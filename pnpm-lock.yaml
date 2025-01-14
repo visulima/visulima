@@ -32,10 +32,10 @@ importers:
     dependencies:
       '@anolilab/commitlint-config':
         specifier: ^5.0.3
-        version: 5.0.3(@commitlint/cli@19.6.1(@types/node@22.10.5)(typescript@5.7.3))(@types/node@22.10.5)(typescript@5.7.3)
+        version: 5.0.3(@commitlint/cli@19.6.1(@types/node@22.10.6)(typescript@5.7.3))(@types/node@22.10.6)(typescript@5.7.3)
       '@anolilab/lint-staged-config':
         specifier: ^2.1.7
-        version: 2.1.7(eslint@8.57.0)(husky@9.1.7)(jest@29.7.0(@types/node@22.10.5))(lint-staged@15.3.0)(prettier@3.4.2)(secretlint@9.0.0)(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))
+        version: 2.1.7(eslint@8.57.0)(husky@9.1.7)(jest@29.7.0(@types/node@22.10.6))(lint-staged@15.3.0)(prettier@3.4.2)(secretlint@9.0.0)(vite@5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1))
       '@anolilab/multi-semantic-release':
         specifier: ^1.1.6
         version: 1.1.6(semantic-release@24.2.1(typescript@5.7.3))(typescript@5.7.3)
@@ -50,7 +50,7 @@ importers:
         version: 7.26.0
       '@commitlint/cli':
         specifier: ^19.6.1
-        version: 19.6.1(@types/node@22.10.5)(typescript@5.7.3)
+        version: 19.6.1(@types/node@22.10.6)(typescript@5.7.3)
       '@commitlint/config-conventional':
         specifier: ^19.6.0
         version: 19.6.0
@@ -67,8 +67,8 @@ importers:
         specifier: ^9.0.0
         version: 9.0.0
       '@types/node':
-        specifier: 22.10.5
-        version: 22.10.5
+        specifier: 22.10.6
+        version: 22.10.6
       audit-ci:
         specifier: ^7.1.0
         version: 7.1.0
@@ -77,7 +77,7 @@ importers:
         version: 5.0.14
       commitizen:
         specifier: ^4.3.1
-        version: 4.3.1(@types/node@22.10.5)(typescript@5.7.3)
+        version: 4.3.1(@types/node@22.10.6)(typescript@5.7.3)
       core-js:
         specifier: ^3.40.0
         version: 3.40.0
@@ -106,8 +106,8 @@ importers:
         specifier: ^3.4.2
         version: 3.4.2
       publint:
-        specifier: ^0.3.1
-        version: 0.3.1
+        specifier: ^0.3.2
+        version: 0.3.2
       read-pkg:
         specifier: ^9.0.1
         version: 9.0.1
@@ -137,7 +137,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
 
   apps/docs:
     dependencies:
@@ -166,8 +166,8 @@ importers:
         specifier: ^3.7.2
         version: 3.7.2
       framer-motion:
-        specifier: ^11.17.0
-        version: 11.17.0(@emotion/is-prop-valid@1.2.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^11.17.1
+        version: 11.18.0(@emotion/is-prop-valid@1.2.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       fs-extra:
         specifier: ^11.2.0
         version: 11.2.0
@@ -181,8 +181,8 @@ importers:
         specifier: 3.3.1
         version: 3.3.1(@types/react@19.0.2)(acorn@8.14.0)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       publint:
-        specifier: ^0.3.1
-        version: 0.3.1
+        specifier: ^0.3.2
+        version: 0.3.2
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -239,8 +239,8 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       '@types/node':
-        specifier: 22.10.5
-        version: 22.10.5
+        specifier: 22.10.6
+        version: 22.10.6
       '@types/react':
         specifier: ^19.0.2
         version: 19.0.2
@@ -321,7 +321,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
 
   apps/storybook:
     dependencies:
@@ -379,7 +379,7 @@ importers:
         version: 8.4.7(storybook@8.4.7(prettier@3.4.2))
       '@storybook/builder-vite':
         specifier: ~8.4.7
-        version: 8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
+        version: 8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
       '@storybook/core-server':
         specifier: ~8.4.7
         version: 8.4.7(storybook@8.4.7(prettier@3.4.2))
@@ -388,10 +388,10 @@ importers:
         version: 8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)
       '@storybook/react-vite':
         specifier: ^8.4.7
-        version: 8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.30.1)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
+        version: 8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.30.1)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
       '@storybook/test-runner':
         specifier: ^0.21.0
-        version: 0.21.0(@swc/helpers@0.5.15)(@types/node@22.10.5)(storybook@8.4.7(prettier@3.4.2))
+        version: 0.21.0(@swc/helpers@0.5.15)(@types/node@22.10.6)(storybook@8.4.7(prettier@3.4.2))
       '@storybook/testing-library':
         specifier: ~0.2.2
         version: 0.2.2
@@ -399,8 +399,8 @@ importers:
         specifier: ^16.1.0
         version: 16.1.0(@testing-library/dom@10.4.0)(@types/react-dom@19.0.2(@types/react@19.0.2))(@types/react@19.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/node':
-        specifier: 22.10.5
-        version: 22.10.5
+        specifier: 22.10.6
+        version: 22.10.6
       '@types/react':
         specifier: ^19.0.2
         version: 19.0.2
@@ -409,7 +409,7 @@ importers:
         version: 19.0.2(@types/react@19.0.2)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
-        version: 4.3.4(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
+        version: 4.3.4(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
@@ -427,7 +427,7 @@ importers:
         version: 2.0.3(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.29.1
-        version: eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2))
+        version: eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2))
       eslint-plugin-jsx-a11y:
         specifier: ^6.10.2
         version: 6.10.2(eslint@9.18.0(jiti@2.4.2))
@@ -459,8 +459,8 @@ importers:
         specifier: ^8.4.49
         version: 8.4.49
       publint:
-        specifier: ^0.3.1
-        version: 0.3.1
+        specifier: ^0.3.2
+        version: 0.3.2
       serve:
         specifier: ^14.2.4
         version: 14.2.4
@@ -481,10 +481,10 @@ importers:
         version: 5.7.3
       vite:
         specifier: ^6.0.7
-        version: 6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
+        version: 6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
       vite-tsconfig-paths:
         specifier: ^5.1.4
-        version: 5.1.4(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
+        version: 5.1.4(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
 
   examples/api-platform/express:
     dependencies:
@@ -611,8 +611,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -626,14 +626,14 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       '@types/node':
-        specifier: 22.10.5
-        version: 22.10.5
+        specifier: 22.10.6
+        version: 22.10.6
       '@visulima/colorize':
         specifier: 1.4.18
         version: 1.4.18
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.5)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.6)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -666,7 +666,7 @@ importers:
         version: 2.0.3(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.29.1
-        version: eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2))
+        version: eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2))
       eslint-plugin-mdx:
         specifier: ^3.1.5
         version: 3.1.5(eslint@9.18.0(jiti@2.4.2))
@@ -699,7 +699,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
 
   packages/ansi/__fixtures__/package/cjs:
     dependencies:
@@ -819,11 +819,11 @@ importers:
         specifier: ^4.6.9
         version: 4.6.9
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@types/qs':
-        specifier: ^6.9.17
-        version: 6.9.17
+        specifier: ^6.9.18
+        version: 6.9.18
       '@types/react':
         specifier: ^19.0.2
         version: 19.0.2
@@ -928,7 +928,7 @@ importers:
         version: 4.0.14(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
       node-mocks-http:
         specifier: ^1.16.2
-        version: 1.16.2(@types/express@5.0.0)(@types/node@18.19.15)
+        version: 1.16.2(@types/express@5.0.0)(@types/node@18.19.70)
       openapi-types:
         specifier: ^12.1.3
         version: 12.1.3
@@ -976,7 +976,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
       webpack:
         specifier: ^5.97.1
         version: 5.97.1(@swc/core@1.6.7(@swc/helpers@0.5.15))
@@ -999,8 +999,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -1008,14 +1008,14 @@ importers:
         specifier: ^0.8.3
         version: 0.8.3(eslint@8.57.0)(typescript@5.7.3)
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/colorize':
         specifier: 1.4.18
         version: 1.4.18
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -1078,7 +1078,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
       wrap-ansi:
         specifier: ^9.0.0
         version: 9.0.0
@@ -1113,7 +1113,7 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5
       command-line-args:
-        specifier: ^6.0.0
+        specifier: ^6.0.1
         version: 6.0.1
       fastest-levenshtein:
         specifier: ^1.0.16
@@ -1132,8 +1132,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -1162,14 +1162,14 @@ importers:
         specifier: ^5.2.3
         version: 5.2.3
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/nextra-theme-docs':
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(nextra@3.3.1(@types/react@19.0.2)(acorn@8.14.0)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.1)
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -1220,7 +1220,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/cerebro/__fixtures__/package/cjs:
     dependencies:
@@ -1265,11 +1265,11 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -1335,7 +1335,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/colorize/__bench__:
     dependencies:
@@ -1419,8 +1419,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -1431,14 +1431,14 @@ importers:
         specifier: ^2.0.4
         version: 2.0.4
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/nextra-theme-docs':
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(nextra@3.3.1(@types/react@19.0.2)(acorn@8.14.0)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.1)
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -1501,7 +1501,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
       zod:
         specifier: ^3.24.1
         version: 3.24.1
@@ -1558,8 +1558,8 @@ importers:
         specifier: 7.0.15
         version: 7.0.15
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -1622,7 +1622,7 @@ importers:
         version: 4.0.14(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
       node-mocks-http:
         specifier: ^1.16.2
-        version: 1.16.2(@types/express@5.0.0)(@types/node@18.19.15)
+        version: 1.16.2(@types/express@5.0.0)(@types/node@18.19.70)
       openapi-types:
         specifier: ^12.1.3
         version: 12.1.3
@@ -1649,7 +1649,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/deep-clone:
     devDependencies:
@@ -1666,8 +1666,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@mfederczuk/deeptools':
         specifier: 2.1.0-indev01
         version: 2.1.0-indev01
@@ -1681,14 +1681,14 @@ importers:
         specifier: ^4.5.9
         version: 4.5.9
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@ungap/structured-clone':
         specifier: ^1.2.1
         version: 1.2.1
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -1775,7 +1775,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/error:
     devDependencies:
@@ -1792,8 +1792,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -1822,14 +1822,14 @@ importers:
         specifier: ^5.2.3
         version: 5.2.3
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/nextra-theme-docs':
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(nextra@3.3.1(@types/react@19.0.2)(acorn@8.14.0)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.1)
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -1883,7 +1883,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/find-cache-dir:
     dependencies:
@@ -1907,8 +1907,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -1926,7 +1926,7 @@ importers:
         version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2000,8 +2000,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -2009,11 +2009,11 @@ importers:
         specifier: ^0.8.3
         version: 0.8.3(eslint@8.57.0)(typescript@5.7.3)
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2067,7 +2067,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/fs:
     dependencies:
@@ -2091,8 +2091,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -2100,14 +2100,14 @@ importers:
         specifier: ^0.8.3
         version: 0.8.3(eslint@8.57.0)(typescript@5.7.3)
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/error':
         specifier: 4.4.13
         version: 4.4.13
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2185,7 +2185,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/fs/__fixtures__/find-up: {}
 
@@ -2230,8 +2230,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@arthurgeron/eslint-plugin-react-usememo':
         specifier: ^2.4.4
         version: 2.4.4
@@ -2245,11 +2245,11 @@ importers:
         specifier: ^16.1.0
         version: 16.1.0(@testing-library/dom@10.4.0)(@types/react-dom@19.0.2(@types/react@19.0.2))(@types/react@19.0.2)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2309,10 +2309,10 @@ importers:
         version: 1.5.0
       msw:
         specifier: ^2.7.0
-        version: 2.7.0(@types/node@18.19.15)(typescript@5.7.3)
+        version: 2.7.0(@types/node@18.19.70)(typescript@5.7.3)
       node-mocks-http:
         specifier: ^1.16.2
-        version: 1.16.2(@types/express@5.0.0)(@types/node@18.19.15)
+        version: 1.16.2(@types/express@5.0.0)(@types/node@18.19.70)
       prettier:
         specifier: ^3.4.2
         version: 3.4.2
@@ -2333,7 +2333,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/humanizer:
     devDependencies:
@@ -2350,8 +2350,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -2365,11 +2365,11 @@ importers:
         specifier: ^0.7.34
         version: 0.7.34
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -2432,7 +2432,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/humanizer/__fixtures__/package/cjs:
     dependencies:
@@ -2461,8 +2461,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -2476,17 +2476,17 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/colorize':
         specifier: 1.4.18
         version: 1.4.18
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/browser':
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
+        version: 2.1.8(@types/node@18.19.70)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.70)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2546,7 +2546,7 @@ importers:
         version: 1.1.0(typescript@5.7.3)
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
       webdriverio:
         specifier: ^9.5.4
         version: 9.5.4
@@ -2571,7 +2571,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
 
   packages/is-ansi-color-supported:
     devDependencies:
@@ -2588,8 +2588,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -2600,11 +2600,11 @@ importers:
         specifier: ^9.0.0
         version: 9.0.0
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2658,7 +2658,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/jsdoc-open-api:
     dependencies:
@@ -2719,8 +2719,8 @@ importers:
         specifier: ^4.6.9
         version: 4.6.9
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@types/webpack':
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.15))
@@ -2777,7 +2777,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/object:
     devDependencies:
@@ -2794,8 +2794,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -2809,11 +2809,11 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       '@types/node':
-        specifier: 18.19.39
-        version: 18.19.39
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/packem':
         specifier: ^1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.39)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2882,7 +2882,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.39)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.39)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/package:
     dependencies:
@@ -2890,8 +2890,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@inquirer/confirm':
-        specifier: ^5.1.2
-        version: 5.1.2(@types/node@18.19.15)
+        specifier: ^5.1.3
+        version: 5.1.3(@types/node@18.19.70)
       '@visulima/fs':
         specifier: 2.3.7
         version: 2.3.7
@@ -2915,20 +2915,20 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
       '@inquirer/core':
-        specifier: ^10.1.3
-        version: 10.1.3(@types/node@18.19.15)
+        specifier: ^10.1.4
+        version: 10.1.4(@types/node@18.19.70)
       '@inquirer/type':
         specifier: ^3.0.2
-        version: 3.0.2(@types/node@18.19.15)
+        version: 3.0.2(@types/node@18.19.70)
       '@pnpm/exe':
-        specifier: ^9.15.3
-        version: 9.15.3
+        specifier: ^9.15.4
+        version: 9.15.4
       '@rushstack/eslint-plugin-security':
         specifier: ^0.8.3
         version: 0.8.3(eslint@8.57.0)(typescript@5.7.3)
@@ -2936,14 +2936,14 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@types/normalize-package-data':
         specifier: ^2.4.4
         version: 2.4.4
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3012,7 +3012,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
       yarn:
         specifier: ^1.22.22
         version: 1.22.22
@@ -3044,8 +3044,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -3053,11 +3053,11 @@ importers:
         specifier: ^0.8.3
         version: 0.8.3(eslint@8.57.0)(typescript@5.7.3)
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3114,7 +3114,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/pail:
     dependencies:
@@ -3147,8 +3147,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -3162,11 +3162,11 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/redact':
         specifier: 1.0.11
         version: 1.0.11
@@ -3235,7 +3235,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
       wrap-ansi:
         specifier: ^9.0.0
         version: 9.0.0
@@ -3269,7 +3269,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
 
   packages/pail/__fixtures__/package/cjs:
     dependencies:
@@ -3298,8 +3298,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -3310,11 +3310,11 @@ importers:
         specifier: ^9.0.0
         version: 9.0.0
       '@types/node':
-        specifier: ^22.10.2
-        version: 22.10.2
+        specifier: ^22.10.6
+        version: 22.10.6
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.2)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.6)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3371,7 +3371,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.2)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
       zeptomatch:
         specifier: ^2.0.0
         version: 2.0.0
@@ -3407,8 +3407,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -3428,11 +3428,11 @@ importers:
         specifier: 4.0.9
         version: 4.0.9
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: 2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3489,7 +3489,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: 2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/redact:
     dependencies:
@@ -3510,8 +3510,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -3522,11 +3522,11 @@ importers:
         specifier: ^9.0.0
         version: 9.0.0
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: 18.19.70
+        version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3583,7 +3583,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
 
   packages/redact/__bench__:
     dependencies:
@@ -3608,7 +3608,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
 
   packages/redact/__fixtures__/package/cjs:
     dependencies:
@@ -3644,8 +3644,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -3663,7 +3663,7 @@ importers:
         version: 18.19.70
       '@visulima/packem':
         specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3747,8 +3747,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
-        specifier: ^0.17.2
-        version: 0.17.2
+        specifier: ^0.17.3
+        version: 0.17.3
       '@babel/core':
         specifier: ^7.26.0
         version: 7.26.0
@@ -4091,13 +4091,13 @@ packages:
     peerDependencies:
       openapi-types: '>=7'
 
-  '@arethetypeswrong/cli@0.17.2':
-    resolution: {integrity: sha512-/u2VcQJ8PKc4hcao/vXnHrYLEI/sQqKarbHi+NEIfvdymaW5o62XOCXy2yvalQa/vR+AAD/QNEgAUzHo5f7hrw==}
+  '@arethetypeswrong/cli@0.17.3':
+    resolution: {integrity: sha512-wI9ZSTweunmzHboSyYtWRFpba9fM9mpX1g7EUoRr+86zHSd7NR7svb6EmJD2hv1V+SoisB2fERu6EQGGEfQ8oQ==}
     engines: {node: '>=18'}
     hasBin: true
 
-  '@arethetypeswrong/core@0.17.2':
-    resolution: {integrity: sha512-JYeLgS4rQ2l3gHCabaka3atsEyskfpx+WqUbo+6l8LApILJgr0/XDb7KNC9Ovevp4iPVF2Q73oshpgOKJ3uDRQ==}
+  '@arethetypeswrong/core@0.17.3':
+    resolution: {integrity: sha512-2TB7O5JmC7UX7QHRGGftxRVQjV4Ce6oOIDGIDDERyT9dQ8lK/tRGfFubzO80rWeXm/gSrA8jirlXSWSE1i5ynQ==}
     engines: {node: '>=18'}
 
   '@arthurgeron/eslint-plugin-react-usememo@2.4.4':
@@ -6158,14 +6158,14 @@ packages:
     peerDependencies:
       '@types/node': '>=18'
 
-  '@inquirer/confirm@5.1.2':
-    resolution: {integrity: sha512-VKgaKxw2I3cu2smedeMFyxuYyI+HABlFY1Px4j8NueA7xDskKAo9hxEQemTpp1Fu4OiTtOCgU4eK91BVuBKH3g==}
+  '@inquirer/confirm@5.1.3':
+    resolution: {integrity: sha512-fuF9laMmHoOgWapF9h9hv6opA5WvmGFHsTYGCmuFxcghIhEhb3dN0CdQR4BUMqa2H506NCj8cGX4jwMsE4t6dA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@types/node': '>=18'
 
-  '@inquirer/core@10.1.3':
-    resolution: {integrity: sha512-+7/dCYwDku2xfcWJWX6Urxb8aRz6d0K+4lRgIBM08ktE84dm++RPROgnVfWq4hLK5FVu/O4rbO9HnJtaz3pt2w==}
+  '@inquirer/core@10.1.4':
+    resolution: {integrity: sha512-5y4/PUJVnRb4bwWY67KLdebWOhOc7xj5IP2J80oWXa64mVag24rwQ1VAdnj7/eDY/odhguW0zQ1Mp1pj6fO/2w==}
     engines: {node: '>=18'}
 
   '@inquirer/figures@1.0.9':
@@ -6923,30 +6923,30 @@ packages:
     resolution: {integrity: sha512-htyl8TWnKL7K/ESFa1oW2UB5lVDxuF5DpM7tBi6Hu2LNL3mWkIzNLG6N4zoCUP1lCKNxWy/3iu8mS8MvToGd6w==}
     engines: {node: '>=12.22.0'}
 
-  '@pnpm/exe@9.15.3':
-    resolution: {integrity: sha512-ANKGbjR70CT817kRi6+/uv+AuAIj5idyluT4W3wIcyfg+6z0k4lwryPbWPF480UEz+i9GMLCqQwqrlZsVVL1nQ==}
+  '@pnpm/exe@9.15.4':
+    resolution: {integrity: sha512-hi9OoO5V6ifhCwqHEQpvJscLkPv4+qANWhrI8OuavOU4eRy+SBFUmb3T0tqKhBq9HikkbZuI44FSK3cdOdXRcQ==}
     hasBin: true
 
-  '@pnpm/linux-arm64@9.15.3':
-    resolution: {integrity: sha512-vC3BrxhDYuW6iCPgjMU5bZHoL8db2J60jUjZMJFdaT1rResYzZ/06XxPTcxNrAqva2JI7KIIYFv+Ur8sQchVSA==}
+  '@pnpm/linux-arm64@9.15.4':
+    resolution: {integrity: sha512-b6+BHd/oCZ/EldPgQuSqL/hd3J8WwhhMBj8K5v3jrAIZg9jueuQLPBmlwzaF2tmqmHtG8sqNfNnCjMipLR+68w==}
     cpu: [arm64]
     os: [linux]
     hasBin: true
 
-  '@pnpm/linux-x64@9.15.3':
-    resolution: {integrity: sha512-YPQWIwwH1PFo4KcGuZL2vBbKBHhRenxLoavPvBinp/+dIat/z2C/Is/C1A5K6gM+ZHeJu/g8cRzhGUU4/lrpMA==}
+  '@pnpm/linux-x64@9.15.4':
+    resolution: {integrity: sha512-TdOOZ1af2lXjiW7Ti3d+DZSnjt/xKA1VGC67frhxbzeOMH3bdHZdUwvMNrpQ/fcHNkfGB97eQYg1rmTQTp2vrQ==}
     cpu: [x64]
     os: [linux]
     hasBin: true
 
-  '@pnpm/macos-arm64@9.15.3':
-    resolution: {integrity: sha512-n/nEwqIKzSzm3t5zgtT2PFJujR+F0p8kW8R0eF6qquqOuxXyQzncR+dHzEKgPR+RZaF6r3VsOZrLZGtgsmoVlQ==}
+  '@pnpm/macos-arm64@9.15.4':
+    resolution: {integrity: sha512-/tw5aV5kKe5pvPxWDtfWQmZ5RJJQuYmnUgeqyDbGPEoxRcbR41Cte64GI0SuNIlc6lb7y9qrVZAvTe+oQKmMGg==}
     cpu: [arm64]
     os: [darwin]
     hasBin: true
 
-  '@pnpm/macos-x64@9.15.3':
-    resolution: {integrity: sha512-5SMmi33Wot/AP4GxrOQoi/esTLCF5kSzZ13ML4XPHhFnuOTw9Cb+/PcmVBmI9dn0n99bg/ZofGRZfvrfLpp20Q==}
+  '@pnpm/macos-x64@9.15.4':
+    resolution: {integrity: sha512-f8GusN4eCXaJDADENFQ2vci1Y/iW8CHsYyKautHXu7Uh99+LQ2hBSz4xGZEnYVRBMLG+8f94RIAa/OE9oMs2mA==}
     cpu: [x64]
     os: [darwin]
     hasBin: true
@@ -6959,14 +6959,14 @@ packages:
     resolution: {integrity: sha512-UA91GwWPhFExt3IizW6bOeY/pQ0BkuNwKjk9iQW9KqxluGCrg4VenZ0/L+2Y0+ZOtme72EVvg6v0zo3AMQRCeA==}
     engines: {node: '>=12'}
 
-  '@pnpm/win-arm64@9.15.3':
-    resolution: {integrity: sha512-cVDTUBaA/HyTqgEJBz+FURwL5N9/RlzjSc3FQsjgdr+mq3hNoMFZ9qShXvsdZDcnJo9KiTBFj3BUaarZd//y7Q==}
+  '@pnpm/win-arm64@9.15.4':
+    resolution: {integrity: sha512-axW7Y54pjK8H+fEajL9cU65JMO8M1XqBlgO5IfKhEutZOEYKf8tXMtY6zbq5i4K2vRLeZObyk6jvrFI4g8pBaA==}
     cpu: [arm64]
     os: [win32]
     hasBin: true
 
-  '@pnpm/win-x64@9.15.3':
-    resolution: {integrity: sha512-cg+1+h5g6D6WtYDwGKF8XjNTnE2JxwP+fZG3hETx6u/sqWMDPrypFMfn9gTjALwZlM/PJiTOQ+iT1OwjpYiA9Q==}
+  '@pnpm/win-x64@9.15.4':
+    resolution: {integrity: sha512-nbaD4ZR63QS2loazXwN2T8rdfzqawVAOArHYfg4kBIFtEOlRpTGCPObenqmD0ISDwirB6KgNd8V5vAcP1MpccA==}
     cpu: [x64]
     os: [win32]
     hasBin: true
@@ -7016,8 +7016,8 @@ packages:
   '@promptbook/utils@0.58.0':
     resolution: {integrity: sha512-TglWndmjikWN+OGg9eNOUaMTM7RHr8uFCtgxfWULT1BUjcohywdijf54vS1U4mZ1tBLdHD4/fIrIHtmHzPUIZQ==}
 
-  '@publint/pack@0.1.0':
-    resolution: {integrity: sha512-NvV5jPAQIMCoHvaJ0ZhfouBJ2woFYYf+o6B7dCHGh/tLKSPVoxhjffi35xPuMHgOv65aTOKUzML5XwQF9EkDAA==}
+  '@publint/pack@0.1.1':
+    resolution: {integrity: sha512-TvCl79Y8v18ZhFGd5mjO1kYPovSBq3+4LVCi5Nfl1JI8fS8i8kXbgQFGwBJRXczim8GlW8c2LMBKTtExYXOy/A==}
     engines: {node: '>=18'}
 
   '@puppeteer/browsers@2.3.1':
@@ -9114,23 +9114,17 @@ packages:
   '@types/node@18.18.14':
     resolution: {integrity: sha512-iSOeNeXYNYNLLOMDSVPvIFojclvMZ/HDY2dU17kUlcsOsSQETbWIslJbYLZgA+ox8g2XQwSHKTkght1a5X26lQ==}
 
-  '@types/node@18.19.15':
-    resolution: {integrity: sha512-AMZ2UWx+woHNfM11PyAEQmfSxi05jm9OlkxczuHeEqmvwPkYj6MWv44gbzDPefYOLysTOFyI3ziiy2ONmUZfpA==}
-
-  '@types/node@18.19.39':
-    resolution: {integrity: sha512-nPwTRDKUctxw3di5b4TfT3I0sWDiWoPQCZjXhvdkINntwr8lcoVCKsTgnXeRubKIlfnV+eN/HYk6Jb40tbcEAQ==}
-
   '@types/node@18.19.70':
     resolution: {integrity: sha512-RE+K0+KZoEpDUbGGctnGdkrLFwi1eYKTlIHNl2Um98mUkGsm1u2Ff6Ltd0e8DktTtC98uy7rSj+hO8t/QuLoVQ==}
 
   '@types/node@20.14.11':
     resolution: {integrity: sha512-kprQpL8MMeszbz6ojB5/tU8PLN4kesnN8Gjzw349rDlNgsSzg90lAVj3llK99Dh7JON+t9AuscPPFW6mPbTnSA==}
 
-  '@types/node@22.10.2':
-    resolution: {integrity: sha512-Xxr6BBRCAOQixvonOye19wnzyDiUtTeqldOOmj3CkeblonbccA12PFwlufvRdrpjXxqnmUaeiU5EOA+7s5diUQ==}
-
   '@types/node@22.10.5':
     resolution: {integrity: sha512-F8Q+SeGimwOo86fiovQh8qiXfFEh2/ocYv7tU5pJ3EXMSSxk1Joj5wefpFK2fHTf/N6HKGSxIDBT9f3gCxXPkQ==}
+
+  '@types/node@22.10.6':
+    resolution: {integrity: sha512-qNiuwC4ZDAUNcY47xgaSuS92cjf8JbSUoaKS77bmLG1rU7MlATVSiw/IlrjtIyyskXBZ8KkNfjK/P5na7rgXbQ==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -9147,8 +9141,8 @@ packages:
   '@types/qs@6.9.16':
     resolution: {integrity: sha512-7i+zxXdPD0T4cKDuxCUXJ4wHcsJLwENa6Z3dCu8cfCK743OGy5Nu1RmAGqDPsoTDINVEcdXKRvR/zre+P2Ku1A==}
 
-  '@types/qs@6.9.17':
-    resolution: {integrity: sha512-rX4/bPcfmvxHDv0XjfJELTTr+iB+tn032nPILqHm5wbthUUUuVtNGGqzhya9XUxjTP8Fpr0qYgSZZKxGY++svQ==}
+  '@types/qs@6.9.18':
+    resolution: {integrity: sha512-kK7dgTYDyGqS+e2Q4aK9X3D7q234CIZ1Bv0q/7Z5IwRDoADNU81xXJK/YVyLbLTZCoIwUoDoffFeF+p/eIklAA==}
 
   '@types/ramda@0.30.0':
     resolution: {integrity: sha512-DQtfqUbSB18iM9NHbQ++kVUDuBWHMr6T2FpW1XTiksYRGjq4WnNPZLt712OEHEBJs7aMyJ68Mf2kGMOP1srVVw==}
@@ -13139,8 +13133,8 @@ packages:
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
-  framer-motion@11.17.0:
-    resolution: {integrity: sha512-uTNLH9JPMD3ad14WBt3KYRTR+If4tGPLgKTKTIIPaEBMkvazs6EkWNcmCh65qA/tyinOqIbQiuCorXX0qQsNoQ==}
+  framer-motion@11.18.0:
+    resolution: {integrity: sha512-Vmjl5Al7XqKHzDFnVqzi1H9hzn5w4eN/bdqXTymVpU2UuMQuz9w6UPdsL9dFBeH7loBlnu4qcEXME+nvbkcIOw==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0 || ^19.0.0
@@ -17354,8 +17348,8 @@ packages:
   psl@1.9.0:
     resolution: {integrity: sha512-E/ZsdU4HLs/68gYzgGTkMicWTLPdAftJLfJFlLUAAKZGkStNU72sZjT66SnMDVOfOWY/YAoiD7Jxa9iHvngcag==}
 
-  publint@0.3.1:
-    resolution: {integrity: sha512-kZo30Y7aRyF/KmXMiGjkQFuhqQ7+dS6msPUoMUhhCYpVd1bEO3LC2tYueJxzscFAM7P+ayJ5vWGUeoj1xDCmHw==}
+  publint@0.3.2:
+    resolution: {integrity: sha512-fPs7QUbUvwixxPYUUTn0Kqp0rbH5rbiAOZwQOXMkIj+4Nopby1AngodSQmzTkJWTJ5R4uVV8oYmgVIjj+tgv1w==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -20578,15 +20572,15 @@ snapshots:
 
   '@andrewbranch/untar.js@1.0.3': {}
 
-  '@anolilab/commitlint-config@5.0.3(@commitlint/cli@19.6.1(@types/node@22.10.5)(typescript@5.7.3))(@types/node@22.10.5)(typescript@5.7.3)':
+  '@anolilab/commitlint-config@5.0.3(@commitlint/cli@19.6.1(@types/node@22.10.6)(typescript@5.7.3))(@types/node@22.10.6)(typescript@5.7.3)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
-      '@commitlint/cli': 19.6.1(@types/node@22.10.5)(typescript@5.7.3)
+      '@commitlint/cli': 19.6.1(@types/node@22.10.6)(typescript@5.7.3)
       '@commitlint/config-conventional': 18.6.3
-      '@commitlint/core': 18.6.1(@types/node@22.10.5)(typescript@5.7.3)
-      commitizen: 4.3.1(@types/node@22.10.5)(typescript@5.7.3)
+      '@commitlint/core': 18.6.1(@types/node@22.10.6)(typescript@5.7.3)
+      commitizen: 4.3.1(@types/node@22.10.6)(typescript@5.7.3)
       conventional-changelog-conventionalcommits: 7.0.2
-      cz-conventional-changelog: 3.3.0(@types/node@22.10.5)(typescript@5.7.3)
+      cz-conventional-changelog: 3.3.0(@types/node@22.10.6)(typescript@5.7.3)
     transitivePeerDependencies:
       - '@types/node'
       - typescript
@@ -20798,7 +20792,7 @@ snapshots:
       - svelte-eslint-parser
       - vue-eslint-parser
 
-  '@anolilab/lint-staged-config@2.1.7(eslint@8.57.0)(husky@9.1.7)(jest@29.7.0(@types/node@22.10.5))(lint-staged@15.3.0)(prettier@3.4.2)(secretlint@9.0.0)(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@anolilab/lint-staged-config@2.1.7(eslint@8.57.0)(husky@9.1.7)(jest@29.7.0(@types/node@22.10.6))(lint-staged@15.3.0)(prettier@3.4.2)(secretlint@9.0.0)(vite@5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       find-up: 5.0.0
@@ -20807,10 +20801,10 @@ snapshots:
       shell-quote: 1.8.1
     optionalDependencies:
       eslint: 8.57.0
-      jest: 29.7.0(@types/node@22.10.5)
+      jest: 29.7.0(@types/node@22.10.6)
       prettier: 3.4.2
       secretlint: 9.0.0
-      vite: 5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1)
+      vite: 5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1)
 
   '@anolilab/multi-semantic-release@1.1.6(semantic-release@24.2.1(typescript@5.7.3))(typescript@5.7.3)':
     dependencies:
@@ -20951,9 +20945,9 @@ snapshots:
       call-me-maybe: 1.0.2
       openapi-types: 12.1.3
 
-  '@arethetypeswrong/cli@0.17.2':
+  '@arethetypeswrong/cli@0.17.3':
     dependencies:
-      '@arethetypeswrong/core': 0.17.2
+      '@arethetypeswrong/core': 0.17.3
       chalk: 4.1.2
       cli-table3: 0.6.5
       commander: 10.0.1
@@ -20961,7 +20955,7 @@ snapshots:
       marked-terminal: 7.1.0(marked@9.1.6)
       semver: 7.6.3
 
-  '@arethetypeswrong/core@0.17.2':
+  '@arethetypeswrong/core@0.17.3':
     dependencies:
       '@andrewbranch/untar.js': 1.0.3
       cjs-module-lexer: 1.3.1
@@ -22107,11 +22101,11 @@ snapshots:
 
   '@colors/colors@1.6.0': {}
 
-  '@commitlint/cli@19.6.1(@types/node@22.10.5)(typescript@5.7.3)':
+  '@commitlint/cli@19.6.1(@types/node@22.10.6)(typescript@5.7.3)':
     dependencies:
       '@commitlint/format': 19.5.0
       '@commitlint/lint': 19.6.0
-      '@commitlint/load': 19.6.1(@types/node@22.10.5)(typescript@5.7.3)
+      '@commitlint/load': 19.6.1(@types/node@22.10.6)(typescript@5.7.3)
       '@commitlint/read': 19.5.0
       '@commitlint/types': 19.5.0
       tinyexec: 0.3.1
@@ -22146,11 +22140,11 @@ snapshots:
       '@commitlint/types': 19.5.0
       ajv: 8.17.1
 
-  '@commitlint/core@18.6.1(@types/node@22.10.5)(typescript@5.7.3)':
+  '@commitlint/core@18.6.1(@types/node@22.10.6)(typescript@5.7.3)':
     dependencies:
       '@commitlint/format': 18.6.1
       '@commitlint/lint': 18.6.1
-      '@commitlint/load': 18.6.1(@types/node@22.10.5)(typescript@5.7.3)
+      '@commitlint/load': 18.6.1(@types/node@22.10.6)(typescript@5.7.3)
       '@commitlint/read': 18.6.1
     transitivePeerDependencies:
       - '@types/node'
@@ -22215,7 +22209,7 @@ snapshots:
       '@commitlint/rules': 19.6.0
       '@commitlint/types': 19.5.0
 
-  '@commitlint/load@18.6.1(@types/node@22.10.5)(typescript@5.7.3)':
+  '@commitlint/load@18.6.1(@types/node@22.10.6)(typescript@5.7.3)':
     dependencies:
       '@commitlint/config-validator': 18.6.1
       '@commitlint/execute-rule': 18.6.1
@@ -22223,7 +22217,7 @@ snapshots:
       '@commitlint/types': 18.6.1
       chalk: 4.1.2
       cosmiconfig: 8.3.6(typescript@5.7.3)
-      cosmiconfig-typescript-loader: 5.0.0(@types/node@22.10.5)(cosmiconfig@8.3.6(typescript@5.7.3))(typescript@5.7.3)
+      cosmiconfig-typescript-loader: 5.0.0(@types/node@22.10.6)(cosmiconfig@8.3.6(typescript@5.7.3))(typescript@5.7.3)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -22232,7 +22226,7 @@ snapshots:
       - '@types/node'
       - typescript
 
-  '@commitlint/load@19.2.0(@types/node@22.10.5)(typescript@5.7.3)':
+  '@commitlint/load@19.2.0(@types/node@22.10.6)(typescript@5.7.3)':
     dependencies:
       '@commitlint/config-validator': 19.0.3
       '@commitlint/execute-rule': 19.0.0
@@ -22240,7 +22234,7 @@ snapshots:
       '@commitlint/types': 19.5.0
       chalk: 5.4.1
       cosmiconfig: 9.0.0(typescript@5.7.3)
-      cosmiconfig-typescript-loader: 5.0.0(@types/node@22.10.5)(cosmiconfig@9.0.0(typescript@5.7.3))(typescript@5.7.3)
+      cosmiconfig-typescript-loader: 5.0.0(@types/node@22.10.6)(cosmiconfig@9.0.0(typescript@5.7.3))(typescript@5.7.3)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -22249,7 +22243,7 @@ snapshots:
       - typescript
     optional: true
 
-  '@commitlint/load@19.6.1(@types/node@22.10.5)(typescript@5.7.3)':
+  '@commitlint/load@19.6.1(@types/node@22.10.6)(typescript@5.7.3)':
     dependencies:
       '@commitlint/config-validator': 19.5.0
       '@commitlint/execute-rule': 19.5.0
@@ -22257,7 +22251,7 @@ snapshots:
       '@commitlint/types': 19.5.0
       chalk: 5.4.1
       cosmiconfig: 9.0.0(typescript@5.7.3)
-      cosmiconfig-typescript-loader: 6.1.0(@types/node@22.10.5)(cosmiconfig@9.0.0(typescript@5.7.3))(typescript@5.7.3)
+      cosmiconfig-typescript-loader: 6.1.0(@types/node@22.10.6)(cosmiconfig@9.0.0(typescript@5.7.3))(typescript@5.7.3)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -23193,82 +23187,43 @@ snapshots:
 
   '@inquirer/confirm@5.0.2(@types/node@18.18.14)':
     dependencies:
-      '@inquirer/core': 10.1.3(@types/node@18.18.14)
+      '@inquirer/core': 10.1.4(@types/node@18.18.14)
       '@inquirer/type': 3.0.2(@types/node@18.18.14)
       '@types/node': 18.18.14
-    optional: true
-
-  '@inquirer/confirm@5.0.2(@types/node@18.19.15)':
-    dependencies:
-      '@inquirer/core': 10.1.3(@types/node@18.19.15)
-      '@inquirer/type': 3.0.2(@types/node@18.19.15)
-      '@types/node': 18.19.15
-
-  '@inquirer/confirm@5.0.2(@types/node@18.19.39)':
-    dependencies:
-      '@inquirer/core': 10.1.3(@types/node@18.19.39)
-      '@inquirer/type': 3.0.2(@types/node@18.19.39)
-      '@types/node': 18.19.39
     optional: true
 
   '@inquirer/confirm@5.0.2(@types/node@18.19.70)':
     dependencies:
-      '@inquirer/core': 10.1.3(@types/node@18.19.70)
+      '@inquirer/core': 10.1.4(@types/node@18.19.70)
       '@inquirer/type': 3.0.2(@types/node@18.19.70)
       '@types/node': 18.19.70
+
+  '@inquirer/confirm@5.0.2(@types/node@22.10.6)':
+    dependencies:
+      '@inquirer/core': 10.1.4(@types/node@22.10.6)
+      '@inquirer/type': 3.0.2(@types/node@22.10.6)
+      '@types/node': 22.10.6
     optional: true
 
-  '@inquirer/confirm@5.0.2(@types/node@22.10.2)':
+  '@inquirer/confirm@5.1.3(@types/node@18.18.14)':
     dependencies:
-      '@inquirer/core': 10.1.3(@types/node@22.10.2)
-      '@inquirer/type': 3.0.2(@types/node@22.10.2)
-      '@types/node': 22.10.2
-    optional: true
-
-  '@inquirer/confirm@5.0.2(@types/node@22.10.5)':
-    dependencies:
-      '@inquirer/core': 10.1.3(@types/node@22.10.5)
-      '@inquirer/type': 3.0.2(@types/node@22.10.5)
-      '@types/node': 22.10.5
-    optional: true
-
-  '@inquirer/confirm@5.1.2(@types/node@18.18.14)':
-    dependencies:
-      '@inquirer/core': 10.1.3(@types/node@18.18.14)
+      '@inquirer/core': 10.1.4(@types/node@18.18.14)
       '@inquirer/type': 3.0.2(@types/node@18.18.14)
       '@types/node': 18.18.14
 
-  '@inquirer/confirm@5.1.2(@types/node@18.19.15)':
+  '@inquirer/confirm@5.1.3(@types/node@18.19.70)':
     dependencies:
-      '@inquirer/core': 10.1.3(@types/node@18.19.15)
-      '@inquirer/type': 3.0.2(@types/node@18.19.15)
-      '@types/node': 18.19.15
-
-  '@inquirer/confirm@5.1.2(@types/node@18.19.39)':
-    dependencies:
-      '@inquirer/core': 10.1.3(@types/node@18.19.39)
-      '@inquirer/type': 3.0.2(@types/node@18.19.39)
-      '@types/node': 18.19.39
-
-  '@inquirer/confirm@5.1.2(@types/node@18.19.70)':
-    dependencies:
-      '@inquirer/core': 10.1.3(@types/node@18.19.70)
+      '@inquirer/core': 10.1.4(@types/node@18.19.70)
       '@inquirer/type': 3.0.2(@types/node@18.19.70)
       '@types/node': 18.19.70
 
-  '@inquirer/confirm@5.1.2(@types/node@22.10.2)':
+  '@inquirer/confirm@5.1.3(@types/node@22.10.6)':
     dependencies:
-      '@inquirer/core': 10.1.3(@types/node@22.10.2)
-      '@inquirer/type': 3.0.2(@types/node@22.10.2)
-      '@types/node': 22.10.2
+      '@inquirer/core': 10.1.4(@types/node@22.10.6)
+      '@inquirer/type': 3.0.2(@types/node@22.10.6)
+      '@types/node': 22.10.6
 
-  '@inquirer/confirm@5.1.2(@types/node@22.10.5)':
-    dependencies:
-      '@inquirer/core': 10.1.3(@types/node@22.10.5)
-      '@inquirer/type': 3.0.2(@types/node@22.10.5)
-      '@types/node': 22.10.5
-
-  '@inquirer/core@10.1.3(@types/node@18.18.14)':
+  '@inquirer/core@10.1.4(@types/node@18.18.14)':
     dependencies:
       '@inquirer/figures': 1.0.9
       '@inquirer/type': 3.0.2(@types/node@18.18.14)
@@ -23282,35 +23237,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@inquirer/core@10.1.3(@types/node@18.19.15)':
-    dependencies:
-      '@inquirer/figures': 1.0.9
-      '@inquirer/type': 3.0.2(@types/node@18.19.15)
-      ansi-escapes: 4.3.2
-      cli-width: 4.1.0
-      mute-stream: 2.0.0
-      signal-exit: 4.1.0
-      strip-ansi: 6.0.1
-      wrap-ansi: 6.2.0
-      yoctocolors-cjs: 2.1.2
-    transitivePeerDependencies:
-      - '@types/node'
-
-  '@inquirer/core@10.1.3(@types/node@18.19.39)':
-    dependencies:
-      '@inquirer/figures': 1.0.9
-      '@inquirer/type': 3.0.2(@types/node@18.19.39)
-      ansi-escapes: 4.3.2
-      cli-width: 4.1.0
-      mute-stream: 2.0.0
-      signal-exit: 4.1.0
-      strip-ansi: 6.0.1
-      wrap-ansi: 6.2.0
-      yoctocolors-cjs: 2.1.2
-    transitivePeerDependencies:
-      - '@types/node'
-
-  '@inquirer/core@10.1.3(@types/node@18.19.70)':
+  '@inquirer/core@10.1.4(@types/node@18.19.70)':
     dependencies:
       '@inquirer/figures': 1.0.9
       '@inquirer/type': 3.0.2(@types/node@18.19.70)
@@ -23324,24 +23251,10 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@inquirer/core@10.1.3(@types/node@22.10.2)':
+  '@inquirer/core@10.1.4(@types/node@22.10.6)':
     dependencies:
       '@inquirer/figures': 1.0.9
-      '@inquirer/type': 3.0.2(@types/node@22.10.2)
-      ansi-escapes: 4.3.2
-      cli-width: 4.1.0
-      mute-stream: 2.0.0
-      signal-exit: 4.1.0
-      strip-ansi: 6.0.1
-      wrap-ansi: 6.2.0
-      yoctocolors-cjs: 2.1.2
-    transitivePeerDependencies:
-      - '@types/node'
-
-  '@inquirer/core@10.1.3(@types/node@22.10.5)':
-    dependencies:
-      '@inquirer/figures': 1.0.9
-      '@inquirer/type': 3.0.2(@types/node@22.10.5)
+      '@inquirer/type': 3.0.2(@types/node@22.10.6)
       ansi-escapes: 4.3.2
       cli-width: 4.1.0
       mute-stream: 2.0.0
@@ -23358,25 +23271,13 @@ snapshots:
     dependencies:
       '@types/node': 18.18.14
 
-  '@inquirer/type@3.0.2(@types/node@18.19.15)':
-    dependencies:
-      '@types/node': 18.19.15
-
-  '@inquirer/type@3.0.2(@types/node@18.19.39)':
-    dependencies:
-      '@types/node': 18.19.39
-
   '@inquirer/type@3.0.2(@types/node@18.19.70)':
     dependencies:
       '@types/node': 18.19.70
 
-  '@inquirer/type@3.0.2(@types/node@22.10.2)':
+  '@inquirer/type@3.0.2(@types/node@22.10.6)':
     dependencies:
-      '@types/node': 22.10.2
-
-  '@inquirer/type@3.0.2(@types/node@22.10.5)':
-    dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -23400,7 +23301,7 @@ snapshots:
   '@jest/console@29.7.0':
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       chalk: 4.1.2
       jest-message-util: 29.7.0
       jest-util: 29.7.0
@@ -23413,14 +23314,14 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       ci-info: 3.9.0
       exit: 0.1.2
       graceful-fs: 4.2.11
       jest-changed-files: 29.7.0
-      jest-config: 29.7.0(@types/node@22.10.5)
+      jest-config: 29.7.0(@types/node@22.10.6)
       jest-haste-map: 29.7.0
       jest-message-util: 29.7.0
       jest-regex-util: 29.6.3
@@ -23449,7 +23350,7 @@ snapshots:
     dependencies:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       jest-mock: 29.7.0
 
   '@jest/expect-utils@29.7.0':
@@ -23467,7 +23368,7 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@sinonjs/fake-timers': 10.3.0
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       jest-message-util: 29.7.0
       jest-mock: 29.7.0
       jest-util: 29.7.0
@@ -23489,7 +23390,7 @@ snapshots:
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
       '@jridgewell/trace-mapping': 0.3.25
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       chalk: 4.1.2
       collect-v8-coverage: 1.0.2
       exit: 0.1.2
@@ -23559,15 +23460,15 @@ snapshots:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       '@types/yargs': 17.0.32
       chalk: 4.1.2
 
-  '@joshwooding/vite-plugin-react-docgen-typescript@0.4.2(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))':
+  '@joshwooding/vite-plugin-react-docgen-typescript@0.4.2(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))':
     dependencies:
       magic-string: 0.27.0
       react-docgen-typescript: 2.2.2(typescript@5.7.3)
-      vite: 6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
+      vite: 6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
     optionalDependencies:
       typescript: 5.7.3
 
@@ -24206,25 +24107,25 @@ snapshots:
 
   '@pnpm/config.env-replace@1.1.0': {}
 
-  '@pnpm/exe@9.15.3':
+  '@pnpm/exe@9.15.4':
     optionalDependencies:
-      '@pnpm/linux-arm64': 9.15.3
-      '@pnpm/linux-x64': 9.15.3
-      '@pnpm/macos-arm64': 9.15.3
-      '@pnpm/macos-x64': 9.15.3
-      '@pnpm/win-arm64': 9.15.3
-      '@pnpm/win-x64': 9.15.3
+      '@pnpm/linux-arm64': 9.15.4
+      '@pnpm/linux-x64': 9.15.4
+      '@pnpm/macos-arm64': 9.15.4
+      '@pnpm/macos-x64': 9.15.4
+      '@pnpm/win-arm64': 9.15.4
+      '@pnpm/win-x64': 9.15.4
 
-  '@pnpm/linux-arm64@9.15.3':
+  '@pnpm/linux-arm64@9.15.4':
     optional: true
 
-  '@pnpm/linux-x64@9.15.3':
+  '@pnpm/linux-x64@9.15.4':
     optional: true
 
-  '@pnpm/macos-arm64@9.15.3':
+  '@pnpm/macos-arm64@9.15.4':
     optional: true
 
-  '@pnpm/macos-x64@9.15.3':
+  '@pnpm/macos-x64@9.15.4':
     optional: true
 
   '@pnpm/network.ca-file@1.0.2':
@@ -24237,10 +24138,10 @@ snapshots:
       '@pnpm/network.ca-file': 1.0.2
       config-chain: 1.1.13
 
-  '@pnpm/win-arm64@9.15.3':
+  '@pnpm/win-arm64@9.15.4':
     optional: true
 
-  '@pnpm/win-x64@9.15.3':
+  '@pnpm/win-x64@9.15.4':
     optional: true
 
   '@polka/url@1.0.0-next.25': {}
@@ -24299,7 +24200,7 @@ snapshots:
     dependencies:
       spacetrim: 0.11.36
 
-  '@publint/pack@0.1.0': {}
+  '@publint/pack@0.1.1': {}
 
   '@puppeteer/browsers@2.3.1':
     dependencies:
@@ -25606,13 +25507,13 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@storybook/builder-vite@8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))':
+  '@storybook/builder-vite@8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))':
     dependencies:
       '@storybook/csf-plugin': 8.4.7(storybook@8.4.7(prettier@3.4.2))
       browser-assert: 1.2.1
       storybook: 8.4.7(prettier@3.4.2)
       ts-dedent: 2.2.0
-      vite: 6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
+      vite: 6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
 
   '@storybook/channels@7.6.17':
     dependencies:
@@ -25799,7 +25700,7 @@ snapshots:
       '@storybook/csf': 0.1.11
       '@storybook/global': 5.0.0
       '@storybook/types': 7.6.20
-      '@types/qs': 6.9.17
+      '@types/qs': 6.9.18
       dequal: 2.0.3
       lodash: 4.17.21
       memoizerific: 1.11.3
@@ -25818,11 +25719,11 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       storybook: 8.4.7(prettier@3.4.2)
 
-  '@storybook/react-vite@8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.30.1)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))':
+  '@storybook/react-vite@8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.30.1)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))':
     dependencies:
-      '@joshwooding/vite-plugin-react-docgen-typescript': 0.4.2(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
+      '@joshwooding/vite-plugin-react-docgen-typescript': 0.4.2(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
       '@rollup/pluginutils': 5.1.3(rollup@4.30.1)
-      '@storybook/builder-vite': 8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
+      '@storybook/builder-vite': 8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
       '@storybook/react': 8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)
       find-up: 5.0.0
       magic-string: 0.30.13
@@ -25832,7 +25733,7 @@ snapshots:
       resolve: 1.22.8
       storybook: 8.4.7(prettier@3.4.2)
       tsconfig-paths: 4.2.0
-      vite: 6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
+      vite: 6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
     transitivePeerDependencies:
       - '@storybook/test'
       - rollup
@@ -25866,7 +25767,7 @@ snapshots:
       memoizerific: 1.11.3
       qs: 6.13.0
 
-  '@storybook/test-runner@0.21.0(@swc/helpers@0.5.15)(@types/node@22.10.5)(storybook@8.4.7(prettier@3.4.2))':
+  '@storybook/test-runner@0.21.0(@swc/helpers@0.5.15)(@types/node@22.10.6)(storybook@8.4.7(prettier@3.4.2))':
     dependencies:
       '@babel/core': 7.26.0
       '@babel/generator': 7.26.0
@@ -25877,14 +25778,14 @@ snapshots:
       '@swc/core': 1.6.7(@swc/helpers@0.5.15)
       '@swc/jest': 0.2.36(@swc/core@1.6.7(@swc/helpers@0.5.15))
       expect-playwright: 0.8.0
-      jest: 29.7.0(@types/node@22.10.5)
+      jest: 29.7.0(@types/node@22.10.6)
       jest-circus: 29.7.0
       jest-environment-node: 29.7.0
       jest-junit: 16.0.0
-      jest-playwright-preset: 4.0.0(jest-circus@29.7.0)(jest-environment-node@29.7.0)(jest-runner@29.7.0)(jest@29.7.0(@types/node@22.10.5))
+      jest-playwright-preset: 4.0.0(jest-circus@29.7.0)(jest-environment-node@29.7.0)(jest-runner@29.7.0)(jest@29.7.0(@types/node@22.10.6))
       jest-runner: 29.7.0
       jest-serializer-html: 7.1.0
-      jest-watch-typeahead: 2.2.2(jest@29.7.0(@types/node@22.10.5))
+      jest-watch-typeahead: 2.2.2(jest@29.7.0(@types/node@22.10.6))
       nyc: 15.1.0
       playwright: 1.49.1
       storybook: 8.4.7(prettier@3.4.2)
@@ -26945,7 +26846,7 @@ snapshots:
 
   '@types/accepts@1.3.7':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/acorn@4.0.6':
     dependencies:
@@ -26977,29 +26878,29 @@ snapshots:
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/braces@3.0.4': {}
 
   '@types/cli-progress@3.11.6':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/command-line-args@5.2.3': {}
 
   '@types/concat-stream@2.0.3':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/content-disposition@0.5.8': {}
 
   '@types/conventional-commits-parser@5.0.0':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/cookie@0.6.0': {}
 
@@ -27008,7 +26909,7 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/express': 5.0.0
       '@types/keygrip': 1.0.6
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/cors@2.8.17':
     dependencies:
@@ -27155,22 +27056,22 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.6':
     dependencies:
-      '@types/node': 22.10.5
-      '@types/qs': 6.9.17
+      '@types/node': 22.10.6
+      '@types/qs': 6.9.18
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
 
   '@types/express-serve-static-core@5.0.0':
     dependencies:
-      '@types/node': 22.10.5
-      '@types/qs': 6.9.17
+      '@types/node': 22.10.6
+      '@types/qs': 6.9.18
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
 
   '@types/express-serve-static-core@5.0.4':
     dependencies:
-      '@types/node': 22.10.5
-      '@types/qs': 6.9.17
+      '@types/node': 22.10.6
+      '@types/qs': 6.9.18
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
 
@@ -27178,7 +27079,7 @@ snapshots:
     dependencies:
       '@types/body-parser': 1.19.5
       '@types/express-serve-static-core': 4.19.6
-      '@types/qs': 6.9.17
+      '@types/qs': 6.9.18
       '@types/serve-static': 1.15.7
 
   '@types/express@5.0.0':
@@ -27196,7 +27097,7 @@ snapshots:
 
   '@types/graceful-fs@4.1.9':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/hast@2.3.10':
     dependencies:
@@ -27252,7 +27153,7 @@ snapshots:
       '@types/http-errors': 2.0.4
       '@types/keygrip': 1.0.6
       '@types/koa-compose': 3.2.8
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/koa__router@12.0.4':
     dependencies:
@@ -27261,7 +27162,7 @@ snapshots:
   '@types/liftoff@4.0.3':
     dependencies:
       '@types/fined': 1.1.5
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/lodash.clonedeep@4.5.9':
     dependencies:
@@ -27323,18 +27224,10 @@ snapshots:
 
   '@types/node-fetch@2.6.11':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       form-data: 4.0.0
 
   '@types/node@18.18.14':
-    dependencies:
-      undici-types: 5.26.5
-
-  '@types/node@18.19.15':
-    dependencies:
-      undici-types: 5.26.5
-
-  '@types/node@18.19.39':
     dependencies:
       undici-types: 5.26.5
 
@@ -27346,11 +27239,11 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@22.10.2':
+  '@types/node@22.10.5':
     dependencies:
       undici-types: 6.20.0
 
-  '@types/node@22.10.5':
+  '@types/node@22.10.6':
     dependencies:
       undici-types: 6.20.0
 
@@ -27364,7 +27257,7 @@ snapshots:
 
   '@types/qs@6.9.16': {}
 
-  '@types/qs@6.9.17': {}
+  '@types/qs@6.9.18': {}
 
   '@types/ramda@0.30.0':
     dependencies:
@@ -27389,12 +27282,12 @@ snapshots:
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/serve-static@1.15.7':
     dependencies:
       '@types/http-errors': 2.0.4
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       '@types/send': 0.17.4
 
   '@types/sinonjs__fake-timers@8.1.5': {}
@@ -27413,7 +27306,7 @@ snapshots:
 
   '@types/through@0.0.33':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/tough-cookie@4.0.5': {}
 
@@ -27431,11 +27324,11 @@ snapshots:
 
   '@types/wait-on@5.3.4':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/webpack@5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.15))':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       tapable: 2.2.1
       webpack: 5.97.1(@swc/core@1.6.7(@swc/helpers@0.5.15))
     transitivePeerDependencies:
@@ -27448,7 +27341,7 @@ snapshots:
 
   '@types/ws@8.5.10':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/xregexp@4.4.0':
     dependencies:
@@ -27462,7 +27355,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
     optional: true
 
   '@typescript-eslint/eslint-plugin@7.15.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.7.3))(eslint@8.57.0)(typescript@5.7.3)':
@@ -28071,27 +27964,7 @@ snapshots:
   '@visulima/package@3.4.0(@types/node@18.18.14)':
     dependencies:
       '@antfu/install-pkg': 0.5.0
-      '@inquirer/confirm': 5.1.2(@types/node@18.18.14)
-      '@visulima/fs': 2.3.3
-      '@visulima/path': 1.2.0
-      normalize-package-data: 7.0.0
-    transitivePeerDependencies:
-      - '@types/node'
-
-  '@visulima/package@3.4.0(@types/node@18.19.15)':
-    dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@inquirer/confirm': 5.1.2(@types/node@18.19.15)
-      '@visulima/fs': 2.3.3
-      '@visulima/path': 1.2.0
-      normalize-package-data: 7.0.0
-    transitivePeerDependencies:
-      - '@types/node'
-
-  '@visulima/package@3.4.0(@types/node@18.19.39)':
-    dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@inquirer/confirm': 5.1.2(@types/node@18.19.39)
+      '@inquirer/confirm': 5.1.3(@types/node@18.18.14)
       '@visulima/fs': 2.3.3
       '@visulima/path': 1.2.0
       normalize-package-data: 7.0.0
@@ -28101,27 +27974,17 @@ snapshots:
   '@visulima/package@3.4.0(@types/node@18.19.70)':
     dependencies:
       '@antfu/install-pkg': 0.5.0
-      '@inquirer/confirm': 5.1.2(@types/node@18.19.70)
+      '@inquirer/confirm': 5.1.3(@types/node@18.19.70)
       '@visulima/fs': 2.3.3
       '@visulima/path': 1.2.0
       normalize-package-data: 7.0.0
     transitivePeerDependencies:
       - '@types/node'
 
-  '@visulima/package@3.4.0(@types/node@22.10.2)':
+  '@visulima/package@3.4.0(@types/node@22.10.6)':
     dependencies:
       '@antfu/install-pkg': 0.5.0
-      '@inquirer/confirm': 5.1.2(@types/node@22.10.2)
-      '@visulima/fs': 2.3.3
-      '@visulima/path': 1.2.0
-      normalize-package-data: 7.0.0
-    transitivePeerDependencies:
-      - '@types/node'
-
-  '@visulima/package@3.4.0(@types/node@22.10.5)':
-    dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@inquirer/confirm': 5.1.2(@types/node@22.10.5)
+      '@inquirer/confirm': 5.1.3(@types/node@22.10.6)
       '@visulima/fs': 2.3.3
       '@visulima/path': 1.2.0
       normalize-package-data: 7.0.0
@@ -28200,151 +28063,7 @@ snapshots:
       - rolldown
       - rotating-file-stream
 
-  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
-    dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@babel/parser': 7.26.3
-      '@clack/prompts': 0.9.0
-      '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
-      '@csstools/css-tokenizer': 3.0.3
-      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.4.49)
-      '@rollup/plugin-alias': 5.1.1(rollup@4.30.1)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.30.1)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.30.1)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.30.1)
-      '@rollup/plugin-json': 6.1.0(rollup@4.30.1)
-      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.30.1)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.30.1)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.30.1)
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
-      '@visulima/cerebro': 1.1.28(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/colorize': 1.4.14
-      '@visulima/find-cache-dir': 1.0.18
-      '@visulima/fs': 2.3.3
-      '@visulima/humanizer': 1.0.16
-      '@visulima/package': 3.4.0(@types/node@18.19.15)
-      '@visulima/pail': 2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/path': 1.2.0
-      '@visulima/source-map': 1.0.12
-      '@visulima/tsconfig': 1.1.4
-      browserslist: 4.24.3
-      defu: 6.1.4
-      es-module-lexer: 1.6.0
-      fastest-levenshtein: 1.0.16
-      glob-parent: 6.0.2
-      hookable: 5.5.3
-      jiti: 2.4.2
-      magic-string: 0.30.17
-      mlly: 1.7.3
-      oxc-parser: 0.44.0
-      oxc-resolver: 3.0.3
-      rollup: 4.30.1
-      rollup-plugin-dts: 6.1.1(rollup@4.30.1)(typescript@5.7.3)
-      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.30.1)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.30.1)
-      rollup-plugin-visualizer: 5.14.0(rollup@4.30.1)
-      semver: 7.6.3
-      source-map-js: 1.2.1
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.10
-    optionalDependencies:
-      '@swc/core': 1.6.7(@swc/helpers@0.5.15)
-      esbuild: 0.24.2
-      icss-utils: 5.1.0(postcss@8.4.49)
-      lightningcss: 1.25.1
-      postcss: 8.4.49
-      postcss-load-config: 6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.4.49)
-      postcss-modules-local-by-default: 4.0.5(postcss@8.4.49)
-      postcss-modules-scope: 3.2.0(postcss@8.4.49)
-      postcss-modules-values: 4.0.0(postcss@8.4.49)
-      postcss-value-parser: 4.2.0
-      sucrase: 3.35.0
-      typedoc: 0.27.6(typescript@5.7.3)
-      typedoc-plugin-markdown: 4.4.1(typedoc@0.27.6(typescript@5.7.3))
-      typedoc-plugin-rename-defaults: 0.7.2(typedoc@0.27.6(typescript@5.7.3))
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - '@75lb/nature'
-      - '@types/node'
-      - '@visulima/redact'
-      - picomatch
-      - rolldown
-      - rotating-file-stream
-
-  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.39)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
-    dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@babel/parser': 7.26.3
-      '@clack/prompts': 0.9.0
-      '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
-      '@csstools/css-tokenizer': 3.0.3
-      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.4.49)
-      '@rollup/plugin-alias': 5.1.1(rollup@4.30.1)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.30.1)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.30.1)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.30.1)
-      '@rollup/plugin-json': 6.1.0(rollup@4.30.1)
-      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.30.1)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.30.1)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.30.1)
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
-      '@visulima/cerebro': 1.1.28(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/colorize': 1.4.14
-      '@visulima/find-cache-dir': 1.0.18
-      '@visulima/fs': 2.3.3
-      '@visulima/humanizer': 1.0.16
-      '@visulima/package': 3.4.0(@types/node@18.19.39)
-      '@visulima/pail': 2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/path': 1.2.0
-      '@visulima/source-map': 1.0.12
-      '@visulima/tsconfig': 1.1.4
-      browserslist: 4.24.3
-      defu: 6.1.4
-      es-module-lexer: 1.6.0
-      fastest-levenshtein: 1.0.16
-      glob-parent: 6.0.2
-      hookable: 5.5.3
-      jiti: 2.4.2
-      magic-string: 0.30.17
-      mlly: 1.7.3
-      oxc-parser: 0.44.0
-      oxc-resolver: 3.0.3
-      rollup: 4.30.1
-      rollup-plugin-dts: 6.1.1(rollup@4.30.1)(typescript@5.7.3)
-      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.30.1)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.30.1)
-      rollup-plugin-visualizer: 5.14.0(rollup@4.30.1)
-      semver: 7.6.3
-      source-map-js: 1.2.1
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.10
-    optionalDependencies:
-      '@swc/core': 1.6.7(@swc/helpers@0.5.15)
-      esbuild: 0.24.2
-      icss-utils: 5.1.0(postcss@8.4.49)
-      lightningcss: 1.25.1
-      postcss: 8.4.49
-      postcss-load-config: 6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.4.49)
-      postcss-modules-local-by-default: 4.0.5(postcss@8.4.49)
-      postcss-modules-scope: 3.2.0(postcss@8.4.49)
-      postcss-modules-values: 4.0.0(postcss@8.4.49)
-      postcss-value-parser: 4.2.0
-      sucrase: 3.35.0
-      typedoc: 0.27.6(typescript@5.7.3)
-      typedoc-plugin-markdown: 4.4.1(typedoc@0.27.6(typescript@5.7.3))
-      typedoc-plugin-rename-defaults: 0.7.2(typedoc@0.27.6(typescript@5.7.3))
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - '@75lb/nature'
-      - '@types/node'
-      - '@visulima/redact'
-      - picomatch
-      - rolldown
-      - rotating-file-stream
-
-  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
+  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
     dependencies:
       '@antfu/install-pkg': 0.5.0
       '@babel/parser': 7.26.3
@@ -28416,7 +28135,7 @@ snapshots:
       - rolldown
       - rotating-file-stream
 
-  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.2)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
+  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.6)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
     dependencies:
       '@antfu/install-pkg': 0.5.0
       '@babel/parser': 7.26.3
@@ -28438,79 +28157,7 @@ snapshots:
       '@visulima/find-cache-dir': 1.0.18
       '@visulima/fs': 2.3.3
       '@visulima/humanizer': 1.0.16
-      '@visulima/package': 3.4.0(@types/node@22.10.2)
-      '@visulima/pail': 2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/path': 1.2.0
-      '@visulima/source-map': 1.0.12
-      '@visulima/tsconfig': 1.1.4
-      browserslist: 4.24.3
-      defu: 6.1.4
-      es-module-lexer: 1.6.0
-      fastest-levenshtein: 1.0.16
-      glob-parent: 6.0.2
-      hookable: 5.5.3
-      jiti: 2.4.2
-      magic-string: 0.30.17
-      mlly: 1.7.3
-      oxc-parser: 0.44.0
-      oxc-resolver: 3.0.3
-      rollup: 4.30.1
-      rollup-plugin-dts: 6.1.1(rollup@4.30.1)(typescript@5.7.3)
-      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.30.1)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.30.1)
-      rollup-plugin-visualizer: 5.14.0(rollup@4.30.1)
-      semver: 7.6.3
-      source-map-js: 1.2.1
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.10
-    optionalDependencies:
-      '@swc/core': 1.6.7(@swc/helpers@0.5.15)
-      esbuild: 0.24.2
-      icss-utils: 5.1.0(postcss@8.4.49)
-      lightningcss: 1.25.1
-      postcss: 8.4.49
-      postcss-load-config: 6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.4.49)
-      postcss-modules-local-by-default: 4.0.5(postcss@8.4.49)
-      postcss-modules-scope: 3.2.0(postcss@8.4.49)
-      postcss-modules-values: 4.0.0(postcss@8.4.49)
-      postcss-value-parser: 4.2.0
-      sucrase: 3.35.0
-      typedoc: 0.27.6(typescript@5.7.3)
-      typedoc-plugin-markdown: 4.4.1(typedoc@0.27.6(typescript@5.7.3))
-      typedoc-plugin-rename-defaults: 0.7.2(typedoc@0.27.6(typescript@5.7.3))
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - '@75lb/nature'
-      - '@types/node'
-      - '@visulima/redact'
-      - picomatch
-      - rolldown
-      - rotating-file-stream
-
-  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.5)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
-    dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@babel/parser': 7.26.3
-      '@clack/prompts': 0.9.0
-      '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
-      '@csstools/css-tokenizer': 3.0.3
-      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.4.49)
-      '@rollup/plugin-alias': 5.1.1(rollup@4.30.1)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.30.1)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.30.1)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.30.1)
-      '@rollup/plugin-json': 6.1.0(rollup@4.30.1)
-      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.30.1)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.30.1)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.30.1)
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
-      '@visulima/cerebro': 1.1.28(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/colorize': 1.4.14
-      '@visulima/find-cache-dir': 1.0.18
-      '@visulima/fs': 2.3.3
-      '@visulima/humanizer': 1.0.16
-      '@visulima/package': 3.4.0(@types/node@22.10.5)
+      '@visulima/package': 3.4.0(@types/node@22.10.6)
       '@visulima/pail': 2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
       '@visulima/path': 1.2.0
       '@visulima/source-map': 1.0.12
@@ -28613,14 +28260,14 @@ snapshots:
       jsonc-parser: 3.3.1
       resolve-pkg-maps: 1.0.0
 
-  '@vitejs/plugin-react@4.3.4(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))':
+  '@vitejs/plugin-react@4.3.4(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))':
     dependencies:
       '@babel/core': 7.26.0
       '@babel/plugin-transform-react-jsx-self': 7.25.9(@babel/core@7.26.0)
       '@babel/plugin-transform-react-jsx-source': 7.25.9(@babel/core@7.26.0)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.2
-      vite: 6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
+      vite: 6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -28635,51 +28282,6 @@ snapshots:
       sirv: 3.0.0
       tinyrainbow: 1.2.0
       vitest: 2.1.8(@types/node@18.18.14)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.18.14)(typescript@5.7.3))(terser@5.31.1)
-      ws: 8.18.0
-    optionalDependencies:
-      playwright: 1.49.1
-      webdriverio: 9.5.4
-    transitivePeerDependencies:
-      - '@types/node'
-      - bufferutil
-      - typescript
-      - utf-8-validate
-      - vite
-    optional: true
-
-  '@vitest/browser@2.1.8(@types/node@18.19.15)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)':
-    dependencies:
-      '@testing-library/dom': 10.4.0
-      '@testing-library/user-event': 14.5.2(@testing-library/dom@10.4.0)
-      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))
-      '@vitest/utils': 2.1.8
-      magic-string: 0.30.13
-      msw: 2.7.0(@types/node@18.19.15)(typescript@5.7.3)
-      sirv: 3.0.0
-      tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
-      ws: 8.18.0
-    optionalDependencies:
-      playwright: 1.49.1
-      webdriverio: 9.5.4
-    transitivePeerDependencies:
-      - '@types/node'
-      - bufferutil
-      - typescript
-      - utf-8-validate
-      - vite
-
-  '@vitest/browser@2.1.8(@types/node@18.19.39)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)':
-    dependencies:
-      '@testing-library/dom': 10.4.0
-      '@testing-library/user-event': 14.5.2(@testing-library/dom@10.4.0)
-      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@18.19.39)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1))
-      '@vitest/utils': 2.1.8
-      magic-string: 0.30.13
-      msw: 2.7.0(@types/node@18.19.39)(typescript@5.7.3)
-      sirv: 3.0.0
-      tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@18.19.39)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.39)(typescript@5.7.3))(terser@5.31.1)
       ws: 8.18.0
     optionalDependencies:
       playwright: 1.49.1
@@ -28713,42 +28315,18 @@ snapshots:
       - typescript
       - utf-8-validate
       - vite
-    optional: true
 
-  '@vitest/browser@2.1.8(@types/node@22.10.2)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)':
+  '@vitest/browser@2.1.8(@types/node@22.10.6)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)':
     dependencies:
       '@testing-library/dom': 10.4.0
       '@testing-library/user-event': 14.5.2(@testing-library/dom@10.4.0)
-      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.3))(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))
+      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(vite@5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1))
       '@vitest/utils': 2.1.8
       magic-string: 0.30.13
-      msw: 2.7.0(@types/node@22.10.2)(typescript@5.7.3)
+      msw: 2.7.0(@types/node@22.10.6)(typescript@5.7.3)
       sirv: 3.0.0
       tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@22.10.2)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.3))(terser@5.31.1)
-      ws: 8.18.0
-    optionalDependencies:
-      playwright: 1.49.1
-      webdriverio: 9.5.4
-    transitivePeerDependencies:
-      - '@types/node'
-      - bufferutil
-      - typescript
-      - utf-8-validate
-      - vite
-    optional: true
-
-  '@vitest/browser@2.1.8(@types/node@22.10.5)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)':
-    dependencies:
-      '@testing-library/dom': 10.4.0
-      '@testing-library/user-event': 14.5.2(@testing-library/dom@10.4.0)
-      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))
-      '@vitest/utils': 2.1.8
-      magic-string: 0.30.13
-      msw: 2.7.0(@types/node@22.10.5)(typescript@5.7.3)
-      sirv: 3.0.0
-      tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+      vitest: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
       ws: 8.18.0
     optionalDependencies:
       playwright: 1.49.1
@@ -28775,9 +28353,9 @@ snapshots:
       std-env: 3.8.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+      vitest: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
     optionalDependencies:
-      '@vitest/browser': 2.1.8(@types/node@22.10.5)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
+      '@vitest/browser': 2.1.8(@types/node@22.10.6)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
     transitivePeerDependencies:
       - supports-color
 
@@ -28804,24 +28382,6 @@ snapshots:
       msw: 2.7.0(@types/node@18.18.14)(typescript@5.7.3)
       vite: 5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1)
 
-  '@vitest/mocker@2.1.8(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))':
-    dependencies:
-      '@vitest/spy': 2.1.8
-      estree-walker: 3.0.3
-      magic-string: 0.30.13
-    optionalDependencies:
-      msw: 2.7.0(@types/node@18.19.15)(typescript@5.7.3)
-      vite: 5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1)
-
-  '@vitest/mocker@2.1.8(msw@2.7.0(@types/node@18.19.39)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1))':
-    dependencies:
-      '@vitest/spy': 2.1.8
-      estree-walker: 3.0.3
-      magic-string: 0.30.13
-    optionalDependencies:
-      msw: 2.7.0(@types/node@18.19.39)(typescript@5.7.3)
-      vite: 5.4.11(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1)
-
   '@vitest/mocker@2.1.8(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.70)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@vitest/spy': 2.1.8
@@ -28831,23 +28391,14 @@ snapshots:
       msw: 2.7.0(@types/node@18.19.70)(typescript@5.7.3)
       vite: 5.4.11(@types/node@18.19.70)(lightningcss@1.25.1)(terser@5.31.1)
 
-  '@vitest/mocker@2.1.8(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.3))(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@vitest/mocker@2.1.8(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(vite@5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@vitest/spy': 2.1.8
       estree-walker: 3.0.3
       magic-string: 0.30.13
     optionalDependencies:
-      msw: 2.7.0(@types/node@22.10.2)(typescript@5.7.3)
-      vite: 5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1)
-
-  '@vitest/mocker@2.1.8(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))':
-    dependencies:
-      '@vitest/spy': 2.1.8
-      estree-walker: 3.0.3
-      magic-string: 0.30.13
-    optionalDependencies:
-      msw: 2.7.0(@types/node@22.10.5)(typescript@5.7.3)
-      vite: 5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1)
+      msw: 2.7.0(@types/node@22.10.6)(typescript@5.7.3)
+      vite: 5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1)
 
   '@vitest/pretty-format@2.0.5':
     dependencies:
@@ -28889,7 +28440,7 @@ snapshots:
       sirv: 3.0.0
       tinyglobby: 0.2.10
       tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+      vitest: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
 
   '@vitest/utils@2.0.5':
     dependencies:
@@ -30261,10 +29812,10 @@ snapshots:
 
   commenting@1.1.0: {}
 
-  commitizen@4.3.1(@types/node@22.10.5)(typescript@5.7.3):
+  commitizen@4.3.1(@types/node@22.10.6)(typescript@5.7.3):
     dependencies:
       cachedir: 2.3.0
-      cz-conventional-changelog: 3.3.0(@types/node@22.10.5)(typescript@5.7.3)
+      cz-conventional-changelog: 3.3.0(@types/node@22.10.6)(typescript@5.7.3)
       dedent: 0.7.0
       detect-indent: 6.1.0
       find-node-modules: 2.1.3
@@ -30458,24 +30009,24 @@ snapshots:
     dependencies:
       layout-base: 2.0.1
 
-  cosmiconfig-typescript-loader@5.0.0(@types/node@22.10.5)(cosmiconfig@8.3.6(typescript@5.7.3))(typescript@5.7.3):
+  cosmiconfig-typescript-loader@5.0.0(@types/node@22.10.6)(cosmiconfig@8.3.6(typescript@5.7.3))(typescript@5.7.3):
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       cosmiconfig: 8.3.6(typescript@5.7.3)
       jiti: 1.21.6
       typescript: 5.7.3
 
-  cosmiconfig-typescript-loader@5.0.0(@types/node@22.10.5)(cosmiconfig@9.0.0(typescript@5.7.3))(typescript@5.7.3):
+  cosmiconfig-typescript-loader@5.0.0(@types/node@22.10.6)(cosmiconfig@9.0.0(typescript@5.7.3))(typescript@5.7.3):
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       cosmiconfig: 9.0.0(typescript@5.7.3)
       jiti: 1.21.6
       typescript: 5.7.3
     optional: true
 
-  cosmiconfig-typescript-loader@6.1.0(@types/node@22.10.5)(cosmiconfig@9.0.0(typescript@5.7.3))(typescript@5.7.3):
+  cosmiconfig-typescript-loader@6.1.0(@types/node@22.10.6)(cosmiconfig@9.0.0(typescript@5.7.3))(typescript@5.7.3):
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       cosmiconfig: 9.0.0(typescript@5.7.3)
       jiti: 2.4.2
       typescript: 5.7.3
@@ -30505,13 +30056,13 @@ snapshots:
       crc-32: 1.2.2
       readable-stream: 4.5.2
 
-  create-jest@29.7.0(@types/node@22.10.5):
+  create-jest@29.7.0(@types/node@22.10.6):
     dependencies:
       '@jest/types': 29.6.3
       chalk: 4.1.2
       exit: 0.1.2
       graceful-fs: 4.2.11
-      jest-config: 29.7.0(@types/node@22.10.5)
+      jest-config: 29.7.0(@types/node@22.10.6)
       jest-util: 29.7.0
       prompts: 2.4.2
     transitivePeerDependencies:
@@ -30629,16 +30180,16 @@ snapshots:
 
   cytoscape@3.30.0: {}
 
-  cz-conventional-changelog@3.3.0(@types/node@22.10.5)(typescript@5.7.3):
+  cz-conventional-changelog@3.3.0(@types/node@22.10.6)(typescript@5.7.3):
     dependencies:
       chalk: 2.4.2
-      commitizen: 4.3.1(@types/node@22.10.5)(typescript@5.7.3)
+      commitizen: 4.3.1(@types/node@22.10.6)(typescript@5.7.3)
       conventional-commit-types: 3.0.0
       lodash.map: 4.6.0
       longest: 2.0.1
       word-wrap: 1.2.5
     optionalDependencies:
-      '@commitlint/load': 19.2.0(@types/node@22.10.5)(typescript@5.7.3)
+      '@commitlint/load': 19.2.0(@types/node@22.10.6)(typescript@5.7.3)
     transitivePeerDependencies:
       - '@types/node'
       - typescript
@@ -31766,7 +31317,7 @@ snapshots:
       enhanced-resolve: 5.17.0
       eslint: 9.18.0(jiti@2.4.2)
       eslint-module-utils: 2.8.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2))
-      eslint-plugin-import: eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2))
+      eslint-plugin-import: eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2))
       fast-glob: 3.3.2
       get-tsconfig: 4.7.5
       is-core-module: 2.14.0
@@ -31805,7 +31356,7 @@ snapshots:
       remark-parse: 10.0.2
       remark-stringify: 10.0.3
       synckit: 0.9.0
-      tslib: 2.6.3
+      tslib: 2.8.1
       unified: 10.1.2
       unified-engine: 10.1.0
       unist-util-visit: 4.1.2
@@ -31825,7 +31376,7 @@ snapshots:
       remark-parse: 10.0.2
       remark-stringify: 10.0.3
       synckit: 0.9.0
-      tslib: 2.6.3
+      tslib: 2.8.1
       unified: 10.1.2
       unified-engine: 10.1.0
       unist-util-visit: 4.1.2
@@ -32062,23 +31613,6 @@ snapshots:
       eslint: 9.18.0(jiti@2.4.2)
       eslint-import-resolver-node: 0.3.9
       eslint-module-utils: 2.8.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2))
-      get-tsconfig: 4.7.5
-      is-glob: 4.0.3
-      minimatch: 3.1.2
-      semver: 7.6.2
-    transitivePeerDependencies:
-      - '@typescript-eslint/parser'
-      - eslint-import-resolver-typescript
-      - eslint-import-resolver-webpack
-      - supports-color
-
-  eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)):
-    dependencies:
-      debug: 4.3.5
-      doctrine: 3.0.0
-      eslint: 9.18.0(jiti@2.4.2)
-      eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@9.18.0(jiti@2.4.2))
       get-tsconfig: 4.7.5
       is-glob: 4.0.3
       minimatch: 3.1.2
@@ -32584,7 +32118,7 @@ snapshots:
       '@typescript-eslint/utils': 7.15.0(eslint@8.57.0)(typescript@5.7.3)
       eslint: 8.57.0
     optionalDependencies:
-      vitest: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+      vitest: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -32594,7 +32128,7 @@ snapshots:
       '@typescript-eslint/utils': 7.15.0(eslint@8.57.0)(typescript@5.7.3)
       eslint: 8.57.0
     optionalDependencies:
-      vitest: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1)
+      vitest: 2.1.8(@types/node@18.19.70)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3))(terser@5.31.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -32604,7 +32138,7 @@ snapshots:
       '@typescript-eslint/utils': 7.15.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3)
       eslint: 9.18.0(jiti@2.4.2)
     optionalDependencies:
-      vitest: 2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1)
+      vitest: 2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -33370,7 +32904,7 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
-  framer-motion@11.17.0(@emotion/is-prop-valid@1.2.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  framer-motion@11.18.0(@emotion/is-prop-valid@1.2.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       motion-dom: 11.16.4
       motion-utils: 11.16.0
@@ -34907,7 +34441,7 @@ snapshots:
       '@jest/expect': 29.7.0
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       chalk: 4.1.2
       co: 4.6.0
       dedent: 1.5.3
@@ -34927,16 +34461,16 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
-  jest-cli@29.7.0(@types/node@22.10.5):
+  jest-cli@29.7.0(@types/node@22.10.6):
     dependencies:
       '@jest/core': 29.7.0
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
       chalk: 4.1.2
-      create-jest: 29.7.0(@types/node@22.10.5)
+      create-jest: 29.7.0(@types/node@22.10.6)
       exit: 0.1.2
       import-local: 3.1.0
-      jest-config: 29.7.0(@types/node@22.10.5)
+      jest-config: 29.7.0(@types/node@22.10.6)
       jest-util: 29.7.0
       jest-validate: 29.7.0
       yargs: 17.7.2
@@ -34946,7 +34480,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  jest-config@29.7.0(@types/node@22.10.5):
+  jest-config@29.7.0(@types/node@22.10.6):
     dependencies:
       '@babel/core': 7.26.0
       '@jest/test-sequencer': 29.7.0
@@ -34971,7 +34505,7 @@ snapshots:
       slash: 3.0.0
       strip-json-comments: 3.1.1
     optionalDependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
@@ -35000,7 +34534,7 @@ snapshots:
       '@jest/environment': 29.7.0
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       jest-mock: 29.7.0
       jest-util: 29.7.0
 
@@ -35010,7 +34544,7 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@types/graceful-fs': 4.1.9
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -35056,13 +34590,13 @@ snapshots:
   jest-mock@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       jest-util: 29.7.0
 
-  jest-playwright-preset@4.0.0(jest-circus@29.7.0)(jest-environment-node@29.7.0)(jest-runner@29.7.0)(jest@29.7.0(@types/node@22.10.5)):
+  jest-playwright-preset@4.0.0(jest-circus@29.7.0)(jest-environment-node@29.7.0)(jest-runner@29.7.0)(jest@29.7.0(@types/node@22.10.6)):
     dependencies:
       expect-playwright: 0.8.0
-      jest: 29.7.0(@types/node@22.10.5)
+      jest: 29.7.0(@types/node@22.10.6)
       jest-circus: 29.7.0
       jest-environment-node: 29.7.0
       jest-process-manager: 0.4.0
@@ -35123,7 +34657,7 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       chalk: 4.1.2
       emittery: 0.13.1
       graceful-fs: 4.2.11
@@ -35151,7 +34685,7 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       chalk: 4.1.2
       cjs-module-lexer: 1.3.1
       collect-v8-coverage: 1.0.2
@@ -35201,7 +34735,7 @@ snapshots:
   jest-util@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
@@ -35216,11 +34750,11 @@ snapshots:
       leven: 3.1.0
       pretty-format: 29.7.0
 
-  jest-watch-typeahead@2.2.2(jest@29.7.0(@types/node@22.10.5)):
+  jest-watch-typeahead@2.2.2(jest@29.7.0(@types/node@22.10.6)):
     dependencies:
       ansi-escapes: 6.2.1
       chalk: 5.4.1
-      jest: 29.7.0(@types/node@22.10.5)
+      jest: 29.7.0(@types/node@22.10.6)
       jest-regex-util: 29.6.3
       jest-watcher: 29.7.0
       slash: 5.1.0
@@ -35231,7 +34765,7 @@ snapshots:
     dependencies:
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       emittery: 0.13.1
@@ -35240,23 +34774,23 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
   jest-worker@29.7.0:
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       jest-util: 29.7.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
-  jest@29.7.0(@types/node@22.10.5):
+  jest@29.7.0(@types/node@22.10.6):
     dependencies:
       '@jest/core': 29.7.0
       '@jest/types': 29.6.3
       import-local: 3.1.0
-      jest-cli: 29.7.0(@types/node@22.10.5)
+      jest-cli: 29.7.0(@types/node@22.10.6)
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -37257,57 +36791,6 @@ snapshots:
       - '@types/node'
     optional: true
 
-  msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3):
-    dependencies:
-      '@bundled-es-modules/cookie': 2.0.1
-      '@bundled-es-modules/statuses': 1.0.1
-      '@bundled-es-modules/tough-cookie': 0.1.6
-      '@inquirer/confirm': 5.0.2(@types/node@18.19.15)
-      '@mswjs/interceptors': 0.37.1
-      '@open-draft/deferred-promise': 2.2.0
-      '@open-draft/until': 2.1.0
-      '@types/cookie': 0.6.0
-      '@types/statuses': 2.0.5
-      graphql: 16.9.0
-      headers-polyfill: 4.0.3
-      is-node-process: 1.2.0
-      outvariant: 1.4.3
-      path-to-regexp: 6.3.0
-      picocolors: 1.1.1
-      strict-event-emitter: 0.5.1
-      type-fest: 4.32.0
-      yargs: 17.7.2
-    optionalDependencies:
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - '@types/node'
-
-  msw@2.7.0(@types/node@18.19.39)(typescript@5.7.3):
-    dependencies:
-      '@bundled-es-modules/cookie': 2.0.1
-      '@bundled-es-modules/statuses': 1.0.1
-      '@bundled-es-modules/tough-cookie': 0.1.6
-      '@inquirer/confirm': 5.0.2(@types/node@18.19.39)
-      '@mswjs/interceptors': 0.37.1
-      '@open-draft/deferred-promise': 2.2.0
-      '@open-draft/until': 2.1.0
-      '@types/cookie': 0.6.0
-      '@types/statuses': 2.0.5
-      graphql: 16.9.0
-      headers-polyfill: 4.0.3
-      is-node-process: 1.2.0
-      outvariant: 1.4.3
-      path-to-regexp: 6.3.0
-      picocolors: 1.1.1
-      strict-event-emitter: 0.5.1
-      type-fest: 4.32.0
-      yargs: 17.7.2
-    optionalDependencies:
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - '@types/node'
-    optional: true
-
   msw@2.7.0(@types/node@18.19.70)(typescript@5.7.3):
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
@@ -37332,40 +36815,13 @@ snapshots:
       typescript: 5.7.3
     transitivePeerDependencies:
       - '@types/node'
-    optional: true
 
-  msw@2.7.0(@types/node@22.10.2)(typescript@5.7.3):
+  msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3):
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
       '@bundled-es-modules/statuses': 1.0.1
       '@bundled-es-modules/tough-cookie': 0.1.6
-      '@inquirer/confirm': 5.0.2(@types/node@22.10.2)
-      '@mswjs/interceptors': 0.37.1
-      '@open-draft/deferred-promise': 2.2.0
-      '@open-draft/until': 2.1.0
-      '@types/cookie': 0.6.0
-      '@types/statuses': 2.0.5
-      graphql: 16.9.0
-      headers-polyfill: 4.0.3
-      is-node-process: 1.2.0
-      outvariant: 1.4.3
-      path-to-regexp: 6.3.0
-      picocolors: 1.1.1
-      strict-event-emitter: 0.5.1
-      type-fest: 4.32.0
-      yargs: 17.7.2
-    optionalDependencies:
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - '@types/node'
-    optional: true
-
-  msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3):
-    dependencies:
-      '@bundled-es-modules/cookie': 2.0.1
-      '@bundled-es-modules/statuses': 1.0.1
-      '@bundled-es-modules/tough-cookie': 0.1.6
-      '@inquirer/confirm': 5.0.2(@types/node@22.10.5)
+      '@inquirer/confirm': 5.0.2(@types/node@22.10.6)
       '@mswjs/interceptors': 0.37.1
       '@open-draft/deferred-promise': 2.2.0
       '@open-draft/until': 2.1.0
@@ -37708,7 +37164,7 @@ snapshots:
 
   node-machine-id@1.1.12: {}
 
-  node-mocks-http@1.16.2(@types/express@5.0.0)(@types/node@18.19.15):
+  node-mocks-http@1.16.2(@types/express@5.0.0)(@types/node@18.19.70):
     dependencies:
       accepts: 1.3.8
       content-disposition: 0.5.4
@@ -37722,7 +37178,7 @@ snapshots:
       type-is: 1.6.18
     optionalDependencies:
       '@types/express': 5.0.0
-      '@types/node': 18.19.15
+      '@types/node': 18.19.70
 
   node-plop@0.32.0:
     dependencies:
@@ -38967,9 +38423,9 @@ snapshots:
 
   psl@1.9.0: {}
 
-  publint@0.3.1:
+  publint@0.3.2:
     dependencies:
-      '@publint/pack': 0.1.0
+      '@publint/pack': 0.1.1
       package-manager-detector: 0.2.8
       picocolors: 1.1.1
       sade: 1.8.1
@@ -40602,7 +40058,7 @@ snapshots:
   snake-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   socks-proxy-agent@8.0.4:
     dependencies:
@@ -41200,12 +40656,12 @@ snapshots:
 
   synckit@0.6.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   synckit@0.9.0:
     dependencies:
       '@pkgr/core': 0.1.1
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   system-architecture@0.1.0: {}
 
@@ -42567,42 +42023,6 @@ snapshots:
       - supports-color
       - terser
 
-  vite-node@2.1.8(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1):
-    dependencies:
-      cac: 6.7.14
-      debug: 4.4.0
-      es-module-lexer: 1.5.4
-      pathe: 1.1.2
-      vite: 5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1)
-    transitivePeerDependencies:
-      - '@types/node'
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
-  vite-node@2.1.8(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1):
-    dependencies:
-      cac: 6.7.14
-      debug: 4.4.0
-      es-module-lexer: 1.5.4
-      pathe: 1.1.2
-      vite: 5.4.11(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1)
-    transitivePeerDependencies:
-      - '@types/node'
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
   vite-node@2.1.8(@types/node@18.19.70)(lightningcss@1.25.1)(terser@5.31.1):
     dependencies:
       cac: 6.7.14
@@ -42621,13 +42041,13 @@ snapshots:
       - supports-color
       - terser
 
-  vite-node@2.1.8(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1):
+  vite-node@2.1.8(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1):
     dependencies:
       cac: 6.7.14
       debug: 4.4.0
       es-module-lexer: 1.5.4
       pathe: 1.1.2
-      vite: 5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1)
+      vite: 5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -42639,31 +42059,13 @@ snapshots:
       - supports-color
       - terser
 
-  vite-node@2.1.8(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1):
-    dependencies:
-      cac: 6.7.14
-      debug: 4.4.0
-      es-module-lexer: 1.5.4
-      pathe: 1.1.2
-      vite: 5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1)
-    transitivePeerDependencies:
-      - '@types/node'
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
-  vite-tsconfig-paths@5.1.4(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)):
+  vite-tsconfig-paths@5.1.4(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)):
     dependencies:
       debug: 4.4.0
       globrex: 0.1.2
       tsconfck: 3.1.1(typescript@5.7.3)
     optionalDependencies:
-      vite: 6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
+      vite: 6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -42679,28 +42081,6 @@ snapshots:
       lightningcss: 1.25.1
       terser: 5.31.1
 
-  vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1):
-    dependencies:
-      esbuild: 0.21.4
-      postcss: 8.4.49
-      rollup: 4.30.1
-    optionalDependencies:
-      '@types/node': 18.19.15
-      fsevents: 2.3.3
-      lightningcss: 1.25.1
-      terser: 5.31.1
-
-  vite@5.4.11(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1):
-    dependencies:
-      esbuild: 0.21.4
-      postcss: 8.4.49
-      rollup: 4.30.1
-    optionalDependencies:
-      '@types/node': 18.19.39
-      fsevents: 2.3.3
-      lightningcss: 1.25.1
-      terser: 5.31.1
-
   vite@5.4.11(@types/node@18.19.70)(lightningcss@1.25.1)(terser@5.31.1):
     dependencies:
       esbuild: 0.21.4
@@ -42712,35 +42092,24 @@ snapshots:
       lightningcss: 1.25.1
       terser: 5.31.1
 
-  vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1):
+  vite@5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1):
     dependencies:
       esbuild: 0.21.4
       postcss: 8.4.49
       rollup: 4.30.1
     optionalDependencies:
-      '@types/node': 22.10.2
+      '@types/node': 22.10.6
       fsevents: 2.3.3
       lightningcss: 1.25.1
       terser: 5.31.1
 
-  vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1):
-    dependencies:
-      esbuild: 0.21.4
-      postcss: 8.4.49
-      rollup: 4.30.1
-    optionalDependencies:
-      '@types/node': 22.10.5
-      fsevents: 2.3.3
-      lightningcss: 1.25.1
-      terser: 5.31.1
-
-  vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0):
+  vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0):
     dependencies:
       esbuild: 0.24.2
       postcss: 8.4.49
       rollup: 4.30.1
     optionalDependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
       fsevents: 2.3.3
       jiti: 2.4.2
       lightningcss: 1.25.1
@@ -42773,82 +42142,6 @@ snapshots:
     optionalDependencies:
       '@types/node': 18.18.14
       '@vitest/browser': 2.1.8(@types/node@18.18.14)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
-      '@vitest/ui': 2.1.8(vitest@2.1.8)
-      jsdom: 26.0.0
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
-  vitest@2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1):
-    dependencies:
-      '@vitest/expect': 2.1.8
-      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))
-      '@vitest/pretty-format': 2.1.8
-      '@vitest/runner': 2.1.8
-      '@vitest/snapshot': 2.1.8
-      '@vitest/spy': 2.1.8
-      '@vitest/utils': 2.1.8
-      chai: 5.1.2
-      debug: 4.4.0
-      expect-type: 1.1.0
-      magic-string: 0.30.13
-      pathe: 1.1.2
-      std-env: 3.8.0
-      tinybench: 2.9.0
-      tinyexec: 0.3.1
-      tinypool: 1.0.2
-      tinyrainbow: 1.2.0
-      vite: 5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1)
-      vite-node: 2.1.8(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 18.19.15
-      '@vitest/browser': 2.1.8(@types/node@18.19.15)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
-      '@vitest/ui': 2.1.8(vitest@2.1.8)
-      jsdom: 26.0.0
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
-  vitest@2.1.8(@types/node@18.19.39)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.39)(typescript@5.7.3))(terser@5.31.1):
-    dependencies:
-      '@vitest/expect': 2.1.8
-      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@18.19.39)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1))
-      '@vitest/pretty-format': 2.1.8
-      '@vitest/runner': 2.1.8
-      '@vitest/snapshot': 2.1.8
-      '@vitest/spy': 2.1.8
-      '@vitest/utils': 2.1.8
-      chai: 5.1.2
-      debug: 4.4.0
-      expect-type: 1.1.0
-      magic-string: 0.30.13
-      pathe: 1.1.2
-      std-env: 3.8.0
-      tinybench: 2.9.0
-      tinyexec: 0.3.1
-      tinypool: 1.0.2
-      tinyrainbow: 1.2.0
-      vite: 5.4.11(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1)
-      vite-node: 2.1.8(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 18.19.39
-      '@vitest/browser': 2.1.8(@types/node@18.19.39)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.39)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
       '@vitest/ui': 2.1.8(vitest@2.1.8)
       jsdom: 26.0.0
     transitivePeerDependencies:
@@ -42900,10 +42193,10 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.1.8(@types/node@22.10.2)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.3))(terser@5.31.1):
+  vitest@2.1.8(@types/node@22.10.6)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(terser@5.31.1):
     dependencies:
       '@vitest/expect': 2.1.8
-      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.3))(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))
+      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@22.10.6)(typescript@5.7.3))(vite@5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1))
       '@vitest/pretty-format': 2.1.8
       '@vitest/runner': 2.1.8
       '@vitest/snapshot': 2.1.8
@@ -42919,50 +42212,12 @@ snapshots:
       tinyexec: 0.3.1
       tinypool: 1.0.2
       tinyrainbow: 1.2.0
-      vite: 5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1)
-      vite-node: 2.1.8(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1)
+      vite: 5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1)
+      vite-node: 2.1.8(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.10.2
-      '@vitest/browser': 2.1.8(@types/node@22.10.2)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
-      '@vitest/ui': 2.1.8(vitest@2.1.8)
-      jsdom: 26.0.0
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
-  vitest@2.1.8(@types/node@22.10.5)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(terser@5.31.1):
-    dependencies:
-      '@vitest/expect': 2.1.8
-      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))
-      '@vitest/pretty-format': 2.1.8
-      '@vitest/runner': 2.1.8
-      '@vitest/snapshot': 2.1.8
-      '@vitest/spy': 2.1.8
-      '@vitest/utils': 2.1.8
-      chai: 5.1.2
-      debug: 4.4.0
-      expect-type: 1.1.0
-      magic-string: 0.30.13
-      pathe: 1.1.2
-      std-env: 3.8.0
-      tinybench: 2.9.0
-      tinyexec: 0.3.1
-      tinypool: 1.0.2
-      tinyrainbow: 1.2.0
-      vite: 5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1)
-      vite-node: 2.1.8(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 22.10.5
-      '@vitest/browser': 2.1.8(@types/node@22.10.5)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
+      '@types/node': 22.10.6
+      '@vitest/browser': 2.1.8(@types/node@22.10.6)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@22.10.6)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
       '@vitest/ui': 2.1.8(vitest@2.1.8)
       jsdom: 26.0.0
     transitivePeerDependencies:
