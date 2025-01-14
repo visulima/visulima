@@ -259,7 +259,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^9.0.0",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.15",
-        "@visulima/packem": "1.10.7",
+        "@visulima/packem": "1.11.0",
         "@visulima/redact": "1.0.11",
         "@vitest/coverage-v8": "^2.1.8",
         "@vitest/ui": "^2.1.8",
@@ -287,7 +287,7 @@
     },
     "peerDependencies": {
         "@visulima/redact": "1.0.11",
-        "rotating-file-stream": "^3.1.1"
+        "rotating-file-stream": "^3.2.5"
     },
     "peerDependenciesMeta": {
         "@visulima/redact": {
