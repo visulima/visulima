@@ -1,3 +1,9 @@
+## @visulima/package [3.4.5](https://github.com/visulima/visulima/compare/@visulima/package@3.4.4...@visulima/package@3.4.5) (2025-01-16)
+
+### Bug Fixes
+
+* **package:** exported FindPackageJsonCache for findPackageJson and findPackageJsonSync ([36e241c](https://github.com/visulima/visulima/commit/36e241c70f6b9cfeca09e00ece699e79d792e778))
+
 ## @visulima/package [3.4.4](https://github.com/visulima/visulima/compare/@visulima/package@3.4.3...@visulima/package@3.4.4) (2025-01-13)
 
 
