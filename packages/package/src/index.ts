@@ -2,7 +2,7 @@ export { default as PackageNotFoundError } from "./error/package-not-found-error
 export type { RootMonorepo, Strategy } from "./monorepo";
 export { findMonorepoRoot, findMonorepoRootSync } from "./monorepo";
 export { findPackageRoot, findPackageRootSync } from "./package";
-export type { NormalizedReadResult } from "./package-json";
+export type { NormalizedReadResult, FindPackageJsonCache } from "./package-json";
 export {
     ensurePackages,
     findPackageJson,
