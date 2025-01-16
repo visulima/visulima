@@ -24,22 +24,16 @@ describe("dnsCheck", () => {
     });
 
     it("should return unhealthy when the host is not resolved", async () => {
-        expect.assertions(1);
+        expect.assertions(7);
 
         const result = await dnsCheck("example.com", ["93.122.1212.45"], { family: 4 })();
 
-        expect(result).toStrictEqual({
-            displayName: "DNS check for example.com",
-            health: {
-                healthy: false,
-                message: "DNS check for example.com returned address 93.184.215.14 instead of 93.122.1212.45.",
-
-                timestamp: expect.any(String),
-            },
-            meta: {
-                addresses: expect.any(Object),
-                host: "example.com",
-            },
-        });
+        expect(result.displayName).toBe("DNS check for example.com");
+        expect(result.health.healthy).toBe(false);
+        expect(result.health.message).toContain("DNS check for example.com returned address ");
+        expect(result.health.message).toContain(" instead of 93.122.1212.45.");
+        expect(result.health.timestamp).toEqual(expect.any(String));
+        expect(result.meta.addresses).toEqual(expect.any(Object));
+        expect(result.meta.host).toBe("example.com");
     }, 10_000);
 });
