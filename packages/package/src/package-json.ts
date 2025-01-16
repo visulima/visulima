@@ -17,10 +17,12 @@ import type { Cache, EnsurePackagesOptions, NormalizedPackageJson, PackageJson }
 import isNode from "./utils/is-node";
 
 type ReadOptions = {
-    cache?: Cache<NormalizedReadResult> | boolean;
+    cache?: FindPackageJsonCache | boolean;
 };
 
 const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
+
+export type FindPackageJsonCache = Cache<NormalizedReadResult>
 
 export type NormalizedReadResult = {
     packageJson: NormalizedPackageJson;
