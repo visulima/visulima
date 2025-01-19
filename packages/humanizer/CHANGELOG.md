@@ -1,3 +1,9 @@
+## @visulima/humanizer [1.1.0](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.20...@visulima/humanizer@1.1.0) (2025-01-19)
+
+### Features
+
+* **humanizer:** added new units to parseBytes and formatBytes ([499fe1d](https://github.com/visulima/visulima/commit/499fe1d53e9b9aef5fdc65d2d9f3badc98f86a5a))
+
 ## @visulima/humanizer [1.0.20](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.19...@visulima/humanizer@1.0.20) (2025-01-13)
 
 
