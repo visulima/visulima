@@ -12,6 +12,13 @@ interface BytesOptions {
      * @default 'en-US'
      */
     locale?: IntlLocale;
+
+    /**
+     * The unit to use for the output.
+     *
+     * @default "metric"
+     */
+    units?: "iec_octet" | "iec" | "metric_octet" | "metric";
 }
 
 export type IntlLocale =

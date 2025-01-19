@@ -83,6 +83,174 @@ describe("formatBytes", () => {
 
         expect(formatBytes(0)).toBe("0 Bytes");
     });
+
+    const testCases = [
+        // Metric
+        { description: "metric 10", expectedUnit: "Bytes", expectedValue: "10", value: 10 },
+        { description: "metric 1000", expectedUnit: "Bytes", expectedValue: "1,000", value: 1000 },
+        { description: "metric -1000", expectedUnit: "Bytes", expectedValue: "-1,000", value: -1000 },
+        { description: "metric 10000", expectedUnit: "KB", expectedValue: "10", value: 10_000 },
+        { description: "metric 34560000", expectedUnit: "MB", expectedValue: "33", value: 34_560_000 },
+        { description: "metric 34560000000", expectedUnit: "GB", expectedValue: "32", value: 34_560_000_000 },
+        { description: "metric 34560000000000", expectedUnit: "TB", expectedValue: "31", value: 34_560_000_000_000 },
+        { description: "metric 34560000000000000", expectedUnit: "PB", expectedValue: "31", value: 34_560_000_000_000_000 },
+        { description: "metric 34560000000000000000", expectedUnit: "EB", expectedValue: "30", value: 34_560_000_000_000_000_000 },
+        { description: "metric 34560000000000000000000", expectedUnit: "ZB", expectedValue: "29", value: 34_560_000_000_000_000_000_000 },
+        { description: "metric 34560000000000000000000000", expectedUnit: "YB", expectedValue: "29", value: 34_560_000_000_000_000_000_000_000 },
+        {
+            description: "metric 34560000000000000000000000000",
+            expectedUnit: "YB",
+            expectedValue: "28,587",
+            value: 34_560_000_000_000_000_000_000_000_000,
+        },
+        {
+            description: "metric -34560000000000000000000000000",
+            expectedUnit: "YB",
+            expectedValue: "-28,587",
+            value: -34_560_000_000_000_000_000_000_000_000,
+        },
+
+        // Metric Octet
+        { description: "metric_octet 10", expectedUnit: "o", expectedValue: "10", options: { units: "metric_octet" }, value: 10 },
+        { description: "metric_octet 1000", expectedUnit: "o", expectedValue: "1,000", options: { units: "metric_octet" }, value: 1000 },
+        { description: "metric_octet -1000", expectedUnit: "o", expectedValue: "-1,000", options: { units: "metric_octet" }, value: -1000 },
+        { description: "metric_octet 10000", expectedUnit: "ko", expectedValue: "10", options: { units: "metric_octet" }, value: 10_000 },
+        { description: "metric_octet 34560000", expectedUnit: "Mo", expectedValue: "33", options: { units: "metric_octet" }, value: 34_560_000 },
+        { description: "metric_octet 34560000000", expectedUnit: "Go", expectedValue: "32", options: { units: "metric_octet" }, value: 34_560_000_000 },
+        { description: "metric_octet 34560000000000", expectedUnit: "To", expectedValue: "31", options: { units: "metric_octet" }, value: 34_560_000_000_000 },
+        {
+            description: "metric_octet 34560000000000000",
+            expectedUnit: "Po",
+            expectedValue: "31",
+            options: { units: "metric_octet" },
+            value: 34_560_000_000_000_000,
+        },
+        {
+            description: "metric_octet 34560000000000000000",
+            expectedUnit: "Eo",
+            expectedValue: "30",
+            options: { units: "metric_octet" },
+            value: 34_560_000_000_000_000_000,
+        },
+        {
+            description: "metric_octet 34560000000000000000000",
+            expectedUnit: "Zo",
+            expectedValue: "29",
+            options: { units: "metric_octet" },
+            value: 34_560_000_000_000_000_000_000,
+        },
+        {
+            description: "metric_octet 34560000000000000000000000",
+            expectedUnit: "Yo",
+            expectedValue: "29",
+            options: { units: "metric_octet" },
+            value: 34_560_000_000_000_000_000_000_000,
+        },
+        {
+            description: "metric_octet 34560000000000000000000000000",
+            expectedUnit: "Yo",
+            expectedValue: "28,587",
+            options: { units: "metric_octet" },
+            value: 34_560_000_000_000_000_000_000_000_000,
+        },
+        {
+            description: "metric_octet -34560000000000000000000000000",
+            expectedUnit: "Yo",
+            expectedValue: "-28,587",
+            options: { units: "metric_octet" },
+            value: -34_560_000_000_000_000_000_000_000_000,
+        },
+
+        // IEC
+        { description: "iec 10", expectedUnit: "B", expectedValue: "10", options: { units: "iec" }, value: 10 },
+        { description: "iec 1000", expectedUnit: "B", expectedValue: "1,000", options: { units: "iec" }, value: 1000 },
+        { description: "iec -1000", expectedUnit: "B", expectedValue: "-1,000", options: { units: "iec" }, value: -1000 },
+        { description: "iec 10000", expectedUnit: "KiB", expectedValue: "10", options: { units: "iec" }, value: 10_000 },
+        { description: "iec 34560000", expectedUnit: "MiB", expectedValue: "33", options: { units: "iec" }, value: 34_560_000 },
+        { description: "iec 34560000000", expectedUnit: "GiB", expectedValue: "32", options: { units: "iec" }, value: 34_560_000_000 },
+        { description: "iec 34560000000000", expectedUnit: "TiB", expectedValue: "31", options: { units: "iec" }, value: 34_560_000_000_000 },
+        { description: "iec 34560000000000000", expectedUnit: "PiB", expectedValue: "31", options: { units: "iec" }, value: 34_560_000_000_000_000 },
+        { description: "iec 34560000000000000000", expectedUnit: "EiB", expectedValue: "30", options: { units: "iec" }, value: 34_560_000_000_000_000_000 },
+        { description: "iec 34560000000000000000000", expectedUnit: "ZiB", expectedValue: "29", options: { units: "iec" }, value: 34_560_000_000_000_000_000_000 },
+        {
+            description: "iec 34560000000000000000000000",
+            expectedUnit: "YiB",
+            expectedValue: "29",
+            options: { units: "iec" },
+            value: 34_560_000_000_000_000_000_000_000,
+        },
+        {
+            description: "iec 34560000000000000000000000000",
+            expectedUnit: "YiB",
+            expectedValue: "28,587",
+            options: { units: "iec" },
+            value: 34_560_000_000_000_000_000_000_000_000,
+        },
+        {
+            description: "iec -34560000000000000000000000000",
+            expectedUnit: "YiB",
+            expectedValue: "-28,587",
+            options: { units: "iec" },
+            value: -34_560_000_000_000_000_000_000_000_000,
+        },
+
+        // IEC Octet
+        { description: "iec_octet 10", expectedUnit: "o", expectedValue: "10", options: { units: "iec_octet" }, value: 10 },
+        { description: "iec_octet 1000", expectedUnit: "o", expectedValue: "1,000", options: { units: "iec_octet" }, value: 1000 },
+        { description: "iec_octet -1000", expectedUnit: "o", expectedValue: "-1,000", options: { units: "iec_octet" }, value: -1000 },
+        { description: "iec_octet 10000", expectedUnit: "Kio", expectedValue: "10", options: { units: "iec_octet" }, value: 10_000 },
+        { description: "iec_octet 34560000", expectedUnit: "Mio", expectedValue: "33", options: { units: "iec_octet" }, value: 34_560_000 },
+        { description: "iec_octet 34560000000", expectedUnit: "Gio", expectedValue: "32", options: { units: "iec_octet" }, value: 34_560_000_000 },
+        { description: "iec_octet 34560000000000", expectedUnit: "Tio", expectedValue: "31", options: { units: "iec_octet" }, value: 34_560_000_000_000 },
+        { description: "iec_octet 34560000000000000", expectedUnit: "Pio", expectedValue: "31", options: { units: "iec_octet" }, value: 34_560_000_000_000_000 },
+        {
+            description: "iec_octet 34560000000000000000",
+            expectedUnit: "Eio",
+            expectedValue: "30",
+            options: { units: "iec_octet" },
+            value: 34_560_000_000_000_000_000,
+        },
+        {
+            description: "iec_octet 34560000000000000000000",
+            expectedUnit: "Zio",
+            expectedValue: "29",
+            options: { units: "iec_octet" },
+            value: 34_560_000_000_000_000_000_000,
+        },
+        {
+            description: "iec_octet 34560000000000000000000000",
+            expectedUnit: "Yio",
+            expectedValue: "29",
+            options: { units: "iec_octet" },
+            value: 34_560_000_000_000_000_000_000_000,
+        },
+        {
+            description: "iec_octet 34560000000000000000000000000",
+            expectedUnit: "Yio",
+            expectedValue: "28,587",
+            options: { units: "iec_octet" },
+            value: 34_560_000_000_000_000_000_000_000_000,
+        },
+        {
+            description: "iec_octet -34560000000000000000000000000",
+            expectedUnit: "Yio",
+            expectedValue: "-28,587",
+            options: { units: "iec_octet" },
+            value: -34_560_000_000_000_000_000_000_000_000,
+        },
+    ];
+
+    it.each<{
+        description: string;
+        expectedUnit: string;
+        expectedValue: string;
+        options?: Record<string, unknown>;
+        value: number;
+    }>(testCases)("should support $description", ({ expectedUnit, expectedValue, options = {}, value }) => {
+        expect.assertions(1);
+
+        expect(formatBytes(value, { ...options })).toBe(`${expectedValue} ${expectedUnit}`);
+    });
 });
 
 describe("parseBytes", () => {

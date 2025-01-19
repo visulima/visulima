@@ -1,46 +1,170 @@
 import type { FormateByteOptions, ParseByteOptions } from "./types";
 
-const BYTE_SIZES = [
-    {
-        long: "Bytes",
-        short: "Bytes",
-    },
-    {
-        long: "Kilobytes",
-        short: "KB",
-    },
-    {
-        long: "Megabytes",
-        short: "MB",
-    },
-    {
-        long: "Gigabytes",
-        short: "GB",
-    },
-    {
-        long: "Terabytes",
-        short: "TB",
-    },
-    {
-        long: "Petabytes",
-        short: "PB",
-    },
-    {
-        long: "Exabytes",
-        short: "EB",
-    },
-    {
-        long: "Zettabytes",
-        short: "ZB",
-    },
-    {
-        long: "Yottabytes",
-        short: "YB",
-    },
-] as const;
+const BYTE_SIZES = {
+    iec: [
+        {
+            long: "Bytes",
+            short: "B",
+        },
+        {
+            long: "Kibibytes",
+            short: "KiB",
+        },
+        {
+            long: "Mebibytes",
+            short: "MiB",
+        },
+        {
+            long: "Gibibytes",
+            short: "GiB",
+        },
+        {
+            long: "Tebibytes",
+            short: "TiB",
+        },
+        {
+            long: "Pebibytes",
+            short: "PiB",
+        },
+        {
+            long: "Exbibytes",
+            short: "EiB",
+        },
+        {
+            long: "Zebibytes",
+            short: "ZiB",
+        },
+        {
+            long: "Yobibytes",
+            short: "YiB",
+        },
+    ],
+    iec_octet: [
+        {
+            long: "Octets",
+            short: "o",
+        },
+        {
+            long: "Kibioctets",
+            short: "Kio",
+        },
+        {
+            long: "Mebioctets",
+            short: "Mio",
+        },
+        {
+            long: "Gibioctets",
+            short: "Gio",
+        },
+        {
+            long: "Tebioctets",
+            short: "Tio",
+        },
+        {
+            long: "Pebioctets",
+            short: "Pio",
+        },
+        {
+            long: "Exbioctets",
+            short: "Eio",
+        },
+        {
+            long: "Zebioctets",
+            short: "Zio",
+        },
+        {
+            long: "Yobioctets",
+            short: "Yio",
+        },
+    ],
+    metric: [
+        {
+            long: "Bytes",
+            short: "Bytes",
+        },
+        {
+            long: "Kilobytes",
+            short: "KB",
+        },
+        {
+            long: "Megabytes",
+            short: "MB",
+        },
+        {
+            long: "Gigabytes",
+            short: "GB",
+        },
+        {
+            long: "Terabytes",
+            short: "TB",
+        },
+        {
+            long: "Petabytes",
+            short: "PB",
+        },
+        {
+            long: "Exabytes",
+            short: "EB",
+        },
+        {
+            long: "Zettabytes",
+            short: "ZB",
+        },
+        {
+            long: "Yottabytes",
+            short: "YB",
+        },
+    ],
+    metric_octet: [
+        {
+            long: "Octets",
+            short: "o",
+        },
+        {
+            long: "Kilo-octets",
+            short: "ko",
+        },
+        {
+            long: "Mega-octets",
+            short: "Mo",
+        },
+        {
+            long: "Giga-octets",
+            short: "Go",
+        },
+        {
+            long: "Tera-octets",
+            short: "To",
+        },
+        {
+            long: "Peta-octets",
+            short: "Po",
+        },
+        {
+            long: "Exa-octets",
+            short: "Eo",
+        },
+        {
+            long: "Zetta-octets",
+            short: "Zo",
+        },
+        {
+            long: "Yotta-octets",
+            short: "Yo",
+        },
+    ],
+} as const;
 
-type ByteSize = (typeof BYTE_SIZES)[number]["short"];
-type LongByteSize = (typeof BYTE_SIZES)[number]["long"];
+type ByteSize =
+    | (typeof BYTE_SIZES)["iec_octet"][number]["short"]
+    | (typeof BYTE_SIZES)["iec"][number]["short"]
+    | (typeof BYTE_SIZES)["metric_octet"][number]["short"]
+    | (typeof BYTE_SIZES)["metric"][number]["short"];
+type LongByteSize =
+    | (typeof BYTE_SIZES)["iec_octet"][number]["long"]
+    | (typeof BYTE_SIZES)["iec"][number]["long"]
+    | (typeof BYTE_SIZES)["metric_octet"][number]["long"]
+    | (typeof BYTE_SIZES)["metric"][number]["long"];
 
 type Unit = ByteSize | LongByteSize;
 
@@ -81,6 +205,7 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
     const config = {
         base: 2,
         locale: "en-US",
+        units: "metric",
         ...options,
     } as Required<ParseByteOptions>;
 
@@ -117,7 +242,7 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
         .replace(/^ZEBI/, "ZETTA")
         .replace(/^YIBI/, "YOTTA")
         .replace(/^(.)IB$/, "$1B") as Uppercase<Unit> | "B";
-    const level = BYTE_SIZES.findIndex((unit) => (unit.short[0] as string).toUpperCase() === type[0]);
+    const level = BYTE_SIZES[config.units].findIndex((unit) => (unit.short[0] as string).toUpperCase() === type[0]);
     const base = fromBase(config.base);
 
     return localizedNumber * base ** level;
@@ -140,37 +265,43 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
         decimals,
         locale,
         long,
+
         unit: requestedUnit,
+        units,
         ...l10nOptions
     } = {
         base: 2,
         decimals: 0,
         locale: "en-US",
         long: false,
+        units: "metric",
         ...options,
-    } as FormateByteOptions<ByteSize>;
+    } as Required<FormateByteOptions<ByteSize>>;
     const base = fromBase(givenBase as 2 | 10);
 
     const absoluteBytes = Math.abs(bytes);
     const space = (options?.space ?? true) ? " " : "";
+    const referenceTable = BYTE_SIZES[units];
 
-    const requestedUnitIndex = BYTE_SIZES.findIndex((unit) => unit.short === requestedUnit);
+    const requestedUnitIndex = referenceTable.findIndex((unit) => unit.short === requestedUnit);
 
     if (bytes === 0) {
-        const level = Math.min(0, Math.max(requestedUnitIndex, BYTE_SIZES.length - 1));
+        const level = Math.min(0, Math.max(requestedUnitIndex, referenceTable.length - 1));
 
         // eslint-disable-next-line security/detect-object-injection,prefer-template
-        return "0" + space + (BYTE_SIZES[level] as { long: string; short: string })[long ? "long" : "short"];
+        return "0" + space + (referenceTable[level] as { long: string; short: string })[long ? "long" : "short"];
     }
 
-    const level = requestedUnitIndex >= 0 ? requestedUnitIndex : Math.min(Math.floor(Math.log(absoluteBytes) / Math.log(base)), BYTE_SIZES.length - 1);
+    const level = requestedUnitIndex >= 0 ? requestedUnitIndex : Math.min(Math.floor(Math.log(absoluteBytes) / Math.log(base)), referenceTable.length - 1);
     // eslint-disable-next-line security/detect-object-injection
-    const unit = (BYTE_SIZES[level] as { long: string; short: string })[long ? "long" : "short"];
+    const unit = (referenceTable[level] as { long: string; short: string })[long ? "long" : "short"];
 
     const value = bytes / base ** level;
     const fractionDigits = (decimals as number) < 0 ? undefined : decimals;
     const formattedValue = new Intl.NumberFormat(locale, {
+        // @ts-expect-error - should be overridden by the options
         maximumFractionDigits: fractionDigits,
+        // @ts-expect-error - should be overridden by the options
         minimumFractionDigits: fractionDigits,
         ...l10nOptions,
     }).format(value);
