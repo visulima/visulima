@@ -249,6 +249,7 @@ describe("formatBytes", () => {
     }>(testCases)("should support $description", ({ expectedUnit, expectedValue, options = {}, value }) => {
         expect.assertions(1);
 
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         expect(formatBytes(value, { ...options })).toBe(`${expectedValue} ${expectedUnit}`);
     });
 });
