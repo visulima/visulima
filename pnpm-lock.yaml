@@ -35,7 +35,7 @@ importers:
         version: 5.0.3(@commitlint/cli@19.6.1(@types/node@22.10.5)(typescript@5.7.3))(@types/node@22.10.5)(typescript@5.7.3)
       '@anolilab/lint-staged-config':
         specifier: ^2.1.7
-        version: 2.1.7(eslint@8.57.0)(husky@9.1.7)(jest@29.7.0(@types/node@22.10.5))(lint-staged@15.3.0)(prettier@3.4.2)(secretlint@9.0.0)(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))
+        version: 2.1.7(eslint@8.57.0)(husky@9.1.7)(jest@29.7.0(@types/node@22.10.5))(lint-staged@15.4.1)(prettier@3.4.2)(secretlint@9.0.0)(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))
       '@anolilab/multi-semantic-release':
         specifier: ^1.1.6
         version: 1.1.6(semantic-release@24.2.1(typescript@5.7.3))(typescript@5.7.3)
@@ -91,8 +91,8 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       lint-staged:
-        specifier: ^15.3.0
-        version: 15.3.0
+        specifier: ^15.4.1
+        version: 15.4.1
       nx:
         specifier: ^20.3.1
         version: 20.3.1(@swc/core@1.6.7(@swc/helpers@0.5.15))
@@ -121,11 +121,11 @@ importers:
         specifier: ^24.2.1
         version: 24.2.1(typescript@5.7.3)
       sort-package-json:
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.14.0
+        version: 2.14.0
       taze:
-        specifier: ^18.1.0
-        version: 18.1.0
+        specifier: ^18.2.0
+        version: 18.2.0
       textlint:
         specifier: ^14.4.2
         version: 14.4.2
@@ -166,11 +166,11 @@ importers:
         specifier: ^3.7.2
         version: 3.7.2
       framer-motion:
-        specifier: ^11.17.0
-        version: 11.17.0(@emotion/is-prop-valid@1.2.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^11.18.2
+        version: 11.18.2(@emotion/is-prop-valid@1.2.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       fs-extra:
-        specifier: ^11.2.0
-        version: 11.2.0
+        specifier: ^11.3.0
+        version: 11.3.0
       lucide-react:
         specifier: ^0.471.0
         version: 0.471.0(react@18.3.1)
@@ -308,8 +308,8 @@ importers:
         specifier: ^3.4.2
         version: 3.4.2
       sort-package-json:
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.14.0
+        version: 2.14.0
       symlink-dir:
         specifier: ^6.0.4
         version: 6.0.4
@@ -388,7 +388,7 @@ importers:
         version: 8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)
       '@storybook/react-vite':
         specifier: ^8.4.7
-        version: 8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.30.1)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
+        version: 8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.31.0)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
       '@storybook/test-runner':
         specifier: ^0.21.0
         version: 0.21.0(@swc/helpers@0.5.15)(@types/node@22.10.5)(storybook@8.4.7(prettier@3.4.2))
@@ -427,7 +427,7 @@ importers:
         version: 2.0.3(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.29.1
-        version: eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2))
+        version: eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2))
       eslint-plugin-jsx-a11y:
         specifier: ^6.10.2
         version: 6.10.2(eslint@9.18.0(jiti@2.4.2))
@@ -465,8 +465,8 @@ importers:
         specifier: ^14.2.4
         version: 14.2.4
       sort-package-json:
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.14.0
+        version: 2.14.0
       storybook:
         specifier: ^8.4.7
         version: 8.4.7(prettier@3.4.2)
@@ -632,8 +632,8 @@ importers:
         specifier: 1.4.18
         version: 1.4.18
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.5)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.5)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -666,7 +666,7 @@ importers:
         version: 2.0.3(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.29.1
-        version: eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2))
+        version: eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2))
       eslint-plugin-mdx:
         specifier: ^3.1.5
         version: 3.1.5(eslint@9.18.0(jiti@2.4.2))
@@ -945,8 +945,8 @@ importers:
         specifier: ^19.0.0
         version: 19.0.0(react@19.0.0)
       redoc:
-        specifier: ^2.2.0
-        version: 2.2.0(core-js@3.40.0)(mobx@6.13.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(styled-components@6.1.14(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
+        specifier: ^2.3.0
+        version: 2.3.0(core-js@3.40.0)(mobx@6.13.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(styled-components@6.1.14(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
       rimraf:
         specifier: 6.0.1
         version: 6.0.1
@@ -1014,8 +1014,8 @@ importers:
         specifier: 1.4.18
         version: 1.4.18
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -1108,7 +1108,7 @@ importers:
         version: 1.0.22
       '@visulima/pail':
         specifier: 2.1.18
-        version: 2.1.18(rotating-file-stream@3.2.5)
+        version: 2.1.18(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -1168,8 +1168,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(nextra@3.3.1(@types/react@19.0.2)(acorn@8.14.0)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.1)
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -1268,8 +1268,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -1322,8 +1322,8 @@ importers:
         specifier: 6.0.1
         version: 6.0.1
       rollup:
-        specifier: 4.30.1
-        version: 4.30.1
+        specifier: 4.31.0
+        version: 4.31.0
       secretlint:
         specifier: 9.0.0
         version: 9.0.0
@@ -1346,8 +1346,8 @@ importers:
         specifier: ^4.1.3
         version: 4.1.3
       ansis:
-        specifier: ^3.8.1
-        version: 3.8.1
+        specifier: ^3.9.0
+        version: 3.9.0
       chalk:
         specifier: ^5.4.1
         version: 5.4.1
@@ -1437,8 +1437,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(nextra@3.3.1(@types/react@19.0.2)(acorn@8.14.0)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.1)
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -1687,8 +1687,8 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -1828,8 +1828,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(nextra@3.3.1(@types/react@19.0.2)(acorn@8.14.0)(next@15.1.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.1)
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -1925,8 +1925,8 @@ importers:
         specifier: 18.19.70
         version: 18.19.70
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2012,8 +2012,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2106,8 +2106,8 @@ importers:
         specifier: 4.4.13
         version: 4.4.13
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2248,8 +2248,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2368,8 +2368,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -2482,8 +2482,8 @@ importers:
         specifier: 1.4.18
         version: 1.4.18
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/browser':
         specifier: ^2.1.8
         version: 2.1.8(@types/node@18.19.15)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
@@ -2603,8 +2603,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2812,8 +2812,8 @@ importers:
         specifier: 18.19.39
         version: 18.19.39
       '@visulima/packem':
-        specifier: ^1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.39)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: ^1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.39)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2942,8 +2942,8 @@ importers:
         specifier: ^2.4.4
         version: 2.4.4
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3056,8 +3056,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3165,8 +3165,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/redact':
         specifier: 1.0.11
         version: 1.0.11
@@ -3252,8 +3252,8 @@ importers:
         specifier: ^1.8.15
         version: 1.8.15
       consola:
-        specifier: ^3.3.3
-        version: 3.3.3
+        specifier: ^3.4.0
+        version: 3.4.0
       pino:
         specifier: ^9.6.0
         version: 9.6.0
@@ -3313,8 +3313,8 @@ importers:
         specifier: ^22.10.2
         version: 22.10.5
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.5)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.5)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3431,8 +3431,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: 2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3525,8 +3525,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3662,8 +3662,8 @@ importers:
         specifier: 18.19.70
         version: 18.19.70
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3742,10 +3742,10 @@ importers:
         version: 5.0.14(prettier@3.4.2)
       '@anolilab/semantic-release-pnpm':
         specifier: 1.1.6
-        version: 1.1.6(@types/node@18.18.14)
+        version: 1.1.6(@types/node@18.19.71)
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.3
-        version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(@types/node@18.18.14))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
+        version: 9.0.3(@anolilab/semantic-release-pnpm@1.1.6(@types/node@18.19.71))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))
       '@arethetypeswrong/cli':
         specifier: ^0.17.2
         version: 0.17.2
@@ -3762,11 +3762,11 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       '@types/node':
-        specifier: 18.18.14
-        version: 18.18.14
+        specifier: 18.19.71
+        version: 18.19.71
       '@visulima/packem':
-        specifier: 1.10.7
-        version: 1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.18.14)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
+        specifier: 1.16.0
+        version: 1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -3838,7 +3838,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.18.14)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.18.14)(typescript@5.7.3))(terser@5.31.1)
+        version: 2.1.8(@types/node@18.19.71)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.71)(typescript@5.7.3))(terser@5.31.1)
 
   packages/tsconfig/__fixtures__/package/cjs:
     dependencies:
@@ -4020,6 +4020,7 @@ packages:
   '@anolilab/package-json-utils@3.0.9':
     resolution: {integrity: sha512-CYwpW2hlsOSdwtksYG5vH7Y48X7qwSnvk4yTsplce/FZFZLKRxuCbwlUqgTEYUng3nZ55A+5EC3rEttgor7e9w==}
     engines: {node: '>=18.* <=21.*'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@anolilab/prettier-config@5.0.14':
     resolution: {integrity: sha512-P7nVwARFM0SKQ0j8Q2y6Q3acHaPNtXOKEX9lgZcf5veFdvNjzK79iZcFdpQikyix4VQBs8x6wBPAD0yDfpC6pQ==}
@@ -4067,8 +4068,8 @@ packages:
   '@antfu/install-pkg@1.0.0':
     resolution: {integrity: sha512-xvX6P/lo1B3ej0OsaErAjqgFYzYVcJpamjLAFLYh9vRJngBrMoUG7aVnrGTeqM7yxbyTD5p3F2+0/QUEh8Vzhw==}
 
-  '@antfu/ni@0.23.2':
-    resolution: {integrity: sha512-FSEVWXvwroExDXUu8qV6Wqp2X3D1nJ0Li4LFymCyvCVrm7I3lNfG0zZWSWvGU1RE7891eTnFTyh31L3igOwNKQ==}
+  '@antfu/ni@23.2.0':
+    resolution: {integrity: sha512-PsqWG9QcgTQ0eyEMxYaaJMxoCaCmy8InPkToC7MQuOHHUPQknMZtCrnzZSZDXk+X9Z93eGFh+v0mE2X6FWNtuw==}
     hasBin: true
 
   '@antfu/utils@0.7.10':
@@ -4246,6 +4247,11 @@ packages:
 
   '@babel/parser@7.26.3':
     resolution: {integrity: sha512-WJ/CvmY8Mea8iDXo6a7RK2wbmJITT5fN3BEkRuFlxVyNx8jOKIIhmC4fSkTcPcf8JyavbBwIe6OpiCOBXt/IcA==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
+  '@babel/parser@7.26.5':
+    resolution: {integrity: sha512-SRJ4jYmXRqV1/Xc+TIVG84WjHBXKlxO9sHQnA2Pf12QQEAp1LOh6kDzNHXcUnbH1QI0FDoPPVOt+vyUDucxpaw==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -4774,6 +4780,10 @@ packages:
     resolution: {integrity: sha512-vN5p+1kl59GVKMvTHt55NzzmYVxprfJD+ql7U9NFIfKCBkYE55LYtS+WtPlaYOyzydrKI8Nezd+aZextrd+FMA==}
     engines: {node: '>=6.9.0'}
 
+  '@babel/types@7.26.5':
+    resolution: {integrity: sha512-L6mZmwFDK6Cjh1nRCLXpa6no13ZIioJDz7mdkzHv399pThrTa/k0nUlNaenOeh2kWu/iaOQYElEpKPUswUa9Vg==}
+    engines: {node: '>=6.9.0'}
+
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
@@ -4788,13 +4798,6 @@ packages:
 
   '@bundled-es-modules/tough-cookie@0.1.6':
     resolution: {integrity: sha512-dvMHbL464C0zI+Yqxbz6kZ5TOEp7GLW+pry/RWndAR8MJQAXZ2rPmIs8tziTZjeIyhSNZgZbCePtfSbdWqStJw==}
-
-  '@cfaester/enzyme-adapter-react-18@0.8.0':
-    resolution: {integrity: sha512-3Z3ThTUouHwz8oIyhTYQljEMNRFtlVyc3VOOHCbxs47U6cnXs8K9ygi/c1tv49s7MBlTXeIcuN+Ttd9aPtILFQ==}
-    peerDependencies:
-      enzyme: ^3.11.0
-      react: '>=18'
-      react-dom: '>=18'
 
   '@chevrotain/cst-dts-gen@11.0.3':
     resolution: {integrity: sha512-BvIKpRLeS/8UbfxXxgC33xOumsacaeCKAjAeLyOn7Pcp95HiRbrpl14S+9vaZLolnbssPIUuiUd8IvgkRyt6NQ==}
@@ -4811,11 +4814,11 @@ packages:
   '@chevrotain/utils@11.0.3':
     resolution: {integrity: sha512-YslZMgtJUyuMbZ+aKvfF3x1f5liK4mWNxghFRv7jqRR9C3R3fAOGTTKvxXDa2Y1s9zSbcpuO0cAxDYsc9SrXoQ==}
 
-  '@clack/core@0.4.0':
-    resolution: {integrity: sha512-YJCYBsyJfNDaTbvDUVSJ3SgSuPrcujarRgkJ5NLjexDZKvaOiVVJvAQYx8lIgG0qRT8ff0fPgqyBCVivanIZ+A==}
+  '@clack/core@0.4.1':
+    resolution: {integrity: sha512-Pxhij4UXg8KSr7rPek6Zowm+5M22rbd2g1nfojHJkxp5YkFqiZ2+YLEM/XGVIzvGOcM0nqjIFxrpDwWRZYWYjA==}
 
-  '@clack/prompts@0.9.0':
-    resolution: {integrity: sha512-nGsytiExgUr4FL0pR/LeqxA28nz3E0cW7eLTSh3Iod9TGrbBt8Y7BHbV3mmkNC4G0evdYyQ3ZsbiBkk7ektArA==}
+  '@clack/prompts@0.9.1':
+    resolution: {integrity: sha512-JIpyaboYZeWYlyP0H+OoPPxd6nqueG/CmN6ixBiNFsIDHREevjIf0n0Ohh5gr5C8pEDknzgvz+pIJ8dMhzWIeg==}
 
   '@code-hike/lighter@0.7.0':
     resolution: {integrity: sha512-64O07rIORKQLB+5T/GKAmKcD9sC0N9yHFJXa0Hs+0Aee1G+I4bSXxTccuDFP6c/G/3h5Pk7yv7PoX9/SpzaeiQ==}
@@ -6586,48 +6589,48 @@ packages:
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
 
-  '@oxc-parser/binding-darwin-arm64@0.44.0':
-    resolution: {integrity: sha512-JioiiO64lejtmmwTBImSGYBAZiYywK+hj79NgQyMt5G+is+kQF2jRZMuvbRQZr7ewGh2QA70Sw+wlf4wbwQWnw==}
+  '@oxc-parser/binding-darwin-arm64@0.47.1':
+    resolution: {integrity: sha512-WxlX4VVqFciQY+atVEzvZ+4m72vcHgXGDJfoMG+vBQ19+79+pipZTUhM4mIVe73IDe+B5l8AKgaMIWyEYE/cDg==}
     cpu: [arm64]
     os: [darwin]
 
-  '@oxc-parser/binding-darwin-x64@0.44.0':
-    resolution: {integrity: sha512-STXi4QwBhqnqR0AhkFGkh83If1lDS6YHH1v9itmiQgIga545pNywpS7eiJa129whUPk129wg0KuVrx5G8ffOgw==}
+  '@oxc-parser/binding-darwin-x64@0.47.1':
+    resolution: {integrity: sha512-yrZIVDtpxfneTmBy3sHw8uUnVqkFhbUBEHHl4Nms/IZ/CYrA3oE8FDhwy0nF30kZBxcGk/0+32OZ6h8jZETPUA==}
     cpu: [x64]
     os: [darwin]
 
-  '@oxc-parser/binding-linux-arm64-gnu@0.44.0':
-    resolution: {integrity: sha512-XHzPke9TUD1QD8PZPEYSO/TlHqiYjTH/wqSiWy8v1ZaQv+OPaE/V3WQl9hj7PKy9gOOa1Io66ssfWBbd1miRrQ==}
+  '@oxc-parser/binding-linux-arm64-gnu@0.47.1':
+    resolution: {integrity: sha512-F0gsHSTp4q2+3G/cESfZ22Ri60MCMT2UDbrypIgQscgqyDCq3RXa91QPcwa3Q4SNrmWNSfGYawUcJyDrcJ3Bjw==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-arm64-musl@0.44.0':
-    resolution: {integrity: sha512-tMjg+K1rFcABdw8mC4+8DJdhxmcB5VflN66YJ4v76Bf2nzi14Ceegw1Bc8nbbp6u0oe24kd5pJkrxQtOeYQrlA==}
+  '@oxc-parser/binding-linux-arm64-musl@0.47.1':
+    resolution: {integrity: sha512-CKPOjxhNxZ9pmFIQD7IGeXktS22XhRVHmQC9HHsCTWQPI4IezlNOgdfZyNjmuN9Zin47LntYTEkRrThg7s1GFQ==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-x64-gnu@0.44.0':
-    resolution: {integrity: sha512-Mg4FLd/aoYIt37akmWQmVqCLxmDIVVkqTxGFp8AiwVjy0DPLWRTX51sqwzaJi8PU/nqUamPdhofPPhEnrudDNQ==}
+  '@oxc-parser/binding-linux-x64-gnu@0.47.1':
+    resolution: {integrity: sha512-PTnTtbUxz5wXTCDh7USLO2x17FEUhdfqKd8V1xzf1T5BIMDOvGqx95v+C7+sT/hGWf4mUKsjeLXAwsXMb86Zrw==}
     cpu: [x64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-x64-musl@0.44.0':
-    resolution: {integrity: sha512-NTiHusZP0fWiVskHn4LIA1U5qaC360owCj26Qcx4XLSV5at3rcxsssE+wRtWUpzhAO+PKB4riQ8fDPDJNXzAtw==}
+  '@oxc-parser/binding-linux-x64-musl@0.47.1':
+    resolution: {integrity: sha512-bnkI/xu6sruQnk4ee5SljFGUHzX4cucOtBbuz7vj/PI6pifp4QI9MgEkTN/LIvYbwQ1ja5yCreSoMU8uaFVgHg==}
     cpu: [x64]
     os: [linux]
 
-  '@oxc-parser/binding-win32-arm64-msvc@0.44.0':
-    resolution: {integrity: sha512-7FaJZcvFtf+Ht1akywBKLwbDC9YHh/+bIFFlF2Mi/SF4RUNzjnYIbgzNhcG4V5dtlQLB6JDe28dIFKM9UZAL5A==}
+  '@oxc-parser/binding-win32-arm64-msvc@0.47.1':
+    resolution: {integrity: sha512-gIgyBxgsUcZivNSRJNpVLP2vPQsjhPKgTnkeBZoWgPFFS3ZLqEEXb4Q5z84l/pmnTQLwDF2WbMeZrY3yKo4CsQ==}
     cpu: [arm64]
     os: [win32]
 
-  '@oxc-parser/binding-win32-x64-msvc@0.44.0':
-    resolution: {integrity: sha512-ShIawSz6LxxF/6IhyxAjeB7dkyqyqE/121lIyhn8WGPtW8kbZgIcfb/WU7T7CVaLMwuBOe5fAQvSk3wOiqoh1w==}
+  '@oxc-parser/binding-win32-x64-msvc@0.47.1':
+    resolution: {integrity: sha512-BmqQoNNa71NVdQVIYDALUld/b/C/XHPVu0mTN+F8N3lC360hoFzczrngAnE9UxJ3N4YAi6elqDzqoQuS9aQk1Q==}
     cpu: [x64]
     os: [win32]
 
-  '@oxc-project/types@0.44.0':
-    resolution: {integrity: sha512-2apz8ZnFX2vuZn7qnNY5feVjuT4MGyoirt9tmJCoYMQBeHFaDRpOlqbgZ3N+ICFc5fxdpQK6EMP4kOXtUejOeg==}
+  '@oxc-project/types@0.47.1':
+    resolution: {integrity: sha512-fGa82XCkNqP/TT3z8sMb6Y+uVJBf7uvdP9nfwMzYgjZyVgdgzFwvsNMHp+iNLRP9jbM5VsGkb2/f/zG0POM2nA==}
 
   '@oxc-resolver/binding-darwin-arm64@3.0.3':
     resolution: {integrity: sha512-cCSzv2VNSKrQUy43enMt6cN+TlijYUJ3qVOx52ioq7qOKtZ6sy3kcfzSOy3f27cFOCaPotIqC35eb3LMrdsPCA==}
@@ -7394,8 +7397,18 @@ packages:
     cpu: [arm]
     os: [android]
 
+  '@rollup/rollup-android-arm-eabi@4.31.0':
+    resolution: {integrity: sha512-9NrR4033uCbUBRgvLcBrJofa2KY9DzxL2UKZ1/4xA/mnTNyhZCWBuD8X3tPm1n4KxcgaraOYgrFKSgwjASfmlA==}
+    cpu: [arm]
+    os: [android]
+
   '@rollup/rollup-android-arm64@4.30.1':
     resolution: {integrity: sha512-/NA2qXxE3D/BRjOJM8wQblmArQq1YoBVJjrjoTSBS09jgUisq7bqxNHJ8kjCHeV21W/9WDGwJEWSN0KQ2mtD/w==}
+    cpu: [arm64]
+    os: [android]
+
+  '@rollup/rollup-android-arm64@4.31.0':
+    resolution: {integrity: sha512-iBbODqT86YBFHajxxF8ebj2hwKm1k8PTBQSojSt3d1FFt1gN+xf4CowE47iN0vOSdnd+5ierMHBbu/rHc7nq5g==}
     cpu: [arm64]
     os: [android]
 
@@ -7404,8 +7417,18 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
+  '@rollup/rollup-darwin-arm64@4.31.0':
+    resolution: {integrity: sha512-WHIZfXgVBX30SWuTMhlHPXTyN20AXrLH4TEeH/D0Bolvx9PjgZnn4H677PlSGvU6MKNsjCQJYczkpvBbrBnG6g==}
+    cpu: [arm64]
+    os: [darwin]
+
   '@rollup/rollup-darwin-x64@4.30.1':
     resolution: {integrity: sha512-x78BavIwSH6sqfP2xeI1hd1GpHL8J4W2BXcVM/5KYKoAD3nNsfitQhvWSw+TFtQTLZ9OmlF+FEInEHyubut2OA==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@rollup/rollup-darwin-x64@4.31.0':
+    resolution: {integrity: sha512-hrWL7uQacTEF8gdrQAqcDy9xllQ0w0zuL1wk1HV8wKGSGbKPVjVUv/DEwT2+Asabf8Dh/As+IvfdU+H8hhzrQQ==}
     cpu: [x64]
     os: [darwin]
 
@@ -7414,8 +7437,18 @@ packages:
     cpu: [arm64]
     os: [freebsd]
 
+  '@rollup/rollup-freebsd-arm64@4.31.0':
+    resolution: {integrity: sha512-S2oCsZ4hJviG1QjPY1h6sVJLBI6ekBeAEssYKad1soRFv3SocsQCzX6cwnk6fID6UQQACTjeIMB+hyYrFacRew==}
+    cpu: [arm64]
+    os: [freebsd]
+
   '@rollup/rollup-freebsd-x64@4.30.1':
     resolution: {integrity: sha512-1MEdGqogQLccphhX5myCJqeGNYTNcmTyaic9S7CG3JhwuIByJ7J05vGbZxsizQthP1xpVx7kd3o31eOogfEirw==}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@rollup/rollup-freebsd-x64@4.31.0':
+    resolution: {integrity: sha512-pCANqpynRS4Jirn4IKZH4tnm2+2CqCNLKD7gAdEjzdLGbH1iO0zouHz4mxqg0uEMpO030ejJ0aA6e1PJo2xrPA==}
     cpu: [x64]
     os: [freebsd]
 
@@ -7424,8 +7457,18 @@ packages:
     cpu: [arm]
     os: [linux]
 
+  '@rollup/rollup-linux-arm-gnueabihf@4.31.0':
+    resolution: {integrity: sha512-0O8ViX+QcBd3ZmGlcFTnYXZKGbFu09EhgD27tgTdGnkcYXLat4KIsBBQeKLR2xZDCXdIBAlWLkiXE1+rJpCxFw==}
+    cpu: [arm]
+    os: [linux]
+
   '@rollup/rollup-linux-arm-musleabihf@4.30.1':
     resolution: {integrity: sha512-B8Rcyj9AV7ZlEFqvB5BubG5iO6ANDsRKlhIxySXcF1axXYUyqwBok+XZPgIYGBgs7LDXfWfifxhw0Ik57T0Yug==}
+    cpu: [arm]
+    os: [linux]
+
+  '@rollup/rollup-linux-arm-musleabihf@4.31.0':
+    resolution: {integrity: sha512-w5IzG0wTVv7B0/SwDnMYmbr2uERQp999q8FMkKG1I+j8hpPX2BYFjWe69xbhbP6J9h2gId/7ogesl9hwblFwwg==}
     cpu: [arm]
     os: [linux]
 
@@ -7434,8 +7477,18 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@rollup/rollup-linux-arm64-gnu@4.31.0':
+    resolution: {integrity: sha512-JyFFshbN5xwy6fulZ8B/8qOqENRmDdEkcIMF0Zz+RsfamEW+Zabl5jAb0IozP/8UKnJ7g2FtZZPEUIAlUSX8cA==}
+    cpu: [arm64]
+    os: [linux]
+
   '@rollup/rollup-linux-arm64-musl@4.30.1':
     resolution: {integrity: sha512-i4Ab2vnvS1AE1PyOIGp2kXni69gU2DAUVt6FSXeIqUCPIR3ZlheMW3oP2JkukDfu3PsexYRbOiJrY+yVNSk9oA==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@rollup/rollup-linux-arm64-musl@4.31.0':
+    resolution: {integrity: sha512-kpQXQ0UPFeMPmPYksiBL9WS/BDiQEjRGMfklVIsA0Sng347H8W2iexch+IEwaR7OVSKtr2ZFxggt11zVIlZ25g==}
     cpu: [arm64]
     os: [linux]
 
@@ -7444,8 +7497,18 @@ packages:
     cpu: [loong64]
     os: [linux]
 
+  '@rollup/rollup-linux-loongarch64-gnu@4.31.0':
+    resolution: {integrity: sha512-pMlxLjt60iQTzt9iBb3jZphFIl55a70wexvo8p+vVFK+7ifTRookdoXX3bOsRdmfD+OKnMozKO6XM4zR0sHRrQ==}
+    cpu: [loong64]
+    os: [linux]
+
   '@rollup/rollup-linux-powerpc64le-gnu@4.30.1':
     resolution: {integrity: sha512-GLrZraoO3wVT4uFXh67ElpwQY0DIygxdv0BNW9Hkm3X34wu+BkqrDrkcsIapAY+N2ATEbvak0XQ9gxZtCIA5Rw==}
+    cpu: [ppc64]
+    os: [linux]
+
+  '@rollup/rollup-linux-powerpc64le-gnu@4.31.0':
+    resolution: {integrity: sha512-D7TXT7I/uKEuWiRkEFbed1UUYZwcJDU4vZQdPTcepK7ecPhzKOYk4Er2YR4uHKme4qDeIh6N3XrLfpuM7vzRWQ==}
     cpu: [ppc64]
     os: [linux]
 
@@ -7454,8 +7517,18 @@ packages:
     cpu: [riscv64]
     os: [linux]
 
+  '@rollup/rollup-linux-riscv64-gnu@4.31.0':
+    resolution: {integrity: sha512-wal2Tc8O5lMBtoePLBYRKj2CImUCJ4UNGJlLwspx7QApYny7K1cUYlzQ/4IGQBLmm+y0RS7dwc3TDO/pmcneTw==}
+    cpu: [riscv64]
+    os: [linux]
+
   '@rollup/rollup-linux-s390x-gnu@4.30.1':
     resolution: {integrity: sha512-GWFs97Ruxo5Bt+cvVTQkOJ6TIx0xJDD/bMAOXWJg8TCSTEK8RnFeOeiFTxKniTc4vMIaWvCplMAFBt9miGxgkA==}
+    cpu: [s390x]
+    os: [linux]
+
+  '@rollup/rollup-linux-s390x-gnu@4.31.0':
+    resolution: {integrity: sha512-O1o5EUI0+RRMkK9wiTVpk2tyzXdXefHtRTIjBbmFREmNMy7pFeYXCFGbhKFwISA3UOExlo5GGUuuj3oMKdK6JQ==}
     cpu: [s390x]
     os: [linux]
 
@@ -7464,8 +7537,18 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@rollup/rollup-linux-x64-gnu@4.31.0':
+    resolution: {integrity: sha512-zSoHl356vKnNxwOWnLd60ixHNPRBglxpv2g7q0Cd3Pmr561gf0HiAcUBRL3S1vPqRC17Zo2CX/9cPkqTIiai1g==}
+    cpu: [x64]
+    os: [linux]
+
   '@rollup/rollup-linux-x64-musl@4.30.1':
     resolution: {integrity: sha512-V9U8Ey2UqmQsBT+xTOeMzPzwDzyXmnAoO4edZhL7INkwQcaW1Ckv3WJX3qrrp/VHaDkEWIBWhRwP47r8cdrOow==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rollup/rollup-linux-x64-musl@4.31.0':
+    resolution: {integrity: sha512-ypB/HMtcSGhKUQNiFwqgdclWNRrAYDH8iMYH4etw/ZlGwiTVxBz2tDrGRrPlfZu6QjXwtd+C3Zib5pFqID97ZA==}
     cpu: [x64]
     os: [linux]
 
@@ -7474,13 +7557,28 @@ packages:
     cpu: [arm64]
     os: [win32]
 
+  '@rollup/rollup-win32-arm64-msvc@4.31.0':
+    resolution: {integrity: sha512-JuhN2xdI/m8Hr+aVO3vspO7OQfUFO6bKLIRTAy0U15vmWjnZDLrEgCZ2s6+scAYaQVpYSh9tZtRijApw9IXyMw==}
+    cpu: [arm64]
+    os: [win32]
+
   '@rollup/rollup-win32-ia32-msvc@4.30.1':
     resolution: {integrity: sha512-pxHAU+Zv39hLUTdQQHUVHf4P+0C47y/ZloorHpzs2SXMRqeAWmGghzAhfOlzFHHwjvgokdFAhC4V+6kC1lRRfw==}
     cpu: [ia32]
     os: [win32]
 
+  '@rollup/rollup-win32-ia32-msvc@4.31.0':
+    resolution: {integrity: sha512-U1xZZXYkvdf5MIWmftU8wrM5PPXzyaY1nGCI4KI4BFfoZxHamsIe+BtnPLIvvPykvQWlVbqUXdLa4aJUuilwLQ==}
+    cpu: [ia32]
+    os: [win32]
+
   '@rollup/rollup-win32-x64-msvc@4.30.1':
     resolution: {integrity: sha512-D6qjsXGcvhTjv0kI4fU8tUuBDF/Ueee4SVX79VfNDXZa64TfCW1Slkb6Z7O1p7vflqZjcmOVdZlqf8gvJxc6og==}
+    cpu: [x64]
+    os: [win32]
+
+  '@rollup/rollup-win32-x64-msvc@4.31.0':
+    resolution: {integrity: sha512-ul8rnCsUumNln5YWwz0ted2ZHFhzhRRnkpBZ+YRuHoRAlUji9KChpOUOndY7uykrPEPXVbHLlsdo6v5yXo/TXw==}
     cpu: [x64]
     os: [win32]
 
@@ -8782,9 +8880,6 @@ packages:
   '@types/node-fetch@2.6.11':
     resolution: {integrity: sha512-24xFj9R5+rfQJLRyM56qh+wnVSYhyXC2tkoBndtY0U+vubqNsYXGjufB2nn8Q6gt0LrARwL6UBtMCSVCwl4B1g==}
 
-  '@types/node@18.18.14':
-    resolution: {integrity: sha512-iSOeNeXYNYNLLOMDSVPvIFojclvMZ/HDY2dU17kUlcsOsSQETbWIslJbYLZgA+ox8g2XQwSHKTkght1a5X26lQ==}
-
   '@types/node@18.19.15':
     resolution: {integrity: sha512-AMZ2UWx+woHNfM11PyAEQmfSxi05jm9OlkxczuHeEqmvwPkYj6MWv44gbzDPefYOLysTOFyI3ziiy2ONmUZfpA==}
 
@@ -8793,6 +8888,9 @@ packages:
 
   '@types/node@18.19.70':
     resolution: {integrity: sha512-RE+K0+KZoEpDUbGGctnGdkrLFwi1eYKTlIHNl2Um98mUkGsm1u2Ff6Ltd0e8DktTtC98uy7rSj+hO8t/QuLoVQ==}
+
+  '@types/node@18.19.71':
+    resolution: {integrity: sha512-evXpcgtZm8FY4jqBSN8+DmOTcVkkvTmAayeo4Wf3m1xAruyVGzGuDh/Fb/WWX2yLItUiho42ozyJjB0dw//Tkw==}
 
   '@types/node@20.14.11':
     resolution: {integrity: sha512-kprQpL8MMeszbz6ojB5/tU8PLN4kesnN8Gjzw349rDlNgsSzg90lAVj3llK99Dh7JON+t9AuscPPFW6mPbTnSA==}
@@ -9126,23 +9224,13 @@ packages:
     resolution: {integrity: sha512-+IB8fYbVHEAtLfhCXSRS61Q/OfBJTaPCXhvGvXTBIUfs9lqZMDesZ2UnvKYbnEYHSMgCzBaj5BOq66iePl8mjw==}
     engines: {node: '>=16'}
 
-  '@visulima/boxen@1.0.23':
-    resolution: {integrity: sha512-os8zpUA6Iizcbp2JtH43diakJB1EagyEk57v1KaNd6Eh1A7XekNZw0AyUW5AdVmOoeWC0wZkrMXBNWxHL35AQQ==}
-    engines: {node: '>=18.* <=23.*'}
-    os: [darwin, linux, win32]
-
   '@visulima/boxen@1.0.27':
     resolution: {integrity: sha512-PwPxcNq3B+nGk85FJA1d+zLx0JTNHIrbRRINyudpcHdHThbGuDL6VIuJQ8Ad8APYUQkq2p2btUAEhjqupW7/SQ==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/cerebro@1.1.28':
-    resolution: {integrity: sha512-jXYqE87Ad7OkA9ONp997YYj5QfycWXCNpB0QO7GvfBvJD3dpHnowmul6BoFlSrxlQ8twxtTx+kDxTxjgBmd+5w==}
-    engines: {node: '>=18.* <=23.*'}
-    os: [darwin, linux, win32]
-
-  '@visulima/colorize@1.4.14':
-    resolution: {integrity: sha512-d78gKcysz8kcD3Ki5m4kLUGYzyLwwaoGAY1IA/juhN9dvuJ+RJedi0Kx5nP/TdYmNDiQyNTFLSyr4F+yMsY2BA==}
+  '@visulima/cerebro@1.1.33':
+    resolution: {integrity: sha512-1NrAbF4ZbI3C5IgexNTUM64jpiFd6xDGYa1lP+8c1OzNECdl0O7Rj1BcD8LGRJ6TDm2VU+y+tDxkLvwkzujQvg==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
@@ -9168,23 +9256,9 @@ packages:
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/error@4.4.9':
-    resolution: {integrity: sha512-oJ2Jm6qPmZ6LpuGAPghwDTud7RTuFRWrsSWdmd7ppym4DszDEXWhpCjwEGevOL4fGL8Q8gqvItGnzBwM0geFmQ==}
-    engines: {node: '>=18.* <=23.*'}
-    os: [darwin, linux, win32]
-
-  '@visulima/find-cache-dir@1.0.18':
-    resolution: {integrity: sha512-chxkcfQ2aTLeVDRNWCJkeSbBNEh7SugwD90ufzI08GHiDamXAnXjE9HEtRwX+b7HQnLnfSZxUOEHR1xl1WaFSA==}
-    engines: {node: '>=18.* <=23.*'}
-
   '@visulima/find-cache-dir@1.0.22':
     resolution: {integrity: sha512-DKaAnfDkwDTWVS0q+8QKZP+1AB5D4Z9io+Y7zoi3TYpNHNcT4jgD/LSSSQHcpFtvDSndIR83IroAy8LKQMy3qA==}
     engines: {node: '>=18.* <=23.*'}
-
-  '@visulima/fmt@1.1.12':
-    resolution: {integrity: sha512-+fguDgRwJacWSgDbeAgIrimEJXdgR3XDmMnTXyhsxSWgNqEgUiiGCPoxnof7xXMMJWN6LTRgVgRyRX7/u9ZNeg==}
-    engines: {node: '>=18.* <=23.*'}
-    os: [darwin, linux, win32]
 
   '@visulima/fmt@1.1.13':
     resolution: {integrity: sha512-NlXu4G/BM8Q6z4vbfNXkUUjjzvmYDz7DrASBQiToexAvKA25HqPRxxJL0+CjYlkZY/HTmDA9dXyksgcOMSQzig==}
@@ -9201,12 +9275,8 @@ packages:
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/humanizer@1.0.16':
-    resolution: {integrity: sha512-DW1bxGoaCkDTqXB9tFzAySCuyE93+xUE8jGl3DMxDQUIvDGA3gFdMAKJ7OwWsbnkRuP3kIY2RiF0ERu2mAmdiw==}
-    engines: {node: '>=18.* <=23.*'}
-
-  '@visulima/inspector@1.0.14':
-    resolution: {integrity: sha512-p7AYC8pSHmk+U2OupPFz4VZgKOyDtTq3Fw4wxXqOPfBeFh1Q5OcowLsWjfD/JgW3VNeAg/obN+8VAYPx+wbc/w==}
+  '@visulima/humanizer@1.1.0':
+    resolution: {integrity: sha512-W2LpKKN/JL4RcjZ87jM0DWlpbOe/6sU3dnIKQ31/J55aERIqyFB3nTK53hyfR2FqdVGbwWmr0lC0KlZv1abHrw==}
     engines: {node: '>=18.* <=23.*'}
 
   '@visulima/inspector@1.0.18':
@@ -9215,11 +9285,6 @@ packages:
 
   '@visulima/is-ansi-color-supported@2.2.10':
     resolution: {integrity: sha512-LFetJq1wRChBEon5ejdGM0ckHX5EAWYLpfswckDMwLhcmhoNmuBCM1KMt8Bs6ooHvqZfRsadlzfy2skR6XdE2A==}
-    engines: {node: '>=18.* <=23.*'}
-    os: [darwin, linux, win32]
-
-  '@visulima/is-ansi-color-supported@2.2.9':
-    resolution: {integrity: sha512-w1LFr983XoNKKjriSw7M8HTKgm0+8sMP30piFjLGpZVR7tI3A1ShhF3nNX8im8yRcGZtGSKN401nOlABxHR0Dg==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
@@ -9244,8 +9309,13 @@ packages:
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/packem@1.10.7':
-    resolution: {integrity: sha512-G37sEY/xc7RtNKbl0pVr7c7aRy6xlKvluDw7zWudLGmieaarXvqOScr0tiDcgTAT32ThR9onYmRXi223BGsIDw==}
+  '@visulima/package@3.4.5':
+    resolution: {integrity: sha512-A1kLtKj8kUuduv6Sf/pCjuWf2DJvzTKlX4cXReZ4bdWKWBjfFKzOes1WBzynXE/WLWtecy49JMswSZyeGH14cQ==}
+    engines: {node: '>=18.* <=23.*'}
+    os: [darwin, linux, win32]
+
+  '@visulima/packem@1.16.0':
+    resolution: {integrity: sha512-dReFqqH1qzfNbfMmVTrhdz0DKk6SA0rEN5EPiuzw+xFLLS3V5ScJohWdblDVijEPhWf+6JYnVBGueY3ccFDhzg==}
     engines: {node: '>=18.* <=23.*'}
     hasBin: true
     peerDependencies:
@@ -9328,19 +9398,6 @@ packages:
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/pail@2.1.13':
-    resolution: {integrity: sha512-gCYNdC++vUAS/qfctrFRCJAkw1REqxWGJ7Jxk/CcwrjnqwpJdWnmxoaUY1oKIpYHvIQ+9M/UXeL5Ff4E6sp2HQ==}
-    engines: {node: '>=18.* <=23.*'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      '@visulima/redact': 1.0.10
-      rotating-file-stream: ^3.1.1
-    peerDependenciesMeta:
-      '@visulima/redact':
-        optional: true
-      rotating-file-stream:
-        optional: true
-
   '@visulima/pail@2.1.18':
     resolution: {integrity: sha512-N0gECYNJNgelMZR8DO8kkUmfM7nByiaMHcUDV9FY8wblorQqLeCDvntdOBmXstxXMDj3r2vkxtpRH5blXawSgg==}
     engines: {node: '>=18.* <=23.*'}
@@ -9376,12 +9433,12 @@ packages:
     resolution: {integrity: sha512-AmWZ86zMeXej43rwcb53oPJw6GMoExBXPuofhlgAAfUjcdRqxeUYS4o3o13TxVizxTKvAJHLvPGUqrTxel5V/A==}
     engines: {node: '>=18.* <=23.*'}
 
-  '@visulima/source-map@1.0.12':
-    resolution: {integrity: sha512-ihyq+SIk1AB1TBehx2xo3bPZfWB8Qu19UXvx4ulTMUGQCDqUQdITbEwaChlXpTEPKbnw1j4RMXxsGvKjdDg4nQ==}
+  '@visulima/source-map@1.0.16':
+    resolution: {integrity: sha512-NuT9iL5k0hr7/GGBlg4yYV/hhy5Sr84KOEhS9lCKrXcfAzw/8QIyAOruhlI43VFJrgP8ERe1YY+nyqXdBIL73Q==}
     engines: {node: '>=18.* <=23.*'}
 
-  '@visulima/tsconfig@1.1.4':
-    resolution: {integrity: sha512-bgxcY4IkrhHnCiqDMu4/0eaoTzqn2leqMs+Edy+ZzImnGRvKYoxjAsf3hiW0WugIguHChCkzdIKCyutsCHKbSA==}
+  '@visulima/tsconfig@1.1.8':
+    resolution: {integrity: sha512-OcneurNqhQyLDKKIoUQzlyh3BFCTbmr/GW9JDtn31caL2DPLcG6AFbAilDi3ScmanK7jDp6Nye+2ZTEcRPocIg==}
     engines: {node: '>=18.* <=23.*'}
 
   '@vitejs/plugin-react@4.3.4':
@@ -9710,8 +9767,8 @@ packages:
     resolution: {integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==}
     engines: {node: '>=12'}
 
-  ansis@3.8.1:
-    resolution: {integrity: sha512-gzGUTqsBugYCegbhldz7Ox9NrizAlCSAP5Y6rRD9agN76osoyhKznznmaB4G5BAVvrqwksPOGdnYh1Q000cUqw==}
+  ansis@3.9.0:
+    resolution: {integrity: sha512-PcDrVe15ldexeZMsVLBAzBwF2KhZgaU0R+CHxH+x5kqn/pO+UWVBZJ+NEXMPpEOLUFeNsnNdoWYc2gwO+MVkDg==}
     engines: {node: '>=16'}
 
   any-promise@1.3.0:
@@ -10081,6 +10138,11 @@ packages:
 
   browserslist@4.24.3:
     resolution: {integrity: sha512-1CPmv8iobE2fyRMV97dAcMVegvvWKxmq94hkLiAkUGwKVTyDLw33K+ZxiFrREKmmps4rIw6grcCFCnTMSZ/YiA==}
+    engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
+    hasBin: true
+
+  browserslist@4.24.4:
+    resolution: {integrity: sha512-KDi1Ny1gSePi1vm0q4oxSF8b4DR44GF4BbmS2YdhPLOEqd8pDviZOGH/GsmRwoWJ2+5Lr085X7naowMwKHDG1A==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
@@ -10637,8 +10699,8 @@ packages:
   confusing-browser-globals@1.0.11:
     resolution: {integrity: sha512-JsPKdmh8ZkmnHxDk55FZ1TqVLvEQTvoByJZRN9jzI0UjxK/QgAmsphz7PGtqgPieQZ/CQcHWXCR7ATDNhGe+YA==}
 
-  consola@3.3.3:
-    resolution: {integrity: sha512-Qil5KwghMzlqd51UXM0b6fyaGHtOC22scxrwrz4A2882LyUMwQjnvaedN1HAeXzphspQ6CpHkzMAWxBTUruDLg==}
+  consola@3.4.0:
+    resolution: {integrity: sha512-EiPU8G6dQG0GFHNR8ljnZFki/8a+cQwEQ+7wpxdChl02Q8HXlwEZWD5lqAF8vC2sEC3Tehr8hy7vErz88LHyUA==}
     engines: {node: ^14.18.0 || >=16.10.0}
 
   constant-case@3.0.4:
@@ -11541,9 +11603,6 @@ packages:
   environment@1.1.0:
     resolution: {integrity: sha512-xUtoPkMggbz0MPyPiIWr1Kp4aeWJjDZ6SMvURhimjdZgsRuDplF5/s9hcgGhyXMhs+6vpnuoiZ2kFiu3FMnS8Q==}
     engines: {node: '>=18'}
-
-  enzyme-shallow-equal@1.0.7:
-    resolution: {integrity: sha512-/um0GFqUXnpM9SvKtje+9Tjoz3f1fpBC3eXRFrNs8kpYn69JljciYP7KZTqM/YQbUY9KUjvKB4jo/q+L6WGGvg==}
 
   error-ex@1.3.2:
     resolution: {integrity: sha512-7dFHNmqeFSEt2ZBsCriorKnn3Z2pj+fd9kmI6QoWw4//DL+icEBfc0U7qJCisqrTsKTjw4fNFy2pW9OqStD84g==}
@@ -12585,8 +12644,8 @@ packages:
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
-  framer-motion@11.17.0:
-    resolution: {integrity: sha512-uTNLH9JPMD3ad14WBt3KYRTR+If4tGPLgKTKTIIPaEBMkvazs6EkWNcmCh65qA/tyinOqIbQiuCorXX0qQsNoQ==}
+  framer-motion@11.18.2:
+    resolution: {integrity: sha512-5F5Och7wrvtLVElIpclDT0CBzMVg3dL22B64aZwHtsIY8RB4mXICLrkajK4G9R+ieSAGcgrLeae2SeUTg2pr6w==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0 || ^19.0.0
@@ -12630,8 +12689,8 @@ packages:
     resolution: {integrity: sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==}
     engines: {node: '>=14.14'}
 
-  fs-extra@11.2.0:
-    resolution: {integrity: sha512-PmDi3uwK5nFuXh7XDTlVnS17xJS7vW36is2+w3xcv8SVxiB4NyATf4ctkVY5bkSjX0Y4nbvZCq1/EjtEyr9ktw==}
+  fs-extra@11.3.0:
+    resolution: {integrity: sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==}
     engines: {node: '>=14.14'}
 
   fs-extra@8.1.0:
@@ -12971,10 +13030,6 @@ packages:
   has-yarn@3.0.0:
     resolution: {integrity: sha512-IrsVwUHhEULx3R8f/aA8AHuEzAorplsab/v8HBzEiIukwq5i/EC+xmOW+HfP1OaDP+2JkgT1yILHN2O3UFIbcA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-
-  has@1.0.4:
-    resolution: {integrity: sha512-qdSAmqLF6209RFj4VVItywPMbm3vWylknmB3nvNiUIs72xAimcM8nVYxYr7ncvZq5qzk9MKIZR8ijqD/1QuYjQ==}
-    engines: {node: '>= 0.4.0'}
 
   hasha@5.2.2:
     resolution: {integrity: sha512-Hrp5vIK/xr5SkeN2onO32H0MgNZ0f17HRNH39WfL0SYUNOTZ5Lz1TJ8Pajo/87dYGEFlLMm7mIc/k/s6Bvz9HQ==}
@@ -14301,8 +14356,8 @@ packages:
   linkify-it@5.0.0:
     resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
 
-  lint-staged@15.3.0:
-    resolution: {integrity: sha512-vHFahytLoF2enJklgtOtCtIjZrKD/LoxlaUusd5nh7dWv/dkKQJY74ndFSzxCdv7g0ueGg1ORgTSt4Y9LPZn9A==}
+  lint-staged@15.4.1:
+    resolution: {integrity: sha512-P8yJuVRyLrm5KxCtFx+gjI5Bil+wO7wnTl7C3bXhvtTaAFGirzeB24++D0wGoUwxrUKecNiehemgCob9YL39NA==}
     engines: {node: '>=18.12.0'}
     hasBin: true
 
@@ -15243,6 +15298,9 @@ packages:
   mlly@1.7.3:
     resolution: {integrity: sha512-xUsx5n/mN0uQf4V548PKQ+YShA4/IW0KI1dZhrNrPCLG+xizETbHTkOa1f8/xut9JRPp8kQuMnz0oqwkTiLo/A==}
 
+  mlly@1.7.4:
+    resolution: {integrity: sha512-qmdSIPC4bDJXgZTCR7XosJiNKySV7O215tsPtDN9iEO/7q/76b/ijtgRu/+epFXSJhijtTCCGp3DWS549P3xKw==}
+
   mobx-react-lite@4.0.7:
     resolution: {integrity: sha512-RjwdseshK9Mg8On5tyJZHtGD+J78ZnCnRaxeQDSiciKVQDUbfZcXhmld0VMxAwvcTnPEHZySGGewm467Fcpreg==}
     peerDependencies:
@@ -15275,11 +15333,11 @@ packages:
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
-  motion-dom@11.16.4:
-    resolution: {integrity: sha512-2wuCie206pCiP2K23uvwJeci4pMFfyQKpWI0Vy6HrCTDzDCer4TsYtT7IVnuGbDeoIV37UuZiUr6SZMHEc1Vww==}
+  motion-dom@11.18.1:
+    resolution: {integrity: sha512-g76KvA001z+atjfxczdRtw/RXOM3OMSdd1f4DL77qCTF/+avrRJiawSG4yDibEQ215sr9kpinSlX2pCTJ9zbhw==}
 
-  motion-utils@11.16.0:
-    resolution: {integrity: sha512-ngdWPjg31rD4WGXFi0eZ00DQQqKKu04QExyv/ymlC+3k+WIgYVFbt6gS5JsFPbJODTF/r8XiE/X+SsoT9c0ocw==}
+  motion-utils@11.18.1:
+    resolution: {integrity: sha512-49Kt+HKjtbJKLtgO/LKj9Ld+6vw9BjH5d9sc40R/kVyH8GLAXgT42M2NnuPcJNuA3s9ZfZBUcwIgpmZWGEE+hA==}
 
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
@@ -15928,8 +15986,8 @@ packages:
   outvariant@1.4.3:
     resolution: {integrity: sha512-+Sl2UErvtsoajRDKCE5/dBz4DIvHXQQnAxtQTF04OJxY0+DyZXSo5P5Bb7XYWOh81syohlYL24hbDwxedPUJCA==}
 
-  oxc-parser@0.44.0:
-    resolution: {integrity: sha512-AlYw0Gmw38Q4fL2q09T1qdrA6hgP7IMl69Yu5Eb7RMsncTHyU3rfhqoXYjjudLYvqArjk6zKlCYT8qB4cd+/SQ==}
+  oxc-parser@0.47.1:
+    resolution: {integrity: sha512-Z5TDh96dzit1i8a8GOt7cXmsiBkUPDthz4lh4yNNwdb7EPZyPrBjFpwC6Mqr+Dtq3qxTr0c4FDLFnWaIp/ncSw==}
 
   oxc-resolver@3.0.3:
     resolution: {integrity: sha512-fU5lhDCb9fCv/CP2YJiBEcuC+ZhTdOBzyacoUvPlZxA4NpF6JPVbgeYD9rthQIjfWlAwi5qfxQj2dyqxLoJ9HA==}
@@ -16272,6 +16330,9 @@ packages:
   pathe@1.1.2:
     resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}
 
+  pathe@2.0.2:
+    resolution: {integrity: sha512-15Ztpk+nov8DR524R4BF7uEuzESgzUEAV4Ah7CUMNGXdE5ELuvxElxGXndBl32vMSsWa1jpNf22Z+Er3sKwq+w==}
+
   pathval@2.0.0:
     resolution: {integrity: sha512-vE7JKRyES09KiunauX7nd2Q9/L7lhok4smP9RZTDeD4MVs72Dp2qNFVz39Nz5a0FVEW0BJR6C0DYrq6unoziZA==}
     engines: {node: '>= 14.16'}
@@ -16361,6 +16422,9 @@ packages:
 
   pkg-types@1.2.1:
     resolution: {integrity: sha512-sQoqa8alT3nHjGuTjuKgOnvjo4cljkufdtLMnO2LBP/wRwuDlo1tkaEdMxCRhyGRPacv/ztlZgDPm2b7FAmEvw==}
+
+  pkg-types@1.3.1:
+    resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
 
   plain-object-clone@2.0.0:
     resolution: {integrity: sha512-66gemNM7aIkdXqB/sQGTYHje1a6FiYYA3hP63b43lzBAqN+lAsCggNcy8M6SU8+ehGZuoQZ9Xrbcm660S4lqwQ==}
@@ -16897,11 +16961,6 @@ packages:
       '@types/react':
         optional: true
 
-  react-shallow-renderer@16.15.0:
-    resolution: {integrity: sha512-oScf2FqQ9LFVQgA73vr86xl2NaOIX73rh+YFqcOp68CWj56tSfgtGKrEbyhCj0rSijyG9M1CYprTh39fBi5hzA==}
-    peerDependencies:
-      react: ^16.0.0 || ^17.0.0 || ^18.0.0
-
   react-style-singleton@2.2.1:
     resolution: {integrity: sha512-ZWj0fHEMyWkHzKYUr2Bs/4zU6XLmq9HsgBURm7g5pAVfyn49DgUiNgY2d4lXRlYSiCif9YBGpQleewkcqddc7g==}
     engines: {node: '>=10'}
@@ -17049,8 +17108,8 @@ packages:
     resolution: {integrity: sha512-tYkDkVVtYkSVhuQ4zBgfvciymHaeuel+zFKXShfDnFP5SyVEP7qo70Rf1jTOTCx3vGNAbnEi/xFkcfQVMIBWag==}
     engines: {node: '>=12'}
 
-  redoc@2.2.0:
-    resolution: {integrity: sha512-52rz/xJtpUBc3Y/GAkaX03czKhQXTxoU7WnkXNzRLuGwiGb/iEO4OgwcgQqtwHWrYNaZXTyqZ4MAVXpi/e1gAg==}
+  redoc@2.3.0:
+    resolution: {integrity: sha512-v9+8ic/jF3CbrBR/N78BDYDkngszEjOfoBWIa9ES4J0c3hysWLIibn5UeBh9SW6EREoNuKeuIZDRlBKdKnBXwQ==}
     engines: {node: '>=6.9', npm: '>=3.0.0'}
     peerDependencies:
       core-js: ^3.1.4
@@ -17460,6 +17519,11 @@ packages:
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
+  rollup@4.31.0:
+    resolution: {integrity: sha512-9cCE8P4rZLx9+PjoyqHLs31V9a9Vpvfo4qNcs6JCiGWYhw2gijSetFbH6SSy1whnkgcefnUwr8sad7tgqsGvnw==}
+    engines: {node: '>=18.0.0', npm: '>=8.0.0'}
+    hasBin: true
+
   rotating-file-stream@3.2.5:
     resolution: {integrity: sha512-T8iBxUA4SookMTU97cIHUPck7beLOvN4g+y4db9E2eLn54OFsdp4qMnxuqmmJ05lcQHzueEVnPRykxfnPG948g==}
     engines: {node: '>=14.0'}
@@ -17831,8 +17895,8 @@ packages:
   sort-object-keys@1.1.3:
     resolution: {integrity: sha512-855pvK+VkU7PaKYPc+Jjnmt4EzejQHyhhF33q31qG8x7maDzkeFhAAThdCYay11CISO+qAMwjOBP+fPZe0IPyg==}
 
-  sort-package-json@2.12.0:
-    resolution: {integrity: sha512-/HrPQAeeLaa+vbAH/znjuhwUluuiM/zL5XX9kop8UpDgjtyWKt43hGDk2vd/TBdDpzIyzIHVUgmYofzYrAQjew==}
+  sort-package-json@2.14.0:
+    resolution: {integrity: sha512-xBRdmMjFB/KW3l51mP31dhlaiFmqkHLfWTfZAno8prb/wbDxwBPWFpxB16GZbiPbYr3wL41H8Kx22QIDWRe8WQ==}
     hasBin: true
 
   source-map-js@1.2.1:
@@ -18302,8 +18366,8 @@ packages:
   tar-stream@3.1.7:
     resolution: {integrity: sha512-qJj60CXt7IU1Ffyc3NJMjh6EkuCFej46zUqJ4J7pqYlThyd9bO0XBTmcOIhSzZJVWfsLks0+nle/j538YAW9RQ==}
 
-  taze@18.1.0:
-    resolution: {integrity: sha512-Mc/PtV3ZePomBPUAzTHVALOq2fbMPR/f7MjWljZ0YHJa9UsteyNfACcAZOhO/nWXKp9C544mSo/woRx7wTkU7g==}
+  taze@18.2.0:
+    resolution: {integrity: sha512-rjKW+/AJ8KTBl27cyCo6jtk6j9r3axN8olOOBhA12UciMLDXn79wZG09Nb3t1r51m1pqV8nOz98vKaFDerTe2g==}
     hasBin: true
 
   telejson@7.2.0:
@@ -20017,12 +20081,12 @@ snapshots:
       - svelte-eslint-parser
       - vue-eslint-parser
 
-  '@anolilab/lint-staged-config@2.1.7(eslint@8.57.0)(husky@9.1.7)(jest@29.7.0(@types/node@22.10.5))(lint-staged@15.3.0)(prettier@3.4.2)(secretlint@9.0.0)(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@anolilab/lint-staged-config@2.1.7(eslint@8.57.0)(husky@9.1.7)(jest@29.7.0(@types/node@22.10.5))(lint-staged@15.4.1)(prettier@3.4.2)(secretlint@9.0.0)(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       find-up: 5.0.0
       husky: 9.1.7
-      lint-staged: 15.3.0
+      lint-staged: 15.4.1
       shell-quote: 1.8.1
     optionalDependencies:
       eslint: 8.57.0
@@ -20068,22 +20132,6 @@ snapshots:
       '@visulima/path': 1.3.3
       ini: 5.0.0
       ts-deepmerge: 7.0.2
-
-  '@anolilab/semantic-release-pnpm@1.1.6(@types/node@18.18.14)':
-    dependencies:
-      '@anolilab/rc': 1.1.4
-      '@semantic-release/error': 4.0.0
-      '@visulima/fs': 2.3.7
-      '@visulima/package': 3.4.0(@types/node@18.18.14)
-      '@visulima/path': 1.3.3
-      aggregate-error: 5.0.0
-      execa: 9.5.2
-      ini: 5.0.0
-      normalize-url: 8.0.1
-      registry-auth-token: 5.0.3
-      semver: 7.6.3
-    transitivePeerDependencies:
-      - '@types/node'
 
   '@anolilab/semantic-release-pnpm@1.1.6(@types/node@18.19.15)':
     dependencies:
@@ -20133,6 +20181,22 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
+  '@anolilab/semantic-release-pnpm@1.1.6(@types/node@18.19.71)':
+    dependencies:
+      '@anolilab/rc': 1.1.4
+      '@semantic-release/error': 4.0.0
+      '@visulima/fs': 2.3.7
+      '@visulima/package': 3.4.0(@types/node@18.19.71)
+      '@visulima/path': 1.3.3
+      aggregate-error: 5.0.0
+      execa: 9.5.2
+      ini: 5.0.0
+      normalize-url: 8.0.1
+      registry-auth-token: 5.0.3
+      semver: 7.6.3
+    transitivePeerDependencies:
+      - '@types/node'
+
   '@anolilab/semantic-release-pnpm@1.1.6(@types/node@22.10.5)':
     dependencies:
       '@anolilab/rc': 1.1.4
@@ -20148,22 +20212,6 @@ snapshots:
       semver: 7.6.3
     transitivePeerDependencies:
       - '@types/node'
-
-  '@anolilab/semantic-release-preset@9.0.3(@anolilab/semantic-release-pnpm@1.1.6(@types/node@18.18.14))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))':
-    dependencies:
-      '@semantic-release/changelog': 6.0.3(semantic-release@24.2.1(typescript@5.7.3))
-      '@semantic-release/commit-analyzer': 13.0.0(semantic-release@24.2.1(typescript@5.7.3))
-      '@semantic-release/exec': 6.0.3(semantic-release@24.2.1(typescript@5.7.3))
-      '@semantic-release/git': 10.0.1(semantic-release@24.2.1(typescript@5.7.3))
-      '@semantic-release/github': 11.0.1(semantic-release@24.2.1(typescript@5.7.3))
-      '@semantic-release/release-notes-generator': 14.0.1(semantic-release@24.2.1(typescript@5.7.3))
-      conventional-changelog-conventionalcommits: 8.0.0
-      semantic-release: 24.2.1(typescript@5.7.3)
-    optionalDependencies:
-      '@anolilab/semantic-release-pnpm': 1.1.6(@types/node@18.18.14)
-      '@semantic-release/npm': 12.0.1(semantic-release@24.2.1(typescript@5.7.3))
-    transitivePeerDependencies:
-      - supports-color
 
   '@anolilab/semantic-release-preset@9.0.3(@anolilab/semantic-release-pnpm@1.1.6(@types/node@18.19.15))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))':
     dependencies:
@@ -20209,6 +20257,22 @@ snapshots:
       semantic-release: 24.2.1(typescript@5.7.3)
     optionalDependencies:
       '@anolilab/semantic-release-pnpm': 1.1.6(@types/node@18.19.70)
+      '@semantic-release/npm': 12.0.1(semantic-release@24.2.1(typescript@5.7.3))
+    transitivePeerDependencies:
+      - supports-color
+
+  '@anolilab/semantic-release-preset@9.0.3(@anolilab/semantic-release-pnpm@1.1.6(@types/node@18.19.71))(@semantic-release/npm@12.0.1(semantic-release@24.2.1(typescript@5.7.3)))(semantic-release@24.2.1(typescript@5.7.3))':
+    dependencies:
+      '@semantic-release/changelog': 6.0.3(semantic-release@24.2.1(typescript@5.7.3))
+      '@semantic-release/commit-analyzer': 13.0.0(semantic-release@24.2.1(typescript@5.7.3))
+      '@semantic-release/exec': 6.0.3(semantic-release@24.2.1(typescript@5.7.3))
+      '@semantic-release/git': 10.0.1(semantic-release@24.2.1(typescript@5.7.3))
+      '@semantic-release/github': 11.0.1(semantic-release@24.2.1(typescript@5.7.3))
+      '@semantic-release/release-notes-generator': 14.0.1(semantic-release@24.2.1(typescript@5.7.3))
+      conventional-changelog-conventionalcommits: 8.0.0
+      semantic-release: 24.2.1(typescript@5.7.3)
+    optionalDependencies:
+      '@anolilab/semantic-release-pnpm': 1.1.6(@types/node@18.19.71)
       '@semantic-release/npm': 12.0.1(semantic-release@24.2.1(typescript@5.7.3))
     transitivePeerDependencies:
       - supports-color
@@ -20273,7 +20337,7 @@ snapshots:
       package-manager-detector: 0.2.8
       tinyexec: 0.3.2
 
-  '@antfu/ni@0.23.2': {}
+  '@antfu/ni@23.2.0': {}
 
   '@antfu/utils@0.7.10': {}
 
@@ -20547,6 +20611,10 @@ snapshots:
   '@babel/parser@7.26.3':
     dependencies:
       '@babel/types': 7.26.3
+
+  '@babel/parser@7.26.5':
+    dependencies:
+      '@babel/types': 7.26.5
 
   '@babel/plugin-bugfix-firefox-class-in-computed-class-key@7.24.7(@babel/core@7.26.0)':
     dependencies:
@@ -21212,6 +21280,11 @@ snapshots:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
 
+  '@babel/types@7.26.5':
+    dependencies:
+      '@babel/helper-string-parser': 7.25.9
+      '@babel/helper-validator-identifier': 7.25.9
+
   '@bcoe/v8-coverage@0.2.3': {}
 
   '@braintree/sanitize-url@7.0.4': {}
@@ -21228,16 +21301,6 @@ snapshots:
     dependencies:
       '@types/tough-cookie': 4.0.5
       tough-cookie: 4.1.4
-
-  '@cfaester/enzyme-adapter-react-18@0.8.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      enzyme-shallow-equal: 1.0.7
-      function.prototype.name: 1.1.8
-      has: 1.0.4
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      react-is: 18.3.1
-      react-shallow-renderer: 16.15.0(react@19.0.0)
 
   '@chevrotain/cst-dts-gen@11.0.3':
     dependencies:
@@ -21256,14 +21319,14 @@ snapshots:
 
   '@chevrotain/utils@11.0.3': {}
 
-  '@clack/core@0.4.0':
+  '@clack/core@0.4.1':
     dependencies:
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
-  '@clack/prompts@0.9.0':
+  '@clack/prompts@0.9.1':
     dependencies:
-      '@clack/core': 0.4.0
+      '@clack/core': 0.4.1
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
@@ -22320,12 +22383,6 @@ snapshots:
   '@img/sharp-win32-x64@0.33.5':
     optional: true
 
-  '@inquirer/confirm@5.1.2(@types/node@18.18.14)':
-    dependencies:
-      '@inquirer/core': 10.1.3(@types/node@18.18.14)
-      '@inquirer/type': 3.0.2(@types/node@18.18.14)
-      '@types/node': 18.18.14
-
   '@inquirer/confirm@5.1.2(@types/node@18.19.15)':
     dependencies:
       '@inquirer/core': 10.1.3(@types/node@18.19.15)
@@ -22344,25 +22401,17 @@ snapshots:
       '@inquirer/type': 3.0.2(@types/node@18.19.70)
       '@types/node': 18.19.70
 
+  '@inquirer/confirm@5.1.2(@types/node@18.19.71)':
+    dependencies:
+      '@inquirer/core': 10.1.3(@types/node@18.19.71)
+      '@inquirer/type': 3.0.2(@types/node@18.19.71)
+      '@types/node': 18.19.71
+
   '@inquirer/confirm@5.1.2(@types/node@22.10.5)':
     dependencies:
       '@inquirer/core': 10.1.3(@types/node@22.10.5)
       '@inquirer/type': 3.0.2(@types/node@22.10.5)
       '@types/node': 22.10.5
-
-  '@inquirer/core@10.1.3(@types/node@18.18.14)':
-    dependencies:
-      '@inquirer/figures': 1.0.9
-      '@inquirer/type': 3.0.2(@types/node@18.18.14)
-      ansi-escapes: 4.3.2
-      cli-width: 4.1.0
-      mute-stream: 2.0.0
-      signal-exit: 4.1.0
-      strip-ansi: 6.0.1
-      wrap-ansi: 6.2.0
-      yoctocolors-cjs: 2.1.2
-    transitivePeerDependencies:
-      - '@types/node'
 
   '@inquirer/core@10.1.3(@types/node@18.19.15)':
     dependencies:
@@ -22406,6 +22455,20 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
+  '@inquirer/core@10.1.3(@types/node@18.19.71)':
+    dependencies:
+      '@inquirer/figures': 1.0.9
+      '@inquirer/type': 3.0.2(@types/node@18.19.71)
+      ansi-escapes: 4.3.2
+      cli-width: 4.1.0
+      mute-stream: 2.0.0
+      signal-exit: 4.1.0
+      strip-ansi: 6.0.1
+      wrap-ansi: 6.2.0
+      yoctocolors-cjs: 2.1.2
+    transitivePeerDependencies:
+      - '@types/node'
+
   '@inquirer/core@10.1.3(@types/node@22.10.5)':
     dependencies:
       '@inquirer/figures': 1.0.9
@@ -22422,10 +22485,6 @@ snapshots:
 
   '@inquirer/figures@1.0.9': {}
 
-  '@inquirer/type@3.0.2(@types/node@18.18.14)':
-    dependencies:
-      '@types/node': 18.18.14
-
   '@inquirer/type@3.0.2(@types/node@18.19.15)':
     dependencies:
       '@types/node': 18.19.15
@@ -22437,6 +22496,10 @@ snapshots:
   '@inquirer/type@3.0.2(@types/node@18.19.70)':
     dependencies:
       '@types/node': 18.19.70
+
+  '@inquirer/type@3.0.2(@types/node@18.19.71)':
+    dependencies:
+      '@types/node': 18.19.71
 
   '@inquirer/type@3.0.2(@types/node@22.10.5)':
     dependencies:
@@ -23157,31 +23220,31 @@ snapshots:
 
   '@opentelemetry/api@1.9.0': {}
 
-  '@oxc-parser/binding-darwin-arm64@0.44.0':
+  '@oxc-parser/binding-darwin-arm64@0.47.1':
     optional: true
 
-  '@oxc-parser/binding-darwin-x64@0.44.0':
+  '@oxc-parser/binding-darwin-x64@0.47.1':
     optional: true
 
-  '@oxc-parser/binding-linux-arm64-gnu@0.44.0':
+  '@oxc-parser/binding-linux-arm64-gnu@0.47.1':
     optional: true
 
-  '@oxc-parser/binding-linux-arm64-musl@0.44.0':
+  '@oxc-parser/binding-linux-arm64-musl@0.47.1':
     optional: true
 
-  '@oxc-parser/binding-linux-x64-gnu@0.44.0':
+  '@oxc-parser/binding-linux-x64-gnu@0.47.1':
     optional: true
 
-  '@oxc-parser/binding-linux-x64-musl@0.44.0':
+  '@oxc-parser/binding-linux-x64-musl@0.47.1':
     optional: true
 
-  '@oxc-parser/binding-win32-arm64-msvc@0.44.0':
+  '@oxc-parser/binding-win32-arm64-msvc@0.47.1':
     optional: true
 
-  '@oxc-parser/binding-win32-x64-msvc@0.44.0':
+  '@oxc-parser/binding-win32-x64-msvc@0.47.1':
     optional: true
 
-  '@oxc-project/types@0.44.0': {}
+  '@oxc-project/types@0.47.1': {}
 
   '@oxc-resolver/binding-darwin-arm64@3.0.3':
     optional: true
@@ -23955,13 +24018,13 @@ snapshots:
 
   '@resvg/resvg-wasm@2.4.0': {}
 
-  '@rollup/plugin-alias@5.1.1(rollup@4.30.1)':
+  '@rollup/plugin-alias@5.1.1(rollup@4.31.0)':
     optionalDependencies:
-      rollup: 4.30.1
+      rollup: 4.31.0
 
-  '@rollup/plugin-commonjs@28.0.2(rollup@4.30.1)':
+  '@rollup/plugin-commonjs@28.0.2(rollup@4.31.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
       commondir: 1.0.1
       estree-walker: 2.0.2
       fdir: 6.4.2(picomatch@4.0.2)
@@ -23969,118 +24032,175 @@ snapshots:
       magic-string: 0.30.17
       picomatch: 4.0.2
     optionalDependencies:
-      rollup: 4.30.1
+      rollup: 4.31.0
 
-  '@rollup/plugin-dynamic-import-vars@2.1.5(rollup@4.30.1)':
+  '@rollup/plugin-dynamic-import-vars@2.1.5(rollup@4.31.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
       astring: 1.8.6
       estree-walker: 2.0.2
       fast-glob: 3.3.2
       magic-string: 0.30.17
     optionalDependencies:
-      rollup: 4.30.1
+      rollup: 4.31.0
 
-  '@rollup/plugin-inject@5.0.5(rollup@4.30.1)':
+  '@rollup/plugin-inject@5.0.5(rollup@4.31.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
       estree-walker: 2.0.2
       magic-string: 0.30.17
     optionalDependencies:
-      rollup: 4.30.1
+      rollup: 4.31.0
 
-  '@rollup/plugin-json@6.1.0(rollup@4.30.1)':
+  '@rollup/plugin-json@6.1.0(rollup@4.31.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
     optionalDependencies:
-      rollup: 4.30.1
+      rollup: 4.31.0
 
-  '@rollup/plugin-node-resolve@16.0.0(rollup@4.30.1)':
+  '@rollup/plugin-node-resolve@16.0.0(rollup@4.31.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
       '@types/resolve': 1.20.2
       deepmerge: 4.3.1
       is-module: 1.0.0
       resolve: 1.22.8
     optionalDependencies:
-      rollup: 4.30.1
+      rollup: 4.31.0
 
-  '@rollup/plugin-replace@6.0.2(rollup@4.30.1)':
+  '@rollup/plugin-replace@6.0.2(rollup@4.31.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
       magic-string: 0.30.17
     optionalDependencies:
-      rollup: 4.30.1
+      rollup: 4.31.0
 
-  '@rollup/plugin-wasm@6.2.2(rollup@4.30.1)':
+  '@rollup/plugin-wasm@6.2.2(rollup@4.31.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
     optionalDependencies:
-      rollup: 4.30.1
+      rollup: 4.31.0
 
-  '@rollup/pluginutils@5.1.4(rollup@4.30.1)':
+  '@rollup/pluginutils@5.1.4(rollup@4.31.0)':
     dependencies:
       '@types/estree': 1.0.6
       estree-walker: 2.0.2
       picomatch: 4.0.2
     optionalDependencies:
-      rollup: 4.30.1
+      rollup: 4.31.0
 
   '@rollup/rollup-android-arm-eabi@4.30.1':
+    optional: true
+
+  '@rollup/rollup-android-arm-eabi@4.31.0':
     optional: true
 
   '@rollup/rollup-android-arm64@4.30.1':
     optional: true
 
+  '@rollup/rollup-android-arm64@4.31.0':
+    optional: true
+
   '@rollup/rollup-darwin-arm64@4.30.1':
+    optional: true
+
+  '@rollup/rollup-darwin-arm64@4.31.0':
     optional: true
 
   '@rollup/rollup-darwin-x64@4.30.1':
     optional: true
 
+  '@rollup/rollup-darwin-x64@4.31.0':
+    optional: true
+
   '@rollup/rollup-freebsd-arm64@4.30.1':
+    optional: true
+
+  '@rollup/rollup-freebsd-arm64@4.31.0':
     optional: true
 
   '@rollup/rollup-freebsd-x64@4.30.1':
     optional: true
 
+  '@rollup/rollup-freebsd-x64@4.31.0':
+    optional: true
+
   '@rollup/rollup-linux-arm-gnueabihf@4.30.1':
+    optional: true
+
+  '@rollup/rollup-linux-arm-gnueabihf@4.31.0':
     optional: true
 
   '@rollup/rollup-linux-arm-musleabihf@4.30.1':
     optional: true
 
+  '@rollup/rollup-linux-arm-musleabihf@4.31.0':
+    optional: true
+
   '@rollup/rollup-linux-arm64-gnu@4.30.1':
+    optional: true
+
+  '@rollup/rollup-linux-arm64-gnu@4.31.0':
     optional: true
 
   '@rollup/rollup-linux-arm64-musl@4.30.1':
     optional: true
 
+  '@rollup/rollup-linux-arm64-musl@4.31.0':
+    optional: true
+
   '@rollup/rollup-linux-loongarch64-gnu@4.30.1':
+    optional: true
+
+  '@rollup/rollup-linux-loongarch64-gnu@4.31.0':
     optional: true
 
   '@rollup/rollup-linux-powerpc64le-gnu@4.30.1':
     optional: true
 
+  '@rollup/rollup-linux-powerpc64le-gnu@4.31.0':
+    optional: true
+
   '@rollup/rollup-linux-riscv64-gnu@4.30.1':
+    optional: true
+
+  '@rollup/rollup-linux-riscv64-gnu@4.31.0':
     optional: true
 
   '@rollup/rollup-linux-s390x-gnu@4.30.1':
     optional: true
 
+  '@rollup/rollup-linux-s390x-gnu@4.31.0':
+    optional: true
+
   '@rollup/rollup-linux-x64-gnu@4.30.1':
+    optional: true
+
+  '@rollup/rollup-linux-x64-gnu@4.31.0':
     optional: true
 
   '@rollup/rollup-linux-x64-musl@4.30.1':
     optional: true
 
+  '@rollup/rollup-linux-x64-musl@4.31.0':
+    optional: true
+
   '@rollup/rollup-win32-arm64-msvc@4.30.1':
+    optional: true
+
+  '@rollup/rollup-win32-arm64-msvc@4.31.0':
     optional: true
 
   '@rollup/rollup-win32-ia32-msvc@4.30.1':
     optional: true
 
+  '@rollup/rollup-win32-ia32-msvc@4.31.0':
+    optional: true
+
   '@rollup/rollup-win32-x64-msvc@4.30.1':
+    optional: true
+
+  '@rollup/rollup-win32-x64-msvc@4.31.0':
     optional: true
 
   '@rtsao/scc@1.1.0': {}
@@ -24203,7 +24323,7 @@ snapshots:
     dependencies:
       '@semantic-release/error': 3.0.0
       aggregate-error: 3.1.0
-      fs-extra: 11.2.0
+      fs-extra: 11.3.0
       lodash: 4.17.21
       semantic-release: 24.2.1(typescript@5.7.3)
 
@@ -24278,7 +24398,7 @@ snapshots:
       '@semantic-release/error': 4.0.0
       aggregate-error: 5.0.0
       execa: 9.5.2
-      fs-extra: 11.2.0
+      fs-extra: 11.3.0
       lodash-es: 4.17.21
       nerf-dart: 1.0.0
       normalize-url: 8.0.1
@@ -24636,7 +24756,7 @@ snapshots:
       '@storybook/node-logger': 7.6.20
       '@storybook/types': 7.6.20
       '@types/find-cache-dir': 3.2.1
-      '@types/node': 18.19.70
+      '@types/node': 18.19.71
       '@types/node-fetch': 2.6.11
       '@types/pretty-hrtime': 1.0.3
       chalk: 4.1.2
@@ -24645,7 +24765,7 @@ snapshots:
       file-system-cache: 2.3.0
       find-cache-dir: 3.3.2
       find-up: 5.0.0
-      fs-extra: 11.2.0
+      fs-extra: 11.3.0
       glob: 10.4.5
       handlebars: 4.7.8
       lazy-universal-dotenv: 4.0.0
@@ -24786,10 +24906,10 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       storybook: 8.4.7(prettier@3.4.2)
 
-  '@storybook/react-vite@8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.30.1)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))':
+  '@storybook/react-vite@8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.31.0)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))':
     dependencies:
       '@joshwooding/vite-plugin-react-docgen-typescript': 0.4.2(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
       '@storybook/builder-vite': 8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0))
       '@storybook/react': 8.4.7(@storybook/test@8.4.7(storybook@8.4.7(prettier@3.4.2)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.4.7(prettier@3.4.2))(typescript@5.7.3)
       find-up: 5.0.0
@@ -26258,10 +26378,6 @@ snapshots:
       '@types/node': 22.10.5
       form-data: 4.0.1
 
-  '@types/node@18.18.14':
-    dependencies:
-      undici-types: 5.26.5
-
   '@types/node@18.19.15':
     dependencies:
       undici-types: 5.26.5
@@ -26271,6 +26387,10 @@ snapshots:
       undici-types: 5.26.5
 
   '@types/node@18.19.70':
+    dependencies:
+      undici-types: 5.26.5
+
+  '@types/node@18.19.71':
     dependencies:
       undici-types: 5.26.5
 
@@ -26812,16 +26932,14 @@ snapshots:
       satori: 0.12.0
       yoga-wasm-web: 0.3.3
 
-  '@visulima/boxen@1.0.23': {}
-
   '@visulima/boxen@1.0.27': {}
 
-  '@visulima/cerebro@1.1.28(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)':
+  '@visulima/cerebro@1.1.33(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)':
     dependencies:
-      '@visulima/boxen': 1.0.23
-      '@visulima/colorize': 1.4.14
-      '@visulima/find-cache-dir': 1.0.18
-      '@visulima/pail': 2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/boxen': 1.0.27
+      '@visulima/colorize': 1.4.18
+      '@visulima/find-cache-dir': 1.0.22
+      '@visulima/pail': 2.1.18(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
       cli-table3: 0.6.5
       command-line-args: 6.0.1
       fastest-levenshtein: 1.0.16
@@ -26829,10 +26947,6 @@ snapshots:
       - '@75lb/nature'
       - '@visulima/redact'
       - rotating-file-stream
-
-  '@visulima/colorize@1.4.14':
-    dependencies:
-      '@visulima/is-ansi-color-supported': 2.2.9
 
   '@visulima/colorize@1.4.18':
     dependencies:
@@ -26856,19 +26970,10 @@ snapshots:
 
   '@visulima/error@4.4.13': {}
 
-  '@visulima/error@4.4.9': {}
-
-  '@visulima/find-cache-dir@1.0.18':
-    dependencies:
-      '@visulima/fs': 2.3.3
-      '@visulima/path': 1.2.0
-
   '@visulima/find-cache-dir@1.0.22':
     dependencies:
       '@visulima/fs': 2.3.7
       '@visulima/path': 1.3.3
-
-  '@visulima/fmt@1.1.12': {}
 
   '@visulima/fmt@1.1.13': {}
 
@@ -26882,15 +26987,11 @@ snapshots:
       '@visulima/path': 1.3.3
       yaml: 2.7.0
 
-  '@visulima/humanizer@1.0.16': {}
-
-  '@visulima/inspector@1.0.14': {}
+  '@visulima/humanizer@1.1.0': {}
 
   '@visulima/inspector@1.0.18': {}
 
   '@visulima/is-ansi-color-supported@2.2.10': {}
-
-  '@visulima/is-ansi-color-supported@2.2.9': {}
 
   '@visulima/jsdoc-open-api@2.0.71(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
     dependencies:
@@ -26973,16 +27074,6 @@ snapshots:
     transitivePeerDependencies:
       - csstype
 
-  '@visulima/package@3.4.0(@types/node@18.18.14)':
-    dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@inquirer/confirm': 5.1.2(@types/node@18.18.14)
-      '@visulima/fs': 2.3.3
-      '@visulima/path': 1.2.0
-      normalize-package-data: 7.0.0
-    transitivePeerDependencies:
-      - '@types/node'
-
   '@visulima/package@3.4.0(@types/node@18.19.15)':
     dependencies:
       '@antfu/install-pkg': 0.5.0
@@ -27013,6 +27104,16 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
+  '@visulima/package@3.4.0(@types/node@18.19.71)':
+    dependencies:
+      '@antfu/install-pkg': 0.5.0
+      '@inquirer/confirm': 5.1.2(@types/node@18.19.71)
+      '@visulima/fs': 2.3.3
+      '@visulima/path': 1.2.0
+      normalize-package-data: 7.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+
   '@visulima/package@3.4.0(@types/node@22.10.5)':
     dependencies:
       '@antfu/install-pkg': 0.5.0
@@ -27023,34 +27124,84 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.18.14)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
+  '@visulima/package@3.4.5(@types/node@18.19.15)':
     dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@babel/parser': 7.26.3
-      '@clack/prompts': 0.9.0
+      '@antfu/install-pkg': 1.0.0
+      '@inquirer/confirm': 5.1.2(@types/node@18.19.15)
+      '@visulima/fs': 2.3.7
+      '@visulima/path': 1.3.3
+      normalize-package-data: 7.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+
+  '@visulima/package@3.4.5(@types/node@18.19.39)':
+    dependencies:
+      '@antfu/install-pkg': 1.0.0
+      '@inquirer/confirm': 5.1.2(@types/node@18.19.39)
+      '@visulima/fs': 2.3.7
+      '@visulima/path': 1.3.3
+      normalize-package-data: 7.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+
+  '@visulima/package@3.4.5(@types/node@18.19.70)':
+    dependencies:
+      '@antfu/install-pkg': 1.0.0
+      '@inquirer/confirm': 5.1.2(@types/node@18.19.70)
+      '@visulima/fs': 2.3.7
+      '@visulima/path': 1.3.3
+      normalize-package-data: 7.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+
+  '@visulima/package@3.4.5(@types/node@18.19.71)':
+    dependencies:
+      '@antfu/install-pkg': 1.0.0
+      '@inquirer/confirm': 5.1.2(@types/node@18.19.71)
+      '@visulima/fs': 2.3.7
+      '@visulima/path': 1.3.3
+      normalize-package-data: 7.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+
+  '@visulima/package@3.4.5(@types/node@22.10.5)':
+    dependencies:
+      '@antfu/install-pkg': 1.0.0
+      '@inquirer/confirm': 5.1.2(@types/node@22.10.5)
+      '@visulima/fs': 2.3.7
+      '@visulima/path': 1.3.3
+      normalize-package-data: 7.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+
+  '@visulima/packem@1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
+    dependencies:
+      '@antfu/install-pkg': 1.0.0
+      '@babel/parser': 7.26.5
+      '@clack/prompts': 0.9.1
       '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
       '@csstools/css-tokenizer': 3.0.3
       '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.4.49)
-      '@rollup/plugin-alias': 5.1.1(rollup@4.30.1)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.30.1)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.30.1)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.30.1)
-      '@rollup/plugin-json': 6.1.0(rollup@4.30.1)
-      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.30.1)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.30.1)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.30.1)
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
-      '@visulima/cerebro': 1.1.28(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/colorize': 1.4.14
-      '@visulima/find-cache-dir': 1.0.18
-      '@visulima/fs': 2.3.3
-      '@visulima/humanizer': 1.0.16
-      '@visulima/package': 3.4.0(@types/node@18.18.14)
-      '@visulima/pail': 2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/path': 1.2.0
-      '@visulima/source-map': 1.0.12
-      '@visulima/tsconfig': 1.1.4
-      browserslist: 4.24.3
+      '@rollup/plugin-alias': 5.1.1(rollup@4.31.0)
+      '@rollup/plugin-commonjs': 28.0.2(rollup@4.31.0)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.31.0)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.31.0)
+      '@rollup/plugin-json': 6.1.0(rollup@4.31.0)
+      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.31.0)
+      '@rollup/plugin-replace': 6.0.2(rollup@4.31.0)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.31.0)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
+      '@visulima/cerebro': 1.1.33(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/colorize': 1.4.18
+      '@visulima/find-cache-dir': 1.0.22
+      '@visulima/fs': 2.3.7
+      '@visulima/humanizer': 1.1.0
+      '@visulima/package': 3.4.5(@types/node@18.19.15)
+      '@visulima/pail': 2.1.18(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/path': 1.3.3
+      '@visulima/source-map': 1.0.16
+      '@visulima/tsconfig': 1.1.8
+      browserslist: 4.24.4
       defu: 6.1.4
       es-module-lexer: 1.6.0
       fastest-levenshtein: 1.0.16
@@ -27058,14 +27209,15 @@ snapshots:
       hookable: 5.5.3
       jiti: 2.4.2
       magic-string: 0.30.17
-      mlly: 1.7.3
-      oxc-parser: 0.44.0
+      mlly: 1.7.4
+      oxc-parser: 0.47.1
       oxc-resolver: 3.0.3
-      rollup: 4.30.1
-      rollup-plugin-dts: 6.1.1(rollup@4.30.1)(typescript@5.7.3)
-      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.30.1)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.30.1)
-      rollup-plugin-visualizer: 5.14.0(rollup@4.30.1)
+      picomatch: 4.0.2
+      rollup: 4.31.0
+      rollup-plugin-dts: 6.1.1(rollup@4.31.0)(typescript@5.7.3)
+      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.31.0)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.31.0)
+      rollup-plugin-visualizer: 5.14.0(rollup@4.31.0)
       semver: 7.6.3
       source-map-js: 1.2.1
       tinyexec: 0.3.2
@@ -27091,38 +27243,37 @@ snapshots:
       - '@75lb/nature'
       - '@types/node'
       - '@visulima/redact'
-      - picomatch
       - rolldown
       - rotating-file-stream
 
-  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.15)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
+  '@visulima/packem@1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.39)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
     dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@babel/parser': 7.26.3
-      '@clack/prompts': 0.9.0
+      '@antfu/install-pkg': 1.0.0
+      '@babel/parser': 7.26.5
+      '@clack/prompts': 0.9.1
       '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
       '@csstools/css-tokenizer': 3.0.3
       '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.4.49)
-      '@rollup/plugin-alias': 5.1.1(rollup@4.30.1)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.30.1)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.30.1)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.30.1)
-      '@rollup/plugin-json': 6.1.0(rollup@4.30.1)
-      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.30.1)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.30.1)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.30.1)
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
-      '@visulima/cerebro': 1.1.28(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/colorize': 1.4.14
-      '@visulima/find-cache-dir': 1.0.18
-      '@visulima/fs': 2.3.3
-      '@visulima/humanizer': 1.0.16
-      '@visulima/package': 3.4.0(@types/node@18.19.15)
-      '@visulima/pail': 2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/path': 1.2.0
-      '@visulima/source-map': 1.0.12
-      '@visulima/tsconfig': 1.1.4
-      browserslist: 4.24.3
+      '@rollup/plugin-alias': 5.1.1(rollup@4.31.0)
+      '@rollup/plugin-commonjs': 28.0.2(rollup@4.31.0)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.31.0)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.31.0)
+      '@rollup/plugin-json': 6.1.0(rollup@4.31.0)
+      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.31.0)
+      '@rollup/plugin-replace': 6.0.2(rollup@4.31.0)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.31.0)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
+      '@visulima/cerebro': 1.1.33(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/colorize': 1.4.18
+      '@visulima/find-cache-dir': 1.0.22
+      '@visulima/fs': 2.3.7
+      '@visulima/humanizer': 1.1.0
+      '@visulima/package': 3.4.5(@types/node@18.19.39)
+      '@visulima/pail': 2.1.18(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/path': 1.3.3
+      '@visulima/source-map': 1.0.16
+      '@visulima/tsconfig': 1.1.8
+      browserslist: 4.24.4
       defu: 6.1.4
       es-module-lexer: 1.6.0
       fastest-levenshtein: 1.0.16
@@ -27130,14 +27281,15 @@ snapshots:
       hookable: 5.5.3
       jiti: 2.4.2
       magic-string: 0.30.17
-      mlly: 1.7.3
-      oxc-parser: 0.44.0
+      mlly: 1.7.4
+      oxc-parser: 0.47.1
       oxc-resolver: 3.0.3
-      rollup: 4.30.1
-      rollup-plugin-dts: 6.1.1(rollup@4.30.1)(typescript@5.7.3)
-      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.30.1)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.30.1)
-      rollup-plugin-visualizer: 5.14.0(rollup@4.30.1)
+      picomatch: 4.0.2
+      rollup: 4.31.0
+      rollup-plugin-dts: 6.1.1(rollup@4.31.0)(typescript@5.7.3)
+      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.31.0)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.31.0)
+      rollup-plugin-visualizer: 5.14.0(rollup@4.31.0)
       semver: 7.6.3
       source-map-js: 1.2.1
       tinyexec: 0.3.2
@@ -27163,38 +27315,37 @@ snapshots:
       - '@75lb/nature'
       - '@types/node'
       - '@visulima/redact'
-      - picomatch
       - rolldown
       - rotating-file-stream
 
-  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.39)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
+  '@visulima/packem@1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
     dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@babel/parser': 7.26.3
-      '@clack/prompts': 0.9.0
+      '@antfu/install-pkg': 1.0.0
+      '@babel/parser': 7.26.5
+      '@clack/prompts': 0.9.1
       '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
       '@csstools/css-tokenizer': 3.0.3
       '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.4.49)
-      '@rollup/plugin-alias': 5.1.1(rollup@4.30.1)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.30.1)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.30.1)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.30.1)
-      '@rollup/plugin-json': 6.1.0(rollup@4.30.1)
-      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.30.1)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.30.1)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.30.1)
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
-      '@visulima/cerebro': 1.1.28(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/colorize': 1.4.14
-      '@visulima/find-cache-dir': 1.0.18
-      '@visulima/fs': 2.3.3
-      '@visulima/humanizer': 1.0.16
-      '@visulima/package': 3.4.0(@types/node@18.19.39)
-      '@visulima/pail': 2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/path': 1.2.0
-      '@visulima/source-map': 1.0.12
-      '@visulima/tsconfig': 1.1.4
-      browserslist: 4.24.3
+      '@rollup/plugin-alias': 5.1.1(rollup@4.31.0)
+      '@rollup/plugin-commonjs': 28.0.2(rollup@4.31.0)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.31.0)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.31.0)
+      '@rollup/plugin-json': 6.1.0(rollup@4.31.0)
+      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.31.0)
+      '@rollup/plugin-replace': 6.0.2(rollup@4.31.0)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.31.0)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
+      '@visulima/cerebro': 1.1.33(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/colorize': 1.4.18
+      '@visulima/find-cache-dir': 1.0.22
+      '@visulima/fs': 2.3.7
+      '@visulima/humanizer': 1.1.0
+      '@visulima/package': 3.4.5(@types/node@18.19.70)
+      '@visulima/pail': 2.1.18(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/path': 1.3.3
+      '@visulima/source-map': 1.0.16
+      '@visulima/tsconfig': 1.1.8
+      browserslist: 4.24.4
       defu: 6.1.4
       es-module-lexer: 1.6.0
       fastest-levenshtein: 1.0.16
@@ -27202,14 +27353,15 @@ snapshots:
       hookable: 5.5.3
       jiti: 2.4.2
       magic-string: 0.30.17
-      mlly: 1.7.3
-      oxc-parser: 0.44.0
+      mlly: 1.7.4
+      oxc-parser: 0.47.1
       oxc-resolver: 3.0.3
-      rollup: 4.30.1
-      rollup-plugin-dts: 6.1.1(rollup@4.30.1)(typescript@5.7.3)
-      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.30.1)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.30.1)
-      rollup-plugin-visualizer: 5.14.0(rollup@4.30.1)
+      picomatch: 4.0.2
+      rollup: 4.31.0
+      rollup-plugin-dts: 6.1.1(rollup@4.31.0)(typescript@5.7.3)
+      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.31.0)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.31.0)
+      rollup-plugin-visualizer: 5.14.0(rollup@4.31.0)
       semver: 7.6.3
       source-map-js: 1.2.1
       tinyexec: 0.3.2
@@ -27235,38 +27387,37 @@ snapshots:
       - '@75lb/nature'
       - '@types/node'
       - '@visulima/redact'
-      - picomatch
       - rolldown
       - rotating-file-stream
 
-  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.70)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
+  '@visulima/packem@1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
     dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@babel/parser': 7.26.3
-      '@clack/prompts': 0.9.0
+      '@antfu/install-pkg': 1.0.0
+      '@babel/parser': 7.26.5
+      '@clack/prompts': 0.9.1
       '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
       '@csstools/css-tokenizer': 3.0.3
       '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.4.49)
-      '@rollup/plugin-alias': 5.1.1(rollup@4.30.1)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.30.1)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.30.1)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.30.1)
-      '@rollup/plugin-json': 6.1.0(rollup@4.30.1)
-      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.30.1)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.30.1)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.30.1)
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
-      '@visulima/cerebro': 1.1.28(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/colorize': 1.4.14
-      '@visulima/find-cache-dir': 1.0.18
-      '@visulima/fs': 2.3.3
-      '@visulima/humanizer': 1.0.16
-      '@visulima/package': 3.4.0(@types/node@18.19.70)
-      '@visulima/pail': 2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/path': 1.2.0
-      '@visulima/source-map': 1.0.12
-      '@visulima/tsconfig': 1.1.4
-      browserslist: 4.24.3
+      '@rollup/plugin-alias': 5.1.1(rollup@4.31.0)
+      '@rollup/plugin-commonjs': 28.0.2(rollup@4.31.0)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.31.0)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.31.0)
+      '@rollup/plugin-json': 6.1.0(rollup@4.31.0)
+      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.31.0)
+      '@rollup/plugin-replace': 6.0.2(rollup@4.31.0)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.31.0)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
+      '@visulima/cerebro': 1.1.33(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/colorize': 1.4.18
+      '@visulima/find-cache-dir': 1.0.22
+      '@visulima/fs': 2.3.7
+      '@visulima/humanizer': 1.1.0
+      '@visulima/package': 3.4.5(@types/node@18.19.71)
+      '@visulima/pail': 2.1.18(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/path': 1.3.3
+      '@visulima/source-map': 1.0.16
+      '@visulima/tsconfig': 1.1.8
+      browserslist: 4.24.4
       defu: 6.1.4
       es-module-lexer: 1.6.0
       fastest-levenshtein: 1.0.16
@@ -27274,14 +27425,15 @@ snapshots:
       hookable: 5.5.3
       jiti: 2.4.2
       magic-string: 0.30.17
-      mlly: 1.7.3
-      oxc-parser: 0.44.0
+      mlly: 1.7.4
+      oxc-parser: 0.47.1
       oxc-resolver: 3.0.3
-      rollup: 4.30.1
-      rollup-plugin-dts: 6.1.1(rollup@4.30.1)(typescript@5.7.3)
-      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.30.1)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.30.1)
-      rollup-plugin-visualizer: 5.14.0(rollup@4.30.1)
+      picomatch: 4.0.2
+      rollup: 4.31.0
+      rollup-plugin-dts: 6.1.1(rollup@4.31.0)(typescript@5.7.3)
+      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.31.0)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.31.0)
+      rollup-plugin-visualizer: 5.14.0(rollup@4.31.0)
       semver: 7.6.3
       source-map-js: 1.2.1
       tinyexec: 0.3.2
@@ -27307,38 +27459,37 @@ snapshots:
       - '@75lb/nature'
       - '@types/node'
       - '@visulima/redact'
-      - picomatch
       - rolldown
       - rotating-file-stream
 
-  '@visulima/packem@1.10.7(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.5)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
+  '@visulima/packem@1.16.0(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.10.5)(@visulima/redact@1.0.11)(esbuild@0.24.2)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.1(typedoc@0.27.6(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.6(typescript@5.7.3)))(typedoc@0.27.6(typescript@5.7.3))(typescript@5.7.3)':
     dependencies:
-      '@antfu/install-pkg': 0.5.0
-      '@babel/parser': 7.26.3
-      '@clack/prompts': 0.9.0
+      '@antfu/install-pkg': 1.0.0
+      '@babel/parser': 7.26.5
+      '@clack/prompts': 0.9.1
       '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
       '@csstools/css-tokenizer': 3.0.3
       '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.4.49)
-      '@rollup/plugin-alias': 5.1.1(rollup@4.30.1)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.30.1)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.30.1)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.30.1)
-      '@rollup/plugin-json': 6.1.0(rollup@4.30.1)
-      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.30.1)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.30.1)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.30.1)
-      '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
-      '@visulima/cerebro': 1.1.28(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/colorize': 1.4.14
-      '@visulima/find-cache-dir': 1.0.18
-      '@visulima/fs': 2.3.3
-      '@visulima/humanizer': 1.0.16
-      '@visulima/package': 3.4.0(@types/node@22.10.5)
-      '@visulima/pail': 2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
-      '@visulima/path': 1.2.0
-      '@visulima/source-map': 1.0.12
-      '@visulima/tsconfig': 1.1.4
-      browserslist: 4.24.3
+      '@rollup/plugin-alias': 5.1.1(rollup@4.31.0)
+      '@rollup/plugin-commonjs': 28.0.2(rollup@4.31.0)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.31.0)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.31.0)
+      '@rollup/plugin-json': 6.1.0(rollup@4.31.0)
+      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.31.0)
+      '@rollup/plugin-replace': 6.0.2(rollup@4.31.0)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.31.0)
+      '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
+      '@visulima/cerebro': 1.1.33(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/colorize': 1.4.18
+      '@visulima/find-cache-dir': 1.0.22
+      '@visulima/fs': 2.3.7
+      '@visulima/humanizer': 1.1.0
+      '@visulima/package': 3.4.5(@types/node@22.10.5)
+      '@visulima/pail': 2.1.18(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)
+      '@visulima/path': 1.3.3
+      '@visulima/source-map': 1.0.16
+      '@visulima/tsconfig': 1.1.8
+      browserslist: 4.24.4
       defu: 6.1.4
       es-module-lexer: 1.6.0
       fastest-levenshtein: 1.0.16
@@ -27346,14 +27497,15 @@ snapshots:
       hookable: 5.5.3
       jiti: 2.4.2
       magic-string: 0.30.17
-      mlly: 1.7.3
-      oxc-parser: 0.44.0
+      mlly: 1.7.4
+      oxc-parser: 0.47.1
       oxc-resolver: 3.0.3
-      rollup: 4.30.1
-      rollup-plugin-dts: 6.1.1(rollup@4.30.1)(typescript@5.7.3)
-      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.30.1)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.30.1)
-      rollup-plugin-visualizer: 5.14.0(rollup@4.30.1)
+      picomatch: 4.0.2
+      rollup: 4.31.0
+      rollup-plugin-dts: 6.1.1(rollup@4.31.0)(typescript@5.7.3)
+      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.31.0)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.31.0)
+      rollup-plugin-visualizer: 5.14.0(rollup@4.31.0)
       semver: 7.6.3
       source-map-js: 1.2.1
       tinyexec: 0.3.2
@@ -27379,24 +27531,12 @@ snapshots:
       - '@75lb/nature'
       - '@types/node'
       - '@visulima/redact'
-      - picomatch
       - rolldown
       - rotating-file-stream
 
   '@visulima/pagination@3.0.25': {}
 
-  '@visulima/pail@2.1.13(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)':
-    dependencies:
-      '@visulima/colorize': 1.4.14
-      '@visulima/error': 4.4.9
-      '@visulima/fmt': 1.1.12
-      '@visulima/inspector': 1.0.14
-      safe-stable-stringify: 2.5.0
-    optionalDependencies:
-      '@visulima/redact': 1.0.11
-      rotating-file-stream: 3.2.5
-
-  '@visulima/pail@2.1.18(rotating-file-stream@3.2.5)':
+  '@visulima/pail@2.1.18(@visulima/redact@1.0.11)(rotating-file-stream@3.2.5)':
     dependencies:
       '@visulima/colorize': 1.4.18
       '@visulima/error': 4.4.13
@@ -27404,6 +27544,7 @@ snapshots:
       '@visulima/inspector': 1.0.18
       safe-stable-stringify: 2.5.0
     optionalDependencies:
+      '@visulima/redact': 1.0.11
       rotating-file-stream: 3.2.5
 
   '@visulima/path@1.2.0': {}
@@ -27420,15 +27561,15 @@ snapshots:
     dependencies:
       compromise: 14.14.3
 
-  '@visulima/source-map@1.0.12':
+  '@visulima/source-map@1.0.16':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
-      '@visulima/path': 1.2.0
+      '@visulima/path': 1.3.3
 
-  '@visulima/tsconfig@1.1.4':
+  '@visulima/tsconfig@1.1.8':
     dependencies:
-      '@visulima/fs': 2.3.3
-      '@visulima/path': 1.2.0
+      '@visulima/fs': 2.3.7
+      '@visulima/path': 1.3.3
       jsonc-parser: 3.3.1
       resolve-pkg-maps: 1.0.0
 
@@ -27442,29 +27583,6 @@ snapshots:
       vite: 6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.2)(yaml@2.7.0)
     transitivePeerDependencies:
       - supports-color
-
-  '@vitest/browser@2.1.8(@types/node@18.18.14)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)':
-    dependencies:
-      '@testing-library/dom': 10.4.0
-      '@testing-library/user-event': 14.5.2(@testing-library/dom@10.4.0)
-      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@18.18.14)(typescript@5.7.3))(vite@5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1))
-      '@vitest/utils': 2.1.8
-      magic-string: 0.30.17
-      msw: 2.7.0(@types/node@18.18.14)(typescript@5.7.3)
-      sirv: 3.0.0
-      tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@18.18.14)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.18.14)(typescript@5.7.3))(terser@5.31.1)
-      ws: 8.18.0
-    optionalDependencies:
-      playwright: 1.49.1
-      webdriverio: 9.5.4
-    transitivePeerDependencies:
-      - '@types/node'
-      - bufferutil
-      - typescript
-      - utf-8-validate
-      - vite
-    optional: true
 
   '@vitest/browser@2.1.8(@types/node@18.19.15)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)':
     dependencies:
@@ -27534,6 +27652,29 @@ snapshots:
       - vite
     optional: true
 
+  '@vitest/browser@2.1.8(@types/node@18.19.71)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)':
+    dependencies:
+      '@testing-library/dom': 10.4.0
+      '@testing-library/user-event': 14.5.2(@testing-library/dom@10.4.0)
+      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@18.19.71)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1))
+      '@vitest/utils': 2.1.8
+      magic-string: 0.30.17
+      msw: 2.7.0(@types/node@18.19.71)(typescript@5.7.3)
+      sirv: 3.0.0
+      tinyrainbow: 1.2.0
+      vitest: 2.1.8(@types/node@18.19.71)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.71)(typescript@5.7.3))(terser@5.31.1)
+      ws: 8.18.0
+    optionalDependencies:
+      playwright: 1.49.1
+      webdriverio: 9.5.4
+    transitivePeerDependencies:
+      - '@types/node'
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - vite
+    optional: true
+
   '@vitest/browser@2.1.8(@types/node@22.10.5)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)':
     dependencies:
       '@testing-library/dom': 10.4.0
@@ -27591,15 +27732,6 @@ snapshots:
       chai: 5.1.2
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.8(msw@2.7.0(@types/node@18.18.14)(typescript@5.7.3))(vite@5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1))':
-    dependencies:
-      '@vitest/spy': 2.1.8
-      estree-walker: 3.0.3
-      magic-string: 0.30.17
-    optionalDependencies:
-      msw: 2.7.0(@types/node@18.18.14)(typescript@5.7.3)
-      vite: 5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1)
-
   '@vitest/mocker@2.1.8(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@vitest/spy': 2.1.8
@@ -27626,6 +27758,15 @@ snapshots:
     optionalDependencies:
       msw: 2.7.0(@types/node@18.19.70)(typescript@5.7.3)
       vite: 5.4.11(@types/node@18.19.70)(lightningcss@1.25.1)(terser@5.31.1)
+
+  '@vitest/mocker@2.1.8(msw@2.7.0(@types/node@18.19.71)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1))':
+    dependencies:
+      '@vitest/spy': 2.1.8
+      estree-walker: 3.0.3
+      magic-string: 0.30.17
+    optionalDependencies:
+      msw: 2.7.0(@types/node@18.19.71)(typescript@5.7.3)
+      vite: 5.4.11(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1)
 
   '@vitest/mocker@2.1.8(msw@2.7.0(@types/node@22.10.5)(typescript@5.7.3))(vite@5.4.11(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
@@ -28000,7 +28141,7 @@ snapshots:
 
   ansi-styles@6.2.1: {}
 
-  ansis@3.8.1: {}
+  ansis@3.9.0: {}
 
   any-promise@1.3.0: {}
 
@@ -28452,6 +28593,13 @@ snapshots:
       electron-to-chromium: 1.5.80
       node-releases: 2.0.19
       update-browserslist-db: 1.1.1(browserslist@4.24.3)
+
+  browserslist@4.24.4:
+    dependencies:
+      caniuse-lite: 1.0.30001692
+      electron-to-chromium: 1.5.80
+      node-releases: 2.0.19
+      update-browserslist-db: 1.1.1(browserslist@4.24.4)
 
   bser@2.1.1:
     dependencies:
@@ -29051,7 +29199,7 @@ snapshots:
 
   confusing-browser-globals@1.0.11: {}
 
-  consola@3.3.3: {}
+  consola@3.4.0: {}
 
   constant-case@3.0.4:
     dependencies:
@@ -29943,11 +30091,6 @@ snapshots:
 
   environment@1.1.0: {}
 
-  enzyme-shallow-equal@1.0.7:
-    dependencies:
-      hasown: 2.0.2
-      object-is: 1.1.6
-
   error-ex@1.3.2:
     dependencies:
       is-arrayish: 0.2.1
@@ -30348,7 +30491,7 @@ snapshots:
       enhanced-resolve: 5.17.1
       eslint: 9.18.0(jiti@2.4.2)
       eslint-module-utils: 2.12.0(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2))
-      eslint-plugin-import: eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2))
+      eslint-plugin-import: eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2))
       fast-glob: 3.3.2
       get-tsconfig: 4.7.5
       is-core-module: 2.15.1
@@ -30633,23 +30776,6 @@ snapshots:
       eslint: 9.18.0(jiti@2.4.2)
       eslint-import-resolver-node: 0.3.9
       eslint-module-utils: 2.12.0(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2)))(eslint@9.18.0(jiti@2.4.2))
-      get-tsconfig: 4.7.5
-      is-glob: 4.0.3
-      minimatch: 3.1.2
-      semver: 7.6.3
-    transitivePeerDependencies:
-      - '@typescript-eslint/parser'
-      - eslint-import-resolver-typescript
-      - eslint-import-resolver-webpack
-      - supports-color
-
-  eslint-plugin-i@2.29.1(eslint@9.18.0(jiti@2.4.2)):
-    dependencies:
-      debug: 4.4.0
-      doctrine: 3.0.0
-      eslint: 9.18.0(jiti@2.4.2)
-      eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@6.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@9.18.0(jiti@2.4.2))
       get-tsconfig: 4.7.5
       is-glob: 4.0.3
       minimatch: 3.1.2
@@ -31931,10 +32057,10 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
-  framer-motion@11.17.0(@emotion/is-prop-valid@1.2.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  framer-motion@11.18.2(@emotion/is-prop-valid@1.2.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      motion-dom: 11.16.4
-      motion-utils: 11.16.0
+      motion-dom: 11.18.1
+      motion-utils: 11.18.1
       tslib: 2.8.1
     optionalDependencies:
       '@emotion/is-prop-valid': 1.2.2
@@ -31972,7 +32098,7 @@ snapshots:
       jsonfile: 6.1.0
       universalify: 2.0.1
 
-  fs-extra@11.2.0:
+  fs-extra@11.3.0:
     dependencies:
       graceful-fs: 4.2.11
       jsonfile: 6.1.0
@@ -32090,7 +32216,7 @@ snapshots:
       basic-ftp: 5.0.5
       data-uri-to-buffer: 6.0.2
       debug: 4.4.0
-      fs-extra: 11.2.0
+      fs-extra: 11.3.0
     transitivePeerDependencies:
       - supports-color
 
@@ -32373,8 +32499,6 @@ snapshots:
       kind-of: 6.0.3
 
   has-yarn@3.0.0: {}
-
-  has@1.0.4: {}
 
   hasha@5.2.2:
     dependencies:
@@ -34041,7 +34165,7 @@ snapshots:
     dependencies:
       uc.micro: 2.1.0
 
-  lint-staged@15.3.0:
+  lint-staged@15.4.1:
     dependencies:
       chalk: 5.4.1
       commander: 12.1.0
@@ -35633,6 +35757,13 @@ snapshots:
       pkg-types: 1.2.1
       ufo: 1.5.4
 
+  mlly@1.7.4:
+    dependencies:
+      acorn: 8.14.0
+      pathe: 2.0.2
+      pkg-types: 1.3.1
+      ufo: 1.5.4
+
   mobx-react-lite@4.0.7(mobx@6.13.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       mobx: 6.13.5
@@ -35653,11 +35784,11 @@ snapshots:
 
   moment@2.30.1: {}
 
-  motion-dom@11.16.4:
+  motion-dom@11.18.1:
     dependencies:
-      motion-utils: 11.16.0
+      motion-utils: 11.18.1
 
-  motion-utils@11.16.0: {}
+  motion-utils@11.18.1: {}
 
   mri@1.2.0: {}
 
@@ -35666,32 +35797,6 @@ snapshots:
   ms@2.0.0: {}
 
   ms@2.1.3: {}
-
-  msw@2.7.0(@types/node@18.18.14)(typescript@5.7.3):
-    dependencies:
-      '@bundled-es-modules/cookie': 2.0.1
-      '@bundled-es-modules/statuses': 1.0.1
-      '@bundled-es-modules/tough-cookie': 0.1.6
-      '@inquirer/confirm': 5.1.2(@types/node@18.18.14)
-      '@mswjs/interceptors': 0.37.1
-      '@open-draft/deferred-promise': 2.2.0
-      '@open-draft/until': 2.1.0
-      '@types/cookie': 0.6.0
-      '@types/statuses': 2.0.5
-      graphql: 16.9.0
-      headers-polyfill: 4.0.3
-      is-node-process: 1.2.0
-      outvariant: 1.4.3
-      path-to-regexp: 6.3.0
-      picocolors: 1.1.1
-      strict-event-emitter: 0.5.1
-      type-fest: 4.32.0
-      yargs: 17.7.2
-    optionalDependencies:
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - '@types/node'
-    optional: true
 
   msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3):
     dependencies:
@@ -35750,6 +35855,32 @@ snapshots:
       '@bundled-es-modules/statuses': 1.0.1
       '@bundled-es-modules/tough-cookie': 0.1.6
       '@inquirer/confirm': 5.1.2(@types/node@18.19.70)
+      '@mswjs/interceptors': 0.37.1
+      '@open-draft/deferred-promise': 2.2.0
+      '@open-draft/until': 2.1.0
+      '@types/cookie': 0.6.0
+      '@types/statuses': 2.0.5
+      graphql: 16.9.0
+      headers-polyfill: 4.0.3
+      is-node-process: 1.2.0
+      outvariant: 1.4.3
+      path-to-regexp: 6.3.0
+      picocolors: 1.1.1
+      strict-event-emitter: 0.5.1
+      type-fest: 4.32.0
+      yargs: 17.7.2
+    optionalDependencies:
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - '@types/node'
+    optional: true
+
+  msw@2.7.0(@types/node@18.19.71)(typescript@5.7.3):
+    dependencies:
+      '@bundled-es-modules/cookie': 2.0.1
+      '@bundled-es-modules/statuses': 1.0.1
+      '@bundled-es-modules/tough-cookie': 0.1.6
+      '@inquirer/confirm': 5.1.2(@types/node@18.19.71)
       '@mswjs/interceptors': 0.37.1
       '@open-draft/deferred-promise': 2.2.0
       '@open-draft/until': 2.1.0
@@ -36580,18 +36711,18 @@ snapshots:
 
   outvariant@1.4.3: {}
 
-  oxc-parser@0.44.0:
+  oxc-parser@0.47.1:
     dependencies:
-      '@oxc-project/types': 0.44.0
+      '@oxc-project/types': 0.47.1
     optionalDependencies:
-      '@oxc-parser/binding-darwin-arm64': 0.44.0
-      '@oxc-parser/binding-darwin-x64': 0.44.0
-      '@oxc-parser/binding-linux-arm64-gnu': 0.44.0
-      '@oxc-parser/binding-linux-arm64-musl': 0.44.0
-      '@oxc-parser/binding-linux-x64-gnu': 0.44.0
-      '@oxc-parser/binding-linux-x64-musl': 0.44.0
-      '@oxc-parser/binding-win32-arm64-msvc': 0.44.0
-      '@oxc-parser/binding-win32-x64-msvc': 0.44.0
+      '@oxc-parser/binding-darwin-arm64': 0.47.1
+      '@oxc-parser/binding-darwin-x64': 0.47.1
+      '@oxc-parser/binding-linux-arm64-gnu': 0.47.1
+      '@oxc-parser/binding-linux-arm64-musl': 0.47.1
+      '@oxc-parser/binding-linux-x64-gnu': 0.47.1
+      '@oxc-parser/binding-linux-x64-musl': 0.47.1
+      '@oxc-parser/binding-win32-arm64-msvc': 0.47.1
+      '@oxc-parser/binding-win32-x64-msvc': 0.47.1
 
   oxc-resolver@3.0.3:
     optionalDependencies:
@@ -36964,6 +37095,8 @@ snapshots:
 
   pathe@1.1.2: {}
 
+  pathe@2.0.2: {}
+
   pathval@2.0.0: {}
 
   pause-stream@0.0.11:
@@ -37052,6 +37185,12 @@ snapshots:
       mlly: 1.7.3
       pathe: 1.1.2
 
+  pkg-types@1.3.1:
+    dependencies:
+      confbox: 0.1.8
+      mlly: 1.7.4
+      pathe: 2.0.2
+
   plain-object-clone@2.0.0: {}
 
   platform@1.3.6: {}
@@ -37096,7 +37235,7 @@ snapshots:
     dependencies:
       chokidar: 3.6.0
       dependency-graph: 0.11.0
-      fs-extra: 11.2.0
+      fs-extra: 11.3.0
       get-stdin: 9.0.0
       globby: 14.0.2
       picocolors: 1.1.1
@@ -37602,12 +37741,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.0.2
 
-  react-shallow-renderer@16.15.0(react@19.0.0):
-    dependencies:
-      object-assign: 4.1.1
-      react: 19.0.0
-      react-is: 18.3.1
-
   react-style-singleton@2.2.1(@types/react@19.0.2)(react@18.3.1):
     dependencies:
       get-nonce: 1.0.1
@@ -37827,9 +37960,8 @@ snapshots:
       indent-string: 5.0.0
       strip-indent: 4.0.0
 
-  redoc@2.2.0(core-js@3.40.0)(mobx@6.13.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(styled-components@6.1.14(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
+  redoc@2.3.0(core-js@3.40.0)(mobx@6.13.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(styled-components@6.1.14(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
     dependencies:
-      '@cfaester/enzyme-adapter-react-18': 0.8.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@redocly/openapi-core': 1.17.0
       classnames: 2.5.1
       core-js: 3.40.0
@@ -37858,7 +37990,6 @@ snapshots:
       url-template: 2.0.8
     transitivePeerDependencies:
       - encoding
-      - enzyme
       - react-native
       - supports-color
 
@@ -38381,15 +38512,15 @@ snapshots:
 
   robust-predicates@3.0.2: {}
 
-  rollup-plugin-dts@6.1.1(rollup@4.30.1)(typescript@5.7.3):
+  rollup-plugin-dts@6.1.1(rollup@4.31.0)(typescript@5.7.3):
     dependencies:
       magic-string: 0.30.17
-      rollup: 4.30.1
+      rollup: 4.31.0
       typescript: 5.7.3
     optionalDependencies:
       '@babel/code-frame': 7.26.0
 
-  rollup-plugin-license@3.5.3(picomatch@4.0.2)(rollup@4.30.1):
+  rollup-plugin-license@3.5.3(picomatch@4.0.2)(rollup@4.31.0):
     dependencies:
       commenting: 1.1.0
       fdir: 6.3.0(picomatch@4.0.2)
@@ -38397,25 +38528,25 @@ snapshots:
       magic-string: 0.30.17
       moment: 2.30.1
       package-name-regex: 2.0.6
-      rollup: 4.30.1
+      rollup: 4.31.0
       spdx-expression-validate: 2.0.0
       spdx-satisfies: 5.0.1
     transitivePeerDependencies:
       - picomatch
 
-  rollup-plugin-polyfill-node@0.13.0(rollup@4.30.1):
+  rollup-plugin-polyfill-node@0.13.0(rollup@4.31.0):
     dependencies:
-      '@rollup/plugin-inject': 5.0.5(rollup@4.30.1)
-      rollup: 4.30.1
+      '@rollup/plugin-inject': 5.0.5(rollup@4.31.0)
+      rollup: 4.31.0
 
-  rollup-plugin-visualizer@5.14.0(rollup@4.30.1):
+  rollup-plugin-visualizer@5.14.0(rollup@4.31.0):
     dependencies:
       open: 8.4.2
       picomatch: 4.0.2
       source-map: 0.7.4
       yargs: 17.7.2
     optionalDependencies:
-      rollup: 4.30.1
+      rollup: 4.31.0
 
   rollup@4.30.1:
     dependencies:
@@ -38440,6 +38571,31 @@ snapshots:
       '@rollup/rollup-win32-arm64-msvc': 4.30.1
       '@rollup/rollup-win32-ia32-msvc': 4.30.1
       '@rollup/rollup-win32-x64-msvc': 4.30.1
+      fsevents: 2.3.3
+
+  rollup@4.31.0:
+    dependencies:
+      '@types/estree': 1.0.6
+    optionalDependencies:
+      '@rollup/rollup-android-arm-eabi': 4.31.0
+      '@rollup/rollup-android-arm64': 4.31.0
+      '@rollup/rollup-darwin-arm64': 4.31.0
+      '@rollup/rollup-darwin-x64': 4.31.0
+      '@rollup/rollup-freebsd-arm64': 4.31.0
+      '@rollup/rollup-freebsd-x64': 4.31.0
+      '@rollup/rollup-linux-arm-gnueabihf': 4.31.0
+      '@rollup/rollup-linux-arm-musleabihf': 4.31.0
+      '@rollup/rollup-linux-arm64-gnu': 4.31.0
+      '@rollup/rollup-linux-arm64-musl': 4.31.0
+      '@rollup/rollup-linux-loongarch64-gnu': 4.31.0
+      '@rollup/rollup-linux-powerpc64le-gnu': 4.31.0
+      '@rollup/rollup-linux-riscv64-gnu': 4.31.0
+      '@rollup/rollup-linux-s390x-gnu': 4.31.0
+      '@rollup/rollup-linux-x64-gnu': 4.31.0
+      '@rollup/rollup-linux-x64-musl': 4.31.0
+      '@rollup/rollup-win32-arm64-msvc': 4.31.0
+      '@rollup/rollup-win32-ia32-msvc': 4.31.0
+      '@rollup/rollup-win32-x64-msvc': 4.31.0
       fsevents: 2.3.3
 
   rotating-file-stream@3.2.5: {}
@@ -38938,7 +39094,7 @@ snapshots:
 
   sort-object-keys@1.1.3: {}
 
-  sort-package-json@2.12.0:
+  sort-package-json@2.14.0:
     dependencies:
       detect-indent: 7.0.1
       detect-newline: 4.0.1
@@ -39580,9 +39736,9 @@ snapshots:
       fast-fifo: 1.3.2
       streamx: 2.18.0
 
-  taze@18.1.0:
+  taze@18.2.0:
     dependencies:
-      '@antfu/ni': 0.23.2
+      '@antfu/ni': 23.2.0
       js-yaml: 4.1.0
       ofetch: 1.4.1
       package-manager-detector: 0.2.8
@@ -40021,7 +40177,7 @@ snapshots:
       bundle-require: 5.0.0(esbuild@0.24.2)
       cac: 6.7.14
       chokidar: 4.0.1
-      consola: 3.3.3
+      consola: 3.4.0
       debug: 4.4.0
       esbuild: 0.24.2
       joycon: 3.1.1
@@ -40276,7 +40432,7 @@ snapshots:
       '@types/concat-stream': 2.0.3
       '@types/debug': 4.1.12
       '@types/is-empty': 1.2.3
-      '@types/node': 18.19.70
+      '@types/node': 18.19.71
       '@types/unist': 2.0.10
       concat-stream: 2.0.0
       debug: 4.4.0
@@ -40553,6 +40709,12 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
+  update-browserslist-db@1.1.1(browserslist@4.24.4):
+    dependencies:
+      browserslist: 4.24.4
+      escalade: 3.2.0
+      picocolors: 1.1.1
+
   update-check@1.5.4:
     dependencies:
       registry-auth-token: 3.3.2
@@ -40769,24 +40931,6 @@ snapshots:
       unist-util-stringify-position: 4.0.0
       vfile-message: 4.0.2
 
-  vite-node@2.1.8(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1):
-    dependencies:
-      cac: 6.7.14
-      debug: 4.4.0
-      es-module-lexer: 1.6.0
-      pathe: 1.1.2
-      vite: 5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1)
-    transitivePeerDependencies:
-      - '@types/node'
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
   vite-node@2.1.8(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1):
     dependencies:
       cac: 6.7.14
@@ -40841,6 +40985,24 @@ snapshots:
       - supports-color
       - terser
 
+  vite-node@2.1.8(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.0
+      es-module-lexer: 1.6.0
+      pathe: 1.1.2
+      vite: 5.4.11(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
   vite-node@2.1.8(@types/node@22.10.5)(lightningcss@1.25.1)(terser@5.31.1):
     dependencies:
       cac: 6.7.14
@@ -40870,22 +41032,11 @@ snapshots:
       - supports-color
       - typescript
 
-  vite@5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1):
-    dependencies:
-      esbuild: 0.21.4
-      postcss: 8.4.49
-      rollup: 4.30.1
-    optionalDependencies:
-      '@types/node': 18.18.14
-      fsevents: 2.3.3
-      lightningcss: 1.25.1
-      terser: 5.31.1
-
   vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1):
     dependencies:
       esbuild: 0.21.4
       postcss: 8.4.49
-      rollup: 4.30.1
+      rollup: 4.31.0
     optionalDependencies:
       '@types/node': 18.19.15
       fsevents: 2.3.3
@@ -40896,7 +41047,7 @@ snapshots:
     dependencies:
       esbuild: 0.21.4
       postcss: 8.4.49
-      rollup: 4.30.1
+      rollup: 4.31.0
     optionalDependencies:
       '@types/node': 18.19.39
       fsevents: 2.3.3
@@ -40907,9 +41058,20 @@ snapshots:
     dependencies:
       esbuild: 0.21.4
       postcss: 8.4.49
-      rollup: 4.30.1
+      rollup: 4.31.0
     optionalDependencies:
       '@types/node': 18.19.70
+      fsevents: 2.3.3
+      lightningcss: 1.25.1
+      terser: 5.31.1
+
+  vite@5.4.11(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1):
+    dependencies:
+      esbuild: 0.21.4
+      postcss: 8.4.49
+      rollup: 4.31.0
+    optionalDependencies:
+      '@types/node': 18.19.71
       fsevents: 2.3.3
       lightningcss: 1.25.1
       terser: 5.31.1
@@ -40918,7 +41080,7 @@ snapshots:
     dependencies:
       esbuild: 0.21.4
       postcss: 8.4.49
-      rollup: 4.30.1
+      rollup: 4.31.0
     optionalDependencies:
       '@types/node': 22.10.5
       fsevents: 2.3.3
@@ -40938,44 +41100,6 @@ snapshots:
       terser: 5.31.1
       tsx: 4.19.2
       yaml: 2.7.0
-
-  vitest@2.1.8(@types/node@18.18.14)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.18.14)(typescript@5.7.3))(terser@5.31.1):
-    dependencies:
-      '@vitest/expect': 2.1.8
-      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@18.18.14)(typescript@5.7.3))(vite@5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1))
-      '@vitest/pretty-format': 2.1.8
-      '@vitest/runner': 2.1.8
-      '@vitest/snapshot': 2.1.8
-      '@vitest/spy': 2.1.8
-      '@vitest/utils': 2.1.8
-      chai: 5.1.2
-      debug: 4.4.0
-      expect-type: 1.1.0
-      magic-string: 0.30.17
-      pathe: 1.1.2
-      std-env: 3.8.0
-      tinybench: 2.9.0
-      tinyexec: 0.3.2
-      tinypool: 1.0.2
-      tinyrainbow: 1.2.0
-      vite: 5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1)
-      vite-node: 2.1.8(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 18.18.14
-      '@vitest/browser': 2.1.8(@types/node@18.18.14)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.18.14)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
-      '@vitest/ui': 2.1.8(vitest@2.1.8)
-      jsdom: 26.0.0
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
 
   vitest@2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.7.3))(terser@5.31.1):
     dependencies:
@@ -41078,6 +41202,44 @@ snapshots:
     optionalDependencies:
       '@types/node': 18.19.70
       '@vitest/browser': 2.1.8(@types/node@18.19.70)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.70)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
+      '@vitest/ui': 2.1.8(vitest@2.1.8)
+      jsdom: 26.0.0
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vitest@2.1.8(@types/node@18.19.71)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.71)(typescript@5.7.3))(terser@5.31.1):
+    dependencies:
+      '@vitest/expect': 2.1.8
+      '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@18.19.71)(typescript@5.7.3))(vite@5.4.11(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1))
+      '@vitest/pretty-format': 2.1.8
+      '@vitest/runner': 2.1.8
+      '@vitest/snapshot': 2.1.8
+      '@vitest/spy': 2.1.8
+      '@vitest/utils': 2.1.8
+      chai: 5.1.2
+      debug: 4.4.0
+      expect-type: 1.1.0
+      magic-string: 0.30.17
+      pathe: 1.1.2
+      std-env: 3.8.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinypool: 1.0.2
+      tinyrainbow: 1.2.0
+      vite: 5.4.11(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1)
+      vite-node: 2.1.8(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 18.19.71
+      '@vitest/browser': 2.1.8(@types/node@18.19.71)(playwright@1.49.1)(typescript@5.7.3)(vite@5.4.11(@types/node@18.19.71)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.5.4)
       '@vitest/ui': 2.1.8(vitest@2.1.8)
       jsdom: 26.0.0
     transitivePeerDependencies:
