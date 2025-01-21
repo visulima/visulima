@@ -1,15 +1,16 @@
 import { findUp, findUpSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
 
+import type { Options as ReadTsConfigOptions } from "./read-tsconfig";
 import { readTsConfig } from "./read-tsconfig";
 import type { TsConfigJsonResolved } from "./types";
 
-type Options = {
+const TsConfigFileCache = new Map<string, TsConfigResult>();
+
+export type Options = ReadTsConfigOptions & {
     cache?: Map<string, TsConfigJsonResolved> | boolean;
     configFileName?: string;
 };
-
-const TsConfigFileCache = new Map<string, TsConfigResult>();
 
 export type TsConfigResult = {
     config: TsConfigJsonResolved;
@@ -52,7 +53,9 @@ export const findTsConfig = async (cwd?: URL | string, options: Options = {}): P
     }
 
     const output = {
-        config: readTsConfig(filePath),
+        config: readTsConfig(filePath, {
+            tscCompatible: options.tscCompatible,
+        }),
         path: filePath,
     };
 
@@ -89,7 +92,9 @@ export const findTsConfigSync = (cwd?: URL | string, options: Options = {}): TsC
     }
 
     const output = {
-        config: readTsConfig(filePath),
+        config: readTsConfig(filePath, {
+            tscCompatible: options.tscCompatible,
+        }),
         path: filePath,
     };
 
