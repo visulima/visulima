@@ -447,7 +447,7 @@ export type Options = {
      *
      * When `true`, it will make the configuration compatible with the latest TypeScript version.
      *
-     * @default false
+     * @default undefined
      */
     tscCompatible?: "5.3" | "5.4" | "5.5" | "5.6" | true;
 };
