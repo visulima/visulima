@@ -1,3 +1,10 @@
+## @visulima/tsconfig [1.1.9](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.8...@visulima/tsconfig@1.1.9) (2025-01-21)
+
+### Bug Fixes
+
+* **tsconfig:** added missing tscCompatible option on findTsConfig and findTsConfigSync ([9f56637](https://github.com/visulima/visulima/commit/9f56637b5158f6364fa3e1c215ec9e7f2022a161))
+* **tsconfig:** fixed tscCompatible default on jsdoc ([fa80961](https://github.com/visulima/visulima/commit/fa809618aec6ec5f8777beb384509ed6c6794d43))
+
 ## @visulima/tsconfig [1.1.8](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.7...@visulima/tsconfig@1.1.8) (2025-01-13)
 
 ### Bug Fixes
