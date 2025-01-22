@@ -1,6 +1,6 @@
 {
     "name": "@visulima/colorize",
-    "version": "1.4.18",
+    "version": "1.4.19",
     "description": "Terminal and Console string styling done right.",
     "keywords": [
         "256",
@@ -181,7 +181,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/is-ansi-color-supported": "workspace:*"
+        "@visulima/is-ansi-color-supported": "2.2.11"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
