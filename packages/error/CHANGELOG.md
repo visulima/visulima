@@ -1,3 +1,14 @@
+## @visulima/error [4.4.14](https://github.com/visulima/visulima/compare/@visulima/error@4.4.13...@visulima/error@4.4.14) (2025-01-22)
+
+### Bug Fixes
+
+* **error:** dont display a main frame if the error has a broken state data, updated dev deps ([c0b8f15](https://github.com/visulima/visulima/commit/c0b8f157f98ce4b03a66ecc2b36aa148b3be5d73))
+
+### Miscellaneous Chores
+
+* **error:** fixed new test value ([cacee8b](https://github.com/visulima/visulima/commit/cacee8bec5988ed62225e3831cad79650c59ce3d))
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
 ## @visulima/error [4.4.13](https://github.com/visulima/visulima/compare/@visulima/error@4.4.12...@visulima/error@4.4.13) (2025-01-13)
 
 
