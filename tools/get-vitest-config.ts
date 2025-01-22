@@ -20,7 +20,7 @@ export const getVitestConfig = (options: ViteUserConfig = {}) => {
                 exclude: ["__fixtures__/**", "__bench__/**", "scripts/**", "src/**/types.ts", "src/module.d.ts", "src/reset.d.ts"],
             },
             environment: "node",
-            reporters: process.env.CI_PREFLIGHT ? ["basic", "github-actions"] : ["basic"],
+            reporters: process.env.CI_PREFLIGHT ? ["default", "github-actions"] : ["default"],
             sequence: {
                 seed: VITEST_SEQUENCE_SEED,
             },
