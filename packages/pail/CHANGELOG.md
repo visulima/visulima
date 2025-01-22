@@ -1,3 +1,17 @@
+## @visulima/pail [2.1.19](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.18...@visulima/pail@2.1.19) (2025-01-22)
+
+### Miscellaneous Chores
+
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.19
+* **@visulima/error:** upgraded to 4.4.14
+* **@visulima/inspector:** upgraded to 1.0.19
+* **@visulima/redact:** upgraded to 1.0.12
+
 ## @visulima/pail [2.1.18](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.17...@visulima/pail@2.1.18) (2025-01-13)
 
 
