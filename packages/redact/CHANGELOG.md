@@ -1,3 +1,13 @@
+## @visulima/redact [1.0.12](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.11...@visulima/redact@1.0.12) (2025-01-22)
+
+### Bug Fixes
+
+* **redact:** updated compromise to ^14.14.4 and all dev deps ([6f7ab76](https://github.com/visulima/visulima/commit/6f7ab7601d7f806e5bea167ccfeedcdbcb860733))
+
+### Miscellaneous Chores
+
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
 ## @visulima/redact [1.0.11](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.10...@visulima/redact@1.0.11) (2025-01-12)
 
 ### Bug Fixes
