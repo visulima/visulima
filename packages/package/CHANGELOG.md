@@ -1,3 +1,18 @@
+## @visulima/package [3.4.6](https://github.com/visulima/visulima/compare/@visulima/package@3.4.5...@visulima/package@3.4.6) (2025-01-22)
+
+### Bug Fixes
+
+* **package:** updated @inquirer/confirm to ^5.1.3 and all dev deps ([c8affca](https://github.com/visulima/visulima/commit/c8affca010f813d6690df281efa646b5c06c1b48))
+
+### Miscellaneous Chores
+
+* lock file update, added dedupe lint command ([5ba7093](https://github.com/visulima/visulima/commit/5ba7093fefaca7ed2fce6b0cf6069a53c300456a))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.3.8
+
 ## @visulima/package [3.4.5](https://github.com/visulima/visulima/compare/@visulima/package@3.4.4...@visulima/package@3.4.5) (2025-01-16)
 
 ### Bug Fixes
