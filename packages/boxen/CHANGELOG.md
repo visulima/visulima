@@ -1,3 +1,18 @@
+## @visulima/boxen [1.0.28](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.27...@visulima/boxen@1.0.28) (2025-01-22)
+
+### Styles
+
+* cs fixes ([f615a6a](https://github.com/visulima/visulima/commit/f615a6af4c0d4fb9ec054565fe5c93e88df487e9))
+
+### Miscellaneous Chores
+
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.19
+
 ## @visulima/boxen [1.0.27](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.26...@visulima/boxen@1.0.27) (2025-01-13)
 
 
