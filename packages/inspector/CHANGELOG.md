@@ -1,3 +1,14 @@
+## @visulima/inspector [1.0.19](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.18...@visulima/inspector@1.0.19) (2025-01-22)
+
+### Miscellaneous Chores
+
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.19
+
 ## @visulima/inspector [1.0.18](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.17...@visulima/inspector@1.0.18) (2025-01-13)
 
 
