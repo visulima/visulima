@@ -1832,4 +1832,20 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             23,
         ]);
     });
+
+    it('should not create a stacktrace if the stack is broken', () => {
+        const stackFrames = parseStacktrace({ stack: `Error: ENOENT: no such file or directory, rename 'test' -> 'test2'
+    at Object.renameSync (node:fs:1035:3)
+    at REPL17:1:9
+    at ContextifyScript.runInThisContext (node:vm:121:12)
+    at REPLServer.defaultEval (node:repl:599:22)
+    at bound (node:domain:433:15)
+    at REPLServer.runBound [as eval] (node:domain:444:12)
+    at REPLServer.onLine (node:repl:929:10)
+    at REPLServer.emit (node:events:529:35)
+    at REPLServer.emit (node:domain:489:12)
+    at [_onLine] [as _onLine] (node:internal/readline/interface:423:12)` }  as unknown as Error);
+
+        expect(stackFrames).toHaveLength(0);
+    });
 });
