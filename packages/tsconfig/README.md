@@ -101,7 +101,7 @@ const tsconfig = await readTsConfig("/Users/../Projects/visulima/packages/tsconf
 type TsConfigJson = object;
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.32.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1
+Defined in: node_modules/.pnpm/type-fest@4.33.0/node_modules/type-fest/source/tsconfig-json.d.ts:1
 
 Type for [TypeScript's `tsconfig.json` file](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html) (TypeScript 3.7).
 
@@ -188,10 +188,10 @@ Instructs the TypeScript compiler how to watch files.
 ### findTsConfig()
 
 ```ts
-function findTsConfig(cwd?, options?): Promise<TsConfigResult>
+function findTsConfig(cwd?, options?): Promise<TsConfigResult>;
 ```
 
-Defined in: [packages/tsconfig/src/find-tsconfig.ts:29](https://github.com/visulima/visulima/blob/20d25d79f41ab7a8946c50f8e31c1646a6032d4c/packages/tsconfig/src/find-tsconfig.ts#L29)
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:30](https://github.com/visulima/visulima/blob/6041f6500a9f8eebfb16d20448abfbd626ba57ab/packages/tsconfig/src/find-tsconfig.ts#L30)
 
 An asynchronous function that retrieves the TSConfig by searching for the "tsconfig.json" first,
 second attempt is to look for the "jsconfig.json" file from a given current working directory.
@@ -201,34 +201,34 @@ second attempt is to look for the "jsconfig.json" file from a given current work
 ##### cwd?
 
 Optional. The current working directory from which to search for the "tsconfig.json" file.
-             The type of `cwd` is `string`.
+The type of `cwd` is `string`.
 
 `string` | `URL`
 
 ##### options?
 
-`Options` = `{}`
+[`FindTsConfigOptions`](README.md#findtsconfigoptions) = `{}`
 
 #### Returns
 
 `Promise`\<[`TsConfigResult`](README.md#tsconfigresult)\>
 
 A `Promise` that resolves to the TSConfig result object.
-         The return type of the function is `Promise<TsConfigResult>`.
+The return type of the function is `Promise<TsConfigResult>`.
 
 #### Throws
 
 An `Error` when the "tsconfig.json" file is not found.
 
-***
+---
 
 ### findTsConfigSync()
 
 ```ts
-function findTsConfigSync(cwd?, options?): TsConfigResult
+function findTsConfigSync(cwd?, options?): TsConfigResult;
 ```
 
-Defined in: [packages/tsconfig/src/find-tsconfig.ts:66](https://github.com/visulima/visulima/blob/20d25d79f41ab7a8946c50f8e31c1646a6032d4c/packages/tsconfig/src/find-tsconfig.ts#L66)
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:69](https://github.com/visulima/visulima/blob/6041f6500a9f8eebfb16d20448abfbd626ba57ab/packages/tsconfig/src/find-tsconfig.ts#L69)
 
 #### Parameters
 
@@ -238,21 +238,21 @@ Defined in: [packages/tsconfig/src/find-tsconfig.ts:66](https://github.com/visul
 
 ##### options?
 
-`Options` = `{}`
+[`FindTsConfigOptions`](README.md#findtsconfigoptions) = `{}`
 
 #### Returns
 
 [`TsConfigResult`](README.md#tsconfigresult)
 
-***
+---
 
 ### readTsConfig()
 
 ```ts
-function readTsConfig(tsconfigPath, options?): object
+function readTsConfig(tsconfigPath, options?): object;
 ```
 
-Defined in: [packages/tsconfig/src/read-tsconfig.ts:460](https://github.com/visulima/visulima/blob/20d25d79f41ab7a8946c50f8e31c1646a6032d4c/packages/tsconfig/src/read-tsconfig.ts#L460)
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:460](https://github.com/visulima/visulima/blob/6041f6500a9f8eebfb16d20448abfbd626ba57ab/packages/tsconfig/src/read-tsconfig.ts#L460)
 
 #### Parameters
 
@@ -262,7 +262,7 @@ Defined in: [packages/tsconfig/src/read-tsconfig.ts:460](https://github.com/visu
 
 ##### options?
 
-`Options`
+[`ReadTsConfigOptions`](README.md#readtsconfigoptions)
 
 #### Returns
 
@@ -336,15 +336,15 @@ optional watchOptions: WatchOptions;
 
 Instructs the TypeScript compiler how to watch files.
 
-***
+---
 
 ### writeTsConfig()
 
 ```ts
-function writeTsConfig(tsConfig, options): Promise<void>
+function writeTsConfig(tsConfig, options): Promise<void>;
 ```
 
-Defined in: [packages/tsconfig/src/write-tsconfig.ts:17](https://github.com/visulima/visulima/blob/20d25d79f41ab7a8946c50f8e31c1646a6032d4c/packages/tsconfig/src/write-tsconfig.ts#L17)
+Defined in: [packages/tsconfig/src/write-tsconfig.ts:17](https://github.com/visulima/visulima/blob/6041f6500a9f8eebfb16d20448abfbd626ba57ab/packages/tsconfig/src/write-tsconfig.ts#L17)
 
 An asynchronous function that writes the provided TypeScript configuration object to a tsconfig.json file.
 
@@ -370,15 +370,15 @@ intersection type of `WriteOptions` and a Record type with an optional `cwd` key
 A `Promise` that resolves when the tsconfig.json file has been written.
 The return type of function is `Promise<void>`.
 
-***
+---
 
 ### writeTsConfigSync()
 
 ```ts
-function writeTsConfigSync(tsConfig, options): void
+function writeTsConfigSync(tsConfig, options): void;
 ```
 
-Defined in: [packages/tsconfig/src/write-tsconfig.ts:35](https://github.com/visulima/visulima/blob/20d25d79f41ab7a8946c50f8e31c1646a6032d4c/packages/tsconfig/src/write-tsconfig.ts#L35)
+Defined in: [packages/tsconfig/src/write-tsconfig.ts:35](https://github.com/visulima/visulima/blob/6041f6500a9f8eebfb16d20448abfbd626ba57ab/packages/tsconfig/src/write-tsconfig.ts#L35)
 
 A function that writes the provided TypeScript configuration object to a tsconfig.json file.
 
@@ -404,7 +404,7 @@ intersection type of `WriteOptions` and a Record type with an optional `cwd` key
 A `Promise` that resolves when the tsconfig.json file has been written.
 The return type of function is `Promise<void>`.
 
-***
+---
 
 ### implicitBaseUrlSymbol
 
@@ -412,9 +412,63 @@ The return type of function is `Promise<void>`.
 const implicitBaseUrlSymbol: typeof implicitBaseUrlSymbol;
 ```
 
-Defined in: [packages/tsconfig/src/read-tsconfig.ts:457](https://github.com/visulima/visulima/blob/20d25d79f41ab7a8946c50f8e31c1646a6032d4c/packages/tsconfig/src/read-tsconfig.ts#L457)
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:457](https://github.com/visulima/visulima/blob/6041f6500a9f8eebfb16d20448abfbd626ba57ab/packages/tsconfig/src/read-tsconfig.ts#L457)
 
-***
+---
+
+### FindTsConfigOptions
+
+```ts
+type FindTsConfigOptions = ReadTsConfigOptions & object;
+```
+
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:10](https://github.com/visulima/visulima/blob/6041f6500a9f8eebfb16d20448abfbd626ba57ab/packages/tsconfig/src/find-tsconfig.ts#L10)
+
+#### Type declaration
+
+##### cache?
+
+```ts
+optional cache:
+  | Map<string, TsConfigJsonResolved>
+  | boolean;
+```
+
+##### configFileName?
+
+```ts
+optional configFileName: string;
+```
+
+---
+
+### ReadTsConfigOptions
+
+```ts
+type ReadTsConfigOptions = object;
+```
+
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:444](https://github.com/visulima/visulima/blob/6041f6500a9f8eebfb16d20448abfbd626ba57ab/packages/tsconfig/src/read-tsconfig.ts#L444)
+
+#### Type declaration
+
+##### tscCompatible?
+
+```ts
+optional tscCompatible: "5.3" | "5.4" | "5.5" | "5.6" | true;
+```
+
+Make the configuration compatible with the specified TypeScript version.
+
+When `true`, it will make the configuration compatible with the latest TypeScript version.
+
+###### Default
+
+```ts
+undefined;
+```
+
+---
 
 ### TsConfigJsonResolved
 
@@ -422,9 +476,9 @@ Defined in: [packages/tsconfig/src/read-tsconfig.ts:457](https://github.com/visu
 type TsConfigJsonResolved = Except<TsConfigJson, "extends">;
 ```
 
-Defined in: [packages/tsconfig/src/types.ts:3](https://github.com/visulima/visulima/blob/20d25d79f41ab7a8946c50f8e31c1646a6032d4c/packages/tsconfig/src/types.ts#L3)
+Defined in: [packages/tsconfig/src/types.ts:3](https://github.com/visulima/visulima/blob/6041f6500a9f8eebfb16d20448abfbd626ba57ab/packages/tsconfig/src/types.ts#L3)
 
-***
+---
 
 ### TsConfigResult
 
@@ -432,7 +486,7 @@ Defined in: [packages/tsconfig/src/types.ts:3](https://github.com/visulima/visul
 type TsConfigResult = object;
 ```
 
-Defined in: [packages/tsconfig/src/find-tsconfig.ts:14](https://github.com/visulima/visulima/blob/20d25d79f41ab7a8946c50f8e31c1646a6032d4c/packages/tsconfig/src/find-tsconfig.ts#L14)
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:15](https://github.com/visulima/visulima/blob/6041f6500a9f8eebfb16d20448abfbd626ba57ab/packages/tsconfig/src/find-tsconfig.ts#L15)
 
 #### Type declaration
 
@@ -461,6 +515,8 @@ path: string;
 - [writeTsConfigSync](README.md#writetsconfigsync)
 - [TsConfigJson](namespaces/TsConfigJson/README.md)
 - [implicitBaseUrlSymbol](README.md#implicitbaseurlsymbol)
+- [FindTsConfigOptions](README.md#findtsconfigoptions)
+- [ReadTsConfigOptions](README.md#readtsconfigoptions)
 - [TsConfigJsonResolved](README.md#tsconfigjsonresolved)
 - [TsConfigResult](README.md#tsconfigresult)
 
