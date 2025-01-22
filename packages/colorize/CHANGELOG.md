@@ -1,3 +1,19 @@
+## @visulima/colorize [1.4.19](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.18...@visulima/colorize@1.4.19) (2025-01-22)
+
+### Bug Fixes
+
+* **colorize:** fixed the typesVersions exports ([47d60fe](https://github.com/visulima/visulima/commit/47d60fee140168fe46830a778ed874fb7a1a34a8))
+* fixed support for edge-light runtime ([40e9ea3](https://github.com/visulima/visulima/commit/40e9ea38d442c5aed4f8660596d4ef63c79bdf35))
+
+### Miscellaneous Chores
+
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.2.11
+
 ## @visulima/colorize [1.4.18](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.17...@visulima/colorize@1.4.18) (2025-01-13)
 
 
