@@ -1,6 +1,6 @@
 {
     "name": "@visulima/error",
-    "version": "4.4.13",
+    "version": "4.4.14",
     "description": "Error with more than just a message, stacktrace parsing.",
     "keywords": [
         "anolilab",
