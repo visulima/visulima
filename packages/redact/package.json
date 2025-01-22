@@ -99,21 +99,21 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "compromise": "^14.14.3"
+        "compromise": "^14.14.4"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-pnpm": "^1.1.6",
-        "@anolilab/semantic-release-preset": "^9.0.3",
-        "@arethetypeswrong/cli": "^0.17.2",
+        "@anolilab/semantic-release-pnpm": "^1.1.9",
+        "@anolilab/semantic-release-preset": "^10.0.2",
+        "@arethetypeswrong/cli": "^0.17.3",
         "@babel/core": "^7.26.0",
         "@rushstack/eslint-plugin-security": "^0.8.3",
         "@secretlint/secretlint-rule-preset-recommend": "^9.0.0",
-        "@types/node": "18.19.15",
-        "@visulima/packem": "1.10.7",
-        "@vitest/coverage-v8": "^2.1.8",
-        "@vitest/ui": "^2.1.8",
+        "@types/node": "18.19.71",
+        "@visulima/packem": "1.17.4",
+        "@vitest/coverage-v8": "^3.0.3",
+        "@vitest/ui": "^3.0.3",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
         "dot-prop": "^9.0.0",
@@ -130,7 +130,7 @@
         "secretlint": "9.0.0",
         "semantic-release": "24.2.1",
         "typescript": "5.7.3",
-        "vitest": "^2.1.8"
+        "vitest": "^3.0.3"
     },
     "engines": {
         "node": ">=18.* <=23.*"
