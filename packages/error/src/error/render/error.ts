@@ -140,7 +140,7 @@ const getCause = (error: AggregateError | Error | VisulimaError, options: Option
     message += getMessage(cause, options, deep);
 
     const stacktrace = parseStacktrace(cause);
-    const mainFrame = stacktrace.shift() as Trace;
+    const mainFrame = stacktrace.shift();
 
     const hint = getHint(cause, options, deep);
 
@@ -148,13 +148,15 @@ const getCause = (error: AggregateError | Error | VisulimaError, options: Option
         message += hint + "\n";
     }
 
-    message += getMainFrame(mainFrame, options, deep);
+    if (mainFrame) {
+        message += getMainFrame(mainFrame, options, deep);
 
-    if (!options.hideErrorCauseCodeView) {
-        const code = getCode(mainFrame, options, deep);
+        if (!options.hideErrorCauseCodeView) {
+            const code = getCode(mainFrame, options, deep);
 
-        if (code !== undefined) {
-            message += "\n" + code;
+            if (code !== undefined) {
+                message += "\n" + code;
+            }
         }
     }
 
