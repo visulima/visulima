@@ -28,6 +28,8 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
     // eslint-disable-next-line no-param-reassign
     path = toPath(path) as string;
 
+    const temporaryPath = `${path}.tmp`;
+
     try {
         const pathExists = isAccessibleSync(path, F_OK);
 
@@ -43,7 +45,7 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
         let stat: Stats | undefined;
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        nodeWriteFileSync(`${path}.tmp`, toUint8Array(content), { encoding: options.encoding, flag: options.flag });
+        nodeWriteFileSync(temporaryPath, toUint8Array(content), { encoding: options.encoding, flag: options.flag });
 
         if (pathExists && !options.overwrite) {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -57,8 +59,6 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             renameSync(path, `${path}.bak`);
         }
-
-        const temporaryPath = `${path}.tmp`;
 
         if (options.chown) {
             try {
@@ -80,7 +80,7 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/restrict-template-expressions
         throw new Error(`Failed to write file at: ${path} - ${error.message}`, { cause: error });
     } finally {
-        if (isAccessibleSync(`${path}.tmp`)) {
+        if (isAccessibleSync(temporaryPath)) {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             unlinkSync(`${path}.tmp`);
         }

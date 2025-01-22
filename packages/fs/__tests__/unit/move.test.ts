@@ -11,8 +11,8 @@ const fixtureFileContent = "test content";
 const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 describe.each([
-    ["moveFileSync", moveSync],
-    ["moveFile", move],
+    ["moveSync", moveSync],
+    ["move", move],
 ])("%s", (_, function_) => {
     let distribution: string;
     let distributionFile: string;
