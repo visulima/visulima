@@ -1,3 +1,19 @@
+## @visulima/fs [2.3.8](https://github.com/visulima/visulima/compare/@visulima/fs@2.3.7...@visulima/fs@2.3.8) (2025-01-22)
+
+### Styles
+
+* cs fixes ([f615a6a](https://github.com/visulima/visulima/commit/f615a6af4c0d4fb9ec054565fe5c93e88df487e9))
+
+### Miscellaneous Chores
+
+* **fs:** changed wrong name in test, moved parameter out of the try ([09c73c8](https://github.com/visulima/visulima/commit/09c73c815df2a1cb9ab3a7c3500c69d347c40368))
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.4.14
+
 ## @visulima/fs [2.3.7](https://github.com/visulima/visulima/compare/@visulima/fs@2.3.6...@visulima/fs@2.3.7) (2025-01-13)
 
 
