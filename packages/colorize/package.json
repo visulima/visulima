@@ -80,7 +80,14 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.server.mjs",
+            "edge-light": {
+                "types": "./dist/index.server.d.mts",
+                "default": "./dist/index.server.mjs"
+            },
+            "browser": {
+                "types": "./dist/index.browser.d.mts",
+                "default": "./dist/index.browser.mjs"
+            },
             "require": {
                 "types": "./dist/index.server.d.cts",
                 "default": "./dist/index.server.cjs"
@@ -167,7 +174,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/is-ansi-color-supported": "2.2.10"
+        "@visulima/is-ansi-color-supported": "workspace:*"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
