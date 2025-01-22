@@ -140,6 +140,13 @@
     "types": "dist/index.server.d.ts",
     "typesVersions": {
         ">=5.0": {
+            ".": [
+                "./dist/index.server.d.ts",
+                "./dist/index.browser.d.ts"
+            ],
+            "browser": [
+                "./dist/index.browser.d.ts"
+            ],
             "template": [
                 "./dist/template.d.ts"
             ],
