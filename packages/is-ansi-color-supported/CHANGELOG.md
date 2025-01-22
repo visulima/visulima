@@ -1,3 +1,13 @@
+## @visulima/is-ansi-color-supported [2.2.11](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.10...@visulima/is-ansi-color-supported@2.2.11) (2025-01-22)
+
+### Bug Fixes
+
+* fixed support for edge-light runtime ([40e9ea3](https://github.com/visulima/visulima/commit/40e9ea38d442c5aed4f8660596d4ef63c79bdf35))
+
+### Miscellaneous Chores
+
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
 ## @visulima/is-ansi-color-supported [2.2.10](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.9...@visulima/is-ansi-color-supported@2.2.10) (2025-01-12)
 
 ### Bug Fixes
