@@ -9,8 +9,8 @@
 
 import { describe, expect, it } from "vitest";
 
-// eslint-disable-next-line import/extensions
-import { blue, magenta, red } from "../../src/index.server";
+// @ts-expect-error - this is a test file
+import { blue, magenta, red } from "../../src/index.server.mts";
 // eslint-disable-next-line import/no-named-as-default
 import template from "../../src/template";
 
