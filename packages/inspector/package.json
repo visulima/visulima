@@ -103,10 +103,10 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.71",
         "@visulima/colorize": "1.4.19",
-        "@visulima/packem": "1.17.4",
-        "@vitest/browser": "^3.0.3",
-        "@vitest/coverage-v8": "^3.0.3",
-        "@vitest/ui": "^3.0.3",
+        "@visulima/packem": "1.18.0",
+        "@vitest/browser": "^3.0.4",
+        "@vitest/coverage-v8": "^3.0.4",
+        "@vitest/ui": "^3.0.4",
         "cross-env": "^7.0.3",
         "esbuild": "0.24.2",
         "eslint": "8.57.0",
@@ -114,9 +114,9 @@
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
         "eslint-plugin-mdx": "^3.1.5",
-        "eslint-plugin-vitest": "^0.4.1",
+        "eslint-plugin-vitest": "0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
-        "playwright": "^1.49.1",
+        "playwright": "^1.50.0",
         "prettier": "^3.4.2",
         "rimraf": "6.0.1",
         "secretlint": "9.0.0",
@@ -124,8 +124,8 @@
         "type-fest": "^4.33.0",
         "typescript": "5.7.3",
         "typescript-coverage-report": "^1.1.0",
-        "vitest": "^3.0.3",
-        "webdriverio": "^9.6.0"
+        "vitest": "^3.0.4",
+        "webdriverio": "^9.6.4"
     },
     "engines": {
         "node": ">=18.* <=23.*"
