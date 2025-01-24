@@ -225,7 +225,7 @@
         "@nrwl/workspace": "19.8.4",
         "@octokit/rest": "^21.1.0",
         "@secretlint/secretlint-rule-preset-recommend": "^9.0.0",
-        "@types/node": "22.10.7",
+        "@types/node": "18.19.71",
         "audit-ci": "^7.1.0",
         "browserslist-config-anolilab": "^5.0.14",
         "commitizen": "^4.3.1",
@@ -233,8 +233,8 @@
         "cross-env": "^7.0.3",
         "husky": "^9.1.7",
         "is-ci": "^4.1.0",
-        "lint-staged": "^15.4.1",
-        "nx": "^20.3.2",
+        "lint-staged": "^15.4.2",
+        "nx": "^20.3.3",
         "pkg-pr-new": "^0.0.39",
         "plop": "^4.0.1",
         "prettier": "^3.4.2",
@@ -248,7 +248,7 @@
         "textlint": "^14.4.2",
         "tsup": "^8.3.5",
         "typescript": "5.7.3",
-        "vitest": "^3.0.3"
+        "vitest": "^3.0.4"
     },
     "packageManager": "pnpm@9.15.4",
     "engines": {
