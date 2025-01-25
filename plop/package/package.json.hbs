@@ -55,8 +55,8 @@
         "url": "https://github.com/visulima/visulima/issues"
     },
     "scripts": {
-        "build": "cross-env NODE_ENV=development packem build",
-        "build:prod": "cross-env NODE_ENV=production packem build",
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:attw": "attw --pack",
@@ -93,7 +93,6 @@
         "@vitest/coverage-v8": "^2.1.8",
         "@vitest/ui": "^2.1.8",
         "conventional-changelog-conventionalcommits": "8.0.0",
-        "cross-env": "^7.0.3",
         "esbuild": "^0.24.2",
         "eslint": "8.57.1",
         "eslint-plugin-deprecation": "^3.0.0",

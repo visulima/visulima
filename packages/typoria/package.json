@@ -1,63 +1,21 @@
 {
-    "name": "@visulima/fs",
-    "version": "3.0.1",
-    "description": "Human friendly file system utilities for Node.js",
+    "name": "@visulima/typoria",
+    "version": "0.0.0",
+    "description": "Build excellent documentation site with less effort",
     "keywords": [
-        "anolilab",
-        "detect-newline",
-        "dir",
-        "directory",
-        "eol",
-        "empty-dir",
-        "ensure",
-        "ensure-file",
-        "ensure-dir",
-        "ensure-link",
-        "ensure-symlink",
-        "file",
-        "files",
-        "filesystem",
-        "find",
-        "find-up",
-        "findup",
-        "folder",
-        "fs",
-        "fs-safe",
-        "look",
-        "look-up",
-        "json",
-        "read-json",
-        "match",
-        "package",
-        "parent",
-        "parents",
-        "path",
-        "read",
-        "read-file",
-        "read-yaml",
-        "resolve",
-        "safe",
-        "search",
-        "std",
-        "standard",
-        "up",
         "visulima",
-        "walk",
-        "walking",
-        "write",
-        "write-dir",
-        "write-file",
-        "write-safe",
-        "yaml"
+        "documentation",
+        "typoria",
+        "mdx"
     ],
-    "homepage": "https://www.visulima.com/docs/package/fs",
+    "homepage": "https://visulima.com/packages/typoria",
     "bugs": {
         "url": "https://github.com/visulima/visulima/issues"
     },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/fs"
+        "directory": "packages/typoria"
     },
     "funding": [
         {
@@ -87,66 +45,66 @@
                 "default": "./dist/index.mjs"
             }
         },
-        "./utils": {
+        "./mdx-plugins": {
             "require": {
-                "types": "./dist/utils.d.cts",
-                "default": "./dist/utils.cjs"
+                "types": "./dist/mdx-plugins/index.d.cts",
+                "default": "./dist/mdx-plugins/index.cjs"
             },
             "import": {
-                "types": "./dist/utils.d.mts",
-                "default": "./dist/utils.mjs"
+                "types": "./dist/mdx-plugins/index.d.mts",
+                "default": "./dist/mdx-plugins/index.mjs"
             }
         },
-        "./error": {
+        "./content-collections": {
             "require": {
-                "types": "./dist/error.d.cts",
-                "default": "./dist/error.cjs"
+                "types": "./dist/content-collections/index.d.cts",
+                "default": "./dist/content-collections/index.cjs"
             },
             "import": {
-                "types": "./dist/error.d.mts",
-                "default": "./dist/error.mjs"
+                "types": "./dist/content-collections/index.d.mts",
+                "default": "./dist/content-collections/index.mjs"
             }
         },
-        "./yaml": {
+        "./content-collections/configuration": {
             "require": {
-                "types": "./dist/yaml.d.cts",
-                "default": "./dist/yaml.cjs"
+                "types": "./dist/content-collections/configuration.d.cts",
+                "default": "./dist/content-collections/configuration.cjs"
             },
             "import": {
-                "types": "./dist/yaml.d.mts",
-                "default": "./dist/yaml.mjs"
+                "types": "./dist/content-collections/configuration.d.mts",
+                "default": "./dist/content-collections/configuration.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
+    "browser": "./dist/index.mjs",
     "types": "dist/index.d.ts",
     "typesVersions": {
         ">=5.0": {
             ".": [
                 "./dist/index.d.ts"
             ],
-            "utils": [
-                "./dist/utils.d.ts"
+            "mdx-plugins": [
+                "./dist/mdx-plugins/index.d.ts"
             ],
-            "error": [
-                "./dist/error.d.ts"
+            "content-collections": [
+                "./dist/content-collections/index.d.ts"
             ],
-            "yaml": [
-                "./dist/yaml.d.ts"
+            "content-collections/configuration": [
+                "./dist/content-collections/configuration.d.ts"
             ]
         }
     },
     "files": [
-        "dist/**",
+        "dist",
         "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
+        "CHANGELOG.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development packem build",
-        "build:prod": "cross-env NODE_ENV=production packem build",
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:attw": "attw --pack",
@@ -162,63 +120,77 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/path": "1.3.4"
+        "@shikijs/rehype": "^2.1.0",
+        "@shikijs/transformers": "^2.1.0",
+        "@visulima/path": "^1.3.3",
+        "github-slugger": "^2.0.0",
+        "hast-util-to-estree": "^3.1.1",
+        "hast-util-to-jsx-runtime": "^2.3.2",
+        "image-size": "^1.2.0",
+        "mdast": "^3.0.0",
+        "remark": "^15.0.1",
+        "remark-gfm": "^4.0.0",
+        "shiki": "^2.1.0",
+        "unified": "^11.0.5",
+        "unist-util-visit": "^5.0.0",
+        "vfile": "^6.0.3"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-pnpm": "^1.1.9",
+        "@anolilab/semantic-release-pnpm": "1.1.9",
         "@anolilab/semantic-release-preset": "^10.0.2",
         "@arethetypeswrong/cli": "^0.17.3",
-        "@babel/core": "^7.26.0",
+        "@babel/core": "^7.26.7",
+        "@content-collections/core": "^0.8.0",
+        "@content-collections/mdx": "^0.2.0",
+        "@mdx-js/mdx": "^3.1.0",
         "@rushstack/eslint-plugin-security": "^0.8.3",
-        "@types/node": "18.19.71",
-        "@visulima/error": "4.4.15",
-        "@visulima/packem": "1.18.0",
+        "@secretlint/secretlint-rule-preset-recommend": "^9.0.0",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/estree-jsx": "^1.0.5",
+        "@types/hast": "^3.0.4",
+        "@types/mdast": "^4.0.4",
+        "@types/node": "22.10.10",
+        "@types/react": "^18.3.12",
+        "@types/react-dom": "^18.3.6",
+        "@types/unist": "^3.0.3",
+        "@visulima/packem": "^1.18.1",
         "@vitest/coverage-v8": "^3.0.4",
         "@vitest/ui": "^3.0.4",
         "conventional-changelog-conventionalcommits": "8.0.0",
-        "cross-env": "^7.0.3",
-        "detect-indent": "^7.0.1",
-        "esbuild": "0.24.2",
-        "eslint": "8.57.0",
+        "esbuild": "^0.24.2",
+        "eslint": "8.57.1",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
-        "fast-safe-stringify": "2.1.1",
+        "mdast-util-mdx-jsx": "^3.2.0",
+        "mdast-util-mdxjs-esm": "^2.0.1",
         "prettier": "^3.4.2",
-        "redos-detector": "^6.1.2",
-        "rimraf": "6.0.1",
-        "safe-regex2": "^4.0.1",
-        "semantic-release": "24.2.1",
-        "tempy": "^3.1.0",
-        "type-fest": "^4.33.0",
-        "typedoc": "0.27.6",
-        "typedoc-plugin-markdown": "4.4.1",
-        "typedoc-plugin-rename-defaults": "0.7.2",
-        "typescript": "5.7.3",
+        "react": "18.3.1",
+        "react-dom": "18.3.1",
+        "remark-mdx": "^3.1.0",
+        "remark-rehype": "^11.1.1",
+        "rimraf": "^6.0.1",
+        "secretlint": "9.0.0",
+        "semantic-release": "^24.2.1",
+        "typescript": "^5.7.3",
         "vitest": "^3.0.4",
-        "yaml": "^2.7.0"
+        "zod": "^3.24.1"
     },
     "peerDependencies": {
-        "yaml": "^2.7.0"
-    },
-    "peerDependenciesMeta": {
-        "yaml": {
-            "optional": true
-        }
+        "@content-collections/core": "0.x.x",
+        "@content-collections/mdx": "0.x.x",
+        "react": "18.3.1",
+        "react-dom": "18.3.1",
+        "zod": "3.x.x"
     },
     "engines": {
-        "node": ">=18.0.0 <=23.x"
+        "node": ">=18.* <=22.*"
     },
-    "os": [
-        "darwin",
-        "linux",
-        "win32"
-    ],
     "publishConfig": {
         "access": "public",
         "provenance": true
@@ -226,7 +198,8 @@
     "anolilab": {
         "eslint-config": {
             "plugin": {
-                "tsdoc": false
+                "tsdoc": false,
+                "etc": false
             },
             "warn_on_unsupported_typescript_version": false,
             "info_on_disabling_jsx_react_rule": false,
@@ -234,10 +207,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        "src/index.ts",
-        "src/error.ts",
-        "src/utils.ts"
-    ]
+    }
 }

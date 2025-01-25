@@ -103,6 +103,21 @@
     "module": "dist/is-color-supported.server.mjs",
     "browser": "./dist/is-color-supported.browser.mjs",
     "types": "dist/is-color-supported.server.d.ts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/is-color-supported.edge-light.d.ts",
+                "./dist/is-color-supported.browser.d.ts",
+                "./dist/is-color-supported.server.d.ts"
+            ],
+            "edge-light": [
+                "./dist/is-color-supported.edge-light.d.ts"
+            ],
+            "browser": [
+                "./dist/is-color-supported.browser.d.ts"
+            ]
+        }
+    },
     "files": [
         "dist/**",
         "README.md",
@@ -178,21 +193,6 @@
             "info_on_disabling_prettier_conflict_rule": false,
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
-        }
-    },
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/is-color-supported.edge-light.d.ts",
-                "./dist/is-color-supported.browser.d.ts",
-                "./dist/is-color-supported.server.d.ts"
-            ],
-            "edge-light": [
-                "./dist/is-color-supported.edge-light.d.ts"
-            ],
-            "browser": [
-                "./dist/is-color-supported.browser.d.ts"
-            ]
         }
     }
 }
