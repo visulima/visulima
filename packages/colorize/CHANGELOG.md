@@ -1,3 +1,20 @@
+## @visulima/colorize [1.4.20](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.19...@visulima/colorize@1.4.20) (2025-01-25)
+
+### Bug Fixes
+
+* fixed wrong node version range in package.json ([4ae2929](https://github.com/visulima/visulima/commit/4ae292984681c71a770e4d4560432f7b7c5a141a))
+
+### Miscellaneous Chores
+
+* fixed typescript url ([fe65a8c](https://github.com/visulima/visulima/commit/fe65a8c0296ece7ee26474c70d065b06d4d0da89))
+* updated all dev dependencies ([37fb298](https://github.com/visulima/visulima/commit/37fb298b2af7c63be64252024e54bb3af6ddabec))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.2.12
+* **@visulima/path:** upgraded to 1.3.4
+
 ## @visulima/colorize [1.4.19](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.18...@visulima/colorize@1.4.19) (2025-01-22)
 
 ### Bug Fixes
