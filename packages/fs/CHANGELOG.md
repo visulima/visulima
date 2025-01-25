@@ -1,3 +1,19 @@
+## @visulima/fs [3.0.1](https://github.com/visulima/visulima/compare/@visulima/fs@3.0.0...@visulima/fs@3.0.1) (2025-01-25)
+
+### Bug Fixes
+
+* fixed wrong node version range in package.json ([4ae2929](https://github.com/visulima/visulima/commit/4ae292984681c71a770e4d4560432f7b7c5a141a))
+
+### Miscellaneous Chores
+
+* fixed typescript url ([fe65a8c](https://github.com/visulima/visulima/commit/fe65a8c0296ece7ee26474c70d065b06d4d0da89))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.3.4
+* **@visulima/error:** upgraded to 4.4.15
+
 ## @visulima/fs [3.0.0](https://github.com/visulima/visulima/compare/@visulima/fs@2.3.8...@visulima/fs@3.0.0) (2025-01-25)
 
 ### ⚠ BREAKING CHANGES
