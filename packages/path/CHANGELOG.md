@@ -1,3 +1,16 @@
+## @visulima/path [1.3.4](https://github.com/visulima/visulima/compare/@visulima/path@1.3.3...@visulima/path@1.3.4) (2025-01-25)
+
+### Bug Fixes
+
+* fixed wrong node version range in package.json ([4ae2929](https://github.com/visulima/visulima/commit/4ae292984681c71a770e4d4560432f7b7c5a141a))
+
+### Miscellaneous Chores
+
+* fixed typescript url ([fe65a8c](https://github.com/visulima/visulima/commit/fe65a8c0296ece7ee26474c70d065b06d4d0da89))
+* lock file update, added dedupe lint command ([5ba7093](https://github.com/visulima/visulima/commit/5ba7093fefaca7ed2fce6b0cf6069a53c300456a))
+* updated all dev dependencies ([37fb298](https://github.com/visulima/visulima/commit/37fb298b2af7c63be64252024e54bb3af6ddabec))
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
 ## @visulima/path [1.3.3](https://github.com/visulima/visulima/compare/@visulima/path@1.3.2...@visulima/path@1.3.3) (2025-01-13)
 
 ### Bug Fixes
