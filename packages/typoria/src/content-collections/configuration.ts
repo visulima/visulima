@@ -50,7 +50,7 @@ export type SerializableTOC = {
     url: string;
 }[];
 
-export async function transformMDX<D extends BaseDocument>(
+export const transformMDX = async <D extends BaseDocument>(
     document: D,
     context: Context,
     options: TransformOptions = {},
@@ -63,7 +63,7 @@ export async function transformMDX<D extends BaseDocument>(
          */
         structuredData: InterfaceToObject<StructuredData>;
     }
-> {
+> => {
     const { generateStructuredData = true, rehypeCodeOptions, remarkHeadingOptions, remarkImageOptions, ...rest } = options;
 
     return context.cache(
@@ -113,7 +113,7 @@ export async function transformMDX<D extends BaseDocument>(
     );
 }
 
-export function createDocSchema(z: typeof Zod) {
+export const createDocSchema = (z: typeof Zod) => {
     return {
         // OpenAPI generated
         _openapi: z.record(z.any()).optional(),
@@ -124,7 +124,7 @@ export function createDocSchema(z: typeof Zod) {
     };
 }
 
-export function createMetaSchema(z: typeof Zod) {
+export const createMetaSchema = (z: typeof Zod) => {
     return {
         defaultOpen: z.boolean().optional(),
         description: z.string().optional(),

@@ -55,12 +55,48 @@
                 "default": "./dist/mdx-plugins/index.mjs"
             }
         },
+        "./content-collections": {
+            "require": {
+                "types": "./dist/content-collections/index.d.cts",
+                "default": "./dist/content-collections/index.cjs"
+            },
+            "import": {
+                "types": "./dist/content-collections/index.d.mts",
+                "default": "./dist/content-collections/index.mjs"
+            }
+        },
+        "./content-collections/configuration": {
+            "require": {
+                "types": "./dist/content-collections/configuration.d.cts",
+                "default": "./dist/content-collections/configuration.cjs"
+            },
+            "import": {
+                "types": "./dist/content-collections/configuration.d.mts",
+                "default": "./dist/content-collections/configuration.mjs"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
     "browser": "./dist/index.mjs",
     "types": "dist/index.d.ts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ],
+            "mdx-plugins": [
+                "./dist/mdx-plugins/index.d.ts"
+            ],
+            "content-collections": [
+                "./dist/content-collections/index.d.ts"
+            ],
+            "content-collections/configuration": [
+                "./dist/content-collections/configuration.d.ts"
+            ]
+        }
+    },
     "files": [
         "dist",
         "README.md",
@@ -84,48 +120,42 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "mdast": "^3.0.0",
-        "image-size": "^1.2.0",
-        "@visulima/path": "^1.3.3",
         "@shikijs/rehype": "^2.1.0",
         "@shikijs/transformers": "^2.1.0",
+        "@visulima/path": "^1.3.3",
         "github-slugger": "^2.0.0",
         "hast-util-to-estree": "^3.1.1",
         "hast-util-to-jsx-runtime": "^2.3.2",
-        "remark": "^15.0.0",
+        "image-size": "^1.2.0",
+        "mdast": "^3.0.0",
+        "remark": "^15.0.1",
         "remark-gfm": "^4.0.0",
         "shiki": "^2.1.0",
-        "unist-util-visit": "^5.0.0",
         "unified": "^11.0.5",
+        "unist-util-visit": "^5.0.0",
         "vfile": "^6.0.3"
     },
     "devDependencies": {
-        "react": "18.3.1",
-        "react-dom": "18.3.1",
-        "@types/react": "^18.3.12",
-        "@types/react-dom": "^18.3.6",
-        "@types/estree-jsx": "^1.0.5",
-        "@mdx-js/mdx": "^3.1.0",
-        "@types/hast": "^3.0.4",
-        "@types/mdast": "^4.0.3",
-        "@types/unist": "^3.0.3",
-        "mdast-util-mdx-jsx": "^3.2.0",
-        "mdast-util-mdxjs-esm": "^2.0.1",
-        "remark-mdx": "^3.1.0",
-        "remark-rehype": "^11.1.1",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-pnpm": "1.1.9",
         "@anolilab/semantic-release-preset": "^10.0.2",
         "@arethetypeswrong/cli": "^0.17.3",
-        "@babel/core": "^7.26.0",
+        "@babel/core": "^7.26.7",
         "@content-collections/core": "^0.8.0",
         "@content-collections/mdx": "^0.2.0",
+        "@mdx-js/mdx": "^3.1.0",
         "@rushstack/eslint-plugin-security": "^0.8.3",
         "@secretlint/secretlint-rule-preset-recommend": "^9.0.0",
         "@total-typescript/ts-reset": "^0.6.1",
+        "@types/estree-jsx": "^1.0.5",
+        "@types/hast": "^3.0.4",
+        "@types/mdast": "^4.0.4",
         "@types/node": "22.10.10",
-        "@visulima/packem": "^1.18.0",
+        "@types/react": "^18.3.12",
+        "@types/react-dom": "^18.3.6",
+        "@types/unist": "^3.0.3",
+        "@visulima/packem": "^1.18.1",
         "@vitest/coverage-v8": "^3.0.4",
         "@vitest/ui": "^3.0.4",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -137,7 +167,13 @@
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
+        "mdast-util-mdx-jsx": "^3.2.0",
+        "mdast-util-mdxjs-esm": "^2.0.1",
         "prettier": "^3.4.2",
+        "react": "18.3.1",
+        "react-dom": "18.3.1",
+        "remark-mdx": "^3.1.0",
+        "remark-rehype": "^11.1.1",
         "rimraf": "^6.0.1",
         "secretlint": "9.0.0",
         "semantic-release": "^24.2.1",
@@ -146,10 +182,10 @@
         "zod": "^3.24.1"
     },
     "peerDependencies": {
-        "react": "18.3.1",
-        "react-dom": "18.3.1",
         "@content-collections/core": "0.x.x",
         "@content-collections/mdx": "0.x.x",
+        "react": "18.3.1",
+        "react-dom": "18.3.1",
         "zod": "3.x.x"
     },
     "engines": {
@@ -170,16 +206,6 @@
             "info_on_disabling_prettier_conflict_rule": false,
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
-        }
-    },
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/index.d.ts"
-            ],
-            "mdx-plugins": [
-                "./dist/mdx-plugins/index.d.ts"
-            ]
         }
     }
 }
