@@ -2153,8 +2153,8 @@ If the directory structure does not exist, it is created.
 
 ```ts
 function ensureSymlink(
-   target, 
-   linkName, 
+   target,
+   linkName,
 type?): Promise<void>
 ```
 
@@ -2196,8 +2196,8 @@ A void promise that resolves once the link exists.
 
 ```ts
 function ensureSymlinkSync(
-   target, 
-   linkName, 
+   target,
+   linkName,
    type?): void
 ```
 
@@ -2365,8 +2365,8 @@ Returns a boolean indicating if the path is accessible or not.
 
 ```ts
 function move(
-   sourcePath, 
-   destinationPath, 
+   sourcePath,
+   destinationPath,
 options): Promise<void>
 ```
 
@@ -2415,8 +2415,8 @@ console.log('The file has been moved');
 
 ```ts
 function moveSync(
-   sourcePath, 
-   destinationPath, 
+   sourcePath,
+   destinationPath,
    options?): void
 ```
 
@@ -2549,8 +2549,8 @@ Defined in: [packages/fs/src/read/read-json.ts:8](https://github.com/visulima/vi
 
 ```ts
 function readJson<T>(
-   path, 
-   reviver, 
+   path,
+   reviver,
 options?): Promise<T>
 ```
 
@@ -2612,8 +2612,8 @@ Defined in: [packages/fs/src/read/read-json-sync.ts:8](https://github.com/visuli
 
 ```ts
 function readJsonSync<T>(
-   path, 
-   reviver, 
+   path,
+   reviver,
    options?): T
 ```
 
@@ -2749,8 +2749,8 @@ This option is ignored if the `recursive` option is not `true`.
 
 ```ts
 function rename(
-   source, 
-   destination, 
+   source,
+   destination,
 options?): Promise<void>
 ```
 
@@ -2799,8 +2799,8 @@ console.log('The file has been renamed');
 
 ```ts
 function renameSync(
-   source, 
-   destination, 
+   source,
+   destination,
    options?): void
 ```
 
@@ -2911,8 +2911,8 @@ Same as [`walk`](index.md#walk) but uses synchronous ops
 
 ```ts
 function writeFile(
-   path, 
-   content, 
+   path,
+   content,
 options?): Promise<void>
 ```
 
@@ -2942,8 +2942,8 @@ Defined in: [packages/fs/src/write/write-file.ts:15](https://github.com/visulima
 
 ```ts
 function writeFileSync(
-   path, 
-   content, 
+   path,
+   content,
    options?): void
 ```
 
@@ -2973,8 +2973,8 @@ Defined in: [packages/fs/src/write/write-file-sync.ts:15](https://github.com/vis
 
 ```ts
 function writeJson(
-   path, 
-   data, 
+   path,
+   data,
 options): Promise<void>
 ```
 
@@ -3004,8 +3004,8 @@ Defined in: [packages/fs/src/write/write-json.ts:11](https://github.com/visulima
 
 ```ts
 function writeJsonSync(
-   path, 
-   data, 
+   path,
+   data,
    options): void
 ```
 
@@ -3453,7 +3453,7 @@ This option is ignored if the `recursive` option is not `true`.
 ### FindUpName
 
 ```ts
-type FindUpName = 
+type FindUpName =
   | string[]
   | string
   | (directory) => FindUpNameFnResult;
@@ -3466,7 +3466,7 @@ Defined in: [packages/fs/src/types.ts:180](https://github.com/visulima/visulima/
 ### FindUpNameFnResult
 
 ```ts
-type FindUpNameFnResult = 
+type FindUpNameFnResult =
   | PathLike
   | Promise<PathLike | typeof FIND_UP_STOP>
   | typeof FIND_UP_STOP
@@ -3480,7 +3480,7 @@ Defined in: [packages/fs/src/types.ts:178](https://github.com/visulima/visulima/
 ### FindUpNameSync
 
 ```ts
-type FindUpNameSync = 
+type FindUpNameSync =
   | string[]
   | string
   | (directory) => FindUpNameSyncFnResult;
@@ -3616,7 +3616,7 @@ true
 ### ReadFileEncoding
 
 ```ts
-type ReadFileEncoding = 
+type ReadFileEncoding =
   | "ascii"
   | "base64"
   | "base64url"
@@ -4113,8 +4113,8 @@ Defined in: [packages/fs/src/utils/assert-valid-file-or-directory-path.ts:2](htt
 
 ```ts
 function parseJson<T>(
-   string, 
-   filename?, 
+   string,
+   filename?,
    options?): T
 ```
 
@@ -4146,9 +4146,9 @@ Defined in: [packages/fs/src/utils/parse-json.ts:60](https://github.com/visulima
 
 ```ts
 function parseJson<T>(
-   string, 
-   reviver, 
-   fileName?, 
+   string,
+   reviver,
+   fileName?,
    options?): T
 ```
 
@@ -4261,8 +4261,8 @@ Defined in: [packages/fs/src/read/read-yaml.ts:6](https://github.com/visulima/vi
 
 ```ts
 function readYaml<R>(
-   path, 
-   reviver?, 
+   path,
+   reviver?,
 options?): Promise<R>
 ```
 
@@ -4324,8 +4324,8 @@ Defined in: [packages/fs/src/read/read-yaml-sync.ts:6](https://github.com/visuli
 
 ```ts
 function readYamlSync<R>(
-   path, 
-   reviver?, 
+   path,
+   reviver?,
    options?): R
 ```
 
@@ -4361,8 +4361,8 @@ Defined in: [packages/fs/src/read/read-yaml-sync.ts:7](https://github.com/visuli
 
 ```ts
 function writeYaml(
-   path, 
-   data, 
+   path,
+   data,
 options?): Promise<void>
 ```
 
@@ -4390,9 +4390,9 @@ Defined in: [packages/fs/src/write/write-yaml.ts:10](https://github.com/visulima
 
 ```ts
 function writeYaml(
-   path, 
-   data, 
-   replacer?, 
+   path,
+   data,
+   replacer?,
 options?): Promise<void>
 ```
 
@@ -4428,8 +4428,8 @@ Defined in: [packages/fs/src/write/write-yaml.ts:16](https://github.com/visulima
 
 ```ts
 function writeYamlSync(
-   path, 
-   data, 
+   path,
+   data,
    options?): void
 ```
 
@@ -4457,9 +4457,9 @@ Defined in: [packages/fs/src/write/write-yaml-sync.ts:10](https://github.com/vis
 
 ```ts
 function writeYamlSync(
-   path, 
-   data, 
-   replacer?, 
+   path,
+   data,
+   replacer?,
    options?): void
 ```
 
@@ -4529,7 +4529,7 @@ If you would like to help take a look at the [list of issues](https://github.com
 The visulima fs is open-sourced software licensed under the [MIT][license-url]
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-[typescript-url]: "typescript"
+[typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/fs?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
 [npm-image]: https://img.shields.io/npm/v/@visulima/fs/latest.svg?style=for-the-badge&logo=npm
