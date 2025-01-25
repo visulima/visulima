@@ -1,6 +1,6 @@
 {
     "name": "@visulima/is-ansi-color-supported",
-    "version": "2.2.11",
+    "version": "2.2.12",
     "description": "Detect whether a terminal or browser supports ansi colors.",
     "keywords": [
         "anolilab",
@@ -157,7 +157,7 @@
         "vitest": "^3.0.4"
     },
     "engines": {
-        "node": ">=18.* <=23.*"
+        "node": ">=18.0.0 <=23.x"
     },
     "os": [
         "darwin",

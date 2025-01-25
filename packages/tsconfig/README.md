@@ -429,7 +429,7 @@ Defined in: [packages/tsconfig/src/find-tsconfig.ts:10](https://github.com/visul
 ##### cache?
 
 ```ts
-optional cache: 
+optional cache:
   | Map<string, TsConfigJsonResolved>
   | boolean;
 ```
@@ -547,7 +547,7 @@ If you would like to help take a look at the [list of issues](https://github.com
 The visulima tsconfig is open-sourced software licensed under the [MIT][license-url]
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-[typescript-url]: "typescript"
+[typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/tsconfig?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
 [npm-image]: https://img.shields.io/npm/v/@visulima/tsconfig/latest.svg?style=for-the-badge&logo=npm

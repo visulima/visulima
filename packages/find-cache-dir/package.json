@@ -1,6 +1,6 @@
 {
     "name": "@visulima/find-cache-dir",
-    "version": "1.0.24",
+    "version": "1.0.25",
     "description": "Finds the common standard cache directory",
     "keywords": [
         "visulima",
@@ -81,8 +81,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/fs": "3.0.0",
-        "@visulima/path": "1.3.3"
+        "@visulima/fs": "3.0.1",
+        "@visulima/path": "1.3.4"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -117,7 +117,7 @@
         "vitest": "^3.0.4"
     },
     "engines": {
-        "node": ">=18.* <=23.*"
+        "node": ">=18.0.0 <=23.x"
     },
     "publishConfig": {
         "access": "public",

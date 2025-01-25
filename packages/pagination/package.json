@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pagination",
-    "version": "3.0.25",
+    "version": "3.0.26",
     "description": "Simple Pagination for Node.",
     "keywords": [
         "anolilab",
@@ -110,7 +110,7 @@
         "vitest": "^3.0.4"
     },
     "engines": {
-        "node": ">=18.* <=23.*"
+        "node": ">=18.0.0 <=23.x"
     },
     "os": [
         "darwin",

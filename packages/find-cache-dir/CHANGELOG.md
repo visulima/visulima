@@ -1,3 +1,19 @@
+## @visulima/find-cache-dir [1.0.25](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@1.0.24...@visulima/find-cache-dir@1.0.25) (2025-01-25)
+
+### Bug Fixes
+
+* fixed wrong node version range in package.json ([4ae2929](https://github.com/visulima/visulima/commit/4ae292984681c71a770e4d4560432f7b7c5a141a))
+
+### Miscellaneous Chores
+
+* fixed typescript url ([fe65a8c](https://github.com/visulima/visulima/commit/fe65a8c0296ece7ee26474c70d065b06d4d0da89))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 3.0.1
+* **@visulima/path:** upgraded to 1.3.4
+
 ## @visulima/find-cache-dir [1.0.24](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@1.0.23...@visulima/find-cache-dir@1.0.24) (2025-01-25)
 
 ### Miscellaneous Chores
