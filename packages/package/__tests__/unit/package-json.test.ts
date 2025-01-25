@@ -126,6 +126,25 @@ describe("package-json", () => {
             });
         });
 
+        it("should throw an error in strict mode when warnings are found during package.json parsing", () => {
+            expect.assertions(1);
+
+            const packageFile = {
+                dependencies: {
+                    "dependency-1": "^1.0.0",
+                    "dependency-2": "^2.0.0",
+                },
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            expect(() => {
+                parsePackageJson(packageFile, {
+                    strict: true,
+                });
+            }).toThrow(Error);
+        });
+
         it("should accept a valid package.json file path and return a normalized package.json object", () => {
             expect.assertions(1);
 
@@ -229,6 +248,7 @@ describe("package-json", () => {
                 version: "1.0.0",
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
             const result = getPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "dependencies.dependency-1", undefined);
 
             expect(result).toBeUndefined();
@@ -401,7 +421,7 @@ describe("package-json", () => {
             await ensurePackages(packageJson, ["package1", "package2"], "dependencies", {
                 confirm: {
                     message: (packages) => `Custom Packages are required for this config: ${packages.join(", ")}. Do you want to install them?`,
-                }
+                },
             });
 
             expect(mockConfirm).toHaveBeenCalledWith(

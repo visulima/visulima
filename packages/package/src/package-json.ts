@@ -23,8 +23,6 @@ type ReadOptions = {
 
 const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
 
-export type FindPackageJsonCache = Cache<NormalizedReadResult>
-
 const normalizeInput = (input: Input, strict: boolean): NormalizedPackageJson => {
     const warnings: string[] = [];
 
@@ -37,12 +35,13 @@ const normalizeInput = (input: Input, strict: boolean): NormalizedPackageJson =>
     );
 
     if (strict && warnings.length > 0) {
-        // eslint-disable-next-line unicorn/error-message
-        throw new Error(warnings.join("\n"));
+        throw new Error(`The following warnings were encountered while normalizing package data:\n- ${warnings.join("\n- ")}`);
     }
 
     return input as NormalizedPackageJson;
 };
+
+export type FindPackageJsonCache = Cache<NormalizedReadResult>;
 
 export type NormalizedReadResult = {
     packageJson: NormalizedPackageJson;
@@ -257,7 +256,7 @@ export const ensurePackages = async (
     options: EnsurePackagesOptions = {},
 ): Promise<void> => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (process.env.CI || (isNode && !(process.stdout?.isTTY))) {
+    if (process.env.CI || (isNode && !process.stdout?.isTTY)) {
         console.warn("Skipping package installation because the process is not interactive.");
 
         return;
