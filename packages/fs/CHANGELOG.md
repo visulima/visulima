@@ -1,3 +1,18 @@
+## @visulima/fs [3.0.0](https://github.com/visulima/visulima/compare/@visulima/fs@2.3.8...@visulima/fs@3.0.0) (2025-01-25)
+
+### ⚠ BREAKING CHANGES
+
+* **fs:** The yaml dep is not more include out of the box, you need to install it your self, all yaml function can now be found on @visulima/fs/yaml
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* **fs:** moved all yaml functions out of the main exports into `/yaml`, to reduce the bundle size ([b3766a0](https://github.com/visulima/visulima/commit/b3766a002bd53ce6ec8ef63e7da22c5e4d03becc))
+
+### Miscellaneous Chores
+
+* updated all dev dependencies ([37fb298](https://github.com/visulima/visulima/commit/37fb298b2af7c63be64252024e54bb3af6ddabec))
+
 ## @visulima/fs [2.3.8](https://github.com/visulima/visulima/compare/@visulima/fs@2.3.7...@visulima/fs@2.3.8) (2025-01-22)
 
 ### Styles
