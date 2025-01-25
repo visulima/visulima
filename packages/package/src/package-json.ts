@@ -18,12 +18,22 @@ import isNode from "./utils/is-node";
 
 type ReadOptions = {
     cache?: FindPackageJsonCache | boolean;
+    ignoreWarnings?: (RegExp | string)[];
     strict?: boolean;
 };
 
 const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
 
-const normalizeInput = (input: Input, strict: boolean): NormalizedPackageJson => {
+/**
+ * Normalizes package.json data with optional strict validation and warning skipping.
+ *
+ * @param {Input} input - The package.json data to normalize
+ * @param {boolean} strict - Whether to throw errors on normalization warnings
+ * @param {(string | RegExp)[]} ignoreWarnings - List of warning messages or patterns to skip in strict mode
+ * @returns {NormalizedPackageJson} The normalized package.json data
+ * @throws {Error} When strict mode is enabled and non-skipped normalization warnings occur
+ */
+const normalizeInput = (input: Input, strict: boolean, ignoreWarnings: (RegExp | string)[] = []): NormalizedPackageJson => {
     const warnings: string[] = [];
 
     normalizeData(
@@ -35,7 +45,20 @@ const normalizeInput = (input: Input, strict: boolean): NormalizedPackageJson =>
     );
 
     if (strict && warnings.length > 0) {
-        throw new Error(`The following warnings were encountered while normalizing package data:\n- ${warnings.join("\n- ")}`);
+        const filteredWarnings = warnings.filter(
+            (warning) =>
+                !ignoreWarnings.some((pattern) => {
+                    if (pattern instanceof RegExp) {
+                        return pattern.test(warning);
+                    }
+
+                    return pattern === warning;
+                }),
+        );
+
+        if (filteredWarnings.length > 0) {
+            throw new Error(`The following warnings were encountered while normalizing package data:\n- ${filteredWarnings.join("\n- ")}`);
+        }
     }
 
     return input as NormalizedPackageJson;
@@ -80,7 +103,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
 
     const packageJson = await readJson(filePath);
 
-    normalizeInput(packageJson as Input, options.strict ?? false);
+    normalizeInput(packageJson as Input, options.strict ?? false, options.ignoreWarnings);
 
     const output = {
         packageJson: packageJson as NormalizedPackageJson,
@@ -115,7 +138,7 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
 
     const packageJson = readJsonSync(filePath);
 
-    normalizeInput(packageJson as Input, options.strict ?? false);
+    normalizeInput(packageJson as Input, options.strict ?? false, options.ignoreWarnings);
 
     const output = {
         packageJson: packageJson as NormalizedPackageJson,
@@ -164,6 +187,7 @@ export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJso
 export const parsePackageJson = (
     packageFile: JsonObject | string,
     options?: {
+        ignoreWarnings?: (RegExp | string)[];
         strict?: boolean;
     },
 ): NormalizedPackageJson => {
@@ -182,7 +206,7 @@ export const parsePackageJson = (
           ? readJsonSync(packageFile as string)
           : parseJson(packageFile as string);
 
-    normalizeInput(json as Input, options?.strict ?? false);
+    normalizeInput(json as Input, options?.strict ?? false, options?.ignoreWarnings);
 
     return json as NormalizedPackageJson;
 };

@@ -127,7 +127,7 @@ describe("package-json", () => {
         });
 
         it("should throw an error in strict mode when warnings are found during package.json parsing", () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             const packageFile = {
                 dependencies: {
@@ -138,11 +138,128 @@ describe("package-json", () => {
                 version: "1.0.0",
             };
 
-            expect(() => {
+            try {
                 parsePackageJson(packageFile, {
                     strict: true,
                 });
-            }).toThrow(Error);
+
+                expect(true).toBeFalsy();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                expect(error).toBeInstanceOf(Error);
+                expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
+            }
+        });
+
+        it("should not throw in strict mode when no warnings occur", () => {
+            const validPackage = {
+                author: "Test Author",
+                description: "A test package",
+                license: "MIT",
+                name: "test-package",
+                readme: "ERROR: No README data found!",
+                repository: {
+                    directory: "packages/package",
+                    type: "git",
+                    url: "git+https://github.com/visulima/visulima.git",
+                },
+                version: "1.0.0",
+            };
+
+            expect(() => {
+                parsePackageJson(validPackage, { strict: true });
+            }).not.toThrow();
+        });
+
+        it("should skip warnings that match exact strings in skipStrictWarnings", () => {
+            expect.assertions(3);
+
+            const packageFile = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            try {
+                parsePackageJson(packageFile, {
+                    skipStrictWarnings: ["No description", "No repository field."],
+                    strict: true,
+                });
+
+                expect(true).toBeFalsy();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
+                expect(error.message).not.toContain("No description");
+                expect(error.message).not.toContain("No repository field.");
+            }
+        });
+
+        it("should skip warnings that match regex patterns in skipStrictWarnings", () => {
+            expect.assertions(3);
+
+            const packageFile = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            try {
+                parsePackageJson(packageFile, {
+                    skipStrictWarnings: [/No description/, /repository field/],
+                    strict: true,
+                });
+
+                expect(true).toBeFalsy();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
+                expect(error.message).not.toContain("No description");
+                expect(error.message).not.toContain("No repository field.");
+            }
+        });
+
+        it("should skip warnings using both string and regex patterns", () => {
+            expect.assertions(3);
+
+            const packageFile = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            try {
+                parsePackageJson(packageFile, {
+                    skipStrictWarnings: ["No description", /repository field/],
+                    strict: true,
+                });
+
+                expect(true).toBeFalsy();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
+                expect(error.message).not.toContain("No description");
+                expect(error.message).not.toContain("No repository field.");
+            }
+        });
+
+        it("should throw on warnings that don't match skipStrictWarnings patterns", () => {
+            expect.assertions(2);
+
+            const packageFile = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            try {
+                parsePackageJson(packageFile, {
+                    skipStrictWarnings: ["Different warning", /unrelated.*/],
+                    strict: true,
+                });
+
+                expect(true).toBeFalsy();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                expect(error).toBeInstanceOf(Error);
+                expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
+            }
         });
 
         it("should accept a valid package.json file path and return a normalized package.json object", () => {
