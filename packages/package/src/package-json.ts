@@ -18,11 +18,60 @@ import isNode from "./utils/is-node";
 
 type ReadOptions = {
     cache?: FindPackageJsonCache | boolean;
+    ignoreWarnings?: (RegExp | string)[];
+    strict?: boolean;
 };
 
 const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
 
-export type FindPackageJsonCache = Cache<NormalizedReadResult>
+class PackageJsonValidationError extends Error {
+    public constructor(warnings: string[]) {
+        super(`The following warnings were encountered while normalizing package data:\n- ${warnings.join("\n- ")}`);
+        this.name = "PackageJsonValidationError";
+    }
+}
+
+/**
+ * Normalizes package.json data with optional strict validation and warning skipping.
+ *
+ * @param {Input} input - The package.json data to normalize
+ * @param {boolean} strict - Whether to throw errors on normalization warnings
+ * @param {(string | RegExp)[]} ignoreWarnings - List of warning messages or patterns to skip in strict mode
+ * @returns {NormalizedPackageJson} The normalized package.json data
+ * @throws {Error} When strict mode is enabled and non-skipped normalization warnings occur
+ */
+const normalizeInput = (input: Input, strict: boolean, ignoreWarnings: (RegExp | string)[] = []): NormalizedPackageJson => {
+    const warnings: string[] = [];
+
+    normalizeData(
+        input,
+        (message) => {
+            warnings.push(message);
+        },
+        strict,
+    );
+
+    if (strict && warnings.length > 0) {
+        const filteredWarnings = warnings.filter(
+            (warning) =>
+                !ignoreWarnings.some((pattern) => {
+                    if (pattern instanceof RegExp) {
+                        return pattern.test(warning);
+                    }
+
+                    return pattern === warning;
+                }),
+        );
+
+        if (filteredWarnings.length > 0) {
+            throw new PackageJsonValidationError(filteredWarnings);
+        }
+    }
+
+    return input as NormalizedPackageJson;
+};
+
+export type FindPackageJsonCache = Cache<NormalizedReadResult>;
 
 export type NormalizedReadResult = {
     packageJson: NormalizedPackageJson;
@@ -35,7 +84,8 @@ export type NormalizedReadResult = {
  * @param cwd - The current working directory.
  * @returns A `Promise` that resolves to an object containing the parsed package.json data and the file path.
  * The type of the returned promise is `Promise<NormalizedReadResult>`.
- * @throws An `Error` if the package.json file cannot be found.
+ *
+ * @throws {Error} If the package.json file cannot be found or if strict mode is enabled and normalize warnings are thrown.
  */
 export const findPackageJson = async (cwd?: URL | string, options: ReadOptions = {}): Promise<NormalizedReadResult> => {
     const findUpConfig: FindUpOptions = {
@@ -60,7 +110,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
 
     const packageJson = await readJson(filePath);
 
-    normalizeData(packageJson as Input);
+    normalizeInput(packageJson as Input, options.strict ?? false, options.ignoreWarnings);
 
     const output = {
         packageJson: packageJson as NormalizedPackageJson,
@@ -95,7 +145,7 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
 
     const packageJson = readJsonSync(filePath);
 
-    normalizeData(packageJson as Input);
+    normalizeInput(packageJson as Input, options.strict ?? false, options.ignoreWarnings);
 
     const output = {
         packageJson: packageJson as NormalizedPackageJson,
@@ -131,7 +181,23 @@ export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJso
     writeJsonSync(join(directory, "package.json"), data, writeOptions);
 };
 
-export const parsePackageJson = (packageFile: JsonObject | string): NormalizedPackageJson => {
+/**
+ * A synchronous function to parse the package.json file/object/string and return normalize the data.
+ *
+ * @param {string | (JsonObject)} packageFile
+ * @param {{strict?: false | true | undefined}} options
+ *
+ * @returns {NormalizedPackageJson}
+ *
+ * @throws {Error} If the packageFile parameter is not an object or a string or if strict mode is enabled and normalize warnings are thrown.
+ */
+export const parsePackageJson = (
+    packageFile: JsonObject | string,
+    options?: {
+        ignoreWarnings?: (RegExp | string)[];
+        strict?: boolean;
+    },
+): NormalizedPackageJson => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const isObject = packageFile !== null && typeof packageFile === "object" && !Array.isArray(packageFile);
     const isString = typeof packageFile === "string";
@@ -147,7 +213,7 @@ export const parsePackageJson = (packageFile: JsonObject | string): NormalizedPa
           ? readJsonSync(packageFile as string)
           : parseJson(packageFile as string);
 
-    normalizeData(json as Input);
+    normalizeInput(json as Input, options?.strict ?? false, options?.ignoreWarnings);
 
     return json as NormalizedPackageJson;
 };
@@ -221,7 +287,7 @@ export const ensurePackages = async (
     options: EnsurePackagesOptions = {},
 ): Promise<void> => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (process.env.CI || (isNode && !(process.stdout?.isTTY))) {
+    if (process.env.CI || (isNode && !process.stdout?.isTTY)) {
         console.warn("Skipping package installation because the process is not interactive.");
 
         return;
