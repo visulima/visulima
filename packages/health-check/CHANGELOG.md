@@ -1,3 +1,19 @@
+## @visulima/health-check [2.0.20](https://github.com/visulima/visulima/compare/@visulima/health-check@2.0.19...@visulima/health-check@2.0.20) (2025-01-25)
+
+### Bug Fixes
+
+* fixed wrong node version range in package.json ([4ae2929](https://github.com/visulima/visulima/commit/4ae292984681c71a770e4d4560432f7b7c5a141a))
+
+### Miscellaneous Chores
+
+* fixed typescript url ([fe65a8c](https://github.com/visulima/visulima/commit/fe65a8c0296ece7ee26474c70d065b06d4d0da89))
+* updated all dev dependencies ([37fb298](https://github.com/visulima/visulima/commit/37fb298b2af7c63be64252024e54bb3af6ddabec))
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
+### Tests
+
+* **health-check:** improved test of dns check ([47d60cd](https://github.com/visulima/visulima/commit/47d60cdd5b8d2959620de278cfe85ac910f7dd2d))
+
 ## @visulima/health-check [2.0.19](https://github.com/visulima/visulima/compare/@visulima/health-check@2.0.18...@visulima/health-check@2.0.19) (2025-01-12)
 
 ### Bug Fixes
