@@ -39,6 +39,22 @@ yarn add @visulima/fs
 pnpm add @visulima/fs
 ```
 
+> **Note:** If you want to parse or write YAML, you'll need to install `yaml` as well.
+
+```sh
+npm install yaml
+```
+
+```sh
+yarn add yaml
+```
+
+```sh
+pnpm add yaml
+```
+
+> After installing `yaml`, you can use the `readYaml`, `readYamlSync` and `writeYaml`, `writeYamlSync` functions from `@visulima/fs/yaml`.
+
 ## Usage
 
 ## walk
@@ -443,7 +459,7 @@ The printable section of the JSON which produces the error.
 
 ### AlreadyExistsError
 
-Defined in: [packages/fs/src/error/already-exists-error.ts:4](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/already-exists-error.ts#L4)
+Defined in: [packages/fs/src/error/already-exists-error.ts:4](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/already-exists-error.ts#L4)
 
 Error thrown when file already exists.
 
@@ -459,7 +475,7 @@ Error thrown when file already exists.
 new AlreadyExistsError(message): AlreadyExistsError
 ```
 
-Defined in: [packages/fs/src/error/already-exists-error.ts:9](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/already-exists-error.ts#L9)
+Defined in: [packages/fs/src/error/already-exists-error.ts:9](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/already-exists-error.ts#L9)
 
 Creates a new instance.
 
@@ -491,7 +507,7 @@ Error.constructor
 get code(): string
 ```
 
-Defined in: [packages/fs/src/error/already-exists-error.ts:14](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/already-exists-error.ts#L14)
+Defined in: [packages/fs/src/error/already-exists-error.ts:14](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/already-exists-error.ts#L14)
 
 ###### Returns
 
@@ -503,7 +519,7 @@ Defined in: [packages/fs/src/error/already-exists-error.ts:14](https://github.co
 set code(_name): void
 ```
 
-Defined in: [packages/fs/src/error/already-exists-error.ts:19](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/already-exists-error.ts#L19)
+Defined in: [packages/fs/src/error/already-exists-error.ts:19](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/already-exists-error.ts#L19)
 
 ###### Parameters
 
@@ -523,7 +539,7 @@ Defined in: [packages/fs/src/error/already-exists-error.ts:19](https://github.co
 get name(): string
 ```
 
-Defined in: [packages/fs/src/error/already-exists-error.ts:24](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/already-exists-error.ts#L24)
+Defined in: [packages/fs/src/error/already-exists-error.ts:24](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/already-exists-error.ts#L24)
 
 ###### Returns
 
@@ -535,7 +551,7 @@ Defined in: [packages/fs/src/error/already-exists-error.ts:24](https://github.co
 set name(_name): void
 ```
 
-Defined in: [packages/fs/src/error/already-exists-error.ts:29](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/already-exists-error.ts#L29)
+Defined in: [packages/fs/src/error/already-exists-error.ts:29](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/already-exists-error.ts#L29)
 
 ###### Parameters
 
@@ -681,7 +697,7 @@ Error.stackTraceLimit
 
 ### DirectoryError
 
-Defined in: [packages/fs/src/error/directory-error.ts:4](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/directory-error.ts#L4)
+Defined in: [packages/fs/src/error/directory-error.ts:4](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/directory-error.ts#L4)
 
 Error thrown when an operation is not allowed on a directory.
 
@@ -697,7 +713,7 @@ Error thrown when an operation is not allowed on a directory.
 new DirectoryError(message): DirectoryError
 ```
 
-Defined in: [packages/fs/src/error/directory-error.ts:9](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/directory-error.ts#L9)
+Defined in: [packages/fs/src/error/directory-error.ts:9](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/directory-error.ts#L9)
 
 Creates a new instance.
 
@@ -729,7 +745,7 @@ Error.constructor
 get code(): string
 ```
 
-Defined in: [packages/fs/src/error/directory-error.ts:14](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/directory-error.ts#L14)
+Defined in: [packages/fs/src/error/directory-error.ts:14](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/directory-error.ts#L14)
 
 ###### Returns
 
@@ -741,7 +757,7 @@ Defined in: [packages/fs/src/error/directory-error.ts:14](https://github.com/vis
 set code(_name): void
 ```
 
-Defined in: [packages/fs/src/error/directory-error.ts:19](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/directory-error.ts#L19)
+Defined in: [packages/fs/src/error/directory-error.ts:19](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/directory-error.ts#L19)
 
 ###### Parameters
 
@@ -761,7 +777,7 @@ Defined in: [packages/fs/src/error/directory-error.ts:19](https://github.com/vis
 get name(): string
 ```
 
-Defined in: [packages/fs/src/error/directory-error.ts:24](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/directory-error.ts#L24)
+Defined in: [packages/fs/src/error/directory-error.ts:24](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/directory-error.ts#L24)
 
 ###### Returns
 
@@ -773,7 +789,7 @@ Defined in: [packages/fs/src/error/directory-error.ts:24](https://github.com/vis
 set name(_name): void
 ```
 
-Defined in: [packages/fs/src/error/directory-error.ts:29](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/directory-error.ts#L29)
+Defined in: [packages/fs/src/error/directory-error.ts:29](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/directory-error.ts#L29)
 
 ###### Parameters
 
@@ -919,7 +935,7 @@ Error.stackTraceLimit
 
 ### NotEmptyError
 
-Defined in: [packages/fs/src/error/not-empty-error.ts:4](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-empty-error.ts#L4)
+Defined in: [packages/fs/src/error/not-empty-error.ts:4](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-empty-error.ts#L4)
 
 Error thrown when a directory is not empty.
 
@@ -935,7 +951,7 @@ Error thrown when a directory is not empty.
 new NotEmptyError(message): NotEmptyError
 ```
 
-Defined in: [packages/fs/src/error/not-empty-error.ts:9](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-empty-error.ts#L9)
+Defined in: [packages/fs/src/error/not-empty-error.ts:9](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-empty-error.ts#L9)
 
 Creates a new instance.
 
@@ -967,7 +983,7 @@ Error.constructor
 get code(): string
 ```
 
-Defined in: [packages/fs/src/error/not-empty-error.ts:14](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-empty-error.ts#L14)
+Defined in: [packages/fs/src/error/not-empty-error.ts:14](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-empty-error.ts#L14)
 
 ###### Returns
 
@@ -979,7 +995,7 @@ Defined in: [packages/fs/src/error/not-empty-error.ts:14](https://github.com/vis
 set code(_name): void
 ```
 
-Defined in: [packages/fs/src/error/not-empty-error.ts:19](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-empty-error.ts#L19)
+Defined in: [packages/fs/src/error/not-empty-error.ts:19](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-empty-error.ts#L19)
 
 ###### Parameters
 
@@ -999,7 +1015,7 @@ Defined in: [packages/fs/src/error/not-empty-error.ts:19](https://github.com/vis
 get name(): string
 ```
 
-Defined in: [packages/fs/src/error/not-empty-error.ts:24](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-empty-error.ts#L24)
+Defined in: [packages/fs/src/error/not-empty-error.ts:24](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-empty-error.ts#L24)
 
 ###### Returns
 
@@ -1011,7 +1027,7 @@ Defined in: [packages/fs/src/error/not-empty-error.ts:24](https://github.com/vis
 set name(_name): void
 ```
 
-Defined in: [packages/fs/src/error/not-empty-error.ts:29](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-empty-error.ts#L29)
+Defined in: [packages/fs/src/error/not-empty-error.ts:29](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-empty-error.ts#L29)
 
 ###### Parameters
 
@@ -1157,7 +1173,7 @@ Error.stackTraceLimit
 
 ### NotFoundError
 
-Defined in: [packages/fs/src/error/not-found-error.ts:4](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-found-error.ts#L4)
+Defined in: [packages/fs/src/error/not-found-error.ts:4](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-found-error.ts#L4)
 
 Error thrown when a file or directory is not found.
 
@@ -1173,7 +1189,7 @@ Error thrown when a file or directory is not found.
 new NotFoundError(message): NotFoundError
 ```
 
-Defined in: [packages/fs/src/error/not-found-error.ts:9](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-found-error.ts#L9)
+Defined in: [packages/fs/src/error/not-found-error.ts:9](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-found-error.ts#L9)
 
 Creates a new instance.
 
@@ -1205,7 +1221,7 @@ Error.constructor
 get code(): string
 ```
 
-Defined in: [packages/fs/src/error/not-found-error.ts:14](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-found-error.ts#L14)
+Defined in: [packages/fs/src/error/not-found-error.ts:14](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-found-error.ts#L14)
 
 ###### Returns
 
@@ -1217,7 +1233,7 @@ Defined in: [packages/fs/src/error/not-found-error.ts:14](https://github.com/vis
 set code(_name): void
 ```
 
-Defined in: [packages/fs/src/error/not-found-error.ts:19](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-found-error.ts#L19)
+Defined in: [packages/fs/src/error/not-found-error.ts:19](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-found-error.ts#L19)
 
 ###### Parameters
 
@@ -1237,7 +1253,7 @@ Defined in: [packages/fs/src/error/not-found-error.ts:19](https://github.com/vis
 get name(): string
 ```
 
-Defined in: [packages/fs/src/error/not-found-error.ts:24](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-found-error.ts#L24)
+Defined in: [packages/fs/src/error/not-found-error.ts:24](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-found-error.ts#L24)
 
 ###### Returns
 
@@ -1249,7 +1265,7 @@ Defined in: [packages/fs/src/error/not-found-error.ts:24](https://github.com/vis
 set name(_name): void
 ```
 
-Defined in: [packages/fs/src/error/not-found-error.ts:29](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/not-found-error.ts#L29)
+Defined in: [packages/fs/src/error/not-found-error.ts:29](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/not-found-error.ts#L29)
 
 ###### Parameters
 
@@ -1395,7 +1411,7 @@ Error.stackTraceLimit
 
 ### PermissionError
 
-Defined in: [packages/fs/src/error/permission-error.ts:4](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/permission-error.ts#L4)
+Defined in: [packages/fs/src/error/permission-error.ts:4](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/permission-error.ts#L4)
 
 Error thrown when an operation is not permitted.
 
@@ -1411,7 +1427,7 @@ Error thrown when an operation is not permitted.
 new PermissionError(message): PermissionError
 ```
 
-Defined in: [packages/fs/src/error/permission-error.ts:9](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/permission-error.ts#L9)
+Defined in: [packages/fs/src/error/permission-error.ts:9](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/permission-error.ts#L9)
 
 Creates a new instance.
 
@@ -1443,7 +1459,7 @@ Error.constructor
 get code(): string
 ```
 
-Defined in: [packages/fs/src/error/permission-error.ts:14](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/permission-error.ts#L14)
+Defined in: [packages/fs/src/error/permission-error.ts:14](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/permission-error.ts#L14)
 
 ###### Returns
 
@@ -1455,7 +1471,7 @@ Defined in: [packages/fs/src/error/permission-error.ts:14](https://github.com/vi
 set code(_name): void
 ```
 
-Defined in: [packages/fs/src/error/permission-error.ts:19](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/permission-error.ts#L19)
+Defined in: [packages/fs/src/error/permission-error.ts:19](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/permission-error.ts#L19)
 
 ###### Parameters
 
@@ -1475,7 +1491,7 @@ Defined in: [packages/fs/src/error/permission-error.ts:19](https://github.com/vi
 get name(): string
 ```
 
-Defined in: [packages/fs/src/error/permission-error.ts:24](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/permission-error.ts#L24)
+Defined in: [packages/fs/src/error/permission-error.ts:24](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/permission-error.ts#L24)
 
 ###### Returns
 
@@ -1487,7 +1503,7 @@ Defined in: [packages/fs/src/error/permission-error.ts:24](https://github.com/vi
 set name(_name): void
 ```
 
-Defined in: [packages/fs/src/error/permission-error.ts:29](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/permission-error.ts#L29)
+Defined in: [packages/fs/src/error/permission-error.ts:29](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/permission-error.ts#L29)
 
 ###### Parameters
 
@@ -1633,7 +1649,7 @@ Error.stackTraceLimit
 
 ### WalkError
 
-Defined in: [packages/fs/src/error/walk-error.ts:7](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/walk-error.ts#L7)
+Defined in: [packages/fs/src/error/walk-error.ts:7](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/walk-error.ts#L7)
 
 Error thrown in walk or walkSync during iteration.
 
@@ -1649,7 +1665,7 @@ Error thrown in walk or walkSync during iteration.
 new WalkError(cause, root): WalkError
 ```
 
-Defined in: [packages/fs/src/error/walk-error.ts:12](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/walk-error.ts#L12)
+Defined in: [packages/fs/src/error/walk-error.ts:12](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/walk-error.ts#L12)
 
 Constructs a new instance.
 
@@ -1683,7 +1699,7 @@ Error.constructor
 get name(): string
 ```
 
-Defined in: [packages/fs/src/error/walk-error.ts:21](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/walk-error.ts#L21)
+Defined in: [packages/fs/src/error/walk-error.ts:21](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/walk-error.ts#L21)
 
 ###### Returns
 
@@ -1695,7 +1711,7 @@ Defined in: [packages/fs/src/error/walk-error.ts:21](https://github.com/visulima
 set name(_name): void
 ```
 
-Defined in: [packages/fs/src/error/walk-error.ts:26](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/walk-error.ts#L26)
+Defined in: [packages/fs/src/error/walk-error.ts:26](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/walk-error.ts#L26)
 
 ###### Parameters
 
@@ -1781,7 +1797,7 @@ Error.message
 root: string;
 ```
 
-Defined in: [packages/fs/src/error/walk-error.ts:9](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/walk-error.ts#L9)
+Defined in: [packages/fs/src/error/walk-error.ts:9](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/walk-error.ts#L9)
 
 File path of the root that's being walked.
 
@@ -1862,7 +1878,7 @@ Re-exports [JSONError](utils.md#jsonerror)
 function collect(directory, options): Promise<string[]>
 ```
 
-Defined in: [packages/fs/src/find/collect.ts:4](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/find/collect.ts#L4)
+Defined in: [packages/fs/src/find/collect.ts:4](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/find/collect.ts#L4)
 
 #### Parameters
 
@@ -1886,7 +1902,7 @@ Defined in: [packages/fs/src/find/collect.ts:4](https://github.com/visulima/visu
 function collectSync(directory, options): string[]
 ```
 
-Defined in: [packages/fs/src/find/collect-sync.ts:4](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/find/collect-sync.ts#L4)
+Defined in: [packages/fs/src/find/collect-sync.ts:4](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/find/collect-sync.ts#L4)
 
 #### Parameters
 
@@ -1910,7 +1926,7 @@ Defined in: [packages/fs/src/find/collect-sync.ts:4](https://github.com/visulima
 function detect(content): "\n" | "\r\n"
 ```
 
-Defined in: [packages/fs/src/eol.ts:20](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/eol.ts#L20)
+Defined in: [packages/fs/src/eol.ts:20](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/eol.ts#L20)
 
 Detect the EOL character for string input.
 Returns null if no newline.
@@ -1933,7 +1949,7 @@ Returns null if no newline.
 function emptyDir(dir, options?): Promise<void>
 ```
 
-Defined in: [packages/fs/src/remove/empty-dir.ts:19](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/remove/empty-dir.ts#L19)
+Defined in: [packages/fs/src/remove/empty-dir.ts:19](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/remove/empty-dir.ts#L19)
 
 Ensures that a directory is empty.
 Deletes directory contents if the directory is not empty.
@@ -1962,7 +1978,7 @@ The directory itself is not deleted.
 function emptyDirSync(dir, options?): void
 ```
 
-Defined in: [packages/fs/src/remove/empty-dir-sync.ts:18](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/remove/empty-dir-sync.ts#L18)
+Defined in: [packages/fs/src/remove/empty-dir-sync.ts:18](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/remove/empty-dir-sync.ts#L18)
 
 Ensures that a directory is empty.
 Deletes directory contents if the directory is not empty.
@@ -1991,7 +2007,7 @@ The directory itself is not deleted.
 function ensureDir(directory): Promise<void>
 ```
 
-Defined in: [packages/fs/src/ensure/ensure-dir.ts:12](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/ensure/ensure-dir.ts#L12)
+Defined in: [packages/fs/src/ensure/ensure-dir.ts:12](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/ensure/ensure-dir.ts#L12)
 
 Ensures that the directory exists.
 If the directory structure does not exist, it is created. Like mkdir -p.
@@ -2014,7 +2030,7 @@ If the directory structure does not exist, it is created. Like mkdir -p.
 function ensureDirSync(directory): void
 ```
 
-Defined in: [packages/fs/src/ensure/ensure-dir-sync.ts:12](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/ensure/ensure-dir-sync.ts#L12)
+Defined in: [packages/fs/src/ensure/ensure-dir-sync.ts:12](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/ensure/ensure-dir-sync.ts#L12)
 
 Ensures that the directory exists.
 If the directory structure does not exist, it is created. Like mkdir -p.
@@ -2037,7 +2053,7 @@ If the directory structure does not exist, it is created. Like mkdir -p.
 function ensureFile(filePath): Promise<void>
 ```
 
-Defined in: [packages/fs/src/ensure/ensure-file.ts:16](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/ensure/ensure-file.ts#L16)
+Defined in: [packages/fs/src/ensure/ensure-file.ts:16](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/ensure/ensure-file.ts#L16)
 
 Ensures that the file exists.
 If the file that is requested to be created is in directories that do not exist,
@@ -2061,7 +2077,7 @@ these directories are created. If the file already exists, it is NOTMODIFIED.
 function ensureFileSync(filePath): void
 ```
 
-Defined in: [packages/fs/src/ensure/ensure-file-sync.ts:16](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/ensure/ensure-file-sync.ts#L16)
+Defined in: [packages/fs/src/ensure/ensure-file-sync.ts:16](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/ensure/ensure-file-sync.ts#L16)
 
 Ensures that the file exists.
 If the file that is requested to be created is in directories that do not exist,
@@ -2085,7 +2101,7 @@ these directories are created. If the file already exists, it is NOTMODIFIED.
 function ensureLink(source, destination): Promise<void>
 ```
 
-Defined in: [packages/fs/src/ensure/ensure-link.ts:15](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/ensure/ensure-link.ts#L15)
+Defined in: [packages/fs/src/ensure/ensure-link.ts:15](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/ensure/ensure-link.ts#L15)
 
 Ensures that the hard link exists.
 If the directory structure does not exist, it is created.
@@ -2112,7 +2128,7 @@ If the directory structure does not exist, it is created.
 function ensureLinkSync(source, destination): void
 ```
 
-Defined in: [packages/fs/src/ensure/ensure-link-sync.ts:15](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/ensure/ensure-link-sync.ts#L15)
+Defined in: [packages/fs/src/ensure/ensure-link-sync.ts:15](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/ensure/ensure-link-sync.ts#L15)
 
 Ensures that the hard link exists.
 If the directory structure does not exist, it is created.
@@ -2142,7 +2158,7 @@ function ensureSymlink(
 type?): Promise<void>
 ```
 
-Defined in: [packages/fs/src/ensure/ensure-symlink.ts:28](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/ensure/ensure-symlink.ts#L28)
+Defined in: [packages/fs/src/ensure/ensure-symlink.ts:28](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/ensure/ensure-symlink.ts#L28)
 
 Ensures that the link exists, and points to a valid file.
 If the directory structure does not exist, it is created.
@@ -2185,7 +2201,7 @@ function ensureSymlinkSync(
    type?): void
 ```
 
-Defined in: [packages/fs/src/ensure/ensure-symlink-sync.ts:28](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/ensure/ensure-symlink-sync.ts#L28)
+Defined in: [packages/fs/src/ensure/ensure-symlink-sync.ts:28](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/ensure/ensure-symlink-sync.ts#L28)
 
 Ensures that the link exists, and points to a valid file.
 If the directory structure does not exist, it is created.
@@ -2225,7 +2241,7 @@ A void.
 function findUp(name, options): Promise<string>
 ```
 
-Defined in: [packages/fs/src/find/find-up.ts:11](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/find/find-up.ts#L11)
+Defined in: [packages/fs/src/find/find-up.ts:11](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/find/find-up.ts#L11)
 
 #### Parameters
 
@@ -2249,7 +2265,7 @@ Defined in: [packages/fs/src/find/find-up.ts:11](https://github.com/visulima/vis
 function findUpSync(name, options): string
 ```
 
-Defined in: [packages/fs/src/find/find-up-sync.ts:11](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/find/find-up-sync.ts#L11)
+Defined in: [packages/fs/src/find/find-up-sync.ts:11](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/find/find-up-sync.ts#L11)
 
 #### Parameters
 
@@ -2273,7 +2289,7 @@ Defined in: [packages/fs/src/find/find-up-sync.ts:11](https://github.com/visulim
 function format(content, eol): string
 ```
 
-Defined in: [packages/fs/src/eol.ts:36](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/eol.ts#L36)
+Defined in: [packages/fs/src/eol.ts:36](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/eol.ts#L36)
 
 Format the file to the targeted EOL.
 
@@ -2299,7 +2315,7 @@ Format the file to the targeted EOL.
 function isAccessible(path, mode?): Promise<boolean>
 ```
 
-Defined in: [packages/fs/src/is-accessible.ts:9](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/is-accessible.ts#L9)
+Defined in: [packages/fs/src/is-accessible.ts:9](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/is-accessible.ts#L9)
 
 Returns a Promise that resolves to a boolean indicating if the path is accessible or not.
 
@@ -2325,7 +2341,7 @@ Returns a Promise that resolves to a boolean indicating if the path is accessibl
 function isAccessibleSync(path, mode?): boolean
 ```
 
-Defined in: [packages/fs/src/is-accessible-sync.ts:9](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/is-accessible-sync.ts#L9)
+Defined in: [packages/fs/src/is-accessible-sync.ts:9](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/is-accessible-sync.ts#L9)
 
 Returns a boolean indicating if the path is accessible or not.
 
@@ -2354,7 +2370,7 @@ function move(
 options): Promise<void>
 ```
 
-Defined in: [packages/fs/src/move/index.ts:35](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/move/index.ts#L35)
+Defined in: [packages/fs/src/move/index.ts:35](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/move/index.ts#L35)
 
 Move a file asynchronously.
 
@@ -2404,7 +2420,7 @@ function moveSync(
    options?): void
 ```
 
-Defined in: [packages/fs/src/move/index.ts:61](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/move/index.ts#L61)
+Defined in: [packages/fs/src/move/index.ts:61](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/move/index.ts#L61)
 
 Move a file synchronously.
 
@@ -2451,7 +2467,7 @@ console.log('The file has been moved');
 function readFile<O>(path, options?): Promise<ContentType<O>>
 ```
 
-Defined in: [packages/fs/src/read/read-file.ts:20](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/read/read-file.ts#L20)
+Defined in: [packages/fs/src/read/read-file.ts:20](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/read/read-file.ts#L20)
 
 #### Type Parameters
 
@@ -2479,7 +2495,7 @@ Defined in: [packages/fs/src/read/read-file.ts:20](https://github.com/visulima/v
 function readFileSync<O>(path, options?): ContentType<O>
 ```
 
-Defined in: [packages/fs/src/read/read-file-sync.ts:18](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/read/read-file-sync.ts#L18)
+Defined in: [packages/fs/src/read/read-file-sync.ts:18](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/read/read-file-sync.ts#L18)
 
 #### Type Parameters
 
@@ -2509,7 +2525,7 @@ Defined in: [packages/fs/src/read/read-file-sync.ts:18](https://github.com/visul
 function readJson<T>(path, options?): Promise<T>
 ```
 
-Defined in: [packages/fs/src/read/read-json.ts:8](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/read/read-json.ts#L8)
+Defined in: [packages/fs/src/read/read-json.ts:8](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/read/read-json.ts#L8)
 
 ##### Type Parameters
 
@@ -2538,7 +2554,7 @@ function readJson<T>(
 options?): Promise<T>
 ```
 
-Defined in: [packages/fs/src/read/read-json.ts:10](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/read/read-json.ts#L10)
+Defined in: [packages/fs/src/read/read-json.ts:10](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/read/read-json.ts#L10)
 
 ##### Type Parameters
 
@@ -2572,7 +2588,7 @@ Defined in: [packages/fs/src/read/read-json.ts:10](https://github.com/visulima/v
 function readJsonSync<T>(path, options?): T
 ```
 
-Defined in: [packages/fs/src/read/read-json-sync.ts:8](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/read/read-json-sync.ts#L8)
+Defined in: [packages/fs/src/read/read-json-sync.ts:8](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/read/read-json-sync.ts#L8)
 
 ##### Type Parameters
 
@@ -2601,7 +2617,7 @@ function readJsonSync<T>(
    options?): T
 ```
 
-Defined in: [packages/fs/src/read/read-json-sync.ts:10](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/read/read-json-sync.ts#L10)
+Defined in: [packages/fs/src/read/read-json-sync.ts:10](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/read/read-json-sync.ts#L10)
 
 ##### Type Parameters
 
@@ -2627,139 +2643,13 @@ Defined in: [packages/fs/src/read/read-json-sync.ts:10](https://github.com/visul
 
 ***
 
-### readYaml()
-
-#### Call Signature
-
-```ts
-function readYaml<R>(path, options?): Promise<R>
-```
-
-Defined in: [packages/fs/src/read/read-yaml.ts:6](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/read/read-yaml.ts#L6)
-
-##### Type Parameters
-
-• **R** = `Record`\<`string`, `unknown`\>
-
-##### Parameters
-
-###### path
-
-`string` | `URL`
-
-###### options?
-
-`ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
-
-##### Returns
-
-`Promise`\<`R`\>
-
-#### Call Signature
-
-```ts
-function readYaml<R>(
-   path, 
-   reviver?, 
-options?): Promise<R>
-```
-
-Defined in: [packages/fs/src/read/read-yaml.ts:7](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/read/read-yaml.ts#L7)
-
-##### Type Parameters
-
-• **R** = `Record`\<`string`, `unknown`\>
-
-##### Parameters
-
-###### path
-
-`string` | `URL`
-
-###### reviver?
-
-`YamlReviver`
-
-###### options?
-
-`ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
-
-##### Returns
-
-`Promise`\<`R`\>
-
-***
-
-### readYamlSync()
-
-#### Call Signature
-
-```ts
-function readYamlSync<R>(path, options?): R
-```
-
-Defined in: [packages/fs/src/read/read-yaml-sync.ts:6](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/read/read-yaml-sync.ts#L6)
-
-##### Type Parameters
-
-• **R** = `Record`\<`string`, `unknown`\>
-
-##### Parameters
-
-###### path
-
-`string` | `URL`
-
-###### options?
-
-`ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
-
-##### Returns
-
-`R`
-
-#### Call Signature
-
-```ts
-function readYamlSync<R>(
-   path, 
-   reviver?, 
-   options?): R
-```
-
-Defined in: [packages/fs/src/read/read-yaml-sync.ts:7](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/read/read-yaml-sync.ts#L7)
-
-##### Type Parameters
-
-• **R** = `Record`\<`string`, `unknown`\>
-
-##### Parameters
-
-###### path
-
-`string` | `URL`
-
-###### reviver?
-
-`YamlReviver`
-
-###### options?
-
-`ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
-
-##### Returns
-
-`R`
-
-***
-
 ### remove()
 
 ```ts
 function remove(path, options): Promise<void>
 ```
 
-Defined in: [packages/fs/src/remove/remove.ts:5](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/remove/remove.ts#L5)
+Defined in: [packages/fs/src/remove/remove.ts:5](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/remove/remove.ts#L5)
 
 #### Parameters
 
@@ -2810,7 +2700,7 @@ This option is ignored if the `recursive` option is not `true`.
 function removeSync(path, options): void
 ```
 
-Defined in: [packages/fs/src/remove/remove-sync.ts:5](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/remove/remove-sync.ts#L5)
+Defined in: [packages/fs/src/remove/remove-sync.ts:5](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/remove/remove-sync.ts#L5)
 
 #### Parameters
 
@@ -2864,7 +2754,7 @@ function rename(
 options?): Promise<void>
 ```
 
-Defined in: [packages/fs/src/move/index.ts:85](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/move/index.ts#L85)
+Defined in: [packages/fs/src/move/index.ts:85](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/move/index.ts#L85)
 
 Rename a file asynchronously.
 
@@ -2914,7 +2804,7 @@ function renameSync(
    options?): void
 ```
 
-Defined in: [packages/fs/src/move/index.ts:109](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/move/index.ts#L109)
+Defined in: [packages/fs/src/move/index.ts:109](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/move/index.ts#L109)
 
 Rename a file synchronously.
 
@@ -2961,7 +2851,7 @@ console.log('The file has been renamed');
 function walk(directory, __namedParameters): AsyncIterableIterator<WalkEntry>
 ```
 
-Defined in: [packages/fs/src/find/walk.ts:52](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/find/walk.ts#L52)
+Defined in: [packages/fs/src/find/walk.ts:52](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/find/walk.ts#L52)
 
 Walks the file tree rooted at root, yielding each file or directory in the
 tree filtered according to the given options.
@@ -2997,7 +2887,7 @@ Options:
 function walkSync(directory, __namedParameters): IterableIterator<WalkEntry>
 ```
 
-Defined in: [packages/fs/src/find/walk-sync.ts:40](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/find/walk-sync.ts#L40)
+Defined in: [packages/fs/src/find/walk-sync.ts:40](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/find/walk-sync.ts#L40)
 
 Same as [`walk`](index.md#walk) but uses synchronous ops
 
@@ -3026,7 +2916,7 @@ function writeFile(
 options?): Promise<void>
 ```
 
-Defined in: [packages/fs/src/write/write-file.ts:15](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/write/write-file.ts#L15)
+Defined in: [packages/fs/src/write/write-file.ts:15](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/write/write-file.ts#L15)
 
 #### Parameters
 
@@ -3057,7 +2947,7 @@ function writeFileSync(
    options?): void
 ```
 
-Defined in: [packages/fs/src/write/write-file-sync.ts:15](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/write/write-file-sync.ts#L15)
+Defined in: [packages/fs/src/write/write-file-sync.ts:15](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/write/write-file-sync.ts#L15)
 
 #### Parameters
 
@@ -3088,7 +2978,7 @@ function writeJson(
 options): Promise<void>
 ```
 
-Defined in: [packages/fs/src/write/write-json.ts:11](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/write/write-json.ts#L11)
+Defined in: [packages/fs/src/write/write-json.ts:11](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/write/write-json.ts#L11)
 
 #### Parameters
 
@@ -3119,7 +3009,7 @@ function writeJsonSync(
    options): void
 ```
 
-Defined in: [packages/fs/src/write/write-json-sync.ts:11](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/write/write-json-sync.ts#L11)
+Defined in: [packages/fs/src/write/write-json-sync.ts:11](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/write/write-json-sync.ts#L11)
 
 #### Parameters
 
@@ -3139,140 +3029,6 @@ Defined in: [packages/fs/src/write/write-json-sync.ts:11](https://github.com/vis
 
 `void`
 
-***
-
-### writeYaml()
-
-#### Call Signature
-
-```ts
-function writeYaml(
-   path, 
-   data, 
-options?): Promise<void>
-```
-
-Defined in: [packages/fs/src/write/write-yaml.ts:10](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/write/write-yaml.ts#L10)
-
-##### Parameters
-
-###### path
-
-`string` | `URL`
-
-###### data
-
-`any`
-
-###### options?
-
-`Options`
-
-##### Returns
-
-`Promise`\<`void`\>
-
-#### Call Signature
-
-```ts
-function writeYaml(
-   path, 
-   data, 
-   replacer?, 
-options?): Promise<void>
-```
-
-Defined in: [packages/fs/src/write/write-yaml.ts:16](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/write/write-yaml.ts#L16)
-
-##### Parameters
-
-###### path
-
-`string` | `URL`
-
-###### data
-
-`any`
-
-###### replacer?
-
-[`JsonReplacer`](index.md#jsonreplacer)
-
-###### options?
-
-`string` | `number` | `Options`
-
-##### Returns
-
-`Promise`\<`void`\>
-
-***
-
-### writeYamlSync()
-
-#### Call Signature
-
-```ts
-function writeYamlSync(
-   path, 
-   data, 
-   options?): void
-```
-
-Defined in: [packages/fs/src/write/write-yaml-sync.ts:10](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/write/write-yaml-sync.ts#L10)
-
-##### Parameters
-
-###### path
-
-`string` | `URL`
-
-###### data
-
-`any`
-
-###### options?
-
-`Options`
-
-##### Returns
-
-`void`
-
-#### Call Signature
-
-```ts
-function writeYamlSync(
-   path, 
-   data, 
-   replacer?, 
-   options?): void
-```
-
-Defined in: [packages/fs/src/write/write-yaml-sync.ts:16](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/write/write-yaml-sync.ts#L16)
-
-##### Parameters
-
-###### path
-
-`string` | `URL`
-
-###### data
-
-`any`
-
-###### replacer?
-
-[`JsonReplacer`](index.md#jsonreplacer)
-
-###### options?
-
-`string` | `number` | `Options`
-
-##### Returns
-
-`void`
-
 ## Variables
 
 ### CRLF
@@ -3281,7 +3037,7 @@ Defined in: [packages/fs/src/write/write-yaml-sync.ts:16](https://github.com/vis
 const CRLF: "\r\n";
 ```
 
-Defined in: [packages/fs/src/eol.ts:9](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/eol.ts#L9)
+Defined in: [packages/fs/src/eol.ts:9](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/eol.ts#L9)
 
 End-of-line character for Windows platforms.
 
@@ -3293,7 +3049,7 @@ End-of-line character for Windows platforms.
 const EOL: "\n" | "\r\n";
 ```
 
-Defined in: [packages/fs/src/eol.ts:14](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/eol.ts#L14)
+Defined in: [packages/fs/src/eol.ts:14](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/eol.ts#L14)
 
 End-of-line character evaluated for the current platform.
 
@@ -3305,7 +3061,7 @@ End-of-line character evaluated for the current platform.
 const F_OK: 0 = 0;
 ```
 
-Defined in: [packages/fs/src/constants.ts:2](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/constants.ts#L2)
+Defined in: [packages/fs/src/constants.ts:2](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/constants.ts#L2)
 
 Is the path visible to the calling process?
 
@@ -3317,7 +3073,7 @@ Is the path visible to the calling process?
 const FIND_UP_STOP: typeof FIND_UP_STOP;
 ```
 
-Defined in: [packages/fs/src/constants.ts:13](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/constants.ts#L13)
+Defined in: [packages/fs/src/constants.ts:13](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/constants.ts#L13)
 
 ***
 
@@ -3327,7 +3083,7 @@ Defined in: [packages/fs/src/constants.ts:13](https://github.com/visulima/visuli
 const LF: "\n";
 ```
 
-Defined in: [packages/fs/src/eol.ts:6](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/eol.ts#L6)
+Defined in: [packages/fs/src/eol.ts:6](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/eol.ts#L6)
 
 End-of-line character for POSIX platforms such as macOS and Linux.
 
@@ -3339,7 +3095,7 @@ End-of-line character for POSIX platforms such as macOS and Linux.
 const R_OK: 4 = 4;
 ```
 
-Defined in: [packages/fs/src/constants.ts:5](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/constants.ts#L5)
+Defined in: [packages/fs/src/constants.ts:5](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/constants.ts#L5)
 
 Is the path readable to the calling process?
 
@@ -3351,7 +3107,7 @@ Is the path readable to the calling process?
 const W_OK: 2 = 2;
 ```
 
-Defined in: [packages/fs/src/constants.ts:8](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/constants.ts#L8)
+Defined in: [packages/fs/src/constants.ts:8](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/constants.ts#L8)
 
 Is the path writable to the calling process?
 
@@ -3363,7 +3119,7 @@ Is the path writable to the calling process?
 const X_OK: 1 = 1;
 ```
 
-Defined in: [packages/fs/src/constants.ts:11](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/constants.ts#L11)
+Defined in: [packages/fs/src/constants.ts:11](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/constants.ts#L11)
 
 Is the path executable to the calling process?
 
@@ -3371,7 +3127,7 @@ Is the path executable to the calling process?
 
 ### WalkEntry
 
-Defined in: [packages/fs/src/types.ts:56](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L56)
+Defined in: [packages/fs/src/types.ts:56](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L56)
 
 #### Extends
 
@@ -3481,13 +3237,13 @@ Pick.name
 path: string;
 ```
 
-Defined in: [packages/fs/src/types.ts:57](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L57)
+Defined in: [packages/fs/src/types.ts:57](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L57)
 
 ***
 
 ### WalkOptions
 
-Defined in: [packages/fs/src/types.ts:9](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L9)
+Defined in: [packages/fs/src/types.ts:9](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L9)
 
 #### Properties
 
@@ -3497,7 +3253,7 @@ Defined in: [packages/fs/src/types.ts:9](https://github.com/visulima/visulima/bl
 optional extensions: string[];
 ```
 
-Defined in: [packages/fs/src/types.ts:15](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L15)
+Defined in: [packages/fs/src/types.ts:15](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L15)
 
 List of file extensions used to filter entries.
 If specified, entries without the file extension specified by this option are excluded.
@@ -3514,7 +3270,7 @@ If specified, entries without the file extension specified by this option are ex
 optional followSymlinks: boolean;
 ```
 
-Defined in: [packages/fs/src/types.ts:20](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L20)
+Defined in: [packages/fs/src/types.ts:20](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L20)
 
 Indicates whether symlinks should be resolved or not.
 
@@ -3530,7 +3286,7 @@ Indicates whether symlinks should be resolved or not.
 optional includeDirs: boolean;
 ```
 
-Defined in: [packages/fs/src/types.ts:25](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L25)
+Defined in: [packages/fs/src/types.ts:25](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L25)
 
 Indicates whether directory entries should be included or not.
 
@@ -3546,7 +3302,7 @@ Indicates whether directory entries should be included or not.
 optional includeFiles: boolean;
 ```
 
-Defined in: [packages/fs/src/types.ts:30](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L30)
+Defined in: [packages/fs/src/types.ts:30](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L30)
 
 Indicates whether file entries should be included or not.
 
@@ -3562,7 +3318,7 @@ Indicates whether file entries should be included or not.
 optional includeSymlinks: boolean;
 ```
 
-Defined in: [packages/fs/src/types.ts:36](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L36)
+Defined in: [packages/fs/src/types.ts:36](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L36)
 
 Indicates whether symlink entries should be included or not.
 This option is meaningful only if `followSymlinks` is set to `false`.
@@ -3579,7 +3335,7 @@ This option is meaningful only if `followSymlinks` is set to `false`.
 optional match: (string | RegExp)[];
 ```
 
-Defined in: [packages/fs/src/types.ts:42](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L42)
+Defined in: [packages/fs/src/types.ts:42](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L42)
 
 List of regular expression or glob patterns used to filter entries.
 If specified, entries that do not match the patterns specified by this option are excluded.
@@ -3596,7 +3352,7 @@ If specified, entries that do not match the patterns specified by this option ar
 optional maxDepth: number;
 ```
 
-Defined in: [packages/fs/src/types.ts:47](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L47)
+Defined in: [packages/fs/src/types.ts:47](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L47)
 
 The maximum depth of the file tree to be walked recursively.
 
@@ -3612,7 +3368,7 @@ The maximum depth of the file tree to be walked recursively.
 optional skip: (string | RegExp)[];
 ```
 
-Defined in: [packages/fs/src/types.ts:53](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L53)
+Defined in: [packages/fs/src/types.ts:53](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L53)
 
 List of regular expression or glob patterns used to filter entries.
 If specified, entries matching the patterns specified by this option are excluded.
@@ -3631,7 +3387,7 @@ If specified, entries matching the patterns specified by this option are exclude
 type CodeFrameLocation = object;
 ```
 
-Defined in: [packages/fs/src/types.ts:91](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L91)
+Defined in: [packages/fs/src/types.ts:91](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L91)
 
 #### Type declaration
 
@@ -3655,7 +3411,7 @@ line: number;
 type EmptyDirOptions = object;
 ```
 
-Defined in: [packages/fs/src/types.ts:188](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L188)
+Defined in: [packages/fs/src/types.ts:188](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L188)
 
 #### Type declaration
 
@@ -3703,7 +3459,7 @@ type FindUpName =
   | (directory) => FindUpNameFnResult;
 ```
 
-Defined in: [packages/fs/src/types.ts:180](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L180)
+Defined in: [packages/fs/src/types.ts:180](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L180)
 
 ***
 
@@ -3717,7 +3473,7 @@ type FindUpNameFnResult =
   | undefined;
 ```
 
-Defined in: [packages/fs/src/types.ts:178](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L178)
+Defined in: [packages/fs/src/types.ts:178](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L178)
 
 ***
 
@@ -3730,7 +3486,7 @@ type FindUpNameSync =
   | (directory) => FindUpNameSyncFnResult;
 ```
 
-Defined in: [packages/fs/src/types.ts:185](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L185)
+Defined in: [packages/fs/src/types.ts:185](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L185)
 
 ***
 
@@ -3740,7 +3496,7 @@ Defined in: [packages/fs/src/types.ts:185](https://github.com/visulima/visulima/
 type FindUpNameSyncFnResult = PathLike | typeof FIND_UP_STOP | undefined;
 ```
 
-Defined in: [packages/fs/src/types.ts:183](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L183)
+Defined in: [packages/fs/src/types.ts:183](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L183)
 
 ***
 
@@ -3750,7 +3506,7 @@ Defined in: [packages/fs/src/types.ts:183](https://github.com/visulima/visulima/
 type FindUpOptions = object;
 ```
 
-Defined in: [packages/fs/src/types.ts:170](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L170)
+Defined in: [packages/fs/src/types.ts:170](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L170)
 
 #### Type declaration
 
@@ -3786,7 +3542,7 @@ optional type: "directory" | "file";
 type JsonReplacer = (number | string)[] | (this, key, value) => unknown | null;
 ```
 
-Defined in: [packages/fs/src/types.ts:143](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L143)
+Defined in: [packages/fs/src/types.ts:143](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L143)
 
 ***
 
@@ -3796,7 +3552,7 @@ Defined in: [packages/fs/src/types.ts:143](https://github.com/visulima/visulima/
 type JsonReviver = Parameters<typeof JSON["parse"]>["1"];
 ```
 
-Defined in: [packages/fs/src/types.ts:89](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L89)
+Defined in: [packages/fs/src/types.ts:89](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L89)
 
 ***
 
@@ -3806,7 +3562,7 @@ Defined in: [packages/fs/src/types.ts:89](https://github.com/visulima/visulima/b
 type MoveOptions = object;
 ```
 
-Defined in: [packages/fs/src/move/types.ts:3](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/move/types.ts#L3)
+Defined in: [packages/fs/src/move/types.ts:3](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/move/types.ts#L3)
 
 #### Type declaration
 
@@ -3874,7 +3630,7 @@ type ReadFileEncoding =
   | "utf16le";
 ```
 
-Defined in: [packages/fs/src/types.ts:61](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L61)
+Defined in: [packages/fs/src/types.ts:61](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L61)
 
 ***
 
@@ -3884,7 +3640,7 @@ Defined in: [packages/fs/src/types.ts:61](https://github.com/visulima/visulima/b
 type ReadFileOptions<C> = object;
 ```
 
-Defined in: [packages/fs/src/types.ts:63](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L63)
+Defined in: [packages/fs/src/types.ts:63](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L63)
 
 #### Type Parameters
 
@@ -3936,7 +3692,7 @@ The flag used to open the file. Default: `r`
 type ReadJsonOptions = CodeFrameOptions & object;
 ```
 
-Defined in: [packages/fs/src/types.ts:104](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L104)
+Defined in: [packages/fs/src/types.ts:104](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L104)
 
 #### Type declaration
 
@@ -3964,7 +3720,7 @@ optional beforeParse: (source) => string;
 type WriteFileOptions = object;
 ```
 
-Defined in: [packages/fs/src/types.ts:108](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L108)
+Defined in: [packages/fs/src/types.ts:108](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L108)
 
 #### Type declaration
 
@@ -4036,7 +3792,7 @@ Recursively create parent directories if needed. Default: `true`
 type WriteJsonOptions = WriteFileOptions & object;
 ```
 
-Defined in: [packages/fs/src/types.ts:146](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L146)
+Defined in: [packages/fs/src/types.ts:146](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L146)
 
 #### Type declaration
 
@@ -4091,23 +3847,13 @@ Override the default `JSON.stringify` method.
 ###### Returns
 
 `string`
-
-***
-
-### YamlReplacer
-
-```ts
-type YamlReplacer = JsonReplacer;
-```
-
-Defined in: [packages/fs/src/types.ts:144](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/types.ts#L144)
 # utils
 
 ## Classes
 
 ### JSONError
 
-Defined in: [packages/fs/src/error/json-error.ts:1](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/json-error.ts#L1)
+Defined in: [packages/fs/src/error/json-error.ts:1](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/json-error.ts#L1)
 
 #### Extends
 
@@ -4121,7 +3867,7 @@ Defined in: [packages/fs/src/error/json-error.ts:1](https://github.com/visulima/
 new JSONError(message): JSONError
 ```
 
-Defined in: [packages/fs/src/error/json-error.ts:11](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/json-error.ts#L11)
+Defined in: [packages/fs/src/error/json-error.ts:11](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/json-error.ts#L11)
 
 ###### Parameters
 
@@ -4149,7 +3895,7 @@ Error.constructor
 get message(): string
 ```
 
-Defined in: [packages/fs/src/error/json-error.ts:21](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/json-error.ts#L21)
+Defined in: [packages/fs/src/error/json-error.ts:21](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/json-error.ts#L21)
 
 ###### Returns
 
@@ -4161,7 +3907,7 @@ Defined in: [packages/fs/src/error/json-error.ts:21](https://github.com/visulima
 set message(message): void
 ```
 
-Defined in: [packages/fs/src/error/json-error.ts:25](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/json-error.ts#L25)
+Defined in: [packages/fs/src/error/json-error.ts:25](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/json-error.ts#L25)
 
 ###### Parameters
 
@@ -4233,7 +3979,7 @@ Error.cause
 codeFrame: string;
 ```
 
-Defined in: [packages/fs/src/error/json-error.ts:4](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/json-error.ts#L4)
+Defined in: [packages/fs/src/error/json-error.ts:4](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/json-error.ts#L4)
 
 ##### fileName
 
@@ -4241,7 +3987,7 @@ Defined in: [packages/fs/src/error/json-error.ts:4](https://github.com/visulima/
 fileName: string;
 ```
 
-Defined in: [packages/fs/src/error/json-error.ts:2](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/json-error.ts#L2)
+Defined in: [packages/fs/src/error/json-error.ts:2](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/json-error.ts#L2)
 
 ##### name
 
@@ -4249,7 +3995,7 @@ Defined in: [packages/fs/src/error/json-error.ts:2](https://github.com/visulima/
 readonly name: "JSONError" = "JSONError";
 ```
 
-Defined in: [packages/fs/src/error/json-error.ts:7](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/error/json-error.ts#L7)
+Defined in: [packages/fs/src/error/json-error.ts:7](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/error/json-error.ts#L7)
 
 ###### Overrides
 
@@ -4327,7 +4073,7 @@ Error.stackTraceLimit
 function assertValidFileContents(contents): void
 ```
 
-Defined in: [packages/fs/src/utils/assert-valid-file-contents.ts:2](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/utils/assert-valid-file-contents.ts#L2)
+Defined in: [packages/fs/src/utils/assert-valid-file-contents.ts:2](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/utils/assert-valid-file-contents.ts#L2)
 
 #### Parameters
 
@@ -4347,7 +4093,7 @@ Defined in: [packages/fs/src/utils/assert-valid-file-contents.ts:2](https://gith
 function assertValidFileOrDirectoryPath(fileOrDirectoryPath): void
 ```
 
-Defined in: [packages/fs/src/utils/assert-valid-file-or-directory-path.ts:2](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/utils/assert-valid-file-or-directory-path.ts#L2)
+Defined in: [packages/fs/src/utils/assert-valid-file-or-directory-path.ts:2](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/utils/assert-valid-file-or-directory-path.ts#L2)
 
 #### Parameters
 
@@ -4372,7 +4118,7 @@ function parseJson<T>(
    options?): T
 ```
 
-Defined in: [packages/fs/src/utils/parse-json.ts:60](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/utils/parse-json.ts#L60)
+Defined in: [packages/fs/src/utils/parse-json.ts:60](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/utils/parse-json.ts#L60)
 
 ##### Type Parameters
 
@@ -4406,7 +4152,7 @@ function parseJson<T>(
    options?): T
 ```
 
-Defined in: [packages/fs/src/utils/parse-json.ts:61](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/utils/parse-json.ts#L61)
+Defined in: [packages/fs/src/utils/parse-json.ts:61](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/utils/parse-json.ts#L61)
 
 ##### Type Parameters
 
@@ -4442,7 +4188,7 @@ Defined in: [packages/fs/src/utils/parse-json.ts:61](https://github.com/visulima
 function stripJsonComments(jsonString, __namedParameters): string
 ```
 
-Defined in: [packages/fs/src/utils/strip-json-comments.ts:5](https://github.com/visulima/visulima/blob/b309b541cc634c8a1016a02f604ced5999e9d18f/packages/fs/src/utils/strip-json-comments.ts#L5)
+Defined in: [packages/fs/src/utils/strip-json-comments.ts:5](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/utils/strip-json-comments.ts#L5)
 
 #### Parameters
 
@@ -4479,6 +4225,277 @@ Defined in: node\_modules/.pnpm/@visulima+path@1.3.3/node\_modules/@visulima/pat
 #### Returns
 
 `string`
+# yaml
+
+## Functions
+
+### readYaml()
+
+#### Call Signature
+
+```ts
+function readYaml<R>(path, options?): Promise<R>
+```
+
+Defined in: [packages/fs/src/read/read-yaml.ts:6](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/read/read-yaml.ts#L6)
+
+##### Type Parameters
+
+• **R** = `Record`\<`string`, `unknown`\>
+
+##### Parameters
+
+###### path
+
+`string` | `URL`
+
+###### options?
+
+`ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
+
+##### Returns
+
+`Promise`\<`R`\>
+
+#### Call Signature
+
+```ts
+function readYaml<R>(
+   path, 
+   reviver?, 
+options?): Promise<R>
+```
+
+Defined in: [packages/fs/src/read/read-yaml.ts:7](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/read/read-yaml.ts#L7)
+
+##### Type Parameters
+
+• **R** = `Record`\<`string`, `unknown`\>
+
+##### Parameters
+
+###### path
+
+`string` | `URL`
+
+###### reviver?
+
+`YamlReviver`
+
+###### options?
+
+`ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
+
+##### Returns
+
+`Promise`\<`R`\>
+
+***
+
+### readYamlSync()
+
+#### Call Signature
+
+```ts
+function readYamlSync<R>(path, options?): R
+```
+
+Defined in: [packages/fs/src/read/read-yaml-sync.ts:6](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/read/read-yaml-sync.ts#L6)
+
+##### Type Parameters
+
+• **R** = `Record`\<`string`, `unknown`\>
+
+##### Parameters
+
+###### path
+
+`string` | `URL`
+
+###### options?
+
+`ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
+
+##### Returns
+
+`R`
+
+#### Call Signature
+
+```ts
+function readYamlSync<R>(
+   path, 
+   reviver?, 
+   options?): R
+```
+
+Defined in: [packages/fs/src/read/read-yaml-sync.ts:7](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/read/read-yaml-sync.ts#L7)
+
+##### Type Parameters
+
+• **R** = `Record`\<`string`, `unknown`\>
+
+##### Parameters
+
+###### path
+
+`string` | `URL`
+
+###### reviver?
+
+`YamlReviver`
+
+###### options?
+
+`ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
+
+##### Returns
+
+`R`
+
+***
+
+### writeYaml()
+
+#### Call Signature
+
+```ts
+function writeYaml(
+   path, 
+   data, 
+options?): Promise<void>
+```
+
+Defined in: [packages/fs/src/write/write-yaml.ts:10](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/write/write-yaml.ts#L10)
+
+##### Parameters
+
+###### path
+
+`string` | `URL`
+
+###### data
+
+`any`
+
+###### options?
+
+`Options`
+
+##### Returns
+
+`Promise`\<`void`\>
+
+#### Call Signature
+
+```ts
+function writeYaml(
+   path, 
+   data, 
+   replacer?, 
+options?): Promise<void>
+```
+
+Defined in: [packages/fs/src/write/write-yaml.ts:16](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/write/write-yaml.ts#L16)
+
+##### Parameters
+
+###### path
+
+`string` | `URL`
+
+###### data
+
+`any`
+
+###### replacer?
+
+[`JsonReplacer`](index.md#jsonreplacer)
+
+###### options?
+
+`string` | `number` | `Options`
+
+##### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### writeYamlSync()
+
+#### Call Signature
+
+```ts
+function writeYamlSync(
+   path, 
+   data, 
+   options?): void
+```
+
+Defined in: [packages/fs/src/write/write-yaml-sync.ts:10](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/write/write-yaml-sync.ts#L10)
+
+##### Parameters
+
+###### path
+
+`string` | `URL`
+
+###### data
+
+`any`
+
+###### options?
+
+`Options`
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+```ts
+function writeYamlSync(
+   path, 
+   data, 
+   replacer?, 
+   options?): void
+```
+
+Defined in: [packages/fs/src/write/write-yaml-sync.ts:16](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/write/write-yaml-sync.ts#L16)
+
+##### Parameters
+
+###### path
+
+`string` | `URL`
+
+###### data
+
+`any`
+
+###### replacer?
+
+[`JsonReplacer`](index.md#jsonreplacer)
+
+###### options?
+
+`string` | `number` | `Options`
+
+##### Returns
+
+`void`
+
+## Type Aliases
+
+### YamlReplacer
+
+```ts
+type YamlReplacer = JsonReplacer;
+```
+
+Defined in: [packages/fs/src/types.ts:144](https://github.com/visulima/visulima/blob/37fb298b2af7c63be64252024e54bb3af6ddabec/packages/fs/src/types.ts#L144)
 
 <!-- /TYPEDOC -->
 
