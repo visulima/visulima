@@ -22,8 +22,6 @@ export { default as readFile } from "./read/read-file";
 export { default as readFileSync } from "./read/read-file-sync";
 export { default as readJson } from "./read/read-json";
 export { default as readJsonSync } from "./read/read-json-sync";
-export { default as readYaml } from "./read/read-yaml";
-export { default as readYamlSync } from "./read/read-yaml-sync";
 export { default as emptyDir } from "./remove/empty-dir";
 export { default as emptyDirSync } from "./remove/empty-dir-sync";
 export { default as remove } from "./remove/remove";
@@ -45,11 +43,8 @@ export type {
     WalkOptions,
     WriteFileOptions,
     WriteJsonOptions,
-    YamlReplacer,
 } from "./types";
 export { default as writeFile } from "./write/write-file";
 export { default as writeFileSync } from "./write/write-file-sync";
 export { default as writeJson } from "./write/write-json";
 export { default as writeJsonSync } from "./write/write-json-sync";
-export { default as writeYaml } from "./write/write-yaml";
-export { default as writeYamlSync } from "./write/write-yaml-sync";
