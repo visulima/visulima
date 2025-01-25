@@ -171,7 +171,7 @@ describe("package-json", () => {
             }).not.toThrow();
         });
 
-        it("should skip warnings that match exact strings in skipStrictWarnings", () => {
+        it("should skip warnings that match exact strings in ignoreWarnings", () => {
             expect.assertions(3);
 
             const packageFile = {
@@ -181,7 +181,7 @@ describe("package-json", () => {
 
             try {
                 parsePackageJson(packageFile, {
-                    skipStrictWarnings: ["No description", "No repository field."],
+                    ignoreWarnings: ["No description", "No repository field."],
                     strict: true,
                 });
 
@@ -194,7 +194,7 @@ describe("package-json", () => {
             }
         });
 
-        it("should skip warnings that match regex patterns in skipStrictWarnings", () => {
+        it("should skip warnings that match regex patterns in ignoreWarnings", () => {
             expect.assertions(3);
 
             const packageFile = {
@@ -204,7 +204,7 @@ describe("package-json", () => {
 
             try {
                 parsePackageJson(packageFile, {
-                    skipStrictWarnings: [/No description/, /repository field/],
+                    ignoreWarnings: [/No description/, /repository field/],
                     strict: true,
                 });
 
@@ -227,7 +227,7 @@ describe("package-json", () => {
 
             try {
                 parsePackageJson(packageFile, {
-                    skipStrictWarnings: ["No description", /repository field/],
+                    ignoreWarnings: ["No description", /repository field/],
                     strict: true,
                 });
 
@@ -240,7 +240,7 @@ describe("package-json", () => {
             }
         });
 
-        it("should throw on warnings that don't match skipStrictWarnings patterns", () => {
+        it("should throw on warnings that don't match ignoreWarnings patterns", () => {
             expect.assertions(2);
 
             const packageFile = {
@@ -250,7 +250,7 @@ describe("package-json", () => {
 
             try {
                 parsePackageJson(packageFile, {
-                    skipStrictWarnings: ["Different warning", /unrelated.*/],
+                    ignoreWarnings: ["Different warning", /unrelated.*/],
                     strict: true,
                 });
 

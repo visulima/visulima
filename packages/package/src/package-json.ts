@@ -24,6 +24,13 @@ type ReadOptions = {
 
 const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
 
+class PackageJsonValidationError extends Error {
+    public constructor(warnings: string[]) {
+        super(`The following warnings were encountered while normalizing package data:\n- ${warnings.join("\n- ")}`);
+        this.name = "PackageJsonValidationError";
+    }
+}
+
 /**
  * Normalizes package.json data with optional strict validation and warning skipping.
  *
@@ -57,7 +64,7 @@ const normalizeInput = (input: Input, strict: boolean, ignoreWarnings: (RegExp |
         );
 
         if (filteredWarnings.length > 0) {
-            throw new Error(`The following warnings were encountered while normalizing package data:\n- ${filteredWarnings.join("\n- ")}`);
+            throw new PackageJsonValidationError(filteredWarnings);
         }
     }
 
