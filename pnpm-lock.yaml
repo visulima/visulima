@@ -722,8 +722,8 @@ importers:
         specifier: 3.0.17
         version: 3.0.17(zod@3.24.1)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.72
-        version: 2.0.72(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)
+        specifier: 2.0.73
+        version: 2.0.73(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -843,8 +843,8 @@ importers:
         specifier: 2.0.34
         version: 2.0.34(@prisma/client@6.2.1(prisma@6.2.1))(prisma@6.2.1)
       '@visulima/fs':
-        specifier: 2.3.8
-        version: 2.3.8
+        specifier: 3.0.0
+        version: 3.0.0(yaml@2.7.0)
       '@vitest/coverage-v8':
         specifier: ^3.0.4
         version: 3.0.4(@vitest/browser@3.0.4)(vitest@3.0.4)
@@ -1107,8 +1107,8 @@ importers:
         specifier: 1.4.19
         version: 1.4.19
       '@visulima/find-cache-dir':
-        specifier: 1.0.23
-        version: 1.0.23
+        specifier: 1.0.24
+        version: 1.0.24(yaml@2.7.0)
       '@visulima/pail':
         specifier: 2.1.19
         version: 2.1.19(rotating-file-stream@3.2.5)
@@ -1891,8 +1891,8 @@ importers:
   packages/find-cache-dir:
     dependencies:
       '@visulima/fs':
-        specifier: 2.3.8
-        version: 2.3.8
+        specifier: 3.0.0
+        version: 3.0.0(yaml@2.7.0)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -2669,8 +2669,8 @@ importers:
         specifier: ^10.1.1
         version: 10.1.1(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 2.3.8
-        version: 2.3.8
+        specifier: 3.0.0
+        version: 3.0.0(yaml@2.7.0)
       comment-parser:
         specifier: ^1.4.1
         version: 1.4.1
@@ -2896,8 +2896,8 @@ importers:
         specifier: ^5.1.3
         version: 5.1.3(@types/node@18.19.71)
       '@visulima/fs':
-        specifier: 2.3.8
-        version: 2.3.8
+        specifier: 3.0.0
+        version: 3.0.0(yaml@2.7.0)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -3725,8 +3725,8 @@ importers:
   packages/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 2.3.8
-        version: 2.3.8
+        specifier: 3.0.0
+        version: 3.0.0(yaml@2.7.0)
       '@visulima/path':
         specifier: 1.3.3
         version: 1.3.3
@@ -9146,8 +9146,8 @@ packages:
     resolution: {integrity: sha512-DKaAnfDkwDTWVS0q+8QKZP+1AB5D4Z9io+Y7zoi3TYpNHNcT4jgD/LSSSQHcpFtvDSndIR83IroAy8LKQMy3qA==}
     engines: {node: '>=18.* <=23.*'}
 
-  '@visulima/find-cache-dir@1.0.23':
-    resolution: {integrity: sha512-V3zLl+krORMVperjf+hXbcdO6+WJfMOL/OBpPIe0wMq9q72iBoOvmZ3ZpbzDIcVh5Md1CcEXFMIci8qwfjloyw==}
+  '@visulima/find-cache-dir@1.0.24':
+    resolution: {integrity: sha512-JsjAovIwKSi/9djS0Gt9jwwC615XQkqUKKdLFxE4W6GyRU6UDBTj/E7q3/B3d4XKjW/Cg6ABf2sSwkagUudhcg==}
     engines: {node: '>=18.* <=23.*'}
 
   '@visulima/fmt@1.1.13':
@@ -9164,6 +9164,16 @@ packages:
     resolution: {integrity: sha512-IuMtqidiv8KBmZGLOm0FIBbYsCR4JwwnyO8bPS4wkR8oUcjlUAnhEWrxgHL5DjzpYwncS+1uZuxoJf3CkCdi0w==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
+
+  '@visulima/fs@3.0.0':
+    resolution: {integrity: sha512-qAqk6e/2mamL5+w1EgNR37ZIp849RP9vWBquVO2ZdZtBUgzeDVYjxi8XUjoAIoVsPTqpYSuSt5fzNkeiqlAROQ==}
+    engines: {node: '>=18.* <=23.*'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      yaml: ^2.7.0
+    peerDependenciesMeta:
+      yaml:
+        optional: true
 
   '@visulima/humanizer@1.1.0':
     resolution: {integrity: sha512-W2LpKKN/JL4RcjZ87jM0DWlpbOe/6sU3dnIKQ31/J55aERIqyFB3nTK53hyfR2FqdVGbwWmr0lC0KlZv1abHrw==}
@@ -9187,8 +9197,8 @@ packages:
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.72':
-    resolution: {integrity: sha512-OAWSFeiaKZhcYp46iM9zkV5bbrupFLE1WDvAjLz0n5dfRSbmKd3BpjTKXysiMWGIfJF8yGMKaQjPTbfDkmjtIA==}
+  '@visulima/jsdoc-open-api@2.0.73':
+    resolution: {integrity: sha512-qByB9LV4WPc1+e2d1GydHq4qlnvuGP4DgviOhYmjIeefDBIBDUtRtWyAoMcXkz92HEAxIenTViuKx5ZI+ycNlA==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -9197,7 +9207,7 @@ packages:
     resolution: {integrity: sha512-eGQn1GmpnoQJwBWYIOgwGTuCu1o7jnTko68Sb9Z5eBszY0XfMcsU1sm9pYQ6y+EMyj2g2O/Hs8uZ1n8P9CULEg==}
     engines: {node: '>=18.* <=22.*'}
     peerDependencies:
-      next: '>=14.2.15'
+      next: '>=15.1.2'
       nextra: '>=2.2.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
@@ -15336,7 +15346,7 @@ packages:
     resolution: {integrity: sha512-2nYhLyzLXNFtuYWjkKIW90Z1htjDQKKCLXQBqa2pMsChwxUb/5P954dMBudpLjebQ7Uv7tj6G79Etr25eJYHLw==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=14.2.15'
+      next: '>=15.1.2'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -26658,10 +26668,12 @@ snapshots:
       '@visulima/fs': 2.3.7
       '@visulima/path': 1.3.3
 
-  '@visulima/find-cache-dir@1.0.23':
+  '@visulima/find-cache-dir@1.0.24(yaml@2.7.0)':
     dependencies:
-      '@visulima/fs': 2.3.8
+      '@visulima/fs': 3.0.0(yaml@2.7.0)
       '@visulima/path': 1.3.3
+    transitivePeerDependencies:
+      - yaml
 
   '@visulima/fmt@1.1.13': {}
 
@@ -26675,6 +26687,12 @@ snapshots:
       '@visulima/path': 1.3.3
       yaml: 2.7.0
 
+  '@visulima/fs@3.0.0(yaml@2.7.0)':
+    dependencies:
+      '@visulima/path': 1.3.3
+    optionalDependencies:
+      yaml: 2.7.0
+
   '@visulima/humanizer@1.1.0': {}
 
   '@visulima/inspector@1.0.18': {}
@@ -26685,10 +26703,10 @@ snapshots:
 
   '@visulima/is-ansi-color-supported@2.2.11': {}
 
-  '@visulima/jsdoc-open-api@2.0.72(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.73(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.1(openapi-types@12.1.3)
-      '@visulima/fs': 2.3.8
+      '@visulima/fs': 3.0.0(yaml@2.7.0)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       read-pkg-up: 7.0.1
