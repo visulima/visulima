@@ -1,3 +1,9 @@
+## @visulima/pail [2.1.21](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.20...@visulima/pail@2.1.21) (2025-01-26)
+
+### Bug Fixes
+
+* **pail:** dont call extra log on the a function ([a272682](https://github.com/visulima/visulima/commit/a27268205556f0b338e0634143b5361b4e345e07))
+
 ## @visulima/pail [2.1.20](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.19...@visulima/pail@2.1.20) (2025-01-25)
 
 ### Bug Fixes
