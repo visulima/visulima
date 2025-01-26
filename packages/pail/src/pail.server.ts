@@ -133,7 +133,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
             // eslint-disable-next-line security/detect-object-injection
-            (this as unknown as PailServerImpl)[type].log(String(data).trim());
+            (this as unknown as PailServerImpl)[type](String(data).trim());
         };
     }
 
