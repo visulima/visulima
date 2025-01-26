@@ -1,3 +1,9 @@
+## @visulima/package [3.5.0](https://github.com/visulima/visulima/compare/@visulima/package@3.4.8...@visulima/package@3.5.0) (2025-01-26)
+
+### Features
+
+* **package:** adding strict parsing to findPackageJson, findPackageJsonSync and parsePackageJson ([#485](https://github.com/visulima/visulima/issues/485)) ([67636d2](https://github.com/visulima/visulima/commit/67636d2022bca95c60d92e5b7ccbdd9cbe0bd9e9))
+
 ## @visulima/package [3.4.8](https://github.com/visulima/visulima/compare/@visulima/package@3.4.7...@visulima/package@3.4.8) (2025-01-25)
 
 ### Bug Fixes
