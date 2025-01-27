@@ -9,6 +9,12 @@ describe("maps", () => {
         expect(inspect(new Map())).toBe("Map (0) {}");
     });
 
+    it("should correctly inspects Map with a single entry", () => {
+        expect.assertions(1);
+
+        expect(inspect(new Map([["a", 1]]))).toStrictEqual("Map (1) { 'a' => 1 }");
+    });
+
     it("should inspects both keys and values", () => {
         expect.assertions(1);
 
