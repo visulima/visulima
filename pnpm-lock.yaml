@@ -1110,8 +1110,8 @@ importers:
         specifier: 1.0.25
         version: 1.0.25(yaml@2.7.0)
       '@visulima/pail':
-        specifier: 2.1.20
-        version: 2.1.20(rotating-file-stream@3.2.5)
+        specifier: 2.1.21
+        version: 2.1.21(rotating-file-stream@3.2.5)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -9320,8 +9320,8 @@ packages:
       rotating-file-stream:
         optional: true
 
-  '@visulima/pail@2.1.20':
-    resolution: {integrity: sha512-rZ1v7tgW54IvrlY/i15xt0wtiVx5pzIQZVQuGQwaQjlXCB1L6cHhK5qrat6FWdlaFYuwHjaESUbdZzI0FUBchw==}
+  '@visulima/pail@2.1.21':
+    resolution: {integrity: sha512-7bXW+TeyeDAbNGYNBUJVfSHjWK4jrfLKN4ehU3WI5DVoH4LgZGUQkFMwqYlJxQFEQ7rwKGfCD4Zx66e7eqFlEg==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -26973,7 +26973,7 @@ snapshots:
       '@visulima/redact': 1.0.13
       rotating-file-stream: 3.2.5
 
-  '@visulima/pail@2.1.20(rotating-file-stream@3.2.5)':
+  '@visulima/pail@2.1.21(rotating-file-stream@3.2.5)':
     dependencies:
       '@visulima/colorize': 1.4.20
       '@visulima/error': 4.4.15
