@@ -12,8 +12,8 @@ import { toPath } from "@visulima/path/utils";
 import WalkError from "../error/walk-error";
 import type { WalkEntry, WalkOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import globToRegExp from "../utils/glob-to-regex";
-import walkInclude from "../utils/walk-include";
+import globToRegExp from "./utils/glob-to-regex";
+import walkInclude from "./utils/walk-include";
 
 /** Create {@linkcode WalkEntry} for the `path` synchronously. */
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle

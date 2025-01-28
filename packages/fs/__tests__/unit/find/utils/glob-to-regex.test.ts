@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import globToRegExp from "../../../src/utils/glob-to-regex";
+import globToRegExp from "../../../../src/find/utils/glob-to-regex";
 
 describe("globToRegExp", () => {
     // https://en.wikipedia.org/wiki/Glob_(programming)

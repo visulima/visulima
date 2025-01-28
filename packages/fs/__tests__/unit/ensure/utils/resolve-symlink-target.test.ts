@@ -1,7 +1,7 @@
 import { dirname, resolve } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
-import resolveSymlinkTarget from "../../../src/utils/resolve-symlink-target";
+import resolveSymlinkTarget from "../../../../src/ensure/utils/resolve-symlink-target";
 
 describe("resolveSymlinkTarget", () => {
     it("should return the target if it is a URL", () => {
