@@ -100,8 +100,8 @@ const longText = 'This is a very long description that will be automatically tru
 
 table4
     .setHeaders([
-        { content: 'Feature', hAlign: 'center' },
-        { content: 'Description', hAlign: 'center' },
+        { content: 'Feature', hAlign: 'left' },
+        { content: 'Description', hAlign: 'left' },
         { content: 'Status', hAlign: 'center' },
     ])
     .addRow([
