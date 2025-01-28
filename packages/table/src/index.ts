@@ -101,6 +101,7 @@ export class Table {
     private rows: Cell[][] = [];
     private headers: Cell[][] = [];
     private columnWidths: number[] = [];
+    private columnCount: number = 0;
     private columnMaxWidths: Map<number, number> = new Map();
     private spanningCells: Map<string, CellOptions> = new Map();
     private rowSpanningCells: Map<string, CellOptions> = new Map();
@@ -206,28 +207,38 @@ export class Table {
     private padCell(cell: Cell, width: number, isHeader: boolean = false): string {
         const normalizedCell = this.normalizeCellOption(cell);
         const content = normalizedCell.content?.toString() || '';
-        const contentWidth = this.strlen(content);
-        const availableWidth = width - (this.padding * 2);
-        const paddingWidth = Math.max(0, availableWidth - contentWidth);
-        const hAlign = normalizedCell.hAlign || 'left';
+        const lines = content.split('\n');
+        const paddedLines: string[] = [];
 
-        let leftPad = ' '.repeat(this.padding);
-        let rightPad = ' '.repeat(this.padding);
+        for (const line of lines) {
+            const lineWidth = this.strlen(line);
+            const availableWidth = Math.max(0, width - (this.padding * 2));
+            const padWidth = Math.max(0, availableWidth - lineWidth);
 
-        if (paddingWidth > 0) {
-            if (hAlign === 'right') {
-                leftPad += ' '.repeat(paddingWidth);
-            } else if (hAlign === 'center') {
-                const leftExtra = Math.floor(paddingWidth / 2);
-                const rightExtra = paddingWidth - leftExtra;
-                leftPad += ' '.repeat(leftExtra);
-                rightPad = ' '.repeat(this.padding + rightExtra);
-            } else { // left
-                rightPad = ' '.repeat(this.padding + paddingWidth);
+            let paddedLine = '';
+            // Left padding
+            paddedLine += ' '.repeat(this.padding);
+
+            // Content with alignment
+            switch (normalizedCell.hAlign || 'left') {
+                case 'right':
+                    paddedLine += ' '.repeat(padWidth) + line;
+                    break;
+                case 'center':
+                    const leftPad = Math.floor(padWidth / 2);
+                    const rightPad = padWidth - leftPad;
+                    paddedLine += ' '.repeat(leftPad) + line + ' '.repeat(rightPad);
+                    break;
+                default: // 'left'
+                    paddedLine += line + ' '.repeat(padWidth);
             }
+
+            // Right padding
+            paddedLine += ' '.repeat(this.padding);
+            paddedLines.push(paddedLine);
         }
 
-        return leftPad + content + rightPad;
+        return paddedLines.join('\n');
     }
 
     private repeat(str: string, times: number): string {
@@ -277,105 +288,200 @@ export class Table {
 
     private createLine(left: string, body: string, join: string, right: string): string {
         const result: string[] = [];
-        let currentCol = 0;
-
-        while (currentCol < this.columnWidths.length) {
-            result.push(body.repeat(this.columnWidths[currentCol]));
-            if (currentCol < this.columnWidths.length - 1) {
+        for (let i = 0; i < this.columnCount; i++) {
+            result.push(body.repeat(this.columnWidths[i]));
+            if (i < this.columnCount - 1) {
                 result.push(join);
             }
-            currentCol++;
         }
-
         return left + result.join('') + right + EOL;
     }
 
     private layoutTable(): void {
-        this.columnWidths = this.computeColumnWidths(this.mapPositions());
-    }
-
-    private computeColumnWidths(positions: Map<Cell, { x: number; y: number }>): number[] {
-        const widths: number[] = [];
-        const spans = new Map<number, number>(); // Track column spans
-
-        // First pass: Calculate base widths and track spans
-        this.headers.forEach(row => {
-            let currentCol = 0;
-            row.forEach(cell => {
-                if (!cell) return;
-                const normalizedCell = this.normalizeCellOption(cell);
-                const content = normalizedCell.content?.toString() || '';
-                const colSpan = normalizedCell.colSpan || 1;
-
-                if (colSpan === 1) {
-                    const width = this.strlen(content);
-                    widths[currentCol] = Math.max(widths[currentCol] || 0, width);
-                } else {
-                    spans.set(currentCol, colSpan);
-                }
-                currentCol += colSpan;
-            });
-        });
-
-        // Second pass: Process data rows
-        this.rows.forEach(row => {
-            let currentCol = 0;
-            row.forEach(cell => {
-                if (!cell) {
-                    currentCol++;
-                    return;
-                }
-
-                const normalizedCell = this.normalizeCellOption(cell);
-                const content = normalizedCell.content?.toString() || '';
-                const width = this.strlen(content);
-                widths[currentCol] = Math.max(widths[currentCol] || 0, width);
-                currentCol++;
-            });
-        });
-
-        // Third pass: Distribute span widths
-        spans.forEach((span, startCol) => {
-            let totalWidth = 0;
-            for (let i = 0; i < span; i++) {
-                totalWidth += widths[startCol + i] || 0;
-            }
-            
-            // Ensure minimum width for spanned content
-            const minWidth = Math.ceil(totalWidth / span);
-            for (let i = 0; i < span; i++) {
-                widths[startCol + i] = Math.max(widths[startCol + i] || 0, minWidth);
-            }
-        });
-
-        // Add padding
-        return widths.map(width => width + (this.padding * 2));
+        const positions = this.mapPositions();
+        this.columnWidths = this.computeColumnWidths(positions);
+        this.addSpanningCells();
     }
 
     private mapPositions(): Map<Cell, { x: number; y: number }> {
         const positions = new Map<Cell, { x: number; y: number }>();
 
-        // First pass: Store positions
-        this.rows.forEach((row, y) => {
-            row.forEach((cell, x) => {
-                positions.set(cell, { x, y });
+        // Map header positions
+        this.headers.forEach((row, y) => {
+            let x = 0;
+            row.forEach((cell) => {
+                if (cell) {
+                    positions.set(cell, { x, y });
+                    const colSpan = this.normalizeCellOption(cell).colSpan || 1;
+                    x += colSpan;
+                } else {
+                    x++;
+                }
+            });
+        });
+
+        // Map row positions
+        this.rows.forEach((row, rowIndex) => {
+            let x = 0;
+            row.forEach((cell) => {
+                if (cell) {
+                    positions.set(cell, { x, y: rowIndex + this.headers.length });
+                    const colSpan = this.normalizeCellOption(cell).colSpan || 1;
+                    x += colSpan;
+                } else {
+                    x++;
+                }
             });
         });
 
         return positions;
     }
 
-    private addSpanningCells() {
-        const positions = new Map<Cell, { x: number; y: number }>();
+    private computeColumnWidths(positions: Map<Cell, { x: number; y: number }>): number[] {
+        const widths = new Array(this.columnCount).fill(0);
+        const alignments = new Array(this.columnCount).fill('');
 
-        // First pass: Store positions
-        this.rows.forEach((row, y) => {
-            row.forEach((cell, x) => {
-                positions.set(cell, { x, y });
+        // First pass: Calculate widths for header cells and store alignments
+        this.headers.forEach(row => {
+            row.forEach((cell, index) => {
+                if (cell) {
+                    const normalizedCell = this.normalizeCellOption(cell);
+                    const colSpan = normalizedCell.colSpan || 1;
+                    
+                    if (colSpan === 1) {
+                        widths[index] = Math.max(widths[index], this.getCellWidth(normalizedCell));
+                        alignments[index] = normalizedCell.hAlign || 'left';
+                    }
+                }
             });
         });
 
-        // Second pass: Handle spans
+        // Second pass: Calculate widths for non-spanning cells in rows
+        this.rows.forEach(row => {
+            row.forEach((cell, index) => {
+                if (cell) {
+                    const normalizedCell = this.normalizeCellOption(cell);
+                    const colSpan = normalizedCell.colSpan || 1;
+
+                    if (colSpan === 1) {
+                        widths[index] = Math.max(widths[index], this.getCellWidth(normalizedCell));
+                        // Use header alignment if not specified in cell
+                        if (!normalizedCell.hAlign && alignments[index]) {
+                            normalizedCell.hAlign = alignments[index];
+                        }
+                    }
+                }
+            });
+        });
+
+        // Third pass: Handle spanning cells in headers
+        this.headers.forEach(row => {
+            row.forEach((cell, index) => {
+                if (cell) {
+                    const normalizedCell = this.normalizeCellOption(cell);
+                    const colSpan = normalizedCell.colSpan || 1;
+
+                    if (colSpan > 1) {
+                        const cellWidth = this.getCellWidth(normalizedCell);
+                        let currentSpanWidth = 0;
+                        
+                        // Calculate current span width including borders
+                        for (let i = 0; i < colSpan; i++) {
+                            if (index + i < this.columnCount) {
+                                currentSpanWidth += widths[index + i];
+                                if (i < colSpan - 1) {
+                                    currentSpanWidth += 1; // Add border width
+                                }
+                            }
+                        }
+
+                        if (cellWidth > currentSpanWidth) {
+                            // Distribute the extra width proportionally
+                            const extraWidth = cellWidth - currentSpanWidth;
+                            const columnsToAdjust = Math.min(colSpan, this.columnCount - index);
+                            const extraPerColumn = Math.ceil(extraWidth / columnsToAdjust);
+                            
+                            for (let i = 0; i < columnsToAdjust; i++) {
+                                widths[index + i] += extraPerColumn;
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Fourth pass: Handle spanning cells in rows
+        this.rows.forEach(row => {
+            row.forEach((cell, index) => {
+                if (cell) {
+                    const normalizedCell = this.normalizeCellOption(cell);
+                    const colSpan = normalizedCell.colSpan || 1;
+
+                    if (colSpan > 1) {
+                        const cellWidth = this.getCellWidth(normalizedCell);
+                        let currentSpanWidth = 0;
+                        
+                        // Calculate current span width including borders
+                        for (let i = 0; i < colSpan; i++) {
+                            if (index + i < this.columnCount) {
+                                currentSpanWidth += widths[index + i];
+                                if (i < colSpan - 1) {
+                                    currentSpanWidth += 1; // Add border width
+                                }
+                            }
+                        }
+
+                        if (cellWidth > currentSpanWidth) {
+                            // Distribute the extra width proportionally
+                            const extraWidth = cellWidth - currentSpanWidth;
+                            const columnsToAdjust = Math.min(colSpan, this.columnCount - index);
+                            const extraPerColumn = Math.ceil(extraWidth / columnsToAdjust);
+                            
+                            for (let i = 0; i < columnsToAdjust; i++) {
+                                widths[index + i] += extraPerColumn;
+                            }
+                        }
+
+                        // Use header alignment if not specified in cell
+                        if (!normalizedCell.hAlign) {
+                            // Find the dominant alignment in the spanned columns
+                            const spannedAlignments = alignments.slice(index, index + colSpan).filter(Boolean);
+                            if (spannedAlignments.length > 0) {
+                                const alignmentCounts = spannedAlignments.reduce((acc, curr) => {
+                                    acc[curr] = (acc[curr] || 0) + 1;
+                                    return acc;
+                                }, {} as Record<string, number>);
+                                
+                                const dominantAlignment = Object.entries(alignmentCounts)
+                                    .reduce((a, b) => a[1] > b[1] ? a : b)[0];
+                                normalizedCell.hAlign = dominantAlignment;
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Add padding to all columns
+        return widths.map(width => width + (this.padding * 2));
+    }
+
+    private addSpanningCells() {
+        const positions = new Map<Cell, { x: number; y: number }>();
+
+        this.rows.forEach((row, rowIndex) => {
+            let x = 0;
+            row.forEach((cell) => {
+                if (cell) {
+                    positions.set(cell, { x, y: rowIndex + this.headers.length });
+                    const colSpan = this.normalizeCellOption(cell).colSpan || 1;
+                    x += colSpan;
+                } else {
+                    x++;
+                }
+            });
+        });
+
         this.rows.forEach((row, rowIndex) => {
             row.forEach((cell) => {
                 const normalizedCell = this.normalizeCellOption(cell);
@@ -432,23 +538,22 @@ export class Table {
     private renderHeaders(): string {
         let result = '';
 
-        // Render headers with proper border style
+        // Headers (without top border)
         this.headers.forEach((row, index) => {
-            // Top border for first header row
-            if (index === 0 && this.border.top) {
-                result += this.renderBorder(this.border.top);
-            }
-
-            // Render the header row
             result += this.renderRow(row, {
                 bodyLeft: this.border.bodyLeft || '',
                 bodyRight: this.border.bodyRight || '',
                 bodyJoin: this.border.bodyJoin || ''
             }, true);
 
-            // Bottom border after headers
-            if (this.border.mid) {
-                result += this.renderBorder(this.border.mid);
+            // Add separator after header
+            if (index === this.headers.length - 1 && this.border.joinBody) {
+                result += this.createLine(
+                    this.border.joinLeft || '',
+                    this.border.joinBody,
+                    this.border.joinJoin || '',
+                    this.border.joinRight || ''
+                );
             }
         });
 
@@ -459,46 +564,30 @@ export class Table {
         const leftBorder = border.bodyLeft || '';
         const rightBorder = border.bodyRight || '';
         const joinBorder = border.bodyJoin || '';
-
         let result = leftBorder;
+
         let currentCol = 0;
-
-        while (currentCol < this.columnWidths.length) {
+        while (currentCol < this.columnCount) {
             const cell = row[currentCol];
-
-            // Skip undefined cells (used for rowSpan/colSpan)
+            
             if (cell === undefined || cell === null) {
                 result += ' '.repeat(this.columnWidths[currentCol]);
                 currentCol++;
-                if (currentCol < this.columnWidths.length) {
-                    result += joinBorder;
+            } else {
+                const normalizedCell = this.normalizeCellOption(cell);
+                const colSpan = normalizedCell.colSpan || 1;
+                let totalWidth = this.columnWidths[currentCol];
+                
+                // Calculate total width including borders for spanning cells
+                for (let i = 1; i < colSpan && (currentCol + i) < this.columnCount; i++) {
+                    totalWidth += this.columnWidths[currentCol + i] + joinBorder.length;
                 }
-                continue;
+                
+                result += this.padCell(normalizedCell, totalWidth, isHeader);
+                currentCol += colSpan;
             }
-
-            const normalizedCell = this.normalizeCellOption(cell);
-            const colSpan = normalizedCell.colSpan || 1;
-
-            // Calculate total width for spanning cells
-            let totalWidth = this.columnWidths[currentCol];
-            if (colSpan > 1) {
-                for (let i = 1; i < colSpan; i++) {
-                    if (currentCol + i < this.columnWidths.length) {
-                        totalWidth += this.columnWidths[currentCol + i] + joinBorder.length;
-                    }
-                }
-
-                // For header cells with colSpan, ensure content is centered
-                if (isHeader) {
-                    const content = normalizedCell.content?.toString() || '';
-                    normalizedCell.hAlign = 'center';
-                }
-            }
-
-            result += this.padCell(normalizedCell, totalWidth, isHeader);
-            currentCol += colSpan;
-
-            if (currentCol < this.columnWidths.length) {
+            
+            if (currentCol < this.columnCount) {
                 result += joinBorder;
             }
         }
@@ -508,9 +597,55 @@ export class Table {
     }
 
     public setHeaders(headers: Cell[]): Table {
-        this.headers = [headers];
+        const processedHeaders: Cell[] = [];
+        let maxCol = 0;
+        let currentCol = 0;
+
+        // First pass: Count total columns needed and create processed headers
+        headers.forEach(cell => {
+            if (!cell) {
+                processedHeaders[currentCol] = null;
+                maxCol = Math.max(maxCol, currentCol + 1);
+                currentCol++;
+            } else {
+                const normalizedCell = this.normalizeCellOption(cell);
+                const colSpan = normalizedCell.colSpan || 1;
+
+                // Add the cell
+                processedHeaders[currentCol] = normalizedCell;
+                
+                // Add null cells for spanning columns
+                for (let i = 1; i < colSpan; i++) {
+                    processedHeaders[currentCol + i] = null;
+                }
+                
+                maxCol = Math.max(maxCol, currentCol + colSpan);
+                currentCol += colSpan;
+            }
+        });
+
+        // Second pass: Ensure array is fully populated
+        for (let i = 0; i < maxCol; i++) {
+            if (processedHeaders[i] === undefined) {
+                processedHeaders[i] = null;
+            }
+        }
+
+        // Third pass: Verify column count matches header width
+        let headerWidth = 0;
+        processedHeaders.forEach((cell, index) => {
+            if (cell) {
+                const colSpan = this.normalizeCellOption(cell).colSpan || 1;
+                headerWidth = Math.max(headerWidth, index + colSpan);
+            } else {
+                headerWidth = Math.max(headerWidth, index + 1);
+            }
+        });
+
+        this.headers = [processedHeaders];
+        this.columnCount = headerWidth;
+        this.columnWidths = new Array(headerWidth).fill(0);
         this.layoutTable();
-        this.addSpanningCells();
         return this;
     }
 
@@ -591,10 +726,8 @@ export class Table {
     }
 }
 
-// Convenient factory function
 export const createTable = (options?: TableOptions): Table => new Table(options);
 
-// Strip ANSI color codes for width calculation
 function stripAnsi(str: string): string {
     return str.replace(/\u001b\[(?:\d*;){0,5}\d*m/g, '');
 }
