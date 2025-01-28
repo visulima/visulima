@@ -38,26 +38,26 @@ table2
         { content: 'Coverage', hAlign: 'center' },
     ])
     .addRow([
-        { content: 'Frontend', rowSpan: 2, hAlign: 'center', vAlign: 'middle' },
-        { content: 'Unit', hAlign: 'center' },
+        { content: 'Frontend', rowSpan: 2, hAlign: 'center' },
+        { content: 'Unit', hAlign: 'left' },
         { content: green('156/156'), hAlign: 'right' },
         { content: '100%', hAlign: 'right' },
     ])
     .addRow([
         null, // rowSpan from above
-        { content: 'Integration', hAlign: 'center' },
+        { content: 'Integration', hAlign: 'left' },
         { content: yellow('23/25'), hAlign: 'right' },
         { content: '92%', hAlign: 'right' },
     ])
     .addRow([
-        { content: 'Backend', rowSpan: 2, hAlign: 'center', vAlign: 'middle' },
-        { content: 'Unit', hAlign: 'center' },
+        { content: 'Backend', rowSpan: 2, hAlign: 'center' },
+        { content: 'Unit', hAlign: 'left' },
         { content: green('312/312'), hAlign: 'right' },
         { content: '100%', hAlign: 'right' },
     ])
     .addRow([
         null, // rowSpan from above
-        { content: 'Integration', hAlign: 'center' },
+        { content: 'Integration', hAlign: 'left' },
         { content: red('45/60'), hAlign: 'right' },
         { content: '75%', hAlign: 'right' },
     ]);
@@ -100,8 +100,8 @@ const longText = 'This is a very long description that will be automatically tru
 
 table4
     .setHeaders([
-        { content: 'Feature', hAlign: 'left' },
-        { content: 'Description', hAlign: 'left' },
+        { content: 'Feature', hAlign: 'center' },
+        { content: 'Description', hAlign: 'center' },
         { content: 'Status', hAlign: 'center' },
     ])
     .addRow([

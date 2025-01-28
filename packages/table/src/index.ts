@@ -101,6 +101,7 @@ export class Table {
     private rows: Cell[][] = [];
     private headers: Cell[][] = [];
     private columnWidths: number[] = [];
+    private columnMaxWidths: Map<number, number> = new Map();
     private spanningCells: Map<string, CellOptions> = new Map();
     private rowSpanningCells: Map<string, CellOptions> = new Map();
     private border: BorderStyle;
@@ -142,7 +143,7 @@ export class Table {
     private getCellWidth(cell: Cell): number {
         const normalizedCell = this.normalizeCellOption(cell);
         const content = normalizedCell.content?.toString() || '';
-        
+
         // For multi-line content, get the maximum line width
         return Math.max(
             ...content.split('\n').map(line => this.strlen(line))
@@ -205,46 +206,28 @@ export class Table {
     private padCell(cell: Cell, width: number, isHeader: boolean = false): string {
         const normalizedCell = this.normalizeCellOption(cell);
         const content = normalizedCell.content?.toString() || '';
-        const padding = ' '.repeat(this.padding);
-        
-        // Calculate available width for content (subtract padding)
-        const availableWidth = Math.max(0, width - (this.padding * 2));
-        
-        // If no content or width is too small, return empty padding
-        if (!content || availableWidth <= 0) {
-            return ' '.repeat(Math.max(0, width));
+        const contentWidth = this.strlen(content);
+        const availableWidth = width - (this.padding * 2);
+        const paddingWidth = Math.max(0, availableWidth - contentWidth);
+        const hAlign = normalizedCell.hAlign || 'left';
+
+        let leftPad = ' '.repeat(this.padding);
+        let rightPad = ' '.repeat(this.padding);
+
+        if (paddingWidth > 0) {
+            if (hAlign === 'right') {
+                leftPad += ' '.repeat(paddingWidth);
+            } else if (hAlign === 'center') {
+                const leftExtra = Math.floor(paddingWidth / 2);
+                const rightExtra = paddingWidth - leftExtra;
+                leftPad += ' '.repeat(leftExtra);
+                rightPad = ' '.repeat(this.padding + rightExtra);
+            } else { // left
+                rightPad = ' '.repeat(this.padding + paddingWidth);
+            }
         }
 
-        // Handle multi-line content
-        const lines = content.split('\n');
-        const paddedLines = lines.map(line => {
-            const lineWidth = this.strlen(line);
-            const hAlign = normalizedCell.hAlign || this.align;
-
-            // Calculate the actual space needed
-            const spaceNeeded = Math.max(0, availableWidth - lineWidth);
-            let padded = '';
-
-            switch (hAlign) {
-                case 'right': {
-                    padded = ' '.repeat(spaceNeeded) + line;
-                    break;
-                }
-                case 'center': {
-                    const leftSpace = Math.floor(spaceNeeded / 2);
-                    const rightSpace = spaceNeeded - leftSpace;
-                    padded = ' '.repeat(leftSpace) + line + ' '.repeat(rightSpace);
-                    break;
-                }
-                default: // 'left'
-                    padded = line + ' '.repeat(spaceNeeded);
-            }
-
-            // Add cell padding
-            return padding + padded + padding;
-        });
-
-        return paddedLines.join('\n');
+        return leftPad + content + rightPad;
     }
 
     private repeat(str: string, times: number): string {
@@ -292,13 +275,12 @@ export class Table {
         return ret + truncateChar;
     }
 
-    private createLine(left: string = '', body: string = '', join: string = '', right: string = ''): string {
+    private createLine(left: string, body: string, join: string, right: string): string {
         const result: string[] = [];
         let currentCol = 0;
 
         while (currentCol < this.columnWidths.length) {
-            const width = this.columnWidths[currentCol];
-            result.push(body.repeat(width));
+            result.push(body.repeat(this.columnWidths[currentCol]));
             if (currentCol < this.columnWidths.length - 1) {
                 result.push(join);
             }
@@ -308,118 +290,84 @@ export class Table {
         return left + result.join('') + right + EOL;
     }
 
-    private layoutTable() {
-        const alloc: { [key: number]: number } = {};
-        const positions = new Map<Cell, { x: number; y: number }>();
-        
-        // First pass: Layout the cells and handle rowSpans
-        this.rows.forEach((row, rowIndex) => {
-            let col = 0;
-            row.forEach((cell) => {
-                // Find next available column
-                while (alloc[col] > 0) {
-                    col++;
-                }
-
-                // Store cell position
-                positions.set(cell, { x: col, y: rowIndex });
-
-                // Set cell position
-                const normalizedCell = this.normalizeCellOption(cell);
-                const rowSpan = normalizedCell.rowSpan || 1;
-                const colSpan = normalizedCell.colSpan || 1;
-
-                // Mark columns as allocated for rowSpans
-                if (rowSpan > 1) {
-                    for (let i = 0; i < colSpan; i++) {
-                        alloc[col + i] = rowSpan;
-                    }
-                }
-
-                col += colSpan;
-            });
-
-            // Decrement allocation counts
-            Object.keys(alloc).forEach((idx) => {
-                alloc[parseInt(idx)]--;
-                if (alloc[parseInt(idx)] < 1) {
-                    delete alloc[parseInt(idx)];
-                }
-            });
-        });
-
-        // Second pass: Calculate column widths
-        this.columnWidths = this.computeColumnWidths(positions);
+    private layoutTable(): void {
+        this.columnWidths = this.computeColumnWidths(this.mapPositions());
     }
 
     private computeColumnWidths(positions: Map<Cell, { x: number; y: number }>): number[] {
         const widths: number[] = [];
-        const spanningCells: Array<{ cell: Cell; x: number }> = [];
+        const spans = new Map<number, number>(); // Track column spans
 
-        // Calculate initial widths from headers and content
-        const processCell = (cell: Cell, x: number) => {
-            if (!cell) return;
-            const normalizedCell = this.normalizeCellOption(cell);
-            const colSpan = normalizedCell.colSpan || 1;
-            
-            if (colSpan === 1) {
-                const cellWidth = this.getCellWidth(cell);
-                widths[x] = Math.max(widths[x] || 0, cellWidth);
-            } else {
-                spanningCells.push({ cell, x });
-            }
-        };
-
-        // Process headers
+        // First pass: Calculate base widths and track spans
         this.headers.forEach(row => {
-            row.forEach((cell, x) => processCell(cell, x));
-        });
-
-        // Process data rows
-        this.rows.forEach(row => {
-            row.forEach((cell, x) => {
+            let currentCol = 0;
+            row.forEach(cell => {
                 if (!cell) return;
-                const pos = positions.get(cell);
-                if (pos) {
-                    processCell(cell, pos.x);
+                const normalizedCell = this.normalizeCellOption(cell);
+                const content = normalizedCell.content?.toString() || '';
+                const colSpan = normalizedCell.colSpan || 1;
+
+                if (colSpan === 1) {
+                    const width = this.strlen(content);
+                    widths[currentCol] = Math.max(widths[currentCol] || 0, width);
+                } else {
+                    spans.set(currentCol, colSpan);
                 }
+                currentCol += colSpan;
             });
         });
 
-        // Handle spanning cells
-        spanningCells.forEach(({ cell, x }) => {
-            const normalizedCell = this.normalizeCellOption(cell);
-            const colSpan = normalizedCell.colSpan || 1;
-            const cellWidth = this.getCellWidth(cell);
-
-            // Calculate current width of spanned columns
-            let currentWidth = 0;
-            for (let i = 0; i < colSpan; i++) {
-                currentWidth += (widths[x + i] || 0);
-                if (i > 0) currentWidth++; // Add border width
-            }
-
-            if (cellWidth > currentWidth) {
-                // Distribute extra width evenly
-                const extra = cellWidth - currentWidth;
-                const perColumn = Math.ceil(extra / colSpan);
-                
-                for (let i = 0; i < colSpan; i++) {
-                    widths[x + i] = (widths[x + i] || 0) + perColumn;
+        // Second pass: Process data rows
+        this.rows.forEach(row => {
+            let currentCol = 0;
+            row.forEach(cell => {
+                if (!cell) {
+                    currentCol++;
+                    return;
                 }
+
+                const normalizedCell = this.normalizeCellOption(cell);
+                const content = normalizedCell.content?.toString() || '';
+                const width = this.strlen(content);
+                widths[currentCol] = Math.max(widths[currentCol] || 0, width);
+                currentCol++;
+            });
+        });
+
+        // Third pass: Distribute span widths
+        spans.forEach((span, startCol) => {
+            let totalWidth = 0;
+            for (let i = 0; i < span; i++) {
+                totalWidth += widths[startCol + i] || 0;
+            }
+            
+            // Ensure minimum width for spanned content
+            const minWidth = Math.ceil(totalWidth / span);
+            for (let i = 0; i < span; i++) {
+                widths[startCol + i] = Math.max(widths[startCol + i] || 0, minWidth);
             }
         });
 
-        // Add padding and ensure minimum width
-        return widths.map(width => {
-            const minContentWidth = Math.max(1, width || 0);
-            return minContentWidth + (this.padding * 2); // Add padding for both sides
+        // Add padding
+        return widths.map(width => width + (this.padding * 2));
+    }
+
+    private mapPositions(): Map<Cell, { x: number; y: number }> {
+        const positions = new Map<Cell, { x: number; y: number }>();
+
+        // First pass: Store positions
+        this.rows.forEach((row, y) => {
+            row.forEach((cell, x) => {
+                positions.set(cell, { x, y });
+            });
         });
+
+        return positions;
     }
 
     private addSpanningCells() {
         const positions = new Map<Cell, { x: number; y: number }>();
-        
+
         // First pass: Store positions
         this.rows.forEach((row, y) => {
             row.forEach((cell, x) => {
@@ -434,7 +382,7 @@ export class Table {
                 const rowSpan = normalizedCell.rowSpan || 1;
                 const colSpan = normalizedCell.colSpan || 1;
                 const pos = positions.get(cell);
-                
+
                 if (!pos) return;
 
                 if (rowSpan > 1) {
@@ -457,6 +405,56 @@ export class Table {
         });
     }
 
+    private renderBorder(border: { topBody?: string; topJoin?: string; topLeft?: string; topRight?: string } = {}): string {
+        if (!border || !border.topBody) {
+            return '';
+        }
+
+        const left = border.topLeft || '';
+        const body = border.topBody;
+        const join = border.topJoin || '';
+        const right = border.topRight || '';
+
+        const result: string[] = [];
+        let currentCol = 0;
+
+        while (currentCol < this.columnWidths.length) {
+            result.push(body.repeat(this.columnWidths[currentCol]));
+            if (currentCol < this.columnWidths.length - 1) {
+                result.push(join);
+            }
+            currentCol++;
+        }
+
+        return left + result.join('') + right + EOL;
+    }
+
+    private renderHeaders(): string {
+        let result = '';
+
+        // Render headers with proper border style
+        this.headers.forEach((row, index) => {
+            // Top border for first header row
+            if (index === 0 && this.border.top) {
+                result += this.renderBorder(this.border.top);
+            }
+
+            // Render the header row
+            result += this.renderRow(row, {
+                bodyLeft: this.border.bodyLeft || '',
+                bodyRight: this.border.bodyRight || '',
+                bodyJoin: this.border.bodyJoin || ''
+            }, true);
+
+            // Bottom border after headers
+            if (this.border.mid) {
+                result += this.renderBorder(this.border.mid);
+            }
+        });
+
+        return result;
+    }
+
     private renderRow(row: Cell[], border: BorderStyle, isHeader: boolean = false): string {
         const leftBorder = border.bodyLeft || '';
         const rightBorder = border.bodyRight || '';
@@ -464,32 +462,12 @@ export class Table {
 
         let result = leftBorder;
         let currentCol = 0;
-        const rowIndex = isHeader ? -1 : this.rows.length - 1;
-
-        // Track which columns are part of a rowSpan
-        const spanningColumns = new Map<number, CellOptions>();
-        for (let i = 0; i < this.columnWidths.length; i++) {
-            const key = `${rowIndex},${i}`;
-            if (this.rowSpanningCells.has(key)) {
-                spanningColumns.set(i, this.rowSpanningCells.get(key)!);
-            }
-        }
 
         while (currentCol < this.columnWidths.length) {
-            // Handle row spanning cells
-            if (spanningColumns.has(currentCol)) {
-                const spanCell = spanningColumns.get(currentCol)!;
-                result += this.padCell(spanCell, this.columnWidths[currentCol], isHeader);
-                currentCol++;
-                if (currentCol < this.columnWidths.length) {
-                    result += joinBorder;
-                }
-                continue;
-            }
-
             const cell = row[currentCol];
+
             // Skip undefined cells (used for rowSpan/colSpan)
-            if (cell === undefined) {
+            if (cell === undefined || cell === null) {
                 result += ' '.repeat(this.columnWidths[currentCol]);
                 currentCol++;
                 if (currentCol < this.columnWidths.length) {
@@ -500,20 +478,26 @@ export class Table {
 
             const normalizedCell = this.normalizeCellOption(cell);
             const colSpan = normalizedCell.colSpan || 1;
-            let width = this.columnWidths[currentCol];
 
-            // Calculate width for column spanning
+            // Calculate total width for spanning cells
+            let totalWidth = this.columnWidths[currentCol];
             if (colSpan > 1) {
                 for (let i = 1; i < colSpan; i++) {
                     if (currentCol + i < this.columnWidths.length) {
-                        width += this.columnWidths[currentCol + i];
-                        width += joinBorder.length;
+                        totalWidth += this.columnWidths[currentCol + i] + joinBorder.length;
                     }
+                }
+
+                // For header cells with colSpan, ensure content is centered
+                if (isHeader) {
+                    const content = normalizedCell.content?.toString() || '';
+                    normalizedCell.hAlign = 'center';
                 }
             }
 
-            result += this.padCell(cell, width, isHeader);
-            currentCol++;
+            result += this.padCell(normalizedCell, totalWidth, isHeader);
+            currentCol += colSpan;
+
             if (currentCol < this.columnWidths.length) {
                 result += joinBorder;
             }
@@ -558,7 +542,6 @@ export class Table {
         // Headers
         this.headers.forEach((row, index) => {
             result += this.renderRow(row, {
-                ...this.border,
                 bodyLeft: this.border.bodyLeft || '',
                 bodyRight: this.border.bodyRight || '',
                 bodyJoin: this.border.bodyJoin || ''
@@ -578,7 +561,6 @@ export class Table {
         // Body rows
         this.rows.forEach((row, index) => {
             result += this.renderRow(row, {
-                ...this.border,
                 bodyLeft: this.border.bodyLeft || '',
                 bodyRight: this.border.bodyRight || '',
                 bodyJoin: this.border.bodyJoin || ''
@@ -614,5 +596,5 @@ export const createTable = (options?: TableOptions): Table => new Table(options)
 
 // Strip ANSI color codes for width calculation
 function stripAnsi(str: string): string {
-    return str.replace(/\u001b\[\d+m/g, '');
+    return str.replace(/\u001b\[(?:\d*;){0,5}\d*m/g, '');
 }
