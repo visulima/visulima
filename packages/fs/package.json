@@ -48,7 +48,10 @@
         "write-dir",
         "write-file",
         "write-safe",
-        "yaml"
+        "yaml",
+        "size",
+        "brotli",
+        "gzip"
     ],
     "homepage": "https://www.visulima.com/docs/package/fs",
     "bugs": {
@@ -117,6 +120,16 @@
                 "default": "./dist/yaml.mjs"
             }
         },
+        "./size": {
+            "require": {
+                "types": "./dist/size.d.cts",
+                "default": "./dist/size.cjs"
+            },
+            "import": {
+                "types": "./dist/size.d.mts",
+                "default": "./dist/size.mjs"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
@@ -135,6 +148,9 @@
             ],
             "yaml": [
                 "./dist/yaml.d.ts"
+            ],
+            "size": [
+                "./dist/size.d.ts"
             ]
         }
     },
