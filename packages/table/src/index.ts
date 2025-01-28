@@ -196,7 +196,7 @@ export class Table {
         return result + truncateChar;
     }
 
-    private padCell(cell: Cell, width: number): string {
+    private padCell(cell: Cell, width: number): string[] {
         const normalizedCell = this.normalizeCellOption(cell);
         const content = normalizedCell.content.toString() || "";
         const lines = content.split("\n");
@@ -205,6 +205,7 @@ export class Table {
         // Calculate maximum line width for truncation
         const maxContentWidth = this.maxWidth || (width - this.padding * 2);
 
+        // For each line in the cell content
         for (const line of lines) {
             const truncatedLine = this.truncateString(line, maxContentWidth);
             const lineWidth = this.strlen(truncatedLine);
@@ -234,10 +235,12 @@ export class Table {
 
             // Right padding
             paddedLine += " ".repeat(this.padding);
+
+            // Add the padded line to our list
             paddedLines.push(paddedLine);
         }
 
-        return paddedLines.join("\n");
+        return paddedLines;
     }
 
     private createLine(left: string, body: string, join: string, right: string): string {
@@ -305,6 +308,8 @@ export class Table {
                 if (cell) {
                     positions.set(cell, { x, y: rowIndex + this.headers.length });
                     const colSpan = this.normalizeCellOption(cell).colSpan || 1;
+
+                    // Add the cell
                     x += colSpan;
                 } else {
                     x++;
@@ -337,10 +342,14 @@ return;
         const rightBorder = border.bodyRight || "";
         const joinBorder = border.bodyJoin || "";
 
-        // Split each cell into lines and find the maximum number of lines
+        // Split each cell into lines
         const cellLines: string[][] = row.map((cell, index) => {
             if (cell === undefined || cell === null) {
-                return [" ".repeat(this.columnWidths[index])];
+                // For empty cells, create a properly padded empty cell
+                let emptyCell = " ".repeat(this.padding); // Left padding
+                emptyCell += " ".repeat(this.columnWidths[index] - this.padding * 2); // Content space
+                emptyCell += " ".repeat(this.padding); // Right padding
+                return [emptyCell];
             }
 
             const normalizedCell = this.normalizeCellOption(cell);
@@ -352,7 +361,7 @@ return;
                 totalWidth += this.columnWidths[index + i] + joinBorder.length;
             }
 
-            return this.padCell(normalizedCell, totalWidth).split("\n");
+            return this.padCell(normalizedCell, totalWidth);
         });
 
         const maxLines = Math.max(...cellLines.map(lines => lines.length));
@@ -366,13 +375,23 @@ return;
             while (currentCol < this.columnCount) {
                 const cell = row[currentCol];
                 if (cell === undefined || cell === null) {
-                    lineStr += (cellLines[currentCol][lineIndex] || " ".repeat(this.columnWidths[currentCol]));
+                    lineStr += cellLines[currentCol][0];
                     currentCol++;
                 } else {
                     const normalizedCell = this.normalizeCellOption(cell);
                     const colSpan = normalizedCell.colSpan || 1;
                     const lines = cellLines[currentCol];
-                    lineStr += lines[lineIndex] || " ".repeat(lines[0].length);
+
+                    // For subsequent lines of multi-line cells, use empty space for the first and last columns
+                    if (lineIndex > 0 && (currentCol === 0 || currentCol === this.columnCount - 1)) {
+                        const emptyLine = " ".repeat(this.padding); // Left padding
+                        const contentSpace = " ".repeat(this.columnWidths[currentCol] - this.padding * 2);
+                        const rightPad = " ".repeat(this.padding); // Right padding
+                        lineStr += emptyLine + contentSpace + rightPad;
+                    } else {
+                        lineStr += lines[lineIndex] || lines[0];
+                    }
+                    
                     currentCol += colSpan;
                 }
 

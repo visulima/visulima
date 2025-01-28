@@ -95,7 +95,10 @@ console.log(table3.toString());
 console.log();
 
 // Example 4: Table with truncated content and multi-line text
-const table4 = new Table();
+const table4 = new Table({
+    truncate: true,
+    maxWidth: 120,   // Maximum width for cell content before truncation
+});
 const longText = 'This is a very long description that will be automatically truncated to fit within the cell width while preserving ANSI colors and maintaining proper alignment.';
 
 table4
