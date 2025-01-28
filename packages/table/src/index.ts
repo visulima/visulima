@@ -142,7 +142,11 @@ export class Table {
     private getCellWidth(cell: Cell): number {
         const normalizedCell = this.normalizeCellOption(cell);
         const content = normalizedCell.content?.toString() || '';
-        return this.strlen(content);
+        
+        // For multi-line content, get the maximum line width
+        return Math.max(
+            ...content.split('\n').map(line => this.strlen(line))
+        );
     }
 
     private strlen(str: string): number {
@@ -203,54 +207,44 @@ export class Table {
         const content = normalizedCell.content?.toString() || '';
         const padding = ' '.repeat(this.padding);
         
-        // Calculate available width for content
-        const availableWidth = Math.max(0, width - 2 * this.padding);
+        // Calculate available width for content (subtract padding)
+        const availableWidth = Math.max(0, width - (this.padding * 2));
         
         // If no content or width is too small, return empty padding
         if (!content || availableWidth <= 0) {
-            return ' '.repeat(width);
+            return ' '.repeat(Math.max(0, width));
         }
 
-        // Calculate padding based on alignment
-        const hAlign = normalizedCell.hAlign || this.align;
-        const vAlign = normalizedCell.vAlign || 'middle';
+        // Handle multi-line content
+        const lines = content.split('\n');
+        const paddedLines = lines.map(line => {
+            const lineWidth = this.strlen(line);
+            const hAlign = normalizedCell.hAlign || this.align;
 
-        // Handle different horizontal alignments
-        let padded = '';
-        switch (hAlign) {
-            case 'left':
-                padded = this.pad(content, availableWidth, ' ', 'left');
-                break;
-            case 'right':
-                padded = this.pad(content, availableWidth, ' ', 'right');
-                break;
-            case 'center':
-                padded = this.pad(content, availableWidth, ' ', 'center');
-                break;
-            default:
-                padded = this.pad(content, availableWidth, ' ', 'left');
-        }
+            // Calculate the actual space needed
+            const spaceNeeded = Math.max(0, availableWidth - lineWidth);
+            let padded = '';
 
-        return padding + padded + padding;
-    }
-
-    private pad(str: string, len: number, padChar: string, dir: 'left' | 'right' | 'center'): string {
-        const length = this.strlen(str);
-        if (len + 1 >= length) {
-            const padlen = len - length;
-            switch (dir) {
-                case 'right':
-                    return this.repeat(padChar, padlen) + str;
-                case 'center': {
-                    const right = Math.ceil(padlen / 2);
-                    const left = padlen - right;
-                    return this.repeat(padChar, left) + str + this.repeat(padChar, right);
+            switch (hAlign) {
+                case 'right': {
+                    padded = ' '.repeat(spaceNeeded) + line;
+                    break;
                 }
-                default:
-                    return str + this.repeat(padChar, padlen);
+                case 'center': {
+                    const leftSpace = Math.floor(spaceNeeded / 2);
+                    const rightSpace = spaceNeeded - leftSpace;
+                    padded = ' '.repeat(leftSpace) + line + ' '.repeat(rightSpace);
+                    break;
+                }
+                default: // 'left'
+                    padded = line + ' '.repeat(spaceNeeded);
             }
-        }
-        return str;
+
+            // Add cell padding
+            return padding + padded + padding;
+        });
+
+        return paddedLines.join('\n');
     }
 
     private repeat(str: string, times: number): string {
@@ -362,39 +356,53 @@ export class Table {
         const widths: number[] = [];
         const spanningCells: Array<{ cell: Cell; x: number }> = [];
 
-        // First pass: Handle non-spanning cells
-        this.rows.forEach((row) => {
-            row.forEach((cell) => {
-                const normalizedCell = this.normalizeCellOption(cell);
-                const colSpan = normalizedCell.colSpan || 1;
-                const pos = positions.get(cell);
-                
-                if (!pos) return;
+        // Calculate initial widths from headers and content
+        const processCell = (cell: Cell, x: number) => {
+            if (!cell) return;
+            const normalizedCell = this.normalizeCellOption(cell);
+            const colSpan = normalizedCell.colSpan || 1;
+            
+            if (colSpan === 1) {
+                const cellWidth = this.getCellWidth(cell);
+                widths[x] = Math.max(widths[x] || 0, cellWidth);
+            } else {
+                spanningCells.push({ cell, x });
+            }
+        };
 
-                if (colSpan > 1) {
-                    spanningCells.push({ cell, x: pos.x });
-                } else {
-                    const cellWidth = this.getCellWidth(cell);
-                    widths[pos.x] = Math.max(widths[pos.x] || 0, cellWidth + (2 * this.padding));
+        // Process headers
+        this.headers.forEach(row => {
+            row.forEach((cell, x) => processCell(cell, x));
+        });
+
+        // Process data rows
+        this.rows.forEach(row => {
+            row.forEach((cell, x) => {
+                if (!cell) return;
+                const pos = positions.get(cell);
+                if (pos) {
+                    processCell(cell, pos.x);
                 }
             });
         });
 
-        // Second pass: Handle spanning cells
-        spanningCells.reverse().forEach(({ cell, x }) => {
+        // Handle spanning cells
+        spanningCells.forEach(({ cell, x }) => {
             const normalizedCell = this.normalizeCellOption(cell);
             const colSpan = normalizedCell.colSpan || 1;
-            const content = normalizedCell.content?.toString() || '';
-            const desiredWidth = content.length + (2 * this.padding);
+            const cellWidth = this.getCellWidth(cell);
 
-            let existingWidth = widths[x] || 0;
-            for (let i = 1; i < colSpan; i++) {
-                existingWidth += 1 + (widths[x + i] || 0);
+            // Calculate current width of spanned columns
+            let currentWidth = 0;
+            for (let i = 0; i < colSpan; i++) {
+                currentWidth += (widths[x + i] || 0);
+                if (i > 0) currentWidth++; // Add border width
             }
 
-            if (desiredWidth > existingWidth) {
-                const toDistribute = desiredWidth - existingWidth;
-                const perColumn = Math.ceil(toDistribute / colSpan);
+            if (cellWidth > currentWidth) {
+                // Distribute extra width evenly
+                const extra = cellWidth - currentWidth;
+                const perColumn = Math.ceil(extra / colSpan);
                 
                 for (let i = 0; i < colSpan; i++) {
                     widths[x + i] = (widths[x + i] || 0) + perColumn;
@@ -402,8 +410,11 @@ export class Table {
             }
         });
 
-        // Ensure minimum width for all columns
-        return widths.map(w => Math.max(1, w || 0));
+        // Add padding and ensure minimum width
+        return widths.map(width => {
+            const minContentWidth = Math.max(1, width || 0);
+            return minContentWidth + (this.padding * 2); // Add padding for both sides
+        });
     }
 
     private addSpanningCells() {
