@@ -3810,6 +3810,12 @@ importers:
       semantic-release:
         specifier: ^24.2.0
         version: 24.2.1(typescript@5.7.3)
+      string-width:
+        specifier: ^7.2.0
+        version: 7.2.0
+      strip-ansi:
+        specifier: ^7.1.0
+        version: 7.1.0
       typescript:
         specifier: ^5.7.2
         version: 5.7.3
