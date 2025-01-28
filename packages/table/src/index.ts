@@ -98,10 +98,16 @@ export class Table {
 
     private readonly padding: number;
 
+    private readonly truncate: boolean;
+
+    private readonly maxWidth?: number;
+
     constructor(options: TableOptions = {}) {
         this.border = options.border || DEFAULT_BORDER;
         this.align = options.align || "left";
         this.padding = options.padding || 1;
+        this.truncate = options.truncate || false;
+        this.maxWidth = options.maxWidth;
     }
 
     private normalizeCellOption(cell: Cell): CellOptions {
@@ -147,16 +153,62 @@ export class Table {
         }, 0);
     }
 
+    private truncateString(str: string, maxWidth: number): string {
+        if (!this.truncate || !maxWidth || this.strlen(str) <= maxWidth) {
+            return str;
+        }
+
+        const truncateChar = "…";
+        const truncateWidth = stringWidth(truncateChar);
+        let result = "";
+        let currentWidth = 0;
+
+        // Handle ANSI escape sequences
+        const chars = str.split("");
+        let inEscapeSequence = false;
+        let currentEscapeSequence = "";
+
+        for (const char of chars) {
+            if (char === "\u001b") {
+                inEscapeSequence = true;
+                currentEscapeSequence = char;
+                continue;
+            }
+
+            if (inEscapeSequence) {
+                currentEscapeSequence += char;
+                if (char === "m") {
+                    result += currentEscapeSequence;
+                    inEscapeSequence = false;
+                }
+                continue;
+            }
+
+            const charWidth = stringWidth(char);
+            if (currentWidth + charWidth + truncateWidth > maxWidth) {
+                break;
+            }
+
+            result += char;
+            currentWidth += charWidth;
+        }
+
+        return result + truncateChar;
+    }
+
     private padCell(cell: Cell, width: number): string {
         const normalizedCell = this.normalizeCellOption(cell);
         const content = normalizedCell.content.toString() || "";
         const lines = content.split("\n");
         const paddedLines: string[] = [];
 
+        // Calculate maximum line width for truncation
+        const maxContentWidth = this.maxWidth || (width - this.padding * 2);
+
         for (const line of lines) {
-            const lineWidth = this.strlen(line);
-            const availableWidth = Math.max(0, width - this.padding * 2);
-            const padWidth = Math.max(0, availableWidth - lineWidth);
+            const truncatedLine = this.truncateString(line, maxContentWidth);
+            const lineWidth = this.strlen(truncatedLine);
+            const padWidth = Math.max(0, width - this.padding * 2 - lineWidth);
 
             let paddedLine = "";
             // Left padding
@@ -165,18 +217,18 @@ export class Table {
             // Content with alignment
             switch (normalizedCell.hAlign || "left") {
                 case "right": {
-                    paddedLine += " ".repeat(padWidth) + line;
+                    paddedLine += " ".repeat(padWidth) + truncatedLine;
                     break;
                 }
                 case "center": {
                     const leftPad = Math.floor(padWidth / 2);
                     const rightPad = padWidth - leftPad;
-                    paddedLine += " ".repeat(leftPad) + line + " ".repeat(rightPad);
+                    paddedLine += " ".repeat(leftPad) + truncatedLine + " ".repeat(rightPad);
                     break;
                 }
                 default: {
                     // 'left'
-                    paddedLine += line + " ".repeat(padWidth);
+                    paddedLine += truncatedLine + " ".repeat(padWidth);
                 }
             }
 
@@ -284,36 +336,56 @@ return;
         const leftBorder = border.bodyLeft || "";
         const rightBorder = border.bodyRight || "";
         const joinBorder = border.bodyJoin || "";
-        let result = leftBorder;
 
-        let currentCol = 0;
-        while (currentCol < this.columnCount) {
-            const cell = row[currentCol];
-
+        // Split each cell into lines and find the maximum number of lines
+        const cellLines: string[][] = row.map((cell, index) => {
             if (cell === undefined || cell === null) {
-                result += " ".repeat(this.columnWidths[currentCol]);
-                currentCol++;
-            } else {
-                const normalizedCell = this.normalizeCellOption(cell);
-                const colSpan = normalizedCell.colSpan || 1;
-                let totalWidth = this.columnWidths[currentCol];
+                return [" ".repeat(this.columnWidths[index])];
+            }
 
-                // Calculate total width including borders for spanning cells
-                for (let index = 1; index < colSpan && currentCol + index < this.columnCount; index++) {
-                    totalWidth += this.columnWidths[currentCol + index] + joinBorder.length;
+            const normalizedCell = this.normalizeCellOption(cell);
+            const colSpan = normalizedCell.colSpan || 1;
+            let totalWidth = this.columnWidths[index];
+
+            // Calculate total width including borders for spanning cells
+            for (let i = 1; i < colSpan && index + i < this.columnCount; i++) {
+                totalWidth += this.columnWidths[index + i] + joinBorder.length;
+            }
+
+            return this.padCell(normalizedCell, totalWidth).split("\n");
+        });
+
+        const maxLines = Math.max(...cellLines.map(lines => lines.length));
+
+        // Build each line of the row
+        const rowLines: string[] = [];
+        for (let lineIndex = 0; lineIndex < maxLines; lineIndex++) {
+            let lineStr = leftBorder;
+            let currentCol = 0;
+
+            while (currentCol < this.columnCount) {
+                const cell = row[currentCol];
+                if (cell === undefined || cell === null) {
+                    lineStr += (cellLines[currentCol][lineIndex] || " ".repeat(this.columnWidths[currentCol]));
+                    currentCol++;
+                } else {
+                    const normalizedCell = this.normalizeCellOption(cell);
+                    const colSpan = normalizedCell.colSpan || 1;
+                    const lines = cellLines[currentCol];
+                    lineStr += lines[lineIndex] || " ".repeat(lines[0].length);
+                    currentCol += colSpan;
                 }
 
-                result += this.padCell(normalizedCell, totalWidth);
-                currentCol += colSpan;
+                if (currentCol < this.columnCount) {
+                    lineStr += joinBorder;
+                }
             }
 
-            if (currentCol < this.columnCount) {
-                result += joinBorder;
-            }
+            lineStr += rightBorder;
+            rowLines.push(lineStr);
         }
 
-        result += rightBorder + EOL;
-        return result;
+        return rowLines.join(EOL) + EOL;
     }
 
     public setHeaders(headers: Cell[]): this {
