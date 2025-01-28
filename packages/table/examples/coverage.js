@@ -35,7 +35,7 @@ table2
     .setHeaders([
         { content: 'Component', hAlign: 'center' },
         { content: 'Tests', hAlign: 'center', colSpan: 2 },
-        { content: 'Coverage', hAlign: 'center' },
+        { content: 'Coverage', hAlign: 'center' }
     ])
     .addRow([
         { content: 'Frontend', rowSpan: 2, hAlign: 'center' },
