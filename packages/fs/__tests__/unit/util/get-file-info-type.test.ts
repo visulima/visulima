@@ -2,7 +2,7 @@ import type { Stats } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { getFileInfoType } from "../../../src/utils/get-file-info-type";
+import { getFileInfoType } from "../../../src/ensure/utils/get-file-info-type";
 
 describe("getFileInfoType", () => {
     it("should return undefined if type is not found", () => {

@@ -9,7 +9,7 @@ import isAccessibleSync from "../is-accessible-sync";
 import type { WriteFileOptions } from "../types";
 import assertValidFileContents from "../utils/assert-valid-file-contents";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import toUint8Array from "../utils/to-uint-8-array";
+import toUint8Array from "./utils/to-uint-8-array";
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): void => {

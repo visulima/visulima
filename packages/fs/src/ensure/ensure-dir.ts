@@ -2,7 +2,7 @@
 import { lstat, mkdir } from "node:fs/promises";
 
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import { getFileInfoType } from "../utils/get-file-info-type";
+import { getFileInfoType } from "./utils/get-file-info-type";
 
 /**
  * Ensures that the directory exists.
