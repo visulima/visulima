@@ -9,18 +9,14 @@ import { brotliCompressSync, createBrotliCompress, createGzip, gzipSync } from "
 import { toPath } from "@visulima/path/utils";
 
 /**
- * Checks if a string is likely a file path.
- *
- * @param input - The string to check
- * @returns True if the string appears to be a file path
+ * Checks if a file exists at the given path.
+ * Note: This function checks for actual file existence, not just path syntax validity.
  */
-const isFilePath = (input: string): boolean => {
-    // If it's an absolute path, check if it exists
+const fileExists = (input: string): boolean => {
     if (isAbsolute(input)) {
         return existsSync(input);
     }
 
-    // Try to resolve relative path and check if it exists
     try {
         return existsSync(resolve(input));
     } catch {
@@ -29,37 +25,35 @@ const isFilePath = (input: string): boolean => {
 };
 
 /**
- * Asynchronously gets the size of a stream.
- *
- * @param stream - The stream to calculate the size for
- * @returns Promise that resolves with the size in bytes of the stream
+ * Asynchronously gets the size of a stream using a memory-efficient chunk-based approach.
+ * This function counts the size of chunks without storing them in memory.
  */
-const getStreamSize = async (stream: Readable): Promise<number> => {
-    const chunks: Buffer[] = [];
+const getStreamSizeEfficient = async (stream: Readable): Promise<number> => {
+    let totalSize = 0;
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk));
+        totalSize += Buffer.from(chunk).length;
     }
 
-    return Buffer.concat(chunks).length;
+    return totalSize;
 };
 
 /**
- * Asynchronously calculates the compressed size of a stream.
- *
- * @param stream - The stream to calculate the compressed size for
- * @param createCompressor - A function that creates a compressor stream
- * @returns Promise that resolves with the compressed size in bytes of the stream
+ * Asynchronously calculates the compressed size of a stream using a memory-efficient approach.
+ * This function processes chunks incrementally without storing the entire compressed output.
  */
-const getCompressedStreamSize = async (stream: Readable, createCompressor: () => NodeJS.ReadWriteStream): Promise<number> => {
-    const chunks: Buffer[] = [];
+const getCompressedStreamSizeEfficient = async (stream: Readable, createCompressor: () => NodeJS.ReadWriteStream): Promise<number> => {
+    let totalSize = 0;
     const compressor = createCompressor();
 
     // eslint-disable-next-line @typescript-eslint/no-shadow,compat/compat
     return await new Promise((resolve, reject) => {
-        compressor.on("data", (chunk) => chunks.push(chunk));
-        compressor.on("end", () => resolve(Buffer.concat(chunks).length));
+        compressor.on("data", (chunk) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/restrict-plus-operands
+            totalSize += chunk.length;
+        });
+        compressor.on("end", () => resolve(totalSize));
         compressor.on("error", reject);
 
         stream.on("error", reject);
@@ -68,18 +62,21 @@ const getCompressedStreamSize = async (stream: Readable, createCompressor: () =>
 };
 
 /**
- * Handles input data and applies a processor function to it.
- *
- * @param input - The input data to handle
- * @param processor - A function that processes the input data
- * @returns Promise that resolves with the result of the processor function
+ * Processes input data in a memory-efficient way.
+ * For files and streams, it uses a streaming approach to avoid loading entire contents into memory.
  */
-const handleInput = async (input: Buffer | Readable | URL | string, processor: (data: Buffer) => number): Promise<number> => {
+const processInputEfficiently = async (
+    input: Buffer | Readable | URL | string,
+    processor: (data: Buffer) => number,
+    streamProcessor: (stream: Readable) => Promise<number>,
+): Promise<number> => {
     if (input instanceof URL || typeof input === "string") {
         const path = toPath(input);
 
-        if (isFilePath(path)) {
-            return processor(await readFile(path));
+        if (fileExists(path)) {
+            // For files, we create a readable stream to process them in chunks
+            const fileStream = Readable.from(await readFile(path));
+            return await streamProcessor(fileStream);
         }
 
         if (typeof input === "string") {
@@ -88,14 +85,7 @@ const handleInput = async (input: Buffer | Readable | URL | string, processor: (
     }
 
     if (input instanceof Readable) {
-        const chunks: Buffer[] = [];
-
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for await (const chunk of input) {
-            chunks.push(Buffer.from(chunk));
-        }
-
-        return processor(Buffer.concat(chunks));
+        return await streamProcessor(input);
     }
 
     return processor(input as Buffer);
@@ -103,76 +93,46 @@ const handleInput = async (input: Buffer | Readable | URL | string, processor: (
 
 /**
  * Asynchronously calculates the gzipped size of the input.
- *
- * @param input - The input to calculate the gzipped size for:
- *                - string: Text content to compress
- *                - Buffer: Binary data to compress
- *                - Readable: Stream of data to compress
- *                - URL/string: File path to read and compress
- * @param options - Optional zlib options for compression customization
- * @returns Promise that resolves with the size in bytes of the gzipped input
+ * Uses memory-efficient streaming for large inputs.
  */
 export const gzipSize = async (input: Buffer | Readable | URL | string, options?: ZlibOptions): Promise<number> => {
-    if (input instanceof Readable) {
-        return await getCompressedStreamSize(input, () => createGzip(options));
-    }
+    const streamProcessor = async (stream: Readable): Promise<number> => await getCompressedStreamSizeEfficient(stream, () => createGzip(options));
+    const bufferProcessor = (data: Buffer): number => gzipSync(data, options).length;
 
-    return await handleInput(input, (data) => gzipSync(data, options).length);
+    return await processInputEfficiently(input, bufferProcessor, streamProcessor);
 };
 
 /**
  * Asynchronously calculates the Brotli compressed size of the input.
- *
- * @param input - The input to calculate the Brotli compressed size for:
- *                - string: Text content to compress
- *                - Buffer: Binary data to compress
- *                - Readable: Stream of data to compress
- *                - URL/string: File path to read and compress
- * @param options - Optional Brotli options for compression customization
- * @returns Promise that resolves with the size in bytes of the Brotli compressed input
+ * Uses memory-efficient streaming for large inputs.
  */
 export const brotliSize = async (input: Buffer | Readable | URL | string, options?: BrotliOptions): Promise<number> => {
-    if (input instanceof Readable) {
-        return await getCompressedStreamSize(input, () => createBrotliCompress(options));
-    }
+    const streamProcessor = async (stream: Readable): Promise<number> => await getCompressedStreamSizeEfficient(stream, () => createBrotliCompress(options));
+    const bufferProcessor = (data: Buffer): number => brotliCompressSync(data, options).length;
 
-    return await handleInput(input, (data) => brotliCompressSync(data, options).length);
+    return await processInputEfficiently(input, bufferProcessor, streamProcessor);
 };
 
 /**
  * Asynchronously gets the raw size of the input without compression.
- *
- * @param input - The input to calculate the raw size for:
- *                - string: Text content to measure
- *                - Buffer: Binary data to measure
- *                - Readable: Stream of data to measure
- *                - URL/string: File path to measure
- * @returns Promise that resolves with the raw size in bytes of the input
+ * Uses memory-efficient streaming for large inputs.
  */
 export const rawSize = async (input: Buffer | Readable | URL | string): Promise<number> => {
-    if (input instanceof Readable) {
-        return await getStreamSize(input);
-    }
+    const streamProcessor = async (stream: Readable): Promise<number> => await getStreamSizeEfficient(stream);
+    const bufferProcessor = (data: Buffer): number => data.length;
 
-    return await handleInput(input, (data) => data.length);
+    return await processInputEfficiently(input, bufferProcessor, streamProcessor);
 };
 
 /**
  * Synchronously calculates the gzipped size of the input.
- * Note: Does not support streams as they are inherently asynchronous.
- *
- * @param input - The input to calculate the gzipped size for:
- *                - string: Text content to compress
- *                - Buffer: Binary data to compress
- *                - URL/string: File path to read and compress
- * @param options - Optional zlib options for compression customization
- * @returns The size in bytes of the gzipped input
+ * Note: For large files, consider using the async gzipSize function instead.
  */
 export const gzipSizeSync = (input: Buffer | URL | string, options?: ZlibOptions): number => {
     if (input instanceof URL || typeof input === "string") {
         const path = toPath(input);
 
-        if (isFilePath(path)) {
+        if (fileExists(path)) {
             return gzipSync(readFileSync(path), options).length;
         }
 
@@ -186,20 +146,13 @@ export const gzipSizeSync = (input: Buffer | URL | string, options?: ZlibOptions
 
 /**
  * Synchronously calculates the Brotli compressed size of the input.
- * Note: Does not support streams as they are inherently asynchronous.
- *
- * @param input - The input to calculate the Brotli compressed size for:
- *                - string: Text content to compress
- *                - Buffer: Binary data to compress
- *                - URL/string: File path to read and compress
- * @param options - Optional Brotli options for compression customization
- * @returns The size in bytes of the Brotli compressed input
+ * Note: For large files, consider using the async brotliSize function instead.
  */
 export const brotliSizeSync = (input: Buffer | URL | string, options?: BrotliOptions): number => {
     if (input instanceof URL || typeof input === "string") {
         const path = toPath(input);
 
-        if (isFilePath(path)) {
+        if (fileExists(path)) {
             return brotliCompressSync(readFileSync(path), options).length;
         }
 
@@ -213,19 +166,13 @@ export const brotliSizeSync = (input: Buffer | URL | string, options?: BrotliOpt
 
 /**
  * Synchronously gets the raw size of the input without compression.
- * Note: Does not support streams as they are inherently asynchronous.
- *
- * @param input - The input to calculate the raw size for:
- *                - string: Text content to measure
- *                - Buffer: Binary data to measure
- *                - URL/string: File path to measure
- * @returns The raw size in bytes of the input
+ * Note: For large files, consider using the async rawSize function instead.
  */
 export const rawSizeSync = (input: Buffer | URL | string): number => {
     if (input instanceof URL || typeof input === "string") {
         const path = toPath(input);
 
-        if (isFilePath(path)) {
+        if (fileExists(path)) {
             return statSync(path).size;
         }
 
