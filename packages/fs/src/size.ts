@@ -150,9 +150,6 @@ export const brotliSize = async (input: Buffer | Readable | URL | string, option
             stream.on("error", reject);
 
             stream.pipe(brotli);
-            stream.on("end", () => {
-                brotli.end();
-            });
         });
     };
 
@@ -167,6 +164,16 @@ export const brotliSize = async (input: Buffer | Readable | URL | string, option
         if (typeof input === "string") {
             return await getSizeFromStream(Readable.from(Buffer.from(input)));
         }
+    }
+
+    if (input instanceof Readable) {
+        const chunks: Buffer[] = [];
+
+        for await (const chunk of input) {
+            chunks.push(Buffer.from(chunk));
+        }
+
+        return await getSizeFromStream(Readable.from(Buffer.concat(chunks)));
     }
 
     return await getSizeFromStream(Readable.from(input));
@@ -214,15 +221,11 @@ export const rawSize = async (input: Buffer | Readable | URL | string): Promise<
     }
 
     if (input instanceof Readable) {
-        let size = 0;
-
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        const chunks: Buffer[] = [];
         for await (const chunk of input) {
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands,@typescript-eslint/no-unsafe-member-access
-            size += chunk.length;
+            chunks.push(Buffer.from(chunk));
         }
-
-        return size;
+        return Buffer.concat(chunks).length;
     }
 
     return (input as Buffer).length;

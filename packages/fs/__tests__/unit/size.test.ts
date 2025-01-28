@@ -9,8 +9,6 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { brotliSize, brotliSizeSync, gzipSize, gzipSizeSync, rawSize, rawSizeSync } from "../../src/size";
 
 const fixtureFileContent = "Hello, World!";
-const testBuffer = Buffer.from(fixtureFileContent);
-const testStream = Readable.from([fixtureFileContent]);
 
 describe("size functions", () => {
     let distribution: string;
@@ -41,6 +39,8 @@ describe("size functions", () => {
         it("should get size of buffer", async () => {
             expect.assertions(1);
 
+            const testBuffer = Buffer.from(fixtureFileContent);
+
             const size = await gzipSize(testBuffer);
             const expectedSize = gzipSync(testBuffer).length;
 
@@ -59,7 +59,7 @@ describe("size functions", () => {
         it("should get size of stream", async () => {
             expect.assertions(1);
 
-            const size = await gzipSize(testStream);
+            const size = await gzipSize(Readable.from([fixtureFileContent]));
             const expectedSize = gzipSync(fixtureFileContent).length;
 
             expect(size).toBe(expectedSize);
@@ -89,6 +89,8 @@ describe("size functions", () => {
         it("should get size of buffer", async () => {
             expect.assertions(1);
 
+            const testBuffer = Buffer.from(fixtureFileContent);
+
             const size = await brotliSize(testBuffer);
             const expectedSize = brotliCompressSync(testBuffer).length;
 
@@ -107,7 +109,7 @@ describe("size functions", () => {
         it("should get size of stream", async () => {
             expect.assertions(1);
 
-            const size = await brotliSize(testStream);
+            const size = await brotliSize(Readable.from([fixtureFileContent]));
             const expectedSize = brotliCompressSync(fixtureFileContent).length;
 
             expect(size).toBe(expectedSize);
@@ -136,6 +138,8 @@ describe("size functions", () => {
         it("should get size of buffer", async () => {
             expect.assertions(1);
 
+            const testBuffer = Buffer.from(fixtureFileContent);
+
             const size = await rawSize(testBuffer);
 
             expect(size).toBe(testBuffer.length);
@@ -151,7 +155,7 @@ describe("size functions", () => {
         it("should get size of stream", async () => {
             expect.assertions(1);
 
-            const size = await rawSize(testStream);
+            const size = await rawSize(Readable.from([fixtureFileContent]));
 
             expect(size).toBe(fixtureFileContent.length);
         });
@@ -169,6 +173,8 @@ describe("size functions", () => {
 
         it("should get size of buffer synchronously", () => {
             expect.assertions(1);
+
+            const testBuffer = Buffer.from(fixtureFileContent);
 
             const size = gzipSizeSync(testBuffer);
             const expectedSize = gzipSync(testBuffer).length;
@@ -209,6 +215,8 @@ describe("size functions", () => {
         it("should get size of buffer synchronously", () => {
             expect.assertions(1);
 
+            const testBuffer = Buffer.from(fixtureFileContent);
+
             const size = brotliSizeSync(testBuffer);
             const expectedSize = brotliCompressSync(testBuffer).length;
 
@@ -246,6 +254,8 @@ describe("size functions", () => {
 
         it("should get size of buffer synchronously", () => {
             expect.assertions(1);
+
+            const testBuffer = Buffer.from(fixtureFileContent);
 
             const size = rawSizeSync(testBuffer);
 
