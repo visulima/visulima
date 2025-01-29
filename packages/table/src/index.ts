@@ -3,85 +3,10 @@ import { EOL } from "node:os";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import stringWidth from "string-width";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import stripAnsi from 'strip-ansi';
+import stripAnsi from "strip-ansi";
 
 import { DEFAULT_BORDER } from "./style";
-
-export type HorizontalAlign = "center" | "left" | "right";
-export type VerticalAlign = "bottom" | "middle" | "top";
-
-export type CellOptions = {
-    colSpan?: number;
-    content: number | string;
-    hAlign?: HorizontalAlign;
-    rowSpan?: number;
-    vAlign?: VerticalAlign;
-};
-
-export type Cell = CellOptions | number | string | null;
-
-export type BorderStyle = {
-    bodyJoin?: string;
-    bodyLeft?: string;
-    bodyRight?: string;
-    bottomBody?: string;
-
-    bottomJoin?: string;
-    bottomLeft?: string;
-    bottomRight?: string;
-    joinBody?: string;
-
-    joinJoin?: string;
-    joinLeft?: string;
-    joinRight?: string;
-
-    topBody?: string;
-    topJoin?: string;
-    topLeft?: string;
-    topRight?: string;
-};
-
-export type TableOptions = {
-    /**
-     * The default alignment of the cell content
-     */
-    align?: HorizontalAlign;
-    /**
-     * The style of the table borders
-     */
-    border?: BorderStyle;
-    /**
-     * Whether to draw the outer border of the table
-     */
-    drawOuterBorder?: boolean;
-    /**
-     * The character to use for empty cells
-     */
-    emptyCellChar?: string;
-    /**
-     * The maximum width of a cell before truncation
-     */
-    maxWidth?: number;
-    /**
-     * The padding between the cell content and the cell border
-     */
-    padding?: number;
-    /**
-     * Style options for specific parts of the table
-     */
-    style?: {
-        cells?: string[];
-        header?: string[];
-    };
-    /**
-     * Whether to truncate cells that are too long
-     */
-    truncate?: boolean;
-    /**
-     * The default vertical alignment of the cell content
-     */
-    vAlign?: VerticalAlign;
-};
+import type { BorderStyle, Cell, CellOptions, HorizontalAlign, TableOptions } from "./types";
 
 export class Table {
     private readonly rows: Cell[][] = [];
@@ -153,9 +78,9 @@ export class Table {
         }, 0);
     }
 
-    private truncateString(str: string, maxWidth: number): string {
-        if (!this.truncate || !maxWidth || this.strlen(str) <= maxWidth) {
-            return str;
+    private truncateString(string_: string, maxWidth: number): string {
+        if (!this.truncate || !maxWidth || this.strlen(string_) <= maxWidth) {
+            return string_;
         }
 
         const truncateChar = "…";
@@ -164,12 +89,12 @@ export class Table {
         let currentWidth = 0;
 
         // Handle ANSI escape sequences
-        const chars = str.split("");
+        const chars = string_.split("");
         let inEscapeSequence = false;
         let currentEscapeSequence = "";
 
         for (const char of chars) {
-            if (char === "\u001b") {
+            if (char === "\u001B") {
                 inEscapeSequence = true;
                 currentEscapeSequence = char;
                 continue;
@@ -185,6 +110,7 @@ export class Table {
             }
 
             const charWidth = stringWidth(char);
+
             if (currentWidth + charWidth + truncateWidth > maxWidth) {
                 break;
             }
@@ -203,7 +129,7 @@ export class Table {
         const paddedLines: string[] = [];
 
         // Calculate maximum line width for truncation
-        const maxContentWidth = this.maxWidth || (width - this.padding * 2);
+        const maxContentWidth = this.maxWidth || width - this.padding * 2;
 
         // For each line in the cell content
         for (const line of lines) {
@@ -317,14 +243,15 @@ export class Table {
             });
         });
 
-        this.rows.forEach((row, rowIndex) => {
+        this.rows.forEach((row) => {
             row.forEach((cell) => {
                 const normalizedCell = this.normalizeCellOption(cell);
                 const colSpan = normalizedCell.colSpan || 1;
                 const pos = positions.get(cell);
 
-                if (!pos)
-return;
+                if (!pos) {
+                    return;
+                }
 
                 if (colSpan > 1) {
                     for (let index = 1; index < colSpan; index++) {
@@ -357,25 +284,25 @@ return;
             let totalWidth = this.columnWidths[index];
 
             // Calculate total width including borders for spanning cells
-            for (let i = 1; i < colSpan && index + i < this.columnCount; i++) {
-                totalWidth += this.columnWidths[index + i] + joinBorder.length;
+            for (let index_ = 1; index_ < colSpan && index + index_ < this.columnCount; index_++) {
+                totalWidth += this.columnWidths[index + index_] + joinBorder.length;
             }
 
             return this.padCell(normalizedCell, totalWidth);
         });
 
-        const maxLines = Math.max(...cellLines.map(lines => lines.length));
+        const maxLines = Math.max(...cellLines.map((lines) => lines.length));
 
         // Build each line of the row
         const rowLines: string[] = [];
         for (let lineIndex = 0; lineIndex < maxLines; lineIndex++) {
-            let lineStr = leftBorder;
+            let lineString = leftBorder;
             let currentCol = 0;
 
             while (currentCol < this.columnCount) {
                 const cell = row[currentCol];
                 if (cell === undefined || cell === null) {
-                    lineStr += cellLines[currentCol][0];
+                    lineString += cellLines[currentCol][0];
                     currentCol++;
                 } else {
                     const normalizedCell = this.normalizeCellOption(cell);
@@ -387,21 +314,21 @@ return;
                         const emptyLine = " ".repeat(this.padding); // Left padding
                         const contentSpace = " ".repeat(this.columnWidths[currentCol] - this.padding * 2);
                         const rightPad = " ".repeat(this.padding); // Right padding
-                        lineStr += emptyLine + contentSpace + rightPad;
+                        lineString += emptyLine + contentSpace + rightPad;
                     } else {
-                        lineStr += lines[lineIndex] || lines[0];
+                        lineString += lines[lineIndex] || lines[0];
                     }
-                    
+
                     currentCol += colSpan;
                 }
 
                 if (currentCol < this.columnCount) {
-                    lineStr += joinBorder;
+                    lineString += joinBorder;
                 }
             }
 
-            lineStr += rightBorder;
-            rowLines.push(lineStr);
+            lineString += rightBorder;
+            rowLines.push(lineString);
         }
 
         return rowLines.join(EOL) + EOL;
@@ -518,3 +445,5 @@ return;
 }
 
 export const createTable = (options?: TableOptions): Table => new Table(options);
+
+export type { BorderStyle, Cell, CellOptions, HorizontalAlign, TableOptions, VerticalAlign } from "./types";
