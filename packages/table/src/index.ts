@@ -260,6 +260,7 @@ export class Table {
 
         // eslint-disable-next-line unicorn/no-array-reduce
         return lines.reduce((memo, s) => {
+            // Use stringWidth to get the correct width for emojis and CJK characters
             const width = stringWidth(s);
             return width > memo ? width : memo;
         }, 0);
@@ -360,7 +361,7 @@ export class Table {
         const paddedLines: string[] = [];
 
         // Calculate available width for content (subtract padding)
-        const availableWidth = width - this.padding * 2;
+        const availableWidth = width;
 
         // For each line in the cell content
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
@@ -375,7 +376,8 @@ export class Table {
             }
 
             const lineWidth = this.strlen(processedLine);
-            const remainingWidth = Math.max(0, availableWidth - lineWidth);
+            const remainingWidth = Math.max(0, availableWidth - lineWidth - this.padding * 2);
+
             let contentWithPadding = "";
 
             switch (normalizedCell.hAlign) {
@@ -465,7 +467,7 @@ export class Table {
 
                         if (colSpan === 1) {
                             const content = String(normalizedCell.content ?? "");
-                            const cellWidth = Math.max(1, this.strlen(content));
+                            const cellWidth = Math.max(1, this.strlen(content)) + this.padding * 2;
 
                             widths[columnIndex] = Math.max(widths[columnIndex] as number, cellWidth);
                         }
@@ -483,7 +485,7 @@ export class Table {
 
                     if (colSpan === 1) {
                         const content = String(normalizedCell.content ?? "");
-                        const cellWidth = Math.max(1, this.strlen(content));
+                        const cellWidth = Math.max(1, this.strlen(content)) + this.padding * 2;
 
                         // eslint-disable-next-line security/detect-object-injection
                         widths[columnIndex] = Math.max(widths[columnIndex] as number, cellWidth);
@@ -510,8 +512,7 @@ export class Table {
             return widths;
         }
 
-        // Add padding to all columns if maxWidth is not set
-        return widths.map((width) => width + this.padding * 2);
+        return widths;
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity

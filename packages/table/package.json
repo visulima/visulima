@@ -11,12 +11,16 @@
         "unicode",
         "alignment",
         "ansi",
-        "visulima",
-        "table"
+        "visulima"
     ],
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "homepage": "https://visulima.com/packages/table",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/table"
     },
     "funding": [
         {
@@ -28,8 +32,11 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.com/packages/table",
     "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "type": "module",
     "exports": {
@@ -57,21 +64,22 @@
     },
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
-    "browser": "./dist/index.mjs",
     "types": "dist/index.d.ts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ],
+            "style": [
+                "./dist/style.d.ts"
+            ]
+        }
+    },
     "files": [
         "dist",
         "README.md",
         "CHANGELOG.md"
     ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/table"
-    },
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
     "scripts": {
         "build": "cross-env NODE_ENV=development packem build",
         "build:prod": "cross-env NODE_ENV=production packem build",
@@ -89,13 +97,6 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "engines": {
-        "node": ">=18.0.0 <=23.x"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
@@ -107,10 +108,8 @@
         "@secretlint/secretlint-rule-preset-recommend": "^9.0.0",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.71",
-        "@visulima/packem": "^1.10.0",
         "@visulima/colorize": "^1.4.20",
-        "string-width": "^7.2.0",
-
+        "@visulima/packem": "^1.10.0",
         "@vitest/coverage-v8": "^2.1.8",
         "@vitest/ui": "^2.1.8",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -127,8 +126,16 @@
         "rimraf": "^6.0.1",
         "secretlint": "9.0.0",
         "semantic-release": "^24.2.0",
+        "string-width": "^7.2.0",
         "typescript": "^5.7.2",
         "vitest": "^2.1.8"
+    },
+    "engines": {
+        "node": ">=18.0.0 <=23.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     },
     "anolilab": {
         "eslint-config": {
@@ -141,16 +148,6 @@
             "info_on_disabling_prettier_conflict_rule": false,
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
-        }
-    },
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/index.d.ts"
-            ],
-            "style": [
-                "./dist/style.d.ts"
-            ]
         }
     }
 }

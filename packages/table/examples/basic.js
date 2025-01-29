@@ -1,26 +1,13 @@
 import { createTable } from "../dist/index.mjs";
 import { DOUBLE_BORDER } from "../dist/style.mjs";
 
-const OSC = '\u001B]';
-const BEL = '\u0007';
-const SEP = ';';
-const url = 'https://example.com';
-const text = 'This is a link to example.com';
+const OSC = "\u001B]";
+const BEL = "\u0007";
+const SEP = ";";
+const url = "https://example.com";
+const text = "This is a link to example.com";
 
-const link = [
-  OSC,
-  '8',
-  SEP,
-  SEP,
-  url,
-  BEL,
-  text,
-  OSC,
-  '8',
-  SEP,
-  SEP,
-  BEL
-].join('');
+const link = [OSC, "8", SEP, SEP, url, BEL, text, OSC, "8", SEP, SEP, BEL].join("");
 
 // Example 1: Default style
 console.log("Default style:");
@@ -149,10 +136,10 @@ const emptyTable2 = createTable()
 console.log(emptyTable2.toString());
 
 // Example with headers set but not shown
-console.log('\nHeaders set but not shown:');
+console.log("\nHeaders set but not shown:");
 const tableWithHiddenHeaders = createTable({ showHeader: false });
-tableWithHiddenHeaders.setHeaders(['Column 1', 'Column 2', 'Column 3']);
-tableWithHiddenHeaders.addRow(['Value 1', 'Value 2', 'Value 3']);
-tableWithHiddenHeaders.addRow(['Value 4', 'Value 5', 'Value 6']);
+tableWithHiddenHeaders.setHeaders(["Column 1", "Column 2", "Column 3"]);
+tableWithHiddenHeaders.addRow(["Value 1", "Value 2", "Value 3"]);
+tableWithHiddenHeaders.addRow(["Value 4", "Value 5", "Value 6"]);
 
 console.log(tableWithHiddenHeaders.toString());

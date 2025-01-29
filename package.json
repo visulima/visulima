@@ -10,13 +10,6 @@
         "apps/*"
     ],
     "scripts": {
-        "lint:eslint:table": "pnpm --filter \"table\" run lint:eslint",
-        "lint:eslint:fix:table": "pnpm --filter \"table\" run lint:eslint:fix",
-        "lint:types:table": "pnpm --filter \"table\" run lint:types",
-        "test:table": "pnpm --filter \"table\" run test",
-        "test:coverage:table": "pnpm --filter \"table\" run test:coverage",
-        "test:ui:table": "pnpm --filter \"table\" run test:ui",
-
         "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
@@ -90,6 +83,7 @@
         "lint:eslint:fix:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run lint:eslint:fix",
         "lint:eslint:fix:redact": "pnpm --filter \"redact\" run lint:eslint:fix",
         "lint:eslint:fix:storybook": "pnpm --filter \"storybook\" run lint:eslint:fix",
+        "lint:eslint:fix:table": "pnpm --filter \"table\" run lint:eslint:fix",
         "lint:eslint:fmt": "pnpm --filter \"fmt\" run lint:eslint",
         "lint:eslint:fs": "pnpm --filter \"fs\" run lint:eslint",
         "lint:eslint:health-check": "pnpm --filter \"health-check\" run lint:eslint",
@@ -103,6 +97,7 @@
         "lint:eslint:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run lint:eslint",
         "lint:eslint:redact": "pnpm --filter \"redact\" run lint:eslint",
         "lint:eslint:storybook": "pnpm --filter \"storybook\" run lint:eslint",
+        "lint:eslint:table": "pnpm --filter \"table\" run lint:eslint",
         "lint:fix": "pnpm run lint:prettier:fix && pnpm run lint:eslint:fix && pnpm run sort-package-json",
         "lint:package-json": "nx run-many --target=lint:package-json --parallel --projects=tag:type:package",
         "lint:prettier": "pnpm run lint:prettier:root && nx run-many --target=lint:prettier --all --parallel",
@@ -137,6 +132,7 @@
         "lint:types:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run lint:types",
         "lint:types:redact": "pnpm --filter \"redact\" run lint:types",
         "lint:types:root": "tsc --noEmit",
+        "lint:types:table": "pnpm --filter \"table\" run lint:types",
         "nx": "nx",
         "plop": "plop",
         "prepare": "is-ci || husky || exit 0",
@@ -178,6 +174,7 @@
         "test:coverage:pail": "pnpm --filter \"pail\" run test:coverage",
         "test:coverage:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test:coverage",
         "test:coverage:redact": "pnpm --filter \"redact\" run test:coverage",
+        "test:coverage:table": "pnpm --filter \"table\" run test:coverage",
         "test:crud": "pnpm --filter \"crud\" run test",
         "test:deep-clone": "pnpm --filter \"deep-clone\" run test",
         "test:error": "pnpm --filter \"error\" run test",
@@ -193,6 +190,7 @@
         "test:pail": "pnpm --filter \"pail\" run test",
         "test:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test",
         "test:redact": "pnpm --filter \"redact\" run test",
+        "test:table": "pnpm --filter \"table\" run test",
         "test:ui:ansi": "pnpm --filter \"ansi\" run test:ui",
         "test:ui:api-platform": "pnpm --filter \"api-platform\" run test:ui",
         "test:ui:boxen": "pnpm --filter \"boxen\" run test:ui",
@@ -214,6 +212,7 @@
         "test:ui:pail": "pnpm --filter \"pail\" run test:coverage",
         "test:ui:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test:ui",
         "test:ui:redact": "pnpm --filter \"redact\" run test:ui",
+        "test:ui:table": "pnpm --filter \"table\" run test:ui",
         "update:deps": "taze"
     },
     "browserslist": [
