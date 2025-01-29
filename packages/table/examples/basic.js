@@ -1,6 +1,27 @@
 import { createTable } from "../dist/index.mjs";
 import { DOUBLE_BORDER } from "../dist/style.mjs";
 
+const OSC = '\u001B]';
+const BEL = '\u0007';
+const SEP = ';';
+const url = 'https://example.com';
+const text = 'This is a link to example.com';
+
+const link = [
+  OSC,
+  '8',
+  SEP,
+  SEP,
+  url,
+  BEL,
+  text,
+  OSC,
+  '8',
+  SEP,
+  SEP,
+  BEL
+].join('');
+
 // Example 1: Default style
 console.log("Default style:");
 const defaultTable = createTable()
@@ -53,13 +74,13 @@ const roundedTable = createTable({
         joinJoin: "┼",
     },
 })
-    .setHeaders(["Character", "Ability Score", "Modifier"])
-    .addRow(["Strength", "18", "+4"])
-    .addRow(["Dexterity", "14", "+2"])
-    .addRow(["Constitution", "16", "+3"])
-    .addRow(["Intelligence", "14", "+2"])
-    .addRow(["Wisdom", "15", "+2"])
-    .addRow(["Charisma", "16", "+3"]);
+    .setHeaders(["Character", "Ability Score", "Modifier", "link"])
+    .addRow(["Strength", "18", "+4", ""])
+    .addRow(["Dexterity", "14", "+2", ""])
+    .addRow(["Constitution", "16", "+3", ""])
+    .addRow(["Intelligence", "14", "+2", ""])
+    .addRow(["Wisdom", "15", "+2", link])
+    .addRow(["Charisma", "16", "+3", link]);
 
 console.log(roundedTable.toString());
 console.log("\n");

@@ -1,7 +1,7 @@
 {
     "name": "@visulima/table",
     "version": "1.0.0",
-    "description": "A powerful and flexible CLI table generator for Node.js",
+    "description": "Create beautiful ASCII tables with customizable borders, padding, and alignment. Supports Unicode, colors, and ANSI escape codes.",
     "keywords": [
         "cli",
         "table",
