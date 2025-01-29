@@ -1,3 +1,13 @@
+## @visulima/fs [3.1.0](https://github.com/visulima/visulima/compare/@visulima/fs@3.0.1...@visulima/fs@3.1.0) (2025-01-29)
+
+### Features
+
+* **fs:** adding size helper ([#488](https://github.com/visulima/visulima/issues/488)) ([3276bd7](https://github.com/visulima/visulima/commit/3276bd79b678e39b82d9ba8bc3d56e3af6f65746))
+
+### Code Refactoring
+
+* **fs:** moved some files into different folders ([80733b2](https://github.com/visulima/visulima/commit/80733b29737ec19389947056012cd33c8fefeea4))
+
 ## @visulima/fs [3.0.1](https://github.com/visulima/visulima/compare/@visulima/fs@3.0.0...@visulima/fs@3.0.1) (2025-01-25)
 
 ### Bug Fixes
