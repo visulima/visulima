@@ -27,12 +27,15 @@ export class Table {
 
     private readonly maxWidth?: number;
 
+    private readonly showHeader: boolean;
+
     constructor(options: TableOptions = {}) {
         this.border = options.border || DEFAULT_BORDER;
         this.align = options.align || "left";
         this.padding = options.padding || 1;
         this.truncate = options.truncate || false;
         this.maxWidth = options.maxWidth;
+        this.showHeader = options.showHeader || true;
     }
 
     private normalizeCellOption(cell: Cell): CellOptions {
@@ -72,6 +75,7 @@ export class Table {
     private strlen(string_: string): number {
         const split = stripAnsi(string_).split("\n");
 
+        // eslint-disable-next-line unicorn/no-array-reduce
         return split.reduce((memo, s) => {
             const width = stringWidth(s);
             return width > memo ? width : memo;
@@ -407,19 +411,21 @@ export class Table {
             result += this.createLine(this.border.topLeft || "", this.border.topBody, this.border.topJoin || "", this.border.topRight || "");
         }
 
-        // Headers
-        this.headers.forEach((row, index) => {
-            result += this.renderRow(row, {
-                bodyJoin: this.border.bodyJoin || "",
-                bodyLeft: this.border.bodyLeft || "",
-                bodyRight: this.border.bodyRight || "",
-            });
+        // Headers - only render if showHeader is true
+        if (this.showHeader) {
+            this.headers.forEach((row, index) => {
+                result += this.renderRow(row, {
+                    bodyJoin: this.border.bodyJoin || "",
+                    bodyLeft: this.border.bodyLeft || "",
+                    bodyRight: this.border.bodyRight || "",
+                });
 
-            // Add separator after header
-            if (index === this.headers.length - 1 && this.border.joinBody) {
-                result += this.createLine(this.border.joinLeft || "", this.border.joinBody, this.border.joinJoin || "", this.border.joinRight || "");
-            }
-        });
+                // Add separator after header
+                if (index === this.headers.length - 1 && this.border.joinBody) {
+                    result += this.createLine(this.border.joinLeft || "", this.border.joinBody, this.border.joinJoin || "", this.border.joinRight || "");
+                }
+            });
+        }
 
         // Body rows
         this.rows.forEach((row, index) => {

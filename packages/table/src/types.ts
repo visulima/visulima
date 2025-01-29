@@ -1,4 +1,3 @@
-
 export type HorizontalAlign = "center" | "left" | "right";
 export type VerticalAlign = "bottom" | "middle" | "top";
 
@@ -58,6 +57,10 @@ export type TableOptions = {
      * The padding between the cell content and the cell border
      */
     padding?: number;
+    /**
+     * Whether to show the header of the table
+     */
+    showHeader?: boolean;
     /**
      * Style options for specific parts of the table
      */
