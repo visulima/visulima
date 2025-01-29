@@ -58,7 +58,7 @@
     "homepage": "https://www.visulima.com/docs/package/colorize",
     "repository": {
         "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
+        "url": "git+https://github.com/visulima/visulima.git",
         "directory": "packages/colorize"
     },
     "funding": [

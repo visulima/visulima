@@ -101,7 +101,7 @@
     },
     "main": "dist/is-color-supported.server.cjs",
     "module": "dist/is-color-supported.server.mjs",
-    "browser": "./dist/is-color-supported.browser.mjs",
+    "browser": "dist/is-color-supported.browser.mjs",
     "types": "dist/is-color-supported.server.d.ts",
     "files": [
         "dist/**",
