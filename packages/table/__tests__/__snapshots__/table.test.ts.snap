@@ -1,0 +1,58 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`table > border styles > should support default border style > table-default-style 1`] = `
+"┌──────────┬──────────┐
+│ Header 1 │ Header 2 │
+├──────────┼──────────┤
+│ Value 1  │ Value 2  │
+└──────────┴──────────┘
+"
+`;
+
+exports[`table > border styles > should support double border style > table-double-style 1`] = `
+"╔══════════╦══════════╗
+║ Header 1 ║ Header 2 ║
+╠══════════╬══════════╣
+║ Value 1  ║ Value 2  ║
+╚══════════╩══════════╝
+"
+`;
+
+exports[`table > border styles > should support markdown border style > table-markdown-style 1`] = `
+"|----------|----------|
+| Header 1 | Header 2 |
+|----------|----------|
+| Value 1  | Value 2  |
+|----------|----------|
+"
+`;
+
+exports[`table > border styles > should support minimal border style > table-minimal-style 1`] = `
+"┌──────────┬──────────┐
+│ Header 1 │ Header 2 │
+│ Value 1  │ Value 2  │
+└──────────┴──────────┘
+"
+`;
+
+exports[`table > border styles > should support rounded border style > table-rounded-style 1`] = `
+"╭──────────┬──────────╮
+│ Header 1 │ Header 2 │
+├──────────┼──────────┤
+│ Value 1  │ Value 2  │
+╰──────────┴──────────╯
+"
+`;
+
+exports[`table > complex tables > should handle complex table with progress bars, colors, and Unicode > complex-table-with-progress 1`] = `
+"┌────────────┬────────────────┬───────────┐
+│ 📊 Metrics │  📈 Progress   │ 🎯 Target │
+├────────────┼────────────────┼───────────┤
+│ 代码覆盖率 │ [34m▓▓▓▓▓▓▓▓░░ 80%[0m │       90% │
+├────────────┼────────────────┼───────────┤
+│ 性能测试   │ [32m▓▓▓▓▓▓▓▓▓░ 95%[0m │       85% │
+├────────────┼────────────────┼───────────┤
+│ 安全扫描   │ [31m▓▓▓▓░░░░░░ 40%[0m │      100% │
+└────────────┴────────────────┴───────────┘
+"
+`;

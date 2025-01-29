@@ -110,7 +110,7 @@
         "@visulima/packem": "^1.10.0",
         "@visulima/colorize": "^1.4.20",
         "string-width": "^7.2.0",
-        "strip-ansi": "^7.1.0",
+
         "@vitest/coverage-v8": "^2.1.8",
         "@vitest/ui": "^2.1.8",
         "conventional-changelog-conventionalcommits": "8.0.0",

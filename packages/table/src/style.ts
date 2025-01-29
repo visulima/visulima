@@ -21,27 +21,6 @@ export const DEFAULT_BORDER: BorderStyle = {
     topRight: "┐",
 };
 
-export const HEAVY_BORDER: BorderStyle = {
-    bodyJoin: "║",
-    bodyLeft: "║",
-    bodyRight: "║",
-    bottomBody: "═",
-
-    bottomJoin: "╩",
-    bottomLeft: "╚",
-    bottomRight: "╝",
-    joinBody: "═",
-
-    joinJoin: "╬",
-    joinLeft: "╠",
-    joinRight: "╣",
-
-    topBody: "═",
-    topJoin: "╦",
-    topLeft: "╔",
-    topRight: "╗",
-};
-
 export const ROUNDED_BORDER: BorderStyle = {
     bodyJoin: "│",
     bodyLeft: "│",
@@ -93,11 +72,11 @@ export const MINIMAL_BORDER: BorderStyle = {
     bottomJoin: "┴",
     bottomLeft: "└",
     bottomRight: "┘",
-    joinBody: "─",
+    joinBody: "",
 
-    joinJoin: "┼",
-    joinLeft: "├",
-    joinRight: "┤",
+    joinJoin: "",
+    joinLeft: "",
+    joinRight: "",
 
     topBody: "─",
     topJoin: "┬",

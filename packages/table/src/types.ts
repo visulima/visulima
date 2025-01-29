@@ -1,15 +1,22 @@
 export type HorizontalAlign = "center" | "left" | "right";
 export type VerticalAlign = "bottom" | "middle" | "top";
 
+export type Border = {
+    body: string;
+    left: string;
+    middle: string;
+    right: string;
+};
+
 export type CellOptions = {
     colSpan?: number;
-    content: number | string;
+    content: number | string | null | undefined;
     hAlign?: HorizontalAlign;
     rowSpan?: number;
     vAlign?: VerticalAlign;
 };
 
-export type Cell = CellOptions | number | string | null;
+export type Cell = CellOptions | number | string | null | undefined;
 
 export type BorderStyle = {
     bodyJoin?: string;

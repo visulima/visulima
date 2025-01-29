@@ -8,12 +8,7 @@ const salesTable = createTable({
     align: "right",
     padding: 2,
 })
-    .setHeaders([
-        { content: "Product", hAlign: "left" },
-        "Units Sold",
-        "Revenue",
-        { content: "Growth", hAlign: "center" }
-    ])
+    .setHeaders([{ content: "Product", hAlign: "left" }, "Units Sold", "Revenue", { content: "Growth", hAlign: "center" }])
     .addRow(["Widgets", "1,230", "$12,300", "+15%"])
     .addRow(["Gadgets", "2,480", "$24,800", "+22%"])
     .addRow(["Gizmos", "3,790", "$37,900", "+18%"])
@@ -32,7 +27,7 @@ const employeeTable = createTable({
         { content: "Employee ID", hAlign: "center" },
         { content: "Name", hAlign: "left" },
         { content: "Department", hAlign: "left" },
-        { content: "Salary", hAlign: "right" }
+        { content: "Salary", hAlign: "right" },
     ])
     .addRow(["EMP001", "John Smith", "Engineering", "$85,000"])
     .addRow(["EMP002", "Sarah Johnson", "Marketing", "$72,000"])
@@ -84,25 +79,10 @@ const wideTable = createTable({
         { content: "Project", hAlign: "left" },
         { content: "Description", hAlign: "left" },
         { content: "Status", hAlign: "center" },
-        { content: "Priority", hAlign: "center" }
+        { content: "Priority", hAlign: "center" },
     ])
-    .addRow([
-        "Website Redesign",
-        "Complete overhaul of company website with modern design and improved UX",
-        "In Progress",
-        "High"
-    ])
-    .addRow([
-        "Mobile App",
-        "Native mobile application for both iOS and Android platforms",
-        "Planning",
-        "Medium"
-    ])
-    .addRow([
-        "DB Migration",
-        "Migrate legacy database to new cloud infrastructure with zero downtime",
-        "Pending",
-        "Critical"
-    ]);
+    .addRow(["Website Redesign", "Complete overhaul of company website with modern design and improved UX", "In Progress", "High"])
+    .addRow(["Mobile App", "Native mobile application for both iOS and Android platforms", "Planning", "Medium"])
+    .addRow(["DB Migration", "Migrate legacy database to new cloud infrastructure with zero downtime", "Pending", "Critical"]);
 
 console.log(wideTable.toString());
