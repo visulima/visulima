@@ -1,0 +1,8 @@
+{
+    "name": "table",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/table/src",
+    "projectType": "library",
+    "tags": ["table", "type:package"],
+    "implicitDependencies": []
+}
