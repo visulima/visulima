@@ -348,3 +348,17 @@ coloredWordWrapTable.addRow([
 ]);
 
 console.log(coloredWordWrapTable.toString());
+
+console.log("\nTable with Emoji and word wrap:");
+const emojiTable = createTable({
+    wordWrap: true,
+    maxWidth: 15,
+});
+
+emojiTable.setHeaders(["Table"]);
+emojiTable.addRow(["🥇 Some Text", 24]);
+emojiTable.addRow(["🥈 Some more text", 22]);
+emojiTable.addRow(["🥉 I am a reallylong name", 19]);
+emojiTable.addRow(["I have a super duperlongname", 18]);
+
+console.log(emojiTable.toString());
