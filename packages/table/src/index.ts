@@ -9,20 +9,6 @@ import type { Cell as CellType, CellOptions, TableConstructorOptions } from "./t
 const widthCache = new Map<string, number>();
 
 /**
- * Gets the visible width of a string, accounting for ANSI escape codes.
- * @param str String to measure
- * @returns Visible width of the string
- */
-const getContentWidth = (string_: string): number => {
-    if (widthCache.has(string_)) {
-        return widthCache.get(string_)!;
-    }
-    const width = stringWidth(stripVTControlCharacters(string_));
-    widthCache.set(string_, width);
-    return width;
-};
-
-/**
  * Normalizes a cell value into a CellType object.
  * @param cell The cell value to normalize
  * @returns Normalized cell object
@@ -109,8 +95,9 @@ export class Table {
      * @returns This table instance for chaining
      */
     public setHeaders(headers: CellType[]): this {
-        const headerRows = [headers];
         let maxCol = 0;
+
+        const headerRows = [headers];
         const length_ = headers.length;
 
         // Optimize loop for header column counting
@@ -127,6 +114,7 @@ export class Table {
         this.columnCount = Math.max(this.columnCount, maxCol);
         this.headers = headerRows.map((headerRow) => fillMissingCells(headerRow, this.columnCount));
         this.isDirty = true;
+
         return this;
     }
 
@@ -138,14 +126,17 @@ export class Table {
     public addRow(row: CellType[]): this {
         let maxCol = 0;
         let currentCol = 0;
+
         const length_ = row.length;
 
         // Optimize loop for row column counting
         for (let index = 0; index < length_; index++) {
             const cell = row[index];
+
             if (cell) {
                 const normalizedCell = normalizeCellOption(cell);
                 const colSpan = normalizedCell.colSpan ?? 1;
+
                 currentCol += colSpan;
                 maxCol = Math.max(maxCol, currentCol);
             } else {
@@ -162,6 +153,7 @@ export class Table {
 
         this.rows.push(fillMissingCells(row, this.columnCount));
         this.isDirty = true;
+
         return this;
     }
 
@@ -172,9 +164,11 @@ export class Table {
      */
     public addRows(rows: CellType[][]): this {
         const length_ = rows.length;
+
         for (let index = 0; index < length_; index++) {
             this.addRow(rows[index]);
         }
+
         return this;
     }
 
@@ -192,7 +186,7 @@ export class Table {
         // Helper to get content width based on cell options
         const getContentWidth = (cell: CellType): number => {
             const normalizedCell = this.normalizeCellOption(cell);
-            const content = String(normalizedCell.content ?? "");
+            const content = String(normalizedCell.content);
 
             let contentWidth: number;
             if (normalizedCell.maxWidth) {
@@ -205,6 +199,7 @@ export class Table {
             } else {
                 // For normal cells, use the maximum line width
                 const lines = content.split("\n");
+
                 contentWidth = Math.max(...lines.map((line) => stringWidth(line)));
             }
 
@@ -395,6 +390,23 @@ export class Table {
     }
 
     private truncate(string_: string, maxWidth: number): string {
+        /**
+         * Gets the visible width of a string, accounting for ANSI escape codes.
+         * @param str String to measure
+         * @returns Visible width of the string
+         */
+        const getContentWidth = (string_: string): number => {
+            if (widthCache.has(string_)) {
+                return widthCache.get(string_)!;
+            }
+
+            const width = stringWidth(stripVTControlCharacters(string_));
+
+            widthCache.set(string_, width);
+
+            return width;
+        };
+
         if (getContentWidth(string_) <= maxWidth) {
             return string_;
         }
@@ -481,7 +493,7 @@ export class Table {
             while ((match = linkPattern.exec(line)) !== null) {
                 formats.push({
                     index: match.index,
-                    sequence: `\u001B]8;;${match[1]}\u0007${match[2]}\u001B]8;;\u0007`
+                    sequence: `\u001B]8;;${match[1]}\u0007${match[2]}\u001B]8;;\u0007`,
                 });
             }
 
