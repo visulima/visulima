@@ -440,6 +440,7 @@ export class Table {
     // eslint-disable-next-line class-methods-use-this
     private preserveAnsiCodes(text: string, start: number, end: number): string {
         const openCodes: string[] = [];
+
         let match;
 
         // Find all ANSI codes before the slice point
@@ -463,7 +464,7 @@ export class Table {
         const slicedContent = text.slice(start, end);
 
         // If we have any open codes at the end, add a reset
-        return openCodes.join("") + slicedContent + (openCodes.length > 0 ? "\u001B[0m" : "");
+        return openCodes.join("") + slicedContent + "\u001b[0m";
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
