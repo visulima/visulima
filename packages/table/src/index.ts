@@ -589,7 +589,7 @@ export class Table {
             }
 
             const content = String(cell.content);
-            const isEmpty = content === "";
+            const isEmpty = content.trim() === "";
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             const availableWidth = totalWidth - (isEmpty ? 0 : this.options.style.paddingLeft + this.options.style.paddingRight);
 
@@ -636,7 +636,7 @@ export class Table {
                 }
 
                 const contentWidth = stringWidth(content);
-                const isEmpty = cell.content === "";
+                const isEmpty = content.trim() === "";
                 // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 const availableWidth = totalWidth - (isEmpty ? 0 : this.options.style.paddingLeft + this.options.style.paddingRight);
                 const remainingSpace = Math.max(0, availableWidth - contentWidth);
