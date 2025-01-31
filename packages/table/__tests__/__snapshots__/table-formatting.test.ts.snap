@@ -2,10 +2,10 @@
 
 exports[`table formatting > ANSI colored text > should handle word wrapping with colored text 1`] = `
 "┌───────┬─────────┐
-│ [31mHello[0m │ [34mI [34mam[0m    │
-│ [31mhow[0m   │ [34mfine[0m    │
-│ [31mare[0m   │ [34mthanks![0m │
-│ [31myou?[0m  │         │
+│ [31mHello[0m │ [34mI [34m[34mam[0m    │
+│ [31m[31mhow[0m   │ [34m[34mfine[0m    │
+│ [31m[31mare[0m   │ [34m[34mthanks![0m │
+│ [31m[31myou?[0m  │         │
 └───────┴─────────┘"
 `;
 

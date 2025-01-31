@@ -455,113 +455,102 @@ export class Table {
             return [string_];
         }
 
+        // Quick check for strings that don't need wrapping
+        if (stringWidth(string_) <= width) {
+            return [string_];
+        }
+
         // First split by newlines to preserve them
-        const lines = string_.split(/(\r?\n)/);
+        const lines = string_.split(/\r?\n/);
         const result: string[] = [];
 
+        // Precompile regex patterns
+        const colorPattern = /\u001B\[\d+m/g;
+        const linkPattern = /\u001B\]8;;([^\u0007]*)\u0007([^\u0007]*)\u001B\]8;;\u0007/g;
+        
         for (const line of lines) {
-            // Handle newline characters
-            if (/\r?\n/.test(line)) {
-                result.push("");
-                continue;
-            }
-
             // Handle empty lines or whitespace
-            if (!line.trim()) {
+            if (!line || !line.trim()) {
                 result.push(line);
                 continue;
             }
 
-            // Extract all color and link sequences
-            const segments: { color?: string; text: string; url?: string }[] = [];
-            let currentPos = 0;
-            let currentColor = "";
+            // Extract and store formatting sequences
+            const formats: Array<{ index: number; sequence: string }> = [];
+            let plainText = line;
 
-            // Regular expression to match both color codes and hyperlinks
-            const pattern = /\u001B\[(\d+)m|\u001B\]8;;([^\u0007]*)\u0007([^\u0007]*)\u001B\]8;;\u0007/g;
+            // Extract color codes
             let match;
-
-            while ((match = pattern.exec(line)) !== null) {
-                const [fullMatch, colorCode, url, linkText] = match;
-                const matchStart = match.index;
-
-                // Add text before the match if any
-                if (matchStart > currentPos) {
-                    segments.push({
-                        color: currentColor,
-                        text: line.slice(currentPos, matchStart),
-                    });
-                }
-
-                if (colorCode) {
-                    // Handle color code
-                    currentColor = fullMatch;
-                } else if (url && linkText) {
-                    // Handle hyperlink
-                    segments.push({
-                        color: currentColor,
-                        text: linkText,
-                        url,
-                    });
-                }
-
-                currentPos = matchStart + fullMatch.length;
+            while ((match = colorPattern.exec(line)) !== null) {
+                formats.push({ index: match.index, sequence: match[0] });
             }
 
-            // Add remaining text if any
-            if (currentPos < line.length) {
-                segments.push({
-                    color: currentColor,
-                    text: line.slice(currentPos),
+            // Extract hyperlinks
+            while ((match = linkPattern.exec(line)) !== null) {
+                formats.push({ 
+                    index: match.index,
+                    sequence: `\u001B]8;;${match[1]}\u0007${match[2]}\u001B]8;;\u0007`
                 });
             }
 
-            // Process segments
+            // Sort formats by index
+            formats.sort((a, b) => a.index - b.index);
+
+            // Remove all formatting sequences for width calculation
+            plainText = stripVTControlCharacters(line);
+
+            // Split into words and calculate
+            const words = plainText.split(/\s+/);
             let currentLine = "";
             let currentWidth = 0;
+            let lastColor = "";
 
-            for (const segment of segments) {
-                const words = segment.text.split(/\s+/);
-                for (const word of words) {
-                    const wordWidth = stringWidth(word);
-                    if (
-                        currentWidth + wordWidth + (currentLine ? 1 : 0) > width && // Line is full, start a new one
-                        currentLine
-                    ) {
-                        if (currentColor) {
-                            currentLine += "\u001B[0m";
-                        }
-                        result.push(currentLine);
-                        currentLine = "";
-                        currentWidth = 0;
+            for (const word of words) {
+                const wordWidth = stringWidth(word);
+
+                // Check if we need to start a new line
+                if (currentWidth + wordWidth + (currentWidth > 0 ? 1 : 0) > width && currentLine) {
+                    // Add any active color sequence closing
+                    if (lastColor) {
+                        currentLine += "\u001B[0m";
                     }
-
-                    if (currentLine) {
-                        currentLine += " ";
-                        currentWidth += 1;
-                    }
-
-                    // Add color and/or link formatting
-                    if (segment.url) {
-                        currentLine += `\u001B]8;;${segment.url}\u0007`;
-                    }
-                    if (segment.color) {
-                        currentLine += segment.color;
-                    }
-
-                    currentLine += word;
-
-                    if (segment.url) {
-                        currentLine += "\u001B]8;;\u0007";
-                    }
-
-                    currentWidth += wordWidth;
+                    result.push(currentLine);
+                    currentLine = "";
+                    currentWidth = 0;
                 }
+
+                // Add space if needed
+                if (currentLine) {
+                    currentLine += " ";
+                    currentWidth += 1;
+                }
+
+                // Reapply active formatting
+                if (lastColor) {
+                    currentLine += lastColor;
+                }
+
+                // Add word with its original formatting
+                let wordStart = plainText.indexOf(word);
+                let formattedWord = word;
+
+                // Apply any formatting that should be present at this position
+                for (const format of formats) {
+                    if (format.index <= wordStart) {
+                        if (format.sequence.startsWith("\u001B[")) {
+                            lastColor = format.sequence;
+                        }
+                        formattedWord = format.sequence + formattedWord;
+                    }
+                }
+
+                currentLine += formattedWord;
+                currentWidth += wordWidth;
             }
 
             // Add the last line if any
             if (currentLine) {
-                if (currentColor) {
+                if (lastColor) {
                     currentLine += "\u001B[0m";
                 }
                 result.push(currentLine);
