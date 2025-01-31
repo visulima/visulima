@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`table borders > border styles > should support default border style > table-default-style 1`] = `
+"┌──────────┬──────────┐
+│ Header 1 │ Header 2 │
+├──────────┼──────────┤
+│ Value 1  │ Value 2  │
+└──────────┴──────────┘"
+`;
+
+exports[`table borders > border styles > should support disabled decoration lines 1`] = `
+" foo         bar  baz  
+ frobnicate  bar  quuz "
+`;
+
+exports[`table borders > border styles > should support double border style > table-double-style 1`] = `
+"╔══════════╦══════════╗
+║ Header 1 ║ Header 2 ║
+╠══════════╬══════════╣
+║ Value 1  ║ Value 2  ║
+╚══════════╩══════════╝"
+`;
+
+exports[`table borders > border styles > should support markdown border style > table-markdown-style 1`] = `
+"|----------|----------|
+| Header 1 | Header 2 |
+|----------|----------|
+| Value 1  | Value 2  |
+|----------|----------|"
+`;
+
+exports[`table borders > border styles > should support minimal border style > table-minimal-style 1`] = `
+"-----------------------
+ Header 1  Header 2 
+-----------------------
+ Value 1   Value 2  
+-----------------------"
+`;
+
+exports[`table borders > border styles > should support rounded border style > table-rounded-style 1`] = `
+"╭──────────┬──────────╮
+│ Header 1 │ Header 2 │
+├──────────┼──────────┤
+│ Value 1  │ Value 2  │
+╰──────────┴──────────╯"
+`;
