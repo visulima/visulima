@@ -1,0 +1,154 @@
+{
+    "name": "@visulima/table",
+    "version": "1.0.0",
+    "description": "Create beautiful ASCII tables with customizable borders, padding, and alignment. Supports Unicode, colors, and ANSI escape codes.",
+    "keywords": [
+        "cli",
+        "table",
+        "terminal",
+        "console",
+        "ascii",
+        "unicode",
+        "alignment",
+        "ansi",
+        "visulima"
+    ],
+    "homepage": "https://visulima.com/packages/table",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/table"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            }
+        },
+        "./style": {
+            "require": {
+                "types": "./dist/style.d.cts",
+                "default": "./dist/style.cjs"
+            },
+            "import": {
+                "types": "./dist/style.d.mts",
+                "default": "./dist/style.mjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.cjs",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ],
+            "style": [
+                "./dist/style.d.ts"
+            ]
+        }
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest",
+        "test:bench": "vitest bench --run"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^15.0.3",
+        "@anolilab/prettier-config": "^5.0.14",
+        "@anolilab/semantic-release-pnpm": "1.1.6",
+        "@anolilab/semantic-release-preset": "^9.0.3",
+        "@arethetypeswrong/cli": "^0.17.1",
+        "@babel/core": "^7.26.0",
+        "@rushstack/eslint-plugin-security": "^0.8.3",
+        "@secretlint/secretlint-rule-preset-recommend": "^9.0.0",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/node": "18.19.71",
+        "@visulima/colorize": "^1.4.20",
+        "@visulima/packem": "^1.10.0",
+        "@vitest/coverage-v8": "^2.1.8",
+        "@vitest/ui": "^2.1.8",
+        "cli-table3": "^0.6.3",
+        "conventional-changelog-conventionalcommits": "8.0.0",
+        "cross-env": "^7.0.3",
+        "esbuild": "^0.24.2",
+        "eslint": "8.57.1",
+        "eslint-plugin-deprecation": "^3.0.0",
+        "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
+        "eslint-plugin-mdx": "^3.1.5",
+        "eslint-plugin-vitest": "^0.4.1",
+        "eslint-plugin-vitest-globals": "^1.5.0",
+        "prettier": "^3.4.2",
+        "rimraf": "^6.0.1",
+        "secretlint": "9.0.0",
+        "semantic-release": "^24.2.0",
+        "vitest": "^2.1.8",
+        "typescript": "^5.7.3"
+    },
+    "engines": {
+        "node": ">=18.0.0 <=23.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "anolilab": {
+        "eslint-config": {
+            "plugin": {
+                "tsdoc": false,
+                "etc": false
+            },
+            "warn_on_unsupported_typescript_version": false,
+            "info_on_disabling_jsx_react_rule": false,
+            "info_on_disabling_prettier_conflict_rule": false,
+            "info_on_disabling_jsonc_sort_keys_rule": false,
+            "info_on_disabling_etc_no_deprecated": false
+        }
+    }
+}
