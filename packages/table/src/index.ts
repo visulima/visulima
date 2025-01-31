@@ -381,8 +381,7 @@ export class Table {
         };
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    private truncate(string_: string, maxWidth: number): string {
+    private truncate(string_: string, maxWidth: number, ellipsis: string = this.options.truncate): string {
         /**
          * Gets the visible width of a string, accounting for ANSI escape codes.
          * @param string_ String to measure
@@ -437,7 +436,7 @@ export class Table {
 
             const charWidth = getContentWidth(char);
 
-            if (currentWidth + charWidth > maxWidth - 1) {
+            if (currentWidth + charWidth > maxWidth - (ellipsis ? 1 : 0)) {
                 break;
             }
 
@@ -446,7 +445,9 @@ export class Table {
         }
 
         // Add ellipsis and close any open color codes
-        result += "…";
+        if (ellipsis) {
+            result += ellipsis;
+        }
 
         if (lastColorCode) {
             result += "\u001B[0m";
@@ -605,10 +606,13 @@ export class Table {
             const availableWidth = totalWidth - (isEmpty ? 0 : this.options.style.paddingLeft + this.options.style.paddingRight);
 
             let cellLines: string[];
+
+            const maxWidth = cell.maxWidth ?? this.options.maxWidth;
+
             if (cell.wordWrap) {
                 cellLines = this.wordWrap(content, availableWidth);
-            } else if (cell.maxWidth) {
-                cellLines = [this.truncate(content, cell.maxWidth)];
+            } else if (maxWidth) {
+                cellLines = [this.truncate(content, maxWidth, "")];
             } else {
                 cellLines = content.split("\n");
             }

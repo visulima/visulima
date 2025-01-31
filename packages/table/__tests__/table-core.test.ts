@@ -240,22 +240,22 @@ describe("table core functionality", () => {
         it("should handle maxWidth with multi-byte characters", () => {
             expect.assertions(1);
 
-            const table = new Table({ maxWidth: 5 });
+            const table = new Table({ maxWidth: 6, style: { paddingLeft: 0, paddingRight: 0 } });
             table.addRow(["Test", "こんにちは", "🌟🌟🌟🌟🌟"]);
 
             const output = table.toString();
 
             expect(output).toMatchInlineSnapshot(`
-                "┌────┬─────┬─────┐
+                "┌────┬──────┬──────┐
                 │Test│こんに│🌟🌟🌟│
-                └────┴─────┴─────┘"
+                └────┴──────┴──────┘"
             `);
         });
 
         it("should handle maxWidth with ANSI escape codes", () => {
             expect.assertions(1);
 
-            const table = new Table({ maxWidth: 5 });
+            const table = new Table({ maxWidth: 5, style: { paddingLeft: 0, paddingRight: 0 } });
             table.addRow(["Test", "\u001B[31mThis is red text\u001B[0m", "\u001B[32mGreen\u001B[0m"]);
 
             const output = table.toString();
