@@ -330,13 +330,12 @@ describe("table core functionality", () => {
             const output = table.toString();
 
             expect(output).toMatchInlineSnapshot(`
-                "┌────┬─────┬───┐
-                │H1  │Head │H3 │
-                │    │er2  │   │
-                ├────┼─────┼───┤
-                │Data│Long │End│
-                │    │Data │   │
-                └────┴─────┴───┘"
+              "┌────┬─────┬───┐
+              │H1  │Head…│H3 │
+              ├────┼─────┼───┤
+              │Data│Long │End│
+              │    │Data │   │
+              └────┴─────┴───┘"
             `);
         });
     });

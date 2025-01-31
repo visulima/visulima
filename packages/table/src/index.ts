@@ -357,6 +357,7 @@ export class Table {
         if (cell === null || cell === undefined || cell === "") {
             return {
                 content: "",
+                maxWidth: this.options.maxWidth,
                 wordWrap: this.options.wordWrap,
             };
         }
@@ -371,12 +372,14 @@ export class Table {
             return {
                 ...cell,
                 content: String(content),
+                maxWidth: cell.maxWidth ?? this.options.maxWidth,
                 wordWrap: cell.wordWrap ?? this.options.wordWrap,
             };
         }
 
         return {
             content: String(cell),
+            maxWidth: this.options.maxWidth,
             wordWrap: this.options.wordWrap,
         };
     }
@@ -581,15 +584,16 @@ export class Table {
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
     private renderRow(row: CellType[], columnWidths: number[], border: { left: string; middle: string; right: string }): string[] {
-        const cells = row.map((cell) => this.normalizeCellOption(cell));
         const lines: string[] = [];
 
         // Process each cell and get their content lines
         const cellContents: string[][] = [];
         let maxLines = 1;
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const [index, cell] of cells.entries()) {
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,prefer-const
+        for (let [index, cell] of row.entries()) {
+            cell = this.normalizeCellOption(cell);
+
             const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - index);
 
             let totalWidth = columnWidths[index] as number;
@@ -604,14 +608,18 @@ export class Table {
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             const availableWidth = totalWidth - (isEmpty ? 0 : this.options.style.paddingLeft + this.options.style.paddingRight);
 
-            let cellLines: string[];
+            let cellLines: string[] = [];
 
-            const maxWidth = cell.maxWidth ?? this.options.maxWidth;
+            if (cell.wordWrap || cell.maxWidth) {
+                if (cell.wordWrap) {
+                    cellLines = this.wordWrap(content, availableWidth);
 
-            if (cell.wordWrap) {
-                cellLines = this.wordWrap(content, availableWidth);
-            } else if (maxWidth) {
-                cellLines = [this.truncate(content, maxWidth, this.options.truncate)];
+                    if (cell.maxWidth !== undefined) {
+                        cellLines = cellLines.map((line) => this.truncate(line, cell.maxWidth as number, this.options.truncate));
+                    }
+                } else if (cell.maxWidth !== undefined) {
+                    cellLines = [this.truncate(content, cell.maxWidth, this.options.truncate)];
+                }
             } else {
                 cellLines = content.split("\n");
             }
@@ -627,8 +635,8 @@ export class Table {
             let currentCol = 0;
 
             // eslint-disable-next-line no-loops/no-loops,no-plusplus
-            for (let cellIndex = 0; cellIndex < cells.length && currentCol < this.columnCount; cellIndex++) {
-                const cell = cells[cellIndex] as CellOptions & { content: string };
+            for (let cellIndex = 0; cellIndex < row.length && currentCol < this.columnCount; cellIndex++) {
+                const cell = this.normalizeCellOption(row[cellIndex]);
                 const content = (cellContents[cellIndex] as string[])[lineIndex] ?? "";
                 const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - currentCol);
 

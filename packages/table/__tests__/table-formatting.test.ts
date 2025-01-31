@@ -172,7 +172,7 @@ describe("table formatting", () => {
 
             const output = table.toString();
             const lines = output.split("\n");
-console.log(output)
+
             // Find the line containing the colored text (including ANSI codes)
             const truncatedLine = lines.find((line) => line.includes("\u001B[32m"));
             expect(truncatedLine).toBeDefined();
