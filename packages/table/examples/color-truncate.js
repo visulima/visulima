@@ -9,7 +9,7 @@ const table = createTable({ maxWidth: 40 });
 table.addRow([
     "Position",
     "Colored Text",
-    { content: "Truncation", style: { align: "center" } }
+    { content: "Truncation" }
 ]);
 
 // Test end truncation

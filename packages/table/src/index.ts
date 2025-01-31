@@ -1,6 +1,8 @@
 import { stripVTControlCharacters } from "node:util";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import ansiRegex from "ansi-regex";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import stringWidth from "string-width";
 import type { RequiredDeep } from "type-fest";
 
@@ -9,22 +11,29 @@ import type { Cell as CellType, CellOptions, TableConstructorOptions, TruncateOp
 
 const ansiPattern = ansiRegex();
 
-function findRealPosition(text: string, visiblePosition: number): number {
+const findRealPosition = (text: string, visiblePosition: number): number => {
     let visibleIndex = 0;
     let realIndex = 0;
     let match;
 
+    // eslint-disable-next-line no-loops/no-loops,no-cond-assign
     while ((match = ansiPattern.exec(text)) !== null) {
         const beforeMatch = text.slice(realIndex, match.index);
+
         visibleIndex += beforeMatch.length;
+
         if (visibleIndex > visiblePosition) {
             return match.index - (visibleIndex - visiblePosition);
         }
+
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         realIndex = match.index + match[0].length;
     }
 
     const remaining = text.slice(realIndex);
+
     visibleIndex += remaining.length;
+
     if (visibleIndex > visiblePosition) {
         return text.length - (visibleIndex - visiblePosition);
     }
