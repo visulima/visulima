@@ -224,29 +224,15 @@ console.log(onlyHeaderTable.toString());
 console.log("\nTable with multiple column spans:");
 const colspanTable = createTable();
 
-colspanTable.setHeaders([
-    { content: "Span All", colSpan: 3 },
-]);
+colspanTable.setHeaders([{ content: "Span All", colSpan: 3 }]);
 
-colspanTable.addRow([
-    { content: "Span Two", colSpan: 2 },
-    "C",
-]);
+colspanTable.addRow([{ content: "Span Two", colSpan: 2 }, "C"]);
 
-colspanTable.addRow([
-    "A",
-    { content: "Span Two", colSpan: 2 },
-]);
+colspanTable.addRow(["A", { content: "Span Two", colSpan: 2 }]);
 
-colspanTable.addRow([
-    "A",
-    "B",
-    "C",
-]);
+colspanTable.addRow(["A", "B", "C"]);
 
-colspanTable.addRow([
-    { content: "Span All", colSpan: 3 },
-]);
+colspanTable.addRow([{ content: "Span All", colSpan: 3 }]);
 
 console.log(colspanTable.toString());
 
@@ -256,9 +242,7 @@ newLinesTable.addRow(["something\nwith\nnewlines"]);
 console.log(newLinesTable.toString());
 
 const table3 = createTable();
-table3
-    .addRow([{ colSpan: 2, content: "Spanning Two Columns" }, "Normal"])
-    .addRow(["A", "B", "C"]);
+table3.addRow([{ colSpan: 2, content: "Spanning Two Columns" }, "Normal"]).addRow(["A", "B", "C"]);
 console.log(table3.toString());
 
 // Example with truncated cells
@@ -267,13 +251,9 @@ const truncatedTable = createTable();
 truncatedTable.setHeaders([
     { content: "Short Header", maxWidth: 10 },
     { content: "This is a very long header that will be truncated", maxWidth: 15 },
-    { content: "Normal" }
+    { content: "Normal" },
 ]);
-truncatedTable.addRow([
-    { content: "Short", maxWidth: 10 },
-    { content: "This is a very long cell that will be truncated", maxWidth: 15 },
-    "Normal"
-]);
+truncatedTable.addRow([{ content: "Short", maxWidth: 10 }, { content: "This is a very long cell that will be truncated", maxWidth: 15 }, "Normal"]);
 console.log(truncatedTable.toString());
 
 // Example with truncated colored cells
@@ -282,12 +262,12 @@ const coloredTable = createTable();
 coloredTable.setHeaders([
     { content: "\u001B[31mRed Header That Will Be Truncated\u001B[0m", maxWidth: 15 },
     { content: "\u001B[32mGreen Header That Will Be Truncated\u001B[0m", maxWidth: 15 },
-    { content: "Normal" }
+    { content: "Normal" },
 ]);
 coloredTable.addRow([
     { content: "\u001B[31mRed Cell That Will Be Truncated\u001B[0m", maxWidth: 15 },
     { content: "\u001B[32mGreen Cell That Will Be Truncated\u001B[0m", maxWidth: 15 },
-    "Normal"
+    "Normal",
 ]);
 console.log(coloredTable.toString());
 
@@ -344,7 +324,10 @@ coloredWordWrapTable.setHeaders(["Red Text", "Green Text", "Mixed Colors"]);
 coloredWordWrapTable.addRow([
     { content: "\u001b[31mThis is a very long line of red text that should be wrapped properly across multiple lines while maintaining the color\u001b[0m" },
     { content: "\u001b[32mThis is a very long line of green text that should be wrapped properly across multiple lines while maintaining the color\u001b[0m" },
-    { content: "\u001b[31mRed text\u001b[0m and \u001b[32mgreen text\u001b[0m mixed together in a very long line that should wrap properly while maintaining both colors" },
+    {
+        content:
+            "\u001b[31mRed text\u001b[0m and \u001b[32mgreen text\u001b[0m mixed together in a very long line that should wrap properly while maintaining both colors",
+    },
 ]);
 
 console.log(coloredWordWrapTable.toString());
@@ -362,3 +345,15 @@ emojiTable.addRow(["🥉 I am a reallylong name", 19]);
 emojiTable.addRow(["I have a super duperlongname", 18]);
 
 console.log(emojiTable.toString());
+
+console.log("\nTable with CJK characters:");
+const CJKtable = createTable();
+
+CJKtable.addRows([
+    ["foobar", { content: "English test", maxWidth: 9 }, "baz"],
+    ["foobar", { content: "中文测试", maxWidth: 9 }, "baz"],
+    ["foobar", { content: "日本語テスト", maxWidth: 9 }, "baz"],
+    ["foobar", { content: "한국어테스트", maxWidth: 9 }, "baz"],
+]);
+
+console.log(CJKtable.toString());

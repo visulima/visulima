@@ -110,7 +110,9 @@ export class Table {
         // Optimize loop for header column counting
         // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let index = 0; index < length_; index++) {
+            // eslint-disable-next-line security/detect-object-injection
             const cell = headers[index];
+
             if (!cell) {
                 // eslint-disable-next-line no-continue
                 continue;
@@ -142,6 +144,7 @@ export class Table {
         // Optimize loop for row column counting
         // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let index = 0; index < length_; index++) {
+            // eslint-disable-next-line security/detect-object-injection
             const cell = row[index];
 
             if (cell) {
@@ -308,6 +311,7 @@ export class Table {
                 const cellWidth = this.calculateCellWidth(normalizedCell);
 
                 if (colSpan === 1) {
+                    // eslint-disable-next-line security/detect-object-injection
                     widths[currentCol] = Math.max(widths[currentCol] as number, cellWidth);
                 } else {
                     // For spanning cells, calculate minimum width needed per column
@@ -424,15 +428,18 @@ export class Table {
         return wantedIndex;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     private preserveAnsiCodes(text: string, start: number, end: number): string {
         const openCodes: string[] = [];
         let match;
 
         // Find all ANSI codes before the slice point
         const beforeText = text.slice(0, start);
+        // eslint-disable-next-line no-loops/no-loops,no-cond-assign
         while ((match = ansiPattern.exec(beforeText)) !== null) {
             const code = match[0];
             if (!code.endsWith("m")) {
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
@@ -447,9 +454,10 @@ export class Table {
         const slicedContent = text.slice(start, end);
 
         // If we have any open codes at the end, add a reset
-        return openCodes.join("") + slicedContent + "\u001B[0m";
+        return openCodes.join("") + slicedContent + (openCodes.length > 0 ? "\u001B[0m" : "");
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     private truncate(string_: string, maxWidth: number, options: Required<TruncateOptions>): string {
         if (typeof string_ !== "string") {
             throw new TypeError(`Expected input to be a string, got ${typeof string_}`);
@@ -494,8 +502,10 @@ export class Table {
                     truncationCharacter += " ";
                 }
 
+                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 const visibleStart = stringWidth(stripVTControlCharacters(line)) - maxWidth + stringWidth(truncationCharacter);
                 const realStart = findRealPosition(line, visibleStart);
+
                 return truncationCharacter + this.preserveAnsiCodes(line, realStart, line.length);
             }
 
@@ -518,8 +528,10 @@ export class Table {
                 }
 
                 const firstHalf = findRealPosition(line, half);
+                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 const secondHalfStart = stringWidth(stripVTControlCharacters(line)) - (maxWidth - half) + stringWidth(truncationCharacter);
                 const secondHalf = findRealPosition(line, secondHalfStart);
+
                 return this.preserveAnsiCodes(line, 0, firstHalf) + truncationCharacter + this.preserveAnsiCodes(line, secondHalf, line.length);
             }
 
@@ -527,6 +539,7 @@ export class Table {
             if (options.position === "end") {
                 if (options.preferTruncationOnSpace) {
                     const nearestSpace = this.getIndexOfNearestSpace(line, maxWidth - 1);
+
                     return this.preserveAnsiCodes(line, 0, nearestSpace) + truncationCharacter;
                 }
 
@@ -535,6 +548,7 @@ export class Table {
                 }
 
                 const endPos = findRealPosition(line, maxWidth - stringWidth(truncationCharacter));
+
                 return this.preserveAnsiCodes(line, 0, endPos) + truncationCharacter;
             }
 
@@ -606,6 +620,7 @@ export class Table {
 
             // Split into words and calculate
             const words = plainText.split(/\s+/);
+
             let currentLine = "";
             let currentWidth = 0;
             let lastColor = "";
@@ -639,6 +654,7 @@ export class Table {
 
                 // Add word with its original formatting
                 const wordStart = plainText.indexOf(word);
+
                 let formattedWord = word;
 
                 // Apply any formatting that should be present at this position
@@ -648,6 +664,7 @@ export class Table {
                         if (format.sequence.startsWith("\u001B[")) {
                             lastColor = format.sequence;
                         }
+
                         formattedWord = format.sequence + formattedWord;
                     }
                 }
@@ -662,6 +679,7 @@ export class Table {
                 if (lastColor) {
                     currentLine += "\u001B[0m";
                 }
+
                 result.push(currentLine);
             }
         }
@@ -683,6 +701,7 @@ export class Table {
 
             const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - index);
 
+            // eslint-disable-next-line security/detect-object-injection
             let totalWidth = columnWidths[index] as number;
 
             // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention,no-plusplus,no-underscore-dangle
@@ -723,7 +742,9 @@ export class Table {
 
             // eslint-disable-next-line no-loops/no-loops,no-plusplus
             for (let cellIndex = 0; cellIndex < row.length && currentCol < this.columnCount; cellIndex++) {
+                // eslint-disable-next-line security/detect-object-injection
                 const cell = this.normalizeCellOption(row[cellIndex]);
+                // eslint-disable-next-line security/detect-object-injection
                 const content = (cellContents[cellIndex] as string[])[lineIndex] ?? "";
                 const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - currentCol);
 
@@ -731,6 +752,7 @@ export class Table {
                     line += border.middle;
                 }
 
+                // eslint-disable-next-line security/detect-object-injection
                 let totalWidth = columnWidths[currentCol] as number;
                 // eslint-disable-next-line no-loops/no-loops,no-plusplus
                 for (let index = 1; index < colSpan; index++) {
@@ -776,6 +798,7 @@ export class Table {
                 if (currentCol > 0) {
                     line += border.middle;
                 }
+                // eslint-disable-next-line security/detect-object-injection
                 line += " ".repeat(columnWidths[currentCol] as number);
                 // eslint-disable-next-line no-plusplus
                 currentCol++;
@@ -798,6 +821,7 @@ export class Table {
 
         // eslint-disable-next-line no-plusplus,no-loops/no-loops
         for (let index = 0; index < this.columnWidths.length; index++) {
+            // eslint-disable-next-line security/detect-object-injection
             line.push(options.body.repeat(this.columnWidths[index] as number));
 
             if (index < this.columnWidths.length - 1) {
