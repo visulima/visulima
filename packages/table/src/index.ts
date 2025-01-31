@@ -4,10 +4,7 @@ import stringWidth from "string-width";
 import type { RequiredDeep } from "type-fest";
 
 import { DEFAULT_BORDER } from "./style";
-import type { Cell as CellType, CellOptions, TableConstructorOptions } from "./types";
-
-// Cache for string width calculations
-const widthCache: Map<string, number> = new Map<string, number>();
+import type { Cell as CellType, CellOptions, TableConstructorOptions, TruncateOptions } from "./types";
 
 /**
  * Fills missing cells in a row to match the target column count.
@@ -61,7 +58,13 @@ export class Table {
                 ...options?.style,
             },
             transformTabToSpace: 4,
-            truncate: options?.truncate ?? "…",
+            truncate: {
+                position: "end",
+                preferTruncationOnSpace: false,
+                space: false,
+                truncationCharacter: "…",
+                ...options?.truncate,
+            },
             wordWrap: options?.wordWrap ?? false,
         } as RequiredDeep<TableConstructorOptions>;
     }
@@ -332,6 +335,7 @@ export class Table {
             return {
                 content: "",
                 maxWidth: this.options.maxWidth,
+                truncate: this.options.truncate,
                 wordWrap: this.options.wordWrap,
             };
         }
@@ -354,6 +358,10 @@ export class Table {
                         ? ""
                         : String(cell.content).replaceAll("\t", " ".repeat(this.options.transformTabToSpace)),
                 maxWidth: cell.maxWidth ?? this.options.maxWidth,
+                truncate: {
+                    ...this.options.truncate,
+                    ...cell.truncate,
+                },
                 wordWrap: cell.wordWrap ?? this.options.wordWrap,
             };
         }
@@ -365,82 +373,125 @@ export class Table {
         return {
             content: String(cell).replaceAll("\t", " ".repeat(this.options.transformTabToSpace)),
             maxWidth: this.options.maxWidth,
+            truncate: this.options.truncate,
             wordWrap: this.options.wordWrap,
         };
     }
 
     // eslint-disable-next-line class-methods-use-this
-    private truncate(string_: string, maxWidth: number, ellipsis: string): string {
-        /**
-         * Gets the visible width of a string, accounting for ANSI escape codes.
-         * @param string_ String to measure
-         * @returns Visible width of the string
-         */
-        // eslint-disable-next-line @typescript-eslint/no-shadow
-        const getContentWidth = (string_: string): number => {
-            if (widthCache.has(string_)) {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                return widthCache.get(string_)!;
+    private getIndexOfNearestSpace(string_: string, wantedIndex: number, shouldSearchRight = false): number {
+        if (string_.charAt(wantedIndex) === " ") {
+            return wantedIndex;
+        }
+
+        const direction = shouldSearchRight ? 1 : -1;
+
+        // eslint-disable-next-line no-loops/no-loops,no-plusplus
+        for (let index = 0; index <= 3; index++) {
+            const finalIndex = wantedIndex + index * direction;
+
+            if (string_.charAt(finalIndex) === " ") {
+                return finalIndex;
             }
+        }
 
-            const width = stringWidth(stripVTControlCharacters(string_));
+        return wantedIndex;
+    }
 
-            widthCache.set(string_, width);
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    private truncate(string_: string, maxWidth: number, options: Required<TruncateOptions>): string {
+        if (typeof string_ !== "string") {
+            throw new TypeError(`Expected input to be a string, got ${typeof string_}`);
+        }
 
-            return width;
-        };
+        if (typeof maxWidth !== "number") {
+            throw new TypeError(`Expected maxWidth to be a number, got ${typeof maxWidth}`);
+        }
 
-        if (getContentWidth(string_) <= maxWidth) {
+        if (maxWidth < 1) {
+            return "";
+        }
+
+        if (maxWidth === 1) {
+            return options.truncationCharacter;
+        }
+
+        const length = stringWidth(string_);
+
+        if (length <= maxWidth) {
             return string_;
         }
 
-        // Handle strings with ANSI escape codes
-        let currentWidth = 0;
-        let result = "";
-        let inEscapeSequence = false;
-        let escapeSequence = "";
-        let lastColorCode = "";
+        const lines = string_.split("\n");
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const char of string_) {
-            if (inEscapeSequence) {
-                escapeSequence += char;
+        let { truncationCharacter } = options;
 
-                if (char === "m") {
-                    result += escapeSequence;
-                    lastColorCode = escapeSequence;
-                    inEscapeSequence = false;
-                    escapeSequence = "";
+        const truncatedLines = lines.map((line) => {
+            const lineLength = stringWidth(line);
+
+            if (lineLength <= maxWidth) {
+                return line;
+            }
+
+            if (options.position === "start") {
+                if (options.preferTruncationOnSpace) {
+                    const nearestSpace = this.getIndexOfNearestSpace(line, lineLength - maxWidth + 1, true);
+                    return truncationCharacter + stripVTControlCharacters(line.slice(nearestSpace)).trim();
                 }
-                // eslint-disable-next-line no-continue
-                continue;
+
+                if (options.space) {
+                    truncationCharacter += " ";
+                }
+
+                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+                return truncationCharacter + stripVTControlCharacters(line.slice(lineLength - maxWidth + stringWidth(truncationCharacter)));
             }
 
-            if (char === "\u001B") {
-                inEscapeSequence = true;
-                escapeSequence = char;
-                // eslint-disable-next-line no-continue
-                continue;
+            if (options.position === "middle") {
+                if (options.space) {
+                    truncationCharacter = ` ${truncationCharacter} `;
+                }
+
+                const half = Math.floor(maxWidth / 2);
+
+                if (options.preferTruncationOnSpace) {
+                    const spaceNearFirstBreakPoint = this.getIndexOfNearestSpace(line, half);
+                    const spaceNearSecondBreakPoint = this.getIndexOfNearestSpace(line, lineLength - (maxWidth - half) + 1, true);
+
+                    return (
+                        stripVTControlCharacters(line.slice(0, spaceNearFirstBreakPoint)) +
+                        truncationCharacter +
+                        stripVTControlCharacters(line.slice(spaceNearSecondBreakPoint)).trim()
+                    );
+                }
+
+                return (
+                    stripVTControlCharacters(line.slice(0, half)) +
+                    truncationCharacter +
+                    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+                    stripVTControlCharacters(line.slice(lineLength - (maxWidth - half) + stringWidth(truncationCharacter)))
+                );
             }
 
-            const charWidth = getContentWidth(char);
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if (options.position === "end") {
+                if (options.preferTruncationOnSpace) {
+                    const nearestSpace = this.getIndexOfNearestSpace(line, maxWidth - 1);
+                    return stripVTControlCharacters(line.slice(0, nearestSpace)) + truncationCharacter;
+                }
 
-            if (currentWidth + charWidth > maxWidth - 1) {
-                break;
+                if (options.space) {
+                    truncationCharacter = ` ${truncationCharacter}`;
+                }
+
+                return stripVTControlCharacters(line.slice(0, maxWidth - stringWidth(truncationCharacter))) + truncationCharacter;
             }
 
-            currentWidth += charWidth;
-            result += char;
-        }
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            throw new Error(`Expected options.position to be either 'start', 'middle' or 'end', got ${options.position}`);
+        });
 
-        // Add ellipsis and close any open color codes
-        result += ellipsis;
-
-        if (lastColorCode) {
-            result += "\u001B[0m";
-        }
-
-        return result;
+        return truncatedLines.join("\n");
     }
 
     // eslint-disable-next-line class-methods-use-this,sonarjs/cognitive-complexity
@@ -600,10 +651,10 @@ export class Table {
                     cellLines = this.wordWrap(content, availableWidth);
 
                     if (cell.maxWidth !== undefined) {
-                        cellLines = cellLines.map((line) => this.truncate(line, cell.maxWidth as number, this.options.truncate));
+                        cellLines = cellLines.map((line) => this.truncate(line, cell.maxWidth as number, cell.truncate as Required<TruncateOptions>));
                     }
                 } else if (cell.maxWidth !== undefined) {
-                    cellLines = [this.truncate(content, cell.maxWidth, this.options.truncate)];
+                    cellLines = [this.truncate(content, cell.maxWidth, cell.truncate as Required<TruncateOptions>)];
                 }
             } else {
                 cellLines = content.split("\n");

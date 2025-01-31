@@ -58,6 +58,32 @@ export type CellStyle = {
 /**
  * Configuration options for a table cell.
  */
+export interface TruncateOptions {
+    /**
+     * The position to truncate the string.
+     * @default 'end'
+     */
+    position?: "end" | "middle" | "start";
+
+    /**
+     * Truncate the string from a whitespace if it is within 3 characters from the actual breaking point.
+     * @default false
+     */
+    preferTruncationOnSpace?: boolean;
+
+    /**
+     * Add a space between the text and the ellipsis.
+     * @default false
+     */
+    space?: boolean;
+
+    /**
+     * The character to use at the breaking point.
+     * @default '…'
+     */
+    truncationCharacter?: string;
+}
+
 export interface CellOptions {
     /**
      * Number of columns this cell spans.
@@ -93,6 +119,11 @@ export interface CellOptions {
      * Style options for the cell.
      */
     style?: CellStyle;
+
+    /**
+     * Options for controlling how text is truncated when it exceeds maxWidth
+     */
+    truncate?: TruncateOptions;
 
     /**
      * Vertical alignment of the cell content.
@@ -221,9 +252,9 @@ export interface TableConstructorOptions {
     transformTabToSpace?: number;
 
     /**
-     * The character to use for truncating cell content
+     * Options for controlling how text is truncated when it exceeds maxWidth
      */
-    truncate?: string;
+    truncate?: TruncateOptions;
 
     /**
      * Whether to enable word wrapping.
