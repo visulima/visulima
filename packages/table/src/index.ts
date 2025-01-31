@@ -1,7 +1,15 @@
 import { stripVTControlCharacters } from "node:util";
 
+import ansiRegex from "ansi-regex";
+import stringWidth from "string-width";
+import type { RequiredDeep } from "type-fest";
+
+import { DEFAULT_BORDER } from "./style";
+import type { Cell as CellType, CellOptions, TableConstructorOptions, TruncateOptions } from "./types";
+
+const ansiPattern = ansiRegex();
+
 function findRealPosition(text: string, visiblePosition: number): number {
-    const ansiPattern = /[\u001B\u009B][[\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\d\/#&.:=?%@~_]+)*|[a-zA-Z\d]+(?:;[-a-zA-Z\d\/#&.:=?%@~_]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~]))/g;
     let visibleIndex = 0;
     let realIndex = 0;
     let match;
@@ -23,13 +31,6 @@ function findRealPosition(text: string, visiblePosition: number): number {
 
     return text.length;
 }
-
-
-import stringWidth from "string-width";
-import type { RequiredDeep } from "type-fest";
-
-import { DEFAULT_BORDER } from "./style";
-import type { Cell as CellType, CellOptions, TableConstructorOptions, TruncateOptions } from "./types";
 
 /**
  * Fills missing cells in a row to match the target column count.
@@ -423,9 +424,7 @@ export class Table {
         return wantedIndex;
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     private preserveAnsiCodes(text: string, start: number, end: number): string {
-        const ansiPattern = /[\u001B\u009B][[\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\d\/#&.:=?%@~_]+)*|[a-zA-Z\d]+(?:;[-a-zA-Z\d\/#&.:=?%@~_]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~]))/g;
         const openCodes: string[] = [];
         let match;
 
@@ -433,9 +432,11 @@ export class Table {
         const beforeText = text.slice(0, start);
         while ((match = ansiPattern.exec(beforeText)) !== null) {
             const code = match[0];
-            if (!code.endsWith('m')) continue;
-            
-            if (code === '\u001b[0m' || code === '\u001b[m') {
+            if (!code.endsWith("m")) {
+                continue;
+            }
+
+            if (code === "\u001B[0m" || code === "\u001B[m") {
                 openCodes.length = 0; // Reset on full reset code
             } else {
                 openCodes.push(code);
@@ -446,7 +447,7 @@ export class Table {
         const slicedContent = text.slice(start, end);
 
         // If we have any open codes at the end, add a reset
-        return openCodes.join('') + slicedContent + '\u001b[0m';
+        return openCodes.join("") + slicedContent + "\u001B[0m";
     }
 
     private truncate(string_: string, maxWidth: number, options: Required<TruncateOptions>): string {
@@ -519,11 +520,7 @@ export class Table {
                 const firstHalf = findRealPosition(line, half);
                 const secondHalfStart = stringWidth(stripVTControlCharacters(line)) - (maxWidth - half) + stringWidth(truncationCharacter);
                 const secondHalf = findRealPosition(line, secondHalfStart);
-                return (
-                    this.preserveAnsiCodes(line, 0, firstHalf) +
-                    truncationCharacter +
-                    this.preserveAnsiCodes(line, secondHalf, line.length)
-                );
+                return this.preserveAnsiCodes(line, 0, firstHalf) + truncationCharacter + this.preserveAnsiCodes(line, secondHalf, line.length);
             }
 
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
