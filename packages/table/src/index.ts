@@ -391,8 +391,10 @@ export class Table {
         if (cell === null || cell === undefined || cell === "") {
             return {
                 content: "",
+                hAlign: "left",
                 maxWidth: this.options.maxWidth,
                 truncate: this.options.truncate,
+                vAlign: "top",
                 wordWrap: this.options.wordWrap,
             };
         }
@@ -414,11 +416,13 @@ export class Table {
                     cell.content === null || cell.content === undefined || cell.content === ""
                         ? ""
                         : String(cell.content).replaceAll("\t", " ".repeat(this.options.transformTabToSpace)),
+                hAlign: cell.hAlign || "left",
                 maxWidth: cell.maxWidth ?? this.options.maxWidth,
                 truncate: {
                     ...this.options.truncate,
                     ...cell.truncate,
                 },
+                vAlign: cell.vAlign || "top",
                 wordWrap: cell.wordWrap ?? this.options.wordWrap,
             };
         }
@@ -429,8 +433,10 @@ export class Table {
 
         return {
             content: String(cell).replaceAll("\t", " ".repeat(this.options.transformTabToSpace)),
+            hAlign: "left",
             maxWidth: this.options.maxWidth,
             truncate: this.options.truncate,
+            vAlign: "top",
             wordWrap: this.options.wordWrap,
         };
     }
@@ -778,7 +784,8 @@ export class Table {
                         cellLines = [...new Array(topPadding).fill(emptyLine), ...cellLines, ...new Array(bottomPadding).fill(emptyLine)];
                         break;
                     }
-                    default: { // top
+                    default: {
+                        // top
                         cellLines = [...cellLines, ...padding];
                         break;
                     }
