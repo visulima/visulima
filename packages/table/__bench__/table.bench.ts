@@ -78,36 +78,113 @@ describe("Table Rendering basic table (100x10)", () => {
     bench("cli-table3", () => {
         generateBasicTable(100, 10, Table3).toString();
     });
+});
 
-    // bench("@visulima/table - complex table (100x10)", () => {
-    //     const table = createTable();
-    //
-    //     // Generate complex table with rowspans and colspans
-    //     const rows = [];
-    //     for (let y = 0; y < 100; y++) {
-    //         const row = [];
-    //         for (let x = 0; x < 10; x++) {
-    //             const colSpan = Math.random() > 0.8 ? 2 : 1;
-    //             const rowSpan = Math.random() > 0.8 ? 2 : 1;
-    //             if (colSpan > 1 || rowSpan > 1) {
-    //                 row.push({ content: `${y}-${x} (${rowSpan}x${colSpan})`, colSpan, rowSpan });
-    //                 x += colSpan - 1;
-    //             } else {
-    //                 row.push(`${y}-${x} (1x1)`);
-    //             }
-    //         }
-    //         rows.push(row);
-    //     }
-    //
-    //     // Add rows that don't conflict with rowspans
-    //     for (const row of rows) {
-    //         table.addRow(row);
-    //     }
-    //
-    //     table.toString();
-    // });
-    //
-    // bench("cli-table3 - complex table (100x10)", () => {
-    //     generateComplexTable(100, 10, Table3).toString();
-    // });
+describe("Table Rendering with word wrap", () => {
+    const wrapHeaders = ["Description", "Status", "Notes"];
+    const wrapRows = [
+        [
+            { content: "This is a very long description that should be automatically wrapped to fit within the cell width", wordWrap: true },
+            { content: "Active and pending review from the team", wordWrap: true },
+            { content: "Multiple notes need to be added here for context", wordWrap: true },
+        ],
+        [
+            { content: "A shorter description", wordWrap: true },
+            { content: "Completed", wordWrap: true },
+            { content: "This is a very long note that will be wrapped automatically to demonstrate the word wrap feature", wordWrap: true },
+        ],
+    ];
+
+    bench("@visulima/table", () => {
+        const table = createTable();
+        table.setHeaders(wrapHeaders);
+        table.addRows(wrapRows);
+        table.toString();
+    });
+
+    bench("cli-table3", () => {
+        const table = new Table3({
+            head: wrapHeaders,
+            wordWrap: true,
+            colWidths: [40, 30, 40],
+            style: {
+                head: [],
+                border: [],
+            },
+        });
+        table.push(...wrapRows.map(row => row.map(cell => cell.content)));
+        table.toString();
+    });
+});
+
+describe("Table Rendering with spanning cells", () => {
+    bench("@visulima/table", () => {
+        const table = createTable();
+
+        // Add header with colspan
+        table.setHeaders([
+            { content: "Span All", colSpan: 3 },
+        ]);
+
+        // Add rows with various spans
+        table.addRows([
+            [{ content: "Span Two", colSpan: 2 }, "C"],
+            ["A", { content: "Span Two", colSpan: 2 }],
+            ["A", "B", "C"],
+            [{ content: "Span All", colSpan: 3 }],
+        ]);
+
+        table.toString();
+    });
+
+    bench("cli-table3", () => {
+        const table = new Table3({
+            style: {
+                head: [],
+                border: [],
+            },
+        });
+
+        // cli-table3 uses a different approach for spans
+        table.push(
+            [{ content: "Span All", colSpan: 3 }],
+            [{ content: "Span Two", colSpan: 2 }, "C"],
+            ["A", { content: "Span Two", colSpan: 2 }],
+            ["A", "B", "C"],
+            [{ content: "Span All", colSpan: 3 }],
+        );
+
+        table.toString();
+    });
+});
+
+describe("Table Rendering with truncation", () => {
+    const longText = "This is a very long text that should be truncated at some point to fit within the cell";
+
+    bench("@visulima/table", () => {
+        const table = createTable();
+        table.setHeaders([
+            { content: longText, maxWidth: 20 },
+            { content: "Normal" },
+        ]);
+        table.addRow([
+            { content: longText, maxWidth: 20 },
+            "Short"
+        ]);
+        table.toString();
+    });
+
+    bench("cli-table3", () => {
+        const table = new Table3({
+            head: [longText, "Normal"],
+            colWidths: [20, 10],
+            truncate: "…",
+            style: {
+                head: [],
+                border: [],
+            },
+        });
+        table.push([longText, "Short"]);
+        table.toString();
+    });
 });
