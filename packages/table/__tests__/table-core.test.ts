@@ -266,5 +266,78 @@ describe("table core functionality", () => {
                 └────┴─────┴─────┘"
             `);
         });
+
+        it("should handle maxWidth with mixed content types", () => {
+            expect.assertions(1);
+
+            const table = new Table({ maxWidth: 8, style: { paddingLeft: 0, paddingRight: 0 } });
+            table.addRow([
+                { content: 12345678901, maxWidth: 5 },
+                { content: "Mixed 🌟 Text", maxWidth: 6 },
+                { content: "\u001B[31mColored\u001B[0m Text", maxWidth: 7 }
+            ]);
+
+            const output = table.toString();
+
+            expect(output).toMatchInlineSnapshot(`
+                "┌─────┬──────┬───────┐
+                │12345│Mixed │\u001B[31mColore\u001B[0m│
+                └─────┴──────┴───────┘"
+            `);
+        });
+
+        it("should handle maxWidth with empty and whitespace content", () => {
+            expect.assertions(1);
+
+            const table = new Table({ maxWidth: 5, style: { paddingLeft: 0, paddingRight: 0 } });
+            table.addRow(["", "   ", "\t\n"]);
+
+            const output = table.toString();
+
+            expect(output).toMatchInlineSnapshot(`
+                "┌─┬───┬─┐
+                │ │   │ │
+                └─┴───┴─┘"
+            `);
+        });
+
+        it("should maintain column alignment with maxWidth", () => {
+            expect.assertions(1);
+
+            const table = new Table({ maxWidth: 6, style: { paddingLeft: 0, paddingRight: 0 } });
+            table.addRow([
+                { content: "Left", hAlign: "left", maxWidth: 6 },
+                { content: "Center", hAlign: "center", maxWidth: 6 },
+                { content: "Right", hAlign: "right", maxWidth: 6 }
+            ]);
+
+            const output = table.toString();
+
+            expect(output).toMatchInlineSnapshot(`
+                "┌────┬──────┬─────┐
+                │Left│Center│Right│
+                └────┴──────┴─────┘"
+            `);
+        });
+
+        it("should handle maxWidth with headers and word wrapping", () => {
+            expect.assertions(1);
+
+            const table = new Table({ maxWidth: 5, style: { paddingLeft: 0, paddingRight: 0 }, wordWrap: true });
+            table.setHeaders(["H1", "Header2", "H3"]);
+            table.addRow(["Data", "Long Data", "End"]);
+
+            const output = table.toString();
+
+            expect(output).toMatchInlineSnapshot(`
+                "┌────┬─────┬───┐
+                │H1  │Head │H3 │
+                │    │er2  │   │
+                ├────┼─────┼───┤
+                │Data│Long │End│
+                │    │Data │   │
+                └────┴─────┴───┘"
+            `);
+        });
     });
 });
