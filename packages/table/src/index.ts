@@ -29,7 +29,7 @@ const findRealPosition = (text: string, visiblePosition: number): number => {
     // Second pass: calculate visual width
     let currentPos = 0;
     // eslint-disable-next-line no-loops/no-loops
-    while (currentPos < text.length) {
+    while (currentPos < stringWidth(text)) {
         // Skip ANSI codes
         // eslint-disable-next-line @typescript-eslint/no-loop-func
         const ansi = ansiRanges.find((r) => r.start === currentPos);
@@ -54,7 +54,7 @@ const findRealPosition = (text: string, visiblePosition: number): number => {
         currentPos++;
     }
 
-    return text.length;
+    return Math.min(stringWidth(text), visiblePosition) - 1;
 };
 
 /**
@@ -303,6 +303,7 @@ export class Table {
         }
 
         this.cachedString = lines.join("\n");
+
         return this.cachedString;
     }
 
@@ -363,14 +364,13 @@ export class Table {
 
     private calculateCellWidth(cell: CellOptions & { content: string }): number {
         // Apply cell-specific maxWidth if set, otherwise use global maxWidth
-        const maxWidth = cell.maxWidth ?? this.options.maxWidth;
         const isEmpty = cell.content === "";
 
         let contentWidth: number;
 
-        if (maxWidth) {
+        if (cell.maxWidth) {
             // For truncated cells, use maxWidth
-            contentWidth = Math.min(stringWidth(cell.content), maxWidth);
+            contentWidth = Math.min(stringWidth(cell.content), cell.maxWidth);
         } else if (cell.wordWrap) {
             // For word-wrapped cells, use the longest word length as minimum
             const words = cell.content.split(/\s+/);
@@ -503,7 +503,7 @@ export class Table {
             return options.truncationCharacter;
         }
 
-        const visibleLength = stringWidth((string_));
+        const visibleLength = stringWidth(string_);
 
         if (visibleLength <= maxWidth) {
             return string_;
@@ -523,6 +523,7 @@ export class Table {
             if (options.position === "start") {
                 if (options.preferTruncationOnSpace) {
                     const nearestSpace = this.getIndexOfNearestSpace(line, lineLength - maxWidth + 1, true);
+
                     return truncationCharacter + this.preserveAnsiCodes(line, nearestSpace, line.length).trim();
                 }
 

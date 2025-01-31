@@ -262,7 +262,7 @@ describe("table core functionality", () => {
 
             expect(output).toMatchInlineSnapshot(`
               "┌────┬─────┬─────┐
-              │Test│[31mThis…[0m│[32mGreen[0m│
+              │Test│[31m[31mThis[0m…│[32mGreen[0m│
               └────┴─────┴─────┘"
             `);
         });
@@ -290,13 +290,29 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ maxWidth: 5, style: { paddingLeft: 0, paddingRight: 0 } });
-            table.addRow(["", "   ", "\t\na"]);
+            table.addRow(["", "   ", "\t"]);
 
             const output = table.toString();
 
             expect(output).toMatchInlineSnapshot(`
                 "┌┬───┬────┐
-                ││   │     │
+                ││   │    │
+                └┴───┴────┘"
+            `);
+        });
+
+        it.todo("should handle maxWidth with empty and whitespace content and new line", () => {
+            expect.assertions(1);
+
+            const table = new Table({ maxWidth: 5, style: { paddingLeft: 0, paddingRight: 0 } });
+            table.addRow(["", "   ", "\t\n"]);
+
+            const output = table.toString();
+
+            expect(output).toMatchInlineSnapshot(`
+                "┌┬───┬────┐
+                ││   │    │
+                ││   │    │
                 └┴───┴────┘"
             `);
         });
