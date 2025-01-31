@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Table, createTable } from "../src";
+import { createTable, Table } from "../src";
 
 describe("table core functionality", () => {
     it("should handle empty tables", () => {
@@ -69,8 +69,8 @@ describe("table core functionality", () => {
             const table = createTable({
                 style: {
                     paddingLeft: 1,
-                    paddingRight: 1
-                }
+                    paddingRight: 1,
+                },
             });
 
             table.addRow([{ content: 12 }]);
@@ -184,6 +184,87 @@ describe("table core functionality", () => {
                     expect.stringContaining("Col2"),
                 ]),
             );
+        });
+    });
+
+    describe("maxWidth functionality", () => {
+        it("should respect global maxWidth", () => {
+            expect.assertions(1);
+
+            const table = new Table({ maxWidth: 5, style: { paddingLeft: 0, paddingRight: 0 } });
+            table.addRow(["Short", "This is a very long text", "Another long text"]);
+
+            const output = table.toString();
+
+            expect(output).toMatchInlineSnapshot(`
+                "┌─────┬─────┬─────┐
+                │Short│This │Anoth│
+                └─────┴─────┴─────┘"
+            `);
+        });
+
+        it("should allow cell-specific maxWidth to override global maxWidth", () => {
+            expect.assertions(1);
+
+            const table = new Table({ maxWidth: 10, style: { paddingLeft: 0, paddingRight: 0 } });
+            table.addRow(["Short text", { content: "This is a very long text", maxWidth: 5 }, "Medium length"]);
+
+            const output = table.toString();
+
+            expect(output).toMatchInlineSnapshot(`
+                "┌──────────┬─────┬──────────┐
+                │Short text│This │Medium len│
+                └──────────┴─────┴──────────┘"
+            `);
+        });
+
+        it("should handle maxWidth with word wrapping", () => {
+            expect.assertions(1);
+
+            const table = new Table({ maxWidth: 10, style: { paddingLeft: 0, paddingRight: 0 }, wordWrap: true });
+            table.addRow(["Short", "This is a very long text that should wrap", "Test"]);
+
+            const output = table.toString();
+
+            expect(output).toMatchInlineSnapshot(`
+                "┌─────┬──────────┬────┐
+                │Short│This is a │Test│
+                │     │very long │    │
+                │     │text that │    │
+                │     │should    │    │
+                │     │wrap      │    │
+                └─────┴──────────┴────┘"
+            `);
+        });
+
+        it("should handle maxWidth with multi-byte characters", () => {
+            expect.assertions(1);
+
+            const table = new Table({ maxWidth: 5 });
+            table.addRow(["Test", "こんにちは", "🌟🌟🌟🌟🌟"]);
+
+            const output = table.toString();
+
+            expect(output).toMatchInlineSnapshot(`
+                "┌────┬─────┬─────┐
+                │Test│こんに│🌟🌟🌟│
+                └────┴─────┴─────┘"
+            `);
+        });
+
+        it("should handle maxWidth with ANSI escape codes", () => {
+            expect.assertions(1);
+
+            const table = new Table({ maxWidth: 5 });
+            table.addRow(["Test", "\u001B[31mThis is red text\u001B[0m", "\u001B[32mGreen\u001B[0m"]);
+
+            const output = table.toString();
+
+            expect(output).toMatchInlineSnapshot(`
+                "┌────┬─────┬─────┐
+                │Test│\u001B[31mThis \u001B[0m│\u001B[32mGreen\u001B[0m│
+                └────┴─────┴─────┘"
+            `);
         });
     });
 });
