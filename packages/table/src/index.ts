@@ -721,34 +721,31 @@ export class Table {
         const lines: string[] = [];
 
         // Process each cell and get their content lines
-        const cellContents: string[][] = [];
+        const cellContents: { cell: CellOptions & { content: string }; lines: string[] }[] = [];
         let maxLines = 1;
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,prefer-const
+        // First pass: Process each cell and get their content lines
         for (let [index, cell] of row.entries()) {
             cell = this.normalizeCellOption(cell);
-
             const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - index);
+            const rowSpan = cell.rowSpan ?? 1;
 
-            // eslint-disable-next-line security/detect-object-injection
+            // Calculate total width considering column spans
             let totalWidth = columnWidths[index] as number;
-
-            // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention,no-plusplus,no-underscore-dangle
             for (let index_ = 1; index_ < colSpan; index_++) {
                 totalWidth += (columnWidths[index + index_] as number) + 1;
             }
 
             const content = String(cell.content);
             const isEmpty = content.trim() === "";
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             const availableWidth = totalWidth - (isEmpty ? 0 : this.options.style.paddingLeft + this.options.style.paddingRight);
 
             let cellLines: string[] = [];
 
+            // Handle word wrapping and truncation
             if (cell.wordWrap || cell.maxWidth) {
                 if (cell.wordWrap) {
                     cellLines = this.wordWrap(content, availableWidth);
-
                     if (cell.maxWidth !== undefined) {
                         cellLines = cellLines.map((line) => this.truncate(line, cell.maxWidth as number, cell.truncate as Required<TruncateOptions>));
                     }
@@ -759,38 +756,59 @@ export class Table {
                 cellLines = content.split("\n");
             }
 
-            cellContents.push(cellLines);
-            maxLines = Math.max(maxLines, cellLines.length);
+            // Calculate height needed for rowSpan
+            const cellHeight = Math.max(rowSpan, cellLines.length);
+            const emptyLines = cellHeight - cellLines.length;
+
+            // Apply vertical alignment with rowSpan
+            if (emptyLines > 0) {
+                const emptyLine = " ".repeat(availableWidth);
+                const padding = new Array(emptyLines).fill(emptyLine);
+
+                switch (cell.vAlign) {
+                    case "bottom": {
+                        cellLines = [...padding, ...cellLines];
+                        break;
+                    }
+                    case "middle": {
+                        const topPadding = Math.floor(emptyLines / 2);
+                        const bottomPadding = emptyLines - topPadding;
+                        cellLines = [...new Array(topPadding).fill(emptyLine), ...cellLines, ...new Array(bottomPadding).fill(emptyLine)];
+                        break;
+                    }
+                    default: { // top
+                        cellLines = [...cellLines, ...padding];
+                        break;
+                    }
+                }
+            }
+
+            cellContents.push({ cell, lines: cellLines });
+            maxLines = Math.max(maxLines, cellHeight);
         }
 
         // Generate each line of the row
-        // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let lineIndex = 0; lineIndex < maxLines; lineIndex++) {
             let line = border.left;
             let currentCol = 0;
 
-            // eslint-disable-next-line no-loops/no-loops,no-plusplus
             for (let cellIndex = 0; cellIndex < row.length && currentCol < this.columnCount; cellIndex++) {
-                // eslint-disable-next-line security/detect-object-injection
-                const cell = this.normalizeCellOption(row[cellIndex]);
-                // eslint-disable-next-line security/detect-object-injection
-                const content = (cellContents[cellIndex] as string[])[lineIndex] ?? "";
+                const { cell, lines } = cellContents[cellIndex];
+                const content = lines[lineIndex] ?? "";
                 const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - currentCol);
 
                 if (currentCol > 0) {
                     line += border.middle;
                 }
 
-                // eslint-disable-next-line security/detect-object-injection
+                // Calculate total width for the cell
                 let totalWidth = columnWidths[currentCol] as number;
-                // eslint-disable-next-line no-loops/no-loops,no-plusplus
                 for (let index = 1; index < colSpan; index++) {
                     totalWidth += (columnWidths[currentCol + index] as number) + 1;
                 }
 
                 const contentWidth = stringWidth(content);
                 const isEmpty = content.trim() === "";
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 const availableWidth = totalWidth - (isEmpty ? 0 : this.options.style.paddingLeft + this.options.style.paddingRight);
                 const remainingSpace = Math.max(0, availableWidth - contentWidth);
 
@@ -798,7 +816,7 @@ export class Table {
                     line += " ".repeat(this.options.style.paddingLeft);
                 }
 
-                // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
+                // Apply horizontal alignment
                 switch (cell.hAlign) {
                     case "right": {
                         line += " ".repeat(remainingSpace) + content;

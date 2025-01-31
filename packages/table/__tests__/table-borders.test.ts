@@ -83,10 +83,10 @@ describe("table borders", () => {
                 },
             });
 
-            table.addRows([
+            table.addRows(
                 ["foo", "bar", "baz"],
                 ["frob", "bar", "quuz"],
-            ]);
+            );
 
             const expected = ["╔══════╤═════╤══════╗", "║ foo  │ bar │ baz  ║", "╟──────┼─────┼──────╢", "║ frob │ bar │ quuz ║", "╚══════╧═════╧══════╝"].join(
                 "\n",
@@ -104,10 +104,10 @@ describe("table borders", () => {
                 },
             });
 
-            table.addRows([
+            table.addRows(
                 ["foo", "bar", "baz"],
                 ["frobnicate", "bar", "quuz"],
-            ]);
+            );
 
             expect(table.toString()).toMatchSnapshot();
         });

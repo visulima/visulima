@@ -69,12 +69,12 @@ describe("table formatting", () => {
         it("should handle CJK text with truncation", () => {
             const table = createTable();
 
-            table.addRows([
+            table.addRows(
                 ["foobar", { content: "English test", maxWidth: 9 }, "baz"],
                 ["foobar", { content: "中文测试", maxWidth: 9 }, "baz"],
                 ["foobar", { content: "日本語テスト", maxWidth: 9 }, "baz"],
                 ["foobar", { content: "한국어테스트", maxWidth: 9 }, "baz"],
-            ]);
+            );
 
             expect(table.toString()).toMatchSnapshot();
         });

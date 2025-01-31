@@ -19,10 +19,10 @@ describe("table CLI Compatibility Tests", () => {
                 { content: "When", hAlign: "left" },
             ]);
 
-            table.addRows([
+            table.addRows(
                 ["v0.1", "Testing something cool", "rauchg@gmail.com", "7 minutes ago"],
                 ["v0.1", "Testing something cool", "rauchg@gmail.com", "8 minutes ago"],
-            ]);
+            );
 
             expect(table.toString()).toMatchSnapshot();
         });
@@ -35,10 +35,10 @@ describe("table CLI Compatibility Tests", () => {
                 },
             });
 
-            table.addRows([
+            table.addRows(
                 ["v0.1", "Testing something cool"],
                 ["v0.1", "Testing something cool"],
-            ]);
+            );
 
             const expected = [
                 "┌────┬──────────────────────┐",
@@ -65,10 +65,10 @@ describe("table CLI Compatibility Tests", () => {
                 { content: "Header 2", hAlign: "left" },
             ]);
 
-            table.addRows([
+            table.addRows(
                 ["Header 3", "v0.1", "Testing something cool"],
                 ["Header 4", "v0.1", "Testing something cool"],
-            ]);
+            );
 
             const expected = [
                 "┌────────┬────────┬──────────────────────┐",

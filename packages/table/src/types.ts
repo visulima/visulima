@@ -9,28 +9,6 @@ export type HorizontalAlign = "center" | "left" | "right";
 export type VerticalAlign = "bottom" | "middle" | "top";
 
 /**
- * Represents the position of a cell in a table.
- */
-export interface CellPosition {
-    /**
-     * The x-coordinate (column) of the cell.
-     */
-    x: number | null;
-
-    /**
-     * The y-coordinate (row) of the cell.
-     */
-    y: number | null;
-}
-
-export type Border = {
-    body: string;
-    left: string;
-    middle: string;
-    right: string;
-};
-
-/**
  * Style options for a cell.
  */
 export type CellStyle = {
