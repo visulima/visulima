@@ -224,9 +224,9 @@
         "secretlint": "9.0.0",
         "semantic-release": "24.2.1",
         "styled-components": "^6.1.14",
-        "swagger-ui-dist": "^5.18.2",
-        "swagger-ui-react": "^5.18.2",
-        "tsup": "^8.3.5",
+        "swagger-ui-dist": "^5.18.3",
+        "swagger-ui-react": "^5.18.3",
+        "tsup": "^8.3.6",
         "type-fest": "^4.33.0",
         "typescript": "5.7.3",
         "vitest": "^3.0.4",
@@ -245,14 +245,14 @@
         "fastify": "^4.27.0",
         "koa": "^2.15.3",
         "next": "^13.5.6",
-        "rate-limiter-flexible": "^5.0.3",
+        "rate-limiter-flexible": "^5.0.5",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "redoc": "^2.1.4",
+        "redoc": "^2.1.5",
         "swagger-ui-dist": "^4.19.1",
         "swagger-ui-react": "^4.19.1",
         "webpack": "^5.91.0",
-        "zod": "^3.22.4"
+        "zod": "^3.22.5"
     },
     "peerDependenciesMeta": {
         "@hapi/hapi": {
