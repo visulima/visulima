@@ -503,7 +503,7 @@ export class Table {
             return options.truncationCharacter;
         }
 
-        const visibleLength = stringWidth(stripVTControlCharacters(string_));
+        const visibleLength = stringWidth((string_));
 
         if (visibleLength <= maxWidth) {
             return string_;
@@ -514,7 +514,7 @@ export class Table {
         let { truncationCharacter } = options;
 
         const truncatedLines = lines.map((line) => {
-            const lineLength = stringWidth(stripVTControlCharacters(line));
+            const lineLength = stringWidth((line));
 
             if (lineLength <= maxWidth) {
                 return line;
@@ -531,7 +531,7 @@ export class Table {
                 }
 
                 // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                const visibleStart = stringWidth(stripVTControlCharacters(line)) - maxWidth + stringWidth(truncationCharacter);
+                const visibleStart = stringWidth((line)) - maxWidth + stringWidth(truncationCharacter);
                 const realStart = findRealPosition(line, visibleStart);
 
                 return truncationCharacter + this.preserveAnsiCodes(line, realStart, line.length);
@@ -557,7 +557,7 @@ export class Table {
 
                 const firstHalf = findRealPosition(line, half);
                 // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                const secondHalfStart = stringWidth(stripVTControlCharacters(line)) - (maxWidth - half) + stringWidth(truncationCharacter);
+                const secondHalfStart = stringWidth((line)) - (maxWidth - half) + stringWidth(truncationCharacter);
                 const secondHalf = findRealPosition(line, secondHalfStart);
 
                 return this.preserveAnsiCodes(line, 0, firstHalf) + truncationCharacter + this.preserveAnsiCodes(line, secondHalf, line.length);
