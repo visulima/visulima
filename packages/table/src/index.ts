@@ -69,6 +69,7 @@ export class Table {
     private cachedColumnWidths: number[] | null = null;
     private cachedString: string | null = null;
     private isDirty = true;
+    private cellCache = new Map<string, { width: number; lines: string[] }>();
 
     /**
      * Creates a new Table instance.
@@ -266,6 +267,34 @@ export class Table {
         return this.cachedString;
     }
 
+    private getCellContent(cell: CellType, availableWidth: number): { width: number; lines: string[] } {
+        const normalizedCell = this.normalizeCellOption(cell);
+        const cacheKey = `${normalizedCell.content}:${availableWidth}:${normalizedCell.wordWrap}:${normalizedCell.maxWidth}`;
+
+        if (this.cellCache.has(cacheKey)) {
+            return this.cellCache.get(cacheKey)!;
+        }
+
+        let lines: string[];
+        let width: number;
+
+        if (normalizedCell.wordWrap) {
+            lines = this.wordWrap(normalizedCell.content, availableWidth);
+            width = Math.max(...lines.map((line) => stringWidth(line)));
+        } else if (normalizedCell.maxWidth) {
+            const truncated = this.truncate(normalizedCell.content, normalizedCell.maxWidth);
+            lines = [truncated];
+            width = stringWidth(truncated);
+        } else {
+            lines = normalizedCell.content.split("\n");
+            width = Math.max(...lines.map((line) => stringWidth(line)));
+        }
+
+        const result = { width, lines };
+        this.cellCache.set(cacheKey, result);
+        return result;
+    }
+
     /**
      * Computes column widths with caching
      * @private
@@ -276,12 +305,13 @@ export class Table {
             return this.cachedColumnWidths;
         }
 
-        const widths: number[] = Array.from({length: this.columnCount}).fill(0);
+        const widths: number[] = Array.from({ length: this.columnCount }).fill(0);
 
         // Helper to get content width based on cell options
         const getContentWidth = (cell: CellType): number => {
             const normalizedCell = this.normalizeCellOption(cell);
             const content = String(normalizedCell.content);
+            const isEmpty = content === "" || content === null || content === undefined;
 
             let contentWidth: number;
             if (normalizedCell.maxWidth) {
@@ -294,17 +324,16 @@ export class Table {
             } else {
                 // For normal cells, use the maximum line width
                 const lines = content.split("\n");
-
                 contentWidth = Math.max(...lines.map((line) => stringWidth(line)));
             }
 
-            return contentWidth + this.options.style.paddingLeft + this.options.style.paddingRight;
+            return isEmpty ? 0 : contentWidth + this.options.style.paddingLeft + this.options.style.paddingRight;
         };
 
         // Process all rows including headers if shown
         const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
 
-        // First pass: Calculate minimum widths for each column
+        // Calculate minimum widths for each column
         for (const row of allRows) {
             let currentCol = 0;
             for (const cell of row) {
@@ -327,35 +356,6 @@ export class Table {
                     // Set minimum width for each column in span
                     for (let index = 0; index < colSpan && currentCol + index < this.columnCount; index++) {
                         widths[currentCol + index] = Math.max(widths[currentCol + index], minWidthPerCol);
-                    }
-                }
-
-                currentCol += colSpan;
-            }
-        }
-
-        // Second pass: Check if spanning cells fit and adjust if needed
-        for (const row of allRows) {
-            let currentCol = 0;
-            for (const cell of row) {
-                if (currentCol >= this.columnCount) {
-                    break;
-                }
-                const normalizedCell = this.normalizeCellOption(cell);
-                const colSpan = Math.min(normalizedCell.colSpan ?? 1, this.columnCount - currentCol);
-
-                if (colSpan > 1) {
-                    const cellWidth = getContentWidth(cell);
-                    const currentWidth = widths.slice(currentCol, currentCol + colSpan).reduce((sum, w) => sum + w, 0);
-                    const totalBorderWidth = colSpan - 1;
-
-                    if (cellWidth > currentWidth + totalBorderWidth) {
-                        const additionalNeeded = cellWidth - (currentWidth + totalBorderWidth);
-                        const additionalPerCol = Math.ceil(additionalNeeded / colSpan);
-
-                        for (let index = 0; index < colSpan && currentCol + index < this.columnCount; index++) {
-                            widths[currentCol + index] += additionalPerCol;
-                        }
                     }
                 }
 
@@ -585,7 +585,8 @@ export class Table {
             }
 
             const content = String(cell.content ?? "");
-            const availableWidth = totalWidth - this.options.style.paddingLeft - this.options.style.paddingRight;
+            const isEmpty = content === "" || content === null || content === undefined;
+            const availableWidth = totalWidth - (isEmpty ? 0 : this.options.style.paddingLeft + this.options.style.paddingRight);
 
             let cellLines: string[];
             if (cell.wordWrap) {
@@ -607,8 +608,8 @@ export class Table {
 
             for (let cellIndex = 0; cellIndex < cells.length && currentCol < this.columnCount; cellIndex++) {
                 const cell = cells[cellIndex];
-                const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - currentCol);
                 const content = cellContents[cellIndex][lineIndex] ?? "";
+                const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - currentCol);
 
                 if (currentCol > 0) {
                     line += border.middle;
@@ -620,10 +621,13 @@ export class Table {
                 }
 
                 const contentWidth = stringWidth(content);
-                const availableWidth = totalWidth - this.options.style.paddingLeft - this.options.style.paddingRight;
+                const isEmpty = cell.content === "" || cell.content === null || cell.content === undefined;
+                const availableWidth = totalWidth - (isEmpty ? 0 : this.options.style.paddingLeft + this.options.style.paddingRight);
                 const remainingSpace = Math.max(0, availableWidth - contentWidth);
 
-                line += " ".repeat(this.options.style.paddingLeft);
+                if (!isEmpty) {
+                    line += " ".repeat(this.options.style.paddingLeft);
+                }
 
                 switch (cell.hAlign) {
                     case "right": {
@@ -641,7 +645,10 @@ export class Table {
                     }
                 }
 
-                line += " ".repeat(this.options.style.paddingRight);
+                if (!isEmpty) {
+                    line += " ".repeat(this.options.style.paddingRight);
+                }
+
                 currentCol += colSpan;
             }
 
