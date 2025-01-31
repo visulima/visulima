@@ -10,32 +10,6 @@ import type { Cell as CellType, CellOptions, TableConstructorOptions } from "./t
 const widthCache: Map<string, number> = new Map<string, number>();
 
 /**
- * Normalizes a cell value into a CellType object.
- * @param cell The cell value to normalize
- * @returns Normalized cell object
- */
-const normalizeCellOption = (cell: CellType): CellOptions & { content: string } => {
-    if (cell === null || typeof cell !== "object") {
-        if (cell === undefined || cell === null || cell === "") {
-            return { content: "" };
-        }
-
-        return { content: String(cell) };
-    }
-
-    if (cell.content === undefined || cell.content === null || cell.content === "") {
-        // eslint-disable-next-line no-param-reassign
-        cell.content = "";
-    }
-
-    if (typeof cell.content === "object") {
-        throw new TypeError("Cell content must be a string, undefined, null or number");
-    }
-
-    return cell as CellOptions & { content: string };
-};
-
-/**
  * Fills missing cells in a row to match the target column count.
  * @param row Array of cells to fill
  * @param targetColumnCount Desired number of columns
@@ -86,6 +60,7 @@ export class Table {
                 paddingRight: 1,
                 ...options?.style,
             },
+            transformTabToSpace: 4,
             truncate: options?.truncate ?? "…",
             wordWrap: options?.wordWrap ?? false,
         } as RequiredDeep<TableConstructorOptions>;
@@ -141,14 +116,15 @@ export class Table {
             const cell = row[index];
 
             if (cell) {
-                const normalizedCell = normalizeCellOption(cell);
-                const colSpan = normalizedCell.colSpan ?? 1;
+                const normalizedCell = this.normalizeCellOption(cell);
 
-                currentCol += colSpan;
+                currentCol += normalizedCell.colSpan ?? 1;
+
                 maxCol = Math.max(maxCol, currentCol);
             } else {
                 // eslint-disable-next-line no-plusplus
                 currentCol++;
+
                 maxCol = Math.max(maxCol, currentCol);
             }
         }
@@ -328,24 +304,22 @@ export class Table {
     }
 
     private calculateCellWidth(cell: CellOptions & { content: string }): number {
-        const normalizedCell = this.normalizeCellOption(cell);
-
         // Apply cell-specific maxWidth if set, otherwise use global maxWidth
-        const maxWidth = normalizedCell.maxWidth ?? this.options.maxWidth;
-        const isEmpty = normalizedCell.content === "";
+        const maxWidth = cell.maxWidth ?? this.options.maxWidth;
+        const isEmpty = cell.content === "";
 
         let contentWidth: number;
 
         if (maxWidth) {
             // For truncated cells, use maxWidth
-            contentWidth = Math.min(stringWidth(normalizedCell.content), maxWidth);
-        } else if (normalizedCell.wordWrap) {
+            contentWidth = Math.min(stringWidth(cell.content), maxWidth);
+        } else if (cell.wordWrap) {
             // For word-wrapped cells, use the longest word length as minimum
-            const words = normalizedCell.content.split(/\s+/);
+            const words = cell.content.split(/\s+/);
             contentWidth = Math.max(...words.map((word) => stringWidth(word)));
         } else {
             // For normal cells, use the maximum line width
-            const lines = normalizedCell.content.split("\n");
+            const lines = cell.content.split("\n");
             contentWidth = Math.max(...lines.map((line) => stringWidth(line)));
         }
 
@@ -363,22 +337,33 @@ export class Table {
         }
 
         if (typeof cell === "object" && !Array.isArray(cell)) {
-            let { content } = cell;
-
-            if (content === null || content === undefined || content === "") {
-                content = "";
+            if (
+                cell.content !== null &&
+                cell.content !== undefined &&
+                cell.content !== "" &&
+                typeof cell.content !== "string" &&
+                typeof cell.content !== "number"
+            ) {
+                throw new TypeError("Cell content must be a string, undefined, null or number");
             }
 
             return {
                 ...cell,
-                content: String(content),
+                content:
+                    cell.content === null || cell.content === undefined || cell.content === ""
+                        ? ""
+                        : String(cell.content).replaceAll("\t", " ".repeat(this.options.transformTabToSpace)),
                 maxWidth: cell.maxWidth ?? this.options.maxWidth,
                 wordWrap: cell.wordWrap ?? this.options.wordWrap,
             };
         }
 
+        if (typeof cell !== "string" && typeof cell !== "number") {
+            throw new TypeError("Cell input must be a string, object (CellType) or number");
+        }
+
         return {
-            content: String(cell),
+            content: String(cell).replaceAll("\t", " ".repeat(this.options.transformTabToSpace)),
             maxWidth: this.options.maxWidth,
             wordWrap: this.options.wordWrap,
         };

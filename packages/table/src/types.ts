@@ -105,7 +105,7 @@ export interface CellOptions {
     wordWrap?: boolean;
 }
 
-export type Cell = CellOptions | number | string | null | undefined;
+export type Cell = CellOptions | bigint | number | string | null | undefined;
 
 /**
  * Defines the border style configuration for tables.
@@ -214,6 +214,11 @@ export interface TableConstructorOptions {
      * The style options for the table
      */
     style?: Partial<TableStyle>;
+
+    /**
+     * The number of spaces to use for tab characters.
+     */
+    transformTabToSpace?: number;
 
     /**
      * The character to use for truncating cell content
