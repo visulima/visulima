@@ -29,14 +29,14 @@ const getContentWidth = (string_: string): number => {
  */
 const normalizeCellOption = (cell: CellType): CellOptions & { content: string } => {
     if (cell === null || typeof cell !== "object") {
-        if (cell === undefined || cell === null) {
+        if (cell === undefined || cell === null || cell === "") {
             return { content: "" };
         }
 
         return { content: String(cell) };
     }
 
-    if (cell.content === undefined || cell.content === null) {
+    if (cell.content === undefined || cell.content === null || cell.content === "") {
         // eslint-disable-next-line no-param-reassign
         cell.content = "";
     }
@@ -373,7 +373,7 @@ export class Table {
     }
 
     private normalizeCellOption(cell: CellType): CellOptions & { content: string } {
-        if (cell === null || cell === undefined) {
+        if (cell === null || cell === undefined || cell === "") {
             return {
                 content: "",
                 wordWrap: this.options.wordWrap,
@@ -462,13 +462,13 @@ export class Table {
 
         for (const line of lines) {
             // Handle empty lines or whitespace
-            if (!line || !line.trim()) {
+            if (!line.trim()) {
                 result.push(line);
                 continue;
             }
 
             // Extract and store formatting sequences
-            const formats: Array<{ index: number; sequence: string }> = [];
+            const formats: { index: number; sequence: string }[] = [];
             let plainText = line;
 
             // Extract color codes
@@ -523,7 +523,7 @@ export class Table {
                 }
 
                 // Add word with its original formatting
-                let wordStart = plainText.indexOf(word);
+                const wordStart = plainText.indexOf(word);
                 let formattedWord = word;
 
                 // Apply any formatting that should be present at this position
