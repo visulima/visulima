@@ -290,14 +290,14 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ maxWidth: 5, style: { paddingLeft: 0, paddingRight: 0 } });
-            table.addRow(["", "   ", "\t\n"]);
+            table.addRow(["", "   ", "\t\na"]);
 
             const output = table.toString();
 
             expect(output).toMatchInlineSnapshot(`
-                "┌─┬───┬─┐
-                │ │   │ │
-                └─┴───┴─┘"
+                "┌┬───┬────┐
+                ││   │     │
+                └┴───┴────┘"
             `);
         });
 

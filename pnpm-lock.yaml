@@ -3768,6 +3768,9 @@ importers:
       '@vitest/ui':
         specifier: ^2.1.8
         version: 2.1.8(vitest@2.1.8)
+      ansi-regex:
+        specifier: ^6.1.0
+        version: 6.1.0
       cli-table3:
         specifier: ^0.6.3
         version: 0.6.5

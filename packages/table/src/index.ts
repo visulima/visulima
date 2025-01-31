@@ -1,5 +1,30 @@
 import { stripVTControlCharacters } from "node:util";
 
+function findRealPosition(text: string, visiblePosition: number): number {
+    const ansiPattern = /[\u001B\u009B][[\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\d\/#&.:=?%@~_]+)*|[a-zA-Z\d]+(?:;[-a-zA-Z\d\/#&.:=?%@~_]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~]))/g;
+    let visibleIndex = 0;
+    let realIndex = 0;
+    let match;
+
+    while ((match = ansiPattern.exec(text)) !== null) {
+        const beforeMatch = text.slice(realIndex, match.index);
+        visibleIndex += beforeMatch.length;
+        if (visibleIndex > visiblePosition) {
+            return match.index - (visibleIndex - visiblePosition);
+        }
+        realIndex = match.index + match[0].length;
+    }
+
+    const remaining = text.slice(realIndex);
+    visibleIndex += remaining.length;
+    if (visibleIndex > visiblePosition) {
+        return text.length - (visibleIndex - visiblePosition);
+    }
+
+    return text.length;
+}
+
+
 import stringWidth from "string-width";
 import type { RequiredDeep } from "type-fest";
 
@@ -399,6 +424,31 @@ export class Table {
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
+    private preserveAnsiCodes(text: string, start: number, end: number): string {
+        const ansiPattern = /[\u001B\u009B][[\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\d\/#&.:=?%@~_]+)*|[a-zA-Z\d]+(?:;[-a-zA-Z\d\/#&.:=?%@~_]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~]))/g;
+        const openCodes: string[] = [];
+        let match;
+
+        // Find all ANSI codes before the slice point
+        const beforeText = text.slice(0, start);
+        while ((match = ansiPattern.exec(beforeText)) !== null) {
+            const code = match[0];
+            if (!code.endsWith('m')) continue;
+            
+            if (code === '\u001b[0m' || code === '\u001b[m') {
+                openCodes.length = 0; // Reset on full reset code
+            } else {
+                openCodes.push(code);
+            }
+        }
+
+        // Get the actual content between start and end
+        const slicedContent = text.slice(start, end);
+
+        // If we have any open codes at the end, add a reset
+        return openCodes.join('') + slicedContent + '\u001b[0m';
+    }
+
     private truncate(string_: string, maxWidth: number, options: Required<TruncateOptions>): string {
         if (typeof string_ !== "string") {
             throw new TypeError(`Expected input to be a string, got ${typeof string_}`);
@@ -416,9 +466,9 @@ export class Table {
             return options.truncationCharacter;
         }
 
-        const length = stringWidth(string_);
+        const visibleLength = stringWidth(stripVTControlCharacters(string_));
 
-        if (length <= maxWidth) {
+        if (visibleLength <= maxWidth) {
             return string_;
         }
 
@@ -427,7 +477,7 @@ export class Table {
         let { truncationCharacter } = options;
 
         const truncatedLines = lines.map((line) => {
-            const lineLength = stringWidth(line);
+            const lineLength = stringWidth(stripVTControlCharacters(line));
 
             if (lineLength <= maxWidth) {
                 return line;
@@ -436,7 +486,7 @@ export class Table {
             if (options.position === "start") {
                 if (options.preferTruncationOnSpace) {
                     const nearestSpace = this.getIndexOfNearestSpace(line, lineLength - maxWidth + 1, true);
-                    return truncationCharacter + stripVTControlCharacters(line.slice(nearestSpace)).trim();
+                    return truncationCharacter + this.preserveAnsiCodes(line, nearestSpace, line.length).trim();
                 }
 
                 if (options.space) {
@@ -444,7 +494,8 @@ export class Table {
                 }
 
                 // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                return truncationCharacter + stripVTControlCharacters(line.slice(lineLength - maxWidth + stringWidth(truncationCharacter)));
+                const visibleLineLength = stringWidth(stripVTControlCharacters(line));
+                return truncationCharacter + this.preserveAnsiCodes(line, visibleLineLength - maxWidth + stringWidth(truncationCharacter), line.length);
             }
 
             if (options.position === "middle") {
@@ -459,17 +510,17 @@ export class Table {
                     const spaceNearSecondBreakPoint = this.getIndexOfNearestSpace(line, lineLength - (maxWidth - half) + 1, true);
 
                     return (
-                        stripVTControlCharacters(line.slice(0, spaceNearFirstBreakPoint)) +
+                        this.preserveAnsiCodes(line, 0, spaceNearFirstBreakPoint) +
                         truncationCharacter +
-                        stripVTControlCharacters(line.slice(spaceNearSecondBreakPoint)).trim()
+                        this.preserveAnsiCodes(line, spaceNearSecondBreakPoint, line.length).trim()
                     );
                 }
 
                 return (
-                    stripVTControlCharacters(line.slice(0, half)) +
+                    this.preserveAnsiCodes(line, 0, half) +
                     truncationCharacter +
                     // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                    stripVTControlCharacters(line.slice(lineLength - (maxWidth - half) + stringWidth(truncationCharacter)))
+                    this.preserveAnsiCodes(line, lineLength - (maxWidth - half) + stringWidth(truncationCharacter), line.length)
                 );
             }
 
@@ -477,14 +528,14 @@ export class Table {
             if (options.position === "end") {
                 if (options.preferTruncationOnSpace) {
                     const nearestSpace = this.getIndexOfNearestSpace(line, maxWidth - 1);
-                    return stripVTControlCharacters(line.slice(0, nearestSpace)) + truncationCharacter;
+                    return this.preserveAnsiCodes(line, 0, nearestSpace) + truncationCharacter;
                 }
 
                 if (options.space) {
                     truncationCharacter = ` ${truncationCharacter}`;
                 }
 
-                return stripVTControlCharacters(line.slice(0, maxWidth - stringWidth(truncationCharacter))) + truncationCharacter;
+                return this.preserveAnsiCodes(line, 0, maxWidth - stringWidth(truncationCharacter)) + truncationCharacter;
             }
 
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
