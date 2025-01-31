@@ -173,15 +173,110 @@ export class Table {
     }
 
     /**
+     * Renders the table to a string.
+     * @returns String representation of the table
+     */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    public toString(): string {
+        if (!this.isDirty && this.cachedString !== null) {
+            return this.cachedString;
+        }
+
+        if (this.rows.length === 0 && this.headers.length === 0) {
+            this.cachedString = "";
+            return "";
+        }
+
+        this.columnWidths = this.calculateColumnWidths();
+        const lines: string[] = [];
+
+        // Add top border
+        if (this.options.style.border.topBody) {
+            lines.push(
+                this.createLine({
+                    body: this.options.style.border.topBody,
+                    left: this.options.style.border.topLeft ?? "",
+                    middle: this.options.style.border.topJoin ?? "",
+                    right: this.options.style.border.topRight ?? "",
+                }),
+            );
+        }
+
+        // Add headers if they exist and showHeader is true
+        if (this.headers.length > 0 && this.options.showHeader) {
+            this.headers.forEach((row) => {
+                lines.push(
+                    ...this.renderRow(row, this.columnWidths, {
+                        left: this.options.style.border.bodyLeft ?? "",
+                        middle: this.options.style.border.bodyJoin ?? "",
+                        right: this.options.style.border.bodyRight ?? "",
+                    }),
+                );
+            });
+
+            // Add header separator if there are rows
+            if (this.rows.length > 0 && this.options.style.border.joinBody) {
+                lines.push(
+                    this.createLine({
+                        body: this.options.style.border.joinBody,
+                        left: this.options.style.border.joinLeft ?? "",
+                        middle: this.options.style.border.joinJoin ?? "",
+                        right: this.options.style.border.joinRight ?? "",
+                    }),
+                );
+            }
+        }
+
+        // Add rows
+        this.rows.forEach((row, rowIndex) => {
+            lines.push(
+                ...this.renderRow(row, this.columnWidths, {
+                    left: this.options.style.border.bodyLeft ?? "",
+                    middle: this.options.style.border.bodyJoin ?? "",
+                    right: this.options.style.border.bodyRight ?? "",
+                }),
+            );
+
+            // Add row separator if not the last row
+            if (rowIndex < this.rows.length - 1 && this.options.style.border.joinBody) {
+                lines.push(
+                    this.createLine({
+                        body: this.options.style.border.joinBody,
+                        left: this.options.style.border.joinLeft ?? "",
+                        middle: this.options.style.border.joinJoin ?? "",
+                        right: this.options.style.border.joinRight ?? "",
+                    }),
+                );
+            }
+        });
+
+        // Add bottom border
+        if (this.options.style.border.bottomBody) {
+            lines.push(
+                this.createLine({
+                    body: this.options.style.border.bottomBody,
+                    left: this.options.style.border.bottomLeft ?? "",
+                    middle: this.options.style.border.bottomJoin ?? "",
+                    right: this.options.style.border.bottomRight ?? "",
+                }),
+            );
+        }
+
+        this.cachedString = lines.join("\n");
+        return this.cachedString;
+    }
+
+    /**
      * Computes column widths with caching
      * @private
      */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     private calculateColumnWidths(): number[] {
         if (!this.isDirty && this.cachedColumnWidths) {
             return this.cachedColumnWidths;
         }
 
-        const widths: number[] = new Array(this.columnCount).fill(0);
+        const widths: number[] = Array.from({length: this.columnCount}).fill(0);
 
         // Helper to get content width based on cell options
         const getContentWidth = (cell: CellType): number => {
@@ -274,99 +369,6 @@ export class Table {
         return widths;
     }
 
-    /**
-     * Renders the table to a string.
-     * @returns String representation of the table
-     */
-    public toString(): string {
-        if (!this.isDirty && this.cachedString !== null) {
-            return this.cachedString;
-        }
-
-        if (this.rows.length === 0 && this.headers.length === 0) {
-            this.cachedString = "";
-            return "";
-        }
-
-        this.columnWidths = this.calculateColumnWidths();
-        const lines: string[] = [];
-
-        // Add top border
-        if (this.options.style.border.topBody) {
-            lines.push(
-                this.createLine({
-                    body: this.options.style.border.topBody,
-                    left: this.options.style.border.topLeft ?? "",
-                    middle: this.options.style.border.topJoin ?? "",
-                    right: this.options.style.border.topRight ?? "",
-                }),
-            );
-        }
-
-        // Add headers if they exist and showHeader is true
-        if (this.headers.length > 0 && this.options.showHeader) {
-            this.headers.forEach((row) => {
-                lines.push(
-                    ...this.renderRow(row, this.columnWidths, {
-                        left: this.options.style.border.bodyLeft ?? "",
-                        middle: this.options.style.border.bodyJoin ?? "",
-                        right: this.options.style.border.bodyRight ?? "",
-                    }),
-                );
-            });
-
-            // Add header separator if there are rows
-            if (this.rows.length > 0 && this.options.style.border.joinBody) {
-                lines.push(
-                    this.createLine({
-                        body: this.options.style.border.joinBody,
-                        left: this.options.style.border.joinLeft ?? "",
-                        middle: this.options.style.border.joinJoin ?? "",
-                        right: this.options.style.border.joinRight ?? "",
-                    }),
-                );
-            }
-        }
-
-        // Add rows
-        this.rows.forEach((row, rowIndex) => {
-            lines.push(
-                ...this.renderRow(row, this.columnWidths, {
-                    left: this.options.style.border.bodyLeft ?? "",
-                    middle: this.options.style.border.bodyJoin ?? "",
-                    right: this.options.style.border.bodyRight ?? "",
-                }),
-            );
-
-            // Add row separator if not the last row
-            if (rowIndex < this.rows.length - 1 && this.options.style.border.joinBody) {
-                lines.push(
-                    this.createLine({
-                        body: this.options.style.border.joinBody,
-                        left: this.options.style.border.joinLeft ?? "",
-                        middle: this.options.style.border.joinJoin ?? "",
-                        right: this.options.style.border.joinRight ?? "",
-                    }),
-                );
-            }
-        });
-
-        // Add bottom border
-        if (this.options.style.border.bottomBody) {
-            lines.push(
-                this.createLine({
-                    body: this.options.style.border.bottomBody,
-                    left: this.options.style.border.bottomLeft ?? "",
-                    middle: this.options.style.border.bottomJoin ?? "",
-                    right: this.options.style.border.bottomRight ?? "",
-                }),
-            );
-        }
-
-        this.cachedString = lines.join("\n");
-        return this.cachedString;
-    }
-
     private normalizeCellOption(cell: CellType): CellOptions & { content: string } {
         if (cell === null || cell === undefined || cell === "") {
             return {
@@ -389,6 +391,7 @@ export class Table {
         };
     }
 
+    // eslint-disable-next-line class-methods-use-this
     private truncate(string_: string, maxWidth: number): string {
         /**
          * Gets the visible width of a string, accounting for ANSI escape codes.
@@ -454,6 +457,7 @@ export class Table {
         return result;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     private wordWrap(string_: string, width: number): string[] {
         if (width <= 0 || !string_) {
             return [string_];
@@ -564,6 +568,7 @@ export class Table {
         return result;
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     private renderRow(row: CellType[], columnWidths: number[], border: { left: string; middle: string; right: string }): string[] {
         const cells = row.map((cell) => this.normalizeCellOption(cell));
         const lines: string[] = [];
