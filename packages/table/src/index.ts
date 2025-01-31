@@ -394,14 +394,6 @@ export class Table {
         };
     }
 
-    private getLastColor(string_: string): string {
-        const matches = string_.match(/\u001B\[[0-9;]*m/g);
-        if (!matches) {
-            return "";
-        }
-        return matches.at(-1);
-    }
-
     private truncate(string_: string, maxWidth: number): string {
         if (getContentWidth(string_) <= maxWidth) {
             return string_;
@@ -467,7 +459,7 @@ export class Table {
         // Precompile regex patterns
         const colorPattern = /\u001B\[\d+m/g;
         const linkPattern = /\u001B\]8;;([^\u0007]*)\u0007([^\u0007]*)\u001B\]8;;\u0007/g;
-        
+
         for (const line of lines) {
             // Handle empty lines or whitespace
             if (!line || !line.trim()) {
@@ -487,7 +479,7 @@ export class Table {
 
             // Extract hyperlinks
             while ((match = linkPattern.exec(line)) !== null) {
-                formats.push({ 
+                formats.push({
                     index: match.index,
                     sequence: `\u001B]8;;${match[1]}\u0007${match[2]}\u001B]8;;\u0007`
                 });
@@ -555,83 +547,6 @@ export class Table {
                 }
                 result.push(currentLine);
             }
-        }
-
-        return result;
-    }
-
-    private wrapPlainText(text: string, width: number): string[] {
-        const result: string[] = [];
-        let currentLine = "";
-        let currentWidth = 0;
-
-        // Split into words, preserving whitespace
-        const words = text.split(/(\s+)/).filter(Boolean);
-
-        for (const word of words) {
-            // Handle whitespace
-            if (/^\s+$/.test(word)) {
-                if (currentWidth > 0 && currentWidth + 1 <= width) {
-                    currentLine += word;
-                    currentWidth += 1;
-                }
-                continue;
-            }
-
-            const wordWidth = stringWidth(word);
-
-            // If the word is too long for a single line
-            if (wordWidth > width) {
-                // First add the current line if it has content
-                if (currentLine) {
-                    result.push(currentLine);
-                    currentLine = "";
-                    currentWidth = 0;
-                }
-
-                // Then split the long word
-                let remaining = word;
-                while (remaining) {
-                    let chunk = "";
-                    let index = 0;
-                    while (index < remaining.length) {
-                        const nextChar = remaining[index];
-                        const nextWidth = stringWidth(chunk + nextChar);
-                        if (nextWidth > width) {
-                            break;
-                        }
-                        chunk += nextChar;
-                        index++;
-                    }
-                    if (chunk) {
-                        remaining = remaining.slice(chunk.length);
-                    } else {
-                        chunk = remaining[0];
-                        remaining = remaining.slice(1);
-                    }
-                    result.push(chunk);
-                }
-                continue;
-            }
-
-            // If adding this word would exceed the width
-            if (currentWidth + (currentWidth > 0 ? 1 : 0) + wordWidth > width) {
-                result.push(currentLine);
-                currentLine = word;
-                currentWidth = wordWidth;
-            } else {
-                // Add word to current line
-                if (currentWidth > 0) {
-                    currentLine += " ";
-                    currentWidth += 1;
-                }
-                currentLine += word;
-                currentWidth += wordWidth;
-            }
-        }
-
-        if (currentLine) {
-            result.push(currentLine);
         }
 
         return result;
@@ -746,37 +661,6 @@ export class Table {
         }
 
         return options.left + line.join("") + options.right;
-    }
-
-    private alignContent(content: string, availableSpace: number, alignment: string): string {
-        const lines = content.split("\n");
-        const contentWidth = Math.max(...lines.map((line) => stringWidth(line)));
-        const effectiveWidth = Math.min(contentWidth, availableSpace);
-
-        let paddedContent = "";
-        for (const line of lines) {
-            const lineWidth = stringWidth(line);
-            const padding = effectiveWidth - lineWidth;
-
-            switch (alignment) {
-                case "right": {
-                    paddedContent += " ".repeat(padding) + line + "\n";
-                    break;
-                }
-                case "center": {
-                    const leftPadding = Math.floor(padding / 2);
-                    const rightPadding = padding - leftPadding;
-                    paddedContent += " ".repeat(leftPadding) + line + " ".repeat(rightPadding) + "\n";
-                    break;
-                }
-                default: {
-                    // left alignment
-                    paddedContent += line + " ".repeat(padding) + "\n";
-                }
-            }
-        }
-
-        return paddedContent.trim();
     }
 }
 
