@@ -13,33 +13,49 @@ const ansiPattern = ansiRegex();
 
 const findRealPosition = (text: string, visiblePosition: number): number => {
     let visibleIndex = 0;
-    let realIndex = 0;
     let match;
+
+    // First pass: collect ANSI code positions
+    const ansiRanges: { end: number; start: number }[] = [];
+
+    ansiPattern.lastIndex = 0;
 
     // eslint-disable-next-line no-loops/no-loops,no-cond-assign
     while ((match = ansiPattern.exec(text)) !== null) {
-        const beforeMatch = text.slice(realIndex, match.index);
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+        ansiRanges.push({ end: match.index + match[0].length, start: match.index });
+    }
 
-        visibleIndex += beforeMatch.length;
+    // Second pass: calculate visual width
+    let currentPos = 0;
+    // eslint-disable-next-line no-loops/no-loops
+    while (currentPos < text.length) {
+        // Skip ANSI codes
+        // eslint-disable-next-line @typescript-eslint/no-loop-func
+        const ansi = ansiRanges.find((r) => r.start === currentPos);
 
-        if (visibleIndex > visiblePosition) {
-            return match.index - (visibleIndex - visiblePosition);
+        if (ansi) {
+            currentPos = ansi.end;
+            // eslint-disable-next-line no-continue
+            continue;
+        }
+
+        const char = text[currentPos];
+        const charWidth = stringWidth(char as string);
+
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+        if (visibleIndex + charWidth > visiblePosition) {
+            return currentPos;
         }
 
         // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        realIndex = match.index + match[0].length;
-    }
-
-    const remaining = text.slice(realIndex);
-
-    visibleIndex += remaining.length;
-
-    if (visibleIndex > visiblePosition) {
-        return text.length - (visibleIndex - visiblePosition);
+        visibleIndex += charWidth;
+        // eslint-disable-next-line no-plusplus
+        currentPos++;
     }
 
     return text.length;
-}
+};
 
 /**
  * Fills missing cells in a row to match the target column count.
@@ -464,7 +480,7 @@ export class Table {
         const slicedContent = text.slice(start, end);
 
         // If we have any open codes at the end, add a reset
-        return openCodes.join("") + slicedContent + "\u001b[0m";
+        return openCodes.join("") + slicedContent + "\u001B[0m";
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
