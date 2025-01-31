@@ -14,11 +14,11 @@ describe("table core functionality", () => {
         const output = table.toString();
 
         expect(output).toMatchInlineSnapshot(`
-          "┌──┬──┬──┐
-          │  │  │  │
-          ├──┼──┼──┤
-          │  │  │  │
-          └──┴──┴──┘"
+          "┌┬┬┐
+          ││││
+          ├┼┼┤
+          ││││
+          └┴┴┘"
         `);
     });
 
@@ -34,13 +34,13 @@ describe("table core functionality", () => {
         const output = table.toString();
 
         expect(output).toMatchInlineSnapshot(`
-          "┌──┬──┬──┐
-          │  │  │  │
-          ├──┼──┼──┤
-          │  │  │  │
-          ├──┼──┼──┤
-          │  │  │  │
-          └──┴──┴──┘"
+          "┌┬┬┐
+          ││││
+          ├┼┼┤
+          ││││
+          ├┼┼┤
+          ││││
+          └┴┴┘"
         `);
     });
 
@@ -56,11 +56,11 @@ describe("table core functionality", () => {
         const output = table.toString();
 
         expect(output).toMatchInlineSnapshot(`
-          "┌──┬──┬──┐
-          │  │  │  │
-          ├──┼──┼──┤
-          │  │  │  │
-          └──┴──┴──┘"
+          "┌┬┬┐
+          ││││
+          ├┼┼┤
+          ││││
+          └┴┴┘"
         `);
     });
 
