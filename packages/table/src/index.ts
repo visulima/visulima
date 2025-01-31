@@ -78,6 +78,7 @@ export class Table {
      */
     public constructor(options?: TableConstructorOptions) {
         this.options = {
+            maxWidth: options?.maxWidth,
             showHeader: options?.showHeader ?? true,
             style: {
                 border: DEFAULT_BORDER,
@@ -284,29 +285,6 @@ export class Table {
 
         const widths: number[] = Array.from<number>({ length: this.columnCount }).fill(0);
 
-        // Helper to get content width based on cell options
-        const getContentWidth = (cell: CellType): number => {
-            const normalizedCell = this.normalizeCellOption(cell);
-            const isEmpty = normalizedCell.content === "";
-
-            let contentWidth: number;
-            if (normalizedCell.maxWidth) {
-                // For truncated cells, use maxWidth
-                contentWidth = Math.min(stringWidth(normalizedCell.content), normalizedCell.maxWidth);
-            } else if (normalizedCell.wordWrap) {
-                // For word-wrapped cells, use the longest word length as minimum
-                const words = normalizedCell.content.split(/\s+/);
-                contentWidth = Math.max(...words.map((word) => stringWidth(word)));
-            } else {
-                // For normal cells, use the maximum line width
-                const lines = normalizedCell.content.split("\n");
-                contentWidth = Math.max(...lines.map((line) => stringWidth(line)));
-            }
-
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-            return isEmpty ? 0 : contentWidth + this.options.style.paddingLeft + this.options.style.paddingRight;
-        };
-
         // Process all rows including headers if shown
         const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
 
@@ -322,7 +300,7 @@ export class Table {
 
                 const normalizedCell = this.normalizeCellOption(cell);
                 const colSpan = Math.min(normalizedCell.colSpan ?? 1, this.columnCount - currentCol);
-                const cellWidth = getContentWidth(cell);
+                const cellWidth = this.calculateCellWidth(normalizedCell);
 
                 if (colSpan === 1) {
                     widths[currentCol] = Math.max(widths[currentCol] as number, cellWidth);
@@ -347,6 +325,32 @@ export class Table {
         this.isDirty = false;
 
         return widths;
+    }
+
+    private calculateCellWidth(cell: CellOptions & { content: string }): number {
+        const normalizedCell = this.normalizeCellOption(cell);
+
+        // Apply cell-specific maxWidth if set, otherwise use global maxWidth
+        const maxWidth = normalizedCell.maxWidth ?? this.options.maxWidth;
+        const isEmpty = normalizedCell.content === "";
+
+        let contentWidth: number;
+
+        if (maxWidth) {
+            // For truncated cells, use maxWidth
+            contentWidth = Math.min(stringWidth(normalizedCell.content), maxWidth);
+        } else if (normalizedCell.wordWrap) {
+            // For word-wrapped cells, use the longest word length as minimum
+            const words = normalizedCell.content.split(/\s+/);
+            contentWidth = Math.max(...words.map((word) => stringWidth(word)));
+        } else {
+            // For normal cells, use the maximum line width
+            const lines = normalizedCell.content.split("\n");
+            contentWidth = Math.max(...lines.map((line) => stringWidth(line)));
+        }
+
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+        return isEmpty ? 0 : contentWidth + this.options.style.paddingLeft + this.options.style.paddingRight;
     }
 
     private normalizeCellOption(cell: CellType): CellOptions & { content: string } {
@@ -384,7 +388,7 @@ export class Table {
          * @param string_ String to measure
          * @returns Visible width of the string
          */
-            // eslint-disable-next-line @typescript-eslint/no-shadow
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         const getContentWidth = (string_: string): number => {
             if (widthCache.has(string_)) {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

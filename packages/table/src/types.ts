@@ -181,27 +181,30 @@ export interface BorderStyle {
  */
 export interface TableStyle {
     /**
-     * The border style configuration.
+     * Border style configuration.
      */
     border?: BorderStyle;
+
     /**
-     * The padding to apply to the left side of cells.
+     * Left padding for all cells.
      */
     paddingLeft?: number;
+
     /**
-     * The padding to apply to the right side of cells.
+     * Right padding for all cells.
      */
     paddingRight?: number;
-    /**
-     * Whether to word wrap cell content by default.
-     */
-    wordWrap?: boolean;
 }
 
 /**
  * Defines the options for table construction.
  */
 export interface TableConstructorOptions {
+    /**
+     * Maximum width for all cells. Individual cell maxWidth will override this.
+     */
+    maxWidth?: number;
+
     /**
      * Whether to show the header of the table
      */
@@ -216,8 +219,9 @@ export interface TableConstructorOptions {
      * The character to use for truncating cell content
      */
     truncate?: string;
+
     /**
-     * Whether to word wrap cell content by default.
+     * Whether to enable word wrapping.
      */
     wordWrap?: boolean;
 }
