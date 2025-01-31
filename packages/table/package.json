@@ -118,6 +118,7 @@
         "cross-env": "^7.0.3",
         "esbuild": "^0.24.2",
         "eslint": "8.57.1",
+        "table": "^6.9.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
