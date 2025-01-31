@@ -107,7 +107,7 @@
         "@visulima/fs": "3.1.0",
         "comment-parser": "^1.4.1",
         "lodash.mergewith": "^4.6.2",
-        "read-pkg-up": "^7.0.1",
+        "read-package-up": "^11.0.0",
         "yaml": "^2.7.0"
     },
     "devDependencies": {
