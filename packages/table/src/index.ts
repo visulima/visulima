@@ -9,6 +9,8 @@ import type { RequiredDeep } from "type-fest";
 import { DEFAULT_BORDER } from "./style";
 import type { Cell as CellType, CellOptions, TableConstructorOptions, TruncateOptions } from "./types";
 
+type CellContent = { cell: CellOptions & { content: string }; lines: string[] };
+
 const ansiPattern = ansiRegex();
 
 const findRealPosition = (text: string, visiblePosition: number): number => {
@@ -721,7 +723,7 @@ export class Table {
         const lines: string[] = [];
 
         // Process each cell and get their content lines
-        const cellContents: { cell: CellOptions & { content: string }; lines: string[] }[] = [];
+        const cellContents: CellContent[] = [];
         let maxLines = 1;
 
         // First pass: Process each cell and get their content lines
@@ -793,7 +795,8 @@ export class Table {
             let currentCol = 0;
 
             for (let cellIndex = 0; cellIndex < row.length && currentCol < this.columnCount; cellIndex++) {
-                const { cell, lines } = cellContents[cellIndex];
+                // eslint-disable-next-line @typescript-eslint/no-shadow
+                const { cell, lines } = cellContents[cellIndex] as CellContent;
                 const content = lines[lineIndex] ?? "";
                 const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - currentCol);
 
