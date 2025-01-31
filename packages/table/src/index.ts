@@ -456,31 +456,33 @@ export class Table {
     // eslint-disable-next-line class-methods-use-this
     private preserveAnsiCodes(text: string, start: number, end: number): string {
         const openCodes: string[] = [];
-
         let match;
 
-        // Find all ANSI codes before the slice point
-        const beforeText = text.slice(0, start);
+        // Track codes through entire range up to end
+        ansiPattern.lastIndex = 0;
         // eslint-disable-next-line no-loops/no-loops,no-cond-assign
-        while ((match = ansiPattern.exec(beforeText)) !== null) {
-            const code = match[0];
-            if (!code.endsWith("m")) {
-                // eslint-disable-next-line no-continue
-                continue;
+        while ((match = ansiPattern.exec(text)) !== null) {
+            if (match.index > end) {
+                break;
             }
 
-            if (code === "\u001B[0m" || code === "\u001B[m") {
-                openCodes.length = 0; // Reset on full reset code
-            } else {
+            const code = match[0];
+            if (code === "\u001B[0m") {
+                // Reset when explicit reset found before end
+                if (match.index < end) {
+                    openCodes.length = 0;
+                }
+            } else if (
+                code.startsWith("\u001B[") && // Track if code starts before end of slice
+                match.index < end
+            ) {
                 openCodes.push(code);
             }
         }
 
-        // Get the actual content between start and end
         const slicedContent = text.slice(start, end);
 
-        // If we have any open codes at the end, add a reset
-        return openCodes.join("") + slicedContent + "\u001B[0m";
+        return openCodes.join("") + slicedContent + (openCodes.length > 0 ? "\u001B[0m" : "");
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
