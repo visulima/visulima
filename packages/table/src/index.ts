@@ -493,9 +493,9 @@ export class Table {
                     truncationCharacter += " ";
                 }
 
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                const visibleLineLength = stringWidth(stripVTControlCharacters(line));
-                return truncationCharacter + this.preserveAnsiCodes(line, visibleLineLength - maxWidth + stringWidth(truncationCharacter), line.length);
+                const visibleStart = stringWidth(stripVTControlCharacters(line)) - maxWidth + stringWidth(truncationCharacter);
+                const realStart = findRealPosition(line, visibleStart);
+                return truncationCharacter + this.preserveAnsiCodes(line, realStart, line.length);
             }
 
             if (options.position === "middle") {
@@ -516,11 +516,13 @@ export class Table {
                     );
                 }
 
+                const firstHalf = findRealPosition(line, half);
+                const secondHalfStart = stringWidth(stripVTControlCharacters(line)) - (maxWidth - half) + stringWidth(truncationCharacter);
+                const secondHalf = findRealPosition(line, secondHalfStart);
                 return (
-                    this.preserveAnsiCodes(line, 0, half) +
+                    this.preserveAnsiCodes(line, 0, firstHalf) +
                     truncationCharacter +
-                    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                    this.preserveAnsiCodes(line, lineLength - (maxWidth - half) + stringWidth(truncationCharacter), line.length)
+                    this.preserveAnsiCodes(line, secondHalf, line.length)
                 );
             }
 
@@ -535,7 +537,8 @@ export class Table {
                     truncationCharacter = ` ${truncationCharacter}`;
                 }
 
-                return this.preserveAnsiCodes(line, 0, maxWidth - stringWidth(truncationCharacter)) + truncationCharacter;
+                const endPos = findRealPosition(line, maxWidth - stringWidth(truncationCharacter));
+                return this.preserveAnsiCodes(line, 0, endPos) + truncationCharacter;
             }
 
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
