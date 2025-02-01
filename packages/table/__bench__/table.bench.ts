@@ -155,7 +155,7 @@ describe("Table Rendering with word wrap", () => {
     bench("@visulima/table", () => {
         const table = createTable();
         table.setHeaders(wrapHeaders);
-        table.addRows(wrapRows);
+        table.addRows(...wrapRows);
         table.toString();
     });
 
@@ -196,12 +196,12 @@ describe("Table Rendering with spanning cells", () => {
         ]);
 
         // Add rows with various spans
-        table.addRows([
+        table.addRows(
             [{ content: "Span Two", colSpan: 2 }, "C"],
             ["A", { content: "Span Two", colSpan: 2 }],
             ["A", "B", "C"],
             [{ content: "Span All", colSpan: 3 }],
-        ]);
+        );
 
         table.toString();
     });
