@@ -8,6 +8,7 @@ import type { RequiredDeep } from "type-fest";
 
 import { DEFAULT_BORDER } from "./style";
 import type { Cell as CellType, CellOptions, TableConstructorOptions, TruncateOptions } from "./types";
+import { createTableLayout, getCellsInColumn, type TableLayout } from "./layout";
 
 type CellContent = { cell: CellOptions & { content: string }; lines: string[] };
 
@@ -95,6 +96,7 @@ export class Table {
     private cachedColumnWidths: number[] | null = null;
     private cachedString: string | null = null;
     private isDirty = true;
+    private layout: TableLayout | null = null;
 
     /**
      * Creates a new Table instance.
@@ -196,6 +198,7 @@ export class Table {
 
         this.rows.push(fillMissingCells(row, this.columnCount));
         this.isDirty = true;
+        this.layout = null; // Reset layout since table structure changed
 
         return this;
     }
@@ -227,6 +230,12 @@ export class Table {
         if (this.rows.length === 0 && this.headers.length === 0) {
             this.cachedString = "";
             return "";
+        }
+
+        // Create layout if not exists or if table is dirty
+        if (!this.layout || this.isDirty) {
+            const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
+            this.layout = createTableLayout(allRows);
         }
 
         this.columnWidths = this.calculateColumnWidths();
@@ -325,10 +334,8 @@ export class Table {
         const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
 
         // Calculate minimum widths for each column
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const row of allRows) {
             let currentCol = 0;
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const cell of row) {
                 if (currentCol >= this.columnCount) {
                     break;
@@ -339,8 +346,7 @@ export class Table {
                 const cellWidth = this.calculateCellWidth(normalizedCell);
 
                 if (colSpan === 1) {
-                    // eslint-disable-next-line security/detect-object-injection
-                    widths[currentCol] = Math.max(widths[currentCol] as number, cellWidth);
+                    widths[currentCol] = Math.max(widths[currentCol], cellWidth);
                 } else {
                     // For spanning cells, calculate minimum width needed per column
                     const totalBorderWidth = colSpan - 1;
@@ -348,9 +354,8 @@ export class Table {
                     const minWidthPerCol = Math.ceil(widthNeeded / colSpan);
 
                     // Set minimum width for each column in span
-                    // eslint-disable-next-line no-plusplus,no-loops/no-loops
-                    for (let index = 0; index < colSpan && currentCol + index < this.columnCount; index++) {
-                        widths[currentCol + index] = Math.max(widths[currentCol + index] as number, minWidthPerCol);
+                    for (let i = 0; i < colSpan && currentCol + i < this.columnCount; i++) {
+                        widths[currentCol + i] = Math.max(widths[currentCol + i], minWidthPerCol);
                     }
                 }
 
@@ -727,21 +732,18 @@ export class Table {
     // eslint-disable-next-line sonarjs/cognitive-complexity
     private renderRow(row: CellType[], columnWidths: number[], border: { left: string; middle: string; right: string }): string[] {
         const lines: string[] = [];
-
-        // Process each cell and get their content lines
         const cellContents: CellContent[] = [];
         let maxLines = 1;
 
         // First pass: Process each cell and get their content lines
         for (let [index, cell] of row.entries()) {
             cell = this.normalizeCellOption(cell);
-            const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - index);
-            const rowSpan = cell.rowSpan ?? 1;
+            const colSpan = cell.colSpan ?? 1;
 
             // Calculate total width considering column spans
             let totalWidth = columnWidths[index] as number;
-            for (let index_ = 1; index_ < colSpan; index_++) {
-                totalWidth += (columnWidths[index + index_] as number) + 1;
+            for (let i = 1; i < colSpan && index + i < columnWidths.length; i++) {
+                totalWidth += (columnWidths[index + i] as number) + 1;
             }
 
             const content = String(cell.content);
@@ -765,6 +767,7 @@ export class Table {
             }
 
             // Calculate height needed for rowSpan
+            const rowSpan = cell.rowSpan ?? 1;
             const cellHeight = Math.max(rowSpan, cellLines.length);
             const emptyLines = cellHeight - cellLines.length;
 

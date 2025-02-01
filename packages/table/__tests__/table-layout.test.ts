@@ -15,11 +15,11 @@ describe("table layout", () => {
 
         it("should create simple grid layout", () => {
             const table = createTable();
-            table.addRows([
+            table.addRows(
                 ["A1", "B1", "C1"],
                 ["A2", "B2", "C2"],
                 ["A3", "B3", "C3"],
-            ]);
+            );
 
             const expected = [
                 "┌────┬────┬────┐",
@@ -207,11 +207,11 @@ describe("table layout", () => {
             const output = table.toString();
 
             expect(output).toMatchInlineSnapshot(`
-              "┌──┬──┬──┐
-              │  │  │  │
-              ├──┼──┼──┤
-              │  │  │  │
-              └──┴──┴──┘"
+              "┌┬┬┐
+              ││││
+              ├┼┼┤
+              ││││
+              └┴┴┘"
             `);
         });
 
@@ -227,13 +227,13 @@ describe("table layout", () => {
             const output = table.toString();
 
             expect(output).toMatchInlineSnapshot(`
-              "┌──┬──┬──┐
-              │  │  │  │
-              ├──┼──┼──┤
-              │  │  │  │
-              ├──┼──┼──┤
-              │  │  │  │
-              └──┴──┴──┘"
+              "┌┬┬┐
+              ││││
+              ├┼┼┤
+              ││││
+              ├┼┼┤
+              ││││
+              └┴┴┘"
             `);
         });
 
