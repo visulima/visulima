@@ -28,163 +28,163 @@ const generateBasicTable = (rows: number, cols: number, Table: any, options = {}
     return table;
 };
 
-describe("Table Rendering 1763 rows (5 columns)", () => {
-    bench("@visulima/table", () => {
-        const table = createTable({
-            padding: 1,
-        });
-
-        // Generate headers
-        table.setHeaders([
-            { content: "ID", hAlign: "left" },
-            { content: "Name", hAlign: "left" },
-            { content: "Email", hAlign: "left" },
-            { content: "Status", hAlign: "center" },
-            { content: "Created At", hAlign: "right" },
-        ]);
-
-        // Generate 1763 rows of mock data
-        for (let i = 1; i <= 1763; i++) {
-            table.addRow([
-                i.toString(),
-                `User ${i}`,
-                `user${i}@example.com`,
-                i % 2 === 0 ? "Active" : "Inactive",
-                new Date(2024, 0, 1, 0, i).toISOString(),
-            ]);
-        }
-
-        // Render the table
-        table.toString();
-    });
-
-    bench("cli-table3", () => {
-        const table = new Table3({
-            head: ["ID", "Name", "Email", "Status", "Created At"],
-            style: {
-                head: [],
-                border: [],
-            },
-        });
-
-        // Generate 1763 rows of mock data
-        for (let i = 1; i <= 1763; i++) {
-            table.push([
-                i.toString(),
-                `User ${i}`,
-                `user${i}@example.com`,
-                i % 2 === 0 ? "Active" : "Inactive",
-                new Date(2024, 0, 1, 0, i).toISOString(),
-            ]);
-        }
-
-        // Render the table
-        table.toString();
-    });
-
-    bench("table", () => {
-        const data = [
-            ["ID", "Name", "Email", "Status", "Created At"],
-        ];
-
-        // Generate 1763 rows of mock data
-        for (let i = 1; i <= 1763; i++) {
-            data.push([
-                i.toString(),
-                `User ${i}`,
-                `user${i}@example.com`,
-                i % 2 === 0 ? "Active" : "Inactive",
-                new Date(2024, 0, 1, 0, i).toISOString(),
-            ]);
-        }
-
-        // Render the table
-        table(data);
-    });
-});
-
-describe("Table Rendering basic table (100x10)", () => {
-    bench("@visulima/table", () => {
-        const table = createTable();
-
-        // Generate 100x10 table
-        for (let y = 0; y < 100; y++) {
-            const row = [];
-            for (let x = 0; x < 10; x++) {
-                row.push(`${y}-${x} (1x1)`);
-            }
-            table.addRow(row);
-        }
-
-        table.toString();
-    });
-
-    bench("cli-table3", () => {
-        generateBasicTable(100, 10, Table3).toString();
-    });
-
-    bench("table", () => {
-        const data = [];
-        // Generate 100x10 table
-        for (let y = 0; y < 100; y++) {
-            const row = [];
-            for (let x = 0; x < 10; x++) {
-                row.push(`${y}-${x} (1x1)`);
-            }
-            data.push(row);
-        }
-        table(data);
-    });
-});
-
-describe("Table Rendering with word wrap", () => {
-    const wrapHeaders = ["Description", "Status", "Notes"];
-    const wrapRows = [
-        [
-            { content: "This is a very long description that should be automatically wrapped to fit within the cell width", wordWrap: true },
-            { content: "Active and pending review from the team", wordWrap: true },
-            { content: "Multiple notes need to be added here for context", wordWrap: true },
-        ],
-        [
-            { content: "A shorter description", wordWrap: true },
-            { content: "Completed", wordWrap: true },
-            { content: "This is a very long note that will be wrapped automatically to demonstrate the word wrap feature", wordWrap: true },
-        ],
-    ];
-
-    bench("@visulima/table", () => {
-        const table = createTable();
-        table.setHeaders(wrapHeaders);
-        table.addRows(...wrapRows);
-        table.toString();
-    });
-
-    bench("cli-table3", () => {
-        const table = new Table3({
-            head: wrapHeaders,
-            wordWrap: true,
-            colWidths: [40, 30, 40],
-            style: {
-                head: [],
-                border: [],
-            },
-        });
-        table.push(...wrapRows.map(row => row.map(cell => cell.content)));
-        table.toString();
-    });
-
-    bench("table", () => {
-        const data = [wrapHeaders];
-        data.push(...wrapRows.map(row => row.map(cell => cell.content)));
-        table(data, {
-            columns: [
-                { width: 40, wrapWord: true },
-                { width: 30, wrapWord: true },
-                { width: 40, wrapWord: true },
-            ],
-        });
-    });
-});
+// describe("Table Rendering 1763 rows (5 columns)", () => {
+//     bench("@visulima/table", () => {
+//         const table = createTable({
+//             padding: 1,
+//         });
+//
+//         // Generate headers
+//         table.setHeaders([
+//             { content: "ID", hAlign: "left" },
+//             { content: "Name", hAlign: "left" },
+//             { content: "Email", hAlign: "left" },
+//             { content: "Status", hAlign: "center" },
+//             { content: "Created At", hAlign: "right" },
+//         ]);
+//
+//         // Generate 1763 rows of mock data
+//         for (let i = 1; i <= 1763; i++) {
+//             table.addRow([
+//                 i.toString(),
+//                 `User ${i}`,
+//                 `user${i}@example.com`,
+//                 i % 2 === 0 ? "Active" : "Inactive",
+//                 new Date(2024, 0, 1, 0, i).toISOString(),
+//             ]);
+//         }
+//
+//         // Render the table
+//         table.toString();
+//     });
+//
+//     bench("cli-table3", () => {
+//         const table = new Table3({
+//             head: ["ID", "Name", "Email", "Status", "Created At"],
+//             style: {
+//                 head: [],
+//                 border: [],
+//             },
+//         });
+//
+//         // Generate 1763 rows of mock data
+//         for (let i = 1; i <= 1763; i++) {
+//             table.push([
+//                 i.toString(),
+//                 `User ${i}`,
+//                 `user${i}@example.com`,
+//                 i % 2 === 0 ? "Active" : "Inactive",
+//                 new Date(2024, 0, 1, 0, i).toISOString(),
+//             ]);
+//         }
+//
+//         // Render the table
+//         table.toString();
+//     });
+//
+//     bench("table", () => {
+//         const data = [
+//             ["ID", "Name", "Email", "Status", "Created At"],
+//         ];
+//
+//         // Generate 1763 rows of mock data
+//         for (let i = 1; i <= 1763; i++) {
+//             data.push([
+//                 i.toString(),
+//                 `User ${i}`,
+//                 `user${i}@example.com`,
+//                 i % 2 === 0 ? "Active" : "Inactive",
+//                 new Date(2024, 0, 1, 0, i).toISOString(),
+//             ]);
+//         }
+//
+//         // Render the table
+//         table(data);
+//     });
+// });
+//
+// describe("Table Rendering basic table (100x10)", () => {
+//     bench("@visulima/table", () => {
+//         const table = createTable();
+//
+//         // Generate 100x10 table
+//         for (let y = 0; y < 100; y++) {
+//             const row = [];
+//             for (let x = 0; x < 10; x++) {
+//                 row.push(`${y}-${x} (1x1)`);
+//             }
+//             table.addRow(row);
+//         }
+//
+//         table.toString();
+//     });
+//
+//     bench("cli-table3", () => {
+//         generateBasicTable(100, 10, Table3).toString();
+//     });
+//
+//     bench("table", () => {
+//         const data = [];
+//         // Generate 100x10 table
+//         for (let y = 0; y < 100; y++) {
+//             const row = [];
+//             for (let x = 0; x < 10; x++) {
+//                 row.push(`${y}-${x} (1x1)`);
+//             }
+//             data.push(row);
+//         }
+//         table(data);
+//     });
+// });
+//
+// describe("Table Rendering with word wrap", () => {
+//     const wrapHeaders = ["Description", "Status", "Notes"];
+//     const wrapRows = [
+//         [
+//             { content: "This is a very long description that should be automatically wrapped to fit within the cell width", wordWrap: true },
+//             { content: "Active and pending review from the team", wordWrap: true },
+//             { content: "Multiple notes need to be added here for context", wordWrap: true },
+//         ],
+//         [
+//             { content: "A shorter description", wordWrap: true },
+//             { content: "Completed", wordWrap: true },
+//             { content: "This is a very long note that will be wrapped automatically to demonstrate the word wrap feature", wordWrap: true },
+//         ],
+//     ];
+//
+//     bench("@visulima/table", () => {
+//         const table = createTable();
+//         table.setHeaders(wrapHeaders);
+//         table.addRows(...wrapRows);
+//         table.toString();
+//     });
+//
+//     bench("cli-table3", () => {
+//         const table = new Table3({
+//             head: wrapHeaders,
+//             wordWrap: true,
+//             colWidths: [40, 30, 40],
+//             style: {
+//                 head: [],
+//                 border: [],
+//             },
+//         });
+//         table.push(...wrapRows.map(row => row.map(cell => cell.content)));
+//         table.toString();
+//     });
+//
+//     bench("table", () => {
+//         const data = [wrapHeaders];
+//         data.push(...wrapRows.map(row => row.map(cell => cell.content)));
+//         table(data, {
+//             columns: [
+//                 { width: 40, wrapWord: true },
+//                 { width: 30, wrapWord: true },
+//                 { width: 40, wrapWord: true },
+//             ],
+//         });
+//     });
+// });
 
 describe("Table Rendering with spanning cells", () => {
     bench("@visulima/table", () => {
