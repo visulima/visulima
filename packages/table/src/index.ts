@@ -10,7 +10,7 @@ import { DEFAULT_BORDER } from "./style";
 import type { Cell as CellType, CellOptions, TableConstructorOptions, TruncateOptions } from "./types";
 import { createTableLayout, getCellsInColumn, type TableLayout } from "./layout";
 
-type CellContent = { cell: CellOptions & { content: string }; lines: string[] };
+type CellContent = { cell: CellOptions & { content: string }; lines: string[]; isSpanCell?: boolean };
 
 const ansiPattern = ansiRegex();
 
@@ -232,12 +232,9 @@ export class Table {
             return "";
         }
 
-        // Create layout if not exists or if table is dirty
-        if (!this.layout || this.isDirty) {
-            const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
-            this.layout = createTableLayout(allRows);
-        }
-
+        // Create and initialize the layout
+        const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
+        this.layout = createTableLayout(allRows);
         this.columnWidths = this.calculateColumnWidths();
         const lines: string[] = [];
 
@@ -253,67 +250,74 @@ export class Table {
             );
         }
 
-        // Add headers if they exist and showHeader is true
-        if (this.headers.length > 0 && this.options.showHeader) {
-            this.headers.forEach((row) => {
-                lines.push(
-                    ...this.renderRow(row, this.columnWidths, {
-                        left: this.options.style.border?.bodyLeft ?? "",
-                        middle: this.options.style.border?.bodyJoin ?? "",
-                        right: this.options.style.border?.bodyRight ?? "",
-                    }),
-                );
-            });
+        // Process each row
+        for (let rowIndex = 0; rowIndex < allRows.length; rowIndex++) {
+            // Get cells for this row from layout
+            const rowCells = this.layout.cells.filter(cell => cell.y === rowIndex);
 
-            // Add header separator if there are rows
-            if (this.rows.length > 0 && this.options.style.border?.joinBody) {
-                lines.push(
-                    this.createLine({
-                        body: this.options.style.border?.joinBody,
-                        left: this.options.style.border?.joinLeft ?? "",
-                        middle: this.options.style.border?.joinJoin ?? "",
-                        right: this.options.style.border?.joinRight ?? "",
-                    }),
-                );
-            }
-        }
+            // Sort cells by x position
+            rowCells.sort((a, b) => a.x - b.x);
 
-        // Add rows
-        this.rows.forEach((row, rowIndex) => {
+            // Render the row
             lines.push(
-                ...this.renderRow(row, this.columnWidths, {
+                ...this.renderRow(allRows[rowIndex], this.columnWidths, {
                     left: this.options.style.border?.bodyLeft ?? "",
                     middle: this.options.style.border?.bodyJoin ?? "",
                     right: this.options.style.border?.bodyRight ?? "",
                 }),
             );
 
-            // Add row separator if not the last row
-            if (rowIndex < this.rows.length - 1 && this.options.style.border?.joinBody) {
-                lines.push(
-                    this.createLine({
-                        body: this.options.style.border?.joinBody,
-                        left: this.options.style.border?.joinLeft ?? "",
-                        middle: this.options.style.border?.joinJoin ?? "",
-                        right: this.options.style.border?.joinRight ?? "",
-                    }),
-                );
+            // Add row separator if needed
+            if (rowIndex < allRows.length - 1 && this.options.style.border?.joinBody) {
+                // Get cells that span into the next row
+                const spanningCells = this.layout.cells.filter(cell => {
+                    return !cell.isSpanCell && cell.y <= rowIndex && cell.y + cell.height > rowIndex + 1;
+                });
+
+                // Skip separator if the entire row is spanned
+                const isRowFullySpanned = spanningCells.reduce((acc, cell) => acc + cell.width, 0) === this.columnCount;
+
+                if (!isRowFullySpanned) {
+                    // Create a special separator that respects row spans
+                    lines.push(
+                        this.createSpannedLine(
+                            {
+                                body: this.options.style.border.joinBody ?? "",
+                                left: this.options.style.border.joinLeft ?? "",
+                                middle: this.options.style.border.joinJoin ?? "",
+                                right: this.options.style.border.joinRight ?? "",
+                            },
+                            spanningCells.map(cell => ({
+                                cell: {
+                                    content: cell.content,
+                                    rowSpan: cell.height,
+                                    colSpan: cell.width,
+                                    ...cell
+                                } as CellType,
+                                remainingSpan: cell.height - (rowIndex - cell.y + 1)
+                            })),
+                            allRows[rowIndex + 1],
+                            this.columnWidths,
+                        ),
+                    );
+                }
             }
-        });
+        }
 
         // Add bottom border
         if (this.options.style.border?.bottomBody) {
             lines.push(
                 this.createLine({
-                    body: this.options.style.border?.bottomBody,
-                    left: this.options.style.border?.bottomLeft ?? "",
-                    middle: this.options.style.border?.bottomJoin ?? "",
-                    right: this.options.style.border?.bottomRight ?? "",
+                    body: this.options.style.border.bottomBody,
+                    left: this.options.style.border.bottomLeft ?? "",
+                    middle: this.options.style.border.bottomJoin ?? "",
+                    right: this.options.style.border.bottomRight ?? "",
                 }),
             );
         }
 
         this.cachedString = lines.join("\n");
+        this.isDirty = false;
 
         return this.cachedString;
     }
@@ -735,10 +739,50 @@ export class Table {
         const cellContents: CellContent[] = [];
         let maxLines = 1;
 
+        // Get layout cells for this row if layout exists
+        const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
+        const rowY = allRows.findIndex(r => r === row);
+        const layoutCells = rowY >= 0 && this.layout ? this.layout.cells.filter(cell => cell.y === rowY) : [];
+        const cellsByX = new Map<number, LayoutCell>();
+        layoutCells.forEach(cell => cellsByX.set(cell.x, cell));
+
         // First pass: Process each cell and get their content lines
         for (let [index, cell] of row.entries()) {
-            cell = this.normalizeCellOption(cell);
-            const colSpan = cell.colSpan ?? 1;
+            const layoutCell = cellsByX.get(index);
+
+            // Skip if this cell is part of a span
+            if (layoutCell?.isSpanCell) {
+                cellContents.push({
+                    cell: { content: '', colSpan: 1 },
+                    lines: [''],
+                    isSpanCell: true
+                });
+                continue;
+            }
+
+            // Handle null cells (part of rowSpan)
+            if (cell === null) {
+                // This cell is part of a rowSpan, find the parent cell
+                const parentCell = this.findParentCell(row, index);
+                if (parentCell) {
+                    cellContents.push({
+                        cell: parentCell,
+                        lines: [''],
+                        isSpanCell: true
+                    });
+                } else {
+                    // If no parent found, use empty cell
+                    cellContents.push({
+                        cell: { content: '', colSpan: 1 },
+                        lines: [''],
+                        isSpanCell: false
+                    });
+                }
+                continue;
+            }
+
+            const normalizedCell = this.normalizeCellOption(cell);
+            const colSpan = layoutCell?.width ?? normalizedCell.colSpan ?? 1;
 
             // Calculate total width considering column spans
             let totalWidth = columnWidths[index] as number;
@@ -746,28 +790,28 @@ export class Table {
                 totalWidth += (columnWidths[index + i] as number) + 1;
             }
 
-            const content = String(cell.content);
+            const content = String(normalizedCell.content);
             const isEmpty = content.trim() === "";
             const availableWidth = totalWidth - (isEmpty ? 0 : this.options.style.paddingLeft + this.options.style.paddingRight);
 
             let cellLines: string[] = [];
 
             // Handle word wrapping and truncation
-            if (cell.wordWrap || cell.maxWidth) {
-                if (cell.wordWrap) {
+            if (normalizedCell.wordWrap || normalizedCell.maxWidth) {
+                if (normalizedCell.wordWrap) {
                     cellLines = this.wordWrap(content, availableWidth);
-                    if (cell.maxWidth !== undefined) {
-                        cellLines = cellLines.map((line) => this.truncate(line, cell.maxWidth as number, cell.truncate as Required<TruncateOptions>));
+                    if (normalizedCell.maxWidth !== undefined) {
+                        cellLines = cellLines.map((line) => this.truncate(line, normalizedCell.maxWidth as number, normalizedCell.truncate as Required<TruncateOptions>));
                     }
-                } else if (cell.maxWidth !== undefined) {
-                    cellLines = [this.truncate(content, cell.maxWidth, cell.truncate as Required<TruncateOptions>)];
+                } else if (normalizedCell.maxWidth !== undefined) {
+                    cellLines = [this.truncate(content, normalizedCell.maxWidth, normalizedCell.truncate as Required<TruncateOptions>)];
                 }
             } else {
                 cellLines = content.split("\n");
             }
 
             // Calculate height needed for rowSpan
-            const rowSpan = cell.rowSpan ?? 1;
+            const rowSpan = layoutCell?.height ?? normalizedCell.rowSpan ?? 1;
             const cellHeight = Math.max(rowSpan, cellLines.length);
             const emptyLines = cellHeight - cellLines.length;
 
@@ -776,7 +820,7 @@ export class Table {
                 const emptyLine = " ".repeat(availableWidth);
                 const padding = new Array(emptyLines).fill(emptyLine);
 
-                switch (cell.vAlign) {
+                switch (normalizedCell.vAlign) {
                     case "bottom": {
                         cellLines = [...padding, ...cellLines];
                         break;
@@ -795,7 +839,7 @@ export class Table {
                 }
             }
 
-            cellContents.push({ cell, lines: cellLines });
+            cellContents.push({ cell: normalizedCell, lines: cellLines, isSpanCell: false });
             maxLines = Math.max(maxLines, cellHeight);
         }
 
@@ -806,12 +850,21 @@ export class Table {
 
             for (let cellIndex = 0; cellIndex < row.length && currentCol < this.columnCount; cellIndex++) {
                 // eslint-disable-next-line @typescript-eslint/no-shadow
-                const { cell, lines } = cellContents[cellIndex] as CellContent;
+                const { cell, lines, isSpanCell } = cellContents[cellIndex] as CellContent;
                 const content = lines[lineIndex] ?? "";
                 const colSpan = Math.min(cell.colSpan ?? 1, this.columnCount - currentCol);
 
                 if (currentCol > 0) {
-                    line += border.middle;
+                    // Only add middle border if not in a row span
+                    const prevCell = cellContents[cellIndex - 1];
+                    const prevIsSpan = prevCell && prevCell.isSpanCell;
+                    const currentIsSpan = isSpanCell;
+
+                    if (!prevIsSpan || !currentIsSpan) {
+                        line += border.middle;
+                    } else {
+                        line += " ";
+                    }
                 }
 
                 // Calculate total width for the cell
@@ -843,6 +896,7 @@ export class Table {
                     }
                     default: {
                         line += content + " ".repeat(remainingSpace);
+                        break;
                     }
                 }
 
@@ -853,14 +907,12 @@ export class Table {
                 currentCol += colSpan;
             }
 
-            // eslint-disable-next-line no-loops/no-loops
+            // Fill remaining columns
             while (currentCol < this.columnCount) {
                 if (currentCol > 0) {
                     line += border.middle;
                 }
-                // eslint-disable-next-line security/detect-object-injection
                 line += " ".repeat(columnWidths[currentCol] as number);
-                // eslint-disable-next-line no-plusplus
                 currentCol++;
             }
 
@@ -890,6 +942,97 @@ export class Table {
         }
 
         return options.left + line.join("") + options.right;
+    }
+
+    private createSpannedLine(
+        options: { body: string; left: string; middle: string; right: string },
+        spans: { cell: CellType; remainingSpan: number }[],
+        currentRow: CellType[],
+        columnWidths: number[],
+    ): string {
+        const parts: string[] = [];
+        let currentCol = 0;
+
+        // Process each column
+        for (let i = 0; i < columnWidths.length; i++) {
+            const width = columnWidths[i] as number;
+            const isSpanned = spans.some(span => {
+                const cell = span.cell;
+                if (typeof cell !== 'object') return false;
+
+                // Check if this column is part of a rowspan
+                if (span.remainingSpan > 1) {
+                    const startCol = currentRow.findIndex(c => c === cell);
+                    if (startCol === -1) return false;
+                    const colSpan = cell.colSpan || 1;
+                    return i >= startCol && i < startCol + colSpan;
+                }
+                return false;
+            });
+
+            // Add appropriate characters based on whether this column is spanned
+            if (isSpanned) {
+                parts.push(' '.repeat(width));
+            } else {
+                parts.push(options.body.repeat(width));
+            }
+
+            // Add separator if not at last column
+            if (i < columnWidths.length - 1) {
+                const nextIsSpanned = spans.some(span => {
+                    const cell = span.cell;
+                    if (typeof cell !== 'object') return false;
+                    if (span.remainingSpan <= 1) return false;
+
+                    const startCol = currentRow.findIndex(c => c === cell);
+                    if (startCol === -1) return false;
+                    const colSpan = cell.colSpan || 1;
+                    return (i + 1) >= startCol && (i + 1) < startCol + colSpan;
+                });
+
+                // Only add middle character if either current or next column is not spanned
+                if (!isSpanned || !nextIsSpanned) {
+                    parts.push(options.middle);
+                } else {
+                    parts.push(' ');
+                }
+            }
+
+            currentCol += width + 1;
+        }
+
+        return options.left + parts.join('') + options.right;
+    }
+
+    private findParentCell(row: CellType[], index: number): CellOptions & { content: string } | undefined {
+        if (!this.layout) return undefined;
+
+        // Get the current row's y position
+        const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
+        const rowY = allRows.findIndex(r => r === row);
+        if (rowY === -1) return undefined;
+
+        // Find a cell in the layout that spans to this position
+        const parentCell = this.layout.cells.find(cell => {
+            // Check if this cell spans to our target position
+            return !cell.isSpanCell &&
+                   cell.y < rowY &&
+                   cell.y + cell.height > rowY &&
+                   cell.x <= index &&
+                   cell.x + cell.width > index;
+        });
+
+        if (!parentCell) return undefined;
+
+        // Convert layout cell to cell options
+        return {
+            content: parentCell.content,
+            rowSpan: parentCell.height,
+            colSpan: parentCell.width,
+            ...parentCell
+        };
+
+
     }
 }
 
