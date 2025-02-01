@@ -57,12 +57,12 @@ console.log('\nLonger maxWidth without preferTruncationOnSpace:');
 console.log(test10.toString());
 
 const CJKtable = createTable({ maxWidth: 6 });
-CJKtable.addRows([
+CJKtable.addRows(
     ["foobar", { content: "English test", maxWidth: 9 }, "baz"],
     ["foobar", { content: "中文测试", maxWidth: 9 }, "baz"],
     ["foobar", { content: "日本語テスト", maxWidth: 9 }, "baz"],
     ["foobar", { content: "한국어테스트", maxWidth: 9 }, "baz"],
     ["Test", "こんにちは", "🌟🌟🌟🌟🌟"]
-]);
+);
 console.log("\nTable with CJK characters:");
 console.log(CJKtable.toString());
