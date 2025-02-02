@@ -157,10 +157,8 @@ function findRealPosition(text: string, visiblePosition: number): number {
 /** Computes the logical width of a row (the sum of colSpans, defaulting to 1 per cell). */
 function computeRowLogicalWidth(row: CellType[]): number {
     return row.reduce((total, cell) => {
-        if (cell === null)
-return total + 1;
-        if (typeof cell === "object" && !Array.isArray(cell))
-return total + (cell.colSpan ?? 1);
+        if (cell === null) return total + 1;
+        if (typeof cell === "object" && !Array.isArray(cell)) return total + (cell.colSpan ?? 1);
         return total + 1;
     }, 0);
 }
@@ -176,8 +174,7 @@ function fillRowToWidth(row: CellType[], targetWidth: number): CellType[] {
 
 /** Returns the underlying “real” cell (if a span cell, returns its parent). */
 function getRealCell(layoutCell: LayoutCell | null): LayoutCell | null {
-    if (!layoutCell)
-return null;
+    if (!layoutCell) return null;
     return layoutCell.isSpanCell ? layoutCell.parentCell || layoutCell : layoutCell;
 }
 
@@ -251,11 +248,10 @@ export class Table {
     // Use an arrow function for createLine so that "this" is bound.
     private readonly createLine = (options: { body: string; left: string; middle: string; right: string }): string => {
         const { body, left, middle, right } = options;
-        const parts = Array.from({length: this.columnWidths.length});
+        const parts = Array.from({ length: this.columnWidths.length });
         for (let index = 0; index < this.columnWidths.length; index++) {
             parts[index] = body.repeat(this.columnWidths[index]);
-            if (index < this.columnWidths.length - 1)
-parts[index] += middle;
+            if (index < this.columnWidths.length - 1) parts[index] += middle;
         }
         return left + parts.join("") + right;
     };
@@ -265,7 +261,23 @@ parts[index] += middle;
         const borderDisabled = Object.values(this.borderStyle).every((value) => value === "");
         if (borderDisabled) {
             const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
-            return allRows.map((row) => row.map((cell) => (cell ? String(cell.content) : "")).join("  ")).join("\n");
+            const widths = this.calculateColumnWidths();
+            return allRows
+                .map((row) => {
+                    let colIndex = 0;
+                    return row
+                        .map((cell) => {
+                            const norm = this.normalizeCellOption(cell);
+                            const leftPad = " ".repeat(this.options.style.paddingLeft);
+                            const rightPad = " ".repeat(this.options.style.paddingRight);
+                            const availableWidth = widths[colIndex] - this.options.style.paddingLeft - this.options.style.paddingRight;
+                            const paddedContent = norm.content.padEnd(availableWidth, " ");
+                            colIndex++;
+                            return leftPad + paddedContent + rightPad;
+                        })
+                        .join("");
+                })
+                .join("\n");
         }
         if (!this.isDirty && this.cachedString !== null) {
             return this.cachedString;
@@ -637,7 +649,7 @@ parts[index] += middle;
      */
     private renderRow(row: CellType[], columnWidths: number[], rowIndex: number): string[] {
         const columnMapping = new Array(this.columnCount);
-        const {cells} = (this.layout!);
+        const { cells } = this.layout!;
         for (let columnIndex = 0; columnIndex < this.columnCount; columnIndex++) {
             let chosenCell: LayoutCell | null = null;
             let maxY = -1;
@@ -695,13 +707,17 @@ parts[index] += middle;
                     availableWidth -= this.options.style.paddingLeft + this.options.style.paddingRight;
                 }
                 let contentLines: string[];
-                if (normalizedCell.wordWrap || (normalizedCell.maxWidth !== undefined && stringWidth(content) > normalizedCell.maxWidth)) {
-                    contentLines = normalizedCell.wordWrap
-                        ? this.wordWrap(content, availableWidth)
-                        : [this.truncate(content, normalizedCell.maxWidth!, normalizedCell.truncate as Required<TruncateOptions>)];
+                // If wordWrap is enabled but the content has no spaces, use truncation instead.
+                if (normalizedCell.wordWrap && content.indexOf(" ") === -1) {
+                    contentLines = [this.truncate(content, availableWidth, normalizedCell.truncate as Required<TruncateOptions>)];
+                } else if (normalizedCell.wordWrap) {
+                    contentLines = this.wordWrap(content, availableWidth);
+                } else if (normalizedCell.maxWidth !== undefined && stringWidth(content) > normalizedCell.maxWidth) {
+                    contentLines = [this.truncate(content, normalizedCell.maxWidth, normalizedCell.truncate as Required<TruncateOptions>)];
                 } else {
                     contentLines = content.split("\n");
                 }
+
                 return contentLines;
             }
             return [""];
