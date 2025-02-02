@@ -62,7 +62,7 @@
         "@types/react": "18.3.3",
         "@types/react-dom": "18.3.0",
         "cross-env": "^7.0.3",
-        "eslint": "8.57.0",
+        "eslint": "9.19.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
