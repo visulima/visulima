@@ -131,36 +131,36 @@ describe("table layout", () => {
 
             table.addRow([{ colSpan: 9, content: "TOP", hAlign: "center" }]);
             table.addRow([
-                { content: "TL", rowSpan: 4, vAlign: "center" },
+                { content: "TL", rowSpan: 4, vAlign: "middle" },
                 { content: "A1", rowSpan: 3 },
                 "B1",
                 "C1",
-                { content: "D1", rowSpan: 3, vAlign: "center" },
+                { content: "D1", rowSpan: 3, vAlign: "middle" },
                 "E1",
                 "F1",
                 { content: "G1", rowSpan: 3 },
-                { content: "TR", rowSpan: 4, vAlign: "center" },
+                { content: "TR", rowSpan: 4, vAlign: "middle" },
             ]);
             table.addRow([{ content: "B2", rowSpan: 2 }, "C2", { colSpan: 2, content: "E2", rowSpan: 2 }]);
             table.addRow(["C3"]);
             table.addRow([{ colSpan: 7, content: "A2", hAlign: "center" }]);
             table.addRow([{ colSpan: 9, content: "CLEAR", hAlign: "center" }]);
             table.addRow([
-                { content: "BL", rowSpan: 4, vAlign: "center" },
+                { content: "BL", rowSpan: 4, vAlign: "middle" },
                 { colSpan: 7, content: "A3", hAlign: "center" },
-                { content: "BR", rowSpan: 4, vAlign: "center" },
+                { content: "BR", rowSpan: 4, vAlign: "middle" },
             ]);
             table.addRow([
                 { colSpan: 3, content: "A4", hAlign: "center" },
-                { content: "D2", rowSpan: 2, vAlign: "center" },
+                { content: "D2", rowSpan: 2, vAlign: "middle" },
                 { colSpan: 2, content: "E3", hAlign: "center" },
-                { content: "G2", rowSpan: 3, vAlign: "center" },
+                { content: "G2", rowSpan: 3, vAlign: "middle" },
             ]);
             table.addRow([
-                { content: "A5", rowSpan: 2, vAlign: "center" },
+                { content: "A5", rowSpan: 2, vAlign: "middle" },
                 { colSpan: 2, content: "B3", hAlign: "center" },
-                { content: "E4", rowSpan: 2, vAlign: "center" },
-                { content: "F3", rowSpan: 2, vAlign: "center" },
+                { content: "E4", rowSpan: 2, vAlign: "middle" },
+                { content: "F3", rowSpan: 2, vAlign: "middle" },
             ]);
             table.addRow(["B4", { colSpan: 2, content: "C4", hAlign: "center" }]);
             table.addRow([{ colSpan: 9, content: "BOTTOM", hAlign: "center" }]);

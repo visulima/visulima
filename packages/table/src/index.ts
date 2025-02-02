@@ -310,6 +310,7 @@ export class Table {
 
             // Separator between rows (if not last row).
             if (rowIndex < allRows.length - 1) {
+                // First, determine which cells in the current row continue below.
                 const spanned: boolean[] = [];
                 for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
                     const foundCell = this.layout.cells.find(
@@ -322,38 +323,108 @@ export class Table {
                     );
                     spanned[colIndex] = foundCell ? rowIndex + 1 < foundCell.y + foundCell.height : false;
                 }
+
                 let separatorLine = "";
-                const { bodyLeft, bodyRight, joinBody, joinJoin, joinLeft, joinRight } = this.borderStyle;
+                const { bodyLeft, bodyRight, bottomJoin, joinBody, joinJoin, joinLeft, joinRight } = this.borderStyle;
+
+                // Left border for the separator.
                 separatorLine += spanned[0] ? (bodyLeft ?? "") : (joinLeft ?? "");
+
+                // For each column we add the horizontal line and (if not last column) a join.
                 for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
                     separatorLine += spanned[colIndex] ? " ".repeat(this.columnWidths[colIndex]) : (joinBody ?? "").repeat(this.columnWidths[colIndex]);
+
                     if (colIndex < this.columnCount - 1) {
-                        const leftSpanned = spanned[colIndex];
-                        const rightSpanned = spanned[colIndex + 1];
-                        separatorLine +=
-                            leftSpanned && rightSpanned
-                                ? (joinJoin ?? "")
-                                : leftSpanned
-                                  ? (joinLeft ?? "")
-                                  : rightSpanned
-                                    ? (joinRight ?? "")
-                                    : (joinJoin ?? "");
+                        // Check the row below: if the cells for both the current column and the next column
+                        // in rowIndex+1 are merged into one (by a cell with colSpan > 1), then use the bottom join.
+                        // Remove the !layoutCell.isSpanCell filter so that we “see” the spanning cell (or its span)
+                        const cellBelowLeft = this.layout.cells.find(
+                            (layoutCell) =>
+                                layoutCell.x <= colIndex &&
+                                layoutCell.x + layoutCell.width > colIndex &&
+                                layoutCell.y <= rowIndex + 1 &&
+                                layoutCell.y + layoutCell.height > rowIndex + 1,
+                        );
+                        const cellBelowRight = this.layout.cells.find(
+                            (layoutCell) =>
+                                layoutCell.x <= colIndex + 1 &&
+                                layoutCell.x + layoutCell.width > colIndex + 1 &&
+                                layoutCell.y <= rowIndex + 1 &&
+                                layoutCell.y + layoutCell.height > rowIndex + 1,
+                        );
+
+                        let joinChar;
+                        if (cellBelowLeft && cellBelowRight && areCellsEquivalent(cellBelowLeft, cellBelowRight)) {
+                            // If the next row uses one cell spanning both columns, then use bottomJoin.
+                            joinChar = bottomJoin ?? "";
+                        } else {
+                            // Otherwise, use the normal join logic based on whether the current cells continue.
+                            const leftSpanned = spanned[colIndex];
+                            const rightSpanned = spanned[colIndex + 1];
+                            joinChar =
+                                leftSpanned && rightSpanned
+                                    ? (joinJoin ?? "")
+                                    : leftSpanned
+                                      ? (joinLeft ?? "")
+                                      : rightSpanned
+                                        ? (joinRight ?? "")
+                                        : (joinJoin ?? "");
+                        }
+                        separatorLine += joinChar;
                     }
                 }
+
+                // Right border for the separator.
                 separatorLine += spanned[this.columnCount - 1] ? (bodyRight ?? "") : (joinRight ?? "");
                 outputLines.push(separatorLine);
             }
         }
 
-        // Bottom border.
-        outputLines.push(
-            this.createLine({
-                body: this.borderStyle.bottomBody,
-                left: this.borderStyle.bottomLeft ?? "",
-                middle: this.borderStyle.bottomJoin ?? "",
-                right: this.borderStyle.bottomRight ?? "",
-            }),
-        );
+        // Instead of the default createLine call, build the bottom border by grouping columns.
+        if (this.layout) {
+            const lastRowIndex = allRows.length - 1;
+            const columnMapping = [];
+            // For each logical column, find the cell covering that column in the last row.
+            for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
+                const foundCell = this.layout.cells.find(
+                    (layoutCell) =>
+                        layoutCell.x <= colIndex &&
+                        layoutCell.x + layoutCell.width > colIndex &&
+                        layoutCell.y <= lastRowIndex &&
+                        layoutCell.y + layoutCell.height > lastRowIndex,
+                );
+                // getRealCell returns the underlying cell for a span cell.
+                columnMapping.push(getRealCell(foundCell));
+            }
+            // Group contiguous columns that belong to the same real cell.
+            const groups = [];
+            let currentGroup = { cell: columnMapping[0], end: 0, start: 0 };
+            for (let col = 1; col < columnMapping.length; col++) {
+                if (areCellsEquivalent(columnMapping[col], currentGroup.cell)) {
+                    currentGroup.end = col;
+                } else {
+                    groups.push(currentGroup);
+                    currentGroup = { cell: columnMapping[col], end: col, start: col };
+                }
+            }
+            groups.push(currentGroup);
+
+            // Build the bottom border by grouping columns in the bottom row.
+            let bottomBorder = this.borderStyle.bottomLeft ?? "";
+            for (let index = 0; index < groups.length; index++) {
+                const baseWidth = this.columnWidths.slice(groups[index].start, groups[index].end + 1).reduce((a, b) => a + b, 0);
+                // Add one extra for every omitted join between columns.
+                const extra = groups[index].end - groups[index].start;
+                const groupWidth = baseWidth + extra;
+                bottomBorder += (this.borderStyle.bottomBody ?? "").repeat(groupWidth);
+                // Only add a join if this is not the last group.
+                if (index < groups.length - 1) {
+                    bottomBorder += this.borderStyle.bottomJoin ?? "";
+                }
+            }
+            bottomBorder += this.borderStyle.bottomRight ?? "";
+            outputLines.push(bottomBorder);
+        }
 
         this.cachedString = outputLines.join("\n");
         this.isDirty = false;
@@ -689,11 +760,9 @@ export class Table {
 
         // Compute each group's effective width.
         const groupWidths = groups.map((group) => {
-            let totalWidth = 0;
-            for (let col = group.start; col <= group.end; col++) {
-                totalWidth += columnWidths[col];
-            }
-            return totalWidth;
+            const baseWidth = this.columnWidths.slice(group.start, group.end + 1).reduce((a, b) => a + b, 0);
+            const extra = group.end - group.start; // (colSpan - 1)
+            return baseWidth + extra;
         });
 
         // For each group, if the cell starts on this row, normalize it and extract its content.
@@ -708,7 +777,7 @@ export class Table {
                 }
                 let contentLines: string[];
                 // If wordWrap is enabled but the content has no spaces, use truncation instead.
-                if (normalizedCell.wordWrap && content.indexOf(" ") === -1) {
+                if (normalizedCell.wordWrap && !content.includes(" ")) {
                     contentLines = [this.truncate(content, availableWidth, normalizedCell.truncate as Required<TruncateOptions>)];
                 } else if (normalizedCell.wordWrap) {
                     contentLines = this.wordWrap(content, availableWidth);
