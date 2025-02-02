@@ -66,8 +66,9 @@ function createSpanCells(parentCell: LayoutCell): LayoutCell[] {
   const spanCells: LayoutCell[] = [];
   for (let rowIndex = parentCell.y; rowIndex < parentCell.y + parentCell.height; rowIndex++) {
     for (let columnIndex = parentCell.x; columnIndex < parentCell.x + parentCell.width; columnIndex++) {
-      if (columnIndex === parentCell.x && rowIndex === parentCell.y)
-continue;
+      if (columnIndex === parentCell.x && rowIndex === parentCell.y) {
+        continue;
+      }
       spanCells.push({
         content: "",
         height: 1,
@@ -103,8 +104,9 @@ function createTableLayout(rows: CellType[][]): TableLayout {
   for (const [rowIndex, currentRow] of rows.entries()) {
     // Process each cell in order; the row array is assumed to have length equal to its logical width.
     for (const [cellIndex, currentCell] of currentRow.entries()) {
-      if (currentCell === null)
-continue; // Null cells are assumed to be covered by a spanning cell.
+      if (currentCell === null) {
+        continue;
+      } // Null cells are assumed to be covered by a spanning cell.
       const freeColumn = tracker.findNextFree(cellIndex, rowIndex);
       const layoutCell = createLayoutCell(currentCell, freeColumn, rowIndex);
       layoutCells.push(layoutCell);
@@ -191,14 +193,14 @@ function areCellsEquivalent(cellA: LayoutCell | null, cellB: LayoutCell | null):
 export class Table {
   private readonly rows: CellType[][] = [];
   private headers: CellType[][] = [];
-  // Global logical column count (widest row in terms of sum of colSpans)
-  private columnCount = 0;
+  private columnCount = 0; // Global logical column count (widest row in terms of sum of colSpans)
   private readonly options: RequiredDeep<TableConstructorOptions>;
   private columnWidths: number[] = [];
   private cachedColumnWidths: number[] | null = null;
   private cachedString: string | null = null;
   private isDirty = true;
   private layout: TableLayout | null = null;
+  private readonly borderStyle: typeof DEFAULT_BORDER;
 
   public constructor(options?: TableConstructorOptions) {
     this.options = {
@@ -220,6 +222,7 @@ export class Table {
       },
       wordWrap: options?.wordWrap ?? false,
     } as RequiredDeep<TableConstructorOptions>;
+    this.borderStyle = this.options.style.border;
   }
 
   public setHeaders(headers: CellType[]): this {
@@ -248,20 +251,18 @@ export class Table {
 
   // Use an arrow function for createLine so that "this" is bound.
   private readonly createLine = (options: { body: string; left: string; middle: string; right: string }): string => {
-    const parts: string[] = [];
-    for (let colIndex = 0; colIndex < this.columnWidths.length; colIndex++) {
-      parts.push(options.body.repeat(this.columnWidths[colIndex]));
-      if (colIndex < this.columnWidths.length - 1) {
-        parts.push(options.middle);
-      }
+    const { body, middle, left, right } = options;
+    const parts = new Array(this.columnWidths.length);
+    for (let i = 0; i < this.columnWidths.length; i++) {
+      parts[i] = body.repeat(this.columnWidths[i]);
+      if (i < this.columnWidths.length - 1) parts[i] += middle;
     }
-    return options.left + parts.join("") + options.right;
+    return left + parts.join("") + right;
   };
 
   public toString(): string {
-    const borderStyle = this.options.style.border;
     // If all border decorations are disabled, simply join cell contents.
-    const borderDisabled = Object.values(borderStyle).every((value) => value === "");
+    const borderDisabled = Object.values(this.borderStyle).every((value) => value === "");
     if (borderDisabled) {
       const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
       return allRows.map((row) => row.map((cell) => (cell ? String(cell.content) : "")).join("  ")).join("\n");
@@ -283,10 +284,10 @@ export class Table {
     // Top border.
     outputLines.push(
       this.createLine({
-        body: borderStyle.topBody,
-        left: borderStyle.topLeft ?? "",
-        middle: borderStyle.topJoin ?? "",
-        right: borderStyle.topRight ?? "",
+        body: this.borderStyle.topBody,
+        left: this.borderStyle.topLeft ?? "",
+        middle: this.borderStyle.topJoin ?? "",
+        right: this.borderStyle.topRight ?? "",
       }),
     );
 
@@ -309,26 +310,20 @@ export class Table {
           spanned[colIndex] = foundCell ? (rowIndex + 1 < foundCell.y + foundCell.height) : false;
         }
         let separatorLine = "";
-        separatorLine += spanned[0] ? (borderStyle.bodyLeft ?? "") : (borderStyle.joinLeft ?? "");
+        const { bodyLeft, joinLeft, joinBody, joinJoin, joinRight, bodyRight } = this.borderStyle;
+        separatorLine += spanned[0] ? (bodyLeft ?? "") : (joinLeft ?? "");
         for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
-          separatorLine += spanned[colIndex] ? " ".repeat(this.columnWidths[colIndex]) : (borderStyle.joinBody ?? "").repeat(this.columnWidths[colIndex]);
+          separatorLine += spanned[colIndex] ? " ".repeat(this.columnWidths[colIndex]) : (joinBody ?? "").repeat(this.columnWidths[colIndex]);
           if (colIndex < this.columnCount - 1) {
             const leftSpanned = spanned[colIndex];
             const rightSpanned = spanned[colIndex + 1];
-            let joinChar = "";
-            if (leftSpanned && rightSpanned) {
-              joinChar = borderStyle.joinJoin ?? "";
-            } else if (leftSpanned && !rightSpanned) {
-              joinChar = borderStyle.joinLeft ?? "";
-            } else if (!leftSpanned && rightSpanned) {
-              joinChar = borderStyle.joinRight ?? "";
-            } else {
-              joinChar = borderStyle.joinJoin ?? "";
-            }
-            separatorLine += joinChar;
+            separatorLine += leftSpanned && rightSpanned ? (joinJoin ?? "") :
+                            leftSpanned ? (joinLeft ?? "") :
+                            rightSpanned ? (joinRight ?? "") :
+                            (joinJoin ?? "");
           }
         }
-        separatorLine += spanned[this.columnCount - 1] ? (borderStyle.bodyRight ?? "") : (borderStyle.joinRight ?? "");
+        separatorLine += spanned[this.columnCount - 1] ? (bodyRight ?? "") : (joinRight ?? "");
         outputLines.push(separatorLine);
       }
     }
@@ -336,10 +331,10 @@ export class Table {
     // Bottom border.
     outputLines.push(
       this.createLine({
-        body: borderStyle.bottomBody,
-        left: borderStyle.bottomLeft ?? "",
-        middle: borderStyle.bottomJoin ?? "",
-        right: borderStyle.bottomRight ?? "",
+        body: this.borderStyle.bottomBody,
+        left: this.borderStyle.bottomLeft ?? "",
+        middle: this.borderStyle.bottomJoin ?? "",
+        right: this.borderStyle.bottomRight ?? "",
       }),
     );
 
@@ -357,8 +352,9 @@ export class Table {
     for (const currentRow of allRows) {
       let currentColumnIndex = 0;
       for (const cell of currentRow) {
-        if (currentColumnIndex >= this.columnCount)
-break;
+        if (currentColumnIndex >= this.columnCount) {
+          break;
+        }
         const normalizedCell = this.normalizeCellOption(cell);
         const cellWidth = this.calculateCellWidth(normalizedCell);
         const colSpan = Math.min(normalizedCell.colSpan ?? 1, this.columnCount - currentColumnIndex);
@@ -442,13 +438,15 @@ break;
   }
 
   private getIndexOfNearestSpace(text: string, targetIndex: number, searchRight = false): number {
-    if (text.charAt(targetIndex) === " ")
-return targetIndex;
+    if (text.charAt(targetIndex) === " ") {
+      return targetIndex;
+    }
     const direction = searchRight ? 1 : -1;
     for (let offset = 0; offset <= 3; offset++) {
       const pos = targetIndex + offset * direction;
-      if (text.charAt(pos) === " ")
-return pos;
+      if (text.charAt(pos) === " ") {
+        return pos;
+      }
     }
     return targetIndex;
   }
@@ -458,12 +456,14 @@ return pos;
     let match: RegExpExecArray | null = null;
     globalAnsiPattern.lastIndex = 0;
     while ((match = globalAnsiPattern.exec(text)) !== null) {
-      if (match.index > endIndex)
-break;
+      if (match.index > endIndex) {
+        break;
+      }
       const code = match[0];
       if (code === "\u001B[0m") {
-        if (match.index < endIndex)
-openCodes.length = 0;
+        if (match.index < endIndex) {
+          openCodes.length = 0;
+        }
       } else if (code.startsWith("\u001B[") && match.index < endIndex) {
         openCodes.push(code);
       }
@@ -479,33 +479,39 @@ openCodes.length = 0;
     if (typeof maxWidth !== "number") {
       throw new TypeError(`Expected maxWidth to be a number, got ${typeof maxWidth}`);
     }
-    if (maxWidth < 1)
-return "";
-    if (maxWidth === 1)
-return options.truncationCharacter;
+    if (maxWidth < 1) {
+      return "";
+    }
+    if (maxWidth === 1) {
+      return options.truncationCharacter;
+    }
     const visibleLength = stringWidth(text);
-    if (visibleLength <= maxWidth)
-return text;
+    if (visibleLength <= maxWidth) {
+      return text;
+    }
     const lines = text.split("\n");
     let { truncationCharacter } = options;
     const truncatedLines = lines.map((line) => {
       const lineLength = stringWidth(line);
-      if (lineLength <= maxWidth)
-return line;
+      if (lineLength <= maxWidth) {
+        return line;
+      }
       if (options.position === "start") {
         if (options.preferTruncationOnSpace) {
           const nearestSpace = this.getIndexOfNearestSpace(line, lineLength - maxWidth + 1, true);
           return truncationCharacter + this.preserveAnsiCodes(line, nearestSpace, line.length).trim();
         }
-        if (options.space)
-truncationCharacter += " ";
+        if (options.space) {
+          truncationCharacter += " ";
+        }
         const visibleStart = stringWidth(line) - maxWidth + stringWidth(truncationCharacter);
         const realStart = findRealPosition(line, visibleStart);
         return truncationCharacter + this.preserveAnsiCodes(line, realStart, line.length);
       }
       if (options.position === "middle") {
-        if (options.space)
-truncationCharacter = ` ${truncationCharacter} `;
+        if (options.space) {
+          truncationCharacter = ` ${truncationCharacter} `;
+        }
         const halfWidth = Math.floor(maxWidth / 2);
         if (options.preferTruncationOnSpace) {
           const spaceNearFirst = this.getIndexOfNearestSpace(line, halfWidth);
@@ -530,8 +536,9 @@ truncationCharacter = ` ${truncationCharacter} `;
           const nearestSpace = this.getIndexOfNearestSpace(line, maxWidth - 1);
           return this.preserveAnsiCodes(line, 0, nearestSpace) + truncationCharacter;
         }
-        if (options.space)
-truncationCharacter = ` ${truncationCharacter}`;
+        if (options.space) {
+          truncationCharacter = ` ${truncationCharacter}`;
+        }
         const realEnd = findRealPosition(line, maxWidth - stringWidth(truncationCharacter));
         return this.preserveAnsiCodes(line, 0, realEnd) + truncationCharacter;
       }
@@ -541,10 +548,12 @@ truncationCharacter = ` ${truncationCharacter}`;
   }
 
   private wordWrap(text: string, maxWidth: number): string[] {
-    if (maxWidth <= 0 || !text)
-return [text];
-    if (stringWidth(text) <= maxWidth)
-return [text];
+    if (maxWidth <= 0 || !text) {
+      return [text];
+    }
+    if (stringWidth(text) <= maxWidth) {
+      return [text];
+    }
     const lines = text.split(/\r?\n/);
     const wrappedLines: string[] = [];
     const colorPattern = ansiRegex();
@@ -577,8 +586,9 @@ return [text];
       for (const word of words) {
         const wordWidth = stringWidth(word);
         if (currentLineWidth + wordWidth + (currentLine ? 1 : 0) > maxWidth && currentLine) {
-          if (lastAnsi)
-currentLine += "\u001B[0m";
+          if (lastAnsi) {
+            currentLine += "\u001B[0m";
+          }
           wrappedLines.push(currentLine);
           currentLine = "";
           currentLineWidth = 0;
@@ -587,14 +597,16 @@ currentLine += "\u001B[0m";
           currentLine += " ";
           currentLineWidth += 1;
         }
-        if (lastAnsi)
-currentLine += lastAnsi;
+        if (lastAnsi) {
+          currentLine += lastAnsi;
+        }
         const wordStart = plainText.indexOf(word);
         let formattedWord = word;
         for (const format of formats) {
           if (format.index <= wordStart) {
-            if (format.sequence.startsWith("\u001B["))
-lastAnsi = format.sequence;
+            if (format.sequence.startsWith("\u001B[")) {
+              lastAnsi = format.sequence;
+            }
             formattedWord = format.sequence + formattedWord;
           }
         }
@@ -602,8 +614,9 @@ lastAnsi = format.sequence;
         currentLineWidth += wordWidth;
       }
       if (currentLine) {
-        if (lastAnsi)
-currentLine += "\u001B[0m";
+        if (lastAnsi) {
+          currentLine += "\u001B[0m";
+        }
         wrappedLines.push(currentLine);
       }
     }
@@ -622,22 +635,27 @@ currentLine += "\u001B[0m";
    * otherwise, a blank is rendered.
    */
   private renderRow(row: CellType[], columnWidths: number[], rowIndex: number): string[] {
-    const columnMapping: { cell: LayoutCell | null; isStart: boolean }[] = [];
+    const columnMapping = new Array(this.columnCount);
+    const cells = this.layout!.cells;
     for (let columnIndex = 0; columnIndex < this.columnCount; columnIndex++) {
-      const coveringCells = this.layout!.cells.filter((layoutCell) =>
-        layoutCell.x <= columnIndex &&
-        layoutCell.x + layoutCell.width > columnIndex &&
-        layoutCell.y <= rowIndex &&
-        layoutCell.y + layoutCell.height > rowIndex
-      );
       let chosenCell: LayoutCell | null = null;
-      if (coveringCells.length > 0) {
-        const startingCells = coveringCells.filter((cell) => cell.y === rowIndex);
-        chosenCell = startingCells.length > 0 ? startingCells[0]
-          : coveringCells.reduce((previous, current) => (current.y > previous.y ? current : previous));
+      let maxY = -1;
+      for (const layoutCell of cells) {
+        if (layoutCell.x <= columnIndex && 
+            layoutCell.x + layoutCell.width > columnIndex && 
+            layoutCell.y <= rowIndex && 
+            layoutCell.y + layoutCell.height > rowIndex) {
+          if (layoutCell.y === rowIndex) {
+            chosenCell = layoutCell;
+            break;
+          } else if (layoutCell.y > maxY) {
+            maxY = layoutCell.y;
+            chosenCell = layoutCell;
+          }
+        }
       }
       const isStart = chosenCell ? (chosenCell.y === rowIndex) : false;
-      columnMapping.push({ cell: chosenCell, isStart });
+      columnMapping[columnIndex] = { cell: chosenCell, isStart };
     }
 
     // Group contiguous columns that share the same real cell.
