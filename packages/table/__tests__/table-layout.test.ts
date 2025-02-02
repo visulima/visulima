@@ -41,9 +41,9 @@ describe("table layout", () => {
             table.addRow([{ colSpan: 2, content: "Spanning Two Columns" }, "Normal"]).addRow(["A", "B", "C"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───────────┬───────────┬────────┐
+              "┌───────────────────────┬────────┐
               │ Spanning Two Columns  │ Normal │
-              ├───────────┼───────────┼────────┤
+              ├───────────┬───────────┼────────┤
               │ A         │ B         │ C      │
               └───────────┴───────────┴────────┘"
             `);
@@ -57,13 +57,13 @@ describe("table layout", () => {
                 .addRow(["A", "B", "C"]);
 
             const expected = [
-                "┌──────────────────────────────┐",
-                "│ Span All                     │",
-                "├───────────────────┬──────────┤",
-                "│ Span Two          │ C        │",
-                "├──────────┬────────┼──────────┤",
-                "│ A        │ B      │ C        │",
-                "└──────────┴────────┴──────────┘",
+                "┌─────────────────┐",
+                "│ Span All        │",
+                "├─────────────┬───┤",
+                "│ Span Two    │ C │",
+                "├───────┬─────┼───┤",
+                "│ A     │ B   │ C │",
+                "└───────┴─────┴───┘",
             ].join("\n");
 
             expect(table.toString()).toBe(expected);

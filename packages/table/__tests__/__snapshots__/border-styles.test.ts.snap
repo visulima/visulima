@@ -1,0 +1,157 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`table Border Styles > renders table with ASCII border style 1`] = `
+"+--------------+--------------+--------------+
+| Header 1     | Header 2     | Header 3     |
++--------------+--------------+--------------+
+| Row 1 Cell 1 | Row 1 Cell 2 | Row 1 Cell 3 |
++--------------+--------------+--------------+
+| Row 2 Cell 1 | Row 2 Cell 2 | Row 2 Cell 3 |
++--------------+--------------+--------------+"
+`;
+
+exports[`table Border Styles > renders table with DEFAULT border style 1`] = `
+"┌──────────────┬──────────────┬──────────────┐
+│ Header 1     │ Header 2     │ Header 3     │
+├──────────────┼──────────────┼──────────────┤
+│ Row 1 Cell 1 │ Row 1 Cell 2 │ Row 1 Cell 3 │
+├──────────────┼──────────────┼──────────────┤
+│ Row 2 Cell 1 │ Row 2 Cell 2 │ Row 2 Cell 3 │
+└──────────────┴──────────────┴──────────────┘"
+`;
+
+exports[`table Border Styles > renders table with DOTS border style 1`] = `
+"┌┈┈┈┈┈┈┈┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┈┈┈┈┈┈┈┐
+┊ Header 1     ┊ Header 2     ┊ Header 3     ┊
+├┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┤
+┊ Row 1 Cell 1 ┊ Row 1 Cell 2 ┊ Row 1 Cell 3 ┊
+├┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┤
+┊ Row 2 Cell 1 ┊ Row 2 Cell 2 ┊ Row 2 Cell 3 ┊
+└┈┈┈┈┈┈┈┈┈┈┈┈┈┈┴┈┈┈┈┈┈┈┈┈┈┈┈┈┈┴┈┈┈┈┈┈┈┈┈┈┈┈┈┈┘"
+`;
+
+exports[`table Border Styles > renders table with DOUBLE border style 1`] = `
+"╔══════════════╦══════════════╦══════════════╗
+║ Header 1     ║ Header 2     ║ Header 3     ║
+╠══════════════╬══════════════╬══════════════╣
+║ Row 1 Cell 1 ║ Row 1 Cell 2 ║ Row 1 Cell 3 ║
+╠══════════════╬══════════════╬══════════════╣
+║ Row 2 Cell 1 ║ Row 2 Cell 2 ║ Row 2 Cell 3 ║
+╚══════════════╩══════════════╩══════════════╝"
+`;
+
+exports[`table Border Styles > renders table with MARKDOWN border style 1`] = `
+"|--------------|--------------|--------------|
+| Header 1     | Header 2     | Header 3     |
+|--------------|--------------|--------------|
+| Row 1 Cell 1 | Row 1 Cell 2 | Row 1 Cell 3 |
+|--------------|--------------|--------------|
+| Row 2 Cell 1 | Row 2 Cell 2 | Row 2 Cell 3 |
+|--------------|--------------|--------------|"
+`;
+
+exports[`table Border Styles > renders table with MINIMAL border style 1`] = `
+"----------------------------------------------
+ Header 1      Header 2      Header 3     
+----------------------------------------------
+ Row 1 Cell 1  Row 1 Cell 2  Row 1 Cell 3 
+----------------------------------------------
+ Row 2 Cell 1  Row 2 Cell 2  Row 2 Cell 3 
+----------------------------------------------"
+`;
+
+exports[`table Border Styles > renders table with NO_BORDER border style 1`] = `
+" Header 1      Header 2      Header 3     
+ Row 1 Cell 1  Row 1 Cell 2  Row 1 Cell 3 
+ Row 2 Cell 1  Row 2 Cell 2  Row 2 Cell 3 "
+`;
+
+exports[`table Border Styles > renders table with ROUNDED border style 1`] = `
+"╭──────────────┬──────────────┬──────────────╮
+│ Header 1     │ Header 2     │ Header 3     │
+├──────────────┼──────────────┼──────────────┤
+│ Row 1 Cell 1 │ Row 1 Cell 2 │ Row 1 Cell 3 │
+├──────────────┼──────────────┼──────────────┤
+│ Row 2 Cell 1 │ Row 2 Cell 2 │ Row 2 Cell 3 │
+╰──────────────┴──────────────┴──────────────╯"
+`;
+
+exports[`table Border Styles > renders table with mixed alignments using ROUNDED border style 1`] = `
+"╭────────────┬──────────────┬──────────────────╮
+│ Left Align │ Center Align │      Right Align │
+├────────────┼──────────────┼──────────────────┤
+│ Short      │ Medium Text  │ Longer Text Here │
+├────────────┼──────────────┼──────────────────┤
+│ A          │ BB           │ CCC              │
+╰────────────┴──────────────┴──────────────────╯"
+`;
+
+exports[`table Border Styles > renders table with mixed styling using NO_BORDER style 1`] = `
+"  Mixed        Styling           Example        
+  Left\\nTop    Center\\nMiddle    Right\\nBottom  "
+`;
+
+exports[`table Border Styles > renders table with multiline content using DOUBLE border style 1`] = `
+"╔════════════════════════╦════════════════╗
+║ Multiline Header       ║ Regular Header ║
+╠════════════════════════╬════════════════╣
+║ Line 1\\nLine 2\\nLine 3 ║ Regular Cell   ║
+╠════════════════════════╬════════════════╣
+║ Regular Cell 1         ║ Regular Cell 2 ║
+╚════════════════════════╩════════════════╝"
+`;
+
+exports[`table Border Styles > renders table with spanning cells using DEFAULT border style 1`] = `
+"┌─────────────────┬────────────────┐
+│ Spanning Header │ Regular Header │
+├──────────────────────────────────┤
+│ Spanning Content                 │
+├─────────────────┼────────────────┤
+│ Regular Cell 1  │ Regular Cell 2 │
+└─────────────────┴────────────────┘"
+`;
+
+exports[`table Border Styles > renders table with truncated content using ASCII border style 1`] = `
+"+------------+----------------------+
+| Truncated… | Regular Header       |
++------------+----------------------+
+| This cont… | Regular Cell         |
++------------+----------------------+
+| Also trun… | Another Regular Cell |
++------------+----------------------+"
+`;
+
+exports[`table Border Styles > renders table with vertical alignments using DOTS border style 1`] = `
+"┌┈┈┈┈┈┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┐
+┊ Top\\nAlign ┊ Middle\\nAlign ┊ Bottom\\nAlign    ┊
+├┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┤
+┊ Short      ┊ Medium\\nText  ┊ Long\\nText\\nHere ┊
+└┈┈┈┈┈┈┈┈┈┈┈┈┴┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┴┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┘"
+`;
+
+exports[`table Border Styles > renders table with word wrapping using MARKDOWN border style 1`] = `
+"|--------|-------------|
+| Short  | Long Header |
+| Header | That Should |
+|        | Wrap        |
+|--------|-------------|
+| Short  | This is a   |
+|        | very long   |
+|        | cell        |
+|        | content     |
+|        | that should |
+|        | be wrapped  |
+|        | across      |
+|        | multiple    |
+|        | lines       |
+|--------|-------------|
+| Also   | Another     |
+| Short  | long        |
+|        | content     |
+|        | that needs  |
+|        | to be       |
+|        | wrapped to  |
+|        | maintain    |
+|        | readability |
+|--------|-------------|"
+`;
