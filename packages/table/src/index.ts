@@ -157,8 +157,10 @@ function findRealPosition(text: string, visiblePosition: number): number {
 /** Computes the logical width of a row (the sum of colSpans, defaulting to 1 per cell). */
 function computeRowLogicalWidth(row: CellType[]): number {
     return row.reduce((total, cell) => {
-        if (cell === null) return total + 1;
-        if (typeof cell === "object" && !Array.isArray(cell)) return total + (cell.colSpan ?? 1);
+        if (cell === null)
+return total + 1;
+        if (typeof cell === "object" && !Array.isArray(cell))
+return total + (cell.colSpan ?? 1);
         return total + 1;
     }, 0);
 }
@@ -174,7 +176,8 @@ function fillRowToWidth(row: CellType[], targetWidth: number): CellType[] {
 
 /** Returns the underlying “real” cell (if a span cell, returns its parent). */
 function getRealCell(layoutCell: LayoutCell | null): LayoutCell | null {
-    if (!layoutCell) return null;
+    if (!layoutCell)
+return null;
     return layoutCell.isSpanCell ? layoutCell.parentCell || layoutCell : layoutCell;
 }
 
@@ -251,231 +254,219 @@ export class Table {
         const parts = Array.from({ length: this.columnWidths.length });
         for (let index = 0; index < this.columnWidths.length; index++) {
             parts[index] = body.repeat(this.columnWidths[index]);
-            if (index < this.columnWidths.length - 1) parts[index] += middle;
+            if (index < this.columnWidths.length - 1)
+parts[index] += middle;
         }
         return left + parts.join("") + right;
     };
 
     public toString(): string {
-  // If borders are disabled, simply join cell contents.
-  const borderDisabled = Object.values(this.borderStyle).every((v) => v === "");
-  if (borderDisabled) {
-    const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
-    const widths = this.calculateColumnWidths();
-    return allRows
-      .map((row) => {
-        let colIndex = 0;
-        return row
-          .map((cell) => {
-            const norm = this.normalizeCellOption(cell);
-            const leftPad = " ".repeat(this.options.style.paddingLeft);
-            const rightPad = " ".repeat(this.options.style.paddingRight);
-            const availableWidth = widths[colIndex] - this.options.style.paddingLeft - this.options.style.paddingRight;
-            colIndex++;
-            return leftPad + norm.content.padEnd(availableWidth, " ") + rightPad;
-          })
-          .join("");
-      })
-      .join("\n");
-  }
-
-  if (!this.isDirty && this.cachedString !== null) {
-    return this.cachedString;
-  }
-  if (this.rows.length === 0 && this.headers.length === 0) {
-    this.cachedString = "";
-    return "";
-  }
-  const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
-
-  // Build the layout and calculate column widths.
-  this.layout = createTableLayout(allRows);
-  // Sort cells by row then column.
-  this.layout.cells.sort((a, b) => a.y - b.y || a.x - b.x);
-  this.columnWidths = this.calculateColumnWidths();
-
-  const outputLines: string[] = [];
-
-  // ───── New Helper: groupRowForDisplay ─────
-  // For a given row index, build an array of groups, where each group represents contiguous
-  // logical columns that share the same "real" cell.
-  // Here we first try to pick, for each column, the main cell if it starts exactly at this row.
-  // Otherwise, we fall back to any cell covering that column.
-  const groupRowForDisplay = (rowIndex: number): { start: number; end: number; cell: LayoutCell | null }[] => {
-    const mapping: (LayoutCell | null)[] = [];
-    for (let col = 0; col < this.columnCount; col++) {
-      // Prefer the main cell for this row (i.e. cell.y === rowIndex and not a span cell).
-      let cell = this.layout.cells.find(
-        (c) =>
-          c.x <= col &&
-          c.x + c.width > col &&
-          c.y === rowIndex &&
-          !c.isSpanCell
-      );
-      if (!cell) {
-        // Fall back: pick any cell covering this column.
-        cell = this.layout.cells.find(
-          (c) =>
-            c.x <= col &&
-            c.x + c.width > col &&
-            c.y <= rowIndex &&
-            c.y + c.height > rowIndex
-        );
-      }
-      mapping.push(cell ? getRealCell(cell) : null);
-    }
-    const groups: { start: number; end: number; cell: LayoutCell | null }[] = [];
-    if (mapping.length === 0) return groups;
-    let currentGroup = { cell: mapping[0], start: 0, end: 0 };
-    for (let i = 1; i < mapping.length; i++) {
-      if (areCellsEquivalent(mapping[i], currentGroup.cell)) {
-        currentGroup.end = i;
-      } else {
-        groups.push(currentGroup);
-        currentGroup = { cell: mapping[i], start: i, end: i };
-      }
-    }
-    groups.push(currentGroup);
-    return groups;
-  };
-
-  // ───── Top Border ─────
-  let topBorder = "";
-  if (this.options.showHeader && this.headers.length > 0 && this.layout) {
-    // Use the header row (row index 0) for grouping.
-    const groups = groupRowForDisplay(0);
-    topBorder += this.borderStyle.topLeft ?? "";
-    groups.forEach((group, idx) => {
-      // Effective width = sum of the column widths for columns group.start..group.end
-      // plus one extra for every omitted join (i.e. extra = group.end - group.start).
-      const baseWidth = this.columnWidths.slice(group.start, group.end + 1).reduce((a, b) => a + b, 0);
-      const extra = group.end - group.start;
-      const groupWidth = baseWidth + extra;
-      topBorder += (this.borderStyle.topBody ?? "").repeat(groupWidth);
-      if (idx < groups.length - 1) {
-        topBorder += this.borderStyle.topJoin ?? "";
-      }
-    });
-    topBorder += this.borderStyle.topRight ?? "";
-  } else {
-    topBorder = this.createLine({
-      body: this.borderStyle.topBody,
-      left: this.borderStyle.topLeft ?? "",
-      middle: this.borderStyle.topJoin ?? "",
-      right: this.borderStyle.topRight ?? "",
-    });
-  }
-  outputLines.push(topBorder);
-
-  // ───── Render Rows and Separators ─────
-  for (let rowIndex = 0; rowIndex < allRows.length; rowIndex++) {
-    const renderedRowLines = this.renderRow(allRows[rowIndex], this.columnWidths, rowIndex);
-    outputLines.push(...renderedRowLines);
-
-    if (rowIndex < allRows.length - 1) {
-      let separatorLine = "";
-      // For the separator immediately after the header, use grouping from the first body row.
-      if (this.options.showHeader && rowIndex === this.headers.length - 1 && this.layout) {
-        const groups = groupRowForDisplay(this.headers.length);
-        separatorLine += this.borderStyle.joinLeft ?? "";
-        groups.forEach((group, idx) => {
-          const baseWidth = this.columnWidths.slice(group.start, group.end + 1).reduce((a, b) => a + b, 0);
-          const extra = group.end - group.start;
-          const groupWidth = baseWidth + extra;
-          separatorLine += (this.borderStyle.joinBody ?? "").repeat(groupWidth);
-          if (idx < groups.length - 1) {
-            separatorLine += this.borderStyle.joinJoin ?? "";
-          }
-        });
-        separatorLine += this.borderStyle.joinRight ?? "";
-      } else {
-        // Normal separators between body rows: use the spanned flags.
-        const spanned: boolean[] = [];
-        for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
-          const cell = this.layout.cells.find(
-            (c) =>
-              c.x <= colIndex &&
-              c.x + c.width > colIndex &&
-              c.y <= rowIndex &&
-              c.y + c.height > rowIndex
-          );
-          spanned[colIndex] = cell ? rowIndex + 1 < cell.y + cell.height : false;
+        // ─── If borders are disabled, simply join cell contents.
+        const borderDisabled = Object.values(this.borderStyle).every((v) => v === "");
+        if (borderDisabled) {
+            const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
+            const widths = this.calculateColumnWidths();
+            return allRows
+                .map((row) => {
+                    let colIndex = 0;
+                    return row
+                        .map((cell) => {
+                            const norm = this.normalizeCellOption(cell);
+                            const leftPad = " ".repeat(this.options.style.paddingLeft);
+                            const rightPad = " ".repeat(this.options.style.paddingRight);
+                            const availableWidth = widths[colIndex] - this.options.style.paddingLeft - this.options.style.paddingRight;
+                            colIndex++;
+                            return leftPad + norm.content.padEnd(availableWidth, " ") + rightPad;
+                        })
+                        .join("");
+                })
+                .join("\n");
         }
-        const { bodyLeft, bodyRight, joinBody, joinJoin, joinLeft, joinRight, bottomJoin } = this.borderStyle;
-        separatorLine += spanned[0] ? (bodyLeft ?? "") : (joinLeft ?? "");
-        for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
-          separatorLine += spanned[colIndex]
-            ? " ".repeat(this.columnWidths[colIndex])
-            : (joinBody ?? "").repeat(this.columnWidths[colIndex]);
-          if (colIndex < this.columnCount - 1) {
-            const cellBelowLeft = this.layout.cells.find(
-              (c) =>
-                c.x <= colIndex &&
-                c.x + c.width > colIndex &&
-                c.y <= rowIndex + 1 &&
-                c.y + c.height > rowIndex + 1
-            );
-            const cellBelowRight = this.layout.cells.find(
-              (c) =>
-                c.x <= colIndex + 1 &&
-                c.x + c.width > colIndex + 1 &&
-                c.y <= rowIndex + 1 &&
-                c.y + c.height > rowIndex + 1
-            );
-            let joinChar;
-            if (cellBelowLeft && cellBelowRight && areCellsEquivalent(cellBelowLeft, cellBelowRight)) {
-              joinChar = bottomJoin ?? "";
-            } else {
-              const leftSpanned = spanned[colIndex];
-              const rightSpanned = spanned[colIndex + 1];
-              joinChar =
-                leftSpanned && rightSpanned
-                  ? (joinJoin ?? "")
-                  : leftSpanned
-                  ? (joinLeft ?? "")
-                  : rightSpanned
-                  ? (joinRight ?? "")
-                  : (joinJoin ?? "");
+
+        if (!this.isDirty && this.cachedString !== null) {
+            return this.cachedString;
+        }
+        if (this.rows.length === 0 && this.headers.length === 0) {
+            this.cachedString = "";
+            return "";
+        }
+        const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
+
+        // ─── Build the layout and calculate column widths.
+        this.layout = createTableLayout(allRows);
+        // Sort layout cells by row (y) then by column (x)
+        this.layout.cells.sort((a, b) => a.y - b.y || a.x - b.x);
+        this.columnWidths = this.calculateColumnWidths();
+
+        const outputLines: string[] = [];
+
+        // ─── Helper: groupRowForDisplay ───
+        // For a given row index, loop over logical columns 0..(this.columnCount - 1)
+        // and find the covering layout cell. For each column we “prefer” a cell that
+        // starts exactly at that row (i.e. a “main” cell) and, if none is found, use any cell covering it.
+        // We normalize each cell via getRealCell(), then group adjacent columns whose normalized cells are equivalent.
+        // Each group is an object { start, end, cell }.
+        const groupRowForDisplay = (rowIndex: number): { cell: LayoutCell | null; end: number; start: number }[] => {
+            const mapping: (LayoutCell | null)[] = [];
+            for (let col = 0; col < this.columnCount; col++) {
+                // Prefer a cell that starts exactly at rowIndex and isn’t a span placeholder.
+                let cell = this.layout.cells.find((c) => c.x <= col && c.x + c.width > col && c.y === rowIndex && !c.isSpanCell);
+                if (!cell) {
+                    // Fall back: pick any cell covering this column.
+                    cell = this.layout.cells.find((c) => c.x <= col && c.x + c.width > col && c.y <= rowIndex && c.y + c.height > rowIndex);
+                }
+                mapping.push(cell ? getRealCell(cell) : null);
             }
-            separatorLine += joinChar;
-          }
+            const groups: { cell: LayoutCell | null; end: number; start: number }[] = [];
+            if (mapping.length === 0)
+return groups;
+            let currentGroup = { cell: mapping[0], end: 0, start: 0 };
+            for (let index = 1; index < mapping.length; index++) {
+                if (areCellsEquivalent(mapping[index], currentGroup.cell)) {
+                    currentGroup.end = index;
+                } else {
+                    groups.push(currentGroup);
+                    currentGroup = { cell: mapping[index], end: index, start: index };
+                }
+            }
+            groups.push(currentGroup);
+            return groups;
+        };
+
+        // ─── Helper: effectiveWidth ───
+        // For a group covering columns from group.start to group.end,
+        // effective width = sum(columnWidths) + (group.end - group.start) extra for omitted joins.
+        const effectiveWidth = (group: { cell: LayoutCell | null; end: number; start: number }): number => {
+            const base = this.columnWidths.slice(group.start, group.end + 1).reduce((sum, w) => sum + w, 0);
+            return base + (group.end - group.start);
+        };
+
+        const {
+            bodyLeft,
+            bodyRight,
+            bottomBody,
+            bottomJoin,
+            bottomLeft,
+            bottomRight,
+            joinBody,
+            joinJoin,
+            joinLeft,
+            joinRight,
+            topBody,
+            topJoin,
+            topLeft,
+            topRight,
+        } = this.borderStyle;
+
+        // ─── Top Border ───
+        // First, get the grouping for row 0 (if headers are used, row 0 is the header row).
+        const groups = groupRowForDisplay(0);
+        // If the number of groups is less than the total column count, then some cells are merged.
+        if (groups.length < this.columnCount) {
+            // Build a merged top border using the effective widths of the groups.
+            let topBorder = topLeft;
+
+            groups.forEach((group, index) => {
+                // Effective width = (sum of columnWidths for group) + (group.end - group.start)
+                const baseWidth = this.columnWidths.slice(group.start, group.end + 1).reduce((sum, w) => sum + w, 0);
+                const extra = group.end - group.start;
+                const groupWidth = baseWidth + extra;
+                topBorder += topBody.repeat(groupWidth);
+                if (index < groups.length - 1) {
+                    topBorder += topJoin;
+                }
+            });
+
+            topBorder += topRight;
+            outputLines.push(topBorder);
+        } else {
+            // Otherwise, use the normal createLine method.
+            outputLines.push(
+                this.createLine({
+                    body: topBody,
+                    left: topLeft,
+                    middle: topJoin,
+                    right: topRight,
+                }),
+            );
         }
-        separatorLine += spanned[this.columnCount - 1] ? (bodyRight ?? "") : (joinRight ?? "");
-      }
-      outputLines.push(separatorLine);
+
+        // ─── Render Rows and Separators ───
+        for (let rowIndex = 0; rowIndex < allRows.length; rowIndex++) {
+            const renderedRowLines = this.renderRow(allRows[rowIndex], this.columnWidths, rowIndex);
+            outputLines.push(...renderedRowLines);
+
+            if (rowIndex < allRows.length - 1) {
+                let separatorLine = "";
+                // For the header separator (immediately after header rows), use grouping from the first body row.
+                if (this.options.showHeader && rowIndex === this.headers.length - 1 && this.layout) {
+                    const groups = groupRowForDisplay(this.headers.length);
+                    separatorLine += joinLeft;
+                    groups.forEach((group, index) => {
+                        separatorLine += joinBody.repeat(effectiveWidth(group));
+                        if (index < groups.length - 1) {
+                            // For header separator, use headerJoin if defined; otherwise, default to joinJoin.
+                            separatorLine += joinJoin;
+                        }
+                    });
+                    separatorLine += joinRight;
+                } else {
+                    // Normal separators between body rows – use spanned flags.
+                    const spanned: boolean[] = [];
+
+                    for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
+                        const cell = this.layout.cells.find((c) => c.x <= colIndex && c.x + c.width > colIndex && c.y <= rowIndex && c.y + c.height > rowIndex);
+                        spanned[colIndex] = cell ? rowIndex + 1 < cell.y + cell.height : false;
+                    }
+
+                    separatorLine += spanned[0] ? bodyLeft : joinLeft;
+
+                    for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
+                        separatorLine += spanned[colIndex] ? " ".repeat(this.columnWidths[colIndex]) : joinBody.repeat(this.columnWidths[colIndex]);
+
+                        if (colIndex < this.columnCount - 1) {
+                            const cellBelowLeft = this.layout.cells.find(
+                                (c) => c.x <= colIndex && c.x + c.width > colIndex && c.y <= rowIndex + 1 && c.y + c.height > rowIndex + 1,
+                            );
+
+                            const cellBelowRight = this.layout.cells.find(
+                                (c) => c.x <= colIndex + 1 && c.x + c.width > colIndex + 1 && c.y <= rowIndex + 1 && c.y + c.height > rowIndex + 1,
+                            );
+
+                            let joinChar;
+
+                            if (cellBelowLeft && cellBelowRight && areCellsEquivalent(cellBelowLeft, cellBelowRight)) {
+                                joinChar = bottomJoin;
+                            } else {
+                                const leftSpanned = spanned[colIndex];
+                                const rightSpanned = spanned[colIndex + 1];
+                                joinChar = leftSpanned && rightSpanned ? joinJoin : leftSpanned ? joinLeft : rightSpanned ? joinRight : joinJoin;
+                            }
+                            separatorLine += joinChar;
+                        }
+                    }
+                    separatorLine += spanned[this.columnCount - 1] ? bodyRight : joinRight;
+                }
+                outputLines.push(separatorLine);
+            }
+        }
+
+        // ─── Bottom Border ───
+        let bottomBorder = bottomLeft;
+        const bottomGroups = groupRowForDisplay(allRows.length - 1);
+        bottomGroups.forEach((group, index) => {
+            bottomBorder += (bottomBody ?? "").repeat(effectiveWidth(group));
+            if (index < bottomGroups.length - 1) {
+                bottomBorder += bottomJoin ?? "";
+            }
+        });
+        bottomBorder += bottomRight ?? "";
+        outputLines.push(bottomBorder);
+
+        this.cachedString = outputLines.join("\n");
+        this.isDirty = false;
+        return this.cachedString;
     }
-  }
-
-  // ───── Bottom Border ─────
-  let bottomBorder = "";
-  if (this.layout) {
-    const lastRowIndex = allRows.length - 1;
-    const groups = groupRowForDisplay(lastRowIndex);
-    bottomBorder += this.borderStyle.bottomLeft ?? "";
-    groups.forEach((group, idx) => {
-      const baseWidth = this.columnWidths.slice(group.start, group.end + 1).reduce((a, b) => a + b, 0);
-      const extra = group.end - group.start;
-      const groupWidth = baseWidth + extra;
-      bottomBorder += (this.borderStyle.bottomBody ?? "").repeat(groupWidth);
-      if (idx < groups.length - 1) {
-        bottomBorder += this.borderStyle.bottomJoin ?? "";
-      }
-    });
-    bottomBorder += this.borderStyle.bottomRight ?? "";
-  } else {
-    bottomBorder = this.createLine({
-      body: this.borderStyle.bottomBody,
-      left: this.borderStyle.bottomLeft ?? "",
-      middle: this.borderStyle.bottomJoin ?? "",
-      right: this.borderStyle.bottomRight ?? "",
-    });
-  }
-  outputLines.push(bottomBorder);
-
-  this.cachedString = outputLines.join("\n");
-  this.isDirty = false;
-  return this.cachedString;
-}
 
     private calculateColumnWidths(): number[] {
         if (!this.isDirty && this.cachedColumnWidths) {

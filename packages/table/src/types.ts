@@ -123,66 +123,66 @@ export interface BorderStyle {
     /**
      * Character for joining body borders.
      */
-    bodyJoin?: string;
+    bodyJoin: string;
     /**
      * Character for the left border body.
      */
-    bodyLeft?: string;
+    bodyLeft: string;
     /**
      * Character for the right border body.
      */
-    bodyRight?: string;
+    bodyRight: string;
     /**
      * Character for the bottom border body.
      */
-    bottomBody?: string;
+    bottomBody: string;
 
     /**
      * Character for joining bottom borders.
      */
-    bottomJoin?: string;
+    bottomJoin: string;
     /**
      * Character for the bottom-left corner.
      */
-    bottomLeft?: string;
+    bottomLeft: string;
     /**
      * Character for the bottom-right corner.
      */
-    bottomRight?: string;
+    bottomRight: string;
     /**
      * Character for the join body.
      */
-    joinBody?: string;
+    joinBody: string;
 
     /**
      * Character for joining.
      */
-    joinJoin?: string;
+    joinJoin: string;
     /**
      * Character for the left join.
      */
-    joinLeft?: string;
+    joinLeft: string;
     /**
      * Character for the right join.
      */
-    joinRight?: string;
+    joinRight: string;
 
     /**
      * Character for the top border body.
      */
-    topBody?: string;
+    topBody: string;
     /**
      * Character for joining top borders.
      */
-    topJoin?: string;
+    topJoin: string;
     /**
      * Character for the top-left corner.
      */
-    topLeft?: string;
+    topLeft: string;
     /**
      * Character for the top-right corner.
      */
-    topRight?: string;
+    topRight: string;
 }
 
 /**
@@ -192,7 +192,7 @@ export interface TableStyle {
     /**
      * Border style configuration.
      */
-    border?: BorderStyle;
+    border?: Partial<BorderStyle>;
 
     /**
      * Left padding for all cells.
