@@ -219,7 +219,7 @@ export class Table {
 
         // ─── Render Rows and Separators ───
         for (let rowIndex = 0; rowIndex < allRows.length; rowIndex++) {
-            const renderedRowLines = this.renderRow(allRows[rowIndex], this.columnWidths, rowIndex);
+            const renderedRowLines = this.renderRow(rowIndex);
 
             outputLines.push(...renderedRowLines);
 
@@ -357,9 +357,11 @@ export class Table {
             if (cell.maxWidth) {
                 return Math.min(stringWidth(cell.content), cell.maxWidth);
             }
+
             if (cell.wordWrap) {
                 return Math.max(...cell.content.split(/\s+/).map(stringWidth));
             }
+
             return Math.max(...cell.content.split("\n").map(stringWidth));
         };
 
@@ -424,7 +426,6 @@ export class Table {
         };
     }
 
-    // ───────────── Render a Single Row ─────────────
 
     /**
      * Renders a single logical row.
@@ -435,7 +436,7 @@ export class Table {
      * For groups where the cell starts on this row, we normalize it (fixing truncate options) and use its content;
      * otherwise, a blank is rendered.
      */
-    private renderRow(row: CellType[], columnWidths: number[], rowIndex: number): string[] {
+    private renderRow(rowIndex: number): string[] {
         // Map columns to their layout cells
         const columnMapping = this.mapColumnsToLayoutCells(rowIndex);
 
