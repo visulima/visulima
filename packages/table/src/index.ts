@@ -26,27 +26,6 @@ export interface TableLayout {
     width: number;
 }
 
-/** Helper class to track occupied positions in the layout grid. */
-class CellTracker {
-    private readonly occupiedPositions = new Map<string, LayoutCell>();
-
-    public isOccupied(column: number, row: number): boolean {
-        return this.occupiedPositions.has(`${column},${row}`);
-    }
-
-    public occupy(column: number, row: number, layoutCell: LayoutCell): void {
-        this.occupiedPositions.set(`${column},${row}`, layoutCell);
-    }
-
-    public findNextFree(startColumn: number, row: number): number {
-        let currentColumn = startColumn;
-        while (this.isOccupied(currentColumn, row)) {
-            currentColumn++;
-        }
-        return currentColumn;
-    }
-}
-
 /** Creates a layout cell from a given cell configuration. */
 function createLayoutCell(cell: CellType, column: number, row: number): LayoutCell {
     const normalizedCell = typeof cell === "object" && cell !== null ? cell : { content: String(cell) };
@@ -60,71 +39,84 @@ function createLayoutCell(cell: CellType, column: number, row: number): LayoutCe
     };
 }
 
-/** Creates span (placeholder) cells for every covered position except the starting one. */
-function createSpanCells(parentCell: LayoutCell): LayoutCell[] {
-    const spanCells: LayoutCell[] = [];
-    for (let rowIndex = parentCell.y; rowIndex < parentCell.y + parentCell.height; rowIndex++) {
-        for (let columnIndex = parentCell.x; columnIndex < parentCell.x + parentCell.width; columnIndex++) {
-            if (columnIndex === parentCell.x && rowIndex === parentCell.y) {
-                continue;
-            }
-            spanCells.push({
-                content: "",
-                height: 1,
-                isSpanCell: true,
-                parentCell,
-                width: 1,
-                x: columnIndex,
-                y: rowIndex,
-            });
-        }
-    }
-    return spanCells;
-}
-
-/** Computes the overall dimensions (in cells) of the layout. */
-function calculateLayoutDimensions(layoutCells: LayoutCell[]): { height: number; width: number } {
-    let maxColumn = 0;
-    let maxRow = 0;
-    for (const cell of layoutCells) {
-        maxColumn = Math.max(maxColumn, cell.x + cell.width);
-        maxRow = Math.max(maxRow, cell.y + cell.height);
-    }
-    return { height: maxRow, width: maxColumn };
-}
-
 /**
- * Creates a complete table layout from a 2D array of rows.
- * Assumes each row has been “filled” so that its logical width (the sum of colSpans) equals the table’s global column count.
+ * Creates a list of layout cells from a 2D array of rows (CellType[][]).
+ * Also inserts "span cells" (placeholders) for the covered columns/rows.
  */
 function createTableLayout(rows: CellType[][]): TableLayout {
-    const tracker = new CellTracker();
-    const layoutCells: LayoutCell[] = [];
-    for (const [rowIndex, currentRow] of rows.entries()) {
-        // Process each cell in order; the row array is assumed to have length equal to its logical width.
-        for (const [cellIndex, currentCell] of currentRow.entries()) {
-            if (currentCell === null) {
-                continue;
-            } // Null cells are assumed to be covered by a spanning cell.
-            const freeColumn = tracker.findNextFree(cellIndex, rowIndex);
-            const layoutCell = createLayoutCell(currentCell, freeColumn, rowIndex);
-            layoutCells.push(layoutCell);
-            const spanCells = createSpanCells(layoutCell);
-            layoutCells.push(...spanCells);
-            for (let r = rowIndex; r < rowIndex + layoutCell.height; r++) {
-                for (let c = freeColumn; c < freeColumn + layoutCell.width; c++) {
-                    tracker.occupy(c, r, layoutCell);
-                }
+    // Step 1: figure out the total columns by max sum of colSpans in any row
+    let maxCols = 0;
+    for (const row of rows) {
+        let sum = 0;
+        for (const cell of row) {
+            if (cell === null || cell === undefined) {
+                sum += 1;
+            } else if (typeof cell === "object" && !Array.isArray(cell)) {
+                sum += cell.colSpan ?? 1;
+            } else {
+                sum += 1;
             }
         }
+        maxCols = Math.max(maxCols, sum);
     }
-    const dimensions = calculateLayoutDimensions(layoutCells);
-    return { cells: layoutCells, height: dimensions.height, width: dimensions.width };
+
+    // Step 2: build out the cells
+    const layoutCells: LayoutCell[] = [];
+    let rowIndex = 0;
+
+    for (const row of rows) {
+        // We track where we place each cell. colPointer moves left to right.
+        let colPointer = 0;
+        for (const cellValue of row) {
+            if (cellValue == null) {
+                // This 'slot' is presumably covered by a spanning cell
+                colPointer += 1;
+                continue;
+            }
+            // Find the first free column for this row
+            // (Simple approach: assume no collisions because the user input is correct.)
+            const layoutCell = createLayoutCell(cellValue, colPointer, rowIndex);
+            layoutCells.push(layoutCell);
+
+            // Insert placeholder cells for all covered positions except the top-left
+            for (let ry = rowIndex; ry < rowIndex + layoutCell.height; ry++) {
+                for (let rx = colPointer; rx < colPointer + layoutCell.width; rx++) {
+                    if (rx === colPointer && ry === rowIndex) {
+                        // the real cell
+                        continue;
+                    }
+                    // placeholder
+                    layoutCells.push({
+                        content: "",
+                        height: 1,
+                        isSpanCell: true,
+                        parentCell: layoutCell,
+                        width: 1,
+                        x: rx,
+                        y: ry,
+                    });
+                }
+            }
+
+            colPointer += layoutCell.width;
+        }
+        rowIndex++;
+    }
+
+    // Step 3: total table height is the number of rows
+    // (But some cells might extend downward. We’ll find the max.)
+    let maxRow = rows.length;
+    for (const c of layoutCells) {
+        maxRow = Math.max(maxRow, c.y + c.height);
+    }
+
+    // Step 4: return the structure
+    return {
+        cells: layoutCells,
+        height: maxRow,
+        width: maxCols,
+    };
 }
-
-/* ───────────── End Layout Code ───────────── */
-
-/* ───────────── Table Code ───────────── */
 
 const globalAnsiPattern = ansiRegex();
 
