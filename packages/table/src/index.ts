@@ -3,8 +3,7 @@ import type { RequiredDeep } from "type-fest";
 
 import { createTableLayout } from "./layout";
 import { DEFAULT_BORDER } from "./style";
-import { areCellsEquivalent, computeRowLogicalWidth, fillRowToWidth, getRealCell } from "./table-utils";
-import { truncateText, wordWrapText } from "./text-utils";
+import { areCellsEquivalent, computeRowLogicalWidth, fillRowToWidth, getRealCell, truncateText, wordWrapText } from "./utils";
 import type { Cell as CellType, CellOptions, LayoutCell, TableConstructorOptions, TableLayout, TruncateOptions } from "./types";
 
 type NormalizedCell = Omit<CellOptions, "content"> & { content: string };
