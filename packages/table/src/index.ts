@@ -157,10 +157,8 @@ function findRealPosition(text: string, visiblePosition: number): number {
 /** Computes the logical width of a row (the sum of colSpans, defaulting to 1 per cell). */
 function computeRowLogicalWidth(row: CellType[]): number {
     return row.reduce((total, cell) => {
-        if (cell === null)
-return total + 1;
-        if (typeof cell === "object" && !Array.isArray(cell))
-return total + (cell.colSpan ?? 1);
+        if (cell === null) return total + 1;
+        if (typeof cell === "object" && !Array.isArray(cell)) return total + (cell.colSpan ?? 1);
         return total + 1;
     }, 0);
 }
@@ -176,8 +174,7 @@ function fillRowToWidth(row: CellType[], targetWidth: number): CellType[] {
 
 /** Returns the underlying “real” cell (if a span cell, returns its parent). */
 function getRealCell(layoutCell: LayoutCell | null): LayoutCell | null {
-    if (!layoutCell)
-return null;
+    if (!layoutCell) return null;
     return layoutCell.isSpanCell ? layoutCell.parentCell || layoutCell : layoutCell;
 }
 
@@ -254,8 +251,7 @@ export class Table {
         const parts = Array.from({ length: this.columnWidths.length });
         for (let index = 0; index < this.columnWidths.length; index++) {
             parts[index] = body.repeat(this.columnWidths[index]);
-            if (index < this.columnWidths.length - 1)
-parts[index] += middle;
+            if (index < this.columnWidths.length - 1) parts[index] += middle;
         }
         return left + parts.join("") + right;
     };
@@ -318,8 +314,7 @@ parts[index] += middle;
                 mapping.push(cell ? getRealCell(cell) : null);
             }
             const groups: { cell: LayoutCell | null; end: number; start: number }[] = [];
-            if (mapping.length === 0)
-return groups;
+            if (mapping.length === 0) return groups;
             let currentGroup = { cell: mapping[0], end: 0, start: 0 };
             for (let index = 1; index < mapping.length; index++) {
                 if (areCellsEquivalent(mapping[index], currentGroup.cell)) {
@@ -371,7 +366,9 @@ return groups;
                 const baseWidth = this.columnWidths.slice(group.start, group.end + 1).reduce((sum, w) => sum + w, 0);
                 const extra = group.end - group.start;
                 const groupWidth = baseWidth + extra;
+
                 topBorder += topBody.repeat(groupWidth);
+
                 if (index < groups.length - 1) {
                     topBorder += topJoin;
                 }
@@ -394,21 +391,25 @@ return groups;
         // ─── Render Rows and Separators ───
         for (let rowIndex = 0; rowIndex < allRows.length; rowIndex++) {
             const renderedRowLines = this.renderRow(allRows[rowIndex], this.columnWidths, rowIndex);
+
             outputLines.push(...renderedRowLines);
 
             if (rowIndex < allRows.length - 1) {
                 let separatorLine = "";
-                // For the header separator (immediately after header rows), use grouping from the first body row.
-                if (this.options.showHeader && rowIndex === this.headers.length - 1 && this.layout) {
-                    const groups = groupRowForDisplay(this.headers.length);
+
+                if (rowIndex === this.headers.length - 1) {
+                    const rowGroups = groupRowForDisplay(this.headers.length);
+
                     separatorLine += joinLeft;
-                    groups.forEach((group, index) => {
+
+                    rowGroups.forEach((group, index) => {
                         separatorLine += joinBody.repeat(effectiveWidth(group));
-                        if (index < groups.length - 1) {
+                        if (index < rowGroups.length - 1) {
                             // For header separator, use headerJoin if defined; otherwise, default to joinJoin.
                             separatorLine += joinJoin;
                         }
                     });
+
                     separatorLine += joinRight;
                 } else {
                     // Normal separators between body rows – use spanned flags.
@@ -416,6 +417,7 @@ return groups;
 
                     for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
                         const cell = this.layout.cells.find((c) => c.x <= colIndex && c.x + c.width > colIndex && c.y <= rowIndex && c.y + c.height > rowIndex);
+
                         spanned[colIndex] = cell ? rowIndex + 1 < cell.y + cell.height : false;
                     }
 
@@ -438,15 +440,27 @@ return groups;
                             if (cellBelowLeft && cellBelowRight && areCellsEquivalent(cellBelowLeft, cellBelowRight)) {
                                 joinChar = bottomJoin;
                             } else {
-                                const leftSpanned = spanned[colIndex];
-                                const rightSpanned = spanned[colIndex + 1];
-                                joinChar = leftSpanned && rightSpanned ? joinJoin : leftSpanned ? joinLeft : rightSpanned ? joinRight : joinJoin;
+                                const leftSpanned = spanned[colIndex]; // Boolean flag for left column (might be false if it's the starting column)
+                                const rightSpanned = spanned[colIndex + 1]; // Boolean flag for right column (true if it’s a continuation of a spanning cell)
+
+                                if (leftSpanned && rightSpanned) {
+                                    joinChar = topJoin;
+                                } else if (rightSpanned) {
+                                    joinChar = joinRight;
+                                } else if (leftSpanned) {
+                                    joinChar = joinLeft;
+                                } else {
+                                    joinChar = joinJoin;
+                                }
                             }
+
                             separatorLine += joinChar;
                         }
                     }
+
                     separatorLine += spanned[this.columnCount - 1] ? bodyRight : joinRight;
                 }
+
                 outputLines.push(separatorLine);
             }
         }
