@@ -208,6 +208,26 @@ export interface TableStyle {
 /**
  * Defines the options for table construction.
  */
+/** Describes a cell's layout (its position and span). */
+export interface LayoutCell extends CellOptions {
+    height: number;
+    isSpanCell?: boolean;
+    parentCell?: LayoutCell;
+    width: number;
+    x: number;
+    y: number;
+}
+
+/** The complete table layout. */
+export interface TableLayout {
+    cells: LayoutCell[];
+    height: number;
+    width: number;
+}
+
+/**
+ * Defines the options for table construction.
+ */
 export interface TableConstructorOptions {
     /**
      * Maximum width for all cells. Individual cell maxWidth will override this.
