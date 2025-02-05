@@ -9,7 +9,8 @@ export const computeRowLogicalWidth = (row: CellType[]): number => {
         }
 
         if (typeof cell === "object" && !Array.isArray(cell)) {
-            return total + (cell.colSpan ?? 1);
+            const colSpan = cell.colSpan ?? 1;
+            return total + (colSpan > 0 ? colSpan : 1);
         }
 
         return total + 1;

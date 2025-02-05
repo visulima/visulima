@@ -26,18 +26,17 @@ export const wordWrapText = (text: string, maxWidth: number): string[] => {
         }
 
         const formats: { index: number; sequence: string }[] = [];
-
         let plainText = line;
         let match: RegExpExecArray | null = null;
 
+        // Collect ANSI codes
         globalAnsiPattern.lastIndex = 0;
-
         while ((match = globalAnsiPattern.exec(line)) !== null) {
             formats.push({ index: match.index, sequence: match[0] });
         }
 
+        // Collect hyperlinks
         linkPattern.lastIndex = 0;
-
         while ((match = linkPattern.exec(line)) !== null) {
             formats.push({
                 index: match.index,
@@ -46,61 +45,92 @@ export const wordWrapText = (text: string, maxWidth: number): string[] => {
         }
 
         formats.sort((a, b) => a.index - b.index);
-
         plainText = stripVTControlCharacters(line);
-
-        const words = plainText.split(/\s+/);
 
         let currentLine = "";
         let currentLineWidth = 0;
-        let lastAnsi = "";
+        let activeAnsiCodes: string[] = [];
+        let position = 0;
 
-        for (const word of words) {
+        // Split text into words
+        const words = plainText.split(/\s+/);
+        let currentWord = "";
+        let currentWordWidth = 0;
+
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
             const wordWidth = stringWidth(word);
 
-            if (currentLineWidth + wordWidth + (currentLine ? 1 : 0) > maxWidth && currentLine) {
-                if (lastAnsi) {
-                    currentLine += "\u001B[0m";
+            // Apply any ANSI codes at the current position
+            for (const format of formats) {
+                if (format.index === position) {
+                    if (format.sequence.startsWith("\u001B[")) {
+                        if (format.sequence === "\u001B[0m") {
+                            activeAnsiCodes = [];
+                        } else {
+                            activeAnsiCodes.push(format.sequence);
+                        }
+                        currentLine += format.sequence;
+                    }
+                }
+            }
+
+            // If the word is too long, split it
+            if (wordWidth > maxWidth) {
+                if (currentLineWidth > 0) {
+                    if (activeAnsiCodes.length > 0) {
+                        currentLine += "\u001B[0m";
+                    }
+                    wrappedLines.push(currentLine.trimEnd());
+                    currentLine = activeAnsiCodes.join("");
+                    currentLineWidth = 0;
                 }
 
-                wrappedLines.push(currentLine);
-                currentLine = "";
-                currentLineWidth = 0;
-            }
+                let charPos = 0;
+                while (charPos < word.length) {
+                    const char = word[charPos];
+                    const charWidth = stringWidth(char);
 
-            if (currentLine) {
-                currentLine += " ";
-                currentLineWidth += 1;
-            }
-
-            if (lastAnsi) {
-                currentLine += lastAnsi;
-            }
-
-            const wordStart = plainText.indexOf(word);
-
-            let formattedWord = word;
-
-            for (const format of formats) {
-                if (format.index <= wordStart) {
-                    if (format.sequence.startsWith("\u001B[")) {
-                        lastAnsi = format.sequence;
+                    if (currentLineWidth + charWidth > maxWidth) {
+                        if (activeAnsiCodes.length > 0) {
+                            currentLine += "\u001B[0m";
+                        }
+                        wrappedLines.push(currentLine.trimEnd());
+                        currentLine = activeAnsiCodes.join("");
+                        currentLineWidth = 0;
                     }
 
-                    formattedWord = format.sequence + formattedWord;
+                    currentLine += char;
+                    currentLineWidth += charWidth;
+                    charPos++;
                 }
+            } else if (currentLineWidth + (currentLineWidth > 0 ? 1 : 0) + wordWidth > maxWidth) {
+                // Word doesn't fit on current line
+                if (activeAnsiCodes.length > 0) {
+                    currentLine += "\u001B[0m";
+                }
+                wrappedLines.push(currentLine.trimEnd());
+                currentLine = activeAnsiCodes.join("") + word;
+                currentLineWidth = wordWidth;
+            } else {
+                // Word fits on current line
+                if (currentLineWidth > 0) {
+                    currentLine += " ";
+                    currentLineWidth += 1;
+                }
+                currentLine += word;
+                currentLineWidth += wordWidth;
             }
 
-            currentLine += formattedWord;
-            currentLineWidth += wordWidth;
+            position += word.length + 1; // +1 for the space
         }
 
+        // Add the last line if there's anything left
         if (currentLine) {
-            if (lastAnsi) {
+            if (activeAnsiCodes.length > 0) {
                 currentLine += "\u001B[0m";
             }
-
-            wrappedLines.push(currentLine);
+            wrappedLines.push(currentLine.trimEnd());
         }
     }
 
