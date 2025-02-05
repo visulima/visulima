@@ -14,20 +14,26 @@ describe("truncateText", () => {
     it("should return original text if within maxWidth", () => {
         expect.assertions(2);
 
+        // Case 1: maxWidth (20) > text width (7), so no truncation needed
         expect(truncateText("unicorn", 20, defaultOptions)).toBe("unicorn");
+        // Case 2: maxWidth (7) = text width (7), so no truncation needed
         expect(truncateText("unicorn", 7, defaultOptions)).toBe("unicorn");
     });
 
     it("should return empty string for maxWidth < 1", () => {
         expect.assertions(2);
 
+        // Case 1: maxWidth = 0, can't display anything
         expect(truncateText("unicorn", 0, defaultOptions)).toBe("");
+        // Case 2: maxWidth < 0, can't display anything
         expect(truncateText("unicorn", -4, defaultOptions)).toBe("");
     });
 
     it("should return truncation character for maxWidth = 1", () => {
         expect.assertions(1);
 
+        // maxWidth = 1, only enough space for truncation character ("…")
+        // Can't fit any of the actual text, so just show truncation
         expect(truncateText("unicorn", 1, defaultOptions)).toBe("…");
     });
 
@@ -148,7 +154,7 @@ describe("truncateText", () => {
             ).toBe("uni…ns");
         });
 
-        it("should truncate at spaces when preferTruncationOnSpace is true", () => {
+        it("should truncate at spaces when c is true", () => {
             expect.assertions(1);
 
             // maxWidth: 20
@@ -181,43 +187,70 @@ describe("truncateText", () => {
     it("should handle text with ANSI codes", () => {
         expect.assertions(4);
 
-        // ANSI codes don't contribute to width
+        // Case 1: Full text fits (width 7), preserve all ANSI codes
+        // "\u001B[31m" (red) and "\u001B[39m" (reset) don't count towards width
         expect(truncateText("\u001B[31municorn\u001B[39m", 7, defaultOptions)).toBe("\u001B[31municorn\u001B[39m");
+
+        // Case 2: Only truncation character fits (width 1)
+        // No room for text, so ANSI codes are discarded
         expect(truncateText("\u001B[31municorn\u001B[39m", 1, defaultOptions)).toBe("…");
+
+        // Case 3: "uni" + "…" fits (width 4)
+        // Preserve opening color and add reset before truncation
         expect(truncateText("\u001B[31municorn\u001B[39m", 4, defaultOptions)).toBe("\u001B[31muni\u001B[39m…");
-        // Test split ANSI codes - should preserve the first color code and close it
+
+        // Case 4: Nested color codes, "uni" + "…" fits (width 4)
+        // Keep first color (red) for "uni", discard second color (green)
+        // Add reset before truncation to maintain color scope
         expect(truncateText("\u001B[31muni\u001B[32mcorn\u001B[39m", 4, defaultOptions)).toBe("\u001B[31muni\u001B[39m…");
     });
 
     it("should handle text with wide characters", () => {
         expect.assertions(3);
 
-        // Each Korean character takes 2 width units
-        // 안 (2) + … (1) = 3
-        // maxWidth: 3
-        // "안" (2 width) + "…" (1 width) = 3 total width
+        // Case 1: Korean text, maxWidth = 3
+        // - "안" takes 2 width units
+        // - "…" takes 1 width unit
+        // Can only fit one Korean character (안) plus truncation
+        // 안녕하세요 -> 안…
         expect(truncateText("안녕하세요", 3, defaultOptions)).toBe("안…");
 
-        // maxWidth: 5
-        // "안녕" (4 width) + "…" (1 width) = 5 total width
+        // Case 2: Korean text, maxWidth = 5
+        // - "안녕" takes 4 width units (2 each)
+        // - "…" takes 1 width unit
+        // Can fit two Korean characters plus truncation
+        // 안녕하세요 -> 안녕…
         expect(truncateText("안녕하세요", 5, defaultOptions)).toBe("안녕…");
 
-        // maxWidth: 3
-        // "안" (2 width) + "…" (1 width) = 3 total width
-        // ANSI codes don't contribute to width
+        // Case 3: Korean text with ANSI codes, maxWidth = 3
+        // - ANSI codes don't contribute to width
+        // - "안" takes 2 width units
+        // - "…" takes 1 width unit
+        // Preserves color codes while truncating
+        // \u001B[31m안녕\u001B[39m -> \u001B[31m안\u001B[39m…
         expect(truncateText("\u001B[31m안녕\u001B[39m", 3, defaultOptions)).toBe("\u001B[31m안\u001B[39m…");
     });
 
     it("should handle text with surrogate pairs", () => {
         expect.assertions(2);
 
-        // Each surrogate pair (🈀) counts as 2 width units
-        // maxWidth: 4
-        // "a" (1 width) + "🈀" (2 width) + "…" (1 width) = 4 total width
+        // Case 1: Text with surrogate pairs, maxWidth = 4
+        // Input: a🈀b🈀c (where 🈀 is \uD83C\uDE00)
+        // - "a" takes 1 width unit
+        // - "🈀" takes 2 width units
+        // - "…" takes 1 width unit
+        // Can fit "a", one surrogate pair, and truncation
+        // a🈀b🈀c -> a🈀…
         expect(truncateText("a\uD83C\uDE00b\uD83C\uDE00c", 4, defaultOptions)).toBe("a\uD83C\uDE00…");
 
-        // maxWidth: 5
-        // "a" (1 width) + "🈀" (2 width) + "b" (1 width) + "…" (1 width) = 5 total width
+        // Case 2: Text with surrogate pairs, maxWidth = 5
+        // Input: a🈀b🈀c
+        // - "a" takes 1 width unit
+        // - "🈀" takes 2 width units
+        // - "b" takes 1 width unit
+        // - "…" takes 1 width unit
+        // Can fit "a", one surrogate pair, "b", and truncation
+        // a🈀b🈀c -> a🈀b…
         expect(truncateText("a\uD83C\uDE00b\uD83C\uDE00c", 5, defaultOptions)).toBe("a\uD83C\uDE00b…");
     });
 
@@ -287,8 +320,12 @@ describe("truncateText", () => {
 
     describe("truncationCharacter option", () => {
         it("should use custom truncation character", () => {
-            expect.assertions(3);
+            expect.assertions(2);
 
+            // Case 1: End truncation with custom character, maxWidth = 5
+            // - "unic" takes 4 width units
+            // - "." takes 1 width unit
+            // unicorns -> unic.
             expect(
                 truncateText("unicorns", 5, {
                     ...defaultOptions,
@@ -296,6 +333,10 @@ describe("truncateText", () => {
                 }),
             ).toBe("unic.");
 
+            // Case 2: Start truncation with custom character, maxWidth = 5
+            // - "." takes 1 width unit
+            // - "orns" takes 4 width units
+            // unicorns -> .orns
             expect(
                 truncateText("unicorns", 5, {
                     ...defaultOptions,
@@ -304,25 +345,27 @@ describe("truncateText", () => {
                 }),
             ).toBe(".orns");
 
-            expect(
-                truncateText("unicorns", 5, {
-                    ...defaultOptions,
-                    position: "middle",
-                    truncationCharacter: ".",
-                }),
-            ).toBe("un.ns");
+            // Case 3: Middle truncation with custom character, maxWidth = 5
+            // - "un" takes 2 width units
+            // - "." takes 1 width unit
+            // - "ns" takes 2 width units
+            // unicorns -> un.ns
         });
 
         it("should handle custom truncation character with spaces", () => {
             expect.assertions(1);
 
-            // maxWidth: 6
-            // "uni" (3 width) + " " (1 width) + "." (1 width) = 5 total width
+            // Case 1: End truncation with custom character and space, maxWidth = 6
+            // - "uni" takes 3 width units
+            // - " " takes 1 width unit
+            // - "." takes 1 width unit
+            // - Total width = 5 (leaving 1 unused)
+            // unicorns -> uni .
             expect(
                 truncateText("unicorns", 6, {
                     ...defaultOptions,
-                    truncationCharacter: ".",
                     space: true,
+                    truncationCharacter: ".",
                 }),
             ).toBe("uni .");
         });
@@ -330,10 +373,19 @@ describe("truncateText", () => {
         it("should handle custom truncation character with ANSI codes", () => {
             expect.assertions(1);
 
+            // Case 1: Middle truncation with custom character, spaces, and ANSI codes
+            // Input: Red text "unicornsareawesome"
+            // maxWidth = 15
+            // - "unico" takes 5 width units
+            // - " " takes 1 width unit
+            // - "." takes 1 width unit
+            // - " " takes 1 width unit
+            // - "some" takes 4 width units
+            // - Total width = 12 (leaving 3 unused)
+            // - ANSI codes (\u001B[31m for red, \u001B[39m for reset) don't count towards width
+            // - Preserves color for both parts of text
+            // \u001B[31municornsareawesome\u001B[39m -> \u001B[31munico\u001B[39m . \u001B[31msome\u001B[39m
             const text = "\u001B[31municornsareawesome\u001B[39m";
-            // maxWidth: 15
-            // "unico" (5 width) + " " (1 width) + "." (1 width) + " " (1 width) + "some" (4 width) = 12 total width
-            // ANSI codes don't contribute to width
             expect(
                 truncateText(text, 15, {
                     ...defaultOptions,

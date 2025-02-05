@@ -3816,6 +3816,9 @@ importers:
       semantic-release:
         specifier: ^24.2.0
         version: 24.2.1(typescript@5.7.3)
+      slice-ansi:
+        specifier: ^7.1.0
+        version: 7.1.0
       table:
         specifier: ^6.9.0
         version: 6.9.0

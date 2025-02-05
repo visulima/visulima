@@ -8,6 +8,7 @@ export const getIndexOfNearestSpace = (text: string, targetIndex: number, search
 
     for (let offset = 0; offset <= 3; offset++) {
         const pos = targetIndex + offset * direction;
+
         if (text.charAt(pos) === " ") {
             return pos;
         }
