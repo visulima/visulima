@@ -19,28 +19,29 @@ export const truncateText = (text: string, maxWidth: number, options: Required<T
     let { truncationCharacter } = options;
 
     const truncatedLines = lines.map((line) => {
-        const length = stringWidth(line);
-
-        if (length <= maxWidth) {
+        const visibleWidth = stringWidth(line);
+        if (visibleWidth <= maxWidth) {
             return line;
         }
+
+        // Calculate extra space count if option.space is true
+        const extraSpace = options.space ? (options.position === "middle" ? 2 : 1) : 0;
+        const truncCharWidth = stringWidth(truncationCharacter) + extraSpace;
 
         if (options.position === "start") {
             if (options.space) {
                 truncationCharacter += " ";
             }
-
-            const truncCharWidth = stringWidth(truncationCharacter);
             const targetWidth = maxWidth - truncCharWidth;
-            const startPos = findRealPosition(line, length - targetWidth);
-
+            const startPos = findRealPosition(line, visibleWidth - targetWidth);
+            let breakPoint = startPos;
             if (options.preferTruncationOnSpace) {
                 const nearestSpace = getIndexOfNearestSpace(line, startPos, true);
-                const truncated = preserveAnsiCodes(line, nearestSpace, length).trim();
-                return truncationCharacter + truncated;
+                if (nearestSpace !== -1) {
+                    breakPoint = nearestSpace;
+                }
             }
-
-            const truncated = preserveAnsiCodes(line, startPos, length);
+            const truncated = preserveAnsiCodes(line, breakPoint, line.length).trim();
             return truncationCharacter + truncated;
         }
 
@@ -48,50 +49,41 @@ export const truncateText = (text: string, maxWidth: number, options: Required<T
             if (options.space) {
                 truncationCharacter = ` ${truncationCharacter} `;
             }
-
-            const truncCharWidth = stringWidth(truncationCharacter);
-            const targetHalfWidth = Math.floor((maxWidth - truncCharWidth) / 2);
-            const remainingWidth = maxWidth - targetHalfWidth - truncCharWidth;
-
-            const firstBreakPoint = findRealPosition(line, targetHalfWidth);
-            const secondBreakPoint = findRealPosition(line, length - remainingWidth);
+            const targetTotal = maxWidth - stringWidth(truncationCharacter);
+            const leftTarget = Math.floor(targetTotal / 2);
+            const rightTarget = targetTotal - leftTarget;
+            const leftBreak = findRealPosition(line, leftTarget);
+            const rightBreak = findRealPosition(line, visibleWidth - rightTarget);
+            let leftPart = preserveAnsiCodes(line, 0, leftBreak);
+            let rightPart = preserveAnsiCodes(line, rightBreak, line.length);
 
             if (options.preferTruncationOnSpace) {
-                const spaceNearFirstBreak = getIndexOfNearestSpace(line, firstBreakPoint);
-                const spaceNearSecondBreak = getIndexOfNearestSpace(
-                    line,
-                    secondBreakPoint,
-                    true,
-                );
-
-                const firstPart = preserveAnsiCodes(line, 0, spaceNearFirstBreak);
-                const secondPart = preserveAnsiCodes(line, spaceNearSecondBreak, length).trim();
-
-                return firstPart + truncationCharacter + secondPart;
+                const leftSpace = getIndexOfNearestSpace(line, leftBreak, false);
+                if (leftSpace !== -1) {
+                    leftPart = preserveAnsiCodes(line, 0, leftSpace);
+                }
+                const rightSpace = getIndexOfNearestSpace(line, rightBreak, true);
+                if (rightSpace !== -1) {
+                    rightPart = preserveAnsiCodes(line, rightSpace, line.length).trim();
+                }
             }
-
-            const firstPart = preserveAnsiCodes(line, 0, firstBreakPoint);
-            const secondPart = preserveAnsiCodes(line, secondBreakPoint, length);
-
-            return firstPart + truncationCharacter + secondPart;
+            return leftPart + truncationCharacter + rightPart;
         }
 
-        // Default: end position
+        // Default: end truncation
         if (options.space) {
             truncationCharacter = ` ${truncationCharacter}`;
         }
-
-        const truncCharWidth = stringWidth(truncationCharacter);
         const targetWidth = maxWidth - truncCharWidth;
         const endPos = findRealPosition(line, targetWidth);
-
+        let breakPoint = endPos;
         if (options.preferTruncationOnSpace) {
             const nearestSpace = getIndexOfNearestSpace(line, endPos);
-            const truncated = preserveAnsiCodes(line, 0, nearestSpace);
-            return truncated + truncationCharacter;
+            if (nearestSpace !== -1) {
+                breakPoint = nearestSpace;
+            }
         }
-
-        const truncated = preserveAnsiCodes(line, 0, endPos);
+        const truncated = preserveAnsiCodes(line, 0, breakPoint);
         return truncated + truncationCharacter;
     });
 
