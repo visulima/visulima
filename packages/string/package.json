@@ -1,0 +1,327 @@
+{
+    "name": "@visulima/string",
+    "version": "0.0.0",
+    "description": "Functions for manipulating strings.",
+    "keywords": [
+        "visulima",
+        "string"
+    ],
+    "homepage": "https://visulima.com/packages/string",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/string"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            }
+        },
+        "./case": {
+            "require": {
+                "types": "./dist/case/index.d.cts",
+                "default": "./dist/case/index.cjs"
+            },
+            "import": {
+                "types": "./dist/case/index.d.mts",
+                "default": "./dist/case/index.mjs"
+            }
+        },
+        "./case/camel-case": {
+            "require": {
+                "types": "./dist/case/camel-case.d.cts",
+                "default": "./dist/case/camel-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/camel-case.d.mts",
+                "default": "./dist/case/camel-case.mjs"
+            }
+        },
+        "./case/capital-case": {
+            "require": {
+                "types": "./dist/case/capital-case.d.cts",
+                "default": "./dist/case/capital-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/capital-case.d.mts",
+                "default": "./dist/case/capital-case.mjs"
+            }
+        },
+        "./case/constant-case": {
+            "require": {
+                "types": "./dist/case/constant-case.d.cts",
+                "default": "./dist/case/constant-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/constant-case.d.mts",
+                "default": "./dist/case/constant-case.mjs"
+            }
+        },
+        "./case/dot-case": {
+            "require": {
+                "types": "./dist/case/dot-case.d.cts",
+                "default": "./dist/case/dot-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/dot-case.d.mts",
+                "default": "./dist/case/dot-case.mjs"
+            }
+        },
+        "./case/flat-case": {
+            "require": {
+                "types": "./dist/case/flat-case.d.cts",
+                "default": "./dist/case/flat-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/flat-case.d.mts",
+                "default": "./dist/case/flat-case.mjs"
+            }
+        },
+        "./case/flip-case": {
+            "require": {
+                "types": "./dist/case/flip-case.d.cts",
+                "default": "./dist/case/flip-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/flip-case.d.mts",
+                "default": "./dist/case/flip-case.mjs"
+            }
+        },
+        "./case/identify-case": {
+            "require": {
+                "types": "./dist/case/identify-case.d.cts",
+                "default": "./dist/case/identify-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/identify-case.d.mts",
+                "default": "./dist/case/identify-case.mjs"
+            }
+        },
+        "./case/kebab-case": {
+            "require": {
+                "types": "./dist/case/kebab-case.d.cts",
+                "default": "./dist/case/kebab-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/kebab-case.d.mts",
+                "default": "./dist/case/kebab-case.mjs"
+            }
+        },
+        "./case/lower-first": {
+            "require": {
+                "types": "./dist/case/lower-first.d.cts",
+                "default": "./dist/case/lower-first.cjs"
+            },
+            "import": {
+                "types": "./dist/case/lower-first.d.mts",
+                "default": "./dist/case/lower-first.mjs"
+            }
+        },
+        "./case/no-case": {
+            "require": {
+                "types": "./dist/case/no-case.d.cts",
+                "default": "./dist/case/no-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/no-case.d.mts",
+                "default": "./dist/case/no-case.mjs"
+            }
+        },
+        "./case/pascal-case": {
+            "require": {
+                "types": "./dist/case/pascal-case.d.cts",
+                "default": "./dist/case/pascal-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/pascal-case.d.mts",
+                "default": "./dist/case/pascal-case.mjs"
+            }
+        },
+        "./case/pascal-snake-case": {
+            "require": {
+                "types": "./dist/case/pascal-snake-case.d.cts",
+                "default": "./dist/case/pascal-snake-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/pascal-snake-case.d.mts",
+                "default": "./dist/case/pascal-snake-case.mjs"
+            }
+        },
+        "./case/path-case": {
+            "require": {
+                "types": "./dist/case/path-case.d.cts",
+                "default": "./dist/case/path-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/path-case.d.mts",
+                "default": "./dist/case/path-case.mjs"
+            }
+        },
+        "./case/sentence-case": {
+            "require": {
+                "types": "./dist/case/sentence-case.d.cts",
+                "default": "./dist/case/sentence-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/sentence-case.d.mts",
+                "default": "./dist/case/sentence-case.mjs"
+            }
+        },
+        "./case/snake-case": {
+            "require": {
+                "types": "./dist/case/snake-case.d.cts",
+                "default": "./dist/case/snake-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/snake-case.d.mts",
+                "default": "./dist/case/snake-case.mjs"
+            }
+        },
+        "./case/split-by-case": {
+            "require": {
+                "types": "./dist/case/split-by-case.d.cts",
+                "default": "./dist/case/split-by-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/split-by-case.d.mts",
+                "default": "./dist/case/split-by-case.mjs"
+            }
+        },
+        "./case/title-case": {
+            "require": {
+                "types": "./dist/case/title-case.d.cts",
+                "default": "./dist/case/title-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/title-case.d.mts",
+                "default": "./dist/case/title-case.mjs"
+            }
+        },
+        "./case/train-case": {
+            "require": {
+                "types": "./dist/case/train-case.d.cts",
+                "default": "./dist/case/train-case.cjs"
+            },
+            "import": {
+                "types": "./dist/case/train-case.d.mts",
+                "default": "./dist/case/train-case.mjs"
+            }
+        },
+        "./case/upper-first": {
+            "require": {
+                "types": "./dist/case/upper-first.d.cts",
+                "default": "./dist/case/upper-first.cjs"
+            },
+            "import": {
+                "types": "./dist/case/upper-first.d.mts",
+                "default": "./dist/case/upper-first.mjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.cjs",
+    "module": "dist/index.mjs",
+    "browser": "./dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run --typecheck",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "ansi-regex": "6.1.0",
+        "emoji-regex": "10.4.0",
+        "@anolilab/eslint-config": "^15.0.3",
+        "@anolilab/prettier-config": "^5.0.14",
+        "@anolilab/semantic-release-pnpm": "1.1.9",
+        "@anolilab/semantic-release-preset": "^10.0.2",
+        "@arethetypeswrong/cli": "^0.17.3",
+        "@babel/core": "^7.26.7",
+        "@rushstack/eslint-plugin-security": "^0.8.3",
+        "@secretlint/secretlint-rule-preset-recommend": "^9.0.0",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/node": "22.13.1",
+        "@visulima/packem": "^1.18.5",
+        "@vitest/coverage-v8": "^3.0.5",
+        "@vitest/ui": "^3.0.5",
+        "conventional-changelog-conventionalcommits": "8.0.0",
+        "cross-env": "^7.0.3",
+        "esbuild": "^0.24.2",
+        "eslint": "8.57.1",
+        "eslint-plugin-deprecation": "^3.0.0",
+        "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
+        "eslint-plugin-mdx": "^3.1.5",
+        "eslint-plugin-vitest": "^0.4.1",
+        "eslint-plugin-vitest-globals": "^1.5.0",
+        "prettier": "^3.4.2",
+        "rimraf": "^6.0.1",
+        "secretlint": "9.0.0",
+        "semantic-release": "^24.2.1",
+        "typescript": "^5.7.3",
+        "vitest": "^3.0.5"
+    },
+    "engines": {
+        "node": ">=18.0.0 <=23.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "anolilab": {
+        "eslint-config": {
+            "plugin": {
+                "tsdoc": false,
+                "etc": false
+            },
+            "warn_on_unsupported_typescript_version": false,
+            "info_on_disabling_jsx_react_rule": false,
+            "info_on_disabling_prettier_conflict_rule": false,
+            "info_on_disabling_jsonc_sort_keys_rule": false,
+            "info_on_disabling_etc_no_deprecated": false
+        }
+    }
+}
