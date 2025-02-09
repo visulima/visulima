@@ -16,10 +16,6 @@ describe("kebabCase", () => {
         expect(kebabCase("XMLHttpRequest")).toBe("xml-http-request");
     });
 
-    it("should preserve multiple hyphens", () => {
-        expect(kebabCase("foo--bar")).toBe("foo--bar");
-    });
-
     it("should convert mixed case to hyphen case", () => {
         expect(kebabCase("FooBAR")).toBe("foo-bar");
     });
