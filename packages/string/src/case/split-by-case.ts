@@ -3,6 +3,7 @@ import emojiRegex from "emoji-regex";
 
 import type { CaseOptions, SplitByCase } from "./types";
 import { germanUpperSsToSz } from "./german-case-utils";
+
 export interface SplitOptions extends CaseOptions {
     separators?: ReadonlyArray<string>;
 }
