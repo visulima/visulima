@@ -11,11 +11,11 @@ import type {
     Slice,
     Split,
     StartsWith,
+    ToLowerCase,
+    ToUpperCase,
     Trim,
     TrimEnd,
     TrimStart,
-    ToLowerCase,
-    ToUpperCase,
 } from "./types";
 
 declare global {
@@ -119,6 +119,16 @@ declare global {
         startsWith<T extends string = string, S extends string = string, P extends number = 0>(this: T, searchString: S, position?: P): StartsWith<T, S, P>;
 
         /**
+         * Converts all alphabetic characters in a string to lowercase.
+         */
+        toLowerCase<T extends string = string>(this: T): ToLowerCase<T>;
+
+        /**
+         * Converts all alphabetic characters in a string to uppercase.
+         */
+        toUpperCase<T extends string = string>(this: T): ToUpperCase<T>;
+
+        /**
          * Returns a string with all whitespace removed from both ends of a string.
          */
         trim<T extends string = string>(this: T): Trim<T>;
@@ -132,16 +142,6 @@ declare global {
          * Returns a string with all whitespace removed from the start of a string.
          */
         trimStart<T extends string = string>(this: T): TrimStart<T>;
-
-        /**
-         * Converts all alphabetic characters in a string to lowercase.
-         */
-        toLowerCase<T extends string = string>(this: T): ToLowerCase<T>;
-
-        /**
-         * Converts all alphabetic characters in a string to uppercase.
-         */
-        toUpperCase<T extends string = string>(this: T): ToUpperCase<T>;
     }
 }
 

@@ -1,5 +1,6 @@
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, KebabCase } from "./types";
+import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
 
 export interface KebabCaseOptions extends CaseOptions {
     /**
@@ -27,6 +28,10 @@ export const kebabCase = <T extends string = string>(value: T, options: KebabCas
     }
 
     return splitByCase(value, options)
-        .map((p) => (options.locale ? p.toLocaleLowerCase(options.locale) : p.toLowerCase()))
+        .map((p) => {
+            const split = normalizeGermanEszett(p, options.locale);
+
+            return options.locale ? split.toLocaleLowerCase(options.locale) : split.toLowerCase();
+        })
         .join(options.joiner ?? "-") as KebabCase<T>;
 };

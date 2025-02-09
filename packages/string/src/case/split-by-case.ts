@@ -1,8 +1,8 @@
 import ansiRegex from "ansi-regex";
 import emojiRegex from "emoji-regex";
 
-import { germanUpperSsToSz } from "./german-case-utils";
 import type { CaseOptions, SplitByCase } from "./types";
+import { isAllUpper } from "./utils/is-locale-all-upper";
 
 export interface SplitOptions extends CaseOptions {
     separators?: ReadonlyArray<string>;
@@ -45,8 +45,6 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
         ...splitOptions,
     };
 
-    input = germanUpperSsToSz(input, options.locale);
-
     // First, split by any explicit separator.
     const separatorRegex = new RegExp(options.separators.map((s: string) => s.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"));
     const parts = input.split(separatorRegex).filter(Boolean);
@@ -63,6 +61,10 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
 
     // Process one part by scanning through its characters.
     const processPart = (part: string): string[] => {
+        if (options.locale && isAllUpper(part, options.locale)) {
+            return [part];
+        }
+
         const tokens: string[] = [];
         let tokenStart = 0;
         let index = 1;
