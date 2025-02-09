@@ -51,6 +51,14 @@ describe("pascalCase", () => {
         expect(pascalCase("fooBar")).toBe("FooBar");
     });
 
+    it("should handle special formats and mixed cases", () => {
+        expect(pascalCase("C-3PO_and_R2-D2")).toBe("C3PoAndR2D2");
+        expect(pascalCase("The Taking of Pelham 123")).toBe("TheTakingOfPelham123");
+        expect(pascalCase("Ocean's 11")).toBe("Ocean's11");
+        expect(pascalCase("Hello5My5Name5Is5Bond")).toBe("Hello5My5Name5Is5Bond");
+        expect(pascalCase("i-do--not--0like--number0")).toBe("IDoNot0LikeNumber0");
+    });
+
     describe("emoji support 🎯", () => {
         it("should handle emojis in text", () => {
             expect(pascalCase("Foo🐣Bar")).toBe("Foo🐣Bar");

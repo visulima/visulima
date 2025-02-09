@@ -76,6 +76,15 @@ describe("pascalSnakeCase", () => {
         expect(pascalSnakeCase("iOS_app")).toBe("I_Os_App");
     });
 
+    it("should handle special formats and mixed cases", () => {
+        expect(pascalSnakeCase("C-3PO_and_R2-D2")).toBe("C_3_Po_And_R2_D2");
+        expect(pascalSnakeCase("The Taking of Pelham 123")).toBe("The_Taking_Of_Pelham_123");
+        expect(pascalSnakeCase("Ocean's 11")).toBe("Ocean's_11");
+        expect(pascalSnakeCase("21-JUMP-STREET")).toBe("21_Jump_Street");
+        expect(pascalSnakeCase("non-SI units")).toBe("Non_Si_Units");
+        expect(pascalSnakeCase("Red1Green2Blue3")).toBe("Red1_Green2_Blue3");
+    });
+
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             const locale = "tr-TR";

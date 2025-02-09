@@ -27,6 +27,15 @@ describe("flipCase", () => {
         expect(flipCase("")).toBe("");
     });
 
+    it("should handle special formats and mixed cases", () => {
+        expect(flipCase("C-3PO_and_R2-D2")).toBe("c-3po_AND_r2-d2");
+        expect(flipCase("The Taking of Pelham 123")).toBe("tHE tAKING OF pELHAM 123");
+        expect(flipCase("Ocean's 11")).toBe("oCEAN'S 11");
+        expect(flipCase("21-JUMP-STREET")).toBe("21-jump-street");
+        expect(flipCase("non-SI units")).toBe("NON-si UNITS");
+        expect(flipCase("Red1Green2Blue3")).toBe("rED1gREEN2bLUE3");
+    });
+
     describe("emoji support 🎯", () => {
         it("should handle emojis in text", () => {
             expect(flipCase("Foo🐣Bar")).toBe("fOO🐣bAR");
