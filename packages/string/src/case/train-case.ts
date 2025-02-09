@@ -14,7 +14,7 @@ import { upperFirst } from "./upper-first";
  * trainCase("QueryXML123String") // => "Query-XML-123-String"
  * ```
  */
-export const trainCase = <T extends string = string>(value: T, options: CaseOptions = {}): TrainCase<T> => {
+export const trainCase = <T extends string = string>(value: T, options: CaseOptions): TrainCase<T> => {
     if (typeof value !== "string") {
         return "" as TrainCase<T>;
     }
