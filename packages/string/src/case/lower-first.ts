@@ -1,4 +1,4 @@
-import type { LocaleOptions, LowerFirst } from "../types";
+import type { LocaleOptions, LowerFirst } from "./types";
 
 /**
  * Converts first character to lower case.
@@ -14,13 +14,11 @@ import type { LocaleOptions, LowerFirst } from "../types";
  * ```
  */
 export const lowerFirst = <T extends string = string>(value: T, options: LocaleOptions = {}): LowerFirst<T> => {
-    const { locale } = options;
-
     if (!value) {
         return "" as LowerFirst<T>;
     }
 
-    const firstChar = locale ? value.charAt(0).toLocaleLowerCase(locale) : value.charAt(0).toLowerCase();
-    
+    const firstChar = options?.locale ? value.charAt(0).toLocaleLowerCase(options.locale) : value.charAt(0).toLowerCase();
+
     return (firstChar + value.slice(1)) as LowerFirst<T>;
 };

@@ -1,4 +1,4 @@
-import type { LocaleOptions, TrainCase } from "../types";
+import type { CaseOptions, TrainCase } from "./types";
 import { splitByCase } from "./split-by-case";
 import { upperFirst } from "./upper-first";
 
@@ -14,15 +14,14 @@ import { upperFirst } from "./upper-first";
  * trainCase("QueryXML123String") // => "Query-XML-123-String"
  * ```
  */
-export const trainCase = <T extends string = string>(value: T, options: LocaleOptions = {}): TrainCase<T> => {
-    const { locale } = options;
+export const trainCase = <T extends string = string>(value: T, options: CaseOptions = {}): TrainCase<T> => {
 
     if (typeof value !== "string") {
         return "" as TrainCase<T>;
     }
 
-    return splitByCase(value, { locale })
+    return splitByCase(value, options)
         .filter(Boolean)
-        .map((p) => upperFirst(p, { locale }))
+        .map((p) => upperFirst(p, { locale: options?.locale }))
         .join("-") as TrainCase<T>;
 };

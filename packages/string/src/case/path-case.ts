@@ -1,4 +1,4 @@
-import type { LocaleOptions, PathCase } from "../types";
+import type { CaseOptions, PathCase } from "./types";
 import { kebabCase } from "./kebab-case";
 
 /**
@@ -13,5 +13,5 @@ import { kebabCase } from "./kebab-case";
  * pathCase("QueryXML123String") // => "query/xml/123/string"
  * ```
  */
-export const pathCase = <T extends string = string>(value: T, options: LocaleOptions = {}): PathCase<T> =>
+export const pathCase = <T extends string = string>(value: T, options: CaseOptions = {}): PathCase<T> =>
     kebabCase(value, { ...options, joiner: "/" }) as PathCase<T>;

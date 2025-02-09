@@ -1,4 +1,4 @@
-import type { LocaleOptions } from "../types";
+import type { CaseOptions } from "./types";
 
 /**
  * Flips the case of each character in a string.
@@ -10,7 +10,7 @@ import type { LocaleOptions } from "../types";
  * flipCase("XMLHttpRequest") // => "xmlhTTPrEQUEST"
  * ```
  */
-export const flipCase = (value: string, options: LocaleOptions = {}): string => {
+export const flipCase = (value: string, options: CaseOptions = {}): string => {
     const { locale } = options;
 
     if (typeof value !== "string") {
