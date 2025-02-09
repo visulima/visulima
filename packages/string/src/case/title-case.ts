@@ -1,6 +1,7 @@
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, TitleCase } from "./types";
 import { upperFirst } from "./upper-first";
+import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
 
 /**
  * With Title Case all words are capitalized, except for minor words.
@@ -23,7 +24,10 @@ export function titleCase<T extends string = string>(string_?: T, options: CaseO
     }
 
     return splitByCase(string_, options)
-        .filter(Boolean)
-        .map((p) => upperFirst(options.locale ? p.toLocaleLowerCase(options.locale) : p.toLowerCase(), { locale: options.locale }))
+        .map((word: string) => {
+            const split = normalizeGermanEszett(word, options.locale);
+
+            return upperFirst(options.locale ? split.toLocaleLowerCase(options.locale) : split.toLowerCase(), { locale: options.locale });
+        })
         .join(" ") as TitleCase<T>;
 }

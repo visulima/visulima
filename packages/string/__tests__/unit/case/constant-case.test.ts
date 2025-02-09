@@ -79,7 +79,7 @@ describe("constantCase", () => {
         expect(constantCase("fantastic-4")).toBe("FANTASTIC_4");
         expect(constantCase("Apollo13")).toBe("APOLLO_13");
         expect(constantCase("you-have-0-money")).toBe("YOU_HAVE_0_MONEY");
-        expect(constantCase("123BC456BC789")).toBe("123_B_C_456_B_C_789");
+        expect(constantCase("123BC456BC789")).toBe("123_BC_456_BC_789");
         expect(constantCase("DISTRICT_9")).toBe("DISTRICT_9");
     });
 
@@ -92,9 +92,9 @@ describe("constantCase", () => {
 
         it("should handle German specific cases", () => {
             const locale = "de-DE";
-            expect(constantCase("GROSSE STRAßE", { locale })).toBe("GROSSE_STRAßE");
+            expect(constantCase("GROSSE STRAßE", { locale })).toBe("GROSSE_STRASSE");
             expect(constantCase("GROSSE STRASSE", { locale })).toBe("GROSSE_STRASSE");
-            expect(constantCase("GROßE STRAßE", { locale })).toBe("GROßE_STRAßE");
+            expect(constantCase("GROßE STRAßE", { locale })).toBe("GROSSE_STRASSE");
         });
 
         it("should fallback gracefully for invalid locale", () => {

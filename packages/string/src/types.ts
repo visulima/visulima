@@ -320,84 +320,84 @@ export type TrimStart<T extends string> = T extends ` ${infer rest}` ? TrimStart
 export type Trim<T extends string> = TrimEnd<TrimStart<T>>;
 
 export type NodeLocale =
-  | "af"      // Afrikaans
-  | "am"      // Amharic
-  | "ar"      // Arabic
-  | "az"      // Azerbaijani
-  | "be"      // Belarusian
-  | "bg"      // Bulgarian
-  | "bn"      // Bengali
-  | "bs"      // Bosnian
-  | "ca"      // Catalan
-  | "cs"      // Czech
-  | "cy"      // Welsh
-  | "da"      // Danish
-  | "de"      // German
-  | "el"      // Greek
-  | "en"      // English
-  | "en-AU"   // English (Australia)
-  | "en-CA"   // English (Canada)
-  | "en-GB"   // English (United Kingdom)
-  | "en-US"   // English (United States)
-  | "es"      // Spanish
-  | "es-ES"   // Spanish (Spain)
-  | "et"      // Estonian
-  | "fa"      // Persian
-  | "fi"      // Finnish
-  | "fil"     // Filipino
-  | "fr"      // French
-  | "ga"      // Irish
-  | "gl"      // Galician
-  | "gu"      // Gujarati
-  | "he"      // Hebrew
-  | "hi"      // Hindi
-  | "hr"      // Croatian
-  | "hu"      // Hungarian
-  | "hy"      // Armenian
-  | "id"      // Indonesian
-  | "is"      // Icelandic
-  | "it"      // Italian
-  | "ja"      // Japanese
-  | "ka"      // Georgian
-  | "kk"      // Kazakh
-  | "km"      // Khmer
-  | "kn"      // Kannada
-  | "ko"      // Korean
-  | "ky"      // Kyrgyz
-  | "lo"      // Lao
-  | "lt"      // Lithuanian
-  | "lv"      // Latvian
-  | "mk"      // Macedonian
-  | "ml"      // Malayalam
-  | "mn"      // Mongolian
-  | "mr"      // Marathi
-  | "ms"      // Malay
-  | "mt"      // Maltese
-  | "ne"      // Nepali
-  | "nl"      // Dutch
-  | "no"      // Norwegian
-  | "pa"      // Punjabi
-  | "pl"      // Polish
-  | "pt"      // Portuguese
-  | "pt-BR"   // Portuguese (Brazil)
-  | "pt-PT"   // Portuguese (Portugal)
-  | "ro"      // Romanian
-  | "ru"      // Russian
-  | "si"      // Sinhala
-  | "sk"      // Slovak
-  | "sl"      // Slovenian
-  | "sq"      // Albanian
-  | "sr"      // Serbian
-  | "sv"      // Swedish
-  | "ta"      // Tamil
-  | "te"      // Telugu
-  | "th"      // Thai
-  | "tr"      // Turkish
-  | "uk"      // Ukrainian
-  | "ur"      // Urdu
-  | "uz"      // Uzbek
-  | "vi"      // Vietnamese
-  | "zh"      // Chinese
-  | "zh-CN"   // Chinese (Simplified)
-  | "zh-HK"   // Chinese (Hong Kong)
-  | "zh-TW";  // Chinese (Traditional)
+    | "af" // Afrikaans
+    | "am" // Amharic
+    | "ar" // Arabic
+    | "az" // Azerbaijani
+    | "be" // Belarusian
+    | "bg" // Bulgarian
+    | "bn" // Bengali
+    | "bs" // Bosnian
+    | "ca" // Catalan
+    | "cs" // Czech
+    | "cy" // Welsh
+    | "da" // Danish
+    | "de" // German
+    | "el" // Greek
+    | "en" // English
+    | "en-AU" // English (Australia)
+    | "en-CA" // English (Canada)
+    | "en-GB" // English (United Kingdom)
+    | "en-US" // English (United States)
+    | "es" // Spanish
+    | "es-ES" // Spanish (Spain)
+    | "et" // Estonian
+    | "fa" // Persian
+    | "fi" // Finnish
+    | "fil" // Filipino
+    | "fr" // French
+    | "ga" // Irish
+    | "gl" // Galician
+    | "gu" // Gujarati
+    | "he" // Hebrew
+    | "hi" // Hindi
+    | "hr" // Croatian
+    | "hu" // Hungarian
+    | "hy" // Armenian
+    | "id" // Indonesian
+    | "is" // Icelandic
+    | "it" // Italian
+    | "ja" // Japanese
+    | "ka" // Georgian
+    | "kk" // Kazakh
+    | "km" // Khmer
+    | "kn" // Kannada
+    | "ko" // Korean
+    | "ky" // Kyrgyz
+    | "lo" // Lao
+    | "lt" // Lithuanian
+    | "lv" // Latvian
+    | "mk" // Macedonian
+    | "ml" // Malayalam
+    | "mn" // Mongolian
+    | "mr" // Marathi
+    | "ms" // Malay
+    | "mt" // Maltese
+    | "ne" // Nepali
+    | "nl" // Dutch
+    | "no" // Norwegian
+    | "pa" // Punjabi
+    | "pl" // Polish
+    | "pt" // Portuguese
+    | "pt-BR" // Portuguese (Brazil)
+    | "pt-PT" // Portuguese (Portugal)
+    | "ro" // Romanian
+    | "ru" // Russian
+    | "si" // Sinhala
+    | "sk" // Slovak
+    | "sl" // Slovenian
+    | "sq" // Albanian
+    | "sr" // Serbian
+    | "sv" // Swedish
+    | "ta" // Tamil
+    | "te" // Telugu
+    | "th" // Thai
+    | "tr" // Turkish
+    | "uk" // Ukrainian
+    | "ur" // Urdu
+    | "uz" // Uzbek
+    | "vi" // Vietnamese
+    | "zh" // Chinese
+    | "zh-CN" // Chinese (Simplified)
+    | "zh-HK" // Chinese (Hong Kong)
+    | "zh-TW"; // Chinese (Traditional)
