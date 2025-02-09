@@ -1,4 +1,4 @@
-import type { LocaleOptions, PascalSnakeCase } from "../types";
+import type { CaseOptions, PascalSnakeCase } from "./types";
 import { noCase } from "./no-case";
 import { upperFirst } from "./upper-first";
 
@@ -14,7 +14,7 @@ import { upperFirst } from "./upper-first";
  * pascalSnakeCase("QueryXML123String") // => "Query_Xml_123_String"
  * ```
  */
-export const pascalSnakeCase = <T extends string = string>(value: T, options: LocaleOptions = {}): PascalSnakeCase<T> => {
+export const pascalSnakeCase = <T extends string = string>(value: T, options: CaseOptions = {}): PascalSnakeCase<T> => {
     const { locale } = options;
     const words = noCase(value, options).split(" ");
     

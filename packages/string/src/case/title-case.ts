@@ -1,4 +1,4 @@
-import type { LocaleOptions, TitleCase } from "../types";
+import type { CaseOptions, TitleCase } from "./types";
 import { splitByCase } from "./split-by-case";
 import { upperFirst } from "./upper-first";
 
@@ -15,17 +15,15 @@ import { upperFirst } from "./upper-first";
  * ```
  */
 export function titleCase(): "";
-export function titleCase<T extends string>(string_: T, options?: LocaleOptions): TitleCase<T>;
+export function titleCase<T extends string>(string_: T, options?: CaseOptions): TitleCase<T>;
 // eslint-disable-next-line func-style
-export function titleCase<T extends string = string>(string_?: T, options: LocaleOptions = {}): TitleCase<T> {
-    const { locale } = options;
-
+export function titleCase<T extends string = string>(string_?: T, options: CaseOptions = {}): TitleCase<T> {
     if (typeof string_ !== "string" && !Array.isArray(string_)) {
         return "" as TitleCase<T>;
     }
 
-    return splitByCase(string_, { locale })
+    return splitByCase(string_, options)
         .filter(Boolean)
-        .map((p) => upperFirst(locale ? p.toLocaleLowerCase(locale) : p.toLowerCase(), { locale }))
+        .map((p) => upperFirst(options?.locale ? p.toLocaleLowerCase(options.locale) : p.toLowerCase(), { locale: options?.locale }))
         .join(" ") as TitleCase<T>
 }

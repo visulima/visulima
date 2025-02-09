@@ -1,4 +1,4 @@
-import type { LocaleOptions, PascalCase } from "../types";
+import type { CaseOptions, PascalCase } from "./types";
 import { splitByCase } from "./split-by-case";
 import { upperFirst } from "./upper-first";
 
@@ -19,14 +19,12 @@ import { upperFirst } from "./upper-first";
  * pascalCase('QueryXML123String') // 'QueryXml123String'
  * ```
  */
-export const pascalCase = <T extends string = string>(value: T, options: LocaleOptions = {}): PascalCase<T> => {
-    const { locale } = options;
-
+export const pascalCase = <T extends string = string>(value: T, options: CaseOptions = {}): PascalCase<T> => {
     if (typeof value !== "string" || !value) {
         return "" as PascalCase<T>;
     }
 
-    return splitByCase(value, { locale })
-        .map((word: string) => upperFirst(locale ? word.toLocaleLowerCase(locale) : word.toLowerCase(), { locale }))
+    return splitByCase(value, options)
+        .map((word: string) => upperFirst(options?.locale ? word.toLocaleLowerCase(options.locale) : word.toLowerCase(), { locale: options?.locale }))
         .join("") as PascalCase<T>;
 };

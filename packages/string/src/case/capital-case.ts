@@ -1,4 +1,4 @@
-import type { CapitalCase, LocaleOptions } from "../types";
+import type { CapitalCase, CaseOptions } from "./types";
 import { noCase } from "./no-case";
 import { upperFirst } from "./upper-first";
 
@@ -14,9 +14,8 @@ import { upperFirst } from "./upper-first";
  * capitalCase("QueryXML123String") // => "Query Xml 123 String"
  * ```
  */
-export const capitalCase = <T extends string = string>(value: T, options: LocaleOptions = {}): CapitalCase<T> => {
-    const { locale } = options;
+export const capitalCase = <T extends string = string>(value: T, options: CaseOptions = {}): CapitalCase<T> => {
     const words = noCase(value, options).split(" ");
-    
-    return words.map((word) => upperFirst(word, { locale })).join(" ") as CapitalCase<T>;
+
+    return words.map((word) => upperFirst(word, { locale: options?.locale })).join(" ") as CapitalCase<T>;
 };

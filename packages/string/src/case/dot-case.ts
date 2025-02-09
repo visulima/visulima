@@ -1,4 +1,4 @@
-import type { DotCase, LocaleOptions } from "../types";
+import type { DotCase, CaseOptions } from "./types";
 import { kebabCase } from "./kebab-case";
 
 /**
@@ -13,5 +13,5 @@ import { kebabCase } from "./kebab-case";
  * dotCase("QueryXML123String") // => "query.xml.123.string"
  * ```
  */
-export const dotCase = <T extends string = string>(value: T, options: LocaleOptions = {}): DotCase<T> =>
+export const dotCase = <T extends string = string>(value: T, options: CaseOptions = {}): DotCase<T> =>
     kebabCase(value, { ...options, joiner: "." }) as DotCase<T>;

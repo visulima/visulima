@@ -1,4 +1,4 @@
-import type { LocaleOptions, NoCase } from "../types";
+import type { CaseOptions, NoCase } from "./types";
 import { kebabCase } from "./kebab-case";
 
 /**
@@ -13,5 +13,5 @@ import { kebabCase } from "./kebab-case";
  * noCase("QueryXML123String") // => "query xml 123 string"
  * ```
  */
-export const noCase = <T extends string = string>(value: T, options: LocaleOptions = {}): NoCase<T> =>
+export const noCase = <T extends string = string>(value: T, options: CaseOptions = {}): NoCase<T> =>
     kebabCase(value, { ...options, joiner: " " }) as NoCase<T>;

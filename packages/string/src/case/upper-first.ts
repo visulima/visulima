@@ -1,4 +1,4 @@
-import type { LocaleOptions, UpperFirst } from "../types";
+import type { CaseOptions, UpperFirst } from "./types";
 
 /**
  * Converts first character to upper case.
@@ -13,12 +13,14 @@ import type { LocaleOptions, UpperFirst } from "../types";
  * upperFirst("istanbul", { locale: "tr" }) // => "İstanbul"
  * ```
  */
-export const upperFirst = <T extends string = string>(value: T, options: LocaleOptions = {}): UpperFirst<T> => {
+export const upperFirst = <T extends string = string>(value: T, options: CaseOptions = {}): UpperFirst<T> => {
+    if (!value) {
+        return "" as UpperFirst<T>;
+    }
+
     const { locale } = options;
 
-    if (!value) return "" as UpperFirst<T>;
-
     const firstChar = locale ? value.charAt(0).toLocaleUpperCase(locale) : value.charAt(0).toUpperCase();
-    
+
     return (firstChar + value.slice(1)) as UpperFirst<T>;
 };
