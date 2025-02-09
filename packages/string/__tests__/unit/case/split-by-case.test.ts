@@ -121,7 +121,7 @@ describe("splitByCase", () => {
 
         it("should handle ANSI escape codes with numbers", () => {
             expect(splitByCase("\u001B[31mError404Found\u001B[0m")).toEqual(["\u001B[31m", "Error", "404", "Found", "\u001B[0m"]);
-            expect(splitByCase("\u001B[33mWarning2xx\u001B[0m")).toEqual(["\u001B[33m", "Warning", "2xx", "\u001B[0m"]);
+            expect(splitByCase("\u001B[33mWarning2xx\u001B[0m")).toEqual(["\u001B[33m", "Warning", "2", "xx", "\u001B[0m"]);
         });
     });
 

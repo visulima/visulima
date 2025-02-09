@@ -4,6 +4,55 @@ import emojiRegex from "emoji-regex";
 import type { CaseOptions, SplitByCase } from "./types";
 import { isAllUpper } from "./utils/is-locale-all-upper";
 
+const ansiRe = ansiRegex();
+
+const splitTokenByAnsi = (token: string): string[] => {
+    const segments: string[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    ansiRe.lastIndex = 0;
+
+    while ((match = ansiRe.exec(token)) !== null) {
+        if (match.index > lastIndex) {
+            segments.push(token.slice(lastIndex, match.index));
+        }
+        segments.push(match[0]); // should be the full ANSI escape
+        lastIndex = ansiRe.lastIndex;
+    }
+    if (lastIndex < token.length) {
+        segments.push(token.slice(lastIndex));
+    }
+    return segments.filter(Boolean);
+};
+
+const emojiRe = emojiRegex();
+
+const splitTokenByEmoji = (token: string): string[] => {
+    const segments: string[] = [];
+
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    emojiRe.lastIndex = 0; // reset regex state
+
+    while ((match = emojiRe.exec(token)) !== null) {
+        const { index } = match;
+
+        if (index > lastIndex) {
+            segments.push(token.slice(lastIndex, index));
+        }
+
+        segments.push(match[0]);
+        lastIndex = emojiRe.lastIndex;
+    }
+
+    if (lastIndex < token.length) {
+        segments.push(token.slice(lastIndex));
+    }
+
+    return segments.filter(Boolean);
+};
+
 export interface SplitOptions extends CaseOptions {
     separators?: ReadonlyArray<string>;
 }
@@ -103,6 +152,7 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
 
                 // eslint-disable-next-line no-loops/no-loops
                 while (runStart > tokenStart && isUpper(part[runStart - 1])) {
+                    // eslint-disable-next-line no-plusplus
                     runStart--;
                 }
 
@@ -119,6 +169,7 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
                     // otherwise, split off the last letter.
                     const runString = part.slice(runStart, runEnd);
 
+                    // eslint-disable-next-line unicorn/prefer-ternary
                     if (options.knownAcronyms.includes(runString)) {
                         boundary = runEnd; // keep all three letters together
                     } else {
@@ -136,10 +187,12 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
                     tokenStart = boundary;
                     index = tokenStart;
 
+                    // eslint-disable-next-line no-continue
                     continue;
                 }
             }
 
+            // eslint-disable-next-line no-plusplus
             index++;
         }
 
@@ -149,6 +202,27 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
         }
 
         return tokens;
+    };
+
+    /**
+     * Processes a part while preserving ANSI escape sequences.
+     * For each segment obtained by splitting the part via ANSI,
+     * if the segment is ANSI (starts with ESC), leave it alone;
+     * otherwise, run the normal processPart function on it.
+     */
+    const splitPartPreservingAnsi = (part: string): string[] => {
+        const ansiSegments = splitTokenByAnsi(part);
+        const result: string[] = [];
+        for (const segment of ansiSegments) {
+            // If the segment is an ANSI escape sequence, it usually starts with ESC (\x1B).
+            if (segment.startsWith("\x1B")) {
+                result.push(segment);
+            } else {
+                // Process normal text using your processPart function.
+                result.push(...processPart(segment));
+            }
+        }
+        return result;
     };
 
     // Process every part and then (for each token) apply a “post‐split” for the case
@@ -186,67 +260,13 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
     const words: string[] = [];
 
     for (const part of parts) {
-        const prelim = processPart(part);
-        // For each token produced, run the postProcess step.
-        for (const tok of prelim) {
-            words.push(...postProcess(tok));
+        // First, split the part so that any ANSI escapes are isolated.
+        const segments = splitPartPreservingAnsi(part);
+        // Then, run the postProcess step on each segment.
+        for (const seg of segments) {
+            words.push(...postProcess(seg));
         }
     }
-
-    const ansiRe = ansiRegex();
-    const splitTokenByAnsi = (token: string): string[] => {
-        const segments: string[] = [];
-
-        let lastIndex = 0;
-        let match: RegExpExecArray | null;
-
-        ansiRe.lastIndex = 0; // ensure starting at beginning
-
-        while ((match = ansiRe.exec(token)) !== null) {
-            const { index } = match;
-
-            if (index > lastIndex) {
-                segments.push(token.slice(lastIndex, index));
-            }
-
-            segments.push(match[0]);
-            lastIndex = ansiRe.lastIndex;
-        }
-
-        if (lastIndex < token.length) {
-            segments.push(token.slice(lastIndex));
-        }
-
-        return segments.filter(Boolean);
-    };
-
-    // === Step 4. Further split tokens on emoji boundaries ===
-    const emojiRe = emojiRegex();
-    const splitTokenByEmoji = (token: string): string[] => {
-        const segments: string[] = [];
-
-        let lastIndex = 0;
-        let match: RegExpExecArray | null;
-
-        emojiRe.lastIndex = 0; // reset regex state
-
-        while ((match = emojiRe.exec(token)) !== null) {
-            const { index } = match;
-
-            if (index > lastIndex) {
-                segments.push(token.slice(lastIndex, index));
-            }
-
-            segments.push(match[0]);
-            lastIndex = emojiRe.lastIndex;
-        }
-
-        if (lastIndex < token.length) {
-            segments.push(token.slice(lastIndex));
-        }
-
-        return segments.filter(Boolean);
-    };
 
     // === Step 5. Combine ANSI and emoji splitting ===
     let finalTokens: string[] = [];
