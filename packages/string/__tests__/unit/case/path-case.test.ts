@@ -47,6 +47,15 @@ describe("pathCase", () => {
         expect(pathCase("fooBar")).toBe("foo/bar");
     });
 
+    it("should handle special formats and mixed cases", () => {
+        expect(pathCase("C-3PO_and_R2-D2")).toBe("c/3po/and/r2/d2");
+        expect(pathCase("src/components/Button.tsx")).toBe("src/components/button/tsx");
+        expect(pathCase("path/to/file/v1.2.3")).toBe("path/to/file/v1/2/3");
+        expect(pathCase("48-HOLA-mundo-6")).toBe("48/hola/mundo/6");
+        expect(pathCase("non-SI units")).toBe("non/si/units");
+        expect(pathCase("Red1Green2Blue3")).toBe("red1/green2/blue3");
+    });
+
     describe("emoji support 🎯", () => {
         it("should handle emojis in text", () => {
             expect(pathCase("Foo🐣Bar")).toBe("foo/🐣/bar");

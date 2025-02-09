@@ -46,6 +46,15 @@ describe("noCase", () => {
         expect(noCase("fooBar")).toBe("foo bar");
     });
 
+    it("should handle special formats and mixed cases", () => {
+        expect(noCase("C-3PO_and_R2-D2")).toBe("c 3po and r2 d2");
+        expect(noCase("The Taking of Pelham 123")).toBe("the taking of pelham 123");
+        expect(noCase("Ocean's 11")).toBe("ocean's 11");
+        expect(noCase("21-JUMP-STREET")).toBe("21 jump street");
+        expect(noCase("non-SI units")).toBe("non si units");
+        expect(noCase("Red1Green2Blue3")).toBe("red1 green2 blue3");
+    });
+
     describe("emoji support 🎯", () => {
         it("should handle emojis in text", () => {
             expect(noCase("Foo🐣Bar")).toBe("foo 🐣 bar");

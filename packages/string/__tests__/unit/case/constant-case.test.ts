@@ -75,6 +75,14 @@ describe("constantCase", () => {
         expect(constantCase("iOS_app")).toBe("I_OS_APP");
     });
 
+    it("should handle special formats and mixed cases", () => {
+        expect(constantCase("fantastic-4")).toBe("FANTASTIC_4");
+        expect(constantCase("Apollo13")).toBe("APOLLO13");
+        expect(constantCase("you-have-0-money")).toBe("YOU_HAVE_0_MONEY");
+        expect(constantCase("123BC456BC789")).toBe("123_B_C456_B_C789");
+        expect(constantCase("DISTRICT_9")).toBe("DISTRICT_9");
+    });
+
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             const locale = "tr-TR";

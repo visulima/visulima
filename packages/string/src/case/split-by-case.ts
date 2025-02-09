@@ -4,8 +4,6 @@ import emojiRegex from "emoji-regex";
 import type { CaseOptions, SplitByCase } from "./types";
 import { germanUpperSsToSz } from "./german-case-utils";
 export interface SplitOptions extends CaseOptions {
-    knownAcronyms?: ReadonlyArray<string>;
-    normalize?: boolean;
     separators?: ReadonlyArray<string>;
 }
 
@@ -195,20 +193,27 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
     const ansiRe = ansiRegex();
     const splitTokenByAnsi = (token: string): string[] => {
         const segments: string[] = [];
+
         let lastIndex = 0;
         let match: RegExpExecArray | null;
+
         ansiRe.lastIndex = 0; // ensure starting at beginning
+
         while ((match = ansiRe.exec(token)) !== null) {
             const { index } = match;
+
             if (index > lastIndex) {
                 segments.push(token.slice(lastIndex, index));
             }
+
             segments.push(match[0]);
             lastIndex = ansiRe.lastIndex;
         }
+
         if (lastIndex < token.length) {
             segments.push(token.slice(lastIndex));
         }
+
         return segments.filter(Boolean);
     };
 
@@ -216,28 +221,37 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
     const emojiRe = emojiRegex();
     const splitTokenByEmoji = (token: string): string[] => {
         const segments: string[] = [];
+
         let lastIndex = 0;
         let match: RegExpExecArray | null;
+
         emojiRe.lastIndex = 0; // reset regex state
+
         while ((match = emojiRe.exec(token)) !== null) {
             const { index } = match;
+
             if (index > lastIndex) {
                 segments.push(token.slice(lastIndex, index));
             }
+
             segments.push(match[0]);
             lastIndex = emojiRe.lastIndex;
         }
+
         if (lastIndex < token.length) {
             segments.push(token.slice(lastIndex));
         }
+
         return segments.filter(Boolean);
     };
 
     // === Step 5. Combine ANSI and emoji splitting ===
     let finalTokens: string[] = [];
+
     for (const token of words) {
         // First split by ANSI escapes
         const ansiTokens = splitTokenByAnsi(token);
+
         for (const ansiToken of ansiTokens) {
             // Then, if the segment contains emoji, further split it.
             if (emojiRe.test(ansiToken)) {
@@ -251,7 +265,7 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
     // Optionally, if "normalize" is true and a token is all–uppercase and not a known acronym,
     // convert it to title–case.
     if (options.normalize) {
-        finalTokens = finalTokens.map((tok) => {
+        finalTokens = finalTokens.map((tok: string) => {
             if (/^[A-Z]+$/.test(tok) && !options.knownAcronyms.includes(tok)) {
                 return toLocaleLower(tok[0] + tok.slice(1));
             }

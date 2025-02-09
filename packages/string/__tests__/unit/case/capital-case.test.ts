@@ -76,6 +76,15 @@ describe("capitalCase", () => {
         expect(capitalCase("iOS_app")).toBe("I Os App");
     });
 
+    it("should handle special formats and mixed cases", () => {
+        expect(capitalCase("C-3PO_and_R2-D2")).toBe("C 3 Po And R2 D2");
+        expect(capitalCase("The Taking of Pelham 123")).toBe("The Taking Of Pelham 123");
+        expect(capitalCase("Ocean's 11")).toBe("Ocean's 11");
+        expect(capitalCase("21-JUMP-STREET")).toBe("21 Jump Street");
+        expect(capitalCase("non-SI units")).toBe("Non Si Units");
+        expect(capitalCase("Red1Green2Blue3")).toBe("Red1 Green2 Blue3");
+    });
+
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             const locale = "tr-TR";
