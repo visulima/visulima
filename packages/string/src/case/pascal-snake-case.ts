@@ -1,5 +1,5 @@
-import type { CaseOptions, PascalSnakeCase } from "./types";
 import { noCase } from "./no-case";
+import type { CaseOptions, PascalSnakeCase } from "./types";
 import { upperFirst } from "./upper-first";
 
 /**
@@ -17,6 +17,6 @@ import { upperFirst } from "./upper-first";
 export const pascalSnakeCase = <T extends string = string>(value: T, options: CaseOptions = {}): PascalSnakeCase<T> => {
     const { locale } = options;
     const words = noCase(value, options).split(" ");
-    
+
     return words.map((word) => upperFirst(word, { locale })).join("_") as PascalSnakeCase<T>;
 };

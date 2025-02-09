@@ -83,10 +83,10 @@ describe("dotCase", () => {
 
     it("should handle special formats and mixed cases", () => {
         expect(dotCase("EstosSon_losActores")).toBe("estos.son.los.actores");
-        expect(dotCase("Red1Green2Blue3")).toBe("red1.green2.blue3");
-        expect(dotCase("REEL2REAL")).toBe("r.e.e.l2.r.e.a.l");
-        expect(dotCase("reel2real")).toBe("reel2real");
-        expect(dotCase("Reel2Real")).toBe("reel2.real");
+        expect(dotCase("Red1Green2Blue3")).toBe("red.1.green.2.blue.3");
+        expect(dotCase("REEL2REAL")).toBe("reel.2.real");
+        expect(dotCase("reel2real")).toBe("reel.2.real");
+        expect(dotCase("Reel2Real")).toBe("reel.2.real");
         expect(dotCase("non-SI units")).toBe("non.si.units");
     });
 
