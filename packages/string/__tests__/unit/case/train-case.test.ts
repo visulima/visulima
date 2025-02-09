@@ -111,9 +111,5 @@ describe("trainCase", () => {
             expect(trainCase("GROSSE STRASSE", { locale })).toBe("GROSSE-STRASSE");
             expect(trainCase("GROßE STRAßE", { locale })).toBe("GROßE-STRAßE");
         });
-
-        it("should handle locale array", () => {
-            expect(trainCase("istanbulIzmir", { locale: ["tr-TR", "en-US"] })).toBe("İstanbul-Izmir");
-        });
     });
 });

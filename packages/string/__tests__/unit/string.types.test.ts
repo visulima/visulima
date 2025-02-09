@@ -13,7 +13,9 @@ import type {
     Reverse,
     Slice,
     Split,
-    StartsWith, ToLowerCase, ToUpperCase,
+    StartsWith,
+    ToLowerCase,
+    ToUpperCase,
     Trim,
     TrimEnd,
     TrimStart,
@@ -146,7 +148,7 @@ describe("string Type Utils", () => {
         });
     });
 
-    describe("ToLowerCase/ToUpperCase", () => {
+    describe("toLowerCase/ToUpperCase", () => {
         it("should convert to lowercase correctly", () => {
             expectTypeOf<ToLowerCase<"HELLO">>().toEqualTypeOf<"hello">();
             expectTypeOf<ToLowerCase<"HeLLo">>().toEqualTypeOf<"hello">();

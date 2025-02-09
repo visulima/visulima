@@ -17,7 +17,7 @@ export interface LocaleOptions {
      * The locale to use for case conversion.
      * If not provided, the system default locale will be used.
      */
-    locale?: NodeLocale | NodeLocale[];
+    locale?: NodeLocale;
 }
 
 /**

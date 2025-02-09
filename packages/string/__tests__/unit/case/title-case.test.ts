@@ -99,10 +99,6 @@ describe("titleCase", () => {
             expect(titleCase("izmir ankara", { locale })).toBe("İzmir Ankara");
         });
 
-        it("should handle locale array", () => {
-            expect(titleCase("istanbul izmir", { locale: ["tr-TR", "en-US"] })).toBe("İstanbul İzmir");
-        });
-
         it("should handle German specific cases", () => {
             const locale = "de-DE";
             expect(titleCase("GROSSE STRAßE", { locale })).toBe("Große Straße");

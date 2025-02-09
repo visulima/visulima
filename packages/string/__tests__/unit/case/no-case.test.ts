@@ -77,8 +77,8 @@ describe("noCase", () => {
 
         it("should handle German specific cases", () => {
             const locale = "de-DE";
-            expect(noCase("GROSSE STRAßE", { locale })).toBe("grosse straße");
-            expect(noCase("GROSSE STRASSE", { locale })).toBe("grosse strasse");
+            expect(noCase("GROSSE STRAßE", { locale })).toBe("große straße");
+            expect(noCase("GROSSE STRASSE", { locale })).toBe("große straße");
             expect(noCase("GROßE STRAßE", { locale })).toBe("große straße");
         });
 

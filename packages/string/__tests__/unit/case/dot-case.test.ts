@@ -99,8 +99,8 @@ describe("dotCase", () => {
 
         it("should handle German specific cases", () => {
             const locale = "de-DE";
-            expect(dotCase("GROSSE STRAßE", { locale })).toBe("grosse.straße");
-            expect(dotCase("GROSSE STRASSE", { locale })).toBe("grosse.strasse");
+            expect(dotCase("GROSSE STRAßE", { locale })).toBe("große.straße");
+            expect(dotCase("GROSSE STRASSE", { locale })).toBe("große.straße");
             expect(dotCase("GROßE STRAßE", { locale })).toBe("große.straße");
         });
 

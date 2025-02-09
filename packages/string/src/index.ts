@@ -1,3 +1,3 @@
-const a = "test".toUpperCase()
+const a = "test".toUpperCase();
 
 console.log(a);
