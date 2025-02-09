@@ -1,5 +1,5 @@
-import type { DotCase, CaseOptions } from "./types";
 import { kebabCase } from "./kebab-case";
+import type { CaseOptions, DotCase } from "./types";
 
 /**
  * Converts a string to dot.case.

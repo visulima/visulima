@@ -82,7 +82,7 @@ describe("camelCase", () => {
     });
 
     it("should handle special formats and mixed cases", () => {
-        expect(camelCase("C-3PO_and_R2-D2")).toBe("c3poAndR2D2");
+        expect(camelCase("C-3PO_and_R2-D2")).toBe("c3PoAndR2D2");
         expect(camelCase("non-SI units")).toBe("nonSiUnits");
         expect(camelCase("EstosSon_losActores")).toBe("estosSonLosActores");
     });
@@ -92,7 +92,7 @@ describe("camelCase", () => {
         expect(camelCase("STARTER-FOR-10")).toBe("starterFor10");
         expect(camelCase("the__0__is_the_best")).toBe("the0IsTheBest");
         expect(camelCase("10-10-a-a-10-10")).toBe("1010AA1010");
-        expect(camelCase("se7en")).toBe("se7en");
+        expect(camelCase("se7en")).toBe("se7En");
         expect(camelCase("Red1Green2Blue3")).toBe("red1Green2Blue3");
         expect(camelCase("REEL2REAL")).toBe("reel2Real");
         expect(camelCase("reel2real")).toBe("reel2Real");

@@ -1,5 +1,5 @@
-import type { CaseOptions, PathCase } from "./types";
 import { kebabCase } from "./kebab-case";
+import type { CaseOptions, PathCase } from "./types";
 
 /**
  * Converts a string to path/case.

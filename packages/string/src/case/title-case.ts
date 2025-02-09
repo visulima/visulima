@@ -1,5 +1,5 @@
-import type { CaseOptions, TitleCase } from "./types";
 import { splitByCase } from "./split-by-case";
+import type { CaseOptions, TitleCase } from "./types";
 import { upperFirst } from "./upper-first";
 
 /**
@@ -24,6 +24,6 @@ export function titleCase<T extends string = string>(string_?: T, options: CaseO
 
     return splitByCase(string_, options)
         .filter(Boolean)
-        .map((p) => upperFirst(options?.locale ? p.toLocaleLowerCase(options.locale) : p.toLowerCase(), { locale: options?.locale }))
-        .join(" ") as TitleCase<T>
+        .map((p) => upperFirst(options.locale ? p.toLocaleLowerCase(options.locale) : p.toLowerCase(), { locale: options.locale }))
+        .join(" ") as TitleCase<T>;
 }

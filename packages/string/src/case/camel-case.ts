@@ -1,6 +1,6 @@
-import type { CamelCase, CaseOptions } from "./types";
 import { lowerFirst } from "./lower-first";
 import { pascalCase } from "./pascal-case";
+import type { CamelCase, CaseOptions } from "./types";
 
 /**
  * Converts a string to camelCase.
@@ -24,5 +24,5 @@ export const camelCase = <T extends string = string>(value: T, options: CaseOpti
         return "" as CamelCase<T>;
     }
 
-    return lowerFirst(pascalCase(value, options), { locale: options?.locale }) as CamelCase<T>;
+    return lowerFirst(pascalCase(value, options), { locale: options.locale }) as CamelCase<T>;
 };
