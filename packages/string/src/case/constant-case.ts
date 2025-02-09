@@ -13,8 +13,8 @@ import type { CaseOptions, ConstantCase } from "./types";
  * constantCase("QueryXML123String") // => "QUERY_XML_123_STRING"
  * ```
  */
-export const constantCase = <T extends string = string>(value: T, options: CaseOptions = {}): ConstantCase<T> => {
+export const constantCase = <T extends string = string>(value?: T, options?: CaseOptions): ConstantCase<T> => {
     const result = snakeCase(value, options);
 
-    return (options.locale ? result.toLocaleUpperCase(options.locale) : result.toUpperCase()) as ConstantCase<T>;
+    return (options?.locale ? result.toLocaleUpperCase(options.locale) : result.toUpperCase()) as ConstantCase<T>;
 };

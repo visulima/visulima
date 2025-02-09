@@ -13,12 +13,12 @@ import type { LocaleOptions, LowerFirst } from "./types";
  * lowerFirst("İSTANBUL", { locale: "tr" }) // => "istanbul"
  * ```
  */
-export const lowerFirst = <T extends string = string>(value: T, options: LocaleOptions = {}): LowerFirst<T> => {
-    if (!value) {
+export const lowerFirst = <T extends string = string>(value?: T, options?: LocaleOptions): LowerFirst<T> => {
+    if (typeof value !== "string") {
         return "" as LowerFirst<T>;
     }
 
-    const firstChar = options.locale ? value.charAt(0).toLocaleLowerCase(options.locale) : value.charAt(0).toLowerCase();
+    const firstChar = options?.locale ? value.charAt(0).toLocaleLowerCase(options.locale) : value.charAt(0).toLowerCase();
 
     return (firstChar + value.slice(1)) as LowerFirst<T>;
 };
