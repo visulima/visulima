@@ -73,6 +73,15 @@ describe("flatCase", () => {
         expect(flatCase("FOO BAR_BAZ-QUX")).toBe("foobarbazqux");
     });
 
+    it("should handle special formats and mixed cases", () => {
+        expect(flatCase("C-3PO_and_R2-D2")).toBe("c3poandr2d2");
+        expect(flatCase("The Taking of Pelham 123")).toBe("thetakingofpelham123");
+        expect(flatCase("Ocean's 11")).toBe("oceans11");
+        expect(flatCase("21-JUMP-STREET")).toBe("21jumpstreet");
+        expect(flatCase("non-SI units")).toBe("nonsiunits");
+        expect(flatCase("Red1Green2Blue3")).toBe("red1green2blue3");
+    });
+
     describe("locale support", () => {
         it("should handle German specific cases", () => {
             const locale = "de-DE";

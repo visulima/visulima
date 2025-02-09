@@ -45,4 +45,13 @@ describe("upperFirst", () => {
         expect(upperFirst("FOO_BAR")).toBe("FOO_BAR");
         expect(upperFirst("foo-bar")).toBe("Foo-bar");
     });
+
+    it("should handle special formats and mixed cases", () => {
+        expect(upperFirst("c-3PO")).toBe("C-3PO");
+        expect(upperFirst("r2-D2")).toBe("R2-D2");
+        expect(upperFirst("ocean's")).toBe("Ocean's");
+        expect(upperFirst("21jumpStreet")).toBe("21jumpStreet");
+        expect(upperFirst("nonSIUnits")).toBe("NonSIUnits");
+        expect(upperFirst("red1Green2")).toBe("Red1Green2");
+    });
 });

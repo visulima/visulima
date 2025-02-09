@@ -83,6 +83,11 @@ describe("titleCase", () => {
         expect(titleCase("foo123Bar")).toBe("Foo 123 Bar");
         expect(titleCase("foo_bar-baz")).toBe("Foo Bar Baz");
         expect(titleCase("FOO BAR_BAZ-QUX")).toBe("Foo Bar Baz Qux");
+        expect(titleCase("session9")).toBe("Session9");
+        expect(titleCase("planet_51")).toBe("Planet 51");
+        expect(titleCase("United9")).toBe("United9");
+        expect(titleCase("The Taking of Pelham 123")).toBe("The Taking Of Pelham 123");
+        expect(titleCase("Ocean's 11")).toBe("Ocean's 11");
     });
 
     describe("locale support", () => {

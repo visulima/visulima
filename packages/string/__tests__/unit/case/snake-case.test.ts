@@ -48,6 +48,14 @@ describe("snakeCase", () => {
         });
     });
 
+    it("should handle special formats and mixed cases", () => {
+        expect(snakeCase("C-3PO_and_R2-D2")).toBe("c_3po_and_r2_d2");
+        expect(snakeCase("3_idiots_2009")).toBe("3_idiots_2009");
+        expect(snakeCase("12_angry_men")).toBe("12_angry_men");
+        expect(snakeCase("48-HOLA-mundo-6")).toBe("48_hola_mundo_6");
+        expect(snakeCase("IDoNot0LikeNumber0")).toBe("i_do_not0_like_number0");
+    });
+
     describe("locale support", () => {
         it("should handle German specific cases", () => {
             const locale = "de-DE";
