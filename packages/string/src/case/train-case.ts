@@ -1,5 +1,5 @@
-import type { CaseOptions, TrainCase } from "./types";
 import { splitByCase } from "./split-by-case";
+import type { CaseOptions, TrainCase } from "./types";
 import { upperFirst } from "./upper-first";
 
 /**
@@ -15,13 +15,12 @@ import { upperFirst } from "./upper-first";
  * ```
  */
 export const trainCase = <T extends string = string>(value: T, options: CaseOptions = {}): TrainCase<T> => {
-
     if (typeof value !== "string") {
         return "" as TrainCase<T>;
     }
 
     return splitByCase(value, options)
         .filter(Boolean)
-        .map((p) => upperFirst(p, { locale: options?.locale }))
+        .map((p) => upperFirst(p, { locale: options.locale }))
         .join("-") as TrainCase<T>;
 };

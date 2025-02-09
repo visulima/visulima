@@ -1,5 +1,5 @@
-import type { CaseOptions, SentenceCase } from "./types";
 import { noCase } from "./no-case";
+import type { CaseOptions, SentenceCase } from "./types";
 import { upperFirst } from "./upper-first";
 
 /**
@@ -16,6 +16,6 @@ import { upperFirst } from "./upper-first";
  */
 export const sentenceCase = <T extends string = string>(value: T, options: CaseOptions = {}): SentenceCase<T> => {
     const words = noCase(value, options);
-    
+
     return upperFirst(words, options) as SentenceCase<T>;
 };

@@ -1,8 +1,8 @@
 import ansiRegex from "ansi-regex";
 import emojiRegex from "emoji-regex";
 
-import type { CaseOptions, SplitByCase } from "./types";
 import { germanUpperSsToSz } from "./german-case-utils";
+import type { CaseOptions, SplitByCase } from "./types";
 
 export interface SplitOptions extends CaseOptions {
     separators?: ReadonlyArray<string>;
