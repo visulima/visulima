@@ -1,6 +1,7 @@
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, PascalCase } from "./types";
 import { upperFirst } from "./upper-first";
+import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
 
 /**
  * Converts a string to PascalCase.
@@ -25,6 +26,10 @@ export const pascalCase = <T extends string = string>(value: T, options: CaseOpt
     }
 
     return splitByCase(value, options)
-        .map((word: string) => upperFirst(options.locale ? word.toLocaleLowerCase(options.locale) : word.toLowerCase(), { locale: options.locale }))
+        .map((word: string) => {
+            const split = normalizeGermanEszett(word, options.locale);
+
+            return upperFirst(options.locale ? split.toLocaleLowerCase(options.locale) : split.toLowerCase(), { locale: options.locale });
+        })
         .join("") as PascalCase<T>;
 };
