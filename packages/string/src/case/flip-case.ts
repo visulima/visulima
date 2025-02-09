@@ -10,18 +10,16 @@ import type { CaseOptions } from "./types";
  * flipCase("XMLHttpRequest") // => "xmlhTTPrEQUEST"
  * ```
  */
-export const flipCase = (value: string, options: CaseOptions = {}): string => {
-    const { locale } = options;
-
-    if (typeof value !== "string") {
+export const flipCase = <T extends string = string>(value?: T, options?: CaseOptions): string => {
+    if (typeof value !== "string" || !value) {
         return "";
     }
 
     return value
         .split("")
         .map((char) => {
-            const lowerChar = locale ? char.toLocaleLowerCase(locale) : char.toLowerCase();
-            return char === lowerChar ? (locale ? char.toLocaleUpperCase(locale) : char.toUpperCase()) : lowerChar;
+            const lowerChar = options?.locale ? char.toLocaleLowerCase(options.locale) : char.toLowerCase();
+            return char === lowerChar ? (options?.locale ? char.toLocaleUpperCase(options.locale) : char.toUpperCase()) : lowerChar;
         })
         .join("");
 };

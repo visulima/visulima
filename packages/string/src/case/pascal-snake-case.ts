@@ -14,9 +14,12 @@ import { upperFirst } from "./upper-first";
  * pascalSnakeCase("QueryXML123String") // => "Query_Xml_123_String"
  * ```
  */
-export const pascalSnakeCase = <T extends string = string>(value: T, options: CaseOptions = {}): PascalSnakeCase<T> => {
-    const { locale } = options;
+export const pascalSnakeCase = <T extends string = string>(value?: T, options?: CaseOptions): PascalSnakeCase<T> => {
+    if (typeof value !== "string") {
+        return "" as PascalSnakeCase<T>;
+    }
+
     const words = noCase(value, options).split(" ");
 
-    return words.map((word) => upperFirst(word, { locale })).join("_") as PascalSnakeCase<T>;
+    return words.map((word) => upperFirst(word, { locale: options?.locale })).join("_") as PascalSnakeCase<T>;
 };

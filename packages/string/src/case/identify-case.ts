@@ -16,7 +16,11 @@ export type CaseStyle = "camel" | "kebab" | "lower" | "mixed" | "pascal" | "snak
  * identifyCase("FooBAR") // => "mixed"
  * ```
  */
-export const identifyCase = <T extends string = string>(value: T): CaseStyle => {
+export const identifyCase = <T extends string = string>(value?: T): CaseStyle => {
+    if (typeof value !== "string" || !value) {
+        return "lower";
+    }
+
     if (value === value.toLowerCase()) {
         if (value.includes("_")) {
             return "snake";

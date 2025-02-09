@@ -14,8 +14,8 @@ import { upperFirst } from "./upper-first";
  * capitalCase("QueryXML123String") // => "Query Xml 123 String"
  * ```
  */
-export const capitalCase = <T extends string = string>(value: T, options: CaseOptions = {}): CapitalCase<T> => {
+export const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions): CapitalCase<T> => {
     const words = noCase(value, options).split(" ");
 
-    return words.map((word) => upperFirst(word, { locale: options.locale })).join(" ") as CapitalCase<T>;
+    return words.map((word) => upperFirst(word, { locale: options?.locale })).join(" ") as CapitalCase<T>;
 };

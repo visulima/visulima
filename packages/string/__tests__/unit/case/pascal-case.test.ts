@@ -79,7 +79,7 @@ describe("pascalCase", () => {
         it("should handle Turkish specific cases", () => {
             const locale = "tr-TR";
             expect(pascalCase("istanbul_city", { locale })).toBe("İstanbulCity");
-            expect(pascalCase("izmir_city", { locale })).toBe("İzmirCıty");
+            expect(pascalCase("izmir_city", { locale })).toBe("İzmirCity");
         });
 
         it("should handle German specific cases", () => {
