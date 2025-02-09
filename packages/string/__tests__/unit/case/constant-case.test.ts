@@ -87,7 +87,7 @@ describe("constantCase", () => {
         it("should handle Turkish specific cases", () => {
             const locale = "tr-TR";
             expect(constantCase("istanbul_city", { locale })).toBe("İSTANBUL_CİTY");
-            expect(constantCase("İZMİR_CITY", { locale })).toBe("İZMİR_CİTY");
+            expect(constantCase("İZMİR_CITY", { locale })).toBe("İZMİR_CITY");
         });
 
         it("should handle German specific cases", () => {
