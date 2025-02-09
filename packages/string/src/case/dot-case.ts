@@ -13,5 +13,4 @@ import type { CaseOptions, DotCase } from "./types";
  * dotCase("QueryXML123String") // => "query.xml.123.string"
  * ```
  */
-export const dotCase = <T extends string = string>(value: T, options: CaseOptions = {}): DotCase<T> =>
-    kebabCase(value, { ...options, joiner: "." }) as DotCase<T>;
+export const dotCase = <T extends string = string>(value?: T, options?: CaseOptions): DotCase<T> => kebabCase(value, { ...options, joiner: "." }) as DotCase<T>;

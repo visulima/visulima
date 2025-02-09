@@ -20,16 +20,16 @@ import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
  * pascalCase('QueryXML123String') // 'QueryXml123String'
  * ```
  */
-export const pascalCase = <T extends string = string>(value: T, options: CaseOptions = {}): PascalCase<T> => {
+export const pascalCase = <T extends string = string>(value?: T, options?: CaseOptions): PascalCase<T> => {
     if (typeof value !== "string" || !value) {
         return "" as PascalCase<T>;
     }
 
     return splitByCase(value, options)
         .map((word: string) => {
-            const split = normalizeGermanEszett(word, options.locale);
+            const split = normalizeGermanEszett(word, options?.locale);
 
-            return upperFirst(options.locale ? split.toLocaleLowerCase(options.locale) : split.toLowerCase(), { locale: options.locale });
+            return upperFirst(options?.locale ? split.toLocaleLowerCase(options.locale) : split.toLowerCase(), { locale: options?.locale });
         })
         .join("") as PascalCase<T>;
 };

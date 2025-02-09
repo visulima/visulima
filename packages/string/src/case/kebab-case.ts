@@ -22,16 +22,16 @@ export interface KebabCaseOptions extends CaseOptions {
  * kebabCase("QueryXML123String") // => "query-xml-123-string"
  * ```
  */
-export const kebabCase = <T extends string = string>(value: T, options: KebabCaseOptions = {}): KebabCase<T> => {
+export const kebabCase = <T extends string = string>(value?: T, options?: KebabCaseOptions): KebabCase<T> => {
     if (typeof value !== "string") {
         return "" as KebabCase<T>;
     }
 
     return splitByCase(value, options)
         .map((p) => {
-            const split = normalizeGermanEszett(p, options.locale);
+            const split = normalizeGermanEszett(p, options?.locale);
 
-            return options.locale ? split.toLocaleLowerCase(options.locale) : split.toLowerCase();
+            return options?.locale ? split.toLocaleLowerCase(options.locale) : split.toLowerCase();
         })
-        .join(options.joiner ?? "-") as KebabCase<T>;
+        .join(options?.joiner ?? "-") as KebabCase<T>;
 };
