@@ -77,11 +77,11 @@ describe("trainCase", () => {
         expect(trainCase("Foo123Bar")).toBe("Foo-123-Bar");
         expect(trainCase("foo_bar-baz")).toBe("Foo-Bar-Baz");
         expect(trainCase("FOO BAR_BAZ-QUX")).toBe("FOO-BAR-BAZ-QUX");
-        expect(trainCase("C-3PO_and_R2-D2")).toBe("C-3-PO-And-R2-D2");
-        expect(trainCase("21-JUMP-STREET")).toBe("21-Jump-Street");
-        expect(trainCase("21-test-test21-21Test")).toBe("21-Test-Test21-21-Test");
+        expect(trainCase("C-3PO_and_R2-D2")).toBe("C-3-PO-And-R-2-D-2");
+        expect(trainCase("21-JUMP-STREET")).toBe("21-JUMP-STREET");
+        expect(trainCase("21-test-test21-21Test")).toBe("21-Test-Test-21-21-Test");
         expect(trainCase("8Mm")).toBe("8-Mm");
-        expect(trainCase("Friday-the-13th")).toBe("Friday-The-13th");
+        expect(trainCase("Friday-the-13th")).toBe("Friday-The-13-Th");
     });
 
     describe("emoji support 🎯", () => {

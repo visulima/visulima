@@ -1,5 +1,5 @@
-import type { CaseOptions, KebabCase } from "./types";
 import { splitByCase } from "./split-by-case";
+import type { CaseOptions, KebabCase } from "./types";
 
 export interface KebabCaseOptions extends CaseOptions {
     /**
@@ -27,6 +27,6 @@ export const kebabCase = <T extends string = string>(value: T, options: KebabCas
     }
 
     return splitByCase(value, options)
-        .map((p) => options?.locale ? p.toLocaleLowerCase(options.locale) : p.toLowerCase())
+        .map((p) => (options.locale ? p.toLocaleLowerCase(options.locale) : p.toLowerCase()))
         .join(options.joiner ?? "-") as KebabCase<T>;
 };

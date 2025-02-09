@@ -13,7 +13,7 @@
  * germanUpperSsToSz("GROSSE") // => "GROßE"
  * ```
  */
-export const germanUpperSsToSz = (value: string, locale?: string | string[]): string => {
+export const germanUpperSsToSz = (value: string, locale?: string[] | string): string => {
     // Only apply this conversion for German locales
     if (!locale || (Array.isArray(locale) ? !locale.some((l) => l.startsWith("de")) : !locale.startsWith("de"))) {
         return value;
@@ -21,5 +21,5 @@ export const germanUpperSsToSz = (value: string, locale?: string | string[]): st
 
     // Replace "SS" with "ß" only when both letters are uppercase
     // This uses a positive lookbehind to ensure we don't convert "ss" or "Ss"
-    return value.replace(/(?<![a-zß])SS(?![a-z])/g, "ß");
+    return value.replaceAll(/(?<![a-zß])SS(?![a-z])/g, "ß");
 };
