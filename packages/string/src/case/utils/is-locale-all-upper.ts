@@ -5,7 +5,9 @@
  * @param s The string to test.
  * @param locale Defaults to "de-DE".
  */
-export const isAllUpperGerman = (s: string, locale = "de-DE"): boolean => [...s].every((ch) => ch === "ß" || ch === ch.toLocaleUpperCase(locale));
+import { fastUpperCase } from "./string-ops";
+
+export const isAllUpperGerman = (s: string, locale = "de-DE"): boolean => [...s].every((ch) => ch === "ß" || ch === fastUpperCase(ch, locale));
 
 /**
  * For Greek, we want to treat the final sigma (ς) as equivalent to uppercase sigma (Σ)
@@ -17,7 +19,7 @@ export const isAllUpperGerman = (s: string, locale = "de-DE"): boolean => [...s]
 export const isAllUpperGreek = (s: string, locale = "el-GR"): boolean => {
     // Normalize any final sigma (ς) to the standard uppercase sigma (Σ)
     const normalized = s.replaceAll("ς", "Σ");
-    return normalized === normalized.toLocaleUpperCase(locale);
+    return normalized === fastUpperCase(normalized, locale);
 };
 
 /**
@@ -26,7 +28,7 @@ export const isAllUpperGreek = (s: string, locale = "el-GR"): boolean => {
  * @param s The string to test.
  * @param locale Defaults to "tr-TR".
  */
-export const isAllUpperTurkish = (s: string, locale = "tr-TR"): boolean => s === s.toLocaleUpperCase(locale);
+export const isAllUpperTurkish = (s: string, locale = "tr-TR"): boolean => s === fastUpperCase(s, locale);
 
 /**
  * A generic helper that dispatches to a locale‐specific “is all uppercase” test.
@@ -37,7 +39,7 @@ export const isAllUpperTurkish = (s: string, locale = "tr-TR"): boolean => s ===
  */
 export const isAllUpper = (s: string, locale?: string): boolean => {
     if (!locale) {
-        return s === s.toUpperCase();
+        return s === fastUpperCase(s);
     }
 
     const normLocale = locale.toLowerCase();
