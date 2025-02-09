@@ -268,7 +268,6 @@ export const splitByCase = <T extends string>(input: T, splitOptions?: SplitOpti
         }
     }
 
-    // === Step 5. Combine ANSI and emoji splitting ===
     let finalTokens: string[] = [];
 
     for (const token of words) {
