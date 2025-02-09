@@ -1,4 +1,4 @@
-import type { LocaleOptions, SentenceCase } from "../types";
+import type { CaseOptions, SentenceCase } from "./types";
 import { noCase } from "./no-case";
 import { upperFirst } from "./upper-first";
 
@@ -14,7 +14,7 @@ import { upperFirst } from "./upper-first";
  * sentenceCase("QueryXML123String") // => "Query xml 123 string"
  * ```
  */
-export const sentenceCase = <T extends string = string>(value: T, options: LocaleOptions = {}): SentenceCase<T> => {
+export const sentenceCase = <T extends string = string>(value: T, options: CaseOptions = {}): SentenceCase<T> => {
     const words = noCase(value, options);
     
     return upperFirst(words, options) as SentenceCase<T>;
