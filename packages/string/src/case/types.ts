@@ -1,5 +1,4 @@
-import type { NodeLocale } from "../types";
-
+import type { NodeLocale, IsStringLiteral } from "../types";
 
 type Splitter = " " | "_" | "-" | "." | "/";
 type LastOfArray<T extends any[]> = T extends [...any, infer R] ? R : never;
@@ -176,7 +175,7 @@ export type FlipCase<T extends string> = IsStringLiteral<T> extends true
  * Converts a string to dot.case.
  * Example: "fooBar" -> "foo.bar"
  */
-export type DotCase<T extends string> = string & {
+export type DotCase<T extends string> = T & {
     __dot_case__: never;
 };
 
@@ -184,7 +183,7 @@ export type DotCase<T extends string> = string & {
  * Converts a string to path/case.
  * Example: "fooBar" -> "foo/bar"
  */
-export type PathCase<T extends string> = string & {
+export type PathCase<T extends string> = T & {
     __path_case__: never;
 };
 
@@ -192,7 +191,7 @@ export type PathCase<T extends string> = string & {
  * Converts a string to no case (space separated).
  * Example: "fooBar" -> "foo bar"
  */
-export type NoCase<T extends string> = string & {
+export type NoCase<T extends string> = T & {
     __no_case__: never;
 };
 
@@ -200,7 +199,7 @@ export type NoCase<T extends string> = string & {
  * Converts a string to CONSTANT_CASE.
  * Example: "fooBar" -> "FOO_BAR"
  */
-export type ConstantCase<T extends string> = string & {
+export type ConstantCase<T extends string> = T & {
     __constant_case__: never;
 };
 
@@ -208,7 +207,7 @@ export type ConstantCase<T extends string> = string & {
  * Converts a string to Capital Case.
  * Example: "fooBar" -> "Foo Bar"
  */
-export type CapitalCase<T extends string> = string & {
+export type CapitalCase<T extends string> = T & {
     __capital_case__: never;
 };
 
@@ -216,7 +215,7 @@ export type CapitalCase<T extends string> = string & {
  * Converts a string to Sentence case.
  * Example: "fooBar" -> "Foo bar"
  */
-export type SentenceCase<T extends string> = string & {
+export type SentenceCase<T extends string> = T & {
     __sentence_case__: never;
 };
 
@@ -224,7 +223,7 @@ export type SentenceCase<T extends string> = string & {
  * Converts a string to Pascal_Snake_Case.
  * Example: "fooBar" -> "Foo_Bar"
  */
-export type PascalSnakeCase<T extends string> = string & {
+export type PascalSnakeCase<T extends string> = T & {
     __pascal_snake_case__: never;
 };
 
