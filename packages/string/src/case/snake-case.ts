@@ -1,5 +1,5 @@
-import type { CaseOptions, SnakeCase } from "./types";
 import { kebabCase } from "./kebab-case";
+import type { CaseOptions, SnakeCase } from "./types";
 
 /**
  * Converts a string to snake_case.
@@ -13,6 +13,5 @@ import { kebabCase } from "./kebab-case";
  * snakeCase("QueryXML123String") // => "query_xml_123_string"
  * ```
  */
-export const snakeCase = <T extends string = string>(value: T, options: CaseOptions = {}): SnakeCase<T> => {
-    return kebabCase(value, { ...options, joiner: "_" }) as SnakeCase<T>;
-};
+export const snakeCase = <T extends string = string>(value: T, options: CaseOptions = {}): SnakeCase<T> =>
+    kebabCase(value, { ...options, joiner: "_" }) as SnakeCase<T>;

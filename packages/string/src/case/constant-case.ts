@@ -1,5 +1,5 @@
-import type { ConstantCase, CaseOptions } from "./types";
 import { snakeCase } from "./snake-case";
+import type { CaseOptions, ConstantCase } from "./types";
 
 /**
  * Converts a string to CONSTANT_CASE.
@@ -16,5 +16,5 @@ import { snakeCase } from "./snake-case";
 export const constantCase = <T extends string = string>(value: T, options: CaseOptions = {}): ConstantCase<T> => {
     const result = snakeCase(value, options);
 
-    return (options?.locale ? result.toLocaleUpperCase(options.locale) : result.toUpperCase()) as ConstantCase<T>;
+    return (options.locale ? result.toLocaleUpperCase(options.locale) : result.toUpperCase()) as ConstantCase<T>;
 };
