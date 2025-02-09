@@ -1,7 +1,7 @@
-import type { KebabCase, LocaleOptions } from "../types";
+import type { CaseOptions, KebabCase } from "./types";
 import { splitByCase } from "./split-by-case";
 
-interface KebabCaseOptions extends LocaleOptions {
+export interface KebabCaseOptions extends CaseOptions {
     /**
      * The string to use as a joiner between words.
      * @default "-"
@@ -22,13 +22,11 @@ interface KebabCaseOptions extends LocaleOptions {
  * ```
  */
 export const kebabCase = <T extends string = string>(value: T, options: KebabCaseOptions = {}): KebabCase<T> => {
-    const { joiner = "-", locale } = options;
-
     if (typeof value !== "string") {
         return "" as KebabCase<T>;
     }
 
-    return splitByCase(value as string, { locale })
-        .map((p) => p.toLowerCase())
-        .join(joiner ?? "-") as KebabCase<T>;
+    return splitByCase(value, options)
+        .map((p) => options?.locale ? p.toLocaleLowerCase(options.locale) : p.toLowerCase())
+        .join(options.joiner ?? "-") as KebabCase<T>;
 };

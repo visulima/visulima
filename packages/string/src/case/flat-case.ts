@@ -1,4 +1,4 @@
-import type { FlatCase, LocaleOptions } from "../types";
+import type { FlatCase, CaseOptions } from "./types";
 import { kebabCase } from "./kebab-case";
 
 /**
@@ -11,10 +11,6 @@ import { kebabCase } from "./kebab-case";
  * flatCase("QueryXML123String") // => "queryxml123string"
  * ```
  */
-export const flatCase = <T extends string = string>(value: T, options: LocaleOptions = {}): FlatCase<T> => {
-    if (typeof value !== "string") {
-        return "" as FlatCase<T>;
-    }
-
+export const flatCase = <T extends string = string>(value: T, options: CaseOptions = {}): FlatCase<T> => {
     return kebabCase(value, { ...options, joiner: "" }) as FlatCase<T>;
 };
