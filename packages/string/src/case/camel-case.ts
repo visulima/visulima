@@ -19,10 +19,10 @@ import type { CamelCase, CaseOptions } from "./types";
  * camelCase('QueryXML123String') // 'queryXml123String'
  * ```
  */
-export const camelCase = <T extends string = string>(value: T, options: CaseOptions = {}): CamelCase<T> => {
+export const camelCase = <T extends string = string>(value?: T, options?: CaseOptions): CamelCase<T> => {
     if (typeof value !== "string" || !value) {
         return "" as CamelCase<T>;
     }
 
-    return lowerFirst(pascalCase(value, options), { locale: options.locale }) as CamelCase<T>;
+    return lowerFirst(pascalCase(value, options), { locale: options?.locale }) as CamelCase<T>;
 };
