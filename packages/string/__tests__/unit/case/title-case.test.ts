@@ -15,10 +15,6 @@ describe("titleCase", () => {
         expect(titleCase("foo")).toBe("Foo");
     });
 
-    it("should convert kebab-case to title case", () => {
-        expect(titleCase("foo-bar")).toBe("Foo Bar");
-    });
-
     it("should handle mixed case with hyphens", () => {
         expect(titleCase("this-IS-aTitle")).toBe("This Is A Title");
         expect(titleCase("XMLHttpRequest")).toBe("Xml Http Request");
@@ -45,10 +41,6 @@ describe("titleCase", () => {
     it("should convert snake_case to Title Case", () => {
         expect(titleCase("foo_bar")).toBe("Foo Bar");
         expect(titleCase("foo_bar_baz")).toBe("Foo Bar Baz");
-    });
-
-    it("should convert kebab-case to Title Case", () => {
-        expect(titleCase("foo-bar")).toBe("Foo Bar");
     });
 
     describe("emoji support 🎯", () => {

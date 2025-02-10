@@ -19,7 +19,7 @@ export function titleCase(): "";
 export function titleCase<T extends string>(string_: T, options?: CaseOptions): TitleCase<T>;
 // eslint-disable-next-line func-style
 export function titleCase<T extends string = string>(string_?: T, options: CaseOptions = {}): TitleCase<T> {
-    if (typeof string_ !== "string" && !Array.isArray(string_)) {
+    if (typeof string_ !== "string") {
         return "" as TitleCase<T>;
     }
 

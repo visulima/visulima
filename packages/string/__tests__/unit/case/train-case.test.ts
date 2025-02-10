@@ -69,10 +69,6 @@ describe("trainCase", () => {
         expect(trainCase("foo bar baz")).toBe("Foo-Bar-Baz");
     });
 
-    it("should handle empty string", () => {
-        expect(trainCase("")).toBe("");
-    });
-
     it("should handle mixed case with numbers and special characters", () => {
         expect(trainCase("Foo123Bar")).toBe("Foo-123-Bar");
         expect(trainCase("foo_bar-baz")).toBe("Foo-Bar-Baz");

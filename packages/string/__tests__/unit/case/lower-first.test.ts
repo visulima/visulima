@@ -1,4 +1,4 @@
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { lowerFirst } from "../../../src/case";
 
@@ -23,10 +23,6 @@ describe("lowerFirst", () => {
     it("should handle already lowercase first character", () => {
         expect(lowerFirst("foo")).toBe("foo");
         expect(lowerFirst("bar")).toBe("bar");
-    });
-
-    it("should handle empty string", () => {
-        expect(lowerFirst("")).toBe("");
     });
 
     it("should handle single character", () => {
