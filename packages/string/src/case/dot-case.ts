@@ -1,6 +1,9 @@
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, DotCase } from "./types";
 
+// Cache for frequently used dot case conversions
+const dotCache = new Map<string, string>();
+
 /**
  * Converts a string to dot.case.
  * @example
@@ -13,4 +16,5 @@ import type { CaseOptions, DotCase } from "./types";
  * dotCase("QueryXML123String") // => "query.xml.123.string"
  * ```
  */
-export const dotCase = <T extends string = string>(value?: T, options?: CaseOptions): DotCase<T> => kebabCase(value, { ...options, joiner: "." }) as DotCase<T>;
+export const dotCase = <T extends string = string>(value?: T, options?: CaseOptions): DotCase<T> =>
+    kebabCase(value, { cacheStore: dotCache, ...options, joiner: "." }) as DotCase<T>;

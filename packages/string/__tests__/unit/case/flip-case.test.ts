@@ -1,8 +1,71 @@
 import { describe, expect, it } from "vitest";
 
 import { flipCase } from "../../../src/case";
+import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
 
 describe("flipCase", () => {
+    describe("caching", () => {
+        it("should use cache when enabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // First call should cache
+            const result1 = flipCase(input, { cache: true, cacheStore: customCache });
+            expect(result1).toBe("TESTsTRING");
+            expect(customCache.size).toBe(1);
+
+            // Second call should use cache
+            const result2 = flipCase(input, { cache: true, cacheStore: customCache });
+            expect(result2).toBe("TESTsTRING");
+            expect(customCache.size).toBe(1);
+        });
+
+        it("should not use cache when disabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // First call without cache
+            const result1 = flipCase(input, { cache: false, cacheStore: customCache });
+            expect(result1).toBe("TESTsTRING");
+            expect(customCache.size).toBe(0);
+
+            // Second call without cache
+            const result2 = flipCase(input, { cache: false, cacheStore: customCache });
+            expect(result2).toBe("TESTsTRING");
+            expect(customCache.size).toBe(0);
+        });
+
+        it("should respect cache size limit", () => {
+            const customCache = new Map<string, string>();
+            const input1 = "testString1";
+            const input2 = "testString2";
+
+            const options = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
+
+            // First string should be cached
+            const result1 = flipCase(input1, options);
+            expect(customCache.size).toBe(1);
+            expect(customCache.get(generateCacheKey(input1, options))).toBe(result1);
+
+            // Second string should be cached due to size limit, the first string should be evicted
+            const result2 = flipCase(input2, options);
+            expect(customCache.size).toBe(1);
+            expect(customCache.has(generateCacheKey(input1, options))).toBeFalsy();
+            expect(customCache.get(generateCacheKey(input2, options))).toBe(result2);
+        });
+
+        it("should handle custom cache store", () => {
+            const defaultCache = new Map<string, string>();
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // Use custom cache
+            flipCase(input, { cache: true, cacheStore: customCache });
+            expect(customCache.size).toBe(1);
+            expect(defaultCache.size).toBe(0);
+        });
+    });
+
     it("should flip case of mixed case string", () => {
         expect(flipCase("FooBar")).toBe("fOObAR");
         expect(flipCase("fooBar")).toBe("FOObAR");
@@ -37,15 +100,44 @@ describe("flipCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text", () => {
-            expect(flipCase("Foo🐣Bar")).toBe("fOO🐣bAR");
-            expect(flipCase("hello🌍World")).toBe("HELLO🌍wORLD");
-            expect(flipCase("test🎉Party🎈Fun")).toBe("TEST🎉pARTY🎈fUN");
-            expect(flipCase("EMOJI👾Gaming")).toBe("emoji👾gAMING");
-            expect(flipCase("upper🚀Case")).toBe("UPPER🚀cASE");
-            expect(flipCase("snake_case_🐍_test")).toBe("SNAKE_CASE_🐍_TEST");
-            expect(flipCase("kebab-case-🍔-test")).toBe("KEBAB-CASE-🍔-TEST");
-            expect(flipCase("flip🤭Case")).toBe("FLIP🤭cASE");
+        it("should handle emojis in text with handleEmoji=false (default)", () => {
+            expect(flipCase("Foo🐣Bar")).toBe("fOObAR");
+            expect(flipCase("hello🌍World")).toBe("HELLOwORLD");
+            expect(flipCase("test🎉Party🎈Fun")).toBe("TESTpARTYfUN");
+            expect(flipCase("EMOJI👾Gaming")).toBe("emojigAMING");
+            expect(flipCase("upper🚀Case")).toBe("UPPERcASE");
+            expect(flipCase("snake_case_🐍_test")).toBe("SNAKE_CASE_TEST");
+            expect(flipCase("kebab-case-🍔-test")).toBe("KEBAB-CASE-TEST");
+            expect(flipCase("flip🤭Case")).toBe("FLIPcASE");
+            expect(flipCase("welcome to the 🎉party")).toBe("WELCOME TO THE PARTY");
+        });
+
+        it("should handle emojis in text with handleEmoji=true", () => {
+            expect(flipCase("Foo🐣Bar", { handleEmoji: true })).toBe("fOO🐣bAR");
+            expect(flipCase("hello🌍World", { handleEmoji: true })).toBe("HELLO🌍wORLD");
+            expect(flipCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("TEST🎉pARTY🎈fUN");
+            expect(flipCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("emoji👾gAMING");
+            expect(flipCase("upper🚀Case", { handleEmoji: true })).toBe("UPPER🚀cASE");
+            expect(flipCase("snake_case_🐍_test", { handleEmoji: true })).toBe("SNAKE_CASE🐍TEST");
+            expect(flipCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("KEBAB-CASE🍔TEST");
+            expect(flipCase("flip🤭Case", { handleEmoji: true })).toBe("FLIP🤭cASE");
+            expect(flipCase("welcome to the 🎉party", { handleEmoji: true })).toBe("WELCOME TO THE 🎉PARTY");
+        });
+    });
+
+    describe("aNSI support", () => {
+        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
+            expect(flipCase("\u001B[31mRedText\u001B[0m")).toBe("rEDtEXT");
+            expect(flipCase("\u001B[1mBoldText\u001B[0m")).toBe("bOLDtEXT");
+            expect(flipCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("gREENfoo_bLUEbar");
+        });
+
+        it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect(flipCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mrEDtEXT\u001B[0m");
+            expect(flipCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mbOLDtEXT\u001B[0m");
+            expect(flipCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
+                "\u001B[32mgREENfoo\u001B[0m_\u001B[34mbLUEbar\u001B[0m",
+            );
         });
     });
 });

@@ -1,6 +1,9 @@
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, PathCase } from "./types";
 
+// Cache for frequently used path case conversions
+const pathCache = new Map<string, string>();
+
 /**
  * Converts a string to path/case.
  * @example
@@ -14,4 +17,4 @@ import type { CaseOptions, PathCase } from "./types";
  * ```
  */
 export const pathCase = <T extends string = string>(value?: T, options?: CaseOptions): PathCase<T> =>
-    kebabCase(value, { ...options, joiner: "/" }) as PathCase<T>;
+    kebabCase(value, { cacheStore: pathCache, ...options, joiner: "/" }) as PathCase<T>;

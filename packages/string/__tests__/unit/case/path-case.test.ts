@@ -1,8 +1,71 @@
 import { describe, expect, it } from "vitest";
 
 import { pathCase } from "../../../src/case";
+import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
 
 describe("pathCase", () => {
+    describe("caching", () => {
+        it("should use cache when enabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // First call should cache
+            const result1 = pathCase(input, { cache: true, cacheStore: customCache });
+            expect(result1).toBe("test/string");
+            expect(customCache.size).toBe(1);
+
+            // Second call should use cache
+            const result2 = pathCase(input, { cache: true, cacheStore: customCache });
+            expect(result2).toBe("test/string");
+            expect(customCache.size).toBe(1);
+        });
+
+        it("should not use cache when disabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // First call without cache
+            const result1 = pathCase(input, { cache: false, cacheStore: customCache });
+            expect(result1).toBe("test/string");
+            expect(customCache.size).toBe(0);
+
+            // Second call without cache
+            const result2 = pathCase(input, { cache: false, cacheStore: customCache });
+            expect(result2).toBe("test/string");
+            expect(customCache.size).toBe(0);
+        });
+
+        it("should respect cache size limit", () => {
+            const customCache = new Map<string, string>();
+            const input1 = "testString1";
+            const input2 = "testString2";
+
+            const options = { cache: true, cacheMaxSize: 1, cacheStore: customCache, joiner: "/" };
+
+            // First string should be cached
+            const result1 = pathCase(input1, options);
+            expect(customCache.size).toBe(1);
+            expect(customCache.get(generateCacheKey(input1, options))).toBe(result1);
+
+            // Second string should be cached due to size limit, the first string should be evicted
+            const result2 = pathCase(input2, options);
+            expect(customCache.size).toBe(1);
+            expect(customCache.has(generateCacheKey(input1, options))).toBeFalsy();
+            expect(customCache.get(generateCacheKey(input2, options))).toBe(result2);
+        });
+
+        it("should handle custom cache store", () => {
+            const defaultCache = new Map<string, string>();
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // Use custom cache
+            pathCase(input, { cache: true, cacheStore: customCache });
+            expect(customCache.size).toBe(1);
+            expect(defaultCache.size).toBe(0);
+        });
+    });
+
     it("should handle empty string", () => {
         expect(pathCase("")).toBe("");
     });
@@ -57,15 +120,44 @@ describe("pathCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text", () => {
-            expect(pathCase("Foo🐣Bar")).toBe("foo/🐣/bar");
-            expect(pathCase("hello🌍World")).toBe("hello/🌍/world");
-            expect(pathCase("test🎉Party🎈Fun")).toBe("test/🎉/party/🎈/fun");
-            expect(pathCase("EMOJI👾Gaming")).toBe("emoji/👾/gaming");
-            expect(pathCase("upper🚀Case")).toBe("upper/🚀/case");
-            expect(pathCase("snake_case_🐍_test")).toBe("snake/case/🐍/test");
-            expect(pathCase("kebab-case-🍔-test")).toBe("kebab/case/🍔/test");
-            expect(pathCase("path/to/📁/file")).toBe("path/to/📁/file");
+        it("should handle emojis in text with handleEmoji=false (default)", () => {
+            expect(pathCase("Foo🐣Bar")).toBe("foo/bar");
+            expect(pathCase("hello🌍World")).toBe("hello/world");
+            expect(pathCase("test🎉Party🎈Fun")).toBe("test/party/fun");
+            expect(pathCase("EMOJI👾Gaming")).toBe("emoji/gaming");
+            expect(pathCase("upper🚀Case")).toBe("upper/case");
+            expect(pathCase("snake_case_🐍_test")).toBe("snake/case/test");
+            expect(pathCase("kebab-case-🍔-test")).toBe("kebab/case/test");
+            expect(pathCase("path/to/📁/file")).toBe("path/to/file");
+            expect(pathCase("welcome to the 🎉party")).toBe("welcome/to/the/party");
+        });
+
+        it("should handle emojis in text with handleEmoji=true", () => {
+            expect(pathCase("Foo🐣Bar", { handleEmoji: true })).toBe("foo/🐣/bar");
+            expect(pathCase("hello🌍World", { handleEmoji: true })).toBe("hello/🌍/world");
+            expect(pathCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("test/🎉/party/🎈/fun");
+            expect(pathCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("emoji/👾/gaming");
+            expect(pathCase("upper🚀Case", { handleEmoji: true })).toBe("upper/🚀/case");
+            expect(pathCase("snake_case_🐍_test", { handleEmoji: true })).toBe("snake/case/🐍/test");
+            expect(pathCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("kebab/case/🍔/test");
+            expect(pathCase("path/to/📁/file", { handleEmoji: true })).toBe("path/to/📁/file");
+            expect(pathCase("welcome to the 🎉party", { handleEmoji: true })).toBe("welcome/to/the/🎉/party");
+        });
+    });
+
+    describe("aNSI support", () => {
+        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
+            expect(pathCase("\u001B[31mRedText\u001B[0m")).toBe("red/text");
+            expect(pathCase("\u001B[1mBoldText\u001B[0m")).toBe("bold/text");
+            expect(pathCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("green/foo/blue/bar");
+        });
+
+        it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect(pathCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mred/text\u001B[0m");
+            expect(pathCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mbold/text\u001B[0m");
+            expect(pathCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
+                "\u001B[32mgreen/foo\u001B[0m/\u001B[34mblue/bar\u001B[0m",
+            );
         });
     });
 

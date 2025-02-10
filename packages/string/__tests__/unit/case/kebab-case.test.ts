@@ -1,8 +1,72 @@
 import { describe, expect, it, test } from "vitest";
 
 import { kebabCase } from "../../../src/case";
+import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
 
 describe("kebabCase", () => {
+    describe("caching", () => {
+        it("should use cache when enabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // First call should cache
+            const result1 = kebabCase(input, { cache: true, cacheStore: customCache });
+            expect(result1).toBe("test-string");
+            expect(customCache.size).toBe(1);
+
+            // Second call should use cache
+            const result2 = kebabCase(input, { cache: true, cacheStore: customCache });
+            expect(result2).toBe("test-string");
+            expect(customCache.size).toBe(1);
+        });
+
+        it("should not use cache when disabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // First call without cache
+            const result1 = kebabCase(input, { cache: false, cacheStore: customCache });
+            expect(result1).toBe("test-string");
+            expect(customCache.size).toBe(0);
+
+            // Second call without cache
+            const result2 = kebabCase(input, { cache: false, cacheStore: customCache });
+            expect(result2).toBe("test-string");
+            expect(customCache.size).toBe(0);
+        });
+
+        it("should respect cache size limit", () => {
+            const customCache = new Map<string, string>();
+            const input1 = "testString1";
+            const input2 = "testString2";
+
+            const options1 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
+            const options2 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
+
+            // First string should be cached
+            const result1 = kebabCase(input1, options1);
+            expect(customCache.size).toBe(1);
+            expect(customCache.get(generateCacheKey(input1, options1))).toBe(result1);
+
+            // Second string should be cached due to size limit, the first string should be evicted
+            const result2 = kebabCase(input2, options2);
+            expect(customCache.size).toBe(1);
+            expect(customCache.has(generateCacheKey(input1, options1))).toBeFalsy();
+            expect(customCache.get(generateCacheKey(input2, options2))).toBe(result2);
+        });
+
+        it("should handle custom cache store", () => {
+            const defaultCache = new Map<string, string>();
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // Use custom cache
+            kebabCase(input, { cache: true, cacheStore: customCache });
+            expect(customCache.size).toBe(1);
+            expect(defaultCache.size).toBe(0);
+        });
+    });
+
     it("should handle empty string", () => {
         expect(kebabCase("")).toBe("");
     });
@@ -44,14 +108,40 @@ describe("kebabCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text", () => {
-            expect(kebabCase("Foo🐣Bar")).toBe("foo-🐣-bar");
-            expect(kebabCase("hello🌍World")).toBe("hello-🌍-world");
-            expect(kebabCase("test🎉Party🎈Fun")).toBe("test-🎉-party-🎈-fun");
-            expect(kebabCase("EMOJI👾Gaming")).toBe("emoji-👾-gaming");
-            expect(kebabCase("upper🚀Case")).toBe("upper-🚀-case");
-            expect(kebabCase("snake_case_🐍_test")).toBe("snake-case-🐍-test");
-            expect(kebabCase("camelCase🍔Test")).toBe("camel-case-🍔-test");
+        it("should handle emojis in text with handleEmoji=false (default)", () => {
+            expect(kebabCase("Foo🐣Bar")).toBe("foo-bar");
+            expect(kebabCase("hello🌍World")).toBe("hello-world");
+            expect(kebabCase("test🎉Party🎈Fun")).toBe("test-party-fun");
+            expect(kebabCase("EMOJI👾Gaming")).toBe("emoji-gaming");
+            expect(kebabCase("upper🚀Case")).toBe("upper-case");
+            expect(kebabCase("snake_case_🐍_test")).toBe("snake-case-test");
+            expect(kebabCase("camelCase🍔Test")).toBe("camel-case-test");
+        });
+
+        it("should handle emojis in text with handleEmoji=true", () => {
+            expect(kebabCase("Foo🐣Bar", { handleEmoji: true })).toBe("foo-🐣-bar");
+            expect(kebabCase("hello🌍World", { handleEmoji: true })).toBe("hello-🌍-world");
+            expect(kebabCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("test-🎉-party-🎈-fun");
+            expect(kebabCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("emoji-👾-gaming");
+            expect(kebabCase("upper🚀Case", { handleEmoji: true })).toBe("upper-🚀-case");
+            expect(kebabCase("snake_case_🐍_test", { handleEmoji: true })).toBe("snake-case-🐍-test");
+            expect(kebabCase("camelCase🍔Test", { handleEmoji: true })).toBe("camel-case-🍔-test");
+        });
+    });
+
+    describe("aNSI support", () => {
+        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
+            expect(kebabCase("\u001B[31mRedText\u001B[0m")).toBe("red-text");
+            expect(kebabCase("\u001B[1mBoldText\u001B[0m")).toBe("bold-text");
+            expect(kebabCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("green-foo-blue-bar");
+        });
+
+        it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect(kebabCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31m-red-text-\u001B[0m");
+            expect(kebabCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1m-bold-text-\u001B[0m");
+            expect(kebabCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
+                "\u001B[32m-green-foo-\u001B[0m-\u001B[34m-blue-bar-\u001B[0m",
+            );
         });
     });
 

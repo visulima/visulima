@@ -14,11 +14,11 @@ import type { LocaleOptions, LowerFirst } from "./types";
  * ```
  */
 export const lowerFirst = <T extends string = string>(value?: T, options?: LocaleOptions): LowerFirst<T> => {
-    if (typeof value !== "string") {
+    if (typeof value !== "string" || value === "") {
         return "" as LowerFirst<T>;
     }
 
-    const firstChar = options?.locale ? value.charAt<T>(0).toLocaleLowerCase(options.locale) : value.charAt<T>(0).toLowerCase();
+    const firstChar = options?.locale ? (value[0] as string).toLocaleLowerCase(options.locale) : (value[0] as string).toLowerCase();
 
     // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     return (firstChar + value.slice(1)) as LowerFirst<T>;

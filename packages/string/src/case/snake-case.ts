@@ -1,6 +1,9 @@
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, SnakeCase } from "./types";
 
+// Cache for frequently used snake case conversions
+const snakeCache = new Map<string, string>();
+
 /**
  * Converts a string to snake_case.
  * @example
@@ -13,10 +16,5 @@ import type { CaseOptions, SnakeCase } from "./types";
  * snakeCase("QueryXML123String") // => "query_xml_123_string"
  * ```
  */
-export const snakeCase = <T extends string = string>(value?: T, options?: CaseOptions): SnakeCase<T> => {
-    if (typeof value !== "string") {
-        return "" as SnakeCase<T>;
-    }
-
-    return kebabCase(value, { ...options, joiner: "_" }) as SnakeCase<T>;
-};
+export const snakeCase = <T extends string = string>(value?: T, options?: CaseOptions): SnakeCase<T> =>
+    kebabCase(value, { cacheStore: snakeCache, ...options, joiner: "_" }) as SnakeCase<T>;

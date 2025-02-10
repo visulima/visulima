@@ -25,6 +25,46 @@ export interface LocaleOptions {
  */
 export interface CaseOptions extends LocaleOptions {
     /**
+     * Whether to enable caching for the case conversion.
+     * @default false
+     */
+    cache?: boolean;
+
+    /**
+     * The maximum size of the cache. Only applicable if cache is enabled.
+     * @default 1000
+     */
+    cacheMaxSize?: number;
+
+    /**
+     * A custom cache store for this specific case function.
+     * Each case function (camelCase, pascalCase, etc.) should have its own dedicated cache store
+     * to avoid conflicts and ensure optimal performance.
+     * @example
+     * ```typescript
+     * // Create separate caches for each case function
+     * const camelCaseStore = new Map<string, string>();
+     * const pascalCaseStore = new Map<string, string>();
+     *
+     * camelCase("some-string", { cache: true, cacheStore: camelCaseStore });
+     * pascalCase("some-string", { cache: true, cacheStore: pascalCaseStore });
+     * ```
+     */
+    cacheStore?: Map<string, string>;
+
+    /**
+     * Whether to handle ANSI escape sequences.
+     * @default false
+     */
+    handleAnsi?: boolean;
+
+    /**
+     * Whether to handle emoji sequences.
+     * @default false
+     */
+    handleEmoji?: boolean;
+
+    /**
      * A list of known acronyms to preserve casing for.
      */
     knownAcronyms?: ReadonlyArray<string>;
@@ -239,7 +279,7 @@ export type IdentifyCase<T extends string> =
                     : "lower"
             : T extends Uppercase<T>
               ? "upper"
-              : T extends `${Capitalize<string>}`
+              : T extends Capitalize<string>
                 ? T extends `${Uppercase<string>}${string}`
                     ? T extends `${string}-${string}`
                         ? "train"

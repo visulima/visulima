@@ -39,7 +39,7 @@
         "example:crud:next:13:dev": "nx run-many --target=dev --parallel --projects=crud,api-platform,nextjs_13_example_crud",
         "example:health-check:dev": "pnpm --filter \"nextjs_example_health_check\" run dev",
         "graph": "nx dep-graph",
-        "preinstall": "node verify-node-version.cjs && npx only-allow pnpm",
+        "preinstall": "node verify-node-version.js && npm exec only-allow pnpm",
         "lint": "pnpm run lint:prettier && pnpm run lint:eslint && lint:dedupe --check",
         "lint:affected:attw": "nx affected --target=lint:attw --parallel --exclude=*-bench,docs,storybook --nxBail",
         "lint:affected:eslint": "nx affected --target=lint:eslint --parallel --exclude=*-bench,docs,storybook --nxBail",

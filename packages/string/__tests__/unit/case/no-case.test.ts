@@ -56,15 +56,42 @@ describe("noCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text", () => {
-            expect(noCase("Foo🐣Bar")).toBe("foo 🐣 bar");
-            expect(noCase("hello🌍World")).toBe("hello 🌍 world");
-            expect(noCase("test🎉Party🎈Fun")).toBe("test 🎉 party 🎈 fun");
-            expect(noCase("EMOJI👾Gaming")).toBe("emoji 👾 gaming");
-            expect(noCase("upper🚀Case")).toBe("upper 🚀 case");
-            expect(noCase("snake_case_🐍_test")).toBe("snake case 🐍 test");
-            expect(noCase("kebab-case-🍔-test")).toBe("kebab case 🍔 test");
-            expect(noCase("no📝case")).toBe("no 📝 case");
+        it("should handle emojis in text with handleEmoji=false (default)", () => {
+            expect(noCase("Foo🐣Bar")).toBe("foo bar");
+            expect(noCase("hello🌍World")).toBe("hello world");
+            expect(noCase("test🎉Party🎈Fun")).toBe("test party fun");
+            expect(noCase("EMOJI👾Gaming")).toBe("emoji gaming");
+            expect(noCase("upper🚀Case")).toBe("upper case");
+            expect(noCase("snake_case_🐍_test")).toBe("snake case test");
+            expect(noCase("kebab-case-🍔-test")).toBe("kebab case test");
+            expect(noCase("no📝case")).toBe("no case");
+        });
+
+        it("should handle emojis in text with handleEmoji=true", () => {
+            expect(noCase("Foo🐣Bar", { handleEmoji: true })).toBe("foo 🐣 bar");
+            expect(noCase("hello🌍World", { handleEmoji: true })).toBe("hello 🌍 world");
+            expect(noCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("test 🎉 party 🎈 fun");
+            expect(noCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("emoji 👾 gaming");
+            expect(noCase("upper🚀Case", { handleEmoji: true })).toBe("upper 🚀 case");
+            expect(noCase("snake_case_🐍_test", { handleEmoji: true })).toBe("snake case 🐍 test");
+            expect(noCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("kebab case 🍔 test");
+            expect(noCase("no📝case", { handleEmoji: true })).toBe("no 📝 case");
+        });
+    });
+
+    describe("aNSI support", () => {
+        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
+            expect(noCase("\u001B[31mRedText\u001B[0m")).toBe("red text");
+            expect(noCase("\u001B[1mBoldText\u001B[0m")).toBe("bold text");
+            expect(noCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("green foo blue bar");
+        });
+
+        it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect(noCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31m red text \u001B[0m");
+            expect(noCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1m bold text \u001B[0m");
+            expect(noCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
+                "\u001B[32m green foo \u001B[0m \u001B[34m blue bar \u001B[0m",
+            );
         });
     });
 

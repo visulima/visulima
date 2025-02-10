@@ -1,8 +1,72 @@
 import { describe, expect, it } from "vitest";
 
 import { titleCase } from "../../../src/case";
+import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
 
 describe("titleCase", () => {
+    describe("caching", () => {
+        it("should use cache when enabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "test-string";
+
+            // First call should cache
+            const result1 = titleCase(input, { cache: true, cacheStore: customCache });
+            expect(result1).toBe("Test String");
+            expect(customCache.size).toBe(1);
+
+            // Second call should use cache
+            const result2 = titleCase(input, { cache: true, cacheStore: customCache });
+            expect(result2).toBe("Test String");
+            expect(customCache.size).toBe(1);
+        });
+
+        it("should not use cache when disabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "test-string";
+
+            // First call without cache
+            const result1 = titleCase(input, { cache: false, cacheStore: customCache });
+            expect(result1).toBe("Test String");
+            expect(customCache.size).toBe(0);
+
+            // Second call without cache
+            const result2 = titleCase(input, { cache: false, cacheStore: customCache });
+            expect(result2).toBe("Test String");
+            expect(customCache.size).toBe(0);
+        });
+
+        it("should respect cache size limit", () => {
+            const customCache = new Map<string, string>();
+            const input1 = "test-string-1";
+            const input2 = "test-string-2";
+
+            const options1 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
+            const options2 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
+
+            // First string should be cached
+            const result1 = titleCase(input1, options1);
+            expect(customCache.size).toBe(1);
+            expect(customCache.get(generateCacheKey(input1, options1))).toBe(result1);
+
+            // Second string should be cached due to size limit, the first string should be evicted
+            const result2 = titleCase(input2, options2);
+            expect(customCache.size).toBe(1);
+            expect(customCache.has(generateCacheKey(input1, options1))).toBeFalsy();
+            expect(customCache.get(generateCacheKey(input2, options2))).toBe(result2);
+        });
+
+        it("should handle custom cache store", () => {
+            const defaultCache = new Map<string, string>();
+            const customCache = new Map<string, string>();
+            const input = "test-string";
+
+            // Use custom cache
+            titleCase(input, { cache: true, cacheStore: customCache });
+            expect(customCache.size).toBe(1);
+            expect(defaultCache.size).toBe(0);
+        });
+    });
+
     it("should handle empty string", () => {
         expect(titleCase("")).toBe("");
     });
@@ -44,15 +108,42 @@ describe("titleCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text", () => {
-            expect(titleCase("Foo🐣Bar")).toBe("Foo 🐣 Bar");
-            expect(titleCase("hello🌍World")).toBe("Hello 🌍 World");
-            expect(titleCase("test🎉Party🎈Fun")).toBe("Test 🎉 Party 🎈 Fun");
-            expect(titleCase("EMOJI👾Gaming")).toBe("Emoji 👾 Gaming");
-            expect(titleCase("upper🚀Case")).toBe("Upper 🚀 Case");
-            expect(titleCase("snake_case_🐍_test")).toBe("Snake Case 🐍 Test");
-            expect(titleCase("kebab-case-🍔-test")).toBe("Kebab Case 🍔 Test");
-            expect(titleCase("welcome to the 🎉party")).toBe("Welcome To The 🎉 Party");
+        it("should handle emojis in text with handleEmoji=false (default)", () => {
+            expect(titleCase("Foo🐣Bar")).toBe("Foo Bar");
+            expect(titleCase("hello🌍World")).toBe("Hello World");
+            expect(titleCase("test🎉Party🎈Fun")).toBe("Test Party Fun");
+            expect(titleCase("EMOJI👾Gaming")).toBe("Emoji Gaming");
+            expect(titleCase("upper🚀Case")).toBe("Upper Case");
+            expect(titleCase("snake_case_🐍_test")).toBe("Snake Case  Test");
+            expect(titleCase("kebab-case-🍔-test")).toBe("Kebab Case Test");
+            expect(titleCase("welcome to the 🎉party")).toBe("Welcome To The Party");
+        });
+
+        it("should handle emojis in text with handleEmoji=true", () => {
+            expect(titleCase("Foo🐣Bar", { handleEmoji: true })).toBe("Foo 🐣 Bar");
+            expect(titleCase("hello🌍World", { handleEmoji: true })).toBe("Hello 🌍 World");
+            expect(titleCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("Test 🎉 Party 🎈 Fun");
+            expect(titleCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("Emoji 👾 Gaming");
+            expect(titleCase("upper🚀Case", { handleEmoji: true })).toBe("Upper 🚀 Case");
+            expect(titleCase("snake_case_🐍_test", { handleEmoji: true })).toBe("Snake Case 🐍 Test");
+            expect(titleCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("Kebab Case 🍔 Test");
+            expect(titleCase("welcome to the 🎉party", { handleEmoji: true })).toBe("Welcome To The 🎉 Party");
+        });
+    });
+
+    describe("aNSI support", () => {
+        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
+            expect(titleCase("\u001B[31mRedText\u001B[0m")).toBe("Red Text");
+            expect(titleCase("\u001B[1mBoldText\u001B[0m")).toBe("Bold Text");
+            expect(titleCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("Green Foo Blue Bar");
+        });
+
+        it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect(titleCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31m Red Text \u001B[0m");
+            expect(titleCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1m Bold Text \u001B[0m");
+            expect(titleCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
+                "\u001B[32m Green Foo \u001B[0m \u001B[34m Blue Bar \u001B[0m",
+            );
         });
     });
 
@@ -65,10 +156,6 @@ describe("titleCase", () => {
         expect(titleCase("the quick brown fox")).toBe("The Quick Brown Fox");
         expect(titleCase("a tale of two cities")).toBe("A Tale Of Two Cities");
         expect(titleCase("to kill a mockingbird")).toBe("To Kill A Mockingbird");
-    });
-
-    it("should handle empty string", () => {
-        expect(titleCase("")).toBe("");
     });
 
     it("should handle mixed case with numbers and special characters", () => {

@@ -13,76 +13,92 @@ pnpm run bench
 To run a specific benchmark file:
 
 ```bash
-pnpm run bench case-functions.bench.ts
+pnpm run bench camel-case.bench.ts
 pnpm run bench case-utils.bench.ts
 ```
 
-## What's Being Measured
+## Benchmark Files
 
-### Case Functions Benchmark (`case-functions.bench.ts`)
+### Case Functions
 
-Compares the performance of Visulima case conversion functions against Lodash, Scule, and change-case:
+Each case function has its own benchmark file for focused testing and comparison:
 
-- `camelCase`
-- `kebabCase`
-- `snakeCase`
+- `camel-case.bench.ts` - Tests camelCase conversions
+- `kebab-case.bench.ts` - Tests kebab-case conversions
+- `snake-case.bench.ts` - Tests snake_case conversions
+- `constant-case.bench.ts` - Tests CONSTANT_CASE conversions
+- `pascal-case.bench.ts` - Tests PascalCase conversions
+- `title-case.bench.ts` - Tests Title Case conversions
+- `train-case.bench.ts` - Tests Train-Case conversions
+- `split-by-case.bench.ts` - Tests case-based string splitting
+- `flat-case.bench.ts` - Tests flatcase conversions
+- `dot-case.bench.ts` - Tests dot.case conversions
+- `sentence-case.bench.ts` - Tests Sentence case conversions
+- `flip-case.bench.ts` - Tests fLiP cAsE conversions
+- `no-case.bench.ts` - Tests no case conversions
+- `pascal-snake-case.bench.ts` - Tests Pascal_Snake_Case conversions
+- `capital-case.bench.ts` - Tests Capital Case conversions
+- `upper-first.bench.ts` - Tests upperFirst conversions
+- `lower-first.bench.ts` - Tests lowerFirst conversions
 
-Tests include:
-- Basic case conversions
-- Locale-aware conversions (German)
-- Special character handling (ANSI, emojis)
-- Known acronym handling
+### Utilities
 
-### Case Utilities Benchmark (`case-utils.bench.ts`)
+- `case-utils.bench.ts` - Tests case utility functions (toLowerCase, toUpperCase)
+- `test-strings.ts` - Shared test data used across all benchmarks
 
-Compares the performance of Visulima's optimized case utilities against native JavaScript:
+## Test Categories
 
-- `toLowerCase` vs `fastLowerCase`
-- `toUpperCase` vs `fastUpperCase`
-- Locale-aware case conversions
-- Cache effectiveness with repeated strings
-- Special character handling
+Each case function benchmark includes tests for:
 
-## Test Data
+1. Standard Case Conversions
+   - Basic string transformations
+   - Cache effectiveness
+   - Comparison with other libraries
 
-The benchmarks use a variety of test strings to cover different scenarios:
-- Mixed case strings
-- Hyphenated strings
-- Underscored strings
-- Strings with special characters (ANSI, emojis)
-- Common acronyms
-- Repeated strings (for cache testing)
+2. Special Character Handling
+   - ANSI escape sequences
+   - Emoji characters
+   - Unicode characters
 
-## Expected Results
+3. Acronym Handling
+   - Common programming acronyms (XML, API, etc.)
+   - Custom acronym lists
+   - Mixed case acronyms
 
-The Visulima implementations should show performance advantages in:
-1. Repeated operations (due to caching)
-2. Special character handling (ANSI, emojis)
-3. Locale-aware operations
-4. Known acronym handling
+## Library Comparisons
 
-Scule is optimized for:
-1. Simple case conversions
-2. Basic string transformations
-3. Small memory footprint
+Benchmarks compare Visulima against:
 
-change-case provides:
-1. Modular approach with separate functions
-2. Unicode support
-3. Extensive case conversion options
+- Lodash (where available)
+- Scule
+- change-case
+- case-anything
+- Native JavaScript methods
 
-Lodash provides:
-1. Consistent behavior across edge cases
-2. Broad browser compatibility
-3. Well-tested implementations
+## Performance Characteristics
 
-Native operations may be faster for:
-1. Single, simple case conversions
-2. Basic ASCII strings without special handling
+The Visulima implementations are optimized for:
+
+1. Cached Operations
+   - Efficient handling of repeated strings
+   - Limited cache size to prevent memory issues
+
+2. Special Cases
+   - ANSI escape sequences
+   - Emoji characters
+   - Locale-aware operations
+   - Acronym preservation
+
+3. Edge Cases
+   - Mixed case strings
+   - Multiple separators
+   - Leading/trailing separators
+   - Empty strings
 
 ## Notes
 
-- The benchmarks use Vitest's bench utilities
-- Each operation is run multiple times with different input strings
-- Cache size is limited to prevent memory issues
-- Special attention is paid to locale-aware operations and special character handling
+- All benchmarks use Vitest's bench utilities
+- Test data is shared via `test-strings.ts`
+- Each benchmark can be run independently
+- Cache behavior is tested with both cold and warm caches
+- Special focus on real-world use cases and edge cases

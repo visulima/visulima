@@ -1,8 +1,71 @@
 import { describe, expect, it } from "vitest";
 
 import { pascalSnakeCase } from "../../../src/case";
+import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
 
 describe("pascalSnakeCase", () => {
+    describe("caching", () => {
+        it("should use cache when enabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "test-string";
+
+            // First call should cache
+            const result1 = pascalSnakeCase(input, { cache: true, cacheStore: customCache });
+            expect(result1).toBe("Test_String");
+            expect(customCache.size).toBe(1);
+
+            // Second call should use cache
+            const result2 = pascalSnakeCase(input, { cache: true, cacheStore: customCache });
+            expect(result2).toBe("Test_String");
+            expect(customCache.size).toBe(1);
+        });
+
+        it("should not use cache when disabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "test-string";
+
+            // First call without cache
+            const result1 = pascalSnakeCase(input, { cache: false, cacheStore: customCache });
+            expect(result1).toBe("Test_String");
+            expect(customCache.size).toBe(0);
+
+            // Second call without cache
+            const result2 = pascalSnakeCase(input, { cache: false, cacheStore: customCache });
+            expect(result2).toBe("Test_String");
+            expect(customCache.size).toBe(0);
+        });
+
+        it("should respect cache size limit", () => {
+            const customCache = new Map<string, string>();
+            const input1 = "test-string-1";
+            const input2 = "test-string-2";
+
+            const options = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
+
+            // First string should be cached
+            const result1 = pascalSnakeCase(input1, options);
+            expect(customCache.size).toBe(1);
+            expect(customCache.get(generateCacheKey(input1, options))).toBe(result1);
+
+            // Second string should be cached due to size limit, the first string should be evicted
+            const result2 = pascalSnakeCase(input2, options);
+            expect(customCache.size).toBe(1);
+            expect(customCache.has(generateCacheKey(input1, options))).toBeFalsy();
+            expect(customCache.get(generateCacheKey(input2, options))).toBe(result2);
+        });
+
+        it("should handle custom cache store", () => {
+            const defaultCache = new Map<string, string>();
+            const customCache = new Map<string, string>();
+            const input = "test-string";
+
+            // Use custom cache
+            pascalSnakeCase(input, { cache: true, cacheStore: customCache });
+            expect(customCache.size).toBe(1);
+            expect(defaultCache.size).toBe(0);
+        });
+    });
+
     it("should handle empty string", () => {
         expect(pascalSnakeCase("")).toBe("");
     });
