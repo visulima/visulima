@@ -1,5 +1,5 @@
 import { bench, describe } from "vitest";
-import { fastLowerCase, fastUpperCase } from "../src/case/utils/string-ops";
+import { toLowerCase, toUpperCase } from "../src/case/utils/string-ops";
 
 const TEST_STRINGS = [
     "foo bar",
@@ -30,7 +30,7 @@ describe("Case Utility Functions Benchmark", () => {
 
         bench("visulima/string fastLowerCase", () => {
             for (const str of TEST_STRINGS) {
-                fastLowerCase(str);
+                toLowerCase(str);
             }
         });
 
@@ -42,7 +42,7 @@ describe("Case Utility Functions Benchmark", () => {
 
         bench("visulima/string fastLowerCase with locale", () => {
             for (const str of TEST_STRINGS) {
-                fastLowerCase(str, "de-DE");
+                toLowerCase(str, "de-DE");
             }
         });
     });
@@ -57,7 +57,7 @@ describe("Case Utility Functions Benchmark", () => {
 
         bench("visulima/string fastUpperCase", () => {
             for (const str of TEST_STRINGS) {
-                fastUpperCase(str);
+                toUpperCase(str);
             }
         });
 
@@ -69,7 +69,7 @@ describe("Case Utility Functions Benchmark", () => {
 
         bench("visulima/string fastUpperCase with locale", () => {
             for (const str of TEST_STRINGS) {
-                fastUpperCase(str, "de-DE");
+                toUpperCase(str, "de-DE");
             }
         });
     });
@@ -80,7 +80,7 @@ describe("Case Utility Functions Benchmark", () => {
 
         bench("fastLowerCase", () => {
             for (const str of repeatedStrings) {
-                fastLowerCase(str);
+                toLowerCase(str);
             }
         });
 
@@ -92,7 +92,7 @@ describe("Case Utility Functions Benchmark", () => {
 
         bench("fastUpperCase", () => {
             for (const str of repeatedStrings) {
-                fastUpperCase(str);
+                toUpperCase(str);
             }
         });
 
@@ -115,7 +115,7 @@ describe("Case Utility Functions Benchmark", () => {
 
         bench("fastLowerCase with special chars", () => {
             for (const str of specialStrings) {
-                fastLowerCase(str);
+                toLowerCase(str);
             }
         });
 
@@ -127,7 +127,7 @@ describe("Case Utility Functions Benchmark", () => {
 
         bench("fastUpperCase with special chars", () => {
             for (const str of specialStrings) {
-                fastUpperCase(str);
+                toUpperCase(str);
             }
         });
 

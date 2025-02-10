@@ -1,7 +1,7 @@
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, KebabCase } from "./types";
 import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
-import { fastJoin, fastLowerCase } from "./utils/string-ops";
+import { fastJoin, toLowerCase } from "./utils/string-ops";
 
 export interface KebabCaseOptions extends CaseOptions {
     /**
@@ -43,7 +43,7 @@ export const kebabCase = <T extends string = string>(value?: T, options?: KebabC
     const words = splitByCase(value, options);
     const processed = words.map((p) => {
         const split = normalizeGermanEszett(p, options?.locale);
-        return fastLowerCase(split, options?.locale);
+        return toLowerCase(split, options?.locale);
     });
 
     const result = fastJoin(processed, options?.joiner ?? "-") as KebabCase<T>;
