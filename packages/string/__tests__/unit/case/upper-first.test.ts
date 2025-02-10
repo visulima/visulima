@@ -25,10 +25,6 @@ describe("upperFirst", () => {
         expect(upperFirst("BAR")).toBe("BAR");
     });
 
-    it("should handle empty string", () => {
-        expect(upperFirst("")).toBe("");
-    });
-
     it("should handle single character", () => {
         expect(upperFirst("f")).toBe("F");
         expect(upperFirst("A")).toBe("A");

@@ -65,6 +65,9 @@ describe("splitByCase", () => {
     it("should handle path case", () => {
         expect(splitByCase("foo/bar/baz")).toEqual(["foo", "bar", "baz"]);
         expect(splitByCase("some/mixed/Case/test")).toEqual(["some", "mixed", "Case", "test"]);
+
+        // expect(splitByCase("../foo/bar")).toEqual(["..", "foo", "bar"]);
+        // expect(splitByCase("foo/../../bar")).toEqual(["foo", "..", "..", "bar"]);
     });
 
     it("should handle complex mixed cases", () => {
