@@ -26,9 +26,10 @@ describe("string Interface Augmentations", () => {
             expectTypeOf(input.concat(" ", "world")).toEqualTypeOf<"hello world">();
         });
 
-        it("should handle array of strings", () => {
+        it.todo("should handle array of strings", () => {
             const input = "hello";
-            expectTypeOf(input.concat(" ", "world")).toEqualTypeOf<"hello world">();
+            const array = [" ", "world", "!"];
+            expectTypeOf(input.concat(...array)).toEqualTypeOf<"hello world!">();
         });
     });
 

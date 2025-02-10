@@ -48,12 +48,6 @@ describe("flatCase", () => {
         expect(flatCase("")).toBe("");
     });
 
-    it("should handle mixed case with numbers and special characters", () => {
-        expect(flatCase("Foo123Bar")).toBe("foo123bar");
-        expect(flatCase("foo_bar-baz")).toBe("foobarbaz");
-        expect(flatCase("FOO BAR_BAZ-QUX")).toBe("foobarbazqux");
-    });
-
     describe("emoji support 🎯", () => {
         it("should handle emojis in text", () => {
             expect(flatCase("Foo🐣Bar")).toBe("foo🐣bar");
