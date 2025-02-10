@@ -1,6 +1,6 @@
 # String Case Functions Benchmarks
 
-This directory contains benchmarks comparing the performance of Visulima string case functions against Lodash and native JavaScript implementations.
+This directory contains benchmarks comparing the performance of Visulima string case functions against Lodash, Scule, change-case, and native JavaScript implementations.
 
 ## Running the Benchmarks
 
@@ -21,7 +21,7 @@ pnpm run bench case-utils.bench.ts
 
 ### Case Functions Benchmark (`case-functions.bench.ts`)
 
-Compares the performance of Visulima case conversion functions against Lodash:
+Compares the performance of Visulima case conversion functions against Lodash, Scule, and change-case:
 
 - `camelCase`
 - `kebabCase`
@@ -60,6 +60,21 @@ The Visulima implementations should show performance advantages in:
 2. Special character handling (ANSI, emojis)
 3. Locale-aware operations
 4. Known acronym handling
+
+Scule is optimized for:
+1. Simple case conversions
+2. Basic string transformations
+3. Small memory footprint
+
+change-case provides:
+1. Modular approach with separate functions
+2. Unicode support
+3. Extensive case conversion options
+
+Lodash provides:
+1. Consistent behavior across edge cases
+2. Broad browser compatibility
+3. Well-tested implementations
 
 Native operations may be faster for:
 1. Single, simple case conversions
