@@ -18,9 +18,8 @@ export const upperFirst = <T extends string = string>(value?: T, options?: CaseO
         return "" as UpperFirst<T>;
     }
 
-    const { locale } = options || {};
+    const firstChar = options?.locale ? value.charAt<T>(0).toLocaleUpperCase(options.locale) : value.charAt<T>(0).toUpperCase();
 
-    const firstChar = locale ? value.charAt(0).toLocaleUpperCase(locale) : value.charAt(0).toUpperCase();
-
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     return (firstChar + value.slice(1)) as UpperFirst<T>;
 };

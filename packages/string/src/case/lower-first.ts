@@ -18,7 +18,8 @@ export const lowerFirst = <T extends string = string>(value?: T, options?: Local
         return "" as LowerFirst<T>;
     }
 
-    const firstChar = options?.locale ? value.charAt(0).toLocaleLowerCase(options.locale) : value.charAt(0).toLowerCase();
+    const firstChar = options?.locale ? value.charAt<T>(0).toLocaleLowerCase(options.locale) : value.charAt<T>(0).toLowerCase();
 
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     return (firstChar + value.slice(1)) as LowerFirst<T>;
 };

@@ -1,6 +1,6 @@
 import { bench, describe } from "vitest";
 import { camelCase as lodashCamelCase, kebabCase as lodashKebabCase, snakeCase as lodashSnakeCase } from "lodash";
-import { camelCase, kebabCase, snakeCase } from "../src/case";
+import { camelCase, kebabCase, snakeCase } from "../dist/case";
 
 const TEST_STRINGS = [
     "foo bar",

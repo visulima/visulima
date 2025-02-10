@@ -327,5 +327,72 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
+    },
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ],
+            "case": [
+                "./dist/case/index.d.ts"
+            ],
+            "case/camel-case": [
+                "./dist/case/camel-case.d.ts"
+            ],
+            "case/capital-case": [
+                "./dist/case/capital-case.d.ts"
+            ],
+            "case/constant-case": [
+                "./dist/case/constant-case.d.ts"
+            ],
+            "case/dot-case": [
+                "./dist/case/dot-case.d.ts"
+            ],
+            "case/flat-case": [
+                "./dist/case/flat-case.d.ts"
+            ],
+            "case/flip-case": [
+                "./dist/case/flip-case.d.ts"
+            ],
+            "case/identify-case": [
+                "./dist/case/identify-case.d.ts"
+            ],
+            "case/kebab-case": [
+                "./dist/case/kebab-case.d.ts"
+            ],
+            "case/lower-first": [
+                "./dist/case/lower-first.d.ts"
+            ],
+            "case/no-case": [
+                "./dist/case/no-case.d.ts"
+            ],
+            "case/pascal-case": [
+                "./dist/case/pascal-case.d.ts"
+            ],
+            "case/pascal-snake-case": [
+                "./dist/case/pascal-snake-case.d.ts"
+            ],
+            "case/path-case": [
+                "./dist/case/path-case.d.ts"
+            ],
+            "case/sentence-case": [
+                "./dist/case/sentence-case.d.ts"
+            ],
+            "case/snake-case": [
+                "./dist/case/snake-case.d.ts"
+            ],
+            "case/split-by-case": [
+                "./dist/case/split-by-case.d.ts"
+            ],
+            "case/title-case": [
+                "./dist/case/title-case.d.ts"
+            ],
+            "case/train-case": [
+                "./dist/case/train-case.d.ts"
+            ],
+            "case/upper-first": [
+                "./dist/case/upper-first.d.ts"
+            ]
+        }
     }
 }

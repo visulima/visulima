@@ -1,19 +1,20 @@
 import type { CaseOptions } from "../types";
 import { isAllUpper } from "./is-locale-all-upper";
 import { SEPARATORS_REGEX, getSeparatorsRegex, splitByAnsi, splitByEmoji, EMOJI_REGEX } from "./regex";
-import { fastLowerCase, fastUpperCase } from "./string-ops";
-
-export interface SplitOptions extends CaseOptions {
-    separators?: ReadonlyArray<string>;
-}
+import { toLowerCase, toUpperCase } from "./string-ops";
 
 // Cache for processed words
 const wordCache = new Map<string, string[]>();
 const CACHE_MAX_SIZE = 1000;
 
+export interface SplitOptions extends CaseOptions {
+    separators?: ReadonlyArray<string>;
+}
+
 /**
  * Splits a string into words based on case boundaries and separators
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const splitByWords = (input: string, splitOptions?: SplitOptions): string[] => {
     const options = {
         knownAcronyms: [],
@@ -23,14 +24,15 @@ export const splitByWords = (input: string, splitOptions?: SplitOptions): string
     };
 
     // Instead of simple ASCII range comparisons, we use locale–aware checks
-    const isLower = (ch: string): boolean => ch === fastLowerCase(ch, options.locale) && ch !== fastUpperCase(ch, options.locale);
-    const isUpper = (ch: string): boolean => ch === fastUpperCase(ch, options.locale) && ch !== fastLowerCase(ch, options.locale);
+    const isLower = (ch: string): boolean => ch === toLowerCase(ch, options.locale) && ch !== toUpperCase(ch, options.locale);
+    const isUpper = (ch: string): boolean => ch === toUpperCase(ch, options.locale) && ch !== toLowerCase(ch, options.locale);
     const isDigit = (ch: string) => /\d/.test(ch);
     const isLetter = (ch: string) => /[A-Z]/i.test(ch);
 
     // Check cache first for simple cases
     if (!splitOptions) {
         const cached = wordCache.get(input);
+
         if (cached) {
             return [...cached];
         }
@@ -50,9 +52,11 @@ export const splitByWords = (input: string, splitOptions?: SplitOptions): string
         let tokenStart = 0;
         let index = 1;
 
+        // eslint-disable-next-line no-loops/no-loops
         while (index < part.length) {
-            const previous = part[index - 1];
-            const current = part[index];
+            const previous = part[index - 1] as string;
+            // eslint-disable-next-line security/detect-object-injection
+            const current = part[index] as string;
 
             // Rule A: letter/digit–to–letter/digit transition
             if (
@@ -62,7 +66,9 @@ export const splitByWords = (input: string, splitOptions?: SplitOptions): string
             ) {
                 tokens.push(part.slice(tokenStart, index));
                 tokenStart = index;
+                // eslint-disable-next-line no-plusplus
                 index++;
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
@@ -71,10 +77,12 @@ export const splitByWords = (input: string, splitOptions?: SplitOptions): string
                 isUpper(previous) &&
                 isUpper(current) &&
                 index + 1 < part.length &&
-                isLower(part[index + 1])
+                isLower(part[index + 1] as string)
             ) {
                 let runStart = index - 1;
-                while (runStart > tokenStart && isUpper(part[runStart - 1])) {
+                // eslint-disable-next-line no-loops/no-loops
+                while (runStart > tokenStart && isUpper(part[runStart - 1] as string)) {
+                    // eslint-disable-next-line no-plusplus
                     runStart--;
                 }
 
@@ -96,10 +104,12 @@ export const splitByWords = (input: string, splitOptions?: SplitOptions): string
                     tokens.push(part.slice(tokenStart, boundary));
                     tokenStart = boundary;
                     index = tokenStart;
+                    // eslint-disable-next-line no-continue
                     continue;
                 }
             }
 
+            // eslint-disable-next-line no-plusplus
             index++;
         }
 
@@ -112,10 +122,10 @@ export const splitByWords = (input: string, splitOptions?: SplitOptions): string
 
     // Post-process tokens
     const postProcess = (tok: string): string[] => {
-        const m = /^([A-Z]{2,})([a-z].*)$/.exec(tok);
+        const m = /^([A-Z]{2,})[a-z].*$/.exec(tok);
 
         if (m) {
-            const acr = m[1];
+            const acr = m[1] as string;
             let boundary: number;
 
             if (acr.length === 2) {
@@ -135,12 +145,12 @@ export const splitByWords = (input: string, splitOptions?: SplitOptions): string
     };
 
     // Process each part with ANSI and emoji preservation
-    const words = parts.flatMap((part) => {
+    let words = parts.flatMap((part) => {
         // First handle ANSI escape sequences
         const ansiSegments = splitByAnsi(part);
         return ansiSegments.flatMap((segment) => {
             // Preserve ANSI escape sequences
-            if (segment.startsWith("\x1B")) {
+            if (segment.startsWith("\u001B")) {
                 return [segment];
             }
 
@@ -158,21 +168,20 @@ export const splitByWords = (input: string, splitOptions?: SplitOptions): string
             });
         });
     });
-
-    // Cache result for simple cases
-    if (!splitOptions && wordCache.size < CACHE_MAX_SIZE) {
-        wordCache.set(input, [...words]);
-    }
-
     // Normalize if requested
     if (options.normalize) {
-        return words.map((tok) => {
+        words = words.map((tok) => {
             if (/^[A-Z]+$/.test(tok) && !options.knownAcronyms.includes(tok)) {
-                return fastLowerCase(tok[0], options.locale) + tok.slice(1);
+                return toLowerCase(tok[0] as string, options.locale) + tok.slice(1);
             }
 
             return tok;
         });
+    }
+
+    // Cache result for simple cases
+    if (!splitOptions && wordCache.size < CACHE_MAX_SIZE) {
+        wordCache.set(input, [...words]);
     }
 
     return words;
