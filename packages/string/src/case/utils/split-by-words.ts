@@ -5,8 +5,6 @@ import { fastLowerCase, fastUpperCase } from "./string-ops";
 
 export interface SplitOptions extends CaseOptions {
     separators?: ReadonlyArray<string>;
-    knownAcronyms?: string[];
-    normalize?: boolean;
 }
 
 // Cache for processed words
