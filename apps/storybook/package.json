@@ -62,7 +62,7 @@
         "eslint-plugin-testing-library": "^7.1.1",
         "eslint-plugin-validate-jsx-nesting": "^0.1.1",
         "postcss": "^8.5.1",
-        "publint": "^0.3.2",
+        "publint": "^0.3.4",
         "serve": "^14.2.4",
         "sort-package-json": "^2.14.0",
         "storybook": "^8.5.0",
