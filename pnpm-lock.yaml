@@ -3753,6 +3753,9 @@ importers:
       '@total-typescript/ts-reset':
         specifier: ^0.6.1
         version: 0.6.1
+      '@types/lodash':
+        specifier: ^4.14.202
+        version: 4.17.6
       '@types/node':
         specifier: 22.13.1
         version: 22.13.1
@@ -3801,6 +3804,9 @@ importers:
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       prettier:
         specifier: ^3.4.2
         version: 3.4.2

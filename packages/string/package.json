@@ -255,6 +255,7 @@
         "CHANGELOG.md"
     ],
     "scripts": {
+        "bench": "vitest bench",
         "build": "cross-env NODE_ENV=development packem build",
         "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
@@ -269,9 +270,12 @@
         "test": "vitest run --typecheck",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "test:bench": "vitest bench --run"
     },
     "devDependencies": {
+        "lodash": "^4.17.21",
+        "@types/lodash": "^4.14.202",
         "ansi-regex": "6.1.0",
         "emoji-regex": "10.4.0",
         "@anolilab/eslint-config": "^15.0.3",

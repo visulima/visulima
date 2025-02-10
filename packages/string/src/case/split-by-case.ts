@@ -1,5 +1,5 @@
 import type { SplitByCase } from "./types";
-import { splitByWords, type SplitOptions } from "./utils/case-helpers";
+import { splitByWords, type SplitOptions } from "./utils/split-by-words";
 
 /**
  * Splits a string into "words" by:
