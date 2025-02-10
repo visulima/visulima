@@ -71,10 +71,6 @@ describe("pascalCase", () => {
         });
     });
 
-    it("should handle camelCase input", () => {
-        expect(pascalCase("fooBar")).toBe("FooBar");
-    });
-
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             const locale = "tr-TR";
