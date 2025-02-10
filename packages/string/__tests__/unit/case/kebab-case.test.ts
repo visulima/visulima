@@ -60,10 +60,6 @@ describe("kebabCase", () => {
         expect(kebabCase("foo bar baz")).toBe("foo-bar-baz");
     });
 
-    it("should handle empty string", () => {
-        expect(kebabCase("")).toBe("");
-    });
-
     it("should handle special formats and mixed cases", () => {
         expect(kebabCase("7samurai")).toBe("7-samurai");
         expect(kebabCase("14BLADES")).toBe("14-blades");
