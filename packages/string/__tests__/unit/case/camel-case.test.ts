@@ -1,8 +1,72 @@
 import { describe, expect, it, test } from "vitest";
 
 import { camelCase } from "../../../src/case";
+import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
 
 describe("camelCase", () => {
+    describe("caching", () => {
+        it("should use cache when enabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "test-string";
+
+            // First call should cache
+            const result1 = camelCase(input, { cache: true, cacheStore: customCache });
+            expect(result1).toBe("testString");
+            expect(customCache.size).toBe(1);
+
+            // Second call should use cache
+            const result2 = camelCase(input, { cache: true, cacheStore: customCache });
+            expect(result2).toBe("testString");
+            expect(customCache.size).toBe(1);
+        });
+
+        it("should not use cache when disabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "test-string";
+
+            // First call without cache
+            const result1 = camelCase(input, { cache: false, cacheStore: customCache });
+            expect(result1).toBe("testString");
+            expect(customCache.size).toBe(0);
+
+            // Second call without cache
+            const result2 = camelCase(input, { cache: false, cacheStore: customCache });
+            expect(result2).toBe("testString");
+            expect(customCache.size).toBe(0);
+        });
+
+        it("should respect cache size limit", () => {
+            const customCache = new Map<string, string>();
+            const input1 = "test-string-1";
+            const input2 = "test-string-2";
+
+            const options1 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
+            const options2 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
+
+            // First string should be cached
+            const result1 = camelCase(input1, options1);
+            expect(customCache.size).toBe(1);
+            expect(customCache.get(generateCacheKey(input1, options1))).toBe(result1);
+
+            // Second string should be cached due to size limit, the first string should be evicted
+            const result2 = camelCase(input2, options2);
+            expect(customCache.size).toBe(1);
+            expect(customCache.has(generateCacheKey(input1, options1))).toBeFalsy();
+            expect(customCache.get(generateCacheKey(input2, options2))).toBe(result2);
+        });
+
+        it("should handle custom cache store", () => {
+            const defaultCache = new Map<string, string>();
+            const customCache = new Map<string, string>();
+            const input = "test-string";
+
+            // Use custom cache
+            camelCase(input, { cache: true, cacheStore: customCache });
+            expect(customCache.size).toBe(1);
+            expect(defaultCache.size).toBe(0);
+        });
+    });
+
     it("should convert FooBarBaz to fooBarBaz", () => {
         expect(camelCase("FooBarBaz")).toBe("fooBarBaz");
         expect(camelCase("XMLHttpRequest")).toBe("xmlHttpRequest");
@@ -60,21 +124,49 @@ describe("camelCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text", () => {
-            expect(camelCase("Foo🐣Bar")).toBe("foo🐣Bar");
-            expect(camelCase("hello🌍World")).toBe("hello🌍World");
-            expect(camelCase("test🎉Party🎈Fun")).toBe("test🎉Party🎈Fun");
-            expect(camelCase("EMOJI👾Gaming")).toBe("emoji👾Gaming");
-            expect(camelCase("upper🚀Case")).toBe("upper🚀Case");
-            expect(camelCase("snake_case_🐍_test")).toBe("snakeCase🐍Test");
-            expect(camelCase("kebab-case-🍔-test")).toBe("kebabCase🍔Test");
+        it("should handle emojis in text with handleEmoji=false (default)", () => {
+            expect(camelCase("Foo🐣Bar")).toBe("fooBar");
+            expect(camelCase("hello🌍World")).toBe("helloWorld");
+            expect(camelCase("test🎉Party🎈Fun")).toBe("testPartyFun");
+            expect(camelCase("EMOJI👾Gaming")).toBe("emojiGaming");
+            expect(camelCase("upper🚀Case")).toBe("upperCase");
+            expect(camelCase("snake_case_🐍_test")).toBe("snakeCaseTest");
+            expect(camelCase("kebab-case-🍔-test")).toBe("kebabCaseTest");
+            expect(camelCase("welcome to the 🎉party")).toBe("welcomeToTheParty");
+        });
+
+        it("should handle emojis in text with handleEmoji=true", () => {
+            expect(camelCase("Foo🐣Bar", { handleEmoji: true })).toBe("foo🐣Bar");
+            expect(camelCase("hello🌍World", { handleEmoji: true })).toBe("hello🌍World");
+            expect(camelCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("test🎉Party🎈Fun");
+            expect(camelCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("emoji👾Gaming");
+            expect(camelCase("upper🚀Case", { handleEmoji: true })).toBe("upper🚀Case");
+            expect(camelCase("snake_case_🐍_test", { handleEmoji: true })).toBe("snakeCase🐍Test");
+            expect(camelCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("kebabCase🍔Test");
+            expect(camelCase("welcome to the 🎉party", { handleEmoji: true })).toBe("welcomeToThe🎉Party");
+        });
+    });
+
+    describe("aNSI support", () => {
+        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
+            expect(camelCase("\u001B[31mRedText\u001B[0m")).toBe("redText");
+            expect(camelCase("\u001B[1mBoldText\u001B[0m")).toBe("boldText");
+            expect(camelCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("greenFooBlueBar");
+        });
+
+        it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect(camelCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mredText\u001B[0m");
+            expect(camelCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mboldText\u001B[0m");
+            expect(camelCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
+                "\u001B[32mgreenFoo\u001B[0m\u001B[34mBlueBar\u001B[0m",
+            );
         });
     });
 
     it("should handle international characters", () => {
         expect(camelCase("Buenos Días")).toBe("buenosDías");
         expect(camelCase("Jag_förstår_inte")).toBe("jagFörstårInte");
-        expect(camelCase("quicoYÑoño")).toBe("quicoYÑoño");
+        expect(camelCase("quicoYÑoño")).toBe("quicoYñoño");
         expect(camelCase("Πολύ-καλό")).toBe("πολύΚαλό");
         expect(camelCase("ОЧЕНЬ_ПРИЯТНО")).toBe("оченьПриятно");
         expect(camelCase("Ես-հայերեն-չգիտեմ")).toBe("եսՀայերենՉգիտեմ");

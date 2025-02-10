@@ -5,9 +5,8 @@
  * @param s The string to test.
  * @param locale Defaults to "de-DE".
  */
-import { toUpperCase } from "./string-ops";
 
-export const isAllUpperGerman = (s: string, locale = "de-DE"): boolean => [...s].every((ch) => ch === "ß" || ch === toUpperCase(ch, locale));
+export const isAllUpperGerman = (s: string, locale = "de-DE"): boolean => [...s].every((ch) => ch === "ß" || ch === ch.toLocaleUpperCase(locale));
 
 /**
  * For Greek, we want to treat the final sigma (ς) as equivalent to uppercase sigma (Σ)
@@ -19,7 +18,8 @@ export const isAllUpperGerman = (s: string, locale = "de-DE"): boolean => [...s]
 export const isAllUpperGreek = (s: string, locale = "el-GR"): boolean => {
     // Normalize any final sigma (ς) to the standard uppercase sigma (Σ)
     const normalized = s.replaceAll("ς", "Σ");
-    return normalized === toUpperCase(normalized, locale);
+
+    return normalized === normalized.toLocaleUpperCase(locale);
 };
 
 /**
@@ -28,7 +28,7 @@ export const isAllUpperGreek = (s: string, locale = "el-GR"): boolean => {
  * @param s The string to test.
  * @param locale Defaults to "tr-TR".
  */
-export const isAllUpperTurkish = (s: string, locale = "tr-TR"): boolean => s === toUpperCase(s, locale);
+export const isAllUpperTurkish = (s: string, locale = "tr-TR"): boolean => s === s.toLocaleUpperCase(locale);
 
 /**
  * A generic helper that dispatches to a locale‐specific “is all uppercase” test.
@@ -37,22 +37,41 @@ export const isAllUpperTurkish = (s: string, locale = "tr-TR"): boolean => s ===
  * @param s The string to test.
  * @param locale Optional locale identifier.
  */
+// Cache for locale-specific uppercase results
+const upperCache = new Map<string, boolean>();
+const CACHE_MAX_SIZE = 2000;
+
 export const isAllUpper = (s: string, locale?: string): boolean => {
-    if (!locale) {
-        return s === toUpperCase(s);
+    // Generate cache key based on locale and string
+    const cacheKey = locale ? `${locale}:${s}` : s;
+    const cached = upperCache.get(cacheKey);
+
+    if (cached !== undefined) {
+        return cached;
     }
 
-    const normLocale = locale.toLowerCase();
+    let result: boolean;
 
-    if (normLocale.startsWith("de")) {
-        return isAllUpperGerman(s, locale);
-    }
-    if (normLocale.startsWith("el")) {
-        return isAllUpperGreek(s, locale);
-    }
-    if (normLocale.startsWith("tr")) {
-        return isAllUpperTurkish(s, locale);
+    if (locale) {
+        const normLocale = locale.toLowerCase();
+
+        if (normLocale.startsWith("de")) {
+            result = isAllUpperGerman(s, locale);
+        } else if (normLocale.startsWith("el")) {
+            result = isAllUpperGreek(s, locale);
+        } else if (normLocale.startsWith("tr")) {
+            result = isAllUpperTurkish(s, locale);
+        } else {
+            result = s === s.toLocaleUpperCase(locale);
+        }
+    } else {
+        result = s === s.toUpperCase();
     }
 
-    return s === s.toLocaleUpperCase(locale);
+    // Cache the result if we haven't exceeded the cache size
+    if (upperCache.size < CACHE_MAX_SIZE) {
+        upperCache.set(cacheKey, result);
+    }
+
+    return result;
 };

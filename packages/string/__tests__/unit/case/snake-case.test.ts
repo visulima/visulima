@@ -1,8 +1,71 @@
 import { describe, expect, it, test } from "vitest";
 
 import { snakeCase } from "../../../src/case";
+import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
 
 describe("snakeCase", () => {
+    describe("caching", () => {
+        it("should use cache when enabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // First call should cache
+            const result1 = snakeCase(input, { cache: true, cacheStore: customCache });
+            expect(result1).toBe("test_string");
+            expect(customCache.size).toBe(1);
+
+            // Second call should use cache
+            const result2 = snakeCase(input, { cache: true, cacheStore: customCache });
+            expect(result2).toBe("test_string");
+            expect(customCache.size).toBe(1);
+        });
+
+        it("should not use cache when disabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // First call without cache
+            const result1 = snakeCase(input, { cache: false, cacheStore: customCache });
+            expect(result1).toBe("test_string");
+            expect(customCache.size).toBe(0);
+
+            // Second call without cache
+            const result2 = snakeCase(input, { cache: false, cacheStore: customCache });
+            expect(result2).toBe("test_string");
+            expect(customCache.size).toBe(0);
+        });
+
+        it("should respect cache size limit", () => {
+            const customCache = new Map<string, string>();
+            const input1 = "testString1";
+            const input2 = "testString2";
+
+            const options = { cache: true, cacheMaxSize: 1, cacheStore: customCache, joiner: "_" };
+
+            // First string should be cached
+            const result1 = snakeCase(input1, options);
+            expect(customCache.size).toBe(1);
+            expect(customCache.get(generateCacheKey(input1, options))).toBe(result1);
+
+            // Second string should be cached due to size limit, the first string should be evicted
+            const result2 = snakeCase(input2, options);
+            expect(customCache.size).toBe(1);
+            expect(customCache.has(generateCacheKey(input1, options))).toBeFalsy();
+            expect(customCache.get(generateCacheKey(input2, options))).toBe(result2);
+        });
+
+        it("should handle custom cache store", () => {
+            const defaultCache = new Map<string, string>();
+            const customCache = new Map<string, string>();
+            const input = "testString";
+
+            // Use custom cache
+            snakeCase(input, { cache: true, cacheStore: customCache });
+            expect(customCache.size).toBe(1);
+            expect(defaultCache.size).toBe(0);
+        });
+    });
+
     it("should convert pascal case to snake case", () => {
         expect(snakeCase("FooBarBaz")).toBe("foo_bar_baz");
         expect(snakeCase("XMLHttpRequest")).toBe("xml_http_request");
@@ -37,14 +100,42 @@ describe("snakeCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text", () => {
-            expect(snakeCase("Foo🐣Bar")).toBe("foo_🐣_bar");
-            expect(snakeCase("hello🌍World")).toBe("hello_🌍_world");
-            expect(snakeCase("test🎉Party🎈Fun")).toBe("test_🎉_party_🎈_fun");
-            expect(snakeCase("EMOJI👾Gaming")).toBe("emoji_👾_gaming");
-            expect(snakeCase("upper🚀Case")).toBe("upper_🚀_case");
-            expect(snakeCase("camelCase🐪Test")).toBe("camel_case_🐪_test");
-            expect(snakeCase("kebab-case-🍔-test")).toBe("kebab_case_🍔_test");
+        it("should handle emojis in text with handleEmoji=false (default)", () => {
+            expect(snakeCase("Foo🐣Bar")).toBe("foo_bar");
+            expect(snakeCase("hello🌍World")).toBe("hello_world");
+            expect(snakeCase("test🎉Party🎈Fun")).toBe("test_party_fun");
+            expect(snakeCase("EMOJI👾Gaming")).toBe("emoji_gaming");
+            expect(snakeCase("upper🚀Case")).toBe("upper_case");
+            expect(snakeCase("camelCase🐪Test")).toBe("camel_case_test");
+            expect(snakeCase("kebab-case-🍔-test")).toBe("kebab_case_test");
+            expect(snakeCase("welcome to the 🎉party")).toBe("welcome_to_the_party");
+        });
+
+        it("should handle emojis in text with handleEmoji=true", () => {
+            expect(snakeCase("Foo🐣Bar", { handleEmoji: true })).toBe("foo_🐣_bar");
+            expect(snakeCase("hello🌍World", { handleEmoji: true })).toBe("hello_🌍_world");
+            expect(snakeCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("test_🎉_party_🎈_fun");
+            expect(snakeCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("emoji_👾_gaming");
+            expect(snakeCase("upper🚀Case", { handleEmoji: true })).toBe("upper_🚀_case");
+            expect(snakeCase("camelCase🐪Test", { handleEmoji: true })).toBe("camel_case_🐪_test");
+            expect(snakeCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("kebab_case_🍔_test");
+            expect(snakeCase("welcome to the 🎉party", { handleEmoji: true })).toBe("welcome_to_the_🎉_party");
+        });
+    });
+
+    describe("aNSI support", () => {
+        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
+            expect(snakeCase("\u001B[31mRedText\u001B[0m")).toBe("red_text");
+            expect(snakeCase("\u001B[1mBoldText\u001B[0m")).toBe("bold_text");
+            expect(snakeCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("green_foo_blue_bar");
+        });
+
+        it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect(snakeCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mred_text\u001B[0m");
+            expect(snakeCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mbold_text\u001B[0m");
+            expect(snakeCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
+                "\u001B[32mgreen_foo\u001B[0m_\u001B[34mblue_bar\u001B[0m",
+            );
         });
     });
 

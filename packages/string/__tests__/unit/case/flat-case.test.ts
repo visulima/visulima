@@ -1,8 +1,75 @@
 import { describe, expect, it } from "vitest";
 
 import { flatCase } from "../../../src/case";
+import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
 
 describe("flatCase", () => {
+    describe("caching", () => {
+        it("should use cache when enabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "testString";
+            const options = { cache: true, cacheStore: customCache };
+
+            // First call should cache
+            const result1 = flatCase(input, options);
+            expect(result1).toBe("teststring");
+            expect(customCache.size).toBe(1);
+            expect(customCache.get(generateCacheKey(input, options))).toBe(result1);
+
+            // Second call should use cache
+            const result2 = flatCase(input, options);
+            expect(result2).toBe("teststring");
+            expect(customCache.size).toBe(1);
+        });
+
+        it("should not use cache when disabled", () => {
+            const customCache = new Map<string, string>();
+            const input = "testString";
+            const options = { cache: false, cacheStore: customCache };
+
+            // First call without cache
+            const result1 = flatCase(input, options);
+            expect(result1).toBe("teststring");
+            expect(customCache.size).toBe(0);
+
+            // Second call without cache
+            const result2 = flatCase(input, options);
+            expect(result2).toBe("teststring");
+            expect(customCache.size).toBe(0);
+        });
+
+        it("should respect cache size limit", () => {
+            const customCache = new Map<string, string>();
+            const input1 = "testString1";
+            const input2 = "testString2";
+            const options1 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
+            const options2 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
+
+            // First string should be cached
+            flatCase(input1, options1);
+            expect(customCache.size).toBe(1);
+            expect(customCache.get(generateCacheKey(input1, options1))).toBeDefined();
+
+            // Second string should be cached due to size limit, the first string should be evicted
+            flatCase(input2, options2);
+            expect(customCache.size).toBe(1);
+            expect(customCache.has(generateCacheKey(input1, options1))).toBeFalsy();
+            expect(customCache.has(generateCacheKey(input2, options2))).toBeTruthy();
+        });
+
+        it("should handle custom cache store", () => {
+            const defaultCache = new Map<string, string>();
+            const customCache = new Map<string, string>();
+            const input = "testString";
+            const options = { cache: true, cacheStore: customCache };
+
+            // Use custom cache
+            flatCase(input, options);
+            expect(customCache.size).toBe(1);
+            expect(defaultCache.size).toBe(0);
+        });
+    });
+
     it("should convert camelCase to flat case", () => {
         expect(flatCase("fooBar")).toBe("foobar");
         expect(flatCase("fooBarBaz")).toBe("foobarbaz");
@@ -49,15 +116,44 @@ describe("flatCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text", () => {
-            expect(flatCase("Foo🐣Bar")).toBe("foo🐣bar");
-            expect(flatCase("hello🌍World")).toBe("hello🌍world");
-            expect(flatCase("test🎉Party🎈Fun")).toBe("test🎉party🎈fun");
-            expect(flatCase("EMOJI👾Gaming")).toBe("emoji👾gaming");
-            expect(flatCase("upper🚀Case")).toBe("upper🚀case");
-            expect(flatCase("snake_case_🐍_test")).toBe("snakecase🐍test");
-            expect(flatCase("kebab-case-🍔-test")).toBe("kebabcase🍔test");
-            expect(flatCase("flat📝text")).toBe("flat📝text");
+        it("should handle emojis in text with handleEmoji=false (default)", () => {
+            expect(flatCase("Foo🐣Bar")).toBe("foobar");
+            expect(flatCase("hello🌍World")).toBe("helloworld");
+            expect(flatCase("test🎉Party🎈Fun")).toBe("testpartyfun");
+            expect(flatCase("EMOJI👾Gaming")).toBe("emojigaming");
+            expect(flatCase("upper🚀Case")).toBe("uppercase");
+            expect(flatCase("snake_case_🐍_test")).toBe("snakecasetest");
+            expect(flatCase("kebab-case-🍔-test")).toBe("kebabcasetest");
+            expect(flatCase("flat📝text")).toBe("flattext");
+            expect(flatCase("welcome to the 🎉party")).toBe("welcometotheparty");
+        });
+
+        it("should handle emojis in text with handleEmoji=true", () => {
+            expect(flatCase("Foo🐣Bar", { handleEmoji: true })).toBe("foo🐣bar");
+            expect(flatCase("hello🌍World", { handleEmoji: true })).toBe("hello🌍world");
+            expect(flatCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("test🎉party🎈fun");
+            expect(flatCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("emoji👾gaming");
+            expect(flatCase("upper🚀Case", { handleEmoji: true })).toBe("upper🚀case");
+            expect(flatCase("snake_case_🐍_test", { handleEmoji: true })).toBe("snakecase🐍test");
+            expect(flatCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("kebabcase🍔test");
+            expect(flatCase("flat📝text", { handleEmoji: true })).toBe("flat📝text");
+            expect(flatCase("welcome to the 🎉party", { handleEmoji: true })).toBe("welcometothe🎉party");
+        });
+    });
+
+    describe("aNSI support", () => {
+        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
+            expect(flatCase("\u001B[31mRedText\u001B[0m")).toBe("redtext");
+            expect(flatCase("\u001B[1mBoldText\u001B[0m")).toBe("boldtext");
+            expect(flatCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("greenfoobluebar");
+        });
+
+        it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect(flatCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mredtext\u001B[0m");
+            expect(flatCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mboldtext\u001B[0m");
+            expect(flatCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe("\u001B[32mgreenfoobluebar\u001B[0m");
+            expect(flatCase("\u001B[31mRed\u001B[0m_\u001B[32mGreen\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mred\u001B[0m\u001B[32mgreen\u001B[0m");
+            expect(flatCase("\u001B[1mBold\u001B[0m-\u001B[31mRed\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mbold\u001B[0m\u001B[31mred\u001B[0m");
         });
     });
 

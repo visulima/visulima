@@ -1,7 +1,9 @@
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, KebabCase } from "./types";
+import { generateCacheKey } from "./utils/generate-cache-key";
+import { manageCache } from "./utils/manage-cache";
 import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
-import { fastJoin, toLowerCase } from "./utils/string-ops";
+import { toLowerCase } from "./utils/to-lower-case";
 
 export interface KebabCaseOptions extends CaseOptions {
     /**
@@ -25,32 +27,52 @@ export interface KebabCaseOptions extends CaseOptions {
  */
 // Cache for frequently used kebab case conversions
 const kebabCache = new Map<string, string>();
-const CACHE_MAX_SIZE = 1000;
+const DEFAULT_CACHE_MAX_SIZE = 1000;
 
 export const kebabCase = <T extends string = string>(value?: T, options?: KebabCaseOptions): KebabCase<T> => {
     if (typeof value !== "string") {
         return "" as KebabCase<T>;
     }
 
-    // For simple cases without options, use cache
-    if (!options) {
-        const cached = kebabCache.get(value);
+    const shouldCache = options?.cache ?? false;
+    const cacheMaxSize = options?.cacheMaxSize ?? DEFAULT_CACHE_MAX_SIZE;
+    const cacheStore = options?.cacheStore ?? kebabCache;
+
+    let cacheKey: string | undefined;
+
+    if (shouldCache) {
+        cacheKey = generateCacheKey(value, options);
+    }
+
+    // For cases with caching enabled, use cache with composite key
+    if (shouldCache && cacheKey) {
+        const cached = cacheStore.get(cacheKey);
+
         if (cached) {
             return cached as KebabCase<T>;
         }
     }
 
-    const words = splitByCase(value, options);
+    const words = splitByCase(value, {
+        handleAnsi: options?.handleAnsi,
+        handleEmoji: options?.handleEmoji,
+        knownAcronyms: options?.knownAcronyms,
+        locale: options?.locale,
+        normalize: options?.normalize,
+        separators: undefined,
+    });
+
     const processed = words.map((p) => {
         const split = normalizeGermanEszett(p, options?.locale);
+
         return toLowerCase(split, options?.locale);
     });
 
-    const result = fastJoin(processed, options?.joiner ?? "-") as KebabCase<T>;
+    const result = processed.join(options?.joiner ?? "-") as KebabCase<T>;
 
-    // Cache the result for simple cases
-    if (!options && kebabCache.size < CACHE_MAX_SIZE) {
-        kebabCache.set(value, result);
+    // Cache the result for future use if caching is enabled
+    if (shouldCache && cacheKey) {
+        manageCache(cacheStore, cacheKey, result, cacheMaxSize);
     }
 
     return result;
