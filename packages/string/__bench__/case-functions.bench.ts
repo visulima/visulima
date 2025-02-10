@@ -1,5 +1,7 @@
 import { bench, describe } from "vitest";
 import { camelCase as lodashCamelCase, kebabCase as lodashKebabCase, snakeCase as lodashSnakeCase } from "lodash";
+import { camelCase as sculeCamelCase, kebabCase as sculeKebabCase, snakeCase as sculeSnakeCase } from "scule";
+import { camelCase as changeCaseCamel, kebabCase as changeCaseKebab, snakeCase as changeCaseSnake } from "change-case";
 import { camelCase, kebabCase, snakeCase } from "../dist/case";
 
 const TEST_STRINGS = [
@@ -45,6 +47,18 @@ describe("Case Functions Benchmark", () => {
                 lodashCamelCase(str);
             }
         });
+
+        bench("scule camelCase", () => {
+            for (const str of TEST_STRINGS) {
+                sculeCamelCase(str);
+            }
+        });
+
+        bench("change-case camelCase", () => {
+            for (const str of TEST_STRINGS) {
+                changeCaseCamel(str);
+            }
+        });
     });
 
     // Kebab Case
@@ -60,6 +74,18 @@ describe("Case Functions Benchmark", () => {
                 lodashKebabCase(str);
             }
         });
+
+        bench("scule kebabCase", () => {
+            for (const str of TEST_STRINGS) {
+                sculeKebabCase(str);
+            }
+        });
+
+        bench("change-case kebabCase", () => {
+            for (const str of TEST_STRINGS) {
+                changeCaseKebab(str);
+            }
+        });
     });
 
     // Snake Case
@@ -73,6 +99,18 @@ describe("Case Functions Benchmark", () => {
         bench("lodash snakeCase", () => {
             for (const str of TEST_STRINGS) {
                 lodashSnakeCase(str);
+            }
+        });
+
+        bench("scule snakeCase", () => {
+            for (const str of TEST_STRINGS) {
+                sculeSnakeCase(str);
+            }
+        });
+
+        bench("change-case snakeCase", () => {
+            for (const str of TEST_STRINGS) {
+                changeCaseSnake(str);
             }
         });
     });
@@ -113,6 +151,18 @@ describe("Case Functions Benchmark", () => {
                 lodashCamelCase(str);
             }
         });
+
+        bench("scule camelCase with special chars", () => {
+            for (const str of specialStrings) {
+                sculeCamelCase(str);
+            }
+        });
+
+        bench("change-case camelCase with special chars", () => {
+            for (const str of specialStrings) {
+                changeCaseCamel(str);
+            }
+        });
     });
 
     // Test with known acronyms
@@ -134,6 +184,18 @@ describe("Case Functions Benchmark", () => {
         bench("lodash camelCase with acronyms", () => {
             for (const str of acronymStrings) {
                 lodashCamelCase(str);
+            }
+        });
+
+        bench("scule camelCase with acronyms", () => {
+            for (const str of acronymStrings) {
+                sculeCamelCase(str);
+            }
+        });
+
+        bench("change-case camelCase with acronyms", () => {
+            for (const str of acronymStrings) {
+                changeCaseCamel(str);
             }
         });
     });
