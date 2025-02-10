@@ -28,7 +28,9 @@ module.exports = defineConfig({
             files: ["*.ts", "*.tsx", "*.mts", "*.cts", "*.js", "*.jsx"],
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
-            rules: {},
+            rules: {
+                "unicorn/prefer-string-slice": "off"
+            },
         },
         {
             files: ["*.ts", "*.tsx", "*.mts", "*.cts"],

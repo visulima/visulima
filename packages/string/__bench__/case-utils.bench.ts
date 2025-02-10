@@ -1,5 +1,6 @@
 import { bench, describe } from "vitest";
-import { toLowerCase, toUpperCase } from "../src/case/utils/string-ops";
+import { toLowerCase } from "../src/case/utils/to-lower-case";
+import { toUpperCase } from "../src/case/utils/to-upper-case";
 
 const TEST_STRINGS = [
     "foo bar",

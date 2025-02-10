@@ -1,5 +1,11 @@
 import { snakeCase } from "./snake-case";
 import type { CaseOptions, ConstantCase } from "./types";
+import { generateCacheKey } from "./utils/generate-cache-key";
+import { manageCache } from "./utils/manage-cache";
+
+// Cache for frequently used constant case conversions
+const constantCache = new Map<string, string>();
+const DEFAULT_CACHE_MAX_SIZE = 1000;
 
 /**
  * Converts a string to CONSTANT_CASE.
@@ -14,7 +20,36 @@ import type { CaseOptions, ConstantCase } from "./types";
  * ```
  */
 export const constantCase = <T extends string = string>(value?: T, options?: CaseOptions): ConstantCase<T> => {
-    const result = snakeCase(value, options);
+    if (typeof value !== "string") {
+        return "" as ConstantCase<T>;
+    }
 
-    return (options?.locale ? result.toLocaleUpperCase(options.locale) : result.toUpperCase()) as ConstantCase<T>;
+    const shouldCache = options?.cache ?? false;
+    const cacheMaxSize = options?.cacheMaxSize ?? DEFAULT_CACHE_MAX_SIZE;
+    const cacheStore = options?.cacheStore ?? constantCache;
+
+    let cacheKey: string | undefined;
+
+    if (shouldCache) {
+        cacheKey = generateCacheKey(value, options);
+    }
+
+    // For cases with caching enabled, use cache with composite key
+    if (shouldCache && cacheKey) {
+        const cached = cacheStore.get(cacheKey);
+
+        if (cached) {
+            return cached as ConstantCase<T>;
+        }
+    }
+
+    const snakeResult = snakeCase(value, { ...options, cache: false });
+    const result = (options?.locale ? snakeResult.toLocaleUpperCase(options.locale) : snakeResult.toUpperCase()) as ConstantCase<T>;
+
+    // Cache the result for future use if caching is enabled
+    if (shouldCache && cacheKey) {
+        manageCache(cacheStore, cacheKey, result, cacheMaxSize);
+    }
+
+    return result;
 };

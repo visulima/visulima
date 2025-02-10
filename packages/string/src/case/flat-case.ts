@@ -1,6 +1,9 @@
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, FlatCase } from "./types";
 
+// Cache for frequently used flat case conversions
+const flatCache = new Map<string, string>();
+
 /**
  * Converts a string to flatcase (all lowercase, no separators).
  * @example
@@ -12,4 +15,4 @@ import type { CaseOptions, FlatCase } from "./types";
  * ```
  */
 export const flatCase = <T extends string = string>(value?: T, options?: CaseOptions): FlatCase<T> =>
-    kebabCase(value, { ...options, joiner: "" }) as FlatCase<T>;
+    kebabCase(value, { cacheStore: flatCache, ...options, joiner: "" }) as FlatCase<T>;
