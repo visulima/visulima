@@ -25,7 +25,7 @@ export const pascalCase = <T extends string = string>(value?: T, options?: CaseO
         return "" as PascalCase<T>;
     }
 
-    return splitByCase(value, options)
+    return splitByCase(value, { ...options, separators: undefined })
         .map((word: string) => {
             const split = normalizeGermanEszett(word, options?.locale);
 
