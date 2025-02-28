@@ -38,14 +38,14 @@ export const computeSubSteps = (stops: StopOutput[], steps: number): number[] =>
             const min = Math.min(...substeps);
 
             // eslint-disable-next-line no-plusplus
-            substeps[substeps.indexOf(min)]++;
+            (substeps[substeps.indexOf(min)] as number)++;
             // eslint-disable-next-line no-plusplus
             totalSubsteps++;
         } else {
             const max = Math.max(...substeps);
 
             // eslint-disable-next-line no-plusplus
-            substeps[substeps.indexOf(max)]--;
+            (substeps[substeps.indexOf(max)] as number)--;
             // eslint-disable-next-line no-plusplus
             totalSubsteps--;
         }
