@@ -8,7 +8,7 @@
     },
     "dependencies": {
         "@visulima/colorize": "workspace:*",
-        "color-convert": "^2.0.1",
+        "color-convert": "^3.0.1",
         "log-update": "^6.1.0"
     }
 }

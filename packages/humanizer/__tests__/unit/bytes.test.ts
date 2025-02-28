@@ -171,7 +171,13 @@ describe("formatBytes", () => {
         { description: "iec 34560000000000", expectedUnit: "TiB", expectedValue: "31", options: { units: "iec" }, value: 34_560_000_000_000 },
         { description: "iec 34560000000000000", expectedUnit: "PiB", expectedValue: "31", options: { units: "iec" }, value: 34_560_000_000_000_000 },
         { description: "iec 34560000000000000000", expectedUnit: "EiB", expectedValue: "30", options: { units: "iec" }, value: 34_560_000_000_000_000_000 },
-        { description: "iec 34560000000000000000000", expectedUnit: "ZiB", expectedValue: "29", options: { units: "iec" }, value: 34_560_000_000_000_000_000_000 },
+        {
+            description: "iec 34560000000000000000000",
+            expectedUnit: "ZiB",
+            expectedValue: "29",
+            options: { units: "iec" },
+            value: 34_560_000_000_000_000_000_000,
+        },
         {
             description: "iec 34560000000000000000000000",
             expectedUnit: "YiB",
@@ -202,7 +208,13 @@ describe("formatBytes", () => {
         { description: "iec_octet 34560000", expectedUnit: "Mio", expectedValue: "33", options: { units: "iec_octet" }, value: 34_560_000 },
         { description: "iec_octet 34560000000", expectedUnit: "Gio", expectedValue: "32", options: { units: "iec_octet" }, value: 34_560_000_000 },
         { description: "iec_octet 34560000000000", expectedUnit: "Tio", expectedValue: "31", options: { units: "iec_octet" }, value: 34_560_000_000_000 },
-        { description: "iec_octet 34560000000000000", expectedUnit: "Pio", expectedValue: "31", options: { units: "iec_octet" }, value: 34_560_000_000_000_000 },
+        {
+            description: "iec_octet 34560000000000000",
+            expectedUnit: "Pio",
+            expectedValue: "31",
+            options: { units: "iec_octet" },
+            value: 34_560_000_000_000_000,
+        },
         {
             description: "iec_octet 34560000000000000000",
             expectedUnit: "Eio",

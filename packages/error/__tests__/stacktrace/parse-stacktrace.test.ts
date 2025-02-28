@@ -1833,8 +1833,10 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         ]);
     });
 
-    it('should not create a stacktrace if the stack is broken', () => {
-        const stackFrames = parseStacktrace({ stack: "Error\n no such file or directory, rename '/home/prisis/WebstormProjects/visulima/visulima/packages/is-ansi-color-supported/package.json.tmp' -> '/home/prisis/WebstormProjects/visulima/visulima/packages/is-ansi-color-supported/package.json'" }  as unknown as Error);
+    it("should not create a stacktrace if the stack is broken", () => {
+        const stackFrames = parseStacktrace({
+            stack: "Error\n no such file or directory, rename '/home/prisis/WebstormProjects/visulima/visulima/packages/is-ansi-color-supported/package.json.tmp' -> '/home/prisis/WebstormProjects/visulima/visulima/packages/is-ansi-color-supported/package.json'",
+        } as unknown as Error);
 
         expect(stackFrames).toHaveLength(0);
     });

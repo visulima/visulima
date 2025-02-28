@@ -338,6 +338,7 @@ Supported authentication methods are:
 For more information, see [Authentication](/docs/short/authentication.md).
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+
 [typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/jsdoc-open-api?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
