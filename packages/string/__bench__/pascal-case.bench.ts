@@ -11,7 +11,7 @@ describe("pascalCase", () => {
 
     bench("visulima/string pascalCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            pascalCase(str);
+            pascalCase(str, { cache: true });
         }
     });
 

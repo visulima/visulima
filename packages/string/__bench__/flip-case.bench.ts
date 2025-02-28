@@ -11,7 +11,7 @@ describe("flipCase", () => {
 
     bench("visulima/string flipCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            flipCase(str);
+            flipCase(str, { cache: true });
         }
     });
 
