@@ -10,12 +10,6 @@ describe("upperFirst", () => {
         }
     });
 
-    bench("visulima/string upperFirst (with cache)", () => {
-        for (const str of TEST_STRINGS) {
-            upperFirst(str);
-        }
-    });
-
     bench("scule upperFirst", () => {
         for (const str of TEST_STRINGS) {
             sculeUpperFirst(str);

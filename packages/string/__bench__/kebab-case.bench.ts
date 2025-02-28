@@ -15,7 +15,7 @@ describe("kebabCase", () => {
 
     bench("visulima/string kebabCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            kebabCase(str);
+            kebabCase(str, { cache: true });
         }
     });
 

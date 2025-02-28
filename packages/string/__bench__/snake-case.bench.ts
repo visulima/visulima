@@ -15,7 +15,7 @@ describe("snakeCase", () => {
 
     bench("visulima/string snakeCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            snakeCase(str);
+            snakeCase(str, { cache: true });
         }
     });
 
