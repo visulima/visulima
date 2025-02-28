@@ -73,6 +73,16 @@ export interface CaseOptions extends LocaleOptions {
      * Whether to normalize case (e.g., convert uppercase tokens not in knownAcronyms to title case).
      */
     normalize?: boolean;
+
+    /**
+     * Whether to strip ANSI escape sequences. (default: false)
+     */
+    stripAnsi?: boolean;
+
+    /**
+     * Whether to strip emoji sequences. (default: false)
+     */
+    stripEmoji?: boolean;
 }
 
 /**

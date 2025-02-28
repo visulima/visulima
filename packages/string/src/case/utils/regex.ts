@@ -49,33 +49,6 @@ export const getSeparatorsRegex = (separators: ReadonlyArray<string>): RegExp =>
 };
 
 /**
- * Split text by ANSI escape sequences
- */
-export const splitByAnsi = (text: string): string[] => {
-    const segments: string[] = [];
-
-    let lastIndex = 0;
-    let match: RegExpExecArray | null;
-
-    ANSI_REGEX.lastIndex = 0;
-
-    while ((match = ANSI_REGEX.exec(text)) !== null) {
-        if (match.index > lastIndex) {
-            segments.push(text.slice(lastIndex, match.index));
-        }
-
-        segments.push(match[0]);
-        lastIndex = ANSI_REGEX.lastIndex;
-    }
-
-    if (lastIndex < text.length) {
-        segments.push(text.slice(lastIndex));
-    }
-
-    return segments.filter(Boolean);
-};
-
-/**
  * Split text by emoji characters
  */
 export const splitByEmoji = (text: string): string[] => {
@@ -102,3 +75,7 @@ export const splitByEmoji = (text: string): string[] => {
 
     return segments.filter(Boolean);
 };
+
+export const stripAnsi = (string_: string): string => string_.replace(ANSI_REGEX, "");
+
+export const stripEmoji = (string_: string): string => string_.replace(EMOJI_REGEX, "");

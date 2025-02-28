@@ -6,7 +6,7 @@
  *
  * @param value The string to normalize.
  */
-export const normalizeGreekSigma = (value: string): string => {
+export const normalizeGreekSigma = (value: string): string =>
     // Replace both forms of lowercase sigma with uppercase sigma.
-    return value.replaceAll(/[σς]/g, "Σ");
-};
+     value.replaceAll(/[σς]/g, "Σ")
+;

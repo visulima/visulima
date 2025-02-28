@@ -1,4 +1,4 @@
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { kebabCase } from "../../../src/case";
 import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
@@ -108,14 +108,14 @@ describe("kebabCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text with handleEmoji=false (default)", () => {
-            expect(kebabCase("Foo🐣Bar")).toBe("foo-bar");
-            expect(kebabCase("hello🌍World")).toBe("hello-world");
-            expect(kebabCase("test🎉Party🎈Fun")).toBe("test-party-fun");
-            expect(kebabCase("EMOJI👾Gaming")).toBe("emoji-gaming");
-            expect(kebabCase("upper🚀Case")).toBe("upper-case");
-            expect(kebabCase("snake_case_🐍_test")).toBe("snake-case-test");
-            expect(kebabCase("camelCase🍔Test")).toBe("camel-case-test");
+        it("should handle emojis in text with stripEmoji=true", () => {
+            expect(kebabCase("Foo🐣Bar", { stripEmoji: true })).toBe("foo-bar");
+            expect(kebabCase("hello🌍World", { stripEmoji: true })).toBe("hello-world");
+            expect(kebabCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("test-party-fun");
+            expect(kebabCase("EMOJI👾Gaming", { stripEmoji: true })).toBe("emoji-gaming");
+            expect(kebabCase("upper🚀Case", { stripEmoji: true })).toBe("upper-case");
+            expect(kebabCase("snake_case_🐍_test", { stripEmoji: true })).toBe("snake-case-test");
+            expect(kebabCase("camelCase🍔Test", { stripEmoji: true })).toBe("camel-case-test");
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
@@ -130,10 +130,10 @@ describe("kebabCase", () => {
     });
 
     describe("aNSI support", () => {
-        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
-            expect(kebabCase("\u001B[31mRedText\u001B[0m")).toBe("red-text");
-            expect(kebabCase("\u001B[1mBoldText\u001B[0m")).toBe("bold-text");
-            expect(kebabCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("green-foo-blue-bar");
+        it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect(kebabCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("red-text");
+            expect(kebabCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("bold-text");
+            expect(kebabCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("green-foo-blue-bar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
