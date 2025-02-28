@@ -169,6 +169,7 @@ If you would like to help take a look at the [list of issues](https://github.com
 The visulima is-ansi-color-supported is open-sourced software licensed under the [MIT][license-url]
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+
 [typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/is-ansi-color-supported?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"

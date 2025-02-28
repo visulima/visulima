@@ -158,7 +158,6 @@ describe("utils", () => {
             expect(result).toBeTruthy();
         });
 
-
         it("should return true for a relative path with '..'", () => {
             expect.assertions(1);
 
