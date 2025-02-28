@@ -11,7 +11,7 @@ describe("sentenceCase", () => {
 
     bench("visulima/string sentenceCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            sentenceCase(str);
+            sentenceCase(str, { cache: true });
         }
     });
 

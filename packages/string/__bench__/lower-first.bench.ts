@@ -12,7 +12,7 @@ describe("lowerFirst", () => {
 
     bench("visulima/string lowerFirst (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            lowerFirst(str);
+            lowerFirst(str, { cache: true });
         }
     });
 

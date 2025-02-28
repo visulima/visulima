@@ -11,7 +11,7 @@ describe("dotCase", () => {
 
     bench("visulima/string dotCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            dotCase(str);
+            dotCase(str, { cache: true });
         }
     });
 

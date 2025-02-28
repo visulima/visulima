@@ -11,7 +11,7 @@ describe("noCase", () => {
 
     bench("visulima/string noCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            noCase(str);
+            noCase(str, { cache: true });
         }
     });
 

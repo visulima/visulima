@@ -11,7 +11,7 @@ describe("constantCase", () => {
 
     bench("visulima/string constantCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            constantCase(str);
+            constantCase(str, { cache: true });
         }
     });
 

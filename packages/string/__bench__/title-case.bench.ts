@@ -12,7 +12,7 @@ describe("titleCase", () => {
 
     bench("visulima/string titleCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            titleCase(str);
+            titleCase(str, { cache: true });
         }
     });
 

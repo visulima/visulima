@@ -11,7 +11,7 @@ describe("capitalCase", () => {
 
     bench("visulima/string capitalCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            capitalCase(str);
+            capitalCase(str, { cache: true });
         }
     });
 

@@ -13,7 +13,7 @@ describe("trainCase", () => {
 
     bench("visulima/string trainCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            trainCase(str);
+            trainCase(str, { cache: true });
         }
     });
 
