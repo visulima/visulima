@@ -1,7 +1,7 @@
 <div align="center">
   <h3>visulima string</h3>
   <p>
-  Functions for manipulating strings.
+  A robust string manipulation library providing utilities for common string operations with support for multiple languages.
   </p>
 </div>
 
@@ -23,6 +23,16 @@
     </p>
 </div>
 
+## Features
+
+- **Case Conversion**:
+    - Convert between camelCase, PascalCase, snake_case, kebab-case, and more
+- **String Splitting**:
+    - Split strings based on case transitions, script boundaries, and separators
+- **Locale Support**:
+    - Handle strings in multiple languages including Japanese, Korean, Chinese, and Cyrillic scripts
+    - Intelligent script and case boundary detection
+
 ---
 
 ## Install
@@ -37,6 +47,19 @@ yarn add @visulima/string
 
 ```sh
 pnpm add @visulima/string
+```
+
+## Quick Examples
+
+```typescript
+import { splitByCase, camelCase } from '@visulima/string';
+
+// Split complex strings
+splitByCase('XMLHttpRequest');  // ['XML', 'Http', 'Request']
+splitByCase('日本語Text', { locale: 'ja' });  // ['日本語', 'Text']
+
+// Case conversions
+camelCase('hello_world');  // 'helloWorld'
 ```
 
 ## Usage
