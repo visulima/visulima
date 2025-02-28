@@ -332,30 +332,6 @@ describe("splitByCase", () => {
         });
     });
 
-    describe("Tamil script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const str of TAMIL_STRINGS) {
-                splitByCase(str, { locale: "ta" });
-            }
-        });
-    });
-
-    describe("Telugu script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const str of TELUGU_STRINGS) {
-                splitByCase(str, { locale: "te" });
-            }
-        });
-    });
-
-    describe("Tamil script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const str of TAMIL_STRINGS) {
-                splitByCase(str, { locale: "ta" });
-            }
-        });
-    });
-
     describe("Telugu script handling", () => {
         bench("visulima/string splitByCase (no cache)", () => {
             for (const str of TELUGU_STRINGS) {
