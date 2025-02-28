@@ -1,7 +1,7 @@
 import { bench, describe } from "vitest";
 import { upperFirst as sculeUpperFirst } from "scule";
 import { upperFirst } from "../dist/case";
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "./test-strings";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 
 describe("upperFirst", () => {
     bench("visulima/string upperFirst (no cache)", () => {

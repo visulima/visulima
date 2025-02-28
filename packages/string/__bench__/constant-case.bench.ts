@@ -1,6 +1,6 @@
 import { bench, describe } from "vitest";
 import { constantCase } from "../dist/case";
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "./test-strings";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 
 describe("constantCase", () => {
     bench("visulima/string constantCase (no cache)", () => {

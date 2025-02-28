@@ -2,7 +2,7 @@ import { bench, describe } from "vitest";
 import { trainCase as caseAnythingTrainCase } from "case-anything";
 import { trainCase as sculeTrainCase } from "scule";
 import { trainCase } from "../dist/case";
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "./test-strings";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 
 describe("trainCase", () => {
     bench("visulima/string trainCase (no cache)", () => {

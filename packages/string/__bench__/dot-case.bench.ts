@@ -1,6 +1,6 @@
 import { bench, describe } from "vitest";
 import { dotCase } from "../dist/case";
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "./test-strings";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 
 describe("dotCase", () => {
     bench("visulima/string dotCase (no cache)", () => {

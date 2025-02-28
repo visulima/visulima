@@ -1,4 +1,4 @@
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { pascalCase } from "../../../src/case";
 import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
@@ -124,14 +124,14 @@ describe("pascalCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text with handleEmoji=false (default)", () => {
-            expect(pascalCase("Foo🐣Bar")).toBe("FooBar");
-            expect(pascalCase("hello🌍World")).toBe("HelloWorld");
-            expect(pascalCase("test🎉Party🎈Fun")).toBe("TestPartyFun");
-            expect(pascalCase("EMOJI👾Gaming")).toBe("EmojiGaming");
-            expect(pascalCase("upper🚀Case")).toBe("UpperCase");
-            expect(pascalCase("snake_case_🐍_test")).toBe("SnakeCaseTest");
-            expect(pascalCase("kebab-case-🍔-test")).toBe("KebabCaseTest");
+        it("should handle emojis in text with stripEmoji=true", () => {
+            expect(pascalCase("Foo🐣Bar", { stripEmoji: true })).toBe("FooBar");
+            expect(pascalCase("hello🌍World", { stripEmoji: true })).toBe("HelloWorld");
+            expect(pascalCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("TestPartyFun");
+            expect(pascalCase("EMOJI👾Gaming", { stripEmoji: true })).toBe("EmojiGaming");
+            expect(pascalCase("upper🚀Case", { stripEmoji: true })).toBe("UpperCase");
+            expect(pascalCase("snake_case_🐍_test", { stripEmoji: true })).toBe("SnakeCaseTest");
+            expect(pascalCase("kebab-case-🍔-test", { stripEmoji: true })).toBe("KebabCaseTest");
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
@@ -146,10 +146,10 @@ describe("pascalCase", () => {
     });
 
     describe("aNSI support", () => {
-        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
-            expect(pascalCase("\u001B[31mRedText\u001B[0m")).toBe("RedText");
-            expect(pascalCase("\u001B[1mBoldText\u001B[0m")).toBe("BoldText");
-            expect(pascalCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("GreenFooBlueBar");
+        it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect(pascalCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("RedText");
+            expect(pascalCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("BoldText");
+            expect(pascalCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("GreenFooBlueBar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {

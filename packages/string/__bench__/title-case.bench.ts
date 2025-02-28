@@ -1,7 +1,7 @@
 import { bench, describe } from "vitest";
 import { titleCase as sculeTitleCase } from "scule";
 import { titleCase } from "../dist/case";
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "./test-strings";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 
 describe("titleCase", () => {
     bench("visulima/string titleCase (no cache)", () => {

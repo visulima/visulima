@@ -1,6 +1,7 @@
 import type { CaseOptions, FlipCase } from "./types";
 import { generateCacheKey } from "./utils/generate-cache-key";
 import { manageCache } from "./utils/manage-cache";
+import { stripAnsi, stripEmoji } from "./utils/regex";
 
 // Cache for frequently used flip case conversions
 const flipCache = new Map<string, string>();
@@ -41,11 +42,22 @@ export const flipCase = <T extends string = string>(value?: T, options?: CaseOpt
         }
     }
 
-    const result = value
+    let cleanedInput = value;
+
+    if (options?.stripAnsi) {
+        cleanedInput = stripAnsi(cleanedInput) as T;
+    }
+
+    if (options?.stripEmoji) {
+        cleanedInput = stripEmoji(cleanedInput) as T;
+    }
+
+    const result = cleanedInput
         // eslint-disable-next-line unicorn/prefer-spread
         .split("")
         .map((char) => {
             const lowerChar = options?.locale ? char.toLocaleLowerCase(options.locale) : char.toLowerCase();
+
             return char === lowerChar ? (options?.locale ? char.toLocaleUpperCase(options.locale) : char.toUpperCase()) : lowerChar;
         })
         .join("");

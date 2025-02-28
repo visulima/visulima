@@ -108,15 +108,15 @@ describe("titleCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text with handleEmoji=false (default)", () => {
-            expect(titleCase("Foo🐣Bar")).toBe("Foo Bar");
-            expect(titleCase("hello🌍World")).toBe("Hello World");
-            expect(titleCase("test🎉Party🎈Fun")).toBe("Test Party Fun");
-            expect(titleCase("EMOJI👾Gaming")).toBe("Emoji Gaming");
-            expect(titleCase("upper🚀Case")).toBe("Upper Case");
-            expect(titleCase("snake_case_🐍_test")).toBe("Snake Case  Test");
-            expect(titleCase("kebab-case-🍔-test")).toBe("Kebab Case Test");
-            expect(titleCase("welcome to the 🎉party")).toBe("Welcome To The Party");
+        it("should handle emojis in text with stripEmoji=true", () => {
+            expect(titleCase("Foo🐣Bar", { stripEmoji: true })).toBe("Foo Bar");
+            expect(titleCase("hello🌍World", { stripEmoji: true })).toBe("Hello World");
+            expect(titleCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("Test Party Fun");
+            expect(titleCase("EMOJI👾Gaming", { stripEmoji: true })).toBe("Emoji Gaming");
+            expect(titleCase("upper🚀Case", { stripEmoji: true })).toBe("Upper Case");
+            expect(titleCase("snake_case_🐍_test", { stripEmoji: true })).toBe("Snake Case Test");
+            expect(titleCase("kebab-case-🍔-test", { stripEmoji: true })).toBe("Kebab Case Test");
+            expect(titleCase("welcome to the 🎉party", { stripEmoji: true })).toBe("Welcome To The Party");
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
@@ -132,10 +132,10 @@ describe("titleCase", () => {
     });
 
     describe("aNSI support", () => {
-        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
-            expect(titleCase("\u001B[31mRedText\u001B[0m")).toBe("Red Text");
-            expect(titleCase("\u001B[1mBoldText\u001B[0m")).toBe("Bold Text");
-            expect(titleCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("Green Foo Blue Bar");
+        it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect(titleCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("Red Text");
+            expect(titleCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("Bold Text");
+            expect(titleCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("Green Foo Blue Bar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {

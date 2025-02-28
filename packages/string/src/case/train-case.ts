@@ -51,6 +51,8 @@ export const trainCase = <T extends string = string>(value?: T, options?: CaseOp
         locale: options?.locale,
         normalize: options?.normalize,
         separators: undefined,
+        stripAnsi: options?.stripAnsi,
+        stripEmoji: options?.stripEmoji,
     })
         .filter(Boolean)
         .map((p) => upperFirst(p, { locale: options?.locale }))

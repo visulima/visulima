@@ -100,16 +100,16 @@ describe("flipCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text with handleEmoji=false (default)", () => {
-            expect(flipCase("Foo🐣Bar")).toBe("fOObAR");
-            expect(flipCase("hello🌍World")).toBe("HELLOwORLD");
-            expect(flipCase("test🎉Party🎈Fun")).toBe("TESTpARTYfUN");
-            expect(flipCase("EMOJI👾Gaming")).toBe("emojigAMING");
-            expect(flipCase("upper🚀Case")).toBe("UPPERcASE");
-            expect(flipCase("snake_case_🐍_test")).toBe("SNAKE_CASE_TEST");
-            expect(flipCase("kebab-case-🍔-test")).toBe("KEBAB-CASE-TEST");
-            expect(flipCase("flip🤭Case")).toBe("FLIPcASE");
-            expect(flipCase("welcome to the 🎉party")).toBe("WELCOME TO THE PARTY");
+        it("should handle emojis in text with stripEmoji=true", () => {
+            expect(flipCase("Foo🐣Bar", { stripEmoji: true })).toBe("fOObAR");
+            expect(flipCase("hello🌍World", { stripEmoji: true })).toBe("HELLOwORLD");
+            expect(flipCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("TESTpARTYfUN");
+            expect(flipCase("EMOJI👾Gaming", { stripEmoji: true })).toBe("emojigAMING");
+            expect(flipCase("upper🚀Case", { stripEmoji: true })).toBe("UPPERcASE");
+            expect(flipCase("snake_case_🐍_test", { stripEmoji: true })).toBe("SNAKE_CASE__TEST");
+            expect(flipCase("kebab-case-🍔-test", { stripEmoji: true })).toBe("KEBAB-CASE--TEST");
+            expect(flipCase("flip🤭Case", { stripEmoji: true })).toBe("FLIPcASE");
+            expect(flipCase("welcome to the 🎉party", { stripEmoji: true })).toBe("WELCOME TO THE PARTY");
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
@@ -118,18 +118,18 @@ describe("flipCase", () => {
             expect(flipCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("TEST🎉pARTY🎈fUN");
             expect(flipCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("emoji👾gAMING");
             expect(flipCase("upper🚀Case", { handleEmoji: true })).toBe("UPPER🚀cASE");
-            expect(flipCase("snake_case_🐍_test", { handleEmoji: true })).toBe("SNAKE_CASE🐍TEST");
-            expect(flipCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("KEBAB-CASE🍔TEST");
+            expect(flipCase("snake_case_🐍_test", { handleEmoji: true })).toBe("SNAKE_CASE_🐍_TEST");
+            expect(flipCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("KEBAB-CASE-🍔-TEST");
             expect(flipCase("flip🤭Case", { handleEmoji: true })).toBe("FLIP🤭cASE");
             expect(flipCase("welcome to the 🎉party", { handleEmoji: true })).toBe("WELCOME TO THE 🎉PARTY");
         });
     });
 
     describe("aNSI support", () => {
-        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
-            expect(flipCase("\u001B[31mRedText\u001B[0m")).toBe("rEDtEXT");
-            expect(flipCase("\u001B[1mBoldText\u001B[0m")).toBe("bOLDtEXT");
-            expect(flipCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("gREENfoo_bLUEbar");
+        it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect(flipCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("rEDtEXT");
+            expect(flipCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("bOLDtEXT");
+            expect(flipCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("gREENfoo_bLUEbar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
