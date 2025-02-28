@@ -244,15 +244,16 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Valentin Palkovic](https://github.com/valentinpalkovic) and [prisma-json-schema-generator](https://github.com/valentinpalkovic/prisma-json-schema-generator)
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Valentin Palkovic](https://github.com/valentinpalkovic) and [prisma-json-schema-generator](https://github.com/valentinpalkovic/prisma-json-schema-generator)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 
 The visulima prisma-dmmf-transformer is open-sourced software licensed under the [MIT][license-url]
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+
 [typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/prisma-dmmf-transformer?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
