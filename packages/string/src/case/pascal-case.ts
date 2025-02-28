@@ -57,6 +57,8 @@ export const pascalCase = <T extends string = string>(value?: T, options?: CaseO
         locale: options?.locale,
         normalize: options?.normalize,
         separators: undefined,
+        stripAnsi: options?.stripAnsi,
+        stripEmoji: options?.stripEmoji,
     })
         .map((word: string) => {
             const split = normalizeGermanEszett(word, options?.locale);

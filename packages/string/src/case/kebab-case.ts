@@ -60,10 +60,12 @@ export const kebabCase = <T extends string = string>(value?: T, options?: KebabC
         locale: options?.locale,
         normalize: options?.normalize,
         separators: undefined,
+        stripAnsi: options?.stripAnsi,
+        stripEmoji: options?.stripEmoji,
     });
 
     const processed = words.map((p) => {
-        const split = normalizeGermanEszett(p, options?.locale);
+        const split = options?.locale?.startsWith("de") ? normalizeGermanEszett(p) : p;
 
         return toLowerCase(split, options?.locale);
     });

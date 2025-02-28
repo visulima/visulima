@@ -120,16 +120,16 @@ describe("pathCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text with handleEmoji=false (default)", () => {
-            expect(pathCase("Foo🐣Bar")).toBe("foo/bar");
-            expect(pathCase("hello🌍World")).toBe("hello/world");
-            expect(pathCase("test🎉Party🎈Fun")).toBe("test/party/fun");
-            expect(pathCase("EMOJI👾Gaming")).toBe("emoji/gaming");
-            expect(pathCase("upper🚀Case")).toBe("upper/case");
-            expect(pathCase("snake_case_🐍_test")).toBe("snake/case/test");
-            expect(pathCase("kebab-case-🍔-test")).toBe("kebab/case/test");
-            expect(pathCase("path/to/📁/file")).toBe("path/to/file");
-            expect(pathCase("welcome to the 🎉party")).toBe("welcome/to/the/party");
+        it("should handle emojis in text with stripEmoji=true", () => {
+            expect(pathCase("Foo🐣Bar", { stripEmoji: true })).toBe("foo/bar");
+            expect(pathCase("hello🌍World", { stripEmoji: true })).toBe("hello/world");
+            expect(pathCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("test/party/fun");
+            expect(pathCase("EMOJI👾Gaming", { stripEmoji: true })).toBe("emoji/gaming");
+            expect(pathCase("upper🚀Case", { stripEmoji: true })).toBe("upper/case");
+            expect(pathCase("snake_case_🐍_test", { stripEmoji: true })).toBe("snake/case/test");
+            expect(pathCase("kebab-case-🍔-test", { stripEmoji: true })).toBe("kebab/case/test");
+            expect(pathCase("path/to/📁/file", { stripEmoji: true })).toBe("path/to/file");
+            expect(pathCase("welcome to the 🎉party", { stripEmoji: true })).toBe("welcome/to/the/party");
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
@@ -146,10 +146,10 @@ describe("pathCase", () => {
     });
 
     describe("aNSI support", () => {
-        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
-            expect(pathCase("\u001B[31mRedText\u001B[0m")).toBe("red/text");
-            expect(pathCase("\u001B[1mBoldText\u001B[0m")).toBe("bold/text");
-            expect(pathCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("green/foo/blue/bar");
+        it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect(pathCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("red/text");
+            expect(pathCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("bold/text");
+            expect(pathCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("green/foo/blue/bar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {

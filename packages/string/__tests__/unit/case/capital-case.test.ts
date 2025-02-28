@@ -114,16 +114,16 @@ describe("capitalCase", () => {
     });
 
     describe("emoji support 🎯", () => {
-        it("should handle emojis in text with handleEmoji=false (default)", () => {
-            expect(capitalCase("Foo🐣Bar")).toBe("Foo Bar");
-            expect(capitalCase("hello🌍World")).toBe("Hello World");
-            expect(capitalCase("test🎉Party🎈Fun")).toBe("Test Party Fun");
-            expect(capitalCase("EMOJI👾Gaming")).toBe("Emoji Gaming");
-            expect(capitalCase("upper🚀Case")).toBe("Upper Case");
-            expect(capitalCase("snake_case_🐍_test")).toBe("Snake Case Test");
-            expect(capitalCase("kebab-case-🍔-test")).toBe("Kebab Case Test");
-            expect(capitalCase("capital👑text")).toBe("Capital Text");
-            expect(capitalCase("welcome to the 🎉party")).toBe("Welcome To The Party");
+        it("should handle emojis in text with stripEmoji=true", () => {
+            expect(capitalCase("Foo🐣Bar", { stripEmoji: true })).toBe("Foo Bar");
+            expect(capitalCase("hello🌍World", { stripEmoji: true })).toBe("Hello World");
+            expect(capitalCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("Test Party Fun");
+            expect(capitalCase("EMOJI👾Gaming", { stripEmoji: true })).toBe("Emoji Gaming");
+            expect(capitalCase("upper🚀Case", { stripEmoji: true })).toBe("Upper Case");
+            expect(capitalCase("snake_case_🐍_test", { stripEmoji: true })).toBe("Snake Case Test");
+            expect(capitalCase("kebab-case-🍔-test", { stripEmoji: true })).toBe("Kebab Case Test");
+            expect(capitalCase("capital👑text", { stripEmoji: true })).toBe("Capitaltext");
+            expect(capitalCase("welcome to the 🎉party", { stripEmoji: true })).toBe("Welcome To The Party");
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
@@ -140,10 +140,10 @@ describe("capitalCase", () => {
     });
 
     describe("aNSI support", () => {
-        it("should handle ANSI sequences with handleAnsi=false (default)", () => {
-            expect(capitalCase("\u001B[31mRedText\u001B[0m")).toBe("Red Text");
-            expect(capitalCase("\u001B[1mBoldText\u001B[0m")).toBe("Bold Text");
-            expect(capitalCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m")).toBe("Green Foo Blue Bar");
+        it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect(capitalCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("Red Text");
+            expect(capitalCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("Bold Text");
+            expect(capitalCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("Green Foo Blue Bar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {

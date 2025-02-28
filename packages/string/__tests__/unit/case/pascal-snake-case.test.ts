@@ -114,14 +114,14 @@ describe("pascalSnakeCase", () => {
 
     describe("emoji support 🎯", () => {
         it("should handle emojis in text", () => {
-            expect(pascalSnakeCase("Foo🐣Bar")).toBe("Foo_🐣_Bar");
-            expect(pascalSnakeCase("hello🌍World")).toBe("Hello_🌍_World");
-            expect(pascalSnakeCase("test🎉Party🎈Fun")).toBe("Test_🎉_Party_🎈_Fun");
-            expect(pascalSnakeCase("EMOJI👾Gaming")).toBe("Emoji_👾_Gaming");
-            expect(pascalSnakeCase("upper🚀Case")).toBe("Upper_🚀_Case");
-            expect(pascalSnakeCase("snake_case_🐍_test")).toBe("Snake_Case_🐍_Test");
-            expect(pascalSnakeCase("kebab-case-🍔-test")).toBe("Kebab_Case_🍔_Test");
-            expect(pascalSnakeCase("pascal🦆snake")).toBe("Pascal_🦆_Snake");
+            expect(pascalSnakeCase("Foo🐣Bar", { handleEmoji: true })).toBe("Foo_🐣_Bar");
+            expect(pascalSnakeCase("hello🌍World", { handleEmoji: true })).toBe("Hello_🌍_World");
+            expect(pascalSnakeCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("Test_🎉_Party_🎈_Fun");
+            expect(pascalSnakeCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("Emoji_👾_Gaming");
+            expect(pascalSnakeCase("upper🚀Case", { handleEmoji: true })).toBe("Upper_🚀_Case");
+            expect(pascalSnakeCase("snake_case_🐍_test", { handleEmoji: true })).toBe("Snake_Case_🐍_Test");
+            expect(pascalSnakeCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("Kebab_Case_🍔_Test");
+            expect(pascalSnakeCase("pascal🦆snake", { handleEmoji: true })).toBe("Pascal_🦆_Snake");
         });
     });
 

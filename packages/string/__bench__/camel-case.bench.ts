@@ -4,7 +4,7 @@ import { camelCase as caseAnythingCamelCase } from "case-anything";
 import { camelCase as sculeCamelCase } from "scule";
 import { camelCase as changeCaseCamel } from "change-case";
 import { camelCase } from "../dist/case";
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "./test-strings";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 
 describe("camelCase", () => {
     bench("visulima/string camelCase (no cache)", () => {
