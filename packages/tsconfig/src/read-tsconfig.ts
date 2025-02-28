@@ -277,7 +277,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         return config;
     }
 
-    if (["5.4", "5.5", "5.6", "5.7", "true"].includes(String(options?.tscCompatible))) {
+    if (["5.4", "5.5", "5.6", "5.7", "5.8", "true"].includes(String(options?.tscCompatible))) {
         if (
             config.compilerOptions.esModuleInterop === undefined &&
             (config.compilerOptions.module === "node16" || config.compilerOptions.module === "nodenext" || config.compilerOptions.module === "preserve")
@@ -339,7 +339,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
             }
         }
 
-        if (["5.7", "true"].includes(String(options?.tscCompatible)) && config.compilerOptions.moduleResolution) {
+        if (["5.7", "5.8", "true"].includes(String(options?.tscCompatible)) && config.compilerOptions.moduleResolution) {
             let resolvePackageJson = false;
 
             if (["bundler", "node16", "nodenext"].includes(config.compilerOptions.moduleResolution.toLocaleLowerCase())) {
@@ -383,7 +383,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
     }
 
     if (
-        ["5.6", "5.7", "true"].includes(String(options?.tscCompatible)) &&
+        ["5.6", "5.7", "5.8", "true"].includes(String(options?.tscCompatible)) &&
         config.compilerOptions.strict &&
         config.compilerOptions.strictBuiltinIteratorReturn === undefined
     ) {
@@ -391,7 +391,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         config.compilerOptions.strictBuiltinIteratorReturn = true;
     }
 
-    if (["5.4", "5.5", "5.6", "5.7", "true"].includes(String(options?.tscCompatible))) {
+    if (["5.4", "5.5", "5.6", "5.7", "5.8", "true"].includes(String(options?.tscCompatible))) {
         if (config.compilerOptions.strict) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.noImplicitAny = config.compilerOptions.noImplicitAny ?? true;
