@@ -4,7 +4,7 @@ import { kebabCase as caseAnythingKebabCase } from "case-anything";
 import { kebabCase as sculeKebabCase } from "scule";
 import { kebabCase as changeCaseKebab } from "change-case";
 import { kebabCase } from "../dist/case";
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "./test-strings";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 
 describe("kebabCase", () => {
     bench("visulima/string kebabCase (no cache)", () => {

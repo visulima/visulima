@@ -53,11 +53,16 @@ export function titleCase<T extends string = string>(string_?: T, options?: Case
         locale: options?.locale,
         normalize: options?.normalize,
         separators: undefined,
+        stripAnsi: options?.stripAnsi,
+        stripEmoji: options?.stripEmoji,
     })
         .map((word: string) => {
-            const split = normalizeGermanEszett(word, options?.locale);
+            if (options?.locale?.startsWith("de")) {
+                // eslint-disable-next-line no-param-reassign
+                word = normalizeGermanEszett(word);
+            }
 
-            return upperFirst(options?.locale ? split.toLocaleLowerCase(options.locale) : split.toLowerCase(), { locale: options?.locale });
+            return upperFirst(options?.locale ? word.toLocaleLowerCase(options.locale) : word.toLowerCase(), { locale: options?.locale });
         })
         .join(" ") as TitleCase<T>;
 

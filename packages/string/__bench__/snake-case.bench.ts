@@ -4,7 +4,7 @@ import { snakeCase as caseAnythingSnakeCase } from "case-anything";
 import { snakeCase as sculeSnakeCase } from "scule";
 import { snakeCase as changeCaseSnake } from "change-case";
 import { snakeCase } from "../dist/case";
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "./test-strings";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 
 describe("snakeCase", () => {
     bench("visulima/string snakeCase (no cache)", () => {

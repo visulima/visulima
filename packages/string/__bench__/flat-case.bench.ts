@@ -1,7 +1,7 @@
 import { bench, describe } from "vitest";
 import { flatCase as sculeFlatCase } from "scule";
 import { flatCase } from "../dist/case";
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "./test-strings";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 
 describe("flatCase", () => {
     bench("visulima/string flatCase (no cache)", () => {
