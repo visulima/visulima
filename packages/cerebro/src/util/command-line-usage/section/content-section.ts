@@ -102,7 +102,7 @@ class ContentSection extends BaseSection {
                 if (Array.isArray(section.content) && section.content.every((value) => typeof value === "string")) {
                     section.content.forEach((row) => {
                         if (Array.isArray(row)) {
-                            row.forEach((cell) => this.add(templateFormat(cell)));
+                            row.forEach((cell) => this.add(templateFormat(cell as string | undefined)));
                         } else {
                             this.add(templateFormat(row));
                         }
