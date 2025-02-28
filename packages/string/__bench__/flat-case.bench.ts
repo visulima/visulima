@@ -12,7 +12,7 @@ describe("flatCase", () => {
 
     bench("visulima/string flatCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            flatCase(str);
+            flatCase(str, { cache: true });
         }
     });
 

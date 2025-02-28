@@ -15,7 +15,7 @@ describe("camelCase", () => {
 
     bench("visulima/string camelCase (with cache)", () => {
         for (const str of TEST_STRINGS) {
-            camelCase(str);
+            camelCase(str, { cache: true });
         }
     });
 
