@@ -66,6 +66,11 @@ camelCase('hello_world');  // 'helloWorld'
 
 ## Related
 
+- [change-case](https://github.com/blakeembrey/change-case) - Simple string case utilities
+- [lodash](https://lodash.com/) - Comprehensive utility library with string manipulation
+- [scule](https://github.com/unjs/scule) - 🧵 String Case Utils
+- [case-anything](https://github.com/mesqueeb/case-anything) - camelCase, kebab-case, PascalCase... a simple integration with nano package size. (SMALL footprint!)
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
