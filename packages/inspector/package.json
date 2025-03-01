@@ -101,7 +101,7 @@
         "@rushstack/eslint-plugin-security": "^0.8.3",
         "@secretlint/secretlint-rule-preset-recommend": "^9.2.0",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "18.19.71",
+        "@types/node": "18.19.76",
         "@visulima/colorize": "1.4.20",
         "@visulima/packem": "1.18.5",
         "@vitest/browser": "^3.0.7",
