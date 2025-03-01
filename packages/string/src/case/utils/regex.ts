@@ -79,3 +79,15 @@ export const splitByEmoji = (text: string): string[] => {
 export const stripAnsi = (string_: string): string => string_.replace(ANSI_REGEX, "");
 
 export const stripEmoji = (string_: string): string => string_.replace(EMOJI_REGEX, "");
+
+// Script pattern regex for efficient character type detection
+export const CYRILLIC_REGEX = /[\p{Script=Cyrillic}]/u;
+export const LATIN_REGEX = /[\p{Script=Latin}]/u;
+export const GREEK_REGEX = /[\p{Script=Greek}]/u;
+export const HIRAGANA_REGEX = /[\p{Script=Hiragana}]/u;
+export const KATAKANA_REGEX = /[\p{Script=Katakana}]/u;
+export const KANJI_REGEX = /[\p{Script=Han}]/u;
+export const HANGUL_REGEX = /[\p{Script=Hangul}]/u;
+// Special modifiers for Uzbek Latin script
+export const UZBEK_LATIN_MODIFIER_REGEX = /[\u02BB\u02BC\u0027]/u;
+
