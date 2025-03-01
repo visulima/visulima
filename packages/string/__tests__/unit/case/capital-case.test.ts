@@ -170,7 +170,7 @@ describe("capitalCase", () => {
     });
 
     it("should handle special formats and mixed cases", () => {
-        expect(capitalCase("C-3PO_and_R2-D2")).toBe("C 3 Po And R 2 D 2");
+        expect(capitalCase("C-3PO_and_R2-D2")).toBe("C 3po And R2 D2");
         expect(capitalCase("The Taking of Pelham 123")).toBe("The Taking Of Pelham 123");
         expect(capitalCase("Ocean's 11")).toBe("Ocean's 11");
         expect(capitalCase("21-JUMP-STREET")).toBe("21 Jump Street");

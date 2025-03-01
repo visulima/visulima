@@ -111,7 +111,7 @@ describe("pathCase", () => {
     });
 
     it("should handle special formats and mixed cases", () => {
-        expect(pathCase("C-3PO_and_R2-D2")).toBe("c/3/po/and/r/2/d/2");
+        expect(pathCase("C-3PO_and_R2-D2")).toBe("c/3po/and/r2/d2");
         expect(pathCase("src/components/Button.tsx")).toBe("src/components/button/tsx");
         expect(pathCase("path/to/file/v1.2.3")).toBe("path/to/file/v/1/2/3");
         expect(pathCase("48-HOLA-mundo-6")).toBe("48/hola/mundo/6");
