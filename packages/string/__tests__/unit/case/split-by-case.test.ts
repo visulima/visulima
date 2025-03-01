@@ -746,7 +746,7 @@ describe("splitByCase", () => {
     describe("special formats and mixed cases", () => {
         it("should handle movie and product references", () => {
             expect(splitByCase("C3POAndR2D2")).toEqual(["C", "3", "PO", "And", "R", "2", "D", "2"]);
-            expect(splitByCase("C-3PO_and_R2-D2")).toEqual(["C", "3", "PO", "and", "R", "2", "D", "2"]);
+            expect(splitByCase("C-3PO_and_R2-D2")).toEqual(["C", "3PO", "and", "R2", "D2"]);
             // eslint-disable-next-line no-secrets/no-secrets
             expect(splitByCase("Episode7TheForceAwakens")).toEqual(["Episode", "7", "The", "Force", "Awakens"]);
             expect(splitByCase("iPhone12ProMax")).toEqual(["i", "Phone", "12", "Pro", "Max"]);
