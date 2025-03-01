@@ -81,13 +81,31 @@ export const stripAnsi = (string_: string): string => string_.replace(ANSI_REGEX
 export const stripEmoji = (string_: string): string => string_.replace(EMOJI_REGEX, "");
 
 // Script pattern regex for efficient character type detection
+export const ARABIC_REGEX = /[\p{Script=Arabic}]/u;
+export const BENGALI_REGEX = /[\p{Script=Bengali}]/u;
 export const CYRILLIC_REGEX = /[\p{Script=Cyrillic}]/u;
-export const LATIN_REGEX = /[\p{Script=Latin}]/u;
+export const DEVANAGARI_REGEX = /[\p{Script=Devanagari}]/u;
+export const ETHIOPIC_REGEX = /[\p{Script=Ethiopic}]/u;
 export const GREEK_REGEX = /[\p{Script=Greek}]/u;
-export const HIRAGANA_REGEX = /[\p{Script=Hiragana}]/u;
-export const KATAKANA_REGEX = /[\p{Script=Katakana}]/u;
-export const KANJI_REGEX = /[\p{Script=Han}]/u;
+export const GUJARATI_REGEX = /[\p{Script=Gujarati}]/u;
+export const GURMUKHI_REGEX = /[\p{Script=Gurmukhi}]/u;
 export const HANGUL_REGEX = /[\p{Script=Hangul}]/u;
+export const HEBREW_REGEX = /[\p{Script=Hebrew}]/u;
+export const HIRAGANA_REGEX = /[\p{Script=Hiragana}]/u;
+export const KANJI_REGEX = /[\p{Script=Han}]/u;
+export const KANNADA_REGEX = /[\p{Script=Kannada}]/u;
+export const KATAKANA_REGEX = /[\p{Script=Katakana}]/u;
+export const KHMER_REGEX = /[\p{Script=Khmer}]/u;
+export const LAO_REGEX = /[\p{Script=Lao}]/u;
+export const LATIN_REGEX = /[\p{Script=Latin}]/u;
+export const MALAYALAM_REGEX = /[\p{Script=Malayalam}]/u;
+export const MYANMAR_REGEX = /[\p{Script=Myanmar}]/u;
+export const ORIYA_REGEX = /[\p{Script=Oriya}]/u;
+export const SINHALA_REGEX = /[\p{Script=Sinhala}]/u;
+export const TAMIL_REGEX = /[\p{Script=Tamil}]/u;
+export const TELUGU_REGEX = /[\p{Script=Telugu}]/u;
+export const THAI_REGEX = /[\p{Script=Thai}]/u;
+export const TIBETAN_REGEX = /[\p{Script=Tibetan}]/u;
 // Special modifiers for Uzbek Latin script
 export const UZBEK_LATIN_MODIFIER_REGEX = /[\u02BB\u02BC\u0027]/u;
 

@@ -1,20 +1,38 @@
 import type { NodeLocale } from "../types";
 import type { LocaleOptions, SplitByCase } from "./types";
 import {
+    ARABIC_REGEX,
+    BENGALI_REGEX,
     CYRILLIC_REGEX,
+    DEVANAGARI_REGEX,
     EMOJI_REGEX,
+    ETHIOPIC_REGEX,
     FAST_ANSI_REGEX,
     getSeparatorsRegex,
     GREEK_REGEX,
+    GUJARATI_REGEX,
+    GURMUKHI_REGEX,
     HANGUL_REGEX,
+    HEBREW_REGEX,
     HIRAGANA_REGEX,
     KANJI_REGEX,
+    KANNADA_REGEX,
     KATAKANA_REGEX,
+    KHMER_REGEX,
+    LAO_REGEX,
     LATIN_REGEX,
+    MALAYALAM_REGEX,
+    MYANMAR_REGEX,
+    ORIYA_REGEX,
     SEPARATORS_REGEX,
+    SINHALA_REGEX,
     splitByEmoji,
     stripAnsi,
     stripEmoji,
+    TAMIL_REGEX,
+    TELUGU_REGEX,
+    THAI_REGEX,
+    TIBETAN_REGEX,
     UZBEK_LATIN_MODIFIER_REGEX,
 } from "./utils/regex";
 
@@ -142,51 +160,6 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
 // Locale-Aware Splitting
 // ─────────────────────────────
 
-type CharType = "cjk" | "hangul" | "hiragana" | "indic" | "kanji" | "katakana" | "latin" | "other" | "rtl";
-
-// eslint-disable-next-line sonarjs/cognitive-complexity
-const getCharType = (code: number): CharType => {
-    // CJK ranges
-    if (code >= 0x4e_00 && code <= 0x9f_ff) {
-        // CJK Unified
-        return "cjk";
-    }
-
-    // RTL ranges
-    if (
-        (code >= 0x05_90 && code <= 0x05_ff) || // Hebrew
-        (code >= 0x06_00 && code <= 0x06_ff) || // Arabic
-        (code >= 0x07_50 && code <= 0x07_7f) || // Arabic Supplement
-        (code >= 0x08_a0 && code <= 0x08_ff)
-    ) {
-        // Arabic Extended-A
-        return "rtl";
-    }
-
-    // Indic ranges
-    if (
-        (code >= 0x09_00 && code <= 0x09_7f) || // Devanagari
-        (code >= 0x09_80 && code <= 0x09_ff) || // Bengali
-        (code >= 0x0a_00 && code <= 0x0a_7f) || // Gurmukhi
-        (code >= 0x0a_80 && code <= 0x0a_ff) || // Gujarati
-        (code >= 0x0b_00 && code <= 0x0b_7f) || // Oriya
-        (code >= 0x0b_80 && code <= 0x0b_ff) || // Tamil
-        (code >= 0x0c_00 && code <= 0x0c_7f) || // Telugu
-        (code >= 0x0c_80 && code <= 0x0c_ff) || // Kannada
-        (code >= 0x0d_00 && code <= 0x0d_7f) || // Malayalam
-        (code >= 0x0d_80 && code <= 0x0d_ff) || // Sinhala
-        (code >= 0x0e_00 && code <= 0x0e_7f) || // Thai
-        (code >= 0x0e_80 && code <= 0x0e_ff) || // Lao
-        (code >= 0x0f_00 && code <= 0x0f_ff) || // Tibetan
-        (code >= 0x10_00 && code <= 0x10_9f) || // Myanmar
-        (code >= 0x12_00 && code <= 0x13_7f) || // Ethiopic
-        (code >= 0x17_80 && code <= 0x17_ff) // Khmer
-    ) {
-        return "indic";
-    }
-
-    return "other";
-};
 
 /**
  * Splits a string segment using locale‑aware camel‑case rules.
@@ -198,26 +171,15 @@ const getCharType = (code: number): CharType => {
  * @param knownAcronyms A Set of known acronyms.
  * @returns Array of tokens.
  */
-const shouldKeepScriptTogether = (type: CharType): boolean => type === "cjk" || type === "rtl" || type === "indic";
-
-const shouldSplitAtIndex = (lastCharType: CharType, currentCharType: CharType): boolean => {
-    // Don't split if both characters are the same script (except Latin)
-    if (shouldKeepScriptTogether(lastCharType) && lastCharType === currentCharType) {
-        return false;
-    }
-
-    // Always split on script transitions
-    return shouldKeepScriptTogether(lastCharType) !== shouldKeepScriptTogether(currentCharType);
-};
-
 /**
- * Determines if a split should occur at the specified index
- * @param s - The input string
- * @param index - The index to check
- * @param locale - The locale to use for locale-specific rules
- * @param lastCharType - The character type of the previous character
- * @param currentCharType - The character type of the current character
- * @returns true if a split should occur, false otherwise
+ * Splits a string segment using locale‑aware camel‑case rules.
+ * Additionally, if both adjacent characters are non‑Latin (i.e. not A–Z or 0–9),
+ * it does not split them.
+ *
+ * @param s The input segment.
+ * @param locale The locale to use.
+ * @param knownAcronyms A Set of known acronyms.
+ * @returns Array of tokens.
  */
 const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<string>): string[] => {
     if (s.length === 0) {
@@ -228,9 +190,65 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     // return the string as a single token
     const isUpperCase = s === s.toLocaleUpperCase(locale);
 
-    // Special case for German: check for eszett, the big ß was added in 2017
-    if (locale.startsWith("de") && !isUpperCase && s.replaceAll("ß", "SS") === s.toLocaleUpperCase(locale)) {
-        return [s];
+    // Special case for German: handle eszett and mixed case
+    if (locale.startsWith("de")) {
+        // If the string is all uppercase (considering eszett), return as is
+        if (!isUpperCase && s.replaceAll("ß", "SS") === s.toLocaleUpperCase(locale)) {
+            return [s];
+        }
+
+        const chars = [...s];
+        const length__ = chars.length;
+        const result: string[] = [];
+        let currentSegment = chars[0];
+
+        // Track case state
+        let previousIsUpper = chars[0] === chars[0].toLocaleUpperCase(locale);
+        let isInUpperSequence = previousIsUpper;
+        let upperSequenceStart = previousIsUpper ? 0 : -1;
+
+        for (let index = 1; index < length__; index++) {
+            const char = chars[index];
+            const isUpper = char === char.toLocaleUpperCase(locale);
+
+            // Handle transitions
+            if (isUpper !== previousIsUpper) {
+                if (isUpper) {
+                    // Transition to uppercase
+                    if (currentSegment) {
+                        result.push(currentSegment);
+                        currentSegment = char;
+                    }
+                    isInUpperSequence = true;
+                    upperSequenceStart = index;
+                } else {
+                    // Transition to lowercase
+                    if (isInUpperSequence && index - upperSequenceStart > 1) {
+                        // If we had a sequence of uppercase letters, split before the last one
+                        const lastUpperChar = chars[index - 1];
+                        const withoutLastUpper = currentSegment.slice(0, -1);
+                        if (withoutLastUpper) {
+                            result.push(withoutLastUpper);
+                        }
+                        currentSegment = lastUpperChar + char;
+                    } else {
+                        currentSegment += char;
+                    }
+                    isInUpperSequence = false;
+                    upperSequenceStart = -1;
+                }
+            } else {
+                currentSegment += char;
+            }
+
+            previousIsUpper = isUpper;
+        }
+
+        if (currentSegment) {
+            result.push(currentSegment);
+        }
+
+        return result;
     }
 
     // Special handling for Ukrainian and other Cyrillic scripts
@@ -479,6 +497,255 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         return result;
     }
 
+    // Special handling for Chinese scripts
+    if (locale.startsWith("zh")) {
+        // Early return if no Chinese or Latin characters
+        if (!KANJI_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+            return [s];
+        }
+
+        const chars = [...s];
+        const length__ = chars.length;
+        const result: string[] = [];
+        let currentSegment = chars[0];
+
+        // Determine initial type
+        let previousType = KANJI_REGEX.test(chars[0]) ? "han" : LATIN_REGEX.test(chars[0]) ? "latin" : "other";
+
+        for (let index = 1; index < length__; index++) {
+            const char = chars[index];
+            const currentType = KANJI_REGEX.test(char) ? "han" : LATIN_REGEX.test(char) ? "latin" : "other";
+
+            // Split on script transitions
+            if (previousType !== currentType && (previousType === "han" || previousType === "latin") && (currentType === "han" || currentType === "latin")) {
+                result.push(currentSegment);
+                currentSegment = char;
+            } else {
+                currentSegment += char;
+            }
+
+            previousType = currentType;
+        }
+
+        if (currentSegment) {
+            result.push(currentSegment);
+        }
+
+        return result;
+    }
+
+    // Special handling for RTL scripts (Arabic, Persian, Hebrew, Urdu)
+    if (["ar", "fa", "he", "ur"].includes(locale.split("-")[0])) {
+        // Early return if no RTL or Latin characters
+        if (!HEBREW_REGEX.test(s) && !ARABIC_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+            return [s];
+        }
+
+        const chars = [...s];
+        const length__ = chars.length;
+        const result: string[] = [];
+        let currentSegment = chars[0];
+
+        // Helper function to check if a character is RTL
+        const isRtlChar = (ch: string): boolean => HEBREW_REGEX.test(ch) || ARABIC_REGEX.test(ch);
+
+        // Determine initial type
+        let previousType = isRtlChar(chars[0]) ? "rtl" : LATIN_REGEX.test(chars[0]) ? "latin" : "other";
+
+        for (let index = 1; index < length__; index++) {
+            const char = chars[index];
+            const currentType = isRtlChar(char) ? "rtl" : LATIN_REGEX.test(char) ? "latin" : "other";
+
+            // Split on script transitions
+            if (previousType !== currentType && (previousType === "rtl" || previousType === "latin") && (currentType === "rtl" || currentType === "latin")) {
+                result.push(currentSegment);
+                currentSegment = char;
+            } else {
+                currentSegment += char;
+            }
+
+            previousType = currentType;
+        }
+
+        if (currentSegment) {
+            result.push(currentSegment);
+        }
+
+        return result;
+    }
+
+    // Special handling for Indic scripts
+    if ([
+        "am", // Amharic
+        "bn", // Bengali
+        "gu", // Gujarati
+        "hi", // Hindi
+        "km", // Khmer
+        "kn", // Kannada
+        "lo", // Lao
+        "ml", // Malayalam
+        "mr", // Marathi
+        "ne", // Nepali
+        "or", // Oriya
+        "pa", // Punjabi
+        "si", // Sinhala
+        "ta", // Tamil
+        "te", // Telugu
+        "th", // Thai
+    ].includes(locale.split("-")[0])) {
+        // Early return if no Indic or Latin characters
+        if (!(
+            DEVANAGARI_REGEX.test(s) ||
+            BENGALI_REGEX.test(s) ||
+            GUJARATI_REGEX.test(s) ||
+            GURMUKHI_REGEX.test(s) ||
+            KANNADA_REGEX.test(s) ||
+            TAMIL_REGEX.test(s) ||
+            TELUGU_REGEX.test(s) ||
+            MALAYALAM_REGEX.test(s) ||
+            SINHALA_REGEX.test(s) ||
+            THAI_REGEX.test(s) ||
+            LAO_REGEX.test(s) ||
+            TIBETAN_REGEX.test(s) ||
+            MYANMAR_REGEX.test(s) ||
+            ETHIOPIC_REGEX.test(s) ||
+            KHMER_REGEX.test(s) ||
+            ORIYA_REGEX.test(s)
+        ) && !LATIN_REGEX.test(s)) {
+            return [s];
+        }
+
+        const chars = [...s];
+        const length__ = chars.length;
+        const result: string[] = [];
+        let currentSegment = chars[0];
+
+        // Helper function to check if a character is Indic
+        const isIndicChar = (ch: string): boolean =>
+            DEVANAGARI_REGEX.test(ch) ||
+            BENGALI_REGEX.test(ch) ||
+            GUJARATI_REGEX.test(ch) ||
+            GURMUKHI_REGEX.test(ch) ||
+            KANNADA_REGEX.test(ch) ||
+            TAMIL_REGEX.test(ch) ||
+            TELUGU_REGEX.test(ch) ||
+            MALAYALAM_REGEX.test(ch) ||
+            SINHALA_REGEX.test(ch) ||
+            THAI_REGEX.test(ch) ||
+            LAO_REGEX.test(ch) ||
+            TIBETAN_REGEX.test(ch) ||
+            MYANMAR_REGEX.test(ch) ||
+            ETHIOPIC_REGEX.test(ch) ||
+            KHMER_REGEX.test(ch) ||
+            ORIYA_REGEX.test(ch);
+
+        // Determine initial type
+        let previousType = isIndicChar(chars[0]) ? "indic" : LATIN_REGEX.test(chars[0]) ? "latin" : "other";
+
+        for (let index = 1; index < length__; index++) {
+            const char = chars[index];
+            const currentType = isIndicChar(char) ? "indic" : LATIN_REGEX.test(char) ? "latin" : "other";
+
+            // Split on script transitions
+            if (previousType !== currentType && (previousType === "indic" || previousType === "latin") && (currentType === "indic" || currentType === "latin")) {
+                result.push(currentSegment);
+                currentSegment = char;
+            } else {
+                currentSegment += char;
+            }
+
+            previousType = currentType;
+        }
+
+        if (currentSegment) {
+            result.push(currentSegment);
+        }
+
+        return result;
+    }
+
+    // Special handling for Cyrillic scripts (Russian, Ukrainian, etc.)
+    if (["ru", "uk", "be", "bg", "sr"].includes(locale)) {
+        const chars = [...s];
+        const length__ = chars.length;
+
+        // Early return if no Cyrillic or Latin characters
+        if (!CYRILLIC_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+            return [s];
+        }
+
+        const result: string[] = [];
+        let currentSegment = chars[0];
+
+        // Determine initial type
+        let previousType = CYRILLIC_REGEX.test(chars[0]) ? "cyrillic" : LATIN_REGEX.test(chars[0]) ? "latin" : "other";
+        let previousIsUpper = chars[0] === chars[0].toLocaleUpperCase(locale);
+
+        for (let index = 1; index < length__; index++) {
+            const char = chars[index];
+            const currentType = CYRILLIC_REGEX.test(char) ? "cyrillic" : LATIN_REGEX.test(char) ? "latin" : "other";
+            const isUpper = char === char.toLocaleUpperCase(locale);
+
+            // Split on script transitions or case changes within the same script
+            if (
+                (previousType !== currentType && (previousType === "cyrillic" || previousType === "latin") && (currentType === "cyrillic" || currentType === "latin")) ||
+                ((currentType === "cyrillic" || currentType === "latin") && !previousIsUpper && isUpper)
+            ) {
+                result.push(currentSegment);
+                currentSegment = char;
+            } else {
+                currentSegment += char;
+            }
+
+            previousType = currentType;
+            previousIsUpper = isUpper;
+        }
+
+        if (currentSegment) {
+            result.push(currentSegment);
+        }
+
+        return result;
+    }
+
+    // Special handling for Arabic and Hebrew scripts
+    if (["ar", "fa", "he"].includes(locale)) {
+        const chars = [...s];
+        const length__ = chars.length;
+
+        // Early return if no RTL or Latin characters
+        if (!HEBREW_REGEX.test(s) && !ARABIC_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+            return [s];
+        }
+
+        const result: string[] = [];
+        let currentSegment = chars[0];
+
+        // Determine initial type
+        let previousType = HEBREW_REGEX.test(chars[0]) || ARABIC_REGEX.test(chars[0]) ? "rtl" : LATIN_REGEX.test(chars[0]) ? "latin" : "other";
+
+        for (let index = 1; index < length__; index++) {
+            const char = chars[index];
+            const currentType = HEBREW_REGEX.test(char) || ARABIC_REGEX.test(char) ? "rtl" : LATIN_REGEX.test(char) ? "latin" : "other";
+
+            // Split on script transitions
+            if (previousType !== currentType && (previousType === "rtl" || previousType === "latin") && (currentType === "rtl" || currentType === "latin")) {
+                result.push(currentSegment);
+                currentSegment = char;
+            } else {
+                currentSegment += char;
+            }
+
+            previousType = currentType;
+        }
+
+        if (currentSegment) {
+            result.push(currentSegment);
+        }
+
+        return result;
+    }
+
     // Special handling for Korean scripts
     if (locale.startsWith("ko")) {
         const chars = [...s]; // Convert to array once for better performance with Unicode
@@ -558,112 +825,60 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         return result;
     }
 
-    const tokens: string[] = [];
-    const length_ = s.length;
+        // Handle default case - Latin script with case transitions
+    const chars = [...s];
+    const length__ = chars.length;
+    const result: string[] = [];
+    let currentSegment = chars[0];
+    let previousIsUpper = chars[0] === chars[0].toLocaleUpperCase(locale);
 
-    let start = 0;
-    let lastCharType = getCharType(s.charCodeAt(0));
-    let inScript = shouldKeepScriptTogether(lastCharType);
-    let currentScriptStart = inScript ? 0 : -1;
+    // Check for known acronyms first
+    for (const acronym of knownAcronyms) {
+        if (s.startsWith(acronym)) {
+            result.push(acronym);
+            currentSegment = chars[acronym.length];
+            previousIsUpper = currentSegment === currentSegment.toLocaleUpperCase(locale);
+            break;
+        }
+    }
 
-    for (let index = 1; index < length_; index++) {
-        const previousCode = s.charCodeAt(index - 1);
-        const currentCode = s.charCodeAt(index);
-        const currentCharType = getCharType(currentCode);
+    for (let index = 1; index < length__; index++) {
+        const char = chars[index];
+        const isUpper = char === char.toLocaleUpperCase(locale);
 
-        // Check for known acronyms
+        // Check for acronyms at current position
+        let isAcronym = false;
         for (const acronym of knownAcronyms) {
-            if (s.startsWith(acronym, start)) {
-                if (currentScriptStart !== -1) {
-                    tokens.push(s.slice(currentScriptStart, start));
-                    currentScriptStart = -1;
-                }
-
-                tokens.push(acronym);
-                start += acronym.length;
-                index = start - 1; // Move past the acronym
-
-                if (index < length_) {
-                    lastCharType = getCharType(s.charCodeAt(index));
-                    inScript = shouldKeepScriptTogether(lastCharType);
-                    currentScriptStart = inScript ? start : -1;
-                }
-
+            if (s.startsWith(acronym, index)) {
+                result.push(currentSegment);
+                result.push(acronym);
+                index += acronym.length - 1;
+                currentSegment = "";
+                isAcronym = true;
                 break;
             }
         }
 
-        // Ensure we haven't already moved start forward
-        if (index < start) {
-            // eslint-disable-next-line no-continue
+        if (isAcronym) {
             continue;
         }
 
-        // Handle script transitions and special characters
-        if (shouldSplitAtIndex(lastCharType, currentCharType)) {
-            if (currentScriptStart !== -1) {
-                tokens.push(s.slice(currentScriptStart, index));
-                currentScriptStart = -1;
-            } else if (start < index) {
-                tokens.push(s.slice(start, index));
-            }
-
-            start = index;
-
-            inScript = shouldKeepScriptTogether(currentCharType);
-            currentScriptStart = inScript ? index : -1;
-            lastCharType = currentCharType;
-            continue;
+        // Split on case transitions
+        if (!previousIsUpper && isUpper) {
+            result.push(currentSegment);
+            currentSegment = char;
+        } else {
+            currentSegment += char;
         }
 
-        // If we're in a script section, continue collecting characters
-        if (inScript) {
-            continue;
-        }
-
-        // Lower-to-Upper transition
-        const previous = s[index - 1] as string;
-        const current = s[index] as string;
-
-        if (previous === previous.toLocaleLowerCase(locale) && current === current.toLocaleUpperCase(locale)) {
-            tokens.push(s.slice(start, index));
-            start = index;
-            continue;
-        }
-
-        // Uppercase acronym boundary detection
-        if (index + 1 < length_) {
-            const nextCode = s.charCodeAt(index + 1);
-
-            if (
-                previousCode >= 65 &&
-                previousCode <= 90 && // A-Z
-                currentCode >= 65 &&
-                currentCode <= 90 && // A-Z
-                nextCode >= 97 &&
-                nextCode <= 122 // a-z
-            ) {
-                const candidate = s.slice(start, index + 1);
-
-                if (!knownAcronyms.has(candidate)) {
-                    tokens.push(s.slice(start, index));
-                    start = index;
-                    continue;
-                }
-            }
-        }
-
-        lastCharType = currentCharType;
+        previousIsUpper = isUpper;
     }
 
-    // Capture last segment
-    if (currentScriptStart !== -1) {
-        tokens.push(s.slice(currentScriptStart));
-    } else if (start < length_) {
-        tokens.push(s.slice(start));
+    if (currentSegment) {
+        result.push(currentSegment);
     }
 
-    return tokens;
+    return result;
 };
 
 // ─────────────────────────────
