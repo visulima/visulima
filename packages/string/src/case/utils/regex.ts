@@ -91,3 +91,5 @@ export const HANGUL_REGEX = /[\p{Script=Hangul}]/u;
 // Special modifiers for Uzbek Latin script
 export const UZBEK_LATIN_MODIFIER_REGEX = /[\u02BB\u02BC\u0027]/u;
 
+// eslint-disable-next-line no-control-regex,regexp/no-control-character
+export const FAST_ANSI_REGEX = /(\u001B\[[0-9;]*[a-z])/i;
