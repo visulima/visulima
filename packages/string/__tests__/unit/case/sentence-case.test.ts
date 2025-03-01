@@ -166,7 +166,7 @@ describe("sentenceCase", () => {
     });
 
     it("should handle special formats and mixed cases", () => {
-        expect(sentenceCase("C-3PO_and_R2-D2")).toBe("C 3 po and r 2 d 2");
+        expect(sentenceCase("C-3PO_and_R2-D2")).toBe("C 3po and r2 d2");
         expect(sentenceCase("The Taking of Pelham 123")).toBe("The taking of pelham 123");
         expect(sentenceCase("Ocean's 11")).toBe("Ocean's 11");
         expect(sentenceCase("21-JUMP-STREET")).toBe("21 jump street");

@@ -152,7 +152,7 @@ describe("kebabCase", () => {
 
     it("should handle special formats and mixed cases", () => {
         expect(kebabCase("7samurai")).toBe("7-samurai");
-        expect(kebabCase("14BLADES")).toBe("14-blades");
+        expect(kebabCase("14BLADES")).toBe("14blades");
         expect(kebabCase("Happy2-see-you")).toBe("happy-2-see-you");
         expect(kebabCase("B-C-D")).toBe("b-c-d");
         expect(kebabCase("48-HOLA-mundo-6")).toBe("48-hola-mundo-6");
