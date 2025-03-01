@@ -947,9 +947,7 @@ export const splitByCase = <T extends string = string>(input: T, options?: Split
         if (handleAnsi || handleEmoji) {
             tokens.push(...processTextWithAnsiEmoji(part, locale, acronymSet));
         } else if (locale) {
-            // Normalize locale codes
-            const normalizedLocale = locale.toLowerCase().split("-")[0] as NodeLocale;
-            tokens.push(...splitCamelCaseLocale(part, normalizedLocale, acronymSet));
+            tokens.push(...splitCamelCaseLocale(part, locale, acronymSet));
         } else {
             tokens.push(...splitCamelCaseFast(part, acronymSet));
         }
