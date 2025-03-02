@@ -1,8 +1,8 @@
-import { noCase } from "./no-case";
+import noCase from "./no-case";
 import type { CaseOptions, PascalSnakeCase } from "./types";
-import { upperFirst } from "./upper-first";
-import { generateCacheKey } from "./utils/generate-cache-key";
-import { manageCache } from "./utils/manage-cache";
+import upperFirst from "./upper-first";
+import generateCacheKey from "./utils/generate-cache-key";
+import manageCache from "./utils/manage-cache";
 
 // Cache for frequently used pascal snake case conversions
 const pascalSnakeCache = new Map<string, string>();
@@ -20,7 +20,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * pascalSnakeCase("QueryXML123String") // => "Query_Xml_123_String"
  * ```
  */
-export const pascalSnakeCase = <T extends string = string>(value?: T, options?: CaseOptions): PascalSnakeCase<T> => {
+const pascalSnakeCase = <T extends string = string>(value?: T, options?: CaseOptions): PascalSnakeCase<T> => {
     if (typeof value !== "string") {
         return "" as PascalSnakeCase<T>;
     }
@@ -45,7 +45,7 @@ export const pascalSnakeCase = <T extends string = string>(value?: T, options?: 
     }
 
     const words = noCase(value, { ...options, cache: false }).split(" ");
-    const result = words.map((word) => upperFirst(word, { locale: options?.locale })).join("_") as PascalSnakeCase<T>;
+    const result = words.map((word: string) => upperFirst(word, { locale: options?.locale })).join("_") as PascalSnakeCase<T>;
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {
@@ -54,3 +54,5 @@ export const pascalSnakeCase = <T extends string = string>(value?: T, options?: 
 
     return result;
 };
+
+export default pascalSnakeCase;

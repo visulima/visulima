@@ -1,8 +1,8 @@
-import { noCase } from "./no-case";
+import noCase from "./no-case";
 import type { CapitalCase, CaseOptions } from "./types";
-import { upperFirst } from "./upper-first";
-import { generateCacheKey } from "./utils/generate-cache-key";
-import { manageCache } from "./utils/manage-cache";
+import upperFirst from "./upper-first";
+import generateCacheKey from "./utils/generate-cache-key";
+import manageCache from "./utils/manage-cache";
 
 // Cache for frequently used capital case conversions
 const capitalCache = new Map<string, string>();
@@ -20,7 +20,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * capitalCase("QueryXML123String") // => "Query Xml 123 String"
  * ```
  */
-export const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions): CapitalCase<T> => {
+const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions): CapitalCase<T> => {
     if (typeof value !== "string") {
         return "" as CapitalCase<T>;
     }
@@ -54,3 +54,5 @@ export const capitalCase = <T extends string = string>(value?: T, options?: Case
 
     return result;
 };
+
+export default capitalCase;

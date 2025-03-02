@@ -14,5 +14,7 @@ const flatCache = new Map<string, string>();
  * flatCase("QueryXML123String") // => "queryxml123string"
  * ```
  */
-export const flatCase = <T extends string = string>(value?: T, options?: CaseOptions): FlatCase<T> =>
+const flatCase = <T extends string = string>(value?: T, options?: CaseOptions): FlatCase<T> =>
     kebabCase(value, { cacheStore: flatCache, ...options, joiner: "" }) as FlatCase<T>;
+
+export default flatCase;

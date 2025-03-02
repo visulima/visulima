@@ -1,12 +1,13 @@
-import { snakeCase } from "./snake-case";
+import snakeCase from "./snake-case";
 import type { CaseOptions, ConstantCase } from "./types";
-import { generateCacheKey } from "./utils/generate-cache-key";
-import { manageCache } from "./utils/manage-cache";
+import generateCacheKey from "./utils/generate-cache-key";
+import manageCache from "./utils/manage-cache";
 
 // Cache for frequently used constant case conversions
 const constantCache = new Map<string, string>();
 const DEFAULT_CACHE_MAX_SIZE = 1000;
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to CONSTANT_CASE.
  * @example
@@ -19,7 +20,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * constantCase("QueryXML123String") // => "QUERY_XML_123_STRING"
  * ```
  */
-export const constantCase = <T extends string = string>(value?: T, options?: CaseOptions): ConstantCase<T> => {
+const constantCase = <T extends string = string>(value?: T, options?: CaseOptions): ConstantCase<T> => {
     if (typeof value !== "string") {
         return "" as ConstantCase<T>;
     }
@@ -53,3 +54,5 @@ export const constantCase = <T extends string = string>(value?: T, options?: Cas
 
     return result;
 };
+
+export default constantCase;

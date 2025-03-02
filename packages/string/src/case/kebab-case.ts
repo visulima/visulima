@@ -1,7 +1,7 @@
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, KebabCase } from "./types";
-import { generateCacheKey } from "./utils/generate-cache-key";
-import { manageCache } from "./utils/manage-cache";
+import generateCacheKey from "./utils/generate-cache-key";
+import manageCache from "./utils/manage-cache";
 import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
 import { toLowerCase } from "./utils/to-lower-case";
 
