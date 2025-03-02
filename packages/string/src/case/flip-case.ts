@@ -1,6 +1,6 @@
 import type { CaseOptions, FlipCase } from "./types";
-import { generateCacheKey } from "./utils/generate-cache-key";
-import { manageCache } from "./utils/manage-cache";
+import generateCacheKey from "./utils/generate-cache-key";
+import manageCache from "./utils/manage-cache";
 import { stripAnsi, stripEmoji } from "./utils/regex";
 
 // Cache for frequently used flip case conversions
@@ -18,7 +18,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * ```
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const flipCase = <T extends string = string>(value?: T, options?: CaseOptions): FlipCase<T> => {
+const flipCase = <T extends string = string>(value?: T, options?: CaseOptions): FlipCase<T> => {
     if (typeof value !== "string") {
         return "";
     }
@@ -69,3 +69,5 @@ export const flipCase = <T extends string = string>(value?: T, options?: CaseOpt
 
     return result;
 };
+
+export default flipCase;

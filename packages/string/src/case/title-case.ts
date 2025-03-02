@@ -1,8 +1,8 @@
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, TitleCase } from "./types";
-import { upperFirst } from "./upper-first";
-import { generateCacheKey } from "./utils/generate-cache-key";
-import { manageCache } from "./utils/manage-cache";
+import upperFirst from "./upper-first";
+import generateCacheKey from "./utils/generate-cache-key";
+import manageCache from "./utils/manage-cache";
 import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
 
 // Cache for frequently used title case conversions
@@ -22,7 +22,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * ```
  */
 // eslint-disable-next-line func-style
-export function titleCase<T extends string = string>(string_?: T, options?: CaseOptions): TitleCase<T> {
+function titleCase<T extends string = string>(string_?: T, options?: CaseOptions): TitleCase<T> {
     if (typeof string_ !== "string") {
         return "" as TitleCase<T>;
     }
@@ -73,3 +73,5 @@ export function titleCase<T extends string = string>(string_?: T, options?: Case
 
     return result;
 }
+
+export default titleCase;

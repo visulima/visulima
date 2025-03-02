@@ -16,5 +16,7 @@ const pathCache = new Map<string, string>();
  * pathCase("QueryXML123String") // => "query/xml/123/string"
  * ```
  */
-export const pathCase = <T extends string = string>(value?: T, options?: CaseOptions): PathCase<T> =>
+const pathCase = <T extends string = string>(value?: T, options?: CaseOptions): PathCase<T> =>
     kebabCase(value, { cacheStore: pathCache, ...options, joiner: "/" }) as PathCase<T>;
+
+export default pathCase;
