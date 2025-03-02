@@ -9,6 +9,7 @@ import {
     ETHIOPIC_REGEX,
     FAST_ANSI_REGEX,
     getSeparatorsRegex,
+    GREEK_LATIN_SPLIT_REGEX,
     GREEK_REGEX,
     GUJARATI_REGEX,
     GURMUKHI_REGEX,
@@ -200,7 +201,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         const chars = [...s];
         const length__ = chars.length;
         const result: string[] = [];
-        let currentSegment = chars[0];
+        let currentSegment = chars[0] as string;
 
         // Track case state
         let previousIsUpper = chars[0] === chars[0].toLocaleUpperCase(locale);
@@ -225,7 +226,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
                     // Transition to lowercase
                     if (isInUpperSequence && index - upperSequenceStart > 1) {
                         // If we had a sequence of uppercase letters, split before the last one
-                        const lastUpperChar = chars[index - 1];
+                        const lastUpperChar = chars[index - 1] as string;
                         const withoutLastUpper = currentSegment.slice(0, -1);
                         if (withoutLastUpper) {
                             result.push(withoutLastUpper);
@@ -320,38 +321,51 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             return [s];
         }
 
-        // Fast-path processing for Greek scripts
-        const chars = [...s]; // Convert to array once for better Unicode handling
-        const length__ = chars.length;
+        // Split on script boundaries first
+        const parts = s.match(GREEK_LATIN_SPLIT_REGEX) || [s];
         const result: string[] = [];
-        let currentSegment = chars[0];
+        const len = parts.length;
 
-        // Determine initial type (1=greek, 2=latin, 0=other)
-        let previousType = GREEK_REGEX.test(chars[0]) ? 1 : LATIN_REGEX.test(chars[0]) ? 2 : 0;
-        let previousIsUpper = chars[0] === chars[0].toLocaleUpperCase(locale);
-
-        for (let index = 1; index < length__; index++) {
-            const char = chars[index];
-            const currentType = GREEK_REGEX.test(char) ? 1 : LATIN_REGEX.test(char) ? 2 : 0;
-            const isUpper = char === char.toLocaleUpperCase(locale);
-
-            // Split on script transitions or case changes within the same script
-            if (
-                (previousType !== currentType && (previousType === 1 || previousType === 2) && (currentType === 1 || currentType === 2)) ||
-                ((currentType === 1 || currentType === 2) && !previousIsUpper && isUpper)
-            ) {
-                result.push(currentSegment);
-                currentSegment = char;
-            } else {
-                currentSegment += char;
+        // Fast path for single-part strings
+        if (len === 1) {
+            const part = parts[0];
+            if (!GREEK_REGEX.test(part[0]) || part.length === 1) {
+                return [part];
             }
-
-            previousType = currentType;
-            previousIsUpper = isUpper;
         }
 
-        if (currentSegment) {
-            result.push(currentSegment);
+        // Process each part
+        for (let j = 0; j < len; j++) {
+            const part = parts[j];
+            // Skip empty parts
+            if (!part) continue;
+
+            // Fast path for non-Greek or single-char parts
+            if (!GREEK_REGEX.test(part[0]) || part.length === 1) {
+                result.push(part);
+                continue;
+            }
+
+            // For Greek text longer than 1 character, split on case transitions
+            const partLen = part.length;
+            let word = part[0];
+            let prevIsUpper = part[0] === part[0].toLocaleUpperCase(locale);
+
+            for (let i = 1; i < partLen; i++) {
+                const char = part[i];
+                const isUpper = char === char.toLocaleUpperCase(locale);
+                if (!prevIsUpper && isUpper) {
+                    result.push(word);
+                    word = char;
+                } else {
+                    word += char;
+                }
+                prevIsUpper = isUpper;
+            }
+
+            if (word) {
+                result.push(word);
+            }
         }
 
         return result;
@@ -370,66 +384,53 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
         const chars = [...s]; // Convert to array once for better Unicode handling
         const result: string[] = [];
-        let currentSegment: string | undefined = chars[0] as string;
+        let currentSegment = chars[0];
 
         // Pre-compiled Set for Japanese particles - defined once and cached
         const particles = new Set(["と", "に", "へ", "を", "は", "が", "の", "で", "や", "も"]);
 
-        // Determine initial type
-        let previousType: CharType;
+        // Initialize script type for Japanese (1=hiragana, 2=katakana, 3=kanji, 4=latin, 0=other)
+        // or Korean (1=hangul, 2=latin, 0=other)
+        let previousType: number;
 
         if (isJapanese) {
-            previousType = HIRAGANA_REGEX.test(chars[0])
-                ? "hiragana"
-                : KATAKANA_REGEX.test(chars[0])
-                  ? "katakana"
-                  : KANJI_REGEX.test(chars[0])
-                    ? "kanji"
-                    : LATIN_REGEX.test(chars[0])
-                      ? "latin"
-                      : "other";
+            previousType = HIRAGANA_REGEX.test(chars[0]) ? 1 :
+                         KATAKANA_REGEX.test(chars[0]) ? 2 :
+                         KANJI_REGEX.test(chars[0]) ? 3 :
+                         LATIN_REGEX.test(chars[0]) ? 4 : 0;
         } else {
-            previousType = HANGUL_REGEX.test(chars[0]) ? "hangul" : LATIN_REGEX.test(chars[0]) ? "latin" : "other";
+            previousType = HANGUL_REGEX.test(chars[0]) ? 1 :
+                         LATIN_REGEX.test(chars[0]) ? 2 : 0;
         }
 
         for (let index = 1; index < chars.length; index++) {
             const char = chars[index];
-            let currentType: CharType;
+            let currentType: number;
 
             // Determine the type of the current character
             if (isJapanese) {
-                if (HIRAGANA_REGEX.test(char)) {
-                    currentType = "hiragana";
-                } else if (KATAKANA_REGEX.test(char)) {
-                    currentType = "katakana";
-                } else if (KANJI_REGEX.test(char)) {
-                    currentType = "kanji";
-                } else if (LATIN_REGEX.test(char)) {
-                    currentType = "latin";
-                } else {
-                    currentType = "other";
-                }
-            } else if (HANGUL_REGEX.test(char)) {
-                currentType = "hangul";
-            } else if (LATIN_REGEX.test(char)) {
-                currentType = "latin";
+                currentType = HIRAGANA_REGEX.test(char) ? 1 :
+                             KATAKANA_REGEX.test(char) ? 2 :
+                             KANJI_REGEX.test(char) ? 3 :
+                             LATIN_REGEX.test(char) ? 4 : 0;
             } else {
-                currentType = "other";
+                currentType = HANGUL_REGEX.test(char) ? 1 :
+                             LATIN_REGEX.test(char) ? 2 : 0;
             }
 
             // Check for transitions
             let shouldSplit = false;
 
             if (isJapanese) {
-                shouldSplit =
-                    (previousType === "hiragana" && currentType === "katakana") ||
-                    (previousType === "katakana" && currentType === "hiragana") ||
-                    (previousType === "hiragana" && currentType === "latin") ||
-                    (previousType === "katakana" && currentType === "latin") ||
-                    (previousType === "kanji" && currentType === "latin") ||
-                    (previousType === "latin" && (currentType === "hiragana" || currentType === "katakana" || currentType === "kanji"));
+                shouldSplit = (previousType === 1 && currentType === 2) || // hiragana -> katakana
+                             (previousType === 2 && currentType === 1) || // katakana -> hiragana
+                             (previousType === 1 && currentType === 4) || // hiragana -> latin
+                             (previousType === 2 && currentType === 4) || // katakana -> latin
+                             (previousType === 3 && currentType === 4) || // kanji -> latin
+                             (previousType === 4 && (currentType === 1 || currentType === 2 || currentType === 3)); // latin -> japanese
             } else {
-                shouldSplit = (previousType === "hangul" && currentType === "latin") || (previousType === "latin" && currentType === "hangul");
+                shouldSplit = (previousType === 1 && currentType === 2) || // hangul -> latin
+                             (previousType === 2 && currentType === 1);   // latin -> hangul
             }
 
             if (shouldSplit) {
@@ -449,7 +450,6 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
         // Add the last segment if it exists
         if (currentSegment) {
-            // Add the last segment to results
             result.push(currentSegment);
         }
 
@@ -509,15 +509,15 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         const result: string[] = [];
         let currentSegment = chars[0];
 
-        // Determine initial type
-        let previousType = KANJI_REGEX.test(chars[0]) ? "han" : LATIN_REGEX.test(chars[0]) ? "latin" : "other";
+        // Initialize script type (1=han, 2=latin, 0=other)
+        let previousType = KANJI_REGEX.test(chars[0]) ? 1 : LATIN_REGEX.test(chars[0]) ? 2 : 0;
 
         for (let index = 1; index < length__; index++) {
             const char = chars[index];
-            const currentType = KANJI_REGEX.test(char) ? "han" : LATIN_REGEX.test(char) ? "latin" : "other";
+            const currentType = KANJI_REGEX.test(char) ? 1 : LATIN_REGEX.test(char) ? 2 : 0;
 
-            // Split on script transitions
-            if (previousType !== currentType && (previousType === "han" || previousType === "latin") && (currentType === "han" || currentType === "latin")) {
+            // Split on script transitions between Han and Latin
+            if (previousType !== currentType && previousType !== 0 && currentType !== 0) {
                 result.push(currentSegment);
                 currentSegment = char;
             } else {
