@@ -106,13 +106,7 @@ describe("Case Utility Functions Benchmark", () => {
 
     // Special characters handling
     describe("Special characters", () => {
-        const specialStrings = [
-            "foo\u001B[31mbar\u001B[0m",
-            "foo🎉bar",
-            "foo💻bar_baz",
-            "\u001B[31mFOO\u001B[0m_BAR",
-            "foo🚀bar-baz",
-        ];
+        const specialStrings = ["foo\u001B[31mbar\u001B[0m", "foo🎉bar", "foo💻bar_baz", "\u001B[31mFOO\u001B[0m_BAR", "foo🚀bar-baz"];
 
         bench("fastLowerCase with special chars", () => {
             for (const str of specialStrings) {

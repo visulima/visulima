@@ -51,19 +51,21 @@ Each case function has its own benchmark file for focused testing and comparison
 Each case function benchmark includes tests for:
 
 1. Standard Case Conversions
-   - Basic string transformations
-   - Cache effectiveness
-   - Comparison with other libraries
+
+    - Basic string transformations
+    - Cache effectiveness
+    - Comparison with other libraries
 
 2. Special Character Handling
-   - ANSI escape sequences
-   - Emoji characters
-   - Unicode characters
+
+    - ANSI escape sequences
+    - Emoji characters
+    - Unicode characters
 
 3. Acronym Handling
-   - Common programming acronyms (XML, API, etc.)
-   - Custom acronym lists
-   - Mixed case acronyms
+    - Common programming acronyms (XML, API, etc.)
+    - Custom acronym lists
+    - Mixed case acronyms
 
 ## Library Comparisons
 
@@ -80,20 +82,22 @@ Benchmarks compare Visulima against:
 The Visulima implementations are optimized for:
 
 1. Cached Operations
-   - Efficient handling of repeated strings
-   - Limited cache size to prevent memory issues
+
+    - Efficient handling of repeated strings
+    - Limited cache size to prevent memory issues
 
 2. Special Cases
-   - ANSI escape sequences
-   - Emoji characters
-   - Locale-aware operations
-   - Acronym preservation
+
+    - ANSI escape sequences
+    - Emoji characters
+    - Locale-aware operations
+    - Acronym preservation
 
 3. Edge Cases
-   - Mixed case strings
-   - Multiple separators
-   - Leading/trailing separators
-   - Empty strings
+    - Mixed case strings
+    - Multiple separators
+    - Leading/trailing separators
+    - Empty strings
 
 ## Notes
 

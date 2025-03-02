@@ -13,5 +13,4 @@
 export const normalizeGermanEszett = (value: string): string =>
     // Replace "SS" with "ß" only when both letters are uppercase
     // This uses a positive lookbehind to ensure we don't convert "ss" or "Ss"
-     value.replaceAll(/(?<![a-zß])SS(?![a-z])/g, "ß")
-;
+    value.replaceAll(/(?<![a-zß])SS(?![a-z])/g, "ß");
