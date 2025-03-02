@@ -168,7 +168,7 @@ describe("trainCase", () => {
         });
     });
 
-    describe("ANSI support", () => {
+    describe("aNSI support", () => {
         it("should handle ANSI sequences with stripAnsi=true", () => {
             expect(trainCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("Red-Text");
             expect(trainCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("Bold-Text");
@@ -178,7 +178,9 @@ describe("trainCase", () => {
         it("should handle ANSI sequences with handleAnsi=true", () => {
             expect(trainCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mRed-Text\u001B[0m");
             expect(trainCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mBold-Text\u001B[0m");
-            expect(trainCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe("\u001B[32mGreen-FOO\u001B[0m-\u001B[34mBlue-BAR\u001B[0m");
+            expect(trainCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
+                "\u001B[32mGreen-FOO\u001B[0m-\u001B[34mBlue-BAR\u001B[0m",
+            );
         });
     });
 

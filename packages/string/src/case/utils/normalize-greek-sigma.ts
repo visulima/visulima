@@ -8,5 +8,4 @@
  */
 export const normalizeGreekSigma = (value: string): string =>
     // Replace both forms of lowercase sigma with uppercase sigma.
-     value.replaceAll(/[σς]/g, "Σ")
-;
+    value.replaceAll(/[σς]/g, "Σ");

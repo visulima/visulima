@@ -16,7 +16,7 @@ import type {
     Trim,
     TrimEnd,
     TrimStart,
-} from "./types";
+} from "./src/types";
 
 declare global {
     interface String {

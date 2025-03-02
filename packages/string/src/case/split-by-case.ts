@@ -217,8 +217,9 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             const isUpper = char === (char as string).toLocaleUpperCase(locale);
 
             // Handle transitions
-            if (isUpper !== previousIsUpper) {
-                if (isUpper) {
+            if (isUpper === previousIsUpper) {
+                currentSegment += char;
+            } else if (isUpper) {
                     // Transition to uppercase
                     if (currentSegment && currentSegment.length > 0) {
                         result.push(currentSegment);
@@ -242,9 +243,6 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
                     isInUpperSequence = false;
                     upperSequenceStart = -1;
                 }
-            } else {
-                currentSegment += char;
-            }
 
             previousIsUpper = isUpper;
         }
@@ -333,10 +331,10 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         // Split on script boundaries first
         const parts = s.match(GREEK_LATIN_SPLIT_REGEX) || [s];
         const result: string[] = [];
-        const len = parts.length;
+        const length_ = parts.length;
 
         // Fast path for single-part strings
-        if (len === 1) {
+        if (length_ === 1) {
             const part = parts[0];
             if (!part || !GREEK_REGEX.test(part[0] as string) || part.length === 1) {
                 return [part || s];
@@ -359,20 +357,20 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             }
 
             // For Greek text longer than 1 character, split on case transitions
-            const partLen = part.length;
+            const partLength = part.length;
             let word = part[0] as string;
-            let prevIsUpper = part[0] === (part[0] as string).toLocaleUpperCase(locale);
+            let previousIsUpper_ = part[0] === (part[0] as string).toLocaleUpperCase(locale);
 
-            for (let i = 1; i < partLen; i++) {
-                const char = part[i];
+            for (let index = 1; index < partLength; index++) {
+                const char = part[index];
                 const isUpper = char === (char as string).toLocaleUpperCase(locale);
-                if (!prevIsUpper && isUpper) {
+                if (!previousIsUpper_ && isUpper) {
                     result.push(word);
                     word = char;
                 } else {
                     word += char;
                 }
-                prevIsUpper = isUpper;
+                previousIsUpper_ = isUpper;
             }
 
             if (word) {
@@ -688,7 +686,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     }
 
     // Special handling for Cyrillic scripts (Russian, Ukrainian, etc.)
-    if (["ru", "uk", "be", "bg", "sr"].includes(locale)) {
+    if (["be", "bg", "ru", "sr", "uk"].includes(locale)) {
         const chars = [...s];
         const length__ = chars.length;
 
@@ -877,8 +875,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         let isAcronym = false;
         for (const acronym of knownAcronyms) {
             if (s.startsWith(acronym, index)) {
-                result.push(currentSegment);
-                result.push(acronym);
+                result.push(currentSegment, acronym);
                 index += acronym.length - 1;
                 currentSegment = "";
                 isAcronym = true;

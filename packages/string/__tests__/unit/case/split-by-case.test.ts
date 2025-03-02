@@ -440,7 +440,7 @@ describe("splitByCase", () => {
             expect(splitByCase("اردوText", { locale })).toEqual(["اردو", "Text"]);
         });
 
-        describe("Uzbek case handling", () => {
+        describe("uzbek case handling", () => {
             const options = { locale: "uz" };
 
             it("should handle Uzbek Latin script", () => {
@@ -488,7 +488,7 @@ describe("splitByCase", () => {
             expect(splitByCase("IıİiTest", { locale })).toEqual(["Iı", "İi", "Test"]);
         });
 
-        describe("German case handling", () => {
+        describe("german case handling", () => {
             const options = { locale: "de-DE" };
 
             it("should handle German specific cases", () => {
@@ -772,11 +772,11 @@ describe("splitByCase", () => {
         });
 
         it("should handle special characters and symbols", () => {
-           expect(splitByCase("email@domain.com", { separators: /[-_/\s]+/g })).toEqual(["email@domain.com"]);
-           expect(splitByCase("user+alias@email.com", { separators: /[-_/\s]+/g })).toEqual(["user+alias@email.com"]);
-           expect(splitByCase("$specialPrice100")).toEqual(["$special", "Price", "100"]);
-           expect(splitByCase("100%Complete")).toEqual(["100", "%Complete"]);
-           expect(splitByCase("#FF00FF")).toEqual(["#FF00FF"]);
+            expect(splitByCase("email@domain.com", { separators: /[-_/\s]+/g })).toEqual(["email@domain.com"]);
+            expect(splitByCase("user+alias@email.com", { separators: /[-_/\s]+/g })).toEqual(["user+alias@email.com"]);
+            expect(splitByCase("$specialPrice100")).toEqual(["$special", "Price", "100"]);
+            expect(splitByCase("100%Complete")).toEqual(["100", "%Complete"]);
+            expect(splitByCase("#FF00FF")).toEqual(["#FF00FF"]);
         });
 
         it("should handle mixed number formats", () => {
