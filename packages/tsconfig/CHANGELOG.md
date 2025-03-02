@@ -1,3 +1,9 @@
+## @visulima/tsconfig [1.1.14](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.13...@visulima/tsconfig@1.1.14) (2025-02-28)
+
+### Bug Fixes
+
+* **tsconfig:** added support for typescript 5.8 ([ed21d12](https://github.com/visulima/visulima/commit/ed21d122eada6146367236f092c89f7c4807a51e))
+
 ## @visulima/tsconfig [1.1.13](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.12...@visulima/tsconfig@1.1.13) (2025-01-29)
 
 
