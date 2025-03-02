@@ -86,18 +86,6 @@ export interface CaseOptions extends LocaleOptions {
 }
 
 /**
- * Converts all alphabetic characters in a string to lowercase.
- * T: The string to convert.
- */
-export type ToLowerCase<T extends string> = IsStringLiteral<T> extends true ? Lowercase<T> : string;
-
-/**
- * Converts all alphabetic characters in a string to uppercase.
- * T: The string to convert.
- */
-export type ToUpperCase<T extends string> = IsStringLiteral<T> extends true ? Uppercase<T> : string;
-
-/**
  * Converts a string to camelCase.
  * Example: "foo bar" -> "fooBar"
  */

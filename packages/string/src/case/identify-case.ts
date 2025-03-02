@@ -16,7 +16,7 @@ export type CaseStyle = "camel" | "kebab" | "lower" | "mixed" | "pascal" | "snak
  * identifyCase("FooBAR") // => "mixed"
  * ```
  */
-export const identifyCase = (value?: string): CaseStyle => {
+const identifyCase = (value?: string): CaseStyle => {
     if (typeof value !== "string" || !value) {
         return "lower";
     }
@@ -47,3 +47,5 @@ export const identifyCase = (value?: string): CaseStyle => {
 
     return "mixed";
 };
+
+export default identifyCase;

@@ -16,5 +16,7 @@ const dotCache = new Map<string, string>();
  * dotCase("QueryXML123String") // => "query.xml.123.string"
  * ```
  */
-export const dotCase = <T extends string = string>(value?: T, options?: CaseOptions): DotCase<T> =>
+const dotCase = <T extends string = string>(value?: T, options?: CaseOptions): DotCase<T> =>
     kebabCase(value, { cacheStore: dotCache, ...options, joiner: "." }) as DotCase<T>;
+
+export default dotCase;

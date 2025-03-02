@@ -16,5 +16,7 @@ const snakeCache = new Map<string, string>();
  * snakeCase("QueryXML123String") // => "query_xml_123_string"
  * ```
  */
-export const snakeCase = <T extends string = string>(value?: T, options?: CaseOptions): SnakeCase<T> =>
+const snakeCase = <T extends string = string>(value?: T, options?: CaseOptions): SnakeCase<T> =>
     kebabCase(value, { cacheStore: snakeCache, ...options, joiner: "_" }) as SnakeCase<T>;
+
+export default snakeCase;

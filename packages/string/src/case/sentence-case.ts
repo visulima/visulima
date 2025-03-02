@@ -1,8 +1,8 @@
-import { noCase } from "./no-case";
+import noCase from "./no-case";
 import type { CaseOptions, SentenceCase } from "./types";
-import { upperFirst } from "./upper-first";
-import { generateCacheKey } from "./utils/generate-cache-key";
-import { manageCache } from "./utils/manage-cache";
+import upperFirst from "./upper-first";
+import generateCacheKey from "./utils/generate-cache-key";
+import manageCache from "./utils/manage-cache";
 
 // Cache for frequently used sentence case conversions
 const sentenceCache = new Map<string, string>();
@@ -20,7 +20,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * sentenceCase("QueryXML123String") // => "Query xml 123 string"
  * ```
  */
-export const sentenceCase = <T extends string = string>(value?: T, options?: CaseOptions): SentenceCase<T> => {
+const sentenceCase = <T extends string = string>(value?: T, options?: CaseOptions): SentenceCase<T> => {
     if (typeof value !== "string") {
         return "" as SentenceCase<T>;
     }
@@ -54,3 +54,5 @@ export const sentenceCase = <T extends string = string>(value?: T, options?: Cas
 
     return result;
 };
+
+export default sentenceCase;

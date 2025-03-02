@@ -37,10 +37,6 @@ import {
     UZBEK_LATIN_MODIFIER_REGEX,
 } from "./utils/regex";
 
-// ─────────────────────────────
-// Fast Path: No locale (assume ASCII)
-// ─────────────────────────────
-
 // Fast lookup tables for performance optimization
 const isUpperCode = new Uint8Array(128);
 const isLowerCode = new Uint8Array(128);
@@ -53,6 +49,7 @@ for (let index = 0; index < 128; index++) {
     isDigitCode[index] = index >= 48 && index <= 57 ? 1 : 0; // 0-9
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): string[] => {
     if (s.length === 0) {
         return [];
@@ -63,8 +60,9 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
         return [s];
     }
 
-    const tokens: string[] = [];
     let start = 0;
+
+    const tokens: string[] = [];
     const length_ = s.length;
 
     // No special case handling - we'll use a general algorithm
@@ -161,10 +159,6 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
     // Filter out empty tokens which can occur in edge cases
     return tokens.filter((token) => token !== "");
 };
-
-// ─────────────────────────────
-// Locale-Aware Splitting
-// ─────────────────────────────
 
 /**
  * Splits a string segment using locale‑aware camel‑case rules.
@@ -906,9 +900,6 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     return result;
 };
 
-// ─────────────────────────────
-// ANSI and Emoji Handling (only active when enabled)
-// ─────────────────────────────
 /**
  * Processes a segment that may contain ANSI escape sequences and/or emoji.
  * Splits on ANSI if active; then, if emoji are active, splits on emoji boundaries;
@@ -948,10 +939,6 @@ const processTextWithAnsiEmoji = (text: string, locale: NodeLocale | undefined, 
 
     return result;
 };
-
-// ─────────────────────────────
-// Main Exported Function: splitByCase
-// ─────────────────────────────
 
 export interface SplitOptions extends LocaleOptions {
     /** Whether to handle ANSI escape sequences. (default: false) */

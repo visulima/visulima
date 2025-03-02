@@ -1,8 +1,8 @@
-import { lowerFirst } from "./lower-first";
-import { pascalCase } from "./pascal-case";
+import lowerFirst from "./lower-first";
+import pascalCase from "./pascal-case";
 import type { CamelCase, CaseOptions } from "./types";
-import { generateCacheKey } from "./utils/generate-cache-key";
-import { manageCache } from "./utils/manage-cache";
+import generateCacheKey from "./utils/generate-cache-key";
+import manageCache from "./utils/manage-cache";
 
 // Cache for frequently used camel case conversions
 const camelCache = new Map<string, string>();
@@ -25,7 +25,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * camelCase('QueryXML123String') // 'queryXml123String'
  * ```
  */
-export const camelCase = <T extends string = string>(value?: T, options?: CaseOptions): CamelCase<T> => {
+const camelCase = <T extends string = string>(value?: T, options?: CaseOptions): CamelCase<T> => {
     if (typeof value !== "string" || !value) {
         return "" as CamelCase<T>;
     }
@@ -58,3 +58,5 @@ export const camelCase = <T extends string = string>(value?: T, options?: CaseOp
 
     return result;
 };
+
+export default camelCase;

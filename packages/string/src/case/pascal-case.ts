@@ -1,8 +1,8 @@
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, PascalCase } from "./types";
-import { upperFirst } from "./upper-first";
-import { generateCacheKey } from "./utils/generate-cache-key";
-import { manageCache } from "./utils/manage-cache";
+import upperFirst from "./upper-first";
+import generateCacheKey from "./utils/generate-cache-key";
+import manageCache from "./utils/manage-cache";
 import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
 
 // Cache for frequently used pascal case conversions
@@ -26,7 +26,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * pascalCase('QueryXML123String') // 'QueryXml123String'
  * ```
  */
-export const pascalCase = <T extends string = string>(value?: T, options?: CaseOptions): PascalCase<T> => {
+const pascalCase = <T extends string = string>(value?: T, options?: CaseOptions): PascalCase<T> => {
     if (typeof value !== "string" || !value) {
         return "" as PascalCase<T>;
     }
@@ -61,7 +61,7 @@ export const pascalCase = <T extends string = string>(value?: T, options?: CaseO
         stripEmoji: options?.stripEmoji,
     })
         .map((word: string) => {
-            const split = normalizeGermanEszett(word, options?.locale);
+            const split = normalizeGermanEszett(word);
 
             return upperFirst(options?.locale ? split.toLocaleLowerCase(options.locale) : split.toLowerCase(), { locale: options?.locale });
         })
@@ -74,3 +74,5 @@ export const pascalCase = <T extends string = string>(value?: T, options?: CaseO
 
     return result;
 };
+
+export default pascalCase;
