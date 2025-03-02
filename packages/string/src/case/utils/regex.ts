@@ -86,7 +86,9 @@ export const BENGALI_REGEX = /[\p{Script=Bengali}]/u;
 export const CYRILLIC_REGEX = /[\p{Script=Cyrillic}]/u;
 export const DEVANAGARI_REGEX = /[\p{Script=Devanagari}]/u;
 export const ETHIOPIC_REGEX = /[\p{Script=Ethiopic}]/u;
+// Precompiled regex patterns for Greek script handling
 export const GREEK_REGEX = /[\p{Script=Greek}]/u;
+export const GREEK_LATIN_SPLIT_REGEX = /[\p{Script=Greek}]+|[\p{Script=Latin}]+|[^\p{Script=Greek}\p{Script=Latin}]+/gu;
 export const GUJARATI_REGEX = /[\p{Script=Gujarati}]/u;
 export const GURMUKHI_REGEX = /[\p{Script=Gurmukhi}]/u;
 export const HANGUL_REGEX = /[\p{Script=Hangul}]/u;
