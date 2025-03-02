@@ -1,8 +1,8 @@
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, TrainCase } from "./types";
-import { upperFirst } from "./upper-first";
-import { generateCacheKey } from "./utils/generate-cache-key";
-import { manageCache } from "./utils/manage-cache";
+import upperFirst from "./upper-first";
+import generateCacheKey from "./utils/generate-cache-key";
+import manageCache from "./utils/manage-cache";
 
 // Cache for frequently used train case conversions
 const trainCache = new Map<string, string>();
@@ -20,7 +20,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * trainCase("QueryXML123String") // => "Query-XML-123-String"
  * ```
  */
-export const trainCase = <T extends string = string>(value?: T, options?: CaseOptions): TrainCase<T> => {
+const trainCase = <T extends string = string>(value?: T, options?: CaseOptions): TrainCase<T> => {
     if (typeof value !== "string") {
         return "" as TrainCase<T>;
     }
@@ -65,3 +65,5 @@ export const trainCase = <T extends string = string>(value?: T, options?: CaseOp
 
     return result;
 };
+
+export default trainCase;
