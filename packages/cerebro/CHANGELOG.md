@@ -1,3 +1,18 @@
+## @visulima/cerebro [1.1.39](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.38...@visulima/cerebro@1.1.39) (2025-03-03)
+
+### Bug Fixes
+
+* **cerebro:** add type assertion for cell in row processing ([4516f4c](https://github.com/visulima/visulima/commit/4516f4cd8700f06f641c86bf1c9a0d0d5b5c69bb))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([487a976](https://github.com/visulima/visulima/commit/487a976932dc7c39edfc19ffd3968960ff338066))
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 1.0.27
+
 ## @visulima/cerebro [1.1.38](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.37...@visulima/cerebro@1.1.38) (2025-01-29)
 
 
