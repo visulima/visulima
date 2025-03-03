@@ -24,12 +24,9 @@ const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
     const info: Stats = await stat(normalizePath);
 
     return {
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        isDirectory: info.isDirectory,
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        isFile: info.isFile,
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        isSymbolicLink: info.isSymbolicLink,
+        isDirectory: () => info.isDirectory(),
+        isFile: () => info.isFile(),
+        isSymbolicLink: () => info.isSymbolicLink(),
         name,
         path: normalizePath,
     };
@@ -123,12 +120,9 @@ export default async function* walk(
                 } as WalkOptions);
             } else if (entry.isFile() && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                 yield {
-                    // eslint-disable-next-line @typescript-eslint/unbound-method
-                    isDirectory: entry.isDirectory,
-                    // eslint-disable-next-line @typescript-eslint/unbound-method
-                    isFile: entry.isFile,
-                    // eslint-disable-next-line @typescript-eslint/unbound-method
-                    isSymbolicLink: entry.isSymbolicLink,
+                    isDirectory: () => entry.isDirectory(),
+                    isFile: () => entry.isFile(),
+                    isSymbolicLink: () => entry.isSymbolicLink(),
                     name: entry.name,
                     path,
                 };

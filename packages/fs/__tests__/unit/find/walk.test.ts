@@ -26,13 +26,32 @@ const assertWalkPaths = async (rootPath: string, expectedPaths: string[], option
 
     const result = expectedPaths.map((path) => resolve(root, path) as string);
 
-    expect(entries).toHaveLength(result.length);
     expect(entries.map(({ path }) => path)).toStrictEqual(expect.arrayContaining(result));
+    expect(entries).toHaveLength(result.length);
 };
 
 const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 describe("walk", () => {
+    it("should return a valid WalkEntry with correct properties and methods", async () => {
+        expect.assertions(6);
+
+        const root = resolve(fixture, "single_file");
+
+        for await (const entry of await walk(root)) {
+            if (entry.isFile()) {
+                expect(entry.isFile()).toBeTruthy();
+                expect(entry.isDirectory()).toBeFalsy();
+                expect(entry.isSymbolicLink()).toBeFalsy();
+            } else {
+                // Directory entry checks
+                expect(entry.isFile()).toBeFalsy();
+                expect(entry.isDirectory()).toBeTruthy();
+                expect(entry.isSymbolicLink()).toBeFalsy();
+            }
+        }
+    });
+
     it("should return current dir for empty dir", async () => {
         expect.assertions(2);
 
@@ -142,5 +161,80 @@ describe("walk", () => {
         const root = resolve(fixture, "non_existent");
 
         await expect(async () => await getEntries(root)).rejects.toThrow("ENOENT");
+    });
+
+    it("should handle maxDepth of 0", async () => {
+        expect.assertions(2);
+
+        await assertWalkPaths("depth", ["."], { maxDepth: 0 });
+    });
+
+    it("should handle negative maxDepth", async () => {
+        expect.assertions(2);
+
+        await assertWalkPaths("depth", [], { maxDepth: -1 });
+    });
+
+    it("should combine includeDirs=false and includeFiles=false", async () => {
+        expect.assertions(2);
+
+        await assertWalkPaths("depth", [], {
+            includeDirs: false,
+            includeFiles: false,
+        });
+    });
+
+    it("should handle multiple extensions correctly", async () => {
+        expect.assertions(2);
+
+        await assertWalkPaths("ext", ["x.ts", "y.rs"], {
+            extensions: [".ts", ".rs", ".md"],
+        });
+    });
+
+    it("should combine match and skip patterns", async () => {
+        expect.assertions(2);
+
+        await assertWalkPaths("match", ["x"], {
+            match: [/x$/],
+            skip: [/y$/, /z$/],
+        });
+    });
+
+    it("should normalize paths with different separators", async () => {
+        expect.assertions(4);
+
+        const root = resolve(fixture, "nested_single_file");
+        const entries = await getEntries(root);
+
+        expect(entries.length).toBeGreaterThan(0);
+        entries.forEach((entry) => {
+            expect(entry.path).not.toContain("\\");
+        });
+    });
+
+    it("should handle symlinks with followSymlinks=true and includeSymlinks=false", async () => {
+        expect.assertions(2);
+
+        await assertWalkPaths("symlink", [".", "a", "a/z", "b", "x", "y"], {
+            followSymlinks: true,
+            includeSymlinks: false,
+        });
+    });
+
+    it("should handle complex glob patterns in match option", async () => {
+        expect.assertions(2);
+
+        await assertWalkPaths("match", ["x", "y"], {
+            match: isWindows ? ["**\\[xy]"] : ["**/[xy]"],
+        });
+    });
+
+    it("should handle complex glob patterns in skip option", async () => {
+        expect.assertions(2);
+
+        await assertWalkPaths("match", [".", "z"], {
+            skip: isWindows ? ["**\\[xy]"] : ["**/[xy]"],
+        });
     });
 });
