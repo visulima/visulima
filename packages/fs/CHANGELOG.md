@@ -1,3 +1,13 @@
+## @visulima/fs [3.1.1](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.0...@visulima/fs@3.1.1) (2025-03-03)
+
+### Bug Fixes
+
+* **fs:** update entry methods to use function calls for isFile, isDirectory, and isSymbolicLink to not directly call the stat fn ([8efc158](https://github.com/visulima/visulima/commit/8efc158e8358bd5becfd263879837701b26d16d4))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([487a976](https://github.com/visulima/visulima/commit/487a976932dc7c39edfc19ffd3968960ff338066))
+
 ## @visulima/fs [3.1.0](https://github.com/visulima/visulima/compare/@visulima/fs@3.0.1...@visulima/fs@3.1.0) (2025-01-29)
 
 ### Features
