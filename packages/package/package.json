@@ -178,7 +178,7 @@
         "@inquirer/core": "^10.1.7",
         "@inquirer/type": "^3.0.4",
         "@pnpm/exe": "^10.5.2",
-        "@rushstack/eslint-plugin-security": "^0.8.3",
+        "@rushstack/eslint-plugin-security": "^0.9.0",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.71",
         "@types/normalize-package-data": "^2.4.4",

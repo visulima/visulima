@@ -139,7 +139,7 @@
         "@anolilab/semantic-release-preset": "^10.0.3",
         "@arethetypeswrong/cli": "^0.17.4",
         "@mfederczuk/deeptools": "2.1.0-indev01",
-        "@rushstack/eslint-plugin-security": "^0.8.3",
+        "@rushstack/eslint-plugin-security": "^0.9.0",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/lodash.clonedeep": "^4.5.9",
         "@types/node": "18.19.71",
