@@ -81,7 +81,7 @@
         "postcss-import": "^16.1.0",
         "postcss-lightningcss": "1.0.1",
         "prettier": "^3.5.2",
-        "sort-package-json": "^2.15.0",
+        "sort-package-json": "^2.15.1",
         "symlink-dir": "^6.0.4",
         "tailwindcss": "^4.0.9",
         "typescript": "5.8.2",

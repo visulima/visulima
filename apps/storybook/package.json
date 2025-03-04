@@ -64,7 +64,7 @@
         "postcss": "^8.5.3",
         "publint": "^0.3.7",
         "serve": "^14.2.4",
-        "sort-package-json": "^2.15.0",
+        "sort-package-json": "^2.15.1",
         "storybook": "^8.6.2",
         "tailwindcss": "^4.0.9",
         "tailwindcss-animate": "^1.0.7",
