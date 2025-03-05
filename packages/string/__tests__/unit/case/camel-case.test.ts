@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { camelCase } from "../../../src/case";
-import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
+import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 
 describe("camelCase", () => {
     describe("caching", () => {
