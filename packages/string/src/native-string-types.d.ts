@@ -144,5 +144,3 @@ declare global {
         trimStart<T extends string = string>(this: T): TrimStart<T>;
     }
 }
-
-export {};
