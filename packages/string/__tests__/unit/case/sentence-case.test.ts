@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { sentenceCase } from "../../../src/case";
-import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
+import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 
 describe("sentenceCase", () => {
     describe("caching", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { flipCase } from "../../../src/case";
-import { generateCacheKey } from "../../../src/case/utils/generate-cache-key";
+import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 
 describe("flipCase", () => {
     describe("caching", () => {
