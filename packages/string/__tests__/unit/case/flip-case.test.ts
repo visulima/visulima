@@ -112,16 +112,16 @@ describe("flipCase", () => {
             expect(flipCase("welcome to the 🎉party", { stripEmoji: true })).toBe("WELCOME TO THE PARTY");
         });
 
-        it("should handle emojis in text with handleEmoji=true", () => {
-            expect(flipCase("Foo🐣Bar", { handleEmoji: true })).toBe("fOO🐣bAR");
-            expect(flipCase("hello🌍World", { handleEmoji: true })).toBe("HELLO🌍wORLD");
-            expect(flipCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("TEST🎉pARTY🎈fUN");
-            expect(flipCase("EMOJI👾Gaming", { handleEmoji: true })).toBe("emoji👾gAMING");
-            expect(flipCase("upper🚀Case", { handleEmoji: true })).toBe("UPPER🚀cASE");
-            expect(flipCase("snake_case_🐍_test", { handleEmoji: true })).toBe("SNAKE_CASE_🐍_TEST");
-            expect(flipCase("kebab-case-🍔-test", { handleEmoji: true })).toBe("KEBAB-CASE-🍔-TEST");
-            expect(flipCase("flip🤭Case", { handleEmoji: true })).toBe("FLIP🤭cASE");
-            expect(flipCase("welcome to the 🎉party", { handleEmoji: true })).toBe("WELCOME TO THE 🎉PARTY");
+        it("should preserve emojis in text by default", () => {
+            expect(flipCase("Foo🐣Bar")).toBe("fOO🐣bAR");
+            expect(flipCase("hello🌍World")).toBe("HELLO🌍wORLD");
+            expect(flipCase("test🎉Party🎈Fun")).toBe("TEST🎉pARTY🎈fUN");
+            expect(flipCase("EMOJI👾Gaming")).toBe("emoji👾gAMING");
+            expect(flipCase("upper🚀Case")).toBe("UPPER🚀cASE");
+            expect(flipCase("snake_case_🐍_test")).toBe("SNAKE_CASE_🐍_TEST");
+            expect(flipCase("kebab-case-🍔-test")).toBe("KEBAB-CASE-🍔-TEST");
+            expect(flipCase("flip🤭Case")).toBe("FLIP🤭cASE");
+            expect(flipCase("welcome to the 🎉party")).toBe("WELCOME TO THE 🎉PARTY");
         });
     });
 

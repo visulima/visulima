@@ -5,7 +5,7 @@ import type { CaseOptions, FlatCase } from "./types";
 const flatCache = new Map<string, string>();
 
 /**
- * Converts a string to flatcase (all lowercase, no separators).
+ * Converts a string to flat case (all lowercase, no separators).
  * @example
  * ```typescript
  * flatCase("foo-barBaz") // => "foobarbaz"

@@ -214,29 +214,29 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             if (isUpper === previousIsUpper) {
                 currentSegment += char;
             } else if (isUpper) {
-                    // Transition to uppercase
-                    if (currentSegment && currentSegment.length > 0) {
-                        result.push(currentSegment);
-                        currentSegment = char;
-                    }
-                    isInUpperSequence = true;
-                    upperSequenceStart = index;
-                } else {
-                    // Transition to lowercase
-                    if (isInUpperSequence && index - upperSequenceStart > 1) {
-                        // If we had a sequence of uppercase letters, split before the last one
-                        const lastUpperChar = chars[index - 1] as string;
-                        const withoutLastUpper = currentSegment.slice(0, -1);
-                        if (withoutLastUpper && withoutLastUpper.length > 0) {
-                            result.push(withoutLastUpper);
-                        }
-                        currentSegment = lastUpperChar + char;
-                    } else {
-                        currentSegment += char;
-                    }
-                    isInUpperSequence = false;
-                    upperSequenceStart = -1;
+                // Transition to uppercase
+                if (currentSegment && currentSegment.length > 0) {
+                    result.push(currentSegment);
+                    currentSegment = char;
                 }
+                isInUpperSequence = true;
+                upperSequenceStart = index;
+            } else {
+                // Transition to lowercase
+                if (isInUpperSequence && index - upperSequenceStart > 1) {
+                    // If we had a sequence of uppercase letters, split before the last one
+                    const lastUpperChar = chars[index - 1] as string;
+                    const withoutLastUpper = currentSegment.slice(0, -1);
+                    if (withoutLastUpper && withoutLastUpper.length > 0) {
+                        result.push(withoutLastUpper);
+                    }
+                    currentSegment = lastUpperChar + char;
+                } else {
+                    currentSegment += char;
+                }
+                isInUpperSequence = false;
+                upperSequenceStart = -1;
+            }
 
             previousIsUpper = isUpper;
         }
@@ -1066,7 +1066,6 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
             }
 
             if (token.toUpperCase() === token && !acronymSet.has(token)) {
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 return token.slice(0, 1) + (token as string).slice(1).toLowerCase();
             }
 

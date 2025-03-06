@@ -87,10 +87,10 @@ describe("noCase", () => {
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
-            expect(noCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31m red text \u001B[0m");
-            expect(noCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1m bold text \u001B[0m");
+            expect(noCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mred text\u001B[0m");
+            expect(noCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mbold text\u001B[0m");
             expect(noCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
-                "\u001B[32m green foo \u001B[0m \u001B[34m blue bar \u001B[0m",
+                "\u001B[32mgreen foo\u001B[0m \u001B[34mblue bar\u001B[0m",
             );
         });
     });

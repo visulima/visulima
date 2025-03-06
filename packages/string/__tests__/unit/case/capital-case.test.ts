@@ -147,10 +147,10 @@ describe("capitalCase", () => {
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
-            expect(capitalCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31m Red Text \u001B[0m");
-            expect(capitalCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1m Bold Text \u001B[0m");
+            expect(capitalCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mRed Text\u001B[0m");
+            expect(capitalCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mBold Text\u001B[0m");
             expect(capitalCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
-                "\u001B[32m Green Foo \u001B[0m \u001B[34m Blue Bar \u001B[0m",
+                "\u001B[32mGreen Foo\u001B[0m \u001B[34mBlue Bar\u001B[0m",
             );
         });
     });

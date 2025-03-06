@@ -143,10 +143,10 @@ describe("sentenceCase", () => {
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
-            expect(sentenceCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31m Red text \u001B[0m");
-            expect(sentenceCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1m Bold text \u001B[0m");
+            expect(sentenceCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mRed text\u001B[0m");
+            expect(sentenceCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mBold text\u001B[0m");
             expect(sentenceCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
-                "\u001B[32m Green foo \u001B[0m \u001B[34m blue bar \u001B[0m",
+                "\u001B[32mGreen foo\u001B[0m \u001B[34mblue bar\u001B[0m",
             );
         });
     });

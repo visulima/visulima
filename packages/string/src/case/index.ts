@@ -3,7 +3,8 @@ export { default as capitalCase } from "./capital-case";
 export { default as constantCase } from "./constant-case";
 export { default as dotCase } from "./dot-case";
 export { default as flatCase } from "./flat-case";
-export { default as flipCase } from "./flip-case";
+export type { FlipOptions } from "./flip-case";
+export { flipCase } from "./flip-case";
 // eslint-disable-next-line import/no-unused-modules
 export type { CaseStyle } from "./identify-case";
 export { default as identifyCase } from "./identify-case";
@@ -17,7 +18,6 @@ export { default as pascalSnakeCase } from "./pascal-snake-case";
 export { default as pathCase } from "./path-case";
 export { default as sentenceCase } from "./sentence-case";
 export { default as snakeCase } from "./snake-case";
-// eslint-disable-next-line import/no-unused-modules
 export { splitByCase } from "./split-by-case";
 // eslint-disable-next-line import/no-unused-modules
 export type { SplitOptions } from "./split-by-case";
