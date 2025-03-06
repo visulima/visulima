@@ -67,5 +67,6 @@ storybook-static/
 dist
 
 # Ignore Windsurf Rules
-.windsurfrules
-memory-bank/
+# Usage: "Follow the protocol in your .windsurfrules"
+#.windsurfrules
+#memory-bank/

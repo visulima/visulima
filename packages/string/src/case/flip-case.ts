@@ -8,6 +8,12 @@ const flipCache = new Map<string, string>();
 const DEFAULT_CACHE_MAX_SIZE = 1000;
 
 /**
+ * Options specific to flip case operations.
+ * @note handleEmoji is not needed as the function preserves emojis by default
+ */
+export type FlipOptions = Omit<CaseOptions, "handleEmoji">;
+
+/**
  * Flips the case of each character in a string.
  * @example
  * ```typescript
@@ -18,8 +24,8 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * ```
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const flipCase = <T extends string = string>(value?: T, options?: CaseOptions): FlipCase<T> => {
-    if (typeof value !== "string") {
+export const flipCase = <T extends string = string>(value?: T, options?: FlipOptions): FlipCase<T> => {
+    if (typeof value !== "string" || value.length === 0) {
         return "";
     }
 
@@ -42,25 +48,60 @@ const flipCase = <T extends string = string>(value?: T, options?: CaseOptions): 
         }
     }
 
-    let cleanedInput = value;
-
-    if (options?.stripAnsi) {
-        cleanedInput = stripAnsi(cleanedInput) as T;
-    }
+    // For stripEmoji option, completely remove emojis first
+    let processedValue = value;
 
     if (options?.stripEmoji) {
-        cleanedInput = stripEmoji(cleanedInput) as T;
+        processedValue = stripEmoji(processedValue) as T;
     }
 
-    const result = cleanedInput
-        // eslint-disable-next-line unicorn/prefer-spread
-        .split("")
-        .map((char) => {
-            const lowerChar = options?.locale ? char.toLocaleLowerCase(options.locale) : char.toLowerCase();
+    // For stripAnsi option, completely remove ANSI codes
+    if (options?.stripAnsi) {
+        processedValue = stripAnsi(processedValue) as T;
+    }
 
-            return char === lowerChar ? (options?.locale ? char.toLocaleUpperCase(options.locale) : char.toUpperCase()) : lowerChar;
-        })
-        .join("");
+    // Process the string character by character
+    let result = "";
+    let index = 0;
+
+    // eslint-disable-next-line no-loops/no-loops
+    while (index < processedValue.length) {
+        // Handle ANSI sequences if we didn't strip them
+        if (options?.handleAnsi && processedValue[index] === "\u001B") {
+            let ansiSequence = processedValue[index] as string;
+
+            // eslint-disable-next-line no-plusplus
+            index++;
+
+            // eslint-disable-next-line no-loops/no-loops
+            while (index < processedValue.length && processedValue[index] !== "m") {
+                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+                ansiSequence += processedValue[index];
+                // eslint-disable-next-line no-plusplus
+                index++;
+            }
+
+            if (index < processedValue.length) {
+                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+                ansiSequence += processedValue[index];
+                result += ansiSequence;
+            }
+
+            // eslint-disable-next-line no-plusplus
+            index++;
+
+            // eslint-disable-next-line no-continue
+            continue;
+        }
+
+        // Handle regular characters
+        const char = processedValue[index] as string;
+        const lowerChar = options?.locale ? char.toLocaleLowerCase(options.locale) : char.toLowerCase();
+
+        result += char === lowerChar ? (options?.locale ? char.toLocaleUpperCase(options.locale) : char.toUpperCase()) : lowerChar;
+        // eslint-disable-next-line no-plusplus
+        index++;
+    }
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {
@@ -69,5 +110,3 @@ const flipCase = <T extends string = string>(value?: T, options?: CaseOptions): 
 
     return result;
 };
-
-export default flipCase;

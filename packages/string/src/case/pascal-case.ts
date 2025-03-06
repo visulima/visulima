@@ -2,8 +2,10 @@ import { splitByCase } from "./split-by-case";
 import type { CaseOptions, PascalCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
+import { joinSegments } from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
+import { FAST_ANSI_REGEX } from "./utils/regex";
 
 // Cache for frequently used pascal case conversions
 const pascalCache = new Map<string, string>();
@@ -50,22 +52,27 @@ const pascalCase = <T extends string = string>(value?: T, options?: CaseOptions)
         }
     }
 
-    const result = splitByCase(value, {
-        handleAnsi: options?.handleAnsi,
-        handleEmoji: options?.handleEmoji,
-        knownAcronyms: options?.knownAcronyms,
-        locale: options?.locale,
-        normalize: options?.normalize,
-        separators: undefined,
-        stripAnsi: options?.stripAnsi,
-        stripEmoji: options?.stripEmoji,
-    })
-        .map((word: string) => {
-            const split = normalizeGermanEszett(word);
+    const result = joinSegments<PascalCase<T>>(
+        splitByCase(value, {
+            handleAnsi: options?.handleAnsi,
+            handleEmoji: options?.handleEmoji,
+            knownAcronyms: options?.knownAcronyms,
+            locale: options?.locale,
+            normalize: options?.normalize,
+            separators: undefined,
+            stripAnsi: options?.stripAnsi,
+            stripEmoji: options?.stripEmoji,
+        }).map((word: string) => {
+            if (!options?.stripEmoji && FAST_ANSI_REGEX.test(word)) {
+                return word;
+            }
+
+            const split = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
 
             return upperFirst(options?.locale ? split.toLocaleLowerCase(options.locale) : split.toLowerCase(), { locale: options?.locale });
-        })
-        .join("") as PascalCase<T>;
+        }),
+        "",
+    );
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {
