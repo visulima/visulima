@@ -1,9 +1,12 @@
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, KebabCase } from "./types";
 import generateCacheKey from "./utils/generate-cache-key";
+import { joinSegments } from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
+import { FAST_ANSI_REGEX } from "./utils/regex";
 import { toLowerCase } from "./utils/to-lower-case";
+import { toUpperCase } from "./utils/to-upper-case";
 
 export interface KebabCaseOptions extends CaseOptions {
     /**
@@ -11,6 +14,12 @@ export interface KebabCaseOptions extends CaseOptions {
      * @default "-"
      */
     joiner?: string;
+
+    /**
+     * Whether to convert the result to uppercase.
+     * @default false
+     */
+    toUpperCase?: boolean;
 }
 
 /**
@@ -64,13 +73,23 @@ export const kebabCase = <T extends string = string>(value?: T, options?: KebabC
         stripEmoji: options?.stripEmoji,
     });
 
-    const processed = words.map((p) => {
-        const split = options?.locale?.startsWith("de") ? normalizeGermanEszett(p) : p;
+    // Process each word - convert to lowercase and handle German eszett
+    const processed = words.map((word) => {
+        if (!options?.stripEmoji && FAST_ANSI_REGEX.test(word)) {
+            return word;
+        }
+
+        if (options?.toUpperCase) {
+            return toUpperCase(word, options.locale);
+        }
+
+        const split = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
 
         return toLowerCase(split, options?.locale);
     });
 
-    const result = processed.join(options?.joiner ?? "-") as KebabCase<T>;
+    // Join the processed words with proper handling of ANSI and emoji sequences
+    const result = joinSegments<KebabCase<T>>(processed, options?.joiner ?? "-");
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {

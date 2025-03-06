@@ -2,6 +2,7 @@ import { splitByCase } from "./split-by-case";
 import type { CaseOptions, TrainCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
+import { joinSegments } from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 
 // Cache for frequently used train case conversions
@@ -44,19 +45,19 @@ const trainCase = <T extends string = string>(value?: T, options?: CaseOptions):
         }
     }
 
-    const result = splitByCase(value, {
-        handleAnsi: options?.handleAnsi,
-        handleEmoji: options?.handleEmoji,
-        knownAcronyms: options?.knownAcronyms,
-        locale: options?.locale,
-        normalize: options?.normalize,
-        separators: undefined,
-        stripAnsi: options?.stripAnsi,
-        stripEmoji: options?.stripEmoji,
-    })
-        .filter(Boolean)
-        .map((p) => upperFirst(p, { locale: options?.locale }))
-        .join("-") as TrainCase<T>;
+    const result = joinSegments<TrainCase<T>>(
+        splitByCase(value, {
+            handleAnsi: options?.handleAnsi,
+            handleEmoji: options?.handleEmoji,
+            knownAcronyms: options?.knownAcronyms,
+            locale: options?.locale,
+            normalize: options?.normalize,
+            separators: undefined,
+            stripAnsi: options?.stripAnsi,
+            stripEmoji: options?.stripEmoji,
+        }).map((p) => upperFirst(p, { locale: options?.locale })),
+        "-",
+    );
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {

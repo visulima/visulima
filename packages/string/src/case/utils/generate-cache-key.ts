@@ -6,6 +6,6 @@ import type { CaseOptions } from "../types";
  */
 const generateCacheKey = (value: string, options?: CaseOptions & { joiner?: string }): string =>
     // Only include options that affect the output
-    `${value}::${options?.joiner ?? ""}::${options?.locale ?? ""}::${options?.knownAcronyms?.join(",") ?? ""}::${options?.normalize ?? false}`;
+    `${value}::${options?.joiner ?? ""}::${options?.locale ?? ""}::${options?.knownAcronyms?.join(",") ?? ""}::${options?.normalize ? "true" : "false"}`;
 
 export default generateCacheKey;

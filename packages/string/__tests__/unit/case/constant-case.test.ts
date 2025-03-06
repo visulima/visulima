@@ -46,13 +46,13 @@ describe("constantCase", () => {
             // First string should be cached
             const result1 = constantCase(input1, options1);
             expect(customCache.size).toBe(1);
-            expect(customCache.get(generateCacheKey(input1, options1))).toBe(result1);
+            expect(customCache.get(generateCacheKey(input1, { ...options1, joiner: "_" }))).toBe(result1);
 
             // Second string should be cached due to size limit, the first string should be evicted
             const result2 = constantCase(input2, options2);
             expect(customCache.size).toBe(1);
-            expect(customCache.has(generateCacheKey(input1, options1))).toBeFalsy();
-            expect(customCache.get(generateCacheKey(input2, options2))).toBe(result2);
+            expect(customCache.has(generateCacheKey(input1, { ...options1, joiner: "_" }))).toBeFalsy();
+            expect(customCache.get(generateCacheKey(input2, { ...options2, joiner: "_" }))).toBe(result2);
         });
 
         it("should handle custom cache store", () => {
