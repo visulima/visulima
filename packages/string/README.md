@@ -48,6 +48,13 @@
   - Handles template literals and string inputs
   - Normalizes newlines across platforms
   - Configurable trimming behavior
+- **String Width Calculation**:
+  - `getStringWidth`: Calculate visual width of strings with Unicode support
+  - `getStringTruncatedWidth`: Width calculation with smart truncation
+  - Handles CJK characters, emojis, ANSI codes, and more
+  - Configurable character width settings
+  - Support for zero-width and combining characters
+  - Customizable truncation with ellipsis
 
 ### Multi-Script Support
 - **CJK Scripts**:
@@ -355,6 +362,106 @@ sentenceCase('foo_bar');             // 'Foo bar'
 sentenceCase('XMLHttpRequest');      // 'Xml http request'
 sentenceCase('AJAXRequest');        // 'Ajax request'
 sentenceCase('QueryXML123String');  // 'Query xml 123 string'
+```
+
+### String Width Calculation
+
+The package provides two functions for calculating string widths: `getStringWidth` for basic width calculation and `getStringTruncatedWidth` for width calculation with truncation support.
+
+#### Basic Width Calculation
+
+The `getStringWidth` function calculates the visual width of strings, taking into account various Unicode characters, emojis, ANSI escape codes, and more:
+
+```typescript
+import { getStringWidth } from '@visulima/string';
+
+// Basic usage
+getStringWidth('hello');               // => 5
+getStringWidth('👋 hello');            // => 7 (emoji is width 2)
+getStringWidth('あいう');               // => 6 (each character is width 2)
+
+// With custom options
+getStringWidth('hello', { regularWidth: 2 });  // => 10
+getStringWidth('あいう', { ambiguousIsNarrow: true }); // => 3
+
+// ANSI escape codes
+getStringWidth('\u001B[31mRed\u001B[39m');  // => 3
+getStringWidth('\u001B[31mRed\u001B[39m', { countAnsiEscapeCodes: true }); // => 11
+
+// Advanced Unicode support
+getStringWidth('한글');  // => 4 (Korean characters)
+getStringWidth('你好');  // => 4 (Chinese characters)
+getStringWidth('👨‍👩‍👧‍👦');  // => 2 (family emoji with ZWJ sequences)
+```
+
+#### Configuration Options
+
+```typescript
+interface StringWidthOptions {
+    ambiguousIsNarrow?: boolean;    // Treat ambiguous-width characters as narrow
+    ambiguousWidth?: number;        // Width of ambiguous-width characters (default: 1)
+    ansiWidth?: number;             // Width of ANSI escape sequences (default: 0)
+    controlWidth?: number;          // Width of control characters (default: 0)
+    countAnsiEscapeCodes?: boolean; // Include ANSI escape codes in width (default: false)
+    emojiWidth?: number;            // Width of emoji characters (default: 2)
+    fullWidthWidth?: number;        // Width of full-width characters (default: 2)
+    regularWidth?: number;          // Width of regular characters (default: 1)
+    tabWidth?: number;              // Width of tab characters (default: 8)
+    wideWidth?: number;             // Width of wide characters (default: 2)
+}
+```
+
+#### Width Calculation with Truncation
+
+The `getStringTruncatedWidth` function extends the basic width calculation with truncation support:
+
+```typescript
+import { getStringTruncatedWidth } from '@visulima/string';
+
+// Basic truncation
+getStringTruncatedWidth('hello world', {
+    limit: 8,
+    ellipsis: '...'
+}); // => { width: 8, truncated: true, ellipsed: true, index: 5 }
+
+// Custom character widths with truncation
+getStringTruncatedWidth('あいうえお', {
+    limit: 6,
+    ellipsis: '...',
+    fullWidthWidth: 2
+}); // => { width: 6, truncated: true, ellipsed: true, index: 2 }
+
+// ANSI codes with truncation
+getStringTruncatedWidth('\u001B[31mRed Text\u001B[39m', {
+    limit: 5,
+    ellipsis: '...',
+    countAnsiEscapeCodes: true
+}); // => { width: 5, truncated: true, ellipsed: true, index: 4 }
+
+// Complex Unicode with truncation
+getStringTruncatedWidth('👨‍👩‍👧‍👦 Family', {
+    limit: 7,
+    ellipsis: '...'
+}); // => { width: 7, truncated: true, ellipsed: true, index: 11 }
+```
+
+#### Truncation Options
+
+```typescript
+interface StringTruncatedWidthOptions extends StringWidthOptions {
+    // Truncation-specific options
+    ellipsis?: string;           // String to append when truncation occurs (default: '')
+    ellipsisWidth?: number;      // Width of ellipsis, auto-calculated if not provided
+    limit?: number;              // Maximum width limit for the string (default: Infinity)
+}
+
+// Return value structure
+interface StringTruncatedWidthResult {
+    width: number;      // The calculated visual width of the string
+    truncated: boolean; // Whether the string was truncated
+    ellipsed: boolean; // Whether an ellipsis was added
+    index: number;     // The index at which truncation occurred (if any)
+}
 ```
 
 ### Common Options
