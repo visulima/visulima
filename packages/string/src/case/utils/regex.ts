@@ -1,11 +1,11 @@
-import ansiRegex from "ansi-regex";
+import { stripVTControlCharacters } from "node:util";
+
 import emojiRegex from "emoji-regex";
 
 // Pre-compile regular expressions for better performance
 export const SEPARATORS_REGEX = /[-_./\s]+/g;
 
 // Pre-compile ANSI and emoji regex
-export const ANSI_REGEX = ansiRegex();
 export const EMOJI_REGEX = emojiRegex();
 
 // Cache for dynamically created regexes with LRU-like behavior
@@ -76,7 +76,14 @@ export const splitByEmoji = (text: string): string[] => {
     return segments.filter(Boolean);
 };
 
-export const stripAnsi = (string_: string): string => string_.replace(ANSI_REGEX, "");
+/**
+ * Strips ANSI escape sequences from a string.
+ * Uses Node.js's native stripVTControlCharacters for optimal performance.
+ *
+ * @param string_ - The string to strip ANSI sequences from
+ * @returns The string without ANSI sequences
+ */
+export const stripAnsi = (string_: string): string => stripVTControlCharacters(string_);
 
 export const stripEmoji = (string_: string): string => string_.replace(EMOJI_REGEX, "");
 

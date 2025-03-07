@@ -125,9 +125,6 @@ yarn add @visulima/string
 pnpm add @visulima/string
 ```
 
-## Quick Examples
-
-
 ## Usage
 
 ### Outdent (Remove Indentation)
