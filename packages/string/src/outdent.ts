@@ -41,7 +41,7 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
     let indentationLevel = 0;
 
     // Fast path for common case where there's no indentation or simple indentation
-    const match = RE_DETECT_INDENTATION.exec((strings[0] as string));
+    const match = RE_DETECT_INDENTATION.exec(strings[0] as string);
     if (match) {
         indentationLevel = (match[1] as string).length;
     }
@@ -205,7 +205,9 @@ const createInstance = (options: Options): Outdent => {
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
             const firstValueIsOutdent = values[0] === outdent || values[0] === defaultOutdent;
             const firstInterpolatedValueSetsIndentationLevel =
-                firstValueIsOutdent && RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE.test(strings[0] as string) && RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY.test(strings[1] as string);
+                firstValueIsOutdent &&
+                RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE.test(strings[0] as string) &&
+                RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY.test(strings[1] as string);
 
             let renderedArray;
 

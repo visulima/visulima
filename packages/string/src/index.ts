@@ -1,2 +1,5 @@
-export type { Options as OutdentOptions, Outdent } from "./outdent";
+export type { Outdent,Options as OutdentOptions } from "./outdent";
 export { outdent } from "./outdent";
+export { default as getStringTruncatedWidth } from "./get-string-truncated-width";
+export { default as getStringWidth } from "./get-string-width";
+export type { StringWidthResult, StringWidthOptions } from "./types";
