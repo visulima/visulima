@@ -2,8 +2,8 @@ import "cross-fetch/polyfill";
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import httpCheck from "../../src/checks/http-check";
 import { server } from "../../__fixtures__/mock-server";
+import httpCheck from "../../src/checks/http-check";
 
 describe("httpCheck", () => {
     beforeAll(() => server.listen());

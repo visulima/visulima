@@ -4,9 +4,9 @@ import { dirname, toNamespacedPath } from "@visulima/path";
 import { toPath } from "@visulima/path/utils";
 
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import isStatsIdentical from "./utils/is-stats-identical";
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDir from "./ensure-dir";
+import isStatsIdentical from "./utils/is-stats-identical";
 
 /**
  * Ensures that the hard link exists.

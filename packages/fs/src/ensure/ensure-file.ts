@@ -4,9 +4,9 @@ import { dirname } from "@visulima/path";
 import { toPath } from "@visulima/path/utils";
 
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import { getFileInfoType } from "./utils/get-file-info-type";
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDir from "./ensure-dir";
+import { getFileInfoType } from "./utils/get-file-info-type";
 
 /**
  * Ensures that the file exists.

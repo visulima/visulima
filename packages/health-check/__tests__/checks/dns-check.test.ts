@@ -29,7 +29,7 @@ describe("dnsCheck", () => {
         const result = await dnsCheck("example.com", ["93.122.1212.45"], { family: 4 })();
 
         expect(result.displayName).toBe("DNS check for example.com");
-        expect(result.health.healthy).toBe(false);
+        expect(result.health.healthy).toBeFalsy();
         expect(result.health.message).toContain("DNS check for example.com returned address ");
         expect(result.health.message).toContain(" instead of 93.122.1212.45.");
         expect(result.health.timestamp).toEqual(expect.any(String));

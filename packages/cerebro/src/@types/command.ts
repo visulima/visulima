@@ -9,8 +9,7 @@ type TypeConstructor<T> = (value: any) => T extends (infer R)[] ? R | undefined 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MultiplePropertyOptions<T> = any[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
 
-export type OptionDefinition<T> = MultiplePropertyOptions<T> &
-    Omit<BaseOptionDefinition, "type|defaultValue"> & {
+export type OptionDefinition<T> = MultiplePropertyOptions<T> & Omit<BaseOptionDefinition, "type|defaultValue"> & {
         // @internal
         __camelCaseName__?: string;
 
