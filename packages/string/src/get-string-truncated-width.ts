@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import emojiRegex from "emoji-regex";
+import emojiRegex from "emoji-regex-xs";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { eastAsianWidthType } from "get-east-asian-width";
 

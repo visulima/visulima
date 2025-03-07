@@ -1,6 +1,6 @@
 import { stripVTControlCharacters } from "node:util";
 
-import emojiRegex from "emoji-regex";
+import emojiRegex from "emoji-regex-xs";
 
 // Pre-compile regular expressions for better performance
 export const SEPARATORS_REGEX = /[-_./\s]+/g;

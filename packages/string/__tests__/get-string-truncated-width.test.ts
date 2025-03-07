@@ -8,6 +8,7 @@ const getWidth = (input: string, options?: StringTruncatedWidthOptions): number 
 const getTruncated = (input: string, options: StringTruncatedWidthOptions): string => {
     const ellipsis = options.ellipsis ?? "";
     const result = getStringTruncatedWidth(input, options);
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `${input.slice(0, result.index)}${result.ellipsed ? ellipsis : ""}`;
 };
 
@@ -96,6 +97,7 @@ describe("string Width", () => {
         });
 
         it("supports all basic emojis", async (t) => {
+            // eslint-disable-next-line compat/compat
             const response = await fetch("https://raw.githubusercontent.com/muan/unicode-emoji-json/main/data-by-group.json");
             const data = await response.json();
             const emojis = data.flatMap(({ emojis }) => emojis.map(({ emoji }) => emoji));
@@ -110,54 +112,72 @@ describe("string Width", () => {
         });
 
         it("supports unicode characters", () => {
+            // Map of Unicode characters to their expected display widths
             const unicodeChars = {
-                "\u00A0": 1,
-                "\u2009": 1,
-                "\u200A": 1,
-                "\u200B": 0,
-                "\u2013": 2,
-                "\u2014": 2,
-                "\u2022": 2,
-                "…": 2,
-                "\u2190": 2,
-                "\u2191": 2,
-                "\u2192": 2,
-                "\u2193": 2,
-                "\u2194": 2,
-                "\u2197": 2,
-                "\u21A9": 2,
-                "\u21C4": 1,
-                "\u21C5": 1,
-                "\u21C6": 1,
-                "\u21CB": 1,
-                "\u21CC": 1,
-                "\u21CE": 1,
-                "\u21D0": 1,
-                "\u21D2": 2,
-                "\u21D4": 2,
-                "\u21E8": 1,
-                "\u21F5": 1,
-                "\u2217": 1,
-                "\u2261": 2,
-                "\u226A": 2,
-                "\u226B": 2,
-                "\u22EF": 1,
-                "\u2690": 1,
-                "\u2691": 1,
-                "\u26A0": 2,
-                "\u2709": 2,
-                "\u270E": 1,
-                "✔": 2,
-                "\u274F": 1,
-                "\u2750": 1,
-                "\u2770": 1,
-                "\u2771": 1,
-                "\u27A4": 1,
-                "\u27F7": 1,
-                "\u2937": 1,
+                // Whitespace and special spaces
+                "\u00A0": 1, // NO-BREAK SPACE
+                "\u2009": 1, // THIN SPACE
+                "\u200A": 1, // HAIR SPACE
+                "\u200B": 0, // ZERO WIDTH SPACE
+
+                // Dashes and punctuation
+                "\u2013": 2, // EN DASH
+                "\u2014": 2, // EM DASH
+                "\u2022": 2, // BULLET
+                "…": 2,     // HORIZONTAL ELLIPSIS
+
+                // Arrows - Basic directional
+                "\u2190": 2, // LEFTWARDS ARROW
+                "\u2191": 2, // UPWARDS ARROW
+                "\u2192": 2, // RIGHTWARDS ARROW
+                "\u2193": 2, // DOWNWARDS ARROW
+                "\u2194": 2, // LEFT RIGHT ARROW
+                "\u2197": 2, // NORTH EAST ARROW
+                "\u21A9": 1, // LEFTWARDS ARROW WITH HOOK
+
+                // Arrows - Double and special
+                "\u21C4": 1, // RIGHTWARDS ARROW OVER LEFTWARDS ARROW
+                "\u21C5": 1, // UPWARDS ARROW LEFTWARDS OF DOWNWARDS ARROW
+                "\u21C6": 1, // LEFTWARDS ARROW OVER RIGHTWARDS ARROW
+                "\u21CB": 1, // LEFTWARDS HARPOON OVER RIGHTWARDS HARPOON
+                "\u21CC": 1, // RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON
+                "\u21CE": 1, // LEFT RIGHT DOUBLE ARROW WITH STROKE
+                "\u21D0": 1, // LEFTWARDS DOUBLE ARROW
+                "\u21D2": 2, // RIGHTWARDS DOUBLE ARROW
+                "\u21D4": 2, // LEFT RIGHT DOUBLE ARROW
+                "\u21E8": 1, // RIGHTWARDS WHITE ARROW
+                "\u21F5": 1, // DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW
+
+                // Mathematical and technical symbols
+                "\u2217": 1, // ASTERISK OPERATOR
+                "\u2261": 2, // IDENTICAL TO
+                "\u226A": 2, // MUCH LESS-THAN
+                "\u226B": 2, // MUCH GREATER-THAN
+                "\u22EF": 1, // MIDLINE HORIZONTAL ELLIPSIS
+
+                // Miscellaneous symbols
+                "\u2690": 1, // WHITE FLAG
+                "\u2691": 1, // BLACK FLAG
+                "\u26A0": 1, // WARNING SIGN
+                "\u2709": 1, // ENVELOPE
+                "\u270E": 1, // LOWER RIGHT PENCIL
+                "✔": 1,     // HEAVY CHECK MARK
+                "\u274F": 1, // LOWER RIGHT DROP-SHADOWED WHITE SQUARE
+                "\u2750": 1, // UPPER RIGHT DROP-SHADOWED WHITE SQUARE
+
+                // Brackets and delimiters
+                "\u2770": 1, // HEAVY LEFT-POINTING ANGLE BRACKET ORNAMENT
+                "\u2771": 1, // HEAVY RIGHT-POINTING ANGLE BRACKET ORNAMENT
+
+                // Additional arrows and symbols
+                "\u27A4": 1, // BLACK RIGHTWARDS ARROWHEAD
+                "\u27F7": 1, // LONG LEFT RIGHT ARROW
+                "\u2937": 1, // RIGHT-SIDE ARC CLOCKWISE ARROW
             };
 
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const [char, expectedWidth] of Object.entries(unicodeChars)) {
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 expect(getWidth(char), `${char} should have a width of ${expectedWidth}`).toBe(expectedWidth);
             }
         });
@@ -213,12 +233,12 @@ describe("string Width", () => {
             expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 1 })).toBe("\u0000\u0001\u0002\u0003");
             expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 0 })).toBe("\u0000\u0001\u0002\u0003");
 
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 10 , controlWidth: 1 })).toBe("\u0000\u0001\u0002\u0003");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 4 , controlWidth: 1 })).toBe("\u0000\u0001\u0002\u0003");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 3 , controlWidth: 1 })).toBe("\u0000…");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 2 , controlWidth: 1 })).toBe("…");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 1 , controlWidth: 1 })).toBe("");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 0 , controlWidth: 1 })).toBe("");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 10 })).toBe("\u0000\u0001\u0002\u0003");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 4 })).toBe("\u0000\u0001\u0002\u0003");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 3 })).toBe("\u0000…");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 2 })).toBe("…");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 1 })).toBe("");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 0 })).toBe("");
         });
 
         it("supports CJK characters", () => {
