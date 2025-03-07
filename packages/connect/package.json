@@ -1,6 +1,6 @@
 {
     "name": "@visulima/connect",
-    "version": "3.0.18",
+    "version": "3.0.19",
     "description": "The minimal router and middleware layer for Next.js, Micro, Vercel, or Node.js http/http2 with support for zod validation.",
     "keywords": [
         "javascript",
