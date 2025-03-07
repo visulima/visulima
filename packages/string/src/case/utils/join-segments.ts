@@ -7,7 +7,7 @@ import { FAST_ANSI_REGEX } from "./regex";
  * @param options - Join options
  * @returns Joined string with proper handling of ANSI and emoji sequences
  */
-export const joinSegments = <T extends string = string>(segments: string[], joiner: string): T => {
+const joinSegments = <T extends string = string>(segments: string[], joiner: string): T => {
     const { length } = segments;
 
     if (length === 0) {
@@ -23,6 +23,7 @@ export const joinSegments = <T extends string = string>(segments: string[], join
     let ansiStart = "";
     let currentContent = "";
 
+    // eslint-disable-next-line no-loops/no-loops,no-plusplus
     for (let index = 0; index < length; index++) {
         const segment = segments[index] as string;
 
@@ -41,6 +42,7 @@ export const joinSegments = <T extends string = string>(segments: string[], join
                 ansiStart = segment;
             }
 
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -62,3 +64,5 @@ export const joinSegments = <T extends string = string>(segments: string[], join
 
     return result.join("") as T;
 };
+
+export default joinSegments;

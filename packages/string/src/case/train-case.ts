@@ -2,7 +2,7 @@ import { splitByCase } from "./split-by-case";
 import type { CaseOptions, TrainCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
-import { joinSegments } from "./utils/join-segments";
+import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 
 // Cache for frequently used train case conversions
