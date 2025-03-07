@@ -1,3 +1,18 @@
+## @visulima/cerebro [1.1.40](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.39...@visulima/cerebro@1.1.40) (2025-03-07)
+
+### Bug Fixes
+
+* updated @visulima/packem and other dev deps, for better bundling size ([e940581](https://github.com/visulima/visulima/commit/e9405812201594e54dd81d17ddb74177df5f3c24))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.30
+* **@visulima/colorize:** upgraded to 1.4.21
+* **@visulima/find-cache-dir:** upgraded to 1.0.28
+* **@visulima/pail:** upgraded to 2.1.22
+* **@visulima/path:** upgraded to 1.3.5
+
 ## @visulima/cerebro [1.1.39](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.38...@visulima/cerebro@1.1.39) (2025-03-03)
 
 ### Bug Fixes
