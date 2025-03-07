@@ -127,35 +127,6 @@ pnpm add @visulima/string
 
 ## Quick Examples
 
-```typescript
-import {
-    splitByCase,
-    camelCase,
-    pascalCase,
-    snakeCase,
-    kebabCase,
-    titleCase,
-    pathCase,
-    dotCase,
-    constantCase,
-    sentenceCase
-} from '@visulima/string';
-
-// Split complex strings
-splitByCase('XMLHttpRequest');  // ['XML', 'Http', 'Request']
-splitByCase('日本語Text', { locale: 'ja' });  // ['日本語', 'Text']
-
-// Case conversions
-camelCase('hello_world');       // 'helloWorld'
-pascalCase('hello_world');      // 'HelloWorld'
-snakeCase('helloWorld');        // 'hello_world'
-kebabCase('helloWorld');        // 'hello-bar'
-titleCase('hello-world');       // 'Hello World'
-pathCase('hello.world');        // 'hello/world'
-dotCase('hello_world');         // 'hello.world'
-constantCase('helloWorld');     // 'HELLO_WORLD'
-sentenceCase('helloWorld');     // 'Hello world'
-```
 
 ## Usage
 
