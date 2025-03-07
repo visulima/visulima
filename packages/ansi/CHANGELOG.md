@@ -1,3 +1,19 @@
+## @visulima/ansi [1.0.18](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.17...@visulima/ansi@1.0.18) (2025-03-07)
+
+### Bug Fixes
+
+* updated @visulima/packem and other dev deps, for better bundling size ([e940581](https://github.com/visulima/visulima/commit/e9405812201594e54dd81d17ddb74177df5f3c24))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([487a976](https://github.com/visulima/visulima/commit/487a976932dc7c39edfc19ffd3968960ff338066))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.21
+* **@visulima/path:** upgraded to 1.3.5
+
 ## @visulima/ansi [1.0.17](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.16...@visulima/ansi@1.0.17) (2025-01-25)
 
 ### Bug Fixes
