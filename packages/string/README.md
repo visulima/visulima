@@ -43,6 +43,11 @@
   - Split by script boundaries (日本語Text → ["日本語", "Text"])
   - Split by separators (foo-bar → ["foo", "bar"])
   - Preserve known acronyms (XMLHttpRequest → ["XML", "Http", "Request"])
+- **Text Indentation**:
+  - `outdent`: Remove leading indentation while preserving relative indentation
+  - Handles template literals and string inputs
+  - Normalizes newlines across platforms
+  - Configurable trimming behavior
 
 ### Multi-Script Support
 - **CJK Scripts**:
@@ -79,8 +84,12 @@
 ### Performance Features
 - **Optimized Processing**:
   - Precompiled regex patterns
-  - Fast paths for common cases
+  - Efficient string manipulation
+- **Caching Mechanisms**:
   - Smart caching for repeated operations
+  - WeakMap-based caching for template literals
+  - Configurable cache options
+  - Fast paths for common cases
 - **Memory Efficiency**:
   - Minimal string allocations
   - Efficient string splitting
@@ -149,6 +158,64 @@ sentenceCase('helloWorld');     // 'Hello world'
 ```
 
 ## Usage
+
+### Outdent (Remove Indentation)
+
+The `outdent` function removes leading indentation from multi-line strings while preserving the relative indentation structure.
+
+```typescript
+import { outdent } from '@visulima/string';
+
+// Basic usage with template literals
+const text = outdent`
+    This text will have its indentation removed
+    while preserving relative indentation.
+        This line will still be indented relative to the others.
+`;
+
+// Output:
+// This text will have its indentation removed
+// while preserving relative indentation.
+//     This line will still be indented relative to the others.
+
+// With string input
+const result = outdent.string('
+    Hello
+    World
+');
+// Output: "Hello\nWorld"
+
+// With custom options
+const customOutdent = outdent({
+  trimLeadingNewline: false,  // Keep the leading newline
+  trimTrailingNewline: false, // Keep the trailing newline
+  newline: '\r\n',           // Normalize all newlines to CRLF
+  cache: true                 // Enable caching (default)
+});
+
+// Using with interpolation
+const name = 'World';
+const greeting = outdent`
+    Hello ${name}!
+    Welcome to outdent.
+`;
+```
+
+#### Performance Optimization with Caching
+
+The `outdent` function supports caching to improve performance when the same template is used multiple times:
+
+```typescript
+// Default behavior - caching enabled
+const dedent = outdent();
+
+// Disable caching if memory usage is a concern
+const noCacheDedent = outdent({ cache: false });
+
+// Use a custom cache store (advanced usage)
+const customCache = new WeakMap();
+const customCacheDedent = outdent({ cacheStore: customCache });
+```
 
 ### String Splitting
 

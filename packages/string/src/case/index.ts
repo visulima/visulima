@@ -24,3 +24,4 @@ export type { SplitOptions } from "./split-by-case";
 export { default as titleCase } from "./title-case";
 export { default as trainCase } from "./train-case";
 export { default as upperFirst } from "./upper-first";
+export { default as joinSegments } from "./utils/join-segments";
