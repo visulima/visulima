@@ -3790,9 +3790,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
-      emoji-regex:
-        specifier: 10.4.0
-        version: 10.4.0
+      emoji-regex-xs:
+        specifier: ^1.0.0
+        version: 1.0.0
       esbuild:
         specifier: ^0.25.0
         version: 0.25.0
