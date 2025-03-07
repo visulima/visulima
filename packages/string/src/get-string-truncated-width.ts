@@ -6,7 +6,8 @@ import { eastAsianWidthType } from "get-east-asian-width";
 const REGEX = {
     // eslint-disable-next-line no-control-regex,regexp/no-control-character
     ANSI: /[\u001B\u009B](?:[[()#;?]*(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|]8;;.*?\u0007)/y,
-    ANSI_LINK_END: /\u001B]8;;\u0007/y,
+    // eslint-disable-next-line no-control-regex,regexp/no-control-character
+    ANSI_LINK_END: /\u001B\]8;;\u0007/y,
     // eslint-disable-next-line no-control-regex,regexp/no-control-character,regexp/no-obscure-range
     CONTROL: /[\u0000-\u0008\n-\u001F\u007F-\u009F]{1,1000}/y,
     EMOJI: emojiRegex(),
@@ -14,6 +15,7 @@ const REGEX = {
     MODIFIER: /\p{M}+/gu,
     TAB: /\t{1,1000}/y,
     // Zero-width characters and default ignorable code points
+    // eslint-disable-next-line no-misleading-character-class
     ZERO_WIDTH: /[\u200B\u200C\u200D\uFEFF\u2060-\u2064]/y,
 } as const;
 
