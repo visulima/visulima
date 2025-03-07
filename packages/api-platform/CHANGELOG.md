@@ -1,3 +1,18 @@
+## @visulima/api-platform [3.0.40](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.39...@visulima/api-platform@3.0.40) (2025-03-07)
+
+### Bug Fixes
+
+* **api-platform:** updated @visulima/packem and other dev deps, for better bundling size and schema-dts to v1.1.5 ([ae1c843](https://github.com/visulima/visulima/commit/ae1c843808a0fea82d6f99ef936ec12dc5b255c1))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.19
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.77
+* **@visulima/path:** upgraded to 1.3.5
+* **@visulima/crud:** upgraded to 2.0.37
+* **@visulima/fs:** upgraded to 3.1.2
+
 ## @visulima/api-platform [3.0.39](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.38...@visulima/api-platform@3.0.39) (2025-03-03)
 
 
