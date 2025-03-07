@@ -50,7 +50,7 @@ const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key
     // eslint-disable-next-line no-param-reassign
     keys = [...keys, ...layer.keys];
 
-    if (layer.name === "router" && layer.handle && layer.handle.stack !== undefined) {
+    if (layer.name === "router" && layer.handle?.stack !== undefined) {
         for (const l of layer.handle.stack) {
             // eslint-disable-next-line no-param-reassign
             path = path || "";
