@@ -151,7 +151,9 @@ describe("flatCase", () => {
         it("should handle ANSI sequences with handleAnsi=true", () => {
             expect(flatCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mredtext\u001B[0m");
             expect(flatCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mboldtext\u001B[0m");
-            expect(flatCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe("\u001B[32mgreenfoo\u001B[0m\u001B[34mbluebar\u001B[0m");
+            expect(flatCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
+                "\u001B[32mgreenfoo\u001B[0m\u001B[34mbluebar\u001B[0m",
+            );
             expect(flatCase("\u001B[31mRed\u001B[0m_\u001B[32mGreen\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mred\u001B[0m\u001B[32mgreen\u001B[0m");
             expect(flatCase("\u001B[1mBold\u001B[0m-\u001B[31mRed\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mbold\u001B[0m\u001B[31mred\u001B[0m");
         });
