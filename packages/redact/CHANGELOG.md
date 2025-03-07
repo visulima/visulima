@@ -1,3 +1,14 @@
+## @visulima/redact [1.0.14](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.13...@visulima/redact@1.0.14) (2025-03-07)
+
+### Bug Fixes
+
+* updated @visulima/packem and other dev deps, for better bundling size ([e940581](https://github.com/visulima/visulima/commit/e9405812201594e54dd81d17ddb74177df5f3c24))
+
+### Miscellaneous Chores
+
+* fixed issue with pnpm audit, changed browser path ([67337cb](https://github.com/visulima/visulima/commit/67337cb0395442540e7701c4dc8a4fef8a3fe1a2))
+* updated dev dependencies ([487a976](https://github.com/visulima/visulima/commit/487a976932dc7c39edfc19ffd3968960ff338066))
+
 ## @visulima/redact [1.0.13](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.12...@visulima/redact@1.0.13) (2025-01-25)
 
 ### Bug Fixes
