@@ -1,3 +1,14 @@
+## @visulima/jsdoc-open-api [2.0.77](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.76...@visulima/jsdoc-open-api@2.0.77) (2025-03-07)
+
+### Bug Fixes
+
+* updated @visulima/packem and other dev deps, for better bundling size ([e940581](https://github.com/visulima/visulima/commit/e9405812201594e54dd81d17ddb74177df5f3c24))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 3.1.2
+
 ## @visulima/jsdoc-open-api [2.0.76](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.75...@visulima/jsdoc-open-api@2.0.76) (2025-03-03)
 
 ### Miscellaneous Chores
