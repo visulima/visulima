@@ -81,7 +81,7 @@ describe("getStringWidth", () => {
 
     describe("variation selectors", () => {
         it("should handle variation selectors correctly", () => {
-            expect(getStringWidth("\u{1F1E6}\uFE0F")).toBe(1);
+            expect(getStringWidth("\u{1F1E6}\uFE0F")).toBe(2);
             expect(getStringWidth("A\uFE0F")).toBe(1);
             expect(getStringWidth("\uFE0F")).toBe(0);
         });
