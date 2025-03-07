@@ -118,7 +118,7 @@ removed
     it("should respect trimming options", () => {
         const result = outdent({
             trimLeadingNewline: false,
-            trimTrailingNewline: false
+            trimTrailingNewline: false,
         })`
             Test
         `;
