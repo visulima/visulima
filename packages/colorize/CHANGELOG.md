@@ -1,3 +1,21 @@
+## @visulima/colorize [1.4.21](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.20...@visulima/colorize@1.4.21) (2025-03-07)
+
+### Bug Fixes
+
+* updated @visulima/packem and other dev deps, for better bundling size ([e940581](https://github.com/visulima/visulima/commit/e9405812201594e54dd81d17ddb74177df5f3c24))
+
+### Miscellaneous Chores
+
+* **colorize:** add type assertions for better type safety ([2ad0425](https://github.com/visulima/visulima/commit/2ad0425b1e4bcb7e1a86458159be4f452b100ff9))
+* fixed issue with pnpm audit, changed browser path ([67337cb](https://github.com/visulima/visulima/commit/67337cb0395442540e7701c4dc8a4fef8a3fe1a2))
+* updated dev dependencies ([487a976](https://github.com/visulima/visulima/commit/487a976932dc7c39edfc19ffd3968960ff338066))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.2.13
+* **@visulima/path:** upgraded to 1.3.5
+
 ## @visulima/colorize [1.4.20](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.19...@visulima/colorize@1.4.20) (2025-01-25)
 
 ### Bug Fixes
