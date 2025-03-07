@@ -1,3 +1,19 @@
+## @visulima/inspector [1.0.21](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.20...@visulima/inspector@1.0.21) (2025-03-07)
+
+### Bug Fixes
+
+* updated @visulima/packem and other dev deps, for better bundling size ([e940581](https://github.com/visulima/visulima/commit/e9405812201594e54dd81d17ddb74177df5f3c24))
+
+### Miscellaneous Chores
+
+* **inspector:** added a test for single entry map ([7d8caaa](https://github.com/visulima/visulima/commit/7d8caaa21ad2a6fc35c217c2a39f7f13e64048c9))
+* updated dev dependencies ([487a976](https://github.com/visulima/visulima/commit/487a976932dc7c39edfc19ffd3968960ff338066))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.21
+
 ## @visulima/inspector [1.0.20](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.19...@visulima/inspector@1.0.20) (2025-01-25)
 
 ### Bug Fixes
