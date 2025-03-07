@@ -1,3 +1,9 @@
+## @visulima/prisma-dmmf-transformer [2.0.28](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.27...@visulima/prisma-dmmf-transformer@2.0.28) (2025-03-07)
+
+### Bug Fixes
+
+* updated @visulima/packem and other dev deps, for better bundling size ([e940581](https://github.com/visulima/visulima/commit/e9405812201594e54dd81d17ddb74177df5f3c24))
+
 ## @visulima/prisma-dmmf-transformer [2.0.27](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.26...@visulima/prisma-dmmf-transformer@2.0.27) (2025-02-28)
 
 ### Bug Fixes
