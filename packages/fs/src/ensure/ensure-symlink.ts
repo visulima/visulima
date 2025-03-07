@@ -6,11 +6,11 @@ import { toPath } from "@visulima/path/utils";
 
 import { AlreadyExistsError } from "../error";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+// eslint-disable-next-line unicorn/prevent-abbreviations
+import ensureDir from "./ensure-dir";
 import { getFileInfoType } from "./utils/get-file-info-type";
 import isStatsIdentical from "./utils/is-stats-identical";
 import resolveSymlinkTarget from "./utils/resolve-symlink-target";
-// eslint-disable-next-line unicorn/prevent-abbreviations
-import ensureDir from "./ensure-dir";
 
 const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 

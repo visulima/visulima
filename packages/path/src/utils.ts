@@ -150,7 +150,7 @@ export const reverseResolveAlias = (path: string, aliases: Record<string, string
  * @param {string} path - The path to check.
  * @returns {boolean} `true` if the path is relative, otherwise `false`.
  */
-export const isRelative = (path: string): boolean => /^(?:\.?\.[/\\]|\.\.\B)/i.test(path) || path === "..";
+export const isRelative = (path: string): boolean => /^(?:\.?\.[/\\]|\.\.\B)/.test(path) || path === "..";
 
 /**
  * Determines whether a given path is a binary file.

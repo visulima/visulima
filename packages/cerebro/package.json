@@ -123,14 +123,14 @@
         "@eslint-types/jsdoc": "^48.2.2",
         "@eslint-types/typescript-eslint": "^7.5.0",
         "@eslint-types/unicorn": "^52.0.0",
-        "@rushstack/eslint-plugin-security": "^0.8.3",
+        "@rushstack/eslint-plugin-security": "^0.9.0",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.19.71",
         "@visulima/nextra-theme-docs": "4.0.26",
-        "@visulima/packem": "1.18.5",
+        "@visulima/packem": "1.19.1",
         "@visulima/path": "1.3.4",
-        "@vitest/coverage-v8": "^3.0.7",
+        "@vitest/coverage-v8": "^3.0.8",
         "camelcase": "8.0.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
@@ -141,11 +141,11 @@
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
-        "prettier": "^3.5.2",
+        "prettier": "^3.5.3",
         "rimraf": "6.0.1",
         "semantic-release": "24.2.3",
         "typescript": "5.8.2",
-        "vitest": "^3.0.7"
+        "vitest": "^3.0.8"
     },
     "engines": {
         "node": ">=18.0.0 <=23.x"

@@ -23,7 +23,7 @@ const PAD = " ";
 const NONE = "none";
 
 const getObject = (detail: Partial<Spacer> | number | undefined): Spacer =>
-    typeof detail === "number"
+    (typeof detail === "number"
         ? {
               bottom: detail,
               left: detail * 3,
@@ -36,7 +36,7 @@ const getObject = (detail: Partial<Spacer> | number | undefined): Spacer =>
               right: 0,
               top: 0,
               ...detail,
-          };
+          });
 
 const getBorderWidth = (borderStyle: BorderStyle | string) => (borderStyle === NONE ? 0 : 2);
 
@@ -243,7 +243,7 @@ const makeContentText = (
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const boxContent = (content: string, contentWidth: number, columnsWidth: number, options: DimensionOptions): string => {
     const colorizeBorder = (border: string, position: BorderPosition, length: number): string =>
-        options.borderColor ? options.borderColor(border, position, length) : border;
+        (options.borderColor ? options.borderColor(border, position, length) : border);
     const colorizeHeaderText = (title: string): string => (options.headerTextColor ? options.headerTextColor(title) : title);
     const colorizeFooterText = (title: string): string => (options.footerTextColor ? options.footerTextColor(title) : title);
     const colorizeContent = (value: string): string => (options.textColor ? options.textColor(value) : value);

@@ -15,9 +15,10 @@
 
 import type path from "node:path";
 
-import normalizeWindowsPath from "./normalize-windows-path";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import zeptomatch from "zeptomatch";
+
+import normalizeWindowsPath from "./normalize-windows-path";
 
 const UNC_REGEX = /^[/\\]{2}/;
 const IS_ABSOLUTE_RE = /^[/\\](?![/\\])|^[/\\]{2}(?!\.)|^[A-Z]:[/\\]/i;
