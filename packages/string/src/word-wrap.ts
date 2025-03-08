@@ -8,6 +8,34 @@ const ANSI_CSI = "[";
 const ANSI_SGR_TERMINATOR = "m";
 const ANSI_ESCAPE_LINK = `]8;;`;
 
+const ESCAPE_CODES = new Map([
+    [0, 0],
+    [1, 22],
+    [2, 22],
+    [3, 23],
+    [4, 24],
+    [7, 27],
+    [8, 28],
+    [9, 29],
+    [30, 39],
+    [31, 39],
+    [32, 39],
+    [33, 39],
+    [34, 39],
+    [35, 39],
+    [36, 39],
+    [37, 39],
+    [40, 49],
+    [41, 49],
+    [42, 49],
+    [43, 49],
+    [44, 49],
+    [45, 49],
+    [46, 49],
+    [47, 49],
+    [90, 39],
+]);
+
 /**
  * Wraps an ANSI code in the escape sequence
  * @param code The ANSI code to wrap
@@ -45,23 +73,20 @@ const wrapWord = (rows: string[], word: string, columns: number): void => {
     let visible = getStringWidth(stripAnsi(rows.at(-1) ?? ""));
 
     for (const [index, character] of characters.entries()) {
-        const characterLength = getStringWidth(character);
-
-        if (visible + characterLength <= columns) {
-            rows[rows.length - 1] += character;
-        } else {
-            rows.push(character);
-            visible = 0;
-        }
-
+        // First check if we're inside or starting an escape sequence
         if (ESCAPES.has(character)) {
             isInsideEscape = true;
+            rows[rows.length - 1] += character;
 
             const ansiEscapeLinkCandidate = characters.slice(index + 1, index + 1 + ANSI_ESCAPE_LINK.length).join("");
             isInsideLinkEscape = ansiEscapeLinkCandidate === ANSI_ESCAPE_LINK;
+            continue;
         }
 
+        // Continue processing escape sequence
         if (isInsideEscape) {
+            rows[rows.length - 1] += character;
+
             if (isInsideLinkEscape) {
                 if (character === ANSI_ESCAPE_BELL) {
                     isInsideEscape = false;
@@ -74,10 +99,26 @@ const wrapWord = (rows: string[], word: string, columns: number): void => {
             continue;
         }
 
-        if (characterLength > 0) {
-            visible += characterLength;
+        // For normal characters, check if we need to wrap
+        const characterLength = getStringWidth(character);
+
+        // If it's a zero-width character, add it to current row without increasing visible count
+        if (characterLength === 0) {
+            rows[rows.length - 1] += character;
+            continue;
         }
 
+        // If it fits on the current row, add it
+        if (visible + characterLength <= columns) {
+            rows[rows.length - 1] += character;
+            visible += characterLength;
+        } else {
+            // Otherwise start a new row
+            rows.push(character);
+            visible = characterLength;
+        }
+
+        // If we've exactly filled a line and have more characters coming, start a new line
         if (visible === columns && index < characters.length - 1) {
             rows.push("");
             visible = 0;
@@ -199,9 +240,10 @@ const exec = (string: string, options: WordWrapOptions): string => {
         returnValue += character;
 
         if (ESCAPES.has(character)) {
-            const { groups } = new RegExp(`(?:\${ANSI_CSI}(?<code>\d+)m|\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`).exec(
+            const { groups } = new RegExp(`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`).exec(
                 preString.slice(preStringIndex),
             ) || { groups: {} };
+
             if (groups?.code !== undefined) {
                 const code = Number.parseFloat(groups.code);
                 escapeCode = code === END_CODE ? undefined : code;
@@ -210,16 +252,18 @@ const exec = (string: string, options: WordWrapOptions): string => {
             }
         }
 
+        const code = ESCAPE_CODES.get(Number(escapeCode));
+
         if (pre[index + 1] === "\n") {
             if (escapeUrl) {
                 returnValue += wrapAnsiHyperlink("");
             }
 
-            if (escapeCode) {
-                returnValue += wrapAnsiCode(escapeCode);
+            if (escapeCode && code) {
+                returnValue += wrapAnsiCode(code);
             }
         } else if (character === "\n") {
-            if (escapeCode) {
+            if (escapeCode && code) {
                 returnValue += wrapAnsiCode(escapeCode);
             }
 
@@ -234,10 +278,6 @@ const exec = (string: string, options: WordWrapOptions): string => {
     return returnValue;
 };
 
-
-/**
- * Options for the wrapAnsi function
- */
 export interface WordWrapOptions {
     /**
      * Hard wrap the string
@@ -260,7 +300,6 @@ export interface WordWrapOptions {
      */
     wordWrap?: boolean;
 }
-
 
 /**
  * Word wraps a string with ANSI escape codes
