@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { red, green } from "@visulima/colorize";
+import { stripAnsi, FAST_ANSI_REGEX } from "../src/case/utils/regex";
 import { wordWrap } from "../src/word-wrap";
 
-// Test fixtures
-const redText = "\u001B[31m";
-const greenText = "\u001B[32m";
-const resetText = "\u001B[39m";
-
-const fixture = `The quick brown ${redText}fox jumped over ${resetText}the lazy ${greenText}dog and then ran away with the unicorn.${resetText}`;
+// Test fixtures using @visulima/colorize
+const fixture = `The quick brown ${red("fox jumped over")} the lazy ${green("dog and then ran away with the unicorn.")}`;
 const fixture2 = "12345678\n901234567890";
 const fixture3 = "12345678\n901234567890 12345";
 const fixture4 = "12345678\n";
@@ -19,7 +17,7 @@ describe("wordWrap", () => {
         const result = wordWrap(fixture, { width: 20 });
 
         expect(result).toBe(
-            `The quick brown ${redText}fox${resetText}\n${redText}jumped over ${resetText}the lazy\n${greenText}dog and then ran${resetText}\n${greenText}away with the${resetText}\n${greenText}unicorn.${resetText}`,
+            `The quick brown ${red("fox")}\n${red("jumped over")} the lazy\n${green("dog and then ran")}\n${green("away with the")}\n${green("unicorn.")}`,
         );
         expect(result.split("\n").every((line) => stripAnsi(line).length <= 20)).toBe(true);
     });
@@ -28,7 +26,7 @@ describe("wordWrap", () => {
         const result = wordWrap(fixture, { width: 30 });
 
         expect(result).toBe(
-            `The quick brown ${redText}fox jumped${resetText}\n${redText}over ${resetText}the lazy ${greenText}dog and then ran${resetText}\n${greenText}away with the unicorn.${resetText}`,
+            `The quick brown ${red("fox jumped")}\n${red("over")} the lazy ${green("dog and then ran")}\n${green("away with the unicorn.")}`,
         );
         expect(result.split("\n").every((line) => stripAnsi(line).length <= 30)).toBe(true);
     });
@@ -38,7 +36,7 @@ describe("wordWrap", () => {
         const result = wordWrap(fixture, { width: 5, hard: false });
 
         expect(result).toBe(
-            `The\nquick\nbrown\n${redText}fox${resetText}\n${redText}jumped${resetText}\n${redText}over${resetText}\n${redText}${resetText}the\nlazy\n${greenText}dog${resetText}\n${greenText}and${resetText}\n${greenText}then${resetText}\n${greenText}ran${resetText}\n${greenText}away${resetText}\n${greenText}with${resetText}\n${greenText}the${resetText}\n${greenText}unicorn.${resetText}`,
+            `The\nquick\nbrown\n${red("fox")}\n${red("jumped")}\n${red("over")}\nthe\nlazy\n${green("dog")}\n${green("and")}\n${green("then")}\n${green("ran")}\n${green("away")}\n${green("with")}\n${green("the")}\n${green("unicorn.")}`,
         );
         expect(result.split("\n").some((line) => stripAnsi(line).length > 5)).toBe(true);
     });
@@ -47,14 +45,14 @@ describe("wordWrap", () => {
         const result = wordWrap(fixture, { width: 5, hard: true });
 
         expect(result).toBe(
-            `The\nquick\nbrown\n${redText}fox j${resetText}\n${redText}umped${resetText}\n${redText}over${resetText}\n${redText}${resetText}the\nlazy\n${greenText}dog${resetText}\n${greenText}and${resetText}\n${greenText}then${resetText}\n${greenText}ran${resetText}\n${greenText}away${resetText}\n${greenText}with${resetText}\n${greenText}the${resetText}\n${greenText}unico${resetText}\n${greenText}rn.${resetText}`,
+            `The\nquick\nbrown\n${red("fox j")}\n${red("umped")}\n${red("over")}\nthe\nlazy\n${green("dog")}\n${green("and")}\n${green("then")}\n${green("ran")}\n${green("away")}\n${green("with")}\n${green("the")}\n${green("unico")}\n${green("rn.")}`,
         );
         expect(result.split("\n").every((line) => stripAnsi(line).length <= 5)).toBe(true);
     });
 
     // ANSI handling tests
     it("should handle colored string that wraps onto multiple lines", () => {
-        const result = wordWrap(`${greenText}hello world${resetText} hey!`, { width: 5, hard: false });
+        const result = wordWrap(`${green("hello world")} hey!`, { width: 5, hard: false });
         const lines = result.split("\n");
 
         expect(hasAnsi(lines[0])).toBe(true);
@@ -63,7 +61,7 @@ describe("wordWrap", () => {
     });
 
     it("should not prepend newline if first string is greater than width", () => {
-        const result = wordWrap(`${greenText}hello${resetText}-world`, { width: 5, hard: false });
+        const result = wordWrap(`${green("hello")}-world`, { width: 5, hard: false });
         expect(result.split("\n").length).toBe(1);
     });
 
@@ -90,11 +88,28 @@ describe("wordWrap", () => {
     // Unicode and special character handling
     it("should support fullwidth characters", () => {
         expect(wordWrap("안녕하세", { width: 4, hard: true })).toBe("안녕\n하세");
+        expect(wordWrap("古池や蛙飛び込む水の音", { width: 8, hard: true })).toBe("古池や蛙\n飛び込む\n水の音");
     });
 
     it("should support unicode surrogate pairs", () => {
         expect(wordWrap("a\uD83C\uDE00bc", { width: 2, hard: true })).toBe("a\n\uD83C\uDE00\nbc");
         expect(wordWrap("a\uD83C\uDE00bc\uD83C\uDE00d\uD83C\uDE00", { width: 2, hard: true })).toBe("a\n\uD83C\uDE00\nbc\n\uD83C\uDE00\nd\n\uD83C\uDE00");
+    });
+
+    it("should handle emoji sequences correctly", () => {
+        expect(wordWrap("👨‍👩‍👧‍👦 family", { width: 4 })).toBe("👨‍👩\n👨‍👩\nfami\nly");
+        expect(wordWrap("👩🏽 person", { width: 4 })).toBe("👩🏽\npers\non");
+        expect(wordWrap("🏴‍☠️ flag", { width: 4 })).toBe("🏴‍☠️\nflag");
+    });
+
+    it("should handle combining characters", () => {
+        expect(wordWrap("e\u0301 acute", { width: 4 })).toBe("e\u0301\nacut\ne");
+        expect(wordWrap("o\u0308 umlaut", { width: 4 })).toBe("o\u0308\numla\nut");
+    });
+
+    it("should handle zero-width characters", () => {
+        expect(wordWrap("a\u200Bb\u200Bc", { width: 2, hard: true })).toBe("ab\nc");
+        expect(wordWrap("\u200B\u200Ba\u200Bb", { width: 2 })).toBe("ab");
     });
 
     // Whitespace handling
@@ -150,16 +165,7 @@ describe("wordWrap", () => {
     });
 });
 
-// Helper functions for testing
-function stripAnsi(str: string): string {
-    // eslint-disable-next-line no-control-regex,regexp/no-control-character
-    return str.replace(
-        /[\u001B\u009B][[]()#;?]*(?:(?:(?:[a-zA-Z\d]*(?:;[-a-zA-Z\d/#&.:=?%@~_]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~]))/g,
-        "",
-    );
-}
-
+// Helper function for testing
 function hasAnsi(str: string): boolean {
-    // eslint-disable-next-line no-control-regex,regexp/no-control-character
-    return /[\u001B\u009B][[]()#;?]*(?:(?:(?:[a-zA-Z\d]*(?:;[-a-zA-Z\d/#&.:=?%@~_]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~]))/.test(str);
+    return FAST_ANSI_REGEX.test(str);
 }
