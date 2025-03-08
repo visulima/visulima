@@ -117,4 +117,38 @@ describe("getStringWidth", () => {
             expect(getStringWidth("x\u2064x")).toBe(2);
         });
     });
+
+    describe("complex emoji sequences", () => {
+        it("should handle complex emoji sequences correctly", () => {
+            expect(getStringWidth("👩‍👩‍👦‍👦🏻")).toBe(2);
+            expect(getStringWidth("👨‍👩‍👧‍👦")).toBe(2);
+            expect(getStringWidth("🤝🏻👫")).toBe(4);
+            expect(getStringWidth("🚀👽")).toBe(4);
+        });
+    });
+
+    describe("combining character sequences", () => {
+        it("should handle combining character sequences correctly", () => {
+            expect(getStringWidth("x\u0300\u0301")).toBe(1);
+            expect(getStringWidth("e\u0301\u0302e")).toBe(2);
+            expect(getStringWidth("x\u036F\u036F")).toBe(1);
+            expect(getStringWidth("\u0300\u0301\u0302")).toBe(0);
+        });
+    });
+
+    describe("ANSI escape code sequences", () => {
+        it("should handle ANSI escape code sequences correctly", () => {
+            expect(getStringWidth("\u001B[31m\u001B[39m\u001B[40m")).toBe(0);
+            expect(getStringWidth("\u001B[31m\u001B[39m\u001B[40m", { countAnsiEscapeCodes: true })).toBe(15);
+            expect(getStringWidth("\u001B]8;;https://github.com\u0007Click\u001B]8;;\u0007\u001B[31m")).toBe(5);
+        });
+    });
+
+    describe("hyperlinks", () => {
+        it("should handle hyperlinks correctly", () => {
+            expect(getStringWidth("\u001B]8;;https://github.com\u0007Click\u001B]8;;\u0007")).toBe(5);
+            expect(getStringWidth("\u001B]8;;https://github.com\u0007Click\u001B]8;;\u0007\u001B[31m")).toBe(5);
+            expect(getStringWidth("\u001B]8;;https://github.com\u0007Click\u001B]8;;\u0007\u001B[31m\u001B[39m")).toBe(5);
+        });
+    });
 });
