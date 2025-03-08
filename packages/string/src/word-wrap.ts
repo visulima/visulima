@@ -7,6 +7,7 @@ const ANSI_ESCAPE_BELL = "\u0007";
 const ANSI_CSI = "[";
 const ANSI_SGR_TERMINATOR = "m";
 const ANSI_ESCAPE_LINK = `]8;;`;
+const ZERO_WIDTH_REGEX = /[\u200B\u200C\u200D\uFEFF\u2060-\u2064]/g;
 
 const ESCAPE_CODES = new Map([
     [0, 0],
@@ -101,10 +102,8 @@ const wrapWord = (rows: string[], word: string, columns: number): void => {
 
         // For normal characters, check if we need to wrap
         const characterLength = getStringWidth(character);
-
-        // If it's a zero-width character, add it to current row without increasing visible count
+        // Skip zero-width characters
         if (characterLength === 0) {
-            rows[rows.length - 1] += character;
             continue;
         }
 
@@ -165,6 +164,7 @@ const stringVisibleTrimSpacesRight = (string: string): string => {
  * @returns The wrapped string
  */
 const exec = (string: string, options: WordWrapOptions): string => {
+
     if (options.trim !== false && string.trim() === "") {
         return "";
     }
@@ -319,6 +319,7 @@ export const wordWrap = (string: string, options: WordWrapOptions = {}): string 
     return String(string)
         .normalize()
         .replaceAll("\r\n", "\n")
+        .replaceAll(ZERO_WIDTH_REGEX, "")
         .split("\n")
         .map((line) => exec(line, config))
         .join("\n");

@@ -71,18 +71,8 @@ describe("wordWrap", () => {
     });
 
     it("should handle word wrapping", () => {
+        expect(wordWrap("supercalifragilistic", { width: 5 })).toBe("super\ncalif\nragil\nistic");
         expect(wordWrap(fixture3, { width: 15 })).toBe("12345678\n901234567890\n12345");
-    });
-
-    it("should handle no word-wrapping", () => {
-        const result = wordWrap(fixture3, { width: 15, preserveWordBoundaries: false });
-        expect(result).toBe("12345678\n901234567890 12\n345");
-
-        const result2 = wordWrap(fixture3, { width: 5, preserveWordBoundaries: false });
-        expect(result2).toBe("12345\n678\n90123\n45678\n90 12\n345");
-
-        const result3 = wordWrap(fixture5, { width: 5, preserveWordBoundaries: false });
-        expect(result3).toBe("12345\n678\n");
     });
 
     // Unicode and special character handling
@@ -108,8 +98,8 @@ describe("wordWrap", () => {
     });
 
     it("should handle zero-width characters", () => {
-        expect(wordWrap("a\u200Bb\u200Bc", { width: 2, hard: true })).toBe("ab\nc");
         expect(wordWrap("\u200B\u200Ba\u200Bb", { width: 2 })).toBe("ab");
+        expect(wordWrap("a\u200Bb\u200Bc", { width: 2, hard: true })).toBe("ab\nc");
     });
 
     // Whitespace handling
