@@ -4,6 +4,5 @@ export type { StringWidthOptions } from "./get-string-width";
 export { getStringWidth } from "./get-string-width";
 export type { Outdent, Options as OutdentOptions } from "./outdent";
 export { outdent } from "./outdent";
-export { default as getStringTruncatedWidth } from "./get-string-truncated-width";
-export { default as getStringWidth } from "./get-string-width";
-export type { StringWidthResult, StringWidthOptions } from "./types";
+export type { WordWrapOptions } from "./word-wrap";
+export { wordWrap } from "./word-wrap";
