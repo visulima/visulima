@@ -6,19 +6,19 @@ import { getStringWidth } from "./get-string-width";
  */
 export enum WrapMode {
     /**
-     * Preserves word boundaries, words are kept intact even if they exceed width
-     */
-    PRESERVE_WORDS = "preserve_words",
-
-    /**
      * Breaks words at character boundaries to fit the width
      */
     BREAK_AT_CHARACTERS = "break_at_characters",
 
     /**
+     * Preserves word boundaries, words are kept intact even if they exceed width
+     */
+    PRESERVE_WORDS = "preserve_words",
+
+    /**
      * Enforces strict adherence to the width limit by breaking at exact width
      */
-    STRICT_WIDTH = "strict_width"
+    STRICT_WIDTH = "strict_width",
 }
 
 // Constants
@@ -72,13 +72,10 @@ const COLOR_CODES = new Set(["31", "32", "33", "34", "35", "36"]);
  */
 export interface WordWrapOptions {
     /**
-     * Controls how text wrapping is handled at width boundaries.
-     * - PRESERVE_WORDS: Words are kept intact even if they exceed width (default)
-     * - BREAK_AT_CHARACTERS: Words are broken at character boundaries to fit width
-     * - STRICT_WIDTH: Forces breaking exactly at width limit, always
-     * @default WrapMode.PRESERVE_WORDS
+     * Whether to remove zero-width characters from the string.
+     * @default true
      */
-    wrapMode?: WrapMode;
+    removeZeroWidthCharacters?: boolean;
 
     /**
      * Whether to trim whitespace from wrapped lines.
@@ -93,17 +90,13 @@ export interface WordWrapOptions {
     width?: number;
 
     /**
-     * When false, long words never break even if they exceed width.
-     * Only affects PRESERVE_WORDS and BREAK_AT_CHARACTERS modes.
-     * @default true
+     * Controls how text wrapping is handled at width boundaries.
+     * - PRESERVE_WORDS: Words are kept intact even if they exceed width (default)
+     * - BREAK_AT_CHARACTERS: Words are broken at character boundaries to fit width
+     * - STRICT_WIDTH: Forces breaking exactly at width limit, always
+     * @default WrapMode.PRESERVE_WORDS
      */
-    wordWrap?: boolean;
-
-    /**
-     * Whether to remove zero-width characters from the string.
-     * @default true
-     */
-    removeZeroWidthCharacters?: boolean;
+    wrapMode?: WrapMode;
 }
 
 /**
@@ -291,7 +284,16 @@ class AnsiStateTracker {
  * @returns Array of wrapped lines
  */
 const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): string[] => {
-    const characters = [...string];
+    // Fast path for empty strings
+    if (string.length === 0) {
+        return [""];
+    }
+
+    // Fast path for width of 0 or less
+    if (width <= 0) {
+        return [string];
+    }
+
     const rows: string[] = [];
     let currentLine = "";
     let currentWidth = 0;
@@ -299,9 +301,10 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     let isInsideEscape = false;
     let isInsideLinkEscape = false;
     let escapeBuffer = "";
+    let currentLinkUrl = "";
 
-    for (let index = 0; index < characters.length; index++) {
-        const char = characters[index];
+    for (let index = 0; index < string.length; index++) {
+        const char = string[index];
 
         // Handle escape sequences
         if (ESCAPES.has(char)) {
@@ -309,7 +312,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             escapeBuffer = char;
             currentLine += char;
 
-            const escapeInfo = checkEscapeSequence(characters, index);
+            const escapeInfo = checkEscapeSequence([...string], index);
             isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
             continue;
         }
@@ -330,57 +333,125 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
         }
 
         const charWidth = getStringWidth(char);
+        const isSpace = char === ' ';
+
+        // Skip zero-width characters
         if (charWidth === 0) {
             currentLine += char;
             continue;
         }
 
-        // Check if we need to wrap
+        // If adding this character would exceed width, start a new line
         if (currentWidth + charWidth > width) {
             rows.push(currentLine);
+
+            // Start a new line with active ANSI codes and hyperlink if needed
             currentLine = ansiTracker.getActiveEscapes();
+
+            // Re-add hyperlink start if we're inside a link
+            if (currentLinkUrl) {
+                currentLine += `${ESCAPES.values().next().value}${ANSI_ESCAPE_LINK}${currentLinkUrl}${ANSI_ESCAPE_BELL}`;
+            }
+
             currentWidth = 0;
+
+            // Handle spaces at wrap points
+            if (isSpace && trim) {
+                    // Skip all spaces when trim=true
+                    while (index < string.length && string[index] === ' ') {
+                        index++;
+                    }
+                    index--; // Adjust for the loop increment
+                    continue;
+                }
         }
 
+        // Add character to current line
         currentLine += char;
         currentWidth += charWidth;
+
+        // If we've reached exactly the width limit, wrap
+        if (currentWidth === width && index < string.length - 1) {
+            rows.push(currentLine);
+
+            // Start a new line with active ANSI codes and hyperlink if needed
+            currentLine = ansiTracker.getActiveEscapes();
+
+            // Re-add hyperlink start if we're inside a link
+            if (currentLinkUrl) {
+                currentLine += `${ESCAPES.values().next().value}${ANSI_ESCAPE_LINK}${currentLinkUrl}${ANSI_ESCAPE_BELL}`;
+            }
+
+            currentWidth = 0;
+
+            // Handle spaces after a wrap at exact width
+            if (index + 1 < string.length && string[index + 1] === ' ' && trim) {
+                    // Skip all spaces when trim=true
+                    index++;
+                    while (index < string.length && string[index] === ' ') {
+                        index++;
+                    }
+                    index--; // Adjust for the loop increment
+                }
+        }
+
+        // Check if we're at the end of a hyperlink
+        if (currentLinkUrl && index + 5 < string.length &&
+            string.substring(index + 1, index + 5) === `${ESCAPES.values().next().value}]8;;` &&
+            string[index + 5] === ANSI_ESCAPE_BELL) {
+
+            // Add the link end sequence to the current line
+            currentLine += string.substring(index + 1, index + 6);
+            currentLinkUrl = ""; // Clear the current link URL
+            index += 5; // Skip the processed sequence
+        }
     }
 
-    // Add final line if not empty
+    // Add the final line if not empty
     if (currentLine) {
         rows.push(currentLine);
     }
 
-    // Apply trim if needed
-    return trim ? rows.map((row) => stringVisibleTrimSpacesRight(row)) : rows;
-};
+    // Apply trim on the right side of each line if needed
+    return trim ? rows.map(stringVisibleTrimSpacesRight) : rows;
+}
 
 /**
  * Wraps text character by character (word boundaries ignored)
+ * with proper handling of spaces when trim=false
  * @param string - The string to wrap
  * @param width - Maximum width
- * @param wordWrap - Whether word wrapping is enabled
  * @param trim - Whether to trim whitespace
  * @returns Array of wrapped lines
  */
-const wrapCharByChar = (string: string, width: number, wordWrap: boolean, trim: boolean): string[] => {
+const wrapCharByChar = (string: string, width: number, trim: boolean): string[] => {
+    // Handle empty string
+    if (string.length === 0) {
+        return [];
+    }
+
+    // Trim the input if needed
+    const inputToProcess = trim ? string.trim() : string;
+    if (inputToProcess.length === 0) {
+        return [];
+    }
+
+    const rows: string[] = [];
     let currentLine = "";
     let currentWidth = 0;
-    const rows: string[] = [];
-    const characters = [...string];
     const ansiTracker = new AnsiStateTracker();
     let isInsideEscape = false;
     let isInsideLinkEscape = false;
     let escapeBuffer = "";
 
-    for (const [index, character] of characters.entries()) {
+    for (const [index, character] of [...inputToProcess].entries()) {
         // Handle escape sequences
         if (ESCAPES.has(character)) {
             isInsideEscape = true;
             escapeBuffer = character;
             currentLine += character;
 
-            const escapeInfo = checkEscapeSequence(characters, index);
+            const escapeInfo = checkEscapeSequence([...inputToProcess], index);
             isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
             continue;
         }
@@ -401,18 +472,34 @@ const wrapCharByChar = (string: string, width: number, wordWrap: boolean, trim: 
         }
 
         const charWidth = getStringWidth(character);
+        const isSpace = character === ' ';
+
+        // Skip zero-width characters
         if (charWidth === 0) {
             currentLine += character;
             continue;
         }
 
         // Check if we need to wrap
-        if (currentWidth + charWidth > width && wordWrap) {
+        if (currentWidth + charWidth > width) {
             rows.push(currentLine);
             currentLine = ansiTracker.getActiveEscapes();
             currentWidth = 0;
+
+            // Special handling for spaces at wrap points
+            if (isSpace) {
+                if (trim) {
+                    // Skip spaces when trim=true
+                    continue;
+                } else {
+                    // For trim=false, space gets its own line
+                    rows.push(ansiTracker.getActiveEscapes() + character);
+                    continue;
+                }
+            }
         }
 
+        // Add character to current line
         currentLine += character;
         currentWidth += charWidth;
     }
@@ -423,116 +510,92 @@ const wrapCharByChar = (string: string, width: number, wordWrap: boolean, trim: 
     }
 
     return trim ? rows.map((row) => stringVisibleTrimSpacesRight(row)) : rows;
-};
+}
 
 /**
- * Wraps text respecting word boundaries
+ * Wraps text respecting word boundaries with proper ANSI escape sequence handling
  * @param string - The string to wrap
  * @param width - Maximum width
- * @param wordWrap - Whether word wrapping is enabled
  * @param trim - Whether to trim whitespace
- * @param breakAtWidth - Whether to break words at width limit
  * @returns Array of wrapped lines
  */
 const wrapWithWordBoundaries = (
     string: string,
     width: number,
-    wordWrap: boolean,
-    trim: boolean
+    trim: boolean,
 ): string[] => {
-    const lengths = wordLengths(string);
-    const rows: string[] = [""];
-    const words = string.split(" ");
-    const ansiTracker = new AnsiStateTracker();
+    // Quick return for empty string
+    if (string.length === 0) {
+        return [];
+    }
 
-    // Pre-process words to extract and track ANSI sequences
-    const processedWords = words.map((word) => {
-        const result = word;
-        const characters = [...word];
+    // Trim the input if needed
+    const inputToProcess = trim ? string.trim() : string;
+    if (inputToProcess.length === 0) {
+        return [];
+    }
 
-        let isInsideEscape = false;
-        let isInsideLinkEscape = false;
-        let escapeBuffer = "";
+    // Split by space but preserve ANSI escape sequences
+    // This is crucial for the test case with "\u001B[1D" between words
+    const tokens = inputToProcess.split(/(?=\s)|(?<=\s)/);
+    const rows: string[] = [];
 
-        for (const [index, char] of characters.entries()) {
-            if (ESCAPES.has(char)) {
-                isInsideEscape = true;
-                escapeBuffer = char;
-                const escapeInfo = checkEscapeSequence(characters, index);
-                isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
-                continue;
-            }
+    let currentLine = "";
+    let currentWidth = 0;
+    let index = 0;
 
-            if (isInsideEscape) {
-                escapeBuffer += char;
-                if (isInsideLinkEscape) {
-                    if (char === ANSI_ESCAPE_BELL) {
-                        isInsideEscape = isInsideLinkEscape = false;
-                    }
-                } else if (char === ANSI_SGR_TERMINATOR) {
-                    isInsideEscape = false;
-                    ansiTracker.processEscape(escapeBuffer);
-                }
-            }
-        }
+    // Process each token (word or space)
+    while (index < tokens.length) {
+        const token = tokens[index];
+        const isSpace = /^\s+$/.test(token);
+        const tokenVisibleWidth = getStringWidth(stripAnsi(token));
 
-        return result;
-    });
-
-    for (const [index, word] of processedWords.entries()) {
-        if (trim) {
-            rows[rows.length - 1] = rows.at(-1)?.trimStart() ?? "";
-        }
-
-        let rowLength = getStringWidth(rows.at(-1) ?? "");
-
-        if (index !== 0) {
-            if (rowLength >= width && (!wordWrap || !trim)) {
-                rows.push(ansiTracker.getActiveEscapes());
-                rowLength = 0;
-            }
-
-            if (rowLength > 0 || !trim) {
-                rows[rows.length - 1] += " ";
-                rowLength++;
-            }
-        }
-
-        // Handle word that's too long for the line
-        if (rowLength + lengths[index] > width && rowLength > 0) {
-            // If wordWrap is false, keep the word intact
-            if (!wordWrap) {
-                if (rowLength === 0) {
-                    rows[rows.length - 1] += word;
-                } else {
-                    rows.push(ansiTracker.getActiveEscapes() + word);
-                }
-                continue;
-            }
-
-            // Start a new line with active escapes
-            rows.push(ansiTracker.getActiveEscapes());
-            rowLength = 0;
-        }
-
-        // Handle long word at start of line
-        if (rowLength === 0 && lengths[index] > width) {
-            // If wordWrap is false, keep the word intact
-            if (!wordWrap) {
-                rows[rows.length - 1] = word;
-                continue;
-            }
-            // Word wrapping enabled - handle by breaking the word
-            wrapWord(rows, word, width);
+        // Skip empty tokens
+        if (token.length === 0) {
+            index++;
             continue;
         }
 
-        // Normal case - add word to current line
-        rows[rows.length - 1] += word;
+        // Skip leading spaces if trim is true and we're at line start
+        if (trim && isSpace && currentWidth === 0) {
+            index++;
+            continue;
+        }
+
+        // Check if adding this token would exceed width
+        if (currentWidth + tokenVisibleWidth > width && currentWidth > 0) {
+            // Complete current line
+            if (trim) {
+                rows.push(stringVisibleTrimSpacesRight(currentLine));
+            } else {
+                rows.push(currentLine);
+            }
+
+            // Reset for new line
+            currentLine = "";
+            currentWidth = 0;
+
+            // Don't increment i - process this token again for the new line
+            continue;
+        }
+
+        // Add token to current line
+        currentLine += token;
+        currentWidth += tokenVisibleWidth;
+        index++;
     }
 
-    return trim ? rows.map((row) => stringVisibleTrimSpacesRight(row)) : rows;
-};
+    // Add final line if not empty
+    if (currentLine) {
+        if (trim) {
+            rows.push(stringVisibleTrimSpacesRight(currentLine));
+        } else {
+            rows.push(currentLine);
+        }
+    }
+
+    return rows;
+}
 
 /**
  * Preserves ANSI escape codes when joining wrapped lines
@@ -607,7 +670,7 @@ const preserveAnsi = (rawLines: string[]): string => {
  */
 export const wordWrap = (string: string, options: WordWrapOptions = {}): string => {
     // Apply defaults - using destructuring for cleaner code
-    const { trim = true, width = 80, wordWrap = true, wrapMode = WrapMode.PRESERVE_WORDS, removeZeroWidthCharacters = true } = options;
+    const { removeZeroWidthCharacters = true, trim = true, width = 80, wrapMode = WrapMode.PRESERVE_WORDS } = options;
 
     // Quick return for empty string
     if (trim && string.trim() === "") {
@@ -629,15 +692,12 @@ export const wordWrap = (string: string, options: WordWrapOptions = {}): string 
 
         let wrappedLines: string[];
 
-        // Choose wrapping strategy based on wrapMode
         if (wrapMode === WrapMode.STRICT_WIDTH) {
             wrappedLines = wrapWithBreakAtWidth(line, width, trim);
-        } else if (wrapMode === WrapMode.BREAK_AT_CHARACTERS && wordWrap) {
-            wrappedLines = wrapCharByChar(line, width, wordWrap, trim);
+        } else if (wrapMode === WrapMode.BREAK_AT_CHARACTERS) {
+            wrappedLines = wrapCharByChar(line, width, trim);
         } else {
-            // In PRESERVE_WORDS mode, we pass wordWrap=false to ensure long words are never broken
-            // This ensures that words exceeding width are kept intact
-            wrappedLines = wrapWithWordBoundaries(line, width, false, trim);
+            wrappedLines = wrapWithWordBoundaries(line, width, trim);
         }
 
         return preserveAnsi(wrappedLines);
