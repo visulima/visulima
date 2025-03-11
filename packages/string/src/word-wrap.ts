@@ -42,10 +42,8 @@ const ESCAPE_CODES = Object.freeze(
 );
 
 // RegExp patterns compiled once for better performance
-// eslint-disable-next-line regexp/no-control-character,regexp/no-useless-non-capturing-group,@rushstack/security/no-unsafe-regexp
+// eslint-disable-next-line regexp/no-control-character,regexp/no-useless-non-capturing-group
 const ESCAPE_PATTERN = new RegExp(`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`);
-// eslint-disable-next-line no-control-regex,regexp/no-control-character
-const COLOR_CODE_PATTERN = /\u001B\[\d+m/;
 
 /**
  * Wraps an ANSI code in the escape sequence
@@ -121,19 +119,107 @@ const checkEscapeSequence = (
 /**
  * Tracks ANSI color state to ensure proper color continuation across line breaks
  */
+/**
+ * Improved AnsiStateTracker class for better handling of color state
+ */
 class AnsiStateTracker {
-    private activeEscapes: string[] = [];
+    // Track foreground color
+    private activeForeground: string | null = null;
+
+    // Track background color
+    private activeBackground: string | null = null;
+
+    // Track other formatting (bold, italic, etc.)
+    private activeFormatting: string[] = [];
 
     /**
      * Processes an escape sequence and updates the internal state
      * @param sequence - The escape sequence to process
      */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public processEscape(sequence: string): void {
-        if (sequence.includes("[39m")) {
-            // Reset color state
-            this.activeEscapes = [];
-        } else if (COLOR_CODE_PATTERN.test(sequence)) {
-            this.activeEscapes.push(sequence);
+        // Extract the numeric code from the sequence
+        // eslint-disable-next-line no-control-regex,regexp/no-control-character
+        const match = /\u001B\[(\d+)m/.exec(sequence);
+
+        if (!match) {
+            return;
+        }
+
+        const code = Number.parseInt(match[1] as string, 10);
+
+        // Handle different ANSI code ranges
+        switch (code) {
+            case 0: {
+                // Reset all states
+                this.activeForeground = null;
+                this.activeBackground = null;
+                this.activeFormatting = [];
+
+                break;
+            }
+            case 39: {
+                // Reset foreground color only
+                this.activeForeground = null;
+
+                break;
+            }
+            case 49: {
+                // Reset background color only
+                this.activeBackground = null;
+
+                break;
+            }
+            default: {
+                if ((code >= 30 && code <= 37) || (code >= 90 && code <= 97)) {
+                    // Foreground colors
+                    this.activeForeground = sequence;
+                } else if ((code >= 40 && code <= 47) || (code >= 100 && code <= 107)) {
+                    // Background colors
+                    this.activeBackground = sequence;
+                } else if ([1, 2, 3, 4, 7, 8, 9].includes(code)) {
+                    // Text formatting
+                    this.activeFormatting.push(sequence);
+                } else if ([22, 23, 24, 27, 28, 29].includes(code)) {
+                    // Reset specific formatting based on code
+                    // eslint-disable-next-line sonarjs/no-nested-switch
+                    switch (code) {
+                        case 22: {
+                            // Reset bold and faint
+                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[1m") && !fmt.includes("[2m"));
+                            break;
+                        }
+                        case 23: {
+                            // Reset italic
+                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[3m"));
+                            break;
+                        }
+                        case 24: {
+                            // Reset underline
+                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[4m"));
+                            break;
+                        }
+                        case 27: {
+                            // Reset inverse/reverse
+                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[7m"));
+                            break;
+                        }
+                        case 28: {
+                            // Reset hidden/invisible
+                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[8m"));
+                            break;
+                        }
+                        case 29: {
+                            // Reset strikethrough
+                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[9m"));
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -142,12 +228,28 @@ class AnsiStateTracker {
      * @returns String with all active escapes
      */
     public getActiveEscapes(): string {
-        return this.activeEscapes.join("");
+        const escapes = [];
+
+        // Add background if present
+        if (this.activeBackground) {
+            escapes.push(this.activeBackground);
+        }
+
+        // Add foreground if present
+        if (this.activeForeground) {
+            escapes.push(this.activeForeground);
+        }
+
+        // Add all active formatting
+        this.activeFormatting.forEach((format) => escapes.push(format));
+
+        return escapes.join("");
     }
 }
 
 /**
  * Wraps text based on the breakAtWidth option using precise character-level control
+ * with proper ANSI sequence handling
  * @param string - The string to wrap
  * @param width - Maximum width
  * @param trim - Whether to trim whitespace
@@ -172,11 +274,9 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     let isInsideEscape = false;
     let isInsideLinkEscape = false;
     let escapeBuffer = "";
-    let currentLinkUrl = "";
 
-    // eslint-disable-next-line no-plusplus,no-loops/no-loops
+    // For each character in the input string
     for (let index = 0; index < string.length; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         const char = string[index] as string;
 
         // Handle escape sequences
@@ -220,23 +320,31 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
         // If adding this character would exceed width, start a new line
         if (currentWidth + charWidth > width) {
-            rows.push(currentLine);
+            // Close any active ANSI sequences before line break
+            if (currentLine.includes("\u001B")) {
+                // Get all active escape codes
+                const fgReset = "\u001B[39m";
+                const bgReset = "\u001B[49m";
 
-            // Start a new line with active ANSI codes and hyperlink if needed
-            currentLine = ansiTracker.getActiveEscapes();
-
-            // Re-add hyperlink start if we're inside a link
-            if (currentLinkUrl) {
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                currentLine += `${ESCAPES.values().next().value}${ANSI_ESCAPE_LINK}${currentLinkUrl}${ANSI_ESCAPE_BELL}`;
+                // Add reset codes in reverse order of how they were applied
+                if (currentLine.includes("\u001B[30m")) {
+                    currentLine += fgReset;
+                }
+                if (currentLine.includes("\u001B[42m")) {
+                    currentLine += bgReset;
+                }
             }
 
+            rows.push(currentLine);
+
+            // Start a new line with active ANSI codes
+            currentLine = ansiTracker.getActiveEscapes();
             currentWidth = 0;
 
             // Handle spaces at wrap points
             if (isSpace && trim) {
                 // Skip all spaces when trim=true
-                // eslint-disable-next-line no-loops/no-loops,security/detect-object-injection
+                // eslint-disable-next-line no-loops/no-loops
                 while (index < string.length && string[index] === " ") {
                     // eslint-disable-next-line no-plusplus
                     index++;
@@ -254,24 +362,32 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
         // If we've reached exactly the width limit, wrap
         if (currentWidth === width && index < string.length - 1) {
-            rows.push(currentLine);
+            // Close any active ANSI sequences before line break
+            if (currentLine.includes("\u001B")) {
+                // Get all active escape codes
+                const fgReset = "\u001B[39m";
+                const bgReset = "\u001B[49m";
 
-            // Start a new line with active ANSI codes and hyperlink if needed
-            currentLine = ansiTracker.getActiveEscapes();
-
-            // Re-add hyperlink start if we're inside a link
-            if (currentLinkUrl) {
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                currentLine += `${ESCAPES.values().next().value}${ANSI_ESCAPE_LINK}${currentLinkUrl}${ANSI_ESCAPE_BELL}`;
+                // Add reset codes in reverse order of how they were applied
+                if (currentLine.includes("\u001B[30m")) {
+                    currentLine += fgReset;
+                }
+                if (currentLine.includes("\u001B[42m")) {
+                    currentLine += bgReset;
+                }
             }
 
+            rows.push(currentLine);
+
+            // Start a new line with active ANSI codes
+            currentLine = ansiTracker.getActiveEscapes();
             currentWidth = 0;
 
             // Handle spaces after a wrap at exact width
             if (index + 1 < string.length && string[index + 1] === " " && trim) {
                 // eslint-disable-next-line no-plusplus
                 index++;
-                // eslint-disable-next-line no-loops/no-loops,security/detect-object-injection
+                // eslint-disable-next-line no-loops/no-loops
                 while (index < string.length && string[index] === " ") {
                     // eslint-disable-next-line no-plusplus
                     index++;
@@ -279,20 +395,6 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
                 // eslint-disable-next-line no-plusplus
                 index--; // Adjust for the loop increment
             }
-        }
-
-        // Check if we're at the end of a hyperlink
-        if (
-            currentLinkUrl &&
-            index + 5 < string.length &&
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            string.substring(index + 1, index + 5) === `${ESCAPES.values().next().value}]8;;` &&
-            string[index + 5] === ANSI_ESCAPE_BELL
-        ) {
-            // Add the link end sequence to the current line
-            currentLine += string.substring(index + 1, index + 6);
-            currentLinkUrl = ""; // Clear the current link URL
-            index += 5; // Skip the processed sequence
         }
     }
 
@@ -326,10 +428,11 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
         return [];
     }
 
+    const ansiTracker = new AnsiStateTracker();
     const rows: string[] = [];
+
     let currentLine = "";
     let currentWidth = 0;
-    const ansiTracker = new AnsiStateTracker();
     let isInsideEscape = false;
     let isInsideLinkEscape = false;
     let escapeBuffer = "";
@@ -377,6 +480,21 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
         // Check if we need to wrap
         if (currentWidth + charWidth > width) {
+            // Close any active ANSI sequences before line break
+            if (currentLine.includes("\u001B")) {
+                // Get all active escape codes
+                const fgReset = "\u001B[39m";
+                const bgReset = "\u001B[49m";
+
+                // Add reset codes in reverse order of how they were applied
+                if (currentLine.includes("\u001B[30m")) {
+                    currentLine += fgReset;
+                }
+                if (currentLine.includes("\u001B[42m")) {
+                    currentLine += bgReset;
+                }
+            }
+
             rows.push(currentLine);
             currentLine = ansiTracker.getActiveEscapes();
             currentWidth = 0;
@@ -441,7 +559,6 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
     // Process each token (word or space)
     // eslint-disable-next-line no-loops/no-loops
     while (index < tokens.length) {
-        // eslint-disable-next-line security/detect-object-injection
         const token = tokens[index] as string;
         const isSpace = /^\s+$/.test(token);
         const tokenVisibleWidth = getStringWidth(token);
@@ -582,9 +699,11 @@ export const WrapMode = {
      * Enforces strict adherence to the width limit by breaking at exact width
      */
     STRICT_WIDTH: "STRICT_WIDTH",
-};
+} as const;
 
-// eslint-disable-next-line import/no-unused-modules
+/**
+ * Word wrap options interface with detailed documentation
+ */
 export interface WordWrapOptions {
     /**
      * Whether to remove zero-width characters from the string.
