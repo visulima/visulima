@@ -8,6 +8,10 @@ import { FAST_ANSI_REGEX } from "./utils/regex";
 import { toLowerCase } from "./utils/to-lower-case";
 import { toUpperCase } from "./utils/to-upper-case";
 
+// Cache for frequently used kebab case conversions
+const kebabCache = new Map<string, string>();
+const DEFAULT_CACHE_MAX_SIZE = 1000;
+
 export interface KebabCaseOptions extends CaseOptions {
     /**
      * The string to use as a joiner between words.
@@ -22,6 +26,7 @@ export interface KebabCaseOptions extends CaseOptions {
     toUpperCase?: boolean;
 }
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to kebab-case.
  * @example
@@ -34,10 +39,7 @@ export interface KebabCaseOptions extends CaseOptions {
  * kebabCase("QueryXML123String") // => "query-xml-123-string"
  * ```
  */
-// Cache for frequently used kebab case conversions
-const kebabCache = new Map<string, string>();
-const DEFAULT_CACHE_MAX_SIZE = 1000;
-
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const kebabCase = <T extends string = string>(value?: T, options?: KebabCaseOptions): KebabCase<T> => {
     if (typeof value !== "string") {
         return "" as KebabCase<T>;

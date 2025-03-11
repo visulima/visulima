@@ -4,6 +4,7 @@ import type { CaseOptions, NoCase } from "./types";
 // Cache for frequently used no case conversions
 const noCache = new Map<string, string>();
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to no case (space separated words).
  * @example
