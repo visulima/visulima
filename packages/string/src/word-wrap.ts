@@ -91,6 +91,28 @@ const stringVisibleTrimSpacesRight = (string: string): string => {
 };
 
 /**
+ * Helper function to reset ANSI sequences at line breaks
+ * @param currentLine - Current line of text
+ * @returns Line with reset codes if needed
+ */
+const resetAnsiAtLineBreak = (currentLine: string): string => {
+    if (!currentLine.includes("\u001B")) {
+        return currentLine;
+    }
+
+    let result = currentLine;
+    // Add reset codes in reverse order of how they were applied
+    if (currentLine.includes("\u001B[30m")) {
+        result += "\u001B[39m"; // foreground reset
+    }
+    if (currentLine.includes("\u001B[42m")) {
+        result += "\u001B[49m"; // background reset
+    }
+
+    return result;
+};
+
+/**
  * An optimized function to check if a character is inside an ANSI escape sequence
  * @param chars - Array of characters
  * @param index - Current index
@@ -118,9 +140,6 @@ const checkEscapeSequence = (
 
 /**
  * Tracks ANSI color state to ensure proper color continuation across line breaks
- */
-/**
- * Improved AnsiStateTracker class for better handling of color state
  */
 class AnsiStateTracker {
     // Track foreground color
@@ -155,19 +174,16 @@ class AnsiStateTracker {
                 this.activeForeground = null;
                 this.activeBackground = null;
                 this.activeFormatting = [];
-
                 break;
             }
             case 39: {
                 // Reset foreground color only
                 this.activeForeground = null;
-
                 break;
             }
             case 49: {
                 // Reset background color only
                 this.activeBackground = null;
-
                 break;
             }
             default: {
@@ -181,42 +197,20 @@ class AnsiStateTracker {
                     // Text formatting
                     this.activeFormatting.push(sequence);
                 } else if ([22, 23, 24, 27, 28, 29].includes(code)) {
-                    // Reset specific formatting based on code
-                    // eslint-disable-next-line sonarjs/no-nested-switch
-                    switch (code) {
-                        case 22: {
-                            // Reset bold and faint
-                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[1m") && !fmt.includes("[2m"));
-                            break;
-                        }
-                        case 23: {
-                            // Reset italic
-                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[3m"));
-                            break;
-                        }
-                        case 24: {
-                            // Reset underline
-                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[4m"));
-                            break;
-                        }
-                        case 27: {
-                            // Reset inverse/reverse
-                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[7m"));
-                            break;
-                        }
-                        case 28: {
-                            // Reset hidden/invisible
-                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[8m"));
-                            break;
-                        }
-                        case 29: {
-                            // Reset strikethrough
-                            this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes("[9m"));
-                            break;
-                        }
-                        default: {
-                            break;
-                        }
+                    // Create a mapping to avoid nested switch
+                    const formatResetMap: Record<number, string> = {
+                        22: "[1m", // Reset bold
+                        23: "[3m", // Reset italic
+                        24: "[4m", // Reset underline
+                        27: "[7m", // Reset inverse
+                        28: "[8m", // Reset hidden
+                        29: "[9m", // Reset strikethrough
+                    };
+
+                    // eslint-disable-next-line security/detect-object-injection
+                    const formatToRemove = formatResetMap[code];
+                    if (formatToRemove) {
+                        this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes(formatToRemove));
                     }
                 }
             }
@@ -228,22 +222,8 @@ class AnsiStateTracker {
      * @returns String with all active escapes
      */
     public getActiveEscapes(): string {
-        const escapes = [];
-
-        // Add background if present
-        if (this.activeBackground) {
-            escapes.push(this.activeBackground);
-        }
-
-        // Add foreground if present
-        if (this.activeForeground) {
-            escapes.push(this.activeForeground);
-        }
-
-        // Add all active formatting
-        this.activeFormatting.forEach((format) => escapes.push(format));
-
-        return escapes.join("");
+        // First add background, then foreground, then all formatting
+        return [this.activeBackground, this.activeForeground, ...this.activeFormatting].filter(Boolean).join("");
     }
 }
 
@@ -276,6 +256,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     let escapeBuffer = "";
 
     // For each character in the input string
+    // eslint-disable-next-line no-plusplus,no-loops/no-loops
     for (let index = 0; index < string.length; index++) {
         const char = string[index] as string;
 
@@ -320,22 +301,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
         // If adding this character would exceed width, start a new line
         if (currentWidth + charWidth > width) {
-            // Close any active ANSI sequences before line break
-            if (currentLine.includes("\u001B")) {
-                // Get all active escape codes
-                const fgReset = "\u001B[39m";
-                const bgReset = "\u001B[49m";
-
-                // Add reset codes in reverse order of how they were applied
-                if (currentLine.includes("\u001B[30m")) {
-                    currentLine += fgReset;
-                }
-                if (currentLine.includes("\u001B[42m")) {
-                    currentLine += bgReset;
-                }
-            }
-
-            rows.push(currentLine);
+            rows.push(resetAnsiAtLineBreak(currentLine));
 
             // Start a new line with active ANSI codes
             currentLine = ansiTracker.getActiveEscapes();
@@ -344,7 +310,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             // Handle spaces at wrap points
             if (isSpace && trim) {
                 // Skip all spaces when trim=true
-                // eslint-disable-next-line no-loops/no-loops
+                // eslint-disable-next-line no-loops/no-loops,security/detect-object-injection
                 while (index < string.length && string[index] === " ") {
                     // eslint-disable-next-line no-plusplus
                     index++;
@@ -362,22 +328,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
         // If we've reached exactly the width limit, wrap
         if (currentWidth === width && index < string.length - 1) {
-            // Close any active ANSI sequences before line break
-            if (currentLine.includes("\u001B")) {
-                // Get all active escape codes
-                const fgReset = "\u001B[39m";
-                const bgReset = "\u001B[49m";
-
-                // Add reset codes in reverse order of how they were applied
-                if (currentLine.includes("\u001B[30m")) {
-                    currentLine += fgReset;
-                }
-                if (currentLine.includes("\u001B[42m")) {
-                    currentLine += bgReset;
-                }
-            }
-
-            rows.push(currentLine);
+            rows.push(resetAnsiAtLineBreak(currentLine));
 
             // Start a new line with active ANSI codes
             currentLine = ansiTracker.getActiveEscapes();
@@ -559,6 +510,7 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
     // Process each token (word or space)
     // eslint-disable-next-line no-loops/no-loops
     while (index < tokens.length) {
+        // eslint-disable-next-line security/detect-object-injection
         const token = tokens[index] as string;
         const isSpace = /^\s+$/.test(token);
         const tokenVisibleWidth = getStringWidth(token);
@@ -755,7 +707,6 @@ export const wordWrap = (string: string, options: WordWrapOptions = {}): string 
         normalizedString = normalizedString.replaceAll(ZERO_WIDTH_REGEX, "");
     }
 
-    // Process each line individually
     const result = normalizedString.split("\n").map((line) => {
         if (trim && line.trim() === "") {
             return "";
@@ -763,12 +714,19 @@ export const wordWrap = (string: string, options: WordWrapOptions = {}): string 
 
         let wrappedLines: string[];
 
-        if (wrapMode === WrapMode.STRICT_WIDTH) {
-            wrappedLines = wrapWithBreakAtWidth(line, width, trim);
-        } else if (wrapMode === WrapMode.BREAK_AT_CHARACTERS) {
-            wrappedLines = wrapCharByChar(line, width, trim);
-        } else {
-            wrappedLines = wrapWithWordBoundaries(line, width, trim);
+        switch (wrapMode) {
+            case WrapMode.STRICT_WIDTH: {
+                wrappedLines = wrapWithBreakAtWidth(line, width, trim);
+                break;
+            }
+            case WrapMode.BREAK_AT_CHARACTERS: {
+                wrappedLines = wrapCharByChar(line, width, trim);
+                break;
+            }
+            default: {
+                // WrapMode.PRESERVE_WORDS
+                wrappedLines = wrapWithWordBoundaries(line, width, trim);
+            }
         }
 
         return preserveAnsi(wrappedLines);
