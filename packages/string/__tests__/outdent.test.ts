@@ -181,7 +181,12 @@ removed
     });
 
     it("should not get indentation from outdent when preceded by non-whitespace", () => {
-        const toString = "" + outdent;
+        const outdentAsString = "" + outdent;
+        // ... other test setup code
+
+        expect(result).toBe(`non-whitespace\n${outdentAsString}\nHello world!`);
+        expect(result2).toBe(`foo${outdentAsString}\n   Hello world!`);
+        expect(result3).toBe(`${outdentAsString}foo\nHello world!`);
 
         const result = outdent`non-whitespace
                   ${outdent}
