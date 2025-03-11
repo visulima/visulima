@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { splitByCase } from "../../../src/case/split-by-case";
+import { bgRed, red } from "@visulima/colorize";
 
 describe("splitByCase", () => {
     it("should handle empty string", () => {
@@ -685,6 +686,7 @@ describe("splitByCase", () => {
                 "BAR",
                 "\u001B[0m",
             ]);
+            expect(splitByCase(bgRed.green("RedText"), { handleAnsi: true })).toEqual(["\u001B[41m", "\u001B[32m", "Red", "Text", "\u001B[39m", "\u001B[49m"]);
         });
 
         it("should handle ANSI escape codes with numbers when handleAnsi is true", () => {
