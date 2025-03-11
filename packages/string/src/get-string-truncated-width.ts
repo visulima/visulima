@@ -5,7 +5,7 @@ import { eastAsianWidthType } from "get-east-asian-width";
 
 const REGEX = {
     // eslint-disable-next-line no-control-regex,regexp/no-control-character
-    ANSI: /[\u001B\u009B](?:[[()#;?]*(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|]8;;.*?\u0007)/y,
+    ANSI: /[\u001B\u009B](?:[[()#;?]*(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;.*?\u0007)/y,
     // eslint-disable-next-line no-control-regex,regexp/no-control-character
     ANSI_LINK_END: /\u001B\]8;;\u0007/y,
     // eslint-disable-next-line no-control-regex,regexp/no-control-character,regexp/no-obscure-range
@@ -226,10 +226,10 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
                 options.ellipsisWidth ??
                 (options.ellipsis
                     ? getStringTruncatedWidth(options.ellipsis, {
-                            ...options,
-                            ellipsis: "",
-                            ellipsisWidth: 0,
-                            limit: Number.POSITIVE_INFINITY,
+                          ...options,
+                          ellipsis: "",
+                          ellipsisWidth: 0,
+                          limit: Number.POSITIVE_INFINITY,
                       }).width
                     : 0),
             limit: options.limit ?? Number.POSITIVE_INFINITY,

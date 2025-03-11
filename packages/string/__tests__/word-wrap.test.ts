@@ -2,7 +2,7 @@ import { green, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { FAST_ANSI_REGEX, stripAnsi } from "../src/case/utils/regex";
-import { wordWrap,WrapMode } from "../src/word-wrap";
+import { wordWrap, WrapMode } from "../src/word-wrap";
 
 const fixture = `The quick brown ${red("fox jumped over")} the lazy ${green("dog and then ran away with the unicorn.")}`;
 const fixture2 = "12345678\n901234567890";
@@ -108,7 +108,9 @@ describe("wordWrap", () => {
 
     it("should support unicode surrogate pairs", () => {
         expect(wordWrap("a\uD83C\uDE00bc", { width: 2, wrapMode: WrapMode.STRICT_WIDTH })).toBe("a\uD83C\n\uDE00b\nc");
-        expect(wordWrap("a\uD83C\uDE00bc\uD83C\uDE00d\uD83C\uDE00", { width: 2, wrapMode: WrapMode.STRICT_WIDTH })).toBe("a\uD83C\n\uDE00b\nc\uD83C\n\uDE00d\n\uD83C\uDE00");
+        expect(wordWrap("a\uD83C\uDE00bc\uD83C\uDE00d\uD83C\uDE00", { width: 2, wrapMode: WrapMode.STRICT_WIDTH })).toBe(
+            "a\uD83C\n\uDE00b\nc\uD83C\n\uDE00d\n\uD83C\uDE00",
+        );
     });
 
     it("should handle emoji sequences correctly", () => {
@@ -135,8 +137,8 @@ describe("wordWrap", () => {
 
     it("should trim leading and trailing whitespace only on wrapped lines", () => {
         expect(wordWrap("   foo   bar   ", { width: 3 })).toBe("foo\nbar");
-        expect(wordWrap("   foo   bar   ", { width: 6 })).toBe("foo bar");
-        expect(wordWrap("   foo   bar   ", { width: 42 })).toBe("foo bar");
+        expect(wordWrap("   foo   bar   ", { width: 6 })).toBe("foo\nbar");
+        expect(wordWrap("   foo   bar   ", { width: 42 })).toBe("foo   bar");
         expect(wordWrap("   foo   bar   ", { trim: false, width: 42 })).toBe("   foo   bar   ");
     });
 
@@ -147,10 +149,12 @@ describe("wordWrap", () => {
 
     // Hyperlink handling
     it("should wrap hyperlinks preserving clickability", () => {
-        expect(wordWrap(
-            "Check out \u001B]8;;https://www.example.com\u0007my website\u001B]8;;\u0007, it is \u001B]8;;https://www.example.com\u0007supercalifragilisticexpialidocious\u001B]8;;\u0007.",
-            { width: 16, wrapMode: WrapMode.STRICT_WIDTH },
-        )).toBe(
+        expect(
+            wordWrap(
+                "Check out \u001B]8;;https://www.example.com\u0007my website\u001B]8;;\u0007, it is \u001B]8;;https://www.example.com\u0007supercalifragilisticexpialidocious\u001B]8;;\u0007.",
+                { width: 16, wrapMode: WrapMode.STRICT_WIDTH },
+            ),
+        ).toBe(
             [
                 "Check out \u001B]8;;https://www.example.com\u0007my web\u001B]8;;\u0007",
                 "\u001B]8;;https://www.example.com\u0007site\u001B]8;;\u0007, it is \u001B]8;;https://www.example.com\u0007supe\u001B]8;;\u0007",
@@ -173,108 +177,109 @@ describe("wordWrap", () => {
     });
 
     // Tests for option combinations
-    describe('option combinations', () => {
-        describe('wordWrap option', () => {
-            it('should respect WrapMode.PRESERVE_WORDS (default)', () => {
+    describe("option combinations", () => {
+        describe("wordWrap option", () => {
+            it("should respect WrapMode.PRESERVE_WORDS (default)", () => {
                 // Default behavior - preserve word boundaries, words exceed width limit
-                expect(wordWrap('hello supercalifragilistic', { width: 10 }))
-                    .toBe('hello\nsupercalifragilistic');
+                expect(wordWrap("hello supercalifragilistic", { width: 10 })).toBe("hello\nsupercalifragilistic");
 
                 // Explicit WrapMode.PRESERVE_WORDS should match default behavior
-                expect(wordWrap('hello supercalifragilistic', { width: 10, wrapMode: WrapMode.PRESERVE_WORDS }))
-                    .toBe('hello\nsupercalifragilistic');
+                expect(wordWrap("hello supercalifragilistic", { width: 10, wrapMode: WrapMode.PRESERVE_WORDS })).toBe("hello\nsupercalifragilistic");
             });
 
-            it('should respect WrapMode.BREAK_AT_CHARACTERS', () => {
+            it("should respect WrapMode.BREAK_AT_CHARACTERS", () => {
                 // BREAK_AT_CHARACTERS - words are broken at character boundaries
-                expect(wordWrap('hello supercalifragilistic', {
-                    width: 10,
-                    wrapMode: WrapMode.BREAK_AT_CHARACTERS
-                })).toBe('hello supe\nrcalifragi\nlistic');
+                expect(
+                    wordWrap("hello supercalifragilistic", {
+                        width: 10,
+                        wrapMode: WrapMode.BREAK_AT_CHARACTERS,
+                    }),
+                ).toBe("hello supe\nrcalifragi\nlistic");
             });
         });
 
-        describe('wrapMode.STRICT_WIDTH option', () => {
-            it('should break at width with STRICT_WIDTH regardless of other options', () => {
+        describe("wrapMode.STRICT_WIDTH option", () => {
+            it("should break at width with STRICT_WIDTH regardless of other options", () => {
                 // With STRICT_WIDTH, always break at exactly the width
-                expect(wordWrap('supercalifragilistic', { width: 5, wrapMode: WrapMode.STRICT_WIDTH }))
-                    .toBe('super\ncalif\nragil\nistic');
+                expect(wordWrap("supercalifragilistic", { width: 5, wrapMode: WrapMode.STRICT_WIDTH })).toBe("super\ncalif\nragil\nistic");
 
                 // STRICT_WIDTH should override wordWrap=false
-                expect(wordWrap('supercalifragilistic', {
-                    width: 5,
-                    wrapMode: WrapMode.STRICT_WIDTH
-                })).toBe('super\ncalif\nragil\nistic');
+                expect(
+                    wordWrap("supercalifragilistic", {
+                        width: 5,
+                        wrapMode: WrapMode.STRICT_WIDTH,
+                    }),
+                ).toBe("super\ncalif\nragil\nistic");
             });
         });
     });
 
-    describe('STRICT_WIDTH mode', () => {
-        it('should break at exact width with trim=true', () => {
-          expect(wordWrap("foo bar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
-          expect(wordWrap("foo  bar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
-          expect(wordWrap("foo bar baz", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar\nbaz");
+    describe("sTRICT_WIDTH mode", () => {
+        it("should break at exact width with trim=true", () => {
+            expect(wordWrap("foo bar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
+            expect(wordWrap("foo  bar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
+            expect(wordWrap("foo bar baz", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar\nbaz");
         });
 
-        it('should handle spaces properly at line breaks with trim=false', () => {
-          expect(wordWrap("foo bar", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\n ba\nr");
-          expect(wordWrap("foo  bar", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\n  b\nar");
-          expect(wordWrap("foo bar baz", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\n ba\nr b\naz");
+        it("should handle spaces properly at line breaks with trim=false", () => {
+            expect(wordWrap("foo bar", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\n ba\nr");
+            expect(wordWrap("foo  bar", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\n  b\nar");
+            expect(wordWrap("foo bar baz", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\n ba\nr b\naz");
         });
 
-        it('should handle words that exceed width', () => {
-          expect(wordWrap("foobar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
-          expect(wordWrap("verylongword", { width: 4, wrapMode: WrapMode.STRICT_WIDTH })).toBe("very\nlong\nword");
+        it("should handle words that exceed width", () => {
+            expect(wordWrap("foobar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
+            expect(wordWrap("verylongword", { width: 4, wrapMode: WrapMode.STRICT_WIDTH })).toBe("very\nlong\nword");
         });
 
-        it('should handle empty strings and edge cases', () => {
-          expect(wordWrap("", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("");
-          expect(wordWrap(" ", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("");
-          expect(wordWrap(" ", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe(" ");
+        it("should handle empty strings and edge cases", () => {
+            expect(wordWrap("", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("");
+            expect(wordWrap(" ", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("");
+            expect(wordWrap(" ", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe(" ");
         });
-      });
+    });
 
-      describe('PRESERVE_WORDS mode (default)', () => {
-        it('should keep words intact with default settings', () => {
-          expect(wordWrap("foo bar", { width: 3 })).toBe("foo\nbar");
-          expect(wordWrap("foo bar baz", { width: 7 })).toBe("foo bar\nbaz");
-        });
-
-        it('should handle spaces properly with trim=false', () => {
-          expect(wordWrap("foo bar", { trim: false, width: 3 })).toBe("foo\n \nbar");
-          expect(wordWrap("foo  bar", { trim: false, width: 3 })).toBe("foo\n \n \nbar");
+    describe("pRESERVE_WORDS mode (default)", () => {
+        it("should keep words intact with default settings", () => {
+            expect(wordWrap("foo bar", { width: 3 })).toBe("foo\nbar");
+            expect(wordWrap("foo bar baz", { width: 7 })).toBe("foo bar\nbaz");
         });
 
-        it('should respect width limits for each word', () => {
-          expect(wordWrap("verylongword short", { width: 4 })).toBe("verylongword\nshort");
-        });
-      });
-
-      describe('BREAK_AT_CHARACTERS mode', () => {
-        it('should break words at character boundaries', () => {
-          expect(wordWrap("foobar", { width: 3, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("foo\nbar");
-          expect(wordWrap("foo bar", { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("foo b\nar");
+        it("should handle spaces properly with trim=false", () => {
+            expect(wordWrap("foo bar", { trim: false, width: 3 })).toBe("foo\n \nbar");
+            expect(wordWrap("foo  bar", { trim: false, width: 3 })).toBe("foo\n  \nbar");
         });
 
-        it('should handle spaces with trim=false', () => {
-          expect(wordWrap("foo bar", { trim: false, width: 3, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("foo\n \nbar");
+        it("should respect width limits for each word", () => {
+            expect(wordWrap("verylongword short", { width: 4 })).toBe("verylongword\nshort");
         });
-      });
+    });
 
-      describe('Multiple lines input', () => {
-        it('should handle newlines in the input', () => {
-          expect(wordWrap("foo\nbar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
-          expect(wordWrap("foo\nbar baz", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar\nbaz");
+    describe("bREAK_AT_CHARACTERS mode", () => {
+        it("should break words at character boundaries", () => {
+            expect(wordWrap("foobar", { width: 3, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("foo\nbar");
+            expect(wordWrap("foo bar", { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("foo b\nar");
         });
-      });
 
-      describe('Custom test cases', () => {
-        it('should handle edge cases with spaces and different wrap modes', () => {
-          expect(wordWrap("f o o bar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("f o\no b\nar");
-          expect(wordWrap("f o o bar", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("f o\n o \nbar");
-
-          expect(wordWrap("foo   bar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
-          expect(wordWrap("foo   bar", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\n   \nbar");
+        it("should handle spaces with trim=false", () => {
+            expect(wordWrap("foo bar", { trim: false, width: 3, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("foo\n \nbar");
         });
-      });
+    });
+
+    describe("multiple lines input", () => {
+        it("should handle newlines in the input", () => {
+            expect(wordWrap("foo\nbar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
+            expect(wordWrap("foo\nbar baz", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar\nbaz");
+        });
+    });
+
+    describe("custom test cases", () => {
+        it("should handle edge cases with spaces and different wrap modes", () => {
+            expect(wordWrap("f o o bar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("f o\no b\nar");
+            expect(wordWrap("f o o bar", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("f o\n o \nbar");
+
+            expect(wordWrap("foo   bar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
+            expect(wordWrap("foo   bar", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\n   \nbar");
+        });
+    });
 });

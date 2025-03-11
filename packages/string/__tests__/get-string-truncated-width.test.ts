@@ -124,7 +124,7 @@ describe("string Width", () => {
                 "\u2013": 2, // EN DASH
                 "\u2014": 2, // EM DASH
                 "\u2022": 2, // BULLET
-                "…": 2,     // HORIZONTAL ELLIPSIS
+                "…": 2, // HORIZONTAL ELLIPSIS
 
                 // Arrows - Basic directional
                 "\u2190": 2, // LEFTWARDS ARROW
@@ -161,7 +161,7 @@ describe("string Width", () => {
                 "\u26A0": 1, // WARNING SIGN
                 "\u2709": 1, // ENVELOPE
                 "\u270E": 1, // LOWER RIGHT PENCIL
-                "✔": 1,     // HEAVY CHECK MARK
+                "✔": 1, // HEAVY CHECK MARK
                 "\u274F": 1, // LOWER RIGHT DROP-SHADOWED WHITE SQUARE
                 "\u2750": 1, // UPPER RIGHT DROP-SHADOWED WHITE SQUARE
 
@@ -233,12 +233,12 @@ describe("string Width", () => {
             expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 1 })).toBe("\u0000\u0001\u0002\u0003");
             expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 0 })).toBe("\u0000\u0001\u0002\u0003");
 
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 10 })).toBe("\u0000\u0001\u0002\u0003");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 4 })).toBe("\u0000\u0001\u0002\u0003");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 3 })).toBe("\u0000…");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 2 })).toBe("…");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 1 })).toBe("");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…" , limit: 0 })).toBe("");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 10 })).toBe("\u0000\u0001\u0002\u0003");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 4 })).toBe("\u0000\u0001\u0002\u0003");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 3 })).toBe("\u0000…");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 2 })).toBe("…");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 1 })).toBe("");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 0 })).toBe("");
         });
 
         it("supports CJK characters", () => {

@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
+
 import { outdent } from "../src";
 
 // Helper function to create template strings array
-function makeStrings(...strings: Array<string>): TemplateStringsArray {
+function makeStrings(...strings: string[]): TemplateStringsArray {
     (strings as any as { raw: ReadonlyArray<string> }).raw = strings;
     return strings as any as TemplateStringsArray;
 }
@@ -214,13 +215,13 @@ removed
     });
 
     it("should handle complex interpolations", () => {
-        const obj = { toString: () => "Object" };
-        const num = 42;
+        const object = { toString: () => "Object" };
+        const number_ = 42;
         const result = outdent`
             Values:
             String: ${"text"}
-            Number: ${num}
-            Object: ${obj}
+            Number: ${number_}
+            Object: ${object}
         `;
         expect(result).toBe("Values:\nString: text\nNumber: 42\nObject: Object");
     });
