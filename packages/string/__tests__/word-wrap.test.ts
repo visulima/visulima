@@ -1,4 +1,4 @@
-import { green, red } from "@visulima/colorize";
+import { bgGreen, green, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { FAST_ANSI_REGEX, stripAnsi } from "../src/case/utils/regex";
@@ -7,8 +7,7 @@ import { wordWrap, WrapMode } from "../src/word-wrap";
 const fixture = `The quick brown ${red("fox jumped over")} the lazy ${green("dog and then ran away with the unicorn.")}`;
 const fixture2 = "12345678\n901234567890";
 const fixture3 = "12345678\n901234567890 12345";
-const fixture4 = "12345678\n";
-const fixture5 = "12345678\n ";
+const fixture4 = "12345678\n ";
 
 // Helper function for testing
 function hasAnsi(string_: string): boolean {
@@ -96,7 +95,7 @@ describe("wordWrap", () => {
         const result2 = wordWrap(fixture3, { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS });
         expect(result2).toBe("12345\n678\n90123\n45678\n90 12\n345");
 
-        const result3 = wordWrap(fixture5, { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS });
+        const result3 = wordWrap(fixture4, { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS });
         expect(result3).toBe("12345\n678\n");
     });
 
@@ -122,6 +121,17 @@ describe("wordWrap", () => {
     it("should handle combining characters", () => {
         expect(wordWrap("e\u0301 acute", { width: 4, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("é ac\nute");
         expect(wordWrap("o\u0308 umlaut", { width: 4, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("ö um\nlaut");
+    });
+
+    it("should handle background colors with strict width wrapping", () => {
+        expect(
+            wordWrap(bgGreen.black("test"), {
+                trim: false,
+                width: 3,
+                wrapMode: WrapMode.STRICT_WIDTH,
+            }),
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        ).toBe(`${bgGreen.black("tes")}\n${bgGreen.black("t")}`);
     });
 
     it("should handle zero-width characters", () => {
