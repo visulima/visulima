@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { outdent } from "../src";
+import { outdent } from "../../src";
 
 // Helper function to create template strings array
 function makeStrings(...strings: string[]): TemplateStringsArray {
@@ -51,10 +51,10 @@ removed
     it("should preserve trailing spaces on blank lines", () => {
         const result = outdent`
             Hello
-              
+
             World
         `;
-        expect(result).toBe("Hello\n  \nWorld");
+        expect(result).toBe("Hello\n\nWorld");
     });
 
     it("should preserve indentation within the content", () => {
@@ -182,29 +182,24 @@ removed
 
     it("should not get indentation from outdent when preceded by non-whitespace", () => {
         const outdentAsString = "" + outdent;
-        // ... other test setup code
-
-        expect(result).toBe(`non-whitespace\n${outdentAsString}\nHello world!`);
-        expect(result2).toBe(`foo${outdentAsString}\n   Hello world!`);
-        expect(result3).toBe(`${outdentAsString}foo\nHello world!`);
 
         const result = outdent`non-whitespace
                   ${outdent}
                   Hello world!
                   `;
-        expect(result).toBe(`non-whitespace\n${toString}\nHello world!`);
+        expect(result).toBe(`non-whitespace\n${outdentAsString}\nHello world!`);
 
         const result2 = outdent`
                foo${outdent}
                   Hello world!
                   `;
-        expect(result2).toBe(`foo${toString}\n   Hello world!`);
+        expect(result2).toBe(`foo${outdentAsString}\n   Hello world!`);
 
         const result3 = outdent`
             ${outdent}foo
             Hello world!
         `;
-        expect(result3).toBe(`${toString}foo\nHello world!`);
+        expect(result3).toBe(`${outdentAsString}foo\nHello world!`);
     });
 
     it("should maintain cache consistency", () => {

@@ -1,8 +1,8 @@
 import { bgGreen, green, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import { FAST_ANSI_REGEX, stripAnsi } from "../src/case/utils/regex";
-import { wordWrap, WrapMode } from "../src/word-wrap";
+import { FAST_ANSI_REGEX, stripAnsi } from "../../src/case/utils/regex";
+import { wordWrap, WrapMode } from "../../src/word-wrap";
 
 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 const fixture = `The quick brown ${red("fox jumped over")} the lazy ${green("dog and then ran away with the unicorn.")}`;

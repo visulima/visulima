@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { StringTruncatedWidthOptions } from "../src";
-import { getStringTruncatedWidth } from "../src";
+import type { StringTruncatedWidthOptions } from "../../src";
+import { getStringTruncatedWidth } from "../../src";
 
 const getWidth = (input: string, options?: StringTruncatedWidthOptions): number => getStringTruncatedWidth(input, options).width;
 

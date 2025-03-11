@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getStringWidth } from "../src";
+import { getStringWidth } from "../../src";
 
 describe("getStringWidth", () => {
     it("should handle various string types correctly", () => {
