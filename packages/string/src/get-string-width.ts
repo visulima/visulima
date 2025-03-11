@@ -1,5 +1,5 @@
-import { getStringTruncatedWidth } from "./get-string-truncated-width";
 import type { StringTruncatedWidthOptions } from "./get-string-truncated-width";
+import { getStringTruncatedWidth } from "./get-string-truncated-width";
 
 /**
  * Configuration options for string width calculation without truncation support.
@@ -25,7 +25,7 @@ import type { StringTruncatedWidthOptions } from "./get-string-truncated-width";
  * };
  * ```
  */
-export type StringWidthOptions = Omit<StringTruncatedWidthOptions, "ellipsis" | "ellipsisWidth" | "limit">
+export type StringWidthOptions = Omit<StringTruncatedWidthOptions, "ellipsis" | "ellipsisWidth" | "limit">;
 
 /**
  * Calculate the visual width of a string, taking into account Unicode characters, emojis, ANSI escape codes, and more.
@@ -35,7 +35,7 @@ export type StringWidthOptions = Omit<StringTruncatedWidthOptions, "ellipsis" | 
  * // Basic usage
  * getStringWidth('hello'); // => 5
  * getStringWidth('👋 hello'); // => 7
- * 
+ *
  * // With options
  * getStringWidth('hello', { regularWidth: 2 }); // => 10
  * getStringWidth('あいう', { ambiguousIsNarrow: true }); // => 3

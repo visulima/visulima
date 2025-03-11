@@ -333,7 +333,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
         }
 
         const charWidth = getStringWidth(char);
-        const isSpace = char === ' ';
+        const isSpace = char === " ";
 
         // Skip zero-width characters
         if (charWidth === 0) {
@@ -357,13 +357,13 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
             // Handle spaces at wrap points
             if (isSpace && trim) {
-                    // Skip all spaces when trim=true
-                    while (index < string.length && string[index] === ' ') {
-                        index++;
-                    }
-                    index--; // Adjust for the loop increment
-                    continue;
+                // Skip all spaces when trim=true
+                while (index < string.length && string[index] === " ") {
+                    index++;
                 }
+                index--; // Adjust for the loop increment
+                continue;
+            }
         }
 
         // Add character to current line
@@ -385,21 +385,23 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             currentWidth = 0;
 
             // Handle spaces after a wrap at exact width
-            if (index + 1 < string.length && string[index + 1] === ' ' && trim) {
-                    // Skip all spaces when trim=true
+            if (index + 1 < string.length && string[index + 1] === " " && trim) {
+                // Skip all spaces when trim=true
+                index++;
+                while (index < string.length && string[index] === " ") {
                     index++;
-                    while (index < string.length && string[index] === ' ') {
-                        index++;
-                    }
-                    index--; // Adjust for the loop increment
                 }
+                index--; // Adjust for the loop increment
+            }
         }
 
         // Check if we're at the end of a hyperlink
-        if (currentLinkUrl && index + 5 < string.length &&
+        if (
+            currentLinkUrl &&
+            index + 5 < string.length &&
             string.substring(index + 1, index + 5) === `${ESCAPES.values().next().value}]8;;` &&
-            string[index + 5] === ANSI_ESCAPE_BELL) {
-
+            string[index + 5] === ANSI_ESCAPE_BELL
+        ) {
             // Add the link end sequence to the current line
             currentLine += string.substring(index + 1, index + 6);
             currentLinkUrl = ""; // Clear the current link URL
@@ -414,7 +416,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
     // Apply trim on the right side of each line if needed
     return trim ? rows.map(stringVisibleTrimSpacesRight) : rows;
-}
+};
 
 /**
  * Wraps text character by character (word boundaries ignored)
@@ -472,7 +474,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
         }
 
         const charWidth = getStringWidth(character);
-        const isSpace = character === ' ';
+        const isSpace = character === " ";
 
         // Skip zero-width characters
         if (charWidth === 0) {
@@ -510,7 +512,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
     }
 
     return trim ? rows.map((row) => stringVisibleTrimSpacesRight(row)) : rows;
-}
+};
 
 /**
  * Wraps text respecting word boundaries with proper ANSI escape sequence handling
@@ -519,11 +521,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
  * @param trim - Whether to trim whitespace
  * @returns Array of wrapped lines
  */
-const wrapWithWordBoundaries = (
-    string: string,
-    width: number,
-    trim: boolean,
-): string[] => {
+const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): string[] => {
     // Quick return for empty string
     if (string.length === 0) {
         return [];
@@ -595,7 +593,7 @@ const wrapWithWordBoundaries = (
     }
 
     return rows;
-}
+};
 
 /**
  * Preserves ANSI escape codes when joining wrapped lines

@@ -51,7 +51,7 @@ describe("getStringWidth", () => {
         });
     });
 
-    describe("ZWJ characters", () => {
+    describe("zWJ characters", () => {
         it("should handle ZWJ sequences correctly", () => {
             expect(getStringWidth("👶")).toBe(2);
             expect(getStringWidth("👶🏽")).toBe(2);
@@ -137,7 +137,7 @@ describe("getStringWidth", () => {
         });
     });
 
-    describe("ANSI escape code sequences", () => {
+    describe("aNSI escape code sequences", () => {
         it("should handle ANSI escape code sequences correctly", () => {
             expect(getStringWidth("\u001B[31m\u001B[39m\u001B[40m")).toBe(0);
             expect(getStringWidth("\u001B[31m\u001B[39m\u001B[40m", { countAnsiEscapeCodes: true })).toBe(15);
