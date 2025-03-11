@@ -4,15 +4,14 @@ import { describe, expect, it } from "vitest";
 import { FAST_ANSI_REGEX, stripAnsi } from "../src/case/utils/regex";
 import { wordWrap, WrapMode } from "../src/word-wrap";
 
+// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 const fixture = `The quick brown ${red("fox jumped over")} the lazy ${green("dog and then ran away with the unicorn.")}`;
 const fixture2 = "12345678\n901234567890";
 const fixture3 = "12345678\n901234567890 12345";
 const fixture4 = "12345678\n ";
 
 // Helper function for testing
-function hasAnsi(string_: string): boolean {
-    return FAST_ANSI_REGEX.test(string_);
-}
+const hasAnsi = (string_: string): boolean => FAST_ANSI_REGEX.test(string_)
 
 describe("wordWrap", () => {
     // Basic functionality tests
@@ -20,6 +19,7 @@ describe("wordWrap", () => {
         const result = wordWrap(fixture, { width: 20 });
 
         expect(result).toBe(
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             `The quick brown ${red("fox")}\n${red("jumped over")} the lazy\n${green("dog and then ran")}\n${green("away with the")}\n${green("unicorn.")}`,
         );
         expect(result.split("\n").every((line) => stripAnsi(line).length <= 20)).toBeTruthy();
@@ -137,6 +137,15 @@ describe("wordWrap", () => {
     it("should handle zero-width characters", () => {
         expect(wordWrap("\u200B\u200Ba\u200Bb", { width: 2 })).toBe("ab");
         expect(wordWrap("a\u200Bb\u200Bc", { width: 2, wrapMode: WrapMode.STRICT_WIDTH })).toBe("ab\nc");
+    });
+
+    it("should handle tab characters correctly", () => {
+        const textWithTabs = "\t\t\t\ttestingtesting";
+
+        expect(wordWrap(textWithTabs, { width: 10 })).toBe("testingtesting");
+        expect(wordWrap(textWithTabs, { width: 10, trim: false })).toBe("\t\n\t\n\t\n\t\ntestingtesting");
+        expect(wordWrap(textWithTabs, { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS, trim: false })).toBe("\t\n\t\n\t\n\t\ntesti\nngtes\nting");
+        expect(wordWrap(textWithTabs, { width: 5, wrapMode: WrapMode.STRICT_WIDTH, trim: false })).toBe("\t\n\t\n\t\n\t\ntesti\nngtes\nting");
     });
 
     // Whitespace handling

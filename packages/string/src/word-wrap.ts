@@ -301,7 +301,11 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
         // If adding this character would exceed width, start a new line
         if (currentWidth + charWidth > width) {
-            rows.push(resetAnsiAtLineBreak(currentLine));
+            // Only add to rows if the current line is not empty
+            // This fixes the issue with the extra newline at the beginning
+            if (currentLine) {
+                rows.push(resetAnsiAtLineBreak(currentLine));
+            }
 
             // Start a new line with active ANSI codes
             currentLine = ansiTracker.getActiveEscapes();
@@ -431,22 +435,12 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
         // Check if we need to wrap
         if (currentWidth + charWidth > width) {
-            // Close any active ANSI sequences before line break
-            if (currentLine.includes("\u001B")) {
-                // Get all active escape codes
-                const fgReset = "\u001B[39m";
-                const bgReset = "\u001B[49m";
-
-                // Add reset codes in reverse order of how they were applied
-                if (currentLine.includes("\u001B[30m")) {
-                    currentLine += fgReset;
-                }
-                if (currentLine.includes("\u001B[42m")) {
-                    currentLine += bgReset;
-                }
+            // Only add the current line to rows if it's not empty
+            // This fixes the issue with leading newlines
+            if (currentLine) {
+                rows.push(resetAnsiAtLineBreak(currentLine));
             }
 
-            rows.push(currentLine);
             currentLine = ansiTracker.getActiveEscapes();
             currentWidth = 0;
 
