@@ -37,10 +37,12 @@ const identifyCase = (value?: string): CaseStyle => {
         return "upper";
     }
 
+    // eslint-disable-next-line security/detect-unsafe-regex
     if (/^[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]+)*$/.test(value)) {
         return "pascal";
     }
 
+    // eslint-disable-next-line security/detect-unsafe-regex
     if (/^[a-z0-9]+(?:[A-Z][a-z0-9]+)*$/.test(value)) {
         return "camel";
     }

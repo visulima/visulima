@@ -1,6 +1,7 @@
-import { splitByCase, upperFirst } from ".";
 import lowerFirst from "./lower-first";
+import { splitByCase } from "./split-by-case";
 import type { CamelCase, CaseOptions } from "./types";
+import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
@@ -69,7 +70,9 @@ const camelCase = <T extends string = string>(value?: T, options?: CaseOptions):
                 return word;
             }
 
+            // eslint-disable-next-line no-param-reassign
             word = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
+            // eslint-disable-next-line no-param-reassign
             word = options?.locale ? word.toLocaleLowerCase(options.locale) : word.toLowerCase();
 
             if (firstWord) {

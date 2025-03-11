@@ -8,6 +8,7 @@ import manageCache from "./utils/manage-cache";
 const pascalSnakeCache = new Map<string, string>();
 const DEFAULT_CACHE_MAX_SIZE = 1000;
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to Pascal_Snake_Case.
  * @example
