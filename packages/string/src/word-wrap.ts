@@ -1,25 +1,4 @@
-import { stripAnsi } from "./case/utils/regex";
 import { getStringWidth } from "./get-string-width";
-
-/**
- * Enum representing different wrapping strategies for text
- */
-export enum WrapMode {
-    /**
-     * Breaks words at character boundaries to fit the width
-     */
-    BREAK_AT_CHARACTERS = "break_at_characters",
-
-    /**
-     * Preserves word boundaries, words are kept intact even if they exceed width
-     */
-    PRESERVE_WORDS = "preserve_words",
-
-    /**
-     * Enforces strict adherence to the width limit by breaking at exact width
-     */
-    STRICT_WIDTH = "strict_width",
-}
 
 // Constants
 const ESCAPES = new Set(["\u001B", "\u009B"]);
@@ -63,41 +42,10 @@ const ESCAPE_CODES = Object.freeze(
 );
 
 // RegExp patterns compiled once for better performance
+// eslint-disable-next-line regexp/no-control-character,regexp/no-useless-non-capturing-group,@rushstack/security/no-unsafe-regexp
 const ESCAPE_PATTERN = new RegExp(`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`);
-const COLOR_CODE_PATTERN = /\u001B\[(\d+)m/;
-const COLOR_CODES = new Set(["31", "32", "33", "34", "35", "36"]);
-
-/**
- * Word wrap options interface with detailed documentation
- */
-export interface WordWrapOptions {
-    /**
-     * Whether to remove zero-width characters from the string.
-     * @default true
-     */
-    removeZeroWidthCharacters?: boolean;
-
-    /**
-     * Whether to trim whitespace from wrapped lines.
-     * @default true
-     */
-    trim?: boolean;
-
-    /**
-     * Maximum width of each line in visible characters.
-     * @default 80
-     */
-    width?: number;
-
-    /**
-     * Controls how text wrapping is handled at width boundaries.
-     * - PRESERVE_WORDS: Words are kept intact even if they exceed width (default)
-     * - BREAK_AT_CHARACTERS: Words are broken at character boundaries to fit width
-     * - STRICT_WIDTH: Forces breaking exactly at width limit, always
-     * @default WrapMode.PRESERVE_WORDS
-     */
-    wrapMode?: WrapMode;
-}
+// eslint-disable-next-line no-control-regex,regexp/no-control-character
+const COLOR_CODE_PATTERN = /\u001B\[\d+m/;
 
 /**
  * Wraps an ANSI code in the escape sequence
@@ -106,6 +54,7 @@ export interface WordWrapOptions {
  */
 const wrapAnsiCode = (code: number | string): string => {
     const escapeChar = ESCAPES.values().next().value;
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `${escapeChar}${ANSI_CSI}${code}${ANSI_SGR_TERMINATOR}`;
 };
 
@@ -116,27 +65,8 @@ const wrapAnsiCode = (code: number | string): string => {
  */
 const wrapAnsiHyperlink = (url: string): string => {
     const escapeChar = ESCAPES.values().next().value;
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `${escapeChar}${ANSI_ESCAPE_LINK}${url}${ANSI_ESCAPE_BELL}`;
-};
-
-/**
- * Calculate the length of words split on spaces, ignoring ANSI escape codes
- * @param string - The string to process
- * @returns Array of word lengths
- */
-const wordLengths = (string: string): number[] => {
-    // Use memoization for repeated words to improve performance
-    const lengthCache = new Map<string, number>();
-
-    return string.split(" ").map((word) => {
-        if (lengthCache.has(word)) {
-            return lengthCache.get(word)!;
-        }
-
-        const length = getStringWidth(word);
-        lengthCache.set(word, length);
-        return length;
-    });
 };
 
 /**
@@ -146,9 +76,12 @@ const wordLengths = (string: string): number[] => {
  */
 const stringVisibleTrimSpacesRight = (string: string): string => {
     const words = string.split(" ");
+
     let last = words.length;
 
-    while (last > 0 && getStringWidth(words[last - 1]) === 0) {
+    // eslint-disable-next-line no-loops/no-loops
+    while (last > 0 && getStringWidth(words[last - 1] as string) === 0) {
+        // eslint-disable-next-line no-plusplus
         last--;
     }
 
@@ -172,7 +105,8 @@ const checkEscapeSequence = (
     isInsideEscape: boolean;
     isInsideLinkEscape: boolean;
 } => {
-    if (!ESCAPES.has(chars[index])) {
+    // eslint-disable-next-line security/detect-object-injection
+    if (!ESCAPES.has(chars[index] as string)) {
         return { isInsideEscape: false, isInsideLinkEscape: false };
     }
 
@@ -185,67 +119,6 @@ const checkEscapeSequence = (
 };
 
 /**
- * Wrap a long word across multiple rows, handling ANSI escape codes
- * @param rows - The array of rows to add to
- * @param word - The word to wrap
- * @param columns - The maximum number of columns
- */
-const wrapWord = (rows: string[], word: string, columns: number): void => {
-    const characters = [...word];
-    let isInsideEscape = false;
-    let isInsideLinkEscape = false;
-    let visible = getStringWidth(stripAnsi(rows.at(-1) ?? ""));
-
-    for (const [index, character] of characters.entries()) {
-        // Process escape sequences
-        if (ESCAPES.has(character)) {
-            const escapeInfo = checkEscapeSequence(characters, index);
-            isInsideEscape = escapeInfo.isInsideEscape;
-            isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
-            rows[rows.length - 1] += character;
-            continue;
-        }
-
-        if (isInsideEscape) {
-            rows[rows.length - 1] += character;
-
-            if (isInsideLinkEscape) {
-                if (character === ANSI_ESCAPE_BELL) {
-                    isInsideEscape = isInsideLinkEscape = false;
-                }
-            } else if (character === ANSI_SGR_TERMINATOR) {
-                isInsideEscape = false;
-            }
-            continue;
-        }
-
-        // Process regular characters
-        const characterLength = getStringWidth(character);
-        if (characterLength === 0) {
-            continue;
-        }
-
-        if (visible + characterLength <= columns) {
-            rows[rows.length - 1] += character;
-            visible += characterLength;
-        } else {
-            rows.push(character);
-            visible = characterLength;
-        }
-
-        if (visible === columns && index < characters.length - 1) {
-            rows.push("");
-            visible = 0;
-        }
-    }
-
-    // Handle edge case with empty last row
-    if (!visible && rows.at(-1)?.length > 0 && rows.length > 1) {
-        rows[rows.length - 2] += rows.pop();
-    }
-};
-
-/**
  * Tracks ANSI color state to ensure proper color continuation across line breaks
  */
 class AnsiStateTracker {
@@ -255,15 +128,12 @@ class AnsiStateTracker {
      * Processes an escape sequence and updates the internal state
      * @param sequence - The escape sequence to process
      */
-    processEscape(sequence: string): void {
+    public processEscape(sequence: string): void {
         if (sequence.includes("[39m")) {
             // Reset color state
             this.activeEscapes = [];
-        } else {
-            const colorMatch = COLOR_CODE_PATTERN.exec(sequence);
-            if (colorMatch && COLOR_CODES.has(colorMatch[1])) {
-                this.activeEscapes.push(sequence);
-            }
+        } else if (COLOR_CODE_PATTERN.test(sequence)) {
+            this.activeEscapes.push(sequence);
         }
     }
 
@@ -271,7 +141,7 @@ class AnsiStateTracker {
      * Gets all active escape sequences to apply to a new line
      * @returns String with all active escapes
      */
-    getActiveEscapes(): string {
+    public getActiveEscapes(): string {
         return this.activeEscapes.join("");
     }
 }
@@ -283,6 +153,7 @@ class AnsiStateTracker {
  * @param trim - Whether to trim whitespace
  * @returns Array of wrapped lines
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): string[] => {
     // Fast path for empty strings
     if (string.length === 0) {
@@ -303,8 +174,10 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     let escapeBuffer = "";
     let currentLinkUrl = "";
 
+    // eslint-disable-next-line no-plusplus,no-loops/no-loops
     for (let index = 0; index < string.length; index++) {
-        const char = string[index];
+        // eslint-disable-next-line security/detect-object-injection
+        const char = string[index] as string;
 
         // Handle escape sequences
         if (ESCAPES.has(char)) {
@@ -314,6 +187,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
             const escapeInfo = checkEscapeSequence([...string], index);
             isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -323,12 +197,14 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
             if (isInsideLinkEscape) {
                 if (char === ANSI_ESCAPE_BELL) {
+                    // eslint-disable-next-line no-multi-assign
                     isInsideEscape = isInsideLinkEscape = false;
                 }
             } else if (char === ANSI_SGR_TERMINATOR) {
                 isInsideEscape = false;
                 ansiTracker.processEscape(escapeBuffer);
             }
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -338,6 +214,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
         // Skip zero-width characters
         if (charWidth === 0) {
             currentLine += char;
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -350,6 +227,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
             // Re-add hyperlink start if we're inside a link
             if (currentLinkUrl) {
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 currentLine += `${ESCAPES.values().next().value}${ANSI_ESCAPE_LINK}${currentLinkUrl}${ANSI_ESCAPE_BELL}`;
             }
 
@@ -358,10 +236,14 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             // Handle spaces at wrap points
             if (isSpace && trim) {
                 // Skip all spaces when trim=true
+                // eslint-disable-next-line no-loops/no-loops,security/detect-object-injection
                 while (index < string.length && string[index] === " ") {
+                    // eslint-disable-next-line no-plusplus
                     index++;
                 }
+                // eslint-disable-next-line no-plusplus
                 index--; // Adjust for the loop increment
+                // eslint-disable-next-line no-continue
                 continue;
             }
         }
@@ -379,6 +261,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
             // Re-add hyperlink start if we're inside a link
             if (currentLinkUrl) {
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 currentLine += `${ESCAPES.values().next().value}${ANSI_ESCAPE_LINK}${currentLinkUrl}${ANSI_ESCAPE_BELL}`;
             }
 
@@ -386,11 +269,14 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
             // Handle spaces after a wrap at exact width
             if (index + 1 < string.length && string[index + 1] === " " && trim) {
-                // Skip all spaces when trim=true
+                // eslint-disable-next-line no-plusplus
                 index++;
+                // eslint-disable-next-line no-loops/no-loops,security/detect-object-injection
                 while (index < string.length && string[index] === " ") {
+                    // eslint-disable-next-line no-plusplus
                     index++;
                 }
+                // eslint-disable-next-line no-plusplus
                 index--; // Adjust for the loop increment
             }
         }
@@ -399,6 +285,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
         if (
             currentLinkUrl &&
             index + 5 < string.length &&
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             string.substring(index + 1, index + 5) === `${ESCAPES.values().next().value}]8;;` &&
             string[index + 5] === ANSI_ESCAPE_BELL
         ) {
@@ -415,7 +302,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     }
 
     // Apply trim on the right side of each line if needed
-    return trim ? rows.map(stringVisibleTrimSpacesRight) : rows;
+    return trim ? rows.map((element) => stringVisibleTrimSpacesRight(element)) : rows;
 };
 
 /**
@@ -426,6 +313,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
  * @param trim - Whether to trim whitespace
  * @returns Array of wrapped lines
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const wrapCharByChar = (string: string, width: number, trim: boolean): string[] => {
     // Handle empty string
     if (string.length === 0) {
@@ -446,6 +334,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
     let isInsideLinkEscape = false;
     let escapeBuffer = "";
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const [index, character] of [...inputToProcess].entries()) {
         // Handle escape sequences
         if (ESCAPES.has(character)) {
@@ -455,6 +344,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
             const escapeInfo = checkEscapeSequence([...inputToProcess], index);
             isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -464,12 +354,14 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
             if (isInsideLinkEscape) {
                 if (character === ANSI_ESCAPE_BELL) {
+                    // eslint-disable-next-line no-multi-assign
                     isInsideEscape = isInsideLinkEscape = false;
                 }
             } else if (character === ANSI_SGR_TERMINATOR) {
                 isInsideEscape = false;
                 ansiTracker.processEscape(escapeBuffer);
             }
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -479,6 +371,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
         // Skip zero-width characters
         if (charWidth === 0) {
             currentLine += character;
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -492,10 +385,12 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
             if (isSpace) {
                 if (trim) {
                     // Skip spaces when trim=true
+                    // eslint-disable-next-line no-continue
                     continue;
                 } else {
                     // For trim=false, space gets its own line
                     rows.push(ansiTracker.getActiveEscapes() + character);
+                    // eslint-disable-next-line no-continue
                     continue;
                 }
             }
@@ -521,6 +416,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
  * @param trim - Whether to trim whitespace
  * @returns Array of wrapped lines
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): string[] => {
     // Quick return for empty string
     if (string.length === 0) {
@@ -543,26 +439,31 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
     let index = 0;
 
     // Process each token (word or space)
+    // eslint-disable-next-line no-loops/no-loops
     while (index < tokens.length) {
-        const token = tokens[index];
+        // eslint-disable-next-line security/detect-object-injection
+        const token = tokens[index] as string;
         const isSpace = /^\s+$/.test(token);
-        const tokenVisibleWidth = getStringWidth(stripAnsi(token));
+        const tokenVisibleWidth = getStringWidth(token);
 
         // Skip empty tokens
         if (token.length === 0) {
+            // eslint-disable-next-line no-plusplus
             index++;
+            // eslint-disable-next-line no-continue
             continue;
         }
 
         // Skip leading spaces if trim is true and we're at line start
         if (trim && isSpace && currentWidth === 0) {
+            // eslint-disable-next-line no-plusplus
             index++;
+            // eslint-disable-next-line no-continue
             continue;
         }
 
         // Check if adding this token would exceed width
         if (currentWidth + tokenVisibleWidth > width && currentWidth > 0) {
-            // Complete current line
             if (trim) {
                 rows.push(stringVisibleTrimSpacesRight(currentLine));
             } else {
@@ -574,12 +475,13 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
             currentWidth = 0;
 
             // Don't increment i - process this token again for the new line
+            // eslint-disable-next-line no-continue
             continue;
         }
 
-        // Add token to current line
         currentLine += token;
         currentWidth += tokenVisibleWidth;
+        // eslint-disable-next-line no-plusplus
         index++;
     }
 
@@ -600,6 +502,7 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
  * @param rawLines - Array of wrapped lines
  * @returns String with preserved ANSI codes
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const preserveAnsi = (rawLines: string[]): string => {
     // Handle empty array case
     if (rawLines.length === 0) {
@@ -619,6 +522,7 @@ const preserveAnsi = (rawLines: string[]): string => {
     const pre = [...preString];
     let preStringIndex = 0;
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const [index, character] of pre.entries()) {
         returnValue += character;
 
@@ -659,6 +563,56 @@ const preserveAnsi = (rawLines: string[]): string => {
 
     return returnValue;
 };
+
+/**
+ * Enum representing different wrapping strategies for text
+ */
+export const WrapMode = {
+    /**
+     * Breaks words at character boundaries to fit the width
+     */
+    BREAK_AT_CHARACTERS: "BREAK_AT_CHARACTERS",
+
+    /**
+     * Preserves word boundaries, words are kept intact even if they exceed width
+     */
+    PRESERVE_WORDS: "PRESERVE_WORDS",
+
+    /**
+     * Enforces strict adherence to the width limit by breaking at exact width
+     */
+    STRICT_WIDTH: "STRICT_WIDTH",
+};
+
+// eslint-disable-next-line import/no-unused-modules
+export interface WordWrapOptions {
+    /**
+     * Whether to remove zero-width characters from the string.
+     * @default true
+     */
+    removeZeroWidthCharacters?: boolean;
+
+    /**
+     * Whether to trim whitespace from wrapped lines.
+     * @default true
+     */
+    trim?: boolean;
+
+    /**
+     * Maximum width of each line in visible characters.
+     * @default 80
+     */
+    width?: number;
+
+    /**
+     * Controls how text wrapping is handled at width boundaries.
+     * - PRESERVE_WORDS: Words are kept intact even if they exceed width (default)
+     * - BREAK_AT_CHARACTERS: Words are broken at character boundaries to fit width
+     * - STRICT_WIDTH: Forces breaking exactly at width limit, always
+     * @default WrapMode.PRESERVE_WORDS
+     */
+    wrapMode?: keyof typeof WrapMode;
+}
 
 /**
  * Word wrap implementation with multiple wrapping strategies

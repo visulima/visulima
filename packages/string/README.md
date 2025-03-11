@@ -192,6 +192,48 @@ const customCache = new WeakMap();
 const customCacheDedent = outdent({ cacheStore: customCache });
 ```
 
+### Word Wrapping
+
+The `wordWrap` function provides flexible text wrapping with support for ANSI color codes and Unicode.
+
+```typescript
+import { wordWrap, WrapMode } from '@visulima/string';
+
+// Basic usage with default options (80 character width, preserve words)
+const wrapped = wordWrap('This is a long text that will be wrapped to fit within the specified width limit.');
+
+// With custom width (40 characters)
+const narrowWrapped = wordWrap('This text will be wrapped to fit within a 40-character width.', { width: 40 });
+
+// Different wrapping modes
+const preserveWords = wordWrap('Long words will stay intact but may exceed the width limit.', {
+  width: 20,
+  wrapMode: WrapMode.PRESERVE_WORDS // Default - keeps words intact
+});
+
+const breakAtCharacters = wordWrap('Words will be broken at character boundaries to fit width.', {
+  width: 20,
+  wrapMode: WrapMode.BREAK_AT_CHARACTERS // Breaks words to fit width exactly
+});
+
+const strictWidth = wordWrap('Text will be broken exactly at the width limit.', {
+  width: 20,
+  wrapMode: WrapMode.STRICT_WIDTH // Forces strict adherence to width
+});
+
+// Handling ANSI color codes
+const coloredText = '\u001B[31mThis red text\u001B[0m will be wrapped while preserving the color codes.';
+const wrappedColored = wordWrap(coloredText, { width: 20 });
+// Color codes are preserved across line breaks
+
+// Additional options
+const customWrapped = wordWrap('Text with\u200Bzero-width characters and\u200Btrailing spaces.', {
+  width: 30,
+  trim: false, // Don't trim whitespace from lines (default: true)
+  removeZeroWidthCharacters: false // Don't remove zero-width characters (default: true)
+});
+```
+
 ### String Splitting
 
 The `splitByCase` function is a powerful utility that splits strings based on various patterns:
