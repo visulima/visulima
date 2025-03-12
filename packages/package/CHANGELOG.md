@@ -1,3 +1,9 @@
+## @visulima/package [3.5.4](https://github.com/visulima/visulima/compare/@visulima/package@3.5.3...@visulima/package@3.5.4) (2025-03-12)
+
+### Bug Fixes
+
+* **package:** update @inquirer/confirm, @babel/core, @inquirer/core, @inquirer/type, @pnpm/exe, @rushstack/eslint-plugin-security, and eslint-plugin-mdx to latest versions ([c6ce243](https://github.com/visulima/visulima/commit/c6ce2433e6c4fad6ebe5f8b34fc2662146ccd47a))
+
 ## @visulima/package [3.5.3](https://github.com/visulima/visulima/compare/@visulima/package@3.5.2...@visulima/package@3.5.3) (2025-03-07)
 
 ### Bug Fixes
