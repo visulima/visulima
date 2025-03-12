@@ -4,6 +4,7 @@ import type { CaseOptions, PathCase } from "./types";
 // Cache for frequently used path case conversions
 const pathCache = new Map<string, string>();
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to path/case.
  * @example

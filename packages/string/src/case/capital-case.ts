@@ -4,13 +4,14 @@ import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
-import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
+import normalizeGermanEszett from "./utils/normalize-german-eszett";
 import { FAST_ANSI_REGEX } from "./utils/regex";
 
 // Cache for frequently used capital case conversions
 const capitalCache = new Map<string, string>();
 const DEFAULT_CACHE_MAX_SIZE = 1000;
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to Capital Case.
  * @example
@@ -23,6 +24,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * capitalCase("QueryXML123String") // => "Query Xml 123 String"
  * ```
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions): CapitalCase<T> => {
     if (typeof value !== "string") {
         return "" as CapitalCase<T>;

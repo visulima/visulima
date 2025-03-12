@@ -3,12 +3,13 @@ import type { CaseOptions, TitleCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import manageCache from "./utils/manage-cache";
-import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
+import normalizeGermanEszett from "./utils/normalize-german-eszett";
 
 // Cache for frequently used title case conversions
 const titleCache = new Map<string, string>();
 const DEFAULT_CACHE_MAX_SIZE = 1000;
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * With Title Case all words are capitalized, except for minor words.
  * A compact regex of common minor words (such as a for, to) is used

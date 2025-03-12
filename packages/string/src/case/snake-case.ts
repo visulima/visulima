@@ -4,6 +4,7 @@ import type { CaseOptions, SnakeCase } from "./types";
 // Cache for frequently used snake case conversions
 const snakeCache = new Map<string, string>();
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to snake_case.
  * @example

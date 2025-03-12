@@ -7,6 +7,7 @@ import { FAST_ANSI_REGEX } from "./regex";
  * @param options - Join options
  * @returns Joined string with proper handling of ANSI and emoji sequences
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const joinSegments = <T extends string = string>(segments: string[], joiner: string): T => {
     const { length } = segments;
 

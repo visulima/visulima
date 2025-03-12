@@ -4,6 +4,7 @@ import type { CaseOptions, FlatCase } from "./types";
 // Cache for frequently used flat case conversions
 const flatCache = new Map<string, string>();
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to flat case (all lowercase, no separators).
  * @example

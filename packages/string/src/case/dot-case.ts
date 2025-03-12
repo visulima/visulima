@@ -4,6 +4,7 @@ import type { CaseOptions, DotCase } from "./types";
 // Cache for frequently used dot case conversions
 const dotCache = new Map<string, string>();
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to dot.case.
  * @example

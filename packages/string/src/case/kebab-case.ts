@@ -3,10 +3,8 @@ import type { CaseOptions, KebabCase } from "./types";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
-import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
+import normalizeGermanEszett from "./utils/normalize-german-eszett";
 import { FAST_ANSI_REGEX } from "./utils/regex";
-import { toLowerCase } from "./utils/to-lower-case";
-import { toUpperCase } from "./utils/to-upper-case";
 
 // Cache for frequently used kebab case conversions
 const kebabCache = new Map<string, string>();
@@ -82,12 +80,20 @@ export const kebabCase = <T extends string = string>(value?: T, options?: KebabC
         }
 
         if (options?.toUpperCase) {
-            return toUpperCase(word, options.locale);
+            if (options.locale) {
+                return word.toLocaleUpperCase(options.locale);
+            }
+
+            return word.toUpperCase();
         }
 
         const split = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
 
-        return toLowerCase(split, options?.locale);
+        if (options?.locale) {
+            return split.toLocaleLowerCase(options.locale);
+        }
+
+        return split.toLowerCase();
     });
 
     // Join the processed words with proper handling of ANSI and emoji sequences
