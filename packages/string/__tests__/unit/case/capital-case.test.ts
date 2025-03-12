@@ -6,6 +6,7 @@ import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 describe("capitalCase", () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "test-string";
 
@@ -21,6 +22,7 @@ describe("capitalCase", () => {
         });
 
         it("should not use cache when disabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "test-string";
 
@@ -36,6 +38,7 @@ describe("capitalCase", () => {
         });
 
         it("should respect cache size limit", () => {
+            expect.assertions(5);
             const customCache = new Map<string, string>();
             const input1 = "test-string-1";
             const input2 = "test-string-2";
@@ -56,6 +59,7 @@ describe("capitalCase", () => {
         });
 
         it("should handle custom cache store", () => {
+            expect.assertions(2);
             const defaultCache = new Map<string, string>();
             const customCache = new Map<string, string>();
             const input = "test-string";
@@ -68,46 +72,55 @@ describe("capitalCase", () => {
     });
 
     it("should handle empty string", () => {
+        expect.assertions(1);
         expect(capitalCase("")).toBe("");
     });
 
     it("should convert single word to capital case", () => {
+        expect.assertions(1);
         expect(capitalCase("foo")).toBe("Foo");
     });
 
     it("should handle hyphenated words with mixed case", () => {
+        expect.assertions(2);
         expect(capitalCase("foo-bAr")).toBe("Foo B Ar");
         expect(capitalCase("XMLHttpRequest")).toBe("Xml Http Request");
     });
 
     it("should handle multiple separators", () => {
+        expect.assertions(2);
         expect(capitalCase("foo_bar-baz/qux")).toBe("Foo Bar Baz Qux");
         expect(capitalCase("foo_BAR-baz/QUX")).toBe("Foo Bar Baz Qux");
     });
 
     it("should handle snake case", () => {
+        expect.assertions(2);
         expect(capitalCase("FOO_BAR")).toBe("Foo Bar");
         expect(capitalCase("FOO_BAR_BAZ")).toBe("Foo Bar Baz");
     });
 
     it("should handle multiple hyphens and mixed case", () => {
+        expect.assertions(2);
         expect(capitalCase("foo--bar-Baz")).toBe("Foo Bar Baz");
         expect(capitalCase("foo--BAR-baz")).toBe("Foo Bar Baz");
     });
 
     it("should convert snake_case to Capital Case", () => {
+        expect.assertions(3);
         expect(capitalCase("foo_bar")).toBe("Foo Bar");
         expect(capitalCase("foo_bar_baz")).toBe("Foo Bar Baz");
         expect(capitalCase("foo_BAR_baz")).toBe("Foo Bar Baz");
     });
 
     it("should convert kebab-case to Capital Case", () => {
+        expect.assertions(3);
         expect(capitalCase("foo-bar")).toBe("Foo Bar");
         expect(capitalCase("foo-bar-baz")).toBe("Foo Bar Baz");
         expect(capitalCase("foo-BAR-baz")).toBe("Foo Bar Baz");
     });
 
     it("should convert space separated to Capital Case", () => {
+        expect.assertions(3);
         expect(capitalCase("foo bar")).toBe("Foo Bar");
         expect(capitalCase("foo bar baz")).toBe("Foo Bar Baz");
         expect(capitalCase("foo BAR baz")).toBe("Foo Bar Baz");
@@ -115,6 +128,7 @@ describe("capitalCase", () => {
 
     describe("emoji support 🎯", () => {
         it("should handle emojis in text with stripEmoji=true", () => {
+            expect.assertions(9);
             expect(capitalCase("Foo🐣Bar", { stripEmoji: true })).toBe("Foo Bar");
             expect(capitalCase("hello🌍World", { stripEmoji: true })).toBe("Hello World");
             expect(capitalCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("Test Party Fun");
@@ -127,6 +141,7 @@ describe("capitalCase", () => {
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
+            expect.assertions(9);
             expect(capitalCase("Foo🐣Bar", { handleEmoji: true })).toBe("Foo 🐣 Bar");
             expect(capitalCase("hello🌍World", { handleEmoji: true })).toBe("Hello 🌍 World");
             expect(capitalCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("Test 🎉 Party 🎈 Fun");
@@ -141,12 +156,14 @@ describe("capitalCase", () => {
 
     describe("aNSI support", () => {
         it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect.assertions(3);
             expect(capitalCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("Red Text");
             expect(capitalCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("Bold Text");
             expect(capitalCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("Green Foo Blue Bar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect.assertions(3);
             expect(capitalCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mRed Text\u001B[0m");
             expect(capitalCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mBold Text\u001B[0m");
             expect(capitalCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
@@ -156,12 +173,14 @@ describe("capitalCase", () => {
     });
 
     it("should handle camelCase input", () => {
+        expect.assertions(3);
         expect(capitalCase("fooBar")).toBe("Foo Bar");
         expect(capitalCase("fooBarBaz")).toBe("Foo Bar Baz");
         expect(capitalCase("fooBarBAZ")).toBe("Foo Bar Baz");
     });
 
     it("should handle special acronyms", () => {
+        expect.assertions(5);
         expect(capitalCase("XML_HTTP_request")).toBe("Xml Http Request");
         expect(capitalCase("XMLHTTPRequest")).toBe("Xmlhttp Request");
         expect(capitalCase("AJAXRequest")).toBe("Ajax Request");
@@ -170,6 +189,7 @@ describe("capitalCase", () => {
     });
 
     it("should handle special formats and mixed cases", () => {
+        expect.assertions(6);
         expect(capitalCase("C-3PO_and_R2-D2")).toBe("C 3po And R2 D2");
         expect(capitalCase("The Taking of Pelham 123")).toBe("The Taking Of Pelham 123");
         expect(capitalCase("Ocean's 11")).toBe("Ocean's 11");
@@ -180,12 +200,14 @@ describe("capitalCase", () => {
 
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
+            expect.assertions(2);
             const locale = "tr-TR";
             expect(capitalCase("istanbul_city", { locale })).toBe("İstanbul City");
             expect(capitalCase("İZMİR_CITY", { locale })).toBe("İzmir Cıty");
         });
 
         it("should handle German specific cases", () => {
+            expect.assertions(3);
             const locale = "de-DE";
             expect(capitalCase("GROSSE STRAßE", { locale })).toBe("Große Straße");
             expect(capitalCase("GROSSE STRASSE", { locale })).toBe("Große Straße");
@@ -193,6 +215,7 @@ describe("capitalCase", () => {
         });
 
         it("should fallback gracefully for invalid locale", () => {
+            expect.assertions(1);
             expect(capitalCase("test_string", { locale: "invalid-locale" })).toBe("Test String");
         });
     });

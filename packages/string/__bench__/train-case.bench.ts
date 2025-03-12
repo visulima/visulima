@@ -1,70 +1,71 @@
-import { bench, describe } from "vitest";
 import { trainCase as caseAnythingTrainCase } from "case-anything";
 import { trainCase as sculeTrainCase } from "scule";
-import { trainCase } from "../dist/case";
+import { bench, describe } from "vitest";
+
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
+import { trainCase } from "../dist/case";
 
 describe("trainCase", () => {
     bench("visulima/string trainCase (no cache)", () => {
-        for (const str of TEST_STRINGS) {
-            trainCase(str);
+        for (const string_ of TEST_STRINGS) {
+            trainCase(string_);
         }
     });
 
     bench("visulima/string trainCase (with cache)", () => {
-        for (const str of TEST_STRINGS) {
-            trainCase(str, { cache: true });
+        for (const string_ of TEST_STRINGS) {
+            trainCase(string_, { cache: true });
         }
     });
 
     bench("case-anything trainCase", () => {
-        for (const str of TEST_STRINGS) {
-            caseAnythingTrainCase(str);
+        for (const string_ of TEST_STRINGS) {
+            caseAnythingTrainCase(string_);
         }
     });
 
     bench("scule trainCase", () => {
-        for (const str of TEST_STRINGS) {
-            sculeTrainCase(str);
+        for (const string_ of TEST_STRINGS) {
+            sculeTrainCase(string_);
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string trainCase (no cache)", () => {
-            for (const str of SPECIAL_STRINGS) {
-                trainCase(str);
+            for (const string_ of SPECIAL_STRINGS) {
+                trainCase(string_);
             }
         });
 
         bench("case-anything trainCase", () => {
-            for (const str of SPECIAL_STRINGS) {
-                caseAnythingTrainCase(str);
+            for (const string_ of SPECIAL_STRINGS) {
+                caseAnythingTrainCase(string_);
             }
         });
 
         bench("scule trainCase", () => {
-            for (const str of SPECIAL_STRINGS) {
-                sculeTrainCase(str);
+            for (const string_ of SPECIAL_STRINGS) {
+                sculeTrainCase(string_);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string trainCase (no cache)", () => {
-            for (const str of ACRONYM_STRINGS) {
-                trainCase(str);
+            for (const string_ of ACRONYM_STRINGS) {
+                trainCase(string_);
             }
         });
 
         bench("case-anything trainCase", () => {
-            for (const str of ACRONYM_STRINGS) {
-                caseAnythingTrainCase(str);
+            for (const string_ of ACRONYM_STRINGS) {
+                caseAnythingTrainCase(string_);
             }
         });
 
         bench("scule trainCase", () => {
-            for (const str of ACRONYM_STRINGS) {
-                sculeTrainCase(str);
+            for (const string_ of ACRONYM_STRINGS) {
+                sculeTrainCase(string_);
             }
         });
     });

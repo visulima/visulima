@@ -6,6 +6,7 @@ import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 describe("snakeCase", () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "testString";
 
@@ -21,6 +22,7 @@ describe("snakeCase", () => {
         });
 
         it("should not use cache when disabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "testString";
 
@@ -36,6 +38,7 @@ describe("snakeCase", () => {
         });
 
         it("should respect cache size limit", () => {
+            expect.assertions(5);
             const customCache = new Map<string, string>();
             const input1 = "testString1";
             const input2 = "testString2";
@@ -55,6 +58,7 @@ describe("snakeCase", () => {
         });
 
         it("should handle custom cache store", () => {
+            expect.assertions(2);
             const defaultCache = new Map<string, string>();
             const customCache = new Map<string, string>();
             const input = "testString";
@@ -67,40 +71,48 @@ describe("snakeCase", () => {
     });
 
     it("should convert pascal case to snake case", () => {
+        expect.assertions(2);
         expect(snakeCase("FooBarBaz")).toBe("foo_bar_baz");
         expect(snakeCase("XMLHttpRequest")).toBe("xml_http_request");
     });
 
     it("should normalize uppercase snake case", () => {
+        expect.assertions(1);
         expect(snakeCase("FOO_BAR")).toBe("foo_bar");
     });
 
     it("should convert camelCase to snake_case", () => {
+        expect.assertions(2);
         expect(snakeCase("fooBar")).toBe("foo_bar");
         expect(snakeCase("fooBarBaz")).toBe("foo_bar_baz");
     });
 
     it("should convert PascalCase to snake_case", () => {
+        expect.assertions(2);
         expect(snakeCase("FooBar")).toBe("foo_bar");
         expect(snakeCase("FooBarBaz")).toBe("foo_bar_baz");
     });
 
     it("should convert kebab-case to snake_case", () => {
+        expect.assertions(2);
         expect(snakeCase("foo-bar")).toBe("foo_bar");
         expect(snakeCase("foo-bar-baz")).toBe("foo_bar_baz");
     });
 
     it("should convert space separated to snake_case", () => {
+        expect.assertions(2);
         expect(snakeCase("foo bar")).toBe("foo_bar");
         expect(snakeCase("foo bar baz")).toBe("foo_bar_baz");
     });
 
     it("should handle empty string", () => {
+        expect.assertions(1);
         expect(snakeCase("")).toBe("");
     });
 
     describe("emoji support 🎯", () => {
         it("should handle emojis in text with stripEmoji=true", () => {
+            expect.assertions(8);
             expect(snakeCase("Foo🐣Bar", { stripEmoji: true })).toBe("foo_bar");
             expect(snakeCase("hello🌍World", { stripEmoji: true })).toBe("hello_world");
             expect(snakeCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("test_party_fun");
@@ -112,6 +124,7 @@ describe("snakeCase", () => {
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
+            expect.assertions(8);
             expect(snakeCase("Foo🐣Bar", { handleEmoji: true })).toBe("foo_🐣_bar");
             expect(snakeCase("hello🌍World", { handleEmoji: true })).toBe("hello_🌍_world");
             expect(snakeCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("test_🎉_party_🎈_fun");
@@ -125,12 +138,14 @@ describe("snakeCase", () => {
 
     describe("aNSI support", () => {
         it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect.assertions(3);
             expect(snakeCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("red_text");
             expect(snakeCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("bold_text");
             expect(snakeCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("green_foo_blue_bar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect.assertions(3);
             expect(snakeCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mred_text\u001B[0m");
             expect(snakeCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mbold_text\u001B[0m");
             expect(snakeCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
@@ -140,6 +155,7 @@ describe("snakeCase", () => {
     });
 
     it("should handle special formats and mixed cases", () => {
+        expect.assertions(5);
         expect(snakeCase("C-3PO_and_R2-D2")).toBe("c_3po_and_r2_d2");
         expect(snakeCase("3_idiots_2009")).toBe("3_idiots_2009");
         expect(snakeCase("12_angry_men")).toBe("12_angry_men");
@@ -149,6 +165,7 @@ describe("snakeCase", () => {
 
     describe("locale support", () => {
         it("should handle German specific cases", () => {
+            expect.assertions(3);
             const locale = "de-DE";
             expect(snakeCase("großeStrasse", { locale })).toBe("große_strasse");
             expect(snakeCase("GROSSE", { locale })).toBe("große");

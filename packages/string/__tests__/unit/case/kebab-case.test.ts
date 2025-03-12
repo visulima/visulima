@@ -6,6 +6,7 @@ import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 describe("kebabCase", () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "testString";
 
@@ -21,6 +22,7 @@ describe("kebabCase", () => {
         });
 
         it("should not use cache when disabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "testString";
 
@@ -36,6 +38,7 @@ describe("kebabCase", () => {
         });
 
         it("should respect cache size limit", () => {
+            expect.assertions(5);
             const customCache = new Map<string, string>();
             const input1 = "testString1";
             const input2 = "testString2";
@@ -56,6 +59,7 @@ describe("kebabCase", () => {
         });
 
         it("should handle custom cache store", () => {
+            expect.assertions(2);
             const defaultCache = new Map<string, string>();
             const customCache = new Map<string, string>();
             const input = "testString";
@@ -68,47 +72,57 @@ describe("kebabCase", () => {
     });
 
     it("should handle empty string", () => {
+        expect.assertions(1);
         expect(kebabCase("")).toBe("");
     });
 
     it("should preserve lowercase single word", () => {
+        expect.assertions(1);
         expect(kebabCase("foo")).toBe("foo");
     });
 
     it("should handle mixed case with hyphen", () => {
+        expect.assertions(2);
         expect(kebabCase("foo-bAr")).toBe("foo-b-ar");
         expect(kebabCase("XMLHttpRequest")).toBe("xml-http-request");
     });
 
     it("should convert mixed case to hyphen case", () => {
+        expect.assertions(1);
         expect(kebabCase("FooBAR")).toBe("foo-bar");
     });
 
     it("should handle single uppercase letter prefix", () => {
+        expect.assertions(1);
         expect(kebabCase("ALink")).toBe("a-link");
     });
 
     it("should convert snake case to kebab case", () => {
+        expect.assertions(1);
         expect(kebabCase("FOO_BAR")).toBe("foo-bar");
     });
 
     it("should convert camelCase to kebab-case", () => {
+        expect.assertions(2);
         expect(kebabCase("fooBar")).toBe("foo-bar");
         expect(kebabCase("fooBarBaz")).toBe("foo-bar-baz");
     });
 
     it("should convert PascalCase to kebab-case", () => {
+        expect.assertions(2);
         expect(kebabCase("FooBar")).toBe("foo-bar");
         expect(kebabCase("FooBarBaz")).toBe("foo-bar-baz");
     });
 
     it("should convert snake_case to kebab-case", () => {
+        expect.assertions(2);
         expect(kebabCase("foo_bar")).toBe("foo-bar");
         expect(kebabCase("foo_bar_baz")).toBe("foo-bar-baz");
     });
 
     describe("emoji support 🎯", () => {
         it("should handle emojis in text with stripEmoji=true", () => {
+            expect.assertions(7);
             expect(kebabCase("Foo🐣Bar", { stripEmoji: true })).toBe("foo-bar");
             expect(kebabCase("hello🌍World", { stripEmoji: true })).toBe("hello-world");
             expect(kebabCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("test-party-fun");
@@ -119,6 +133,7 @@ describe("kebabCase", () => {
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
+            expect.assertions(7);
             expect(kebabCase("Foo🐣Bar", { handleEmoji: true })).toBe("foo-🐣-bar");
             expect(kebabCase("hello🌍World", { handleEmoji: true })).toBe("hello-🌍-world");
             expect(kebabCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("test-🎉-party-🎈-fun");
@@ -131,12 +146,14 @@ describe("kebabCase", () => {
 
     describe("aNSI support", () => {
         it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect.assertions(3);
             expect(kebabCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("red-text");
             expect(kebabCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("bold-text");
             expect(kebabCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("green-foo-blue-bar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect.assertions(3);
             expect(kebabCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mred-text\u001B[0m");
             expect(kebabCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mbold-text\u001B[0m");
             expect(kebabCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
@@ -146,11 +163,13 @@ describe("kebabCase", () => {
     });
 
     it("should convert space separated to kebab-case", () => {
+        expect.assertions(2);
         expect(kebabCase("foo bar")).toBe("foo-bar");
         expect(kebabCase("foo bar baz")).toBe("foo-bar-baz");
     });
 
     it("should handle special formats and mixed cases", () => {
+        expect.assertions(6);
         expect(kebabCase("7samurai")).toBe("7-samurai");
         expect(kebabCase("14BLADES")).toBe("14blades");
         expect(kebabCase("Happy2-see-you")).toBe("happy-2-see-you");
@@ -161,6 +180,7 @@ describe("kebabCase", () => {
 
     describe("locale support", () => {
         it("should handle German specific cases", () => {
+            expect.assertions(3);
             const locale = "de-DE";
             expect(kebabCase("großeStrasse", { locale })).toBe("große-strasse");
             expect(kebabCase("GROSSE", { locale })).toBe("große");
