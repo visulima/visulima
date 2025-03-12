@@ -1134,7 +1134,7 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5
       command-line-args:
-        specifier: ^6.0.1
+        specifier: ^6.0.0
         version: 6.0.1
       fastest-levenshtein:
         specifier: ^1.0.16
@@ -4037,6 +4037,7 @@ packages:
   '@anolilab/package-json-utils@3.0.9':
     resolution: {integrity: sha512-CYwpW2hlsOSdwtksYG5vH7Y48X7qwSnvk4yTsplce/FZFZLKRxuCbwlUqgTEYUng3nZ55A+5EC3rEttgor7e9w==}
     engines: {node: '>=18.* <=21.*'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@anolilab/prettier-config@5.0.14':
     resolution: {integrity: sha512-P7nVwARFM0SKQ0j8Q2y6Q3acHaPNtXOKEX9lgZcf5veFdvNjzK79iZcFdpQikyix4VQBs8x6wBPAD0yDfpC6pQ==}
