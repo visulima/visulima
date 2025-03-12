@@ -4,13 +4,14 @@ import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
-import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
+import normalizeGermanEszett from "./utils/normalize-german-eszett";
 import { FAST_ANSI_REGEX } from "./utils/regex";
 
 // Cache for frequently used pascal case conversions
 const pascalCache = new Map<string, string>();
 const DEFAULT_CACHE_MAX_SIZE = 1000;
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to PascalCase.
  *
@@ -28,6 +29,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * pascalCase('QueryXML123String') // 'QueryXml123String'
  * ```
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const pascalCase = <T extends string = string>(value?: T, options?: CaseOptions): PascalCase<T> => {
     if (typeof value !== "string" || !value) {
         return "" as PascalCase<T>;

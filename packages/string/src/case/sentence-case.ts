@@ -4,13 +4,14 @@ import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
-import { normalizeGermanEszett } from "./utils/normalize-german-eszett";
+import normalizeGermanEszett from "./utils/normalize-german-eszett";
 import { FAST_ANSI_REGEX } from "./utils/regex";
 
 // Cache for frequently used sentence case conversions
 const sentenceCache = new Map<string, string>();
 const DEFAULT_CACHE_MAX_SIZE = 1000;
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to Sentence case.
  * @example
@@ -23,6 +24,7 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * sentenceCase("QueryXML123String") // => "Query xml 123 string"
  * ```
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const sentenceCase = <T extends string = string>(value?: T, options?: CaseOptions): SentenceCase<T> => {
     if (typeof value !== "string") {
         return "" as SentenceCase<T>;
@@ -64,7 +66,9 @@ const sentenceCase = <T extends string = string>(value?: T, options?: CaseOption
                 return word;
             }
 
+            // eslint-disable-next-line no-param-reassign
             word = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
+            // eslint-disable-next-line no-param-reassign
             word = options?.locale ? word.toLocaleLowerCase(options.locale) : word.toLowerCase();
 
             if (firstWord) {

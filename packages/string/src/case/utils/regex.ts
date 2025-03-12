@@ -1,16 +1,18 @@
+// @ts-expect-error: TODO: find why this typing is not working
 import { stripVTControlCharacters } from "node:util";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import emojiRegex from "emoji-regex-xs";
+
+// Cache for dynamically created regexes with LRU-like behavior
+const regexCache = new Map<string, RegExp>();
+const regexCacheOrder: string[] = [];
 
 // Pre-compile regular expressions for better performance
 export const SEPARATORS_REGEX = /[-_./\s]+/g;
 
 // Pre-compile ANSI and emoji regex
 export const EMOJI_REGEX = emojiRegex();
-
-// Cache for dynamically created regexes with LRU-like behavior
-const regexCache = new Map<string, RegExp>();
-const regexCacheOrder: string[] = [];
 
 /**
  * Creates or retrieves a cached regex for custom separators
@@ -59,6 +61,7 @@ export const splitByEmoji = (text: string): string[] => {
 
     EMOJI_REGEX.lastIndex = 0;
 
+    // eslint-disable-next-line no-loops/no-loops,no-cond-assign
     while ((match = EMOJI_REGEX.exec(text)) !== null) {
         if (match.index > lastIndex) {
             segments.push(text.slice(lastIndex, match.index));

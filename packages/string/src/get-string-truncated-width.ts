@@ -4,8 +4,8 @@ import emojiRegex from "emoji-regex-xs";
 import { eastAsianWidthType } from "get-east-asian-width";
 
 const REGEX = {
-    // eslint-disable-next-line no-control-regex,regexp/no-control-character
-    ANSI: /[\u001B\u009B](?:[[()#;?]*(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;.*?\u0007)/y,
+    // eslint-disable-next-line no-control-regex,regexp/no-control-character,security/detect-unsafe-regex
+    ANSI: /[\u001B\u009B](?:[[()#;?]*(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-n qry=><]|\]8;;.*?\u0007)/y,
     // eslint-disable-next-line no-control-regex,regexp/no-control-character
     ANSI_LINK_END: /\u001B\]8;;\u0007/y,
     // eslint-disable-next-line no-control-regex,regexp/no-control-character,regexp/no-obscure-range
@@ -259,7 +259,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
     let width = 0;
     let widthExtra = 0;
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,no-loops/no-loops,no-restricted-syntax,no-labels
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,no-loops/no-loops,no-restricted-syntax,no-labels,no-constant-condition
     outer: while (true) {
         if (unmatchedEnd > unmatchedStart || (index >= length && index > indexPrevious)) {
             const unmatched = input.slice(unmatchedStart, unmatchedEnd) || input.slice(indexPrevious, index);
