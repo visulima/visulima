@@ -1,7 +1,9 @@
 import type { IsStringLiteral, NodeLocale } from "../types";
 
 type SplitterCharacter = " " | "_" | "-" | "." | "/";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LastOfArray<T extends any[]> = T extends [...any, infer R] ? R : never;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RemoveLastOfArray<T extends any[]> = T extends [...infer F, any] ? F : never;
 type IsUpperCase<S extends string> = S extends Uppercase<S> ? true : false;
 type IsLowerCase<S extends string> = S extends Lowercase<S> ? true : false;

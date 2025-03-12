@@ -8,7 +8,7 @@ const getWidth = (input: string, options?: StringTruncatedWidthOptions): number 
 const getTruncated = (input: string, options: StringTruncatedWidthOptions): string => {
     const ellipsis = options.ellipsis ?? "";
     const result = getStringTruncatedWidth(input, options);
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+
     return `${input.slice(0, result.index)}${result.ellipsed ? ellipsis : ""}`;
 };
 
@@ -111,12 +111,15 @@ describe("string Width", () => {
             // eslint-disable-next-line compat/compat
             const response = await fetch("https://raw.githubusercontent.com/muan/unicode-emoji-json/main/data-by-group.json");
             const data = await response.json();
+            // eslint-disable-next-line @typescript-eslint/no-shadow
             const emojis = data.flatMap(({ emojis }) => emojis.map(({ emoji }) => emoji));
 
-            const failures = emojis.filter((emoji) => {
+            const failures = emojis.filter((emoji: string) => {
                 if (getWidth(emoji) !== 2) {
                     return true;
                 }
+
+                return false;
             });
 
             expect(failures).toStrictEqual([]);
@@ -189,7 +192,7 @@ describe("string Width", () => {
 
             // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const [char, expectedWidth] of Object.entries(unicodeChars)) {
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+
                 expect(getWidth(char), `${char} should have a width of ${expectedWidth}`).toBe(expectedWidth);
             }
         });

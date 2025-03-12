@@ -1,6 +1,7 @@
 /**
  * Returns a tuple of the given length with the given type.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TupleOf<L extends number, T = unknown, Result extends any[] = []> = Result["length"] extends L ? Result : TupleOf<L, T, [...Result, T]>;
 
 /** Slice with StartIndex and EndIndex */
@@ -60,22 +61,30 @@ type InternalEndsWithType<T extends string, S extends string, P extends number> 
 /** Overload of EndsWith without P */
 type EndsWithNoPositionType<T extends string, S extends string> = StartsWith<Reverse<T>, Reverse<S>>;
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 namespace Math {
+    // eslint-disable-next-line import/no-unused-modules
     export type Subtract<A extends number, B extends number> = number extends A | B ? number : TupleOf<A> extends [...infer U, ...TupleOf<B>] ? U["length"] : 0;
 
+    // eslint-disable-next-line import/no-unused-modules
     export type IsNegative<T extends number> = number extends T ? boolean : `${T}` extends `-${number}` ? true : false;
 
+    // eslint-disable-next-line import/no-unused-modules
     export type Abs<T extends number> = `${T}` extends `-${infer U extends number}` ? U : T;
 
+    // eslint-disable-next-line import/no-unused-modules
     export type GetPositiveIndex<T extends string, I extends number> = IsNegative<I> extends false ? I : Subtract<Length<T>, Abs<I>>;
 }
+
 
 export type { Math };
 
 /**
  * Returns true if input number type is a literal
  */
+
 export type IsNumberLiteral<T extends number> = [T] extends [number] ? ([number] extends [T] ? false : true) : false;
+
 
 export type IsBooleanLiteral<T extends boolean> = [T] extends [boolean] ? ([boolean] extends [T] ? false : true) : false;
 
@@ -92,6 +101,7 @@ export type Reverse<T extends string, Accumulator extends string = ""> = T exten
 /**
  * Returns true if any elements in boolean array are the literal true (not false or boolean)
  */
+
 export type Any<BoolArray extends boolean[]> = BoolArray extends [infer Head extends boolean, ...infer Rest extends boolean[]]
     ? IsBooleanLiteral<Head> extends true
         ? Head extends true
@@ -103,6 +113,7 @@ export type Any<BoolArray extends boolean[]> = BoolArray extends [infer Head ext
 /**
  * Returns true if every element in boolean array is the literal true (not false or boolean)
  */
+
 export type All<BoolArray extends boolean[]> =
     IsBooleanLiteral<BoolArray[number]> extends true
         ? BoolArray extends [infer Head extends boolean, ...infer Rest extends boolean[]]
@@ -325,6 +336,7 @@ export type TrimStart<T extends string> = T extends ` ${infer Rest}` ? TrimStart
 export type Trim<T extends string> = TrimEnd<TrimStart<T>>;
 
 export type NodeLocale =
+    // eslint-disable-next-line @typescript-eslint/sort-type-constituents
     | "af" // Afrikaans
     | "am" // Amharic
     | "ar" // Arabic
