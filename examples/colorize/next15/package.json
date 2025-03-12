@@ -18,9 +18,9 @@
         "@types/node": "18.19.71",
         "@types/react": "^19.0.10",
         "@types/react-dom": "^19.0.4",
-        "postcss": "^8.5.3",
         "eslint": "^9.21.0",
-        "eslint-config-next": "^15.2.1",
+        "eslint-config-next": "^15.2.2",
+        "postcss": "^8.5.3",
         "typescript": "5.8.2"
     }
 }
