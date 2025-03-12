@@ -1,4 +1,4 @@
-import { bgRed, red } from "@visulima/colorize";
+import { bgRed } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { splitByCase } from "../../../src/case/split-by-case";
@@ -516,7 +516,7 @@ describe("splitByCase", () => {
             const options = { locale: "uz" };
 
             it("should handle Uzbek Latin script", () => {
-            expect.assertions(3);
+                expect.assertions(3);
 
                 expect(splitByCase("salomDunyo", options)).toStrictEqual(["salom", "Dunyo"]);
                 expect(splitByCase("oʻzbekText", options)).toStrictEqual(["oʻzbek", "Text"]);
@@ -524,14 +524,14 @@ describe("splitByCase", () => {
             });
 
             it("should handle Uzbek Cyrillic script", () => {
-            expect.assertions(3);
+                expect.assertions(3);
                 expect(splitByCase("саломДунё", options)).toStrictEqual(["салом", "Дунё"]);
                 expect(splitByCase("ўзбекText", options)).toStrictEqual(["ўзбек", "Text"]);
                 expect(splitByCase("каттаҲарф", options)).toStrictEqual(["катта", "Ҳарф"]);
             });
 
             it("should handle mixed script cases", () => {
-            expect.assertions(2);
+                expect.assertions(2);
                 expect(splitByCase("oʻzbekЎзбек", options)).toStrictEqual(["oʻzbek", "Ўзбек"]);
                 expect(splitByCase("latinКирилText", options)).toStrictEqual(["latin", "Кирил", "Text"]);
             });
@@ -573,7 +573,7 @@ describe("splitByCase", () => {
             const options = { locale: "de-DE" };
 
             it("should handle German specific cases", () => {
-            expect.assertions(6);
+                expect.assertions(6);
                 expect(splitByCase("GROSSE STRAßE", options)).toStrictEqual(["GROSSE", "STRAßE"]);
                 expect(splitByCase("straßeTest", options)).toStrictEqual(["straße", "Test"]);
                 expect(splitByCase("großeHaus", options)).toStrictEqual(["große", "Haus"]);
@@ -583,27 +583,27 @@ describe("splitByCase", () => {
             });
 
             it("should handle eszett in uppercase sequences", () => {
-            expect.assertions(3);
+                expect.assertions(3);
                 expect(splitByCase("STRAßE", options)).toStrictEqual(["STRAßE"]);
                 expect(splitByCase("GROßE", options)).toStrictEqual(["GROßE"]);
                 expect(splitByCase("GROẞE", options)).toStrictEqual(["GROẞE"]);
             });
 
             it("should handle mixed case with eszett", () => {
-            expect.assertions(2);
+                expect.assertions(2);
                 expect(splitByCase("großeSTRASSE", options)).toStrictEqual(["große", "STRASSE"]);
                 expect(splitByCase("DieGROSSEStadtStraße", options)).toStrictEqual(["Die", "GROSSE", "Stadt", "Straße"]);
             });
 
             it("should handle compound words", () => {
-            expect.assertions(3);
+                expect.assertions(3);
                 expect(splitByCase("BundesstraßeNummer", options)).toStrictEqual(["Bundesstraße", "Nummer"]);
                 expect(splitByCase("GROßSTADT", options)).toStrictEqual(["GROßSTADT"]);
                 expect(splitByCase("KLEINSTRAßE", options)).toStrictEqual(["KLEINSTRAßE"]);
             });
 
             it("should handle German eszett cases", () => {
-            expect.assertions(4);
+                expect.assertions(4);
                 expect(splitByCase("straßeName", options)).toStrictEqual(["straße", "Name"]);
                 expect(splitByCase("STRAẞENAME", options)).toStrictEqual(["STRAẞENAME"]);
                 expect(splitByCase("GROẞBUCHSTABE", options)).toStrictEqual(["GROẞBUCHSTABE"]);
@@ -792,7 +792,14 @@ describe("splitByCase", () => {
                 "BAR",
                 "\u001B[0m",
             ]);
-            expect(splitByCase(bgRed.green("RedText"), { handleAnsi: true })).toStrictEqual(["\u001B[41m", "\u001B[32m", "Red", "Text", "\u001B[39m", "\u001B[49m"]);
+            expect(splitByCase(bgRed.green("RedText"), { handleAnsi: true })).toStrictEqual([
+                "\u001B[41m",
+                "\u001B[32m",
+                "Red",
+                "Text",
+                "\u001B[39m",
+                "\u001B[49m",
+            ]);
         });
 
         it("should handle ANSI escape codes with numbers when handleAnsi is true", () => {

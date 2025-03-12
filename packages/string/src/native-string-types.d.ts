@@ -18,6 +18,8 @@ import type {
     TrimStart,
 } from "./types";
 
+export {};
+
 declare global {
     interface String {
         /**

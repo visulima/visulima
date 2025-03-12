@@ -1,11 +1,11 @@
 import type { IsStringLiteral, NodeLocale } from "../types";
 
-type Splitter = " " | "_" | "-" | "." | "/";
+type SplitterCharacter = " " | "_" | "-" | "." | "/";
 type LastOfArray<T extends any[]> = T extends [...any, infer R] ? R : never;
 type RemoveLastOfArray<T extends any[]> = T extends [...infer F, any] ? F : never;
-type IsUpper<S extends string> = S extends Uppercase<S> ? true : false;
-type IsLower<S extends string> = S extends Lowercase<S> ? true : false;
-type SameLetterCase<X extends string, Y extends string> = IsUpper<X> extends IsUpper<Y> ? true : IsLower<X> extends IsLower<Y> ? true : false;
+type IsUpperCase<S extends string> = S extends Uppercase<S> ? true : false;
+type IsLowerCase<S extends string> = S extends Lowercase<S> ? true : false;
+type SameLetterCase<X extends string, Y extends string> = IsUpperCase<X> extends IsUpperCase<Y> ? true : IsLowerCase<X> extends IsLowerCase<Y> ? true : false;
 type FirstOfString<S extends string> = S extends `${infer F}${string}` ? F : never;
 type RemoveFirstOfString<S extends string> = S extends `${string}${infer R}` ? R : never;
 
@@ -267,7 +267,7 @@ export type IdentifyCase<T extends string> =
                 : "mixed"
         : string;
 
-export type SplitByCase<T, Separator extends string = Splitter, Accumulator extends unknown[] = []> = string extends Separator
+export type SplitByCase<T, Separator extends string = SplitterCharacter, Accumulator extends unknown[] = []> = string extends Separator
     ? string[]
     : T extends `${infer F}${infer R}`
       ? [LastOfArray<Accumulator>] extends [never]
@@ -279,11 +279,11 @@ export type SplitByCase<T, Separator extends string = Splitter, Accumulator exte
                   ? F extends Separator
                       ? FirstOfString<R> extends Separator
                           ? SplitByCase<R, Separator, [...Accumulator, ""]>
-                          : IsUpper<FirstOfString<R>> extends true
+                          : IsUpperCase<FirstOfString<R>> extends true
                             ? SplitByCase<RemoveFirstOfString<R>, Separator, [...Accumulator, FirstOfString<R>]>
                             : SplitByCase<R, Separator, [...Accumulator, ""]>
                       : SplitByCase<R, Separator, [...RemoveLastOfArray<Accumulator>, `${LastOfArray<Accumulator>}${F}`]>
-                  : IsLower<F> extends true
+                  : IsLowerCase<F> extends true
                     ? SplitByCase<RemoveFirstOfString<R>, Separator, [...RemoveLastOfArray<Accumulator>, `${LastOfArray<Accumulator>}${F}`, FirstOfString<R>]>
                     : SplitByCase<R, Separator, [...Accumulator, F]>
             : never

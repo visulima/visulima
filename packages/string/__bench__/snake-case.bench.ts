@@ -9,101 +9,101 @@ import { snakeCase } from "../dist/case";
 
 describe("snakeCase", () => {
     bench("visulima/string snakeCase (no cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            snakeCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            snakeCase(stringValue);
         }
     });
 
     bench("visulima/string snakeCase (with cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            snakeCase(string_, { cache: true });
+        for (const stringValue of TEST_STRINGS) {
+            snakeCase(stringValue, { cache: true });
         }
     });
 
     bench("lodash snakeCase", () => {
-        for (const string_ of TEST_STRINGS) {
-            lodashSnakeCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            lodashSnakeCase(stringValue);
         }
     });
 
     bench("case-anything snakeCase", () => {
-        for (const string_ of TEST_STRINGS) {
-            caseAnythingSnakeCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            caseAnythingSnakeCase(stringValue);
         }
     });
 
     bench("scule snakeCase", () => {
-        for (const string_ of TEST_STRINGS) {
-            sculeSnakeCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            sculeSnakeCase(stringValue);
         }
     });
 
     bench("change-case snakeCase", () => {
-        for (const string_ of TEST_STRINGS) {
-            changeCaseSnake(string_);
+        for (const stringValue of TEST_STRINGS) {
+            changeCaseSnake(stringValue);
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string snakeCase (no cache)", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                snakeCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                snakeCase(stringValue);
             }
         });
 
         bench("lodash snakeCase", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                lodashSnakeCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                lodashSnakeCase(stringValue);
             }
         });
 
         bench("case-anything snakeCase", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                caseAnythingSnakeCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                caseAnythingSnakeCase(stringValue);
             }
         });
 
         bench("scule snakeCase", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                sculeSnakeCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                sculeSnakeCase(stringValue);
             }
         });
 
         bench("change-case snakeCase", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                changeCaseSnake(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                changeCaseSnake(stringValue);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string snakeCase (no cache)", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                snakeCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                snakeCase(stringValue);
             }
         });
 
         bench("lodash snakeCase", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                lodashSnakeCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                lodashSnakeCase(stringValue);
             }
         });
 
         bench("case-anything snakeCase", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                caseAnythingSnakeCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                caseAnythingSnakeCase(stringValue);
             }
         });
 
         bench("scule snakeCase", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                sculeSnakeCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                sculeSnakeCase(stringValue);
             }
         });
 
         bench("change-case snakeCase", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                changeCaseSnake(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                changeCaseSnake(stringValue);
             }
         });
     });

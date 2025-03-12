@@ -6,47 +6,47 @@ import { titleCase } from "../dist/case";
 
 describe("titleCase", () => {
     bench("visulima/string titleCase (no cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            titleCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            titleCase(stringValue);
         }
     });
 
     bench("visulima/string titleCase (with cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            titleCase(string_, { cache: true });
+        for (const stringValue of TEST_STRINGS) {
+            titleCase(stringValue, { cache: true });
         }
     });
 
     bench("scule titleCase", () => {
-        for (const string_ of TEST_STRINGS) {
-            sculeTitleCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            sculeTitleCase(stringValue);
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string titleCase (no cache)", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                titleCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                titleCase(stringValue);
             }
         });
 
         bench("scule titleCase", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                sculeTitleCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                sculeTitleCase(stringValue);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string titleCase (no cache)", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                titleCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                titleCase(stringValue);
             }
         });
 
         bench("scule titleCase", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                sculeTitleCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                sculeTitleCase(stringValue);
             }
         });
     });

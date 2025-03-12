@@ -5,29 +5,29 @@ import { pascalCase } from "../dist/case";
 
 describe("pascalCase", () => {
     bench("visulima/string pascalCase (no cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            pascalCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            pascalCase(stringValue);
         }
     });
 
     bench("visulima/string pascalCase (with cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            pascalCase(string_, { cache: true });
+        for (const stringValue of TEST_STRINGS) {
+            pascalCase(stringValue, { cache: true });
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string pascalCase (no cache)", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                pascalCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                pascalCase(stringValue);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string pascalCase (no cache)", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                pascalCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                pascalCase(stringValue);
             }
         });
     });

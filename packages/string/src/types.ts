@@ -1,45 +1,50 @@
 /**
  * Returns a tuple of the given length with the given type.
  */
-type TupleOf<L extends number, T = unknown, result extends any[] = []> = result["length"] extends L ? result : TupleOf<L, T, [...result, T]>;
+type TupleOf<L extends number, T = unknown, Result extends any[] = []> = Result["length"] extends L ? Result : TupleOf<L, T, [...Result, T]>;
 
-/** Slice with startIndex and endIndex */
-type InternalSlice<T extends string, startIndex extends number, endIndex extends number, _result extends string = ""> =
-    IsNumberLiteral<endIndex | startIndex> extends true
-        ? T extends `${infer head}${infer rest}`
-            ? IsStringLiteral<head> extends true
-                ? startIndex extends 0
-                    ? endIndex extends 0
-                        ? _result
-                        : InternalSlice<rest, 0, Math.Subtract<Math.GetPositiveIndex<T, endIndex>, 1>, `${_result}${head}`>
-                    : InternalSlice<rest, Math.Subtract<Math.GetPositiveIndex<T, startIndex>, 1>, Math.Subtract<Math.GetPositiveIndex<T, endIndex>, 1>, _result>
-                : endIndex | startIndex extends 0
-                  ? _result
+/** Slice with StartIndex and EndIndex */
+type InternalSliceType<T extends string, StartIndex extends number, EndIndex extends number, Result extends string = ""> =
+    IsNumberLiteral<EndIndex | StartIndex> extends true
+        ? T extends `${infer Head}${infer Rest}`
+            ? IsStringLiteral<Head> extends true
+                ? StartIndex extends 0
+                    ? EndIndex extends 0
+                        ? Result
+                        : InternalSliceType<Rest, 0, Math.Subtract<Math.GetPositiveIndex<T, EndIndex>, 1>, `${Result}${Head}`>
+                    : InternalSliceType<
+                          Rest,
+                          Math.Subtract<Math.GetPositiveIndex<T, StartIndex>, 1>,
+                          Math.Subtract<Math.GetPositiveIndex<T, EndIndex>, 1>,
+                          Result
+                      >
+                : EndIndex | StartIndex extends 0
+                  ? Result
                   : string // Head is non-literal
             : IsStringLiteral<T> extends true // Couldn't be split into head/tail
-              ? _result // T ran out
-              : endIndex | startIndex extends 0
-                ? _result // Eg: Slice<`abc${string}`, 1, 3> -> 'bc'
+              ? Result // T ran out
+              : EndIndex | StartIndex extends 0
+                ? Result // Eg: Slice<`abc${string}`, 1, 3> -> 'bc'
                 : string // Head is non-literal
         : string;
 
-/** Slice with startIndex only */
-type SliceStart<T extends string, startIndex extends number, _result extends string = ""> =
-    IsNumberLiteral<startIndex> extends true
-        ? T extends `${infer head}${infer rest}`
-            ? IsStringLiteral<head> extends true
-                ? startIndex extends 0
+/** Slice with StartIndex only */
+type SliceStartType<T extends string, StartIndex extends number, Result extends string = ""> =
+    IsNumberLiteral<StartIndex> extends true
+        ? T extends `${infer Head}${infer Rest}`
+            ? IsStringLiteral<Head> extends true
+                ? StartIndex extends 0
                     ? T
-                    : SliceStart<rest, Math.Subtract<Math.GetPositiveIndex<T, startIndex>, 1>, _result>
+                    : SliceStartType<Rest, Math.Subtract<Math.GetPositiveIndex<T, StartIndex>, 1>, Result>
                 : string
             : IsStringLiteral<T> extends true
-              ? _result
-              : startIndex extends 0
-                ? _result
+              ? Result
+              : StartIndex extends 0
+                ? Result
                 : string
         : string;
 
-type _EndsWith<T extends string, S extends string, P extends number> =
+type InternalEndsWithType<T extends string, S extends string, P extends number> =
     All<[IsStringLiteral<S>, IsNumberLiteral<P>]> extends true
         ? Math.IsNegative<P> extends false
             ? P extends Length<T>
@@ -47,13 +52,13 @@ type _EndsWith<T extends string, S extends string, P extends number> =
                     ? S extends Slice<T, Math.Subtract<Length<T>, Length<S>>, Length<T>>
                         ? true
                         : false
-                    : _EndsWithNoPosition<Slice<T, 0, P>, S> // Eg: EndsWith<`abc${string}xyz`, 'c', 3>
-                : _EndsWithNoPosition<Slice<T, 0, P>, S> // P !== T.length, slice
+                    : EndsWithNoPositionType<Slice<T, 0, P>, S> // Eg: EndsWith<`abc${string}xyz`, 'c', 3>
+                : EndsWithNoPositionType<Slice<T, 0, P>, S> // P !== T.length, slice
             : false // P is negative, false
         : boolean;
 
 /** Overload of EndsWith without P */
-type _EndsWithNoPosition<T extends string, S extends string> = StartsWith<Reverse<T>, Reverse<S>>;
+type EndsWithNoPositionType<T extends string, S extends string> = StartsWith<Reverse<T>, Reverse<S>>;
 
 namespace Math {
     export type Subtract<A extends number, B extends number> = number extends A | B ? number : TupleOf<A> extends [...infer U, ...TupleOf<B>] ? U["length"] : 0;
@@ -78,16 +83,16 @@ export type IsBooleanLiteral<T extends boolean> = [T] extends [boolean] ? ([bool
  * Reverses a string.
  * - `T` The string to reverse.
  */
-export type Reverse<T extends string, _accumulator extends string = ""> = T extends `${infer Head}${infer Tail}`
-    ? Reverse<Tail, `${Head}${_accumulator}`>
-    : _accumulator extends ""
+export type Reverse<T extends string, Accumulator extends string = ""> = T extends `${infer Head}${infer Tail}`
+    ? Reverse<Tail, `${Head}${Accumulator}`>
+    : Accumulator extends ""
       ? T
-      : `${T}${_accumulator}`;
+      : `${T}${Accumulator}`;
 
 /**
  * Returns true if any elements in boolean array are the literal true (not false or boolean)
  */
-export type Any<Array_ extends boolean[]> = Array_ extends [infer Head extends boolean, ...infer Rest extends boolean[]]
+export type Any<BoolArray extends boolean[]> = BoolArray extends [infer Head extends boolean, ...infer Rest extends boolean[]]
     ? IsBooleanLiteral<Head> extends true
         ? Head extends true
             ? true
@@ -98,9 +103,9 @@ export type Any<Array_ extends boolean[]> = Array_ extends [infer Head extends b
 /**
  * Returns true if every element in boolean array is the literal true (not false or boolean)
  */
-export type All<Array_ extends boolean[]> =
-    IsBooleanLiteral<Array_[number]> extends true
-        ? Array_ extends [infer Head extends boolean, ...infer Rest extends boolean[]]
+export type All<BoolArray extends boolean[]> =
+    IsBooleanLiteral<BoolArray[number]> extends true
+        ? BoolArray extends [infer Head extends boolean, ...infer Rest extends boolean[]]
             ? Head extends true
                 ? Any<Rest>
                 : false // Found `false` in array
@@ -120,14 +125,14 @@ export type IsStringLiteral<T extends string> = [T] extends [string]
           : false
     : false;
 
-export type IsStringLiteralArray<Array_ extends ReadonlyArray<string> | string[]> = IsStringLiteral<Array_[number]> extends true ? true : false;
+export type IsStringLiteralArray<StringArray extends ReadonlyArray<string>> = IsStringLiteral<StringArray[number]> extends true ? true : false;
 
 /**
  * Gets the character at the given index.
  * T: The string to get the character from.
  * index: The index of the character.
  */
-export type CharAt<T extends string, index extends number> = All<[IsStringLiteral<T>, IsNumberLiteral<index>]> extends true ? Split<T>[index] : string;
+export type CharAt<T extends string, Index extends number> = All<[IsStringLiteral<T>, IsNumberLiteral<Index>]> extends true ? Split<T>[Index] : string;
 
 /**
  * Concatenates a tuple of strings.
@@ -142,8 +147,8 @@ export type Concat<T extends string[]> = Join<T>;
  * P: The position the search should end.
  */
 export type EndsWith<T extends string, S extends string, P extends number | undefined = undefined> = P extends number
-    ? _EndsWith<T, S, P>
-    : _EndsWithNoPosition<T, S>;
+    ? InternalEndsWithType<T, S, P>
+    : EndsWithNoPositionType<T, S>;
 
 /**
  * Checks if a string includes another string.
@@ -166,12 +171,12 @@ export type Includes<T extends string, S extends string, P extends number = 0> =
  * T: The tuple of strings to join.
  * delimiter: The delimiter.
  */
-export type Join<T extends ReadonlyArray<string>, delimiter extends string = ""> =
-    All<[IsStringLiteralArray<T>, IsStringLiteral<delimiter>]> extends true
-        ? T extends readonly [infer first extends string, ...infer rest extends string[]]
-            ? rest extends []
-                ? first
-                : `${first}${delimiter}${Join<rest, delimiter>}`
+export type Join<T extends ReadonlyArray<string>, Delimiter extends string = ""> =
+    All<[IsStringLiteralArray<T>, IsStringLiteral<Delimiter>]> extends true
+        ? T extends readonly [infer First extends string, ...infer Rest extends string[]]
+            ? Rest extends []
+                ? First
+                : `${First}${Delimiter}${Join<Rest, Delimiter>}`
             : ""
         : string;
 
@@ -186,11 +191,11 @@ export type Length<T extends string> = IsStringLiteral<T> extends true ? Split<T
  * times: The number of times to pad.
  * pad: The string to pad with.
  */
-export type PadEnd<T extends string, times extends number = 0, pad extends string = " "> =
-    All<[IsStringLiteral<pad | T>, IsNumberLiteral<times>]> extends true
-        ? Math.IsNegative<times> extends false
-            ? Math.Subtract<times, Length<T>> extends infer missing extends number
-                ? `${T}${Slice<Repeat<pad, missing>, 0, missing>}`
+export type PadEnd<T extends string, Times extends number = 0, Pad extends string = " "> =
+    All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
+        ? Math.IsNegative<Times> extends false
+            ? Math.Subtract<Times, Length<T>> extends infer Missing extends number
+                ? `${T}${Slice<Repeat<Pad, Missing>, 0, Missing>}`
                 : never
             : T
         : string;
@@ -201,11 +206,11 @@ export type PadEnd<T extends string, times extends number = 0, pad extends strin
  * times: The number of times to pad.
  * pad: The string to pad with.
  */
-export type PadStart<T extends string, times extends number = 0, pad extends string = " "> =
-    All<[IsStringLiteral<pad | T>, IsNumberLiteral<times>]> extends true
-        ? Math.IsNegative<times> extends false
-            ? Math.Subtract<times, Length<T>> extends infer missing extends number
-                ? `${Slice<Repeat<pad, missing>, 0, missing>}${T}`
+export type PadStart<T extends string, Times extends number = 0, Pad extends string = " "> =
+    All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
+        ? Math.IsNegative<Times> extends false
+            ? Math.Subtract<Times, Length<T>> extends infer Missing extends number
+                ? `${Slice<Repeat<Pad, Missing>, 0, Missing>}${T}`
                 : never
             : T
         : string;
@@ -215,12 +220,12 @@ export type PadStart<T extends string, times extends number = 0, pad extends str
  * T: The string to repeat.
  * N: The number of times to repeat.
  */
-export type Repeat<T extends string, times extends number = 0> =
-    All<[IsStringLiteral<T>, IsNumberLiteral<times>]> extends true
-        ? times extends 0
+export type Repeat<T extends string, Times extends number = 0> =
+    All<[IsStringLiteral<T>, IsNumberLiteral<Times>]> extends true
+        ? Times extends 0
             ? ""
-            : Math.IsNegative<times> extends false
-              ? Join<TupleOf<times, T>>
+            : Math.IsNegative<Times> extends false
+              ? Join<TupleOf<Times, T>>
               : never
         : string;
 
@@ -230,11 +235,11 @@ export type Repeat<T extends string, times extends number = 0> =
  * lookup: The lookup string to be replaced.
  * replacement: The replacement string.
  */
-export type ReplaceAll<sentence extends string, lookup extends RegExp | string, replacement extends string = ""> = lookup extends string
-    ? IsStringLiteral<lookup | replacement | sentence> extends true
-        ? sentence extends `${infer rest}${lookup}${infer rest2}`
-            ? `${rest}${replacement}${ReplaceAll<rest2, lookup, replacement>}`
-            : sentence
+export type ReplaceAll<Sentence extends string, Lookup extends RegExp | string, Replacement extends string = ""> = Lookup extends string
+    ? IsStringLiteral<Lookup | Replacement | Sentence> extends true
+        ? Sentence extends `${infer Rest}${Lookup}${infer Rest2}`
+            ? `${Rest}${Replacement}${ReplaceAll<Rest2, Lookup, Replacement>}`
+            : Sentence
         : string
     : string; // Regex used, can't preserve literal
 
@@ -244,33 +249,33 @@ export type ReplaceAll<sentence extends string, lookup extends RegExp | string, 
  * lookup: The lookup string to be replaced.
  * replacement: The replacement string.
  */
-export type Replace<sentence extends string, lookup extends RegExp | string, replacement extends string = ""> = lookup extends string
-    ? IsStringLiteral<lookup | replacement | sentence> extends true
-        ? sentence extends `${infer rest}${lookup}${infer rest2}`
-            ? `${rest}${replacement}${rest2}`
-            : sentence
+export type Replace<Sentence extends string, Lookup extends RegExp | string, Replacement extends string = ""> = Lookup extends string
+    ? IsStringLiteral<Lookup | Replacement | Sentence> extends true
+        ? Sentence extends `${infer Rest}${Lookup}${infer Rest2}`
+            ? `${Rest}${Replacement}${Rest2}`
+            : Sentence
         : string
     : string; // Regex used, can't preserve literal
 
 /**
- * Slices a string from a startIndex to an endIndex.
+ * Slices a string from a StartIndex to an EndIndex.
  * T: The string to slice.
- * startIndex: The start index.
- * endIndex: The end index.
+ * StartIndex: The start index.
+ * EndIndex: The end index.
  */
-export type Slice<T extends string, startIndex extends number = 0, endIndex extends number | undefined = undefined> = endIndex extends number
-    ? InternalSlice<T, startIndex, endIndex>
-    : SliceStart<T, startIndex>;
+export type Slice<T extends string, StartIndex extends number = 0, EndIndex extends number | undefined = undefined> = EndIndex extends number
+    ? InternalSliceType<T, StartIndex, EndIndex>
+    : SliceStartType<T, StartIndex>;
 
 /**
  * Splits a string into an array of substrings.
  * T: The string to split.
  * delimiter: The delimiter.
  */
-export type Split<T extends string, delimiter extends string = ""> =
-    IsStringLiteral<delimiter | T> extends true
-        ? T extends `${infer first}${delimiter}${infer rest}`
-            ? [first, ...Split<rest, delimiter>]
+export type Split<T extends string, Delimiter extends string = ""> =
+    IsStringLiteral<Delimiter | T> extends true
+        ? T extends `${infer First}${Delimiter}${infer Rest}`
+            ? [First, ...Split<Rest, Delimiter>]
             : T extends ""
               ? []
               : [T]
@@ -305,13 +310,13 @@ export type StartsWith<T extends string, S extends string, P extends number = 0>
  * Trims all whitespaces at the end of a string.
  * T: The string to trim.
  */
-export type TrimEnd<T extends string> = T extends `${infer rest} ` ? TrimEnd<rest> : T;
+export type TrimEnd<T extends string> = T extends `${infer Rest} ` ? TrimEnd<Rest> : T;
 
 /**
  * Trims all whitespaces at the start of a string.
  * T: The string to trim.
  */
-export type TrimStart<T extends string> = T extends ` ${infer rest}` ? TrimStart<rest> : T;
+export type TrimStart<T extends string> = T extends ` ${infer Rest}` ? TrimStart<Rest> : T;
 
 /**
  * Trims all whitespaces at the start and end of a string.

@@ -5,29 +5,29 @@ import { sentenceCase } from "../dist/case";
 
 describe("sentenceCase", () => {
     bench("visulima/string sentenceCase (no cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            sentenceCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            sentenceCase(stringValue);
         }
     });
 
     bench("visulima/string sentenceCase (with cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            sentenceCase(string_, { cache: true });
+        for (const stringValue of TEST_STRINGS) {
+            sentenceCase(stringValue, { cache: true });
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string sentenceCase (no cache)", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                sentenceCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                sentenceCase(stringValue);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string sentenceCase (no cache)", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                sentenceCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                sentenceCase(stringValue);
             }
         });
     });

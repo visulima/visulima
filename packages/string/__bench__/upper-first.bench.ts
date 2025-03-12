@@ -6,41 +6,41 @@ import { upperFirst } from "../dist/case";
 
 describe("upperFirst", () => {
     bench("visulima/string upperFirst (no cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            upperFirst(string_);
+        for (const stringValue of TEST_STRINGS) {
+            upperFirst(stringValue);
         }
     });
 
     bench("scule upperFirst", () => {
-        for (const string_ of TEST_STRINGS) {
-            sculeUpperFirst(string_);
+        for (const stringValue of TEST_STRINGS) {
+            sculeUpperFirst(stringValue);
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string upperFirst (no cache)", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                upperFirst(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                upperFirst(stringValue);
             }
         });
 
         bench("scule upperFirst", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                sculeUpperFirst(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                sculeUpperFirst(stringValue);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string upperFirst (no cache)", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                upperFirst(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                upperFirst(stringValue);
             }
         });
 
         bench("scule upperFirst", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                sculeUpperFirst(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                sculeUpperFirst(stringValue);
             }
         });
     });
