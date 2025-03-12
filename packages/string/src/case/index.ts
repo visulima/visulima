@@ -1,3 +1,4 @@
+export type { NodeLocale } from "../types";
 export { default as camelCase } from "./camel-case";
 export { default as capitalCase } from "./capital-case";
 export { default as constantCase } from "./constant-case";

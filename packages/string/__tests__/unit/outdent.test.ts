@@ -204,6 +204,7 @@ removed
 
     it("should not get indentation from outdent when preceded by non-whitespace", () => {
         expect.assertions(3);
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         const outdentAsString = "" + outdent;
 
         const result = outdent`non-whitespace
@@ -243,11 +244,10 @@ removed
         expect.assertions(1);
 
         const object = { toString: () => "Object" };
-        const number_ = 42;
         const result = outdent`
             Values:
             String: ${"text"}
-            Number: ${number_}
+            Number: ${42}
             Object: ${object}
         `;
 

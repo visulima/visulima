@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { FAST_ANSI_REGEX, stripAnsi } from "../../src/case/utils/regex";
 import { wordWrap, WrapMode } from "../../src/word-wrap";
 
-// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+ 
 const fixture = `The quick brown ${red("fox jumped over")} the lazy ${green("dog and then ran away with the unicorn.")}`;
 const fixture2 = "12345678\n901234567890";
 const fixture3 = "12345678\n901234567890 12345";
@@ -20,7 +20,7 @@ describe("wordWrap", () => {
         const result = wordWrap(fixture, { width: 20 });
 
         expect(result).toBe(
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+             
             `The quick brown ${red("fox")}\n${red("jumped over")} the lazy\n${green("dog and then ran")}\n${green("away with the")}\n${green("unicorn.")}`,
         );
         expect(result.split("\n").every((line) => stripAnsi(line).length <= 20)).toBeTruthy();
@@ -143,7 +143,7 @@ describe("wordWrap", () => {
                 width: 3,
                 wrapMode: WrapMode.STRICT_WIDTH,
             }),
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+             
         ).toBe(`${bgGreen.black("tes")}\n${bgGreen.black("t")}`);
     });
 

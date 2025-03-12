@@ -69,6 +69,7 @@ module.exports = defineConfig({
             files: ["src/native-string-types.d.ts"],
             rules: {
                 "@typescript-eslint/method-signature-style": "off",
+                "import/no-unused-modules": "off",
             },
         },
         {
@@ -85,6 +86,7 @@ module.exports = defineConfig({
         {
             files: ["__tests__/**"],
             rules: {
+                "@typescript-eslint/restrict-template-expressions": "off",
                 "import/no-unused-modules": "off",
             },
         },
@@ -98,9 +100,11 @@ module.exports = defineConfig({
         {
             files: ["__bench__/**/*.ts"],
             rules: {
+                "@typescript-eslint/restrict-template-expressions": "off",
+                "import/no-extraneous-dependencies": "off",
                 "import/no-unused-modules": "off",
-                "no-restricted-syntax": "off",
-                "no-loops/no-loops": "off"
+                "no-loops/no-loops": "off",
+                "no-restricted-syntax": "off"
             },
         },
     ],

@@ -100,6 +100,7 @@ describe("splitByCase", () => {
         expect(splitByCase("__FOO__BAR__")).toStrictEqual(["FOO", "BAR"]);
         expect(splitByCase("...test...case...")).toStrictEqual(["test", "case"]);
         expect(splitByCase("///path///case///")).toStrictEqual(["path", "case"]);
+        // eslint-disable-next-line no-secrets/no-secrets
         expect(splitByCase("MixedXMLAndJSON123Data")).toStrictEqual(["Mixed", "XML", "And", "JSON", "123", "Data"]);
     });
 
