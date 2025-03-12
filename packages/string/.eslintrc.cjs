@@ -66,22 +66,10 @@ module.exports = defineConfig({
             },
         },
         {
-            files: ["__tests__/unit/string.types.test.ts", "__tests__/unit/string.interface.types.test.ts"],
-            rules: {
-                "vitest/prefer-expect-assertions": "off",
-            },
-        },
-        {
             files: ["src/native-string-types.d.ts"],
             rules: {
                 "@typescript-eslint/method-signature-style": "off",
             },
-        },
-        {
-            files: ["*.types.test.ts"],
-            rules: {
-                "vitest/expect-expect": "off",
-            }
         },
         {
             files: ["__docs__/**"],
@@ -98,6 +86,21 @@ module.exports = defineConfig({
             files: ["__tests__/**"],
             rules: {
                 "import/no-unused-modules": "off",
+            },
+        },
+        {
+            files: ["__tests__/unit/string.types.test.ts", "__tests__/unit/string.interface.types.test.ts"],
+            rules: {
+                "vitest/expect-expect": "off",
+                "vitest/prefer-expect-assertions": "off",
+            },
+        },
+        {
+            files: ["__bench__/**/*.ts"],
+            rules: {
+                "import/no-unused-modules": "off",
+                "no-restricted-syntax": "off",
+                "no-loops/no-loops": "off"
             },
         },
     ],

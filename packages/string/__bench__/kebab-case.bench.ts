@@ -9,101 +9,101 @@ import { kebabCase } from "../dist/case";
 
 describe("kebabCase", () => {
     bench("visulima/string kebabCase (no cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            kebabCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            kebabCase(stringValue);
         }
     });
 
     bench("visulima/string kebabCase (with cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            kebabCase(string_, { cache: true });
+        for (const stringValue of TEST_STRINGS) {
+            kebabCase(stringValue, { cache: true });
         }
     });
 
     bench("lodash kebabCase", () => {
-        for (const string_ of TEST_STRINGS) {
-            lodashKebabCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            lodashKebabCase(stringValue);
         }
     });
 
     bench("case-anything kebabCase", () => {
-        for (const string_ of TEST_STRINGS) {
-            caseAnythingKebabCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            caseAnythingKebabCase(stringValue);
         }
     });
 
     bench("scule kebabCase", () => {
-        for (const string_ of TEST_STRINGS) {
-            sculeKebabCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            sculeKebabCase(stringValue);
         }
     });
 
     bench("change-case kebabCase", () => {
-        for (const string_ of TEST_STRINGS) {
-            changeCaseKebab(string_);
+        for (const stringValue of TEST_STRINGS) {
+            changeCaseKebab(stringValue);
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string kebabCase (no cache)", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                kebabCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                kebabCase(stringValue);
             }
         });
 
         bench("lodash kebabCase", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                lodashKebabCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                lodashKebabCase(stringValue);
             }
         });
 
         bench("case-anything kebabCase", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                caseAnythingKebabCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                caseAnythingKebabCase(stringValue);
             }
         });
 
         bench("scule kebabCase", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                sculeKebabCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                sculeKebabCase(stringValue);
             }
         });
 
         bench("change-case kebabCase", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                changeCaseKebab(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                changeCaseKebab(stringValue);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string kebabCase (no cache)", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                kebabCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                kebabCase(stringValue);
             }
         });
 
         bench("lodash kebabCase", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                lodashKebabCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                lodashKebabCase(stringValue);
             }
         });
 
         bench("case-anything kebabCase", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                caseAnythingKebabCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                caseAnythingKebabCase(stringValue);
             }
         });
 
         bench("scule kebabCase", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                sculeKebabCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                sculeKebabCase(stringValue);
             }
         });
 
         bench("change-case kebabCase", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                changeCaseKebab(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                changeCaseKebab(stringValue);
             }
         });
     });

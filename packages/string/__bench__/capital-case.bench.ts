@@ -5,29 +5,29 @@ import { capitalCase } from "../dist/case";
 
 describe("capitalCase", () => {
     bench("visulima/string capitalCase (no cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            capitalCase(string_);
+        for (const stringValue of TEST_STRINGS) {
+            capitalCase(stringValue);
         }
     });
 
     bench("visulima/string capitalCase (with cache)", () => {
-        for (const string_ of TEST_STRINGS) {
-            capitalCase(string_, { cache: true });
+        for (const stringValue of TEST_STRINGS) {
+            capitalCase(stringValue, { cache: true });
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string capitalCase (no cache)", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                capitalCase(string_);
+            for (const stringValue of SPECIAL_STRINGS) {
+                capitalCase(stringValue);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string capitalCase (no cache)", () => {
-            for (const string_ of ACRONYM_STRINGS) {
-                capitalCase(string_);
+            for (const stringValue of ACRONYM_STRINGS) {
+                capitalCase(stringValue);
             }
         });
     });

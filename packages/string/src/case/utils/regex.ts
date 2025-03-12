@@ -85,12 +85,12 @@ export const splitByEmoji = (text: string): string[] => {
  * Strips ANSI escape sequences from a string.
  * Uses Node.js's native stripVTControlCharacters for optimal performance.
  *
- * @param string_ - The string to strip ANSI sequences from
+ * @param stringValue - The string to strip ANSI sequences from
  * @returns The string without ANSI sequences
  */
-export const stripAnsi = (string_: string): string => stripVTControlCharacters(string_);
+export const stripAnsi = (stringValue: string): string => stripVTControlCharacters(stringValue);
 
-export const stripEmoji = (string_: string): string => string_.replace(EMOJI_REGEX, "");
+export const stripEmoji = (stringValue: string): string => stringValue.replace(EMOJI_REGEX, "");
 
 // Script pattern regex for efficient character type detection
 export const ARABIC_REGEX = /\p{Script=Arabic}/u;

@@ -147,8 +147,11 @@ describe("Outdent Benchmarks", () => {
     });
 
     // Repeated use benchmark
-    bench("Repeated use of same template", () => outdent`
+    bench(
+        "Repeated use of same template",
+        () => outdent`
             This template will be used
             multiple times to test cache efficiency.
-        `);
+        `,
+    );
 });
