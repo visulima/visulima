@@ -1,8 +1,8 @@
-import { bench, describe } from "vitest";
 import { green, red } from "@visulima/colorize";
+import { bench, describe } from "vitest";
+import wrapAnsi from "wrap-ansi";
 
 import { wordWrap, WrapMode } from "../src/word-wrap";
-import wrapAnsi from "wrap-ansi";
 
 const shortText = "The quick brown fox jumped over the lazy dog";
 const mediumText =
@@ -21,15 +21,15 @@ This text contains ${green("nested")} ANSI ${red("colors")} ${green("and")} mult
 It also has very long words like supercalifragilisticexpialidocious and antidisestablishmentarianism.`;
 
 const fixtures = {
-    short: shortText,
-    medium: mediumText,
-    long: longText,
     complex: complexText,
     emoji: "🚀 Rockets and 🌟 stars are flying across the 🌌 galaxy! 🪐 Planets align while 🌍 Earth watches from afar.",
-    unicode: "Unicode characters like résumé, café, piñata, über, and noël can be challenging for wrapping algorithms.",
-    spaces: "   This    text     has     many    spaces     between     words     that     should     be     handled     correctly.   ",
     hyperlinks:
         "Check out \u001B]8;;https://www.example.com\u0007my website\u001B]8;;\u0007, it is \u001B]8;;https://www.example.com\u0007supercalifragilisticexpialidocious\u001B]8;;\u0007.",
+    long: longText,
+    medium: mediumText,
+    short: shortText,
+    spaces: "   This    text     has     many    spaces     between     words     that     should     be     handled     correctly.   ",
+    unicode: "Unicode characters like résumé, café, piñata, über, and noël can be challenging for wrapping algorithms.",
 };
 
 describe("Word Wrap Benchmarks", () => {
@@ -85,7 +85,7 @@ describe("Word Wrap Benchmarks", () => {
             });
 
             bench("wordWrap - with trim=false", () => {
-                wordWrap(fixtures.spaces, { width: 40, trim: false });
+                wordWrap(fixtures.spaces, { trim: false, width: 40 });
             });
 
             bench("wrap-ansi - with trim=true", () => {
@@ -130,7 +130,7 @@ describe("Word Wrap Benchmarks", () => {
             }
         });
     });
-    
+
     // Benchmark specific edge cases
     describe("Edge Cases", () => {
         bench("Empty string", () => {

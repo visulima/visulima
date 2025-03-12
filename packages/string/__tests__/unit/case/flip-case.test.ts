@@ -6,6 +6,7 @@ import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 describe("flipCase", () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "testString";
 
@@ -21,6 +22,7 @@ describe("flipCase", () => {
         });
 
         it("should not use cache when disabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "testString";
 
@@ -36,6 +38,7 @@ describe("flipCase", () => {
         });
 
         it("should respect cache size limit", () => {
+            expect.assertions(5);
             const customCache = new Map<string, string>();
             const input1 = "testString1";
             const input2 = "testString2";
@@ -55,6 +58,7 @@ describe("flipCase", () => {
         });
 
         it("should handle custom cache store", () => {
+            expect.assertions(2);
             const defaultCache = new Map<string, string>();
             const customCache = new Map<string, string>();
             const input = "testString";
@@ -67,30 +71,36 @@ describe("flipCase", () => {
     });
 
     it("should flip case of mixed case string", () => {
+        expect.assertions(2);
         expect(flipCase("FooBar")).toBe("fOObAR");
         expect(flipCase("fooBar")).toBe("FOObAR");
     });
 
     it("should flip case of uppercase string", () => {
+        expect.assertions(2);
         expect(flipCase("FOO")).toBe("foo");
         expect(flipCase("FOOBAR")).toBe("foobar");
     });
 
     it("should flip case of lowercase string", () => {
+        expect.assertions(2);
         expect(flipCase("foo")).toBe("FOO");
         expect(flipCase("foobar")).toBe("FOOBAR");
     });
 
     it("should handle non-letter characters", () => {
+        expect.assertions(2);
         expect(flipCase("Foo123Bar")).toBe("fOO123bAR");
         expect(flipCase("foo-bar")).toBe("FOO-BAR");
     });
 
     it("should handle empty string", () => {
+        expect.assertions(1);
         expect(flipCase("")).toBe("");
     });
 
     it("should handle special formats and mixed cases", () => {
+        expect.assertions(6);
         expect(flipCase("C-3PO_and_R2-D2")).toBe("c-3po_AND_r2-d2");
         expect(flipCase("The Taking of Pelham 123")).toBe("tHE tAKING OF pELHAM 123");
         expect(flipCase("Ocean's 11")).toBe("oCEAN'S 11");
@@ -101,6 +111,7 @@ describe("flipCase", () => {
 
     describe("emoji support 🎯", () => {
         it("should handle emojis in text with stripEmoji=true", () => {
+            expect.assertions(9);
             expect(flipCase("Foo🐣Bar", { stripEmoji: true })).toBe("fOObAR");
             expect(flipCase("hello🌍World", { stripEmoji: true })).toBe("HELLOwORLD");
             expect(flipCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("TESTpARTYfUN");
@@ -113,6 +124,7 @@ describe("flipCase", () => {
         });
 
         it("should preserve emojis in text by default", () => {
+            expect.assertions(9);
             expect(flipCase("Foo🐣Bar")).toBe("fOO🐣bAR");
             expect(flipCase("hello🌍World")).toBe("HELLO🌍wORLD");
             expect(flipCase("test🎉Party🎈Fun")).toBe("TEST🎉pARTY🎈fUN");
@@ -127,12 +139,14 @@ describe("flipCase", () => {
 
     describe("aNSI support", () => {
         it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect.assertions(3);
             expect(flipCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("rEDtEXT");
             expect(flipCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("bOLDtEXT");
             expect(flipCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("gREENfoo_bLUEbar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect.assertions(3);
             expect(flipCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mrEDtEXT\u001B[0m");
             expect(flipCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mbOLDtEXT\u001B[0m");
             expect(flipCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(

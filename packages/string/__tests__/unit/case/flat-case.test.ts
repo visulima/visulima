@@ -6,6 +6,7 @@ import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 describe("flatCase", () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
+            expect.assertions(5);
             const customCache = new Map<string, string>();
             const input = "testString";
             const options = { cache: true, cacheStore: customCache };
@@ -23,6 +24,7 @@ describe("flatCase", () => {
         });
 
         it("should not use cache when disabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "testString";
             const options = { cache: false, cacheStore: customCache };
@@ -39,6 +41,7 @@ describe("flatCase", () => {
         });
 
         it("should respect cache size limit", () => {
+            expect.assertions(5);
             const customCache = new Map<string, string>();
             const input1 = "testString1";
             const input2 = "testString2";
@@ -58,6 +61,7 @@ describe("flatCase", () => {
         });
 
         it("should handle custom cache store", () => {
+            expect.assertions(2);
             const defaultCache = new Map<string, string>();
             const customCache = new Map<string, string>();
             const input = "testString";
@@ -71,12 +75,14 @@ describe("flatCase", () => {
     });
 
     it("should convert camelCase to flat case", () => {
+        expect.assertions(3);
         expect(flatCase("fooBar")).toBe("foobar");
         expect(flatCase("fooBarBaz")).toBe("foobarbaz");
         expect(flatCase("fooBarBAZ")).toBe("foobarbaz");
     });
 
     it("should handle special acronyms", () => {
+        expect.assertions(5);
         expect(flatCase("XML_HTTP_request")).toBe("xmlhttprequest");
         expect(flatCase("XMLHTTPRequest")).toBe("xmlhttprequest");
         expect(flatCase("AJAXRequest")).toBe("ajaxrequest");
@@ -85,12 +91,14 @@ describe("flatCase", () => {
     });
 
     it("should convert PascalCase to flat case", () => {
+        expect.assertions(3);
         expect(flatCase("FooBar")).toBe("foobar");
         expect(flatCase("FooBarBaz")).toBe("foobarbaz");
         expect(flatCase("FOOBarBAZ")).toBe("foobarbaz");
     });
 
     it("should convert snake_case to flat case", () => {
+        expect.assertions(4);
         expect(flatCase("foo_bar")).toBe("foobar");
         expect(flatCase("foo_bar_baz")).toBe("foobarbaz");
         expect(flatCase("foo_BAR_baz")).toBe("foobarbaz");
@@ -98,6 +106,7 @@ describe("flatCase", () => {
     });
 
     it("should convert kebab-case to flat case", () => {
+        expect.assertions(4);
         expect(flatCase("foo-bar")).toBe("foobar");
         expect(flatCase("foo-bar-baz")).toBe("foobarbaz");
         expect(flatCase("foo-BAR-baz")).toBe("foobarbaz");
@@ -105,6 +114,7 @@ describe("flatCase", () => {
     });
 
     it("should convert space separated to flat case", () => {
+        expect.assertions(4);
         expect(flatCase("foo bar")).toBe("foobar");
         expect(flatCase("foo bar baz")).toBe("foobarbaz");
         expect(flatCase("foo BAR baz")).toBe("foobarbaz");
@@ -112,11 +122,13 @@ describe("flatCase", () => {
     });
 
     it("should handle empty string", () => {
+        expect.assertions(1);
         expect(flatCase("")).toBe("");
     });
 
     describe("emoji support 🎯", () => {
         it("should handle emojis in text with stripEmoji=true", () => {
+            expect.assertions(9);
             expect(flatCase("Foo🐣Bar", { stripEmoji: true })).toBe("foobar");
             expect(flatCase("hello🌍World", { stripEmoji: true })).toBe("helloworld");
             expect(flatCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("testpartyfun");
@@ -129,6 +141,7 @@ describe("flatCase", () => {
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
+            expect.assertions(9);
             expect(flatCase("Foo🐣Bar", { handleEmoji: true })).toBe("foo🐣bar");
             expect(flatCase("hello🌍World", { handleEmoji: true })).toBe("hello🌍world");
             expect(flatCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("test🎉party🎈fun");
@@ -143,12 +156,14 @@ describe("flatCase", () => {
 
     describe("aNSI support", () => {
         it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect.assertions(3);
             expect(flatCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("redtext");
             expect(flatCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("boldtext");
             expect(flatCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("greenfoobluebar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect.assertions(5);
             expect(flatCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mredtext\u001B[0m");
             expect(flatCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mboldtext\u001B[0m");
             expect(flatCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
@@ -160,12 +175,14 @@ describe("flatCase", () => {
     });
 
     it("should handle mixed case with numbers and special characters", () => {
+        expect.assertions(3);
         expect(flatCase("Foo123Bar")).toBe("foo123bar");
         expect(flatCase("foo_bar-baz")).toBe("foobarbaz");
         expect(flatCase("FOO BAR_BAZ-QUX")).toBe("foobarbazqux");
     });
 
     it("should handle special formats and mixed cases", () => {
+        expect.assertions(6);
         expect(flatCase("C-3PO_and_R2-D2")).toBe("c3poandr2d2");
         expect(flatCase("The Taking of Pelham 123")).toBe("thetakingofpelham123");
         expect(flatCase("Ocean's 11")).toBe("ocean's11");
@@ -176,6 +193,7 @@ describe("flatCase", () => {
 
     describe("locale support", () => {
         it("should handle German specific cases", () => {
+            expect.assertions(2);
             const locale = "de-DE";
             expect(flatCase("großeStrasse", { locale })).toBe("großestrasse");
             expect(flatCase("GROßE", { locale })).toBe("große");

@@ -6,6 +6,7 @@ import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 describe("pascalSnakeCase", () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "test-string";
 
@@ -21,6 +22,7 @@ describe("pascalSnakeCase", () => {
         });
 
         it("should not use cache when disabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "test-string";
 
@@ -36,6 +38,7 @@ describe("pascalSnakeCase", () => {
         });
 
         it("should respect cache size limit", () => {
+            expect.assertions(5);
             const customCache = new Map<string, string>();
             const input1 = "test-string-1";
             const input2 = "test-string-2";
@@ -55,6 +58,7 @@ describe("pascalSnakeCase", () => {
         });
 
         it("should handle custom cache store", () => {
+            expect.assertions(2);
             const defaultCache = new Map<string, string>();
             const customCache = new Map<string, string>();
             const input = "test-string";
@@ -67,46 +71,55 @@ describe("pascalSnakeCase", () => {
     });
 
     it("should handle empty string", () => {
+        expect.assertions(1);
         expect(pascalSnakeCase("")).toBe("");
     });
 
     it("should convert single word to Pascal_Snake case", () => {
+        expect.assertions(1);
         expect(pascalSnakeCase("foo")).toBe("Foo");
     });
 
     it("should handle hyphenated words with mixed case", () => {
+        expect.assertions(2);
         expect(pascalSnakeCase("foo-bAr")).toBe("Foo_B_Ar");
         expect(pascalSnakeCase("XMLHttpRequest")).toBe("Xml_Http_Request");
     });
 
     it("should handle multiple separators", () => {
+        expect.assertions(2);
         expect(pascalSnakeCase("foo_bar-baz/qux")).toBe("Foo_Bar_Baz_Qux");
         expect(pascalSnakeCase("foo_BAR-baz/QUX")).toBe("Foo_Bar_Baz_Qux");
     });
 
     it("should handle snake case", () => {
+        expect.assertions(2);
         expect(pascalSnakeCase("FOO_BAR")).toBe("Foo_Bar");
         expect(pascalSnakeCase("FOO_BAR_BAZ")).toBe("Foo_Bar_Baz");
     });
 
     it("should handle multiple hyphens and mixed case", () => {
+        expect.assertions(2);
         expect(pascalSnakeCase("foo--bar-Baz")).toBe("Foo_Bar_Baz");
         expect(pascalSnakeCase("foo--BAR-baz")).toBe("Foo_Bar_Baz");
     });
 
     it("should convert snake_case to Pascal_Snake case", () => {
+        expect.assertions(3);
         expect(pascalSnakeCase("foo_bar")).toBe("Foo_Bar");
         expect(pascalSnakeCase("foo_bar_baz")).toBe("Foo_Bar_Baz");
         expect(pascalSnakeCase("foo_BAR_baz")).toBe("Foo_Bar_Baz");
     });
 
     it("should convert kebab-case to Pascal_Snake case", () => {
+        expect.assertions(3);
         expect(pascalSnakeCase("foo-bar")).toBe("Foo_Bar");
         expect(pascalSnakeCase("foo-bar-baz")).toBe("Foo_Bar_Baz");
         expect(pascalSnakeCase("foo-BAR-baz")).toBe("Foo_Bar_Baz");
     });
 
     it("should convert space separated to Pascal_Snake case", () => {
+        expect.assertions(3);
         expect(pascalSnakeCase("foo bar")).toBe("Foo_Bar");
         expect(pascalSnakeCase("foo bar baz")).toBe("Foo_Bar_Baz");
         expect(pascalSnakeCase("foo BAR baz")).toBe("Foo_Bar_Baz");
@@ -114,6 +127,7 @@ describe("pascalSnakeCase", () => {
 
     describe("emoji support 🎯", () => {
         it("should handle emojis in text", () => {
+            expect.assertions(8);
             expect(pascalSnakeCase("Foo🐣Bar", { handleEmoji: true })).toBe("Foo_🐣_Bar");
             expect(pascalSnakeCase("hello🌍World", { handleEmoji: true })).toBe("Hello_🌍_World");
             expect(pascalSnakeCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("Test_🎉_Party_🎈_Fun");
@@ -126,12 +140,14 @@ describe("pascalSnakeCase", () => {
     });
 
     it("should handle camelCase input", () => {
+        expect.assertions(3);
         expect(pascalSnakeCase("fooBar")).toBe("Foo_Bar");
         expect(pascalSnakeCase("fooBarBaz")).toBe("Foo_Bar_Baz");
         expect(pascalSnakeCase("fooBarBAZ")).toBe("Foo_Bar_Baz");
     });
 
     it("should handle special acronyms", () => {
+        expect.assertions(5);
         expect(pascalSnakeCase("XML_HTTP_request")).toBe("Xml_Http_Request");
         expect(pascalSnakeCase("XMLHTTPRequest")).toBe("Xmlhttp_Request");
         expect(pascalSnakeCase("AJAXRequest")).toBe("Ajax_Request");
@@ -140,6 +156,7 @@ describe("pascalSnakeCase", () => {
     });
 
     it("should handle special formats and mixed cases", () => {
+        expect.assertions(6);
         expect(pascalSnakeCase("C-3PO_and_R2-D2")).toBe("C_3po_And_R2_D2");
         expect(pascalSnakeCase("The Taking of Pelham 123")).toBe("The_Taking_Of_Pelham_123");
         expect(pascalSnakeCase("Ocean's 11")).toBe("Ocean's_11");
@@ -150,12 +167,14 @@ describe("pascalSnakeCase", () => {
 
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
+            expect.assertions(2);
             const locale = "tr-TR";
             expect(pascalSnakeCase("istanbul_city", { locale })).toBe("İstanbul_City");
             expect(pascalSnakeCase("İZMİR_CITY", { locale })).toBe("İzmir_Cıty");
         });
 
         it("should handle German specific cases", () => {
+            expect.assertions(3);
             const locale = "de-DE";
             expect(pascalSnakeCase("GROSSE STRAßE", { locale })).toBe("Große_Straße");
             expect(pascalSnakeCase("GROSSE STRASSE", { locale })).toBe("Große_Straße");
@@ -163,6 +182,7 @@ describe("pascalSnakeCase", () => {
         });
 
         it("should fallback gracefully for invalid locale", () => {
+            expect.assertions(1);
             expect(pascalSnakeCase("test_string", { locale: "invalid-locale" })).toBe("Test_String");
         });
     });

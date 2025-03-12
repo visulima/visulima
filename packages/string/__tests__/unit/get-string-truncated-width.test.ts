@@ -15,6 +15,7 @@ const getTruncated = (input: string, options: StringTruncatedWidthOptions): stri
 describe("string Width", () => {
     describe("calculating the raw result", () => {
         it("supports strings that do not need to be truncated", () => {
+            expect.assertions(4);
             const result = getStringTruncatedWidth("\u001B[31mhello", { ellipsis: "…", limit: Number.POSITIVE_INFINITY });
 
             expect(result.truncated).toBeFalsy();
@@ -24,6 +25,7 @@ describe("string Width", () => {
         });
 
         it("supports strings that do need to be truncated", () => {
+            expect.assertions(4);
             const result = getStringTruncatedWidth("\u001B[31mhello", { ellipsis: "…", limit: 3 });
 
             expect(result.truncated).toBeTruthy();
@@ -35,6 +37,7 @@ describe("string Width", () => {
 
     describe("calculating the width of a string", () => {
         it("supports basic cases", () => {
+            expect.assertions(19);
             expect(getWidth("hello")).toBe(5);
             expect(getWidth("\u001B[31mhello")).toBe(5);
 
@@ -58,6 +61,8 @@ describe("string Width", () => {
         });
 
         it("supports control characters", () => {
+            expect.assertions(6);
+
             expect(getWidth(String.fromCodePoint(0))).toBe(0);
             expect(getWidth(String.fromCodePoint(31))).toBe(0);
             expect(getWidth(String.fromCodePoint(127))).toBe(0);
@@ -67,16 +72,21 @@ describe("string Width", () => {
         });
 
         it("supports tab characters", () => {
+            expect.assertions(3);
+
             expect(getWidth("\t")).toBe(8);
             expect(getWidth("\t\t\t")).toBe(24);
             expect(getWidth("\0\t\0\t\0\t\0")).toBe(24);
         });
 
         it("supports combining characters", () => {
+            expect.assertions(1);
             expect(getWidth("x\u0300")).toBe(1);
         });
 
         it("supports emoji characters", () => {
+            expect.assertions(16);
+
             expect(getWidth("👶")).toBe(2);
             expect(getWidth("👶🏽")).toBe(2);
             expect(getWidth("👩‍👩‍👦‍👦")).toBe(2);
@@ -96,7 +106,8 @@ describe("string Width", () => {
             expect(getWidth("🇺🇳".repeat(2))).toBe(4);
         });
 
-        it("supports all basic emojis", async (t) => {
+        it("supports all basic emojis", async () => {
+            expect.assertions(1);
             // eslint-disable-next-line compat/compat
             const response = await fetch("https://raw.githubusercontent.com/muan/unicode-emoji-json/main/data-by-group.json");
             const data = await response.json();
@@ -108,10 +119,11 @@ describe("string Width", () => {
                 }
             });
 
-            expect(failures).toEqual([]);
+            expect(failures).toStrictEqual([]);
         });
 
         it("supports unicode characters", () => {
+            expect.assertions(44);
             // Map of Unicode characters to their expected display widths
             const unicodeChars = {
                 // Whitespace and special spaces
@@ -183,6 +195,7 @@ describe("string Width", () => {
         });
 
         it("supports japanese half-width characters", () => {
+            expect.assertions(2);
             expect(getWidth("ﾊﾞ")).toBe(2);
             expect(getWidth("ﾊﾟ")).toBe(2);
         });
@@ -190,6 +203,7 @@ describe("string Width", () => {
 
     describe("truncating a string", () => {
         it("supports latin characters", () => {
+            expect.assertions(14);
             expect(getTruncated("hello", { ellipsis: "…", limit: 10 })).toBe("hello");
             expect(getTruncated("hello", { ellipsis: "…", limit: 5 })).toBe("hello");
             expect(getTruncated("hello", { ellipsis: "…", limit: 4 })).toBe("he…");
@@ -208,6 +222,8 @@ describe("string Width", () => {
         });
 
         it("supports ansi characters and does not count them in width limit", () => {
+            expect.assertions(13);
+
             expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 10 })).toBe("\u001B[31mhello");
             expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 5 })).toBe("\u001B[31mhello");
             expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 4 })).toBe("\u001B[31mhe…");
@@ -226,6 +242,8 @@ describe("string Width", () => {
         });
 
         it("supports control characters", () => {
+            expect.assertions(12);
+
             expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 10 })).toBe("\u0000\u0001\u0002\u0003");
             expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 4 })).toBe("\u0000\u0001\u0002\u0003");
             expect(getTruncated("\u0000\u0001\u0002\u0003", { ellipsis: "…", limit: 3 })).toBe("\u0000\u0001\u0002\u0003");
@@ -242,6 +260,8 @@ describe("string Width", () => {
         });
 
         it("supports CJK characters", () => {
+            expect.assertions(8);
+
             expect(getTruncated("古池や", { ellipsis: "…", limit: 10 })).toBe("古池や");
             expect(getTruncated("古池や", { ellipsis: "…", limit: 6 })).toBe("古池や");
             expect(getTruncated("古池や", { ellipsis: "…", limit: 5 })).toBe("古…");
@@ -253,6 +273,8 @@ describe("string Width", () => {
         });
 
         it("supports emoji characters", () => {
+            expect.assertions(12);
+
             expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 10 })).toBe("👶👶🏽");
             expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 4 })).toBe("👶👶🏽");
             expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 3 })).toBe("…");

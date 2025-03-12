@@ -5,8 +5,7 @@ export { default as dotCase } from "./dot-case";
 export { default as flatCase } from "./flat-case";
 export type { FlipOptions } from "./flip-case";
 export { flipCase } from "./flip-case";
-export type { CaseStyle } from "./identify-case";
-export { identifyCase } from "./identify-case";
+export { default as identifyCase } from "./identify-case";
 export type { KebabCaseOptions } from "./kebab-case";
 export { kebabCase } from "./kebab-case";
 export { default as lowerFirst } from "./lower-first";
@@ -20,5 +19,28 @@ export type { SplitOptions } from "./split-by-case";
 export { splitByCase } from "./split-by-case";
 export { default as titleCase } from "./title-case";
 export { default as trainCase } from "./train-case";
+export type {
+    CamelCase,
+    CapitalCase,
+    CaseOptions,
+    ConstantCase,
+    DotCase,
+    FlatCase,
+    FlipCase,
+    IdentifyCase,
+    KebabCase,
+    LocaleOptions,
+    LowerFirst,
+    NoCase,
+    PascalCase,
+    PascalSnakeCase,
+    PathCase,
+    SentenceCase,
+    SnakeCase,
+    SplitByCase,
+    TitleCase,
+    TrainCase,
+    UpperFirst,
+} from "./types";
 export { default as upperFirst } from "./upper-first";
 export { default as joinSegments } from "./utils/join-segments";

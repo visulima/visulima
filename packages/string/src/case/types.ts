@@ -242,29 +242,6 @@ export type PascalSnakeCase<T extends string> = T & {
     __pascal_snake_case__: never;
 };
 
-/**
- * Identifies the case style of a string.
- * Returns: 'camel' | 'pascal' | 'snake' | 'kebab' | 'lower' | 'upper' | 'mixed'
- */
-export type CaseStyle =
-    | "camel"
-    | "capital"
-    | "constant"
-    | "dot"
-    | "flat"
-    | "kebab"
-    | "lower"
-    | "mixed"
-    | "no"
-    | "pascal-snake"
-    | "pascal"
-    | "path"
-    | "sentence"
-    | "snake"
-    | "title"
-    | "train"
-    | "upper";
-
 export type IdentifyCase<T extends string> =
     IsStringLiteral<T> extends true
         ? T extends Lowercase<T>

@@ -1,7 +1,4 @@
-/**
- * Case style identifiers
- */
-export type CaseStyle = "camel" | "kebab" | "lower" | "mixed" | "pascal" | "snake" | "upper";
+import type { IdentifyCase } from "./types";
 
 /**
  * Identifies the case style of a string.
@@ -16,7 +13,7 @@ export type CaseStyle = "camel" | "kebab" | "lower" | "mixed" | "pascal" | "snak
  * identifyCase("FooBAR") // => "mixed"
  * ```
  */
-export const identifyCase = (value?: string): CaseStyle => {
+const identifyCase = <T extends string = string>(value?: T): IdentifyCase<T> => {
     if (typeof value !== "string" || !value) {
         return "lower";
     }
@@ -49,3 +46,5 @@ export const identifyCase = (value?: string): CaseStyle => {
 
     return "mixed";
 };
+
+export default identifyCase;

@@ -6,6 +6,7 @@ import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 describe("camelCase", () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "test-string";
 
@@ -21,6 +22,7 @@ describe("camelCase", () => {
         });
 
         it("should not use cache when disabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "test-string";
 
@@ -36,6 +38,7 @@ describe("camelCase", () => {
         });
 
         it("should respect cache size limit", () => {
+            expect.assertions(5);
             const customCache = new Map<string, string>();
             const input1 = "test-string-1";
             const input2 = "test-string-2";
@@ -56,6 +59,7 @@ describe("camelCase", () => {
         });
 
         it("should handle custom cache store", () => {
+            expect.assertions(2);
             const defaultCache = new Map<string, string>();
             const customCache = new Map<string, string>();
             const input = "test-string";
@@ -68,40 +72,47 @@ describe("camelCase", () => {
     });
 
     it("should convert FooBarBaz to fooBarBaz", () => {
+        expect.assertions(2);
         expect(camelCase("FooBarBaz")).toBe("fooBarBaz");
         expect(camelCase("XMLHttpRequest")).toBe("xmlHttpRequest");
     });
 
     it("should convert FOO_BAR to fooBar", () => {
+        expect.assertions(2);
         expect(camelCase("FOO_BAR")).toBe("fooBar");
         expect(camelCase("FOO_BAR_BAZ")).toBe("fooBarBaz");
     });
 
     it("should convert snake_case to camelCase", () => {
+        expect.assertions(3);
         expect(camelCase("foo_bar")).toBe("fooBar");
         expect(camelCase("foo_bar_baz")).toBe("fooBarBaz");
         expect(camelCase("foo_BAR_baz")).toBe("fooBarBaz");
     });
 
     it("should convert kebab-case to camelCase", () => {
+        expect.assertions(3);
         expect(camelCase("foo-bar")).toBe("fooBar");
         expect(camelCase("foo-bar-baz")).toBe("fooBarBaz");
         expect(camelCase("foo-BAR-baz")).toBe("fooBarBaz");
     });
 
     it("should convert space separated to camelCase", () => {
+        expect.assertions(3);
         expect(camelCase("foo bar")).toBe("fooBar");
         expect(camelCase("foo bar baz")).toBe("fooBarBaz");
         expect(camelCase("foo BAR baz")).toBe("fooBarBaz");
     });
 
     it("should handle PascalCase input", () => {
+        expect.assertions(3);
         expect(camelCase("FooBar")).toBe("fooBar");
         expect(camelCase("FooBarBaz")).toBe("fooBarBaz");
         expect(camelCase("FOOBarBAZ")).toBe("fooBarBaz");
     });
 
     it("should handle special acronyms and cases", () => {
+        expect.assertions(14);
         expect(camelCase("XML_HTTP_request")).toBe("xmlHttpRequest");
         expect(camelCase("XMLHTTPRequest")).toBe("xmlhttpRequest");
         expect(camelCase("AJAXRequest")).toBe("ajaxRequest");
@@ -119,12 +130,14 @@ describe("camelCase", () => {
     });
 
     it("should handle empty string and single characters", () => {
+        expect.assertions(2);
         expect(camelCase("")).toBe("");
         expect(camelCase("a")).toBe("a");
     });
 
     describe("emoji support 🎯", () => {
         it("should handle emojis in text with stripEmoji=true", () => {
+            expect.assertions(8);
             expect(camelCase("Foo🐣Bar", { stripEmoji: true })).toBe("fooBar");
             expect(camelCase("hello🌍World", { stripEmoji: true })).toBe("helloWorld");
             expect(camelCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("testPartyFun");
@@ -136,6 +149,7 @@ describe("camelCase", () => {
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
+            expect.assertions(8);
             expect(camelCase("Foo🐣Bar", { handleEmoji: true })).toBe("foo🐣Bar");
             expect(camelCase("hello🌍World", { handleEmoji: true })).toBe("hello🌍World");
             expect(camelCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("test🎉Party🎈Fun");
@@ -149,12 +163,14 @@ describe("camelCase", () => {
 
     describe("aNSI support", () => {
         it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect.assertions(3);
             expect(camelCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("redText");
             expect(camelCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("boldText");
             expect(camelCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("greenFooBlueBar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect.assertions(3);
             expect(camelCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31mredText\u001B[0m");
             expect(camelCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1mboldText\u001B[0m");
             expect(camelCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
@@ -164,6 +180,7 @@ describe("camelCase", () => {
     });
 
     it("should handle international characters", () => {
+        expect.assertions(7);
         expect(camelCase("Buenos Días")).toBe("buenosDías");
         expect(camelCase("Jag_förstår_inte")).toBe("jagFörstårInte");
         expect(camelCase("quicoYÑoño")).toBe("quicoYñoño");
@@ -174,12 +191,14 @@ describe("camelCase", () => {
     });
 
     it("should handle special formats and mixed cases", () => {
+        expect.assertions(3);
         expect(camelCase("C-3PO_and_R2-D2")).toBe("c3poAndR2D2");
         expect(camelCase("non-SI units")).toBe("nonSiUnits");
         expect(camelCase("EstosSon_losActores")).toBe("estosSonLosActores");
     });
 
     it("should handle strings with numbers", () => {
+        expect.assertions(9);
         expect(camelCase("I-have-99-problems")).toBe("iHave99Problems");
         expect(camelCase("STARTER-FOR-10")).toBe("starterFor10");
         expect(camelCase("the__0__is_the_best")).toBe("the0IsTheBest");
@@ -193,12 +212,14 @@ describe("camelCase", () => {
 
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
+            expect.assertions(2);
             const locale = "tr-TR";
             expect(camelCase("istanbul_city", { locale })).toBe("istanbulCity");
             expect(camelCase("İZMİR_CITY", { locale })).toBe("izmirCıty");
         });
 
         it("should handle German specific cases", () => {
+            expect.assertions(3);
             const locale = "de-DE";
             expect(camelCase("GROSSE STRAßE", { locale })).toBe("großeStraße");
             expect(camelCase("GROSSE STRASSE", { locale })).toBe("großeStraße");
@@ -206,6 +227,7 @@ describe("camelCase", () => {
         });
 
         it("should fallback gracefully for invalid locale", () => {
+            expect.assertions(1);
             expect(camelCase("test_string", { locale: "invalid-locale" })).toBe("testString");
         });
     });

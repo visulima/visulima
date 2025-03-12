@@ -1,32 +1,33 @@
 import { bench, describe } from "vitest";
-import { pascalCase } from "../dist/case";
+
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
+import { pascalCase } from "../dist/case";
 
 describe("pascalCase", () => {
     bench("visulima/string pascalCase (no cache)", () => {
-        for (const str of TEST_STRINGS) {
-            pascalCase(str);
+        for (const string_ of TEST_STRINGS) {
+            pascalCase(string_);
         }
     });
 
     bench("visulima/string pascalCase (with cache)", () => {
-        for (const str of TEST_STRINGS) {
-            pascalCase(str, { cache: true });
+        for (const string_ of TEST_STRINGS) {
+            pascalCase(string_, { cache: true });
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string pascalCase (no cache)", () => {
-            for (const str of SPECIAL_STRINGS) {
-                pascalCase(str);
+            for (const string_ of SPECIAL_STRINGS) {
+                pascalCase(string_);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string pascalCase (no cache)", () => {
-            for (const str of ACRONYM_STRINGS) {
-                pascalCase(str);
+            for (const string_ of ACRONYM_STRINGS) {
+                pascalCase(string_);
             }
         });
     });

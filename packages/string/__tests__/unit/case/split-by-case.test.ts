@@ -1,682 +1,788 @@
+import { bgRed, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { splitByCase } from "../../../src/case/split-by-case";
-import { bgRed, red } from "@visulima/colorize";
 
 describe("splitByCase", () => {
     it("should handle empty string", () => {
-        expect(splitByCase("")).toEqual([]);
+        expect.assertions(1);
+        expect(splitByCase("")).toStrictEqual([]);
     });
 
     it("should handle single word", () => {
-        expect(splitByCase("foo")).toEqual(["foo"]);
-        expect(splitByCase("FOO")).toEqual(["FOO"]);
+        expect.assertions(2);
+        expect(splitByCase("foo")).toStrictEqual(["foo"]);
+        expect(splitByCase("FOO")).toStrictEqual(["FOO"]);
     });
 
     it("should split basic camelCase", () => {
-        expect(splitByCase("fooBar")).toEqual(["foo", "Bar"]);
-        expect(splitByCase("fooBarBaz")).toEqual(["foo", "Bar", "Baz"]);
+        expect.assertions(2);
+        expect(splitByCase("fooBar")).toStrictEqual(["foo", "Bar"]);
+        expect(splitByCase("fooBarBaz")).toStrictEqual(["foo", "Bar", "Baz"]);
     });
 
     it("should split PascalCase with multiple words", () => {
-        expect(splitByCase("FooBarBaz")).toEqual(["Foo", "Bar", "Baz"]);
-        expect(splitByCase("ThisIsATest")).toEqual(["This", "Is", "A", "Test"]);
+        expect.assertions(2);
+        expect(splitByCase("FooBarBaz")).toStrictEqual(["Foo", "Bar", "Baz"]);
+        expect(splitByCase("ThisIsATest")).toStrictEqual(["This", "Is", "A", "Test"]);
     });
 
     it("should handle mixed case patterns", () => {
-        expect(splitByCase("FooBARb")).toEqual(["Foo", "BA", "Rb"]);
-        expect(splitByCase("FOOBar")).toEqual(["FOO", "Bar"]);
-        expect(splitByCase("ABCdef")).toEqual(["AB", "Cdef"]);
+        expect.assertions(5);
+        expect(splitByCase("FooBARb")).toStrictEqual(["Foo", "BA", "Rb"]);
+        expect(splitByCase("FOOBar")).toStrictEqual(["FOO", "Bar"]);
+        expect(splitByCase("ABCdef")).toStrictEqual(["AB", "Cdef"]);
 
         expect(
             splitByCase("FooBARb", {
                 knownAcronyms: ["BAR"],
             }),
-        ).toEqual(["Foo", "BAR", "b"]);
+        ).toStrictEqual(["Foo", "BAR", "b"]);
         expect(
             splitByCase("ABCdef", {
                 knownAcronyms: ["ABC"],
             }),
-        ).toEqual(["ABC", "def"]);
+        ).toStrictEqual(["ABC", "def"]);
     });
 
     it("should handle multiple separators", () => {
-        expect(splitByCase("foo_bar-baz/qux")).toEqual(["foo", "bar", "baz", "qux"]);
-        expect(splitByCase("foo.bar_baz/qux")).toEqual(["foo", "bar", "baz", "qux"]);
+        expect.assertions(2);
+        expect(splitByCase("foo_bar-baz/qux")).toStrictEqual(["foo", "bar", "baz", "qux"]);
+        expect(splitByCase("foo.bar_baz/qux")).toStrictEqual(["foo", "bar", "baz", "qux"]);
     });
 
     it("should handle consecutive uppercase letters", () => {
-        expect(splitByCase("XMLHttpRequest")).toEqual(["XML", "Http", "Request"]);
-        expect(splitByCase("AJAXRequest")).toEqual(["AJAX", "Request"]);
-        expect(splitByCase("getXMLData")).toEqual(["get", "XML", "Data"]);
+        expect.assertions(3);
+        expect(splitByCase("XMLHttpRequest")).toStrictEqual(["XML", "Http", "Request"]);
+        expect(splitByCase("AJAXRequest")).toStrictEqual(["AJAX", "Request"]);
+        expect(splitByCase("getXMLData")).toStrictEqual(["get", "XML", "Data"]);
     });
 
     it("should handle numbers mixed with letters", () => {
-        expect(splitByCase("Query123String")).toEqual(["Query", "123", "String"]);
-        expect(splitByCase("123Test")).toEqual(["123", "Test"]);
-        expect(splitByCase("test123")).toEqual(["test", "123"]);
-        expect(splitByCase("TEST123string")).toEqual(["TEST", "123", "string"]);
+        expect.assertions(4);
+        expect(splitByCase("Query123String")).toStrictEqual(["Query", "123", "String"]);
+        expect(splitByCase("123Test")).toStrictEqual(["123", "Test"]);
+        expect(splitByCase("test123")).toStrictEqual(["test", "123"]);
+        expect(splitByCase("TEST123string")).toStrictEqual(["TEST", "123", "string"]);
     });
 
     it("should handle dot case", () => {
-        expect(splitByCase("foo.bar.baz")).toEqual(["foo", "bar", "baz"]);
-        expect(splitByCase("some.mixed.Case.test")).toEqual(["some", "mixed", "Case", "test"]);
+        expect.assertions(2);
+        expect(splitByCase("foo.bar.baz")).toStrictEqual(["foo", "bar", "baz"]);
+        expect(splitByCase("some.mixed.Case.test")).toStrictEqual(["some", "mixed", "Case", "test"]);
     });
 
     it("should handle path case", () => {
-        expect(splitByCase("foo/bar/baz")).toEqual(["foo", "bar", "baz"]);
-        expect(splitByCase("some/mixed/Case/test")).toEqual(["some", "mixed", "Case", "test"]);
+        expect.assertions(2);
+        expect(splitByCase("foo/bar/baz")).toStrictEqual(["foo", "bar", "baz"]);
+        expect(splitByCase("some/mixed/Case/test")).toStrictEqual(["some", "mixed", "Case", "test"]);
 
-        // expect(splitByCase("../foo/bar")).toEqual(["..", "foo", "bar"]);
-        // expect(splitByCase("foo/../../bar")).toEqual(["foo", "..", "..", "bar"]);
+        // expect(splitByCase("../foo/bar")).toStrictEqual(["..", "foo", "bar"]);
+        // expect(splitByCase("foo/../../bar")).toStrictEqual(["foo", "..", "..", "bar"]);
     });
 
     it("should handle complex mixed cases", () => {
-        expect(splitByCase("ThisXMLParser123Test")).toEqual(["This", "XML", "Parser", "123", "Test"]);
-        expect(splitByCase("parseDBURL2HTTP")).toEqual(["parse", "DBURL", "2", "HTTP"]);
-        expect(splitByCase("API_KEY_123_TEST")).toEqual(["API", "KEY", "123", "TEST"]);
+        expect.assertions(3);
+        expect(splitByCase("ThisXMLParser123Test")).toStrictEqual(["This", "XML", "Parser", "123", "Test"]);
+        expect(splitByCase("parseDBURL2HTTP")).toStrictEqual(["parse", "DBURL", "2", "HTTP"]);
+        expect(splitByCase("API_KEY_123_TEST")).toStrictEqual(["API", "KEY", "123", "TEST"]);
     });
 
     it("should handle custom splitters", () => {
-        expect(splitByCase("foo\\Bar.fuzz-FIZz", { separators: ["\\", ".", "-"] })).toEqual(["foo", "Bar", "fuzz", "FI", "Zz"]);
-        expect(splitByCase("new-name-value", { separators: ["_"] })).toEqual(["new-name-value"]);
-        expect(splitByCase("foo|bar|baz", { separators: ["|"] })).toEqual(["foo", "bar", "baz"]);
+        expect.assertions(3);
+        expect(splitByCase("foo\\Bar.fuzz-FIZz", { separators: ["\\", ".", "-"] })).toStrictEqual(["foo", "Bar", "fuzz", "FI", "Zz"]);
+        expect(splitByCase("new-name-value", { separators: ["_"] })).toStrictEqual(["new-name-value"]);
+        expect(splitByCase("foo|bar|baz", { separators: ["|"] })).toStrictEqual(["foo", "bar", "baz"]);
     });
 
     it("should handle edge cases", () => {
-        expect(splitByCase("__FOO__BAR__")).toEqual(["FOO", "BAR"]);
-        expect(splitByCase("...test...case...")).toEqual(["test", "case"]);
-        expect(splitByCase("///path///case///")).toEqual(["path", "case"]);
-        expect(splitByCase("MixedXMLAndJSON123Data")).toEqual(["Mixed", "XML", "And", "JSON", "123", "Data"]);
+        expect.assertions(4);
+        expect(splitByCase("__FOO__BAR__")).toStrictEqual(["FOO", "BAR"]);
+        expect(splitByCase("...test...case...")).toStrictEqual(["test", "case"]);
+        expect(splitByCase("///path///case///")).toStrictEqual(["path", "case"]);
+        expect(splitByCase("MixedXMLAndJSON123Data")).toStrictEqual(["Mixed", "XML", "And", "JSON", "123", "Data"]);
     });
 
     describe("locale support", () => {
         it("should handle Afrikaans cases", () => {
+            expect.assertions(2);
             const locale = "af";
-            expect(splitByCase("grootWoord", { locale })).toEqual(["groot", "Woord"]);
-            expect(splitByCase("kleinLetters", { locale })).toEqual(["klein", "Letters"]);
+            expect(splitByCase("grootWoord", { locale })).toStrictEqual(["groot", "Woord"]);
+            expect(splitByCase("kleinLetters", { locale })).toStrictEqual(["klein", "Letters"]);
         });
 
         it("should handle Amharic cases", () => {
+            expect.assertions(2);
             const locale = "am";
-            expect(splitByCase("ሰላምWorld", { locale })).toEqual(["ሰላም", "World"]);
-            expect(splitByCase("ኢትዮጵያText", { locale })).toEqual(["ኢትዮጵያ", "Text"]);
+            expect(splitByCase("ሰላምWorld", { locale })).toStrictEqual(["ሰላም", "World"]);
+            expect(splitByCase("ኢትዮጵያText", { locale })).toStrictEqual(["ኢትዮጵያ", "Text"]);
         });
 
         it("should handle Arabic cases", () => {
+            expect.assertions(2);
             const locale = "ar";
-            expect(splitByCase("مرحباWorld", { locale })).toEqual(["مرحبا", "World"]);
-            expect(splitByCase("عربيText", { locale })).toEqual(["عربي", "Text"]);
+            expect(splitByCase("مرحباWorld", { locale })).toStrictEqual(["مرحبا", "World"]);
+            expect(splitByCase("عربيText", { locale })).toStrictEqual(["عربي", "Text"]);
         });
 
         it("should handle Bengali cases", () => {
+            expect.assertions(2);
             const locale = "bn";
-            expect(splitByCase("স্বাগতWorld", { locale })).toEqual(["স্বাগত", "World"]);
-            expect(splitByCase("বাংলাText", { locale })).toEqual(["বাংলা", "Text"]);
+            expect(splitByCase("স্বাগতWorld", { locale })).toStrictEqual(["স্বাগত", "World"]);
+            expect(splitByCase("বাংলাText", { locale })).toStrictEqual(["বাংলা", "Text"]);
         });
 
         it("should handle Bosnian cases", () => {
+            expect.assertions(2);
             const locale = "bs";
-            expect(splitByCase("zdravoSvijete", { locale })).toEqual(["zdravo", "Svijete"]);
-            expect(splitByCase("bosanskiText", { locale })).toEqual(["bosanski", "Text"]);
+            expect(splitByCase("zdravoSvijete", { locale })).toStrictEqual(["zdravo", "Svijete"]);
+            expect(splitByCase("bosanskiText", { locale })).toStrictEqual(["bosanski", "Text"]);
         });
 
         it("should handle Catalan cases", () => {
+            expect.assertions(2);
             const locale = "ca";
-            expect(splitByCase("holaMón", { locale })).toEqual(["hola", "Món"]);
-            expect(splitByCase("catalàText", { locale })).toEqual(["català", "Text"]);
+            expect(splitByCase("holaMón", { locale })).toStrictEqual(["hola", "Món"]);
+            expect(splitByCase("catalàText", { locale })).toStrictEqual(["català", "Text"]);
         });
 
         it("should handle Czech cases", () => {
+            expect.assertions(2);
             const locale = "cs";
-            expect(splitByCase("ahojSvěte", { locale })).toEqual(["ahoj", "Světe"]);
-            expect(splitByCase("českýText", { locale })).toEqual(["český", "Text"]);
+            expect(splitByCase("ahojSvěte", { locale })).toStrictEqual(["ahoj", "Světe"]);
+            expect(splitByCase("českýText", { locale })).toStrictEqual(["český", "Text"]);
         });
 
         it("should handle Danish cases", () => {
+            expect.assertions(2);
             const locale = "da";
-            expect(splitByCase("halloVerden", { locale })).toEqual(["hallo", "Verden"]);
-            expect(splitByCase("danskText", { locale })).toEqual(["dansk", "Text"]);
+            expect(splitByCase("halloVerden", { locale })).toStrictEqual(["hallo", "Verden"]);
+            expect(splitByCase("danskText", { locale })).toStrictEqual(["dansk", "Text"]);
         });
 
         it("should handle Dutch cases", () => {
+            expect.assertions(2);
             const locale = "nl";
-            expect(splitByCase("halloWereld", { locale })).toEqual(["hallo", "Wereld"]);
-            expect(splitByCase("nederlandsText", { locale })).toEqual(["nederlands", "Text"]);
+            expect(splitByCase("halloWereld", { locale })).toStrictEqual(["hallo", "Wereld"]);
+            expect(splitByCase("nederlandsText", { locale })).toStrictEqual(["nederlands", "Text"]);
         });
 
         it("should handle Estonian cases", () => {
+            expect.assertions(2);
             const locale = "et";
-            expect(splitByCase("tereMailm", { locale })).toEqual(["tere", "Mailm"]);
-            expect(splitByCase("eestiText", { locale })).toEqual(["eesti", "Text"]);
+            expect(splitByCase("tereMailm", { locale })).toStrictEqual(["tere", "Mailm"]);
+            expect(splitByCase("eestiText", { locale })).toStrictEqual(["eesti", "Text"]);
         });
 
         it("should handle Finnish cases", () => {
+            expect.assertions(2);
             const locale = "fi";
-            expect(splitByCase("heiMaailma", { locale })).toEqual(["hei", "Maailma"]);
-            expect(splitByCase("suomiText", { locale })).toEqual(["suomi", "Text"]);
+            expect(splitByCase("heiMaailma", { locale })).toStrictEqual(["hei", "Maailma"]);
+            expect(splitByCase("suomiText", { locale })).toStrictEqual(["suomi", "Text"]);
         });
 
         it("should handle Filipino cases", () => {
+            expect.assertions(2);
             const locale = "fil";
-            expect(splitByCase("helloMundo", { locale })).toEqual(["hello", "Mundo"]);
-            expect(splitByCase("filipinoText", { locale })).toEqual(["filipino", "Text"]);
+            expect(splitByCase("helloMundo", { locale })).toStrictEqual(["hello", "Mundo"]);
+            expect(splitByCase("filipinoText", { locale })).toStrictEqual(["filipino", "Text"]);
         });
 
         it("should handle French cases", () => {
+            expect.assertions(2);
             const locale = "fr";
-            expect(splitByCase("bonjourMonde", { locale })).toEqual(["bonjour", "Monde"]);
-            expect(splitByCase("françaisText", { locale })).toEqual(["français", "Text"]);
+            expect(splitByCase("bonjourMonde", { locale })).toStrictEqual(["bonjour", "Monde"]);
+            expect(splitByCase("françaisText", { locale })).toStrictEqual(["français", "Text"]);
         });
 
         it("should handle Galician cases", () => {
+            expect.assertions(2);
             const locale = "gl";
-            expect(splitByCase("holaMundo", { locale })).toEqual(["hola", "Mundo"]);
-            expect(splitByCase("galegoText", { locale })).toEqual(["galego", "Text"]);
+            expect(splitByCase("holaMundo", { locale })).toStrictEqual(["hola", "Mundo"]);
+            expect(splitByCase("galegoText", { locale })).toStrictEqual(["galego", "Text"]);
         });
 
         it("should handle Georgian cases", () => {
+            expect.assertions(2);
             const locale = "ka";
-            expect(splitByCase("გამარჯობაWorld", { locale })).toEqual(["გამარჯობა", "World"]);
-            expect(splitByCase("ქართულიText", { locale })).toEqual(["ქართული", "Text"]);
+            expect(splitByCase("გამარჯობაWorld", { locale })).toStrictEqual(["გამარჯობა", "World"]);
+            expect(splitByCase("ქართულიText", { locale })).toStrictEqual(["ქართული", "Text"]);
         });
 
         it("should handle Greek cases", () => {
+            expect.assertions(2);
             const locale = "el";
-            expect(splitByCase("γειαΣας", { locale })).toEqual(["γεια", "Σας"]);
-            expect(splitByCase("ελληνικάText", { locale })).toEqual(["ελληνικά", "Text"]);
+            expect(splitByCase("γειαΣας", { locale })).toStrictEqual(["γεια", "Σας"]);
+            expect(splitByCase("ελληνικάText", { locale })).toStrictEqual(["ελληνικά", "Text"]);
         });
 
         it("should handle Gujarati cases", () => {
+            expect.assertions(2);
             const locale = "gu";
-            expect(splitByCase("નમસ્તેWorld", { locale })).toEqual(["નમસ્તે", "World"]);
-            expect(splitByCase("ગુજરાતીText", { locale })).toEqual(["ગુજરાતી", "Text"]);
+            expect(splitByCase("નમસ્તેWorld", { locale })).toStrictEqual(["નમસ્તે", "World"]);
+            expect(splitByCase("ગુજરાતીText", { locale })).toStrictEqual(["ગુજરાતી", "Text"]);
         });
 
         it("should handle Hebrew cases", () => {
+            expect.assertions(2);
             const locale = "he";
-            expect(splitByCase("שלוםWorld", { locale })).toEqual(["שלום", "World"]);
-            expect(splitByCase("עבריתטקסט", { locale })).toEqual(["עבריתטקסט"]);
+            expect(splitByCase("שלוםWorld", { locale })).toStrictEqual(["שלום", "World"]);
+            expect(splitByCase("עבריתטקסט", { locale })).toStrictEqual(["עבריתטקסט"]);
         });
 
         it("should handle Hindi cases", () => {
+            expect.assertions(2);
             const locale = "hi";
-            expect(splitByCase("नमस्तेWorld", { locale })).toEqual(["नमस्ते", "World"]);
-            expect(splitByCase("हिंदीText", { locale })).toEqual(["हिंदी", "Text"]);
+            expect(splitByCase("नमस्तेWorld", { locale })).toStrictEqual(["नमस्ते", "World"]);
+            expect(splitByCase("हिंदीText", { locale })).toStrictEqual(["हिंदी", "Text"]);
         });
 
         it("should handle Hungarian cases", () => {
+            expect.assertions(2);
             const locale = "hu";
-            expect(splitByCase("hellóVilág", { locale })).toEqual(["helló", "Világ"]);
-            expect(splitByCase("magyarText", { locale })).toEqual(["magyar", "Text"]);
+            expect(splitByCase("hellóVilág", { locale })).toStrictEqual(["helló", "Világ"]);
+            expect(splitByCase("magyarText", { locale })).toStrictEqual(["magyar", "Text"]);
         });
 
         it("should handle Icelandic cases", () => {
+            expect.assertions(2);
             const locale = "is";
-            expect(splitByCase("hallóHeimur", { locale })).toEqual(["halló", "Heimur"]);
-            expect(splitByCase("íslenskaText", { locale })).toEqual(["íslenska", "Text"]);
+            expect(splitByCase("hallóHeimur", { locale })).toStrictEqual(["halló", "Heimur"]);
+            expect(splitByCase("íslenskaText", { locale })).toStrictEqual(["íslenska", "Text"]);
         });
 
         it("should handle Indonesian cases", () => {
+            expect.assertions(2);
             const locale = "id";
-            expect(splitByCase("haloDunia", { locale })).toEqual(["halo", "Dunia"]);
-            expect(splitByCase("bahasaText", { locale })).toEqual(["bahasa", "Text"]);
+            expect(splitByCase("haloDunia", { locale })).toStrictEqual(["halo", "Dunia"]);
+            expect(splitByCase("bahasaText", { locale })).toStrictEqual(["bahasa", "Text"]);
         });
 
         it("should handle Irish cases", () => {
+            expect.assertions(2);
             const locale = "ga";
-            expect(splitByCase("diaDuit", { locale })).toEqual(["dia", "Duit"]);
-            expect(splitByCase("gaeilgeText", { locale })).toEqual(["gaeilge", "Text"]);
+            expect(splitByCase("diaDuit", { locale })).toStrictEqual(["dia", "Duit"]);
+            expect(splitByCase("gaeilgeText", { locale })).toStrictEqual(["gaeilge", "Text"]);
         });
 
         it("should handle Italian cases", () => {
+            expect.assertions(2);
             const locale = "it";
-            expect(splitByCase("ciaoMondo", { locale })).toEqual(["ciao", "Mondo"]);
-            expect(splitByCase("italianoText", { locale })).toEqual(["italiano", "Text"]);
+            expect(splitByCase("ciaoMondo", { locale })).toStrictEqual(["ciao", "Mondo"]);
+            expect(splitByCase("italianoText", { locale })).toStrictEqual(["italiano", "Text"]);
         });
 
         it("should handle Japanese cases", () => {
+            expect.assertions(3);
             const locale = "ja";
-            expect(splitByCase("こんにちはWorld", { locale })).toEqual(["こんにちは", "World"]);
-            expect(splitByCase("日本語Text", { locale })).toEqual(["日本語", "Text"]);
-            expect(splitByCase("テストデータ", { locale })).toEqual(["テストデータ"]);
+            expect(splitByCase("こんにちはWorld", { locale })).toStrictEqual(["こんにちは", "World"]);
+            expect(splitByCase("日本語Text", { locale })).toStrictEqual(["日本語", "Text"]);
+            expect(splitByCase("テストデータ", { locale })).toStrictEqual(["テストデータ"]);
         });
 
         it("should handle Kazakh cases", () => {
+            expect.assertions(2);
             const locale = "kk";
-            expect(splitByCase("сәлемWorld", { locale })).toEqual(["сәлем", "World"]);
-            expect(splitByCase("қазақText", { locale })).toEqual(["қазақ", "Text"]);
+            expect(splitByCase("сәлемWorld", { locale })).toStrictEqual(["сәлем", "World"]);
+            expect(splitByCase("қазақText", { locale })).toStrictEqual(["қазақ", "Text"]);
         });
 
         it("should handle Khmer cases", () => {
+            expect.assertions(2);
             const locale = "km";
-            expect(splitByCase("ជំរាបសួរWorld", { locale })).toEqual(["ជំរាបសួរ", "World"]);
-            expect(splitByCase("ខ្មែរText", { locale })).toEqual(["ខ្មែរ", "Text"]);
+            expect(splitByCase("ជំរាបសួរWorld", { locale })).toStrictEqual(["ជំរាបសួរ", "World"]);
+            expect(splitByCase("ខ្មែរText", { locale })).toStrictEqual(["ខ្មែរ", "Text"]);
         });
 
         it("should handle Kannada cases", () => {
+            expect.assertions(2);
             const locale = "kn";
-            expect(splitByCase("ನಮಸ್ಕಾರWorld", { locale })).toEqual(["ನಮಸ್ಕಾರ", "World"]);
-            expect(splitByCase("ಕನ್ನಡText", { locale })).toEqual(["ಕನ್ನಡ", "Text"]);
+            expect(splitByCase("ನಮಸ್ಕಾರWorld", { locale })).toStrictEqual(["ನಮಸ್ಕಾರ", "World"]);
+            expect(splitByCase("ಕನ್ನಡText", { locale })).toStrictEqual(["ಕನ್ನಡ", "Text"]);
         });
 
         it("should handle Korean cases", () => {
+            expect.assertions(3);
             const locale = "ko";
-            expect(splitByCase("안녕하세요World", { locale })).toEqual(["안녕하세요", "World"]);
-            expect(splitByCase("한국어Text", { locale })).toEqual(["한국어", "Text"]);
-            expect(splitByCase("테스트데이터", { locale })).toEqual(["테스트데이터"]);
+            expect(splitByCase("안녕하세요World", { locale })).toStrictEqual(["안녕하세요", "World"]);
+            expect(splitByCase("한국어Text", { locale })).toStrictEqual(["한국어", "Text"]);
+            expect(splitByCase("테스트데이터", { locale })).toStrictEqual(["테스트데이터"]);
         });
 
         it("should handle Kyrgyz cases", () => {
+            expect.assertions(2);
             const locale = "ky";
-            expect(splitByCase("саламWorld", { locale })).toEqual(["салам", "World"]);
-            expect(splitByCase("кыргызText", { locale })).toEqual(["кыргыз", "Text"]);
+            expect(splitByCase("саламWorld", { locale })).toStrictEqual(["салам", "World"]);
+            expect(splitByCase("кыргызText", { locale })).toStrictEqual(["кыргыз", "Text"]);
         });
 
         it("should handle Lao cases", () => {
+            expect.assertions(2);
             const locale = "lo";
-            expect(splitByCase("ສະບາຍດີWorld", { locale })).toEqual(["ສະບາຍດີ", "World"]);
-            expect(splitByCase("ລາວText", { locale })).toEqual(["ລາວ", "Text"]);
+            expect(splitByCase("ສະບາຍດີWorld", { locale })).toStrictEqual(["ສະບາຍດີ", "World"]);
+            expect(splitByCase("ລາວText", { locale })).toStrictEqual(["ລາວ", "Text"]);
         });
 
         it("should handle Lithuanian cases", () => {
+            expect.assertions(2);
             const locale = "lt";
-            expect(splitByCase("labasŠviesa", { locale })).toEqual(["labas", "Šviesa"]);
-            expect(splitByCase("lietuviųText", { locale })).toEqual(["lietuvių", "Text"]);
+            expect(splitByCase("labasŠviesa", { locale })).toStrictEqual(["labas", "Šviesa"]);
+            expect(splitByCase("lietuviųText", { locale })).toStrictEqual(["lietuvių", "Text"]);
         });
 
         it("should handle Latvian cases", () => {
+            expect.assertions(2);
             const locale = "lv";
-            expect(splitByCase("sveikiPasaule", { locale })).toEqual(["sveiki", "Pasaule"]);
-            expect(splitByCase("latviešuText", { locale })).toEqual(["latviešu", "Text"]);
+            expect(splitByCase("sveikiPasaule", { locale })).toStrictEqual(["sveiki", "Pasaule"]);
+            expect(splitByCase("latviešuText", { locale })).toStrictEqual(["latviešu", "Text"]);
         });
 
         it("should handle Malayalam cases", () => {
+            expect.assertions(2);
             const locale = "ml";
-            expect(splitByCase("നമസ്കാരംWorld", { locale })).toEqual(["നമസ്കാരം", "World"]);
-            expect(splitByCase("മലയാളംText", { locale })).toEqual(["മലയാളം", "Text"]);
+            expect(splitByCase("നമസ്കാരംWorld", { locale })).toStrictEqual(["നമസ്കാരം", "World"]);
+            expect(splitByCase("മലയാളംText", { locale })).toStrictEqual(["മലയാളം", "Text"]);
         });
 
         it("should handle Mongolian cases", () => {
+            expect.assertions(2);
             const locale = "mn";
-            expect(splitByCase("сайнWorld", { locale })).toEqual(["сайн", "World"]);
-            expect(splitByCase("монголText", { locale })).toEqual(["монгол", "Text"]);
+            expect(splitByCase("сайнWorld", { locale })).toStrictEqual(["сайн", "World"]);
+            expect(splitByCase("монголText", { locale })).toStrictEqual(["монгол", "Text"]);
         });
 
         it("should handle Marathi cases", () => {
+            expect.assertions(2);
             const locale = "mr";
-            expect(splitByCase("नमस्कारWorld", { locale })).toEqual(["नमस्कार", "World"]);
-            expect(splitByCase("मराठीText", { locale })).toEqual(["मराठी", "Text"]);
+            expect(splitByCase("नमस्कारWorld", { locale })).toStrictEqual(["नमस्कार", "World"]);
+            expect(splitByCase("मराठीText", { locale })).toStrictEqual(["मराठी", "Text"]);
         });
 
         it("should handle Malay cases", () => {
+            expect.assertions(2);
             const locale = "ms";
-            expect(splitByCase("haloDunia", { locale })).toEqual(["halo", "Dunia"]);
-            expect(splitByCase("malayText", { locale })).toEqual(["malay", "Text"]);
+            expect(splitByCase("haloDunia", { locale })).toStrictEqual(["halo", "Dunia"]);
+            expect(splitByCase("malayText", { locale })).toStrictEqual(["malay", "Text"]);
         });
 
         it("should handle Maltese cases", () => {
+            expect.assertions(2);
             const locale = "mt";
-            expect(splitByCase("bonguDinja", { locale })).toEqual(["bongu", "Dinja"]);
-            expect(splitByCase("maltiText", { locale })).toEqual(["malti", "Text"]);
+            expect(splitByCase("bonguDinja", { locale })).toStrictEqual(["bongu", "Dinja"]);
+            expect(splitByCase("maltiText", { locale })).toStrictEqual(["malti", "Text"]);
         });
 
         it("should handle Nepali cases", () => {
+            expect.assertions(2);
             const locale = "ne";
-            expect(splitByCase("नमस्तेWorld", { locale })).toEqual(["नमस्ते", "World"]);
-            expect(splitByCase("नेपालीText", { locale })).toEqual(["नेपाली", "Text"]);
+            expect(splitByCase("नमस्तेWorld", { locale })).toStrictEqual(["नमस्ते", "World"]);
+            expect(splitByCase("नेपालीText", { locale })).toStrictEqual(["नेपाली", "Text"]);
         });
 
         it("should handle Norwegian cases", () => {
+            expect.assertions(2);
             const locale = "no";
-            expect(splitByCase("heiVerden", { locale })).toEqual(["hei", "Verden"]);
-            expect(splitByCase("norskText", { locale })).toEqual(["norsk", "Text"]);
+            expect(splitByCase("heiVerden", { locale })).toStrictEqual(["hei", "Verden"]);
+            expect(splitByCase("norskText", { locale })).toStrictEqual(["norsk", "Text"]);
         });
 
         it("should handle Persian cases", () => {
+            expect.assertions(2);
             const locale = "fa";
-            expect(splitByCase("سلامWorld", { locale })).toEqual(["سلام", "World"]);
-            expect(splitByCase("فارسیText", { locale })).toEqual(["فارسی", "Text"]);
+            expect(splitByCase("سلامWorld", { locale })).toStrictEqual(["سلام", "World"]);
+            expect(splitByCase("فارسیText", { locale })).toStrictEqual(["فارسی", "Text"]);
         });
 
         it("should handle Polish cases", () => {
+            expect.assertions(2);
             const locale = "pl";
-            expect(splitByCase("cześćŚwiat", { locale })).toEqual(["cześć", "Świat"]);
-            expect(splitByCase("polskiText", { locale })).toEqual(["polski", "Text"]);
+            expect(splitByCase("cześćŚwiat", { locale })).toStrictEqual(["cześć", "Świat"]);
+            expect(splitByCase("polskiText", { locale })).toStrictEqual(["polski", "Text"]);
         });
 
         it("should handle Portuguese cases", () => {
+            expect.assertions(2);
             const locale = "pt";
-            expect(splitByCase("oláMundo", { locale })).toEqual(["olá", "Mundo"]);
-            expect(splitByCase("portuguêsText", { locale })).toEqual(["português", "Text"]);
+            expect(splitByCase("oláMundo", { locale })).toStrictEqual(["olá", "Mundo"]);
+            expect(splitByCase("portuguêsText", { locale })).toStrictEqual(["português", "Text"]);
         });
 
         it("should handle Punjabi cases", () => {
+            expect.assertions(2);
             const locale = "pa";
-            expect(splitByCase("ਸਤਿਸ੍ਰੀWorld", { locale })).toEqual(["ਸਤਿਸ੍ਰੀ", "World"]);
-            expect(splitByCase("ਪੰਜਾਬੀText", { locale })).toEqual(["ਪੰਜਾਬੀ", "Text"]);
+            expect(splitByCase("ਸਤਿਸ੍ਰੀWorld", { locale })).toStrictEqual(["ਸਤਿਸ੍ਰੀ", "World"]);
+            expect(splitByCase("ਪੰਜਾਬੀText", { locale })).toStrictEqual(["ਪੰਜਾਬੀ", "Text"]);
         });
 
         it("should handle Romanian cases", () => {
+            expect.assertions(2);
             const locale = "ro";
-            expect(splitByCase("salutLume", { locale })).toEqual(["salut", "Lume"]);
-            expect(splitByCase("românăText", { locale })).toEqual(["română", "Text"]);
+            expect(splitByCase("salutLume", { locale })).toStrictEqual(["salut", "Lume"]);
+            expect(splitByCase("românăText", { locale })).toStrictEqual(["română", "Text"]);
         });
 
         it("should handle Russian cases", () => {
+            expect.assertions(2);
             const locale = "ru";
-            expect(splitByCase("приветМир", { locale })).toEqual(["привет", "Мир"]);
-            expect(splitByCase("русскийText", { locale })).toEqual(["русский", "Text"]);
+            expect(splitByCase("приветМир", { locale })).toStrictEqual(["привет", "Мир"]);
+            expect(splitByCase("русскийText", { locale })).toStrictEqual(["русский", "Text"]);
         });
 
         it("should handle Serbian cases", () => {
+            expect.assertions(2);
             const locale = "sr";
-            expect(splitByCase("здравоСвете", { locale })).toEqual(["здраво", "Свете"]);
-            expect(splitByCase("српскиText", { locale })).toEqual(["српски", "Text"]);
+            expect(splitByCase("здравоСвете", { locale })).toStrictEqual(["здраво", "Свете"]);
+            expect(splitByCase("српскиText", { locale })).toStrictEqual(["српски", "Text"]);
         });
 
         it("should handle Sinhala cases", () => {
+            expect.assertions(2);
             const locale = "si";
-            expect(splitByCase("ආයුබෝවන්දWorld", { locale })).toEqual(["ආයුබෝවන්ද", "World"]);
-            expect(splitByCase("සිංහලයText", { locale })).toEqual(["සිංහලය", "Text"]);
+            expect(splitByCase("ආයුබෝවන්දWorld", { locale })).toStrictEqual(["ආයුබෝවන්ද", "World"]);
+            expect(splitByCase("සිංහලයText", { locale })).toStrictEqual(["සිංහලය", "Text"]);
         });
 
         it("should handle Slovak cases", () => {
+            expect.assertions(2);
             const locale = "sk";
-            expect(splitByCase("ahojSvet", { locale })).toEqual(["ahoj", "Svet"]);
-            expect(splitByCase("slovenskýText", { locale })).toEqual(["slovenský", "Text"]);
+            expect(splitByCase("ahojSvet", { locale })).toStrictEqual(["ahoj", "Svet"]);
+            expect(splitByCase("slovenskýText", { locale })).toStrictEqual(["slovenský", "Text"]);
         });
 
         it("should handle Slovenian cases", () => {
+            expect.assertions(2);
             const locale = "sl";
-            expect(splitByCase("zdravoSvet", { locale })).toEqual(["zdravo", "Svet"]);
-            expect(splitByCase("slovenskiČText", { locale })).toEqual(["slovenski", "Č", "Text"]);
+            expect(splitByCase("zdravoSvet", { locale })).toStrictEqual(["zdravo", "Svet"]);
+            expect(splitByCase("slovenskiČText", { locale })).toStrictEqual(["slovenski", "Č", "Text"]);
         });
 
         it("should handle Albanian cases", () => {
+            expect.assertions(2);
             const locale = "sq";
-            expect(splitByCase("përshëndetjeBotë", { locale })).toEqual(["përshëndetje", "Botë"]);
-            expect(splitByCase("shqipText", { locale })).toEqual(["shqip", "Text"]);
+            expect(splitByCase("përshëndetjeBotë", { locale })).toStrictEqual(["përshëndetje", "Botë"]);
+            expect(splitByCase("shqipText", { locale })).toStrictEqual(["shqip", "Text"]);
         });
 
         it("should handle Swedish cases", () => {
+            expect.assertions(2);
             const locale = "sv";
-            expect(splitByCase("hejVärlden", { locale })).toEqual(["hej", "Världen"]);
-            expect(splitByCase("svenskaText", { locale })).toEqual(["svenska", "Text"]);
+            expect(splitByCase("hejVärlden", { locale })).toStrictEqual(["hej", "Världen"]);
+            expect(splitByCase("svenskaText", { locale })).toStrictEqual(["svenska", "Text"]);
         });
 
         it("should handle Tamil cases", () => {
+            expect.assertions(2);
             const locale = "ta";
-            expect(splitByCase("வணக்கம்World", { locale })).toEqual(["வணக்கம்", "World"]);
-            expect(splitByCase("தமிழ்Text", { locale })).toEqual(["தமிழ்", "Text"]);
+            expect(splitByCase("வணக்கம்World", { locale })).toStrictEqual(["வணக்கம்", "World"]);
+            expect(splitByCase("தமிழ்Text", { locale })).toStrictEqual(["தமிழ்", "Text"]);
         });
 
         it("should handle Telugu cases", () => {
+            expect.assertions(2);
             const locale = "te";
-            expect(splitByCase("నమస్కారంWorld", { locale })).toEqual(["నమస్కారం", "World"]);
-            expect(splitByCase("తెలుగుText", { locale })).toEqual(["తెలుగు", "Text"]);
+            expect(splitByCase("నమస్కారంWorld", { locale })).toStrictEqual(["నమస్కారం", "World"]);
+            expect(splitByCase("తెలుగుText", { locale })).toStrictEqual(["తెలుగు", "Text"]);
         });
 
         it("should handle Thai cases", () => {
+            expect.assertions(2);
             const locale = "th";
-            expect(splitByCase("สวัสดีWorld", { locale })).toEqual(["สวัสดี", "World"]);
-            expect(splitByCase("ไทยText", { locale })).toEqual(["ไทย", "Text"]);
+            expect(splitByCase("สวัสดีWorld", { locale })).toStrictEqual(["สวัสดี", "World"]);
+            expect(splitByCase("ไทยText", { locale })).toStrictEqual(["ไทย", "Text"]);
         });
 
         it("should handle Turkish cases", () => {
+            expect.assertions(2);
             const locale = "tr";
-            expect(splitByCase("merhabaDünya", { locale })).toEqual(["merhaba", "Dünya"]);
-            expect(splitByCase("türkçeText", { locale })).toEqual(["türkçe", "Text"]);
+            expect(splitByCase("merhabaDünya", { locale })).toStrictEqual(["merhaba", "Dünya"]);
+            expect(splitByCase("türkçeText", { locale })).toStrictEqual(["türkçe", "Text"]);
         });
 
         it("should handle Ukrainian cases", () => {
+            expect.assertions(2);
             const locale = "uk";
-            expect(splitByCase("привітСвіт", { locale })).toEqual(["привіт", "Світ"]);
-            expect(splitByCase("українськаText", { locale })).toEqual(["українська", "Text"]);
+            expect(splitByCase("привітСвіт", { locale })).toStrictEqual(["привіт", "Світ"]);
+            expect(splitByCase("українськаText", { locale })).toStrictEqual(["українська", "Text"]);
         });
 
         it("should handle Urdu cases", () => {
+            expect.assertions(2);
             const locale = "ur";
-            expect(splitByCase("سلامWorld", { locale })).toEqual(["سلام", "World"]);
-            expect(splitByCase("اردوText", { locale })).toEqual(["اردو", "Text"]);
+            expect(splitByCase("سلامWorld", { locale })).toStrictEqual(["سلام", "World"]);
+            expect(splitByCase("اردوText", { locale })).toStrictEqual(["اردو", "Text"]);
         });
 
         describe("uzbek case handling", () => {
             const options = { locale: "uz" };
 
             it("should handle Uzbek Latin script", () => {
-                expect(splitByCase("salomDunyo", options)).toEqual(["salom", "Dunyo"]);
-                expect(splitByCase("oʻzbekText", options)).toEqual(["oʻzbek", "Text"]);
-                expect(splitByCase("kattaHarf", options)).toEqual(["katta", "Harf"]);
+            expect.assertions(3);
+
+                expect(splitByCase("salomDunyo", options)).toStrictEqual(["salom", "Dunyo"]);
+                expect(splitByCase("oʻzbekText", options)).toStrictEqual(["oʻzbek", "Text"]);
+                expect(splitByCase("kattaHarf", options)).toStrictEqual(["katta", "Harf"]);
             });
 
             it("should handle Uzbek Cyrillic script", () => {
-                expect(splitByCase("саломДунё", options)).toEqual(["салом", "Дунё"]);
-                expect(splitByCase("ўзбекText", options)).toEqual(["ўзбек", "Text"]);
-                expect(splitByCase("каттаҲарф", options)).toEqual(["катта", "Ҳарф"]);
+            expect.assertions(3);
+                expect(splitByCase("саломДунё", options)).toStrictEqual(["салом", "Дунё"]);
+                expect(splitByCase("ўзбекText", options)).toStrictEqual(["ўзбек", "Text"]);
+                expect(splitByCase("каттаҲарф", options)).toStrictEqual(["катта", "Ҳарф"]);
             });
 
             it("should handle mixed script cases", () => {
-                expect(splitByCase("oʻzbekЎзбек", options)).toEqual(["oʻzbek", "Ўзбек"]);
-                expect(splitByCase("latinКирилText", options)).toEqual(["latin", "Кирил", "Text"]);
+            expect.assertions(2);
+                expect(splitByCase("oʻzbekЎзбек", options)).toStrictEqual(["oʻzbek", "Ўзбек"]);
+                expect(splitByCase("latinКирилText", options)).toStrictEqual(["latin", "Кирил", "Text"]);
             });
         });
 
         it("should handle Vietnamese cases", () => {
+            expect.assertions(2);
+
             const locale = "vi";
-            expect(splitByCase("xin chàoThếGiới", { locale })).toEqual(["xin", "chào", "Thế", "Giới"]);
-            expect(splitByCase("tiếngViệtText", { locale })).toEqual(["tiếng", "Việt", "Text"]);
+            expect(splitByCase("xin chàoThếGiới", { locale })).toStrictEqual(["xin", "chào", "Thế", "Giới"]);
+            expect(splitByCase("tiếngViệtText", { locale })).toStrictEqual(["tiếng", "Việt", "Text"]);
         });
 
         it("should handle Chinese cases", () => {
+            expect.assertions(2);
             const locale = "zh";
-            expect(splitByCase("你好World", { locale })).toEqual(["你好", "World"]);
-            expect(splitByCase("中文Text", { locale })).toEqual(["中文", "Text"]);
+            expect(splitByCase("你好World", { locale })).toStrictEqual(["你好", "World"]);
+            expect(splitByCase("中文Text", { locale })).toStrictEqual(["中文", "Text"]);
         });
 
         it("should handle Turkish specific cases", () => {
+            expect.assertions(4);
             const locale = "tr-TR";
-            expect(splitByCase("İstanbulCity", { locale })).toEqual(["İstanbul", "City"]);
-            expect(splitByCase("izmirŞehir", { locale })).toEqual(["izmir", "Şehir"]);
-            expect(splitByCase("türkçeTest", { locale })).toEqual(["türkçe", "Test"]);
-            expect(splitByCase("IıİiTest", { locale })).toEqual(["Iı", "İi", "Test"]);
+            expect(splitByCase("İstanbulCity", { locale })).toStrictEqual(["İstanbul", "City"]);
+            expect(splitByCase("izmirŞehir", { locale })).toStrictEqual(["izmir", "Şehir"]);
+            expect(splitByCase("türkçeTest", { locale })).toStrictEqual(["türkçe", "Test"]);
+            expect(splitByCase("IıİiTest", { locale })).toStrictEqual(["Iı", "İi", "Test"]);
         });
 
         it("should handle Azerbaijani specific cases", () => {
+            expect.assertions(3);
             const locale = "az-AZ";
-            expect(splitByCase("İlkinTest", { locale })).toEqual(["İlkin", "Test"]);
-            expect(splitByCase("bakıŞəhər", { locale })).toEqual(["bakı", "Şəhər"]);
-            expect(splitByCase("IıİiTest", { locale })).toEqual(["Iı", "İi", "Test"]);
+            expect(splitByCase("İlkinTest", { locale })).toStrictEqual(["İlkin", "Test"]);
+            expect(splitByCase("bakıŞəhər", { locale })).toStrictEqual(["bakı", "Şəhər"]);
+            expect(splitByCase("IıİiTest", { locale })).toStrictEqual(["Iı", "İi", "Test"]);
         });
 
         describe("german case handling", () => {
             const options = { locale: "de-DE" };
 
             it("should handle German specific cases", () => {
-                expect(splitByCase("GROSSE STRAßE", options)).toEqual(["GROSSE", "STRAßE"]);
-                expect(splitByCase("straßeTest", options)).toEqual(["straße", "Test"]);
-                expect(splitByCase("großeHaus", options)).toEqual(["große", "Haus"]);
-                expect(splitByCase("äußereForm", options)).toEqual(["äußere", "Form"]);
-                expect(splitByCase("GROẞESHAUS", options)).toEqual(["GROẞESHAUS"]);
-                expect(splitByCase("DERGroßeWAGEN", options)).toEqual(["DER", "Große", "WAGEN"]);
+            expect.assertions(6);
+                expect(splitByCase("GROSSE STRAßE", options)).toStrictEqual(["GROSSE", "STRAßE"]);
+                expect(splitByCase("straßeTest", options)).toStrictEqual(["straße", "Test"]);
+                expect(splitByCase("großeHaus", options)).toStrictEqual(["große", "Haus"]);
+                expect(splitByCase("äußereForm", options)).toStrictEqual(["äußere", "Form"]);
+                expect(splitByCase("GROẞESHAUS", options)).toStrictEqual(["GROẞESHAUS"]);
+                expect(splitByCase("DERGroßeWAGEN", options)).toStrictEqual(["DER", "Große", "WAGEN"]);
             });
 
             it("should handle eszett in uppercase sequences", () => {
-                expect(splitByCase("STRAßE", options)).toEqual(["STRAßE"]);
-                expect(splitByCase("GROßE", options)).toEqual(["GROßE"]);
-                expect(splitByCase("GROẞE", options)).toEqual(["GROẞE"]);
+            expect.assertions(3);
+                expect(splitByCase("STRAßE", options)).toStrictEqual(["STRAßE"]);
+                expect(splitByCase("GROßE", options)).toStrictEqual(["GROßE"]);
+                expect(splitByCase("GROẞE", options)).toStrictEqual(["GROẞE"]);
             });
 
             it("should handle mixed case with eszett", () => {
-                expect(splitByCase("großeSTRASSE", options)).toEqual(["große", "STRASSE"]);
-                expect(splitByCase("DieGROSSEStadtStraße", options)).toEqual(["Die", "GROSSE", "Stadt", "Straße"]);
+            expect.assertions(2);
+                expect(splitByCase("großeSTRASSE", options)).toStrictEqual(["große", "STRASSE"]);
+                expect(splitByCase("DieGROSSEStadtStraße", options)).toStrictEqual(["Die", "GROSSE", "Stadt", "Straße"]);
             });
 
             it("should handle compound words", () => {
-                expect(splitByCase("BundesstraßeNummer", options)).toEqual(["Bundesstraße", "Nummer"]);
-                expect(splitByCase("GROßSTADT", options)).toEqual(["GROßSTADT"]);
-                expect(splitByCase("KLEINSTRAßE", options)).toEqual(["KLEINSTRAßE"]);
+            expect.assertions(3);
+                expect(splitByCase("BundesstraßeNummer", options)).toStrictEqual(["Bundesstraße", "Nummer"]);
+                expect(splitByCase("GROßSTADT", options)).toStrictEqual(["GROßSTADT"]);
+                expect(splitByCase("KLEINSTRAßE", options)).toStrictEqual(["KLEINSTRAßE"]);
             });
 
             it("should handle German eszett cases", () => {
-                expect(splitByCase("straßeName", options)).toEqual(["straße", "Name"]);
-                expect(splitByCase("STRAẞENAME", options)).toEqual(["STRAẞENAME"]);
-                expect(splitByCase("GROẞBUCHSTABE", options)).toEqual(["GROẞBUCHSTABE"]);
-                expect(splitByCase("großBuchstabe", options)).toEqual(["groß", "Buchstabe"]);
+            expect.assertions(4);
+                expect(splitByCase("straßeName", options)).toStrictEqual(["straße", "Name"]);
+                expect(splitByCase("STRAẞENAME", options)).toStrictEqual(["STRAẞENAME"]);
+                expect(splitByCase("GROẞBUCHSTABE", options)).toStrictEqual(["GROẞBUCHSTABE"]);
+                expect(splitByCase("großBuchstabe", options)).toStrictEqual(["groß", "Buchstabe"]);
             });
         });
 
         it("should handle Greek specific cases", () => {
+            expect.assertions(5);
             const locale = "el-GR";
-            expect(splitByCase("καλημέραΚόσμε", { locale })).toEqual(["καλημέρα", "Κόσμε"]);
-            expect(splitByCase("ΕλληνικάTest", { locale })).toEqual(["Ελληνικά", "Test"]);
-            expect(splitByCase("αβγΔΕΖ", { locale })).toEqual(["αβγ", "ΔΕΖ"]);
-            expect(splitByCase("ΚόσμοςTest", { locale })).toEqual(["Κόσμος", "Test"]);
-            expect(splitByCase("ΠΡΟΣΘΕΣΗTest", { locale })).toEqual(["ΠΡΟΣΘΕΣΗ", "Test"]);
+            expect(splitByCase("καλημέραΚόσμε", { locale })).toStrictEqual(["καλημέρα", "Κόσμε"]);
+            expect(splitByCase("ΕλληνικάTest", { locale })).toStrictEqual(["Ελληνικά", "Test"]);
+            expect(splitByCase("αβγΔΕΖ", { locale })).toStrictEqual(["αβγ", "ΔΕΖ"]);
+            expect(splitByCase("ΚόσμοςTest", { locale })).toStrictEqual(["Κόσμος", "Test"]);
+            expect(splitByCase("ΠΡΟΣΘΕΣΗTest", { locale })).toStrictEqual(["ΠΡΟΣΘΕΣΗ", "Test"]);
         });
 
         it("should handle Russian specific cases", () => {
+            expect.assertions(3);
             const locale = "ru-RU";
-            expect(splitByCase("привет Мир", { locale })).toEqual(["привет", "Мир"]);
-            expect(splitByCase("РусскийText", { locale })).toEqual(["Русский", "Text"]);
-            expect(splitByCase("тестКейс", { locale })).toEqual(["тест", "Кейс"]);
+            expect(splitByCase("привет Мир", { locale })).toStrictEqual(["привет", "Мир"]);
+            expect(splitByCase("РусскийText", { locale })).toStrictEqual(["Русский", "Text"]);
+            expect(splitByCase("тестКейс", { locale })).toStrictEqual(["тест", "Кейс"]);
         });
 
         it("should handle Ukrainian specific cases", () => {
+            expect.assertions(3);
             const locale = "uk-UA";
-            expect(splitByCase("привітСвіт", { locale })).toEqual(["привіт", "Світ"]);
-            expect(splitByCase("УкраїнськаMова", { locale })).toEqual(["Українська", "Mова"]);
-            expect(splitByCase("тестКейс", { locale })).toEqual(["тест", "Кейс"]);
+            expect(splitByCase("привітСвіт", { locale })).toStrictEqual(["привіт", "Світ"]);
+            expect(splitByCase("УкраїнськаMова", { locale })).toStrictEqual(["Українська", "Mова"]);
+            expect(splitByCase("тестКейс", { locale })).toStrictEqual(["тест", "Кейс"]);
         });
 
         it("should handle Bulgarian specific cases", () => {
+            expect.assertions(3);
             const locale = "bg-BG";
-            expect(splitByCase("здравейСвят", { locale })).toEqual(["здравей", "Свят"]);
-            expect(splitByCase("БългарскиText", { locale })).toEqual(["Български", "Text"]);
-            expect(splitByCase("тестКейс", { locale })).toEqual(["тест", "Кейс"]);
+            expect(splitByCase("здравейСвят", { locale })).toStrictEqual(["здравей", "Свят"]);
+            expect(splitByCase("БългарскиText", { locale })).toStrictEqual(["Български", "Text"]);
+            expect(splitByCase("тестКейс", { locale })).toStrictEqual(["тест", "Кейс"]);
         });
 
         it("should handle Serbian specific cases", () => {
+            expect.assertions(3);
             const locale = "sr-RS";
-            expect(splitByCase("здравоСвете", { locale })).toEqual(["здраво", "Свете"]);
-            expect(splitByCase("СрпскиText", { locale })).toEqual(["Српски", "Text"]);
-            expect(splitByCase("тестКейс", { locale })).toEqual(["тест", "Кейс"]);
+            expect(splitByCase("здравоСвете", { locale })).toStrictEqual(["здраво", "Свете"]);
+            expect(splitByCase("СрпскиText", { locale })).toStrictEqual(["Српски", "Text"]);
+            expect(splitByCase("тестКейс", { locale })).toStrictEqual(["тест", "Кейс"]);
         });
 
         it("should handle Macedonian specific cases", () => {
+            expect.assertions(3);
             const locale = "mk-MK";
-            expect(splitByCase("здравоСвету", { locale })).toEqual(["здраво", "Свету"]);
-            expect(splitByCase("МакедонскиText", { locale })).toEqual(["Македонски", "Text"]);
-            expect(splitByCase("тестКејс", { locale })).toEqual(["тест", "Кејс"]);
+            expect(splitByCase("здравоСвету", { locale })).toStrictEqual(["здраво", "Свету"]);
+            expect(splitByCase("МакедонскиText", { locale })).toStrictEqual(["Македонски", "Text"]);
+            expect(splitByCase("тестКејс", { locale })).toStrictEqual(["тест", "Кејс"]);
         });
 
         it("should handle Belarusian specific cases", () => {
+            expect.assertions(3);
             const locale = "be-BY";
-            expect(splitByCase("прывітанеСвет", { locale })).toEqual(["прывітане", "Свет"]);
-            expect(splitByCase("БеларускаяText", { locale })).toEqual(["Беларуская", "Text"]);
-            expect(splitByCase("тэстКейс", { locale })).toEqual(["тэст", "Кейс"]);
+            expect(splitByCase("прывітанеСвет", { locale })).toStrictEqual(["прывітане", "Свет"]);
+            expect(splitByCase("БеларускаяText", { locale })).toStrictEqual(["Беларуская", "Text"]);
+            expect(splitByCase("тэстКейс", { locale })).toStrictEqual(["тэст", "Кейс"]);
         });
 
         it("should handle Chinese (Simplified) specific cases", () => {
+            expect.assertions(3);
             const locale = "zh-CN";
-            expect(splitByCase("你好World", { locale })).toEqual(["你好", "World"]);
-            expect(splitByCase("测试Test", { locale })).toEqual(["测试", "Test"]);
-            expect(splitByCase("中文English混合", { locale })).toEqual(["中文", "English", "混合"]);
+            expect(splitByCase("你好World", { locale })).toStrictEqual(["你好", "World"]);
+            expect(splitByCase("测试Test", { locale })).toStrictEqual(["测试", "Test"]);
+            expect(splitByCase("中文English混合", { locale })).toStrictEqual(["中文", "English", "混合"]);
         });
 
         it("should handle Chinese (Traditional) specific cases", () => {
+            expect.assertions(3);
             const locale = "zh-TW";
-            expect(splitByCase("你好World", { locale })).toEqual(["你好", "World"]);
-            expect(splitByCase("測試Test", { locale })).toEqual(["測試", "Test"]);
-            expect(splitByCase("中文English混合", { locale })).toEqual(["中文", "English", "混合"]);
+            expect(splitByCase("你好World", { locale })).toStrictEqual(["你好", "World"]);
+            expect(splitByCase("測試Test", { locale })).toStrictEqual(["測試", "Test"]);
+            expect(splitByCase("中文English混合", { locale })).toStrictEqual(["中文", "English", "混合"]);
         });
 
         it("should handle Chinese (Hong Kong) specific cases", () => {
+            expect.assertions(3);
             const locale = "zh-HK";
-            expect(splitByCase("你好World", { locale })).toEqual(["你好", "World"]);
-            expect(splitByCase("測試Test", { locale })).toEqual(["測試", "Test"]);
-            expect(splitByCase("中文English混合", { locale })).toEqual(["中文", "English", "混合"]);
+            expect(splitByCase("你好World", { locale })).toStrictEqual(["你好", "World"]);
+            expect(splitByCase("測試Test", { locale })).toStrictEqual(["測試", "Test"]);
+            expect(splitByCase("中文English混合", { locale })).toStrictEqual(["中文", "English", "混合"]);
         });
 
         it("should handle Japanese specific cases", () => {
+            expect.assertions(4);
             const locale = "ja-JP";
-            expect(splitByCase("こんにちは World", { locale })).toEqual(["こんにちは", "World"]);
-            expect(splitByCase("テストTest", { locale })).toEqual(["テスト", "Test"]);
-            expect(splitByCase("ひらがなカタカナABC", { locale })).toEqual(["ひらがな", "カタカナ", "ABC"]);
-            expect(splitByCase("漢字とKanji", { locale })).toEqual(["漢字と", "Kanji"]);
+            expect(splitByCase("こんにちは World", { locale })).toStrictEqual(["こんにちは", "World"]);
+            expect(splitByCase("テストTest", { locale })).toStrictEqual(["テスト", "Test"]);
+            expect(splitByCase("ひらがなカタカナABC", { locale })).toStrictEqual(["ひらがな", "カタカナ", "ABC"]);
+            expect(splitByCase("漢字とKanji", { locale })).toStrictEqual(["漢字と", "Kanji"]);
         });
 
         it("should handle Arabic specific cases", () => {
+            expect.assertions(3);
             const locale = "ar-SA";
-            expect(splitByCase("مرحباWorld", { locale })).toEqual(["مرحبا", "World"]);
-            expect(splitByCase("اختبارTest", { locale })).toEqual(["اختبار", "Test"]);
-            expect(splitByCase("عربيEnglishمختلط", { locale })).toEqual(["عربي", "English", "مختلط"]);
+            expect(splitByCase("مرحباWorld", { locale })).toStrictEqual(["مرحبا", "World"]);
+            expect(splitByCase("اختبارTest", { locale })).toStrictEqual(["اختبار", "Test"]);
+            expect(splitByCase("عربيEnglishمختلط", { locale })).toStrictEqual(["عربي", "English", "مختلط"]);
         });
 
         it("should handle Persian specific cases", () => {
+            expect.assertions(3);
             const locale = "fa-IR";
-            expect(splitByCase("سلامWorld", { locale })).toEqual(["سلام", "World"]);
-            expect(splitByCase("تستTest", { locale })).toEqual(["تست", "Test"]);
-            expect(splitByCase("فارسیEnglishمخلوط", { locale })).toEqual(["فارسی", "English", "مخلوط"]);
+            expect(splitByCase("سلامWorld", { locale })).toStrictEqual(["سلام", "World"]);
+            expect(splitByCase("تستTest", { locale })).toStrictEqual(["تست", "Test"]);
+            expect(splitByCase("فارسیEnglishمخلوط", { locale })).toStrictEqual(["فارسی", "English", "مخلوط"]);
         });
 
         it("should handle Hebrew specific cases", () => {
+            expect.assertions(3);
             const locale = "he-IL";
-            expect(splitByCase("שלוםWorld", { locale })).toEqual(["שלום", "World"]);
-            expect(splitByCase("בדיקהTest", { locale })).toEqual(["בדיקה", "Test"]);
-            expect(splitByCase("עבריתEnglishמעורב", { locale })).toEqual(["עברית", "English", "מעורב"]);
+            expect(splitByCase("שלוםWorld", { locale })).toStrictEqual(["שלום", "World"]);
+            expect(splitByCase("בדיקהTest", { locale })).toStrictEqual(["בדיקה", "Test"]);
+            expect(splitByCase("עבריתEnglishמעורב", { locale })).toStrictEqual(["עברית", "English", "מעורב"]);
         });
 
         it("should handle Thai specific cases", () => {
+            expect.assertions(3);
             const locale = "th-TH";
-            expect(splitByCase("สวัสดีWorld", { locale })).toEqual(["สวัสดี", "World"]);
-            expect(splitByCase("ทดสอบTest", { locale })).toEqual(["ทดสอบ", "Test"]);
-            expect(splitByCase("ไทยEnglishผสม", { locale })).toEqual(["ไทย", "English", "ผสม"]);
+            expect(splitByCase("สวัสดีWorld", { locale })).toStrictEqual(["สวัสดี", "World"]);
+            expect(splitByCase("ทดสอบTest", { locale })).toStrictEqual(["ทดสอบ", "Test"]);
+            expect(splitByCase("ไทยEnglishผสม", { locale })).toStrictEqual(["ไทย", "English", "ผสม"]);
         });
 
         it("should handle Hindi specific cases", () => {
+            expect.assertions(3);
             const locale = "hi-IN";
-            expect(splitByCase("नमस्तेWorld", { locale })).toEqual(["नमस्ते", "World"]);
-            expect(splitByCase("परीक्षणTest", { locale })).toEqual(["परीक्षण", "Test"]);
-            expect(splitByCase("हिंदीEnglishमिश्रित", { locale })).toEqual(["हिंदी", "English", "मिश्रित"]);
+            expect(splitByCase("नमस्तेWorld", { locale })).toStrictEqual(["नमस्ते", "World"]);
+            expect(splitByCase("परीक्षणTest", { locale })).toStrictEqual(["परीक्षण", "Test"]);
+            expect(splitByCase("हिंदीEnglishमिश्रित", { locale })).toStrictEqual(["हिंदी", "English", "मिश्रित"]);
         });
 
         it("should handle Marathi specific cases", () => {
+            expect.assertions(3);
             const locale = "mr-IN";
-            expect(splitByCase("नमस्कारWorld", { locale })).toEqual(["नमस्कार", "World"]);
-            expect(splitByCase("चाचणीTest", { locale })).toEqual(["चाचणी", "Test"]);
-            expect(splitByCase("मराठीEnglishमिश्र", { locale })).toEqual(["मराठी", "English", "मिश्र"]);
+            expect(splitByCase("नमस्कारWorld", { locale })).toStrictEqual(["नमस्कार", "World"]);
+            expect(splitByCase("चाचणीTest", { locale })).toStrictEqual(["चाचणी", "Test"]);
+            expect(splitByCase("मराठीEnglishमिश्र", { locale })).toStrictEqual(["मराठी", "English", "मिश्र"]);
         });
 
         it("should handle Nepali specific cases", () => {
+            expect.assertions(3);
             const locale = "ne-NP";
-            expect(splitByCase("नमस्तेWorld", { locale })).toEqual(["नमस्ते", "World"]);
-            expect(splitByCase("परीक्षणTest", { locale })).toEqual(["परीक्षण", "Test"]);
-            expect(splitByCase("नेपालीEnglishमिश्रित", { locale })).toEqual(["नेपाली", "English", "मिश्रित"]);
+            expect(splitByCase("नमस्तेWorld", { locale })).toStrictEqual(["नमस्ते", "World"]);
+            expect(splitByCase("परीक्षणTest", { locale })).toStrictEqual(["परीक्षण", "Test"]);
+            expect(splitByCase("नेपालीEnglishमिश्रित", { locale })).toStrictEqual(["नेपाली", "English", "मिश्रित"]);
         });
 
         it("should handle Korean specific cases", () => {
+            expect.assertions(4);
             const locale = "ko-KR";
-            expect(splitByCase("안녕하세요World", { locale })).toEqual(["안녕하세요", "World"]);
-            expect(splitByCase("테스트Test", { locale })).toEqual(["테스트", "Test"]);
-            expect(splitByCase("한글English혼합", { locale })).toEqual(["한글", "English", "혼합"]);
-            expect(splitByCase("대문자UPPER", { locale })).toEqual(["대문자", "UPPER"]);
+            expect(splitByCase("안녕하세요World", { locale })).toStrictEqual(["안녕하세요", "World"]);
+            expect(splitByCase("테스트Test", { locale })).toStrictEqual(["테스트", "Test"]);
+            expect(splitByCase("한글English혼합", { locale })).toStrictEqual(["한글", "English", "혼합"]);
+            expect(splitByCase("대문자UPPER", { locale })).toStrictEqual(["대문자", "UPPER"]);
         });
     });
 
     describe("aNSI escape codes", () => {
         it("should strip ANSI escape codes when stripAnsi is true", () => {
-            expect(splitByCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toEqual(["Red", "Text"]);
-            expect(splitByCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toEqual(["Bold", "Text"]);
-            expect(splitByCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toEqual(["Green", "FOO", "Blue", "BAR"]);
-            expect(splitByCase("\u001B[31mError404Found\u001B[0m", { stripAnsi: true })).toEqual(["Error", "404", "Found"]);
-            expect(splitByCase("\u001B[33mWarning2xx\u001B[0m", { stripAnsi: true })).toEqual(["Warning", "2", "xx"]);
+            expect.assertions(5);
+            expect(splitByCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toStrictEqual(["Red", "Text"]);
+            expect(splitByCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toStrictEqual(["Bold", "Text"]);
+            expect(splitByCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toStrictEqual(["Green", "FOO", "Blue", "BAR"]);
+            expect(splitByCase("\u001B[31mError404Found\u001B[0m", { stripAnsi: true })).toStrictEqual(["Error", "404", "Found"]);
+            expect(splitByCase("\u001B[33mWarning2xx\u001B[0m", { stripAnsi: true })).toStrictEqual(["Warning", "2", "xx"]);
         });
 
         it("should handle ANSI escape codes when handleAnsi is true", () => {
-            expect(splitByCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toEqual(["\u001B[31m", "Red", "Text", "\u001B[0m"]);
-            expect(splitByCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toEqual(["\u001B[1m", "Bold", "Text", "\u001B[0m"]);
-            expect(splitByCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toEqual([
+            expect.assertions(4);
+            expect(splitByCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toStrictEqual(["\u001B[31m", "Red", "Text", "\u001B[0m"]);
+            expect(splitByCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toStrictEqual(["\u001B[1m", "Bold", "Text", "\u001B[0m"]);
+            expect(splitByCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toStrictEqual([
                 "\u001B[32m",
                 "Green",
                 "FOO",
@@ -686,42 +792,48 @@ describe("splitByCase", () => {
                 "BAR",
                 "\u001B[0m",
             ]);
-            expect(splitByCase(bgRed.green("RedText"), { handleAnsi: true })).toEqual(["\u001B[41m", "\u001B[32m", "Red", "Text", "\u001B[39m", "\u001B[49m"]);
+            expect(splitByCase(bgRed.green("RedText"), { handleAnsi: true })).toStrictEqual(["\u001B[41m", "\u001B[32m", "Red", "Text", "\u001B[39m", "\u001B[49m"]);
         });
 
         it("should handle ANSI escape codes with numbers when handleAnsi is true", () => {
-            expect(splitByCase("\u001B[31mError404Found\u001B[0m", { handleAnsi: true })).toEqual(["\u001B[31m", "Error", "404", "Found", "\u001B[0m"]);
-            expect(splitByCase("\u001B[33mWarning2xx\u001B[0m", { handleAnsi: true })).toEqual(["\u001B[33m", "Warning", "2", "xx", "\u001B[0m"]);
+            expect.assertions(2);
+            expect(splitByCase("\u001B[31mError404Found\u001B[0m", { handleAnsi: true })).toStrictEqual(["\u001B[31m", "Error", "404", "Found", "\u001B[0m"]);
+            expect(splitByCase("\u001B[33mWarning2xx\u001B[0m", { handleAnsi: true })).toStrictEqual(["\u001B[33m", "Warning", "2", "xx", "\u001B[0m"]);
         });
     });
 
     describe("emoji support", () => {
         it("should handle emojis when handleEmoji is true", () => {
-            expect(splitByCase("hello🌍World", { handleEmoji: true })).toEqual(["hello", "🌍", "World"]);
-            expect(splitByCase("test🎉Party🎈Fun", { handleEmoji: true })).toEqual(["test", "🎉", "Party", "🎈", "Fun"]);
-            expect(splitByCase("EMOJI👾Gaming", { handleEmoji: true })).toEqual(["EMOJI", "👾", "Gaming"]);
+            expect.assertions(3);
+            expect(splitByCase("hello🌍World", { handleEmoji: true })).toStrictEqual(["hello", "🌍", "World"]);
+            expect(splitByCase("test🎉Party🎈Fun", { handleEmoji: true })).toStrictEqual(["test", "🎉", "Party", "🎈", "Fun"]);
+            expect(splitByCase("EMOJI👾Gaming", { handleEmoji: true })).toStrictEqual(["EMOJI", "👾", "Gaming"]);
         });
 
         it("should ignore emojis with numbers and special characters when stripEmoji is true", () => {
-            expect(splitByCase("iOS15.4📱Update", { stripEmoji: true })).toEqual(["i", "OS", "15", "4", "Update"]);
-            expect(splitByCase("version2.0✨Release", { stripEmoji: true })).toEqual(["version", "2", "0", "Release"]);
-            expect(splitByCase("error❌404Page", { stripEmoji: true })).toEqual(["error", "404", "Page"]);
+            expect.assertions(3);
+            expect(splitByCase("iOS15.4📱Update", { stripEmoji: true })).toStrictEqual(["i", "OS", "15", "4", "Update"]);
+            expect(splitByCase("version2.0✨Release", { stripEmoji: true })).toStrictEqual(["version", "2", "0", "Release"]);
+            expect(splitByCase("error❌404Page", { stripEmoji: true })).toStrictEqual(["error", "404", "Page"]);
         });
 
         it("should handle emojis with numbers when handleEmoji is true", () => {
-            expect(splitByCase("iOS15.4📱Update", { handleEmoji: true })).toEqual(["i", "OS", "15", "4", "📱", "Update"]);
-            expect(splitByCase("version2.0✨Release", { handleEmoji: true })).toEqual(["version", "2", "0", "✨", "Release"]);
-            expect(splitByCase("error❌404Page", { handleEmoji: true })).toEqual(["error", "❌", "404", "Page"]);
+            expect.assertions(3);
+            expect(splitByCase("iOS15.4📱Update", { handleEmoji: true })).toStrictEqual(["i", "OS", "15", "4", "📱", "Update"]);
+            expect(splitByCase("version2.0✨Release", { handleEmoji: true })).toStrictEqual(["version", "2", "0", "✨", "Release"]);
+            expect(splitByCase("error❌404Page", { handleEmoji: true })).toStrictEqual(["error", "❌", "404", "Page"]);
         });
 
         it("should strip multiple consecutive emojis when stripEmoji is true", () => {
-            expect(splitByCase("weather🌞🌤️🌧️Forecast", { stripEmoji: true })).toEqual(["weather", "Forecast"]);
-            expect(splitByCase("reaction👍👎Rating", { stripEmoji: true })).toEqual(["reaction", "Rating"]);
+            expect.assertions(2);
+            expect(splitByCase("weather🌞🌤️🌧️Forecast", { stripEmoji: true })).toStrictEqual(["weather", "Forecast"]);
+            expect(splitByCase("reaction👍👎Rating", { stripEmoji: true })).toStrictEqual(["reaction", "Rating"]);
         });
 
         it("should handle multiple consecutive emojis when handleEmoji is true", () => {
-            expect(splitByCase("weather🌞🌤️🌧️Forecast", { handleEmoji: true })).toEqual(["weather", "🌞", "🌤️", "🌧️", "Forecast"]);
-            expect(splitByCase("reaction👍👎Rating", { handleEmoji: true })).toEqual(["reaction", "👍", "👎", "Rating"]);
+            expect.assertions(2);
+            expect(splitByCase("weather🌞🌤️🌧️Forecast", { handleEmoji: true })).toStrictEqual(["weather", "🌞", "🌤️", "🌧️", "Forecast"]);
+            expect(splitByCase("reaction👍👎Rating", { handleEmoji: true })).toStrictEqual(["reaction", "👍", "👎", "Rating"]);
         });
     });
 
@@ -729,75 +841,85 @@ describe("splitByCase", () => {
         const mixedText = "\u001B[31mhappy😊Face\u001B[0m";
 
         it("should ignore both ANSI and emoji by default", () => {
-            expect(splitByCase(mixedText, { stripAnsi: true, stripEmoji: true })).toEqual(["happy", "Face"]);
+            expect.assertions(1);
+            expect(splitByCase(mixedText, { stripAnsi: true, stripEmoji: true })).toStrictEqual(["happy", "Face"]);
         });
 
         it("should handle both when both are enabled", () => {
-            expect(splitByCase(mixedText, { handleAnsi: true, handleEmoji: true })).toEqual(["\u001B[31m", "happy", "😊", "Face", "\u001B[0m"]);
+            expect.assertions(1);
+            expect(splitByCase(mixedText, { handleAnsi: true, handleEmoji: true })).toStrictEqual(["\u001B[31m", "happy", "😊", "Face", "\u001B[0m"]);
         });
 
         it("should handle only ANSI when only ANSI is enabled", () => {
-            expect(splitByCase(mixedText, { handleAnsi: true, stripEmoji: true })).toEqual(["\u001B[31m", "happy", "Face", "\u001B[0m"]);
+            expect.assertions(1);
+            expect(splitByCase(mixedText, { handleAnsi: true, stripEmoji: true })).toStrictEqual(["\u001B[31m", "happy", "Face", "\u001B[0m"]);
         });
 
         it("should handle only emoji when only emoji is enabled", () => {
-            expect(splitByCase(mixedText, { handleEmoji: true, stripAnsi: true })).toEqual(["happy", "😊", "Face"]);
+            expect.assertions(1);
+            expect(splitByCase(mixedText, { handleEmoji: true, stripAnsi: true })).toStrictEqual(["happy", "😊", "Face"]);
         });
     });
 
     describe("special formats and mixed cases", () => {
         it("should handle movie and product references", () => {
-            expect(splitByCase("C3POAndR2D2")).toEqual(["C", "3", "PO", "And", "R", "2", "D", "2"]);
-            expect(splitByCase("C-3PO_and_R2-D2")).toEqual(["C", "3PO", "and", "R2", "D2"]);
+            expect.assertions(6);
+            expect(splitByCase("C3POAndR2D2")).toStrictEqual(["C", "3", "PO", "And", "R", "2", "D", "2"]);
+            expect(splitByCase("C-3PO_and_R2-D2")).toStrictEqual(["C", "3PO", "and", "R2", "D2"]);
             // eslint-disable-next-line no-secrets/no-secrets
-            expect(splitByCase("Episode7TheForceAwakens")).toEqual(["Episode", "7", "The", "Force", "Awakens"]);
-            expect(splitByCase("iPhone12ProMax")).toEqual(["i", "Phone", "12", "Pro", "Max"]);
-            expect(splitByCase("iPhone12_Pro_Max")).toEqual(["i", "Phone", "12", "Pro", "Max"]);
-            expect(splitByCase("iPhone12-Pro-Max")).toEqual(["i", "Phone", "12", "Pro", "Max"]);
+            expect(splitByCase("Episode7TheForceAwakens")).toStrictEqual(["Episode", "7", "The", "Force", "Awakens"]);
+            expect(splitByCase("iPhone12ProMax")).toStrictEqual(["i", "Phone", "12", "Pro", "Max"]);
+            expect(splitByCase("iPhone12_Pro_Max")).toStrictEqual(["i", "Phone", "12", "Pro", "Max"]);
+            expect(splitByCase("iPhone12-Pro-Max")).toStrictEqual(["i", "Phone", "12", "Pro", "Max"]);
         });
 
         it("should handle scientific notations and units", () => {
-            expect(splitByCase("pH7Solution")).toEqual(["p", "H", "7", "Solution"]);
-            expect(splitByCase("Na2CO3Compound")).toEqual(["Na", "2", "CO", "3", "Compound"]);
-            expect(splitByCase("v1Point2Release")).toEqual(["v", "1", "Point", "2", "Release"]);
-            expect(splitByCase("H2SO4Molecule")).toEqual(["H", "2", "SO", "4", "Molecule"]);
-            expect(splitByCase("CO2Emission")).toEqual(["CO", "2", "Emission"]);
-            expect(splitByCase("KWh2Day")).toEqual(["K", "Wh", "2", "Day"]);
+            expect.assertions(6);
+            expect(splitByCase("pH7Solution")).toStrictEqual(["p", "H", "7", "Solution"]);
+            expect(splitByCase("Na2CO3Compound")).toStrictEqual(["Na", "2", "CO", "3", "Compound"]);
+            expect(splitByCase("v1Point2Release")).toStrictEqual(["v", "1", "Point", "2", "Release"]);
+            expect(splitByCase("H2SO4Molecule")).toStrictEqual(["H", "2", "SO", "4", "Molecule"]);
+            expect(splitByCase("CO2Emission")).toStrictEqual(["CO", "2", "Emission"]);
+            expect(splitByCase("KWh2Day")).toStrictEqual(["K", "Wh", "2", "Day"]);
         });
 
         it("should handle file paths and versions", () => {
-            expect(splitByCase("src/components/Button.tsx")).toEqual(["src", "components", "Button", "tsx"]);
-            expect(splitByCase("v1.2.3-beta.1")).toEqual(["v", "1", "2", "3", "beta", "1"]);
-            expect(splitByCase("README.md")).toEqual(["README", "md"]);
-            expect(splitByCase("package-lock.json")).toEqual(["package", "lock", "json"]);
-            expect(splitByCase("tsconfig.build.json")).toEqual(["tsconfig", "build", "json"]);
+            expect.assertions(5);
+            expect(splitByCase("src/components/Button.tsx")).toStrictEqual(["src", "components", "Button", "tsx"]);
+            expect(splitByCase("v1.2.3-beta.1")).toStrictEqual(["v", "1", "2", "3", "beta", "1"]);
+            expect(splitByCase("README.md")).toStrictEqual(["README", "md"]);
+            expect(splitByCase("package-lock.json")).toStrictEqual(["package", "lock", "json"]);
+            expect(splitByCase("tsconfig.build.json")).toStrictEqual(["tsconfig", "build", "json"]);
         });
 
         it("should handle special characters and symbols", () => {
-            expect(splitByCase("email@domain.com", { separators: /[-_/\s]+/g })).toEqual(["email@domain.com"]);
-            expect(splitByCase("user+alias@email.com", { separators: /[-_/\s]+/g })).toEqual(["user+alias@email.com"]);
-            expect(splitByCase("$specialPrice100")).toEqual(["$special", "Price", "100"]);
-            expect(splitByCase("100%Complete")).toEqual(["100", "%Complete"]);
-            expect(splitByCase("#FF00FF")).toEqual(["#FF00FF"]);
+            expect.assertions(5);
+            expect(splitByCase("email@domain.com", { separators: /[-_/\s]+/g })).toStrictEqual(["email@domain.com"]);
+            expect(splitByCase("user+alias@email.com", { separators: /[-_/\s]+/g })).toStrictEqual(["user+alias@email.com"]);
+            expect(splitByCase("$specialPrice100")).toStrictEqual(["$special", "Price", "100"]);
+            expect(splitByCase("100%Complete")).toStrictEqual(["100", "%Complete"]);
+            expect(splitByCase("#FF00FF")).toStrictEqual(["#FF00FF"]);
         });
 
         it("should handle mixed number formats", () => {
-            expect(splitByCase("ISO8601Format")).toEqual(["ISO", "8601", "Format"]);
-            expect(splitByCase("3DPrinter")).toEqual(["3", "D", "Printer"]);
-            expect(splitByCase("4KDisplay")).toEqual(["4", "K", "Display"]);
-            expect(splitByCase("Win32API")).toEqual(["Win", "32", "API"]);
-            expect(splitByCase("ES2015Features")).toEqual(["ES", "2015", "Features"]);
+            expect.assertions(5);
+            expect(splitByCase("ISO8601Format")).toStrictEqual(["ISO", "8601", "Format"]);
+            expect(splitByCase("3DPrinter")).toStrictEqual(["3", "D", "Printer"]);
+            expect(splitByCase("4KDisplay")).toStrictEqual(["4", "K", "Display"]);
+            expect(splitByCase("Win32API")).toStrictEqual(["Win", "32", "API"]);
+            expect(splitByCase("ES2015Features")).toStrictEqual(["ES", "2015", "Features"]);
         });
 
         it("should handle special formats with ANSI and emoji", () => {
-            expect(splitByCase("\u001B[31mVersion2.0\u001B[0m", { stripAnsi: true })).toEqual(["Version", "2", "0"]);
-            expect(splitByCase("\u001B[31mVersion2.0\u001B[0m", { handleAnsi: true })).toEqual(["\u001B[31m", "Version", "2", "0", "\u001B[0m"]);
+            expect.assertions(6);
+            expect(splitByCase("\u001B[31mVersion2.0\u001B[0m", { stripAnsi: true })).toStrictEqual(["Version", "2", "0"]);
+            expect(splitByCase("\u001B[31mVersion2.0\u001B[0m", { handleAnsi: true })).toStrictEqual(["\u001B[31m", "Version", "2", "0", "\u001B[0m"]);
 
-            expect(splitByCase("Version2.0✨", { stripEmoji: true })).toEqual(["Version", "2", "0"]);
-            expect(splitByCase("Version2.0✨", { handleEmoji: true })).toEqual(["Version", "2", "0", "✨"]);
+            expect(splitByCase("Version2.0✨", { stripEmoji: true })).toStrictEqual(["Version", "2", "0"]);
+            expect(splitByCase("Version2.0✨", { handleEmoji: true })).toStrictEqual(["Version", "2", "0", "✨"]);
 
-            expect(splitByCase("\u001B[31mVersion2.0✨\u001B[0m", { stripAnsi: true, stripEmoji: true })).toEqual(["Version", "2", "0"]);
-            expect(splitByCase("\u001B[31mVersion2.0✨\u001B[0m", { handleAnsi: true, handleEmoji: true })).toEqual([
+            expect(splitByCase("\u001B[31mVersion2.0✨\u001B[0m", { stripAnsi: true, stripEmoji: true })).toStrictEqual(["Version", "2", "0"]);
+            expect(splitByCase("\u001B[31mVersion2.0✨\u001B[0m", { handleAnsi: true, handleEmoji: true })).toStrictEqual([
                 "\u001B[31m",
                 "Version",
                 "2",

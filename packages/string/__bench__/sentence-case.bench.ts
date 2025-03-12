@@ -1,32 +1,33 @@
 import { bench, describe } from "vitest";
-import { sentenceCase } from "../dist/case";
+
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
+import { sentenceCase } from "../dist/case";
 
 describe("sentenceCase", () => {
     bench("visulima/string sentenceCase (no cache)", () => {
-        for (const str of TEST_STRINGS) {
-            sentenceCase(str);
+        for (const string_ of TEST_STRINGS) {
+            sentenceCase(string_);
         }
     });
 
     bench("visulima/string sentenceCase (with cache)", () => {
-        for (const str of TEST_STRINGS) {
-            sentenceCase(str, { cache: true });
+        for (const string_ of TEST_STRINGS) {
+            sentenceCase(string_, { cache: true });
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string sentenceCase (no cache)", () => {
-            for (const str of SPECIAL_STRINGS) {
-                sentenceCase(str);
+            for (const string_ of SPECIAL_STRINGS) {
+                sentenceCase(string_);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string sentenceCase (no cache)", () => {
-            for (const str of ACRONYM_STRINGS) {
-                sentenceCase(str);
+            for (const string_ of ACRONYM_STRINGS) {
+                sentenceCase(string_);
             }
         });
     });

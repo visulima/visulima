@@ -32,6 +32,8 @@ export const getSeparatorsRegex = (separators: ReadonlyArray<string>): RegExp =>
         }
     } else {
         const pattern = separators.map((s) => s.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+
+        // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
         regex = new RegExp(pattern, "g");
 
         // Implement simple LRU-like caching

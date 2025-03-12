@@ -1,3 +1,5 @@
+import { bench, describe } from "vitest";
+
 import { outdent } from "../src/outdent";
 
 const shortTemplate = `
@@ -36,9 +38,9 @@ const longTemplate = `
     To ensure we have a comprehensive benchmark.
 `;
 
-const interpolatedTemplate = (val1: string, val2: number) => outdent`
-    This template has ${val1}
-    and also ${val2}
+const interpolatedTemplate = (value1: string, value2: number) => outdent`
+    This template has ${value1}
+    and also ${value2}
     to test interpolation performance.
 `;
 
@@ -57,37 +59,35 @@ const firstValueIsOutdent = outdent`
     requires special handling.
 `;
 
-import { bench, describe } from 'vitest';
-
-describe('Outdent Benchmarks', () => {
+describe("Outdent Benchmarks", () => {
     // Basic string handling benchmarks
-    bench('Short string', () => {
+    bench("Short string", () => {
         outdent(shortTemplate);
     });
 
-    bench('Medium string', () => {
+    bench("Medium string", () => {
         outdent(mediumTemplate);
     });
 
-    bench('Long string', () => {
+    bench("Long string", () => {
         outdent(longTemplate);
     });
 
     // Interpolation benchmarks
-    bench('With interpolation', () => {
+    bench("With interpolation", () => {
         interpolatedTemplate("some values", 42);
     });
 
-    bench('With nested outdent', () => {
+    bench("With nested outdent", () => {
         nestedTemplate;
     });
 
-    bench('First value is outdent', () => {
+    bench("First value is outdent", () => {
         firstValueIsOutdent;
     });
 
     // API variations
-    bench('String method', () => {
+    bench("String method", () => {
         outdent.string(`
             Testing the string method
             which is an alternative API
@@ -95,11 +95,11 @@ describe('Outdent Benchmarks', () => {
         `);
     });
 
-    bench('Custom options', () => {
+    bench("Custom options", () => {
         outdent({
+            newline: "\r\n",
             trimLeadingNewline: false,
             trimTrailingNewline: false,
-            newline: "\r\n"
         })`
             Custom options
             with newline normalization
@@ -108,7 +108,7 @@ describe('Outdent Benchmarks', () => {
     });
 
     // Caching benchmarks
-    describe('Caching Options', () => {
+    describe("Caching Options", () => {
         // Create a template that will be used multiple times
         const repeatedTemplate = `
             This template will be used
@@ -117,42 +117,38 @@ describe('Outdent Benchmarks', () => {
         `;
 
         // Default caching (enabled)
-        bench('Default caching', () => {
+        bench("Default caching", () => {
             outdent(repeatedTemplate);
         });
 
         // Explicit caching enabled
-        bench('Explicit cache enabled', () => {
+        bench("Explicit cache enabled", () => {
             outdent({
-                cache: true
+                cache: true,
             })(repeatedTemplate);
         });
 
         // Cache disabled
-        bench('Cache disabled', () => {
+        bench("Cache disabled", () => {
             outdent({
-                cache: false
+                cache: false,
             })(repeatedTemplate);
         });
 
         // Custom cache store
-        const customCache = new WeakMap<TemplateStringsArray, Array<string>>();
+        const customCache = new WeakMap<TemplateStringsArray, string[]>();
 
-        bench('Custom cache store', () => {
+        bench("Custom cache store", () => {
             outdent({
                 cache: true,
-                cacheStore: customCache
+                cacheStore: customCache,
             })(repeatedTemplate);
         });
     });
 
     // Repeated use benchmark
-    bench('Repeated use of same template', () => {
-        const template = outdent`
+    bench("Repeated use of same template", () => outdent`
             This template will be used
             multiple times to test cache efficiency.
-        `;
-
-        return template;
-    });
+        `);
 });

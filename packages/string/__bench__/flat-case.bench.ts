@@ -1,51 +1,52 @@
-import { bench, describe } from "vitest";
 import { flatCase as sculeFlatCase } from "scule";
-import { flatCase } from "../dist/case";
+import { bench, describe } from "vitest";
+
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
+import { flatCase } from "../dist/case";
 
 describe("flatCase", () => {
     bench("visulima/string flatCase (no cache)", () => {
-        for (const str of TEST_STRINGS) {
-            flatCase(str);
+        for (const string_ of TEST_STRINGS) {
+            flatCase(string_);
         }
     });
 
     bench("visulima/string flatCase (with cache)", () => {
-        for (const str of TEST_STRINGS) {
-            flatCase(str, { cache: true });
+        for (const string_ of TEST_STRINGS) {
+            flatCase(string_, { cache: true });
         }
     });
 
     bench("scule flatCase", () => {
-        for (const str of TEST_STRINGS) {
-            sculeFlatCase(str);
+        for (const string_ of TEST_STRINGS) {
+            sculeFlatCase(string_);
         }
     });
 
     describe("Special characters handling", () => {
         bench("visulima/string flatCase (no cache)", () => {
-            for (const str of SPECIAL_STRINGS) {
-                flatCase(str);
+            for (const string_ of SPECIAL_STRINGS) {
+                flatCase(string_);
             }
         });
 
         bench("scule flatCase", () => {
-            for (const str of SPECIAL_STRINGS) {
-                sculeFlatCase(str);
+            for (const string_ of SPECIAL_STRINGS) {
+                sculeFlatCase(string_);
             }
         });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string flatCase (no cache)", () => {
-            for (const str of ACRONYM_STRINGS) {
-                flatCase(str);
+            for (const string_ of ACRONYM_STRINGS) {
+                flatCase(string_);
             }
         });
 
         bench("scule flatCase", () => {
-            for (const str of ACRONYM_STRINGS) {
-                sculeFlatCase(str);
+            for (const string_ of ACRONYM_STRINGS) {
+                sculeFlatCase(string_);
             }
         });
     });

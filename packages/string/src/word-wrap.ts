@@ -42,7 +42,7 @@ const ESCAPE_CODES = Object.freeze(
 );
 
 // RegExp patterns compiled once for better performance
-// eslint-disable-next-line regexp/no-control-character,regexp/no-useless-non-capturing-group
+// eslint-disable-next-line regexp/no-control-character,regexp/no-useless-non-capturing-group,@rushstack/security/no-unsafe-regexp
 const ESCAPE_PATTERN = new RegExp(`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`);
 
 /**
@@ -258,6 +258,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     // For each character in the input string
     // eslint-disable-next-line no-plusplus,no-loops/no-loops
     for (let index = 0; index < string.length; index++) {
+        // eslint-disable-next-line security/detect-object-injection
         const char = string[index] as string;
 
         // Handle escape sequences
@@ -342,7 +343,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             if (index + 1 < string.length && string[index + 1] === " " && trim) {
                 // eslint-disable-next-line no-plusplus
                 index++;
-                // eslint-disable-next-line no-loops/no-loops
+                // eslint-disable-next-line no-loops/no-loops,security/detect-object-injection
                 while (index < string.length && string[index] === " ") {
                     // eslint-disable-next-line no-plusplus
                     index++;

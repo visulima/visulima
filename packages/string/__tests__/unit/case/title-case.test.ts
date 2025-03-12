@@ -6,6 +6,7 @@ import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 describe("titleCase", () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "test-string";
 
@@ -21,6 +22,7 @@ describe("titleCase", () => {
         });
 
         it("should not use cache when disabled", () => {
+            expect.assertions(4);
             const customCache = new Map<string, string>();
             const input = "test-string";
 
@@ -36,6 +38,7 @@ describe("titleCase", () => {
         });
 
         it("should respect cache size limit", () => {
+            expect.assertions(5);
             const customCache = new Map<string, string>();
             const input1 = "test-string-1";
             const input2 = "test-string-2";
@@ -56,6 +59,7 @@ describe("titleCase", () => {
         });
 
         it("should handle custom cache store", () => {
+            expect.assertions(2);
             const defaultCache = new Map<string, string>();
             const customCache = new Map<string, string>();
             const input = "test-string";
@@ -68,47 +72,57 @@ describe("titleCase", () => {
     });
 
     it("should handle empty string", () => {
+        expect.assertions(1);
         expect(titleCase("")).toBe("");
     });
 
     it("should capitalize single letter", () => {
+        expect.assertions(1);
         expect(titleCase("f")).toBe("F");
     });
 
     it("should capitalize single word", () => {
+        expect.assertions(1);
         expect(titleCase("foo")).toBe("Foo");
     });
 
     it("should handle mixed case with hyphens", () => {
+        expect.assertions(2);
         expect(titleCase("this-IS-aTitle")).toBe("This Is A Title");
         expect(titleCase("XMLHttpRequest")).toBe("Xml Http Request");
     });
 
     it("should handle mixed separators", () => {
+        expect.assertions(1);
         expect(titleCase("is_this ATitle")).toBe("Is This A Title");
     });
 
     it("should handle punctuation", () => {
+        expect.assertions(1);
         expect(titleCase("hello, world!")).toBe("Hello, World!");
     });
 
     it("should convert camelCase to Title Case", () => {
+        expect.assertions(2);
         expect(titleCase("fooBar")).toBe("Foo Bar");
         expect(titleCase("fooBarBaz")).toBe("Foo Bar Baz");
     });
 
     it("should convert PascalCase to Title Case", () => {
+        expect.assertions(2);
         expect(titleCase("FooBar")).toBe("Foo Bar");
         expect(titleCase("FooBarBaz")).toBe("Foo Bar Baz");
     });
 
     it("should convert snake_case to Title Case", () => {
+        expect.assertions(2);
         expect(titleCase("foo_bar")).toBe("Foo Bar");
         expect(titleCase("foo_bar_baz")).toBe("Foo Bar Baz");
     });
 
     describe("emoji support 🎯", () => {
         it("should handle emojis in text with stripEmoji=true", () => {
+            expect.assertions(8);
             expect(titleCase("Foo🐣Bar", { stripEmoji: true })).toBe("Foo Bar");
             expect(titleCase("hello🌍World", { stripEmoji: true })).toBe("Hello World");
             expect(titleCase("test🎉Party🎈Fun", { stripEmoji: true })).toBe("Test Party Fun");
@@ -120,6 +134,7 @@ describe("titleCase", () => {
         });
 
         it("should handle emojis in text with handleEmoji=true", () => {
+            expect.assertions(8);
             expect(titleCase("Foo🐣Bar", { handleEmoji: true })).toBe("Foo 🐣 Bar");
             expect(titleCase("hello🌍World", { handleEmoji: true })).toBe("Hello 🌍 World");
             expect(titleCase("test🎉Party🎈Fun", { handleEmoji: true })).toBe("Test 🎉 Party 🎈 Fun");
@@ -133,12 +148,14 @@ describe("titleCase", () => {
 
     describe("aNSI support", () => {
         it("should handle ANSI sequences with stripAnsi=true", () => {
+            expect.assertions(3);
             expect(titleCase("\u001B[31mRedText\u001B[0m", { stripAnsi: true })).toBe("Red Text");
             expect(titleCase("\u001B[1mBoldText\u001B[0m", { stripAnsi: true })).toBe("Bold Text");
             expect(titleCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { stripAnsi: true })).toBe("Green Foo Blue Bar");
         });
 
         it("should handle ANSI sequences with handleAnsi=true", () => {
+            expect.assertions(3);
             expect(titleCase("\u001B[31mRedText\u001B[0m", { handleAnsi: true })).toBe("\u001B[31m Red Text \u001B[0m");
             expect(titleCase("\u001B[1mBoldText\u001B[0m", { handleAnsi: true })).toBe("\u001B[1m Bold Text \u001B[0m");
             expect(titleCase("\u001B[32mGreenFOO\u001B[0m_\u001B[34mBlueBAR\u001B[0m", { handleAnsi: true })).toBe(
@@ -148,17 +165,20 @@ describe("titleCase", () => {
     });
 
     it("should convert kebab-case to Title Case", () => {
+        expect.assertions(2);
         expect(titleCase("foo-bar")).toBe("Foo Bar");
         expect(titleCase("foo-bar-baz")).toBe("Foo Bar Baz");
     });
 
     it("should handle minor words correctly", () => {
+        expect.assertions(3);
         expect(titleCase("the quick brown fox")).toBe("The Quick Brown Fox");
         expect(titleCase("a tale of two cities")).toBe("A Tale Of Two Cities");
         expect(titleCase("to kill a mockingbird")).toBe("To Kill A Mockingbird");
     });
 
     it("should handle mixed case with numbers and special characters", () => {
+        expect.assertions(8);
         expect(titleCase("foo123Bar")).toBe("Foo 123 Bar");
         expect(titleCase("foo_bar-baz")).toBe("Foo Bar Baz");
         expect(titleCase("FOO BAR_BAZ-QUX")).toBe("Foo Bar Baz Qux");
@@ -170,22 +190,28 @@ describe("titleCase", () => {
     });
 
     describe("locale support", () => {
-        const locale = "tr-TR";
-
         it("should handle Turkish specific cases", () => {
+            expect.assertions(3);
+
+            const locale = "tr-TR";
+
             expect(titleCase("istanbul", { locale })).toBe("İstanbul");
             expect(titleCase("İSTANBUL", { locale })).toBe("İstanbul");
             expect(titleCase("izmir ankara", { locale })).toBe("İzmir Ankara");
         });
 
         it("should handle German specific cases", () => {
+            expect.assertions(3);
+
             const locale = "de-DE";
+
             expect(titleCase("GROSSE STRAßE", { locale })).toBe("Große Straße");
             expect(titleCase("GROSSE STRASSE", { locale })).toBe("Große Straße");
             expect(titleCase("GROßE STRAßE", { locale })).toBe("Große Straße");
         });
 
         it("should fallback gracefully for invalid locale", () => {
+            expect.assertions(1);
             expect(titleCase("test string", { locale: "invalid-locale" })).toBe("Test String");
         });
     });
