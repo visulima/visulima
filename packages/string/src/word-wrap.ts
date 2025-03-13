@@ -1,71 +1,9 @@
 import { getStringWidth } from "./get-string-width";
-
-// Constants
-const ESCAPES = new Set(["\u001B", "\u009B"]);
-const END_CODE = 39;
-const ANSI_ESCAPE_BELL = "\u0007";
-const ANSI_CSI = "[";
-const ANSI_SGR_TERMINATOR = "m";
-const ANSI_ESCAPE_LINK = `]8;;`;
-// Zero-width characters to remove, EXCLUDING zero-width joiner used in emoji
-const ZERO_WIDTH_REGEX = /[\u200B\uFEFF\u2060-\u2064]/g;
-
-// Use a frozen Map for better performance and immutability
-const ESCAPE_CODES = Object.freeze(
-    new Map([
-        [0, 0],
-        [1, 22],
-        [2, 22],
-        [3, 23],
-        [4, 24],
-        [7, 27],
-        [8, 28],
-        [9, 29],
-        [30, 39],
-        [31, 39],
-        [32, 39],
-        [33, 39],
-        [34, 39],
-        [35, 39],
-        [36, 39],
-        [37, 39],
-        [40, 49],
-        [41, 49],
-        [42, 49],
-        [43, 49],
-        [44, 49],
-        [45, 49],
-        [46, 49],
-        [47, 49],
-        [90, 39],
-    ]),
-);
-
-// RegExp patterns compiled once for better performance
-// eslint-disable-next-line regexp/no-control-character,regexp/no-useless-non-capturing-group,@rushstack/security/no-unsafe-regexp
-const ESCAPE_PATTERN = new RegExp(`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`);
-
-/**
- * Wraps an ANSI code in the escape sequence
- * @param code - The ANSI code to wrap
- * @returns The wrapped ANSI code
- */
-const wrapAnsiCode = (code: number | string): string => {
-    const escapeChar = ESCAPES.values().next().value;
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    return `${escapeChar}${ANSI_CSI}${code}${ANSI_SGR_TERMINATOR}`;
-};
-
-/**
- * Wraps an ANSI hyperlink in the escape sequence
- * @param url - The URL to wrap
- * @returns The wrapped ANSI hyperlink
- */
-const wrapAnsiHyperlink = (url: string): string => {
-    const escapeChar = ESCAPES.values().next().value;
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    return `${escapeChar}${ANSI_ESCAPE_LINK}${url}${ANSI_ESCAPE_BELL}`;
-};
+import { ANSI_ESCAPE_BELL, ANSI_RESET_CODES, ANSI_SGR_TERMINATOR, END_CODE, ESCAPE_PATTERN, ESCAPES, ZERO_WIDTH_REGEX } from "./constants";
+import { checkEscapeSequence, processAnsiString } from "./utils/ansi-parser";
+import AnsiStateTracker from "./utils/ansi-state-tracker";
+import type { AnsiSegment } from "./utils/types";
+import { resetAnsiAtLineBreak, wrapAnsiCode, wrapAnsiHyperlink } from "./utils/ansi-utils";
 
 /**
  * Trims spaces from a string's right side while preserving ANSI sequences
@@ -89,143 +27,6 @@ const stringVisibleTrimSpacesRight = (string: string): string => {
 
     return words.slice(0, last).join(" ") + words.slice(last).join("");
 };
-
-/**
- * Helper function to reset ANSI sequences at line breaks
- * @param currentLine - Current line of text
- * @returns Line with reset codes if needed
- */
-const resetAnsiAtLineBreak = (currentLine: string): string => {
-    if (!currentLine.includes("\u001B")) {
-        return currentLine;
-    }
-
-    let result = currentLine;
-    // Add reset codes in reverse order of how they were applied
-    if (currentLine.includes("\u001B[30m")) {
-        result += "\u001B[39m"; // foreground reset
-    }
-    if (currentLine.includes("\u001B[42m")) {
-        result += "\u001B[49m"; // background reset
-    }
-
-    return result;
-};
-
-/**
- * An optimized function to check if a character is inside an ANSI escape sequence
- * @param chars - Array of characters
- * @param index - Current index
- * @returns Object with isInsideEscape and isInsideLinkEscape flags
- */
-const checkEscapeSequence = (
-    chars: string[],
-    index: number,
-): {
-    isInsideEscape: boolean;
-    isInsideLinkEscape: boolean;
-} => {
-    // eslint-disable-next-line security/detect-object-injection
-    if (!ESCAPES.has(chars[index] as string)) {
-        return { isInsideEscape: false, isInsideLinkEscape: false };
-    }
-
-    const isInsideEscape = true;
-    // Check for link escape sequence
-    const possibleLink = chars.slice(index + 1, index + 1 + ANSI_ESCAPE_LINK.length).join("");
-    const isInsideLinkEscape = possibleLink === ANSI_ESCAPE_LINK;
-
-    return { isInsideEscape, isInsideLinkEscape };
-};
-
-/**
- * Tracks ANSI color state to ensure proper color continuation across line breaks
- */
-class AnsiStateTracker {
-    // Track foreground color
-    private activeForeground: string | null = null;
-
-    // Track background color
-    private activeBackground: string | null = null;
-
-    // Track other formatting (bold, italic, etc.)
-    private activeFormatting: string[] = [];
-
-    /**
-     * Processes an escape sequence and updates the internal state
-     * @param sequence - The escape sequence to process
-     */
-    // eslint-disable-next-line sonarjs/cognitive-complexity
-    public processEscape(sequence: string): void {
-        // Extract the numeric code from the sequence
-        // eslint-disable-next-line no-control-regex,regexp/no-control-character
-        const match = /\u001B\[(\d+)m/.exec(sequence);
-
-        if (!match) {
-            return;
-        }
-
-        const code = Number.parseInt(match[1] as string, 10);
-
-        // Handle different ANSI code ranges
-        switch (code) {
-            case 0: {
-                // Reset all states
-                this.activeForeground = null;
-                this.activeBackground = null;
-                this.activeFormatting = [];
-                break;
-            }
-            case 39: {
-                // Reset foreground color only
-                this.activeForeground = null;
-                break;
-            }
-            case 49: {
-                // Reset background color only
-                this.activeBackground = null;
-                break;
-            }
-            default: {
-                if ((code >= 30 && code <= 37) || (code >= 90 && code <= 97)) {
-                    // Foreground colors
-                    this.activeForeground = sequence;
-                } else if ((code >= 40 && code <= 47) || (code >= 100 && code <= 107)) {
-                    // Background colors
-                    this.activeBackground = sequence;
-                } else if ([1, 2, 3, 4, 7, 8, 9].includes(code)) {
-                    // Text formatting
-                    this.activeFormatting.push(sequence);
-                } else if ([22, 23, 24, 27, 28, 29].includes(code)) {
-                    // Create a mapping to avoid nested switch
-                    const formatResetMap: Record<number, string> = {
-                        22: "[1m", // Reset bold
-                        23: "[3m", // Reset italic
-                        24: "[4m", // Reset underline
-                        27: "[7m", // Reset inverse
-                        28: "[8m", // Reset hidden
-                        29: "[9m", // Reset strikethrough
-                    };
-
-                    // eslint-disable-next-line security/detect-object-injection
-                    const formatToRemove = formatResetMap[code];
-                    if (formatToRemove) {
-                        this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes(formatToRemove));
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Gets all active escape sequences to apply to a new line
-     * @returns String with all active escapes
-     */
-    public getActiveEscapes(): string {
-        // First add background, then foreground, then all formatting
-        return [this.activeBackground, this.activeForeground, ...this.activeFormatting].filter(Boolean).join("");
-    }
-}
 
 /**
  * Wraps text based on the breakAtWidth option using precise character-level control
@@ -384,86 +185,54 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
         return [];
     }
 
-    const ansiTracker = new AnsiStateTracker();
     const rows: string[] = [];
-
     let currentLine = "";
     let currentWidth = 0;
-    let isInsideEscape = false;
-    let isInsideLinkEscape = false;
-    let escapeBuffer = "";
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const [index, character] of [...inputToProcess].entries()) {
-        // Handle escape sequences
-        if (ESCAPES.has(character)) {
-            isInsideEscape = true;
-            escapeBuffer = character;
-            currentLine += character;
+    // Process string character by character
+    processAnsiString(inputToProcess, {
+        getWidth: getStringWidth,
+        onSegment: (segment: AnsiSegment, stateTracker: AnsiStateTracker) => {
+            if (segment.isEscapeSequence) {
+                currentLine += segment.text;
+            } else {
+                const isSpace = segment.text === " ";
 
-            const escapeInfo = checkEscapeSequence([...inputToProcess], index);
-            isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
-            // eslint-disable-next-line no-continue
-            continue;
-        }
-
-        if (isInsideEscape) {
-            escapeBuffer += character;
-            currentLine += character;
-
-            if (isInsideLinkEscape) {
-                if (character === ANSI_ESCAPE_BELL) {
-                    // eslint-disable-next-line no-multi-assign
-                    isInsideEscape = isInsideLinkEscape = false;
+                // Skip zero-width characters
+                if (segment.width === 0) {
+                    currentLine += segment.text;
+                    return;
                 }
-            } else if (character === ANSI_SGR_TERMINATOR) {
-                isInsideEscape = false;
-                ansiTracker.processEscape(escapeBuffer);
-            }
-            // eslint-disable-next-line no-continue
-            continue;
-        }
 
-        const charWidth = getStringWidth(character);
-        const isSpace = character === " ";
+                // Check if we need to wrap
+                if (currentWidth + segment.width > width) {
+                    // Only add the current line to rows if it's not empty
+                    // This fixes the issue with leading newlines
+                    if (currentLine) {
+                        rows.push(resetAnsiAtLineBreak(currentLine));
+                    }
 
-        // Skip zero-width characters
-        if (charWidth === 0) {
-            currentLine += character;
-            // eslint-disable-next-line no-continue
-            continue;
-        }
+                    currentLine = stateTracker.getActiveEscapes();
+                    currentWidth = 0;
 
-        // Check if we need to wrap
-        if (currentWidth + charWidth > width) {
-            // Only add the current line to rows if it's not empty
-            // This fixes the issue with leading newlines
-            if (currentLine) {
-                rows.push(resetAnsiAtLineBreak(currentLine));
-            }
-
-            currentLine = ansiTracker.getActiveEscapes();
-            currentWidth = 0;
-
-            // Special handling for spaces at wrap points
-            if (isSpace) {
-                if (trim) {
-                    // Skip spaces when trim=true
-                    // eslint-disable-next-line no-continue
-                    continue;
-                } else {
-                    // For trim=false, space gets its own line
-                    rows.push(ansiTracker.getActiveEscapes() + character);
-                    // eslint-disable-next-line no-continue
-                    continue;
+                    // Special handling for spaces at wrap points
+                    if (isSpace) {
+                        if (trim) {
+                            // Skip spaces when trim=true
+                            return;
+                        }
+                        // For trim=false, space gets its own line
+                        rows.push(stateTracker.getActiveEscapes() + segment.text);
+                        return;
+                    }
                 }
-            }
-        }
 
-        // Add character to current line
-        currentLine += character;
-        currentWidth += charWidth;
-    }
+                // Add character to current line
+                currentLine += segment.text;
+                currentWidth += segment.width;
+            }
+        },
+    });
 
     // Add final line if not empty
     if (currentLine) {
@@ -602,7 +371,7 @@ const preserveAnsi = (rawLines: string[]): string => {
             }
         }
 
-        const code = ESCAPE_CODES.get(Number(escapeCode));
+        const code = ANSI_RESET_CODES.get(Number(escapeCode));
 
         if (pre[index + 1] === "\n") {
             if (escapeUrl) {
