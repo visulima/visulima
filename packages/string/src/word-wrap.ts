@@ -1,9 +1,9 @@
+import { ANSI_ESCAPE_BELL, ANSI_RESET_CODES, ANSI_SGR_TERMINATOR, END_CODE, RE_ESCAPE_PATTERN, ESCAPES, RE_ZERO_WIDTH } from "./constants";
 import { getStringWidth } from "./get-string-width";
-import { ANSI_ESCAPE_BELL, ANSI_RESET_CODES, ANSI_SGR_TERMINATOR, END_CODE, ESCAPE_PATTERN, ESCAPES, ZERO_WIDTH_REGEX } from "./constants";
 import { checkEscapeSequence, processAnsiString } from "./utils/ansi-parser";
 import AnsiStateTracker from "./utils/ansi-state-tracker";
-import type { AnsiSegment } from "./utils/types";
 import { resetAnsiAtLineBreak, wrapAnsiCode, wrapAnsiHyperlink } from "./utils/ansi-utils";
+import type { AnsiSegment } from "./utils/types";
 
 /**
  * Trims spaces from a string's right side while preserving ANSI sequences
@@ -360,7 +360,7 @@ const preserveAnsi = (rawLines: string[]): string => {
         returnValue += character;
 
         if (ESCAPES.has(character)) {
-            const match = ESCAPE_PATTERN.exec(preString.slice(preStringIndex));
+            const match = RE_ESCAPE_PATTERN.exec(preString.slice(preStringIndex));
             const groups = match?.groups ?? {};
 
             if (groups.code !== undefined) {
@@ -468,7 +468,7 @@ export const wordWrap = (string: string, options: WordWrapOptions = {}): string 
     let normalizedString = String(string).normalize("NFC").replaceAll("\r\n", "\n");
 
     if (removeZeroWidthCharacters) {
-        normalizedString = normalizedString.replaceAll(ZERO_WIDTH_REGEX, "");
+        normalizedString = normalizedString.replaceAll(RE_ZERO_WIDTH, "");
     }
 
     const result = normalizedString.split("\n").map((line) => {
