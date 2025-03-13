@@ -1,4 +1,3 @@
-// Safe hasOwnProperty
 // eslint-disable-next-line @typescript-eslint/unbound-method
 import {
     RE_DETECT_INDENTATION,
@@ -8,6 +7,7 @@ import {
     RE_TRAILING_NEWLINE
 } from "./constants";
 
+// Safe hasOwnProperty
 const hop = Object.prototype.hasOwnProperty;
 const has = (object: object, property: string): boolean => hop.call(object, property);
 

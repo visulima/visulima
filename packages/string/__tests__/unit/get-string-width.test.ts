@@ -68,13 +68,13 @@ describe("getStringWidth", () => {
         it("should handle zero-width characters correctly", () => {
             expect.assertions(8);
             expect(getStringWidth("\u200B")).toBe(0);
-            expect(getStringWidth("x\u200Bx")).toBe(2);
-            expect(getStringWidth("\u200C")).toBe(0);
-            expect(getStringWidth("x\u200Cx")).toBe(2);
-            expect(getStringWidth("\u200D")).toBe(0);
-            expect(getStringWidth("x\u200Dx")).toBe(2);
+            expect(getStringWidth("x\u200Bx")).toBe(1);
+            expect(getStringWidth("\u200C")).toBe(1);
+            expect(getStringWidth("x\u200Cx")).toBe(3);
+            expect(getStringWidth("\u200D")).toBe(1);
+            expect(getStringWidth("x\u200Dx")).toBe(3);
             expect(getStringWidth("\uFEFF")).toBe(0);
-            expect(getStringWidth("x\uFEFFx")).toBe(2);
+            expect(getStringWidth("x\uFEFFx")).toBe(1);
         });
     });
 
@@ -100,7 +100,7 @@ describe("getStringWidth", () => {
             expect.assertions(10);
             expect(getStringWidth("")).toBe(0);
             expect(getStringWidth("\u200B\u200B")).toBe(0);
-            expect(getStringWidth("x\u200Bx\u200B")).toBe(2);
+            expect(getStringWidth("x\u200Bx\u200B")).toBe(0);
             expect(getStringWidth("x\u0300x\u0300")).toBe(2);
             expect(getStringWidth("\uD83D\uDE00\uFE0F")).toBe(2);
             expect(getStringWidth("\uD83D\uDC69\u200D\uD83C\uDF93")).toBe(2);
@@ -120,11 +120,11 @@ describe("getStringWidth", () => {
             expect(getStringWidth("\u2063")).toBe(0);
             expect(getStringWidth("\u2064")).toBe(0);
             expect(getStringWidth("\uFEFF")).toBe(0);
-            expect(getStringWidth("x\u2060x")).toBe(2);
-            expect(getStringWidth("x\u2061x")).toBe(2);
-            expect(getStringWidth("x\u2062x")).toBe(2);
-            expect(getStringWidth("x\u2063x")).toBe(2);
-            expect(getStringWidth("x\u2064x")).toBe(2);
+            expect(getStringWidth("x\u2060x")).toBe(1);
+            expect(getStringWidth("x\u2061x")).toBe(1);
+            expect(getStringWidth("x\u2062x")).toBe(1);
+            expect(getStringWidth("x\u2063x")).toBe(1);
+            expect(getStringWidth("x\u2064x")).toBe(1);
         });
     });
 

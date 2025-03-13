@@ -1,23 +1,15 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import emojiRegex from "emoji-regex-xs";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { eastAsianWidthType } from "get-east-asian-width";
-
-const REGEX = {
-    // eslint-disable-next-line no-control-regex,regexp/no-control-character,security/detect-unsafe-regex
-    ANSI: /[\u001B\u009B](?:[[()#;?]*(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-n qry=><]|\]8;;.*?\u0007)/y,
-    // eslint-disable-next-line no-control-regex,regexp/no-control-character
-    ANSI_LINK_END: /\u001B\]8;;\u0007/y,
-    // eslint-disable-next-line no-control-regex,regexp/no-control-character,regexp/no-obscure-range
-    CONTROL: /[\u0000-\u0008\n-\u001F\u007F-\u009F]{1,1000}/y,
-    EMOJI: emojiRegex(),
-    LATIN: /(?:[\u0020-\u007E\u00A0-\u00FF](?!\uFE0F)){1,1000}/y,
-    MODIFIER: /\p{M}+/gu,
-    TAB: /\t{1,1000}/y,
-    // Zero-width characters and default ignorable code points
-    // eslint-disable-next-line no-misleading-character-class
-    ZERO_WIDTH: /[\u200B\u200C\u200D\uFEFF\u2060-\u2064]/y,
-} as const;
+import {
+    RE_ANSI,
+    RE_ANSI_LINK_END,
+    RE_CONTROL,
+    RE_EMOJI,
+    RE_LATIN,
+    RE_MODIFIER,
+    RE_TAB,
+    RE_ZERO_WIDTH,
+} from "./constants";
 
 /**
  * Configuration options for string width calculation and truncation.
@@ -267,7 +259,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             lengthExtra = 0;
 
             // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-            for (const char of unmatched.replaceAll(REGEX.MODIFIER, "")) {
+            for (const char of unmatched.replaceAll(RE_MODIFIER, "")) {
                 const codePoint = char.codePointAt(0) ?? 0;
                 const eaw = eastAsianWidthType(codePoint);
 
@@ -351,22 +343,22 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             break;
         }
 
-        REGEX.ZERO_WIDTH.lastIndex = index;
+        RE_ZERO_WIDTH.lastIndex = index;
 
-        if (REGEX.ZERO_WIDTH.test(input)) {
+        if (RE_ZERO_WIDTH.test(input)) {
             unmatchedStart = indexPrevious;
             unmatchedEnd = index;
             // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = REGEX.ZERO_WIDTH.lastIndex;
+            index = indexPrevious = RE_ZERO_WIDTH.lastIndex;
 
             // eslint-disable-next-line no-continue
             continue;
         }
 
-        REGEX.LATIN.lastIndex = index;
+        RE_LATIN.lastIndex = index;
 
-        if (REGEX.LATIN.test(input)) {
-            lengthExtra = REGEX.LATIN.lastIndex - index;
+        if (RE_LATIN.test(input)) {
+            lengthExtra = RE_LATIN.lastIndex - index;
             widthExtra = lengthExtra * config.width.regular;
 
             if (width + widthExtra > truncationLimit) {
@@ -383,24 +375,24 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             unmatchedStart = indexPrevious;
             unmatchedEnd = index;
             // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = REGEX.LATIN.lastIndex;
+            index = indexPrevious = RE_LATIN.lastIndex;
 
             // eslint-disable-next-line no-continue
             continue;
         }
 
-        REGEX.ANSI.lastIndex = index;
+        RE_ANSI.lastIndex = index;
 
-        if (REGEX.ANSI.test(input)) {
-            const ansiLength = REGEX.ANSI.lastIndex - index;
+        if (RE_ANSI.test(input)) {
+            const ansiLength = RE_ANSI.lastIndex - index;
             const ansiWidth = options.countAnsiEscapeCodes ? ansiLength : config.width.ansi;
 
             if (input.slice(index, index + 4) === "\u001B]8;") {
                 // Handle ANSI hyperlink
-                const startPos = REGEX.ANSI.lastIndex;
-                REGEX.ANSI_LINK_END.lastIndex = startPos;
-                if (REGEX.ANSI_LINK_END.test(input)) {
-                    const endPos = REGEX.ANSI_LINK_END.lastIndex;
+                const startPos = RE_ANSI.lastIndex;
+                RE_ANSI_LINK_END.lastIndex = startPos;
+                if (RE_ANSI_LINK_END.test(input)) {
+                    const endPos = RE_ANSI_LINK_END.lastIndex;
                     const textContent = input.slice(startPos, endPos - 5); // -5 to exclude the end sequence
                     const textWidth = textContent.length;
 
@@ -435,16 +427,16 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             unmatchedStart = indexPrevious;
             unmatchedEnd = index;
             // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = REGEX.ANSI.lastIndex;
+            index = indexPrevious = RE_ANSI.lastIndex;
 
             // eslint-disable-next-line no-continue
             continue;
         }
 
-        REGEX.CONTROL.lastIndex = index;
+        RE_CONTROL.lastIndex = index;
 
-        if (REGEX.CONTROL.test(input)) {
-            lengthExtra = REGEX.CONTROL.lastIndex - index;
+        if (RE_CONTROL.test(input)) {
+            lengthExtra = RE_CONTROL.lastIndex - index;
             widthExtra = lengthExtra * config.width.control;
 
             if (width + widthExtra > truncationLimit) {
@@ -461,16 +453,16 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             unmatchedStart = indexPrevious;
             unmatchedEnd = index;
             // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = REGEX.CONTROL.lastIndex;
+            index = indexPrevious = RE_CONTROL.lastIndex;
 
             // eslint-disable-next-line no-continue
             continue;
         }
 
-        REGEX.TAB.lastIndex = index;
+        RE_TAB.lastIndex = index;
 
-        if (REGEX.TAB.test(input)) {
-            lengthExtra = REGEX.TAB.lastIndex - index;
+        if (RE_TAB.test(input)) {
+            lengthExtra = RE_TAB.lastIndex - index;
             widthExtra = lengthExtra * config.width.tab;
 
             if (width + widthExtra > truncationLimit) {
@@ -487,15 +479,15 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             unmatchedStart = indexPrevious;
             unmatchedEnd = index;
             // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = REGEX.TAB.lastIndex;
+            index = indexPrevious = RE_TAB.lastIndex;
 
             // eslint-disable-next-line no-continue
             continue;
         }
 
-        REGEX.EMOJI.lastIndex = index;
+        RE_EMOJI.lastIndex = index;
 
-        if (REGEX.EMOJI.test(input)) {
+        if (RE_EMOJI.test(input)) {
             if (width + config.width.emoji > truncationLimit) {
                 truncationIndex = Math.min(truncationIndex, index);
             }
@@ -510,7 +502,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             unmatchedStart = indexPrevious;
             unmatchedEnd = index;
             // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = REGEX.EMOJI.lastIndex;
+            index = indexPrevious = RE_EMOJI.lastIndex;
 
             // eslint-disable-next-line no-continue
             continue;
@@ -530,23 +522,23 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             let charWidth = 0;
             let charLength = 1;
 
-            REGEX.ANSI.lastIndex = 0;
-            if (REGEX.ANSI.test(char)) {
-                charLength = REGEX.ANSI.lastIndex;
+            RE_ANSI.lastIndex = 0;
+            if (RE_ANSI.test(char)) {
+                charLength = RE_ANSI.lastIndex;
                 index_ += charLength;
                 // eslint-disable-next-line no-continue
                 continue;
             }
 
-            if (REGEX.EMOJI.test(char)) {
+            if (RE_EMOJI.test(char)) {
                 charWidth = options.emojiWidth ?? 2;
-                charLength = REGEX.EMOJI.lastIndex;
-            } else if (REGEX.CONTROL.test(char)) {
-                charWidth = (options.controlWidth ?? 0) * REGEX.CONTROL.lastIndex;
-                charLength = REGEX.CONTROL.lastIndex;
-            } else if (REGEX.TAB.test(char)) {
-                charWidth = (options.tabWidth ?? 8) * REGEX.TAB.lastIndex;
-                charLength = REGEX.TAB.lastIndex;
+                charLength = RE_EMOJI.lastIndex;
+            } else if (RE_CONTROL.test(char)) {
+                charWidth = (options.controlWidth ?? 0) * RE_CONTROL.lastIndex;
+                charLength = RE_CONTROL.lastIndex;
+            } else if (RE_TAB.test(char)) {
+                charWidth = (options.tabWidth ?? 8) * RE_TAB.lastIndex;
+                charLength = RE_TAB.lastIndex;
             } else {
                 const codePoint = char.codePointAt(0) ?? 0;
                 const eaw = eastAsianWidthType(codePoint);
