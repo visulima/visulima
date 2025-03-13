@@ -1,3 +1,4 @@
+export { slice } from "./slice";
 export type { StringTruncatedWidthOptions, StringTruncatedWidthResult } from "./get-string-truncated-width";
 export { getStringTruncatedWidth } from "./get-string-truncated-width";
 export type { StringWidthOptions } from "./get-string-width";

@@ -1,5 +1,13 @@
 // Safe hasOwnProperty
 // eslint-disable-next-line @typescript-eslint/unbound-method
+import {
+    RE_DETECT_INDENTATION,
+    RE_LEADING_NEWLINE,
+    RE_MATCH_NEWLINES,
+    RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE, RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY,
+    RE_TRAILING_NEWLINE
+} from "./constants";
+
 const hop = Object.prototype.hasOwnProperty;
 const has = (object: object, property: string): boolean => hop.call(object, property);
 
@@ -17,15 +25,6 @@ const extend = <T, S extends object>(target: T, source: S): S & T => {
 
     return target as Extended;
 };
-
-const RE_LEADING_NEWLINE = /^[ \t]*(?:\r\n|\r|\n)/;
-const RE_TRAILING_NEWLINE = /(?:\r\n|\r|\n)[ \t]*$/;
-const RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY = /^(?:[\r\n]|$)/;
-const RE_DETECT_INDENTATION = /(?:\r\n|\r|\n)([ \t]*)(?:[^ \t\r\n]|$)/;
-const RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE = /^[ \t]*[\r\n][ \t\r\n]*$/;
-
-// Precompile regular expressions to avoid recompilation during execution
-const RE_MATCH_NEWLINES = /\r\n|\n|\r/g;
 
 /**
  * Optimized version of internalOutdentArray that processes strings more efficiently
