@@ -27,7 +27,7 @@ overrides:
   store2@<2.14.4: '>=2.14.4'
   undici@>=6.0.0 <6.21.1: '>=6.21.1'
   zod@<=3.22.2: '>=3.24.2'
-  dompurify@>=3.0.0 <3.1.3: '>=3.1.3'
+  dompurify@>=3.0.0 <3.1.3: '>=3.2.4'
   '@octokit/request-error@>=6.0.0 <6.1.7': '>=6.1.7'
   '@octokit/request-error@>=1.0.0 <5.1.1': '>=5.1.1'
   '@octokit/endpoint@>=10.0.0 <10.1.3': '>=10.1.3'
@@ -26206,7 +26206,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.12
       tinyrainbow: 2.0.0
-      vitest: 3.0.8(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/browser@3.0.8)(@vitest/ui@3.0.8)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.3(@types/node@18.19.71)(typescript@5.8.2))(terser@5.31.1)(tsx@4.19.3)(yaml@2.7.0)
+      vitest: 3.0.8(@types/debug@4.1.12)(@types/node@22.13.9)(@vitest/browser@3.0.8)(@vitest/ui@3.0.8)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.3(@types/node@22.13.9)(typescript@5.8.2))(terser@5.31.1)(tsx@4.19.3)(yaml@2.7.0)
 
   '@vitest/utils@2.0.5':
     dependencies:
