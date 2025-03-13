@@ -1,7 +1,10 @@
+// @ts-expect-error: TODO: find why this typing is not working
+import { stripVTControlCharacters } from "node:util";
+
+import { stripEmoji } from "../constants";
 import type { CaseOptions, FlipCase } from "./types";
 import generateCacheKey from "./utils/generate-cache-key";
 import manageCache from "./utils/manage-cache";
-import { stripAnsi, stripEmoji } from "./utils/regex";
 
 // Cache for frequently used flip case conversions
 const flipCache = new Map<string, string>();
@@ -57,7 +60,7 @@ export const flipCase = <T extends string = string>(value?: T, options?: FlipOpt
 
     // For stripAnsi option, completely remove ANSI codes
     if (options?.stripAnsi) {
-        processedValue = stripAnsi(processedValue) as T;
+        processedValue = stripVTControlCharacters(processedValue) as T;
     }
 
     // Process the string character by character

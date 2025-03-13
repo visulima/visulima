@@ -5,7 +5,7 @@ import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
-import { FAST_ANSI_REGEX } from "./utils/regex";
+import { RE_FAST_ANSI } from "../constants";
 
 // Cache for frequently used capital case conversions
 const capitalCache = new Map<string, string>();
@@ -62,7 +62,7 @@ const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions
 
     // Process each word - convert to lowercase and handle German eszett
     const processed = words.map((word) => {
-        if (FAST_ANSI_REGEX.test(word)) {
+        if (RE_FAST_ANSI.test(word)) {
             return word;
         }
 

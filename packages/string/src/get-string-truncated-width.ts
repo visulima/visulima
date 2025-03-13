@@ -1,15 +1,20 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { eastAsianWidthType } from "get-east-asian-width";
+
 import {
     RE_ANSI,
     RE_ANSI_LINK_END,
     RE_CONTROL,
     RE_EMOJI,
-    RE_LATIN,
     RE_MODIFIER,
     RE_TAB,
     RE_ZERO_WIDTH,
 } from "./constants";
+
+/**
+ * Regular expression for Latin characters
+ */
+const RE_LATIN = /(?:[\u0020-\u007E\u00A0-\u00FF](?!\uFE0F)){1,1000}/y;
 
 /**
  * Configuration options for string width calculation and truncation.

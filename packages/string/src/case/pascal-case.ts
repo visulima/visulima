@@ -5,7 +5,7 @@ import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
-import { FAST_ANSI_REGEX } from "./utils/regex";
+import { RE_FAST_ANSI } from "../constants";
 
 // Cache for frequently used pascal case conversions
 const pascalCache = new Map<string, string>();
@@ -65,7 +65,7 @@ const pascalCase = <T extends string = string>(value?: T, options?: CaseOptions)
             stripAnsi: options?.stripAnsi,
             stripEmoji: options?.stripEmoji,
         }).map((word: string) => {
-            if (!options?.stripEmoji && FAST_ANSI_REGEX.test(word)) {
+            if (!options?.stripEmoji && RE_FAST_ANSI.test(word)) {
                 return word;
             }
 
