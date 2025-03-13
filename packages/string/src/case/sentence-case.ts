@@ -1,3 +1,4 @@
+import { RE_FAST_ANSI } from "../constants";
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, SentenceCase } from "./types";
 import upperFirst from "./upper-first";
@@ -5,7 +6,6 @@ import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
-import { FAST_ANSI_REGEX } from "./utils/regex";
 
 // Cache for frequently used sentence case conversions
 const sentenceCache = new Map<string, string>();
@@ -62,7 +62,7 @@ const sentenceCase = <T extends string = string>(value?: T, options?: CaseOption
             stripAnsi: options?.stripAnsi,
             stripEmoji: options?.stripEmoji,
         }).map((word: string) => {
-            if (!options?.stripEmoji && FAST_ANSI_REGEX.test(word)) {
+            if (!options?.stripEmoji && RE_FAST_ANSI.test(word)) {
                 return word;
             }
 

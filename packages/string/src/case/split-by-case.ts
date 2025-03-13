@@ -1,41 +1,43 @@
-import type { NodeLocale } from "../types";
-import type { LocaleOptions, SplitByCase } from "./types";
+// @ts-expect-error: TODO: find why this typing is not working
+import { stripVTControlCharacters } from "node:util";
+
 import {
-    ARABIC_REGEX,
-    BENGALI_REGEX,
-    CYRILLIC_REGEX,
-    DEVANAGARI_REGEX,
-    EMOJI_REGEX,
-    ETHIOPIC_REGEX,
-    FAST_ANSI_REGEX,
-    getSeparatorsRegex,
-    GREEK_LATIN_SPLIT_REGEX,
-    GREEK_REGEX,
-    GUJARATI_REGEX,
-    GURMUKHI_REGEX,
-    HANGUL_REGEX,
-    HEBREW_REGEX,
-    HIRAGANA_REGEX,
-    KANJI_REGEX,
-    KANNADA_REGEX,
-    KATAKANA_REGEX,
-    KHMER_REGEX,
-    LAO_REGEX,
-    LATIN_REGEX,
-    MALAYALAM_REGEX,
-    MYANMAR_REGEX,
-    ORIYA_REGEX,
-    SEPARATORS_REGEX,
-    SINHALA_REGEX,
-    splitByEmoji,
-    stripAnsi,
+    RE_ARABIC,
+    RE_BENGALI,
+    RE_CYRILLIC,
+    RE_DEVANAGARI,
+    RE_EMOJI,
+    RE_ETHIOPIC,
+    RE_FAST_ANSI,
+    RE_GREEK,
+    RE_GREEK_LATIN_SPLIT,
+    RE_GUJARATI,
+    RE_GURMUKHI,
+    RE_HANGUL,
+    RE_HEBREW,
+    RE_HIRAGANA,
+    RE_KANJI,
+    RE_KANNADA,
+    RE_KATAKANA,
+    RE_KHMER,
+    RE_LAO,
+    RE_LATIN,
+    RE_MALAYALAM,
+    RE_MYANMAR,
+    RE_ORIYA,
+    RE_SEPARATORS,
+    RE_SINHALA,
+    RE_TAMIL,
+    RE_TELUGU,
+    RE_THAI,
+    RE_TIBETAN,
+    RE_UZBEK_LATIN_MODIFIER,
     stripEmoji,
-    TAMIL_REGEX,
-    TELUGU_REGEX,
-    THAI_REGEX,
-    TIBETAN_REGEX,
-    UZBEK_LATIN_MODIFIER_REGEX,
-} from "./utils/regex";
+} from "../constants";
+import type { NodeLocale } from "../types";
+import getSeparatorsRegex from "../utils/get-separators-regex";
+import splitByEmoji from "../utils/split-by-emoji";
+import type { LocaleOptions, SplitByCase } from "./types";
 
 // Fast lookup tables for performance optimization
 const isUpperCode = new Uint8Array(128);
@@ -268,7 +270,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         locale.startsWith("be")
     ) {
         // Early return if no Cyrillic or Latin characters
-        if (!CYRILLIC_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+        if (!RE_CYRILLIC.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
@@ -279,14 +281,14 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         let currentSegment = chars[0] as string;
 
         // Determine initial type (1=cyrillic, 2=latin, 0=other)
-        let previousType = CYRILLIC_REGEX.test(chars[0] as string) ? 1 : LATIN_REGEX.test(chars[0] as string) ? 2 : 0;
+        let previousType = RE_CYRILLIC.test(chars[0] as string) ? 1 : RE_LATIN.test(chars[0] as string) ? 2 : 0;
         let previousIsUpper = (chars[0] as string) === (chars[0] as string).toLocaleUpperCase(locale);
 
         // eslint-disable-next-line no-plusplus,no-loops/no-loops
         for (let index = 1; index < length__; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
-            const currentType = CYRILLIC_REGEX.test(char) ? 1 : LATIN_REGEX.test(char) ? 2 : 0;
+            const currentType = RE_CYRILLIC.test(char) ? 1 : RE_LATIN.test(char) ? 2 : 0;
             const isUpper = char === char.toLocaleUpperCase(locale);
 
             // Split on script transitions or case changes within the same script
@@ -318,8 +320,8 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
                 // eslint-disable-next-line security/detect-object-injection
                 (result[index] as string).length === 1 &&
                 // eslint-disable-next-line security/detect-object-injection
-                LATIN_REGEX.test(result[index] as string) &&
-                CYRILLIC_REGEX.test((result[index + 1] as string)[0] as string)
+                RE_LATIN.test(result[index] as string) &&
+                RE_CYRILLIC.test((result[index + 1] as string)[0] as string)
             ) {
                 // eslint-disable-next-line security/detect-object-injection
                 finalResult.push((result[index] as string) + (result[index + 1] as string));
@@ -337,12 +339,12 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     // Special handling for Greek scripts
     if (locale.startsWith("el")) {
         // Early return if no Greek or Latin characters
-        if (!GREEK_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+        if (!RE_GREEK.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
         // Split on script boundaries first
-        const parts = s.match(GREEK_LATIN_SPLIT_REGEX) ?? [s];
+        const parts = s.match(RE_GREEK_LATIN_SPLIT) ?? [s];
         const result: string[] = [];
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         const length_ = parts.length;
@@ -350,7 +352,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         // Fast path for single-part strings
         if (length_ === 1) {
             const part = parts[0];
-            if (!part || !GREEK_REGEX.test(part[0] as string) || part.length === 1) {
+            if (!part || !RE_GREEK.test(part[0] as string) || part.length === 1) {
                 return [part || s];
             }
         }
@@ -365,7 +367,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             }
 
             // Fast path for non-Greek or single-char parts
-            if (!GREEK_REGEX.test(part[0] as string) || part.length === 1) {
+            if (!RE_GREEK.test(part[0] as string) || part.length === 1) {
                 result.push(part);
                 // eslint-disable-next-line no-continue
                 continue;
@@ -405,10 +407,10 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     if (locale.startsWith("ja") || locale.startsWith("ko")) {
         const isJapanese = locale.startsWith("ja");
         // Early return if no relevant characters
-        if (isJapanese && !HIRAGANA_REGEX.test(s) && !KATAKANA_REGEX.test(s) && !KANJI_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+        if (isJapanese && !RE_HIRAGANA.test(s) && !RE_KATAKANA.test(s) && !RE_KANJI.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
-        if (!isJapanese && !HANGUL_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+        if (!isJapanese && !RE_HANGUL.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
@@ -424,17 +426,17 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         let previousType: number;
 
         if (isJapanese) {
-            previousType = HIRAGANA_REGEX.test(chars[0] as string)
+            previousType = RE_HIRAGANA.test(chars[0] as string)
                 ? 1
-                : KATAKANA_REGEX.test(chars[0] as string)
+                : RE_KATAKANA.test(chars[0] as string)
                   ? 2
-                  : KANJI_REGEX.test(chars[0] as string)
+                  : RE_KANJI.test(chars[0] as string)
                     ? 3
-                    : LATIN_REGEX.test(chars[0] as string)
+                    : RE_LATIN.test(chars[0] as string)
                       ? 4
                       : 0;
         } else {
-            previousType = HANGUL_REGEX.test(chars[0] as string) ? 1 : LATIN_REGEX.test(chars[0] as string) ? 2 : 0;
+            previousType = RE_HANGUL.test(chars[0] as string) ? 1 : RE_LATIN.test(chars[0] as string) ? 2 : 0;
         }
 
         // eslint-disable-next-line no-plusplus,no-loops/no-loops
@@ -445,9 +447,9 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
             // Determine the type of the current character
             if (isJapanese) {
-                currentType = HIRAGANA_REGEX.test(char) ? 1 : KATAKANA_REGEX.test(char) ? 2 : KANJI_REGEX.test(char) ? 3 : LATIN_REGEX.test(char) ? 4 : 0;
+                currentType = RE_HIRAGANA.test(char) ? 1 : RE_KATAKANA.test(char) ? 2 : RE_KANJI.test(char) ? 3 : RE_LATIN.test(char) ? 4 : 0;
             } else {
-                currentType = HANGUL_REGEX.test(char) ? 1 : LATIN_REGEX.test(char) ? 2 : 0;
+                currentType = RE_HANGUL.test(char) ? 1 : RE_LATIN.test(char) ? 2 : 0;
             }
 
             // Check for transitions
@@ -538,7 +540,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     // Special handling for Chinese scripts
     if (locale.startsWith("zh")) {
         // Early return if no Chinese or Latin characters
-        if (!KANJI_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+        if (!RE_KANJI.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
@@ -549,13 +551,13 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         let currentSegment = chars[0] as string;
 
         // Initialize script type (1=han, 2=latin, 0=other)
-        let previousType = KANJI_REGEX.test(chars[0] as string) ? 1 : LATIN_REGEX.test(chars[0] as string) ? 2 : 0;
+        let previousType = RE_KANJI.test(chars[0] as string) ? 1 : RE_LATIN.test(chars[0] as string) ? 2 : 0;
 
         // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let index = 1; index < length__; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
-            const currentType = KANJI_REGEX.test(char) ? 1 : LATIN_REGEX.test(char) ? 2 : 0;
+            const currentType = RE_KANJI.test(char) ? 1 : RE_LATIN.test(char) ? 2 : 0;
 
             // Split on script transitions between Han and Latin
             if (previousType !== currentType && previousType !== 0 && currentType !== 0) {
@@ -578,7 +580,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     // Special handling for RTL scripts (Arabic, Persian, Hebrew, Urdu)
     if (["ar", "fa", "he", "ur"].includes(locale.split("-")[0])) {
         // Early return if no RTL or Latin characters
-        if (!HEBREW_REGEX.test(s) && !ARABIC_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+        if (!RE_HEBREW.test(s) && !RE_ARABIC.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
@@ -589,16 +591,16 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         let currentSegment = chars[0] as string;
 
         // Helper function to check if a character is RTL
-        const isRtlChar = (ch: string): boolean => HEBREW_REGEX.test(ch) || ARABIC_REGEX.test(ch);
+        const isRtlChar = (ch: string): boolean => RE_HEBREW.test(ch) || RE_ARABIC.test(ch);
 
         // Determine initial type
-        let previousType = isRtlChar(chars[0] as string) ? "rtl" : LATIN_REGEX.test(chars[0] as string) ? "latin" : "other";
+        let previousType = isRtlChar(chars[0] as string) ? "rtl" : RE_LATIN.test(chars[0] as string) ? "latin" : "other";
 
         // eslint-disable-next-line no-plusplus,no-loops/no-loops
         for (let index = 1; index < length__; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
-            const currentType = isRtlChar(char) ? "rtl" : LATIN_REGEX.test(char) ? "latin" : "other";
+            const currentType = isRtlChar(char) ? "rtl" : RE_LATIN.test(char) ? "latin" : "other";
 
             // Split on script transitions
             if (previousType !== currentType && (previousType === "rtl" || previousType === "latin") && (currentType === "rtl" || currentType === "latin")) {
@@ -642,24 +644,24 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         // Early return if no Indic or Latin characters
         if (
             !(
-                DEVANAGARI_REGEX.test(s) ||
-                BENGALI_REGEX.test(s) ||
-                GUJARATI_REGEX.test(s) ||
-                GURMUKHI_REGEX.test(s) ||
-                KANNADA_REGEX.test(s) ||
-                TAMIL_REGEX.test(s) ||
-                TELUGU_REGEX.test(s) ||
-                MALAYALAM_REGEX.test(s) ||
-                SINHALA_REGEX.test(s) ||
-                THAI_REGEX.test(s) ||
-                LAO_REGEX.test(s) ||
-                TIBETAN_REGEX.test(s) ||
-                MYANMAR_REGEX.test(s) ||
-                ETHIOPIC_REGEX.test(s) ||
-                KHMER_REGEX.test(s) ||
-                ORIYA_REGEX.test(s)
+                RE_DEVANAGARI.test(s) ||
+                RE_BENGALI.test(s) ||
+                RE_GUJARATI.test(s) ||
+                RE_GURMUKHI.test(s) ||
+                RE_KANNADA.test(s) ||
+                RE_TAMIL.test(s) ||
+                RE_TELUGU.test(s) ||
+                RE_MALAYALAM.test(s) ||
+                RE_SINHALA.test(s) ||
+                RE_THAI.test(s) ||
+                RE_LAO.test(s) ||
+                RE_TIBETAN.test(s) ||
+                RE_MYANMAR.test(s) ||
+                RE_ETHIOPIC.test(s) ||
+                RE_KHMER.test(s) ||
+                RE_ORIYA.test(s)
             ) &&
-            !LATIN_REGEX.test(s)
+            !RE_LATIN.test(s)
         ) {
             return [s];
         }
@@ -673,31 +675,31 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
         // Helper function to check if a character is Indic
         const isIndicChar = (ch: string): boolean =>
-            DEVANAGARI_REGEX.test(ch) ||
-            BENGALI_REGEX.test(ch) ||
-            GUJARATI_REGEX.test(ch) ||
-            GURMUKHI_REGEX.test(ch) ||
-            KANNADA_REGEX.test(ch) ||
-            TAMIL_REGEX.test(ch) ||
-            TELUGU_REGEX.test(ch) ||
-            MALAYALAM_REGEX.test(ch) ||
-            SINHALA_REGEX.test(ch) ||
-            THAI_REGEX.test(ch) ||
-            LAO_REGEX.test(ch) ||
-            TIBETAN_REGEX.test(ch) ||
-            MYANMAR_REGEX.test(ch) ||
-            ETHIOPIC_REGEX.test(ch) ||
-            KHMER_REGEX.test(ch) ||
-            ORIYA_REGEX.test(ch);
+            RE_DEVANAGARI.test(ch) ||
+            RE_BENGALI.test(ch) ||
+            RE_GUJARATI.test(ch) ||
+            RE_GURMUKHI.test(ch) ||
+            RE_KANNADA.test(ch) ||
+            RE_TAMIL.test(ch) ||
+            RE_TELUGU.test(ch) ||
+            RE_MALAYALAM.test(ch) ||
+            RE_SINHALA.test(ch) ||
+            RE_THAI.test(ch) ||
+            RE_LAO.test(ch) ||
+            RE_TIBETAN.test(ch) ||
+            RE_MYANMAR.test(ch) ||
+            RE_ETHIOPIC.test(ch) ||
+            RE_KHMER.test(ch) ||
+            RE_ORIYA.test(ch);
 
         // Determine initial type
-        let previousType = isIndicChar(chars[0] as string) ? "indic" : LATIN_REGEX.test(chars[0] as string) ? "latin" : "other";
+        let previousType = isIndicChar(chars[0] as string) ? "indic" : RE_LATIN.test(chars[0] as string) ? "latin" : "other";
 
         // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let index = 1; index < length__; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
-            const currentType = isIndicChar(char) ? "indic" : LATIN_REGEX.test(char) ? "latin" : "other";
+            const currentType = isIndicChar(char) ? "indic" : RE_LATIN.test(char) ? "latin" : "other";
 
             // Split on script transitions
             if (
@@ -728,7 +730,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         const length__ = chars.length;
 
         // Early return if no Cyrillic or Latin characters
-        if (!CYRILLIC_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+        if (!RE_CYRILLIC.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
@@ -736,14 +738,14 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         let currentSegment = chars[0] as string;
 
         // Determine initial type
-        let previousType = CYRILLIC_REGEX.test(chars[0] as string) ? "cyrillic" : LATIN_REGEX.test(chars[0] as string) ? "latin" : "other";
+        let previousType = RE_CYRILLIC.test(chars[0] as string) ? "cyrillic" : RE_LATIN.test(chars[0] as string) ? "latin" : "other";
         let previousIsUpper = chars[0] === (chars[0] as string).toLocaleUpperCase(locale);
 
         // eslint-disable-next-line no-plusplus,no-loops/no-loops
         for (let index = 1; index < length__; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
-            const currentType = CYRILLIC_REGEX.test(char) ? "cyrillic" : LATIN_REGEX.test(char) ? "latin" : "other";
+            const currentType = RE_CYRILLIC.test(char) ? "cyrillic" : RE_LATIN.test(char) ? "latin" : "other";
             const isUpper = char === char.toLocaleUpperCase(locale);
 
             // Split on script transitions or case changes within the same script
@@ -777,7 +779,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         const length__ = chars.length;
 
         // Early return if no RTL or Latin characters
-        if (!HEBREW_REGEX.test(s) && !ARABIC_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+        if (!RE_HEBREW.test(s) && !RE_ARABIC.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
@@ -786,13 +788,13 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
         // Determine initial type
         let previousType =
-            HEBREW_REGEX.test(chars[0] as string) || ARABIC_REGEX.test(chars[0] as string) ? "rtl" : LATIN_REGEX.test(chars[0] as string) ? "latin" : "other";
+            RE_HEBREW.test(chars[0] as string) || RE_ARABIC.test(chars[0] as string) ? "rtl" : RE_LATIN.test(chars[0] as string) ? "latin" : "other";
 
         // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let index = 1; index < length__; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
-            const currentType = HEBREW_REGEX.test(char) || ARABIC_REGEX.test(char) ? "rtl" : LATIN_REGEX.test(char) ? "latin" : "other";
+            const currentType = RE_HEBREW.test(char) || RE_ARABIC.test(char) ? "rtl" : RE_LATIN.test(char) ? "latin" : "other";
 
             // Split on script transitions
             if (previousType !== currentType && (previousType === "rtl" || previousType === "latin") && (currentType === "rtl" || currentType === "latin")) {
@@ -819,21 +821,21 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         const length__ = chars.length;
 
         // Early return if no Hangul or Latin characters
-        if (!HANGUL_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+        if (!RE_HANGUL.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
         const result: string[] = [];
 
         let currentSegment = chars[0] as string;
-        let previousType = HANGUL_REGEX.test(chars[0] as string) ? "hangul" : LATIN_REGEX.test(chars[0] as string) ? "latin" : undefined;
+        let previousType = RE_HANGUL.test(chars[0] as string) ? "hangul" : RE_LATIN.test(chars[0] as string) ? "latin" : undefined;
 
         // Process remaining characters
         // eslint-disable-next-line no-plusplus,no-loops/no-loops
         for (let index = 1; index < length__; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
-            const currentType = HANGUL_REGEX.test(char) ? "hangul" : LATIN_REGEX.test(char) ? "latin" : undefined;
+            const currentType = RE_HANGUL.test(char) ? "hangul" : RE_LATIN.test(char) ? "latin" : undefined;
 
             // Split only on script transitions between Hangul and Latin
             if (previousType !== currentType && (previousType === "hangul" || currentType === "hangul")) {
@@ -856,7 +858,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     // Special handling for Uzbek scripts
     if (locale.startsWith("uz")) {
         // Early return if no Cyrillic or Latin characters
-        if (!CYRILLIC_REGEX.test(s) && !LATIN_REGEX.test(s)) {
+        if (!RE_CYRILLIC.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
@@ -875,7 +877,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             const isUpper = char === char.toLocaleUpperCase(locale);
 
             // Special handling for Uzbek Latin modifiers
-            if (UZBEK_LATIN_MODIFIER_REGEX.test(char) || UZBEK_LATIN_MODIFIER_REGEX.test(chars[index - 1] as string)) {
+            if (RE_UZBEK_LATIN_MODIFIER.test(char) || RE_UZBEK_LATIN_MODIFIER.test(chars[index - 1] as string)) {
                 currentSegment += char;
                 // eslint-disable-next-line no-continue
                 continue;
@@ -967,21 +969,21 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const processTextWithAnsiEmoji = (text: string, locale: NodeLocale | undefined, knownAcronyms: Set<string>): string[] => {
     const result: string[] = [];
-    const segments: string[] = FAST_ANSI_REGEX.test(text) ? text.split(FAST_ANSI_REGEX).filter(Boolean) : [text];
+    const segments: string[] = RE_FAST_ANSI.test(text) ? text.split(RE_FAST_ANSI).filter(Boolean) : [text];
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const seg of segments) {
-        if (FAST_ANSI_REGEX.test(seg)) {
+        if (RE_FAST_ANSI.test(seg)) {
             // If the segment is an ANSI escape, pass it through.
             result.push(seg);
         } else {
             // If emoji handling is enabled and the segment contains emoji,
             // split on emoji boundaries.
-            const subs: string[] = EMOJI_REGEX.test(seg) ? splitByEmoji(seg).filter(Boolean) : [seg];
+            const subs: string[] = RE_EMOJI.test(seg) ? splitByEmoji(seg).filter(Boolean) : [seg];
 
             // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const sub of subs) {
-                if (EMOJI_REGEX.test(sub)) {
+                if (RE_EMOJI.test(sub)) {
                     result.push(sub);
                 } else {
                     // Process each plain text subsegment.
@@ -1085,7 +1087,7 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
     let cleanedInput = input;
 
     if (stripAnsiOption) {
-        cleanedInput = stripAnsi(cleanedInput) as T;
+        cleanedInput = stripVTControlCharacters(cleanedInput) as T;
     }
 
     if (stripEmojiOption) {
@@ -1097,7 +1099,7 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
         ? getSeparatorsRegex(separators as string[])
         : separators instanceof RegExp
           ? separators
-          : SEPARATORS_REGEX;
+          : RE_SEPARATORS;
 
     // First, split the input on explicit separators.
     const parts = cleanedInput.split(separatorRegex).filter(Boolean);

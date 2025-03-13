@@ -4,7 +4,7 @@ import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
-import { FAST_ANSI_REGEX } from "./utils/regex";
+import { RE_FAST_ANSI } from "../constants";
 
 // Cache for frequently used kebab case conversions
 const kebabCache = new Map<string, string>();
@@ -75,7 +75,7 @@ export const kebabCase = <T extends string = string>(value?: T, options?: KebabC
 
     // Process each word - convert to lowercase and handle German eszett
     const processed = words.map((word) => {
-        if (!options?.stripEmoji && FAST_ANSI_REGEX.test(word)) {
+        if (!options?.stripEmoji && RE_FAST_ANSI.test(word)) {
             return word;
         }
 

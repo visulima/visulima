@@ -1,4 +1,4 @@
-import { FAST_ANSI_REGEX } from "./regex";
+import { RE_FAST_ANSI } from "../../constants";
 
 /**
  * Joins segments with a joiner, handling ANSI sequences and emojis correctly
@@ -29,7 +29,7 @@ const joinSegments = <T extends string = string>(segments: string[], joiner: str
         // eslint-disable-next-line security/detect-object-injection
         const segment = segments[index] as string;
 
-        if (FAST_ANSI_REGEX.test(segment)) {
+        if (RE_FAST_ANSI.test(segment)) {
             if (ansiStart) {
                 // End of ANSI sequence
                 result.push(ansiStart + currentContent + segment);

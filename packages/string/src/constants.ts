@@ -111,11 +111,6 @@ export const RE_CONTROL = /[\u0000-\u0008\n-\u001F\u007F-\u009F]{1,1000}/y;
 export const RE_EMOJI = emojiRegex();
 
 /**
- * Regular expression for Latin characters
- */
-export const RE_LATIN = /(?:[\u0020-\u007E\u00A0-\u00FF](?!\uFE0F)){1,1000}/y;
-
-/**
  * Regular expression for Unicode modifiers
  */
 export const RE_MODIFIER = /\p{M}+/gu;
@@ -124,3 +119,53 @@ export const RE_MODIFIER = /\p{M}+/gu;
  * Regular expression for tab characters
  */
 export const RE_TAB = /\t{1,1000}/y;
+
+/**
+ * Regular expression for separators used in case conversion
+ */
+export const RE_SEPARATORS = /[-_./\s]+/g;
+
+/**
+ * Fast ANSI regex for quick checks
+ */
+// eslint-disable-next-line no-control-regex,regexp/no-control-character
+export const RE_FAST_ANSI = /(\u001B\[[0-9;]*[a-z])/i;
+
+// Script pattern regex for efficient character type detection
+export const RE_ARABIC = /\p{Script=Arabic}/u;
+export const RE_BENGALI = /\p{Script=Bengali}/u;
+export const RE_CYRILLIC = /\p{Script=Cyrillic}/u;
+export const RE_DEVANAGARI = /\p{Script=Devanagari}/u;
+export const RE_ETHIOPIC = /\p{Script=Ethiopic}/u;
+// Precompiled regex patterns for Greek script handling
+export const RE_GREEK = /\p{Script=Greek}/u;
+export const RE_GREEK_LATIN_SPLIT = /\p{Script=Greek}+|\p{Script=Latin}+|[^\p{Script=Greek}\p{Script=Latin}]+/gu;
+export const RE_GUJARATI = /\p{Script=Gujarati}/u;
+export const RE_GURMUKHI = /\p{Script=Gurmukhi}/u;
+export const RE_HANGUL = /\p{Script=Hangul}/u;
+export const RE_HEBREW = /\p{Script=Hebrew}/u;
+export const RE_HIRAGANA = /\p{Script=Hiragana}/u;
+export const RE_KANJI = /\p{Script=Han}/u;
+export const RE_KANNADA = /\p{Script=Kannada}/u;
+export const RE_KATAKANA = /\p{Script=Katakana}/u;
+export const RE_KHMER = /\p{Script=Khmer}/u;
+export const RE_LAO = /\p{Script=Lao}/u;
+export const RE_LATIN = /\p{Script=Latin}/u;
+export const RE_MALAYALAM = /\p{Script=Malayalam}/u;
+export const RE_MYANMAR = /\p{Script=Myanmar}/u;
+export const RE_ORIYA = /\p{Script=Oriya}/u;
+export const RE_SINHALA = /\p{Script=Sinhala}/u;
+export const RE_TAMIL = /\p{Script=Tamil}/u;
+export const RE_TELUGU = /\p{Script=Telugu}/u;
+export const RE_THAI = /\p{Script=Thai}/u;
+export const RE_TIBETAN = /\p{Script=Tibetan}/u;
+// Special modifiers for Uzbek Latin script
+export const RE_UZBEK_LATIN_MODIFIER = /[\u02BB\u02BC\u0027]/u;
+
+/**
+ * Strips emoji characters from a string.
+ *
+ * @param stringValue - The string to strip emoji from
+ * @returns The string without emoji characters
+ */
+export const stripEmoji = (stringValue: string): string => stringValue.replace(RE_EMOJI, "");

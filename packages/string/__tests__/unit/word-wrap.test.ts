@@ -1,17 +1,18 @@
+import { stripVTControlCharacters } from "node:util";
+
 import { bgGreen, green, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import { FAST_ANSI_REGEX, stripAnsi } from "../../src/case/utils/regex";
+import { RE_FAST_ANSI } from "../../src/constants";
 import { wordWrap, WrapMode } from "../../src/word-wrap";
 
- 
 const fixture = `The quick brown ${red("fox jumped over")} the lazy ${green("dog and then ran away with the unicorn.")}`;
 const fixture2 = "12345678\n901234567890";
 const fixture3 = "12345678\n901234567890 12345";
 const fixture4 = "12345678\n ";
 
 // Helper function for testing
-const hasAnsi = (string_: string): boolean => FAST_ANSI_REGEX.test(string_);
+const hasAnsi = (string_: string): boolean => RE_FAST_ANSI.test(string_);
 
 describe("wordWrap", () => {
     // Basic functionality tests
@@ -20,10 +21,10 @@ describe("wordWrap", () => {
         const result = wordWrap(fixture, { width: 20 });
 
         expect(result).toBe(
-             
+
             `The quick brown ${red("fox")}\n${red("jumped over")} the lazy\n${green("dog and then ran")}\n${green("away with the")}\n${green("unicorn.")}`,
         );
-        expect(result.split("\n").every((line) => stripAnsi(line).length <= 20)).toBeTruthy();
+        expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 20)).toBeTruthy();
     });
 
     it("should wrap string at 30 characters", () => {
@@ -31,7 +32,7 @@ describe("wordWrap", () => {
         const result = wordWrap(fixture, { width: 30 });
 
         expect(result).toBe(`The quick brown ${red("fox jumped")}\n${red("over")} the lazy ${green("dog and then ran")}\n${green("away with the unicorn.")}`);
-        expect(result.split("\n").every((line) => stripAnsi(line).length <= 30)).toBeTruthy();
+        expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 30)).toBeTruthy();
     });
 
     // Word wrapping behavior tests
@@ -42,7 +43,7 @@ describe("wordWrap", () => {
         expect(result).toBe(
             `The\nquick\nbrown\n${red("fox")}\n${red("jumped")}\n${red("over")}\nthe\nlazy\n${green("dog")}\n${green("and")}\n${green("then")}\n${green("ran")}\n${green("away")}\n${green("with")}\n${green("the")}\n${green("unicorn.")}`,
         );
-        expect(result.split("\n").some((line) => stripAnsi(line).length > 5)).toBeTruthy();
+        expect(result.split("\n").some((line) => stripVTControlCharacters(line).length > 5)).toBeTruthy();
     });
 
     it("should break strings longer than width when using STRICT_WIDTH mode", () => {
@@ -67,7 +68,7 @@ describe("wordWrap", () => {
           [32m[32mnicor[39m
           [32m[32mn.[39m"
         `);
-        expect(result.split("\n").every((line) => stripAnsi(line).length <= 5)).toBeTruthy();
+        expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 5)).toBeTruthy();
     });
 
     // ANSI handling tests
@@ -143,7 +144,7 @@ describe("wordWrap", () => {
                 width: 3,
                 wrapMode: WrapMode.STRICT_WIDTH,
             }),
-             
+
         ).toBe(`${bgGreen.black("tes")}\n${bgGreen.black("t")}`);
     });
 
