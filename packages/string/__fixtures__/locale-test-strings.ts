@@ -16,6 +16,7 @@ export const KOREAN_STRINGS = [
     "코드Code",
     "프로그램Program",
     "텍스트TEXT",
+    "안녕하세"
 ] as const;
 
 // Ukrainian test strings
