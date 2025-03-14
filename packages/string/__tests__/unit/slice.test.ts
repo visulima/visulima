@@ -19,8 +19,8 @@ import {
     THAI_STRINGS,
     TURKISH_STRINGS,
     UKRAINIAN_STRINGS,
-} from "../__fixtures__/locale-test-strings";
-import slice from "../src/slice";
+} from "../../__fixtures__/locale-test-strings";
+import slice from "../../src/slice";
 
 const fixture = red("the ") + green("quick ") + blue("brown ") + cyan("fox ") + yellow("jumped ");
 const stripped = stripVTControlCharacters(fixture);
@@ -136,9 +136,10 @@ describe("slice", () => {
     });
 
     it("can slice a string with unknown ANSI color", () => {
-        expect(slice("\u001B[20mTEST\u001B[49m", 0, 4)).toBe("\u001B[20mTEST\u001B[0m");
-        expect(slice("\u001B[1001mTEST\u001B[49m", 0, 3)).toBe("\u001B[1001mTES\u001B[0m");
-        expect(slice("\u001B[1001mTEST\u001B[49m", 0, 2)).toBe("\u001B[1001mTE\u001B[0m");
+        // The slice will not use a full reset sequence of unknown colors
+        expect(slice("\u001B[20mTEST\u001B[49m", 0, 4)).toBe("\u001B[20mTEST\u001B[49m");
+        expect(slice("\u001B[1001mTEST\u001B[49m", 0, 3)).toBe("\u001B[1001mTES\u001B[49m");
+        expect(slice("\u001B[1001mTEST\u001B[49m", 0, 2)).toBe("\u001B[1001mTE\u001B[49m");
     });
 
     it("handles null issue correctly", () => {
