@@ -374,6 +374,8 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
+        "@arcanis/slice-ansi":"2.0.1",
+        "slice-ansi": "^7.1.0",
         "wrap-ansi": "^9.0.0",
         "@visulima/colorize": "1.4.21",
         "get-east-asian-width": "^1.3.0",

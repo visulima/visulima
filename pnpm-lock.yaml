@@ -3754,6 +3754,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^10.0.3
         version: 10.0.3(@anolilab/semantic-release-pnpm@1.1.10(@types/node@18.19.71)(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.3(typescript@5.8.2)))(semantic-release@24.2.3(typescript@5.8.2))(yaml@2.7.0)
+      '@arcanis/slice-ansi':
+        specifier: 2.0.1
+        version: 2.0.1
       '@arethetypeswrong/cli':
         specifier: ^0.17.4
         version: 0.17.4
@@ -3847,6 +3850,9 @@ importers:
       semantic-release:
         specifier: ^24.2.3
         version: 24.2.3(typescript@5.8.2)
+      slice-ansi:
+        specifier: ^7.1.0
+        version: 7.1.0
       typescript:
         specifier: ^5.8.2
         version: 5.8.2
@@ -4225,6 +4231,9 @@ packages:
     resolution: {integrity: sha512-u/kozRnsPO/x8QtKYJOqoGtC4kH6yg1lfYkB9Au0WhYB0FNLpyFusttQtvhlwjtG3rOwiRz4D8DnnXa8iEpIKA==}
     peerDependencies:
       openapi-types: '>=7'
+
+  '@arcanis/slice-ansi@2.0.1':
+    resolution: {integrity: sha512-d8vZjwTAvIZmG+IOcQSxlg7Ruhs/oVtP/p1L4VPxQl80hzvWpjeM7pR3epU/g4IgLdFZ8Jwch2cI6rOlcSsMjA==}
 
   '@arethetypeswrong/cli@0.17.4':
     resolution: {integrity: sha512-AeiKxtf67XD/NdOqXgBOE5TZWH3EOCt+0GkbUpekOzngc+Q/cRZ5azjWyMxISxxfp0EItgm5NoSld9p7BAA5xQ==}
@@ -20065,6 +20074,8 @@ snapshots:
       ajv-draft-04: 1.0.0(ajv@8.17.1)
       call-me-maybe: 1.0.2
       openapi-types: 12.1.3
+
+  '@arcanis/slice-ansi@2.0.1': {}
 
   '@arethetypeswrong/cli@0.17.4':
     dependencies:
