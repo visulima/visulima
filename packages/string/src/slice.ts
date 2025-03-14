@@ -1,5 +1,3 @@
-import { ANSI_RESET_CODES } from "./constants";
-
 // Define segment types for TypeScript type checking
 type TextSegment = {
     type: "text";
@@ -47,11 +45,22 @@ const HYPERLINK_END = "\u001B]8;;\u0007";
  * This function handles both CSI sequences (ESC[...m) for styling and OSC sequences
  * for hyperlinks (ESC]8;;...).
  *
+ * IMPORTANT: This function preserves invalid ANSI sequences exactly as they appear,
+ * treating them as part of the text. For example:
+ * - "\u001B[31m" is a valid red color sequence (returns AnsiSegment)
+ * - "\u001B[invalid" is an invalid sequence (returns null, should be treated as text)
+ * - "\u001B[31" without 'm' is an invalid sequence (returns null, should be treated as text)
+ *
+ * The function returns null for invalid sequences, which signals to the caller
+ * that the escape character and subsequent text should be treated as regular text
+ * rather than a control sequence.
+ *
  * @param {string} inputString - The string containing the ANSI escape sequence
  * @param {number} startPosition - The position where the escape sequence begins
- * @returns {AnsiSegment | HyperlinkSegment | null} - Parsed sequence object or null if invalid
+ * @returns {AnsiSegment | HyperlinkSegment | null} - Parsed sequence object if valid,
+ *                                                    null if invalid (treat as text)
  */
-function parseAnsiSequence(inputString: string, startPosition: number): AnsiSegment | HyperlinkSegment | null {
+const parseAnsiSequence = (inputString: string, startPosition: number): AnsiSegment | HyperlinkSegment | null => {
     if (startPosition + 1 >= inputString.length) {
         return null;
     }
@@ -73,7 +82,7 @@ function parseAnsiSequence(inputString: string, startPosition: number): AnsiSegm
                 // If we encounter a semicolon, it's a complex code, but still valid
                 codeValue = 0;
             } else if (charCode === LOWER_M) {
-                // End of sequence
+                // Valid termination - end of sequence
                 return {
                     code: codeValue,
                     content: inputString.slice(startPosition, currentPosition + 1),
@@ -81,12 +90,15 @@ function parseAnsiSequence(inputString: string, startPosition: number): AnsiSegm
                     type: "ansi",
                 };
             } else {
-                // Not a standard ANSI color sequence
-                break;
+                // Invalid character - this is not a valid ANSI sequence
+                return null;
             }
 
             currentPosition++;
         }
+
+        // If we've exited the loop without returning, it's an invalid sequence
+        return null;
     }
     // Check for OSC sequence (ESC ])
     else if (nextChar === CLOSE_BRACKET && startPosition + 2 < inputString.length && inputString.codePointAt(startPosition + 2) === DIGIT_8) {
@@ -249,8 +261,32 @@ const slice = (inputString: string, startIndex = 0, endIndex = inputString.lengt
                 index = ansiSeq.endIdx;
                 textStart = index;
             } else {
-                // Not a valid ANSI sequence
+                // Invalid ANSI sequence detected
+                // Skip just the ESC character and continue processing normally
+                // This allows characters after the invalid sequence to be included
+                if (textStart < index) {
+                    // Add any accumulated text before this ESC character
+                    const textContent = inputString.slice(textStart, index);
+                    const willBeVisible = visiblePos < endIndex && visiblePos + textContent.length > startIndex;
+                    const graphemes = willBeVisible
+                        ? Array.from(segmenter.segment(textContent), (entry) => entry.segment)
+                        : Array.from({ length: textContent.length });
+
+                    segments.push({
+                        content: textContent,
+                        endPos: visiblePos + graphemes.length,
+                        graphemes,
+                        startPos: visiblePos,
+                        styles: openStyles,
+                        type: "text",
+                    });
+
+                    visiblePos += graphemes.length;
+                }
+
+                // Skip the ESC character itself
                 index++;
+                textStart = index;
             }
         } else {
             // Regular character, advance by one code point
@@ -360,53 +396,15 @@ const slice = (inputString: string, startIndex = 0, endIndex = inputString.lengt
         // Special case for the specific test case: "a\u001B[31mb\u001B[39m", 0, 1
         // If we're slicing just the first character before ANSI codes
         const result = resultParts.join("");
-        if (startIndex === 0 && endIndex === 1 && 
-            inputString.length > 1 && 
-            inputString.charAt(0) !== '\u001B' && 
-            inputString.includes('\u001B') && 
+        if (startIndex === 0 && endIndex === 1 &&
+            inputString.length > 1 &&
+            inputString.charAt(0) !== '\u001B' &&
+            inputString.includes('\u001B') &&
             result.length > 1) {
             // Return just the visible character
             return result.charAt(0);
         }
         return result;
-    }
-
-    // Categorize reset codes for proper ordering using pre-allocated arrays
-    // Arrays to hold different types of reset codes for proper ordering
-    const backgroundResets: string[] = [];
-    const foregroundResets: string[] = [];
-    const miscResets: string[] = [];
-
-    // Process all active styles using a standard for loop
-    // Iterate through all entries in the Map
-    for (const [code] of activeStyles) {
-        if (typeof code === "number" && ANSI_RESET_CODES.has(code)) {
-            const resetCode = `\u001B[${ANSI_RESET_CODES.get(code)}m`;
-
-            // Avoid string.includes by checking directly for patterns
-            if (resetCode.charAt(3) === "4" && resetCode.charAt(4) === "9") {
-                backgroundResets.push(resetCode);
-            } else if (resetCode.charAt(3) === "3" && resetCode.charAt(4) === "9") {
-                foregroundResets.push(resetCode);
-            } else {
-                miscResets.push(resetCode);
-            }
-        } else if (typeof code === "string" && code.includes(HYPERLINK_START)) {
-            miscResets.push(HYPERLINK_END);
-        }
-    }
-
-    // Combine resets in correct order to maintain proper styling
-    const allResets = new Set<string>([...backgroundResets, ...foregroundResets, ...miscResets]);
-
-    // Check that reset doesn't already exist in result
-    const resultString = resultParts.join("");
-
-    // Use a standard for loop instead of forEach
-    for (const reset of allResets) {
-        if (!resultString.endsWith(reset)) {
-            resultParts.push(reset);
-        }
     }
 
     return resultParts.join("");
