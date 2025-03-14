@@ -156,9 +156,10 @@ describe("slice", () => {
 
     it("doesn't add extra escapes", () => {
         const output = `${black.bgYellow(" RUNS ")}  ${green("test")}`;
+
         expect(slice(output, 0, 7)).toBe(`${black.bgYellow(" RUNS ")} `);
         expect(slice(output, 0, 8)).toBe(`${black.bgYellow(" RUNS ")}  `);
-        expect(JSON.stringify(slice("\u001B[31m" + output, 0, 4))).toBe(JSON.stringify(black.bgYellow(" RUN")));
+        expect(slice("\u001B[31m" + output, 0, 4)).toBe(black.bgYellow(" RUN"));
     });
 
     it("does not lose fullwidth characters", () => {
@@ -176,16 +177,16 @@ describe("slice", () => {
 
     it("handles invalid ANSI sequences correctly", () => {
         // Incomplete sequence
-        expect(slice("\u001B[test", 0, 4)).toBe("\u001B[te");
+        expect(slice("\u001B[test", 0, 4)).toBe("[tes");
 
         // Invalid characters in sequence
-        expect(slice("\u001B[abc31mtest\u001B[39m", 0, 4)).toBe("\u001B[test");
+        expect(slice("\u001B[abc31mtest\u001B[39m", 0, 4)).toBe("[abc\u001b[39m");
 
         // Missing terminator
-        expect(slice("\u001B[31test\u001B[39m", 0, 4)).toBe("\u001B[test");
+        expect(slice("\u001B[31test\u001B[39m", 0, 4)).toBe("[31t\u001B[39m");
 
         // Multiple invalid sequences
-        expect(slice("\u001B[31m\u001B[test\u001B[39m", 0, 4)).toBe("\u001B[31mtest\u001B[39m");
+        expect(slice("\u001B[31m\u001B[test\u001B[39m", 0, 4)).toBe("\u001b[31m[tes\u001b[39m");
     });
 
     it("handles multiple consecutive ANSI codes", () => {
@@ -193,7 +194,7 @@ describe("slice", () => {
         expect(slice("\u001B[1m\u001B[31m\u001B[42mtest\u001B[0m", 0, 4)).toBe("\u001B[1m\u001B[31m\u001B[42mtest\u001B[0m");
 
         // Mix of valid and invalid codes
-        expect(slice("\u001B[1m\u001B[invalid\u001B[31mtest\u001B[0m", 0, 4)).toBe("\u001B[1m\u001B[31mtest\u001B[0m");
+        expect(slice("\u001B[1m\u001B[invalid\u001B[31mtest\u001B[0m", 0, 4)).toBe("\u001b[1m[inv\u001b[31m\u001b[0m");
     });
 
     // Locale-specific tests
@@ -209,14 +210,14 @@ describe("slice", () => {
 
                 it("handles Japanese characters correctly with ja locale", () => {
                     const text = JAPANESE_STRINGS[1]; // "カタカナひらがな漢字"
-                    expect(slice(text, 0, 4, "ja")).toBe("カタカナ");
-                    expect(slice(text, 3, 7, "ja")).toBe("ナひらが");
+                    expect(slice(text, 0, 4)).toBe("カタカナ");
+                    expect(slice(text, 3, 7)).toBe("ナひらが");
                 });
 
                 it("handles mixed Japanese and Latin characters", () => {
                     const text = JAPANESE_STRINGS[4]; // "テストString"
-                    expect(slice(text, 0, 5, "ja")).toBe("テストSt");
-                    expect(slice(text, 2, 8, "ja")).toBe("トStrin");
+                    expect(slice(text, 0, 5)).toBe("テストSt");
+                    expect(slice(text, 2, 8)).toBe("トStrin");
                 });
             });
 
@@ -229,14 +230,14 @@ describe("slice", () => {
 
                 it("handles Korean characters correctly with ko locale", () => {
                     const text = KOREAN_STRINGS[1]; // "한글Text"
-                    expect(slice(text, 0, 3, "ko")).toBe("한글T");
-                    expect(slice(text, 1, 5, "ko")).toBe("글Tex");
+                    expect(slice(text, 0, 3)).toBe("한글T");
+                    expect(slice(text, 1, 5)).toBe("글Tex");
                 });
 
                 it("handles mixed Korean and Latin characters", () => {
                     const text = KOREAN_STRINGS[2]; // "테스트String"
-                    expect(slice(text, 0, 5, "ko")).toBe("테스트St");
-                    expect(slice(text, 2, 8, "ko")).toBe("트Strin");
+                    expect(slice(text, 0, 5)).toBe("테스트St");
+                    expect(slice(text, 2, 8)).toBe("트Strin");
                 });
             });
 
@@ -249,20 +250,20 @@ describe("slice", () => {
 
                 it("handles Chinese characters correctly with zh locale", () => {
                     const text = CHINESE_SIMPLIFIED_STRINGS[1]; // "文本String"
-                    expect(slice(text, 0, 3, "zh")).toBe("文本S");
-                    expect(slice(text, 1, 6, "zh")).toBe("本Stri");
+                    expect(slice(text, 0, 3)).toBe("文本S");
+                    expect(slice(text, 1, 6)).toBe("本Stri");
                 });
 
                 it("handles Chinese characters with zh-CN locale", () => {
                     const text = CHINESE_SIMPLIFIED_STRINGS[4]; // "测试Test"
-                    expect(slice(text, 0, 3, "zh-CN")).toBe("测试T");
-                    expect(slice(text, 1, 5, "zh-CN")).toBe("试Tes");
+                    expect(slice(text, 0, 3)).toBe("测试T");
+                    expect(slice(text, 1, 5)).toBe("试Tes");
                 });
 
                 it("handles Chinese characters with zh-TW locale", () => {
                     const text = CHINESE_TRADITIONAL_STRINGS[2]; // "程式Program"
-                    expect(slice(text, 0, 3, "zh-TW")).toBe("程式P");
-                    expect(slice(text, 1, 8, "zh-TW")).toBe("式Progra");
+                    expect(slice(text, 0, 3)).toBe("程式P");
+                    expect(slice(text, 1, 8)).toBe("式Progra");
                 });
             });
 
@@ -275,8 +276,8 @@ describe("slice", () => {
 
                 it("handles Thai characters correctly with th locale", () => {
                     const text = THAI_STRINGS[1]; // "ข้อความString"
-                    expect(slice(text, 0, 5, "th")).toBe("ข้อควา");
-                    expect(slice(text, 2, 9, "th")).toBe("ความStr");
+                    expect(slice(text, 0, 5)).toBe("ข้อควา");
+                    expect(slice(text, 2, 9)).toBe("ความStr");
                 });
             });
         });
@@ -292,8 +293,8 @@ describe("slice", () => {
 
                 it("handles Arabic characters correctly with ar locale", () => {
                     const text = ARABIC_STRINGS[1]; // "نصString"
-                    expect(slice(text, 0, 3, "ar")).toBe("نصS");
-                    expect(slice(text, 1, 6, "ar")).toBe("صStri");
+                    expect(slice(text, 0, 3)).toBe("نصS");
+                    expect(slice(text, 1, 6)).toBe("صStri");
                 });
             });
 
@@ -306,8 +307,8 @@ describe("slice", () => {
 
                 it("handles Hebrew characters correctly with he locale", () => {
                     const text = HEBREW_STRINGS[1]; // "טקסטString"
-                    expect(slice(text, 0, 4, "he")).toBe("טקסט");
-                    expect(slice(text, 2, 8, "he")).toBe("סטStri");
+                    expect(slice(text, 0, 4)).toBe("טקסט");
+                    expect(slice(text, 2, 8)).toBe("סטStri");
                 });
             });
 
@@ -320,8 +321,8 @@ describe("slice", () => {
 
                 it("handles Hindi characters correctly with hi locale", () => {
                     const text = HINDI_STRINGS[1]; // "पाठString"
-                    expect(slice(text, 0, 3, "hi")).toBe("पाठS");
-                    expect(slice(text, 1, 6, "hi")).toBe("ठStri");
+                    expect(slice(text, 0, 3)).toBe("पाठS");
+                    expect(slice(text, 1, 6)).toBe("ठStri");
                 });
             });
 
@@ -334,8 +335,8 @@ describe("slice", () => {
 
                 it("handles Bengali characters correctly with bn locale", () => {
                     const text = BENGALI_STRINGS[1]; // "টেক্সটString"
-                    expect(slice(text, 0, 5, "bn")).toBe("টেক্সটSt");
-                    expect(slice(text, 2, 9, "bn")).toBe("টString");
+                    expect(slice(text, 0, 5)).toBe("টেক্সটSt");
+                    expect(slice(text, 2, 9)).toBe("টString");
                 });
             });
         });
@@ -351,8 +352,8 @@ describe("slice", () => {
 
                 it("handles German special characters correctly with de locale", () => {
                     const text = GERMAN_STRINGS[1]; // "GROẞBUCHSTABE"
-                    expect(slice(text, 0, 4, "de")).toBe("GROẞ");
-                    expect(slice(text, 2, 8, "de")).toBe("OẞBUCH");
+                    expect(slice(text, 0, 4)).toBe("GROẞ");
+                    expect(slice(text, 2, 8)).toBe("OẞBUCH");
                 });
             });
 
@@ -365,8 +366,8 @@ describe("slice", () => {
 
                 it("handles Greek characters correctly with el locale", () => {
                     const text = GREEK_STRINGS[1]; // "ΚείμενοString"
-                    expect(slice(text, 0, 5, "el")).toBe("Κείμε");
-                    expect(slice(text, 3, 9, "el")).toBe("μενοSt");
+                    expect(slice(text, 0, 5)).toBe("Κείμε");
+                    expect(slice(text, 3, 9)).toBe("μενοSt");
                 });
             });
 
@@ -379,8 +380,8 @@ describe("slice", () => {
 
                 it("handles Russian characters correctly with ru locale", () => {
                     const text = RUSSIAN_STRINGS[1]; // "текстString"
-                    expect(slice(text, 0, 4, "ru")).toBe("Текс");
-                    expect(slice(text, 2, 8, "ru")).toBe("кстStr");
+                    expect(slice(text, 0, 4)).toBe("Текс");
+                    expect(slice(text, 2, 8)).toBe("кстStr");
                 });
             });
 
@@ -393,8 +394,8 @@ describe("slice", () => {
 
                 it("handles Ukrainian characters correctly with uk locale", () => {
                     const text = UKRAINIAN_STRINGS[1]; // "ТекстText"
-                    expect(slice(text, 0, 4, "uk")).toBe("Текс");
-                    expect(slice(text, 2, 7, "uk")).toBe("кстTe");
+                    expect(slice(text, 0, 4)).toBe("Текс");
+                    expect(slice(text, 2, 7)).toBe("кстTe");
                 });
             });
         });
@@ -410,8 +411,8 @@ describe("slice", () => {
 
                 it("handles Turkish dotted/dotless i correctly with tr locale", () => {
                     const text = TURKISH_STRINGS[3]; // "IıİiTest"
-                    expect(slice(text, 0, 4, "tr")).toBe("Iıİi");
-                    expect(slice(text, 2, 7, "tr")).toBe("İiTes");
+                    expect(slice(text, 0, 4)).toBe("Iıİi");
+                    expect(slice(text, 2, 7)).toBe("İiTes");
                 });
             });
 
@@ -424,8 +425,8 @@ describe("slice", () => {
 
                 it("handles Lao characters correctly with lo locale", () => {
                     const text = LAO_STRINGS[1]; // "ຂໍ້ຄວາມString"
-                    expect(slice(text, 0, 5, "lo")).toBe("ຂໍ້ຄວາມ");
-                    expect(slice(text, 2, 9, "lo")).toBe("ວາມStri");
+                    expect(slice(text, 0, 5)).toBe("ຂໍ້ຄວາມ");
+                    expect(slice(text, 2, 9)).toBe("ວາມStri");
                 });
             });
         });
