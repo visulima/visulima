@@ -302,8 +302,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -692,8 +692,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -921,8 +921,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1071,8 +1071,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1222,8 +1222,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1331,8 +1331,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1491,8 +1491,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1630,8 +1630,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1750,8 +1750,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1882,8 +1882,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1979,8 +1979,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2066,8 +2066,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2160,8 +2160,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2319,8 +2319,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2428,8 +2428,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2536,8 +2536,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2657,8 +2657,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2763,8 +2763,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2872,8 +2872,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3002,8 +3002,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3110,8 +3110,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3222,8 +3222,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3370,8 +3370,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3488,8 +3488,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3582,8 +3582,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3716,8 +3716,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3819,8 +3819,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
+        specifier: 0.5.4
+        version: 0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -11602,12 +11602,12 @@ packages:
   eslint-plugin-vitest-globals@1.5.0:
     resolution: {integrity: sha512-ZSsVOaOIig0oVLzRTyk8lUfBfqzWxr/J3/NFMfGGRIkGQPejJYmDH3gXmSJxAojts77uzAGB/UmVrwi2DC4LYA==}
 
-  eslint-plugin-vitest@0.4.1:
-    resolution: {integrity: sha512-+PnZ2u/BS+f5FiuHXz4zKsHPcMKHie+K+1Uvu/x91ovkCMEOJqEI8E9Tw1Wzx2QRz4MHOBHYf1ypO8N1K0aNAA==}
+  eslint-plugin-vitest@0.5.4:
+    resolution: {integrity: sha512-um+odCkccAHU53WdKAw39MY61+1x990uXjSPguUCq3VcEHdqJrOb8OTMrbYlY6f9jAKx7x98kLVlIe3RJeJqoQ==}
     engines: {node: ^18.0.0 || >= 20.0.0}
     peerDependencies:
       '@typescript-eslint/eslint-plugin': '*'
-      eslint: '>=8.0.0'
+      eslint: ^8.57.0 || ^9.0.0
       vitest: '*'
     peerDependenciesMeta:
       '@typescript-eslint/eslint-plugin':
@@ -26206,7 +26206,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.12
       tinyrainbow: 2.0.0
-      vitest: 3.0.8(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/browser@3.0.8)(@vitest/ui@3.0.8)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.3(@types/node@18.19.71)(typescript@5.8.2))(terser@5.31.1)(tsx@4.19.3)(yaml@2.7.0)
+      vitest: 3.0.8(@types/debug@4.1.12)(@types/node@22.13.9)(@vitest/browser@3.0.8)(@vitest/ui@3.0.8)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.3(@types/node@22.13.9)(typescript@5.8.2))(terser@5.31.1)(tsx@4.19.3)(yaml@2.7.0)
 
   '@vitest/utils@2.0.5':
     dependencies:
@@ -29284,7 +29284,7 @@ snapshots:
 
   eslint-plugin-vitest-globals@1.5.0: {}
 
-  eslint-plugin-vitest@0.4.1(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8):
+  eslint-plugin-vitest@0.5.4(eslint@8.57.0)(typescript@5.8.2)(vitest@3.0.8):
     dependencies:
       '@typescript-eslint/utils': 7.15.0(eslint@8.57.0)(typescript@5.8.2)
       eslint: 8.57.0
