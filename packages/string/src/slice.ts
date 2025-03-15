@@ -239,7 +239,6 @@ const slice = (inputString: string, startIndex = 0, endIndex = inputString.lengt
                         type: "ansi",
                     });
 
-                    // Update style state
                     if (code === 0) {
                         // Reset all
                         openStyles.clear();
@@ -261,29 +260,6 @@ const slice = (inputString: string, startIndex = 0, endIndex = inputString.lengt
                 index = ansiSeq.endIdx;
                 textStart = index;
             } else {
-                // Invalid ANSI sequence detected
-                // Skip just the ESC character and continue processing normally
-                // This allows characters after the invalid sequence to be included
-                if (textStart < index) {
-                    // Add any accumulated text before this ESC character
-                    const textContent = inputString.slice(textStart, index);
-                    const willBeVisible = visiblePos < endIndex && visiblePos + textContent.length > startIndex;
-                    const graphemes = willBeVisible
-                        ? Array.from(segmenter.segment(textContent), (entry) => entry.segment)
-                        : Array.from({ length: textContent.length });
-
-                    segments.push({
-                        content: textContent,
-                        endPos: visiblePos + graphemes.length,
-                        graphemes,
-                        startPos: visiblePos,
-                        styles: openStyles,
-                        type: "text",
-                    });
-
-                    visiblePos += graphemes.length;
-                }
-
                 // Skip the ESC character itself
                 index++;
                 textStart = index;
@@ -317,9 +293,9 @@ const slice = (inputString: string, startIndex = 0, endIndex = inputString.lengt
         return "";
     }
 
-    // Build the sliced string using an array for performance
     const resultParts = [];
-    let activeStyles: Map<number | string, string> | null = null; // Lazy initialization
+
+    let activeStyles: Map<number | string, string> = new Map<number | string, string>(); // Lazy initialization
     let inSlice = false;
 
     // If starting from the beginning, include opening styles
@@ -330,10 +306,9 @@ const slice = (inputString: string, startIndex = 0, endIndex = inputString.lengt
         if (firstVisibleSegmentIndex > 0) {
             // Add all ANSI codes before the first visible segment
             for (let index = 0; index < firstVisibleSegmentIndex; index++) {
-                const segment = segments[index];
+                const segment = segments[index] as Segment;
 
-                // Add null check to satisfy TypeScript
-                if (segment && (segment.type === "ansi" || segment.type === "hyperlink")) {
+                if (segment.type === "ansi" || segment.type === "hyperlink") {
                     resultParts.push(segment.content);
                 }
             }
@@ -354,19 +329,11 @@ const slice = (inputString: string, startIndex = 0, endIndex = inputString.lengt
 
                     // If not starting from beginning, include active styles
                     if (startIndex > 0) {
-                        // Initialize activeStyles and copy segment.styles now
-                        if (!activeStyles) {
-                            activeStyles = new Map<number | string, string>();
-                        }
-
                         // Add the styles active at this position without using .entries()
                         segment.styles.forEach((style, code) => {
                             resultParts.push(style);
                             (activeStyles as Map<number | string, string>).set(code, style);
                         });
-                    } else if (!activeStyles) {
-                        // Initialize activeStyles for the first time
-                        activeStyles = new Map<number | string, string>();
                     }
                 }
 
