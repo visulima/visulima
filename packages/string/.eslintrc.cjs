@@ -60,7 +60,7 @@ module.exports = defineConfig({
             },
         },
         {
-            files: ["src/index.ts", "src/case/index.ts"],
+            files: ["src/index.ts", "src/case/index.ts", "src/test/index.ts", "src/test/utils.ts"],
             rules: {
                 "import/no-unused-modules": "off",
             },

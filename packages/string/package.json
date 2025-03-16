@@ -273,6 +273,26 @@
                 "default": "./dist/case/upper-first.mjs"
             }
         },
+        "./test/utils": {
+            "require": {
+                "types": "./dist/test/utils.d.cts",
+                "default": "./dist/test/utils.cjs"
+            },
+            "import": {
+                "types": "./dist/test/utils.d.mts",
+                "default": "./dist/test/utils.mjs"
+            }
+        },
+        "./test/vitest": {
+            "require": {
+                "types": "./dist/test/vitest.d.cts",
+                "default": "./dist/test/vitest.cjs"
+            },
+            "import": {
+                "types": "./dist/test/vitest.d.mts",
+                "default": "./dist/test/vitest.mjs"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
@@ -346,6 +366,9 @@
             ],
             "case/upper-first": [
                 "./dist/case/upper-first.d.ts"
+            ],
+            "test/utils": [
+                "./dist/test/utils.d.ts"
             ]
         }
     },
