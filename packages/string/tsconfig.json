@@ -4,6 +4,6 @@
     "include": ["src/**/*", "*.d.ts"],
     "compilerOptions": {
         "moduleResolution": "bundler",
-        "types": ["./src/native-string-types.d.ts"]
+        "types": ["./src/native-string-types.d.ts", "./vitest.d.ts"],
     }
 }

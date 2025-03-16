@@ -1,14 +1,12 @@
-import { stripVTControlCharacters } from "node:util";
-
 import { blue, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { toEqualAnsi } from "../../../src/test/vitest";
 
 describe("ANSI string test utilities", () => {
+    expect.extend({ toEqualAnsi });
 
     it("should work with the expect syntax", () => {
-        expect.extend({ toEqualAnsi });
         expect(red("Test")).toEqualAnsi(red("Test"));
     });
 
