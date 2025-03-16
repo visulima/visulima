@@ -714,6 +714,77 @@ const result = 'Hello, World!'
 // TypeScript knows the exact type at each step
 ```
 
+## Testing Utilities
+
+The package includes specialized utilities for testing ANSI colored strings, making it easier to write tests for terminal output and colored text.
+
+### ANSI String Formatting and Comparison
+
+The `formatAnsiString` function helps format ANSI strings for test output, providing multiple representations:
+
+```typescript
+import { formatAnsiString } from '@visulima/string/test/utils';
+import { red } from '@visulima/colorize';
+
+const coloredText = red('Error message');
+const formatted = formatAnsiString(coloredText);
+
+// Returns an object with:
+// - ansi: Original string with ANSI codes
+// - stripped: String with ANSI codes removed
+// - visible: String with escape codes shown as visible characters
+// - json: JSON stringified version
+// - lengthDifference: Difference between ANSI and stripped length
+```
+
+### Comparing ANSI Strings
+
+The `compareAnsiStrings` function provides detailed comparison between two ANSI strings:
+
+```typescript
+import { compareAnsiStrings } from '@visulima/string/test/utils';
+import { red, blue } from '@visulima/colorize';
+
+const string1 = red('Error');
+const string2 = blue('Error');
+
+const result = compareAnsiStrings(string1, string2);
+// Returns comparison details including:
+// - ansiEqual: Whether the strings are identical including ANSI codes
+// - strippedEqual: Whether the visible content is the same
+// - summary: Length information and comparison results
+// - actual/expected: Formatted representations of both strings
+```
+
+### Vitest Integration
+
+The package includes a custom matcher for [Vitest](https://vitest.dev/) that makes testing ANSI strings straightforward:
+
+```typescript
+import { expect, describe, it } from 'vitest';
+import { toEqualAnsi } from '@visulima/string/test/vitest';
+import { red, green } from '@visulima/colorize';
+
+// Extend Vitest with the custom matcher
+expect.extend({ toEqualAnsi });
+
+describe('colored output tests', () => {
+  it('should display the correct error message', () => {
+    const actual = getErrorMessage(); // Returns colored string
+    const expected = red('Error: ') + green('File not found');
+    
+    // Compare ANSI strings with detailed error messages on failure
+    expect(actual).toEqualAnsi(expected);
+  });
+});
+```
+
+The custom matcher provides detailed error messages when tests fail, showing:
+- The visible content of both strings
+- The ANSI escape codes in both strings
+- Whether the visible content matches but the colors differ
+- Length information for both strings
+
 ## Related
 
 - [change-case](https://github.com/blakeembrey/change-case) - Simple string case utilities
