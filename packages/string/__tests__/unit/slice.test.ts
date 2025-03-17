@@ -161,7 +161,7 @@ describe("slice", () => {
     it("should not add extra escape sequences when slicing styled text", () => {
         const output = `${black.bgYellow(" RUNS ")}  ${green("test")}`;
 
-        expect(JSON.stringify(slice(output, 0, 7))).toEqualAnsi(JSON.stringify(`${black.bgYellow(" RUNS ")} `));
+        expect(slice(output, 0, 7)).toEqualAnsi(`${black.bgYellow(" RUNS ")} `);
         expect(slice(output, 0, 8)).toEqualAnsi(`${black.bgYellow(" RUNS ")}  `);
         // expect(slice("\u001B[31m" + output, 0, 4)).toBe(black.bgYellow(" RUN"));
     });
