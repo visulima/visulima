@@ -76,7 +76,6 @@ namespace Math {
     export type GetPositiveIndex<T extends string, I extends number> = IsNegative<I> extends false ? I : Subtract<Length<T>, Abs<I>>;
 }
 
-
 export type { Math };
 
 /**
@@ -84,7 +83,6 @@ export type { Math };
  */
 
 export type IsNumberLiteral<T extends number> = [T] extends [number] ? ([number] extends [T] ? false : true) : false;
-
 
 export type IsBooleanLiteral<T extends boolean> = [T] extends [boolean] ? ([boolean] extends [T] ? false : true) : false;
 

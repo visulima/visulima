@@ -1,3 +1,4 @@
+import { RE_FAST_ANSI } from "../constants";
 import { splitByCase } from "./split-by-case";
 import type { CapitalCase, CaseOptions } from "./types";
 import upperFirst from "./upper-first";
@@ -5,7 +6,6 @@ import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
-import { RE_FAST_ANSI } from "../constants";
 
 // Cache for frequently used capital case conversions
 const capitalCache = new Map<string, string>();

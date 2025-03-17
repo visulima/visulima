@@ -43,16 +43,17 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
     let isInHyperlink = false;
 
     const chars = [...string];
-    // eslint-disable-next-line no-loops/no-loops
-    for (let i = 0; i < chars.length; i++) {
-        const character = chars[i];
+    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    for (let index = 0; index < chars.length; index++) {
+        // eslint-disable-next-line security/detect-object-injection
+        const character = chars[index] as string;
 
         // Handle escape sequences
         if (character && ESCAPES.has(character)) {
             // If we have pending text, emit it as a segment
             if (currentText) {
                 const width = options.getWidth?.(currentText) ?? 0;
-                const segment: (AnsiSegment | HyperlinkSegment) = {
+                const segment: AnsiSegment | HyperlinkSegment = {
                     isEscapeSequence: false,
                     isGrapheme: true,
                     text: currentText,
@@ -76,22 +77,25 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
             escapeBuffer = character;
 
             // Check for hyperlink sequence
-            const escapeInfo = checkEscapeSequence(chars, i);
+            const escapeInfo = checkEscapeSequence(chars, index);
             isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
 
             if (isInsideLinkEscape) {
                 // Extract URL from hyperlink sequence
-                let urlEnd = i + 1;
+                let urlEnd = index + 1;
                 currentUrl = "";
 
+                // eslint-disable-next-line no-loops/no-loops
                 while (urlEnd < chars.length) {
-                    const nextChar = chars[urlEnd];
+                    // eslint-disable-next-line security/detect-object-injection
+                    const nextChar = chars[urlEnd] as string;
 
                     if (nextChar === ANSI_ESCAPE_BELL) {
                         break;
                     }
 
                     currentUrl += nextChar;
+                    // eslint-disable-next-line no-plusplus
                     urlEnd++;
                 }
 
@@ -99,11 +103,11 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                 currentUrl = currentUrl.slice(4);
 
                 const segment: HyperlinkSegment = {
+                    hyperlinkUrl: currentUrl,
                     isEscapeSequence: true,
                     isGrapheme: false,
                     isHyperlink: true,
                     isHyperlinkStart: true,
-                    hyperlinkUrl: currentUrl,
                     width: 0,
                 };
 
@@ -111,36 +115,38 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     return;
                 }
 
-                i = urlEnd;
+                index = urlEnd;
                 isInHyperlink = true;
                 isInsideEscape = false;
                 isInsideLinkEscape = false;
                 escapeBuffer = "";
+
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
             // Check for hyperlink end sequence: \u001B\\
-            if (i + 1 < chars.length && chars[i + 1] === "\\") {
-                if (isInHyperlink) {
-                    const segment: HyperlinkSegment = {
-                        isEscapeSequence: true,
-                        isGrapheme: false,
-                        isHyperlink: true,
-                        isHyperlinkEnd: true,
-                        width: 0,
-                    };
+            if (index + 1 < chars.length && chars[index + 1] === "\\" && isInHyperlink) {
+                const segment: HyperlinkSegment = {
+                    isEscapeSequence: true,
+                    isGrapheme: false,
+                    isHyperlink: true,
+                    isHyperlinkEnd: true,
+                    width: 0,
+                };
 
-                    if (options.onSegment?.(segment, stateTracker) === false) {
-                        return;
-                    }
-
-                    isInHyperlink = false;
-                    currentUrl = "";
-                    i++; // Skip the backslash
-                    isInsideEscape = false;
-                    escapeBuffer = "";
-                    continue;
+                if (options.onSegment?.(segment, stateTracker) === false) {
+                    return;
                 }
+
+                isInHyperlink = false;
+                currentUrl = "";
+                // eslint-disable-next-line no-plusplus
+                index++; // Skip the backslash
+                isInsideEscape = false;
+                escapeBuffer = "";
+                // eslint-disable-next-line no-continue
+                continue;
             }
         }
 
@@ -170,6 +176,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
         }
 
         // Accumulate regular characters
+
         currentText += character;
 
         // Emit each character as a separate segment, matching the original behavior

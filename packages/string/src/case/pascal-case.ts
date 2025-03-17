@@ -1,3 +1,4 @@
+import { RE_FAST_ANSI } from "../constants";
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, PascalCase } from "./types";
 import upperFirst from "./upper-first";
@@ -5,7 +6,6 @@ import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
-import { RE_FAST_ANSI } from "../constants";
 
 // Cache for frequently used pascal case conversions
 const pascalCache = new Map<string, string>();

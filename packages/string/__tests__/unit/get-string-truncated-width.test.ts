@@ -192,7 +192,6 @@ describe("string Width", () => {
 
             // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const [char, expectedWidth] of Object.entries(unicodeChars)) {
-
                 expect(getWidth(char), `${char} should have a width of ${expectedWidth}`).toBe(expectedWidth);
             }
         });

@@ -30,24 +30,24 @@ export interface AnsiSegment {
  */
 export interface HyperlinkSegment extends Omit<AnsiSegment, "text"> {
     /**
-     * Whether this segment is part of a hyperlink
-     */
-    isHyperlink?: boolean;
-
-    /**
      * The URL of the hyperlink if this segment is part of one
      */
     hyperlinkUrl?: string;
 
     /**
-     * Whether this segment starts a hyperlink
+     * Whether this segment is part of a hyperlink
      */
-    isHyperlinkStart?: boolean;
+    isHyperlink?: boolean;
 
     /**
      * Whether this segment ends a hyperlink
      */
     isHyperlinkEnd?: boolean;
+
+    /**
+     * Whether this segment starts a hyperlink
+     */
+    isHyperlinkStart?: boolean;
 
     /**
      * The text content of the segment

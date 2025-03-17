@@ -1,3 +1,4 @@
+import { RE_FAST_ANSI } from "../constants";
 import lowerFirst from "./lower-first";
 import { splitByCase } from "./split-by-case";
 import type { CamelCase, CaseOptions } from "./types";
@@ -6,7 +7,6 @@ import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import manageCache from "./utils/manage-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
-import { RE_FAST_ANSI } from "../constants";
 
 // Cache for frequently used camel case conversions
 const camelCache = new Map<string, string>();

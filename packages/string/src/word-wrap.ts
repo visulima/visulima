@@ -1,8 +1,8 @@
 import { ANSI_ESCAPE_BELL, ANSI_SGR_TERMINATOR, ESCAPES, RE_ZERO_WIDTH } from "./constants";
 import { getStringWidth } from "./get-string-width";
 import { checkEscapeSequence, processAnsiString } from "./utils/ansi-parser";
+import preserveAnsi from "./utils/ansi-preserve";
 import AnsiStateTracker from "./utils/ansi-state-tracker";
-import { preserveAnsi } from "./utils/ansi-preserve";
 import { resetAnsiAtLineBreak } from "./utils/ansi-utils";
 import type { AnsiSegment } from "./utils/types";
 

@@ -1095,11 +1095,7 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
     }
 
     // Precompute the separator regex.
-    const separatorRegex = Array.isArray(separators)
-        ? getSeparatorsRegex(separators as string[])
-        : separators instanceof RegExp
-          ? separators
-          : RE_SEPARATORS;
+    const separatorRegex = Array.isArray(separators) ? getSeparatorsRegex(separators as string[]) : separators instanceof RegExp ? separators : RE_SEPARATORS;
 
     // First, split the input on explicit separators.
     const parts = cleanedInput.split(separatorRegex).filter(Boolean);

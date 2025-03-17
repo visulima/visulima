@@ -1,15 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { eastAsianWidthType } from "get-east-asian-width";
 
-import {
-    RE_ANSI,
-    RE_ANSI_LINK_END,
-    RE_CONTROL,
-    RE_EMOJI,
-    RE_MODIFIER,
-    RE_TAB,
-    RE_ZERO_WIDTH,
-} from "./constants";
+import { RE_ANSI, RE_ANSI_LINK_END, RE_CONTROL, RE_EMOJI, RE_MODIFIER, RE_TAB, RE_ZERO_WIDTH } from "./constants";
 
 /**
  * Regular expression for Latin characters

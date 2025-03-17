@@ -1,10 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/unbound-method
+
 import {
     RE_DETECT_INDENTATION,
     RE_LEADING_NEWLINE,
     RE_MATCH_NEWLINES,
-    RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE, RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY,
-    RE_TRAILING_NEWLINE
+    RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE,
+    RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY,
+    RE_TRAILING_NEWLINE,
 } from "./constants";
 
 // Safe hasOwnProperty

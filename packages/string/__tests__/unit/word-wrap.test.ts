@@ -21,7 +21,6 @@ describe("wordWrap", () => {
         const result = wordWrap(fixture, { width: 20 });
 
         expect(result).toBe(
-
             `The quick brown ${red("fox")}\n${red("jumped over")} the lazy\n${green("dog and then ran")}\n${green("away with the")}\n${green("unicorn.")}`,
         );
         expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 20)).toBeTruthy();
@@ -144,7 +143,6 @@ describe("wordWrap", () => {
                 width: 3,
                 wrapMode: WrapMode.STRICT_WIDTH,
             }),
-
         ).toBe(`${bgGreen.black("tes")}\n${bgGreen.black("t")}`);
     });
 

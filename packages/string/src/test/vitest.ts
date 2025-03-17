@@ -2,7 +2,7 @@ import type { ExpectationResult } from "./utils";
 import { expectAnsiStrings } from "./utils";
 
 export interface CustomMatchers {
-  toEqualAnsi: (expected: string) => ExpectationResult;
+    toEqualAnsi: (expected: string) => ExpectationResult;
 }
 
 /**
