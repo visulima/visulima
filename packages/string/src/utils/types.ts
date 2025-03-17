@@ -5,11 +5,6 @@ import type AnsiStateTracker from "./ansi-state-tracker";
  */
 export interface AnsiSegment {
     /**
-     * Active ANSI escape codes for this segment
-     */
-    codes: string[];
-
-    /**
      * Whether this segment is an ANSI escape sequence
      */
     isEscapeSequence: boolean;
@@ -28,6 +23,36 @@ export interface AnsiSegment {
      * Visual width of the segment
      */
     width: number;
+}
+
+/**
+ * Represents a segment of text with its hyperlink state
+ */
+export interface HyperlinkSegment extends Omit<AnsiSegment, "text"> {
+    /**
+     * Whether this segment is part of a hyperlink
+     */
+    isHyperlink?: boolean;
+
+    /**
+     * The URL of the hyperlink if this segment is part of one
+     */
+    hyperlinkUrl?: string;
+
+    /**
+     * Whether this segment starts a hyperlink
+     */
+    isHyperlinkStart?: boolean;
+
+    /**
+     * Whether this segment ends a hyperlink
+     */
+    isHyperlinkEnd?: boolean;
+
+    /**
+     * The text content of the segment
+     */
+    text?: string;
 }
 
 /**
@@ -64,5 +89,5 @@ export interface ProcessAnsiStringOptions {
      * @param stateTracker - The ANSI state tracker
      * @returns Whether to continue processing or not
      */
-    onSegment?: (segment: AnsiSegment, stateTracker: AnsiStateTracker) => boolean | void;
+    onSegment?: (segment: AnsiSegment | HyperlinkSegment, stateTracker: AnsiStateTracker) => boolean | void;
 }

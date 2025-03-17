@@ -1,6 +1,6 @@
 import { ANSI_ESCAPE_BELL, ANSI_ESCAPE_LINK, ANSI_SGR_TERMINATOR, ESCAPES } from "../constants";
 import AnsiStateTracker from "./ansi-state-tracker";
-import type { AnsiSegment, ProcessAnsiStringOptions } from "./types";
+import type { AnsiSegment, HyperlinkSegment, ProcessAnsiStringOptions } from "./types";
 
 /**
  * Helper function to check if a character is inside an ANSI escape sequence
@@ -32,89 +32,78 @@ export const checkEscapeSequence = (
  * @param string - The string to process
  * @param options - Processing options
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export const processAnsiString = (string: string, options: ProcessAnsiStringOptions = {}): void => {
     const stateTracker = new AnsiStateTracker();
+
     let currentText = "";
     let isInsideEscape = false;
     let isInsideLinkEscape = false;
     let escapeBuffer = "";
+    let currentUrl = "";
+    let isInHyperlink = false;
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const [index, character] of [...string].entries()) {
+    const chars = [...string];
+    // eslint-disable-next-line no-loops/no-loops
+    for (let i = 0; i < chars.length; i++) {
+        const character = chars[i];
+
         // Handle escape sequences
-        if (ESCAPES.has(character)) {
-            isInsideEscape = true;
-            escapeBuffer = character;
-
-            // Add any pending text as a segment
+        if (character && ESCAPES.has(character)) {
+            // If we have pending text, emit it as a segment
             if (currentText) {
                 const width = options.getWidth?.(currentText) ?? 0;
-                const segment: AnsiSegment = {
-                    codes: [stateTracker.getActiveEscapes()].filter(Boolean),
+                const segment: (AnsiSegment | HyperlinkSegment) = {
                     isEscapeSequence: false,
                     isGrapheme: true,
                     text: currentText,
                     width,
                 };
 
-                if (options.onSegment?.(segment, stateTracker) === false) {
-                    return;
+                // If we're inside a hyperlink, add the link info to the segment
+                if (isInHyperlink) {
+                    (segment as HyperlinkSegment).isHyperlink = true;
+                    (segment as HyperlinkSegment).hyperlinkUrl = currentUrl;
                 }
 
-                if (options.onGrapheme && options.onGrapheme(currentText, width, stateTracker) === false) {
+                if (options.onSegment?.(segment, stateTracker) === false) {
                     return;
                 }
 
                 currentText = "";
             }
 
-            // Check for hyperlink sequence
-            const chars = [...string];
-            const escapeInfo = checkEscapeSequence(chars, index);
-            isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
-            currentText += character;
-            // eslint-disable-next-line no-continue
-            continue;
-        }
+            isInsideEscape = true;
+            escapeBuffer = character;
 
-        if (isInsideEscape) {
-            escapeBuffer += character;
-            currentText += character;
+            // Check for hyperlink sequence
+            const escapeInfo = checkEscapeSequence(chars, i);
+            isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
 
             if (isInsideLinkEscape) {
-                if (character === ANSI_ESCAPE_BELL) {
-                    // End of hyperlink
-                    // eslint-disable-next-line no-multi-assign
-                    isInsideEscape = isInsideLinkEscape = false;
-                    const segment: AnsiSegment = {
-                        codes: [],
-                        isEscapeSequence: true,
-                        isGrapheme: false,
-                        text: currentText,
-                        width: 0,
-                    };
+                // Extract URL from hyperlink sequence
+                let urlEnd = i + 1;
+                currentUrl = "";
 
-                    if (options.onSegment?.(segment, stateTracker) === false) {
-                        return;
+                while (urlEnd < chars.length) {
+                    const nextChar = chars[urlEnd];
+
+                    if (nextChar === ANSI_ESCAPE_BELL) {
+                        break;
                     }
 
-                    if (options.onEscapeSequence && options.onEscapeSequence(currentText, stateTracker) === false) {
-                        return;
-                    }
-
-                    currentText = "";
+                    currentUrl += nextChar;
+                    urlEnd++;
                 }
-            } else if (character === ANSI_SGR_TERMINATOR) {
-                // End of SGR sequence
-                isInsideEscape = false;
-                stateTracker.processEscape(escapeBuffer);
 
-                const segment: AnsiSegment = {
-                    codes: [],
+                // Remove the "]8;;" prefix
+                currentUrl = currentUrl.slice(4);
+
+                const segment: HyperlinkSegment = {
                     isEscapeSequence: true,
                     isGrapheme: false,
-                    text: currentText,
+                    isHyperlink: true,
+                    isHyperlinkStart: true,
+                    hyperlinkUrl: currentUrl,
                     width: 0,
                 };
 
@@ -122,33 +111,83 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     return;
                 }
 
-                if (options.onEscapeSequence && options.onEscapeSequence(currentText, stateTracker) === false) {
+                i = urlEnd;
+                isInHyperlink = true;
+                isInsideEscape = false;
+                isInsideLinkEscape = false;
+                escapeBuffer = "";
+                continue;
+            }
+
+            // Check for hyperlink end sequence: \u001B\\
+            if (i + 1 < chars.length && chars[i + 1] === "\\") {
+                if (isInHyperlink) {
+                    const segment: HyperlinkSegment = {
+                        isEscapeSequence: true,
+                        isGrapheme: false,
+                        isHyperlink: true,
+                        isHyperlinkEnd: true,
+                        width: 0,
+                    };
+
+                    if (options.onSegment?.(segment, stateTracker) === false) {
+                        return;
+                    }
+
+                    isInHyperlink = false;
+                    currentUrl = "";
+                    i++; // Skip the backslash
+                    isInsideEscape = false;
+                    escapeBuffer = "";
+                    continue;
+                }
+            }
+        }
+
+        if (isInsideEscape) {
+            escapeBuffer += character;
+
+            if (character === ANSI_SGR_TERMINATOR) {
+                // End of SGR sequence
+                isInsideEscape = false;
+                stateTracker.processEscape(escapeBuffer);
+
+                const segment: AnsiSegment = {
+                    isEscapeSequence: true,
+                    isGrapheme: false,
+                    text: escapeBuffer,
+                    width: 0,
+                };
+
+                if (options.onSegment?.(segment, stateTracker) === false) {
                     return;
                 }
 
-                currentText = "";
+                escapeBuffer = "";
             }
             // eslint-disable-next-line no-continue
             continue;
         }
 
-        // Handle regular characters
+        // Accumulate regular characters
         currentText += character;
-        const width = options.getWidth?.(currentText) ?? 0;
 
-        const segment: AnsiSegment = {
-            codes: [stateTracker.getActiveEscapes()].filter(Boolean),
+        // Emit each character as a separate segment, matching the original behavior
+        const width = options.getWidth?.(currentText) ?? 0;
+        const segment: AnsiSegment | HyperlinkSegment = {
             isEscapeSequence: false,
             isGrapheme: true,
             text: currentText,
             width,
         };
 
-        if (options.onSegment?.(segment, stateTracker) === false) {
-            return;
+        // If we're inside a link, add the link info to the segment
+        if (isInHyperlink) {
+            (segment as HyperlinkSegment).isHyperlink = true;
+            (segment as HyperlinkSegment).hyperlinkUrl = currentUrl;
         }
 
-        if (options.onGrapheme && options.onGrapheme(currentText, width, stateTracker) === false) {
+        if (options.onSegment?.(segment, stateTracker) === false) {
             return;
         }
 
@@ -158,18 +197,30 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
     // Add any remaining text
     if (currentText) {
         const width = options.getWidth?.(currentText) ?? 0;
-        const segment: AnsiSegment = {
-            codes: [stateTracker.getActiveEscapes()].filter(Boolean),
+        const segment: AnsiSegment | HyperlinkSegment = {
             isEscapeSequence: false,
             isGrapheme: true,
             text: currentText,
             width,
         };
 
-        options.onSegment?.(segment, stateTracker);
-
-        if (options.onGrapheme) {
-            options.onGrapheme(currentText, width, stateTracker);
+        if (isInHyperlink) {
+            (segment as HyperlinkSegment).isHyperlink = true;
+            (segment as HyperlinkSegment).hyperlinkUrl = currentUrl;
         }
+
+        options.onSegment?.(segment, stateTracker);
+    }
+
+    // Handle any incomplete escape sequence
+    if (escapeBuffer) {
+        const segment: AnsiSegment = {
+            isEscapeSequence: true,
+            isGrapheme: false,
+            text: escapeBuffer,
+            width: 0,
+        };
+
+        options.onSegment?.(segment, stateTracker);
     }
 };
