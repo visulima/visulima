@@ -32,7 +32,6 @@ export const checkEscapeSequence = (
  * @param string - The string to process
  * @param options - Processing options
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export const processAnsiString = (string: string, options: ProcessAnsiStringOptions = {}): void => {
     const stateTracker = new AnsiStateTracker();
 
@@ -42,13 +41,11 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
     let escapeBuffer = "";
     let currentUrl = "";
     let isInHyperlink = false;
-    let textIndex = 0;
-    let visualIndex = 0;
 
     const chars = [...string];
-
-    // eslint-disable-next-line no-plusplus,no-loops/no-loops
+    // eslint-disable-next-line no-loops/no-loops,no-plusplus
     for (let index = 0; index < chars.length; index++) {
+        // eslint-disable-next-line security/detect-object-injection
         const character = chars[index] as string;
 
         // Handle escape sequences
@@ -56,17 +53,10 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
             // If we have pending text, emit it as a segment
             if (currentText) {
                 const width = options.getWidth?.(currentText) ?? 0;
-                const textStart = textIndex - currentText.length;
-                const textEnd = textIndex;
-
                 const segment: AnsiSegment | HyperlinkSegment = {
                     isEscapeSequence: false,
                     isGrapheme: true,
                     text: currentText,
-                    textEnd,
-                    textStart,
-                    visualEnd: visualIndex,
-                    visualStart: visualIndex - width,
                     width,
                 };
 
@@ -85,8 +75,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
 
             isInsideEscape = true;
             escapeBuffer = character;
-            // eslint-disable-next-line no-plusplus
-            textIndex++;
 
             // Check for hyperlink sequence
             const escapeInfo = checkEscapeSequence(chars, index);
@@ -99,6 +87,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
 
                 // eslint-disable-next-line no-loops/no-loops
                 while (urlEnd < chars.length) {
+                    // eslint-disable-next-line security/detect-object-injection
                     const nextChar = chars[urlEnd] as string;
 
                     if (nextChar === ANSI_ESCAPE_BELL) {
@@ -108,8 +97,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     currentUrl += nextChar;
                     // eslint-disable-next-line no-plusplus
                     urlEnd++;
-                    // eslint-disable-next-line no-plusplus
-                    textIndex++;
                 }
 
                 // Remove the "]8;;" prefix
@@ -121,10 +108,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     isGrapheme: false,
                     isHyperlink: true,
                     isHyperlinkStart: true,
-                    textEnd: textIndex + 1, // +1 to include the bell char
-                    textStart: textIndex - escapeBuffer.length - currentUrl.length - 1, // -1 for bell char
-                    visualEnd: visualIndex,
-                    visualStart: visualIndex,
                     width: 0,
                 };
 
@@ -137,8 +120,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                 isInsideEscape = false;
                 isInsideLinkEscape = false;
                 escapeBuffer = "";
-                // eslint-disable-next-line no-plusplus
-                textIndex++; // For the bell character
 
                 // eslint-disable-next-line no-continue
                 continue;
@@ -151,10 +132,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     isGrapheme: false,
                     isHyperlink: true,
                     isHyperlinkEnd: true,
-                    textEnd: textIndex + 2, // +2 for escape and backslash
-                    textStart: textIndex,
-                    visualEnd: visualIndex,
-                    visualStart: visualIndex,
                     width: 0,
                 };
 
@@ -166,11 +143,8 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                 currentUrl = "";
                 // eslint-disable-next-line no-plusplus
                 index++; // Skip the backslash
-                // eslint-disable-next-line no-plusplus
-                textIndex++; // For the backslash
                 isInsideEscape = false;
                 escapeBuffer = "";
-
                 // eslint-disable-next-line no-continue
                 continue;
             }
@@ -178,37 +152,16 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
 
         if (isInsideEscape) {
             escapeBuffer += character;
-            // eslint-disable-next-line no-plusplus
-            textIndex++;
 
             if (character === ANSI_SGR_TERMINATOR) {
                 // End of SGR sequence
                 isInsideEscape = false;
                 stateTracker.processEscape(escapeBuffer);
 
-                // Determine style information
-                // eslint-disable-next-line no-control-regex,regexp/no-control-character
-                const styleType = /\u001B\[(\d+)m/.exec(escapeBuffer)?.[1];
-
-                let isCloseStyle = false;
-                let isOpenStyle = false;
-
-                if (styleType) {
-                    isOpenStyle = !["0", "39", "49"].includes(styleType) && !(Number.parseInt(styleType, 10) >= 21 && Number.parseInt(styleType, 10) <= 29);
-                    isCloseStyle = ["0", "39", "49"].includes(styleType) || (Number.parseInt(styleType, 10) >= 21 && Number.parseInt(styleType, 10) <= 29);
-                }
-
                 const segment: AnsiSegment = {
-                    isCloseStyle,
                     isEscapeSequence: true,
                     isGrapheme: false,
-                    isOpenStyle,
-                    styleType,
                     text: escapeBuffer,
-                    textEnd: textIndex,
-                    textStart: textIndex - escapeBuffer.length,
-                    visualEnd: visualIndex,
-                    visualStart: visualIndex,
                     width: 0,
                 };
 
@@ -218,35 +171,43 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
 
                 escapeBuffer = "";
             }
-
             // eslint-disable-next-line no-continue
             continue;
         }
 
         // Accumulate regular characters
-        currentText += character;
-        // eslint-disable-next-line no-plusplus
-        textIndex++;
 
-        // For single-character segments, emit each one separately
-        const width = options.getWidth?.(currentText) ?? currentText.length;
-        visualIndex += width;
+        currentText += character;
+
+        // Emit each character as a separate segment, matching the original behavior
+        const width = options.getWidth?.(currentText) ?? 0;
+        const segment: AnsiSegment | HyperlinkSegment = {
+            isEscapeSequence: false,
+            isGrapheme: true,
+            text: currentText,
+            width,
+        };
+
+        // If we're inside a link, add the link info to the segment
+        if (isInHyperlink) {
+            (segment as HyperlinkSegment).isHyperlink = true;
+            (segment as HyperlinkSegment).hyperlinkUrl = currentUrl;
+        }
+
+        if (options.onSegment?.(segment, stateTracker) === false) {
+            return;
+        }
+
+        currentText = "";
     }
 
     // Add any remaining text
     if (currentText) {
         const width = options.getWidth?.(currentText) ?? 0;
-        const textStart = textIndex - currentText.length;
-        const textEnd = textIndex;
-
         const segment: AnsiSegment | HyperlinkSegment = {
             isEscapeSequence: false,
             isGrapheme: true,
             text: currentText,
-            textEnd,
-            textStart,
-            visualEnd: visualIndex,
-            visualStart: visualIndex - width,
             width,
         };
 
@@ -264,10 +225,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
             isEscapeSequence: true,
             isGrapheme: false,
             text: escapeBuffer,
-            textEnd: textIndex,
-            textStart: textIndex - escapeBuffer.length,
-            visualEnd: visualIndex,
-            visualStart: visualIndex,
             width: 0,
         };
 

@@ -4,9 +4,6 @@ import type AnsiStateTracker from "./ansi-state-tracker";
  * Represents a segment of text with its ANSI state
  */
 export interface AnsiSegment {
-    /** Whether this is a closing style */
-    isCloseStyle?: boolean;
-
     /**
      * Whether this segment is an ANSI escape sequence
      */
@@ -17,28 +14,10 @@ export interface AnsiSegment {
      */
     isGrapheme: boolean;
 
-    /** Whether this is an opening style */
-    isOpenStyle?: boolean;
-
-    /** Style code type (e.g., '31' for red, '1' for bold) */
-    styleType?: string;
-
     /**
      * The text content of the segment
      */
     text: string;
-
-    /** End index of this segment in the original text */
-    textEnd: number;
-
-    /** Start index of this segment in the original text */
-    textStart: number;
-
-    /** Visual end position (accounting for width) */
-    visualEnd: number;
-
-    /** Visual start position (accounting for width) */
-    visualStart: number;
 
     /**
      * Visual width of the segment

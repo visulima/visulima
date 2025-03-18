@@ -445,10 +445,10 @@ describe("slice", () => {
             });
 
             it("should handle mixed language scripts with ANSI colors correctly", () => {
-                const mixedColoredText = `\u001B[31mEnglish\u001B[32m日本語\u001B[33m한국어\u001B[34mالعربية\u001B[0m`;
+                const mixedColoredText = `${red("English")}${green("日本語")}${yellow("한국어")}${blue("العربية")}`;
 
-                expect(slice(mixedColoredText, 0, 10)).toEqualAnsi("\u001B[31mEnglish\u001B[32m日本語\u001B[0m");
-                expect(slice(mixedColoredText, 7, 15)).toEqualAnsi("\u001B[32m日本語\u001B[33m한국\u001B[0m");
+                expect(slice(mixedColoredText, 0, 10)).toEqualAnsi(red("English") + green("日本語"));
+                expect(slice(mixedColoredText, 7, 15)).toEqualAnsi(green("日本語") + yellow("한국어") + blue("ال"));
             });
         });
     });
