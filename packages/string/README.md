@@ -446,7 +446,7 @@ interface StringWidthOptions {
     controlWidth?: number;          // Width of control characters (default: 0)
     countAnsiEscapeCodes?: boolean; // Include ANSI escape codes in width (default: false)
     emojiWidth?: number;            // Width of emoji characters (default: 2)
-    fullWidthWidth?: number;        // Width of full-width characters (default: 2)
+    fullWidth?: number;        // Width of full-width characters (default: 2)
     regularWidth?: number;          // Width of regular characters (default: 1)
     tabWidth?: number;              // Width of tab characters (default: 8)
     wideWidth?: number;             // Width of wide characters (default: 2)
@@ -470,7 +470,7 @@ getStringTruncatedWidth('hello world', {
 getStringTruncatedWidth('あいうえお', {
     limit: 6,
     ellipsis: '...',
-    fullWidthWidth: 2
+    fullWidth: 2
 }); // => { width: 6, truncated: true, ellipsed: true, index: 2 }
 
 // ANSI codes with truncation
@@ -772,7 +772,7 @@ describe('colored output tests', () => {
   it('should display the correct error message', () => {
     const actual = getErrorMessage(); // Returns colored string
     const expected = red('Error: ') + green('File not found');
-    
+
     // Compare ANSI strings with detailed error messages on failure
     expect(actual).toEqualAnsi(expected);
   });

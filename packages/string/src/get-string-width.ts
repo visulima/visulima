@@ -20,7 +20,7 @@ import { getStringTruncatedWidth } from "./get-string-truncated-width";
  * // Unicode handling options
  * const options: StringWidthOptions = {
  *   ambiguousIsNarrow: true,
- *   fullWidthWidth: 2,
+ *   fullWidth: 2,
  *   wideWidth: 2
  * };
  * ```
@@ -49,7 +49,7 @@ export type StringWidthOptions = Omit<StringTruncatedWidthOptions, "ellipsis" | 
  *                 - controlWidth: Width of control characters (default: 0)
  *                 - countAnsiEscapeCodes: Include ANSI escape codes in width calculation (default: false)
  *                 - emojiWidth: Width of emoji characters (default: 2)
- *                 - fullWidthWidth: Width of full-width characters (default: 2)
+ *                 - fullWidth: Width of full-width characters (default: 2)
  *                 - regularWidth: Width of regular characters (default: 1)
  *                 - tabWidth: Width of tab characters (default: 8)
  *                 - wideWidth: Width of wide characters (default: 2)

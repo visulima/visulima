@@ -84,7 +84,7 @@ export interface StringTruncatedWidthOptions {
      * Width of full-width characters
      * @default 2
      */
-    fullWidthWidth?: number;
+    fullWidth?: number;
 
     /**
      * Maximum width limit for the string
@@ -179,7 +179,7 @@ export interface StringTruncatedWidthResult {
  *
  * // With custom character widths
  * getStringTruncatedWidth('あいう', {
- *   fullWidthWidth: 2,
+ *   fullWidth: 2,
  *   ambiguousIsNarrow: true
  * }); // => { width: 6, truncated: false, ellipsed: false, index: 3 }
  * ```
@@ -194,7 +194,7 @@ export interface StringTruncatedWidthResult {
  *                 - ellipsis: String to append when truncation occurs (default: '')
  *                 - ellipsisWidth: Width of ellipsis, auto-calculated if not provided
  *                 - emojiWidth: Width of emoji characters (default: 2)
- *                 - fullWidthWidth: Width of full-width characters (default: 2)
+ *                 - fullWidth: Width of full-width characters (default: 2)
  *                 - limit: Maximum width limit for the string (default: Infinity)
  *                 - regularWidth: Width of regular characters (default: 1)
  *                 - tabWidth: Width of tab characters (default: 8)
@@ -225,10 +225,11 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
         },
         width: {
             ambiguous: options.ambiguousWidth ?? 1,
+            ambiguousIsNarrow: options.ambiguousIsNarrow ?? false,
             ansi: options.ansiWidth ?? 0,
             control: options.controlWidth ?? 0,
             emoji: options.emojiWidth ?? 2,
-            fullWidth: options.fullWidthWidth ?? 2,
+            fullWidth: options.fullWidth ?? 2,
             regular: options.regularWidth ?? 1,
             tab: options.tabWidth ?? 8,
             wide: options.wideWidth ?? 2,
@@ -282,7 +283,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
                         break;
                     }
                     case "ambiguous": {
-                        widthExtra = (options.ambiguousIsNarrow ?? false) ? config.width.regular : config.width.wide;
+                        widthExtra = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
 
                         if (width + widthExtra > truncationLimit) {
                             truncationIndex = Math.min(truncationIndex, indexPrevious + lengthExtra);
@@ -528,13 +529,13 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             }
 
             if (RE_EMOJI.test(char)) {
-                charWidth = options.emojiWidth ?? 2;
+                charWidth = config.width.emoji;
                 charLength = RE_EMOJI.lastIndex;
             } else if (RE_CONTROL.test(char)) {
-                charWidth = (options.controlWidth ?? 0) * RE_CONTROL.lastIndex;
+                charWidth = config.width.control * RE_CONTROL.lastIndex;
                 charLength = RE_CONTROL.lastIndex;
             } else if (RE_TAB.test(char)) {
-                charWidth = (options.tabWidth ?? 8) * RE_TAB.lastIndex;
+                charWidth = config.width.tab * RE_TAB.lastIndex;
                 charLength = RE_TAB.lastIndex;
             } else {
                 const codePoint = char.codePointAt(0) ?? 0;
@@ -543,19 +544,19 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
 
                 switch (eaw) {
                     case "fullwidth": {
-                        charWidth = options.fullWidthWidth ?? 2;
+                        charWidth = config.width.fullWidth;
                         break;
                     }
                     case "wide": {
-                        charWidth = options.wideWidth ?? 2;
+                        charWidth = config.width.wide;
                         break;
                     }
                     case "ambiguous": {
-                        charWidth = (options.ambiguousIsNarrow ?? false) ? (options.regularWidth ?? 1) : (options.wideWidth ?? 2);
+                        charWidth = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
                         break;
                     }
                     default: {
-                        charWidth = options.regularWidth ?? 1;
+                        charWidth = config.width.regular;
                     }
                 }
             }

@@ -1,4 +1,3 @@
-
 import {
     RE_DETECT_INDENTATION,
     RE_LEADING_NEWLINE,
