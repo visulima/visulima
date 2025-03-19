@@ -163,7 +163,7 @@ describe("slice", () => {
 
         expect(slice(output, 0, 7)).toEqualAnsi(`${black.bgYellow(" RUNS ")} `);
         expect(slice(output, 0, 8)).toEqualAnsi(`${black.bgYellow(" RUNS ")}  `);
-        // expect(slice("\u001B[31m" + output, 0, 4)).toBe(black.bgYellow(" RUN"));
+        expect(slice("\u001B[31m" + output, 0, 4)).toBe(black.bgYellow(" RUN"));
     });
 
     it("should not lose fullwidth characters when slicing multibyte strings", () => {
