@@ -104,7 +104,7 @@ module.exports = defineConfig({
                 "import/no-extraneous-dependencies": "off",
                 "import/no-unused-modules": "off",
                 "no-loops/no-loops": "off",
-                "no-restricted-syntax": "off"
+                "no-restricted-syntax": "off",
             },
         },
     ],

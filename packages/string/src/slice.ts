@@ -1,52 +1,52 @@
+import type { StringWidthOptions } from "./get-string-width";
 import { getStringWidth } from "./get-string-width";
 
-const ANSI_REGEX = /\u001B(?:\[(?:\d+(?:;\d+)*)?m|\]8;;(?:.*?)(?:\u0007|\u001B\\))/g;
+const ANSI_REGEX = /\u001B(?:\[(?:\d+(?:;\d+)*)?m|\]8;;.*?(?:\u0007|\u001B\\))/g;
 
-const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
+const defaultSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
 
 type StyledSegment = {
+    after: string; // ANSI sequences that close styling for this segment
+    before: string; // ANSI sequences that apply to this segment
     content: string;
     visibleLength: number;
-    before: string; // ANSI sequences that apply to this segment
-    after: string; // ANSI sequences that close styling for this segment
 };
 
 type VisibleSegment = {
-    index: number;
-    start: number;
     end: number;
+    index: number;
     segment: StyledSegment;
+    start: number;
 };
 
 // Format style type
 interface FormatStyle {
-    open: string;
     close: string;
+    open: string;
 }
 
 // Format style with position information
 interface FormatStylePosition {
-    style: FormatStyle;
     position: number;
+    style: FormatStyle;
 }
 
 /**
- * Processes a string with ANSI escape sequences and divides it into styled segments
- * @param input String with ANSI escape sequences
- * @returns Array of styled segments
+ * Processes a string with ANSI escape sequences and divides it into styled segments.
+ *
+ * @param {string} input - String with ANSI escape sequences
+ * @param {StringWidthOptions} options - Configuration options for width calculation (default: {})
+ * @returns {StyledSegment[]} Array of styled segments with their ANSI styling information
  */
-function processIntoStyledSegments(input: string): StyledSegment[] {
+const processIntoStyledSegments = (input: string, options: SliceOptions): StyledSegment[] => {
     // If no ANSI sequences, return a single segment
     if (!input.includes("\u001B")) {
         return [
             {
-                content: input,
-                visibleLength: getStringWidth(input, {
-                    wideWidth: 1,
-                    fullWidth: 1,
-                }),
-                before: "",
                 after: "",
+                before: "",
+                content: input,
+                visibleLength: getStringWidth(input, options.width),
             },
         ];
     }
@@ -78,7 +78,7 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
         // Other reset codes like 39m, 49m, 22m, etc.
         if (ansi.startsWith("\u001B[") && ansi.endsWith("m")) {
             const code = ansi.slice(2, -1);
-            if (["0", "39", "49", "22", "23", "24", "27", "28", "29"].includes(code)) {
+            if (["0", "22", "23", "24", "27", "28", "29", "39", "49"].includes(code)) {
                 closingSequences.push(ansi);
                 continue;
             }
@@ -91,12 +91,12 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
     // Now process the text parts
     const activeStyles: string[] = [];
 
-    for (let i = 0; i < parts.length; i++) {
-        const text = parts[i] as string;
+    for (const [index, part] of parts.entries()) {
+        const text = part as string;
 
         // Process ANSI code before this text part
-        if (i > 0 && matches[i - 1]) {
-            const ansi = matches[i - 1] as string;
+        if (index > 0 && matches[index - 1]) {
+            const ansi = matches[index - 1] as string;
 
             // Full reset - clear all active styles
             if (ansi === "\u001B[0m") {
@@ -116,7 +116,8 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
                 // Foreground color reset
                 if (code === "39") {
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                         const styleCode = s.slice(2, -1);
                         return (styleCode >= "30" && styleCode <= "37") || (styleCode >= "90" && styleCode <= "97") || styleCode.startsWith("38;");
                     });
@@ -127,7 +128,8 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
                 // Background color reset
                 else if (code === "49") {
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                         const styleCode = s.slice(2, -1);
                         return (styleCode >= "40" && styleCode <= "47") || (styleCode >= "100" && styleCode <= "107") || styleCode.startsWith("48;");
                     });
@@ -147,7 +149,8 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
                     }[code];
 
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                         return s.slice(2, -1) === targetCode;
                     });
 
@@ -161,7 +164,8 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
                     if ((code >= "30" && code <= "37") || (code >= "90" && code <= "97") || code.startsWith("38;")) {
                         // Remove any existing foreground color
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                             const styleCode = s.slice(2, -1);
                             return (styleCode >= "30" && styleCode <= "37") || (styleCode >= "90" && styleCode <= "97") || styleCode.startsWith("38;");
                         });
@@ -171,7 +175,8 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
                     } else if ((code >= "40" && code <= "47") || (code >= "100" && code <= "107") || code.startsWith("48;")) {
                         // Remove any existing background color
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                             const styleCode = s.slice(2, -1);
                             return (styleCode >= "40" && styleCode <= "47") || (styleCode >= "100" && styleCode <= "107") || styleCode.startsWith("48;");
                         });
@@ -181,7 +186,8 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
                     } else if (["1", "3", "4", "7", "8", "9"].includes(code)) {
                         // Remove any existing style of the same type
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                             return s.slice(2, -1) === code;
                         });
                         if (index !== -1) {
@@ -213,7 +219,7 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
 
         // Get all closing sequences from the original input
         // that would close the active styles
-        let closingSequence: string = "";
+        let closingSequence = "";
 
         // If any styles are active, find the appropriate closing sequences
         if (activeStyles.length > 0) {
@@ -234,13 +240,15 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
 
                 // Check if we need foreground and background closes
                 const needsForegroundClose: boolean = activeStyles.some((s) => {
-                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                     const code = s.slice(2, -1);
                     return (code >= "30" && code <= "37") || (code >= "90" && code <= "97") || code.startsWith("38;");
                 });
 
                 const needsBackgroundClose: boolean = activeStyles.some((s) => {
-                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                     const code = s.slice(2, -1);
                     return (code >= "40" && code <= "47") || (code >= "100" && code <= "107") || code.startsWith("48;");
                 });
@@ -274,12 +282,10 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
                 if (needsForegroundClose && needsBackgroundClose && fgOpenPos >= 0 && bgOpenPos >= 0) {
                     if (fgOpenPos > bgOpenPos) {
                         // Foreground was applied after background, so close foreground first
-                        closingParts.push("\u001B[39m"); // Reset foreground
-                        closingParts.push("\u001B[49m"); // Reset background
+                        closingParts.push("\u001B[39m", "\u001B[49m"); // Reset background
                     } else {
                         // Background was applied after foreground, so close background first
-                        closingParts.push("\u001B[49m"); // Reset background
-                        closingParts.push("\u001B[39m"); // Reset foreground
+                        closingParts.push("\u001B[49m", "\u001B[39m"); // Reset foreground
                     }
                 } else {
                     // Handle cases where only one type of style is present
@@ -301,33 +307,31 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
                     // Use the order from the original input
                     if (input.indexOf("\u001B[39m") < input.indexOf("\u001B[49m")) {
                         // Original input closes foreground first
-                        closingParts.push("\u001B[39m");
-                        closingParts.push("\u001B[49m");
+                        closingParts.push("\u001B[39m", "\u001B[49m");
                     } else {
                         // Original input closes background first
-                        closingParts.push("\u001B[49m");
-                        closingParts.push("\u001B[39m");
+                        closingParts.push("\u001B[49m", "\u001B[39m");
                     }
                 }
 
                 // Check for format styles (bold, italic, underline, etc.)
                 // We close these in reverse order of application as well
                 const formatStyles: FormatStyle[] = [
-                    { open: "\u001B[1m", close: "\u001B[22m" }, // Bold
-                    { open: "\u001B[3m", close: "\u001B[23m" }, // Italic
-                    { open: "\u001B[4m", close: "\u001B[24m" }, // Underline
-                    { open: "\u001B[7m", close: "\u001B[27m" }, // Inverse
-                    { open: "\u001B[8m", close: "\u001B[28m" }, // Hidden
-                    { open: "\u001B[9m", close: "\u001B[29m" }, // Strikethrough
+                    { close: "\u001B[22m", open: "\u001B[1m" }, // Bold
+                    { close: "\u001B[23m", open: "\u001B[3m" }, // Italic
+                    { close: "\u001B[24m", open: "\u001B[4m" }, // Underline
+                    { close: "\u001B[27m", open: "\u001B[7m" }, // Inverse
+                    { close: "\u001B[28m", open: "\u001B[8m" }, // Hidden
+                    { close: "\u001B[29m", open: "\u001B[9m" }, // Strikethrough
                 ];
 
                 // Track which format styles are active and their positions in the input
                 const activeFormatStyles: FormatStylePosition[] = formatStyles
-                    .filter((style) => activeStyles.some((s) => s === style.open))
-                    .map((style) => ({
-                        style,
+                    .filter((style) => activeStyles.includes(style.open))
+                    .map((style) => {return {
                         position: input.indexOf(style.open),
-                    }))
+                        style,
+                    }})
                     .filter((item) => item.position >= 0)
                     // Sort by position, latest first (to close in reverse order)
                     .sort((a, b) => b.position - a.position);
@@ -346,30 +350,147 @@ function processIntoStyledSegments(input: string): StyledSegment[] {
 
         // Create the segment
         segments.push({
+            after: closingSequence,
+            before: activeStyles.join(""),
             content: text,
             visibleLength: getStringWidth(text, {
-                wideWidth: 1,
                 fullWidth: 1,
+                wideWidth: 1,
             }),
-            before: activeStyles.join(""),
-            after: closingSequence,
         });
     }
 
     return segments;
-}
+};
 
 /**
- * High-performance function to slice ANSI-colored strings while preserving style codes.
- * Uses a segment-based approach that directly associates styling with content.
- * Handles all ANSI codes including unknown ones.
+ * Fast slice function optimized for non-ANSI strings with proper Unicode handling.
+ * Respects grapheme boundaries and properly handles character width for slicing.
  *
- * @param {string} inputString - The original string with ANSI escape codes
+ * @example
+ * ```typescript
+ * // Basic usage
+ * fastSlice('Hello World', 0, 5); // => 'Hello'
+ *
+ * // With complex scripts
+ * fastSlice('টেক্সটSt', 0, 5); // => 'টেক্'
+ *
+ * // With width options
+ * fastSlice('Hello', 0, 3, { width: { fullWidth: 2 } });
+ * ```
+ *
+ * @param {string} inputString - The input string to slice
  * @param {number} startIndex - Start index for the slice (default: 0)
  * @param {number} endIndex - End index for the slice (default: string length)
- * @returns {string} The sliced string with preserved ANSI styling
+ * @param {SliceOptions} options - Configuration options for width calculation (default: {})
+ * @returns {string} The sliced string with proper Unicode character handling
  */
-function slice(inputString: string, startIndex = 0, endIndex = inputString.length): string {
+const fastSlice = (inputString: string, startIndex = 0, endIndex = inputString.length, options: SliceOptions): string => {
+    const graphemes = [...(options.segmenter as Intl.Segmenter).segment(inputString)];
+    const result: string[] = [];
+
+    let currentWidth = 0;
+    let includedWidth = 0;
+    let startFound = false;
+
+    // Process each grapheme with respect to its width
+    for (const grapheme_ of graphemes) {
+        const grapheme = grapheme_ as Intl.SegmentData;
+        const graphemeWidth = getStringWidth(grapheme.segment, options.width);
+
+        // Current position before adding this grapheme
+        const positionBefore = currentWidth;
+        // Position after adding this grapheme
+        const positionAfter = currentWidth + graphemeWidth;
+
+        // Check if we've found our starting point yet
+        if (!startFound) {
+            if (positionBefore < startIndex) {
+                // This grapheme is still before our target start
+                currentWidth = positionAfter;
+                continue;
+            } else {
+                // We've found our start point
+                startFound = true;
+            }
+        }
+
+        // Now we're in the visible range, check if adding this grapheme would exceed our end point
+        if (positionBefore >= endIndex) {
+            // We've reached the end, stop processing
+            break;
+        }
+
+        // Check if adding this grapheme would exceed the endIndex
+        if (positionAfter > endIndex) {
+            // This grapheme would cross the boundary - do not include it
+            break;
+        }
+
+        // Add this grapheme to our result
+        result.push(grapheme.segment);
+        includedWidth = positionAfter;
+        currentWidth = positionAfter;
+    }
+
+    return result.join("");
+};
+
+/**
+ * Configuration options for string slicing operations.
+ *
+ * @example
+ * ```typescript
+ * const options: SliceOptions = {
+ *   width: {
+ *     fullWidth: 2,
+ *     ambiguousIsNarrow: true
+ *   },
+ *   segmenter: new Intl.Segmenter('ja-JP', { granularity: 'word' })
+ * };
+ * ```
+ */
+export type SliceOptions = {
+    /**
+     * Custom segmenter instance for text segmentation
+     */
+    segmenter?: Intl.Segmenter;
+
+    /**
+     * Options for string width calculations
+     */
+    width?: StringWidthOptions;
+};
+
+/**
+ * Slice a string with support for ANSI colors and proper Unicode width handling.
+ * For strings without ANSI escape sequences, it uses an optimized path.
+ * For strings with ANSI sequences, it preserves all styling while correctly handling Unicode characters.
+ *
+ * @example
+ * ```typescript
+ * // Basic usage
+ * slice('Hello World', 0, 5); // => 'Hello'
+ *
+ * // With ANSI colors
+ * slice('\u001b[31mRed\u001b[0m Text', 0, 3); // => '\u001b[31mRed\u001b[0m'
+ *
+ * // With width options
+ * slice('Hello', 0, 3, { width: { fullWidth: 2 } });
+ * ```
+ *
+ * @param {string} inputString - The input string to slice
+ * @param {number} startIndex - Start index for the slice (default: 0)
+ * @param {number} endIndex - End index for the slice (default: string length)
+ * @param {SliceOptions} options - Configuration options for slicing operation (default: {})
+ * @returns {string} The sliced string with preserved ANSI styling if present
+ */
+const slice = (inputString: string, startIndex = 0, endIndex = inputString.length, options: SliceOptions): string => {
+    const config = {
+        segmenter: defaultSegmenter,
+        ...options,
+    };
+
     if (startIndex >= endIndex || inputString === "") {
         return "";
     }
@@ -382,13 +503,17 @@ function slice(inputString: string, startIndex = 0, endIndex = inputString.lengt
         throw new RangeError("Negative indices aren't supported");
     }
 
-    const segments = processIntoStyledSegments(inputString);
+    if (!inputString.includes("\u001B")) {
+        return fastSlice(inputString, startIndex, endIndex, config);
+    }
+
+    const segments = processIntoStyledSegments(inputString, config);
 
     let currentPos = 0;
     const visibleSegments: VisibleSegment[] = [];
 
-    for (let i = 0; i < segments.length; i++) {
-        const segment = segments[i] as StyledSegment;
+    for (const [index, segment_] of segments.entries()) {
+        const segment = segment_ as StyledSegment;
         const segmentStart = currentPos;
         const segmentEnd = currentPos + segment.visibleLength;
 
@@ -397,10 +522,10 @@ function slice(inputString: string, startIndex = 0, endIndex = inputString.lengt
             const visibleEnd = Math.min(segment.visibleLength, endIndex - segmentStart);
 
             visibleSegments.push({
-                index: i,
-                start: visibleStart,
                 end: visibleEnd,
+                index,
                 segment,
+                start: visibleStart,
             });
         }
 
@@ -416,14 +541,14 @@ function slice(inputString: string, startIndex = 0, endIndex = inputString.lengt
 
     resultParts.push(firstSegmentInfo.segment.before);
 
-    for (let i = 0; i < visibleSegments.length; i++) {
-        const { segment, start, end } = visibleSegments[i] as VisibleSegment;
+    for (let index = 0; index < visibleSegments.length; index++) {
+        const { end, segment, start } = visibleSegments[index] as VisibleSegment;
 
         let slicedContent: string;
         if (start === 0 && end === segment.visibleLength) {
-                slicedContent = segment.content;
+            slicedContent = segment.content;
         } else {
-            const graphemes = Array.from(segmenter.segment(segment.content));
+            const graphemes = [...(config.segmenter as Intl.Segmenter).segment(segment.content)];
 
             slicedContent = graphemes
                 .slice(start, end)
@@ -433,23 +558,20 @@ function slice(inputString: string, startIndex = 0, endIndex = inputString.lengt
 
         resultParts.push(slicedContent);
 
-        if (i < visibleSegments.length - 1) {
-            const nextSegment = (visibleSegments[i + 1] as VisibleSegment).segment;
+        if (index < visibleSegments.length - 1) {
+            const nextSegment = (visibleSegments[index + 1] as VisibleSegment).segment;
 
-            if (segment.after !== "" || nextSegment.before !== "") {
-                if (segment.after !== nextSegment.before) {
-                    resultParts.push(segment.after);
-                    resultParts.push(nextSegment.before);
+            if ((segment.after !== "" || nextSegment.before !== "") && segment.after !== nextSegment.before) {
+                    resultParts.push(segment.after, nextSegment.before);
                 }
-            }
         }
     }
 
-    const lastSegmentInfo = visibleSegments[visibleSegments.length - 1] as VisibleSegment;
+    const lastSegmentInfo = visibleSegments.at(-1) as VisibleSegment;
 
     resultParts.push(lastSegmentInfo.segment.after);
 
     return resultParts.join("");
-}
+};
 
 export default slice;

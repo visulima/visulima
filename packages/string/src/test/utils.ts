@@ -1,6 +1,8 @@
 // @ts-expect-error: TODO: find why this typing is not working
 import { format, stripVTControlCharacters } from "node:util";
 
+import { getStringWidth } from "..";
+
 /**
  * Helper function to format ANSI strings for test output
  * @param ansiString The ANSI string to format
@@ -67,11 +69,11 @@ export const expectAnsiStrings = (actual: string, expected: string): Expectation
                 actualFormatted.stripped,
                 actualFormatted.visible,
                 actualFormatted.json,
-                actualFormatted.ansi.length,
+                getStringWidth(actualFormatted.ansi),
                 expectedFormatted.stripped,
                 expectedFormatted.visible,
                 expectedFormatted.json,
-                expectedFormatted.ansi.length,
+                getStringWidth(expectedFormatted.ansi),
                 strippedEqual ? "✓ Visible content is identical, but escape codes differ" : "✗ Visible content differs",
             );
         },

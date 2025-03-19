@@ -27,16 +27,6 @@ export const TEST_STRINGS = [
     "FOO BAR BAZ",
 ] as const;
 
-export const SPECIAL_STRINGS = [
-    "foo\u001B[31mbar\u001B[0m",
-    "foo🎉bar",
-    "foo💻bar_baz",
-] as const;
+export const SPECIAL_STRINGS = ["foo\u001B[31mbar\u001B[0m", "foo🎉bar", "foo💻bar_baz"] as const;
 
-export const ACRONYM_STRINGS = [
-    "XMLHttpRequest",
-    "APIClient",
-    "OAuth2Provider",
-    "GraphQLAPI",
-    "MySQLDB",
-] as const;
+export const ACRONYM_STRINGS = ["XMLHttpRequest", "APIClient", "OAuth2Provider", "GraphQLAPI", "MySQLDB"] as const;
