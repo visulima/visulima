@@ -116,8 +116,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                 // Foreground color reset
                 if (code === "39") {
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                         const styleCode = s.slice(2, -1);
                         return (styleCode >= "30" && styleCode <= "37") || (styleCode >= "90" && styleCode <= "97") || styleCode.startsWith("38;");
                     });
@@ -128,8 +127,7 @@ return false;
                 // Background color reset
                 else if (code === "49") {
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                         const styleCode = s.slice(2, -1);
                         return (styleCode >= "40" && styleCode <= "47") || (styleCode >= "100" && styleCode <= "107") || styleCode.startsWith("48;");
                     });
@@ -149,8 +147,7 @@ return false;
                     }[code];
 
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                         return s.slice(2, -1) === targetCode;
                     });
 
@@ -164,8 +161,7 @@ return false;
                     if ((code >= "30" && code <= "37") || (code >= "90" && code <= "97") || code.startsWith("38;")) {
                         // Remove any existing foreground color
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                             const styleCode = s.slice(2, -1);
                             return (styleCode >= "30" && styleCode <= "37") || (styleCode >= "90" && styleCode <= "97") || styleCode.startsWith("38;");
                         });
@@ -175,8 +171,7 @@ return false;
                     } else if ((code >= "40" && code <= "47") || (code >= "100" && code <= "107") || code.startsWith("48;")) {
                         // Remove any existing background color
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                             const styleCode = s.slice(2, -1);
                             return (styleCode >= "40" && styleCode <= "47") || (styleCode >= "100" && styleCode <= "107") || styleCode.startsWith("48;");
                         });
@@ -186,8 +181,7 @@ return false;
                     } else if (["1", "3", "4", "7", "8", "9"].includes(code)) {
                         // Remove any existing style of the same type
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                             return s.slice(2, -1) === code;
                         });
                         if (index !== -1) {
@@ -240,15 +234,13 @@ return false;
 
                 // Check if we need foreground and background closes
                 const needsForegroundClose: boolean = activeStyles.some((s) => {
-                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                     const code = s.slice(2, -1);
                     return (code >= "30" && code <= "37") || (code >= "90" && code <= "97") || code.startsWith("38;");
                 });
 
                 const needsBackgroundClose: boolean = activeStyles.some((s) => {
-                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                     const code = s.slice(2, -1);
                     return (code >= "40" && code <= "47") || (code >= "100" && code <= "107") || code.startsWith("48;");
                 });
@@ -328,10 +320,12 @@ return false;
                 // Track which format styles are active and their positions in the input
                 const activeFormatStyles: FormatStylePosition[] = formatStyles
                     .filter((style) => activeStyles.includes(style.open))
-                    .map((style) => {return {
-                        position: input.indexOf(style.open),
-                        style,
-                    }})
+                    .map((style) => {
+                        return {
+                            position: input.indexOf(style.open),
+                            style,
+                        };
+                    })
                     .filter((item) => item.position >= 0)
                     // Sort by position, latest first (to close in reverse order)
                     .sort((a, b) => b.position - a.position);
@@ -562,8 +556,8 @@ const slice = (inputString: string, startIndex = 0, endIndex = inputString.lengt
             const nextSegment = (visibleSegments[index + 1] as VisibleSegment).segment;
 
             if ((segment.after !== "" || nextSegment.before !== "") && segment.after !== nextSegment.before) {
-                    resultParts.push(segment.after, nextSegment.before);
-                }
+                resultParts.push(segment.after, nextSegment.before);
+            }
         }
     }
 

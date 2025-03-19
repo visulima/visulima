@@ -112,7 +112,8 @@ export interface StringTruncatedWidthOptions {
 }
 
 /**
- * Result object returned by getStringTruncatedWidth containing width calculation and truncation details.
+ * Result object returned by getStringTruncatedWidth containing width calculation, truncation details,
+ * and the truncated content.
  *
  * @example
  * ```typescript
@@ -121,15 +122,17 @@ export interface StringTruncatedWidthOptions {
  *   width: 5,        // Total visual width
  *   truncated: false, // String was not truncated
  *   ellipsed: false, // No ellipsis added
- *   index: 5         // Full string length
+ *   index: 5,        // Full string length
+ *   content: 'hello' // Original or truncated content
  * };
  *
  * // With truncation
  * const result: StringTruncatedWidthResult = {
- *   width: 8,       // Width including ellipsis
- *   truncated: true, // String was truncated
- *   ellipsed: true, // Ellipsis was added
- *   index: 5        // Truncation point
+ *   width: 8,        // Width including ellipsis
+ *   truncated: true,  // String was truncated
+ *   ellipsed: true,   // Ellipsis was added
+ *   index: 5,         // Truncation point
+ *   content: 'hello...' // Truncated content with ellipsis
  * };
  * ```
  */
@@ -153,11 +156,17 @@ export interface StringTruncatedWidthResult {
      * The calculated width of the string
      */
     width: number;
+
+    /**
+     * The resulting content after potential truncation
+     */
+    content: string;
 }
 
 /**
  * Calculate the visual width of a string with optional truncation, handling various Unicode character types.
  * This function provides detailed control over character width calculations and truncation behavior.
+ * Returns the truncated content along with width information.
  *
  * Features:
  * - Handles Unicode characters (full-width, wide, ambiguous, etc.)
@@ -165,46 +174,35 @@ export interface StringTruncatedWidthResult {
  * - Processes ANSI escape codes
  * - Handles combining characters and modifiers
  * - Supports string truncation with customizable ellipsis
+ * - Returns the truncated string content
  *
  * @example
  * ```typescript
  * // Basic width calculation
- * getStringTruncatedWidth('hello'); // => { width: 5, truncated: false, ellipsed: false, index: 5 }
+ * getStringTruncatedWidth('hello'); // => { width: 5, truncated: false, ellipsed: false, index: 5, content: 'hello' }
  *
  * // With truncation
  * getStringTruncatedWidth('hello world', {
  *   limit: 8,
  *   ellipsis: '...'
- * }); // => { width: 8, truncated: true, ellipsed: true, index: 5 }
+ * }); // => { width: 8, truncated: true, ellipsed: true, index: 5, content: 'hello...' }
  *
  * // With custom character widths
  * getStringTruncatedWidth('あいう', {
  *   fullWidth: 2,
  *   ambiguousIsNarrow: true
- * }); // => { width: 6, truncated: false, ellipsed: false, index: 3 }
+ * }); // => { width: 6, truncated: false, ellipsed: false, index: 3, content: 'あいう' }
  * ```
  *
  * @param input - The string to calculate the width for and potentially truncate
- * @param options - Configuration options for width calculation and truncation:
- *                 - ambiguousIsNarrow: Treat ambiguous-width characters as narrow (default: false)
- *                 - ambiguousWidth: Width of ambiguous-width characters (default: 1)
- *                 - ansiWidth: Width of ANSI escape sequences (default: 0)
- *                 - controlWidth: Width of control characters (default: 0)
- *                 - countAnsiEscapeCodes: Include ANSI escape codes in width calculation (default: false)
- *                 - ellipsis: String to append when truncation occurs (default: '')
- *                 - ellipsisWidth: Width of ellipsis, auto-calculated if not provided
- *                 - emojiWidth: Width of emoji characters (default: 2)
- *                 - fullWidth: Width of full-width characters (default: 2)
- *                 - limit: Maximum width limit for the string (default: Infinity)
- *                 - regularWidth: Width of regular characters (default: 1)
- *                 - tabWidth: Width of tab characters (default: 8)
- *                 - wideWidth: Width of wide characters (default: 2)
+ * @param options - Configuration options for width calculation and truncation
  *
  * @returns Result object containing:
  *          - width: The calculated visual width of the string
  *          - truncated: Whether the string was truncated
  *          - ellipsed: Whether an ellipsis was added
  *          - index: The index at which truncation occurred (if any)
+ *          - content: The truncated string with ellipsis if applicable
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const getStringTruncatedWidth = (input: string, options: StringTruncatedWidthOptions = {}): StringTruncatedWidthResult => {
@@ -571,10 +569,14 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
         }
     }
 
+    const ellipsed = truncationEnabled && config.truncation.limit >= config.truncation.ellipsisWidth;
+    const content = `${input.slice(0, truncationEnabled ? truncationIndex : length)}${ellipsed ? config.truncation.ellipsis : ""}`;
+
     return {
-        ellipsed: truncationEnabled && config.truncation.limit >= config.truncation.ellipsisWidth,
+        ellipsed,
         index: truncationEnabled ? truncationIndex : length,
         truncated: truncationEnabled,
         width: truncationEnabled ? Math.min(width + config.truncation.ellipsisWidth, config.truncation.limit) : width,
+        content,
     };
 };
