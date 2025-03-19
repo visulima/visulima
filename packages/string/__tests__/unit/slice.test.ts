@@ -140,7 +140,7 @@ describe("slice", () => {
 
     it("should correctly slice a string with unknown ANSI color codes", () => {
         // The slice will not use a full reset sequence of unknown colors
-        expect(slice("\u001B[20mTEST\u001B[49m", 0, 4)).toEqualAnsi("\u001B[20mTEST\u001B[49m");
+        expect(slice("\u001B[20mTEST\u001B[49m", 0, 4)).toEqualAnsi("\u001B[20mTEST");
         expect(slice("\u001B[1001mTEST\u001B[49m", 0, 3)).toEqualAnsi("\u001B[1001mTES\u001B[49m");
         expect(slice("\u001B[1001mTEST\u001B[49m", 0, 2)).toEqualAnsi("\u001B[1001mTE\u001B[49m");
     });
@@ -177,20 +177,24 @@ describe("slice", () => {
     it("should handle hyperlinks correctly while preserving the formatting", () => {
         const link = "\u001B]8;;https://google.com\u0007Google\u001B]8;;\u0007";
         expect(slice(link, 0, 6)).toEqualAnsi(link);
+
+        expect(
+            slice("\u001B]8;;https://google.com\u0007Google\u001B]8;;\u0007 and a second link \u001B]8;;https://google.com\u0007Google\u001B]8;;\u0007", 0, 17),
+        ).toEqualAnsi("\u001B]8;;https://google.com\u0007Google\u001B]8;;\u0007 and a seco");
     });
 
     it("should handle invalid ANSI sequences correctly without breaking", () => {
         // Incomplete sequence
-        expect(slice("\u001B[test", 0, 4)).toEqualAnsi("[tes");
+        expect(slice("\u001B[test", 0, 4)).toEqualAnsi("\u001b[te");
 
         // Invalid characters in sequence
-        expect(slice("\u001B[abc31mtest\u001B[39m", 0, 4)).toEqualAnsi("[abc\u001B[39m");
+        expect(slice("\u001B[abc31mtest\u001B[39m", 0, 4)).toEqualAnsi("\u001b[ab");
 
         // Missing terminator
-        expect(slice("\u001B[31test\u001B[39m", 0, 4)).toEqualAnsi("[31t\u001B[39m");
+        expect(slice("\u001B[31test\u001B[39m", 0, 4)).toEqualAnsi("\u001b[31test");
 
         // Multiple invalid sequences
-        expect(slice("\u001B[31m\u001B[test\u001B[39m", 0, 4)).toEqualAnsi("\u001B[31m[tes\u001B[39m");
+        expect(slice("\u001B[31m\u001B[test\u001B[39m", 0, 4)).toEqualAnsi("\u001b[31m\u001b[te\u001b[39m");
     });
 
     it("should handle multiple consecutive ANSI codes correctly", () => {
@@ -198,7 +202,7 @@ describe("slice", () => {
         expect(slice("\u001B[1m\u001B[31m\u001B[42mtest\u001B[0m", 0, 4)).toEqualAnsi("\u001B[1m\u001B[31m\u001B[42mtest\u001B[0m");
 
         // Mix of valid and invalid codes
-        expect(slice("\u001B[1m\u001B[invalid\u001B[31mtest\u001B[0m", 0, 4)).toEqualAnsi("\u001B[1m[inv\u001B[31m\u001B[0m");
+        expect(slice("\u001B[1m\u001B[invalid\u001B[31mtest\u001B[0m", 0, 4)).toEqualAnsi("\u001b[1m\u001b[in\u001b[0m");
     });
 
     // Locale-specific tests

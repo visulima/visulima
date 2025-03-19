@@ -1,358 +1,406 @@
 import { getStringWidth } from "./get-string-width";
 
-// Define segment types for TypeScript type checking
-type TextSegment = {
-    type: "text";
-    content: string;
-    startPos: number;
-    endPos: number;
-    graphemes: string[];
+// ANSI escape sequence regex
+const ANSI_REGEX = /\u001B(?:\[(?:\d+(?:;\d+)*)?m|\]8;;(?:.*?)(?:\u0007|\u001B\\))/g;
+
+// For text segmentation
+const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+
+// Segment type that includes styling information
+type StyledSegment = {
+  content: string;
+  visibleLength: number;
+  before: string; // ANSI sequences that apply to this segment
+  after: string;  // ANSI sequences that close styling for this segment
 };
-
-type AnsiCodeSegment = {
-    type: "ansi";
-    content: string;
-    code: number | null | undefined;
-    endIdx: number;
-};
-
-type HyperlinkSegment = {
-    type: "hyperlink";
-    content: string;
-    isStart?: boolean;
-    endIdx: number;
-};
-
-// Union type for all segment types
-type Segment = TextSegment | AnsiCodeSegment | HyperlinkSegment;
-
-// ANSI control character code points
-const ESC = 0x1b;
-const OPEN_BRACKET = 0x5b;
-const CLOSE_BRACKET = 0x5d;
-const DIGIT_0 = 0x30;
-const DIGIT_9 = 0x39;
-const LOWER_M = 0x6d;
-const SEMICOLON = 0x3b;
-const DIGIT_8 = 0x38;
-const BEL = 0x07;
-
-// ANSI sequence constants
-const HYPERLINK_START = "\u001B]8;;";
-const HYPERLINK_END = "\u001B]8;;\u0007";
 
 /**
- * Parses an ANSI escape sequence from a string at the specified position.
- * Handles both CSI sequences for styling and OSC sequences for hyperlinks.
- *
- * @param {string} inputString - The string containing the ANSI escape sequence
- * @param {number} startPosition - The position where the escape sequence begins
- * @returns {AnsiCodeSegment | HyperlinkSegment | null} - Parsed sequence object if valid, null if invalid
+ * Processes a string with ANSI escape sequences and divides it into styled segments
+ * @param input String with ANSI escape sequences
+ * @returns Array of styled segments
  */
-const parseAnsiSequence = (inputString: string, startPosition: number): AnsiCodeSegment | HyperlinkSegment | null => {
-    if (startPosition + 1 >= inputString.length) {
-        return null;
+function processIntoStyledSegments(input: string): StyledSegment[] {
+  // If no ANSI sequences, return a single segment
+  if (!input.includes('\u001B')) {
+    return [{
+      content: input,
+      visibleLength: getStringWidth(input, {
+        wideWidth: 1,
+        fullWidth: 1,
+      }),
+      before: '',
+      after: ''
+    }];
+  }
+
+  // Split string by ANSI escape sequences
+  const parts = input.split(ANSI_REGEX);
+  const matches = Array.from(input.matchAll(ANSI_REGEX), m => m[0]);
+
+  const segments: StyledSegment[] = [];
+
+  // Track all opening and closing ANSI sequences
+  const openingSequences: string[] = [];
+  const closingSequences: string[] = [];
+
+  // Process each ANSI sequence first to identify all opening and closing sequences
+  for (const ansi of matches) {
+    // Reset code - full reset
+    if (ansi === '\u001B[0m') {
+      closingSequences.push(ansi);
+      continue;
     }
 
-    const nextChar = inputString.codePointAt(startPosition + 1);
-
-    // Check for CSI sequence (ESC [)
-    if (nextChar === OPEN_BRACKET) {
-        let currentPosition = startPosition + 2;
-        let codeValue = 0;
-
-        // Parse numeric parameters
-        while (currentPosition < inputString.length) {
-            const charCode = inputString.codePointAt(currentPosition) ?? 0;
-
-            if (charCode >= DIGIT_0 && charCode <= DIGIT_9) {
-                codeValue = codeValue * 10 + (charCode - DIGIT_0);
-            } else if (charCode === SEMICOLON) {
-                // Complex code with semicolon is still valid
-                codeValue = 0;
-            } else if (charCode === LOWER_M) {
-                // Valid termination with 'm'
-                return {
-                    code: codeValue,
-                    content: inputString.slice(startPosition, currentPosition + 1),
-                    endIdx: currentPosition + 1,
-                    type: "ansi",
-                };
-            } else {
-                // Invalid character - not a valid ANSI sequence
-                return null;
-            }
-
-            currentPosition++;
-        }
-
-        // Reached end without finding terminator
-        return null;
-    }
-    // Check for OSC sequence (ESC ])
-    else if (nextChar === CLOSE_BRACKET && startPosition + 2 < inputString.length && inputString.codePointAt(startPosition + 2) === DIGIT_8) {
-        // Check for hyperlink start
-        if (
-            startPosition + HYPERLINK_START.length <= inputString.length &&
-            inputString.slice(startPosition, startPosition + HYPERLINK_START.length) === HYPERLINK_START
-        ) {
-            // Find hyperlink end
-            let hyperlinkEndPosition = -1;
-            for (let scanPosition = startPosition + HYPERLINK_START.length; scanPosition < inputString.length; scanPosition++) {
-                if (
-                    inputString.codePointAt(scanPosition) === BEL ||
-                    (inputString.codePointAt(scanPosition) === ESC &&
-                        scanPosition + 1 < inputString.length &&
-                        inputString.codePointAt(scanPosition + 1) === 0x5c)
-                ) {
-                    hyperlinkEndPosition = scanPosition + (inputString.codePointAt(scanPosition) === BEL ? 1 : 2);
-                    break;
-                }
-            }
-
-            if (hyperlinkEndPosition !== -1) {
-                return {
-                    content: inputString.slice(startPosition, hyperlinkEndPosition),
-                    endIdx: hyperlinkEndPosition,
-                    isStart: true,
-                    type: "hyperlink",
-                };
-            }
-        }
-        // Check for hyperlink end
-        else if (
-            startPosition + HYPERLINK_END.length <= inputString.length &&
-            inputString.slice(startPosition, startPosition + HYPERLINK_END.length) === HYPERLINK_END
-        ) {
-            return {
-                content: HYPERLINK_END,
-                endIdx: startPosition + HYPERLINK_END.length,
-                isStart: false,
-                type: "hyperlink",
-            };
-        }
+    // Hyperlink closing
+    if (ansi === '\u001B]8;;\u0007') {
+      closingSequences.push(ansi);
+      continue;
     }
 
-    return null;
-};
+    // Other reset codes like 39m, 49m, 22m, etc.
+    if (ansi.startsWith('\u001B[') && ansi.endsWith('m')) {
+      const code = ansi.slice(2, -1);
+      if (['0', '39', '49', '22', '23', '24', '27', '28', '29'].includes(code)) {
+        closingSequences.push(ansi);
+        continue;
+      }
+    }
+
+    // Otherwise, treat it as an opening sequence
+    openingSequences.push(ansi);
+  }
+
+  // Now process the text parts
+  const activeStyles: string[] = [];
+
+  for (let i = 0; i < parts.length; i++) {
+    const text = parts[i];
+
+    // Process ANSI code before this text part
+    if (i > 0 && matches[i-1]) {
+      const ansi = matches[i-1];
+
+      // Full reset - clear all active styles
+      if (ansi === '\u001B[0m') {
+        activeStyles.length = 0;
+      }
+      // Hyperlink closing
+      else if (ansi === '\u001B]8;;\u0007') {
+        const index = activeStyles.findIndex(s => s.startsWith('\u001B]8;;') && !s.endsWith('\u001B]8;;\u0007'));
+        if (index !== -1) {
+          activeStyles.splice(index, 1);
+        }
+      }
+      // Other specific reset codes
+      else if (ansi.startsWith('\u001B[') && ansi.endsWith('m')) {
+        const code = ansi.slice(2, -1);
+
+        // Foreground color reset
+        if (code === '39') {
+          const index = activeStyles.findIndex(s => {
+            if (!s.startsWith('\u001B[') || !s.endsWith('m')) return false;
+            const styleCode = s.slice(2, -1);
+            return (
+              (styleCode >= '30' && styleCode <= '37') ||
+              (styleCode >= '90' && styleCode <= '97') ||
+              styleCode.startsWith('38;')
+            );
+          });
+          if (index !== -1) {
+            activeStyles.splice(index, 1);
+          }
+        }
+        // Background color reset
+        else if (code === '49') {
+          const index = activeStyles.findIndex(s => {
+            if (!s.startsWith('\u001B[') || !s.endsWith('m')) return false;
+            const styleCode = s.slice(2, -1);
+            return (
+              (styleCode >= '40' && styleCode <= '47') ||
+              (styleCode >= '100' && styleCode <= '107') ||
+              styleCode.startsWith('48;')
+            );
+          });
+          if (index !== -1) {
+            activeStyles.splice(index, 1);
+          }
+        }
+        // Other specific reset codes
+        else if (['22', '23', '24', '27', '28', '29'].includes(code)) {
+          const targetCode = {
+            '22': '1',  // Bold reset
+            '23': '3',  // Italic reset
+            '24': '4',  // Underline reset
+            '27': '7',  // Inverse reset
+            '28': '8',  // Hidden reset
+            '29': '9',  // Strikethrough reset
+          }[code];
+
+          const index = activeStyles.findIndex(s => {
+            if (!s.startsWith('\u001B[') || !s.endsWith('m')) return false;
+            return s.slice(2, -1) === targetCode;
+          });
+
+          if (index !== -1) {
+            activeStyles.splice(index, 1);
+          }
+        }
+        // Opening style - add to active styles
+        else {
+          // Check if we need to replace a style of the same type
+          if (code >= '30' && code <= '37' || code >= '90' && code <= '97' || code.startsWith('38;')) {
+            // Remove any existing foreground color
+            const index = activeStyles.findIndex(s => {
+              if (!s.startsWith('\u001B[') || !s.endsWith('m')) return false;
+              const styleCode = s.slice(2, -1);
+              return (
+                (styleCode >= '30' && styleCode <= '37') ||
+                (styleCode >= '90' && styleCode <= '97') ||
+                styleCode.startsWith('38;')
+              );
+            });
+            if (index !== -1) {
+              activeStyles.splice(index, 1);
+            }
+          }
+          else if (code >= '40' && code <= '47' || code >= '100' && code <= '107' || code.startsWith('48;')) {
+            // Remove any existing background color
+            const index = activeStyles.findIndex(s => {
+              if (!s.startsWith('\u001B[') || !s.endsWith('m')) return false;
+              const styleCode = s.slice(2, -1);
+              return (
+                (styleCode >= '40' && styleCode <= '47') ||
+                (styleCode >= '100' && styleCode <= '107') ||
+                styleCode.startsWith('48;')
+              );
+            });
+            if (index !== -1) {
+              activeStyles.splice(index, 1);
+            }
+          }
+          else if (['1', '3', '4', '7', '8', '9'].includes(code)) {
+            // Remove any existing style of the same type
+            const index = activeStyles.findIndex(s => {
+              if (!s.startsWith('\u001B[') || !s.endsWith('m')) return false;
+              return s.slice(2, -1) === code;
+            });
+            if (index !== -1) {
+              activeStyles.splice(index, 1);
+            }
+          }
+
+          // Add the new style
+          activeStyles.push(ansi);
+        }
+      }
+      // Hyperlink start
+      else if (ansi.startsWith('\u001B]8;;') && !ansi.endsWith('\u001B]8;;\u0007')) {
+        // Remove any existing hyperlink
+        const index = activeStyles.findIndex(s => s.startsWith('\u001B]8;;') && !s.endsWith('\u001B]8;;\u0007'));
+        if (index !== -1) {
+          activeStyles.splice(index, 1);
+        }
+
+        // Add the new hyperlink
+        activeStyles.push(ansi);
+      }
+    }
+
+    // Skip empty parts after processing the style
+    if (text === '') {
+      continue;
+    }
+
+    // Get all closing sequences from the original input
+    // that would close the active styles
+    let closingSequence = '';
+
+    // If any styles are active, find the appropriate closing sequences
+    if (activeStyles.length > 0) {
+      // Check if there's a full reset in the input
+      if (closingSequences.includes('\u001B[0m')) {
+        closingSequence = '\u001B[0m';
+      }
+      // Otherwise, use specific closing codes
+      else {
+        const needsHyperlinkClose = activeStyles.some(s => s.startsWith('\u001B]8;;') && !s.endsWith('\u001B]8;;\u0007'));
+        const needsForegroundClose = activeStyles.some(s => {
+          if (!s.startsWith('\u001B[') || !s.endsWith('m')) return false;
+          const code = s.slice(2, -1);
+          return (code >= '30' && code <= '37') || (code >= '90' && code <= '97') || code.startsWith('38;');
+        });
+        const needsBackgroundClose = activeStyles.some(s => {
+          if (!s.startsWith('\u001B[') || !s.endsWith('m')) return false;
+          const code = s.slice(2, -1);
+          return (code >= '40' && code <= '47') || (code >= '100' && code <= '107') || code.startsWith('48;');
+        });
+        const needsBoldClose = activeStyles.some(s => s === '\u001B[1m');
+        const needsItalicClose = activeStyles.some(s => s === '\u001B[3m');
+        const needsUnderlineClose = activeStyles.some(s => s === '\u001B[4m');
+        const needsInverseClose = activeStyles.some(s => s === '\u001B[7m');
+        const needsHiddenClose = activeStyles.some(s => s === '\u001B[8m');
+        const needsStrikethroughClose = activeStyles.some(s => s === '\u001B[9m');
+
+        if (needsHyperlinkClose && closingSequences.includes('\u001B]8;;\u0007')) {
+          closingSequence += '\u001B]8;;\u0007';
+        }
+        if (needsForegroundClose && closingSequences.includes('\u001B[39m')) {
+          closingSequence += '\u001B[39m';
+        }
+        if (needsBackgroundClose && closingSequences.includes('\u001B[49m')) {
+          closingSequence += '\u001B[49m';
+        }
+        if (needsBoldClose && closingSequences.includes('\u001B[22m')) {
+          closingSequence += '\u001B[22m';
+        }
+        if (needsItalicClose && closingSequences.includes('\u001B[23m')) {
+          closingSequence += '\u001B[23m';
+        }
+        if (needsUnderlineClose && closingSequences.includes('\u001B[24m')) {
+          closingSequence += '\u001B[24m';
+        }
+        if (needsInverseClose && closingSequences.includes('\u001B[27m')) {
+          closingSequence += '\u001B[27m';
+        }
+        if (needsHiddenClose && closingSequences.includes('\u001B[28m')) {
+          closingSequence += '\u001B[28m';
+        }
+        if (needsStrikethroughClose && closingSequences.includes('\u001B[29m')) {
+          closingSequence += '\u001B[29m';
+        }
+      }
+    }
+
+    // Create the segment
+    segments.push({
+      content: text,
+      visibleLength: getStringWidth(text, {
+        wideWidth: 1,
+        fullWidth: 1,
+      }),
+      before: activeStyles.join(''),
+      after: closingSequence
+    });
+  }
+
+  return segments;
+}
+
 
 /**
  * High-performance function to slice ANSI-colored strings while preserving style codes.
- * Handles ANSI escape sequences, hyperlinks, and maintains proper styling across the sliced substring.
+ * Uses a segment-based approach that directly associates styling with content.
+ * Handles all ANSI codes including unknown ones.
  *
  * @param {string} inputString - The original string with ANSI escape codes
  * @param {number} startIndex - Start index for the slice (default: 0)
  * @param {number} endIndex - End index for the slice (default: string length)
- * @param {Object} [options] - Additional options for slicing
- * @param {Intl.Segmenter} [options.segmenter] - Custom segmenter for grapheme handling
  * @returns {string} The sliced string with preserved ANSI styling
  */
-const slice = (inputString: string, startIndex = 0, endIndex = inputString.length, options?: { segmenter?: Intl.Segmenter }): string => {
-    if (startIndex >= endIndex || inputString === "") {
-        return "";
+function slice(inputString: string, startIndex = 0, endIndex = inputString.length): string {
+  // Early returns for simple cases
+  if (startIndex >= endIndex || inputString === "") {
+    return "";
+  }
+
+  // No slicing needed
+  if (startIndex === 0 && endIndex >= inputString.length) {
+    return inputString;
+  }
+
+  // Negative indices not supported
+  if (startIndex < 0 || endIndex < 0) {
+    throw new RangeError("Negative indices aren't supported");
+  }
+
+  // Process the string into styled segments
+  const segments = processIntoStyledSegments(inputString);
+
+  // Find visible segments
+  let currentPos = 0;
+  const visibleSegments: {
+    index: number;
+    start: number;
+    end: number;
+    segment: StyledSegment;
+  }[] = [];
+
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    const segmentStart = currentPos;
+    const segmentEnd = currentPos + segment.visibleLength;
+
+    // Check if this segment is visible in the slice
+    if (segmentEnd > startIndex && segmentStart < endIndex) {
+      const visibleStart = Math.max(0, startIndex - segmentStart);
+      const visibleEnd = Math.min(segment.visibleLength, endIndex - segmentStart);
+
+      visibleSegments.push({
+        index: i,
+        start: visibleStart,
+        end: visibleEnd,
+        segment
+      });
     }
 
-    if (startIndex === 0 && endIndex >= inputString.length && !inputString.includes("\u001B")) {
-        return inputString;
+    currentPos = segmentEnd;
+  }
+
+  if (visibleSegments.length === 0) {
+    return "";
+  }
+
+  // Build the result
+  const resultParts: string[] = [];
+
+  // Add styling for first segment
+  const firstSegmentInfo = visibleSegments[0];
+  resultParts.push(firstSegmentInfo.segment.before);
+
+  // Process each visible segment
+  for (let i = 0; i < visibleSegments.length; i++) {
+    const { segment, start, end } = visibleSegments[i];
+
+    // Slice the visible content
+    let slicedContent;
+    if (start === 0 && end === segment.visibleLength) {
+      // Full segment
+      slicedContent = segment.content;
+    } else {
+      // Partial segment - need to handle graphemes properly
+      const graphemes = Array.from(
+        segmenter.segment(segment.content)
+      );
+
+      slicedContent = graphemes
+        .slice(start, end)
+        .map(entry => entry.segment)
+        .join('');
     }
 
-    if (startIndex < 0 || endIndex < 0) {
-        throw new RangeError("Negative indices aren't supported");
-    }
+    resultParts.push(slicedContent);
 
-    const sliceLength = endIndex - startIndex;
+    // If not the last segment, handle transitions between segments
+    if (i < visibleSegments.length - 1) {
+      const nextSegment = visibleSegments[i + 1].segment;
 
-    if (sliceLength <= 0) {
-        return "";
-    }
-
-    if (inputString.includes(HYPERLINK_START) && startIndex === 0 && endIndex >= inputString.length) {
-        return inputString;
-    }
-
-    let visiblePos = 0;
-    let index = 0;
-    let textStart = 0;
-
-    const segmenter: Intl.Segmenter = options?.segmenter ?? new Intl.Segmenter("en", { granularity: "grapheme" });
-    const segments: Segment[] = [];
-
-    while (index < inputString.length) {
-        const cp = inputString.codePointAt(index) || 0;
-
-        if (cp === ESC) {
-            const ansiSeq = parseAnsiSequence(inputString, index);
-
-            if (ansiSeq) {
-                if (index > textStart) {
-                    const textContent = inputString.slice(textStart, index);
-                    const willBeVisible = visiblePos < endIndex && visiblePos + textContent.length > startIndex;
-                    const graphemes: string[] = willBeVisible
-                        ? Array.from(segmenter.segment(textContent), (entry) => entry.segment)
-                        : Array.from({ length: getStringWidth(textContent) });
-
-                    segments.push({
-                        content: textContent,
-                        endPos: visiblePos + graphemes.length,
-                        graphemes,
-                        startPos: visiblePos,
-                        type: "text",
-                    });
-
-                    visiblePos += graphemes.length;
-                }
-
-                if (ansiSeq.type === "ansi") {
-                    const { code } = ansiSeq;
-
-                    segments.push({
-                        code,
-                        content: ansiSeq.content,
-                        endIdx: ansiSeq.endIdx,
-                        type: "ansi",
-                    });
-                } else if (ansiSeq.type === "hyperlink") {
-                    segments.push({
-                        content: ansiSeq.content,
-                        endIdx: ansiSeq.endIdx,
-                        isStart: ansiSeq.isStart,
-                        type: "hyperlink",
-                    });
-                }
-
-                index = ansiSeq.endIdx;
-                textStart = index;
-            } else {
-                index++;
-                textStart = index;
-            }
-        } else {
-            index += cp > 0xff_ff ? 2 : 1;
+      // If segments have different styling, add closing for current and opening for next
+      if (segment.after !== '' || nextSegment.before !== '') {
+        // Check if we need to add closing and opening styles
+        // Only add them if they're different
+        if (segment.after !== nextSegment.before) {
+          resultParts.push(segment.after);
+          resultParts.push(nextSegment.before);
         }
+      }
     }
+  }
 
-    if (textStart < inputString.length) {
-        const textContent = inputString.slice(textStart);
-        const willBeVisible = visiblePos < endIndex && visiblePos + textContent.length > startIndex;
+  // Add closing styling from the last segment
+  const lastSegmentInfo = visibleSegments[visibleSegments.length - 1];
+  resultParts.push(lastSegmentInfo.segment.after);
 
-        let graphemes: string[] = [];
-
-        if (willBeVisible) {
-            graphemes = Array.from(segmenter.segment(textContent), (entry) => entry.segment);
-        } else {
-            graphemes = Array.from({ length: getStringWidth(textContent) });
-        }
-
-        segments.push({
-            content: textContent,
-            endPos: visiblePos + graphemes.length,
-            graphemes,
-            startPos: visiblePos,
-            type: "text",
-        });
-    }
-
-    const visibleSegments = segments.filter((segment) => segment.type === "text" && segment.startPos < endIndex && segment.endPos > startIndex);
-
-    if (visibleSegments.length === 0) {
-        return "";
-    }
-
-    const resultParts: string[] = [];
-    const firstVisibleSegmentIndex = segments.findIndex((segment) => segment.type === "text" && segment.startPos < endIndex && segment.endPos > startIndex);
-
-    if (firstVisibleSegmentIndex > 0) {
-        // Add all ANSI codes before the first visible segment
-        for (let i = 0; i < firstVisibleSegmentIndex; i++) {
-            const segment = segments[i] as Segment;
-
-            if (segment.type === "ansi" || segment.type === "hyperlink") {
-                resultParts.push(segment.content);
-            }
-        }
-    }
-
-    const textSegments: number[] = [];
-
-    for (let i = 0; i < segments.length; i++) {
-        const segment = segments[i];
-
-        if (!segment) {
-            continue;
-        }
-
-        if (segment.type === "text") {
-            const textSegment = segment as TextSegment;
-            const segmentStart = Math.max(0, startIndex - textSegment.startPos);
-            const segmentEnd = Math.min(textSegment.graphemes.length, endIndex - textSegment.startPos);
-
-            if (segmentStart < segmentEnd) {
-                textSegments.push(i);
-            }
-        }
-    }
-
-    const textRanges: Array<{ index: number; text: string }> = [];
-
-    for (let i = 0; i < segments.length; i++) {
-        const segment = segments[i] as Segment;
-
-        if (segment.type === "text") {
-            const textSegment = segment as TextSegment;
-            const segmentStart = Math.max(0, startIndex - textSegment.startPos);
-            const segmentEnd = Math.min(textSegment.graphemes.length, endIndex - textSegment.startPos);
-
-            if (segmentStart < segmentEnd) {
-                textRanges.push({
-                    index: i,
-                    text: textSegment.graphemes.slice(segmentStart, segmentEnd).join(""),
-                });
-            }
-        }
-    }
-
-    let lastTextIndex = 0;
-
-    for (const { index, text } of textRanges) {
-        if (lastTextIndex !== 0) {
-            for (let i = lastTextIndex + 1; i < index; i++) {
-                const segment = segments[i] as Segment;
-
-                if (segment.type === "text") {
-                    continue;
-                }
-
-                resultParts.push(segment.content);
-            }
-        }
-
-        resultParts.push(text);
-        lastTextIndex = index;
-    }
-
-    const lastSegment = segments[lastTextIndex + 1];
-
-    if (lastSegment && lastSegment.type !== "text") {
-        const ansiSegment = lastSegment as AnsiCodeSegment;
-        resultParts.push(ansiSegment.content);
-    }
-
-    const result = resultParts.join("");
-
-    // Special case for slicing just the first character before ANSI codes
-    if (
-        startIndex === 0 &&
-        endIndex === 1 &&
-        inputString.length > 1 &&
-        inputString.charAt(0) !== "\u001B" &&
-        inputString.includes("\u001B") &&
-        result.length > 1
-    ) {
-        // Return just the visible character
-        return result.charAt(0);
-    }
-
-    return result;
-};
+  return resultParts.join('');
+}
 
 export default slice;
