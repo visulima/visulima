@@ -51,31 +51,23 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
         ];
     }
 
-    // Split string by ANSI escape sequences
     const parts: string[] = input.split(ANSI_REGEX);
     const matches: string[] = Array.from(input.matchAll(ANSI_REGEX), (m) => m[0]);
-
     const segments: StyledSegment[] = [];
-
-    // Track all opening and closing ANSI sequences
     const openingSequences: string[] = [];
     const closingSequences: string[] = [];
 
-    // Process each ANSI sequence first to identify all opening and closing sequences
     for (const ansi of matches) {
-        // Reset code - full reset
         if (ansi === "\u001B[0m") {
             closingSequences.push(ansi);
             continue;
         }
 
-        // Hyperlink closing
         if (ansi === "\u001B]8;;\u0007") {
             closingSequences.push(ansi);
             continue;
         }
 
-        // Other reset codes like 39m, 49m, 22m, etc.
         if (ansi.startsWith("\u001B[") && ansi.endsWith("m")) {
             const code = ansi.slice(2, -1);
             if (["0", "22", "23", "24", "27", "28", "29", "39", "49"].includes(code)) {
@@ -88,55 +80,45 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
         openingSequences.push(ansi);
     }
 
-    // Now process the text parts
     const activeStyles: string[] = [];
 
     for (const [index, part] of parts.entries()) {
         const text = part as string;
 
-        // Process ANSI code before this text part
         if (index > 0 && matches[index - 1]) {
             const ansi = matches[index - 1] as string;
 
-            // Full reset - clear all active styles
             if (ansi === "\u001B[0m") {
                 activeStyles.length = 0;
-            }
-            // Hyperlink closing
-            else if (ansi === "\u001B]8;;\u0007") {
+            } else if (ansi === "\u001B]8;;\u0007") {
                 const index = activeStyles.findIndex((s) => s.startsWith("\u001B]8;;") && !s.endsWith("\u001B]8;;\u0007"));
                 if (index !== -1) {
                     activeStyles.splice(index, 1);
                 }
-            }
-            // Other specific reset codes
-            else if (ansi.startsWith("\u001B[") && ansi.endsWith("m")) {
+            } else if (ansi.startsWith("\u001B[") && ansi.endsWith("m")) {
                 const code = ansi.slice(2, -1);
 
-                // Foreground color reset
                 if (code === "39") {
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                         const styleCode = s.slice(2, -1);
                         return (styleCode >= "30" && styleCode <= "37") || (styleCode >= "90" && styleCode <= "97") || styleCode.startsWith("38;");
                     });
                     if (index !== -1) {
                         activeStyles.splice(index, 1);
                     }
-                }
-                // Background color reset
-                else if (code === "49") {
+                } else if (code === "49") {
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                         const styleCode = s.slice(2, -1);
                         return (styleCode >= "40" && styleCode <= "47") || (styleCode >= "100" && styleCode <= "107") || styleCode.startsWith("48;");
                     });
                     if (index !== -1) {
                         activeStyles.splice(index, 1);
                     }
-                }
-                // Other specific reset codes
-                else if (["22", "23", "24", "27", "28", "29"].includes(code)) {
+                } else if (["22", "23", "24", "27", "28", "29"].includes(code)) {
                     const targetCode = {
                         "22": "1", // Bold reset
                         "23": "3", // Italic reset
@@ -147,21 +129,21 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     }[code];
 
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                         return s.slice(2, -1) === targetCode;
                     });
 
                     if (index !== -1) {
                         activeStyles.splice(index, 1);
                     }
-                }
-                // Opening style - add to active styles
-                else {
+                } else {
                     // Check if we need to replace a style of the same type
                     if ((code >= "30" && code <= "37") || (code >= "90" && code <= "97") || code.startsWith("38;")) {
                         // Remove any existing foreground color
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                             const styleCode = s.slice(2, -1);
                             return (styleCode >= "30" && styleCode <= "37") || (styleCode >= "90" && styleCode <= "97") || styleCode.startsWith("38;");
                         });
@@ -171,7 +153,8 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     } else if ((code >= "40" && code <= "47") || (code >= "100" && code <= "107") || code.startsWith("48;")) {
                         // Remove any existing background color
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                             const styleCode = s.slice(2, -1);
                             return (styleCode >= "40" && styleCode <= "47") || (styleCode >= "100" && styleCode <= "107") || styleCode.startsWith("48;");
                         });
@@ -181,27 +164,25 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     } else if (["1", "3", "4", "7", "8", "9"].includes(code)) {
                         // Remove any existing style of the same type
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
+return false;
                             return s.slice(2, -1) === code;
                         });
+
                         if (index !== -1) {
                             activeStyles.splice(index, 1);
                         }
                     }
 
-                    // Add the new style
                     activeStyles.push(ansi as string);
                 }
-            }
-            // Hyperlink start
-            else if (ansi.startsWith("\u001B]8;;") && !ansi.endsWith("\u001B]8;;\u0007")) {
-                // Remove any existing hyperlink
+            } else if (ansi.startsWith("\u001B]8;;") && !ansi.endsWith("\u001B]8;;\u0007")) {
                 const index = activeStyles.findIndex((s) => s.startsWith("\u001B]8;;") && !s.endsWith("\u001B]8;;\u0007"));
+
                 if (index !== -1) {
                     activeStyles.splice(index, 1);
                 }
 
-                // Add the new hyperlink
                 activeStyles.push(ansi);
             }
         }
@@ -228,20 +209,28 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
 
                 // First, check for hyperlink closing
                 const needsHyperlinkClose: boolean = activeStyles.some((s) => s.startsWith("\u001B]8;;") && !s.endsWith("\u001B]8;;\u0007"));
+
                 if (needsHyperlinkClose && closingSequences.includes("\u001B]8;;\u0007")) {
                     closingParts.push("\u001B]8;;\u0007");
                 }
 
                 // Check if we need foreground and background closes
                 const needsForegroundClose: boolean = activeStyles.some((s) => {
-                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) {
+                        return false;
+                    }
                     const code = s.slice(2, -1);
+
                     return (code >= "30" && code <= "37") || (code >= "90" && code <= "97") || code.startsWith("38;");
                 });
 
                 const needsBackgroundClose: boolean = activeStyles.some((s) => {
-                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
+                    if (!s.startsWith("\u001B[") || !s.endsWith("m")) {
+                        return false;
+                    }
+
                     const code = s.slice(2, -1);
+
                     return (code >= "40" && code <= "47") || (code >= "100" && code <= "107") || code.startsWith("48;");
                 });
 
@@ -298,16 +287,12 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
 
                     // Use the order from the original input
                     if (input.indexOf("\u001B[39m") < input.indexOf("\u001B[49m")) {
-                        // Original input closes foreground first
                         closingParts.push("\u001B[39m", "\u001B[49m");
                     } else {
-                        // Original input closes background first
                         closingParts.push("\u001B[49m", "\u001B[39m");
                     }
                 }
 
-                // Check for format styles (bold, italic, underline, etc.)
-                // We close these in reverse order of application as well
                 const formatStyles: FormatStyle[] = [
                     { close: "\u001B[22m", open: "\u001B[1m" }, // Bold
                     { close: "\u001B[23m", open: "\u001B[3m" }, // Italic
@@ -337,12 +322,10 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     }
                 }
 
-                // Join all closing parts
                 closingSequence = closingParts.join("");
             }
         }
 
-        // Create the segment
         segments.push({
             after: closingSequence,
             before: activeStyles.join(""),
@@ -384,7 +367,6 @@ const fastSlice = (inputString: string, startIndex = 0, endIndex = inputString.l
     const result: string[] = [];
 
     let currentWidth = 0;
-    let includedWidth = 0;
     let startFound = false;
 
     // Process each grapheme with respect to its width
@@ -423,7 +405,6 @@ const fastSlice = (inputString: string, startIndex = 0, endIndex = inputString.l
 
         // Add this grapheme to our result
         result.push(grapheme.segment);
-        includedWidth = positionAfter;
         currentWidth = positionAfter;
     }
 
@@ -479,7 +460,7 @@ export type SliceOptions = {
  * @param {SliceOptions} options - Configuration options for slicing operation (default: {})
  * @returns {string} The sliced string with preserved ANSI styling if present
  */
-const slice = (inputString: string, startIndex = 0, endIndex = inputString.length, options: SliceOptions): string => {
+export const slice = (inputString: string, startIndex = 0, endIndex = inputString.length, options: SliceOptions = {}): string => {
     const config = {
         segmenter: defaultSegmenter,
         ...options,
@@ -567,5 +548,3 @@ const slice = (inputString: string, startIndex = 0, endIndex = inputString.lengt
 
     return resultParts.join("");
 };
-
-export default slice;

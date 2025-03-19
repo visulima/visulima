@@ -20,7 +20,7 @@ import {
     TURKISH_STRINGS,
     UKRAINIAN_STRINGS,
 } from "../../__fixtures__/locale-test-strings";
-import slice from "../../src/slice";
+import { slice } from "../../src/slice";
 import { toEqualAnsi } from "../../src/test/vitest";
 
 const fixture = red("the ") + green("quick ") + blue("brown ") + cyan("fox ") + yellow("jumped ");

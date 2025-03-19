@@ -4,8 +4,8 @@ import { kebabCase as lodashKebabCase } from "lodash";
 import { kebabCase as sculeKebabCase } from "scule";
 import { bench, describe } from "vitest";
 
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
-import { kebabCase } from "../dist/case";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
+import { kebabCase } from "../../dist/case";
 
 describe("kebabCase", () => {
     bench("visulima/string kebabCase (no cache)", () => {

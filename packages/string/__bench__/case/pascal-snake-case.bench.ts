@@ -1,7 +1,7 @@
 import { bench, describe } from "vitest";
 
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
-import { pascalSnakeCase } from "../dist/case";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
+import { pascalSnakeCase } from "../../dist/case";
 
 describe("pascalSnakeCase", () => {
     bench("visulima/string pascalSnakeCase (no cache)", () => {

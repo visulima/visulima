@@ -3790,12 +3790,18 @@ importers:
       '@vitest/ui':
         specifier: ^3.0.8
         version: 3.0.8(vitest@3.0.8)
+      ansi-truncate:
+        specifier: 1.2.0
+        version: 1.2.0
       case-anything:
         specifier: ^3.1.2
         version: 3.1.2
       change-case:
         specifier: ^5.4.4
         version: 5.4.4
+      cli-truncate:
+        specifier: 4.0.0
+        version: 4.0.0
       conventional-changelog-conventionalcommits:
         specifier: 8.0.0
         version: 8.0.0
@@ -9638,6 +9644,9 @@ packages:
     resolution: {integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==}
     engines: {node: '>=12'}
 
+  ansi-truncate@1.2.0:
+    resolution: {integrity: sha512-/SLVrxNIP8o8iRHjdK3K9s2hDqdvb86NEjZOAB6ecWFsOo+9obaby97prnvAPn6j7ExXCpbvtlJFYPkkspg4BQ==}
+
   ansis@3.17.0:
     resolution: {integrity: sha512-0qWUglt9JEqLFr3w1I1pbrChn1grhaiAR2ocX1PP/flRmxgtwTzPFFFnfIlD6aMOLQZgSuCRlidD70lvx8yhzg==}
     engines: {node: '>=14'}
@@ -12212,6 +12221,9 @@ packages:
 
   fast-safe-stringify@2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
+
+  fast-string-truncated-width@1.2.1:
+    resolution: {integrity: sha512-Q9acT/+Uu3GwGj+5w/zsGuQjh9O1TyywhIwAxHudtWrgF09nHOPrvTLhQevPbttcxjr/SNN7mJmfOw/B1bXgow==}
 
   fast-unset@2.0.1:
     resolution: {integrity: sha512-tbY+tzwfxm2miexjMJyjAKuIs+NmVmoADa0H61Jnjg2SN8VjP5ZhdwULtDhH3YIh8iFIJQ7M2GyMNcov1ZOqzA==}
@@ -27240,6 +27252,10 @@ snapshots:
 
   ansi-styles@6.2.1: {}
 
+  ansi-truncate@1.2.0:
+    dependencies:
+      fast-string-truncated-width: 1.2.1
+
   ansis@3.17.0: {}
 
   any-promise@1.3.0: {}
@@ -30862,6 +30878,8 @@ snapshots:
   fast-redact@3.5.0: {}
 
   fast-safe-stringify@2.1.1: {}
+
+  fast-string-truncated-width@1.2.1: {}
 
   fast-unset@2.0.1: {}
 

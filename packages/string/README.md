@@ -493,9 +493,58 @@ getStringTruncatedWidth("👨‍👩‍👧‍👦 Family", {
 }); // => { width: 7, truncated: true, ellipsed: true, index: 11 }
 ```
 
+### String Truncation
+
+The `truncate` function provides a convenient way to truncate strings with support for different positions, Unicode characters, ANSI escape codes, and more.
+
+```typescript
+import { truncate } from '@visulima/string';
+
+// Basic truncation (end position)
+truncate('unicorn', 4); // => 'un…'
+truncate('unicorn', 4, { position: 'end' }); // => 'un…'
+
+// Different positions
+truncate('unicorn', 5, { position: 'start' }); // => '…orn'
+truncate('unicorn', 5, { position: 'middle' }); // => 'un…n'
+
+// With custom ellipsis
+truncate('unicorns', 5, { ellipsis: '.' }); // => 'unic.'
+truncate('unicorns', 5, { ellipsis: ' .' }); // => 'uni .'
+
+// Smart truncation on spaces
+truncate('dragons are awesome', 15, { position: 'end', preferTruncationOnSpace: true }); // => 'dragons are…'
+truncate('unicorns rainbow dragons', 20, { position: 'middle', preferTruncationOnSpace: true }); // => 'unicorns…dragons'
+
+// With ANSI escape codes
+truncate('\u001B[31municorn\u001B[39m', 4); // => '\u001B[31mun\u001B[39m…'
+
+// With Unicode characters
+truncate('안녕하세요', 3, { width: { fullWidth: 2 } }); // => '안…'
+```
+
 #### Truncation Options
 
 ```typescript
+interface TruncateOptions {
+    // String to append when truncation occurs
+    ellipsis?: string; // default: ''
+
+    // Width of the ellipsis string
+    // If not provided, it will be calculated using getStringTruncatedWidth
+    ellipsisWidth?: number;
+
+    // The position to truncate the string
+    position?: 'end' | 'middle' | 'start'; // default: 'end'
+
+    // Truncate the string from a whitespace if it is within 3 characters
+    // from the actual breaking point
+    preferTruncationOnSpace?: boolean; // default: false
+
+    // Width calculation options
+    width?: Omit<StringTruncatedWidthOptions, 'ellipsis' | 'ellipsisWidth' | 'limit'>;
+}
+
 interface StringTruncatedWidthOptions extends StringWidthOptions {
     // Truncation-specific options
     ellipsis?: string; // String to append when truncation occurs (default: '')
@@ -796,6 +845,9 @@ The custom matcher provides detailed error messages when tests fail, showing:
 - [lodash](https://lodash.com/) - Comprehensive utility library with string manipulation
 - [scule](https://github.com/unjs/scule) - 🧵 String Case Utils
 - [case-anything](https://github.com/mesqueeb/case-anything) - camelCase, kebab-case, PascalCase... a simple integration with nano package size. (SMALL footprint!)
+- [cli-truncate](https://github.com/sindresorhus/cli-truncate) - Truncate strings for terminal output
+- [string-width](https://github.com/sindresorhus/string-width) - Measure string width
+- [ansi-slice](https://github.com/sindresorhus/ansi-slice) - Slice strings with ANSI escape codes
 
 ## Supported Node.js Versions
 

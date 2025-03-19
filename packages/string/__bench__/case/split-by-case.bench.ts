@@ -72,9 +72,9 @@ import {
     UZBEK_STRINGS,
     VIETNAMESE_STRINGS,
     WELSH_STRINGS,
-} from "../__fixtures__/locale-test-strings";
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
-import { splitByCase } from "../dist/case";
+} from "../../__fixtures__/locale-test-strings";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
+import { splitByCase } from "../../dist/case";
 
 describe("splitByCase", () => {
     bench("visulima/string splitByCase (no cache)", () => {

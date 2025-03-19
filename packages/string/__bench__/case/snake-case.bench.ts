@@ -4,8 +4,8 @@ import { snakeCase as lodashSnakeCase } from "lodash";
 import { snakeCase as sculeSnakeCase } from "scule";
 import { bench, describe } from "vitest";
 
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
-import { snakeCase } from "../dist/case";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
+import { snakeCase } from "../../dist/case";
 
 describe("snakeCase", () => {
     bench("visulima/string snakeCase (no cache)", () => {

@@ -397,6 +397,8 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
+        "cli-truncate": "4.0.0",
+        "ansi-truncate": "1.2.0",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-pnpm": "1.1.10",

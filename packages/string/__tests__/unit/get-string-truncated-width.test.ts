@@ -6,33 +6,32 @@ import { getStringTruncatedWidth } from "../../src";
 const getWidth = (input: string, options?: StringTruncatedWidthOptions): number => getStringTruncatedWidth(input, options).width;
 
 const getTruncated = (input: string, options: StringTruncatedWidthOptions): string => {
+    const ellipsis = options.ellipsis ?? "";
     const result = getStringTruncatedWidth(input, options);
 
-    return result.content;
+    return `${input.slice(0, result.index)}${result.ellipsed ? ellipsis : ""}`;
 };
 
 describe("getStringTruncatedWidth", () => {
     describe("calculating the raw result", () => {
         it("supports strings that do not need to be truncated", () => {
-            expect.assertions(5);
+            expect.assertions(4);
             const result = getStringTruncatedWidth("\u001B[31mhello", { ellipsis: "…", limit: Number.POSITIVE_INFINITY });
 
             expect(result.truncated).toBeFalsy();
             expect(result.ellipsed).toBeFalsy();
             expect(result.width).toBe(5);
             expect(result.index).toBe(10);
-            expect(result.content).toBe("\u001B[31mhello");
         });
 
         it("supports strings that do need to be truncated", () => {
-            expect.assertions(5);
+            expect.assertions(4);
             const result = getStringTruncatedWidth("\u001B[31mhello", { ellipsis: "…", limit: 3 });
 
             expect(result.truncated).toBeTruthy();
             expect(result.ellipsed).toBeTruthy();
             expect(result.width).toBe(3);
             expect(result.index).toBe(6);
-            expect(result.content).toBe("\u001B[31mh…");
         });
     });
 

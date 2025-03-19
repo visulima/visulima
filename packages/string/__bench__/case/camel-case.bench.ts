@@ -4,8 +4,8 @@ import { camelCase as lodashCamelCase } from "lodash";
 import { camelCase as sculeCamelCase } from "scule";
 import { bench, describe } from "vitest";
 
-import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
-import { camelCase } from "../dist/case";
+import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
+import { camelCase } from "../../dist/case";
 
 describe("camelCase", () => {
     bench("visulima/string camelCase (no cache)", () => {

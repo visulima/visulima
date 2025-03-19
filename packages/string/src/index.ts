@@ -4,7 +4,10 @@ export type { StringWidthOptions } from "./get-string-width";
 export { getStringWidth } from "./get-string-width";
 export type { Outdent, Options as OutdentOptions } from "./outdent";
 export { outdent } from "./outdent";
-export { default as slice } from "./slice";
+export type { SliceOptions } from "./slice";
+export { slice } from "./slice";
+export type { TruncateOptions } from "./truncate";
+export { truncate } from "./truncate";
 export type {
     All,
     Any,

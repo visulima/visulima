@@ -112,8 +112,7 @@ export interface StringTruncatedWidthOptions {
 }
 
 /**
- * Result object returned by getStringTruncatedWidth containing width calculation, truncation details,
- * and the truncated content.
+ * Result object returned by getStringTruncatedWidth containing width calculation and the truncation details.
  *
  * @example
  * ```typescript
@@ -123,7 +122,6 @@ export interface StringTruncatedWidthOptions {
  *   truncated: false, // String was not truncated
  *   ellipsed: false, // No ellipsis added
  *   index: 5,        // Full string length
- *   content: 'hello' // Original or truncated content
  * };
  *
  * // With truncation
@@ -132,7 +130,6 @@ export interface StringTruncatedWidthOptions {
  *   truncated: true,  // String was truncated
  *   ellipsed: true,   // Ellipsis was added
  *   index: 5,         // Truncation point
- *   content: 'hello...' // Truncated content with ellipsis
  * };
  * ```
  */
@@ -156,11 +153,6 @@ export interface StringTruncatedWidthResult {
      * The calculated width of the string
      */
     width: number;
-
-    /**
-     * The resulting content after potential truncation
-     */
-    content: string;
 }
 
 /**
@@ -179,19 +171,19 @@ export interface StringTruncatedWidthResult {
  * @example
  * ```typescript
  * // Basic width calculation
- * getStringTruncatedWidth('hello'); // => { width: 5, truncated: false, ellipsed: false, index: 5, content: 'hello' }
+ * getStringTruncatedWidth('hello'); // => { width: 5, truncated: false, ellipsed: false, index: 5 }
  *
  * // With truncation
  * getStringTruncatedWidth('hello world', {
  *   limit: 8,
  *   ellipsis: '...'
- * }); // => { width: 8, truncated: true, ellipsed: true, index: 5, content: 'hello...' }
+ * }); // => { width: 8, truncated: true, ellipsed: true, index: 5 }
  *
  * // With custom character widths
  * getStringTruncatedWidth('あいう', {
  *   fullWidth: 2,
  *   ambiguousIsNarrow: true
- * }); // => { width: 6, truncated: false, ellipsed: false, index: 3, content: 'あいう' }
+ * }); // => { width: 6, truncated: false, ellipsed: false, index: 3 }
  * ```
  *
  * @param input - The string to calculate the width for and potentially truncate
@@ -202,7 +194,6 @@ export interface StringTruncatedWidthResult {
  *          - truncated: Whether the string was truncated
  *          - ellipsed: Whether an ellipsis was added
  *          - index: The index at which truncation occurred (if any)
- *          - content: The truncated string with ellipsis if applicable
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const getStringTruncatedWidth = (input: string, options: StringTruncatedWidthOptions = {}): StringTruncatedWidthResult => {
@@ -569,14 +560,10 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
         }
     }
 
-    const ellipsed = truncationEnabled && config.truncation.limit >= config.truncation.ellipsisWidth;
-    const content = `${input.slice(0, truncationEnabled ? truncationIndex : length)}${ellipsed ? config.truncation.ellipsis : ""}`;
-
     return {
-        ellipsed,
+        ellipsed: truncationEnabled && config.truncation.limit >= config.truncation.ellipsisWidth,
         index: truncationEnabled ? truncationIndex : length,
         truncated: truncationEnabled,
         width: truncationEnabled ? Math.min(width + config.truncation.ellipsisWidth, config.truncation.limit) : width,
-        content,
     };
 };
