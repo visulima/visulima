@@ -1,4 +1,3 @@
-// @ts-expect-error: TODO: find why this typing is not working
 import { stripVTControlCharacters } from "node:util";
 
 import {

@@ -4,7 +4,6 @@ import { checkEscapeSequence, processAnsiString } from "./utils/ansi-parser";
 import preserveAnsi from "./utils/ansi-preserve";
 import AnsiStateTracker from "./utils/ansi-state-tracker";
 import { resetAnsiAtLineBreak } from "./utils/ansi-utils";
-import type { AnsiSegment } from "./utils/types";
 
 /**
  * Trims spaces from a string's right side while preserving ANSI sequences
@@ -193,7 +192,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
     // Process string character by character
     processAnsiString(inputToProcess, {
         getWidth: getStringWidth,
-        onSegment: (segment: AnsiSegment, stateTracker: AnsiStateTracker) => {
+        onSegment: (segment, stateTracker: AnsiStateTracker) => {
             if (segment.isEscapeSequence) {
                 currentLine += segment.text;
             } else {
@@ -232,6 +231,8 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
                 currentLine += segment.text;
                 currentWidth += segment.width;
             }
+
+            return true;
         },
     });
 

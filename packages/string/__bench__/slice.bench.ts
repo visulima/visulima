@@ -6,7 +6,7 @@ import sliceAnsi from "slice-ansi";
 import { bench, describe } from "vitest";
 
 import { SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
-import slice from "../src/slice";
+import { slice } from "../src/slice";
 
 // Create test strings with ANSI colors
 const coloredString = red("the ") + green("quick ") + blue("brown ") + cyan("fox ") + yellow("jumped ");

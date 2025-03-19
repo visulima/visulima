@@ -1,4 +1,3 @@
-// @ts-expect-error: TODO: find why this typing is not working
 import { format, stripVTControlCharacters } from "node:util";
 
 import { getStringWidth } from "..";

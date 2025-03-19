@@ -848,6 +848,8 @@ The custom matcher provides detailed error messages when tests fail, showing:
 - [cli-truncate](https://github.com/sindresorhus/cli-truncate) - Truncate strings for terminal output
 - [string-width](https://github.com/sindresorhus/string-width) - Measure string width
 - [ansi-slice](https://github.com/sindresorhus/ansi-slice) - Slice strings with ANSI escape codes
+- [fast-string-truncated-width](https://github.com/fabiospampinato/fast-string-truncated-width) - Fast string truncated width
+- [ansi-truncate](https://github.com/fabiospampinato/ansi-truncate) - Truncate strings with ANSI escape codes
 
 ## Supported Node.js Versions
 
