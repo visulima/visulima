@@ -1,10 +1,21 @@
 /**
- * Returns a tuple of the given length with the given type.
+ * Creates a tuple type of specified length filled with a given type.
+ * @template L - The desired length of the tuple
+ * @template T - The type to fill the tuple with (defaults to unknown)
+ * @template Result - Internal accumulator for recursive type building
+ * @returns A tuple type of length L filled with type T
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TupleOf<L extends number, T = unknown, Result extends any[] = []> = Result["length"] extends L ? Result : TupleOf<L, T, [...Result, T]>;
 
-/** Slice with StartIndex and EndIndex */
+/**
+ * Internal type for implementing string slicing with both start and end indices.
+ * Handles edge cases and type safety for string literal types.
+ * @template T - The input string type
+ * @template StartIndex - The starting index for the slice
+ * @template EndIndex - The ending index for the slice
+ * @template Result - Internal accumulator for building the result string
+ */
 type InternalSliceType<T extends string, StartIndex extends number, EndIndex extends number, Result extends string = ""> =
     IsNumberLiteral<EndIndex | StartIndex> extends true
         ? T extends `${infer Head}${infer Rest}`
@@ -29,7 +40,13 @@ type InternalSliceType<T extends string, StartIndex extends number, EndIndex ext
                 : string // Head is non-literal
         : string;
 
-/** Slice with StartIndex only */
+/**
+ * Internal type for implementing string slicing with only a start index.
+ * Provides type-safe string slicing functionality for string literal types.
+ * @template T - The input string type
+ * @template StartIndex - The starting index for the slice
+ * @template Result - Internal accumulator for building the result string
+ */
 type SliceStartType<T extends string, StartIndex extends number, Result extends string = ""> =
     IsNumberLiteral<StartIndex> extends true
         ? T extends `${infer Head}${infer Rest}`
@@ -58,20 +75,51 @@ type InternalEndsWithType<T extends string, S extends string, P extends number> 
             : false // P is negative, false
         : boolean;
 
-/** Overload of EndsWith without P */
+/**
+ * Internal type for implementing EndsWith functionality without a position parameter.
+ * Uses string reversal to check if a string ends with another string.
+ * @template T - The string to check
+ * @template S - The suffix to check for
+ */
 type EndsWithNoPositionType<T extends string, S extends string> = StartsWith<Reverse<T>, Reverse<S>>;
 
+/**
+ * Namespace containing type-level mathematical operations.
+ * These utilities provide type-safe arithmetic and number manipulation.
+ */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace Math {
+    /**
+     * Type-level subtraction operation.
+     * @template A - The minuend (number to subtract from)
+     * @template B - The subtrahend (number to subtract)
+     * @returns The difference as a number type
+     */
     // eslint-disable-next-line import/no-unused-modules
     export type Subtract<A extends number, B extends number> = number extends A | B ? number : TupleOf<A> extends [...infer U, ...TupleOf<B>] ? U["length"] : 0;
 
+    /**
+     * Type predicate that checks if a number is negative.
+     * @template T - The number type to check
+     * @returns true if T is negative, false otherwise
+     */
     // eslint-disable-next-line import/no-unused-modules
     export type IsNegative<T extends number> = number extends T ? boolean : `${T}` extends `-${number}` ? true : false;
 
+    /**
+     * Type-level absolute value operation.
+     * @template T - The number type to get the absolute value of
+     * @returns The absolute value as a number type
+     */
     // eslint-disable-next-line import/no-unused-modules
     export type Abs<T extends number> = `${T}` extends `-${infer U extends number}` ? U : T;
 
+    /**
+     * Converts a potentially negative index to a positive index for a string.
+     * @template T - The string type to reference
+     * @template I - The index to convert
+     * @returns A positive index as a number type
+     */
     // eslint-disable-next-line import/no-unused-modules
     export type GetPositiveIndex<T extends string, I extends number> = IsNegative<I> extends false ? I : Subtract<Length<T>, Abs<I>>;
 }
@@ -79,7 +127,10 @@ namespace Math {
 export type { Math };
 
 /**
- * Returns true if input number type is a literal
+ * Type predicate that determines if a number type is a literal type rather than the general 'number' type.
+ * For example: IsNumberLiteral<42> is true, but IsNumberLiteral<number> is false.
+ * @template T - The number type to check
+ * @returns true if T is a number literal type, false otherwise
  */
 
 export type IsNumberLiteral<T extends number> = [T] extends [number] ? ([number] extends [T] ? false : true) : false;
@@ -87,8 +138,13 @@ export type IsNumberLiteral<T extends number> = [T] extends [number] ? ([number]
 export type IsBooleanLiteral<T extends boolean> = [T] extends [boolean] ? ([boolean] extends [T] ? false : true) : false;
 
 /**
- * Reverses a string.
- * - `T` The string to reverse.
+ * Type-level string reversal utility.
+ * Recursively builds the reversed string using template literal types.
+ * @template T - The string type to reverse
+ * @template Accumulator - Internal accumulator for building the reversed string
+ * @returns A type representing the reversed string
+ * @example
+ * type ReversedHello = Reverse<'hello'> // type ReversedHello = 'olleh'
  */
 export type Reverse<T extends string, Accumulator extends string = ""> = T extends `${infer Head}${infer Tail}`
     ? Reverse<Tail, `${Head}${Accumulator}`>
@@ -97,7 +153,12 @@ export type Reverse<T extends string, Accumulator extends string = ""> = T exten
       : `${T}${Accumulator}`;
 
 /**
- * Returns true if any elements in boolean array are the literal true (not false or boolean)
+ * Type predicate that checks if any element in a boolean array type is the literal 'true'.
+ * Distinguishes between literal true/false and the general boolean type.
+ * @template T - Array of boolean types to check
+ * @returns true if any element is the literal true, false otherwise
+ * @example
+ * type HasTrue = Any<[true, false, boolean]> // type HasTrue = true
  */
 
 export type Any<BoolArray extends boolean[]> = BoolArray extends [infer Head extends boolean, ...infer Rest extends boolean[]]
@@ -109,7 +170,13 @@ export type Any<BoolArray extends boolean[]> = BoolArray extends [infer Head ext
     : false;
 
 /**
- * Returns true if every element in boolean array is the literal true (not false or boolean)
+ * Type predicate that checks if all elements in a boolean array type are the literal 'true'.
+ * Distinguishes between literal true/false and the general boolean type.
+ * @template T - Array of boolean types to check
+ * @returns true if all elements are the literal true, false otherwise
+ * @example
+ * type AllTrue = All<[true, true]> // type AllTrue = true
+ * type NotAllTrue = All<[true, false]> // type NotAllTrue = false
  */
 
 export type All<BoolArray extends boolean[]> =
@@ -122,7 +189,12 @@ export type All<BoolArray extends boolean[]> =
         : false; // Array/Tuple contains `boolean` type
 
 /**
- * Returns true if string input type is a literal
+ * Type predicate that determines if a string type is a literal type rather than the general 'string' type.
+ * @template T - The string type to check
+ * @returns true if T is a string literal type, false if it's the general string type
+ * @example
+ * type IsLiteral = IsStringLiteral<'hello'> // type IsLiteral = true
+ * type NotLiteral = IsStringLiteral<string> // type NotLiteral = false
  */
 export type IsStringLiteral<T extends string> = [T] extends [string]
     ? [string] extends [T]
@@ -137,33 +209,50 @@ export type IsStringLiteral<T extends string> = [T] extends [string]
 export type IsStringLiteralArray<StringArray extends ReadonlyArray<string>> = IsStringLiteral<StringArray[number]> extends true ? true : false;
 
 /**
- * Gets the character at the given index.
- * T: The string to get the character from.
- * index: The index of the character.
+ * Type-safe utility to get the character at a specific index in a string literal type.
+ * @template T - The string type to extract a character from
+ * @template index - The numeric index of the desired character
+ * @returns The character type at the specified index, or never if the index is invalid
+ * @example
+ * type FirstChar = CharAt<'hello', 0> // type FirstChar = 'h'
  */
 export type CharAt<T extends string, Index extends number> = All<[IsStringLiteral<T>, IsNumberLiteral<Index>]> extends true ? Split<T>[Index] : string;
 
 /**
- * Concatenates a tuple of strings.
- * T: The tuple of strings to concatenate.
+ * Type-level string concatenation for tuples of string literals.
+ * Joins all strings in the tuple into a single string type.
+ * @template T - Tuple of string types to concatenate
+ * @returns A single string type representing the concatenated result
+ * @example
+ * type Combined = Concat<['hello', ' ', 'world']> // type Combined = 'hello world'
  */
 export type Concat<T extends string[]> = Join<T>;
 
 /**
- * Checks if a string ends with another string.
- * T: The string to check.
- * S: The string to check against.
- * P: The position the search should end.
+ * Type-level implementation of string.endsWith() functionality.
+ * Checks if a string type ends with another string type at a given position.
+ * @template T - The string type to check
+ * @template S - The suffix to check for
+ * @template P - Optional position at which to end the search
+ * @returns A boolean type indicating if T ends with S at position P
+ * @example
+ * type EndsWithWorld = EndsWith<'hello world', 'world'> // type EndsWithWorld = true
+ * type DoesNotEnd = EndsWith<'hello world', 'hello'> // type DoesNotEnd = false
  */
 export type EndsWith<T extends string, S extends string, P extends number | undefined = undefined> = P extends number
     ? InternalEndsWithType<T, S, P>
     : EndsWithNoPositionType<T, S>;
 
 /**
- * Checks if a string includes another string.
- * T: The string to check.
- * S: The string to check against.
- * P: The position to start the search.
+ * Type-level implementation of string.includes() functionality.
+ * Determines if one string type contains another string type starting at an optional position.
+ * @template T - The string type to search within
+ * @template S - The string type to search for
+ * @template P - Optional position to start the search from
+ * @returns A boolean type indicating if S is found within T starting at P
+ * @example
+ * type HasWorld = Includes<'hello world', 'world'> // type HasWorld = true
+ * type NoWorld = Includes<'hello', 'world'> // type NoWorld = false
  */
 export type Includes<T extends string, S extends string, P extends number = 0> = string extends S | T
     ? boolean
@@ -176,9 +265,13 @@ export type Includes<T extends string, S extends string, P extends number = 0> =
       : Includes<T, S>; // P is negative, ignore it
 
 /**
- * Joins a tuple of strings with the given delimiter.
- * T: The tuple of strings to join.
- * delimiter: The delimiter.
+ * Type-level implementation of Array.join() functionality for string tuples.
+ * Combines string literal types in a tuple using a delimiter.
+ * @template T - Tuple of string types to join
+ * @template delimiter - The delimiter to insert between elements
+ * @returns A string type representing the joined result
+ * @example
+ * type Joined = Join<['a', 'b', 'c'], '.'> // type Joined = 'a.b.c'
  */
 export type Join<T extends ReadonlyArray<string>, Delimiter extends string = ""> =
     All<[IsStringLiteralArray<T>, IsStringLiteral<Delimiter>]> extends true
@@ -190,15 +283,23 @@ export type Join<T extends ReadonlyArray<string>, Delimiter extends string = "">
         : string;
 
 /**
- * Gets the length of a string.
+ * Type-level utility to compute the length of a string literal type.
+ * @template T - The string type to measure
+ * @returns A number literal type representing the string's length
+ * @example
+ * type Len = Length<'hello'> // type Len = 5
  */
 export type Length<T extends string> = IsStringLiteral<T> extends true ? Split<T>["length"] : number;
 
 /**
- * Pads a string at the end with another string.
- * T: The string to pad.
- * times: The number of times to pad.
- * pad: The string to pad with.
+ * Type-level implementation of string.padEnd() functionality.
+ * Adds padding to the end of a string type until it reaches a specified length.
+ * @template T - The string type to pad
+ * @template times - The number of times to repeat the padding
+ * @template pad - The string to use as padding (defaults to space)
+ * @returns A string type with the padding added to the end
+ * @example
+ * type Padded = PadEnd<'hello', 2, '_'> // type Padded = 'hello__'
  */
 export type PadEnd<T extends string, Times extends number = 0, Pad extends string = " "> =
     All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
@@ -210,10 +311,14 @@ export type PadEnd<T extends string, Times extends number = 0, Pad extends strin
         : string;
 
 /**
- * Pads a string at the start with another string.
- * T: The string to pad.
- * times: The number of times to pad.
- * pad: The string to pad with.
+ * Type-level implementation of string.padStart() functionality.
+ * Adds padding to the beginning of a string type until it reaches a specified length.
+ * @template T - The string type to pad
+ * @template times - The number of times to repeat the padding
+ * @template pad - The string to use as padding (defaults to space)
+ * @returns A string type with the padding added to the start
+ * @example
+ * type Padded = PadStart<'hello', 2, '_'> // type Padded = '__hello'
  */
 export type PadStart<T extends string, Times extends number = 0, Pad extends string = " "> =
     All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
@@ -225,9 +330,13 @@ export type PadStart<T extends string, Times extends number = 0, Pad extends str
         : string;
 
 /**
- * Repeats a string N times.
- * T: The string to repeat.
- * N: The number of times to repeat.
+ * Type-level implementation of string.repeat() functionality.
+ * Creates a new string type by repeating the input string a specified number of times.
+ * @template T - The string type to repeat
+ * @template N - The number of times to repeat the string
+ * @returns A string type containing T repeated N times
+ * @example
+ * type Repeated = Repeat<'abc', 2> // type Repeated = 'abcabc'
  */
 export type Repeat<T extends string, Times extends number = 0> =
     All<[IsStringLiteral<T>, IsNumberLiteral<Times>]> extends true
@@ -239,10 +348,14 @@ export type Repeat<T extends string, Times extends number = 0> =
         : string;
 
 /**
- * Replaces all the occurrences of a string with another string.
- * sentence: The sentence to replace.
- * lookup: The lookup string to be replaced.
- * replacement: The replacement string.
+ * Type-level implementation of string.replaceAll() functionality.
+ * Replaces all occurrences of a substring with another string.
+ * @template sentence - The string type to perform replacements on
+ * @template lookup - The string type to search for
+ * @template replacement - The string type to replace matches with
+ * @returns A string type with all occurrences of lookup replaced with replacement
+ * @example
+ * type Replaced = ReplaceAll<'hello hello', 'hello', 'hi'> // type Replaced = 'hi hi'
  */
 export type ReplaceAll<Sentence extends string, Lookup extends RegExp | string, Replacement extends string = ""> = Lookup extends string
     ? IsStringLiteral<Lookup | Replacement | Sentence> extends true
@@ -253,10 +366,14 @@ export type ReplaceAll<Sentence extends string, Lookup extends RegExp | string, 
     : string; // Regex used, can't preserve literal
 
 /**
- * Replaces the first occurrence of a string with another string.
- * sentence: The sentence to replace.
- * lookup: The lookup string to be replaced.
- * replacement: The replacement string.
+ * Type-level implementation of string.replace() functionality.
+ * Replaces the first occurrence of a substring with another string.
+ * @template sentence - The string type to perform replacement on
+ * @template lookup - The string type to search for
+ * @template replacement - The string type to replace the match with
+ * @returns A string type with the first occurrence of lookup replaced with replacement
+ * @example
+ * type Replaced = Replace<'hello hello', 'hello', 'hi'> // type Replaced = 'hi hello'
  */
 export type Replace<Sentence extends string, Lookup extends RegExp | string, Replacement extends string = ""> = Lookup extends string
     ? IsStringLiteral<Lookup | Replacement | Sentence> extends true
@@ -267,19 +384,28 @@ export type Replace<Sentence extends string, Lookup extends RegExp | string, Rep
     : string; // Regex used, can't preserve literal
 
 /**
- * Slices a string from a StartIndex to an EndIndex.
- * T: The string to slice.
- * StartIndex: The start index.
- * EndIndex: The end index.
+ * Type-level implementation of string.slice() functionality.
+ * Extracts a portion of a string type between start and end indices.
+ * @template T - The string type to slice
+ * @template StartIndex - The starting index of the slice
+ * @template EndIndex - The ending index of the slice (optional)
+ * @returns A string type containing the characters between the indices
+ * @example
+ * type Sliced = Slice<'hello world', 0, 5> // type Sliced = 'hello'
+ * type ToEnd = Slice<'hello world', 6> // type ToEnd = 'world'
  */
 export type Slice<T extends string, StartIndex extends number = 0, EndIndex extends number | undefined = undefined> = EndIndex extends number
     ? InternalSliceType<T, StartIndex, EndIndex>
     : SliceStartType<T, StartIndex>;
 
 /**
- * Splits a string into an array of substrings.
- * T: The string to split.
- * delimiter: The delimiter.
+ * Type-level implementation of string.split() functionality.
+ * Splits a string type into a tuple of string types based on a delimiter.
+ * @template T - The string type to split
+ * @template delimiter - The string type to use as a separator
+ * @returns A tuple type containing the split string parts
+ * @example
+ * type Parts = Split<'a,b,c', ','> // type Parts = ['a', 'b', 'c']
  */
 export type Split<T extends string, Delimiter extends string = ""> =
     IsStringLiteral<Delimiter | T> extends true
@@ -291,10 +417,15 @@ export type Split<T extends string, Delimiter extends string = ""> =
         : string[];
 
 /**
- * Checks if a string starts with another string.
- * T: The string to check.
- * S: The string to check against.
- * P: The position to start the search.
+ * Type-level implementation of string.startsWith() functionality.
+ * Checks if a string type begins with another string type at a given position.
+ * @template T - The string type to check
+ * @template S - The prefix to check for
+ * @template P - Optional position at which to start the search
+ * @returns A boolean type indicating if T starts with S at position P
+ * @example
+ * type StartsWithHello = StartsWith<'hello world', 'hello'> // type StartsWithHello = true
+ * type DoesNotStart = StartsWith<'hello world', 'world'> // type DoesNotStart = false
  */
 export type StartsWith<T extends string, S extends string, P extends number = 0> =
     All<[IsStringLiteral<S>, IsNumberLiteral<P>]> extends true
@@ -316,20 +447,32 @@ export type StartsWith<T extends string, S extends string, P extends number = 0>
         : boolean;
 
 /**
- * Trims all whitespaces at the end of a string.
- * T: The string to trim.
+ * Type-level implementation of string.trimEnd() functionality.
+ * Removes whitespace characters from the end of a string type.
+ * @template T - The string type to trim
+ * @returns A string type with trailing whitespace removed
+ * @example
+ * type Trimmed = TrimEnd<'hello  '> // type Trimmed = 'hello'
  */
 export type TrimEnd<T extends string> = T extends `${infer Rest} ` ? TrimEnd<Rest> : T;
 
 /**
- * Trims all whitespaces at the start of a string.
- * T: The string to trim.
+ * Type-level implementation of string.trimStart() functionality.
+ * Removes whitespace characters from the beginning of a string type.
+ * @template T - The string type to trim
+ * @returns A string type with leading whitespace removed
+ * @example
+ * type Trimmed = TrimStart<'  hello'> // type Trimmed = 'hello'
  */
 export type TrimStart<T extends string> = T extends ` ${infer Rest}` ? TrimStart<Rest> : T;
 
 /**
- * Trims all whitespaces at the start and end of a string.
- * T: The string to trim.
+ * Type-level implementation of string.trim() functionality.
+ * Removes whitespace characters from both ends of a string type.
+ * @template T - The string type to trim
+ * @returns A string type with both leading and trailing whitespace removed
+ * @example
+ * type Trimmed = Trim<'  hello  '> // type Trimmed = 'hello'
  */
 export type Trim<T extends string> = TrimEnd<TrimStart<T>>;
 
@@ -418,13 +561,21 @@ export type NodeLocale =
     | "zh-TW"; // Chinese (Traditional)
 
 /**
- * Converts all alphabetic characters in a string to lowercase.
- * T: The string to convert.
+ * Type-level implementation of string.toLowerCase() functionality.
+ * Converts all alphabetic characters in a string type to lowercase.
+ * @template T - The string type to convert
+ * @returns A string type with all characters converted to lowercase
+ * @example
+ * type Lower = ToLowerCase<'HELLO'> // type Lower = 'hello'
  */
 export type ToLowerCase<T extends string> = IsStringLiteral<T> extends true ? Lowercase<T> : string;
 
 /**
- * Converts all alphabetic characters in a string to uppercase.
- * T: The string to convert.
+ * Type-level implementation of string.toUpperCase() functionality.
+ * Converts all alphabetic characters in a string type to uppercase.
+ * @template T - The string type to convert
+ * @returns A string type with all characters converted to uppercase
+ * @example
+ * type Upper = ToUpperCase<'hello'> // type Upper = 'HELLO'
  */
 export type ToUpperCase<T extends string> = IsStringLiteral<T> extends true ? Uppercase<T> : string;
