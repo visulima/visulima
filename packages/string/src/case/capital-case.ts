@@ -4,12 +4,10 @@ import type { CapitalCase, CaseOptions } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
-import manageCache from "./utils/manage-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
+import LRUCache from "../utils/lru-cache";
 
-// Cache for frequently used capital case conversions
-const capitalCache = new Map<string, string>();
-const DEFAULT_CACHE_MAX_SIZE = 1000;
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -31,8 +29,7 @@ const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions
     }
 
     const shouldCache = options?.cache ?? false;
-    const cacheMaxSize = options?.cacheMaxSize ?? DEFAULT_CACHE_MAX_SIZE;
-    const cacheStore = options?.cacheStore ?? capitalCache;
+    const cacheStore = options?.cacheStore ?? defaultCacheStore;
 
     let cacheKey: string | undefined;
 
@@ -40,13 +37,8 @@ const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions
         cacheKey = generateCacheKey(value, options);
     }
 
-    // For cases with caching enabled, use cache with composite key
-    if (shouldCache && cacheKey) {
-        const cached = cacheStore.get(cacheKey);
-
-        if (cached) {
-            return cached as CapitalCase<T>;
-        }
+    if (shouldCache && cacheKey && cacheStore.has(cacheKey)) {
+        return cacheStore.get(cacheKey) as CapitalCase<T>;
     }
 
     const words = splitByCase(value, {
@@ -71,12 +63,10 @@ const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions
         return upperFirst(options?.locale ? split.toLocaleLowerCase(options.locale) : split.toLocaleLowerCase(), options);
     });
 
-    // Join the processed words with proper handling of ANSI and emoji sequences
     const result = joinSegments<CapitalCase<T>>(processed, " ");
 
-    // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {
-        manageCache(cacheStore, cacheKey, result, cacheMaxSize);
+        cacheStore.set(cacheKey, result);
     }
 
     return result;

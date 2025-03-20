@@ -1,8 +1,8 @@
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, DotCase } from "./types";
+import LRUCache from "../utils/lru-cache";
 
-// Cache for frequently used dot case conversions
-const dotCache = new Map<string, string>();
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -18,6 +18,6 @@ const dotCache = new Map<string, string>();
  * ```
  */
 const dotCase = <T extends string = string>(value?: T, options?: CaseOptions): DotCase<T> =>
-    kebabCase(value, { cacheStore: dotCache, ...options, joiner: "." }) as DotCase<T>;
+    kebabCase(value, { cacheStore: defaultCacheStore, ...options, joiner: "." }) as DotCase<T>;
 
 export default dotCase;

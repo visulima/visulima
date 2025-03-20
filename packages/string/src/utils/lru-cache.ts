@@ -5,15 +5,16 @@ class LRUCache<K, V> {
 
     private keyOrder: K[];
 
-    constructor(capacity: number) {
+    public constructor(capacity: number) {
         this.capacity = capacity;
         this.cache = new Map<K, V>();
         this.keyOrder = [];
     }
 
-    get(key: K): V | undefined {
-        if (!this.cache.has(key)) 
-return undefined;
+    public get(key: K): V | undefined {
+        if (!this.cache.has(key)) {
+            return undefined;
+        }
 
         // Move key to the end (most recently used)
         this.keyOrder = this.keyOrder.filter((k) => k !== key);
@@ -22,7 +23,11 @@ return undefined;
         return this.cache.get(key);
     }
 
-    set(key: K, value: V): void {
+    public has(key: K): boolean {
+        return this.cache.has(key);
+    }
+
+    public set(key: K, value: V): void {
         if (this.cache.has(key)) {
             // Update existing key's position
             this.keyOrder = this.keyOrder.filter((k) => k !== key);
@@ -37,6 +42,20 @@ return undefined;
         // Add new key
         this.cache.set(key, value);
         this.keyOrder.push(key);
+    }
+
+    public delete(key: K): void {
+        this.cache.delete(key);
+        this.keyOrder = this.keyOrder.filter((k) => k !== key);
+    }
+
+    public clear(): void {
+        this.cache.clear();
+        this.keyOrder = [];
+    }
+
+    public size(): number {
+        return this.cache.size;
     }
 }
 

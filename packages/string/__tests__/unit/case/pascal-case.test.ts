@@ -2,72 +2,51 @@ import { describe, expect, it } from "vitest";
 
 import { pascalCase } from "../../../src/case";
 import generateCacheKey from "../../../src/case/utils/generate-cache-key";
+import LRUCache from "../../../src/utils/lru-cache";
 
 describe("pascalCase", () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
-            const customCache = new Map<string, string>();
+            const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call should cache
             const result1 = pascalCase(input, { cache: true, cacheStore: customCache });
             expect(result1).toBe("TestString");
-            expect(customCache.size).toBe(1);
+            expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = pascalCase(input, { cache: true, cacheStore: customCache });
             expect(result2).toBe("TestString");
-            expect(customCache.size).toBe(1);
+            expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
-            const customCache = new Map<string, string>();
+            const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call without cache
             const result1 = pascalCase(input, { cache: false, cacheStore: customCache });
             expect(result1).toBe("TestString");
-            expect(customCache.size).toBe(0);
+            expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = pascalCase(input, { cache: false, cacheStore: customCache });
             expect(result2).toBe("TestString");
-            expect(customCache.size).toBe(0);
-        });
-
-        it("should respect cache size limit", () => {
-            expect.assertions(5);
-            const customCache = new Map<string, string>();
-            const input1 = "test-string-1";
-            const input2 = "test-string-2";
-
-            const options1 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
-            const options2 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
-
-            // First string should be cached
-            const result1 = pascalCase(input1, options1);
-            expect(customCache.size).toBe(1);
-            expect(customCache.get(generateCacheKey(input1, options1))).toBe(result1);
-
-            // Second string should be cached due to size limit, the first string should be evicted
-            const result2 = pascalCase(input2, options2);
-            expect(customCache.size).toBe(1);
-            expect(customCache.has(generateCacheKey(input1, options1))).toBeFalsy();
-            expect(customCache.get(generateCacheKey(input2, options2))).toBe(result2);
+            expect(customCache.size()).toBe(0);
         });
 
         it("should handle custom cache store", () => {
-            expect.assertions(2);
-            const defaultCache = new Map<string, string>();
-            const customCache = new Map<string, string>();
+            expect.assertions(1);
+
+            const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // Use custom cache
             pascalCase(input, { cache: true, cacheStore: customCache });
-            expect(customCache.size).toBe(1);
-            expect(defaultCache.size).toBe(0);
+            expect(customCache.size()).toBe(1);
         });
     });
 

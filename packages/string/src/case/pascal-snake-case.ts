@@ -2,11 +2,9 @@ import noCase from "./no-case";
 import type { CaseOptions, PascalSnakeCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
-import manageCache from "./utils/manage-cache";
+import LRUCache from "../utils/lru-cache";
 
-// Cache for frequently used pascal snake case conversions
-const pascalSnakeCache = new Map<string, string>();
-const DEFAULT_CACHE_MAX_SIZE = 1000;
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -27,9 +25,7 @@ const pascalSnakeCase = <T extends string = string>(value?: T, options?: CaseOpt
     }
 
     const shouldCache = options?.cache ?? false;
-    const cacheMaxSize = options?.cacheMaxSize ?? DEFAULT_CACHE_MAX_SIZE;
-    const cacheStore = options?.cacheStore ?? pascalSnakeCache;
-
+    const cacheStore = options?.cacheStore ?? defaultCacheStore;
     let cacheKey: string | undefined;
 
     if (shouldCache) {
@@ -37,12 +33,8 @@ const pascalSnakeCase = <T extends string = string>(value?: T, options?: CaseOpt
     }
 
     // For cases with caching enabled, use cache with composite key
-    if (shouldCache && cacheKey) {
-        const cached = cacheStore.get(cacheKey);
-
-        if (cached) {
-            return cached as PascalSnakeCase<T>;
-        }
+    if (shouldCache && cacheKey && cacheStore.has(cacheKey)) {
+        return cacheStore.get(cacheKey) as PascalSnakeCase<T>;
     }
 
     const words = noCase(value, { ...options, cache: false }).split(" ");
@@ -50,7 +42,7 @@ const pascalSnakeCase = <T extends string = string>(value?: T, options?: CaseOpt
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {
-        manageCache(cacheStore, cacheKey, result, cacheMaxSize);
+        cacheStore.set(cacheKey, result);
     }
 
     return result;

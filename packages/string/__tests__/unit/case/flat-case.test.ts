@@ -2,75 +2,55 @@ import { describe, expect, it } from "vitest";
 
 import { flatCase } from "../../../src/case";
 import generateCacheKey from "../../../src/case/utils/generate-cache-key";
+import LRUCache from "../../../src/utils/lru-cache";
 
 describe("flatCase", () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(5);
-            const customCache = new Map<string, string>();
+            const customCache = new LRUCache<string, string>(50);
             const input = "testString";
             const options = { cache: true, cacheStore: customCache };
 
             // First call should cache
             const result1 = flatCase(input, options);
             expect(result1).toBe("teststring");
-            expect(customCache.size).toBe(1);
+            expect(customCache.size()).toBe(1);
             expect(customCache.get(generateCacheKey(input, options))).toBe(result1);
 
             // Second call should use cache
             const result2 = flatCase(input, options);
             expect(result2).toBe("teststring");
-            expect(customCache.size).toBe(1);
+            expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
-            const customCache = new Map<string, string>();
+            const customCache = new LRUCache<string, string>(50);
             const input = "testString";
             const options = { cache: false, cacheStore: customCache };
 
             // First call without cache
             const result1 = flatCase(input, options);
             expect(result1).toBe("teststring");
-            expect(customCache.size).toBe(0);
+            expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = flatCase(input, options);
             expect(result2).toBe("teststring");
-            expect(customCache.size).toBe(0);
-        });
-
-        it("should respect cache size limit", () => {
-            expect.assertions(5);
-            const customCache = new Map<string, string>();
-            const input1 = "testString1";
-            const input2 = "testString2";
-            const options1 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
-            const options2 = { cache: true, cacheMaxSize: 1, cacheStore: customCache };
-
-            // First string should be cached
-            flatCase(input1, options1);
-            expect(customCache.size).toBe(1);
-            expect(customCache.get(generateCacheKey(input1, options1))).toBeDefined();
-
-            // Second string should be cached due to size limit, the first string should be evicted
-            flatCase(input2, options2);
-            expect(customCache.size).toBe(1);
-            expect(customCache.has(generateCacheKey(input1, options1))).toBeFalsy();
-            expect(customCache.has(generateCacheKey(input2, options2))).toBeTruthy();
+            expect(customCache.size()).toBe(0);
         });
 
         it("should handle custom cache store", () => {
-            expect.assertions(2);
-            const defaultCache = new Map<string, string>();
-            const customCache = new Map<string, string>();
+            expect.assertions(1);
+
+            const customCache = new LRUCache<string, string>(50);
             const input = "testString";
             const options = { cache: true, cacheStore: customCache };
 
             // Use custom cache
             flatCase(input, options);
-            expect(customCache.size).toBe(1);
-            expect(defaultCache.size).toBe(0);
+            expect(customCache.size()).toBe(1);
         });
     });
 

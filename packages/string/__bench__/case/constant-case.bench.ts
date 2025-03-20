@@ -22,12 +22,24 @@ describe("constantCase", () => {
                 constantCase(stringValue);
             }
         });
+
+        bench("visulima/string constantCase (with cache)", () => {
+            for (const stringValue of SPECIAL_STRINGS) {
+                constantCase(stringValue, { cache: true });
+            }
+        });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string constantCase (no cache)", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 constantCase(stringValue);
+            }
+        });
+
+        bench("visulima/string constantCase (with cache)", () => {
+            for (const stringValue of ACRONYM_STRINGS) {
+                constantCase(stringValue, { cache: true });
             }
         });
     });

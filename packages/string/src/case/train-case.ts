@@ -3,11 +3,9 @@ import type { CaseOptions, TrainCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
-import manageCache from "./utils/manage-cache";
+import LRUCache from "../utils/lru-cache";
 
-// Cache for frequently used train case conversions
-const trainCache = new Map<string, string>();
-const DEFAULT_CACHE_MAX_SIZE = 1000;
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -28,9 +26,7 @@ const trainCase = <T extends string = string>(value?: T, options?: CaseOptions):
     }
 
     const shouldCache = options?.cache ?? false;
-    const cacheMaxSize = options?.cacheMaxSize ?? DEFAULT_CACHE_MAX_SIZE;
-    const cacheStore = options?.cacheStore ?? trainCache;
-
+    const cacheStore = options?.cacheStore ?? defaultCacheStore;
     let cacheKey: string | undefined;
 
     if (shouldCache) {
@@ -38,12 +34,8 @@ const trainCase = <T extends string = string>(value?: T, options?: CaseOptions):
     }
 
     // For cases with caching enabled, use cache with composite key
-    if (shouldCache && cacheKey) {
-        const cached = cacheStore.get(cacheKey);
-
-        if (cached) {
-            return cached as TrainCase<T>;
-        }
+    if (shouldCache && cacheKey && cacheStore.has(cacheKey)) {
+        return cacheStore.get(cacheKey) as TrainCase<T>;
     }
 
     const result = joinSegments<TrainCase<T>>(
@@ -62,7 +54,7 @@ const trainCase = <T extends string = string>(value?: T, options?: CaseOptions):
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {
-        manageCache(cacheStore, cacheKey, result, cacheMaxSize);
+        cacheStore.set(cacheKey, result);
     }
 
     return result;

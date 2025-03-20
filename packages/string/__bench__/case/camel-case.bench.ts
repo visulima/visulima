@@ -51,6 +51,12 @@ describe("camelCase", () => {
             }
         });
 
+        bench("visulima/string camelCase (with cache)", () => {
+            for (const stringValue of SPECIAL_STRINGS) {
+                camelCase(stringValue, { cache: true });
+            }
+        });
+
         bench("lodash camelCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 lodashCamelCase(stringValue);
@@ -80,6 +86,12 @@ describe("camelCase", () => {
         bench("visulima/string camelCase (no cache)", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 camelCase(stringValue);
+            }
+        });
+
+        bench("visulima/string camelCase (with cache)", () => {
+            for (const stringValue of ACRONYM_STRINGS) {
+                camelCase(stringValue, { cache: true });
             }
         });
 

@@ -1,8 +1,8 @@
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, FlatCase } from "./types";
+import LRUCache from "../utils/lru-cache";
 
-// Cache for frequently used flat case conversions
-const flatCache = new Map<string, string>();
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -16,6 +16,6 @@ const flatCache = new Map<string, string>();
  * ```
  */
 const flatCase = <T extends string = string>(value?: T, options?: CaseOptions): FlatCase<T> =>
-    kebabCase(value, { cacheStore: flatCache, ...options, joiner: "" }) as FlatCase<T>;
+    kebabCase(value, { cacheStore: defaultCacheStore, ...options, joiner: "" }) as FlatCase<T>;
 
 export default flatCase;

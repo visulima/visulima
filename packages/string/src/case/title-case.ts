@@ -2,12 +2,10 @@ import { splitByCase } from "./split-by-case";
 import type { CaseOptions, TitleCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
-import manageCache from "./utils/manage-cache";
+import LRUCache from "../utils/lru-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
 
-// Cache for frequently used title case conversions
-const titleCache = new Map<string, string>();
-const DEFAULT_CACHE_MAX_SIZE = 1000;
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -23,31 +21,25 @@ const DEFAULT_CACHE_MAX_SIZE = 1000;
  * ```
  */
 // eslint-disable-next-line func-style
-function titleCase<T extends string = string>(string_?: T, options?: CaseOptions): TitleCase<T> {
-    if (typeof string_ !== "string") {
+function titleCase<T extends string = string>(value?: T, options?: CaseOptions): TitleCase<T> {
+    if (typeof value !== "string") {
         return "" as TitleCase<T>;
     }
 
     const shouldCache = options?.cache ?? false;
-    const cacheMaxSize = options?.cacheMaxSize ?? DEFAULT_CACHE_MAX_SIZE;
-    const cacheStore = options?.cacheStore ?? titleCache;
-
+    const cacheStore = options?.cacheStore ?? defaultCacheStore;
     let cacheKey: string | undefined;
 
     if (shouldCache) {
-        cacheKey = generateCacheKey(string_, options);
+        cacheKey = generateCacheKey(value, options);
     }
 
     // For cases with caching enabled, use cache with composite key
-    if (shouldCache && cacheKey) {
-        const cached = cacheStore.get(cacheKey);
-
-        if (cached) {
-            return cached as TitleCase<T>;
-        }
+    if (shouldCache && cacheKey && cacheStore.has(cacheKey)) {
+        return cacheStore.get(cacheKey) as CamelCase<T>;
     }
 
-    const result = splitByCase(string_, {
+    const result = splitByCase(value, {
         handleAnsi: options?.handleAnsi,
         handleEmoji: options?.handleEmoji,
         knownAcronyms: options?.knownAcronyms,
@@ -69,7 +61,7 @@ function titleCase<T extends string = string>(string_?: T, options?: CaseOptions
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {
-        manageCache(cacheStore, cacheKey, result, cacheMaxSize);
+        cacheStore.set(cacheKey, result);
     }
 
     return result;

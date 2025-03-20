@@ -3,11 +3,9 @@ import { stripVTControlCharacters } from "node:util";
 import { stripEmoji } from "../constants";
 import type { CaseOptions, FlipCase } from "./types";
 import generateCacheKey from "./utils/generate-cache-key";
-import manageCache from "./utils/manage-cache";
+import LRUCache from "../utils/lru-cache";
 
-// Cache for frequently used flip case conversions
-const flipCache = new Map<string, string>();
-const DEFAULT_CACHE_MAX_SIZE = 1000;
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 /**
  * Options specific to flip case operations.
@@ -32,9 +30,7 @@ export const flipCase = <T extends string = string>(value?: T, options?: FlipOpt
     }
 
     const shouldCache = options?.cache ?? false;
-    const cacheMaxSize = options?.cacheMaxSize ?? DEFAULT_CACHE_MAX_SIZE;
-    const cacheStore = options?.cacheStore ?? flipCache;
-
+    const cacheStore = options?.cacheStore ?? defaultCacheStore;
     let cacheKey: string | undefined;
 
     if (shouldCache) {
@@ -42,12 +38,8 @@ export const flipCase = <T extends string = string>(value?: T, options?: FlipOpt
     }
 
     // For cases with caching enabled, use cache with composite key
-    if (shouldCache && cacheKey) {
-        const cached = cacheStore.get(cacheKey);
-
-        if (cached) {
-            return cached;
-        }
+    if (shouldCache && cacheKey && cacheStore.has(cacheKey)) {
+        return cacheStore.get(cacheKey) as FlipCase<T>;
     }
 
     // For stripEmoji option, completely remove emojis first
@@ -110,7 +102,7 @@ export const flipCase = <T extends string = string>(value?: T, options?: FlipOpt
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {
-        manageCache(cacheStore, cacheKey, result, cacheMaxSize);
+        cacheStore.set(cacheKey, result);
     }
 
     return result;

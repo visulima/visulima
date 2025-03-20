@@ -1,8 +1,8 @@
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, SnakeCase } from "./types";
+import LRUCache from "../utils/lru-cache";
 
-// Cache for frequently used snake case conversions
-const snakeCache = new Map<string, string>();
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -18,6 +18,6 @@ const snakeCache = new Map<string, string>();
  * ```
  */
 const snakeCase = <T extends string = string>(value?: T, options?: CaseOptions): SnakeCase<T> =>
-    kebabCase(value, { cacheStore: snakeCache, ...options, joiner: "_" }) as SnakeCase<T>;
+    kebabCase(value, { cacheStore: defaultCacheStore, ...options, joiner: "_" }) as SnakeCase<T>;
 
 export default snakeCase;

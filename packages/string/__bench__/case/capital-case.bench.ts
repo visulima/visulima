@@ -22,12 +22,24 @@ describe("capitalCase", () => {
                 capitalCase(stringValue);
             }
         });
+
+        bench("visulima/string capitalCase (with cache)", () => {
+            for (const stringValue of SPECIAL_STRINGS) {
+                capitalCase(stringValue, { cache: true });
+            }
+        });
     });
 
     describe("Acronym handling", () => {
         bench("visulima/string capitalCase (no cache)", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 capitalCase(stringValue);
+            }
+        });
+
+        bench("visulima/string capitalCase (with cache)", () => {
+            for (const stringValue of ACRONYM_STRINGS) {
+                capitalCase(stringValue, { cache: true });
             }
         });
     });

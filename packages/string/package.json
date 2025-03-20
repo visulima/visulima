@@ -343,6 +343,16 @@
                 "default": "./dist/test/vitest.mjs"
             }
         },
+        "./utils": {
+            "require": {
+                "types": "./dist/utils.d.cts",
+                "default": "./dist/utils.cjs"
+            },
+            "import": {
+                "types": "./dist/utils.d.mts",
+                "default": "./dist/utils.mjs"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",

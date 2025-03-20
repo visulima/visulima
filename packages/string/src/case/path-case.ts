@@ -1,8 +1,8 @@
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, PathCase } from "./types";
+import LRUCache from "../utils/lru-cache";
 
-// Cache for frequently used path case conversions
-const pathCache = new Map<string, string>();
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -18,6 +18,6 @@ const pathCache = new Map<string, string>();
  * ```
  */
 const pathCase = <T extends string = string>(value?: T, options?: CaseOptions): PathCase<T> =>
-    kebabCase(value, { cacheStore: pathCache, ...options, joiner: "/" }) as PathCase<T>;
+    kebabCase(value, { cacheStore: defaultCacheStore, ...options, joiner: "/" }) as PathCase<T>;
 
 export default pathCase;

@@ -1,4 +1,5 @@
 import type { IsStringLiteral, NodeLocale } from "../types";
+import type LRUCache from "../utils/lru-cache";
 
 type SplitterCharacter = " " | "_" | "-" | "." | "/";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,16 +28,10 @@ export interface LocaleOptions {
  */
 export interface CaseOptions extends LocaleOptions {
     /**
-     * Whether to enable caching for the case conversion.
+     * Uses a shared LRU cache with a fixed size.
      * @default false
      */
     cache?: boolean;
-
-    /**
-     * The maximum size of the cache. Only applicable if cache is enabled.
-     * @default 1000
-     */
-    cacheMaxSize?: number;
 
     /**
      * A custom cache store for this specific case function.
@@ -45,14 +40,14 @@ export interface CaseOptions extends LocaleOptions {
      * @example
      * ```typescript
      * // Create separate caches for each case function
-     * const camelCaseStore = new Map<string, string>();
-     * const pascalCaseStore = new Map<string, string>();
+     * const camelCaseStore = new LRUCache<string, string>(1000);
+     * const pascalCaseStore = new LRUCache<string, string>(1000);
      *
      * camelCase("some-string", { cache: true, cacheStore: camelCaseStore });
      * pascalCase("some-string", { cache: true, cacheStore: pascalCaseStore });
      * ```
      */
-    cacheStore?: Map<string, string>;
+    cacheStore?: LRUCache<string, string>;
 
     /**
      * Whether to handle ANSI escape sequences.

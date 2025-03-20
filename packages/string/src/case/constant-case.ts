@@ -1,8 +1,8 @@
+import LRUCache from "../utils/lru-cache";
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, ConstantCase } from "./types";
 
-// Cache for frequently used constant case conversions
-const constantCache = new Map<string, string>();
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -18,6 +18,6 @@ const constantCache = new Map<string, string>();
  * ```
  */
 const constantCase = <T extends string = string>(value?: T, options?: CaseOptions): ConstantCase<T> =>
-    kebabCase(value, { cacheStore: constantCache, ...options, joiner: "_", toUpperCase: true }) as ConstantCase<T>;
+    kebabCase(value, { cacheStore: defaultCacheStore, ...options, joiner: "_", toUpperCase: true }) as ConstantCase<T>;
 
 export default constantCase;

@@ -1,8 +1,8 @@
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, NoCase } from "./types";
+import LRUCache from "../utils/lru-cache";
 
-// Cache for frequently used no case conversions
-const noCache = new Map<string, string>();
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -18,6 +18,6 @@ const noCache = new Map<string, string>();
  * ```
  */
 const noCase = <T extends string = string>(value?: T, options?: CaseOptions): NoCase<T> =>
-    kebabCase(value, { cacheStore: noCache, ...options, joiner: " " }) as NoCase<T>;
+    kebabCase(value, { cacheStore: defaultCacheStore, ...options, joiner: " " }) as NoCase<T>;
 
 export default noCase;

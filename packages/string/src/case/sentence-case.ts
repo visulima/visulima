@@ -4,12 +4,10 @@ import type { CaseOptions, SentenceCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
-import manageCache from "./utils/manage-cache";
+import LRUCache from "../utils/lru-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
 
-// Cache for frequently used sentence case conversions
-const sentenceCache = new Map<string, string>();
-const DEFAULT_CACHE_MAX_SIZE = 1000;
+const defaultCacheStore = new LRUCache<string, string>(1000);
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -31,9 +29,7 @@ const sentenceCase = <T extends string = string>(value?: T, options?: CaseOption
     }
 
     const shouldCache = options?.cache ?? false;
-    const cacheMaxSize = options?.cacheMaxSize ?? DEFAULT_CACHE_MAX_SIZE;
-    const cacheStore = options?.cacheStore ?? sentenceCache;
-
+    const cacheStore = options?.cacheStore ?? defaultCacheStore;
     let cacheKey: string | undefined;
 
     if (shouldCache) {
@@ -41,12 +37,8 @@ const sentenceCase = <T extends string = string>(value?: T, options?: CaseOption
     }
 
     // For cases with caching enabled, use cache with composite key
-    if (shouldCache && cacheKey) {
-        const cached = cacheStore.get(cacheKey);
-
-        if (cached) {
-            return cached as SentenceCase<T>;
-        }
+    if (shouldCache && cacheKey && cacheStore.has(cacheKey)) {
+        return cacheStore.get(cacheKey) as SentenceCase<T>;
     }
 
     let firstWord = true;
@@ -84,7 +76,7 @@ const sentenceCase = <T extends string = string>(value?: T, options?: CaseOption
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {
-        manageCache(cacheStore, cacheKey, result, cacheMaxSize);
+        cacheStore.set(cacheKey, result);
     }
 
     return result;
