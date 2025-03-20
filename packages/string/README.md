@@ -850,6 +850,7 @@ The custom matcher provides detailed error messages when tests fail, showing:
 - [ansi-slice](https://github.com/sindresorhus/ansi-slice) - Slice strings with ANSI escape codes
 - [fast-string-truncated-width](https://github.com/fabiospampinato/fast-string-truncated-width) - Fast string truncated width
 - [ansi-truncate](https://github.com/fabiospampinato/ansi-truncate) - Truncate strings with ANSI escape codes
+- [string-ts](https://github.com/gustavoguichard/string-ts) - Strongly typed string functions
 
 ## Supported Node.js Versions
 

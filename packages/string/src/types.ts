@@ -1,4 +1,15 @@
 /**
+ * Modified copy of types from
+ * - https://github.com/gustavoguichard/string-ts/blob/v2.2.1/src/internal/internals.ts
+ * - https://github.com/gustavoguichard/string-ts/blob/v2.2.1/src/internal/math.ts
+ * - https://github.com/gustavoguichard/string-ts/tree/v2.2.1/src/native - all types
+ * - https://github.com/gustavoguichard/string-ts/blob/v2.2.1/src/utils/truncate.ts
+ *
+ * MIT License
+ * Copyright (c) 2023 Gustavo Guichard
+ */
+
+/**
  * Creates a tuple type of specified length filled with a given type.
  * @template L - The desired length of the tuple
  * @template T - The type to fill the tuple with (defaults to unknown)

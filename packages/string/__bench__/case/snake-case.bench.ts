@@ -2,6 +2,7 @@ import { snakeCase as caseAnythingSnakeCase } from "case-anything";
 import { snakeCase as changeCaseSnake } from "change-case";
 import { snakeCase as lodashSnakeCase } from "lodash";
 import { snakeCase as sculeSnakeCase } from "scule";
+import { snakeCase as stringTsSnakeCase } from "string-ts";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
@@ -29,6 +30,12 @@ describe("snakeCase", () => {
     bench("case-anything snakeCase", () => {
         for (const stringValue of TEST_STRINGS) {
             caseAnythingSnakeCase(stringValue);
+        }
+    });
+
+    bench("string-ts snakeCase", () => {
+        for (const stringValue of TEST_STRINGS) {
+            stringTsSnakeCase(stringValue);
         }
     });
 
@@ -74,6 +81,12 @@ describe("snakeCase", () => {
                 changeCaseSnake(stringValue);
             }
         });
+
+        bench("string-ts snakeCase", () => {
+            for (const stringValue of SPECIAL_STRINGS) {
+                stringTsSnakeCase(stringValue);
+            }
+        });
     });
 
     describe("Acronym handling", () => {
@@ -104,6 +117,12 @@ describe("snakeCase", () => {
         bench("change-case snakeCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 changeCaseSnake(stringValue);
+            }
+        });
+
+        bench("string-ts snakeCase", () => {
+            for (const stringValue of ACRONYM_STRINGS) {
+                stringTsSnakeCase(stringValue);
             }
         });
     });

@@ -2,6 +2,7 @@ import { kebabCase as caseAnythingKebabCase } from "case-anything";
 import { kebabCase as changeCaseKebab } from "change-case";
 import { kebabCase as lodashKebabCase } from "lodash";
 import { kebabCase as sculeKebabCase } from "scule";
+import { kebabCase as stringTsKebabCase } from "string-ts";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
@@ -29,6 +30,12 @@ describe("kebabCase", () => {
     bench("case-anything kebabCase", () => {
         for (const stringValue of TEST_STRINGS) {
             caseAnythingKebabCase(stringValue);
+        }
+    });
+
+    bench("string-ts kebabCase", () => {
+        for (const stringValue of TEST_STRINGS) {
+            stringTsKebabCase(stringValue);
         }
     });
 
@@ -74,6 +81,12 @@ describe("kebabCase", () => {
                 changeCaseKebab(stringValue);
             }
         });
+
+        bench("string-ts kebabCase", () => {
+            for (const stringValue of SPECIAL_STRINGS) {
+                stringTsKebabCase(stringValue);
+            }
+        });
     });
 
     describe("Acronym handling", () => {
@@ -104,6 +117,12 @@ describe("kebabCase", () => {
         bench("change-case kebabCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 changeCaseKebab(stringValue);
+            }
+        });
+
+        bench("string-ts kebabCase", () => {
+            for (const stringValue of ACRONYM_STRINGS) {
+                stringTsKebabCase(stringValue);
             }
         });
     });

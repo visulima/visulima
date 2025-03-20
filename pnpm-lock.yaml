@@ -3743,37 +3743,37 @@ importers:
   packages/string:
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.3
+        specifier: 15.0.3
         version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.4)(@babel/core@7.26.10)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.1))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.1))(eslint-plugin-react@7.37.4(eslint@8.57.1))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.1))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.0.13))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.1))(eslint@8.57.1)(typescript@5.8.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.14
+        specifier: 5.0.14
         version: 5.0.14(prettier@3.5.3)
       '@anolilab/semantic-release-pnpm':
         specifier: 1.1.10
         version: 1.1.10(@types/node@18.19.71)(yaml@2.7.0)
       '@anolilab/semantic-release-preset':
-        specifier: ^10.0.3
+        specifier: 10.0.3
         version: 10.0.3(@anolilab/semantic-release-pnpm@1.1.10(@types/node@18.19.71)(yaml@2.7.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.3(typescript@5.8.2)))(semantic-release@24.2.3(typescript@5.8.2))(yaml@2.7.0)
       '@arcanis/slice-ansi':
         specifier: 2.0.1
         version: 2.0.1
       '@arethetypeswrong/cli':
-        specifier: ^0.17.4
+        specifier: 0.17.4
         version: 0.17.4
       '@babel/core':
-        specifier: ^7.26.10
+        specifier: 7.26.10
         version: 7.26.10
       '@rushstack/eslint-plugin-security':
-        specifier: ^0.10.0
+        specifier: 0.10.0
         version: 0.10.0(eslint@8.57.1)(typescript@5.8.2)
       '@secretlint/secretlint-rule-preset-recommend':
-        specifier: ^9.2.0
+        specifier: 9.2.0
         version: 9.2.0
       '@total-typescript/ts-reset':
-        specifier: ^0.6.1
+        specifier: 0.6.1
         version: 0.6.1
       '@types/lodash':
-        specifier: ^4.17.16
+        specifier: 4.17.16
         version: 4.17.16
       '@types/node':
         specifier: 18.19.71
@@ -3782,22 +3782,22 @@ importers:
         specifier: 1.4.21
         version: 1.4.21
       '@visulima/packem':
-        specifier: ^1.19.1
+        specifier: 1.19.1
         version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(esbuild@0.25.1)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.3)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.2(typedoc@0.27.9(typescript@5.8.2)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.9(typescript@5.8.2)))(typedoc@0.27.9(typescript@5.8.2))(typescript@5.8.2)(yaml@2.7.0)
       '@vitest/coverage-v8':
-        specifier: ^3.0.8
+        specifier: 3.0.8
         version: 3.0.8(@vitest/browser@3.0.8)(vitest@3.0.8)
       '@vitest/ui':
-        specifier: ^3.0.8
+        specifier: 3.0.8
         version: 3.0.8(vitest@3.0.8)
       ansi-truncate:
         specifier: 1.2.0
         version: 1.2.0
       case-anything:
-        specifier: ^3.1.2
+        specifier: 3.1.2
         version: 3.1.2
       change-case:
-        specifier: ^5.4.4
+        specifier: 5.4.4
         version: 5.4.4
       cli-truncate:
         specifier: 4.0.0
@@ -3806,73 +3806,76 @@ importers:
         specifier: 8.0.0
         version: 8.0.0
       cross-env:
-        specifier: ^7.0.3
+        specifier: 7.0.3
         version: 7.0.3
       emoji-regex-xs:
-        specifier: ^1.0.0
+        specifier: 1.0.0
         version: 1.0.0
       esbuild:
-        specifier: ^0.25.1
+        specifier: 0.25.1
         version: 0.25.1
       eslint:
         specifier: 8.57.1
         version: 8.57.1
       eslint-plugin-deprecation:
-        specifier: ^3.0.0
+        specifier: 3.0.0
         version: 3.0.0(eslint@8.57.1)(typescript@5.8.2)
       eslint-plugin-etc:
-        specifier: ^2.0.3
+        specifier: 2.0.3
         version: 2.0.3(eslint@8.57.1)(typescript@5.8.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.29.1
         version: eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.2))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
       eslint-plugin-mdx:
-        specifier: ^3.2.0
+        specifier: 3.2.0
         version: 3.2.0(eslint@8.57.1)
       eslint-plugin-vitest:
-        specifier: ^0.4.1
+        specifier: 0.4.1
         version: 0.4.1(eslint@8.57.1)(typescript@5.8.2)(vitest@3.0.8)
       eslint-plugin-vitest-globals:
-        specifier: ^1.5.0
+        specifier: 1.5.0
         version: 1.5.0
       fast-string-truncated-width:
         specifier: 1.2.1
         version: 1.2.1
       get-east-asian-width:
-        specifier: ^1.3.0
+        specifier: 1.3.0
         version: 1.3.0
       lodash:
-        specifier: ^4.17.21
+        specifier: 4.17.21
         version: 4.17.21
       prettier:
-        specifier: ^3.5.3
+        specifier: 3.5.3
         version: 3.5.3
       rimraf:
-        specifier: ^6.0.1
+        specifier: 6.0.1
         version: 6.0.1
       scule:
-        specifier: ^1.3.0
+        specifier: 1.3.0
         version: 1.3.0
       secretlint:
         specifier: 9.2.0
         version: 9.2.0
       semantic-release:
-        specifier: ^24.2.3
+        specifier: 24.2.3
         version: 24.2.3(typescript@5.8.2)
       slice-ansi:
-        specifier: ^7.1.0
+        specifier: 7.1.0
         version: 7.1.0
+      string-ts:
+        specifier: 2.2.1
+        version: 2.2.1
       string-width:
         specifier: 7.2.0
         version: 7.2.0
       typescript:
-        specifier: ^5.8.2
+        specifier: 5.8.2
         version: 5.8.2
       vitest:
-        specifier: ^3.0.8
+        specifier: 3.0.8
         version: 3.0.8(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/browser@3.0.8)(@vitest/ui@3.0.8)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.25.1)(msw@2.7.3(@types/node@18.19.71)(typescript@5.8.2))(terser@5.31.1)(tsx@4.19.3)(yaml@2.7.0)
       wrap-ansi:
-        specifier: ^9.0.0
+        specifier: 9.0.0
         version: 9.0.0
 
   packages/tsconfig:
@@ -17934,6 +17937,9 @@ packages:
   string-length@6.0.0:
     resolution: {integrity: sha512-1U361pxZHEQ+FeSjzqRpV+cu2vTzYeWeafXFLykiFlv4Vc0n3njgU8HrMbyik5uwm77naWMuVG8fhEF+Ovb1Kg==}
     engines: {node: '>=16'}
+
+  string-ts@2.2.1:
+    resolution: {integrity: sha512-Q2u0gko67PLLhbte5HmPfdOjNvUKbKQM+mCNQae6jE91DmoFHY6HH9GcdqCeNx87DZ2KKjiFxmA0R/42OneGWw==}
 
   string-width@4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
@@ -38229,6 +38235,8 @@ snapshots:
   string-length@6.0.0:
     dependencies:
       strip-ansi: 7.1.0
+
+  string-ts@2.2.1: {}
 
   string-width@4.2.3:
     dependencies:
