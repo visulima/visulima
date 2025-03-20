@@ -498,29 +498,29 @@ getStringTruncatedWidth("👨‍👩‍👧‍👦 Family", {
 The `truncate` function provides a convenient way to truncate strings with support for different positions, Unicode characters, ANSI escape codes, and more.
 
 ```typescript
-import { truncate } from '@visulima/string';
+import { truncate } from "@visulima/string";
 
 // Basic truncation (end position)
-truncate('unicorn', 4); // => 'un…'
-truncate('unicorn', 4, { position: 'end' }); // => 'un…'
+truncate("unicorn", 4); // => 'un…'
+truncate("unicorn", 4, { position: "end" }); // => 'un…'
 
 // Different positions
-truncate('unicorn', 5, { position: 'start' }); // => '…orn'
-truncate('unicorn', 5, { position: 'middle' }); // => 'un…n'
+truncate("unicorn", 5, { position: "start" }); // => '…orn'
+truncate("unicorn", 5, { position: "middle" }); // => 'un…n'
 
 // With custom ellipsis
-truncate('unicorns', 5, { ellipsis: '.' }); // => 'unic.'
-truncate('unicorns', 5, { ellipsis: ' .' }); // => 'uni .'
+truncate("unicorns", 5, { ellipsis: "." }); // => 'unic.'
+truncate("unicorns", 5, { ellipsis: " ." }); // => 'uni .'
 
 // Smart truncation on spaces
-truncate('dragons are awesome', 15, { position: 'end', preferTruncationOnSpace: true }); // => 'dragons are…'
-truncate('unicorns rainbow dragons', 20, { position: 'middle', preferTruncationOnSpace: true }); // => 'unicorns…dragons'
+truncate("dragons are awesome", 15, { position: "end", preferTruncationOnSpace: true }); // => 'dragons are…'
+truncate("unicorns rainbow dragons", 20, { position: "middle", preferTruncationOnSpace: true }); // => 'unicorns…dragons'
 
 // With ANSI escape codes
-truncate('\u001B[31municorn\u001B[39m', 4); // => '\u001B[31mun\u001B[39m…'
+truncate("\u001B[31municorn\u001B[39m", 4); // => '\u001B[31mun\u001B[39m…'
 
 // With Unicode characters
-truncate('안녕하세요', 3, { width: { fullWidth: 2 } }); // => '안…'
+truncate("안녕하세요", 3, { width: { fullWidth: 2 } }); // => '안…'
 ```
 
 #### Truncation Options
@@ -535,14 +535,14 @@ interface TruncateOptions {
     ellipsisWidth?: number;
 
     // The position to truncate the string
-    position?: 'end' | 'middle' | 'start'; // default: 'end'
+    position?: "end" | "middle" | "start"; // default: 'end'
 
     // Truncate the string from a whitespace if it is within 3 characters
     // from the actual breaking point
     preferTruncationOnSpace?: boolean; // default: false
 
     // Width calculation options
-    width?: Omit<StringTruncatedWidthOptions, 'ellipsis' | 'ellipsisWidth' | 'limit'>;
+    width?: Omit<StringTruncatedWidthOptions, "ellipsis" | "ellipsisWidth" | "limit">;
 }
 
 interface StringTruncatedWidthOptions extends StringWidthOptions {

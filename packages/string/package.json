@@ -193,6 +193,56 @@
                 "default": "./dist/case/pascal-case.mjs"
             }
         },
+        "./slice": {
+            "require": {
+                "types": "./dist/slice.d.cts",
+                "default": "./dist/slice.cjs"
+            },
+            "import": {
+                "types": "./dist/slice.d.mts",
+                "default": "./dist/slice.mjs"
+            }
+        },
+        "./truncate": {
+            "require": {
+                "types": "./dist/truncate.d.cts",
+                "default": "./dist/truncate.cjs"
+            },
+            "import": {
+                "types": "./dist/truncate.d.mts",
+                "default": "./dist/truncate.mjs"
+            }
+        },
+        "./get-string-width": {
+            "require": {
+                "types": "./dist/get-string-width.d.cts",
+                "default": "./dist/get-string-width.cjs"
+            },
+            "import": {
+                "types": "./dist/get-string-width.d.mts",
+                "default": "./dist/get-string-width.mjs"
+            }
+        },
+        "./get-string-truncated-width": {
+            "require": {
+                "types": "./dist/get-string-truncated-width.d.cts",
+                "default": "./dist/get-string-truncated-width.cjs"
+            },
+            "import": {
+                "types": "./dist/get-string-truncated-width.d.mts",
+                "default": "./dist/get-string-truncated-width.mjs"
+            }
+        },
+        "./outdent": {
+            "require": {
+                "types": "./dist/outdent.d.cts",
+                "default": "./dist/outdent.cjs"
+            },
+            "import": {
+                "types": "./dist/outdent.d.mts",
+                "default": "./dist/outdent.mjs"
+            }
+        },
         "./case/pascal-snake-case": {
             "require": {
                 "types": "./dist/case/pascal-snake-case.d.cts",
@@ -342,6 +392,21 @@
             ],
             "case/pascal-case": [
                 "./dist/case/pascal-case.d.ts"
+            ],
+            "slice": [
+                "./dist/slice.d.ts"
+            ],
+            "truncate": [
+                "./dist/truncate.d.ts"
+            ],
+            "get-string-width": [
+                "./dist/get-string-width.d.ts"
+            ],
+            "get-string-truncated-width": [
+                "./dist/get-string-truncated-width.d.ts"
+            ],
+            "outdent": [
+                "./dist/outdent.d.ts"
             ],
             "case/pascal-snake-case": [
                 "./dist/case/pascal-snake-case.d.ts"

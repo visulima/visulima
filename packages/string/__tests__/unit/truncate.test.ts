@@ -144,7 +144,7 @@ describe("truncate", () => {
                     ellipsis: "...",
                     width: { tabWidth: 4 },
                 }),
-            ).toBe("Tab...");
+            ).toBe("Tab\tT...");
 
             expect(
                 truncate("ｗｉｄｅ", 6, {

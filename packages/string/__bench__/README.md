@@ -20,6 +20,7 @@ pnpm run test:bench string-width.bench.ts
 ## Benchmark Files
 
 ### Case Conversion
+
 Compares performance against lodash, case-anything, scule, and change-case:
 
 - `case/camel-case.bench.ts` - camelCase conversion
@@ -41,6 +42,7 @@ Compares performance against lodash, case-anything, scule, and change-case:
 - `case/upper-first.bench.ts` - upperFirst conversion
 
 ### String Manipulation
+
 Compares performance against various specialized libraries:
 
 - `outdent.bench.ts` - Outdent/dedent with caching vs alternatives
@@ -55,12 +57,14 @@ Compares performance against various specialized libraries:
 Each benchmark includes tests for:
 
 ### String Cases
+
 - Basic transformations
 - Cache effectiveness (where applicable)
 - Special character handling (ANSI, emoji, Unicode)
 - Acronym handling (XML, API, etc.)
 
 ### String Manipulation
+
 - ANSI escape sequences
 - Unicode characters
 - Multi-byte characters
@@ -72,12 +76,14 @@ Each benchmark includes tests for:
 Benchmarks compare against popular alternatives:
 
 ### Case Conversion
+
 - Lodash
 - Scule
 - change-case
 - case-anything
 
 ### String Manipulation
+
 - string-width
 - fast-string-truncated-width
 - cli-truncate
@@ -89,21 +95,23 @@ Benchmarks compare against popular alternatives:
 The implementations are optimized for:
 
 1. Efficient Operations
-   - Smart caching for repeated operations
-   - Optimized string handling
-   - Memory-efficient processing
+
+    - Smart caching for repeated operations
+    - Optimized string handling
+    - Memory-efficient processing
 
 2. Special Cases
-   - ANSI escape sequences
-   - Unicode/emoji support
-   - Multi-byte characters
-   - Whitespace preservation
+
+    - ANSI escape sequences
+    - Unicode/emoji support
+    - Multi-byte characters
+    - Whitespace preservation
 
 3. Edge Cases
-   - Empty strings
-   - Mixed character types
-   - Boundary conditions
-   - Invalid inputs
+    - Empty strings
+    - Mixed character types
+    - Boundary conditions
+    - Invalid inputs
 
 ## Notes
 

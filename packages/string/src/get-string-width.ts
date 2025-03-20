@@ -35,21 +35,21 @@ export type StringWidthOptions = Omit<StringTruncatedWidthOptions, "ellipsis" | 
  * // Basic usage
  * getStringWidth('hello');
  * // => 5
- * 
+ *
  * getStringWidth('👋 hello');
  * // => 7
  *
  * // With custom character widths
  * getStringWidth('hello', { regularWidth: 2 });
  * // => 10
- * 
+ *
  * getStringWidth('あいう', { ambiguousIsNarrow: true });
  * // => 3
- * 
+ *
  * // With combining characters
  * getStringWidth('e\u0301'); // Latin e with acute
  * // => 1
- * 
+ *
  * getStringWidth('\u0e01\u0e31'); // Thai character with vowel mark
  * // => 1
  * ```

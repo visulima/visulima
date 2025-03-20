@@ -1,5 +1,6 @@
-import { bench, describe } from "vitest";
 import stringWidth from "string-width";
+import { bench, describe } from "vitest";
+
 import { getStringWidth } from "../src";
 
 describe("string width", () => {

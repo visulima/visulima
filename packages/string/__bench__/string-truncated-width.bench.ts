@@ -1,5 +1,6 @@
-import { bench, describe } from "vitest";
 import fastStringTruncatedWidth from "fast-string-truncated-width";
+import { bench, describe } from "vitest";
+
 import { getStringTruncatedWidth } from "../src";
 
 describe("string truncated width", () => {
@@ -30,11 +31,11 @@ describe("string truncated width", () => {
         });
 
         bench("@visulima/string getStringTruncatedWidth (count ANSI)", () => {
-            getStringTruncatedWidth(ansiString, { limit: 20, countAnsiEscapeCodes: true });
+            getStringTruncatedWidth(ansiString, { countAnsiEscapeCodes: true, limit: 20 });
         });
 
         bench("fast-string-truncated-width (count ANSI)", () => {
-            fastStringTruncatedWidth(ansiString, { limit: 20, countAnsiEscapeCodes: true });
+            fastStringTruncatedWidth(ansiString, { countAnsiEscapeCodes: true, limit: 20 });
         });
     });
 
@@ -70,11 +71,11 @@ describe("string truncated width", () => {
 
     describe("ambiguous-width characters (narrow)", () => {
         bench("@visulima/string getStringTruncatedWidth (narrow)", () => {
-            getStringTruncatedWidth(ambiguousString, { limit: 20, ambiguousIsNarrow: true });
+            getStringTruncatedWidth(ambiguousString, { ambiguousIsNarrow: true, limit: 20 });
         });
 
         bench("fast-string-truncated-width (narrow)", () => {
-            fastStringTruncatedWidth(ambiguousString, { limit: 20, ambiguousIsNarrow: true });
+            fastStringTruncatedWidth(ambiguousString, { ambiguousIsNarrow: true, limit: 20 });
         });
     });
 
@@ -91,10 +92,10 @@ describe("string truncated width", () => {
     describe("custom width options", () => {
         bench("@visulima/string getStringTruncatedWidth (custom widths)", () => {
             getStringTruncatedWidth(mixedString, {
-                limit: 20,
                 ambiguousWidth: 2,
                 emojiWidth: 2,
                 fullWidth: 2,
+                limit: 20,
                 regularWidth: 1,
                 tabWidth: 4,
             });
@@ -102,10 +103,10 @@ describe("string truncated width", () => {
 
         bench("fast-string-truncated-width (custom widths)", () => {
             fastStringTruncatedWidth(mixedString, {
-                limit: 20,
                 ambiguousWidth: 2,
                 emojiWidth: 2,
                 fullWidth: 2,
+                limit: 20,
                 regularWidth: 1,
                 tabWidth: 4,
             });
@@ -114,27 +115,27 @@ describe("string truncated width", () => {
 
     describe("with ellipsis", () => {
         bench("@visulima/string getStringTruncatedWidth (default ellipsis)", () => {
-            getStringTruncatedWidth(simpleString, { limit: 20, ellipsis: "…" });
+            getStringTruncatedWidth(simpleString, { ellipsis: "…", limit: 20 });
         });
 
         bench("fast-string-truncated-width (default ellipsis)", () => {
-            fastStringTruncatedWidth(simpleString, { limit: 20, ellipsis: "…" });
+            fastStringTruncatedWidth(simpleString, { ellipsis: "…", limit: 20 });
         });
 
         bench("@visulima/string getStringTruncatedWidth (custom ellipsis)", () => {
-            getStringTruncatedWidth(simpleString, { limit: 20, ellipsis: "..." });
+            getStringTruncatedWidth(simpleString, { ellipsis: "...", limit: 20 });
         });
 
         bench("fast-string-truncated-width (custom ellipsis)", () => {
-            fastStringTruncatedWidth(simpleString, { limit: 20, ellipsis: "..." });
+            fastStringTruncatedWidth(simpleString, { ellipsis: "...", limit: 20 });
         });
 
         bench("@visulima/string getStringTruncatedWidth (ANSI ellipsis)", () => {
-            getStringTruncatedWidth(simpleString, { limit: 20, ellipsis: "\u001B[31m...\u001B[39m" });
+            getStringTruncatedWidth(simpleString, { ellipsis: "\u001B[31m...\u001B[39m", limit: 20 });
         });
 
         bench("fast-string-truncated-width (ANSI ellipsis)", () => {
-            fastStringTruncatedWidth(simpleString, { limit: 20, ellipsis: "\u001B[31m...\u001B[39m" });
+            fastStringTruncatedWidth(simpleString, { ellipsis: "\u001B[31m...\u001B[39m", limit: 20 });
         });
     });
 });

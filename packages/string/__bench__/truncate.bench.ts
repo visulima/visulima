@@ -1,6 +1,7 @@
-import { bench, describe } from "vitest";
-import cliTruncate from "cli-truncate";
 import ansiTruncate from "ansi-truncate";
+import cliTruncate from "cli-truncate";
+import { bench, describe } from "vitest";
+
 import { truncate } from "../src/truncate";
 
 describe("truncate", () => {
@@ -39,7 +40,7 @@ describe("truncate", () => {
 
     describe("Unicode string", () => {
         bench("@visulima/string truncate", () => {
-            truncate(unicodeString, 20, { width: { fullWidth: 2, emojiWidth: 2 } });
+            truncate(unicodeString, 20, { width: { emojiWidth: 2, fullWidth: 2 } });
         });
 
         bench("cli-truncate", () => {
@@ -53,7 +54,7 @@ describe("truncate", () => {
 
     describe("mixed content", () => {
         bench("@visulima/string truncate", () => {
-            truncate(mixedString, 20, { width: { fullWidth: 2, emojiWidth: 2 } });
+            truncate(mixedString, 20, { width: { emojiWidth: 2, fullWidth: 2 } });
         });
 
         bench("cli-truncate", () => {

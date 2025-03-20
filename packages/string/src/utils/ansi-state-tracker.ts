@@ -65,7 +65,7 @@ class AnsiStateTracker {
                         29: "[9m", // Reset strikethrough
                     };
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                     
                     const formatToRemove = formatResetMap[code];
 
                     if (formatToRemove) {
