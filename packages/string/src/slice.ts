@@ -1,5 +1,9 @@
 import type { StringWidthOptions } from "./get-string-width";
 import { getStringWidth } from "./get-string-width";
+import { processAnsiString } from "./utils/ansi-parser";
+import AnsiStateTracker from "./utils/ansi-state-tracker";
+import { ANSI_RESET_CODES } from "./constants";
+import type { AnsiSegment, HyperlinkSegment } from "./utils/types";
 
 const ANSI_REGEX = /\u001B(?:\[(?:\d+(?:;\d+)*)?m|\]8;;.*?(?:\u0007|\u001B\\))/g;
 
@@ -100,8 +104,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
 
                 if (code === "39") {
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                         const styleCode = s.slice(2, -1);
                         return (styleCode >= "30" && styleCode <= "37") || (styleCode >= "90" && styleCode <= "97") || styleCode.startsWith("38;");
                     });
@@ -110,8 +113,7 @@ return false;
                     }
                 } else if (code === "49") {
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                         const styleCode = s.slice(2, -1);
                         return (styleCode >= "40" && styleCode <= "47") || (styleCode >= "100" && styleCode <= "107") || styleCode.startsWith("48;");
                     });
@@ -129,8 +131,7 @@ return false;
                     }[code];
 
                     const index = activeStyles.findIndex((s) => {
-                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                        if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                         return s.slice(2, -1) === targetCode;
                     });
 
@@ -142,8 +143,7 @@ return false;
                     if ((code >= "30" && code <= "37") || (code >= "90" && code <= "97") || code.startsWith("38;")) {
                         // Remove any existing foreground color
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                             const styleCode = s.slice(2, -1);
                             return (styleCode >= "30" && styleCode <= "37") || (styleCode >= "90" && styleCode <= "97") || styleCode.startsWith("38;");
                         });
@@ -153,8 +153,7 @@ return false;
                     } else if ((code >= "40" && code <= "47") || (code >= "100" && code <= "107") || code.startsWith("48;")) {
                         // Remove any existing background color
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                             const styleCode = s.slice(2, -1);
                             return (styleCode >= "40" && styleCode <= "47") || (styleCode >= "100" && styleCode <= "107") || styleCode.startsWith("48;");
                         });
@@ -164,8 +163,7 @@ return false;
                     } else if (["1", "3", "4", "7", "8", "9"].includes(code)) {
                         // Remove any existing style of the same type
                         const index = activeStyles.findIndex((s) => {
-                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) 
-return false;
+                            if (!s.startsWith("\u001B[") || !s.endsWith("m")) return false;
                             return s.slice(2, -1) === code;
                         });
 
@@ -370,8 +368,7 @@ const fastSlice = (inputString: string, startIndex = 0, endIndex = inputString.l
     let startFound = false;
 
     // Process each grapheme with respect to its width
-    for (const grapheme_ of graphemes) {
-        const grapheme = grapheme_ as Intl.SegmentData;
+    for (const grapheme of graphemes) {
         const graphemeWidth = getStringWidth(grapheme.segment, options.width);
 
         // Current position before adding this grapheme
@@ -379,14 +376,12 @@ const fastSlice = (inputString: string, startIndex = 0, endIndex = inputString.l
         // Position after adding this grapheme
         const positionAfter = currentWidth + graphemeWidth;
 
-        // Check if we've found our starting point yet
+        // Skip graphemes before the start point
         if (!startFound) {
             if (positionBefore < startIndex) {
-                // This grapheme is still before our target start
                 currentWidth = positionAfter;
                 continue;
             } else {
-                // We've found our start point
                 startFound = true;
             }
         }
@@ -479,6 +474,11 @@ export const slice = (inputString: string, startIndex = 0, endIndex = inputStrin
     }
 
     if (!inputString.includes("\u001B")) {
+        // ASCII-only strings can be sliced directly
+        if (/^[\x00-\x7F]*$/.test(inputString)) {
+            return inputString.slice(startIndex, endIndex);
+        }
+
         return fastSlice(inputString, startIndex, endIndex, config);
     }
 
