@@ -66,7 +66,9 @@ describe("string truncated width", () => {
         bench("fast-string-truncated-width (default)", () => {
             fastStringTruncatedWidth(ambiguousString, { limit: 20 });
         });
+    });
 
+    describe("ambiguous-width characters (narrow)", () => {
         bench("@visulima/string getStringTruncatedWidth (narrow)", () => {
             getStringTruncatedWidth(ambiguousString, { limit: 20, ambiguousIsNarrow: true });
         });

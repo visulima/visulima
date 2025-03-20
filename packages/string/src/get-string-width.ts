@@ -28,31 +28,40 @@ import { getStringTruncatedWidth } from "./get-string-truncated-width";
 export type StringWidthOptions = Omit<StringTruncatedWidthOptions, "ellipsis" | "ellipsisWidth" | "limit">;
 
 /**
- * Calculate the visual width of a string, taking into account Unicode characters, emojis, ANSI escape codes, and more.
+ * Calculate the visual width of a string, taking into account Unicode characters, emojis, and ANSI escape codes.
  *
  * @example
  * ```typescript
  * // Basic usage
- * getStringWidth('hello'); // => 5
- * getStringWidth('👋 hello'); // => 7
+ * getStringWidth('hello');
+ * // => 5
+ * 
+ * getStringWidth('👋 hello');
+ * // => 7
  *
- * // With options
- * getStringWidth('hello', { regularWidth: 2 }); // => 10
- * getStringWidth('あいう', { ambiguousIsNarrow: true }); // => 3
+ * // With custom character widths
+ * getStringWidth('hello', { regularWidth: 2 });
+ * // => 10
+ * 
+ * getStringWidth('あいう', { ambiguousIsNarrow: true });
+ * // => 3
+ * 
+ * // With combining characters
+ * getStringWidth('e\u0301'); // Latin e with acute
+ * // => 1
+ * 
+ * getStringWidth('\u0e01\u0e31'); // Thai character with vowel mark
+ * // => 1
  * ```
  *
+ * Features:
+ * - Full Unicode support including combining marks
+ * - Accurate width calculation for emoji sequences
+ * - ANSI escape code handling
+ * - Customizable character widths
+ *
  * @param input - The string to calculate the width for
- * @param options - Configuration options for width calculation:
- *                 - ambiguousIsNarrow: Treat ambiguous-width characters as narrow (default: false)
- *                 - ambiguousWidth: Width of ambiguous-width characters (default: 1)
- *                 - ansiWidth: Width of ANSI escape sequences (default: 0)
- *                 - controlWidth: Width of control characters (default: 0)
- *                 - countAnsiEscapeCodes: Include ANSI escape codes in width calculation (default: false)
- *                 - emojiWidth: Width of emoji characters (default: 2)
- *                 - fullWidth: Width of full-width characters (default: 2)
- *                 - regularWidth: Width of regular characters (default: 1)
- *                 - tabWidth: Width of tab characters (default: 8)
- *                 - wideWidth: Width of wide characters (default: 2)
+ * @param options - Configuration options for width calculation
  * @returns The calculated visual width of the string
  */
 export const getStringWidth = (input: string, options: StringWidthOptions = {}): number =>

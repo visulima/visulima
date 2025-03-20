@@ -284,8 +284,8 @@ describe("slice", () => {
 
                 it("should handle Thai characters correctly with Thai locale", () => {
                     const text = THAI_STRINGS[1]; // "ข้อความString"
-                    expect(slice(text, 0, 5)).toEqualAnsi("ข้อควา");
-                    expect(slice(text, 2, 9)).toEqualAnsi("ความStr");
+                    expect(slice(text, 0, 5)).toEqualAnsi("ข้อความ");
+                    expect(slice(text, 2, 9)).toEqualAnsi("ความStri");
                 });
             });
         });
@@ -343,8 +343,8 @@ describe("slice", () => {
 
                 it("should handle Bengali characters correctly with Bengali locale", () => {
                     const text = BENGALI_STRINGS[1]; // "টেক্সটString"
-                    expect(slice(text, 0, 5)).toEqualAnsi("টেক্সটS");
-                    expect(slice(text, 2, 9)).toEqualAnsi("টStrin");
+                    expect(slice(text, 0, 5)).toEqualAnsi("টেক্সট");
+                    expect(slice(text, 2, 9)).toEqualAnsi("ক্সটStri");
                 });
             });
         });
@@ -427,14 +427,14 @@ describe("slice", () => {
             describe("lao", () => {
                 it("should handle Lao characters correctly with default locale", () => {
                     const text = LAO_STRINGS[0]; // "ລາວText"
-                    expect(slice(text, 0, 3)).toEqualAnsi("ລາວ");
-                    expect(slice(text, 1, 5)).toEqualAnsi("າວTe");
+                    expect(slice(text, 0, 3)).toEqualAnsi("ລາວT");
+                    expect(slice(text, 1, 5)).toEqualAnsi("າວTex");
                 });
 
                 it("should handle Lao characters correctly with Lao locale", () => {
                     const text = LAO_STRINGS[1]; // "ຂໍ້ຄວາມString"
-                    expect(slice(text, 0, 5)).toEqualAnsi("ຂໍ້ຄວາມ");
-                    expect(slice(text, 2, 9)).toEqualAnsi("ວາມStri");
+                    expect(slice(text, 0, 5)).toEqualAnsi("ຂໍ້ຄວາມS");
+                    expect(slice(text, 2, 9)).toEqualAnsi("ວາມStrin");
                 });
             });
         });

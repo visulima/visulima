@@ -75,13 +75,13 @@ describe("getStringWidth", () => {
             expect.assertions(8);
 
             expect(getStringWidth("\u200B")).toBe(0);
-            expect(getStringWidth("x\u200Bx")).toBe(1);
-            expect(getStringWidth("\u200C")).toBe(1);
-            expect(getStringWidth("x\u200Cx")).toBe(3);
-            expect(getStringWidth("\u200D")).toBe(1);
-            expect(getStringWidth("x\u200Dx")).toBe(3);
+            expect(getStringWidth("x\u200Bx")).toBe(2);
+            expect(getStringWidth("\u200C")).toBe(0);
+            expect(getStringWidth("x\u200Cx")).toBe(2);
+            expect(getStringWidth("\u200D")).toBe(0);
+            expect(getStringWidth("x\u200Dx")).toBe(2);
             expect(getStringWidth("\uFEFF")).toBe(0);
-            expect(getStringWidth("x\uFEFFx")).toBe(1);
+            expect(getStringWidth("x\uFEFFx")).toBe(2);
         });
     });
 

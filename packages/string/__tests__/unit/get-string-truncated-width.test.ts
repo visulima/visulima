@@ -84,6 +84,54 @@ describe("getStringTruncatedWidth", () => {
             expect(getWidth("x\u0300")).toBe(1);
         });
 
+        it("supports combining marks across scripts", () => {
+            expect.assertions(26);
+
+            // Latin with combining marks
+            expect(getWidth("x\u0300")).toBe(1); // Latin x with combining grave
+            expect(getWidth("e\u0301")).toBe(1); // Latin e with combining acute
+
+            // Southeast Asian scripts
+            expect(getWidth("ก\u0e31")).toBe(1); // Thai character with vowel mark
+            expect(getWidth("ປ\u0eb1")).toBe(1); // Lao character with vowel mark
+            expect(getWidth("ສ\u0ecd")).toBe(1); // Lao character with niggahita
+
+            // Indic scripts
+            expect(getWidth("क\u093f")).toBe(1); // Devanagari ka with vowel sign i
+            expect(getWidth("ক\u09bc")).toBe(1); // Bengali ka with nukta
+            expect(getWidth("ਕ\u0a3c")).toBe(1); // Gurmukhi ka with nukta
+
+            // Arabic and Persian
+            expect(getWidth("ب\u064e")).toBe(1); // Arabic beh with fatha
+            expect(getWidth("ا\u0670")).toBe(1); // Arabic alef with superscript alef
+            expect(getWidth("ف\u06ed")).toBe(1); // Arabic feh with small high meem
+
+            // Hebrew
+            expect(getWidth("ב\u05bc")).toBe(1); // Hebrew bet with dagesh
+            expect(getWidth("א\u05b7")).toBe(1); // Hebrew alef with patah
+            expect(getWidth("ב\u05bf")).toBe(1); // Hebrew bet with rafe
+
+            // Tibetan
+            expect(getWidth("ཨ\u0f71")).toBe(1); // Tibetan letter a with vowel sign aa
+            expect(getWidth("ཀ\u0f80")).toBe(1); // Tibetan letter ka with vowel sign reversed i
+
+            // Vietnamese
+            expect(getWidth("a\u0303")).toBe(1); // Latin a with tilde
+            expect(getWidth("e\u0323")).toBe(1); // Latin e with dot below
+
+            // Multiple combining marks
+            expect(getWidth("a\u0303\u0323")).toBe(1); // a with tilde and dot below
+            expect(getWidth("ก\u0e31\u0e47")).toBe(1); // Thai with multiple marks
+            expect(getWidth("ا\u0670\u0651")).toBe(1); // Arabic with multiple marks
+
+            // Mixed scripts with combining marks
+            expect(getWidth("e\u0301क\u093f")).toBe(2); // Latin + Devanagari
+            expect(getWidth("ก\u0e31a\u0303")).toBe(2); // Thai + Vietnamese
+            expect(getWidth("ا\u0670e\u0323")).toBe(2); // Arabic + Vietnamese
+            expect(getWidth("ב\u05bcก\u0e31")).toBe(2); // Hebrew + Thai
+            expect(getWidth("ཨ\u0f71ا\u0670")).toBe(2); // Tibetan + Arabic
+        });
+
         it("supports emoji characters", () => {
             expect.assertions(16);
 
