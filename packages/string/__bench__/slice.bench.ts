@@ -9,6 +9,7 @@ import { SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 import { slice } from "../src/slice";
 
 // Create test strings with ANSI colors
+// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 const coloredString = red("the ") + green("quick ") + blue("brown ") + cyan("fox ") + yellow("jumped ");
 const longColoredString = Array.from({ length: 10 }, (_, index) => colorize[["red", "green", "blue", "cyan", "yellow"][index % 5]](`part-${index} `)).join("");
 const hyperlink = "\u001B]8;;https://example.com\u0007Example Link\u001B]8;;\u0007";
@@ -35,14 +36,6 @@ const sliceTestCases = [
     { begin: 0, end: 3, str: emojiString },
     { begin: 0, end: 5, str: mixedString },
     { begin: 2, end: 7, str: mixedString },
-];
-
-// Create negative index test cases
-const negativeIndexTestCases = [
-    { begin: -10, end: -5, str: coloredString },
-    { begin: -15, end: -3, str: coloredString },
-    { begin: -20, end: -10, str: longColoredString },
-    { begin: -5, end: -2, str: unicodeString },
 ];
 
 // Create test cases with only begin index (end is undefined)
@@ -77,26 +70,6 @@ describe("slice", () => {
         });
     });
 
-    describe("Negative index slicing", () => {
-        bench("visulima/string slice", () => {
-            for (const testCase of negativeIndexTestCases) {
-                slice(testCase.str, testCase.begin, testCase.end);
-            }
-        });
-
-        bench("slice-ansi", () => {
-            for (const testCase of negativeIndexTestCases) {
-                sliceAnsi(testCase.str, testCase.begin, testCase.end);
-            }
-        });
-
-        bench("@arcanis/slice-ansi", () => {
-            for (const testCase of negativeIndexTestCases) {
-                arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
-            }
-        });
-    });
-
     describe("Begin-only slicing (end is undefined)", () => {
         bench("visulima/string slice", () => {
             for (const testCase of beginOnlyTestCases) {
@@ -119,46 +92,46 @@ describe("slice", () => {
 
     describe("Standard test strings", () => {
         bench("visulima/string slice", () => {
-            for (const string_ of TEST_STRINGS) {
-                slice(string_, 0, Math.floor(string_.length / 2));
-                slice(string_, Math.floor(string_.length / 3), Math.floor((string_.length * 2) / 3));
+            for (const input of TEST_STRINGS) {
+                slice(input, 0, Math.floor(input.length / 2));
+                slice(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
             }
         });
 
         bench("slice-ansi", () => {
-            for (const string_ of TEST_STRINGS) {
-                sliceAnsi(string_, 0, Math.floor(string_.length / 2));
-                sliceAnsi(string_, Math.floor(string_.length / 3), Math.floor((string_.length * 2) / 3));
+            for (const input of TEST_STRINGS) {
+                sliceAnsi(input, 0, Math.floor(input.length / 2));
+                sliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
             }
         });
 
         bench("@arcanis/slice-ansi", () => {
-            for (const string_ of TEST_STRINGS) {
-                arcanisSliceAnsi(string_, 0, Math.floor(string_.length / 2));
-                arcanisSliceAnsi(string_, Math.floor(string_.length / 3), Math.floor((string_.length * 2) / 3));
+            for (const input of TEST_STRINGS) {
+                arcanisSliceAnsi(input, 0, Math.floor(input.length / 2));
+                arcanisSliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
             }
         });
     });
 
     describe("Special strings with ANSI and emoji", () => {
         bench("visulima/string slice", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                slice(string_, 0, Math.floor(string_.length / 2));
-                slice(string_, Math.floor(string_.length / 3), Math.floor((string_.length * 2) / 3));
+            for (const input of SPECIAL_STRINGS) {
+                slice(input, 0, Math.floor(input.length / 2));
+                slice(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
             }
         });
 
         bench("slice-ansi", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                sliceAnsi(string_, 0, Math.floor(string_.length / 2));
-                sliceAnsi(string_, Math.floor(string_.length / 3), Math.floor((string_.length * 2) / 3));
+            for (const input of SPECIAL_STRINGS) {
+                sliceAnsi(input, 0, Math.floor(input.length / 2));
+                sliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
             }
         });
 
         bench("@arcanis/slice-ansi", () => {
-            for (const string_ of SPECIAL_STRINGS) {
-                arcanisSliceAnsi(string_, 0, Math.floor(string_.length / 2));
-                arcanisSliceAnsi(string_, Math.floor(string_.length / 3), Math.floor((string_.length * 2) / 3));
+            for (const input of SPECIAL_STRINGS) {
+                arcanisSliceAnsi(input, 0, Math.floor(input.length / 2));
+                arcanisSliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
             }
         });
     });
@@ -167,6 +140,7 @@ describe("slice", () => {
         const edgeCases = [
             { begin: 0, end: 0, str: "" },
             { begin: 0, end: 0, str: coloredString },
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             { begin: coloredString.length, end: coloredString.length + 10, str: coloredString },
             { begin: unicodeString.length, end: undefined, str: unicodeString },
             { begin: 100, end: 200, str: emojiString },

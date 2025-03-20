@@ -1,9 +1,9 @@
 import { stripVTControlCharacters } from "node:util";
 
 import { stripEmoji } from "../constants";
+import LRUCache from "../utils/lru-cache";
 import type { CaseOptions, FlipCase } from "./types";
 import generateCacheKey from "./utils/generate-cache-key";
-import LRUCache from "../utils/lru-cache";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 
@@ -58,7 +58,6 @@ export const flipCase = <T extends string = string>(value?: T, options?: FlipOpt
     let result = "";
     let index = 0;
 
-    // eslint-disable-next-line no-loops/no-loops
     while (index < processedValue.length) {
         // Handle ANSI sequences if we didn't strip them
         // eslint-disable-next-line security/detect-object-injection
@@ -69,7 +68,7 @@ export const flipCase = <T extends string = string>(value?: T, options?: FlipOpt
             // eslint-disable-next-line no-plusplus
             index++;
 
-            // eslint-disable-next-line no-loops/no-loops,security/detect-object-injection
+            // eslint-disable-next-line security/detect-object-injection
             while (index < processedValue.length && processedValue[index] !== "m") {
                 // eslint-disable-next-line @typescript-eslint/restrict-plus-operands,security/detect-object-injection
                 ansiSequence += processedValue[index];

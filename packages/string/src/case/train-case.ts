@@ -1,9 +1,9 @@
+import LRUCache from "../utils/lru-cache";
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, TrainCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
-import LRUCache from "../utils/lru-cache";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 

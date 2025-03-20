@@ -447,6 +447,9 @@
             ],
             "test/vitest": [
                 "./dist/test/vitest.d.ts"
+            ],
+            "utils": [
+                "./dist/utils.d.ts"
             ]
         }
     },

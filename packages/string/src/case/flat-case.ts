@@ -1,6 +1,6 @@
+import LRUCache from "../utils/lru-cache";
 import { kebabCase } from "./kebab-case";
 import type { CaseOptions, FlatCase } from "./types";
-import LRUCache from "../utils/lru-cache";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 

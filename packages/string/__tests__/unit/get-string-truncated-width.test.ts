@@ -238,7 +238,6 @@ describe("getStringTruncatedWidth", () => {
                 "\u2937": 1, // RIGHT-SIDE ARC CLOCKWISE ARROW
             };
 
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const [char, expectedWidth] of Object.entries(unicodeChars)) {
                 expect(getWidth(char), `${char} should have a width of ${expectedWidth}`).toBe(expectedWidth);
             }

@@ -1,8 +1,8 @@
+import LRUCache from "../utils/lru-cache";
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, TitleCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
-import LRUCache from "../utils/lru-cache";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
@@ -10,8 +10,6 @@ const defaultCacheStore = new LRUCache<string, string>(1000);
 // eslint-disable-next-line no-secrets/no-secrets
 /**
  * With Title Case all words are capitalized, except for minor words.
- * A compact regex of common minor words (such as a for, to) is used
- * to automatically keep them lower case.
  * @example
  * ```typescript
  * titleCase("this-IS-aTitle") // => "This is a Title"
@@ -36,7 +34,7 @@ function titleCase<T extends string = string>(value?: T, options?: CaseOptions):
 
     // For cases with caching enabled, use cache with composite key
     if (shouldCache && cacheKey && cacheStore.has(cacheKey)) {
-        return cacheStore.get(cacheKey) as CamelCase<T>;
+        return cacheStore.get(cacheKey) as TitleCase<T>;
     }
 
     const result = splitByCase(value, {

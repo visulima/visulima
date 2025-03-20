@@ -15,7 +15,6 @@ const stringVisibleTrimSpacesRight = (string: string): string => {
 
     let last = words.length;
 
-    // eslint-disable-next-line no-loops/no-loops
     while (last > 0 && getStringWidth(words[last - 1] as string) === 0) {
         // eslint-disable-next-line no-plusplus
         last--;
@@ -57,7 +56,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     let escapeBuffer = "";
 
     // For each character in the input string
-    // eslint-disable-next-line no-plusplus,no-loops/no-loops
+    // eslint-disable-next-line no-plusplus
     for (let index = 0; index < string.length; index++) {
         // eslint-disable-next-line security/detect-object-injection
         const char = string[index] as string;
@@ -116,7 +115,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             // Handle spaces at wrap points
             if (isSpace && trim) {
                 // Skip all spaces when trim=true
-                // eslint-disable-next-line no-loops/no-loops,security/detect-object-injection
+                // eslint-disable-next-line security/detect-object-injection
                 while (index < string.length && string[index] === " ") {
                     // eslint-disable-next-line no-plusplus
                     index++;
@@ -144,7 +143,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             if (index + 1 < string.length && string[index + 1] === " " && trim) {
                 // eslint-disable-next-line no-plusplus
                 index++;
-                // eslint-disable-next-line no-loops/no-loops,security/detect-object-injection
+                // eslint-disable-next-line security/detect-object-injection
                 while (index < string.length && string[index] === " ") {
                     // eslint-disable-next-line no-plusplus
                     index++;
@@ -194,14 +193,16 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
         getWidth: getStringWidth,
         onSegment: (segment, stateTracker: AnsiStateTracker) => {
             if (segment.isEscapeSequence) {
+                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 currentLine += segment.text;
             } else {
                 const isSpace = segment.text === " ";
 
                 // Skip zero-width characters
                 if (segment.width === 0) {
+                    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                     currentLine += segment.text;
-                    return;
+                    return true;
                 }
 
                 // Check if we need to wrap
@@ -217,17 +218,20 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
                     // Special handling for spaces at wrap points
                     if (isSpace) {
+                        // Skip spaces when trim=true
                         if (trim) {
-                            // Skip spaces when trim=true
-                            return;
+                            return true;
                         }
+
                         // For trim=false, space gets its own line
+                        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                         rows.push(stateTracker.getActiveEscapes() + segment.text);
-                        return;
+
+                        return true;
                     }
                 }
 
-                // Add character to current line
+                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 currentLine += segment.text;
                 currentWidth += segment.width;
             }
@@ -274,7 +278,7 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
     let index = 0;
 
     // Process each token (word or space)
-    // eslint-disable-next-line no-loops/no-loops
+
     while (index < tokens.length) {
         // eslint-disable-next-line security/detect-object-injection
         const token = tokens[index] as string;

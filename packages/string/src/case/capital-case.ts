@@ -1,11 +1,11 @@
 import { RE_FAST_ANSI } from "../constants";
+import LRUCache from "../utils/lru-cache";
 import { splitByCase } from "./split-by-case";
 import type { CapitalCase, CaseOptions } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
-import LRUCache from "../utils/lru-cache";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 
@@ -22,7 +22,7 @@ const defaultCacheStore = new LRUCache<string, string>(1000);
  * capitalCase("QueryXML123String") // => "Query Xml 123 String"
  * ```
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions): CapitalCase<T> => {
     if (typeof value !== "string") {
         return "" as CapitalCase<T>;

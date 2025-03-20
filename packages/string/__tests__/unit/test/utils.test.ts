@@ -8,6 +8,8 @@ import { compareAnsiStrings, expectAnsiStrings, formatAnsiString } from "../../.
 describe("aNSI string test utilities", () => {
     describe("formatAnsiString", () => {
         it("should format a simple ANSI string", () => {
+            expect.assertions(5);
+
             const redText = red("Hello");
             const formatted = formatAnsiString(redText);
 
@@ -19,6 +21,9 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle complex ANSI strings with multiple colors", () => {
+            expect.assertions(3);
+
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             const complexText = red("Error: ") + yellow("Something ") + green("went ") + blue("wrong!");
             const formatted = formatAnsiString(complexText);
 
@@ -28,6 +33,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle strings without ANSI codes", () => {
+            expect.assertions(4);
+
             const plainText = "Hello World";
             const formatted = formatAnsiString(plainText);
 
@@ -38,6 +45,9 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle nested and combined styling", () => {
+            expect.assertions(3);
+
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             const nestedText = bold(red("Bold and red") + " just bold");
             const formatted = formatAnsiString(nestedText);
 
@@ -47,6 +57,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle multiple text decorations", () => {
+            expect.assertions(3);
+
             const decoratedText = bold(italic(underline("Fancy text")));
             const formatted = formatAnsiString(decoratedText);
 
@@ -57,6 +69,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle empty strings", () => {
+            expect.assertions(4);
+
             const emptyText = "";
             const formatted = formatAnsiString(emptyText);
 
@@ -67,6 +81,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle ANSI strings with special characters", () => {
+            expect.assertions(2);
+
             const specialChars = red("Line 1\nLine 2\tTabbed\r\nWindows");
             const formatted = formatAnsiString(specialChars);
 
@@ -77,6 +93,8 @@ describe("aNSI string test utilities", () => {
 
     describe("compareAnsiStrings", () => {
         it("should correctly identify identical ANSI strings", () => {
+            expect.assertions(3);
+
             const string1 = red("Test");
             const string2 = red("Test");
 
@@ -88,6 +106,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should detect when visible content is the same but ANSI codes differ", () => {
+            expect.assertions(3);
+
             const string1 = red("Hello World");
             const string2 = blue("Hello World");
 
@@ -99,6 +119,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should detect when both visible content and ANSI codes differ", () => {
+            expect.assertions(2);
+
             const string1 = red("Hello");
             const string2 = blue("World");
 
@@ -109,7 +131,11 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle complex multi-color strings", () => {
+            expect.assertions(2);
+
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             const string1 = red("Error: ") + yellow("Something ") + green("went ") + blue("wrong!");
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             const string2 = red("Error: ") + yellow("Something ") + green("went ") + blue("wrong!");
 
             const comparison = compareAnsiStrings(string1, string2);
@@ -119,6 +145,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle different styling with same content", () => {
+            expect.assertions(3);
+
             const string1 = bold("Important");
             const string2 = italic("Important");
 
@@ -130,9 +158,10 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle empty strings", () => {
+            expect.assertions(4);
+
             const string1 = "";
             const string2 = "";
-
             const comparison = compareAnsiStrings(string1, string2);
 
             expect(comparison.ansiEqual).toBeTruthy();
@@ -142,6 +171,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle one empty and one non-empty string", () => {
+            expect.assertions(4);
+
             const string1 = "";
             const string2 = red("Not empty");
 
@@ -154,7 +185,10 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle strings with different text decorations", () => {
+            expect.assertions(2);
+
             const string1 = bold(underline("Styled text"));
+
             const string2 = italic(dim("Styled text"));
 
             const comparison = compareAnsiStrings(string1, string2);
@@ -164,6 +198,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should handle strings with inverse styling", () => {
+            expect.assertions(2);
+
             const string1 = inverse("Inverted");
             const string2 = "Inverted";
 
@@ -176,6 +212,8 @@ describe("aNSI string test utilities", () => {
 
     describe("expectAnsiStrings", () => {
         it("should return passing result for identical strings", () => {
+            expect.assertions(2);
+
             const string1 = red("Test");
             const string2 = red("Test");
 
@@ -186,6 +224,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should return failing result for different ANSI codes", () => {
+            expect.assertions(3);
+
             const string1 = red("Test");
             const string2 = blue("Test");
 
@@ -197,6 +237,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should return failing result for different content", () => {
+            expect.assertions(3);
+
             const string1 = red("Hello");
             const string2 = red("World");
 
@@ -208,6 +250,8 @@ describe("aNSI string test utilities", () => {
         });
 
         it("should include detailed information in failure message", () => {
+            expect.assertions(7);
+
             const string1 = bold(red("Error"));
             const string2 = italic(blue("Error"));
 

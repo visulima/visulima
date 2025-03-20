@@ -12,6 +12,34 @@ import { slice } from "./slice";
 const DEFAULT_ELLIPSIS = "…";
 const MAX_SPACE_SEARCH_DISTANCE = 3;
 
+/**
+ * Find the index of the nearest space character within a specified distance
+ *
+ * @param str - The string to search in
+ * @param startIndex - The index to start searching from
+ * @param searchRight - Direction to search (true = right, false = left)
+ * @returns The index of the nearest space or the original index if no space is found
+ */
+const findNearestSpace = (string_: string, startIndex: number, searchRight = false): number => {
+    // Early return if already at a space
+    if (string_.charAt(startIndex) === " ") {
+        return startIndex;
+    }
+
+    const direction = searchRight ? 1 : -1;
+    const limit = Math.min(MAX_SPACE_SEARCH_DISTANCE, searchRight ? string_.length - startIndex : startIndex);
+
+    // eslint-disable-next-line no-plusplus
+    for (let offset = 1; offset <= limit; offset++) {
+        const index = startIndex + offset * direction;
+        if (string_.charAt(index) === " ") {
+            return index;
+        }
+    }
+
+    return startIndex;
+};
+
 export type TruncateOptions = {
     /**
      * String to append when truncation occurs
@@ -46,33 +74,6 @@ export type TruncateOptions = {
 };
 
 /**
- * Find the index of the nearest space character within a specified distance
- *
- * @param str - The string to search in
- * @param startIndex - The index to start searching from
- * @param searchRight - Direction to search (true = right, false = left)
- * @returns The index of the nearest space or the original index if no space is found
- */
-const findNearestSpace = (string_: string, startIndex: number, searchRight = false): number => {
-    // Early return if already at a space
-    if (string_.charAt(startIndex) === " ") {
-        return startIndex;
-    }
-
-    const direction = searchRight ? 1 : -1;
-    const limit = Math.min(MAX_SPACE_SEARCH_DISTANCE, searchRight ? string_.length - startIndex : startIndex);
-
-    for (let offset = 1; offset <= limit; offset++) {
-        const index = startIndex + offset * direction;
-        if (string_.charAt(index) === " ") {
-            return index;
-        }
-    }
-
-    return startIndex;
-};
-
-/**
  * Truncates a string to a specified width limit, handling Unicode characters, ANSI escape codes,
  * and adding an optional ellipsis.
  *
@@ -81,6 +82,7 @@ const findNearestSpace = (string_: string, startIndex: number, searchRight = fal
  * @param options - Configuration options for truncation
  * @returns The truncated string with ellipsis if applicable
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const truncate = (input: string, limit: number, options: TruncateOptions = {}): string => {
     // Input validation
     if (typeof input !== "string") {
@@ -100,20 +102,21 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
     const { ellipsis = DEFAULT_ELLIPSIS, position = "end", preferTruncationOnSpace = false } = options;
 
     // Calculate or use provided ellipsis width
-    const ellipsisWidth = options.ellipsisWidth
-        ? options.ellipsisWidth
-        : ellipsis === DEFAULT_ELLIPSIS
-          ? 2
-          : getStringTruncatedWidth(ellipsis, {
-                ...options.width,
-                ellipsis: "",
-                ellipsisWidth: 0,
-                limit: Number.POSITIVE_INFINITY,
-            }).width;
+    let ellipsisWidth: number | undefined = (options.ellipsisWidth ?? ellipsis === DEFAULT_ELLIPSIS) ? 2 : undefined;
+
+    if (ellipsisWidth === undefined) {
+        ellipsisWidth = getStringTruncatedWidth(ellipsis, {
+            ...options.width,
+            ellipsis: "",
+            ellipsisWidth: 0,
+            limit: Number.POSITIVE_INFINITY,
+        }).width;
+    }
 
     if (limit === 1 && ellipsisWidth === 1) {
         return ellipsis;
-    } if (limit === 1) {
+    }
+    if (limit === 1) {
         return "";
     }
 
@@ -161,7 +164,7 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
         }
 
         default: {
-            throw new Error(`Invalid position: expected 'start', 'middle' or 'end', got '${position}'`);
+            throw new Error(`Invalid position: expected 'start', 'middle' or 'end', got '${position as string}'`);
         }
     }
 };

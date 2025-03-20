@@ -43,8 +43,7 @@ const isUpperCode = new Uint8Array(128);
 const isLowerCode = new Uint8Array(128);
 const isDigitCode = new Uint8Array(128);
 
-// Initialize lookup tables once
-// eslint-disable-next-line no-plusplus,no-loops/no-loops
+// eslint-disable-next-line no-plusplus
 for (let index = 0; index < 128; index++) {
     // eslint-disable-next-line security/detect-object-injection
     isUpperCode[index] = index >= 65 && index <= 90 ? 1 : 0; // A-Z
@@ -54,13 +53,133 @@ for (let index = 0; index < 128; index++) {
     isDigitCode[index] = index >= 48 && index <= 57 ? 1 : 0; // 0-9
 }
 
+/**
+ * A shared function to handle script transitions for various locale-specific splitting
+ *
+ * @param s Input string to process
+ * @param scriptDetectors Object mapping script types to detector functions
+ * @param caseSensitive Whether to also split on uppercase transitions
+ * @param locale Locale for case detection
+ * @param customSplitLogic Optional custom logic for determining split points
+ * @returns Array of string segments
+ */
+const handleScriptTransitions = (
+    s: string,
+    scriptDetectors: Record<string, (char: string) => boolean>,
+    caseSensitive: boolean,
+    locale?: NodeLocale,
+    customSplitLogic?: (
+        previousType: string,
+        currentType: string,
+        previousIsUpper: boolean,
+        isUpper: boolean,
+        char: string,
+        index: number,
+        chars: string[],
+    ) => boolean,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+): string[] => {
+    if (s.length === 0) {
+        return [];
+    }
+
+    // Quick validation - see if any of our detectors match the string
+    let hasDetectedScript = false;
+
+    for (const detector of Object.values(scriptDetectors)) {
+        if (detector(s[0] as string)) {
+            hasDetectedScript = true;
+            break;
+        }
+    }
+
+    // Early return if no relevant scripts detected
+    if (!hasDetectedScript && !caseSensitive) {
+        return [s];
+    }
+
+    const chars = [...s];
+    const result: string[] = [];
+    let currentSegment = chars[0] as string;
+
+    // Determine initial script type
+    let previousType = "other";
+
+    for (const [type, detector] of Object.entries(scriptDetectors)) {
+        if (detector(chars[0] as string)) {
+            previousType = type;
+            break;
+        }
+    }
+
+    // Track case if needed
+    let previousIsUpper = caseSensitive && locale ? (chars[0] as string) === (chars[0] as string).toLocaleUpperCase(locale) : false;
+
+    // Process all characters
+    // eslint-disable-next-line no-plusplus
+    for (let index = 1; index < chars.length; index++) {
+        // eslint-disable-next-line security/detect-object-injection
+        const char = chars[index] as string;
+
+        // Determine current script type
+        let currentType = "other";
+
+        for (const [type, detector] of Object.entries(scriptDetectors)) {
+            if (detector(char)) {
+                currentType = type;
+                break;
+            }
+        }
+
+        // Check for case if needed
+        const isUpper = caseSensitive && locale ? char === char.toLocaleUpperCase(locale) : false;
+
+        // Determine if we should split
+        let shouldSplit = false;
+
+        if (customSplitLogic) {
+            // Use custom split logic if provided
+            shouldSplit = customSplitLogic(previousType, currentType, previousIsUpper, isUpper, char, index, chars);
+        } else {
+            // Default split logic
+            // Split on script transitions between known scripts
+            if (previousType !== currentType && previousType !== "other" && currentType !== "other") {
+                shouldSplit = true;
+            }
+
+            // Split on case transitions if enabled
+            if (caseSensitive && currentType !== "other" && !previousIsUpper && isUpper) {
+                shouldSplit = true;
+            }
+        }
+
+        if (shouldSplit) {
+            result.push(currentSegment);
+            currentSegment = char;
+        } else {
+            currentSegment += char;
+        }
+
+        previousType = currentType;
+        if (caseSensitive) {
+            previousIsUpper = isUpper;
+        }
+    }
+
+    // Add the last segment if it exists
+    if (currentSegment && currentSegment.length > 0) {
+        result.push(currentSegment);
+    }
+
+    return result.length > 0 ? result : [s];
+};
+
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): string[] => {
     if (s.length === 0) {
         return [];
     }
 
-    // Quick early return for all uppercase
     if (s.toUpperCase() === s) {
         return [s];
     }
@@ -68,20 +187,15 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
     let start = 0;
 
     const tokens: string[] = [];
-    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-    const length_ = s.length;
 
-    // No special case handling - we'll use a general algorithm
+    const width = s.length;
 
-    // Main tokenization loop - optimized for speed
-    // eslint-disable-next-line no-plusplus,no-loops/no-loops
-    for (let index = 1; index < length_; index++) {
+    // eslint-disable-next-line no-plusplus
+    for (let index = 1; index < width; index++) {
         const previousCode = s.codePointAt(index - 1);
         const currentCode = s.codePointAt(index);
 
-        // Check for known acronyms
         if (knownAcronyms.size > 0) {
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const acronym of knownAcronyms) {
                 if (s.startsWith(acronym, start)) {
                     tokens.push(acronym);
@@ -97,7 +211,6 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
             }
         }
 
-        // Fast checks using lookup tables for common character types
         // eslint-disable-next-line security/detect-object-injection
         const previousIsUpper = previousCode && previousCode < 128 && isUpperCode[previousCode];
         // eslint-disable-next-line security/detect-object-injection
@@ -131,7 +244,7 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
             let isNextUpper = false;
             let isNextDigit = false;
 
-            if (index + 1 < length_) {
+            if (index + 1 < width) {
                 const nextCode = s.codePointAt(index + 1);
                 // eslint-disable-next-line security/detect-object-injection
                 isNextUpper = (nextCode && nextCode < 128 && isUpperCode[nextCode]) as boolean;
@@ -149,7 +262,7 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
         }
 
         // Uppercase acronym boundary detection
-        if (index + 1 < length_) {
+        if (index + 1 < width) {
             const nextCode = s.codePointAt(index + 1);
             // eslint-disable-next-line security/detect-object-injection
             const nextIsLower = nextCode && nextCode < 128 && isLowerCode[nextCode];
@@ -166,7 +279,7 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
     }
 
     // Capture the last segment
-    if (start < length_) {
+    if (start < width) {
         tokens.push(s.slice(start));
     }
 
@@ -203,22 +316,20 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
         const chars = [...s];
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length__ = chars.length;
+        const width_ = chars.length;
         const result: string[] = [];
         let currentSegment = chars[0] as string;
 
-        // Track case state
         let previousIsUpper = chars[0] === (chars[0] as string).toLocaleUpperCase(locale);
         let isInUpperSequence = previousIsUpper;
         let upperSequenceStart = previousIsUpper ? 0 : -1;
 
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
-        for (let index = 1; index < length__; index++) {
+        // eslint-disable-next-line no-plusplus
+        for (let index = 1; index < width_; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index];
             const isUpper = char === (char as string).toLocaleUpperCase(locale);
 
-            // Handle transitions
             if (isUpper === previousIsUpper) {
                 // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 currentSegment += char;
@@ -268,14 +379,13 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         locale.startsWith("mk") ||
         locale.startsWith("be")
     ) {
-        // Early return if no Cyrillic or Latin characters
         if (!RE_CYRILLIC.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
-        const chars: string[] = [...s]; // Convert to array once for better Unicode handling
+        const chars: string[] = [...s];
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length__ = chars.length;
+        const width_ = chars.length;
         const result: string[] = [];
         let currentSegment = chars[0] as string;
 
@@ -283,8 +393,8 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         let previousType = RE_CYRILLIC.test(chars[0] as string) ? 1 : RE_LATIN.test(chars[0] as string) ? 2 : 0;
         let previousIsUpper = (chars[0] as string) === (chars[0] as string).toLocaleUpperCase(locale);
 
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
-        for (let index = 1; index < length__; index++) {
+        // eslint-disable-next-line no-plusplus
+        for (let index = 1; index < width_; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
             const currentType = RE_CYRILLIC.test(char) ? 1 : RE_LATIN.test(char) ? 2 : 0;
@@ -312,7 +422,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         // Post-process: merge single Latin characters with following Cyrillic if they form a word
         const finalResult: string[] = [];
 
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
+        // eslint-disable-next-line no-plusplus
         for (let index = 0; index < result.length; index++) {
             if (
                 index < result.length - 1 &&
@@ -337,27 +447,23 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
     // Special handling for Greek scripts
     if (locale.startsWith("el")) {
-        // Early return if no Greek or Latin characters
         if (!RE_GREEK.test(s) && !RE_LATIN.test(s)) {
             return [s];
         }
 
-        // Split on script boundaries first
         const parts = s.match(RE_GREEK_LATIN_SPLIT) ?? [s];
         const result: string[] = [];
-        // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length_ = parts.length;
+        const width = parts.length;
 
         // Fast path for single-part strings
-        if (length_ === 1) {
+        if (width === 1) {
             const part = parts[0];
+
             if (!part || !RE_GREEK.test(part[0] as string) || part.length === 1) {
                 return [part || s];
             }
         }
 
-        // Process each part
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const part of parts) {
             // Skip empty parts
             if (!part) {
@@ -374,11 +480,12 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
             // For Greek text longer than 1 character, split on case transitions
             const partLength = part.length;
+
             let word = part[0] as string;
             // eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with
             let previousIsUpper = part[0] === (part[0] as string).toLocaleUpperCase(locale);
 
-            // eslint-disable-next-line no-loops/no-loops,no-plusplus
+            // eslint-disable-next-line no-plusplus
             for (let index = 1; index < partLength; index++) {
                 // eslint-disable-next-line security/detect-object-injection
                 const char = part[index] as string;
@@ -405,113 +512,83 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     // Special handling for Japanese and Korean scripts
     if (locale.startsWith("ja") || locale.startsWith("ko")) {
         const isJapanese = locale.startsWith("ja");
-        // Early return if no relevant characters
-        if (isJapanese && !RE_HIRAGANA.test(s) && !RE_KATAKANA.test(s) && !RE_KANJI.test(s) && !RE_LATIN.test(s)) {
-            return [s];
-        }
-        if (!isJapanese && !RE_HANGUL.test(s) && !RE_LATIN.test(s)) {
-            return [s];
-        }
 
-        const chars = [...s]; // Convert to array once for better Unicode handling
-        const result: string[] = [];
-        let currentSegment = chars[0] as string;
+        const scriptDetectors: Record<string, (char: string) => boolean> = isJapanese
+            ? {
+                  hiragana: (char) => RE_HIRAGANA.test(char),
+                  kanji: (char) => RE_KANJI.test(char),
+                  katakana: (char) => RE_KATAKANA.test(char),
+                  latin: (char) => RE_LATIN.test(char),
+              }
+            : {
+                  hangul: (char) => RE_HANGUL.test(char),
+                  latin: (char) => RE_LATIN.test(char),
+              };
 
         // Pre-compiled Set for Japanese particles - defined once and cached
         const particles = new Set(["と", "に", "へ", "を", "は", "が", "の", "で", "や", "も"]);
 
-        // Initialize script type for Japanese (1=hiragana, 2=katakana, 3=kanji, 4=latin, 0=other)
-        // or Korean (1=hangul, 2=latin, 0=other)
-        let previousType: number;
-
         if (isJapanese) {
-            previousType = RE_HIRAGANA.test(chars[0] as string)
-                ? 1
-                : RE_KATAKANA.test(chars[0] as string)
-                  ? 2
-                  : RE_KANJI.test(chars[0] as string)
-                    ? 3
-                    : RE_LATIN.test(chars[0] as string)
-                      ? 4
-                      : 0;
-        } else {
-            previousType = RE_HANGUL.test(chars[0] as string) ? 1 : RE_LATIN.test(chars[0] as string) ? 2 : 0;
-        }
+            const baseSegments = handleScriptTransitions(
+                s,
+                scriptDetectors,
+                false,
+                locale,
+                (previousType, currentType) =>
+                    (previousType === "hiragana" && currentType === "katakana") || // hiragana -> katakana
+                    (previousType === "katakana" && currentType === "hiragana") || // katakana -> hiragana
+                    (previousType === "hiragana" && currentType === "latin") || // hiragana -> latin
+                    (previousType === "katakana" && currentType === "latin") || // katakana -> latin
+                    (previousType === "kanji" && currentType === "latin") || // kanji -> latin
+                    (previousType === "latin" && (currentType === "hiragana" || currentType === "katakana" || currentType === "kanji")), // latin -> japanese
+            );
 
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
-        for (let index = 1; index < chars.length; index++) {
-            // eslint-disable-next-line security/detect-object-injection
-            const char = chars[index] as string;
-            let currentType: number;
+            // Post-process for Japanese particles
+            const result: string[] = [];
 
-            // Determine the type of the current character
-            if (isJapanese) {
-                currentType = RE_HIRAGANA.test(char) ? 1 : RE_KATAKANA.test(char) ? 2 : RE_KANJI.test(char) ? 3 : RE_LATIN.test(char) ? 4 : 0;
-            } else {
-                currentType = RE_HANGUL.test(char) ? 1 : RE_LATIN.test(char) ? 2 : 0;
-            }
-
-            // Check for transitions
-            let shouldSplit = false;
-
-            if (isJapanese) {
-                shouldSplit =
-                    (previousType === 1 && currentType === 2) || // hiragana -> katakana
-                    (previousType === 2 && currentType === 1) || // katakana -> hiragana
-                    (previousType === 1 && currentType === 4) || // hiragana -> latin
-                    (previousType === 2 && currentType === 4) || // katakana -> latin
-                    (previousType === 3 && currentType === 4) || // kanji -> latin
-                    (previousType === 4 && (currentType === 1 || currentType === 2 || currentType === 3)); // latin -> japanese
-            } else {
-                shouldSplit =
-                    (previousType === 1 && currentType === 2) || // hangul -> latin
-                    (previousType === 2 && currentType === 1); // latin -> hangul
-            }
-
-            if (shouldSplit) {
-                // For Japanese, handle particles
-                if (isJapanese && currentSegment.length === 1 && particles.has(currentSegment) && result.length > 0) {
+            for (const segment of baseSegments) {
+                if (segment.length === 1 && particles.has(segment) && result.length > 0) {
                     // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                    result[result.length - 1] += currentSegment;
+                    result[result.length - 1] += segment;
                 } else {
-                    result.push(currentSegment);
+                    result.push(segment);
                 }
-                currentSegment = char;
-            } else {
-                currentSegment += char;
             }
 
-            previousType = currentType;
+            return result.length > 0 ? result : [s];
         }
-
-        // Add the last segment if it exists
-        if (currentSegment && currentSegment.length > 0) {
-            result.push(currentSegment);
-        }
-
-        return result.length > 0 ? result : [s];
+        // Korean
+        return handleScriptTransitions(
+            s,
+            scriptDetectors,
+            false,
+            locale,
+            (previousType, currentType) =>
+                (previousType === "hangul" && currentType === "latin") || // hangul -> latin
+                (previousType === "latin" && currentType === "hangul"), // latin -> hangul
+        );
     }
 
     // Special handling for Slovenian scripts
     if (locale.startsWith("sl")) {
         const chars = [...s];
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length__ = chars.length;
+        const width_ = chars.length;
         const result: string[] = [];
 
         let currentSegment = chars[0] as string;
         let previousIsUpper = chars[0] === (chars[0] as string).toLocaleUpperCase(locale);
 
         // Process remaining characters
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
-        for (let index = 1; index < length__; index++) {
+        // eslint-disable-next-line no-plusplus
+        for (let index = 1; index < width_; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
             const isUpper = char === (char as string).toLocaleUpperCase(locale);
 
             // Special handling for Slovenian characters
             const isSpecialChar = /[ČŠŽĐ]/i.test(char);
-            const nextIsUpper = index < length__ - 1 && chars[index + 1] === (chars[index + 1] as string).toLocaleUpperCase(locale);
+            const nextIsUpper = index < width_ - 1 && chars[index + 1] === (chars[index + 1] as string).toLocaleUpperCase(locale);
 
             // Split on case transitions and special characters
             if ((!previousIsUpper && isUpper) || (isSpecialChar && nextIsUpper)) {
@@ -538,85 +615,31 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
     // Special handling for Chinese scripts
     if (locale.startsWith("zh")) {
-        // Early return if no Chinese or Latin characters
-        if (!RE_KANJI.test(s) && !RE_LATIN.test(s)) {
-            return [s];
-        }
-
-        const chars = [...s];
-        // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length__ = chars.length;
-        const result: string[] = [];
-        let currentSegment = chars[0] as string;
-
-        // Initialize script type (1=han, 2=latin, 0=other)
-        let previousType = RE_KANJI.test(chars[0] as string) ? 1 : RE_LATIN.test(chars[0] as string) ? 2 : 0;
-
-        // eslint-disable-next-line no-loops/no-loops,no-plusplus
-        for (let index = 1; index < length__; index++) {
-            // eslint-disable-next-line security/detect-object-injection
-            const char = chars[index] as string;
-            const currentType = RE_KANJI.test(char) ? 1 : RE_LATIN.test(char) ? 2 : 0;
-
-            // Split on script transitions between Han and Latin
-            if (previousType !== currentType && previousType !== 0 && currentType !== 0) {
-                result.push(currentSegment);
-                currentSegment = char;
-            } else {
-                currentSegment += char;
-            }
-
-            previousType = currentType;
-        }
-
-        if (currentSegment && currentSegment.length > 0) {
-            result.push(currentSegment);
-        }
-
-        return result;
+        return handleScriptTransitions(
+            s,
+            {
+                han: (char) => RE_KANJI.test(char),
+                latin: (char) => RE_LATIN.test(char),
+            },
+            false,
+            locale,
+        );
     }
 
     // Special handling for RTL scripts (Arabic, Persian, Hebrew, Urdu)
     if (["ar", "fa", "he", "ur"].includes(locale.split("-")[0])) {
-        // Early return if no RTL or Latin characters
-        if (!RE_HEBREW.test(s) && !RE_ARABIC.test(s) && !RE_LATIN.test(s)) {
-            return [s];
-        }
-
-        const chars = [...s];
-        // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length__ = chars.length;
-        const result: string[] = [];
-        let currentSegment = chars[0] as string;
-
         // Helper function to check if a character is RTL
         const isRtlChar = (ch: string): boolean => RE_HEBREW.test(ch) || RE_ARABIC.test(ch);
 
-        // Determine initial type
-        let previousType = isRtlChar(chars[0] as string) ? "rtl" : RE_LATIN.test(chars[0] as string) ? "latin" : "other";
-
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
-        for (let index = 1; index < length__; index++) {
-            // eslint-disable-next-line security/detect-object-injection
-            const char = chars[index] as string;
-            const currentType = isRtlChar(char) ? "rtl" : RE_LATIN.test(char) ? "latin" : "other";
-
-            // Split on script transitions
-            if (previousType !== currentType && (previousType === "rtl" || previousType === "latin") && (currentType === "rtl" || currentType === "latin")) {
-                result.push(currentSegment);
-                currentSegment = char;
-            } else {
-                currentSegment += char;
-            }
-
-            previousType = currentType;
-        }
-
-        if (currentSegment && currentSegment.length > 0) {
-            result.push(currentSegment);
-        }
-
-        return result;
+        return handleScriptTransitions(
+            s,
+            {
+                latin: (char) => RE_LATIN.test(char),
+                rtl: (char) => isRtlChar(char),
+            },
+            false,
+            locale,
+        );
     }
 
     // Special handling for Indic scripts
@@ -640,38 +663,6 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             "th", // Thai
         ].includes(locale.split("-")[0])
     ) {
-        // Early return if no Indic or Latin characters
-        if (
-            !(
-                RE_DEVANAGARI.test(s) ||
-                RE_BENGALI.test(s) ||
-                RE_GUJARATI.test(s) ||
-                RE_GURMUKHI.test(s) ||
-                RE_KANNADA.test(s) ||
-                RE_TAMIL.test(s) ||
-                RE_TELUGU.test(s) ||
-                RE_MALAYALAM.test(s) ||
-                RE_SINHALA.test(s) ||
-                RE_THAI.test(s) ||
-                RE_LAO.test(s) ||
-                RE_TIBETAN.test(s) ||
-                RE_MYANMAR.test(s) ||
-                RE_ETHIOPIC.test(s) ||
-                RE_KHMER.test(s) ||
-                RE_ORIYA.test(s)
-            ) &&
-            !RE_LATIN.test(s)
-        ) {
-            return [s];
-        }
-
-        const chars = [...s];
-        // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length__ = chars.length;
-        const result: string[] = [];
-
-        let currentSegment = chars[0] as string;
-
         // Helper function to check if a character is Indic
         const isIndicChar = (ch: string): boolean =>
             RE_DEVANAGARI.test(ch) ||
@@ -691,167 +682,54 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             RE_KHMER.test(ch) ||
             RE_ORIYA.test(ch);
 
-        // Determine initial type
-        let previousType = isIndicChar(chars[0] as string) ? "indic" : RE_LATIN.test(chars[0] as string) ? "latin" : "other";
-
-        // eslint-disable-next-line no-loops/no-loops,no-plusplus
-        for (let index = 1; index < length__; index++) {
-            // eslint-disable-next-line security/detect-object-injection
-            const char = chars[index] as string;
-            const currentType = isIndicChar(char) ? "indic" : RE_LATIN.test(char) ? "latin" : "other";
-
-            // Split on script transitions
-            if (
-                previousType !== currentType &&
-                (previousType === "indic" || previousType === "latin") &&
-                (currentType === "indic" || currentType === "latin")
-            ) {
-                result.push(currentSegment);
-                currentSegment = char;
-            } else {
-                currentSegment += char;
-            }
-
-            previousType = currentType;
-        }
-
-        if (currentSegment && currentSegment.length > 0) {
-            result.push(currentSegment);
-        }
-
-        return result;
+        return handleScriptTransitions(
+            s,
+            {
+                indic: (char) => isIndicChar(char),
+                latin: (char) => RE_LATIN.test(char),
+            },
+            false,
+            locale,
+        );
     }
 
     // Special handling for Cyrillic scripts (Russian, Ukrainian, etc.)
     if (["be", "bg", "ru", "sr", "uk"].includes(locale)) {
-        const chars = [...s];
-        // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length__ = chars.length;
-
-        // Early return if no Cyrillic or Latin characters
-        if (!RE_CYRILLIC.test(s) && !RE_LATIN.test(s)) {
-            return [s];
-        }
-
-        const result: string[] = [];
-        let currentSegment = chars[0] as string;
-
-        // Determine initial type
-        let previousType = RE_CYRILLIC.test(chars[0] as string) ? "cyrillic" : RE_LATIN.test(chars[0] as string) ? "latin" : "other";
-        let previousIsUpper = chars[0] === (chars[0] as string).toLocaleUpperCase(locale);
-
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
-        for (let index = 1; index < length__; index++) {
-            // eslint-disable-next-line security/detect-object-injection
-            const char = chars[index] as string;
-            const currentType = RE_CYRILLIC.test(char) ? "cyrillic" : RE_LATIN.test(char) ? "latin" : "other";
-            const isUpper = char === char.toLocaleUpperCase(locale);
-
-            // Split on script transitions or case changes within the same script
-            if (
-                (previousType !== currentType &&
-                    (previousType === "cyrillic" || previousType === "latin") &&
-                    (currentType === "cyrillic" || currentType === "latin")) ||
-                ((currentType === "cyrillic" || currentType === "latin") && !previousIsUpper && isUpper)
-            ) {
-                result.push(currentSegment);
-                currentSegment = char;
-            } else {
-                currentSegment += char;
-            }
-
-            previousType = currentType;
-            previousIsUpper = isUpper;
-        }
-
-        if (currentSegment && currentSegment.length > 0) {
-            result.push(currentSegment);
-        }
-
-        return result;
+        return handleScriptTransitions(
+            s,
+            {
+                cyrillic: (char) => RE_CYRILLIC.test(char),
+                latin: (char) => RE_LATIN.test(char),
+            },
+            true, // Enable case-sensitive splitting
+            locale,
+        );
     }
 
     // Special handling for Arabic and Hebrew scripts
     if (["ar", "fa", "he"].includes(locale)) {
-        const chars = [...s];
-        // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length__ = chars.length;
-
-        // Early return if no RTL or Latin characters
-        if (!RE_HEBREW.test(s) && !RE_ARABIC.test(s) && !RE_LATIN.test(s)) {
-            return [s];
-        }
-
-        const result: string[] = [];
-        let currentSegment = chars[0] as string;
-
-        // Determine initial type
-        let previousType =
-            RE_HEBREW.test(chars[0] as string) || RE_ARABIC.test(chars[0] as string) ? "rtl" : RE_LATIN.test(chars[0] as string) ? "latin" : "other";
-
-        // eslint-disable-next-line no-loops/no-loops,no-plusplus
-        for (let index = 1; index < length__; index++) {
-            // eslint-disable-next-line security/detect-object-injection
-            const char = chars[index] as string;
-            const currentType = RE_HEBREW.test(char) || RE_ARABIC.test(char) ? "rtl" : RE_LATIN.test(char) ? "latin" : "other";
-
-            // Split on script transitions
-            if (previousType !== currentType && (previousType === "rtl" || previousType === "latin") && (currentType === "rtl" || currentType === "latin")) {
-                result.push(currentSegment);
-                currentSegment = char;
-            } else {
-                currentSegment += char;
-            }
-
-            previousType = currentType;
-        }
-
-        if (currentSegment && currentSegment.length > 0) {
-            result.push(currentSegment);
-        }
-
-        return result;
+        return handleScriptTransitions(
+            s,
+            {
+                latin: (char) => RE_LATIN.test(char),
+                rtl: (char) => RE_HEBREW.test(char) || RE_ARABIC.test(char),
+            },
+            false,
+            locale,
+        );
     }
 
     // Special handling for Korean scripts
     if (locale.startsWith("ko")) {
-        const chars = [...s]; // Convert to array once for better performance with Unicode
-        // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length__ = chars.length;
-
-        // Early return if no Hangul or Latin characters
-        if (!RE_HANGUL.test(s) && !RE_LATIN.test(s)) {
-            return [s];
-        }
-
-        const result: string[] = [];
-
-        let currentSegment = chars[0] as string;
-        let previousType = RE_HANGUL.test(chars[0] as string) ? "hangul" : RE_LATIN.test(chars[0] as string) ? "latin" : undefined;
-
-        // Process remaining characters
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
-        for (let index = 1; index < length__; index++) {
-            // eslint-disable-next-line security/detect-object-injection
-            const char = chars[index] as string;
-            const currentType = RE_HANGUL.test(char) ? "hangul" : RE_LATIN.test(char) ? "latin" : undefined;
-
-            // Split only on script transitions between Hangul and Latin
-            if (previousType !== currentType && (previousType === "hangul" || currentType === "hangul")) {
-                result.push(currentSegment);
-                currentSegment = char as string;
-            } else {
-                currentSegment += char;
-            }
-
-            previousType = currentType;
-        }
-
-        if (currentSegment && currentSegment.length > 0) {
-            result.push(currentSegment);
-        }
-
-        return result;
+        return handleScriptTransitions(
+            s,
+            {
+                hangul: (char) => RE_HANGUL.test(char),
+                latin: (char) => RE_LATIN.test(char),
+            },
+            false,
+            locale,
+        );
     }
 
     // Special handling for Uzbek scripts
@@ -861,16 +739,16 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             return [s];
         }
 
-        const chars = [...s]; // Convert to array once for better Unicode handling
+        const chars = [...s];
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        const length__ = chars.length;
+        const width_ = chars.length;
         const result: string[] = [];
 
         let currentSegment = chars[0] as string;
         let previousIsUpper = chars[0] === (chars[0] as string).toLocaleUpperCase(locale);
 
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
-        for (let index = 1; index < length__; index++) {
+        // eslint-disable-next-line no-plusplus
+        for (let index = 1; index < width_; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
             const isUpper = char === char.toLocaleUpperCase(locale);
@@ -902,13 +780,13 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     // Handle default case - Latin script with case transitions
     const chars = [...s];
     // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-    const length__ = chars.length;
+    const width_ = chars.length;
     const result: string[] = [];
     let currentSegment = chars[0] as string;
     let previousIsUpper = chars[0] === (chars[0] as string).toLocaleUpperCase(locale);
 
     // Check for known acronyms first
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+
     for (const acronym of knownAcronyms) {
         if (s.startsWith(acronym)) {
             result.push(acronym);
@@ -918,15 +796,15 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         }
     }
 
-    // eslint-disable-next-line no-plusplus,no-loops/no-loops
-    for (let index = 1; index < length__; index++) {
+    // eslint-disable-next-line no-plusplus
+    for (let index = 1; index < width_; index++) {
         // eslint-disable-next-line security/detect-object-injection
         const char = chars[index] as string;
         const isUpper = char === char.toLocaleUpperCase(locale);
 
         // Check for acronyms at current position
         let isAcronym = false;
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+
         for (const acronym of knownAcronyms) {
             if (s.startsWith(acronym, index)) {
                 result.push(currentSegment, acronym);
@@ -970,7 +848,6 @@ const processTextWithAnsiEmoji = (text: string, locale: NodeLocale | undefined, 
     const result: string[] = [];
     const segments: string[] = RE_FAST_ANSI.test(text) ? text.split(RE_FAST_ANSI).filter(Boolean) : [text];
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const seg of segments) {
         if (RE_FAST_ANSI.test(seg)) {
             // If the segment is an ANSI escape, pass it through.
@@ -980,7 +857,6 @@ const processTextWithAnsiEmoji = (text: string, locale: NodeLocale | undefined, 
             // split on emoji boundaries.
             const subs: string[] = RE_EMOJI.test(seg) ? splitByEmoji(seg).filter(Boolean) : [seg];
 
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const sub of subs) {
                 if (RE_EMOJI.test(sub)) {
                     result.push(sub);
@@ -1100,7 +976,6 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
     const parts = cleanedInput.split(separatorRegex).filter(Boolean);
     let tokens: string[] = [];
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const part of parts) {
         if (handleAnsi || handleEmoji) {
             tokens.push(...processTextWithAnsiEmoji(part, locale, acronymSet));

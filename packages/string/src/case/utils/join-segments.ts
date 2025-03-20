@@ -24,7 +24,7 @@ const joinSegments = <T extends string = string>(segments: string[], joiner: str
     let ansiStart = "";
     let currentContent = "";
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    // eslint-disable-next-line no-plusplus
     for (let index = 0; index < length; index++) {
         // eslint-disable-next-line security/detect-object-injection
         const segment = segments[index] as string;

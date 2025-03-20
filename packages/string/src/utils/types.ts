@@ -72,7 +72,7 @@ export interface ProcessAnsiStringOptions {
      * @param stateTracker - The ANSI state tracker
      * @returns Whether to continue processing or not
      */
-    onEscapeSequence?: (sequence: string, stateTracker: AnsiStateTracker) => boolean | void;
+    onEscapeSequence?: (sequence: string, stateTracker: AnsiStateTracker) => boolean | undefined;
 
     /**
      * Function to process each grapheme cluster
@@ -81,7 +81,7 @@ export interface ProcessAnsiStringOptions {
      * @param stateTracker - The ANSI state tracker
      * @returns Whether to continue processing or not
      */
-    onGrapheme?: (grapheme: string, width: number, stateTracker: AnsiStateTracker) => boolean | void;
+    onGrapheme?: (grapheme: string, width: number, stateTracker: AnsiStateTracker) => boolean | undefined;
 
     /**
      * Function to process each character segment
@@ -89,5 +89,5 @@ export interface ProcessAnsiStringOptions {
      * @param stateTracker - The ANSI state tracker
      * @returns Whether to continue processing or not
      */
-    onSegment?: (segment: AnsiSegment | HyperlinkSegment, stateTracker: AnsiStateTracker) => boolean | void;
+    onSegment?: (segment: AnsiSegment | HyperlinkSegment, stateTracker: AnsiStateTracker) => boolean | undefined;
 }

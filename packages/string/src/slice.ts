@@ -3,6 +3,7 @@ import { getStringWidth } from "./get-string-width";
 import LRUCache from "./utils/lru-cache";
 
 const segmentCache = new LRUCache<string, StyledSegment[]>(100);
+// eslint-disable-next-line compat/compat
 const defaultSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
 
 type StyledSegment = {
@@ -19,6 +20,7 @@ type VisibleSegment = {
     start: number;
 };
 
+// eslint-disable-next-line no-control-regex,security/detect-unsafe-regex,regexp/no-control-character
 const ANSI_REGEX = /\u001B(?:\[(?:\d+(?:;\d+)*)?m|\]8;;.*?(?:\u0007|\u001B\\))/g;
 const ANSI_RESET_CODES = new Set([
     "0", // Full reset
@@ -39,10 +41,16 @@ const STYLE_CODES = new Set([
     "8", // Hidden
     "9", // Strikethrough
 ]);
+const FORMAT_RESET_CODES = new Map([
+    ["22", "1"], // Bold reset
+    ["23", "3"], // Italic reset
+    ["24", "4"], // Underline reset
+    ["27", "7"], // Inverse reset
+    ["28", "8"], // Hidden reset
+    ["29", "9"], // Strikethrough reset
+]);
 
-// Maps for foreground and background color code checks
 const isForegroundColor = (code: string): boolean => (code >= "30" && code <= "37") || (code >= "90" && code <= "97") || code.startsWith("38;");
-
 const isBackgroundColor = (code: string): boolean => (code >= "40" && code <= "47") || (code >= "100" && code <= "107") || code.startsWith("48;");
 
 type FormatStyle = {
@@ -81,6 +89,7 @@ const findFirstPositionOfAny = (input: string, substrings: string[]): number => 
  * @param options - Configuration options
  * @returns Segments with ANSI styling information
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const processIntoStyledSegments = (input: string, options: SliceOptions): StyledSegment[] => {
     // Fast path: If no ANSI sequences, return a single segment
     if (!input.includes("\u001B")) {
@@ -109,6 +118,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
     ANSI_REGEX.lastIndex = 0;
 
     // More efficient extraction using the exec method with lastIndex tracking
+    // eslint-disable-next-line no-cond-assign
     while ((match = ANSI_REGEX.exec(input)) !== null) {
         const matchedText = match[0];
         parts.push(input.slice(lastIndex, match.index));
@@ -121,13 +131,13 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
         parts.push(input.slice(lastIndex));
     }
 
-    const openingSequences: string[] = [];
     const closingSequences: string[] = [];
 
     for (const ansi of matches) {
         // Fast checks for common patterns
         if (ansi === "\u001B[0m" || ansi === "\u001B]8;;\u0007") {
             closingSequences.push(ansi);
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -138,19 +148,16 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
             // Use our set for fast lookups
             if (ANSI_RESET_CODES.has(code)) {
                 closingSequences.push(ansi);
+                // eslint-disable-next-line no-continue
                 continue;
             }
         }
-
-        // Otherwise, treat it as an opening sequence
-        openingSequences.push(ansi);
     }
 
     const activeStylesSet = new Set<string>();
     const segments: StyledSegment[] = [];
 
     for (const [index, text] of parts.entries()) {
-
         // Handle ANSI sequence processing
         if (index > 0 && matches[index - 1]) {
             const ansi = matches[index - 1] as string;
@@ -196,19 +203,12 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     }
                 }
                 // Handle other style resets
-                else if (["22", "23", "24", "27", "28", "29"].includes(code)) {
-                    const targetCode = {
-                        "22": "1", // Bold reset
-                        "23": "3", // Italic reset
-                        "24": "4", // Underline reset
-                        "27": "7", // Inverse reset
-                        "28": "8", // Hidden reset
-                        "29": "9", // Strikethrough reset
-                    }[code];
+                else if (FORMAT_RESET_CODES.has(code)) {
+                    const targetCode = FORMAT_RESET_CODES.get(code);
 
                     // Efficiently find and remove the matching style
                     for (const style of activeStylesSet) {
-                        if (style === `\u001B[${targetCode}m`) {
+                        if (style === `\u001B[${targetCode as string}m`) {
                             activeStylesSet.delete(style);
                             break;
                         }
@@ -267,6 +267,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
         }
 
         if (text === "") {
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -349,20 +350,24 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     // Use the original input's order for consistency
                     if (input.indexOf("\u001B[39m") < input.indexOf("\u001B[49m")) {
                         // Remove fg/bg closings we've already added
-                        closingParts.length -= (needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0);
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/no-gratuitous-expressions
+                        closingParts.length -= needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0;
                         closingParts.push("\u001B[39m", "\u001B[49m");
                     } else if (input.indexOf("\u001B[49m") < input.indexOf("\u001B[39m")) {
                         // Remove fg/bg closings we've already added
-                        closingParts.length -= (needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0);
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/no-gratuitous-expressions
+                        closingParts.length -= needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0;
                         closingParts.push("\u001B[49m", "\u001B[39m");
                     }
                 }
 
                 const activeFormatStyles = FORMAT_STYLES.filter((style) => activeStylesSet.has(style.open))
-                    .map((style) => {return {
-                        position: input.indexOf(style.open),
-                        style,
-                    }})
+                    .map((style) => {
+                        return {
+                            position: input.indexOf(style.open),
+                            style,
+                        };
+                    })
                     .filter((item) => item.position >= 0)
                     .sort((a, b) => b.position - a.position); // Sort in reverse order of application
 
@@ -422,7 +427,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
  * @param options - Configuration options
  * @returns Sliced string with preserved character boundaries
  */
-const fastSlice = (inputString: string, startIndex = 0, endIndex = inputString.length, options: SliceOptions): string => {
+const fastSlice = (inputString: string, startIndex: number, endIndex: number, options: SliceOptions): string => {
     const graphemes = [...(options.segmenter as Intl.Segmenter).segment(inputString)];
     const result: string[] = [];
 
@@ -442,6 +447,7 @@ const fastSlice = (inputString: string, startIndex = 0, endIndex = inputString.l
         if (!startFound) {
             if (positionBefore < startIndex) {
                 currentWidth = positionAfter;
+                // eslint-disable-next-line no-continue
                 continue;
             } else {
                 startFound = true;
@@ -522,6 +528,7 @@ export type SliceOptions = {
  * @param options - Configuration options (default: {})
  * @returns Sliced string with preserved styling
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const slice = (inputString: string, startIndex = 0, endIndex = inputString.length, options: SliceOptions = {}): string => {
     const config = {
         segmenter: defaultSegmenter,
@@ -542,6 +549,7 @@ export const slice = (inputString: string, startIndex = 0, endIndex = inputStrin
 
     if (!inputString.includes("\u001B")) {
         // ASCII-only strings can be sliced directly
+        // eslint-disable-next-line regexp/no-control-character,no-control-regex
         if (/^[\u0000-\u007F]*$/.test(inputString)) {
             return inputString.slice(startIndex, endIndex);
         }
@@ -551,7 +559,6 @@ export const slice = (inputString: string, startIndex = 0, endIndex = inputStrin
 
     const segments = processIntoStyledSegments(inputString, config);
 
-    // Early return for empty segments
     if (segments.length === 0) {
         return "";
     }
@@ -559,9 +566,7 @@ export const slice = (inputString: string, startIndex = 0, endIndex = inputStrin
     let currentPos = 0;
     const visibleSegments: VisibleSegment[] = [];
 
-    // First pass to collect visible segments
-    for (const [index, segment_] of segments.entries()) {
-        const segment = segment_ as StyledSegment;
+    for (const [index, segment] of segments.entries()) {
         const segmentStart = currentPos;
         const segmentEnd = currentPos + segment.visibleLength;
 
@@ -580,7 +585,6 @@ export const slice = (inputString: string, startIndex = 0, endIndex = inputStrin
         currentPos = segmentEnd;
     }
 
-    // Early return if no visible segments
     if (visibleSegments.length === 0) {
         return "";
     }
@@ -591,18 +595,17 @@ export const slice = (inputString: string, startIndex = 0, endIndex = inputStrin
     // Add first segment's before marker
     resultParts.push(firstSegment.before);
 
-    // Cache the segmenter for better performance
-    const segmenter = config.segmenter as Intl.Segmenter;
-
     // Build result from visible segments
+    // eslint-disable-next-line no-plusplus
     for (let index = 0; index < visibleSegments.length; index++) {
+        // eslint-disable-next-line security/detect-object-injection
         const { end, segment, start } = visibleSegments[index] as VisibleSegment;
 
         // Only use expensive grapheme segmentation when necessary
         if (start === 0 && end === segment.visibleLength) {
             resultParts.push(segment.content);
         } else {
-            const graphemes = [...segmenter.segment(segment.content)];
+            const graphemes = [...(config.segmenter as Intl.Segmenter).segment(segment.content)];
 
             resultParts.push(
                 graphemes

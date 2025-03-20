@@ -1,8 +1,8 @@
+import LRUCache from "../utils/lru-cache";
 import noCase from "./no-case";
 import type { CaseOptions, PascalSnakeCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
-import LRUCache from "../utils/lru-cache";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 

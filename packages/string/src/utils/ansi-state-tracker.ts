@@ -16,8 +16,8 @@ class AnsiStateTracker {
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public processEscape(sequence: string): void {
         // Extract the numeric code from the sequence
-        // eslint-disable-next-line no-control-regex,regexp/no-control-character
-        const match = /\u001B\[(\d+)m/.exec(sequence);
+        // eslint-disable-next-line no-control-regex,regexp/no-control-character, unicorn/no-hex-escape
+        const match = /\x1B\[(\d+)m/.exec(sequence);
 
         if (!match) {
             return;
@@ -65,8 +65,8 @@ class AnsiStateTracker {
                         29: "[9m", // Reset strikethrough
                     };
 
-                     
-                    const formatToRemove = formatResetMap[code];
+                    // eslint-disable-next-line security/detect-object-injection
+                    const formatToRemove = formatResetMap[code] as string;
 
                     if (formatToRemove) {
                         this.activeFormatting = this.activeFormatting.filter((fmt) => !fmt.includes(formatToRemove));

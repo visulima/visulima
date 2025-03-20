@@ -1,11 +1,11 @@
 import { RE_FAST_ANSI } from "../constants";
+import LRUCache from "../utils/lru-cache";
 import { splitByCase } from "./split-by-case";
 import type { CaseOptions, PascalCase } from "./types";
 import upperFirst from "./upper-first";
 import generateCacheKey from "./utils/generate-cache-key";
 import joinSegments from "./utils/join-segments";
 import normalizeGermanEszett from "./utils/normalize-german-eszett";
-import LRUCache from "../utils/lru-cache";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 

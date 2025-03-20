@@ -26,7 +26,6 @@ const preserveAnsi = (rawLines: string[]): string => {
     const pre = [...preString];
     let preStringIndex = 0;
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const [index, character] of pre.entries()) {
         returnValue += character;
 

@@ -44,6 +44,8 @@ module.exports = defineConfig({
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
+                "no-loops/no-loops": "off",
+                "no-restricted-syntax": "off",
                 "prefer-template": "off",
             },
         },
@@ -60,9 +62,15 @@ module.exports = defineConfig({
             },
         },
         {
-            files: ["src/index.ts", "src/case/index.ts", "src/test/index.ts", "src/test/utils.ts"],
+            files: ["src/index.ts", "src/case/index.ts", "src/test/index.ts", "src/test/utils.ts", "src/utils.ts"],
             rules: {
                 "import/no-unused-modules": "off",
+            },
+        },
+        {
+            files: ["src/types.ts", "src/case/types.ts"],
+            rules: {
+                "no-secrets/no-secrets": "off",
             },
         },
         {

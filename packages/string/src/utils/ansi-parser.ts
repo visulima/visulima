@@ -15,6 +15,7 @@ export const checkEscapeSequence = (
     isInsideEscape: boolean;
     isInsideLinkEscape: boolean;
 } => {
+    // eslint-disable-next-line security/detect-object-injection
     if (!ESCAPES.has(chars[index] as string)) {
         return { isInsideEscape: false, isInsideLinkEscape: false };
     }
@@ -32,6 +33,7 @@ export const checkEscapeSequence = (
  * @param string - The string to process
  * @param options - Processing options
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const processAnsiString = (string: string, options: ProcessAnsiStringOptions = {}): void => {
     const stateTracker = new AnsiStateTracker();
 
@@ -43,7 +45,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
     let isInHyperlink = false;
 
     const chars = [...string];
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    // eslint-disable-next-line no-plusplus
     for (let index = 0; index < chars.length; index++) {
         // eslint-disable-next-line security/detect-object-injection
         const character = chars[index] as string;
@@ -85,7 +87,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                 let urlEnd = index + 1;
                 currentUrl = "";
 
-                // eslint-disable-next-line no-loops/no-loops
                 while (urlEnd < chars.length) {
                     // eslint-disable-next-line security/detect-object-injection
                     const nextChar = chars[urlEnd] as string;

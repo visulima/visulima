@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import { trainCase } from "../../../src/case";
-import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 import LRUCache from "../../../src/utils/lru-cache";
 
 describe("trainCase", () => {

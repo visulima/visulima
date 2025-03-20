@@ -14,7 +14,7 @@ const splitByEmoji = (text: string): string[] => {
 
     RE_EMOJI.lastIndex = 0;
 
-    // eslint-disable-next-line no-loops/no-loops,no-cond-assign
+    // eslint-disable-next-line no-cond-assign
     while ((match = RE_EMOJI.exec(text)) !== null) {
         if (match.index > lastIndex) {
             segments.push(text.slice(lastIndex, match.index));

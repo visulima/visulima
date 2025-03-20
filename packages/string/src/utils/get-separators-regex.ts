@@ -1,8 +1,9 @@
+import LRUCache from "./lru-cache";
+
 /**
  * Cache for dynamically created regexes with LRU-like behavior
  */
-const regexCache = new Map<string, RegExp>();
-const regexCacheOrder: string[] = [];
+const regexCache = new LRUCache<string, RegExp>(1000);
 
 /**
  * Creates or retrieves a cached regex for custom separators
@@ -13,34 +14,16 @@ const regexCacheOrder: string[] = [];
 const getSeparatorsRegex = (separators: ReadonlyArray<string>): RegExp => {
     const key = separators.join("");
 
-    let regex = regexCache.get(key);
-
-    if (regex) {
-        // Move to end of LRU list
-        const index = regexCacheOrder.indexOf(key);
-
-        if (index > -1) {
-            regexCacheOrder.splice(index, 1);
-            regexCacheOrder.push(key);
-        }
-    } else {
-        const pattern = separators.map((s) => s.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
-
-        // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
-        regex = new RegExp(pattern, "g");
-
-        // Implement simple LRU-like caching
-        if (regexCache.size >= 100) {
-            const oldestKey = regexCacheOrder.shift();
-
-            if (oldestKey) {
-                regexCache.delete(oldestKey);
-            }
-        }
-
-        regexCache.set(key, regex);
-        regexCacheOrder.push(key);
+    if (regexCache.has(key)) {
+        return regexCache.get(key) as RegExp;
     }
+
+    const pattern = separators.map((s) => s.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+
+    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
+    const regex = new RegExp(pattern, "g");
+
+    regexCache.set(key, regex);
 
     return regex;
 };

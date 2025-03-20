@@ -141,10 +141,10 @@ export interface CaseOptions extends LocaleOptions {
  * Type-level implementation of camelCase conversion.
  * Converts a string type to camelCase format where words are joined together
  * with the first word in lowercase and subsequent words capitalized.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in camelCase format
- * 
+ *
  * @example
  * type Result1 = CamelCase<'foo bar'> // type Result1 = 'fooBar'
  * type Result2 = CamelCase<'foo-bar'> // type Result2 = 'fooBar'
@@ -165,10 +165,10 @@ export type CamelCase<T extends string> =
  * Type-level implementation of PascalCase conversion.
  * Converts a string type to PascalCase format where words are joined together
  * with each word capitalized.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in PascalCase format
- * 
+ *
  * @example
  * type Result1 = PascalCase<'foo bar'> // type Result1 = 'FooBar'
  * type Result2 = PascalCase<'foo-bar'> // type Result2 = 'FooBar'
@@ -180,10 +180,10 @@ export type PascalCase<T extends string> = IsStringLiteral<T> extends true ? Cap
  * Type-level implementation of snake_case conversion.
  * Converts a string type to snake_case format where words are in lowercase
  * and separated by underscores.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in snake_case format
- * 
+ *
  * @example
  * type Result1 = SnakeCase<'fooBar'> // type Result1 = 'foo_bar'
  * type Result2 = SnakeCase<'foo bar'> // type Result2 = 'foo_bar'
@@ -202,10 +202,10 @@ export type SnakeCase<T extends string> =
  * Type-level implementation of kebab-case conversion.
  * Converts a string type to kebab-case format where words are in lowercase
  * and separated by hyphens.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in kebab-case format
- * 
+ *
  * @example
  * type Result1 = KebabCase<'fooBar'> // type Result1 = 'foo-bar'
  * type Result2 = KebabCase<'foo bar'> // type Result2 = 'foo-bar'
@@ -224,10 +224,10 @@ export type KebabCase<T extends string> =
  * Type-level implementation of flat case conversion.
  * Converts a string type to flat case format where all words are joined together
  * in lowercase with no separators.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in flat case format
- * 
+ *
  * @example
  * type Result1 = FlatCase<'foo-barBaz'> // type Result1 = 'foobarbaz'
  * type Result2 = FlatCase<'foo bar'> // type Result2 = 'foobar'
@@ -240,10 +240,10 @@ export type FlatCase<T extends string> = IsStringLiteral<T> extends true ? Lower
  * Converts a string type to Train-Case format where words are capitalized
  * and separated by hyphens. This case style is similar to PascalCase but with
  * hyphens between words.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in Train-Case format
- * 
+ *
  * @example
  * type Result1 = TrainCase<'FooBARb'> // type Result1 = 'Foo-Ba-Rb'
  * type Result2 = TrainCase<'foo bar'> // type Result2 = 'Foo-Bar'
@@ -269,10 +269,10 @@ export type TrainCase<T extends string, N extends boolean = false> =
  * Converts a string type to Title Case format where the first letter of each
  * significant word is capitalized. Articles, conjunctions, and prepositions
  * typically remain in lowercase unless they are the first word.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in Title Case format
- * 
+ *
  * @example
  * type Result1 = TitleCase<'this-IS-aTitle'> // type Result1 = 'This Is A Title'
  * type Result2 = TitleCase<'hello_world'> // type Result2 = 'Hello World'
@@ -284,10 +284,10 @@ export type TitleCase<T extends string> = IsStringLiteral<T> extends true ? (T e
  * Type-level implementation of first character capitalization.
  * Converts the first character of a string type to uppercase while leaving
  * the rest of the string unchanged.
- * 
+ *
  * @template T - The string type to modify
  * @returns A string type with its first character in uppercase
- * 
+ *
  * @example
  * type Result1 = UpperFirst<'hello world!'> // type Result1 = 'Hello world!'
  * type Result2 = UpperFirst<'fooBar'> // type Result2 = 'FooBar'
@@ -299,10 +299,10 @@ export type UpperFirst<T extends string> = IsStringLiteral<T> extends true ? (T 
  * Type-level implementation of first character lowercasing.
  * Converts the first character of a string type to lowercase while leaving
  * the rest of the string unchanged.
- * 
+ *
  * @template T - The string type to modify
  * @returns A string type with its first character in lowercase
- * 
+ *
  * @example
  * type Result1 = LowerFirst<'Hello world!'> // type Result1 = 'hello world!'
  * type Result2 = LowerFirst<'FooBar'> // type Result2 = 'fooBar'
@@ -314,10 +314,10 @@ export type LowerFirst<T extends string> = IsStringLiteral<T> extends true ? (T 
  * Type-level implementation of case flipping.
  * Inverts the case of each character in a string type - uppercase becomes
  * lowercase and vice versa.
- * 
+ *
  * @template T - The string type to modify
  * @returns A string type with inverted character cases
- * 
+ *
  * @example
  * type Result1 = FlipCase<'FooBar'> // type Result1 = 'fOObAR'
  * type Result2 = FlipCase<'Hello World'> // type Result2 = 'hELLO wORLD'
@@ -334,10 +334,10 @@ export type FlipCase<T extends string> =
  * Type-level implementation of dot.case conversion.
  * Converts a string type to dot.case format where words are in lowercase
  * and separated by dots.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in dot.case format
- * 
+ *
  * @example
  * type Result1 = DotCase<'fooBar'> // type Result1 = 'foo.bar'
  * type Result2 = DotCase<'foo_bar'> // type Result2 = 'foo.bar'
@@ -351,10 +351,10 @@ export type DotCase<T extends string> = T & {
  * Type-level implementation of path/case conversion.
  * Converts a string type to path/case format where words are in lowercase
  * and separated by forward slashes, making it suitable for file paths.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in path/case format
- * 
+ *
  * @example
  * type Result1 = PathCase<'fooBar'> // type Result1 = 'foo/bar'
  * type Result2 = PathCase<'foo_bar'> // type Result2 = 'foo/bar'
@@ -368,10 +368,10 @@ export type PathCase<T extends string> = T & {
  * Type-level implementation of no case conversion.
  * Converts a string type to space-separated lowercase words, removing all
  * special case formatting.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in space-separated lowercase format
- * 
+ *
  * @example
  * type Result1 = NoCase<'fooBar'> // type Result1 = 'foo bar'
  * type Result2 = NoCase<'foo_bar'> // type Result2 = 'foo bar'
@@ -385,10 +385,10 @@ export type NoCase<T extends string> = T & {
  * Type-level implementation of CONSTANT_CASE conversion.
  * Converts a string type to CONSTANT_CASE format where words are in uppercase
  * and separated by underscores. Commonly used for constant/enum values.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in CONSTANT_CASE format
- * 
+ *
  * @example
  * type Result1 = ConstantCase<'fooBar'> // type Result1 = 'FOO_BAR'
  * type Result2 = ConstantCase<'foo-bar'> // type Result2 = 'FOO_BAR'
@@ -402,10 +402,10 @@ export type ConstantCase<T extends string> = T & {
  * Type-level implementation of Capital Case conversion.
  * Converts a string type to Capital Case format where each word starts with
  * a capital letter and words are separated by spaces.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in Capital Case format
- * 
+ *
  * @example
  * type Result1 = CapitalCase<'fooBar'> // type Result1 = 'Foo Bar'
  * type Result2 = CapitalCase<'foo_bar'> // type Result2 = 'Foo Bar'
@@ -419,10 +419,10 @@ export type CapitalCase<T extends string> = T & {
  * Type-level implementation of Sentence case conversion.
  * Converts a string type to Sentence case format where only the first word
  * starts with a capital letter and all other words are lowercase.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in Sentence case format
- * 
+ *
  * @example
  * type Result1 = SentenceCase<'fooBar'> // type Result1 = 'Foo bar'
  * type Result2 = SentenceCase<'FOO_BAR'> // type Result2 = 'Foo bar'
@@ -436,10 +436,10 @@ export type SentenceCase<T extends string> = T & {
  * Type-level implementation of Pascal_Snake_Case conversion.
  * Converts a string type to Pascal_Snake_Case format where words are capitalized
  * and separated by underscores. This is a hybrid between PascalCase and snake_case.
- * 
+ *
  * @template T - The string type to convert
  * @returns A string type in Pascal_Snake_Case format
- * 
+ *
  * @example
  * type Result1 = PascalSnakeCase<'fooBar'> // type Result1 = 'Foo_Bar'
  * type Result2 = PascalSnakeCase<'foo bar'> // type Result2 = 'Foo_Bar'
@@ -453,7 +453,7 @@ export type PascalSnakeCase<T extends string> = T & {
  * Type-level utility that identifies the case pattern of a string type.
  * Analyzes the string to determine if it follows a specific case convention
  * such as camelCase, PascalCase, snake_case, etc.
- * 
+ *
  * @template T - The string type to analyze
  * @returns A string literal type indicating the detected case pattern:
  * - 'snake' for snake_case
@@ -467,7 +467,7 @@ export type PascalSnakeCase<T extends string> = T & {
  * - 'title' for Title Case
  * - 'mixed' for mixed case patterns
  * - string type for non-literal strings
- * 
+ *
  * @example
  * type Case1 = IdentifyCase<'foo_bar'> // type Case1 = 'snake'
  * type Case2 = IdentifyCase<'foo-bar'> // type Case2 = 'kebab'
@@ -504,17 +504,17 @@ export type IdentifyCase<T extends string> =
  * Type-level utility that splits a string type into an array of substrings based on case boundaries
  * and separator characters. This is particularly useful for breaking down strings in various case
  * formats into their constituent words.
- * 
+ *
  * The utility handles multiple scenarios:
  * - Case boundaries (e.g., camelCase -> ['camel', 'Case'])
  * - Separator characters (e.g., snake_case -> ['snake', 'case'])
  * - Mixed patterns (e.g., FOO-Bar -> ['FOO', 'Bar'])
- * 
+ *
  * @template T - The string type to split
  * @template Separator - The separator character(s) to split on (defaults to SplitterCharacter)
  * @template Accumulator - Internal accumulator for building the result array
  * @returns A tuple type containing the split string parts, or string[] for non-literal strings
- * 
+ *
  * @example
  * type Split1 = SplitByCase<'camelCase'> // type Split1 = ['camel', 'Case']
  * type Split2 = SplitByCase<'foo_bar'> // type Split2 = ['foo', 'bar']

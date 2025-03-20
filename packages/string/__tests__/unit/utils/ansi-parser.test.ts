@@ -5,36 +5,39 @@ import type { AnsiSegment, HyperlinkSegment } from "../../../src/utils/types";
 
 describe("checkEscapeSequence", () => {
     it("should detect regular ANSI escape sequences", () => {
+        expect.assertions(1);
         const text = "\u001B[31mHello";
         const chars = [...text];
 
         const result = checkEscapeSequence(chars, 0);
 
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
             isInsideEscape: true,
             isInsideLinkEscape: false,
         });
     });
 
     it("should detect hyperlink start sequences", () => {
+        expect.assertions(1);
         const text = "\u001B]8;;https://example.com\u0007Hello";
         const chars = [...text];
 
         const result = checkEscapeSequence(chars, 0);
 
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
             isInsideEscape: true,
             isInsideLinkEscape: true,
         });
     });
 
     it("should return false for non-escape sequences", () => {
+        expect.assertions(1);
         const text = "Hello World";
         const chars = [...text];
 
         const result = checkEscapeSequence(chars, 0);
 
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
             isInsideEscape: false,
             isInsideLinkEscape: false,
         });
@@ -44,6 +47,7 @@ describe("checkEscapeSequence", () => {
 describe("processAnsiString", () => {
     describe("regular ANSI sequences", () => {
         it("should process basic ANSI color codes", () => {
+            expect.assertions(2);
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B[31mHello\u001B[0m";
 
@@ -60,6 +64,7 @@ describe("processAnsiString", () => {
         });
 
         it("should handle nested ANSI sequences", () => {
+            expect.assertions(2);
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B[31m\u001B[1mBold Red\u001B[0m";
 
@@ -78,6 +83,7 @@ describe("processAnsiString", () => {
 
     describe("hyperlink handling", () => {
         it("should process hyperlink sequences", () => {
+            expect.assertions(2);
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B]8;;https://example.com\u0007Click here\u001B\\";
 
@@ -94,6 +100,7 @@ describe("processAnsiString", () => {
         });
 
         it("should handle nested ANSI sequences within hyperlinks", () => {
+            expect.assertions(2);
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B]8;;https://example.com\u0007\u001B[31mRed Link\u001B[0m\u001B\\";
 
@@ -110,6 +117,7 @@ describe("processAnsiString", () => {
         });
 
         it("should handle multiple hyperlinks", () => {
+            expect.assertions(2);
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B]8;;https://example1.com\u0007Link 1\u001B\\ and \u001B]8;;https://example2.com\u0007Link 2\u001B\\";
 
@@ -128,6 +136,7 @@ describe("processAnsiString", () => {
 
     describe("grapheme handling", () => {
         it("should handle combining characters", () => {
+            expect.assertions(3);
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "e\u0301"; // é using combining acute accent
 
@@ -151,6 +160,7 @@ describe("processAnsiString", () => {
         });
 
         it("should handle emoji sequences", () => {
+            expect.assertions(8);
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "👨‍👩‍👧‍👦"; // family emoji
 
@@ -172,6 +182,7 @@ describe("processAnsiString", () => {
 
     describe("error handling", () => {
         it("should handle incomplete ANSI sequences", () => {
+            expect.assertions(2);
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B[31"; // Incomplete color code
 
@@ -191,6 +202,7 @@ describe("processAnsiString", () => {
         });
 
         it("should handle incomplete hyperlink sequences", () => {
+            expect.assertions(2);
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B]8;;https://example.com"; // Missing BEL
 
@@ -212,6 +224,8 @@ describe("processAnsiString", () => {
 
     describe("callback control", () => {
         it("should stop processing when callback returns false", () => {
+            expect.assertions(1);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B[31mHello\u001B[0m World";
 
@@ -227,6 +241,8 @@ describe("processAnsiString", () => {
         });
 
         it("should handle missing width function", () => {
+            expect.assertions(2);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "Hello";
 

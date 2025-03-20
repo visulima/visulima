@@ -8,6 +8,7 @@ import {
 } from "./constants";
 
 // Safe hasOwnProperty
+// eslint-disable-next-line @typescript-eslint/unbound-method
 const hop = Object.prototype.hasOwnProperty;
 const has = (object: object, property: string): boolean => hop.call(object, property);
 
@@ -15,7 +16,6 @@ const has = (object: object, property: string): boolean => hop.call(object, prop
 const extend = <T, S extends object>(target: T, source: S): S & T => {
     type Extended = S & T;
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const property in source) {
         if (has(source, property)) {
             // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any,security/detect-object-injection
@@ -64,7 +64,7 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
     const outdentedStrings: string[] = Array.from({ length: l });
 
     // Process all strings
-    // eslint-disable-next-line no-plusplus,no-loops/no-loops
+    // eslint-disable-next-line no-plusplus
     for (let index = 0; index < l; index++) {
         // eslint-disable-next-line security/detect-object-injection
         let v = strings[index] as string;
@@ -103,7 +103,7 @@ const concatStringsAndValues = (strings: ReadonlyArray<string>, values: Readonly
     let index = 0;
     const l = strings.length;
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    // eslint-disable-next-line no-plusplus
     for (; index < l - 1; index++) {
         // eslint-disable-next-line security/detect-object-injection
         chunks[index * 2] = strings[index] as string;
