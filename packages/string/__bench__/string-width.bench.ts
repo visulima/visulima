@@ -1,6 +1,6 @@
 import { bench, describe } from "vitest";
 import stringWidth from "string-width";
-import { getStringWidth } from "../src";
+import { getStringWidth, getStringTruncatedWidth } from "../src";
 
 describe("string width", () => {
     const simpleString = "The quick brown fox jumps over the lazy dog";
@@ -9,8 +9,10 @@ describe("string width", () => {
     const mixedString = "\u001B[31m你好\u001B[39m world 👨‍👩‍👧‍👦 안녕하세요";
     const ambiguousString = "ｈｅｌｌｏ ｗｏｒｌｄ";
     const controlString = "Hello\tWorld\nNew\rLine";
+    const katakanaString = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ";
+    const longString = simpleString.repeat(1000); // ~44,000 characters
 
-    describe("simple ASCII string", () => {
+    describe("simple ASCII string (getStringWidth)", () => {
         bench("@visulima/string getStringWidth", () => {
             getStringWidth(simpleString);
         });
@@ -20,7 +22,7 @@ describe("string width", () => {
         });
     });
 
-    describe("ANSI string", () => {
+    describe("ANSI string (getStringWidth)", () => {
         bench("@visulima/string getStringWidth", () => {
             getStringWidth(ansiString);
         });
@@ -34,7 +36,7 @@ describe("string width", () => {
         });
     });
 
-    describe("Unicode string", () => {
+    describe("Unicode string (getStringWidth)", () => {
         bench("@visulima/string getStringWidth", () => {
             getStringWidth(unicodeString);
         });
@@ -44,7 +46,7 @@ describe("string width", () => {
         });
     });
 
-    describe("mixed content", () => {
+    describe("mixed content (getStringWidth)", () => {
         bench("@visulima/string getStringWidth", () => {
             getStringWidth(mixedString);
         });
@@ -54,7 +56,7 @@ describe("string width", () => {
         });
     });
 
-    describe("ambiguous-width characters", () => {
+    describe("ambiguous-width characters (getStringWidth)", () => {
         bench("@visulima/string getStringWidth (default)", () => {
             getStringWidth(ambiguousString);
         });
@@ -68,7 +70,7 @@ describe("string width", () => {
         });
     });
 
-    describe("control characters", () => {
+    describe("control characters (getStringWidth)", () => {
         bench("@visulima/string getStringWidth", () => {
             getStringWidth(controlString);
         });
@@ -78,7 +80,7 @@ describe("string width", () => {
         });
     });
 
-    describe("custom width options", () => {
+    describe("custom width options (getStringWidth)", () => {
         bench("@visulima/string getStringWidth (custom widths)", () => {
             getStringWidth(mixedString, {
                 ambiguousWidth: 2,
@@ -94,4 +96,114 @@ describe("string width", () => {
         });
     });
 
+    describe("simple ASCII string (getStringTruncatedWidth)", () => {
+        bench("@visulima/string getStringTruncatedWidth", () => {
+            getStringTruncatedWidth(simpleString, { limit: 20 });
+        });
+    });
+
+    describe("ANSI string (getStringTruncatedWidth)", () => {
+        bench("@visulima/string getStringTruncatedWidth", () => {
+            getStringTruncatedWidth(ansiString, { limit: 20 });
+        });
+
+        bench("@visulima/string getStringTruncatedWidth (count ANSI)", () => {
+            getStringTruncatedWidth(ansiString, { limit: 20, countAnsiEscapeCodes: true });
+        });
+    });
+
+    describe("Unicode string (getStringTruncatedWidth)", () => {
+        bench("@visulima/string getStringTruncatedWidth", () => {
+            getStringTruncatedWidth(unicodeString, { limit: 20 });
+        });
+    });
+
+    describe("mixed content (getStringTruncatedWidth)", () => {
+        bench("@visulima/string getStringTruncatedWidth", () => {
+            getStringTruncatedWidth(mixedString, { limit: 20 });
+        });
+    });
+
+    describe("ambiguous-width characters (getStringTruncatedWidth)", () => {
+        bench("@visulima/string getStringTruncatedWidth (default)", () => {
+            getStringTruncatedWidth(ambiguousString, { limit: 20 });
+        });
+
+        bench("@visulima/string getStringTruncatedWidth (narrow)", () => {
+            getStringTruncatedWidth(ambiguousString, { limit: 20, ambiguousIsNarrow: true });
+        });
+    });
+
+    describe("control characters (getStringTruncatedWidth)", () => {
+        bench("@visulima/string getStringTruncatedWidth", () => {
+            getStringTruncatedWidth(controlString, { limit: 20 });
+        });
+    });
+
+    describe("custom width options (getStringTruncatedWidth)", () => {
+        bench("@visulima/string getStringTruncatedWidth (custom widths)", () => {
+            getStringTruncatedWidth(mixedString, {
+                limit: 20,
+                ambiguousWidth: 2,
+                emojiWidth: 2,
+                fullWidth: 2,
+                regularWidth: 1,
+                tabWidth: 4,
+            });
+        });
+    });
+
+    describe("half-width katakana (getStringWidth)", () => {
+        bench("@visulima/string getStringWidth", () => {
+            getStringWidth(katakanaString);
+        });
+
+        bench("string-width", () => {
+            stringWidth(katakanaString);
+        });
+    });
+
+    describe("half-width katakana (getStringTruncatedWidth)", () => {
+        bench("@visulima/string getStringTruncatedWidth", () => {
+            getStringTruncatedWidth(katakanaString, { limit: 20 });
+        });
+
+        bench("@visulima/string getStringTruncatedWidth (narrow)", () => {
+            getStringTruncatedWidth(katakanaString, { limit: 20, ambiguousIsNarrow: true });
+        });
+    });
+
+    describe("long string (getStringWidth)", () => {
+        bench("@visulima/string getStringWidth", () => {
+            getStringWidth(longString);
+        });
+
+        bench("string-width", () => {
+            stringWidth(longString);
+        });
+    });
+
+    describe("long string (getStringTruncatedWidth)", () => {
+        bench("@visulima/string getStringTruncatedWidth", () => {
+            getStringTruncatedWidth(longString, { limit: 1000 });
+        });
+
+        bench("@visulima/string getStringTruncatedWidth (with cache)", () => {
+            getStringTruncatedWidth(longString, { limit: 1000 });
+        });
+    });
+
+    describe("with ellipsis (getStringTruncatedWidth)", () => {
+        bench("@visulima/string getStringTruncatedWidth (default ellipsis)", () => {
+            getStringTruncatedWidth(simpleString, { limit: 20, ellipsis: "…" });
+        });
+
+        bench("@visulima/string getStringTruncatedWidth (custom ellipsis)", () => {
+            getStringTruncatedWidth(simpleString, { limit: 20, ellipsis: "..." });
+        });
+
+        bench("@visulima/string getStringTruncatedWidth (ANSI ellipsis)", () => {
+            getStringTruncatedWidth(simpleString, { limit: 20, ellipsis: "\u001B[31m...\u001B[39m" });
+        });
+    });
 });

@@ -111,16 +111,6 @@ export const RE_CONTROL = /[\u0000-\u0008\n-\u001F\u007F-\u009F]{1,1000}/y;
 export const RE_EMOJI = emojiRegex();
 
 /**
- * Regular expression for Unicode modifiers
- */
-export const RE_MODIFIER = /\p{M}+/gu;
-
-/**
- * Regular expression for tab characters
- */
-export const RE_TAB = /\t{1,1000}/y;
-
-/**
  * Regular expression for separators used in case conversion
  */
 export const RE_SEPARATORS = /[-_./\s]+/g;

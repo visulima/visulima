@@ -197,8 +197,12 @@ describe("getStringTruncatedWidth", () => {
         });
 
         it("supports japanese half-width characters", () => {
-            expect.assertions(2);
+            expect.assertions(6);
             expect(getWidth("ﾊﾞ")).toBe(2);
+            expect(getWidth("ｱｲｳｴｵ")).toBe(5); // Basic katakana
+            expect(getWidth("ﾊﾟﾋﾟﾌﾟﾍﾟﾎﾟ")).toBe(10); // With dakuten
+            expect(getWidth("ｶﾞｷﾞｸﾞｹﾞｺﾞ")).toBe(10); // With handakuten
+            expect(getWidth("ﾜｦﾝ")).toBe(3); // Special characters
             expect(getWidth("ﾊﾟ")).toBe(2);
         });
     });

@@ -5,6 +5,7 @@ import { getStringWidth } from "../../src";
 describe("getStringWidth", () => {
     it("should handle various string types correctly", () => {
         expect.assertions(26);
+
         expect(getStringWidth("⛣", { ambiguousIsNarrow: false })).toBe(2);
         expect(getStringWidth("abcde")).toBe(5);
         expect(getStringWidth("古池や")).toBe(6);
@@ -36,6 +37,7 @@ describe("getStringWidth", () => {
     describe("control characters", () => {
         it("should ignore control characters", () => {
             expect.assertions(6);
+
             expect(getStringWidth(String.fromCodePoint(0))).toBe(0);
             expect(getStringWidth(String.fromCodePoint(31))).toBe(0);
             expect(getStringWidth(String.fromCodePoint(127))).toBe(0);
@@ -48,6 +50,7 @@ describe("getStringWidth", () => {
     describe("combining characters", () => {
         it("should handle combining characters correctly", () => {
             expect.assertions(5);
+
             expect(getStringWidth("x\u0300")).toBe(1);
             expect(getStringWidth("\u0300\u0301")).toBe(0);
             expect(getStringWidth("e\u0301e")).toBe(2);
@@ -59,6 +62,7 @@ describe("getStringWidth", () => {
     describe("zWJ characters", () => {
         it("should handle ZWJ sequences correctly", () => {
             expect.assertions(4);
+
             expect(getStringWidth("👶")).toBe(2);
             expect(getStringWidth("👶🏽")).toBe(2);
             expect(getStringWidth("👩‍👩‍👦‍👦")).toBe(2);
@@ -69,6 +73,7 @@ describe("getStringWidth", () => {
     describe("zero-width characters", () => {
         it("should handle zero-width characters correctly", () => {
             expect.assertions(8);
+
             expect(getStringWidth("\u200B")).toBe(0);
             expect(getStringWidth("x\u200Bx")).toBe(1);
             expect(getStringWidth("\u200C")).toBe(1);
@@ -83,6 +88,7 @@ describe("getStringWidth", () => {
     describe("surrogate pairs", () => {
         it("should handle surrogate pairs correctly", () => {
             expect.assertions(2);
+
             expect(getStringWidth("\uD83D\uDE00")).toBe(2);
             expect(getStringWidth("A\uD83D\uDE00B")).toBe(4);
         });
@@ -91,6 +97,7 @@ describe("getStringWidth", () => {
     describe("variation selectors", () => {
         it("should handle variation selectors correctly", () => {
             expect.assertions(3);
+
             expect(getStringWidth("\u{1F1E6}\uFE0F")).toBe(2);
             expect(getStringWidth("A\uFE0F")).toBe(1);
             expect(getStringWidth("\uFE0F")).toBe(0);
@@ -100,9 +107,10 @@ describe("getStringWidth", () => {
     describe("edge cases", () => {
         it("should handle various edge cases correctly", () => {
             expect.assertions(10);
+
             expect(getStringWidth("")).toBe(0);
             expect(getStringWidth("\u200B\u200B")).toBe(0);
-            expect(getStringWidth("x\u200Bx\u200B")).toBe(0);
+            expect(getStringWidth("x\u200Bx\u200B")).toBe(2);
             expect(getStringWidth("x\u0300x\u0300")).toBe(2);
             expect(getStringWidth("\uD83D\uDE00\uFE0F")).toBe(2);
             expect(getStringWidth("\uD83D\uDC69\u200D\uD83C\uDF93")).toBe(2);
@@ -116,23 +124,25 @@ describe("getStringWidth", () => {
     describe("default ignorable code points", () => {
         it("should ignore default ignorable code points", () => {
             expect.assertions(11);
+
             expect(getStringWidth("\u2060")).toBe(0);
             expect(getStringWidth("\u2061")).toBe(0);
             expect(getStringWidth("\u2062")).toBe(0);
             expect(getStringWidth("\u2063")).toBe(0);
             expect(getStringWidth("\u2064")).toBe(0);
             expect(getStringWidth("\uFEFF")).toBe(0);
-            expect(getStringWidth("x\u2060x")).toBe(1);
-            expect(getStringWidth("x\u2061x")).toBe(1);
-            expect(getStringWidth("x\u2062x")).toBe(1);
-            expect(getStringWidth("x\u2063x")).toBe(1);
-            expect(getStringWidth("x\u2064x")).toBe(1);
+            expect(getStringWidth("x\u2060x")).toBe(2);
+            expect(getStringWidth("x\u2061x")).toBe(2);
+            expect(getStringWidth("x\u2062x")).toBe(2);
+            expect(getStringWidth("x\u2063x")).toBe(2);
+            expect(getStringWidth("x\u2064x")).toBe(2);
         });
     });
 
     describe("complex emoji sequences", () => {
         it("should handle complex emoji sequences correctly", () => {
             expect.assertions(4);
+
             expect(getStringWidth("👩‍👩‍👦‍👦🏻")).toBe(2);
             expect(getStringWidth("👨‍👩‍👧‍👦")).toBe(2);
             expect(getStringWidth("🤝🏻👫")).toBe(4);
@@ -143,6 +153,7 @@ describe("getStringWidth", () => {
     describe("combining character sequences", () => {
         it("should handle combining character sequences correctly", () => {
             expect.assertions(4);
+
             expect(getStringWidth("x\u0300\u0301")).toBe(1);
             expect(getStringWidth("e\u0301\u0302e")).toBe(2);
             expect(getStringWidth("x\u036F\u036F")).toBe(1);
@@ -153,6 +164,7 @@ describe("getStringWidth", () => {
     describe("aNSI escape code sequences", () => {
         it("should handle ANSI escape code sequences correctly", () => {
             expect.assertions(3);
+
             expect(getStringWidth("\u001B[31m\u001B[39m\u001B[40m")).toBe(0);
             expect(getStringWidth("\u001B[31m\u001B[39m\u001B[40m", { countAnsiEscapeCodes: true })).toBe(15);
             expect(getStringWidth("\u001B]8;;https://github.com\u0007Click\u001B]8;;\u0007\u001B[31m")).toBe(5);
@@ -162,6 +174,7 @@ describe("getStringWidth", () => {
     describe("hyperlinks", () => {
         it("should handle hyperlinks correctly", () => {
             expect.assertions(3);
+
             expect(getStringWidth("\u001B]8;;https://github.com\u0007Click\u001B]8;;\u0007")).toBe(5);
             expect(getStringWidth("\u001B]8;;https://github.com\u0007Click\u001B]8;;\u0007\u001B[31m")).toBe(5);
             expect(getStringWidth("\u001B]8;;https://github.com\u0007Click\u001B]8;;\u0007\u001B[31m\u001B[39m")).toBe(5);

@@ -1,12 +1,69 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { eastAsianWidthType } from "get-east-asian-width";
 
-import { RE_ANSI, RE_ANSI_LINK_END, RE_CONTROL, RE_EMOJI, RE_MODIFIER, RE_TAB, RE_ZERO_WIDTH } from "./constants";
+import { RE_ANSI, RE_ANSI_LINK_END, RE_CONTROL, RE_EMOJI } from "./constants";
 
 /**
- * Regular expression for Latin characters
+ * Regular expression for Latin characters - optimized for width calculation
+ * Using sticky flag for better performance in sequential matching
  */
-const RE_LATIN = /(?:[\u0020-\u007E\u00A0-\u00FF](?!\uFE0F)){1,1000}/y;
+const RE_LATIN_CHARS = /(?:[\u0020-\u007E\u00A0-\u00FF](?!\uFE0F)){1,1000}/y;
+
+/**
+ * Gets the width of a character from cache or calculates it
+ * @param codePoint Unicode code point
+ * @param config Width configuration
+ */
+const getCachedCharWidth = (codePoint: number, config: any): number => {
+    // Split the code point into high and low parts for efficient caching
+    const highBits = Math.floor(codePoint / 65536);
+    const lowBits = codePoint % 65536;
+
+    // Get or create the second-level map
+    let lowMap = charWidthCache.get(highBits);
+    if (!lowMap) {
+        lowMap = new Map();
+        charWidthCache.set(highBits, lowMap);
+    }
+
+    // Check if width is already cached
+    if (lowMap.has(lowBits)) {
+        return lowMap.get(lowBits);
+    }
+
+    // Calculate width based on character type
+    let width;
+
+    // Fast path for common character ranges
+    if (getCharType(codePoint) === "latin") {
+        width = config.width.regular;
+    } else if (getCharType(codePoint) === "control") {
+        width = config.width.control;
+    } else if (getCharType(codePoint) === "wide") {
+        width = config.width.wide;
+    } else {
+        // Fall back to East Asian width calculation for other characters
+        const eaw = eastAsianWidthType(codePoint);
+
+        switch (eaw) {
+            case "fullwidth":
+                width = config.width.fullWidth;
+                break;
+            case "wide":
+                width = config.width.wide;
+                break;
+            case "ambiguous":
+                width = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
+                break;
+            default:
+                width = config.width.regular;
+        }
+    }
+
+    // Cache the result
+    lowMap.set(lowBits, width);
+    return width;
+};
 
 /**
  * Configuration options for string width calculation and truncation.
@@ -87,6 +144,12 @@ export interface StringTruncatedWidthOptions {
     fullWidth?: number;
 
     /**
+     * Width of half-width characters
+     * @default 1
+     */
+    halfWidth?: number;
+
+    /**
      * Maximum width limit for the string
      * @default Infinity
      */
@@ -156,6 +219,60 @@ export interface StringTruncatedWidthResult {
 }
 
 /**
+ * Fast character type check using code point ranges
+ * Optimized for performance by checking common cases first
+ */
+const getCharType = (codePoint: number): "latin" | "control" | "wide" | "half-width" | "other" | "zero" => {
+    // ASCII printable range (most common case first for performance)
+    if (codePoint >= 0x0020 && codePoint <= 0x007e) {
+        return "latin";
+    }
+
+    // Unicode range for Zero Width characters
+    if (codePoint === 0x200b || codePoint === 0x200c || codePoint === 0x200d || codePoint === 0x2060) {
+        return "zero";
+    }
+
+    // Control characters
+    if (codePoint <= 0x001f || (codePoint >= 0x007f && codePoint <= 0x009f)) {
+        return "control";
+    }
+
+    // Latin-1 Supplement (also common in western text)
+    if (codePoint >= 0x00a0 && codePoint <= 0x00ff) {
+        return "latin";
+    }
+
+    // Half-width katakana (U+FF61–U+FF9F)
+    if (codePoint >= 0xff61 && codePoint <= 0xff9f) {
+        return "half-width";
+    }
+
+    // Full-width and CJK characters (wide)
+    if (
+        (codePoint >= 0x1100 && codePoint <= 0x11ff) || // Hangul Jamo
+        (codePoint >= 0x2e80 && codePoint <= 0x9fff) || // CJK & radicals
+        (codePoint >= 0xac00 && codePoint <= 0xd7af) || // Hangul Syllables
+        (codePoint >= 0xf900 && codePoint <= 0xfaff) || // CJK Compatibility Ideographs
+        (codePoint >= 0xff00 && codePoint <= 0xffef && !(codePoint >= 0xff61 && codePoint <= 0xff9f)) || // Full-width Forms (excluding half-width katakana)
+        (codePoint >= 0x3040 && codePoint <= 0x30ff)
+    ) {
+        // Hiragana & Katakana
+        return "wide";
+    }
+
+    return "other";
+};
+
+/**
+ * Cache for storing pre-calculated character widths
+ * Uses a two-level structure for memory efficiency:
+ * - First level: Maps the high 16 bits of code point to a second-level map
+ * - Second level: Maps the low 16 bits to actual width values
+ */
+const charWidthCache = new Map();
+
+/**
  * Calculate the visual width of a string with optional truncation, handling various Unicode character types.
  * This function provides detailed control over character width calculations and truncation behavior.
  * Returns the truncated content along with width information.
@@ -195,8 +312,12 @@ export interface StringTruncatedWidthResult {
  *          - ellipsed: Whether an ellipsis was added
  *          - index: The index at which truncation occurred (if any)
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export const getStringTruncatedWidth = (input: string, options: StringTruncatedWidthOptions = {}): StringTruncatedWidthResult => {
+    if (!input || input.length === 0) {
+        return { width: 0, truncated: false, ellipsed: false, index: 0 };
+    }
+
+    // Initialize configuration with smart defaults
     const config = {
         truncation: {
             ellipsis: options.ellipsis ?? "",
@@ -219,351 +340,228 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             control: options.controlWidth ?? 0,
             emoji: options.emojiWidth ?? 2,
             fullWidth: options.fullWidth ?? 2,
+            halfWidth: options.halfWidth ?? 1,
             regular: options.regularWidth ?? 1,
             tab: options.tabWidth ?? 8,
             wide: options.wideWidth ?? 2,
         },
-    } as const;
+    };
 
     const truncationLimit = Math.max(0, config.truncation.limit - config.truncation.ellipsisWidth);
     const { length } = input;
 
-    let indexPrevious = 0;
+    // Determine if we should use caching strategy based on string length
+    const useCaching = length > 10000; // Only use caching for very long strings
+
     let index = 0;
-    let lengthExtra = 0;
-    let truncationEnabled = false;
-    let truncationIndex = length;
-    let unmatchedStart = 0;
-    let unmatchedEnd = 0;
     let width = 0;
-    let widthExtra = 0;
+    let truncationIndex = length;
+    let truncationEnabled = false;
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,no-loops/no-loops,no-restricted-syntax,no-labels,no-constant-condition
-    outer: while (true) {
-        if (unmatchedEnd > unmatchedStart || (index >= length && index > indexPrevious)) {
-            const unmatched = input.slice(unmatchedStart, unmatchedEnd) || input.slice(indexPrevious, index);
+    // Quick check for ANSI sequences - if none present, can skip those checks in the main loop
+    const hasAnsi = input.includes("\u001B") || input.includes("\u009B");
 
-            lengthExtra = 0;
+    // Process characters until end or truncation point
+    while (index < length) {
+        // Handle ANSI escape sequences - only check if we know there's at least one present
+        if (hasAnsi && (input[index] === "\u001B" || input[index] === "\u009B")) {
+            RE_ANSI.lastIndex = index;
+            if (RE_ANSI.test(input)) {
+                const ansiLength = RE_ANSI.lastIndex - index;
+                const ansiWidth = options.countAnsiEscapeCodes ? ansiLength : config.width.ansi;
 
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-            for (const char of unmatched.replaceAll(RE_MODIFIER, "")) {
-                const codePoint = char.codePointAt(0) ?? 0;
-                const eaw = eastAsianWidthType(codePoint);
+                // Special handling for ANSI hyperlinks (optimization: fast path for non-hyperlinks)
+                if (index + 3 < length && input.slice(index, index + 4) === "\u001B]8;") {
+                    const startPos = RE_ANSI.lastIndex;
+                    RE_ANSI_LINK_END.lastIndex = startPos;
 
-                switch (eaw) {
-                    case "fullwidth": {
-                        widthExtra = config.width.fullWidth;
+                    if (RE_ANSI_LINK_END.test(input)) {
+                        const endPos = RE_ANSI_LINK_END.lastIndex;
+                        const textContent = input.slice(startPos, endPos - 5);
+                        const textWidth = textContent.length;
 
-                        break;
-                    }
-                    case "wide": {
-                        widthExtra = config.width.wide;
+                        if (width + textWidth > truncationLimit) {
+                            truncationIndex = Math.min(truncationIndex, startPos);
 
-                        if (width + widthExtra > truncationLimit) {
-                            truncationIndex = Math.min(truncationIndex, indexPrevious + lengthExtra);
+                            if (width + textWidth > config.truncation.limit) {
+                                truncationEnabled = true;
+                                break;
+                            }
                         }
 
-                        if (width + widthExtra > config.truncation.limit) {
-                            truncationEnabled = true;
-                            truncationIndex = Math.min(truncationIndex, indexPrevious + lengthExtra);
-                            break;
-                        }
-
-                        break;
-                    }
-                    case "ambiguous": {
-                        widthExtra = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
-
-                        if (width + widthExtra > truncationLimit) {
-                            truncationIndex = Math.min(truncationIndex, indexPrevious + lengthExtra);
-                        }
-
-                        if (width + widthExtra > config.truncation.limit) {
-                            truncationEnabled = true;
-                            truncationIndex = Math.min(truncationIndex, indexPrevious + lengthExtra);
-                            break;
-                        }
-
-                        break;
-                    }
-                    case "halfwidth":
-                    case "narrow":
-                    case "neutral": {
-                        widthExtra = config.width.regular;
-
-                        if (width + widthExtra > truncationLimit) {
-                            truncationIndex = Math.min(truncationIndex, indexPrevious + lengthExtra);
-                        }
-
-                        if (width + widthExtra > config.truncation.limit) {
-                            truncationEnabled = true;
-                            truncationIndex = Math.min(truncationIndex, indexPrevious + lengthExtra);
-                            break;
-                        }
-
-                        break;
-                    }
-                    default: {
-                        widthExtra = config.width.regular;
+                        width += textWidth;
+                        index = endPos;
+                        continue;
                     }
                 }
 
-                if (width + widthExtra > truncationLimit) {
-                    truncationIndex = Math.min(truncationIndex, Math.max(unmatchedStart, indexPrevious) + lengthExtra);
-                }
+                // Standard ANSI sequence
+                if (width + ansiWidth > truncationLimit) {
+                    truncationIndex = Math.min(truncationIndex, index);
 
-                if (width + widthExtra > config.truncation.limit) {
-                    truncationEnabled = true;
-                    // eslint-disable-next-line no-labels
-                    break outer;
-                }
-
-                lengthExtra += char.length;
-                width += widthExtra;
-            }
-
-            // eslint-disable-next-line no-multi-assign
-            unmatchedStart = unmatchedEnd = 0;
-        }
-
-        if (index >= length) {
-            break;
-        }
-
-        RE_ZERO_WIDTH.lastIndex = index;
-
-        if (RE_ZERO_WIDTH.test(input)) {
-            unmatchedStart = indexPrevious;
-            unmatchedEnd = index;
-            // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = RE_ZERO_WIDTH.lastIndex;
-
-            // eslint-disable-next-line no-continue
-            continue;
-        }
-
-        RE_LATIN.lastIndex = index;
-
-        if (RE_LATIN.test(input)) {
-            lengthExtra = RE_LATIN.lastIndex - index;
-            widthExtra = lengthExtra * config.width.regular;
-
-            if (width + widthExtra > truncationLimit) {
-                truncationIndex = Math.min(truncationIndex, index + Math.floor((truncationLimit - width) / config.width.regular));
-            }
-
-            if (width + widthExtra > config.truncation.limit) {
-                truncationEnabled = true;
-                truncationIndex = Math.min(truncationIndex, index + Math.floor((config.truncation.limit - width) / config.width.regular));
-                break;
-            }
-
-            width += widthExtra;
-            unmatchedStart = indexPrevious;
-            unmatchedEnd = index;
-            // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = RE_LATIN.lastIndex;
-
-            // eslint-disable-next-line no-continue
-            continue;
-        }
-
-        RE_ANSI.lastIndex = index;
-
-        if (RE_ANSI.test(input)) {
-            const ansiLength = RE_ANSI.lastIndex - index;
-            const ansiWidth = options.countAnsiEscapeCodes ? ansiLength : config.width.ansi;
-
-            if (input.slice(index, index + 4) === "\u001B]8;") {
-                // Handle ANSI hyperlink
-                const startPos = RE_ANSI.lastIndex;
-                RE_ANSI_LINK_END.lastIndex = startPos;
-                if (RE_ANSI_LINK_END.test(input)) {
-                    const endPos = RE_ANSI_LINK_END.lastIndex;
-                    const textContent = input.slice(startPos, endPos - 5); // -5 to exclude the end sequence
-                    const textWidth = textContent.length;
-
-                    if (width + textWidth > truncationLimit) {
-                        truncationIndex = Math.min(truncationIndex, startPos);
-                    }
-
-                    if (width + textWidth > config.truncation.limit) {
+                    if (width + ansiWidth > config.truncation.limit) {
                         truncationEnabled = true;
-                        truncationIndex = Math.min(truncationIndex, startPos);
                         break;
                     }
+                }
 
-                    width += textWidth;
-                    index = endPos;
-                    // eslint-disable-next-line no-continue
-                    continue;
+                width += ansiWidth;
+                index = RE_ANSI.lastIndex;
+                continue;
+            }
+        }
+
+        // Fast path for zero-width characters
+        const charCode = input.charCodeAt(index);
+        if (charCode === 0x200b || charCode === 0xfeff || (charCode >= 0x2060 && charCode <= 0x2064)) {
+            index++;
+            continue;
+        }
+
+        // Fast path for tabs
+        if (charCode === 9) {
+            // Tab character
+            if (width + config.width.tab > truncationLimit) {
+                truncationIndex = Math.min(truncationIndex, index);
+
+                if (width + config.width.tab > config.truncation.limit) {
+                    truncationEnabled = true;
+                    break;
                 }
             }
 
-            if (width + ansiWidth > truncationLimit) {
-                truncationIndex = Math.min(truncationIndex, index);
-            }
-
-            if (width + ansiWidth > config.truncation.limit) {
-                truncationEnabled = true;
-                truncationIndex = Math.min(truncationIndex, index);
-                break;
-            }
-
-            width += ansiWidth;
-            unmatchedStart = indexPrevious;
-            unmatchedEnd = index;
-            // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = RE_ANSI.lastIndex;
-
-            // eslint-disable-next-line no-continue
+            width += config.width.tab;
+            index++;
             continue;
         }
 
-        RE_CONTROL.lastIndex = index;
+        // Handle Latin character sequences efficiently - most common case for western text
+        RE_LATIN_CHARS.lastIndex = index;
+        if (RE_LATIN_CHARS.test(input)) {
+            const latinLength = RE_LATIN_CHARS.lastIndex - index;
+            const latinWidth = latinLength * config.width.regular;
 
-        if (RE_CONTROL.test(input)) {
-            lengthExtra = RE_CONTROL.lastIndex - index;
-            widthExtra = lengthExtra * config.width.control;
+            // Check if this sequence causes truncation
+            if (width + latinWidth > truncationLimit) {
+                // Calculate exact character that crosses the limit
+                const charsToLimit = Math.floor((truncationLimit - width) / config.width.regular);
+                truncationIndex = Math.min(truncationIndex, index + charsToLimit);
 
-            if (width + widthExtra > truncationLimit) {
-                truncationIndex = Math.min(truncationIndex, index + Math.floor((truncationLimit - width) / config.width.control));
+                if (width + latinWidth > config.truncation.limit) {
+                    truncationEnabled = true;
+                    break;
+                }
             }
 
-            if (width + widthExtra > config.truncation.limit) {
-                truncationEnabled = true;
-                truncationIndex = Math.min(truncationIndex, index + Math.floor((config.truncation.limit - width) / config.width.control));
-                break;
-            }
-
-            width += widthExtra;
-            unmatchedStart = indexPrevious;
-            unmatchedEnd = index;
-            // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = RE_CONTROL.lastIndex;
-
-            // eslint-disable-next-line no-continue
+            width += latinWidth;
+            index = RE_LATIN_CHARS.lastIndex;
             continue;
         }
 
-        RE_TAB.lastIndex = index;
+        // Handle control characters
+        if (charCode <= 0x001f || (charCode >= 0x007f && charCode <= 0x009f)) {
+            RE_CONTROL.lastIndex = index;
+            if (RE_CONTROL.test(input)) {
+                const controlLength = RE_CONTROL.lastIndex - index;
+                const controlWidth = controlLength * config.width.control;
 
-        if (RE_TAB.test(input)) {
-            lengthExtra = RE_TAB.lastIndex - index;
-            widthExtra = lengthExtra * config.width.tab;
+                if (width + controlWidth > truncationLimit) {
+                    truncationIndex = Math.min(truncationIndex, index + Math.floor((truncationLimit - width) / config.width.control));
 
-            if (width + widthExtra > truncationLimit) {
-                truncationIndex = Math.min(truncationIndex, index + Math.floor((truncationLimit - width) / config.width.tab));
+                    if (width + controlWidth > config.truncation.limit) {
+                        truncationEnabled = true;
+                        break;
+                    }
+                }
+
+                width += controlWidth;
+                index = RE_CONTROL.lastIndex;
+                continue;
             }
-
-            if (width + widthExtra > config.truncation.limit) {
-                truncationEnabled = true;
-                truncationIndex = Math.min(truncationIndex, index + Math.floor((config.truncation.limit - width) / config.width.tab));
-                break;
-            }
-
-            width += widthExtra;
-            unmatchedStart = indexPrevious;
-            unmatchedEnd = index;
-            // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = RE_TAB.lastIndex;
-
-            // eslint-disable-next-line no-continue
-            continue;
         }
 
+        // Handle emoji characters - defer to emoji regex since emoji detection is complex
         RE_EMOJI.lastIndex = index;
-
         if (RE_EMOJI.test(input)) {
             if (width + config.width.emoji > truncationLimit) {
                 truncationIndex = Math.min(truncationIndex, index);
-            }
 
-            if (width + config.width.emoji > config.truncation.limit) {
-                truncationEnabled = true;
-                truncationIndex = Math.min(truncationIndex, index);
-                break;
-            }
-
-            width += config.width.emoji;
-            unmatchedStart = indexPrevious;
-            unmatchedEnd = index;
-            // eslint-disable-next-line no-multi-assign
-            index = indexPrevious = RE_EMOJI.lastIndex;
-
-            // eslint-disable-next-line no-continue
-            continue;
-        }
-
-        index += 1;
-    }
-
-    if (truncationEnabled) {
-        width = 0;
-        // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        let index_ = 0;
-
-        // eslint-disable-next-line no-loops/no-loops
-        while (index_ < truncationIndex) {
-            const char = input.slice(index_);
-            let charWidth = 0;
-            let charLength = 1;
-
-            RE_ANSI.lastIndex = 0;
-            if (RE_ANSI.test(char)) {
-                charLength = RE_ANSI.lastIndex;
-                index_ += charLength;
-                // eslint-disable-next-line no-continue
-                continue;
-            }
-
-            if (RE_EMOJI.test(char)) {
-                charWidth = config.width.emoji;
-                charLength = RE_EMOJI.lastIndex;
-            } else if (RE_CONTROL.test(char)) {
-                charWidth = config.width.control * RE_CONTROL.lastIndex;
-                charLength = RE_CONTROL.lastIndex;
-            } else if (RE_TAB.test(char)) {
-                charWidth = config.width.tab * RE_TAB.lastIndex;
-                charLength = RE_TAB.lastIndex;
-            } else {
-                const codePoint = char.codePointAt(0) ?? 0;
-                const eaw = eastAsianWidthType(codePoint);
-                charLength = String.fromCodePoint(codePoint).length;
-
-                switch (eaw) {
-                    case "fullwidth": {
-                        charWidth = config.width.fullWidth;
-                        break;
-                    }
-                    case "wide": {
-                        charWidth = config.width.wide;
-                        break;
-                    }
-                    case "ambiguous": {
-                        charWidth = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
-                        break;
-                    }
-                    default: {
-                        charWidth = config.width.regular;
-                    }
+                if (width + config.width.emoji > config.truncation.limit) {
+                    truncationEnabled = true;
+                    break;
                 }
             }
 
-            if (width + charWidth + config.truncation.ellipsisWidth > config.truncation.limit) {
-                truncationIndex = index_;
+            width += config.width.emoji;
+            index = RE_EMOJI.lastIndex;
+            continue;
+        }
+
+        const codePoint = input.codePointAt(index) ?? 0;
+
+        let charWidth: number;
+
+        if (useCaching) {
+            charWidth = getCachedCharWidth(codePoint, config);
+        } else {
+            const charType = getCharType(codePoint);
+
+            if (charType === "latin") {
+                charWidth = config.width.regular;
+            } else if (charType === "control") {
+                charWidth = config.width.control;
+            } else if (charType === "wide") {
+                charWidth = config.width.wide;
+            } else if (charType === "half-width") {
+                charWidth = config.width.halfWidth;
+            } else if (charType === "zero") {
+                charWidth = 0;
+            } else {
+                const eaw = eastAsianWidthType(codePoint);
+
+                switch (eaw) {
+                    case "fullwidth":
+                        charWidth = config.width.fullWidth;
+                        break;
+                    case "wide":
+                        charWidth = config.width.wide;
+                        break;
+                    case "ambiguous":
+                        charWidth = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
+                        break;
+                    default:
+                        charWidth = config.width.regular;
+                }
+            }
+        }
+
+        if (width + charWidth > truncationLimit) {
+            truncationIndex = Math.min(truncationIndex, index);
+
+            if (width + charWidth > config.truncation.limit) {
+                truncationEnabled = true;
                 break;
             }
-
-            width += charWidth;
-            index_ += charLength;
         }
+
+        width += charWidth;
+        // Use the actual character length to handle surrogate pairs correctly
+        index += codePoint > 0xffff ? 2 : 1;
+    }
+
+    let finalWidth = width;
+
+    if (truncationEnabled) {
+        finalWidth = Math.min(
+            width + (config.truncation.limit >= config.truncation.ellipsisWidth ? config.truncation.ellipsisWidth : 0),
+            config.truncation.limit,
+        );
     }
 
     return {
         ellipsed: truncationEnabled && config.truncation.limit >= config.truncation.ellipsisWidth,
         index: truncationEnabled ? truncationIndex : length,
         truncated: truncationEnabled,
-        width: truncationEnabled ? Math.min(width + config.truncation.ellipsisWidth, config.truncation.limit) : width,
+        width: finalWidth,
     };
 };
