@@ -60,7 +60,7 @@ const camelCase = <T extends string = string>(value?: T, options?: CaseOptions):
             stripAnsi: options?.stripAnsi,
             stripEmoji: options?.stripEmoji,
         }).map((word: string) => {
-            if (!options?.stripEmoji && RE_FAST_ANSI.test(word)) {
+            if (options?.handleAnsi && RE_FAST_ANSI.test(word)) {
                 return word;
             }
 

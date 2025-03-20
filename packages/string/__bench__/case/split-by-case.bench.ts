@@ -333,14 +333,6 @@ describe("splitByCase", () => {
         });
     });
 
-    describe("Telugu script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of TELUGU_STRINGS) {
-                splitByCase(stringValue, { locale: "te" });
-            }
-        });
-    });
-
     describe("Afrikaans script handling", () => {
         bench("visulima/string splitByCase (no cache)", () => {
             for (const stringValue of AFRIKAANS_STRINGS) {
