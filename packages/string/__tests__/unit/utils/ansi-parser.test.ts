@@ -100,7 +100,7 @@ describe("processAnsiString", () => {
         });
 
         it("should handle nested ANSI sequences within hyperlinks", () => {
-            expect.assertions(2);
+            expect.assertions(3);
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B]8;;https://example.com\u0007\u001B[31mRed Link\u001B[0m\u001B\\";
 
@@ -113,6 +113,7 @@ describe("processAnsiString", () => {
             });
 
             expect(segments).toHaveLength(12);
+            expect(segments.map((s) => s.text ?? "").join("")).toBe("\u001B[31mRed Link\u001B[0m")
             expect(segments).toMatchSnapshot();
         });
 
@@ -197,7 +198,7 @@ describe("processAnsiString", () => {
             expect(segments).toHaveLength(1);
             expect(segments[0]).toMatchObject({
                 isEscapeSequence: true,
-                text: "\u001B\u001B[31",
+                text: "\u001B[31",
             });
         });
 

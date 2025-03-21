@@ -119,9 +119,17 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
                 while (index < string.length && string[index] === " ") {
                     // eslint-disable-next-line no-plusplus
                     index++;
+                    // Prevent infinite loop by breaking out if we've reached the end
+                    if (index >= string.length) {
+                        break;
+                    }
                 }
-                // eslint-disable-next-line no-plusplus
-                index--; // Adjust for the loop increment
+
+                // Only adjust if we haven't reached the end of the string
+                if (index < string.length) {
+                    // eslint-disable-next-line no-plusplus
+                    index--;
+                }
                 // eslint-disable-next-line no-continue
                 continue;
             }

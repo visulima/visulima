@@ -50,7 +50,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
         // eslint-disable-next-line security/detect-object-injection
         const character = chars[index] as string;
 
-        // Handle escape sequences
         if (character && ESCAPES.has(character)) {
             // If we have pending text, emit it as a segment
             if (currentText) {
@@ -152,7 +151,9 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
         }
 
         if (isInsideEscape) {
-            escapeBuffer += character;
+            if (escapeBuffer !== character) {
+                escapeBuffer += character;
+            }
 
             if (character === ANSI_SGR_TERMINATOR) {
                 // End of SGR sequence
@@ -175,8 +176,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
             // eslint-disable-next-line no-continue
             continue;
         }
-
-        // Accumulate regular characters
 
         currentText += character;
 

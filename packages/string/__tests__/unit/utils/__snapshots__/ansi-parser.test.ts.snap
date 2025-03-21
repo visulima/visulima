@@ -174,7 +174,7 @@ exports[`processAnsiString > hyperlink handling > should handle nested ANSI sequ
   {
     "isEscapeSequence": true,
     "isGrapheme": false,
-    "text": "[31m",
+    "text": "[31m",
     "width": 0,
   },
   {
@@ -244,7 +244,7 @@ exports[`processAnsiString > hyperlink handling > should handle nested ANSI sequ
   {
     "isEscapeSequence": true,
     "isGrapheme": false,
-    "text": "[0m",
+    "text": "[0m",
     "width": 0,
   },
   {
@@ -362,13 +362,13 @@ exports[`processAnsiString > regular ANSI sequences > should handle nested ANSI 
   {
     "isEscapeSequence": true,
     "isGrapheme": false,
-    "text": "[31m",
+    "text": "[31m",
     "width": 0,
   },
   {
     "isEscapeSequence": true,
     "isGrapheme": false,
-    "text": "[1m",
+    "text": "[1m",
     "width": 0,
   },
   {
@@ -422,7 +422,7 @@ exports[`processAnsiString > regular ANSI sequences > should handle nested ANSI 
   {
     "isEscapeSequence": true,
     "isGrapheme": false,
-    "text": "[0m",
+    "text": "[0m",
     "width": 0,
   },
 ]
@@ -433,7 +433,7 @@ exports[`processAnsiString > regular ANSI sequences > should process basic ANSI 
   {
     "isEscapeSequence": true,
     "isGrapheme": false,
-    "text": "[31m",
+    "text": "[31m",
     "width": 0,
   },
   {
@@ -469,7 +469,7 @@ exports[`processAnsiString > regular ANSI sequences > should process basic ANSI 
   {
     "isEscapeSequence": true,
     "isGrapheme": false,
-    "text": "[0m",
+    "text": "[0m",
     "width": 0,
   },
 ]

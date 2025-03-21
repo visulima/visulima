@@ -67,7 +67,7 @@ export const kebabCase = <T extends string = string>(value?: T, options?: KebabC
 
     // Process each word - convert to lowercase and handle German eszett
     const processed = words.map((word) => {
-        if (!options?.stripEmoji && RE_FAST_ANSI.test(word)) {
+        if (options?.handleAnsi && RE_FAST_ANSI.test(word)) {
             return word;
         }
 

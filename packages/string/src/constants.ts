@@ -91,7 +91,7 @@ export const RE_MATCH_NEWLINES = /\r\n|\n|\r/g;
  * Used for parsing and handling ANSI color codes and formatting
  */
 // eslint-disable-next-line no-control-regex,regexp/no-control-character,security/detect-unsafe-regex
-export const RE_ANSI = /[\u001B\u009B](?:[[()#;?]*(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-n qry=><]|\]8;;.*?\u0007)/y;
+export const RE_ANSI = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;[^\u0007\u001B]{0,100}(?:\u0007|\u001B\\))/g;
 
 /**
  * Regular expression for ANSI link end sequences

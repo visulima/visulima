@@ -1,3 +1,4 @@
+import { RE_ANSI } from "./constants";
 import type { StringWidthOptions } from "./get-string-width";
 import { getStringWidth } from "./get-string-width";
 import LRUCache from "./utils/lru-cache";
@@ -20,8 +21,6 @@ type VisibleSegment = {
     start: number;
 };
 
-// eslint-disable-next-line no-control-regex,security/detect-unsafe-regex,regexp/no-control-character
-const ANSI_REGEX = /\u001B(?:\[(?:\d+(?:;\d+)*)?m|\]8;;.*?(?:\u0007|\u001B\\))/g;
 const ANSI_RESET_CODES = new Set([
     "0", // Full reset
     "22", // Bold reset
@@ -114,13 +113,12 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
     let lastIndex = 0;
     let match;
 
-    // Reset regex to start from beginning
-    ANSI_REGEX.lastIndex = 0;
+    RE_ANSI.lastIndex = 0;
 
-    // More efficient extraction using the exec method with lastIndex tracking
     // eslint-disable-next-line no-cond-assign
-    while ((match = ANSI_REGEX.exec(input)) !== null) {
+    while ((match = RE_ANSI.exec(input)) !== null) {
         const matchedText = match[0];
+
         parts.push(input.slice(lastIndex, match.index));
         matches.push(matchedText);
         lastIndex = match.index + matchedText.length;
