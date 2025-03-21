@@ -106,7 +106,7 @@
         "@vitest/ui": "^3.0.8",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
-        "esbuild": "0.25.0",
+        "esbuild": "0.25.1",
         "eslint": "8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -126,7 +126,7 @@
         "zod": "^3.24.2"
     },
     "peerDependencies": {
-        "zod": "^3.22.4"
+        "zod": "^3.22.5"
     },
     "engines": {
         "node": ">=18.0.0 <=23.x"
