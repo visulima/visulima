@@ -3,7 +3,28 @@ import { getStringWidth } from "./get-string-width";
 import { checkEscapeSequence, processAnsiString } from "./utils/ansi-parser";
 import preserveAnsi from "./utils/ansi-preserve";
 import AnsiStateTracker from "./utils/ansi-state-tracker";
-import { resetAnsiAtLineBreak } from "./utils/ansi-utils";
+
+/**
+ * Helper function to reset ANSI sequences at line breaks
+ * @param currentLine - Current line of text
+ * @returns Line with reset codes if needed
+ */
+const resetAnsiAtLineBreak = (currentLine: string): string => {
+    if (!currentLine.includes("\u001B")) {
+        return currentLine;
+    }
+
+    let result = currentLine;
+    // Add reset codes in reverse order of how they were applied
+    if (currentLine.includes("\u001B[30m")) {
+        result += "\u001B[39m"; // foreground reset
+    }
+    if (currentLine.includes("\u001B[42m")) {
+        result += "\u001B[49m"; // background reset
+    }
+
+    return result;
+};
 
 /**
  * Trims spaces from a string's right side while preserving ANSI sequences

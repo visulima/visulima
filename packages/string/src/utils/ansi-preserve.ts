@@ -1,5 +1,6 @@
 import { ANSI_RESET_CODES, END_CODE, ESCAPES, RE_ESCAPE_PATTERN } from "../constants";
-import { wrapAnsiCode, wrapAnsiHyperlink } from "./ansi-utils";
+import wrapAnsiCode from "./wrap-ansi-code";
+import wrapAnsiHyperlink from "./wrap-ansi-hyperlink";
 
 /**
  * Preserves ANSI escape codes when joining wrapped lines
