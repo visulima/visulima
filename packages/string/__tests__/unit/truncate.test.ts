@@ -119,7 +119,7 @@ describe("truncate", () => {
         });
 
         it("should handle strings with mixed content", () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
             expect(
                 truncate("Hello 你好 안녕", 10, {
@@ -127,6 +127,8 @@ describe("truncate", () => {
                     width: { fullWidth: 2 },
                 }),
             ).toBe("Hello ...");
+
+            expect(truncate("日本語テスト", 9)).toBe("日本語…");
 
             expect(
                 truncate("\u001B[31m你好\u001B[39m world", 8, {

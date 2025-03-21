@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { eastAsianWidthType } from "get-east-asian-width";
 
-import { RE_ANSI, RE_ANSI_LINK_END, RE_CONTROL, RE_EMOJI } from "./constants";
+import { RE_ANSI, RE_ANSI_LINK_END, RE_CONTROL, RE_EMOJI, RE_VALID_ANSI_PAIRS, RE_VALID_HYPERLINKS } from "./constants";
 
 /**
  * Cache for storing pre-calculated character widths
@@ -512,7 +512,11 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
         // eslint-disable-next-line security/detect-object-injection
         if (hasAnsi && (input[index] === "\u001B" || input[index] === "\u009B")) {
             RE_ANSI.lastIndex = index;
-            if (RE_ANSI.test(input)) {
+            RE_VALID_ANSI_PAIRS.lastIndex = index;
+            RE_VALID_HYPERLINKS.lastIndex = index;
+
+            // Check if this is a valid ANSI sequence
+            if (RE_ANSI.test(input) && (RE_VALID_ANSI_PAIRS.test(input) || RE_VALID_HYPERLINKS.test(input))) {
                 const ansiLength = RE_ANSI.lastIndex - index;
                 const ansiWidth = options.countAnsiEscapeCodes ? ansiLength : config.width.ansi;
 

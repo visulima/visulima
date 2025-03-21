@@ -94,6 +94,20 @@ export const RE_MATCH_NEWLINES = /\r\n|\n|\r/g;
 export const RE_ANSI = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;[^\u0007\u001B]{0,100}(?:\u0007|\u001B\\))/g;
 
 /**
+ * Regular expression for valid ANSI color/style sequences with proper open/close pairs
+ * Matches sequences like '\u001B[31mtext\u001B[39m'
+ */
+// eslint-disable-next-line regexp/no-control-character, no-control-regex, security/detect-unsafe-regex
+export const RE_VALID_ANSI_PAIRS = /\u001B\[(\d+(?:;\d+)*)?m[^\u001B]*(?:\u001B\[(?:\d+(?:;\d+)*)?m|$)/g;
+
+/**
+ * Regular expression for valid ANSI hyperlink sequences with proper open/close pairs
+ * Matches sequences like '\u001B]8;;https://example.com\u0007text\u001B]8;;\u0007'
+ */
+// eslint-disable-next-line regexp/no-control-character, no-control-regex
+export const RE_VALID_HYPERLINKS = /\u001B\]8;;[^\u0007]*\u0007[^\u001B]*(?:\u001B\]8;;\u0007|$)/g;
+
+/**
  * Regular expression for ANSI link end sequences
  */
 // eslint-disable-next-line no-control-regex,regexp/no-control-character

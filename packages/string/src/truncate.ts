@@ -77,6 +77,23 @@ export type TruncateOptions = {
  * Truncates a string to a specified width limit, handling Unicode characters, ANSI escape codes,
  * and adding an optional ellipsis.
  *
+ * ANSI Sequence Handling:
+ * - Valid ANSI sequences (e.g. '\u001b[31m') are preserved and handled as styling
+ * - Incomplete sequences are preserved as-is
+ * - Missing terminators are preserved as-is
+ *
+ * @example
+ * ```typescript
+ * // Basic usage
+ * truncate('Hello World', 5); // 'Hello…'
+ *
+ * // With valid ANSI styling
+ * truncate('\u001b[31mRed\u001b[0m Text', 3); // '\u001b[31mRed\u001b[0m…'
+ *
+ * // With invalid ANSI sequence
+ * truncate('\u001b[abcText', 4); // '\u001b[abcText'
+ * ```
+ *
  * @param input - The string to truncate
  * @param limit - Maximum width of the returned string
  * @param options - Configuration options for truncation
@@ -139,7 +156,12 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
                 const nearestSpace = findNearestSpace(input, width - limit + 1, true);
                 return ellipsis + slice(input, nearestSpace, width).trim();
             }
-            return ellipsis + slice(input, width - limit + ellipsisWidth, width);
+            return (
+                ellipsis +
+                slice(input, width - limit + ellipsisWidth, width, {
+                    width: options.width,
+                })
+            );
         }
 
         case "middle": {
@@ -151,16 +173,32 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
                 return slice(input, 0, firstBreak) + ellipsis + slice(input, secondBreak, width).trim();
             }
 
-            return slice(input, 0, half) + ellipsis + slice(input, width - (limit - half) + ellipsisWidth, width);
+            return (
+                slice(input, 0, half, {
+                    width: options.width,
+                }) +
+                ellipsis +
+                slice(input, width - (limit - half) + ellipsisWidth, width, {
+                    width: options.width,
+                })
+            );
         }
 
         case "end": {
             if (preferTruncationOnSpace) {
                 const nearestSpace = findNearestSpace(input, limit - 1);
-                return slice(input, 0, nearestSpace) + ellipsis;
+                return (
+                    slice(input, 0, nearestSpace, {
+                        width: options.width,
+                    }) + ellipsis
+                );
             }
 
-            return slice(input, 0, limit - ellipsisWidth) + ellipsis;
+            return (
+                slice(input, 0, limit - ellipsisWidth, {
+                    width: options.width,
+                }) + ellipsis
+            );
         }
 
         default: {
