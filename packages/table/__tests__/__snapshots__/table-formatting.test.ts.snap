@@ -9,6 +9,15 @@ exports[`table formatting > ANSI colored text > should handle word wrapping with
 └───────┴─────────┘"
 `;
 
+exports[`table formatting > aNSI colored text > should handle word wrapping with colored text 1`] = `
+"┌───────┬─────────┐
+│ [31mHello[39m │ [34mI am[39m    │
+│ [31mhow[39m   │ [34mfine[39m    │
+│ [31mare[39m   │ [34mthanks![39m │
+│ [31myou?[39m  │         │
+└───────┴─────────┘"
+`;
+
 exports[`table formatting > unicode and CJK text > should handle CJK text with truncation 1`] = `
 "┌────────┬───────────┬─────┐
 │ foobar │ English … │ baz │

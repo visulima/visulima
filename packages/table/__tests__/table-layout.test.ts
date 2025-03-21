@@ -127,6 +127,8 @@ describe("table layout", () => {
         });
 
         it("should support complex nested spans", () => {
+            expect.assertions(1);
+
             const table = createTable();
 
             table.addRow([{ colSpan: 9, content: "TOP", hAlign: "center" }]);

@@ -1,7 +1,7 @@
 import { describe, bench } from "vitest";
 import { default as Table3 } from "cli-table3";
 import { table } from "table";
-import { createTable } from "../src/index.js";
+import { createTable } from "../src";
 
 interface CellOptions {
     x: number;

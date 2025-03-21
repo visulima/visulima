@@ -4,7 +4,7 @@ import { createTableLayout } from "./layout";
 import { DEFAULT_BORDER } from "./style";
 import type { Cell as CellType, CellOptions, LayoutCell, TableConstructorOptions, TableLayout, TruncateOptions } from "./types";
 import { areCellsEquivalent, computeRowLogicalWidth, fillRowToWidth, getRealCell } from "./utils";
-import { truncate, wordWrap, getStringWidth } from "@visulima/string";
+import { truncate, wordWrap, getStringWidth, WrapMode } from "@visulima/string";
 
 type NormalizedCell = Omit<CellOptions, "content"> & { content: string };
 
@@ -37,8 +37,7 @@ export class Table {
             truncate: {
                 position: "end",
                 preferTruncationOnSpace: false,
-                space: false,
-                truncationCharacter: "…",
+                wrap: WrapMode.STRICT_WIDTH,
                 ...options?.truncate,
             },
             wordWrap: options?.wordWrap ?? false,
@@ -548,7 +547,7 @@ export class Table {
         }
 
         if (cell.wordWrap) {
-            return wordWrap(content, availableWidth);
+            return wordWrap(content, { removeZeroWidthCharacters: true, ...cell.wordWrap, width: availableWidth }).split("\n");
         }
 
         if (cell.maxWidth !== undefined && getStringWidth(content) > cell.maxWidth) {
@@ -560,7 +559,7 @@ export class Table {
 
     private padGroupContents(groups: { cell: LayoutCell | null }[], groupContents: string[][], groupWidths: number[], rowHeight: number): string[][] {
         return groupContents.map((lines, index) => {
-            const effectiveWidth = groupWidths[index];
+            const effectiveWidth = groupWidths[index] as number;
             const groupCell = groups[index].cell;
             const extraLines = rowHeight - lines.length;
             const { bottomPadding, topPadding } = this.calculateVerticalPadding(extraLines, groupCell);
@@ -582,40 +581,50 @@ export class Table {
     }
 
     private calculateVerticalPadding(extraLines: number, cell: LayoutCell | null): { bottomPadding: number; topPadding: number } {
-        if (cell && cell.vAlign === "center") {
+        if (cell && cell.vAlign === "middle") {
             const topPadding = Math.floor(extraLines / 2);
             return { bottomPadding: extraLines - topPadding, topPadding };
         }
+
         if (cell && cell.vAlign === "bottom") {
             return { bottomPadding: 0, topPadding: extraLines };
         }
+
         return { bottomPadding: extraLines, topPadding: 0 };
     }
 
     private padContentLines(lines: string[], effectiveWidth: number, cell: LayoutCell | null): string[] {
         return lines.map((line) => {
-            const lineWidth = getStringWidth(line);
+            const lineWidth = getStringWidth(line, {
+
+            });
+
             let availableWidth = effectiveWidth;
+
             if (line.trim() !== "" && cell) {
                 availableWidth -= this.options.style.paddingLeft + this.options.style.paddingRight;
             }
 
             const { leftPadding, rightPadding } = this.calculateHorizontalPadding(availableWidth - lineWidth, cell);
+
             const padLeft = line.trim() !== "" && cell ? " ".repeat(this.options.style.paddingLeft) : "";
             const padRight = line.trim() !== "" && cell ? " ".repeat(this.options.style.paddingRight) : "";
 
-            return padLeft + " ".repeat(leftPadding) + line + " ".repeat(rightPadding) + padRight;
+            return padLeft + (leftPadding > 0 ? " ".repeat(leftPadding) : "") + line + (rightPadding > 0 ? " ".repeat(rightPadding) : "") + padRight;
         });
     }
 
     private calculateHorizontalPadding(extraSpace: number, cell: LayoutCell | null): { leftPadding: number; rightPadding: number } {
         if (cell && cell.hAlign === "center") {
             const leftPadding = Math.floor(extraSpace / 2);
+
             return { leftPadding, rightPadding: extraSpace - leftPadding };
         }
+
         if (cell && cell.hAlign === "right") {
             return { leftPadding: extraSpace, rightPadding: 0 };
         }
+
         return { leftPadding: 0, rightPadding: extraSpace };
     }
 

@@ -1,10 +1,10 @@
-import { red, blue } from "@visulima/colorize";
+import { blue,red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import { Table, createTable } from "../src";
+import { createTable,Table } from "../src";
 
 describe("table formatting", () => {
-    describe("ANSI colored text", () => {
+    describe("aNSI colored text", () => {
         it("should maintain correct padding with ANSI colored text", () => {
             expect.assertions(3);
 
@@ -18,7 +18,7 @@ describe("table formatting", () => {
             const lines = output.split("\n");
 
             // Verify structure
-            expect(lines).toEqual(
+            expect(lines).toStrictEqual(
                 expect.arrayContaining([
                     expect.stringContaining("Status"),
                     expect.stringContaining("Value"),
@@ -33,6 +33,8 @@ describe("table formatting", () => {
         });
 
         it("should handle word wrapping with colored text", () => {
+            expect.assertions(1);
+
             const table = createTable({
                 wordWrap: true,
             });
@@ -55,7 +57,7 @@ describe("table formatting", () => {
             const lines = output.split("\n");
 
             // Verify content
-            expect(lines).toEqual(
+            expect(lines).toStrictEqual(
                 expect.arrayContaining([
                     expect.stringContaining("📊"),
                     expect.stringContaining("代码覆盖率"),
@@ -67,6 +69,8 @@ describe("table formatting", () => {
         });
 
         it("should handle CJK text with truncation", () => {
+            expect.assertions(1);
+
             const table = createTable();
 
             table.addRows(
@@ -82,6 +86,8 @@ describe("table formatting", () => {
 
     describe("newlines", () => {
         it("should handle newlines in headers", () => {
+            expect.assertions(1);
+
             const table = createTable();
 
             table.setHeaders(["Test", "1\n2\n3"]);
@@ -92,6 +98,8 @@ describe("table formatting", () => {
         });
 
         it("should handle newlines in body cells", () => {
+            expect.assertions(1);
+
             const table = createTable();
 
             table.addRow(["something\nwith\nnewlines"]);
@@ -102,10 +110,12 @@ describe("table formatting", () => {
         });
 
         it("should handle newlines in cross table header and body", () => {
+            expect.assertions(1);
+
             const table = createTable({
                 style: {
-                    paddingRight: 0,
                     paddingLeft: 0,
+                    paddingRight: 0,
                 },
             });
 
@@ -127,6 +137,8 @@ describe("table formatting", () => {
         });
 
         it("should maintain accurate column width with newlines", () => {
+            expect.assertions(1);
+
             const table = createTable();
 
             table.setHeaders(["Test\nWidth"]);
@@ -153,11 +165,11 @@ describe("table formatting", () => {
             // Verify truncation
             const truncatedLine = lines.find((line) => line.includes("This"));
 
-            expect(truncatedLine).toStrictEqual("│ This is a very long… │");
+            expect(truncatedLine).toBe("│ This is a very long… │");
             expect((truncatedLine as string).length).toBeLessThanOrEqual(24); // 20 + padding + borders
 
             // Verify multi-line
-            expect(lines).toEqual(
+            expect(lines).toStrictEqual(
                 expect.arrayContaining([expect.stringContaining("First line"), expect.stringContaining("Second line"), expect.stringContaining("Third line")]),
             );
         });

@@ -1,3 +1,5 @@
+import type { TruncateOptions, WordWrapOptions } from "@visulima/string";
+
 /**
  * Represents horizontal alignment options for table cells.
  */
@@ -32,35 +34,6 @@ export type CellStyle = {
      */
     paddingRight?: number;
 };
-
-/**
- * Configuration options for a table cell.
- */
-export interface TruncateOptions {
-    /**
-     * The position to truncate the string.
-     * @default 'end'
-     */
-    position?: "end" | "middle" | "start";
-
-    /**
-     * Truncate the string from a whitespace if it is within 3 characters from the actual breaking point.
-     * @default false
-     */
-    preferTruncationOnSpace?: boolean;
-
-    /**
-     * Add a space between the text and the ellipsis.
-     * @default false
-     */
-    space?: boolean;
-
-    /**
-     * The character to use at the breaking point.
-     * @default '…'
-     */
-    truncationCharacter?: string;
-}
 
 export interface CellOptions {
     /**
@@ -111,7 +84,7 @@ export interface CellOptions {
     /**
      * Whether to word wrap the cell content.
      */
-    wordWrap?: boolean;
+    wordWrap?: Omit<WordWrapOptions, "width"> | false;
 }
 
 export type Cell = CellOptions | bigint | number | string | null | undefined;
@@ -257,5 +230,5 @@ export interface TableConstructorOptions {
     /**
      * Whether to enable word wrapping.
      */
-    wordWrap?: boolean;
+    wordWrap?: Omit<WordWrapOptions, "width"> | false;
 }

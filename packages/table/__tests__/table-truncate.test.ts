@@ -40,22 +40,12 @@ describe("table truncation", () => {
     });
 
     describe("truncation options", () => {
-        it("should add space before truncation character", () => {
-            expect.assertions(1);
-
-            const table = createTable({ ...baseOptions, maxWidth: 5 });
-
-            table.addRow(["", "   ", { content: testString, truncate: { position: "end", space: true } }]);
-
-            expect(table.toString()).toContain("Thi …");
-        });
-
         it("should use custom truncation character", () => {
             expect.assertions(1);
 
             const table = createTable({ ...baseOptions, maxWidth: 5 });
 
-            table.addRow(["", "   ", { content: testString, truncate: { position: "end", truncationCharacter: "+" } }]);
+            table.addRow(["", "   ", { content: testString, truncate: { ellipsis: "+", ellipsisWidth: 1, position: "end" } }]);
 
             expect(table.toString()).toContain("This+");
         });
