@@ -65,3 +65,8 @@ storybook-static/
 
 # Package build output
 dist
+
+# Ignore Windsurf Rules
+# Usage: "Follow the protocol in your .windsurfrules"
+#.windsurfrules
+#memory-bank/
