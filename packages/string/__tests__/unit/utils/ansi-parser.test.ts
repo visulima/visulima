@@ -113,7 +113,7 @@ describe("processAnsiString", () => {
             });
 
             expect(segments).toHaveLength(12);
-            expect(segments.map((s) => s.text ?? "").join("")).toBe("\u001B[31mRed Link\u001B[0m")
+            expect(segments.map((s) => s.text ?? "").join("")).toBe("\u001B[31mRed Link\u001B[0m");
             expect(segments).toMatchSnapshot();
         });
 
