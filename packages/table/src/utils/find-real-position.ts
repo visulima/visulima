@@ -1,5 +1,5 @@
 import ansiRegex from "ansi-regex";
-import stringWidth from "string-width";
+import { getStringWidth } from "@visulima/string";
 
 interface AnsiRange {
     start: number;
@@ -32,7 +32,7 @@ export const findRealPosition = (text: string, visiblePosition: number): number 
 
     // Remove ANSI codes to get clean text for width calculations
     const cleanText = text.replace(ansiPattern, "");
-    const totalVisibleWidth = stringWidth(cleanText);
+    const totalVisibleWidth = getStringWidth(cleanText);
 
     // If requested position is beyond text width, return text length
     if (visiblePosition >= totalVisibleWidth) {
@@ -71,7 +71,7 @@ export const findRealPosition = (text: string, visiblePosition: number): number 
     // For each character in the clean text
     for (let i = 0; i < cleanText.length; i++) {
         const char = cleanText[i];
-        const width = stringWidth(char);
+        const width = getStringWidth(char);
 
         // If we've found our target position
         if (visiblePos === visiblePosition) {

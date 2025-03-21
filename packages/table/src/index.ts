@@ -1,10 +1,10 @@
-import stringWidth from "string-width";
 import type { RequiredDeep } from "type-fest";
 
 import { createTableLayout } from "./layout";
 import { DEFAULT_BORDER } from "./style";
-import { areCellsEquivalent, computeRowLogicalWidth, fillRowToWidth, getRealCell, truncateText, wordWrapText } from "./utils";
 import type { Cell as CellType, CellOptions, LayoutCell, TableConstructorOptions, TableLayout, TruncateOptions } from "./types";
+import { areCellsEquivalent, computeRowLogicalWidth, fillRowToWidth, getRealCell } from "./utils";
+import { truncate, wordWrap, getStringWidth } from "@visulima/string";
 
 type NormalizedCell = Omit<CellOptions, "content"> & { content: string };
 
@@ -315,7 +315,7 @@ export class Table {
         if (!this.isDirty && this.cachedColumnWidths) {
             return this.cachedColumnWidths;
         }
-        const widths: number[] = new Array(this.columnCount).fill(0);
+        const widths: number[] = Array.from<number>({length: this.columnCount}).fill(0);
         const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
 
         // Process each row and cell to calculate column widths
@@ -355,16 +355,17 @@ export class Table {
 
         const getContentWidth = () => {
             if (cell.maxWidth) {
-                return Math.min(stringWidth(cell.content), cell.maxWidth);
+                return Math.min(getStringWidth(cell.content), cell.maxWidth);
             }
 
             if (cell.wordWrap) {
-                return Math.max(...cell.content.split(/\s+/).map(stringWidth));
+                return Math.max(...cell.content.split(/\s+/).map((input: string) => getStringWidth(input)));
             }
 
-            return Math.max(...cell.content.split("\n").map(stringWidth));
+            return Math.max(...cell.content.split("\n").map((input: string) => getStringWidth(input)));
         };
 
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         return getContentWidth() + this.options.style.paddingLeft + this.options.style.paddingRight;
     }
 
@@ -543,15 +544,15 @@ export class Table {
 
     private processContent(cell: NormalizedCell, content: string, availableWidth: number): string[] {
         if (cell.wordWrap && !content.includes(" ")) {
-            return [truncateText(content, availableWidth, cell.truncate as Required<TruncateOptions>)];
+            return [truncate(content, availableWidth, cell.truncate as Required<TruncateOptions>)];
         }
 
         if (cell.wordWrap) {
-            return wordWrapText(content, availableWidth);
+            return wordWrap(content, availableWidth);
         }
 
-        if (cell.maxWidth !== undefined && stringWidth(content) > cell.maxWidth) {
-            return [truncateText(content, cell.maxWidth, cell.truncate as Required<TruncateOptions>)];
+        if (cell.maxWidth !== undefined && getStringWidth(content) > cell.maxWidth) {
+            return [truncate(content, cell.maxWidth, cell.truncate as Required<TruncateOptions>)];
         }
 
         return content.split("\n");
@@ -593,7 +594,7 @@ export class Table {
 
     private padContentLines(lines: string[], effectiveWidth: number, cell: LayoutCell | null): string[] {
         return lines.map((line) => {
-            const lineWidth = stringWidth(line);
+            const lineWidth = getStringWidth(line);
             let availableWidth = effectiveWidth;
             if (line.trim() !== "" && cell) {
                 availableWidth -= this.options.style.paddingLeft + this.options.style.paddingRight;

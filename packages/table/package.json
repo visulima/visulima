@@ -99,6 +99,7 @@
         "test:bench": "vitest bench --run"
     },
     "devDependencies": {
+        "@visulima/string": "^1.0.0",
         "ansi-regex": "^6.1.0",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
@@ -120,7 +121,6 @@
         "esbuild": "^0.24.2",
         "eslint": "8.57.1",
         "table": "^6.9.0",
-        "slice-ansi": "^7.1.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
