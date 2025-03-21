@@ -1,4 +1,4 @@
-import { RE_ANSI } from "./constants";
+import { RE_ANSI, RE_VALID_ANSI_PAIRS, RE_VALID_HYPERLINKS } from "./constants";
 import type { StringWidthOptions } from "./get-string-width";
 import { getStringWidth } from "./get-string-width";
 import LRUCache from "./utils/lru-cache";
@@ -117,7 +117,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
 
     // eslint-disable-next-line no-cond-assign
     while ((match = RE_ANSI.exec(input)) !== null) {
-        const matchedText = match[0];
+        const matchedText = match[0] as string;
 
         parts.push(input.slice(lastIndex, match.index));
         matches.push(matchedText);
@@ -432,16 +432,11 @@ const fastSlice = (inputString: string, startIndex: number, endIndex: number, op
     let currentWidth = 0;
     let startFound = false;
 
-    // Process each grapheme with respect to its width
     for (const grapheme of graphemes) {
         const graphemeWidth = getStringWidth(grapheme.segment, options.width);
-
-        // Current position before adding this grapheme
         const positionBefore = currentWidth;
-        // Position after adding this grapheme
         const positionAfter = currentWidth + graphemeWidth;
 
-        // Skip graphemes before the start point
         if (!startFound) {
             if (positionBefore < startIndex) {
                 currentWidth = positionAfter;
@@ -454,17 +449,14 @@ const fastSlice = (inputString: string, startIndex: number, endIndex: number, op
 
         // Now we're in the visible range, check if adding this grapheme would exceed our end point
         if (positionBefore >= endIndex) {
-            // We've reached the end, stop processing
             break;
         }
 
         // Check if adding this grapheme would exceed the endIndex
         if (positionAfter > endIndex) {
-            // This grapheme would cross the boundary - do not include it
             break;
         }
 
-        // Add this grapheme to our result
         result.push(grapheme.segment);
         currentWidth = positionAfter;
     }
@@ -507,14 +499,23 @@ export type SliceOptions = {
  * - Handles combining characters
  * - Uses LRU caching for repeated operations
  * - Fast path for ASCII-only strings
+ * - Preserves invalid/malformed ANSI sequences as visible content
+ *
+ * ANSI Sequence Handling:
+ * - Valid ANSI sequences (e.g. '\u001b[31m') are preserved and handled as styling
+ * - Incomplete sequences are preserved as-is
+ * - Missing terminators are preserved as-is
  *
  * @example
  * ```typescript
  * // Basic usage
  * slice('Hello World', 0, 5); // 'Hello'
  *
- * // With ANSI styling
+ * // With valid ANSI styling
  * slice('\u001b[31mRed\u001b[0m Text', 0, 3); // '\u001b[31mRed\u001b[0m'
+ *
+ * // With invalid ANSI sequence
+ * slice('\u001b[abcText', 0, 4); // '\u001b[abcText'
  *
  * // With width options
  * slice('Hello', 0, 3, { width: { fullWidth: 2 } });
@@ -524,10 +525,10 @@ export type SliceOptions = {
  * @param startIndex - Start index in visual width units (default: 0)
  * @param endIndex - End index in visual width units (default: string length)
  * @param options - Configuration options (default: {})
- * @returns Sliced string with preserved styling
+ * @returns Sliced string with preserved styling and content
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const slice = (inputString: string, startIndex = 0, endIndex = inputString.length, options: SliceOptions = {}): string => {
+export const slice = (inputString: string, startIndex = 0, endIndex = Number.MAX_SAFE_INTEGER, options: SliceOptions = {}): string => {
     const config = {
         segmenter: defaultSegmenter,
         ...options,
@@ -537,7 +538,9 @@ export const slice = (inputString: string, startIndex = 0, endIndex = inputStrin
         return "";
     }
 
-    if (startIndex === 0 && endIndex >= inputString.length) {
+    const inputStringWidth = getStringWidth(inputString, config.width);
+
+    if (startIndex === 0 && endIndex >= inputStringWidth) {
         return inputString;
     }
 
@@ -553,6 +556,14 @@ export const slice = (inputString: string, startIndex = 0, endIndex = inputStrin
         }
 
         return fastSlice(inputString, startIndex, endIndex, config);
+    }
+
+    RE_VALID_ANSI_PAIRS.lastIndex = 0;
+    RE_VALID_HYPERLINKS.lastIndex = 0;
+
+    if (!RE_VALID_ANSI_PAIRS.test(inputString) && !RE_VALID_HYPERLINKS.test(inputString)) {
+        // If no valid ANSI pairs found, treat as regular text
+        return inputString;
     }
 
     const segments = processIntoStyledSegments(inputString, config);

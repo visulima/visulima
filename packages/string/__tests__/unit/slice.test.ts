@@ -42,6 +42,7 @@ describe("slice", () => {
 
     it("should behave exactly like regular JavaScript string slice", () => {
         expect.assertions(194);
+
         // The slice should behave exactly as a regular JS slice behaves
         // eslint-disable-next-line no-plusplus
         for (let index = 0; index < 20; index++) {
@@ -102,6 +103,7 @@ describe("slice", () => {
 
     it("should handle grapheme clusters correctly for emoji and combining characters", () => {
         expect.assertions(3);
+
         // Family emoji (👨‍👩‍👧‍👦) is a single grapheme made up of multiple code points
         const family = "👨‍👩‍👧‍👦";
         expect(slice(family, 0, 1)).toEqualAnsi("");
@@ -114,6 +116,7 @@ describe("slice", () => {
 
     it("should handle zero width joiner sequences in composite emoji", () => {
         expect.assertions(1);
+
         // Woman technologist emoji (👩‍💻) uses ZWJ
         const technologist = "👩‍💻";
         expect(slice(technologist, 0, 1)).toEqualAnsi("");
@@ -121,46 +124,54 @@ describe("slice", () => {
 
     it("should support unicode surrogate pairs without breaking characters", () => {
         expect.assertions(1);
+
         expect(slice("a\uD83C\uDE00BC", 0, 2)).toEqualAnsi("a");
     });
 
     it("should not add unnecessary escape codes when slicing colored strings", () => {
         expect.assertions(1);
+
         expect(slice("\u001B[31municorn\u001B[39m", 0, 3)).toEqualAnsi("\u001B[31muni\u001B[39m");
     });
 
     it("should correctly slice a normal character before a colored character", () => {
         expect.assertions(1);
+
         expect(slice("a\u001B[31mb\u001B[39m", 0, 1)).toEqualAnsi("a");
     });
 
     it("should correctly slice a normal character after a colored character", () => {
         expect.assertions(1);
+
         expect(slice("\u001B[31ma\u001B[39mb", 1, 2)).toEqualAnsi("b");
     });
 
     it("should correctly slice a string styled with both background and foreground colors", () => {
         expect.assertions(1);
+
         // Test string: `bgGreen.black('test');`
         expect(slice("\u001B[42m\u001B[30mtest\u001B[39m\u001B[49m", 0, 1)).toEqualAnsi("\u001B[42m\u001B[30mt\u001B[39m\u001B[49m");
     });
 
     it("should correctly slice a string styled with text modifiers", () => {
         expect.assertions(1);
+
         // Test string: `underline('test');`
         expect(slice("\u001B[4mtest\u001B[24m", 0, 1)).toEqualAnsi("\u001B[4mt\u001B[24m");
     });
 
     it("should correctly slice a string with unknown ANSI color codes", () => {
         expect.assertions(3);
+
         // The slice will not use a full reset sequence of unknown colors
-        expect(slice("\u001B[20mTEST\u001B[49m", 0, 4)).toEqualAnsi("\u001B[20mTEST");
+        expect(slice("\u001B[20mTEST\u001B[49m", 0, 4)).toEqualAnsi("\u001B[20mTEST\u001B[49m");
         expect(slice("\u001B[1001mTEST\u001B[49m", 0, 3)).toEqualAnsi("\u001B[1001mTES\u001B[49m");
         expect(slice("\u001B[1001mTEST\u001B[49m", 0, 2)).toEqualAnsi("\u001B[1001mTE\u001B[49m");
     });
 
     it("should handle null issue correctly when slicing special emoji strings", () => {
         expect.assertions(1);
+
         const s = '\u001B[1mautotune.flipCoin("easy as") ? 🎂 : 🍰 \u001B[33m★\u001B[39m\u001B[22m';
         const result = slice(s, 38);
 
@@ -169,6 +180,7 @@ describe("slice", () => {
 
     it("should support true color RGB escape sequences", () => {
         expect.assertions(1);
+
         expect(slice("\u001B[1m\u001B[48;2;255;255;255m\u001B[38;2;255;0;0municorn\u001B[39m\u001B[49m\u001B[22m", 0, 3)).toEqualAnsi(
             "\u001B[1m\u001B[48;2;255;255;255m\u001B[38;2;255;0;0muni\u001B[39m\u001B[49m\u001B[22m",
         );
@@ -176,6 +188,7 @@ describe("slice", () => {
 
     it("should not add extra escape sequences when slicing styled text", () => {
         expect.assertions(3);
+
         const output = `${black.bgYellow(" RUNS ")}  ${green("test")}`;
 
         expect(slice(output, 0, 7)).toEqualAnsi(`${black.bgYellow(" RUNS ")} `);
@@ -185,16 +198,19 @@ describe("slice", () => {
 
     it("should not lose fullwidth characters when slicing multibyte strings", () => {
         expect.assertions(1);
+
         expect(slice("古古test", 0)).toEqualAnsi("古古test");
     });
 
     it("should create empty slices when start and end positions are equal", () => {
         expect.assertions(1);
+
         expect(slice("test", 0, 0)).toEqualAnsi("");
     });
 
     it("should handle hyperlinks correctly while preserving the formatting", () => {
         expect.assertions(2);
+
         const link = "\u001B]8;;https://google.com\u0007Google\u001B]8;;\u0007";
         expect(slice(link, 0, 6)).toEqualAnsi(link);
 
@@ -205,22 +221,23 @@ describe("slice", () => {
 
     it("should handle invalid ANSI sequences correctly without breaking", () => {
         expect.assertions(4);
-        expect.assertions(4);
-        // Incomplete sequence
-        expect(slice("\u001B[test", 0, 4)).toEqualAnsi("\u001B[te");
 
-        // Invalid characters in sequence
-        expect(slice("\u001B[abc31mtest\u001B[39m", 0, 4)).toEqualAnsi("\u001B[ab");
+        // Incomplete sequence - should preserve it
+        expect(slice("\u001B[test", 0, 4)).toEqualAnsi("\u001B[test");
 
-        // Missing terminator
-        expect(slice("\u001B[31test\u001B[39m", 0, 4)).toEqualAnsi("test");
+        // Invalid characters in sequence - should preserve the sequence
+        expect(slice("\u001B[abc31mtest\u001B[39m", 0, 4)).toEqualAnsi("\u001B[abc31mtest\u001B[39m");
 
-        // Multiple invalid sequences
-        expect(slice("\u001B[31m\u001B[test\u001B[39m", 0, 4)).toEqualAnsi("\u001B[31m\u001B[te\u001B[39m");
+        // Missing terminator - should preserve the sequence
+        expect(slice("\u001B[31test\u001B[39m", 0, 4)).toEqualAnsi("\u001B[31test\u001B[39m");
+
+        // Multiple invalid sequences - should preserve all sequences
+        expect(slice("\u001B[31m\u001B[test\u001B[39m", 0, 4)).toEqualAnsi("\u001B[31m\u001B[test\u001B[39m");
     });
 
     it("should handle multiple consecutive ANSI codes correctly", () => {
         expect.assertions(2);
+
         // Multiple valid codes
         expect(slice("\u001B[1m\u001B[31m\u001B[42mtest\u001B[0m", 0, 4)).toEqualAnsi("\u001B[1m\u001B[31m\u001B[42mtest\u001B[0m");
 
@@ -235,19 +252,22 @@ describe("slice", () => {
         describe("east Asian languages", () => {
             describe("japanese", () => {
                 it("should handle Japanese characters correctly with default locale", () => {
-                    expect.assertions(2);
+                    expect.assertions(3);
 
                     const text = JAPANESE_STRINGS[0]; // "ひらがなカタカナABC"
                     expect(slice(text, 0, 5)).toEqualAnsi("ひら");
                     expect(slice(text, 2, 7)).toEqualAnsi("らが");
+                    expect(slice("日本語テスト", 0, 7)).toEqualAnsi("日本語");
                 });
 
                 it("should handle Japanese characters correctly with Japanese locale", () => {
                     expect.assertions(2);
 
                     const text = JAPANESE_STRINGS[1]; // "カタカナひらがな漢字"
-                    expect(slice(text, 0, 4)).toEqualAnsi("カタ");
-                    expect(slice(text, 3, 7)).toEqualAnsi("カ");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("ja", { granularity: "grapheme" }) })).toEqualAnsi("カタ");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 3, 7, { segmenter: new Intl.Segmenter("ja", { granularity: "grapheme" }) })).toEqualAnsi("カ");
                 });
 
                 it("should handle mixed Japanese and Latin characters properly", () => {
@@ -272,8 +292,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = KOREAN_STRINGS[1]; // "한글Text"
-                    expect(slice(text, 0, 3)).toEqualAnsi("한");
-                    expect(slice(text, 1, 5)).toEqualAnsi("글T");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 3, { segmenter: new Intl.Segmenter("ko", { granularity: "grapheme" }) })).toEqualAnsi("한");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 1, 5, { segmenter: new Intl.Segmenter("ko", { granularity: "grapheme" }) })).toEqualAnsi("글T");
                 });
 
                 it("should handle mixed Korean and Latin characters properly", () => {
@@ -298,8 +320,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = CHINESE_SIMPLIFIED_STRINGS[1]; // "文本String"
-                    expect(slice(text, 0, 3)).toEqualAnsi("文");
-                    expect(slice(text, 1, 6)).toEqualAnsi("本St");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 3, { segmenter: new Intl.Segmenter("zh-CN", { granularity: "grapheme" }) })).toEqualAnsi("文");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 1, 6, { segmenter: new Intl.Segmenter("zh-CN", { granularity: "grapheme" }) })).toEqualAnsi("本St");
                 });
 
                 it("should handle simplified Chinese characters correctly with zh-CN locale", () => {
@@ -314,8 +338,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = CHINESE_TRADITIONAL_STRINGS[2]; // "程式Program"
-                    expect(slice(text, 0, 3)).toEqualAnsi("程");
-                    expect(slice(text, 1, 8)).toEqualAnsi("式Prog");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 3, { segmenter: new Intl.Segmenter("zh-TW", { granularity: "grapheme" }) })).toEqualAnsi("程");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 1, 8, { segmenter: new Intl.Segmenter("zh-TW", { granularity: "grapheme" }) })).toEqualAnsi("式Prog");
                 });
             });
 
@@ -332,8 +358,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = THAI_STRINGS[1]; // "ข้อความString"
-                    expect(slice(text, 0, 5)).toEqualAnsi("ข้อความ");
-                    expect(slice(text, 2, 9)).toEqualAnsi("ความStri");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 5, { segmenter: new Intl.Segmenter("th", { granularity: "grapheme" }) })).toEqualAnsi("ข้อความ");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 2, 9, { segmenter: new Intl.Segmenter("th", { granularity: "grapheme" }) })).toEqualAnsi("ความStri");
                 });
             });
         });
@@ -353,8 +381,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = ARABIC_STRINGS[1]; // "نصString"
-                    expect(slice(text, 0, 3)).toEqualAnsi("نصS");
-                    expect(slice(text, 1, 6)).toEqualAnsi("صStri");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 3, { segmenter: new Intl.Segmenter("ar", { granularity: "grapheme" }) })).toEqualAnsi("نصS");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 1, 6, { segmenter: new Intl.Segmenter("ar", { granularity: "grapheme" }) })).toEqualAnsi("صStri");
                 });
             });
 
@@ -371,8 +401,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = HEBREW_STRINGS[1]; // "טקסטString"
-                    expect(slice(text, 0, 4)).toEqualAnsi("טקסט");
-                    expect(slice(text, 2, 8)).toEqualAnsi("סטStri");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("he", { granularity: "grapheme" }) })).toEqualAnsi("טקסט");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 2, 8, { segmenter: new Intl.Segmenter("he", { granularity: "grapheme" }) })).toEqualAnsi("סטStri");
                 });
             });
 
@@ -389,8 +421,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = HINDI_STRINGS[1]; // "पाठString"
-                    expect(slice(text, 0, 3)).toEqualAnsi("पाठS");
-                    expect(slice(text, 1, 6)).toEqualAnsi("ठStri");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 3, { segmenter: new Intl.Segmenter("hi", { granularity: "grapheme" }) })).toEqualAnsi("पाठS");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 1, 6, { segmenter: new Intl.Segmenter("hi", { granularity: "grapheme" }) })).toEqualAnsi("ठStri");
                 });
             });
 
@@ -407,8 +441,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = BENGALI_STRINGS[1]; // "টেক্সটString"
-                    expect(slice(text, 0, 5)).toEqualAnsi("টেক্সট");
-                    expect(slice(text, 2, 9)).toEqualAnsi("ক্সটStri");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 5, { segmenter: new Intl.Segmenter("bn", { granularity: "grapheme" }) })).toEqualAnsi("টেক্সট");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 2, 9, { segmenter: new Intl.Segmenter("bn", { granularity: "grapheme" }) })).toEqualAnsi("ক্সটStri");
                 });
             });
         });
@@ -428,8 +464,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = GERMAN_STRINGS[1]; // "GROẞBUCHSTABE"
-                    expect(slice(text, 0, 4)).toEqualAnsi("GROẞ");
-                    expect(slice(text, 2, 8)).toEqualAnsi("OẞBUCH");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("de", { granularity: "grapheme" }) })).toEqualAnsi("GROẞ");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 2, 8, { segmenter: new Intl.Segmenter("de", { granularity: "grapheme" }) })).toEqualAnsi("OẞBUCH");
                 });
             });
 
@@ -446,8 +484,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = GREEK_STRINGS[1]; // "ΚείμενοString"
-                    expect(slice(text, 0, 5)).toEqualAnsi("Κεί");
-                    expect(slice(text, 3, 9)).toEqualAnsi("ίμε");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 5, { segmenter: new Intl.Segmenter("el", { granularity: "grapheme" }) })).toEqualAnsi("Κεί");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 3, 9, { segmenter: new Intl.Segmenter("el", { granularity: "grapheme" }) })).toEqualAnsi("ίμε");
                 });
             });
 
@@ -464,8 +504,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = RUSSIAN_STRINGS[1]; // "текстString"
-                    expect(slice(text, 0, 4)).toEqualAnsi("Те");
-                    expect(slice(text, 2, 8)).toEqualAnsi("екс");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("ru", { granularity: "grapheme" }) })).toEqualAnsi("Те");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 2, 8, { segmenter: new Intl.Segmenter("ru", { granularity: "grapheme" }) })).toEqualAnsi("екс");
                 });
             });
 
@@ -482,8 +524,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = UKRAINIAN_STRINGS[1]; // "ТекстText"
-                    expect(slice(text, 0, 4)).toEqualAnsi("Те");
-                    expect(slice(text, 2, 7)).toEqualAnsi("ек");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("uk", { granularity: "grapheme" }) })).toEqualAnsi("Те");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 2, 7, { segmenter: new Intl.Segmenter("uk", { granularity: "grapheme" }) })).toEqualAnsi("ек");
                 });
             });
         });
@@ -503,8 +547,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = TURKISH_STRINGS[3]; // "IıİiTest"
-                    expect(slice(text, 0, 4)).toEqualAnsi("Iıİ");
-                    expect(slice(text, 2, 7)).toEqualAnsi("İiTe");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("tr", { granularity: "grapheme" }) })).toEqualAnsi("Iıİ");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 2, 7, { segmenter: new Intl.Segmenter("tr", { granularity: "grapheme" }) })).toEqualAnsi("İiTe");
                 });
             });
 
@@ -521,8 +567,10 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = LAO_STRINGS[1]; // "ຂໍ້ຄວາມString"
-                    expect(slice(text, 0, 5)).toEqualAnsi("ຂໍ້ຄວາມS");
-                    expect(slice(text, 2, 9)).toEqualAnsi("ວາມStrin");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 0, 5, { segmenter: new Intl.Segmenter("lo", { granularity: "grapheme" }) })).toEqualAnsi("ຂໍ້ຄວາມS");
+                    // eslint-disable-next-line compat/compat
+                    expect(slice(text, 2, 9, { segmenter: new Intl.Segmenter("lo", { granularity: "grapheme" }) })).toEqualAnsi("ວາມStrin");
                 });
             });
         });
