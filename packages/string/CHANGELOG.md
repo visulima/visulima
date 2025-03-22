@@ -1,3 +1,16 @@
+## @visulima/string [1.0.2](https://github.com/visulima/visulima/compare/@visulima/string@1.0.1...@visulima/string@1.0.2) (2025-03-22)
+
+### Bug Fixes
+
+* changed ellipsis size from 2 to 1, witch was wrong before ([3002cce](https://github.com/visulima/visulima/commit/3002cce3ba4b7702dab60db4bb15b1e1bbe5cf0f))
+
+## @visulima/string [1.0.1](https://github.com/visulima/visulima/compare/@visulima/string@1.0.0...@visulima/string@1.0.1) (2025-03-21)
+
+### Bug Fixes
+
+* fixed forgotten test change after adjustment ([59b8953](https://github.com/visulima/visulima/commit/59b8953a2aefdb4b6f919039e67809146df6a22e))
+* fixed handling of wrong width calc on the slice ([199c6dd](https://github.com/visulima/visulima/commit/199c6dd57b33b751c067e7a964406583ade5dd28))
+
 ## @visulima/string 1.0.0 (2025-03-21)
 
 ### Features

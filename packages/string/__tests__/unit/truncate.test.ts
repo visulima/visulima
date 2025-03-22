@@ -10,29 +10,29 @@ describe("truncate", () => {
         it("should handle basic strings with default position (end)", () => {
             expect.assertions(8);
 
-            expect(truncate("unicorn", 4)).toBe("un…");
-            expect(truncate("unicorn", 4, { position: "end" })).toBe("un…");
-            expect(truncate("unicorn", 1)).toBe("");
+            expect(truncate("unicorn", 4)).toBe("uni…");
+            expect(truncate("unicorn", 4, { position: "end" })).toBe("uni…");
+            expect(truncate("unicorn", 1)).toBe("…");
             expect(truncate("unicorn", 0)).toBe("");
             expect(truncate("unicorn", -4)).toBe("");
             expect(truncate("unicorn", 20)).toBe("unicorn");
             expect(truncate("unicorn", 7)).toBe("unicorn");
-            expect(truncate("unicorn", 6)).toBe("unic…");
+            expect(truncate("unicorn", 6)).toBe("unico…");
         });
 
         it("should handle ANSI escape codes", () => {
             expect.assertions(3);
 
             expect(truncate("\u001B[31municorn\u001B[39m", 7)).toEqualAnsi("\u001B[31municorn\u001B[39m");
-            expect(truncate("\u001B[31municorn\u001B[39m", 1)).toEqualAnsi("");
-            expect(truncate("\u001B[31municorn\u001B[39m", 4)).toEqualAnsi("\u001B[31mun\u001B[39m…");
+            expect(truncate("\u001B[31municorn\u001B[39m", 1)).toEqualAnsi("…");
+            expect(truncate("\u001B[31municorn\u001B[39m", 4)).toEqualAnsi("\u001B[31muni\u001B[39m…");
         });
 
         it("should handle Unicode characters", () => {
             expect.assertions(2);
 
-            expect(truncate("a\uD83C\uDE00b\uD83C\uDE00c", 5, { width: { emojiWidth: 1 } })).toEqualAnsi("a\uD83C\uDE00…");
-            expect(truncate("안녕하세요", 3, { width: { fullWidth: 2 } })).toBe("…");
+            expect(truncate("a\uD83C\uDE00b\uD83C\uDE00c", 5, { width: { emojiWidth: 1 } })).toEqualAnsi("a\uD83C\uDE00b…");
+            expect(truncate("안녕하세요", 3, { width: { fullWidth: 2 } })).toBe("안…");
         });
     });
 
@@ -40,16 +40,16 @@ describe("truncate", () => {
         it("should handle start position", () => {
             expect.assertions(2);
 
-            expect(truncate("unicorn", 5, { position: "start" })).toBe("…orn");
-            expect(truncate("unicorn", 6, { position: "start" })).toBe("…corn");
+            expect(truncate("unicorn", 5, { position: "start" })).toBe("…corn");
+            expect(truncate("unicorn", 6, { position: "start" })).toBe("…icorn");
         });
 
         it("should handle middle position", () => {
             expect.assertions(3);
 
-            expect(truncate("unicorn", 5, { position: "middle" })).toBe("un…n");
-            expect(truncate("unicorns", 6, { position: "middle" })).toBe("uni…s");
-            expect(truncate("unicorns rainbow dragons", 20, { position: "middle" })).toBe("unicorns r… dragons");
+            expect(truncate("unicorn", 5, { position: "middle" })).toBe("un…rn");
+            expect(truncate("unicorns", 6, { position: "middle" })).toBe("uni…ns");
+            expect(truncate("unicorns rainbow dragons", 20, { position: "middle" })).toBe("unicorns r…w dragons");
         });
     });
 
@@ -128,7 +128,7 @@ describe("truncate", () => {
                 }),
             ).toBe("Hello ...");
 
-            expect(truncate("日本語テスト", 9)).toBe("日本語…");
+            expect(truncate("日本語テスト", 9)).toBe("日本語テ…");
 
             expect(
                 truncate("\u001B[31m你好\u001B[39m world", 8, {

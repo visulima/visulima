@@ -4,6 +4,7 @@ import { bgGreen, green, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { RE_FAST_ANSI } from "../../src/constants";
+import { toEqualAnsi } from "../../src/test/vitest";
 import { wordWrap, WrapMode } from "../../src/word-wrap";
 
 const fixture = `The quick brown ${red("fox jumped over")} the lazy ${green("dog and then ran away with the unicorn.")}`;
@@ -15,7 +16,8 @@ const fixture4 = "12345678\n ";
 const hasAnsi = (string_: string): boolean => RE_FAST_ANSI.test(string_);
 
 describe("wordWrap", () => {
-    // Basic functionality tests
+    expect.extend({ toEqualAnsi });
+
     it("should wrap string at 20 characters", () => {
         expect.assertions(2);
         const result = wordWrap(fixture, { width: 20 });
@@ -191,7 +193,7 @@ describe("wordWrap", () => {
                 "Check out \u001B]8;;https://www.example.com\u0007my website\u001B]8;;\u0007, it is \u001B]8;;https://www.example.com\u0007supercalifragilisticexpialidocious\u001B]8;;\u0007.",
                 { width: 16, wrapMode: WrapMode.STRICT_WIDTH },
             ),
-        ).toBe(
+        ).toEqualAnsi(
             [
                 "Check out \u001B]8;;https://www.example.com\u0007my web\u001B]8;;\u0007",
                 "\u001B]8;;https://www.example.com\u0007site\u001B]8;;\u0007, it is \u001B]8;;https://www.example.com\u0007supe\u001B]8;;\u0007",
@@ -204,8 +206,9 @@ describe("wordWrap", () => {
     // Non-SGR ANSI escape handling
     it("should handle non-SGR/non-hyperlink ANSI escapes", () => {
         expect.assertions(2);
-        expect(wordWrap("Hello, \u001B[1D World!", { width: 8 })).toBe("Hello,\u001B[1D\nWorld!");
-        expect(wordWrap("Hello, \u001B[1D World!", { trim: false, width: 8 })).toBe("Hello, \u001B[1D \nWorld!");
+
+        expect(wordWrap("Hello, \u001B[1D World!", { width: 8 })).toEqualAnsi("Hello,\n\u001B[1D\nWorld!");
+        expect(wordWrap("Hello, \u001B[1D World!", { trim: false, width: 8 })).toEqualAnsi("Hello, \n\u001B[1D \nWorld!");
     });
 
     // Newline normalization
