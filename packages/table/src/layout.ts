@@ -1,4 +1,4 @@
-import type { Cell as CellType , LayoutCell, TableLayout } from "./types";
+import type { Cell as CellType, LayoutCell, TableLayout } from "./types";
 
 /** Creates a layout cell from a given cell configuration. */
 function createLayoutCell(cell: CellType, column: number, row: number): LayoutCell {

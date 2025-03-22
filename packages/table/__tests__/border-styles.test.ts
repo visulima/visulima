@@ -20,7 +20,7 @@ describe("table Border Styles", () => {
         ["MARKDOWN", MARKDOWN_BORDER],
         ["ASCII", ASCII_BORDER],
         ["NO_BORDER", NO_BORDER],
-    ])('renders table with %s border style', (name, borderStyle) => {
+    ])("renders table with %s border style", (name, borderStyle) => {
         expect.assertions(1);
         const table = createTable({
             style: {

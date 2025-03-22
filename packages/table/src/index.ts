@@ -30,7 +30,7 @@ const processContent = (cell: NormalizedCell, content: string, availableWidth: n
     }
 
     return content.split("\n");
-}
+};
 
 /** The main Table class. */
 export class Table {
@@ -279,9 +279,16 @@ export class Table {
                     separatorLine += spanned[0] ? bodyLeft : joinLeft;
 
                     for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
-                        separatorLine += spanned[colIndex] ? " ".repeat(this.columnWidths[colIndex] as number) : joinBody.repeat(this.columnWidths[colIndex] as number);
+                        separatorLine += spanned[colIndex]
+                            ? " ".repeat(this.columnWidths[colIndex] as number)
+                            : joinBody.repeat(this.columnWidths[colIndex] as number);
 
                         if (colIndex < this.columnCount - 1) {
+                            let joinChar;
+
+                            const leftSpanned = spanned[colIndex]; // Boolean flag for left column (might be false if it's the starting column)
+                            const rightSpanned = spanned[colIndex + 1]; // Boolean flag for right column (true if it’s a continuation of a spanning cell)
+
                             const cellBelowLeft = this.layout.cells.find(
                                 (c) => c.x <= colIndex && c.x + c.width > colIndex && c.y <= rowIndex + 1 && c.y + c.height > rowIndex + 1,
                             );
@@ -289,35 +296,26 @@ export class Table {
                             const cellBelowRight = this.layout.cells.find(
                                 (c) => c.x <= colIndex + 1 && c.x + c.width > colIndex + 1 && c.y <= rowIndex + 1 && c.y + c.height > rowIndex + 1,
                             );
+                            const cellAboveLeft = this.layout.cells.find(
+                                (c) => c.x <= colIndex && c.x + c.width > colIndex && c.y <= rowIndex && c.y + c.height > rowIndex,
+                            );
+                            const cellAboveRight = this.layout.cells.find(
+                                (c) => c.x <= colIndex + 1 && c.x + c.width > colIndex + 1 && c.y <= rowIndex && c.y + c.height > rowIndex,
+                            );
 
-                            let joinChar;
+                            const partOfSameSpan = cellAboveLeft && cellAboveRight && areCellsEquivalent(cellAboveLeft, cellAboveRight);
 
                             if (cellBelowLeft && cellBelowRight && areCellsEquivalent(cellBelowLeft, cellBelowRight)) {
-                                joinChar = bottomJoin;
+                                joinChar = joinBody;
+                            } else if (leftSpanned && rightSpanned) {
+                                // If both are spanned and part of the same span (internal to a spanning cell)
+                                joinChar = partOfSameSpan ? topJoin : joinJoin;
+                            } else if (rightSpanned) {
+                                joinChar = joinRight;
+                            } else if (leftSpanned) {
+                                joinChar = joinLeft;
                             } else {
-                                const leftSpanned = spanned[colIndex]; // Boolean flag for left column (might be false if it's the starting column)
-                                const rightSpanned = spanned[colIndex + 1]; // Boolean flag for right column (true if it’s a continuation of a spanning cell)
-
-                                // Check if both columns are part of the same spanning cell in the row above
-                                const cellAboveLeft = this.layout.cells.find(
-                                    (c) => c.x <= colIndex && c.x + c.width > colIndex && c.y <= rowIndex && c.y + c.height > rowIndex,
-                                );
-                                const cellAboveRight = this.layout.cells.find(
-                                    (c) => c.x <= colIndex + 1 && c.x + c.width > colIndex + 1 && c.y <= rowIndex && c.y + c.height > rowIndex,
-                                );
-
-                                const partOfSameSpan = cellAboveLeft && cellAboveRight && areCellsEquivalent(cellAboveLeft, cellAboveRight);
-
-                                if (leftSpanned && rightSpanned) {
-                                    // If both are spanned and part of the same span (internal to a spanning cell)
-                                    joinChar = partOfSameSpan ? topJoin : joinJoin;
-                                } else if (rightSpanned) {
-                                    joinChar = joinRight;
-                                } else if (leftSpanned) {
-                                    joinChar = joinLeft;
-                                } else {
-                                    joinChar = partOfSameSpan ? topJoin : joinJoin;
-                                }
+                                joinChar = partOfSameSpan ? topJoin : joinJoin;
                             }
 
                             separatorLine += joinChar;
@@ -362,7 +360,7 @@ export class Table {
         if (!this.isDirty && this.cachedColumnWidths) {
             return this.cachedColumnWidths;
         }
-        const widths: number[] = Array.from<number>({length: this.columnCount}).fill(0);
+        const widths: number[] = Array.from<number>({ length: this.columnCount }).fill(0);
         const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
 
         // Process each row and cell to calculate column widths
@@ -473,7 +471,6 @@ export class Table {
             wordWrap: this.options.wordWrap,
         };
     }
-
 
     /**
      * Renders a single logical row.

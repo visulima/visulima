@@ -26,7 +26,7 @@ export const findRealPosition = (text: string, visiblePosition: number): number 
     while ((match = ansiPattern.exec(text)) !== null) {
         ansiRanges.push({
             start: match.index,
-            end: match.index + match[0].length
+            end: match.index + match[0].length,
         });
     }
 

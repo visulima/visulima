@@ -122,18 +122,15 @@ describe("table layout", () => {
                 ])
                 .addRow([null, "Bottom Left", "Bottom Right"]);
 
-            const expected = [
-                "┌──────────────────────────────┐",
-                "│           Header             │",
-                "├────────┬─────────────────────┤",
-                "│        │         Top         │",
-                "│ Side   ├───────────┬─────────┤",
-                "│        │ Bottom    │ Bottom  │",
-                "│        │ Left      │ Right   │",
-                "└────────┴───────────┴─────────┘",
-            ].join("\n");
-
-            expect(table.toString()).toBe(expected);
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌───────────────────────────────────┐
+              │              Header               │
+              ├──────┬────────────────────────────┤
+              │ Side │            Top             │
+              │      ├─────────────┬──────────────┤
+              │      │ Bottom Left │ Bottom Right │
+              └──────┴─────────────┴──────────────┘"
+            `);
         });
 
         it("should support complex nested spans", () => {
@@ -250,6 +247,8 @@ describe("table layout", () => {
         });
 
         it("should handle null values in spans", () => {
+            expect.assertions(1);
+
             const table = createTable();
             table
                 .addRow([{ content: "Span", rowSpan: 2 }, "B1"])
