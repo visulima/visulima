@@ -245,11 +245,7 @@ describe("table core functionality", () => {
 
             const output = table.toString();
 
-            expect(output).toMatchInlineSnapshot(`
-              "┌────┬──────┬──────┐
-              │Test│こん… │🌟🌟… │
-              └────┴──────┴──────┘"
-            `);
+            expect(output).toStrictEqual("┌────┬──────┬──────┐\n│Test│こん…│🌟🌟…│\n└────┴──────┴──────┘");
         });
 
         it("should handle maxWidth with ANSI escape codes", () => {
@@ -260,11 +256,7 @@ describe("table core functionality", () => {
 
             const output = table.toString();
 
-            expect(output).toMatchInlineSnapshot(`
-              "┌────┬─────┬─────┐
-              │Test│[31m[31mThis[0m…│[32mGreen[0m│
-              └────┴─────┴─────┘"
-            `);
+            expect(output).toStrictEqual("┌────┬─────┬─────┐\n│Test│\u001b[31mThis\u001b[0m…│\u001b[32mGreen\u001b[0m│\n└────┴─────┴─────┘");
         });
 
         it("should handle maxWidth with mixed content types", () => {
@@ -279,11 +271,7 @@ describe("table core functionality", () => {
 
             const output = table.toString();
 
-            expect(output).toMatchInlineSnapshot(`
-              "┌─────┬──────┬───────┐
-              │1234…│Mixed…│[31m[31mColore[0m…│
-              └─────┴──────┴───────┘"
-            `);
+            expect(output).toStrictEqual("┌─────┬──────┬───────┐\n│1234…│Mixed…│\u001b[31mColore\u001b[0m…│\n└─────┴──────┴───────┘");
         });
 
         it("should handle maxWidth with empty and whitespace content", () => {

@@ -3917,8 +3917,8 @@ importers:
         specifier: ^1.10.0
         version: 1.18.0(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@18.19.71)(esbuild@0.25.1)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.29.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.3)(yaml@2.7.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.2.0(postcss@8.5.3))(postcss-modules-scope@3.2.1(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.4.2(typedoc@0.27.9(typescript@5.7.3)))(typedoc-plugin-rename-defaults@0.7.2(typedoc@0.27.9(typescript@5.7.3)))(typedoc@0.27.9(typescript@5.7.3))(typescript@5.7.3)
       '@visulima/string':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: workspace:*
+        version: link:../string
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(vitest@2.1.8)
@@ -10038,10 +10038,6 @@ packages:
 
   '@visulima/source-map@1.0.17':
     resolution: {integrity: sha512-sLZaA5s4+6Apq5pG9V9Y03WUuXRRGoL9ysd5lBTDsh/Tf4ZWQ5krZpZg5Ep748JiPPZ/lZFe2Ylp7jGz81iblQ==}
-    engines: {node: '>=18.0.0 <=23.x'}
-
-  '@visulima/string@1.0.0':
-    resolution: {integrity: sha512-/hlzLemuK/inj2EPXwKpjiEG5nLFgmL+bzDRE3MCtX0X2aSonPo+a8jziAPIdPodHUqVTIiZ+ieYq2BK+oOIZg==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/tsconfig@1.1.15':
@@ -29113,8 +29109,6 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       '@visulima/path': 1.3.4
-
-  '@visulima/string@1.0.0': {}
 
   '@visulima/tsconfig@1.1.15(yaml@2.7.0)':
     dependencies:

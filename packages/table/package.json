@@ -99,7 +99,7 @@
         "test:bench": "vitest bench --run"
     },
     "devDependencies": {
-        "@visulima/string": "^1.0.0",
+        "@visulima/string": "workspace:*",
         "ansi-regex": "^6.1.0",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",

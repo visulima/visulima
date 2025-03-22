@@ -5,6 +5,8 @@ import { createTable, Table } from "../src";
 describe("table layout", () => {
     describe("basic layouts", () => {
         it("should create single-cell table", () => {
+            expect.assertions(1);
+
             const table = createTable();
             table.addRow(["Single"]);
 
@@ -14,6 +16,8 @@ describe("table layout", () => {
         });
 
         it("should create simple grid layout", () => {
+            expect.assertions(1);
+
             const table = createTable();
             table.addRows(
                 ["A1", "B1", "C1"],
@@ -37,6 +41,8 @@ describe("table layout", () => {
 
     describe("column spans", () => {
         it("should handle single column span", () => {
+            expect.assertions(1);
+
             const table = createTable();
             table.addRow([{ colSpan: 2, content: "Spanning Two Columns" }, "Normal"]).addRow(["A", "B", "C"]);
 
@@ -50,6 +56,8 @@ describe("table layout", () => {
         });
 
         it("should handle multiple column spans", () => {
+            expect.assertions(1);
+
             const table = createTable();
             table
                 .addRow([{ colSpan: 3, content: "Span All" }])
@@ -72,6 +80,8 @@ describe("table layout", () => {
 
     describe("row spans", () => {
         it("should handle single row span", () => {
+            expect.assertions(1);
+
             const table = createTable();
             table.addRow([{ content: "Span", rowSpan: 2 }, "B1", "C1"]).addRow([null, "B2", "C2"]);
 
@@ -81,6 +91,8 @@ describe("table layout", () => {
         });
 
         it("should handle multiple row spans", () => {
+            expect.assertions(1);
+
             const table = createTable();
             table
                 .addRow([{ content: "Span 3", rowSpan: 3 }, "B1", { content: "Span 2", rowSpan: 2 }])
@@ -103,6 +115,8 @@ describe("table layout", () => {
 
     describe("complex layouts", () => {
         it("should handle mixed row and column spans", () => {
+            expect.assertions(1);
+
             const table = createTable();
             table
                 .addRow([{ colSpan: 3, content: "Header", hAlign: "center" }])

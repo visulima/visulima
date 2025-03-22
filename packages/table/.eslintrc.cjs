@@ -42,6 +42,8 @@ module.exports = defineConfig({
                 "@typescript-eslint/no-unsafe-return": "off",
                 "perfectionist/sort-intersection-types": "off",
                 "prefer-template": "off",
+                "no-loops/no-loops": "off",
+                "no-restricted-syntax": "off",
             },
         },
         {

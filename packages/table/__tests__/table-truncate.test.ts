@@ -55,7 +55,7 @@ describe("table truncation", () => {
 
             const table = createTable({ ...baseOptions, maxWidth: 5 });
 
-            table.addRow(["", "   ", { content: testString, truncate: { position: "end", space: true, truncationCharacter: ">" } }]);
+            table.addRow(["", "   ", { content: testString, truncate: { ellipsis: " >", position: "end" } }]);
 
             expect(table.toString()).toContain("Thi >");
         });
@@ -93,10 +93,9 @@ describe("table truncation", () => {
                 {
                     content: longTestString,
                     truncate: {
+                        ellipsis: ">",
                         position: "end",
                         preferTruncationOnSpace: true,
-                        space: true,
-                        truncationCharacter: ">",
                     },
                 },
             ]);

@@ -1,12 +1,36 @@
+import type { TruncateOptions } from "@visulima/string";
+import { getStringWidth, truncate, wordWrap } from "@visulima/string";
 import type { RequiredDeep } from "type-fest";
 
 import { createTableLayout } from "./layout";
 import { DEFAULT_BORDER } from "./style";
-import type { Cell as CellType, CellOptions, LayoutCell, TableConstructorOptions, TableLayout, TruncateOptions } from "./types";
+import type { Cell as CellType, CellOptions, LayoutCell, TableConstructorOptions, TableLayout } from "./types";
 import { areCellsEquivalent, computeRowLogicalWidth, fillRowToWidth, getRealCell } from "./utils";
-import { truncate, wordWrap, getStringWidth, WrapMode } from "@visulima/string";
 
 type NormalizedCell = Omit<CellOptions, "content"> & { content: string };
+
+/**
+ * Processes the content of a cell based on the cell's options.
+ * @param cell - The cell to process.
+ * @param content - The content of the cell.
+ * @param availableWidth - The available width for the content.
+ * @returns An array of strings representing the processed content.
+ */
+const processContent = (cell: NormalizedCell, content: string, availableWidth: number): string[] => {
+    if (cell.wordWrap && !content.includes(" ")) {
+        return [truncate(content, availableWidth, cell.truncate as Required<TruncateOptions>)];
+    }
+
+    if (cell.wordWrap) {
+        return wordWrap(content, { removeZeroWidthCharacters: true, ...cell.wordWrap, width: availableWidth }).split("\n");
+    }
+
+    if (cell.maxWidth !== undefined && getStringWidth(content) > cell.maxWidth) {
+        return [truncate(content, cell.maxWidth, cell.truncate as Required<TruncateOptions>)];
+    }
+
+    return content.split("\n");
+}
 
 /** The main Table class. */
 export class Table {
@@ -37,7 +61,6 @@ export class Table {
             truncate: {
                 position: "end",
                 preferTruncationOnSpace: false,
-                wrap: WrapMode.STRICT_WIDTH,
                 ...options?.truncate,
             },
             wordWrap: options?.wordWrap ?? false,
@@ -75,7 +98,7 @@ export class Table {
         const { body, left, middle, right } = options;
         const parts = Array.from(
             { length: this.columnWidths.length },
-            (_, index) => body.repeat(this.columnWidths[index]) + (index < this.columnWidths.length - 1 ? middle : ""),
+            (_, index) => body.repeat(this.columnWidths[index] as number) + (index < this.columnWidths.length - 1 ? middle : ""),
         );
         return left + parts.join("") + right;
     };
@@ -94,7 +117,7 @@ export class Table {
                             const norm = this.normalizeCellOption(cell);
                             const leftPad = " ".repeat(this.options.style.paddingLeft);
                             const rightPad = " ".repeat(this.options.style.paddingRight);
-                            const availableWidth = widths[colIndex] - this.options.style.paddingLeft - this.options.style.paddingRight;
+                            const availableWidth = (widths[colIndex] as number) - this.options.style.paddingLeft - this.options.style.paddingRight;
                             colIndex++;
                             return leftPad + norm.content.padEnd(availableWidth, " ") + rightPad;
                         })
@@ -128,15 +151,19 @@ export class Table {
         // Each group is an object { start, end, cell }.
         const groupRowForDisplay = (rowIndex: number): { cell: LayoutCell | null; end: number; start: number }[] => {
             const mapping: (LayoutCell | null)[] = [];
+
             for (let col = 0; col < this.columnCount; col++) {
                 // Prefer a cell that starts exactly at rowIndex and isn’t a span placeholder.
-                let cell = this.layout.cells.find((c) => c.x <= col && c.x + c.width > col && c.y === rowIndex && !c.isSpanCell);
+                let cell = this.layout?.cells.find((c) => c.x <= col && c.x + c.width > col && c.y === rowIndex && !c.isSpanCell);
+
                 if (!cell) {
                     // Fall back: pick any cell covering this column.
-                    cell = this.layout.cells.find((c) => c.x <= col && c.x + c.width > col && c.y <= rowIndex && c.y + c.height > rowIndex);
+                    cell = this.layout?.cells.find((c) => c.x <= col && c.x + c.width > col && c.y <= rowIndex && c.y + c.height > rowIndex);
                 }
+
                 mapping.push(cell ? getRealCell(cell) : null);
             }
+
             const groups: { cell: LayoutCell | null; end: number; start: number }[] = [];
 
             if (mapping.length === 0) {
@@ -144,15 +171,18 @@ export class Table {
             }
 
             let currentGroup = { cell: mapping[0], end: 0, start: 0 };
+
             for (let index = 1; index < mapping.length; index++) {
-                if (areCellsEquivalent(mapping[index], currentGroup.cell)) {
+                if (areCellsEquivalent(mapping[index] as LayoutCell, currentGroup.cell as LayoutCell)) {
                     currentGroup.end = index;
                 } else {
-                    groups.push(currentGroup);
+                    groups.push(currentGroup as { cell: LayoutCell | null; end: number; start: number });
                     currentGroup = { cell: mapping[index], end: index, start: index };
                 }
             }
-            groups.push(currentGroup);
+
+            groups.push(currentGroup as { cell: LayoutCell | null; end: number; start: number });
+
             return groups;
         };
 
@@ -161,6 +191,7 @@ export class Table {
         // effective width = sum(columnWidths) + (group.end - group.start) extra for omitted joins.
         const effectiveWidth = (group: { cell: LayoutCell | null; end: number; start: number }): number => {
             const base = this.columnWidths.slice(group.start, group.end + 1).reduce((sum, w) => sum + w, 0);
+
             return base + (group.end - group.start);
         };
 
@@ -252,7 +283,7 @@ export class Table {
                     separatorLine += spanned[0] ? bodyLeft : joinLeft;
 
                     for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
-                        separatorLine += spanned[colIndex] ? " ".repeat(this.columnWidths[colIndex]) : joinBody.repeat(this.columnWidths[colIndex]);
+                        separatorLine += spanned[colIndex] ? " ".repeat(this.columnWidths[colIndex] as number) : joinBody.repeat(this.columnWidths[colIndex] as number);
 
                         if (colIndex < this.columnCount - 1) {
                             const cellBelowLeft = this.layout.cells.find(
@@ -330,12 +361,12 @@ export class Table {
                 const colSpan = Math.min(normalizedCell.colSpan ?? 1, this.columnCount - currentColumnIndex);
 
                 if (colSpan === 1) {
-                    widths[currentColumnIndex] = Math.max(widths[currentColumnIndex], cellWidth);
+                    widths[currentColumnIndex] = Math.max(widths[currentColumnIndex] as number, cellWidth);
                 } else {
                     const borderTotal = colSpan - 1;
                     const eachWidth = Math.ceil((cellWidth - borderTotal) / colSpan);
                     for (let offset = 0; offset < colSpan; offset++) {
-                        widths[currentColumnIndex + offset] = Math.max(widths[currentColumnIndex + offset], eachWidth);
+                        widths[currentColumnIndex + offset] = Math.max(widths[currentColumnIndex + offset] as number, eachWidth);
                     }
                 }
                 currentColumnIndex += colSpan;
@@ -495,10 +526,13 @@ export class Table {
         columnMapping: { cell: LayoutCell | null; isStart: boolean }[],
     ): { cell: LayoutCell | null; end: number; isStart: boolean; start: number }[] {
         const groups: { cell: LayoutCell | null; end: number; isStart: boolean; start: number }[] = [];
-        let currentGroup = { cell: columnMapping[0].cell, end: 0, isStart: columnMapping[0].isStart, start: 0 };
+        const column = columnMapping[0] as { cell: LayoutCell | null; isStart: boolean };
+
+        let currentGroup = { cell: column.cell, end: 0, isStart: column.isStart, start: 0 };
 
         for (let col = 1; col < this.columnCount; col++) {
-            const mappingEntry = columnMapping[col];
+            const mappingEntry = columnMapping[col] as { cell: LayoutCell | null; isStart: boolean };
+
             if (areCellsEquivalent(mappingEntry.cell, currentGroup.cell)) {
                 currentGroup.end = col;
             } else {
@@ -506,6 +540,7 @@ export class Table {
                 currentGroup = { cell: mappingEntry.cell, end: col, isStart: mappingEntry.isStart, start: col };
             }
         }
+
         groups.push(currentGroup);
 
         return groups;
@@ -534,33 +569,17 @@ export class Table {
                     availableWidth -= this.options.style.paddingLeft + this.options.style.paddingRight;
                 }
 
-                return this.processContent(normalizedCell, normalizedCell.content, availableWidth);
+                return processContent(normalizedCell, normalizedCell.content, availableWidth);
             }
 
             return [""];
         });
     }
 
-    private processContent(cell: NormalizedCell, content: string, availableWidth: number): string[] {
-        if (cell.wordWrap && !content.includes(" ")) {
-            return [truncate(content, availableWidth, cell.truncate as Required<TruncateOptions>)];
-        }
-
-        if (cell.wordWrap) {
-            return wordWrap(content, { removeZeroWidthCharacters: true, ...cell.wordWrap, width: availableWidth }).split("\n");
-        }
-
-        if (cell.maxWidth !== undefined && getStringWidth(content) > cell.maxWidth) {
-            return [truncate(content, cell.maxWidth, cell.truncate as Required<TruncateOptions>)];
-        }
-
-        return content.split("\n");
-    }
-
     private padGroupContents(groups: { cell: LayoutCell | null }[], groupContents: string[][], groupWidths: number[], rowHeight: number): string[][] {
         return groupContents.map((lines, index) => {
             const effectiveWidth = groupWidths[index] as number;
-            const groupCell = groups[index].cell;
+            const groupCell = (groups[index] as { cell: LayoutCell | null }).cell;
             const extraLines = rowHeight - lines.length;
             const { bottomPadding, topPadding } = this.calculateVerticalPadding(extraLines, groupCell);
 
@@ -595,16 +614,13 @@ export class Table {
 
     private padContentLines(lines: string[], effectiveWidth: number, cell: LayoutCell | null): string[] {
         return lines.map((line) => {
-            const lineWidth = getStringWidth(line, {
-
-            });
-
             let availableWidth = effectiveWidth;
 
             if (line.trim() !== "" && cell) {
                 availableWidth -= this.options.style.paddingLeft + this.options.style.paddingRight;
             }
 
+            const lineWidth = getStringWidth(line);
             const { leftPadding, rightPadding } = this.calculateHorizontalPadding(availableWidth - lineWidth, cell);
 
             const padLeft = line.trim() !== "" && cell ? " ".repeat(this.options.style.paddingLeft) : "";
@@ -630,12 +646,14 @@ export class Table {
 
     private assembleRowLines(groups: { cell: LayoutCell | null }[], paddedGroupContents: string[][], rowHeight: number): string[] {
         const renderedRowLines: string[] = [];
+
         for (let lineIndex = 0; lineIndex < rowHeight; lineIndex++) {
             let assembledLine = "";
             assembledLine += this.options.style.border.bodyLeft ?? "";
 
             for (let groupIndex = 0; groupIndex < groups.length; groupIndex++) {
                 assembledLine += paddedGroupContents[groupIndex][lineIndex];
+
                 if (groupIndex < groups.length - 1) {
                     assembledLine += areCellsEquivalent(groups[groupIndex].cell, groups[groupIndex + 1].cell)
                         ? " "
