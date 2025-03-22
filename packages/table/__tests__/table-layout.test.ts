@@ -60,17 +60,15 @@ describe("table layout", () => {
                 .addRow([{ colSpan: 2, content: "Span Two" }, "C"])
                 .addRow(["A", "B", "C"]);
 
-            const expected = [
-                "┌─────────────────┐",
-                "│ Span All        │",
-                "├─────────────┬───┤",
-                "│ Span Two    │ C │",
-                "├───────┬─────┼───┤",
-                "│ A     │ B   │ C │",
-                "└───────┴─────┴───┘",
-            ].join("\n");
-
-            expect(table.toString()).toBe(expected);
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌───────────────┐
+              │ Span All      │
+              ├───────────┬───┤
+              │ Span Two  │ C │
+              ├─────┬─────┼───┤
+              │ A   │ B   │ C │
+              └─────┴─────┴───┘"
+            `)
         });
     });
 

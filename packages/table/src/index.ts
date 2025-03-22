@@ -278,14 +278,19 @@ export class Table {
 
                     separatorLine += spanned[0] ? bodyLeft : joinLeft;
 
+                    // eslint-disable-next-line no-plusplus
                     for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
-                        separatorLine += spanned[colIndex]
+                        // eslint-disable-next-line security/detect-object-injection
+                        separatorLine += spanned[colIndex] as boolean
+                            // eslint-disable-next-line security/detect-object-injection
                             ? " ".repeat(this.columnWidths[colIndex] as number)
+                            // eslint-disable-next-line security/detect-object-injection
                             : joinBody.repeat(this.columnWidths[colIndex] as number);
 
                         if (colIndex < this.columnCount - 1) {
                             let joinChar;
 
+                            // eslint-disable-next-line security/detect-object-injection
                             const leftSpanned = spanned[colIndex]; // Boolean flag for left column (might be false if it's the starting column)
                             const rightSpanned = spanned[colIndex + 1]; // Boolean flag for right column (true if it’s a continuation of a spanning cell)
 
