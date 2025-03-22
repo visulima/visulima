@@ -192,6 +192,7 @@ export class Table {
         };
 
         const {
+            bodyJoin,
             bodyLeft,
             bodyRight,
             bottomBody,
@@ -281,11 +282,11 @@ export class Table {
                     // eslint-disable-next-line no-plusplus
                     for (let colIndex = 0; colIndex < this.columnCount; colIndex++) {
                         // eslint-disable-next-line security/detect-object-injection
-                        separatorLine += spanned[colIndex] as boolean
-                            // eslint-disable-next-line security/detect-object-injection
-                            ? " ".repeat(this.columnWidths[colIndex] as number)
-                            // eslint-disable-next-line security/detect-object-injection
-                            : joinBody.repeat(this.columnWidths[colIndex] as number);
+                        separatorLine += (spanned[colIndex] as boolean)
+                            ? // eslint-disable-next-line security/detect-object-injection
+                              " ".repeat(this.columnWidths[colIndex] as number)
+                            : // eslint-disable-next-line security/detect-object-injection
+                              joinBody.repeat(this.columnWidths[colIndex] as number);
 
                         if (colIndex < this.columnCount - 1) {
                             let joinChar;
@@ -307,14 +308,18 @@ export class Table {
                             const cellAboveRight = this.layout.cells.find(
                                 (c) => c.x <= colIndex + 1 && c.x + c.width > colIndex + 1 && c.y <= rowIndex && c.y + c.height > rowIndex,
                             );
-
                             const partOfSameSpan = cellAboveLeft && cellAboveRight && areCellsEquivalent(cellAboveLeft, cellAboveRight);
+                            const aboveSpansBoth = cellAboveLeft && cellAboveRight && areCellsEquivalent(cellAboveLeft, cellAboveRight);
+                            const belowSpansBoth = cellBelowLeft && cellBelowRight && areCellsEquivalent(cellBelowLeft, cellBelowRight);
 
-                            if (cellBelowLeft && cellBelowRight && areCellsEquivalent(cellBelowLeft, cellBelowRight)) {
+                            if (aboveSpansBoth && !belowSpansBoth) {
+                                joinChar = topJoin;
+                            } else if (!aboveSpansBoth && belowSpansBoth) {
+                                joinChar = bottomJoin;
+                            } else if (aboveSpansBoth && belowSpansBoth) {
                                 joinChar = joinBody;
                             } else if (leftSpanned && rightSpanned) {
-                                // If both are spanned and part of the same span (internal to a spanning cell)
-                                joinChar = partOfSameSpan ? topJoin : joinJoin;
+                                joinChar = bodyJoin;
                             } else if (rightSpanned) {
                                 joinChar = joinRight;
                             } else if (leftSpanned) {
