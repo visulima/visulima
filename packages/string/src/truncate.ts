@@ -119,7 +119,7 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
     const { ellipsis = DEFAULT_ELLIPSIS, position = "end", preferTruncationOnSpace = false } = options;
 
     // Calculate or use provided ellipsis width
-    let ellipsisWidth: number | undefined = (options.ellipsisWidth ?? ellipsis === DEFAULT_ELLIPSIS) ? 2 : undefined;
+    let ellipsisWidth: number | undefined = (options.ellipsisWidth ?? ellipsis === DEFAULT_ELLIPSIS) ? 1 : undefined;
 
     if (ellipsisWidth === undefined) {
         ellipsisWidth = getStringTruncatedWidth(ellipsis, {
