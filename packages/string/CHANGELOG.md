@@ -1,3 +1,9 @@
+## @visulima/string [1.0.2](https://github.com/visulima/visulima/compare/@visulima/string@1.0.1...@visulima/string@1.0.2) (2025-03-22)
+
+### Bug Fixes
+
+* changed ellipsis size from 2 to 1, witch was wrong before ([3002cce](https://github.com/visulima/visulima/commit/3002cce3ba4b7702dab60db4bb15b1e1bbe5cf0f))
+
 ## @visulima/string [1.0.1](https://github.com/visulima/visulima/compare/@visulima/string@1.0.0...@visulima/string@1.0.1) (2025-03-21)
 
 ### Bug Fixes
