@@ -92,16 +92,7 @@ export class Table {
         return this;
     }
 
-    /** Creates a horizontal line with the specified border characters. */
-    private readonly createLine = (options: { body: string; left: string; middle: string; right: string }): string => {
-        const { body, left, middle, right } = options;
-        const parts = Array.from(
-            { length: this.columnWidths.length },
-            (_, index) => body.repeat(this.columnWidths[index] as number) + (index < this.columnWidths.length - 1 ? middle : ""),
-        );
-        return left + parts.join("") + right;
-    };
-
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public toString(): string {
         // If borders are disabled, simply join cell contents.
         const borderDisabled = Object.values(this.borderStyle).every((v) => v === "");
@@ -119,7 +110,10 @@ export class Table {
                             const leftPad = " ".repeat(this.options.style.paddingLeft);
                             const rightPad = " ".repeat(this.options.style.paddingRight);
                             const availableWidth = (widths[colIndex] as number) - this.options.style.paddingLeft - this.options.style.paddingRight;
+
+                            // eslint-disable-next-line no-plusplus
                             colIndex++;
+
                             return leftPad + norm.content.padEnd(availableWidth, " ") + rightPad;
                         })
                         .join("");
@@ -130,10 +124,13 @@ export class Table {
         if (!this.isDirty && this.cachedString !== null) {
             return this.cachedString;
         }
+
         if (this.rows.length === 0 && this.headers.length === 0) {
             this.cachedString = "";
+
             return "";
         }
+
         const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
 
         // Build the layout and calculate column widths.
@@ -233,6 +230,7 @@ export class Table {
             });
 
             topBorder += topRight;
+
             outputLines.push(topBorder);
         } else {
             // Otherwise, use the normal createLine method.
@@ -263,7 +261,6 @@ export class Table {
                     rowGroups.forEach((group, index) => {
                         separatorLine += joinBody.repeat(effectiveWidth(group));
                         if (index < rowGroups.length - 1) {
-                            // For header separator, use headerJoin if defined; otherwise, default to joinJoin.
                             separatorLine += joinJoin;
                         }
                     });
@@ -301,14 +298,25 @@ export class Table {
                                 const leftSpanned = spanned[colIndex]; // Boolean flag for left column (might be false if it's the starting column)
                                 const rightSpanned = spanned[colIndex + 1]; // Boolean flag for right column (true if it’s a continuation of a spanning cell)
 
+                                // Check if both columns are part of the same spanning cell in the row above
+                                const cellAboveLeft = this.layout.cells.find(
+                                    (c) => c.x <= colIndex && c.x + c.width > colIndex && c.y <= rowIndex && c.y + c.height > rowIndex,
+                                );
+                                const cellAboveRight = this.layout.cells.find(
+                                    (c) => c.x <= colIndex + 1 && c.x + c.width > colIndex + 1 && c.y <= rowIndex && c.y + c.height > rowIndex,
+                                );
+
+                                const partOfSameSpan = cellAboveLeft && cellAboveRight && areCellsEquivalent(cellAboveLeft, cellAboveRight);
+
                                 if (leftSpanned && rightSpanned) {
-                                    joinChar = topJoin;
+                                    // If both are spanned and part of the same span (internal to a spanning cell)
+                                    joinChar = partOfSameSpan ? topJoin : joinJoin;
                                 } else if (rightSpanned) {
                                     joinChar = joinRight;
                                 } else if (leftSpanned) {
                                     joinChar = joinLeft;
                                 } else {
-                                    joinChar = joinJoin;
+                                    joinChar = partOfSameSpan ? topJoin : joinJoin;
                                 }
                             }
 
@@ -339,6 +347,16 @@ export class Table {
         this.isDirty = false;
         return this.cachedString;
     }
+
+    /** Creates a horizontal line with the specified border characters. */
+    private readonly createLine = (options: { body: string; left: string; middle: string; right: string }): string => {
+        const { body, left, middle, right } = options;
+        const parts = Array.from(
+            { length: this.columnWidths.length },
+            (_, index) => body.repeat(this.columnWidths[index] as number) + (index < this.columnWidths.length - 1 ? middle : ""),
+        );
+        return left + parts.join("") + right;
+    };
 
     private calculateColumnWidths(): number[] {
         if (!this.isDirty && this.cachedColumnWidths) {

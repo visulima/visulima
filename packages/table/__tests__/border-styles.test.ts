@@ -10,32 +10,30 @@ describe("table Border Styles", () => {
         ["Row 2 Cell 1", "Row 2 Cell 2", "Row 2 Cell 3"],
     ];
 
-    const testBorderStyle = (name: string, borderStyle: any) => {
-        it(`renders table with ${name} border style`, () => {
-            expect.assertions(1);
-            const table = createTable({
-                style: {
-                    border: borderStyle,
-                },
-            });
-
-            table.setHeaders(sampleData[0]);
-            table.addRows(...sampleData.slice(1));
-
-            const output = table.toString();
-            expect(output).toMatchSnapshot();
+    // Use it.each to test all border styles
+    it.each([
+        ["DEFAULT", DEFAULT_BORDER],
+        ["MINIMAL", MINIMAL_BORDER],
+        ["DOUBLE", DOUBLE_BORDER],
+        ["ROUNDED", ROUNDED_BORDER],
+        ["DOTS", DOTS_BORDER],
+        ["MARKDOWN", MARKDOWN_BORDER],
+        ["ASCII", ASCII_BORDER],
+        ["NO_BORDER", NO_BORDER],
+    ])('renders table with %s border style', (name, borderStyle) => {
+        expect.assertions(1);
+        const table = createTable({
+            style: {
+                border: borderStyle,
+            },
         });
-    };
 
-    // Test each border style
-    testBorderStyle("DEFAULT", DEFAULT_BORDER);
-    testBorderStyle("MINIMAL", MINIMAL_BORDER);
-    testBorderStyle("DOUBLE", DOUBLE_BORDER);
-    testBorderStyle("ROUNDED", ROUNDED_BORDER);
-    testBorderStyle("DOTS", DOTS_BORDER);
-    testBorderStyle("MARKDOWN", MARKDOWN_BORDER);
-    testBorderStyle("ASCII", ASCII_BORDER);
-    testBorderStyle("NO_BORDER", NO_BORDER);
+        table.setHeaders(sampleData[0]);
+        table.addRows(...sampleData.slice(1));
+
+        const output = table.toString();
+        expect(output).toMatchSnapshot();
+    });
 
     // Test complex scenarios
     it("renders table with spanning cells using DEFAULT border style", () => {

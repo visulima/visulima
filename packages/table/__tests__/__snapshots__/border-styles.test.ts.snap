@@ -106,7 +106,7 @@ exports[`table Border Styles > renders table with spanning cells using DEFAULT b
 │ Spanning Header │ Regular Header │
 ├──────────────────────────────────┤
 │ Spanning Content                 │
-├─────────────────┼────────────────┤
+├─────────────────┬────────────────┤
 │ Regular Cell 1  │ Regular Cell 2 │
 └─────────────────┴────────────────┘"
 `;
