@@ -207,8 +207,8 @@ describe("wordWrap", () => {
     it("should handle non-SGR/non-hyperlink ANSI escapes", () => {
         expect.assertions(2);
 
-        expect(wordWrap("Hello, \u001B[1D World!", { width: 8 })).toEqualAnsi("Hello,\n\u001b[1D\nWorld!");
-        expect(wordWrap("Hello, \u001B[1D World!", { trim: false, width: 8 })).toEqualAnsi("Hello, \n\u001b[1D \nWorld!");
+        expect(wordWrap("Hello, \u001B[1D World!", { width: 8 })).toEqualAnsi("Hello,\n\u001B[1D\nWorld!");
+        expect(wordWrap("Hello, \u001B[1D World!", { trim: false, width: 8 })).toEqualAnsi("Hello, \n\u001B[1D \nWorld!");
     });
 
     // Newline normalization
