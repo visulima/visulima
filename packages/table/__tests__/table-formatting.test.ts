@@ -1,7 +1,7 @@
-import { blue,red } from "@visulima/colorize";
+import { blue, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import { createTable,Table } from "../src";
+import { createTable, Table } from "../src";
 
 describe("table formatting", () => {
     describe("aNSI colored text", () => {

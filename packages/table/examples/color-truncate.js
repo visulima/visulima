@@ -6,11 +6,7 @@ console.log("\n");
 const table = createTable({ maxWidth: 40 });
 
 // Add rows with colored text that will be truncated
-table.addRow([
-    "Position",
-    "Colored Text",
-    { content: "Truncation" }
-]);
+table.addRow(["Position", "Colored Text", { content: "Truncation" }]);
 
 // Test end truncation
 table.addRow([
@@ -20,10 +16,10 @@ table.addRow([
         maxWidth: 20,
         truncate: {
             position: "end",
-            space: true
-        }
+            space: true,
+        },
     },
-    "Colors preserved"
+    "Colors preserved",
 ]);
 
 // Test middle truncation
@@ -34,10 +30,10 @@ table.addRow([
         maxWidth: 15,
         truncate: {
             position: "middle",
-            space: true
-        }
+            space: true,
+        },
     },
-    "Colors preserved"
+    "Colors preserved",
 ]);
 
 // Test start truncation
@@ -48,10 +44,10 @@ table.addRow([
         maxWidth: 15,
         truncate: {
             position: "start",
-            space: true
-        }
+            space: true,
+        },
     },
-    "Colors preserved"
+    "Colors preserved",
 ]);
 
 console.log(table.toString());

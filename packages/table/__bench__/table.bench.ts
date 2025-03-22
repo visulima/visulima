@@ -191,9 +191,7 @@ describe("Table Rendering with spanning cells", () => {
         const table = createTable();
 
         // Add header with colspan
-        table.setHeaders([
-            { content: "Span All", colSpan: 3 },
-        ]);
+        table.setHeaders([{ content: "Span All", colSpan: 3 }]);
 
         // Add rows with various spans
         table.addRows(
@@ -252,14 +250,8 @@ describe("Table Rendering with truncation", () => {
 
     bench("@visulima/table", () => {
         const table = createTable();
-        table.setHeaders([
-            { content: longText, maxWidth: 20 },
-            { content: "Normal" },
-        ]);
-        table.addRow([
-            { content: longText, maxWidth: 20 },
-            "Short"
-        ]);
+        table.setHeaders([{ content: longText, maxWidth: 20 }, { content: "Normal" }]);
+        table.addRow([{ content: longText, maxWidth: 20 }, "Short"]);
         table.toString();
     });
 
@@ -283,10 +275,7 @@ describe("Table Rendering with truncation", () => {
             [longText, "Short"],
         ];
         table(data, {
-            columns: [
-                { width: 20, truncate: 20 },
-                { width: 10 },
-            ],
+            columns: [{ width: 20, truncate: 20 }, { width: 10 }],
         });
     });
 });

@@ -91,9 +91,9 @@ const table3 = new Table({
             topBody: "─",
             topJoin: "┬",
             topLeft: "┌",
-            topRight: "┐"
-        }
-    }
+            topRight: "┐",
+        },
+    },
 });
 
 table3
@@ -136,7 +136,13 @@ table4
     ])
     .addRow([
         { content: magenta("Authentication"), hAlign: "left" },
-        { content: cyan("This is a very long description that will be automatically truncated to fit within the cell width while preserving ANSI colors and maintaining proper alignment."), hAlign: "left", maxWidth: 50 },
+        {
+            content: cyan(
+                "This is a very long description that will be automatically truncated to fit within the cell width while preserving ANSI colors and maintaining proper alignment.",
+            ),
+            hAlign: "left",
+            maxWidth: 50,
+        },
         { content: green("Active"), hAlign: "center" },
     ])
     .addRow([
@@ -172,9 +178,9 @@ const coverageTable = new Table({
             topBody: "─",
             topJoin: "┬",
             topLeft: "┌",
-            topRight: "┐"
-        }
-    }
+            topRight: "┐",
+        },
+    },
 });
 
 coverageTable

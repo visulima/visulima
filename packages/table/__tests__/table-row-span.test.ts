@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
+
 import { createTable } from "../src";
 
-describe("Table Row Span Tests", () => {
+describe("table Row Span Tests", () => {
     it("should correctly render a table with row spans", () => {
+        expect.assertions(9);
+
         const table = createTable();
         table
             .addRow([{ content: "Span 3", rowSpan: 3 }, "B1", { content: "Span 2", rowSpan: 2 }])
@@ -17,7 +20,7 @@ describe("Table Row Span Tests", () => {
             "│        │ B2 │        │",
             "│        ├────┼────────┤",
             "│        │ B3 │ C3     │",
-            "└────────┴────┴────────┘"
+            "└────────┴────┴────────┘",
         ].join("\n");
 
         expect(output).toBe(expectedOutput);
@@ -35,6 +38,8 @@ describe("Table Row Span Tests", () => {
     });
 
     it("should handle multiple row spans in different columns", () => {
+        expect.assertions(1);
+
         const table = createTable();
         table
             .addRow([{ content: "A1", rowSpan: 2 }, "B1", { content: "C1", rowSpan: 3 }])
@@ -49,13 +54,15 @@ describe("Table Row Span Tests", () => {
             "│    │ B2 │    │",
             "├────┼────┤    │",
             "│ A3 │ B3 │    │",
-            "└────┴────┴────┘"
+            "└────┴────┴────┘",
         ].join("\n");
 
         expect(output).toBe(expectedOutput);
     });
 
     it("should handle row spans with varying column widths", () => {
+        expect.assertions(1);
+
         const table = createTable();
         table
             .addRow([{ content: "Long Span", rowSpan: 2 }, "Short"])
@@ -70,13 +77,15 @@ describe("Table Row Span Tests", () => {
             "│           │ B2    │",
             "├───────────┼───────┤",
             "│ A3        │ B3    │",
-            "└───────────┴───────┘"
+            "└───────────┴───────┘",
         ].join("\n");
 
         expect(output).toBe(expectedOutput);
     });
 
     it("should handle row spans that reach the bottom of the table", () => {
+        expect.assertions(1);
+
         const table = createTable();
         table
             .addRow(["A1", { content: "Span to Bottom", rowSpan: 3 }])
@@ -91,7 +100,7 @@ describe("Table Row Span Tests", () => {
             "│ A2 │                │",
             "├────┤                │",
             "│ A3 │                │",
-            "└────┴────────────────┘"
+            "└────┴────────────────┘",
         ].join("\n");
 
         expect(output).toBe(expectedOutput);

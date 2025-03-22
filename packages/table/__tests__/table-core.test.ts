@@ -266,7 +266,7 @@ describe("table core functionality", () => {
             table.addRow([
                 { content: 12345678901, maxWidth: 5 },
                 { content: "Mixed 🌟 Text", maxWidth: 6 },
-                { content: "\u001B[31mColored\u001B[0m Text", maxWidth: 7 }
+                { content: "\u001B[31mColored\u001B[0m Text", maxWidth: 7 },
             ]);
 
             const output = table.toString();
@@ -312,7 +312,7 @@ describe("table core functionality", () => {
             table.addRow([
                 { content: "Left", hAlign: "left", maxWidth: 6 },
                 { content: "Center", hAlign: "center", maxWidth: 6 },
-                { content: "Right", hAlign: "right", maxWidth: 6 }
+                { content: "Right", hAlign: "right", maxWidth: 6 },
             ]);
 
             const output = table.toString();

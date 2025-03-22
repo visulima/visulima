@@ -23,11 +23,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/table artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## @visulima/string
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -54,14 +57,15 @@ Repository: git+https://github.com/visulima/visulima.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 >
->
->
 > # Licenses of bundled dependencies
+>
 > The published @visulima/string artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled dependencies:
+>
 > ## emoji-regex-xs
+>
 > License: MIT
 > By: Steven Levithan
 > Repository: git+https://github.com/slevithan/emoji-regex-xs.git
@@ -88,9 +92,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
-> ---------------------------------------
+> ---
 >
 > ## get-east-asian-width
+>
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/get-east-asian-width

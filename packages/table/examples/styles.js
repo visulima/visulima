@@ -87,7 +87,6 @@ const wideTable = createTable({
 
 console.log(wideTable.toString());
 
-
 console.log("\nMixed Alignment Example:\n");
 const mixedTable = createTable({
     padding: 2,

@@ -354,7 +354,7 @@ CJKtable.addRows(
     ["foobar", { content: "中文测试", maxWidth: 9 }, "baz"],
     ["foobar", { content: "日本語テスト", maxWidth: 9 }, "baz"],
     ["foobar", { content: "한국어테스트", maxWidth: 9 }, "baz"],
-    ["Test", "こんにちは", "🌟🌟🌟🌟🌟"]
+    ["Test", "こんにちは", "🌟🌟🌟🌟🌟"],
 );
 
 console.log(CJKtable.toString());

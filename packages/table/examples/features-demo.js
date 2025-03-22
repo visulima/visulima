@@ -27,17 +27,17 @@ const styledTable = createTable({
             joinBody: "─",
             joinLeft: "├",
             joinRight: "┤",
-            joinJoin: "┼"
+            joinJoin: "┼",
         },
         paddingLeft: 1,
-        paddingRight: 1
-    }
+        paddingRight: 1,
+    },
 });
 
 styledTable.addRow([
     { content: "Product", style: { align: "center" } },
     { content: "Price", style: { align: "right" } },
-    { content: "Stock", style: { align: "center" } }
+    { content: "Stock", style: { align: "center" } },
 ]);
 styledTable.addRow(["Coffee Maker", "$99.99", "15"]);
 styledTable.addRow(["Toaster", "$49.99", "25"]);
@@ -50,15 +50,15 @@ wrapTable.addRow([
     "Short",
     {
         content: "This is a very long content that will be wrapped",
-        wordWrap: true
+        wordWrap: true,
     },
     {
         content: "This will be truncated",
         truncate: {
             position: "end",
-            preferTruncationOnSpace: true
-        }
-    }
+            preferTruncationOnSpace: true,
+        },
+    },
 ]);
 console.log(wrapTable.toString());
 
@@ -77,17 +77,17 @@ multilineTable.addRow([
     {
         content: "Title\nSubtitle",
         style: { paddingLeft: 1, paddingRight: 1 },
-        vAlign: "top"
+        vAlign: "top",
     },
     {
         content: "Description\nwith\nmultiple lines",
         style: { paddingLeft: 1, paddingRight: 1 },
-        vAlign: "middle"
+        vAlign: "middle",
     },
     {
         content: "Footer\nNote",
         style: { paddingLeft: 1, paddingRight: 1 },
-        vAlign: "bottom"
-    }
+        vAlign: "bottom",
+    },
 ]);
 console.log(multilineTable.toString());

@@ -19,11 +19,7 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
-            table.addRows(
-                ["A1", "B1", "C1"],
-                ["A2", "B2", "C2"],
-                ["A3", "B3", "C3"],
-            );
+            table.addRows(["A1", "B1", "C1"], ["A2", "B2", "C2"], ["A3", "B3", "C3"]);
 
             const expected = [
                 "┌────┬────┬────┐",

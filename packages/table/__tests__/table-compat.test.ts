@@ -35,10 +35,7 @@ describe("table CLI Compatibility Tests", () => {
                 },
             });
 
-            table.addRows(
-                ["v0.1", "Testing something cool"],
-                ["v0.1", "Testing something cool"],
-            );
+            table.addRows(["v0.1", "Testing something cool"], ["v0.1", "Testing something cool"]);
 
             const expected = [
                 "┌────┬──────────────────────┐",
@@ -65,10 +62,7 @@ describe("table CLI Compatibility Tests", () => {
                 { content: "Header 2", hAlign: "left" },
             ]);
 
-            table.addRows(
-                ["Header 3", "v0.1", "Testing something cool"],
-                ["Header 4", "v0.1", "Testing something cool"],
-            );
+            table.addRows(["Header 3", "v0.1", "Testing something cool"], ["Header 4", "v0.1", "Testing something cool"]);
 
             const expected = [
                 "┌────────┬────────┬──────────────────────┐",

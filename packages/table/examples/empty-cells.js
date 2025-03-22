@@ -15,7 +15,6 @@ const emptyTable2 = createTable()
 
 console.log(emptyTable2.toString());
 
-
 console.log("Empty cells and null values 2:");
 const emptyTable3 = createTable()
     .setHeaders(["", null, undefined])

@@ -100,7 +100,9 @@ describe("table truncation", () => {
                 },
             ]);
 
-            expect(table.toString()).toContain("Hello world>");
+            const output = table.toString();
+
+            expect(output).toContain("Hello world>");
         });
     });
 });
