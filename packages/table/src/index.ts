@@ -92,7 +92,6 @@ export class Table {
         return this;
     }
 
-    // Use an arrow function for createLine so that "this" is bound.
     /** Creates a horizontal line with the specified border characters. */
     private readonly createLine = (options: { body: string; left: string; middle: string; right: string }): string => {
         const { body, left, middle, right } = options;
@@ -104,11 +103,13 @@ export class Table {
     };
 
     public toString(): string {
-        // ─── If borders are disabled, simply join cell contents.
+        // If borders are disabled, simply join cell contents.
         const borderDisabled = Object.values(this.borderStyle).every((v) => v === "");
+
         if (borderDisabled) {
             const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
             const widths = this.calculateColumnWidths();
+
             return allRows
                 .map((row) => {
                     let colIndex = 0;
@@ -135,7 +136,7 @@ export class Table {
         }
         const allRows = this.options.showHeader ? [...this.headers, ...this.rows] : this.rows;
 
-        // ─── Build the layout and calculate column widths.
+        // Build the layout and calculate column widths.
         this.layout = createTableLayout(allRows);
         // Sort layout cells by row (y) then by column (x)
         this.layout.cells.sort((a, b) => a.y - b.y || a.x - b.x);
@@ -143,7 +144,7 @@ export class Table {
 
         const outputLines: string[] = [];
 
-        // ─── Helper: groupRowForDisplay ───
+        // Groups cells by column for a given row
         // For a given row index, loop over logical columns 0..(this.columnCount - 1)
         // and find the covering layout cell. For each column we “prefer” a cell that
         // starts exactly at that row (i.e. a “main” cell) and, if none is found, use any cell covering it.
@@ -186,9 +187,7 @@ export class Table {
             return groups;
         };
 
-        // ─── Helper: effectiveWidth ───
-        // For a group covering columns from group.start to group.end,
-        // effective width = sum(columnWidths) + (group.end - group.start) extra for omitted joins.
+        // Calculate effective width for a group of cells spanning multiple columns
         const effectiveWidth = (group: { cell: LayoutCell | null; end: number; start: number }): number => {
             const base = this.columnWidths.slice(group.start, group.end + 1).reduce((sum, w) => sum + w, 0);
 
@@ -212,7 +211,7 @@ export class Table {
             topRight,
         } = this.borderStyle;
 
-        // ─── Top Border ───
+        // Render top border
         // First, get the grouping for row 0 (if headers are used, row 0 is the header row).
         const groups = groupRowForDisplay(0);
         // If the number of groups is less than the total column count, then some cells are merged.
@@ -247,7 +246,7 @@ export class Table {
             );
         }
 
-        // ─── Render Rows and Separators ───
+        // Render rows and separators
         for (let rowIndex = 0; rowIndex < allRows.length; rowIndex++) {
             const renderedRowLines = this.renderRow(rowIndex);
 
@@ -324,7 +323,7 @@ export class Table {
             }
         }
 
-        // ─── Bottom Border ───
+        // Render bottom border
         let bottomBorder = bottomLeft;
         const bottomGroups = groupRowForDisplay(allRows.length - 1);
         bottomGroups.forEach((group, index) => {
