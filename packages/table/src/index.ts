@@ -2,7 +2,7 @@ import type { TruncateOptions } from "@visulima/string";
 import { getStringWidth, truncate, wordWrap } from "@visulima/string";
 import type { RequiredDeep } from "type-fest";
 
-import { createTableLayout } from "./layout";
+import createTableLayout from "./layout";
 import { DEFAULT_BORDER } from "./style";
 import type { Cell as CellType, CellOptions, LayoutCell, TableConstructorOptions, TableLayout } from "./types";
 import { areCellsEquivalent, computeRowLogicalWidth, fillRowToWidth, getRealCell } from "./utils";
@@ -524,24 +524,63 @@ export class Table {
     }
 
     private findCoveringCell(cells: LayoutCell[], columnIndex: number, rowIndex: number): LayoutCell | null {
-        let chosenCell: LayoutCell | null = null;
-        let maxY = -1;
-
+        // We need a very specific order of precedence to handle complex nested spans correctly
+        // 1. Cells that start exactly at this position (x,y) are highest priority
+        // 2. Real cells (not span cells) that start on this row
+        // 3. Real cells (not span cells) from any row
+        // 4. Placeholder/span cells, prioritizing ones from most recent rows
+        
+        // First pass: Find cells that start exactly at this position
         for (const layoutCell of cells) {
-            if (this.cellCoversPosition(layoutCell, columnIndex, rowIndex)) {
-                if (layoutCell.y === rowIndex) {
-                    return layoutCell;
-                }
-                if (layoutCell.y > maxY) {
-                    maxY = layoutCell.y;
-                    chosenCell = layoutCell;
+            if (layoutCell.x === columnIndex && layoutCell.y === rowIndex) {
+                return layoutCell; // Exact position match has highest priority
+            }
+        }
+        
+        // Second pass: Find real cells (not span cells) that start on this row
+        for (const layoutCell of cells) {
+            if (this.cellCoversPosition(layoutCell, columnIndex, rowIndex) && 
+                !layoutCell.isSpanCell && 
+                layoutCell.y === rowIndex) {
+                return layoutCell;
+            }
+        }
+        
+        // Third pass: Find any real cells (not span cells)
+        let highestRealCell: LayoutCell | null = null;
+        let maxRealY = -1;
+        
+        for (const layoutCell of cells) {
+            if (this.cellCoversPosition(layoutCell, columnIndex, rowIndex) && !layoutCell.isSpanCell) {
+                // For multiple real cells, prefer the one with highest row (most recent)
+                if (layoutCell.y > maxRealY) {
+                    maxRealY = layoutCell.y;
+                    highestRealCell = layoutCell;
                 }
             }
         }
-
-        return chosenCell;
+        
+        if (highestRealCell) {
+            return highestRealCell;
+        }
+        
+        // Fourth pass: Fall back to placeholder/span cells
+        let highestSpanCell: LayoutCell | null = null;
+        let maxSpanY = -1;
+        
+        for (const layoutCell of cells) {
+            if (this.cellCoversPosition(layoutCell, columnIndex, rowIndex)) {
+                if (layoutCell.y > maxSpanY) {
+                    maxSpanY = layoutCell.y;
+                    highestSpanCell = layoutCell;
+                }
+            }
+        }
+        
+        return highestSpanCell;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     private cellCoversPosition(cell: LayoutCell, columnIndex: number, rowIndex: number): boolean {
         return cell.x <= columnIndex && cell.x + cell.width > columnIndex && cell.y <= rowIndex && cell.y + cell.height > rowIndex;
     }

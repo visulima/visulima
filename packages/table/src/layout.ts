@@ -1,8 +1,9 @@
 import type { Cell as CellType, LayoutCell, TableLayout } from "./types";
 
 /** Creates a layout cell from a given cell configuration. */
-function createLayoutCell(cell: CellType, column: number, row: number): LayoutCell {
+const createLayoutCell = (cell: CellType, column: number, row: number): LayoutCell => {
     const normalizedCell = typeof cell === "object" && cell !== null ? cell : { content: String(cell) };
+
     return {
         ...normalizedCell,
         content: String(normalizedCell.content ?? ""),
@@ -17,7 +18,8 @@ function createLayoutCell(cell: CellType, column: number, row: number): LayoutCe
  * Creates a list of layout cells from a 2D array of rows (CellType[][]).
  * Also inserts "span cells" (placeholders) for the covered columns/rows.
  */
-export function createTableLayout(rows: CellType[][]): TableLayout {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const createTableLayout = (rows: CellType[][]): TableLayout => {
     // Step 1: figure out the total columns by max sum of colSpans in any row
     let maxCols = 0;
     for (const row of rows) {
@@ -37,6 +39,19 @@ export function createTableLayout(rows: CellType[][]): TableLayout {
     // Step 2: build out the cells
     const layoutCells: LayoutCell[] = [];
     let rowIndex = 0;
+    
+    // Create a grid to track occupied positions
+    const occupiedPositions: Record<string, LayoutCell> = {};
+    
+    // Helper function to check if a position is occupied
+    const isPositionOccupied = (x: number, y: number): boolean => {
+        return occupiedPositions[`${x},${y}`] !== undefined;
+    };
+    
+    // Helper function to mark a position as occupied
+    const markPositionOccupied = (x: number, y: number, cell: LayoutCell): void => {
+        occupiedPositions[`${x},${y}`] = cell;
+    };
 
     for (const row of rows) {
         // We track where we place each cell. colPointer moves left to right.
@@ -47,19 +62,36 @@ export function createTableLayout(rows: CellType[][]): TableLayout {
                 colPointer += 1;
                 continue;
             }
-            // Find the first free column for this row
-            // (Simple approach: assume no collisions because the user input is correct.)
+            
+            // Skip over any positions already occupied by spans from earlier rows
+            while (colPointer < maxCols && isPositionOccupied(colPointer, rowIndex)) {
+                colPointer += 1;
+            }
+            
+            // If we reached the end of the row, break out
+            if (colPointer >= maxCols) {
+                break;
+            }
+            
+            // Create a layout cell for this position
             const layoutCell = createLayoutCell(cellValue, colPointer, rowIndex);
             layoutCells.push(layoutCell);
+            
+            // Mark all positions covered by this cell as occupied
+            for (let ry = rowIndex; ry < rowIndex + layoutCell.height; ry++) {
+                for (let rx = colPointer; rx < colPointer + layoutCell.width; rx++) {
+                    markPositionOccupied(rx, ry, layoutCell);
+                }
+            }
 
             // Insert placeholder cells for all covered positions except the top-left
             for (let ry = rowIndex; ry < rowIndex + layoutCell.height; ry++) {
                 for (let rx = colPointer; rx < colPointer + layoutCell.width; rx++) {
                     if (rx === colPointer && ry === rowIndex) {
-                        // the real cell
+                        // the real cell - already added
                         continue;
                     }
-                    // placeholder
+                    // placeholder cell
                     layoutCells.push({
                         content: "",
                         height: 1,
@@ -91,3 +123,5 @@ export function createTableLayout(rows: CellType[][]): TableLayout {
         width: maxCols,
     };
 }
+
+export default createTableLayout;
