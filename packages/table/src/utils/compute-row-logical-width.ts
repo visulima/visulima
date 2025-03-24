@@ -1,7 +1,7 @@
 import type { Cell as CellType } from "../types";
 
 /** Computes the logical width of a row (the sum of colSpans, defaulting to 1 per cell). */
-export const computeRowLogicalWidth = (row: CellType[]): number => 
+const computeRowLogicalWidth = (row: CellType[]): number =>
     // eslint-disable-next-line unicorn/no-array-reduce
      row.reduce((total: number, cell: CellType) => {
         if (cell === null) {
@@ -17,3 +17,5 @@ export const computeRowLogicalWidth = (row: CellType[]): number =>
         return total + 1;
     }, 0)
 ;
+
+export default computeRowLogicalWidth;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Cell as CellType } from "../../../src/types";
-import { fillRowToWidth } from "../../../src/utils/fill-row-to-width";
+import fillRowToWidth from "../../../src/utils/fill-row-to-width";
 
 describe("fillRowToWidth", () => {
     it("should not modify row if current width equals target width", () => {

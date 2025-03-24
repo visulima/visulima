@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { LayoutCell } from "../../../src/types";
-import { areCellsEquivalent } from "../../../src/utils/are-cells-equivalent";
+import areCellsEquivalent from "../../../src/utils/are-cells-equivalent";
 
 describe("areCellsEquivalent", () => {
     it("should return true for identical cells", () => {

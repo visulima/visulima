@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Cell as CellType } from "../../../src/types";
-import { computeRowLogicalWidth } from "../../../src/utils/compute-row-logical-width";
+import computeRowLogicalWidth from "../../../src/utils/compute-row-logical-width";
 
 describe("computeRowLogicalWidth", () => {
     it("should handle empty row", () => {

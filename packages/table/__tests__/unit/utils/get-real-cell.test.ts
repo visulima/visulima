@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { LayoutCell } from "../../../src/types";
-import { getRealCell } from "../../../src/utils/get-real-cell";
+import getRealCell from "../../../src/utils/get-real-cell";
 
 describe("getRealCell", () => {
     it("should return null for null input", () => {

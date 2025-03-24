@@ -1,8 +1,8 @@
 import type { Cell as CellType } from "../types";
-import { computeRowLogicalWidth } from "./compute-row-logical-width";
+import computeRowLogicalWidth from "./compute-row-logical-width";
 
 /** Pads a row with null cells so that its logical width equals targetWidth. */
-export const fillRowToWidth = (row: CellType[], targetWidth: number): CellType[] => {
+const fillRowToWidth = (row: CellType[], targetWidth: number): CellType[] => {
     const currentWidth = computeRowLogicalWidth(row);
 
     if (currentWidth < targetWidth) {
@@ -11,3 +11,5 @@ export const fillRowToWidth = (row: CellType[], targetWidth: number): CellType[]
 
     return row;
 };
+
+export default fillRowToWidth;
