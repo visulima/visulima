@@ -1,5 +1,5 @@
-import { createTable } from "../dist/index.mjs";
-import { DOUBLE_BORDER, ROUNDED_BORDER, DEFAULT_BORDER } from "../dist/style.mjs";
+import { createTable } from "../dist";
+import { DEFAULT_BORDER,DOUBLE_BORDER, ROUNDED_BORDER } from "../dist/style.mjs";
 
 const OSC = "\u001B]";
 const BEL = "\u0007";
@@ -62,10 +62,10 @@ console.log("\n");
 // Example 4: Minimal style with right alignment for numbers
 console.log("Minimal style with right alignment for numbers:");
 const minimalTable = createTable({
+    padding: 2,
     style: {
         border: DEFAULT_BORDER,
     },
-    padding: 2,
 })
     .setHeaders(["Character", "Ability Score", "Modifier"])
     .addRow([{ content: "Strength" }, { content: "18", hAlign: "right" }, { content: "+4", hAlign: "right" }])
@@ -224,15 +224,15 @@ console.log(onlyHeaderTable.toString());
 console.log("\nTable with multiple column spans:");
 const colspanTable = createTable();
 
-colspanTable.setHeaders([{ content: "Span All", colSpan: 3 }]);
+colspanTable.setHeaders([{ colSpan: 3, content: "Span All" }]);
 
-colspanTable.addRow([{ content: "Span Two", colSpan: 2 }, "C"]);
+colspanTable.addRow([{ colSpan: 2, content: "Span Two" }, "C"]);
 
-colspanTable.addRow(["A", { content: "Span Two", colSpan: 2 }]);
+colspanTable.addRow(["A", { colSpan: 2, content: "Span Two" }]);
 
 colspanTable.addRow(["A", "B", "C"]);
 
-colspanTable.addRow([{ content: "Span All", colSpan: 3 }]);
+colspanTable.addRow([{ colSpan: 3, content: "Span All" }]);
 
 console.log(colspanTable.toString());
 
@@ -273,11 +273,11 @@ console.log(coloredTable.toString());
 
 console.log("\nTable with word wrap:");
 const wordWrapTable = createTable({
-    wordWrap: true,
     style: {
         paddingLeft: 1,
         paddingRight: 1,
     },
+    wordWrap: true,
 });
 
 wordWrapTable.setHeaders(["Description", "Status", "Notes"]);
@@ -313,20 +313,20 @@ console.log(mixedTable.toString());
 
 console.log("\nTable with word-wrapped colored text:");
 const coloredWordWrapTable = createTable({
-    wordWrap: true,
     style: {
         paddingLeft: 1,
         paddingRight: 1,
     },
+    wordWrap: true,
 });
 
 coloredWordWrapTable.setHeaders(["Red Text", "Green Text", "Mixed Colors"]);
 coloredWordWrapTable.addRow([
-    { content: "\u001b[31mThis is a very long line of red text that should be wrapped properly across multiple lines while maintaining the color\u001b[0m" },
-    { content: "\u001b[32mThis is a very long line of green text that should be wrapped properly across multiple lines while maintaining the color\u001b[0m" },
+    { content: "\u001B[31mThis is a very long line of red text that should be wrapped properly across multiple lines while maintaining the color\u001B[0m" },
+    { content: "\u001B[32mThis is a very long line of green text that should be wrapped properly across multiple lines while maintaining the color\u001B[0m" },
     {
         content:
-            "\u001b[31mRed text\u001b[0m and \u001b[32mgreen text\u001b[0m mixed together in a very long line that should wrap properly while maintaining both colors",
+            "\u001B[31mRed text\u001B[0m and \u001B[32mgreen text\u001B[0m mixed together in a very long line that should wrap properly while maintaining both colors",
     },
 ]);
 
@@ -334,8 +334,8 @@ console.log(coloredWordWrapTable.toString());
 
 console.log("\nTable with Emoji and word wrap:");
 const emojiTable = createTable({
-    wordWrap: true,
     maxWidth: 15,
+    wordWrap: true,
 });
 
 emojiTable.setHeaders(["Table"]);

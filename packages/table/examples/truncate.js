@@ -1,4 +1,4 @@
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 
 console.log("\n");
 // Test different truncation positions
@@ -44,7 +44,7 @@ const test8 = createTable({ maxWidth: 5, style: { paddingLeft: 0, paddingRight: 
 test8.addRow([
     "",
     "   ",
-    { content: "This is a long string", truncateOptions: { position: "end", space: true, truncationCharacter: ">", preferTruncationOnSpace: true } },
+    { content: "This is a long string", truncateOptions: { position: "end", preferTruncationOnSpace: true, space: true, truncationCharacter: ">" } },
 ]);
 console.log("\nAll options together:");
 console.log(test8.toString());

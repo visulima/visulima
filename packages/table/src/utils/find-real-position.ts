@@ -1,9 +1,9 @@
-import ansiRegex from "ansi-regex";
 import { getStringWidth } from "@visulima/string";
+import ansiRegex from "ansi-regex";
 
 interface AnsiRange {
-    start: number;
     end: number;
+    start: number;
 }
 
 /** Finds the real (non‑ANSI) character index in text corresponding to the visible position. */
@@ -25,8 +25,8 @@ export const findRealPosition = (text: string, visiblePosition: number): number 
     ansiPattern.lastIndex = 0;
     while ((match = ansiPattern.exec(text)) !== null) {
         ansiRanges.push({
-            start: match.index,
             end: match.index + match[0].length,
+            start: match.index,
         });
     }
 
@@ -56,7 +56,8 @@ export const findRealPosition = (text: string, visiblePosition: number): number 
                     break;
                 }
             }
-            if (!isAnsi) break;
+            if (!isAnsi) 
+break;
         }
 
         realPositions[cleanIndex] = realIndex;
@@ -69,13 +70,12 @@ export const findRealPosition = (text: string, visiblePosition: number): number 
     let targetCleanIndex = 0;
 
     // For each character in the clean text
-    for (let i = 0; i < cleanText.length; i++) {
-        const char = cleanText[i];
+    for (const [index, char] of cleanText.entries()) {
         const width = getStringWidth(char);
 
         // If we've found our target position
         if (visiblePos === visiblePosition) {
-            targetCleanIndex = i;
+            targetCleanIndex = index;
             break;
         }
 
@@ -83,7 +83,7 @@ export const findRealPosition = (text: string, visiblePosition: number): number 
         if (width === 2) {
             // If we're at the second cell of a wide character
             if (visiblePos + 1 === visiblePosition) {
-                targetCleanIndex = i + 1;
+                targetCleanIndex = index + 1;
                 break;
             }
             visiblePos += 2;
@@ -93,7 +93,7 @@ export const findRealPosition = (text: string, visiblePosition: number): number 
 
         // If we've reached the target position after incrementing
         if (visiblePos === visiblePosition) {
-            targetCleanIndex = i + 1;
+            targetCleanIndex = index + 1;
             break;
         }
     }
@@ -116,7 +116,8 @@ export const findRealPosition = (text: string, visiblePosition: number): number 
                 break;
             }
         }
-        if (!isAnsi) break;
+        if (!isAnsi) 
+break;
         finalPos++;
     }
 

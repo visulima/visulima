@@ -1,11 +1,11 @@
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 import { DOUBLE_BORDER, ROUNDED_BORDER } from "../dist/style.mjs";
 
 // Example 1: Right-aligned numbers with heavy border
 console.log("Example 1: Right-aligned numbers with heavy border");
 const salesTable = createTable({
-    border: DOUBLE_BORDER,
     align: "right",
+    border: DOUBLE_BORDER,
     padding: 2,
 })
     .setHeaders([{ content: "Product", hAlign: "left" }, "Units Sold", "Revenue", { content: "Growth", hAlign: "center" }])
@@ -40,24 +40,24 @@ console.log("\n");
 // Example 3: Centered content with custom border
 console.log("Example 3: Centered content with custom border");
 const customTable = createTable({
+    align: "center",
     border: {
-        topBody: "═",
-        topJoin: "╦",
-        topLeft: "╔",
-        topRight: "╗",
+        bodyJoin: "║",
+        bodyLeft: "║",
+        bodyRight: "║",
         bottomBody: "═",
         bottomJoin: "╩",
         bottomLeft: "╚",
         bottomRight: "╝",
-        bodyLeft: "║",
-        bodyRight: "║",
-        bodyJoin: "║",
         joinBody: "═",
+        joinJoin: "╬",
         joinLeft: "╠",
         joinRight: "╣",
-        joinJoin: "╬",
+        topBody: "═",
+        topJoin: "╦",
+        topLeft: "╔",
+        topRight: "╗",
     },
-    align: "center",
     padding: 3,
 })
     .setHeaders(["Category", "Q1", "Q2", "Q3", "Q4"])
@@ -71,9 +71,9 @@ console.log("\n");
 // Example 4: Wide table with truncation
 console.log("Example 4: Wide table with truncation");
 const wideTable = createTable({
-    truncate: true,
     maxWidth: 30,
     padding: 1,
+    truncate: true,
 })
     .setHeaders([
         { content: "Project", hAlign: "left" },

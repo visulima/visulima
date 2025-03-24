@@ -1,30 +1,31 @@
-import { createTable } from "../dist/index.mjs";
-import { red, green, blue, yellow, magenta } from "@visulima/colorize";
+import { blue, green, magenta,red, yellow } from "@visulima/colorize";
+
+import { createTable } from "../dist";
 
 console.log("\nColorized border example:");
 const table = createTable({
     style: {
         border: {
-            topBody: green("─"),
-            topJoin: green("┬"),
-            topLeft: green("┌"),
-            topRight: green("┐"),
-
+            bodyJoin: blue("│"),
+            bodyLeft: blue("│"),
+            bodyRight: blue("│"),
             bottomBody: red("─"),
+
             bottomJoin: red("┴"),
             bottomLeft: red("└"),
             bottomRight: red("┘"),
-
-            bodyLeft: blue("│"),
-            bodyRight: blue("│"),
-            bodyJoin: blue("│"),
+            headerJoin: yellow("─"),
 
             joinBody: magenta("─"),
-            joinLeft: magenta("├"),
-            joinRight: magenta("┤"),
             joinJoin: magenta("┼"),
+            joinLeft: magenta("├"),
 
-            headerJoin: yellow("─"),
+            joinRight: magenta("┤"),
+            topBody: green("─"),
+            topJoin: green("┬"),
+            topLeft: green("┌"),
+
+            topRight: green("┐"),
         },
     },
 });

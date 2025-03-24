@@ -1,4 +1,4 @@
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 
 /**
  * This example demonstrates a complex table layout with:
@@ -33,9 +33,9 @@ import { createTable } from "../dist/index.mjs";
  */
 
 console.log("\nExample with complex layout:");
-let table = createTable();
+const table = createTable();
 table.addRows(
-    [{ content: "TOP", colSpan: 9, hAlign: "center" }],
+    [{ colSpan: 9, content: "TOP", hAlign: "center" }],
     [
         { content: "TL", rowSpan: 4, vAlign: "middle" },
         { content: "A1", rowSpan: 3 },
@@ -47,29 +47,29 @@ table.addRows(
         { content: "G1", rowSpan: 3 },
         { content: "TR", rowSpan: 4, vAlign: "middle" },
     ],
-    [{ rowSpan: 2, content: "B2" }, "C2", { rowSpan: 2, colSpan: 2, content: "E2" }],
+    [{ content: "B2", rowSpan: 2 }, "C2", { colSpan: 2, content: "E2", rowSpan: 2 }],
     ["C3"],
-    [{ content: "A2", colSpan: 7, hAlign: "center" }],
-    [{ content: "CLEAR", colSpan: 9, hAlign: "center" }],
+    [{ colSpan: 7, content: "A2", hAlign: "center" }],
+    [{ colSpan: 9, content: "CLEAR", hAlign: "center" }],
     [
         { content: "BL", rowSpan: 4, vAlign: "middle" },
-        { content: "A3", colSpan: 7, hAlign: "center" },
+        { colSpan: 7, content: "A3", hAlign: "center" },
         { content: "BR", rowSpan: 4, vAlign: "middle" },
     ],
     [
-        { content: "A4", colSpan: 3, hAlign: "center" },
+        { colSpan: 3, content: "A4", hAlign: "center" },
         { content: "D2", rowSpan: 2, vAlign: "middle" },
-        { content: "E3", colSpan: 2, hAlign: "center" },
+        { colSpan: 2, content: "E3", hAlign: "center" },
         { content: "G2", rowSpan: 3, vAlign: "middle" },
     ],
     [
         { content: "A5", rowSpan: 2, vAlign: "middle" },
-        { content: "B3", colSpan: 2, hAlign: "center" },
+        { colSpan: 2, content: "B3", hAlign: "center" },
         { content: "E4", rowSpan: 2, vAlign: "middle" },
         { content: "F3", rowSpan: 2, vAlign: "middle" },
     ],
-    ["B4", { content: "C4", colSpan: 2, hAlign: "center" }],
-    [{ content: "BOTTOM", colSpan: 9, hAlign: "center" }],
+    ["B4", { colSpan: 2, content: "C4", hAlign: "center" }],
+    [{ colSpan: 9, content: "BOTTOM", hAlign: "center" }],
 );
 
 console.log(table.toString());

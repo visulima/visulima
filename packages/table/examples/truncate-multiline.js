@@ -1,4 +1,4 @@
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 
 console.log("\nExample 4: Table with truncated content and multi-line text\n");
 

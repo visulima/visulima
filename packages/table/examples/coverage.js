@@ -1,5 +1,6 @@
-import { Table } from "../dist/index.mjs";
-import { red, green, yellow, blue, magenta, cyan, gray } from "@visulima/colorize";
+import { blue, cyan, gray,green, magenta, red, yellow } from "@visulima/colorize";
+
+import { Table } from "../dist";
 
 // Example 1: Basic table with colors and alignment
 console.log("Example 1: Basic table with colors and alignment");
@@ -40,11 +41,11 @@ const table2 = new Table({
 table2
     .setHeaders([
         { content: "Component", hAlign: "center" },
-        { content: "Tests", hAlign: "center", colSpan: 2 },
+        { colSpan: 2, content: "Tests", hAlign: "center" },
         { content: "Coverage", hAlign: "center" },
     ])
     .addRow([
-        { content: "Frontend", rowSpan: 2, hAlign: "center" },
+        { content: "Frontend", hAlign: "center", rowSpan: 2 },
         { content: "Unit", hAlign: "left" },
         { content: green("156/156"), hAlign: "right" },
         { content: "100%", hAlign: "right" },
@@ -56,7 +57,7 @@ table2
         { content: "92%", hAlign: "right" },
     ])
     .addRow([
-        { content: "Backend", rowSpan: 2, hAlign: "center" },
+        { content: "Backend", hAlign: "center", rowSpan: 2 },
         { content: "Unit", hAlign: "left" },
         { content: green("312/312"), hAlign: "right" },
         { content: "100%", hAlign: "right" },

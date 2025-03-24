@@ -1,11 +1,9 @@
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 
 console.log("");
 
 const table = createTable({
-    drawHorizontalLine: (lineIndex, rowCount) => {
-        return lineIndex === 0 || lineIndex === rowCount;
-    },
+    drawHorizontalLine: (lineIndex, rowCount) => lineIndex === 0 || lineIndex === rowCount,
 });
 
 table

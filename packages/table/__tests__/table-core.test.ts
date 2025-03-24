@@ -245,7 +245,7 @@ describe("table core functionality", () => {
 
             const output = table.toString();
 
-            expect(output).toStrictEqual("┌────┬──────┬──────┐\n│Test│こん…│🌟🌟…│\n└────┴──────┴──────┘");
+            expect(output).toBe("┌────┬──────┬──────┐\n│Test│こん…│🌟🌟…│\n└────┴──────┴──────┘");
         });
 
         it("should handle maxWidth with ANSI escape codes", () => {
@@ -256,7 +256,7 @@ describe("table core functionality", () => {
 
             const output = table.toString();
 
-            expect(output).toStrictEqual("┌────┬─────┬─────┐\n│Test│\u001b[31mThis\u001b[0m…│\u001b[32mGreen\u001b[0m│\n└────┴─────┴─────┘");
+            expect(output).toBe("┌────┬─────┬─────┐\n│Test│\u001B[31mThis\u001B[0m…│\u001B[32mGreen\u001B[0m│\n└────┴─────┴─────┘");
         });
 
         it("should handle maxWidth with mixed content types", () => {
@@ -264,14 +264,14 @@ describe("table core functionality", () => {
 
             const table = new Table({ maxWidth: 8, style: { paddingLeft: 0, paddingRight: 0 } });
             table.addRow([
-                { content: 12345678901, maxWidth: 5 },
+                { content: 12_345_678_901, maxWidth: 5 },
                 { content: "Mixed 🌟 Text", maxWidth: 6 },
                 { content: "\u001B[31mColored\u001B[0m Text", maxWidth: 7 },
             ]);
 
             const output = table.toString();
 
-            expect(output).toStrictEqual("┌─────┬──────┬───────┐\n│1234…│Mixed…│\u001b[31mColore\u001b[0m…│\n└─────┴──────┴───────┘");
+            expect(output).toBe("┌─────┬──────┬───────┐\n│1234…│Mixed…│\u001B[31mColore\u001B[0m…│\n└─────┴──────┴───────┘");
         });
 
         it("should handle maxWidth with empty and whitespace content", () => {

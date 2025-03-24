@@ -1,6 +1,5 @@
-import { createTable } from "../dist/index.mjs";
-
-import { DEFAULT_BORDER, ROUNDED_BORDER, DOUBLE_BORDER, MINIMAL_BORDER, ASCII_BORDER, MARKDOWN_BORDER, DOTS_BORDER, NO_BORDER } from "../dist/style.mjs";
+import { createTable } from "../dist";
+import { ASCII_BORDER, DEFAULT_BORDER, DOTS_BORDER, DOUBLE_BORDER, MARKDOWN_BORDER, MINIMAL_BORDER, NO_BORDER,ROUNDED_BORDER } from "../dist/style.mjs";
 
 const data = {
     headers: ["Name", "Age", "City"],
@@ -12,18 +11,18 @@ const data = {
 };
 
 const styles = [
-    { name: "Default Style", border: DEFAULT_BORDER },
-    { name: "Rounded Border", border: ROUNDED_BORDER },
-    { name: "Double Border", border: DOUBLE_BORDER },
-    { name: "Minimal Border", border: MINIMAL_BORDER },
-    { name: "ASCII Border", border: ASCII_BORDER },
-    { name: "Markdown Border", border: MARKDOWN_BORDER },
-    { name: "Dots Border", border: DOTS_BORDER },
-    { name: "No Border", border: NO_BORDER },
+    { border: DEFAULT_BORDER, name: "Default Style" },
+    { border: ROUNDED_BORDER, name: "Rounded Border" },
+    { border: DOUBLE_BORDER, name: "Double Border" },
+    { border: MINIMAL_BORDER, name: "Minimal Border" },
+    { border: ASCII_BORDER, name: "ASCII Border" },
+    { border: MARKDOWN_BORDER, name: "Markdown Border" },
+    { border: DOTS_BORDER, name: "Dots Border" },
+    { border: NO_BORDER, name: "No Border" },
 ];
 
 // Display all border styles
-styles.forEach(({ name, border }) => {
+styles.forEach(({ border, name }) => {
     console.log(`\n${name}:`);
     const table = createTable({ border }).setHeaders(data.headers).addRows(data.rows);
 

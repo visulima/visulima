@@ -1,4 +1,4 @@
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 
 // Basic table creation
 console.log("Basic Table:");
@@ -13,21 +13,21 @@ console.log("\nStyled Table:");
 const styledTable = createTable({
     style: {
         border: {
-            topBody: "─",
-            topJoin: "┬",
-            topLeft: "┌",
-            topRight: "┐",
+            bodyJoin: "│",
+            bodyLeft: "│",
+            bodyRight: "│",
             bottomBody: "─",
             bottomJoin: "┴",
             bottomLeft: "└",
             bottomRight: "┘",
-            bodyLeft: "│",
-            bodyRight: "│",
-            bodyJoin: "│",
             joinBody: "─",
+            joinJoin: "┼",
             joinLeft: "├",
             joinRight: "┤",
-            joinJoin: "┼",
+            topBody: "─",
+            topJoin: "┬",
+            topLeft: "┌",
+            topRight: "┐",
         },
         paddingLeft: 1,
         paddingRight: 1,
@@ -65,7 +65,7 @@ console.log(wrapTable.toString());
 // Table with spanning and custom styling
 console.log("\nSpanning and Custom Styling:");
 const spanTable = createTable();
-spanTable.addRow([{ content: "Quarterly Report", colSpan: 3, style: { align: "center" } }]);
+spanTable.addRow([{ colSpan: 3, content: "Quarterly Report", style: { align: "center" } }]);
 spanTable.addRow(["Q1", "Q2", "Q3"]);
 spanTable.addRow(["$10,000", "$15,000", "$20,000"]);
 console.log(spanTable.toString());

@@ -12,7 +12,7 @@ const createLayoutCell = (cell: CellType, column: number, row: number): LayoutCe
         x: column,
         y: row,
     };
-}
+};
 
 /**
  * Creates a list of layout cells from a 2D array of rows (CellType[][]).
@@ -39,15 +39,13 @@ const createTableLayout = (rows: CellType[][]): TableLayout => {
     // Step 2: build out the cells
     const layoutCells: LayoutCell[] = [];
     let rowIndex = 0;
-    
+
     // Create a grid to track occupied positions
     const occupiedPositions: Record<string, LayoutCell> = {};
-    
+
     // Helper function to check if a position is occupied
-    const isPositionOccupied = (x: number, y: number): boolean => {
-        return occupiedPositions[`${x},${y}`] !== undefined;
-    };
-    
+    const isPositionOccupied = (x: number, y: number): boolean => occupiedPositions[`${x},${y}`] !== undefined;
+
     // Helper function to mark a position as occupied
     const markPositionOccupied = (x: number, y: number, cell: LayoutCell): void => {
         occupiedPositions[`${x},${y}`] = cell;
@@ -62,21 +60,21 @@ const createTableLayout = (rows: CellType[][]): TableLayout => {
                 colPointer += 1;
                 continue;
             }
-            
+
             // Skip over any positions already occupied by spans from earlier rows
             while (colPointer < maxCols && isPositionOccupied(colPointer, rowIndex)) {
                 colPointer += 1;
             }
-            
+
             // If we reached the end of the row, break out
             if (colPointer >= maxCols) {
                 break;
             }
-            
+
             // Create a layout cell for this position
             const layoutCell = createLayoutCell(cellValue, colPointer, rowIndex);
             layoutCells.push(layoutCell);
-            
+
             // Mark all positions covered by this cell as occupied
             for (let ry = rowIndex; ry < rowIndex + layoutCell.height; ry++) {
                 for (let rx = colPointer; rx < colPointer + layoutCell.width; rx++) {
@@ -122,6 +120,6 @@ const createTableLayout = (rows: CellType[][]): TableLayout => {
         height: maxRow,
         width: maxCols,
     };
-}
+};
 
 export default createTableLayout;

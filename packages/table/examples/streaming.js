@@ -1,4 +1,4 @@
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 import { ROUNDED_BORDER } from "../dist/style.mjs";
 
 // Helper function to simulate streaming data
@@ -13,8 +13,8 @@ const simulateDataStream = async (onData, interval = 1000, maxItems = 5) => {
             const data = {
                 id: count,
                 process: processes[Math.floor(Math.random() * processes.length)],
+                progress: `${Math.floor(Math.random() * 100)}%`,
                 status: statuses[Math.floor(Math.random() * statuses.length)],
-                progress: Math.floor(Math.random() * 100) + "%",
                 timestamp: new Date().toLocaleTimeString(),
             };
 
@@ -46,8 +46,8 @@ console.log("\nStreaming Data Example:\n");
 
 // Clear the console and move cursor up
 const clearAndMoveCursor = (rows) => {
-    process.stdout.write("\x1B[" + rows + "A");
-    process.stdout.write("\x1B[0J");
+    process.stdout.write(`\u001B[${rows}A`);
+    process.stdout.write("\u001B[0J");
 };
 
 // Keep track of rows for cursor movement
@@ -72,14 +72,18 @@ await simulateDataStream(
         // Add color based on status
         const status = (() => {
             switch (data.status) {
-                case "Running":
-                    return "\x1b[33m" + data.status + "\x1b[0m"; // Yellow
-                case "Completed":
-                    return "\x1b[32m" + data.status + "\x1b[0m"; // Green
-                case "Failed":
-                    return "\x1b[31m" + data.status + "\x1b[0m"; // Red
-                default:
-                    return "\x1b[90m" + data.status + "\x1b[0m"; // Gray
+                case "Running": {
+                    return `\u001B[33m${data.status}\u001B[0m`;
+                } // Yellow
+                case "Completed": {
+                    return `\u001B[32m${data.status}\u001B[0m`;
+                } // Green
+                case "Failed": {
+                    return `\u001B[31m${data.status}\u001B[0m`;
+                } // Red
+                default: {
+                    return `\u001B[90m${data.status}\u001B[0m`;
+                } // Gray
             }
         })();
 
