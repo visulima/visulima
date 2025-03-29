@@ -87,7 +87,7 @@
         "@arethetypeswrong/cli": "^0.17.4",
         "@babel/core": "^7.26.10",
         "@rushstack/eslint-plugin-security": "^0.10.0",
-        "@types/node": "18.19.71",
+        "@types/node": "18.19.83",
         "@visulima/packem": "1.19.1",
         "@vitest/coverage-v8": "^3.0.8",
         "@vitest/ui": "^3.0.8",
