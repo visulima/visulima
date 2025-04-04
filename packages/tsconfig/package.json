@@ -105,7 +105,7 @@
         "@vitest/ui": "^3.0.8",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
-        "esbuild": "0.25.0",
+        "esbuild": "0.25.2",
         "eslint": "8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -122,7 +122,7 @@
         "type-fest": "^4.37.0",
         "typedoc": "0.27.9",
         "typedoc-plugin-markdown": "4.4.2",
-        "typedoc-plugin-rename-defaults": "0.7.2",
+        "typedoc-plugin-rename-defaults": "0.7.3",
         "typescript": "5.8.2",
         "vitest": "^3.0.8"
     },
