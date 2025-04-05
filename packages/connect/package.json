@@ -99,7 +99,7 @@
         "@babel/core": "^7.26.10",
         "@rushstack/eslint-plugin-security": "^0.10.0",
         "@types/http-errors": "^2.0.4",
-        "@types/node": "18.19.71",
+        "@types/node": "18.19.86",
         "@visulima/nextra-theme-docs": "4.0.26",
         "@visulima/packem": "1.19.1",
         "@vitest/coverage-v8": "^3.0.8",
