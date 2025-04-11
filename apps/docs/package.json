@@ -32,7 +32,7 @@
         "@visulima/nextra-theme-docs": "4.0.26",
         "clsx": "^2.1.1",
         "fathom-client": "^3.7.2",
-        "framer-motion": "^12.5.0",
+        "framer-motion": "^12.6.3",
         "fs-extra": "^11.3.0",
         "lucide-react": "^0.479.0",
         "next": "^15.2.1",
