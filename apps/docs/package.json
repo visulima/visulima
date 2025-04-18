@@ -32,7 +32,7 @@
         "@visulima/nextra-theme-docs": "4.0.26",
         "clsx": "^2.1.1",
         "fathom-client": "^3.7.2",
-        "framer-motion": "^12.5.0",
+        "framer-motion": "^12.7.3",
         "fs-extra": "^11.3.0",
         "lucide-react": "^0.479.0",
         "next": "^15.2.1",
@@ -46,7 +46,7 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@arthurgeron/eslint-plugin-react-usememo": "^2.4.4",
+        "@arthurgeron/eslint-plugin-react-usememo": "^2.5.0",
         "@axe-core/react": "^4.10.1",
         "@babel/core": "^7.26.10",
         "@babel/eslint-parser": "^7.26.10",

@@ -121,7 +121,7 @@
         "tempy": "^3.1.0",
         "type-fest": "^4.37.0",
         "typedoc": "0.27.9",
-        "typedoc-plugin-markdown": "4.4.2",
+        "typedoc-plugin-markdown": "4.6.2",
         "typedoc-plugin-rename-defaults": "0.7.2",
         "typescript": "5.8.2",
         "vitest": "^3.0.8"
