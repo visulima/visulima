@@ -1,3 +1,9 @@
+## @visulima/string [1.0.3](https://github.com/visulima/visulima/compare/@visulima/string@1.0.2...@visulima/string@1.0.3) (2025-04-29)
+
+### Bug Fixes
+
+* enhance string width calculations and handling of ANSI sequences ([#497](https://github.com/visulima/visulima/issues/497)) ([fb650f7](https://github.com/visulima/visulima/commit/fb650f7169d7e9a7aa79123282ff7f4ff5c6693c))
+
 ## @visulima/string [1.0.2](https://github.com/visulima/visulima/compare/@visulima/string@1.0.1...@visulima/string@1.0.2) (2025-03-22)
 
 ### Bug Fixes
