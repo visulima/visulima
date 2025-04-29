@@ -54,6 +54,36 @@ for (let index = 0; index < 128; index++) {
 }
 
 /**
+ * Internal helper: Detects if a character code corresponds to an uppercase ASCII letter.
+ * Uses a precomputed lookup table for performance.
+ *
+ * @param code - The character code (0-127).
+ * @returns 1 if uppercase ASCII, 0 otherwise.
+ */
+// @ts-expect-error - Internal helper, type safety handled by usage
+const isUpper = (code: number): number => isUpperCode[code];
+
+/**
+ * Internal helper: Detects if a character code corresponds to a lowercase ASCII letter.
+ * Uses a precomputed lookup table for performance.
+ *
+ * @param code - The character code (0-127).
+ * @returns 1 if lowercase ASCII, 0 otherwise.
+ */
+// @ts-expect-error - Internal helper, type safety handled by usage
+const isLower = (code: number): number => isLowerCode[code];
+
+/**
+ * Internal helper: Detects if a character code corresponds to an ASCII digit.
+ * Uses a precomputed lookup table for performance.
+ *
+ * @param code - The character code (0-127).
+ * @returns 1 if ASCII digit, 0 otherwise.
+ */
+// @ts-expect-error - Internal helper, type safety handled by usage
+const isDigit = (code: number): number => isDigitCode[code];
+
+/**
  * A shared function to handle script transitions for various locale-specific splitting
  *
  * @param s Input string to process
@@ -174,6 +204,14 @@ const handleScriptTransitions = (
     return result.length > 0 ? result : [s];
 };
 
+/**
+ * Internal helper: Splits a string by camelCase/PascalCase conventions using fast ASCII checks.
+ * Optimized for strings primarily using ASCII characters. Handles known acronyms.
+ *
+ * @param s - The string to split.
+ * @param knownAcronyms - A set of known acronyms to preserve.
+ * @returns An array of split segments.
+ */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): string[] => {
     if (s.length === 0) {
@@ -212,15 +250,15 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
         }
 
         // eslint-disable-next-line security/detect-object-injection
-        const previousIsUpper = previousCode && previousCode < 128 && isUpperCode[previousCode];
+        const previousIsUpper = previousCode && previousCode < 128 && isUpper(previousCode);
         // eslint-disable-next-line security/detect-object-injection
-        const currentIsUpper = currentCode && currentCode < 128 && isUpperCode[currentCode];
+        const currentIsUpper = currentCode && currentCode < 128 && isUpper(currentCode);
         // eslint-disable-next-line security/detect-object-injection
-        const previousIsLower = previousCode && previousCode < 128 && isLowerCode[previousCode];
+        const previousIsLower = previousCode && previousCode < 128 && isLower(previousCode);
         // eslint-disable-next-line security/detect-object-injection
-        const previousIsDigit = previousCode && previousCode < 128 && isDigitCode[previousCode];
+        const previousIsDigit = previousCode && previousCode < 128 && isDigit(previousCode);
         // eslint-disable-next-line security/detect-object-injection
-        const currentIsDigit = currentCode && currentCode < 128 && isDigitCode[currentCode];
+        const currentIsDigit = currentCode && currentCode < 128 && isDigit(currentCode);
 
         // Lower-to-Upper transition: [a-z] -> [A-Z]
         if (previousIsLower && currentIsUpper) {
@@ -247,9 +285,9 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
             if (index + 1 < width) {
                 const nextCode = s.codePointAt(index + 1);
                 // eslint-disable-next-line security/detect-object-injection
-                isNextUpper = (nextCode && nextCode < 128 && isUpperCode[nextCode]) as boolean;
+                isNextUpper = (nextCode && nextCode < 128 && isUpper(nextCode)) as boolean;
                 // eslint-disable-next-line security/detect-object-injection
-                isNextDigit = (nextCode && nextCode < 128 && isDigitCode[nextCode]) as boolean;
+                isNextDigit = (nextCode && nextCode < 128 && isDigit(nextCode)) as boolean;
             }
 
             // Pattern: letter + single digit + uppercase letter (like R2D or C3P)
@@ -265,7 +303,7 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
         if (index + 1 < width) {
             const nextCode = s.codePointAt(index + 1);
             // eslint-disable-next-line security/detect-object-injection
-            const nextIsLower = nextCode && nextCode < 128 && isLowerCode[nextCode];
+            const nextIsLower = nextCode && nextCode < 128 && isLower(nextCode);
 
             if (previousIsUpper && currentIsUpper && nextIsLower) {
                 const candidate = s.slice(start, index + 1);
@@ -288,16 +326,15 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
 };
 
 /**
- * Splits a string segment using locale‑aware camel‑case rules.
- * Additionally, if both adjacent characters are non‑Latin (i.e. not A–Z or 0–9),
- * it does not split them.
+ * Internal helper: Splits a string by camelCase/PascalCase conventions using locale-aware checks.
+ * Slower than the fast version but correctly handles non-ASCII characters and locale-specific casing.
+ * Handles known acronyms.
  *
- * @param s The input segment.
- * @param locale The locale to use.
- * @param knownAcronyms A Set of known acronyms.
- * @returns Array of tokens.
+ * @param s - The string to split.
+ * @param locale - The locale to use for case conversion.
+ * @param knownAcronyms - A set of known acronyms to preserve.
+ * @returns An array of split segments.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<string>): string[] => {
     if (s.length === 0) {
         return [];
@@ -839,9 +876,13 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 };
 
 /**
- * Processes a segment that may contain ANSI escape sequences and/or emoji.
- * Splits on ANSI if active; then, if emoji are active, splits on emoji boundaries;
- * otherwise applies camel-case splitting.
+ * Internal helper: Pre-processes text by splitting ANSI codes and emoji sequences,
+ * then applies locale-specific camel case splitting to the remaining text segments.
+ *
+ * @param text - The input string, potentially containing ANSI and emoji.
+ * @param locale - Optional locale for case splitting.
+ * @param knownAcronyms - Set of known acronyms.
+ * @returns An array of split segments, including preserved ANSI/emoji sequences.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const processTextWithAnsiEmoji = (text: string, locale: NodeLocale | undefined, knownAcronyms: Set<string>): string[] => {
@@ -878,6 +919,7 @@ const processTextWithAnsiEmoji = (text: string, locale: NodeLocale | undefined, 
     return result;
 };
 
+/** Options for the `splitByCase` function. */
 export interface SplitOptions extends LocaleOptions {
     /** Whether to handle ANSI escape sequences. (default: false) */
     handleAnsi?: boolean;
@@ -896,49 +938,26 @@ export interface SplitOptions extends LocaleOptions {
 }
 
 /**
- * Splits a string into an array based on case transitions, script transitions, and separators.
+ * Splits a string into segments based on various criteria including case changes,
+ * separators, Unicode scripts, ANSI codes, and emojis.
  *
- * Supports:
- * 1. Case Transitions:
- *    - camelCase → ["camel", "Case"]
- *    - PascalCase → ["Pascal", "Case"]
- *    - Consecutive uppercase with common acronyms → "XMLHttpRequest" → ["XML", "Http", "Request"]
- *    - Numbers → "Query123String" → ["Query", "123", "String"]
+ * This is the core splitting logic used by various case conversion functions.
  *
- * 2. Script/Writing System Transitions:
- *    - Latin/Japanese:
- *      - Hiragana/Katakana: "ひらがなカタカナ" → ["ひらがな", "カタカナ"]
- *      - Hiragana/Latin: "ひらがなText" → ["ひらがな", "Text"]
- *      - Katakana/Latin: "カタカナText" → ["カタカナ", "Text"]
- *    - Latin/Korean: "한국어Text" → ["한국어", "Text"]
- *    - Latin/Cyrillic: "русскийText" → ["русский", "Text"]
- *    - Latin/Greek: "ελληνικάText" → ["ελληνικά", "Text"]
- *
- * 3. Separators:
- *    - Handles multiple consecutive separators: "__FOO__BAR__" → ["FOO", "BAR"]
- *    - Dots: "foo.bar" → ["foo", "bar"]
- *    - Slashes: "foo/bar" → ["foo", "bar"]
- *    - Hyphens: "foo-bar" → ["foo", "bar"]
- *    - Underscores: "foo_bar" → ["foo", "bar"]
- *
- * @param input - The string to split
- * @param options - Optional configuration object
- * @param options.locale - The locale to use for script-aware splitting (e.g., "ja", "ko", "zh")
- * @param options.acronyms - Additional set of known acronyms to preserve beyond common ones
- * @param options.handleAnsi - Whether to handle ANSI escape sequences. (default: false)
- * @param options.handleEmoji - Whether to handle emoji sequences. (default: false)
- * @param options.normalize - Whether to normalize case (convert all-upper tokens not in knownAcronyms to title case). (default: false)
- * @param options.separators - Overwrite default separators to split on
- * @param options.stripAnsi - Whether to strip ANSI escape sequences. (default: false)
- * @param options.stripEmoji - Whether to strip emoji sequences. (default: false)
- * @returns An array of string segments
+ * @template T - The specific literal type of the input string, if known.
+ * @param input - The string to split.
+ * @param options - Configuration options for splitting behavior.
+ * @returns An array of string segments.
  *
  * @example
- *   splitByCase("XMLHttpRequest") // → ["XML", "Http", "Request"]
- *   splitByCase("ひらがなカタカナABC", { locale: "ja" }) // → ["ひらがな", "カタカナ", "ABC"]
- *   splitByCase("__FOO__BAR__") // → ["FOO", "BAR"]
+ * ```typescript
+ * splitByCase("fooBarBaz") // => ["foo", "Bar", "Baz"]
+ * splitByCase("foo_bar-baz") // => ["foo", "bar", "baz"]
+ * splitByCase("HTMLElement") // => ["HTML", "Element"]
+ * splitByCase("HTMLElement", { knownAcronyms: ["HTML"] }) // => ["HTML", "Element"]
+ * splitByCase("\u001B[31mhello\u001B[0mWorld", { handleAnsi: true }) // => ["\u001B[31m", "hello", "\u001B[0m", "World"]
+ * splitByCase("hello🌍world", { handleEmoji: true }) // => ["hello", "🌍", "world"]
+ * ```
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export const splitByCase = <T extends string = string>(input: T, options: SplitOptions = {}): SplitByCase<T> => {
     if (!input || typeof input !== "string") {
         return [] as unknown as SplitByCase<T>;

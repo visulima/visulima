@@ -27,7 +27,13 @@ const extend = <T, S extends object>(target: T, source: S): S & T => {
 };
 
 /**
- * Optimized version of internalOutdentArray that processes strings more efficiently
+ * Internal helper to remove indentation from an array of strings (from template literal parts).
+ * Handles indentation level detection and normalization based on options.
+ *
+ * @param strings - Array of string parts from a template literal.
+ * @param firstInterpolatedValueSetsIndentationLevel - Flag indicating special indentation handling.
+ * @param options - Outdent options.
+ * @returns Array of strings with indentation removed.
  */
 const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedValueSetsIndentationLevel: boolean, options: Options): string[] => {
     // Skip processing for empty arrays
@@ -94,7 +100,13 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
     return outdentedStrings;
 };
 
-// Optimized string concatenation
+/**
+ * Internal helper to efficiently concatenate alternating strings and values.
+ *
+ * @param strings - Array of string parts.
+ * @param values - Array of interpolated values.
+ * @returns The concatenated string.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const concatStringsAndValues = (strings: ReadonlyArray<string>, values: ReadonlyArray<any>): string => {
     const chunks: string[] = Array.from({ length: strings.length + values.length });
@@ -118,89 +130,57 @@ const concatStringsAndValues = (strings: ReadonlyArray<string>, values: Readonly
     return chunks.join("");
 };
 
+/** Type guard to check if a value is a TemplateStringsArray. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isTemplateStringsArray = (v: any): v is TemplateStringsArray => has(v, "raw") && has(v, "length");
 
-/**
- * A single shared WeakMap cache for template literals.
- * Using WeakMap allows cached templates to be garbage collected when they're no longer referenced.
- *
- * Note: We avoid caching templates with specific newline options to ensure correct results.
- */
+// A single shared WeakMap cache for processed template literals.
 const templateCache = new WeakMap<TemplateStringsArray, string[]>();
 
 /**
- * Creates a new instance of the outdent function with the specified options.
+ * Creates an outdent function instance with specific configuration options.
+ * This allows for customizing behavior like newline normalization and caching.
  *
- * @param options Configuration options for the outdent function
- * @returns A new outdent function instance with the specified configuration
- *
- * @example
- * // Create a default outdent function
- * const dedent = outdent();
- *
- * // Create an outdent function with custom options
- * const customDedent = outdent({
- *   trimLeadingNewline: false,
- *   cache: true
- * });
- *
- * // Use the outdent function with template literals
- * const text = dedent`
- *   This text will have its indentation removed
- *   while preserving relative indentation.
- * `;
+ * @param options - The configuration options for the outdent instance.
+ * @returns An Outdent function tailored to the provided options.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const createInstance = (options: Options): Outdent => {
-    /**
-     * Cache configuration
-     */
-    // Determine if caching is enabled (default is true)
     const enableCache = options.cache !== false;
-
-    // Use provided cache store or fall back to global template cache
     const cache = enableCache ? (options.cacheStore ?? templateCache) : null;
-
-    // Create a flag to indicate special newline handling
-    // We disable caching for templates with special newline options to ensure correct output
     const hasNewlineOption = options.newline !== undefined;
+
+    // Define the actual outdent function returned by the factory
+    // It handles both template literal calls and option-setting calls.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function outdent(stringsOrOptions: TemplateStringsArray, ...values: any[]): string;
     function outdent(stringsOrOptions: Options): Outdent;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,func-style
     function outdent(stringsOrOptions: Options | TemplateStringsArray, ...values: any[]): Outdent | string {
+        // Call signature: outdent`template literal`
         if (isTemplateStringsArray(stringsOrOptions)) {
             const strings = stringsOrOptions;
             const valuesLength = values.length;
 
-            // Fast path for empty template literals
             if (strings.length === 1 && strings[0] === "") {
                 return "";
             }
 
-            // Fast path for no interpolated values
+            // Optimization: No interpolated values
             if (valuesLength === 0) {
-                // Check cache if enabled and no special newline options are set
                 if (enableCache && cache && !hasNewlineOption) {
                     const cached = cache.get(strings);
                     if (cached) {
-                        return cached[0] as string; // Return the cached result
+                        return cached[0] as string;
                     }
                 }
-
-                // Process the string
                 const result = internalOutdentArray(strings, false, options);
-
-                // Cache the result if caching is enabled
                 if (enableCache && cache) {
                     cache.set(strings, result);
                 }
-
                 return result[0] as string;
             }
 
-            // Check for the special case where first value is outdent
+            // Special case: indentation level set by the first interpolated value (if it's also outdent)
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
             const firstValueIsOutdent = values[0] === outdent || values[0] === defaultOutdent;
             const firstInterpolatedValueSetsIndentationLevel =
@@ -208,64 +188,73 @@ const createInstance = (options: Options): Outdent => {
                 RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE.test(strings[0] as string) &&
                 RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY.test(strings[1] as string);
 
-            let renderedArray;
-
-            // Try to get from cache if enabled and no special newline options are set
+            let renderedArray: string[] | undefined;
             if (enableCache && cache && !hasNewlineOption) {
                 renderedArray = cache.get(strings);
             }
 
-            // If not found in cache, process the strings
             if (!renderedArray) {
                 renderedArray = internalOutdentArray(strings, firstInterpolatedValueSetsIndentationLevel, options);
-
-                // Cache the result if enabled
                 if (enableCache && cache) {
                     cache.set(strings, renderedArray);
                 }
             }
 
-            // Concatenate string literals with interpolated values
             return concatStringsAndValues(renderedArray, firstInterpolatedValueSetsIndentationLevel ? values.slice(1) : values);
         }
 
-        // Create a new instance with merged options
+        // Call signature: outdent(options)
+        // Create and return a new instance with merged options
         return createInstance(extend(extend({}, options), stringsOrOptions));
     }
 
-    // Add optimized string method to the outdent function
+    // Attach the .string method to the outdent function instance
     return extend(outdent, {
         string(string_: string): string {
-            // Fast path for empty strings
             if (string_ === "" || !string_) {
                 return "";
             }
-
             return internalOutdentArray([string_], false, options)[0] as string;
         },
     });
 };
 
+// Create the default outdent instance with default options
 const defaultOutdent: Outdent = createInstance({
     trimLeadingNewline: true,
     trimTrailingNewline: true,
+    newline: null,
+    cache: true, // Enable caching by default
 });
 
 export const outdent = defaultOutdent;
 
+/**
+ * Represents the outdent function, which can be called as a template tag
+ * or as a function to create a new instance with specific options.
+ * It also includes a `.string()` method for processing regular strings.
+ */
 export interface Outdent {
     /**
      * Remove indentation from a template literal.
+     * Tag function for template literals.
+     * @param strings - The static string parts of the template literal.
+     * @param values - The interpolated values.
+     * @returns The processed string with indentation removed.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (strings: TemplateStringsArray, ...values: any[]): string;
     /**
      * Create and return a new Outdent instance with the given options.
+     * @param options - Configuration options for the new instance.
+     * @returns A new Outdent function instance.
      */
     (options: Options): Outdent;
 
     /**
      * Remove indentation from a string
+     * @param string_ - The raw string to process.
+     * @returns The processed string with indentation removed.
      */
     string: (string_: string) => string;
 }
