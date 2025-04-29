@@ -61,6 +61,7 @@ for (let index = 0; index < 128; index++) {
  * @returns 1 if uppercase ASCII, 0 otherwise.
  */
 // @ts-expect-error - Internal helper, type safety handled by usage
+// eslint-disable-next-line security/detect-object-injection
 const isUpper = (code: number): number => isUpperCode[code];
 
 /**
@@ -71,6 +72,7 @@ const isUpper = (code: number): number => isUpperCode[code];
  * @returns 1 if lowercase ASCII, 0 otherwise.
  */
 // @ts-expect-error - Internal helper, type safety handled by usage
+// eslint-disable-next-line security/detect-object-injection
 const isLower = (code: number): number => isLowerCode[code];
 
 /**
@@ -81,6 +83,7 @@ const isLower = (code: number): number => isLowerCode[code];
  * @returns 1 if ASCII digit, 0 otherwise.
  */
 // @ts-expect-error - Internal helper, type safety handled by usage
+// eslint-disable-next-line security/detect-object-injection
 const isDigit = (code: number): number => isDigitCode[code];
 
 /**
@@ -162,14 +165,14 @@ const handleScriptTransitions = (
         }
 
         // Check for case if needed
-        const isUpper = caseSensitive && locale ? char === char.toLocaleUpperCase(locale) : false;
+        const isUpperCaseChar = caseSensitive && locale ? char === char.toLocaleUpperCase(locale) : false;
 
         // Determine if we should split
         let shouldSplit = false;
 
         if (customSplitLogic) {
             // Use custom split logic if provided
-            shouldSplit = customSplitLogic(previousType, currentType, previousIsUpper, isUpper, char, index, chars);
+            shouldSplit = customSplitLogic(previousType, currentType, previousIsUpper, isUpperCaseChar, char, index, chars);
         } else {
             // Default split logic
             // Split on script transitions between known scripts
@@ -178,7 +181,7 @@ const handleScriptTransitions = (
             }
 
             // Split on case transitions if enabled
-            if (caseSensitive && currentType !== "other" && !previousIsUpper && isUpper) {
+            if (caseSensitive && currentType !== "other" && !previousIsUpper && isUpperCaseChar) {
                 shouldSplit = true;
             }
         }
@@ -192,7 +195,7 @@ const handleScriptTransitions = (
 
         previousType = currentType;
         if (caseSensitive) {
-            previousIsUpper = isUpper;
+            previousIsUpper = isUpperCaseChar;
         }
     }
 
@@ -249,15 +252,15 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
             }
         }
 
-        // eslint-disable-next-line security/detect-object-injection
+
         const previousIsUpper = previousCode && previousCode < 128 && isUpper(previousCode);
-        // eslint-disable-next-line security/detect-object-injection
+
         const currentIsUpper = currentCode && currentCode < 128 && isUpper(currentCode);
-        // eslint-disable-next-line security/detect-object-injection
+
         const previousIsLower = previousCode && previousCode < 128 && isLower(previousCode);
-        // eslint-disable-next-line security/detect-object-injection
+
         const previousIsDigit = previousCode && previousCode < 128 && isDigit(previousCode);
-        // eslint-disable-next-line security/detect-object-injection
+
         const currentIsDigit = currentCode && currentCode < 128 && isDigit(currentCode);
 
         // Lower-to-Upper transition: [a-z] -> [A-Z]
@@ -284,9 +287,9 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
 
             if (index + 1 < width) {
                 const nextCode = s.codePointAt(index + 1);
-                // eslint-disable-next-line security/detect-object-injection
+
                 isNextUpper = (nextCode && nextCode < 128 && isUpper(nextCode)) as boolean;
-                // eslint-disable-next-line security/detect-object-injection
+
                 isNextDigit = (nextCode && nextCode < 128 && isDigit(nextCode)) as boolean;
             }
 
@@ -302,7 +305,7 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
         // Uppercase acronym boundary detection
         if (index + 1 < width) {
             const nextCode = s.codePointAt(index + 1);
-            // eslint-disable-next-line security/detect-object-injection
+
             const nextIsLower = nextCode && nextCode < 128 && isLower(nextCode);
 
             if (previousIsUpper && currentIsUpper && nextIsLower) {
@@ -335,6 +338,7 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
  * @param knownAcronyms - A set of known acronyms to preserve.
  * @returns An array of split segments.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<string>): string[] => {
     if (s.length === 0) {
         return [];
@@ -365,12 +369,12 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         for (let index = 1; index < width_; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index];
-            const isUpper = char === (char as string).toLocaleUpperCase(locale);
+            const isUpperCaseChar = char === (char as string).toLocaleUpperCase(locale);
 
-            if (isUpper === previousIsUpper) {
+            if (isUpperCaseChar === previousIsUpper) {
                 // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 currentSegment += char;
-            } else if (isUpper) {
+            } else if (isUpperCaseChar) {
                 // Transition to uppercase
                 if (currentSegment && currentSegment.length > 0) {
                     result.push(currentSegment);
@@ -397,7 +401,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
                 upperSequenceStart = -1;
             }
 
-            previousIsUpper = isUpper;
+            previousIsUpper = isUpperCaseChar;
         }
 
         if (currentSegment && currentSegment.length > 0) {
@@ -435,12 +439,12 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
             const currentType = RE_CYRILLIC.test(char) ? 1 : RE_LATIN.test(char) ? 2 : 0;
-            const isUpper = char === char.toLocaleUpperCase(locale);
+            const isUpperCaseChar = char === char.toLocaleUpperCase(locale);
 
             // Split on script transitions or case changes within the same script
             if (
                 (previousType !== currentType && (previousType === 1 || previousType === 2) && (currentType === 1 || currentType === 2)) ||
-                (currentType === previousType && !previousIsUpper && isUpper)
+                (currentType === previousType && !previousIsUpper && isUpperCaseChar)
             ) {
                 result.push(currentSegment);
                 currentSegment = char;
@@ -449,7 +453,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             }
 
             previousType = currentType;
-            previousIsUpper = isUpper;
+            previousIsUpper = isUpperCaseChar;
         }
 
         if (currentSegment && currentSegment.length > 0) {
@@ -526,16 +530,16 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             for (let index = 1; index < partLength; index++) {
                 // eslint-disable-next-line security/detect-object-injection
                 const char = part[index] as string;
-                const isUpper = char === (char as string).toLocaleUpperCase(locale);
+                const isUpperCaseChar = char === (char as string).toLocaleUpperCase(locale);
 
-                if (!previousIsUpper && isUpper) {
+                if (!previousIsUpper && isUpperCaseChar) {
                     result.push(word);
                     word = char;
                 } else {
                     word += char;
                 }
 
-                previousIsUpper = isUpper;
+                previousIsUpper = isUpperCaseChar;
             }
 
             if (word) {
@@ -621,14 +625,14 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         for (let index = 1; index < width_; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
-            const isUpper = char === (char as string).toLocaleUpperCase(locale);
+            const isUpperCaseChar = char === (char as string).toLocaleUpperCase(locale);
 
             // Special handling for Slovenian characters
             const isSpecialChar = /[ČŠŽĐ]/i.test(char);
             const nextIsUpper = index < width_ - 1 && chars[index + 1] === (chars[index + 1] as string).toLocaleUpperCase(locale);
 
             // Split on case transitions and special characters
-            if ((!previousIsUpper && isUpper) || (isSpecialChar && nextIsUpper)) {
+            if ((!previousIsUpper && isUpperCaseChar) || (isSpecialChar && nextIsUpper)) {
                 result.push(currentSegment);
                 currentSegment = char;
 
@@ -640,7 +644,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
                 currentSegment += char;
             }
 
-            previousIsUpper = isUpper;
+            previousIsUpper = isUpperCaseChar;
         }
 
         if (currentSegment && currentSegment.length > 0) {
@@ -788,7 +792,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         for (let index = 1; index < width_; index++) {
             // eslint-disable-next-line security/detect-object-injection
             const char = chars[index] as string;
-            const isUpper = char === char.toLocaleUpperCase(locale);
+            const isUpperCaseChar = char === char.toLocaleUpperCase(locale);
 
             // Special handling for Uzbek Latin modifiers
             if (RE_UZBEK_LATIN_MODIFIER.test(char) || RE_UZBEK_LATIN_MODIFIER.test(chars[index - 1] as string)) {
@@ -797,14 +801,14 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
                 continue;
             }
 
-            if (!previousIsUpper && isUpper) {
+            if (!previousIsUpper && isUpperCaseChar) {
                 result.push(currentSegment);
                 currentSegment = char;
             } else {
                 currentSegment += char;
             }
 
-            previousIsUpper = isUpper;
+            previousIsUpper = isUpperCaseChar;
         }
 
         if (currentSegment && currentSegment.length > 0) {
@@ -837,7 +841,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     for (let index = 1; index < width_; index++) {
         // eslint-disable-next-line security/detect-object-injection
         const char = chars[index] as string;
-        const isUpper = char === char.toLocaleUpperCase(locale);
+        const isUpperCaseChar = char === char.toLocaleUpperCase(locale);
 
         // Check for acronyms at current position
         let isAcronym = false;
@@ -858,14 +862,14 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         }
 
         // Split on case transitions
-        if (!previousIsUpper && isUpper) {
+        if (!previousIsUpper && isUpperCaseChar) {
             result.push(currentSegment);
             currentSegment = char;
         } else {
             currentSegment += char;
         }
 
-        previousIsUpper = isUpper;
+        previousIsUpper = isUpperCaseChar;
     }
 
     if (currentSegment) {
@@ -958,6 +962,7 @@ export interface SplitOptions extends LocaleOptions {
  * splitByCase("hello🌍world", { handleEmoji: true }) // => ["hello", "🌍", "world"]
  * ```
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const splitByCase = <T extends string = string>(input: T, options: SplitOptions = {}): SplitByCase<T> => {
     if (!input || typeof input !== "string") {
         return [] as unknown as SplitByCase<T>;

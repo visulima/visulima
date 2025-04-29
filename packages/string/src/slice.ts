@@ -4,6 +4,7 @@ import { getStringWidth } from "./get-string-width";
 import LRUCache from "./utils/lru-cache";
 
 const segmentCache = new LRUCache<string, StyledSegment[]>(100);
+
 // eslint-disable-next-line compat/compat
 const defaultSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
 
@@ -521,6 +522,7 @@ export type SliceOptions = {
  * @param options - Slicing options.
  * @returns The sliced string with ANSI codes preserved.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const slice = (inputString: string, startIndex = 0, endIndex = Number.MAX_SAFE_INTEGER, options: SliceOptions = {}): string => {
     const config = {
         segmenter: defaultSegmenter,

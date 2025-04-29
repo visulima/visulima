@@ -540,12 +540,20 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
                         const strippedLinkText = linkText.replace(RE_ANSI, "");
 
                         const linkTextWidthResult = getStringTruncatedWidth(strippedLinkText, {
-                            // Pass all width options from the resolved config
-                            ...config.width,
+                            ambiguousIsNarrow: config.width.ambiguousIsNarrow,
+                            ambiguousWidth: config.width.ambiguous,
+                            ansiWidth: config.width.ansi,
+                            controlWidth: config.width.control,
                             countAnsiEscapeCodes: false, // Never count ANSI in link text width
                             ellipsis: config.truncation.ellipsis,
                             ellipsisWidth: config.truncation.ellipsisWidth,
+                            emojiWidth: config.width.emoji,
+                            fullWidth: config.width.fullWidth,
+                            halfWidth: config.width.halfWidth,
                             limit: Math.max(0, truncationLimit - width),
+                            regularWidth: config.width.regular,
+                            tabWidth: config.width.tab,
+                            wideWidth: config.width.wide,
                         });
 
                         const textWidth = linkTextWidthResult.width;
@@ -554,14 +562,14 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
                             truncationEnabled = true;
                             truncationIndex = Math.min(truncationIndex, index); // Truncate at start of link
                         } else if (width + textWidth > truncationLimit) {
-                                truncationIndex = Math.min(truncationIndex, index); // Truncate before link
-                                truncationEnabled = true
+                            truncationIndex = Math.min(truncationIndex, index); // Truncate before link
+                            truncationEnabled = true;
 
-                                if (width + textWidth > config.truncation.limit) {
-                                    // Break immediately if absolute limit exceeded by *full* link width
-                                    break;
-                                }
+                            if (width + textWidth > config.truncation.limit) {
+                                // Break immediately if absolute limit exceeded by *full* link width
+                                break;
                             }
+                        }
 
                         // Add the width of the display text only
                         width += textWidth;

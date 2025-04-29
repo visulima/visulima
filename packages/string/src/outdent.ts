@@ -144,6 +144,7 @@ const templateCache = new WeakMap<TemplateStringsArray, string[]>();
  * @param options - The configuration options for the outdent instance.
  * @returns An Outdent function tailored to the provided options.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const createInstance = (options: Options): Outdent => {
     const enableCache = options.cache !== false;
     const cache = enableCache ? (options.cacheStore ?? templateCache) : null;
@@ -221,10 +222,10 @@ const createInstance = (options: Options): Outdent => {
 
 // Create the default outdent instance with default options
 const defaultOutdent: Outdent = createInstance({
+    cache: true, // Enable caching by default
+    newline: null,
     trimLeadingNewline: true,
     trimTrailingNewline: true,
-    newline: null,
-    cache: true, // Enable caching by default
 });
 
 export const outdent = defaultOutdent;
