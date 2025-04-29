@@ -95,6 +95,7 @@ module.exports = defineConfig({
             files: ["__tests__/**"],
             rules: {
                 "@typescript-eslint/restrict-template-expressions": "off",
+                "compat/compat": "off",
                 "import/no-unused-modules": "off",
             },
         },

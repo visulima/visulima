@@ -181,3 +181,29 @@ describe("getStringWidth", () => {
         });
     });
 });
+
+describe("getStringWidth OSC 8 hyperlinks", () => {
+    it("should ignore OSC 8 hyperlink sequences for width calculation", () => {
+        expect.assertions(1);
+
+        const url = "https://example.com";
+        const linkText = "Example"; // Visual width = 7
+        // Note: Need double backslashes for escape sequences within template literals in tests
+        const osc8String = `\u001B]8;;${url}\u001B\\${linkText}\u001B]8;;\u001B\\`;
+
+        // Expected width is just the width of "Example"
+        expect(getStringWidth(osc8String)).toBe(linkText.length);
+    });
+
+    it("should handle OSC 8 combined with ANSI colors", () => {
+        expect.assertions(1);
+
+        const url = "https://example.com";
+        const linkText = "\u001B[31mExample\u001B[0m"; // Visual width = 7
+        // Note: Need double backslashes for escape sequences within template literals in tests
+        const osc8String = `\u001B]8;;${url}\u001B\\${linkText}\u001B]8;;\u001B\\`;
+
+        // Expected width is still just the width of "Example"
+        expect(getStringWidth(osc8String)).toBe(7);
+    });
+});

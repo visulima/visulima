@@ -4,9 +4,11 @@ import { getStringWidth } from "./get-string-width";
 import LRUCache from "./utils/lru-cache";
 
 const segmentCache = new LRUCache<string, StyledSegment[]>(100);
+
 // eslint-disable-next-line compat/compat
 const defaultSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
 
+/** Represents a segment of text with its associated ANSI styling sequences. */
 type StyledSegment = {
     after: string; // ANSI sequences that close styling for this segment
     before: string; // ANSI sequences that apply to this segment
@@ -14,6 +16,7 @@ type StyledSegment = {
     visibleLength: number;
 };
 
+/** Represents a segment with its position (start/end index) in the visible string. */
 type VisibleSegment = {
     end: number;
     index: number;
@@ -49,14 +52,18 @@ const FORMAT_RESET_CODES = new Map([
     ["29", "9"], // Strikethrough reset
 ]);
 
+/** Checks if an ANSI code string represents a foreground color code. */
 const isForegroundColor = (code: string): boolean => (code >= "30" && code <= "37") || (code >= "90" && code <= "97") || code.startsWith("38;");
+/** Checks if an ANSI code string represents a background color code. */
 const isBackgroundColor = (code: string): boolean => (code >= "40" && code <= "47") || (code >= "100" && code <= "107") || code.startsWith("48;");
 
+/** Represents an ANSI format style with its opening and closing sequence. */
 type FormatStyle = {
     readonly close: string;
     readonly open: string;
 };
 
+/** Maps common ANSI formatting styles to their open and close sequences. */
 const FORMAT_STYLES: ReadonlyArray<FormatStyle> = [
     { close: "\u001B[22m", open: "\u001B[1m" }, // Bold
     { close: "\u001B[23m", open: "\u001B[3m" }, // Italic
@@ -491,41 +498,29 @@ export type SliceOptions = {
 };
 
 /**
- * High-level string slice function with full Unicode and ANSI support.
+ * Slices a string based on visible character width, preserving ANSI escape codes.
  *
- * Features:
- * - Preserves ANSI styling
- * - Respects grapheme boundaries
- * - Handles combining characters
- * - Uses LRU caching for repeated operations
- * - Fast path for ASCII-only strings
- * - Preserves invalid/malformed ANSI sequences as visible content
- *
- * ANSI Sequence Handling:
- * - Valid ANSI sequences (e.g. '\u001b[31m') are preserved and handled as styling
- * - Incomplete sequences are preserved as-is
- * - Missing terminators are preserved as-is
+ * Handles complex scenarios including grapheme clusters, full-width characters,
+ * and ANSI styling (colors, formatting, hyperlinks).
  *
  * @example
  * ```typescript
- * // Basic usage
- * slice('Hello World', 0, 5); // 'Hello'
+ * const styledString = "\u001B[31mHello\u001B[39m \u001B[1mWorld\u001B[22m!";
  *
- * // With valid ANSI styling
- * slice('\u001b[31mRed\u001b[0m Text', 0, 3); // '\u001b[31mRed\u001b[0m'
+ * // Slice from visible index 2 to 8
+ * slice(styledString, 2, 8);
+ * // => "\u001B[31mllo\u001B[39m \u001B[1mWo\u001B[22m"
  *
- * // With invalid ANSI sequence
- * slice('\u001b[abcText', 0, 4); // '\u001b[abcText'
- *
- * // With width options
- * slice('Hello', 0, 3, { width: { fullWidth: 2 } });
+ * // Slice from visible index 7 onwards
+ * slice(styledString, 7);
+ * // => "\u001B[1morld\u001B[22m!"
  * ```
  *
- * @param inputString - String to slice
- * @param startIndex - Start index in visual width units (default: 0)
- * @param endIndex - End index in visual width units (default: string length)
- * @param options - Configuration options (default: {})
- * @returns Sliced string with preserved styling and content
+ * @param inputString - The string to slice.
+ * @param startIndex - The starting visible character index (inclusive). Defaults to 0.
+ * @param endIndex - The ending visible character index (exclusive). Defaults to the end of the string.
+ * @param options - Slicing options.
+ * @returns The sliced string with ANSI codes preserved.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const slice = (inputString: string, startIndex = 0, endIndex = Number.MAX_SAFE_INTEGER, options: SliceOptions = {}): string => {
