@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { eastAsianWidthType } from "get-east-asian-width";
 
-import { RE_ANSI, RE_ANSI_LINK_END, RE_CONTROL, RE_EMOJI, RE_VALID_ANSI_PAIRS, RE_VALID_HYPERLINKS } from "./constants";
+import { RE_ANSI, RE_CONTROL, RE_EMOJI } from "./constants";
 
 /**
  * Cache for storing pre-calculated character widths
@@ -56,6 +56,7 @@ const getCharType = (codePoint: number): "control" | "latin" | "other" | "wide" 
 
 type StringTruncatedWidthConfig = {
     truncation: {
+        countAnsiEscapeCodes: boolean;
         ellipsis: string;
         ellipsisWidth: number;
         limit: number;
@@ -465,6 +466,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
 
     const config: StringTruncatedWidthConfig = {
         truncation: {
+            countAnsiEscapeCodes: options.countAnsiEscapeCodes ?? false,
             ellipsis: options.ellipsis ?? "",
             ellipsisWidth:
                 options.ellipsisWidth ??
@@ -511,40 +513,87 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
         // Handle ANSI escape sequences - only check if we know there's at least one present
         // eslint-disable-next-line security/detect-object-injection
         if (hasAnsi && (input[index] === "\u001B" || input[index] === "\u009B")) {
-            RE_ANSI.lastIndex = index;
-            RE_VALID_ANSI_PAIRS.lastIndex = index;
-            RE_VALID_HYPERLINKS.lastIndex = index;
+            // --- Check for OSC 8 Hyperlink ---
+            if (input.startsWith("\u001B]8;;", index)) {
+                const BELL = "\u0007";
+                const OSC8_CLOSER = "\u001B]8;;" + BELL;
+                const OSC8_CLOSER_LEN = OSC8_CLOSER.length;
 
-            // Check if this is a valid ANSI sequence
-            if (RE_ANSI.test(input) && (RE_VALID_ANSI_PAIRS.test(input) || RE_VALID_HYPERLINKS.test(input))) {
-                const ansiLength = RE_ANSI.lastIndex - index;
-                const ansiWidth = options.countAnsiEscapeCodes ? ansiLength : config.width.ansi;
+                const endOfParametersIndex = input.indexOf(BELL, index + 5); // Find first BELL after \u001B]8;;
 
-                // Special handling for ANSI hyperlinks (optimization: fast path for non-hyperlinks)
-                if (index + 3 < length && input.slice(index, index + 4) === "\u001B]8;") {
-                    const startPos = RE_ANSI.lastIndex;
-                    RE_ANSI_LINK_END.lastIndex = startPos;
+                if (endOfParametersIndex === -1) {
+                    // Invalid OSC8 sequence (no BELL after params), treat as normal ANSI?
+                    // For now, fall through to standard ANSI handler
+                } else {
+                    const startOfCloserIndex = input.indexOf(OSC8_CLOSER, endOfParametersIndex + 1);
 
-                    if (RE_ANSI_LINK_END.test(input)) {
-                        const endPos = RE_ANSI_LINK_END.lastIndex;
-                        const textContent = input.slice(startPos, endPos - 5);
-                        const textWidth = textContent.length;
+                    if (startOfCloserIndex === -1) {
+                        // Invalid OSC8 sequence (no closer), treat as normal ANSI?
+                        // For now, fall through to standard ANSI handler
+                    } else {
+                        // Valid OSC8 structure found
+                        const endOfSequenceIndex = startOfCloserIndex + OSC8_CLOSER_LEN;
+                        const linkText = input.slice(endOfParametersIndex + 1, startOfCloserIndex);
 
-                        if (width + textWidth > truncationLimit) {
-                            truncationIndex = Math.min(truncationIndex, startPos);
+                        // IMPORTANT: Recursively calculate width of ONLY the link text
+                        // Need to handle potential nested ANSI within linkText
+                        const strippedLinkText = linkText.replace(RE_ANSI, "");
+
+                        const linkTextWidthResult = getStringTruncatedWidth(strippedLinkText, {
+                            ambiguousIsNarrow: config.width.ambiguousIsNarrow,
+                            ambiguousWidth: config.width.ambiguous,
+                            ansiWidth: config.width.ansi,
+                            controlWidth: config.width.control,
+                            countAnsiEscapeCodes: false, // Never count ANSI in link text width
+                            ellipsis: config.truncation.ellipsis,
+                            ellipsisWidth: config.truncation.ellipsisWidth,
+                            emojiWidth: config.width.emoji,
+                            fullWidth: config.width.fullWidth,
+                            halfWidth: config.width.halfWidth,
+                            limit: Math.max(0, truncationLimit - width),
+                            regularWidth: config.width.regular,
+                            tabWidth: config.width.tab,
+                            wideWidth: config.width.wide,
+                        });
+
+                        const textWidth = linkTextWidthResult.width;
+
+                        if (linkTextWidthResult.truncated) {
+                            truncationEnabled = true;
+                            truncationIndex = Math.min(truncationIndex, index); // Truncate at start of link
+                        } else if (width + textWidth > truncationLimit) {
+                            truncationIndex = Math.min(truncationIndex, index); // Truncate before link
+                            truncationEnabled = true;
 
                             if (width + textWidth > config.truncation.limit) {
-                                truncationEnabled = true;
+                                // Break immediately if absolute limit exceeded by *full* link width
                                 break;
                             }
                         }
 
+                        // Add the width of the display text only
                         width += textWidth;
-                        index = endPos;
+                        // Advance index past the entire OSC8 sequence
+                        index = endOfSequenceIndex;
+
+                        // Break AFTER potentially setting flags and updating width/index
+                        if (truncationEnabled && width >= config.truncation.limit) {
+                            break;
+                        }
+
                         // eslint-disable-next-line no-continue
                         continue;
                     }
                 }
+            }
+            // If OSC8 logic didn't handle it (invalid sequence or didn't start with \u001B]8;;), fall through...
+
+            RE_ANSI.lastIndex = index; // Use the general RE_ANSI for other codes
+
+            // Check if the input starts with any valid ANSI sequence recognized by RE_ANSI
+            if (RE_ANSI.test(input)) {
+                const ansiLength = RE_ANSI.lastIndex - index;
+                const ansiWidth = config.truncation.countAnsiEscapeCodes ? ansiLength : config.width.ansi;
 
                 // Standard ANSI sequence
                 if (width + ansiWidth > truncationLimit) {
@@ -735,15 +784,16 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
     }
 
     let finalWidth = width;
+    let ellipsed = false;
 
     if (truncationEnabled && config.truncation.limit >= config.truncation.ellipsisWidth) {
-        // When truncating with ellipsis, ensure the final width includes both the truncated content
-        // and the ellipsis, but doesn't exceed the limit
-        finalWidth = Math.min(truncationLimit + config.truncation.ellipsisWidth, config.truncation.limit);
+        // If truncation happened AND there's space for ellipsis:
+        finalWidth = config.truncation.limit;
+        ellipsed = true;
     }
 
     return {
-        ellipsed: truncationEnabled && config.truncation.limit >= config.truncation.ellipsisWidth,
+        ellipsed,
         index: truncationEnabled ? truncationIndex : length,
         truncated: truncationEnabled,
         width: finalWidth,
