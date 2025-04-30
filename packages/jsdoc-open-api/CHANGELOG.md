@@ -1,3 +1,13 @@
+## @visulima/jsdoc-open-api [2.0.78](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.77...@visulima/jsdoc-open-api@2.0.78) (2025-04-30)
+
+### Bug Fixes
+
+* modified CLI command options for clarity, changing `-vv` to `-d` ([#498](https://github.com/visulima/visulima/issues/498)) ([c683bf4](https://github.com/visulima/visulima/commit/c683bf4c51a9dd79699fc253b68d7df52af644e4))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
 ## @visulima/jsdoc-open-api [2.0.77](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.76...@visulima/jsdoc-open-api@2.0.77) (2025-03-07)
 
 ### Bug Fixes
