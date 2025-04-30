@@ -16,7 +16,7 @@ const specificationTemplate = {
     v4: ["components", "channels"],
 };
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents,perfectionist/sort-intersection-types
 type ExtendedYAMLError = YAMLError & { annotation?: string };
 
 const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
@@ -36,13 +36,12 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
 
                 let errorString = "Error parsing YAML in @openapi spec:";
 
-                errorString += verbose
+                errorString += (verbose
                     ? (parsed.errors as ExtendedYAMLError[])
-
-                          .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error.annotation?.replace(/\n/gu, "\n  ")}\n\`\`\``)
+                          .map((error) => `${(error as ExtendedYAMLError).toString() as string}\nImbedded within:\n\`\`\`\n  ${(error as ExtendedYAMLError).annotation?.replace(/\n/gu, "\n  ") as string}\n\`\`\``)
                           .join("\n")
                     : // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                      parsed.errors.map((error) => error.toString()).join("\n");
+                      parsed.errors.map((error) => error.toString()).join("\n")) as string;
 
                 throw new Error(errorString);
             }
@@ -74,7 +73,7 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: numb
         // Line count, number of tags + 1 for description.
         // - Don't count line-breaking due to long descriptions
         // - Don't count empty lines
-        const loc = comment.tags.length + 1;
+        const loc = (comment.tags.length as number) + 1;
         const result = mergeWith({}, ...tagsToObjects(comment.tags, verbose), customizer);
 
         ["definitions", "responses", "parameters", "securityDefinitions", "components", "tags"].forEach((property) => {

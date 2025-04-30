@@ -36,12 +36,12 @@
 
 ## Features
 
--   **Automatic Generation:** Creates OpenAPI specs from JSDoc comments.
--   **Multiple Syntaxes:** Supports standard OpenAPI YAML/JSON within comments and a concise short syntax.
--   **CLI Tool:** Provides a command-line interface for easy generation.
--   **Programmatic API:** Offers a JavaScript API for integration into build processes.
--   **Framework Integration:** Includes helpers like a Webpack plugin (useful for Next.js).
--   **Performance:** Focused on speed and low overhead.
+- **Automatic Generation:** Creates OpenAPI specs from JSDoc comments.
+- **Multiple Syntaxes:** Supports standard OpenAPI YAML/JSON within comments and a concise short syntax.
+- **CLI Tool:** Provides a command-line interface for easy generation.
+- **Programmatic API:** Offers a JavaScript API for integration into build processes.
+- **Framework Integration:** Includes helpers like a Webpack plugin (useful for Next.js).
+- **Performance:** Focused on speed and low overhead.
 
 ## Installation
 
@@ -75,9 +75,31 @@ Choose the syntax you prefer for defining OpenAPI details within your JSDoc comm
 
 The Command Line Interface (CLI) provides a straightforward way to generate your OpenAPI specification.
 
+### Running via Package Managers
+
+Instead of installing the CLI globally or relying on optional dependencies, you can run the installed binary directly using your package manager:
+
+```bash
+# With npx (comes with npm)
+npx jsdoc-open-api generate src/
+# Or explicitly using the package name:
+npx @visulima/jsdoc-open-api generate src/
+
+# With pnpm
+pnpm exec jsdoc-open-api generate src/
+
+# With Yarn 1.x
+yarn run jsdoc-open-api generate src/
+
+# With Yarn Berry (2+)
+yarn jsdoc-open-api generate src/
+```
+
+This is often the recommended way to use package binaries within a project.
+
 ### Optional Dependencies
 
-The CLI relies on `commander` and `cli-progress`. These are listed as `optionalDependencies`. Depending on your package manager (npm/yarn/pnpm) and configuration, you *might* need to install them manually if they weren't installed automatically:
+The CLI relies on `commander` and `cli-progress`. These are listed as `optionalDependencies`. Depending on your package manager (npm/yarn/pnpm) and configuration, you _might_ need to install them manually if they weren't installed automatically:
 
 ```sh
 # If needed:
@@ -125,11 +147,11 @@ jsdoc-open-api generate -d src/
 jsdoc-open-api generate [options] [path ...]
 ```
 
--   `[path ...]` : Paths to files or directories to parse (optional, uses configuration if not provided).
--   `-c, --config [.openapirc.js]` : Specify the configuration file path. Defaults to `.openapirc.js`.
--   `-o, --output [swaggerSpec.json]` : Specify the output file for the OpenAPI specification. Defaults to `swaggerSpec.json`.
--   `-v, --verbose` : Enable verbose output during generation.
--   `-d, --very-verbose` : Enable *very* verbose output for detailed debugging.
+- `[path ...]` : Paths to files or directories to parse (optional, uses configuration if not provided).
+- `-c, --config [.openapirc.js]` : Specify the configuration file path. Defaults to `.openapirc.js`.
+- `-o, --output [swaggerSpec.json]` : Specify the output file for the OpenAPI specification. Defaults to `swaggerSpec.json`.
+- `-v, --verbose` : Enable verbose output during generation.
+- `-d, --very-verbose` : Enable _very_ verbose output for detailed debugging.
 
 ---
 
@@ -138,44 +160,43 @@ jsdoc-open-api generate [options] [path ...]
 You can integrate the generation process directly into your Node.js scripts.
 
 ```javascript
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import jsdocOpenApi from '@visulima/jsdoc-open-api'; // Adjust import based on your module system (require vs import)
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import jsdocOpenApi from "@visulima/jsdoc-open-api"; // Adjust import based on your module system (require vs import)
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'My Programmatic API',
-      version: '1.0.0',
-      description: 'API documentation generated programmatically',
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My Programmatic API",
+            version: "1.0.0",
+            description: "API documentation generated programmatically",
+        },
+        // Add other base OpenAPI definition properties here
     },
-    // Add other base OpenAPI definition properties here
-  },
-  // Glob patterns pointing to your source files with JSDoc comments
-  sources: [path.join(__dirname, 'src/routes/**/*.js')],
-  // Optional: Specify output path (defaults to 'swaggerSpec.json' in current dir)
-  // output: path.join(__dirname, 'public/api-docs.json'),
-  // Optional: Enable verbose logging
-  // verbose: true,
+    // Glob patterns pointing to your source files with JSDoc comments
+    sources: [path.join(__dirname, "src/routes/**/*.js")],
+    // Optional: Specify output path (defaults to 'swaggerSpec.json' in current dir)
+    // output: path.join(__dirname, 'public/api-docs.json'),
+    // Optional: Enable verbose logging
+    // verbose: true,
 };
 
 async function generateDocs() {
-  try {
-    const specification = await jsdocOpenApi(options);
-    console.log('OpenAPI specification generated successfully:');
-    // The specification object is returned, and also written to the output file if specified.
-    // console.log(JSON.stringify(specification, null, 2));
-  } catch (error) {
-    console.error('Error generating OpenAPI specification:', error);
-  }
+    try {
+        const specification = await jsdocOpenApi(options);
+        console.log("OpenAPI specification generated successfully:");
+        // The specification object is returned, and also written to the output file if specified.
+        // console.log(JSON.stringify(specification, null, 2));
+    } catch (error) {
+        console.error("Error generating OpenAPI specification:", error);
+    }
 }
 
 generateDocs();
-
 ```
 
 ---
@@ -229,14 +250,7 @@ const withOpenApi =
 
                 // Add the SwaggerCompilerPlugin to webpack plugins
                 config.plugins = config.plugins || [];
-                config.plugins.push(
-                    new SwaggerCompilerPlugin(
-                        absoluteOutputPath,
-                        absoluteSourcePaths,
-                        definition,
-                        { verbose },
-                    ),
-                );
+                config.plugins.push(new SwaggerCompilerPlugin(absoluteOutputPath, absoluteSourcePaths, definition, { verbose }));
 
                 // Call the original webpack config function if it exists
                 if (typeof nextConfig.webpack === "function") {
@@ -295,18 +309,18 @@ When using the CLI `generate` command without specifying paths or using the `ini
 ```javascript
 // .openapirc.js
 module.exports = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'API from Config',
-      version: '2.0.0',
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "API from Config",
+            version: "2.0.0",
+        },
+        // ... other base definition properties
     },
-    // ... other base definition properties
-  },
-  // Array of glob patterns for your source files
-  sources: ['src/**/*.js', 'routes/**/*.js'],
-  output: 'docs/swagger.json', // Default output file path
-  verbose: false, // Default verbosity
+    // Array of glob patterns for your source files
+    sources: ["src/**/*.js", "routes/**/*.js"],
+    output: "docs/swagger.json", // Default output file path
+    verbose: false, // Default verbosity
 };
 ```
 
@@ -373,7 +387,7 @@ Embed standard OpenAPI 3.0 YAML or JSON directly within `@openapi` or `@swagger`
  *         description: User not found.
  */
 function getUserById(userId) {
-  // Implementation...
+    // Implementation...
 }
 ```
 
@@ -394,9 +408,9 @@ Define the HTTP method and path, followed by tags like `@summary`, `@description
  * @response 200 - A JSON array of user names
  * @responseContent {string[]} 200.application/json
  */
- function listUsers() {
-  // Implementation...
- }
+function listUsers() {
+    // Implementation...
+}
 ```
 
 #### Parameters
@@ -413,9 +427,9 @@ Use `@pathParam`, `@queryParam`, `@headerParam`, `@cookieParam` to define parame
  * @response 200 - OK
  * @responseContent {User} 200.application/json - A user object (assuming 'User' schema is defined elsewhere).
  */
- function getUser(userId, role) {
-  // Implementation...
- }
+function getUser(userId, role) {
+    // Implementation...
+}
 ```
 
 #### Request Body
@@ -432,9 +446,9 @@ Use `@bodyContent` to describe the request body and `@bodyRequired` if it's mand
  * @response 201 - User created successfully.
  * @responseContent {User} 201.application/json - The created user object.
  */
- function createUser(userData) {
-  // Implementation...
- }
+function createUser(userData) {
+    // Implementation...
+}
 ```
 
 #### Responses
@@ -452,9 +466,9 @@ Define responses using `@response` for the status code and description, and `@re
  * @response 404 - Product not found.
  * @response default - Unexpected error.
  */
- function getProduct(productId) {
-  // Implementation...
- }
+function getProduct(productId) {
+    // Implementation...
+}
 ```
 
 #### Input and Output Models (Schema References)
@@ -475,9 +489,9 @@ Reference schemas defined globally (usually using the standard `@openapi` syntax
  * @responseContent {User} 200.application/json
  * @response 404 - User not found.
  */
- function updateUser(userId, userData) {
-  // Implementation...
- }
+function updateUser(userId, userData) {
+    // Implementation...
+}
 ```
 
 #### Authentication
@@ -494,12 +508,13 @@ Reference `securitySchemes` defined globally (using standard `@openapi` syntax) 
  * @security BasicAuth
  * @response 200 - Admin settings object.
  */
- function getAdminSettings() {
-  // Implementation...
- }
+function getAdminSettings() {
+    // Implementation...
+}
 ```
 
 For detailed information on the short syntax tags and possibilities, please refer to the documentation (link to be added if available).
+
 <!-- Add link to short syntax docs here if they exist -->
 
 ---

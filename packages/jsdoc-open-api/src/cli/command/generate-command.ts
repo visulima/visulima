@@ -70,7 +70,7 @@ const generateCommand = async (
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const realDirectory = await realpath(dir);
 
-        const files = await collect(realDirectory, {
+        const files: string[] = await collect(realDirectory, {
             extensions: openapiConfig.extensions ?? [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
             followSymlinks: openapiConfig.followSymlinks ?? false,
             match: openapiConfig.include,
@@ -79,7 +79,7 @@ const generateCommand = async (
 
         if (options.verbose ?? options.veryVerbose) {
             // eslint-disable-next-line no-console
-            console.log(`\nFound ${files.length} files in ${realDirectory}`);
+            console.log(`\nFound ${String(files.length)} files in ${realDirectory}`);
         }
 
         if (options.veryVerbose) {
