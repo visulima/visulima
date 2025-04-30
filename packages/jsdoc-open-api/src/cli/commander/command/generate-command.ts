@@ -13,7 +13,7 @@ const generateCommand = (program: Command, commandName = "generate", configName 
         .option("-c, --config [.openapirc.js]", "@visulima/jsdoc-open-api config file path.")
         .option("-o, --output [swaggerSpec.json]", "Output swagger specification.")
         .option("-v, --verbose", "Verbose output.")
-        .option("-vv, --very-verbose", "Very verbose output.")
+        .option("-d, --very-verbose", "Very verbose output.")
 
         .action(async (paths, options) => {
             try {

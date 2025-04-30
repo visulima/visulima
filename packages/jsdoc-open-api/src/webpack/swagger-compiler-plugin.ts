@@ -60,7 +60,7 @@ class SwaggerCompilerPlugin {
 
             // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations,no-loops/no-loops
             for await (const dir of this.sources) {
-                const files = await collect(dir, {
+                const files: string[] = await collect(dir, {
                     extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
                     includeDirs: false,
                     skip: [...skip],
@@ -68,7 +68,7 @@ class SwaggerCompilerPlugin {
 
                 if (this.verbose) {
                     // eslint-disable-next-line no-console
-                    console.log(`Found ${files.length} files in ${dir}`);
+                    console.log(`Found ${String(files.length)} files in ${dir}`);
                     // eslint-disable-next-line no-console
                     console.log(files);
                 }

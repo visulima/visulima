@@ -20,7 +20,7 @@ const initCommand = (configName: string, packageJsonPath = process.cwd()): void 
         const { packageJson: package_, path: packagePath } = foundPackageJson;
 
         // eslint-disable-next-line no-console
-        console.info(`Found package.json at "${packagePath}"`);
+        console.info(`Found package.json at "${packagePath as string}"`);
 
         if (package_.type === "module") {
             // eslint-disable-next-line no-console
