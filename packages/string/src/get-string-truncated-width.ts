@@ -39,6 +39,11 @@ const getCharType = (codePoint: number): "control" | "latin" | "other" | "wide" 
         return "latin";
     }
 
+    // Box Drawing block (U+2500-U+257F) should be treated as width 1
+    if (codePoint >= 0x25_00 && codePoint <= 0x25_7f) {
+        return "latin"; // Treat as regular width 1
+    }
+
     // Full-width and CJK characters (wide)
     if (
         (codePoint >= 0x11_00 && codePoint <= 0x11_ff) || // Hangul Jamo

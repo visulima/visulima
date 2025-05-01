@@ -4,7 +4,7 @@ import { getStringWidth } from "../../src";
 
 describe("getStringWidth", () => {
     it("should handle various string types correctly", () => {
-        expect.assertions(26);
+        expect.assertions(27);
 
         expect(getStringWidth("⛣", { ambiguousIsNarrow: false })).toBe(2);
         expect(getStringWidth("abcde")).toBe(5);
@@ -32,6 +32,62 @@ describe("getStringWidth", () => {
         expect(getStringWidth(" ")).toBe(1);
         expect(getStringWidth("🔀")).toBe(2);
         expect(getStringWidth("🇪")).toBe(2);
+        expect(getStringWidth("───────────────")).toBe(15);
+    });
+
+    it("should return correct width for box-drawing characters (width 1)", () => {
+        expect.assertions(18);
+
+        // Previous assertions for standard box characters...
+        const horizontal = "─"; // U+2500
+        const vertical = "│"; // U+2502
+        const corner = "┌"; // U+250C
+        const tJunction = "┬"; // U+252C
+        const cross = "┼"; // U+253C
+        const mixed = "┌─┬─┐│ │└─┴─┘";
+
+        expect(getStringWidth(horizontal)).toBe(1);
+        expect(getStringWidth(vertical)).toBe(1);
+        expect(getStringWidth(corner)).toBe(1);
+        expect(getStringWidth(tJunction)).toBe(1);
+        expect(getStringWidth(cross)).toBe(1);
+        expect(getStringWidth(mixed)).toBe(mixed.length);
+
+        // Double line
+        const doubleH = "═"; // U+2550
+        const doubleV = "║"; // U+2551
+        const doubleCorner = "╔"; // U+2554
+        const doubleT = "╦"; // U+2566
+        const doubleCross = "╬"; // U+256C
+
+        expect(getStringWidth(doubleH)).toBe(1);
+        expect(getStringWidth(doubleV)).toBe(1);
+        expect(getStringWidth(doubleCorner)).toBe(1);
+        expect(getStringWidth(doubleT)).toBe(1);
+        expect(getStringWidth(doubleCross)).toBe(1);
+
+        // Rounded corners
+        const roundedCornerTL = "╭"; // U+256D
+        const roundedCornerTR = "╮"; // U+256E
+
+        expect(getStringWidth(roundedCornerTL)).toBe(1);
+        expect(getStringWidth(roundedCornerTR)).toBe(1);
+        // Other rounded corners ╰ (U+256F) and ╯ (U+2570) are also in the block
+
+        // Dotted/dashed lines
+        const dashedH = "┈"; // U+2508 (Light quadrupled dash horizontal) - Check if used
+        const dashedV = "┊"; // U+250A (Light quadrupled dash vertical) - Check if used
+        // Note: DOTS_BORDER uses ┈ (U+2508) and ┊ (U+250A)
+        expect(getStringWidth(dashedH)).toBe(1);
+        expect(getStringWidth(dashedV)).toBe(1);
+
+        // Mixed string with new characters
+        const mixed2 = "╔═╦═╗║ ║╠═╬═╣╚═╩═╝";
+        expect(getStringWidth(mixed2)).toBe(mixed2.length);
+        const mixed3 = "╭─┬─╮│ │├─┼─┤╰─┴─╯";
+        expect(getStringWidth(mixed3)).toBe(mixed3.length);
+        const mixed4 = "┌┈┬┈┐┊ ┊├┈┼┈┤└┈┴┈┘"; // Using DOTS_BORDER chars
+        expect(getStringWidth(mixed4)).toBe(mixed4.length);
     });
 
     describe("control characters", () => {
