@@ -1,3 +1,9 @@
+## @visulima/string [1.0.4](https://github.com/visulima/visulima/compare/@visulima/string@1.0.3...@visulima/string@1.0.4) (2025-05-01)
+
+### Bug Fixes
+
+* **string:** enhance handling of box-drawing characters in string width calculations ([6d1d83a](https://github.com/visulima/visulima/commit/6d1d83a6823d90f9104363a91e8add7e0557fc27))
+
 ## @visulima/string [1.0.3](https://github.com/visulima/visulima/compare/@visulima/string@1.0.2...@visulima/string@1.0.3) (2025-04-29)
 
 ### Bug Fixes
