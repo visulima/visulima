@@ -749,8 +749,8 @@ importers:
         specifier: 3.0.19
         version: 3.0.19(zod@3.24.2)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.77
-        version: 2.0.77(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)
+        specifier: 2.0.78
+        version: 2.0.78(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)
       '@visulima/path':
         specifier: 1.3.5
         version: 1.3.5
@@ -9233,8 +9233,8 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.77':
-    resolution: {integrity: sha512-kvFf7kTZoAHAqylB0SpxWMZQtASk+GGuxQIYsKgfTMQx66VHHzDQP0nS7TUcc0iA45T5cBhQf58vgOh3s16+0w==}
+  '@visulima/jsdoc-open-api@2.0.78':
+    resolution: {integrity: sha512-JeqmhKmVOE2DVSTbRopcl8NGFa5BIuNvs02X6Eagb8gSVWT/VP4ru61Fo+NvwV4W6M+wgkBpebXZp2fZZwARsg==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -9243,7 +9243,7 @@ packages:
     resolution: {integrity: sha512-eGQn1GmpnoQJwBWYIOgwGTuCu1o7jnTko68Sb9Z5eBszY0XfMcsU1sm9pYQ6y+EMyj2g2O/Hs8uZ1n8P9CULEg==}
     engines: {node: '>=18.* <=22.*'}
     peerDependencies:
-      next: '>=15.2.3'
+      next: '>=14.2.15'
       nextra: '>=2.2.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
@@ -11941,6 +11941,7 @@ packages:
   eslint-plugin-i@2.29.1:
     resolution: {integrity: sha512-ORizX37MelIWLbMyqI7hi8VJMf7A0CskMmYkB+lkCX3aF4pkGV7kwx5bSEb4qx7Yce2rAf9s34HqDRPjGRZPNQ==}
     engines: {node: '>=12'}
+    deprecated: Please migrate to the brand new `eslint-plugin-import-x` instead
     peerDependencies:
       eslint: ^7.2.0 || ^8
 
@@ -15524,7 +15525,7 @@ packages:
     resolution: {integrity: sha512-OoTqzO+DcXV7w4JqATcP98pmQG1pn83KAto8945xtmODR9e8iJnRoVyWsjtq3pLMXplXnVZC9GvDLJtaQqleTw==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=15.2.3'
+      next: '>=14.2.15'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -15605,6 +15606,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-emoji@2.1.3:
     resolution: {integrity: sha512-E2WEOVsgs7O16zsURJ/eH8BqhF029wGpEOnv7Urwdo2wmQanOACwJQh0devF9D9RhoZru0+9JXIS0dBXIAz+lA==}
@@ -27410,18 +27412,18 @@ snapshots:
 
   '@visulima/is-ansi-color-supported@2.2.13': {}
 
-  '@visulima/jsdoc-open-api@2.0.77(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.78(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.1(openapi-types@12.1.3)
-      '@visulima/fs': 3.1.2(yaml@2.7.0)
+      '@visulima/fs': 3.1.2(yaml@2.7.1)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       read-pkg-up: 7.0.1
-      yaml: 2.7.0
+      yaml: 2.7.1
     optionalDependencies:
       cli-progress: 3.12.0
       commander: 13.1.0
-      webpack: 5.98.0(@swc/core@1.6.7(@swc/helpers@0.5.15))
+      webpack: 5.99.7(@swc/core@1.6.7(@swc/helpers@0.5.15))
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
