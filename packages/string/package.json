@@ -32,9 +32,6 @@
         "uppercase",
         "lowercase",
         "string-splitting",
-        "unicode",
-        "i18n",
-        "internationalization",
         "typescript",
         "type-safe"
     ],
