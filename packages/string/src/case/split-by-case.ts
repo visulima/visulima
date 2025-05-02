@@ -252,7 +252,6 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
             }
         }
 
-
         const previousIsUpper = previousCode && previousCode < 128 && isUpper(previousCode);
 
         const currentIsUpper = currentCode && currentCode < 128 && isUpper(currentCode);

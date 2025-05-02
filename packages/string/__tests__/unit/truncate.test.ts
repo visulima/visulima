@@ -151,9 +151,6 @@ describe("truncate", () => {
             expect(
                 truncate("ｗｉｄｅ", 6, {
                     ellipsis: "...",
-                    width: {
-                        ambiguousWidth: 2,
-                    },
                 }),
             ).toBe("ｗ...");
         });

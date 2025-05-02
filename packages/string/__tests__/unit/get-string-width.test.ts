@@ -4,7 +4,7 @@ import { getStringWidth } from "../../src";
 
 describe("getStringWidth", () => {
     it("should handle various string types correctly", () => {
-        expect.assertions(27);
+        expect.assertions(28);
 
         expect(getStringWidth("⛣", { ambiguousIsNarrow: false })).toBe(2);
         expect(getStringWidth("abcde")).toBe(5);
@@ -33,6 +33,7 @@ describe("getStringWidth", () => {
         expect(getStringWidth("🔀")).toBe(2);
         expect(getStringWidth("🇪")).toBe(2);
         expect(getStringWidth("───────────────")).toBe(15);
+        expect(getStringWidth("…")).toBe(1);
     });
 
     it("should return correct width for box-drawing characters (width 1)", () => {

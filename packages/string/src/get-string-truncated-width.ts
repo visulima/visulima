@@ -56,6 +56,12 @@ const getCharType = (codePoint: number): "control" | "latin" | "other" | "wide" 
         return "wide";
     }
 
+    // Add check for ellipsis "…"
+    if (codePoint === 0x20_26) {
+        // U+2026 is the horizontal ellipsis
+        return "latin"; // Treat as regular width 1
+    }
+
     return "other";
 };
 
@@ -67,7 +73,6 @@ type StringTruncatedWidthConfig = {
         limit: number;
     };
     width: {
-        ambiguous: number;
         ambiguousIsNarrow: boolean;
         ansi: number;
         control: number;
@@ -289,16 +294,10 @@ const isCombiningCharacter = (codePoint: number): boolean => {
  */
 export interface StringTruncatedWidthOptions {
     /**
-     * Whether ambiguous characters should be treated as narrow
+     * Count [ambiguous width characters](https://www.unicode.org/reports/tr11/#Ambiguous) as having narrow width (count of 1 (regular)) instead of wide width (count of 2 (wide)).
      * @default false
      */
     ambiguousIsNarrow?: boolean;
-
-    /**
-     * Width of ambiguous-width characters
-     * @default 1
-     */
-    ambiguousWidth?: number;
 
     /**
      * Width of ANSI escape sequences
@@ -486,7 +485,6 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             limit: options.limit ?? Number.POSITIVE_INFINITY,
         },
         width: {
-            ambiguous: options.ambiguousWidth ?? 1,
             ambiguousIsNarrow: options.ambiguousIsNarrow ?? false,
             ansi: options.ansiWidth ?? 0,
             control: options.controlWidth ?? 0,
@@ -546,7 +544,6 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
 
                         const linkTextWidthResult = getStringTruncatedWidth(strippedLinkText, {
                             ambiguousIsNarrow: config.width.ambiguousIsNarrow,
-                            ambiguousWidth: config.width.ambiguous,
                             ansiWidth: config.width.ansi,
                             controlWidth: config.width.control,
                             countAnsiEscapeCodes: false, // Never count ANSI in link text width

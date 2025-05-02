@@ -84,7 +84,6 @@ describe("string width", () => {
     describe("custom width options (getStringWidth)", () => {
         bench("@visulima/string getStringWidth (custom widths)", () => {
             getStringWidth(mixedString, {
-                ambiguousWidth: 2,
                 emojiWidth: 2,
                 fullWidth: 2,
                 regularWidth: 1,

@@ -92,7 +92,6 @@ describe("string truncated width", () => {
     describe("custom width options", () => {
         bench("@visulima/string getStringTruncatedWidth (custom widths)", () => {
             getStringTruncatedWidth(mixedString, {
-                ambiguousWidth: 2,
                 emojiWidth: 2,
                 fullWidth: 2,
                 limit: 20,
@@ -103,7 +102,6 @@ describe("string truncated width", () => {
 
         bench("fast-string-truncated-width (custom widths)", () => {
             fastStringTruncatedWidth(mixedString, {
-                ambiguousWidth: 2,
                 emojiWidth: 2,
                 fullWidth: 2,
                 limit: 20,

@@ -447,7 +447,6 @@ getStringWidth("👨‍👩‍👧‍👦"); // => 2 (family emoji with ZWJ sequ
 ```typescript
 interface StringWidthOptions {
     ambiguousIsNarrow?: boolean; // Treat ambiguous-width characters as narrow
-    ambiguousWidth?: number; // Width of ambiguous-width characters (default: 1)
     ansiWidth?: number; // Width of ANSI escape sequences (default: 0)
     controlWidth?: number; // Width of control characters (default: 0)
     countAnsiEscapeCodes?: boolean; // Include ANSI escape codes in width (default: false)
