@@ -1,3 +1,9 @@
+## @visulima/string [1.0.5](https://github.com/visulima/visulima/compare/@visulima/string@1.0.4...@visulima/string@1.0.5) (2025-05-02)
+
+### Bug Fixes
+
+* **string:** update string width calculations for ellipsis and control characters, remove ambiguousWidth ([bf8a2de](https://github.com/visulima/visulima/commit/bf8a2de06429a229b5bdb17cadd8239243a55e0d))
+
 ## @visulima/string [1.0.4](https://github.com/visulima/visulima/compare/@visulima/string@1.0.3...@visulima/string@1.0.4) (2025-05-01)
 
 ### Bug Fixes
