@@ -1,6 +1,6 @@
 import colorize, { bgHex, blue, green, red } from "@visulima/colorize";
 
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 import { DOTS_BORDER } from "../dist/style.mjs";
 
 console.log("Test 1: Basic Table with Spanning Cells");

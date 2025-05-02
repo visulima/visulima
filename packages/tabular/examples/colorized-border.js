@@ -1,6 +1,6 @@
 import { blue, green, magenta, red, yellow } from "@visulima/colorize";
 
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 
 console.log("\nColorized border example:");
 const table = createTable({

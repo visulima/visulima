@@ -1,4 +1,4 @@
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 import { ROUNDED_BORDER } from "../dist/style.mjs";
 
 // Helper function to simulate streaming data

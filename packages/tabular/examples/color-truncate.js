@@ -1,6 +1,6 @@
 import colorize from "@visulima/colorize";
 
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 
 console.log("\n");
 // Create a table with colored text and truncation

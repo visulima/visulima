@@ -4,6 +4,7 @@ coverage
 
 __fixtures__
 __docs__
+examples
 
 vitest.config.ts
 .prettierrc.cjs

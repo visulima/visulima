@@ -1,4 +1,4 @@
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 
 console.log("Empty cells and null values:");
 const emptyTable = createTable()

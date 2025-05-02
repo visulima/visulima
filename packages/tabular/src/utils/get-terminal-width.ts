@@ -22,7 +22,7 @@ export const getTerminalWidth = (defaultWidth = 80): number => {
     if (process.env.CLI_WIDTH) {
         const width = Number.parseInt(process.env.CLI_WIDTH, 10);
 
-        if (!isNaN(width) && width > 0) {
+        if (!Number.isNaN(width) && width > 0) {
             return width - 3;
         }
     }

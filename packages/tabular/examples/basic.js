@@ -1,4 +1,4 @@
-import { createTable } from "../dist/index.mjs";
+import { createTable } from "../dist";
 import { DEFAULT_BORDER, DOUBLE_BORDER, NO_BORDER, ROUNDED_BORDER } from "../dist/style.mjs";
 
 const OSC = "\u001B]";

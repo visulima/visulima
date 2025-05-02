@@ -5,6 +5,8 @@ import { createTable } from "../src";
 describe("table CLI Compatibility Tests", () => {
     describe("basic table layouts", () => {
         it("should create complete table with headers and rows", () => {
+            expect.assertions(1);
+
             const table = createTable({
                 style: {
                     paddingLeft: 1,
@@ -28,6 +30,8 @@ describe("table CLI Compatibility Tests", () => {
         });
 
         it("should create vertical table output", () => {
+            expect.assertions(1);
+
             const table = createTable({
                 style: {
                     paddingLeft: 0,
@@ -49,6 +53,8 @@ describe("table CLI Compatibility Tests", () => {
         });
 
         it("should create cross table output", () => {
+            expect.assertions(1);
+
             const table = createTable({
                 style: {
                     paddingLeft: 0,

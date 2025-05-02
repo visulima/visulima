@@ -183,8 +183,6 @@ describe("table Cell Content Handling", () => {
         });
 
         describe("truncation options", () => {
-            const baseOptions = { style: { paddingLeft: 0, paddingRight: 0 } };
-
             it("should use custom truncation character", () => {
                 expect.assertions(1);
 
@@ -470,6 +468,8 @@ describe("table Cell Content Handling", () => {
 
     describe("hyperlinks (href)", () => {
         it("should wrap content with OSC 8 hyperlink sequences when href is provided", () => {
+            expect.assertions(2);
+
             const table = createTable();
             const url = "https://example.com";
             const linkText = "Example";
