@@ -264,9 +264,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = JAPANESE_STRINGS[1]; // "カタカナひらがな漢字"
-                     
+
                     expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("ja", { granularity: "grapheme" }) })).toEqualAnsi("カタ");
-                     
+
                     expect(slice(text, 3, 7, { segmenter: new Intl.Segmenter("ja", { granularity: "grapheme" }) })).toEqualAnsi("カ");
                 });
 
@@ -292,9 +292,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = KOREAN_STRINGS[1]; // "한글Text"
-                     
+
                     expect(slice(text, 0, 3, { segmenter: new Intl.Segmenter("ko", { granularity: "grapheme" }) })).toEqualAnsi("한");
-                     
+
                     expect(slice(text, 1, 5, { segmenter: new Intl.Segmenter("ko", { granularity: "grapheme" }) })).toEqualAnsi("글T");
                 });
 
@@ -320,9 +320,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = CHINESE_SIMPLIFIED_STRINGS[1]; // "文本String"
-                     
+
                     expect(slice(text, 0, 3, { segmenter: new Intl.Segmenter("zh-CN", { granularity: "grapheme" }) })).toEqualAnsi("文");
-                     
+
                     expect(slice(text, 1, 6, { segmenter: new Intl.Segmenter("zh-CN", { granularity: "grapheme" }) })).toEqualAnsi("本St");
                 });
 
@@ -338,9 +338,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = CHINESE_TRADITIONAL_STRINGS[2]; // "程式Program"
-                     
+
                     expect(slice(text, 0, 3, { segmenter: new Intl.Segmenter("zh-TW", { granularity: "grapheme" }) })).toEqualAnsi("程");
-                     
+
                     expect(slice(text, 1, 8, { segmenter: new Intl.Segmenter("zh-TW", { granularity: "grapheme" }) })).toEqualAnsi("式Prog");
                 });
             });
@@ -358,9 +358,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = THAI_STRINGS[1]; // "ข้อความString"
-                     
+
                     expect(slice(text, 0, 5, { segmenter: new Intl.Segmenter("th", { granularity: "grapheme" }) })).toEqualAnsi("ข้อความ");
-                     
+
                     expect(slice(text, 2, 9, { segmenter: new Intl.Segmenter("th", { granularity: "grapheme" }) })).toEqualAnsi("ความStri");
                 });
             });
@@ -381,9 +381,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = ARABIC_STRINGS[1]; // "نصString"
-                     
+
                     expect(slice(text, 0, 3, { segmenter: new Intl.Segmenter("ar", { granularity: "grapheme" }) })).toEqualAnsi("نصS");
-                     
+
                     expect(slice(text, 1, 6, { segmenter: new Intl.Segmenter("ar", { granularity: "grapheme" }) })).toEqualAnsi("صStri");
                 });
             });
@@ -401,9 +401,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = HEBREW_STRINGS[1]; // "טקסטString"
-                     
+
                     expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("he", { granularity: "grapheme" }) })).toEqualAnsi("טקסט");
-                     
+
                     expect(slice(text, 2, 8, { segmenter: new Intl.Segmenter("he", { granularity: "grapheme" }) })).toEqualAnsi("סטStri");
                 });
             });
@@ -421,9 +421,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = HINDI_STRINGS[1]; // "पाठString"
-                     
+
                     expect(slice(text, 0, 3, { segmenter: new Intl.Segmenter("hi", { granularity: "grapheme" }) })).toEqualAnsi("पाठS");
-                     
+
                     expect(slice(text, 1, 6, { segmenter: new Intl.Segmenter("hi", { granularity: "grapheme" }) })).toEqualAnsi("ठStri");
                 });
             });
@@ -441,9 +441,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = BENGALI_STRINGS[1]; // "টেক্সটString"
-                     
+
                     expect(slice(text, 0, 5, { segmenter: new Intl.Segmenter("bn", { granularity: "grapheme" }) })).toEqualAnsi("টেক্সট");
-                     
+
                     expect(slice(text, 2, 9, { segmenter: new Intl.Segmenter("bn", { granularity: "grapheme" }) })).toEqualAnsi("ক্সটStri");
                 });
             });
@@ -464,9 +464,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = GERMAN_STRINGS[1]; // "GROẞBUCHSTABE"
-                     
+
                     expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("de", { granularity: "grapheme" }) })).toEqualAnsi("GROẞ");
-                     
+
                     expect(slice(text, 2, 8, { segmenter: new Intl.Segmenter("de", { granularity: "grapheme" }) })).toEqualAnsi("OẞBUCH");
                 });
             });
@@ -484,9 +484,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = GREEK_STRINGS[1]; // "ΚείμενοString"
-                     
+
                     expect(slice(text, 0, 5, { segmenter: new Intl.Segmenter("el", { granularity: "grapheme" }) })).toEqualAnsi("Κεί");
-                     
+
                     expect(slice(text, 3, 9, { segmenter: new Intl.Segmenter("el", { granularity: "grapheme" }) })).toEqualAnsi("ίμε");
                 });
             });
@@ -504,9 +504,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = RUSSIAN_STRINGS[1]; // "текстString"
-                     
+
                     expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("ru", { granularity: "grapheme" }) })).toEqualAnsi("Те");
-                     
+
                     expect(slice(text, 2, 8, { segmenter: new Intl.Segmenter("ru", { granularity: "grapheme" }) })).toEqualAnsi("екс");
                 });
             });
@@ -524,9 +524,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = UKRAINIAN_STRINGS[1]; // "ТекстText"
-                     
+
                     expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("uk", { granularity: "grapheme" }) })).toEqualAnsi("Те");
-                     
+
                     expect(slice(text, 2, 7, { segmenter: new Intl.Segmenter("uk", { granularity: "grapheme" }) })).toEqualAnsi("ек");
                 });
             });
@@ -547,9 +547,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = TURKISH_STRINGS[3]; // "IıİiTest"
-                     
+
                     expect(slice(text, 0, 4, { segmenter: new Intl.Segmenter("tr", { granularity: "grapheme" }) })).toEqualAnsi("Iıİ");
-                     
+
                     expect(slice(text, 2, 7, { segmenter: new Intl.Segmenter("tr", { granularity: "grapheme" }) })).toEqualAnsi("İiTe");
                 });
             });
@@ -567,9 +567,9 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = LAO_STRINGS[1]; // "ຂໍ້ຄວາມString"
-                     
+
                     expect(slice(text, 0, 5, { segmenter: new Intl.Segmenter("lo", { granularity: "grapheme" }) })).toEqualAnsi("ຂໍ້ຄວາມS");
-                     
+
                     expect(slice(text, 2, 9, { segmenter: new Intl.Segmenter("lo", { granularity: "grapheme" }) })).toEqualAnsi("ວາມStrin");
                 });
             });

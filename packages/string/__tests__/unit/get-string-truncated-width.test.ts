@@ -31,13 +31,14 @@ describe("getStringTruncatedWidth", () => {
             expect(result.truncated).toBeTruthy();
             expect(result.ellipsed).toBeTruthy();
             expect(result.width).toBe(3);
-            expect(result.index).toBe(6);
+            expect(result.index).toBe(7);
         });
     });
 
     describe("calculating the width of a string", () => {
         it("supports basic cases", () => {
-            expect.assertions(19);
+            expect.assertions(20);
+
             expect(getWidth("hello")).toBe(5);
             expect(getWidth("\u001B[31mhello")).toBe(5);
 
@@ -58,6 +59,7 @@ describe("getStringTruncatedWidth", () => {
             expect(getWidth("\u{845B}\u{E0100}")).toBe(2);
             expect(getWidth("ปฏัก")).toBe(3);
             expect(getWidth("_\u0E34")).toBe(1);
+            expect(getWidth("…")).toBe(1);
         });
 
         it("supports control characters", () => {
@@ -193,7 +195,7 @@ describe("getStringTruncatedWidth", () => {
 
         it("supports all basic emojis", async () => {
             expect.assertions(1);
-             
+
             const response = await fetch("https://raw.githubusercontent.com/muan/unicode-emoji-json/main/data-by-group.json");
             const data = await response.json();
             // eslint-disable-next-line @typescript-eslint/no-shadow
@@ -224,7 +226,7 @@ describe("getStringTruncatedWidth", () => {
                 "\u2013": 2, // EN DASH
                 "\u2014": 2, // EM DASH
                 "\u2022": 2, // BULLET
-                "…": 2, // HORIZONTAL ELLIPSIS
+                "…": 1, // HORIZONTAL ELLIPSIS
 
                 // Arrows - Basic directional
                 "\u2190": 2, // LEFTWARDS ARROW
@@ -296,10 +298,10 @@ describe("getStringTruncatedWidth", () => {
             expect.assertions(14);
             expect(getTruncated("hello", { ellipsis: "…", limit: 10 })).toBe("hello");
             expect(getTruncated("hello", { ellipsis: "…", limit: 5 })).toBe("hello");
-            expect(getTruncated("hello", { ellipsis: "…", limit: 4 })).toBe("he…");
-            expect(getTruncated("hello", { ellipsis: "…", limit: 3 })).toBe("h…");
-            expect(getTruncated("hello", { ellipsis: "…", limit: 2 })).toBe("…");
-            expect(getTruncated("hello", { ellipsis: "…", limit: 1 })).toBe("");
+            expect(getTruncated("hello", { ellipsis: "…", limit: 4 })).toBe("hel…");
+            expect(getTruncated("hello", { ellipsis: "…", limit: 3 })).toBe("he…");
+            expect(getTruncated("hello", { ellipsis: "…", limit: 2 })).toBe("h…");
+            expect(getTruncated("hello", { ellipsis: "…", limit: 1 })).toBe("…");
             expect(getTruncated("hello", { ellipsis: "…", limit: 0 })).toBe("");
 
             expect(getTruncated("hello", { ellipsis: "..", limit: 10 })).toBe("hello");
@@ -316,18 +318,18 @@ describe("getStringTruncatedWidth", () => {
 
             expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 10 })).toBe("\u001B[31mhello");
             expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 5 })).toBe("\u001B[31mhello");
-            expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 4 })).toBe("\u001B[31mhe…");
-            expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 3 })).toBe("\u001B[31mh…");
-            expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 2 })).toBe("\u001B[31m…");
-            expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 1 })).toBe("\u001B[31m");
+            expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 4 })).toBe("\u001B[31mhel…");
+            expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 3 })).toBe("\u001B[31mhe…");
+            expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 2 })).toBe("\u001B[31mh…");
+            expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 1 })).toBe("\u001B[31m…");
             expect(getTruncated("\u001B[31mhello", { ellipsis: "…", limit: 0 })).toBe("\u001B[31m");
 
             // Test with multiple ANSI codes
             expect(getTruncated("\u001B[31m\u001B[1mhello", { ellipsis: "…", limit: 5 })).toBe("\u001B[31m\u001B[1mhello");
-            expect(getTruncated("\u001B[31m\u001B[1mhello", { ellipsis: "…", limit: 4 })).toBe("\u001B[31m\u001B[1mhe…");
-            expect(getTruncated("\u001B[31m\u001B[1mhello", { ellipsis: "…", limit: 3 })).toBe("\u001B[31m\u001B[1mh…");
-            expect(getTruncated("\u001B[31m\u001B[1mhello", { ellipsis: "…", limit: 2 })).toBe("\u001B[31m\u001B[1m…");
-            expect(getTruncated("\u001B[31m\u001B[1mhello", { ellipsis: "…", limit: 1 })).toBe("\u001B[31m\u001B[1m");
+            expect(getTruncated("\u001B[31m\u001B[1mhello", { ellipsis: "…", limit: 4 })).toBe("\u001B[31m\u001B[1mhel…");
+            expect(getTruncated("\u001B[31m\u001B[1mhello", { ellipsis: "…", limit: 3 })).toBe("\u001B[31m\u001B[1mhe…");
+            expect(getTruncated("\u001B[31m\u001B[1mhello", { ellipsis: "…", limit: 2 })).toBe("\u001B[31m\u001B[1mh…");
+            expect(getTruncated("\u001B[31m\u001B[1mhello", { ellipsis: "…", limit: 1 })).toBe("\u001B[31m\u001B[1m…");
             expect(getTruncated("\u001B[31m\u001B[1mhello", { ellipsis: "…", limit: 0 })).toBe("\u001B[31m\u001B[1m");
         });
 
@@ -343,9 +345,9 @@ describe("getStringTruncatedWidth", () => {
 
             expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 10 })).toBe("\u0000\u0001\u0002\u0003");
             expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 4 })).toBe("\u0000\u0001\u0002\u0003");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 3 })).toBe("\u0000…");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 2 })).toBe("…");
-            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 1 })).toBe("");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 3 })).toBe("\u0000\u0001…");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 2 })).toBe("\u0000…");
+            expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 1 })).toBe("…");
             expect(getTruncated("\u0000\u0001\u0002\u0003", { controlWidth: 1, ellipsis: "…", limit: 0 })).toBe("");
         });
 
@@ -354,11 +356,11 @@ describe("getStringTruncatedWidth", () => {
 
             expect(getTruncated("古池や", { ellipsis: "…", limit: 10 })).toBe("古池や");
             expect(getTruncated("古池や", { ellipsis: "…", limit: 6 })).toBe("古池や");
-            expect(getTruncated("古池や", { ellipsis: "…", limit: 5 })).toBe("古…");
+            expect(getTruncated("古池や", { ellipsis: "…", limit: 5 })).toBe("古池…");
             expect(getTruncated("古池や", { ellipsis: "…", limit: 4 })).toBe("古…");
-            expect(getTruncated("古池や", { ellipsis: "…", limit: 3 })).toBe("…");
+            expect(getTruncated("古池や", { ellipsis: "…", limit: 3 })).toBe("古…");
             expect(getTruncated("古池や", { ellipsis: "…", limit: 2 })).toBe("…");
-            expect(getTruncated("古池や", { ellipsis: "…", limit: 1 })).toBe("");
+            expect(getTruncated("古池や", { ellipsis: "…", limit: 1 })).toBe("…");
             expect(getTruncated("古池や", { ellipsis: "…", limit: 0 })).toBe("");
         });
 
@@ -367,16 +369,16 @@ describe("getStringTruncatedWidth", () => {
 
             expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 10 })).toBe("👶👶🏽");
             expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 4 })).toBe("👶👶🏽");
-            expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 3 })).toBe("…");
+            expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 3 })).toBe("👶…");
             expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 2 })).toBe("…");
-            expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 1 })).toBe("");
+            expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 1 })).toBe("…");
             expect(getTruncated("👶👶🏽", { ellipsis: "…", limit: 0 })).toBe("");
 
             expect(getTruncated("👩‍👩‍👦‍👦👨‍❤️‍💋‍👨", { ellipsis: "…", limit: 10 })).toBe("👩‍👩‍👦‍👦👨‍❤️‍💋‍👨");
             expect(getTruncated("👩‍👩‍👦‍👦👨‍❤️‍💋‍👨", { ellipsis: "…", limit: 4 })).toBe("👩‍👩‍👦‍👦👨‍❤️‍💋‍👨");
-            expect(getTruncated("👩‍👩‍👦‍👦👨‍❤️‍💋‍👨", { ellipsis: "…", limit: 3 })).toBe("…");
+            expect(getTruncated("👩‍👩‍👦‍👦👨‍❤️‍💋‍👨", { ellipsis: "…", limit: 3 })).toBe("👩‍👩‍👦‍👦…");
             expect(getTruncated("👩‍👩‍👦‍👦👨‍❤️‍💋‍👨", { ellipsis: "…", limit: 2 })).toBe("…");
-            expect(getTruncated("👩‍👩‍👦‍👦👨‍❤️‍💋‍👨", { ellipsis: "…", limit: 1 })).toBe("");
+            expect(getTruncated("👩‍👩‍👦‍👦👨‍❤️‍💋‍👨", { ellipsis: "…", limit: 1 })).toBe("…");
             expect(getTruncated("👩‍👩‍👦‍👦👨‍❤️‍💋‍👨", { ellipsis: "…", limit: 0 })).toBe("");
         });
     });
