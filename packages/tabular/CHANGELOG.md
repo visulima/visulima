@@ -1,0 +1,9 @@
+## @visulima/tabular 1.0.0 (2025-05-03)
+
+### Features
+
+* adding new tabular cli package ([#499](https://github.com/visulima/visulima/issues/499)) ([646b550](https://github.com/visulima/visulima/commit/646b5501f3a78406f730b7dd1d8d41564daf3d9e))
+
+### Miscellaneous Chores
+
+* **tabular:** fixed readme ([d321263](https://github.com/visulima/visulima/commit/d321263b88cc6ee6210951073cfafc3b8dc88690))
