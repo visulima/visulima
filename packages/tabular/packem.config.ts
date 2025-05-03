@@ -19,7 +19,6 @@ export default defineConfig({
         typedoc: typedocBuilder,
     },
     cjsInterop: true,
-    declaration: false,
     typedoc: {
         format: "inline",
         readmePath: "./README.md",

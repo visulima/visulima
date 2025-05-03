@@ -167,3 +167,87 @@ export const NO_BORDER: BorderStyle = {
     topLeft: { char: "", width: 0 },
     topRight: { char: "", width: 0 },
 };
+
+/**
+ * Block border style.
+ */
+export const BLOCK_BORDER: BorderStyle = {
+    bodyJoin: { char: "█", width: 1 },
+    bodyLeft: { char: "█", width: 1 },
+    bodyRight: { char: "█", width: 1 },
+    bottomBody: { char: "█", width: 1 },
+    bottomJoin: { char: "█", width: 1 },
+    bottomLeft: { char: "█", width: 1 },
+    bottomRight: { char: "█", width: 1 },
+    joinBody: { char: "█", width: 1 },
+    joinJoin: { char: "█", width: 1 },
+    joinLeft: { char: "█", width: 1 },
+    joinRight: { char: "█", width: 1 },
+    topBody: { char: "█", width: 1 },
+    topJoin: { char: "█", width: 1 },
+    topLeft: { char: "█", width: 1 },
+    topRight: { char: "█", width: 1 },
+};
+
+/**
+ * Outer half block border style.
+ */
+export const OUTER_HALF_BLOCK_BORDER: BorderStyle = {
+    bodyJoin: { char: "▌", width: 1 },
+    bodyLeft: { char: "▌", width: 1 },
+    bodyRight: { char: "▐", width: 1 },
+    bottomBody: { char: "▄", width: 1 },
+    bottomJoin: { char: "▄", width: 1 },
+    bottomLeft: { char: "▙", width: 1 },
+    bottomRight: { char: "▟", width: 1 },
+    joinBody: { char: "", width: 0 },
+    joinJoin: { char: "", width: 0 },
+    joinLeft: { char: "▌", width: 1 },
+    joinRight: { char: "▐", width: 1 },
+    topBody: { char: "▀", width: 1 },
+    topJoin: { char: "▀", width: 1 },
+    topLeft: { char: "▛", width: 1 },
+    topRight: { char: "▜", width: 1 },
+};
+
+/**
+ * Inner half block border style.
+ */
+export const INNER_HALF_BLOCK_BORDER: BorderStyle = {
+    bodyJoin: { char: "▐", width: 1 },
+    bodyLeft: { char: "▐", width: 1 },
+    bodyRight: { char: "▌", width: 1 },
+    bottomBody: { char: "▀", width: 1 },
+    bottomJoin: { char: "▀", width: 1 },
+    bottomLeft: { char: "▝", width: 1 },
+    bottomRight: { char: "▘", width: 1 },
+    joinBody: { char: "", width: 0 },
+    joinJoin: { char: "", width: 0 },
+    joinLeft: { char: "▐", width: 1 },
+    joinRight: { char: "▌", width: 1 },
+    topBody: { char: "▄", width: 1 },
+    topJoin: { char: "▄", width: 1 },
+    topLeft: { char: "▗", width: 1 },
+    topRight: { char: "▖", width: 1 },
+};
+
+/**
+ * Thick line border style.
+ */
+export const THICK_BORDER: BorderStyle = {
+    bodyJoin: { char: "┃", width: 1 },
+    bodyLeft: { char: "┃", width: 1 },
+    bodyRight: { char: "┃", width: 1 },
+    bottomBody: { char: "━", width: 1 },
+    bottomJoin: { char: "┻", width: 1 },
+    bottomLeft: { char: "┗", width: 1 },
+    bottomRight: { char: "┛", width: 1 },
+    joinBody: { char: "━", width: 1 },
+    joinJoin: { char: "╋", width: 1 },
+    joinLeft: { char: "┣", width: 1 },
+    joinRight: { char: "┫", width: 1 },
+    topBody: { char: "━", width: 1 },
+    topJoin: { char: "┳", width: 1 },
+    topLeft: { char: "┏", width: 1 },
+    topRight: { char: "┓", width: 1 },
+};

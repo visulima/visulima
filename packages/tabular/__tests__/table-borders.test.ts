@@ -2,7 +2,20 @@ import { blue, gray, green, magenta, red, yellow } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { createTable, Table } from "../src";
-import { ASCII_BORDER, DEFAULT_BORDER, DOTS_BORDER, DOUBLE_BORDER, MARKDOWN_BORDER, MINIMAL_BORDER, NO_BORDER, ROUNDED_BORDER } from "../src/style";
+import {
+    ASCII_BORDER,
+    BLOCK_BORDER,
+    DEFAULT_BORDER,
+    DOTS_BORDER,
+    DOUBLE_BORDER,
+    INNER_HALF_BLOCK_BORDER,
+    MARKDOWN_BORDER,
+    MINIMAL_BORDER,
+    NO_BORDER,
+    OUTER_HALF_BLOCK_BORDER,
+    ROUNDED_BORDER,
+    THICK_BORDER,
+} from "../src/style";
 
 describe("table borders", () => {
     describe("border styles", () => {
@@ -22,6 +35,10 @@ describe("table borders", () => {
             // eslint-disable-next-line unicorn/text-encoding-identifier-case
             ["ASCII", ASCII_BORDER],
             ["NO_BORDER", NO_BORDER],
+            ["BLOCK", BLOCK_BORDER],
+            ["OUTER_HALF_BLOCK", OUTER_HALF_BLOCK_BORDER],
+            ["INNER_HALF_BLOCK", INNER_HALF_BLOCK_BORDER],
+            ["THICK", THICK_BORDER],
         ])("renders table with %s border style", (_, borderStyle) => {
             expect.assertions(1);
             const table = createTable({

@@ -10,6 +10,16 @@ exports[`table borders > border styles > renders table with ASCII border style 1
 +--------------+--------------+--------------+"
 `;
 
+exports[`table borders > border styles > renders table with BLOCK border style 1`] = `
+"██████████████████████████████████████████████
+█ Header 1     █ Header 2     █ Header 3     █
+██████████████████████████████████████████████
+█ Row 1 Cell 1 █ Row 1 Cell 2 █ Row 1 Cell 3 █
+██████████████████████████████████████████████
+█ Row 2 Cell 1 █ Row 2 Cell 2 █ Row 2 Cell 3 █
+██████████████████████████████████████████████"
+`;
+
 exports[`table borders > border styles > renders table with DEFAULT border style 1`] = `
 "┌──────────────┬──────────────┬──────────────┐
 │ Header 1     │ Header 2     │ Header 3     │
@@ -40,6 +50,14 @@ exports[`table borders > border styles > renders table with DOUBLE border style 
 ╚══════════════╩══════════════╩══════════════╝"
 `;
 
+exports[`table borders > border styles > renders table with INNER_HALF_BLOCK border style 1`] = `
+"▗▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▖
+▐ Header 1     ▐ Header 2     ▐ Header 3     ▌
+▐ Row 1 Cell 1 ▐ Row 1 Cell 2 ▐ Row 1 Cell 3 ▌
+▐ Row 2 Cell 1 ▐ Row 2 Cell 2 ▐ Row 2 Cell 3 ▌
+▝▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▘"
+`;
+
 exports[`table borders > border styles > renders table with MARKDOWN border style 1`] = `
 "|--------------|--------------|--------------|
 | Header 1     | Header 2     | Header 3     |
@@ -66,6 +84,14 @@ exports[`table borders > border styles > renders table with NO_BORDER border sty
  Row 2 Cell 1  Row 2 Cell 2  Row 2 Cell 3 "
 `;
 
+exports[`table borders > border styles > renders table with OUTER_HALF_BLOCK border style 1`] = `
+"▛▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▜
+▌ Header 1     ▌ Header 2     ▌ Header 3     ▐
+▌ Row 1 Cell 1 ▌ Row 1 Cell 2 ▌ Row 1 Cell 3 ▐
+▌ Row 2 Cell 1 ▌ Row 2 Cell 2 ▌ Row 2 Cell 3 ▐
+▙▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▟"
+`;
+
 exports[`table borders > border styles > renders table with ROUNDED border style 1`] = `
 "╭──────────────┬──────────────┬──────────────╮
 │ Header 1     │ Header 2     │ Header 3     │
@@ -74,6 +100,16 @@ exports[`table borders > border styles > renders table with ROUNDED border style
 ├──────────────┼──────────────┼──────────────┤
 │ Row 2 Cell 1 │ Row 2 Cell 2 │ Row 2 Cell 3 │
 ╰──────────────┴──────────────┴──────────────╯"
+`;
+
+exports[`table borders > border styles > renders table with THICK border style 1`] = `
+"┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Header 1     ┃ Header 2     ┃ Header 3     ┃
+┣━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━┫
+┃ Row 1 Cell 1 ┃ Row 1 Cell 2 ┃ Row 1 Cell 3 ┃
+┣━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━┫
+┃ Row 2 Cell 1 ┃ Row 2 Cell 2 ┃ Row 2 Cell 3 ┃
+┗━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━┛"
 `;
 
 exports[`table borders > border styles > renders table with mixed alignments using ROUNDED border style 1`] = `
