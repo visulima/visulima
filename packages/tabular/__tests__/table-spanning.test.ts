@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createTable } from "../src/table"; // Assuming Table uses Grid internally
+import { createTable } from "../src/table";
 
 describe("table Cell Spanning", () => {
     describe("colSpan", () => {

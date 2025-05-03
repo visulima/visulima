@@ -13,7 +13,7 @@ trim_trailing_whitespace = true
 [packages/string/__tests__/outdent.test.ts]
 trim_trailing_whitespace = false
 
-[packages/table/__tests__/__snapshots__/*.snap]
+[packages/tabular/__tests__/__snapshots__/*.snap]
 trim_trailing_whitespace = false
 
 [*.mdx]
