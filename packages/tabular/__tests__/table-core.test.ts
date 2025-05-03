@@ -369,3 +369,56 @@ describe("table core functionality", () => {
         `);
     });
 });
+
+describe("error handling and edge cases", () => {
+    it("should throw if addRow receives non-array input", () => {
+        expect.assertions(1);
+        const table = createTable();
+        expect(() => {
+            // @ts-expect-error - Testing invalid input
+            table.addRow("not an array");
+        }).toThrow("Row must be an array");
+    });
+
+    it("should render empty string if table has no rows and showHeader is false", () => {
+        expect.assertions(1);
+        const table = new Table({ showHeader: false });
+        expect(table.toString()).toBe("");
+    });
+
+    it("should render empty string if table has no rows and no headers set", () => {
+        expect.assertions(1);
+        const table = new Table(); // showHeader defaults to true
+        // No setHeaders called, no addRow called
+        expect(table.toString()).toBe("");
+    });
+
+    it("should render only header if headers are set but no rows added", () => {
+        expect.assertions(1);
+        const table = createTable();
+        table.setHeaders(["H1", "H2"]);
+        expect(table.toString()).toMatchInlineSnapshot(`
+          "┌────┬────┐
+          │ H1 │ H2 │
+          └────┴────┘"
+        `);
+    });
+
+    it("should handle adding an empty array row", () => {
+        expect.assertions(1);
+        const table = createTable();
+        table.setHeaders(["A", "B"]);
+        table.addRow(["", ""]); // Add empty row
+        table.addRow(["r2c1", "r2c2"]);
+
+        expect(table.toString()).toMatchInlineSnapshot(`
+          "┌──────┬──────┐
+          │ A    │ B    │
+          ├──────┼──────┤
+          │      │      │
+          ├──────┼──────┤
+          │ r2c1 │ r2c2 │
+          └──────┴──────┘"
+        `);
+    });
+});

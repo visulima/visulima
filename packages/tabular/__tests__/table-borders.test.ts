@@ -30,6 +30,12 @@ describe("table borders", () => {
                 },
             });
 
+            // Add a check for sampleData[0]
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (!sampleData[0]) {
+                throw new Error("Sample data is missing header row for border style test.");
+            }
+
             table.setHeaders(sampleData[0]);
             table.addRows(...sampleData.slice(1));
 
@@ -393,6 +399,138 @@ describe("table borders", () => {
 
             expect(table.toString()).toBe(expected);
             expect(table.toString()).toMatchSnapshot("table-zero-padding");
+        });
+    });
+
+    describe("specific join character logic", () => {
+        it("should render correct join char ('┬') when only row above spans horizontally", () => {
+            expect.assertions(1);
+
+            const table = createTable();
+
+            table.addRow([{ colSpan: 2, content: "Span Above" }]);
+            table.addRow(["A", "B"]);
+            // Expecting '┬' (topJoin) between A and B in the middle border
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌─────────────┐
+              │ Span Above  │
+              ├──────┬──────┤
+              │ A    │ B    │
+              └──────┴──────┘"
+            `);
+        });
+
+        it("should render correct join char ('┴') when only row below spans horizontally", () => {
+            expect.assertions(1);
+
+            const table = createTable();
+
+            table.addRow(["A", "B"]);
+            table.addRow([{ colSpan: 2, content: "Span Below" }]);
+            // Expecting '┴' (bottomJoin) between A and B in the middle border
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌──────┬──────┐
+              │ A    │ B    │
+              ├──────┴──────┤
+              │ Span Below  │
+              └─────────────┘"
+            `);
+        });
+
+        it("should render correct join char ('─') when both rows span horizontally", () => {
+            expect.assertions(1);
+
+            const table = createTable();
+
+            table.addRow([{ colSpan: 2, content: "Span Above" }]);
+            table.addRow([{ colSpan: 2, content: "Span Below" }]);
+            // Expecting '─' (joinBody) between A and B in the middle border
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌─────────────┐
+              │ Span Above  │
+              ├─────────────┤
+              │ Span Below  │
+              └─────────────┘"
+            `);
+        });
+
+        it("should render correct join char ('├') when only left cell spans vertically", () => {
+            expect.assertions(1);
+
+            const table = createTable();
+
+            table.addRow([{ content: "Span Left", rowSpan: 2 }, "A"]);
+            table.addRow(["B"]);
+            // Expecting '├' (joinLeft) on the left edge of the middle border
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌───────────┬───┐
+              │ Span Left │ A │
+              │           ├───┤
+              │           │ B │
+              └───────────┴───┘"
+            `);
+        });
+
+        it("should render correct join char ('┤') when only right cell spans vertically", () => {
+            expect.assertions(1);
+
+            const table = createTable();
+
+            table.addRow(["A", { content: "Span Right", rowSpan: 2 }]);
+            table.addRow(["B"]);
+            // Expecting '┤' (joinRight) on the right edge of the middle border
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌───┬────────────┐
+              │ A │ Span Right │
+              ├───┤            │
+              │ B │            │
+              └───┴────────────┘"
+            `);
+        });
+
+        it("should render correct join char ('│') when different cells span vertically", () => {
+            expect.assertions(1);
+
+            const table = createTable();
+
+            table.addRow([
+                { content: "Span Left", rowSpan: 2 },
+                { content: "Span Right", rowSpan: 2 },
+            ]);
+            // Expecting '│' (bodyJoin) in the middle of the middle border
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌───────────┬────────────┐
+              │ Span Left │ Span Right │
+              │           │            │
+              └───────────┴────────────┘"
+            `);
+        });
+
+        it("should render correct join char (' ') when the same cell spans vertically and horizontally", () => {
+            expect.assertions(1);
+
+            const table = createTable();
+
+            table.addRow([{ colSpan: 2, content: "Span Both", rowSpan: 2 }]);
+            // Expecting space where the internal border would be
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌───────────┐
+              │ Span Both │
+              │           │
+              └───────────┘"
+            `);
+        });
+    });
+
+    describe("border rendering variations", () => {
+        it("should render no borders if borderType is 'none' in renderHorizontalBorder", () => {
+            expect.assertions(1);
+
+            const table = createTable({ style: { border: NO_BORDER } }); // Use NO_BORDER style
+            table.addRow(["A", "B"]);
+            table.addRow(["C", "D"]);
+
+            expect(table.toString()).toMatchFileSnapshot("table-no-borders");
         });
     });
 });

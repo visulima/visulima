@@ -58,6 +58,10 @@ export class Table {
      * @returns The Table instance for chaining.
      */
     public addRow(row: TableCell[]): this {
+        if (!Array.isArray(row)) {
+            throw new TypeError("Row must be an array");
+        }
+
         this.#rows.push(row);
         this.#isDirty = true;
         this.#cachedString = null;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { Cell as CellType, GridItem } from "../../../src/types";
+import type { GridItem, TableCell } from "../../../src/types";
 import calculateCellTotalWidth from "../../../src/utils/calculate-cell-total-width";
 import calculateRowHeights from "../../../src/utils/calculate-row-heights";
 import computeRowLogicalWidth from "../../../src/utils/compute-row-logical-width";
@@ -84,7 +84,7 @@ describe("grid Sizing Calculations", () => {
             ).toStrictEqual([1]);
         });
 
-        it("returns correct heights for multi-line content", () => {
+        it("returns correct heights for multi-line row", () => {
             expect.assertions(1);
             const cell: GridItem = { content: "A\nB\nC" };
             const grid = [[cell]];
@@ -112,24 +112,24 @@ describe("grid Sizing Calculations", () => {
             ).toStrictEqual([3]);
         });
 
-        it("handles rowSpan by propagating height", () => {
+        it("returns correct heights with row spans", () => {
             expect.assertions(1);
-            // Note: The original test might have implicitly assumed the row span calculation logic.
-            // The calculateRowHeights function adjusts height based on content AND span.
-            // This test currently asserts [1, 1], which might be correct if content height doesn't force expansion.
-            // Re-evaluate if this test truly covers the intended row span height logic.
-            const cell: GridItem = { content: "A\nB", rowSpan: 2 };
-            const grid = [[cell], [cell]];
-
+            const cellA: GridItem = { content: "A", rowSpan: 2 };
+            const cellB: GridItem = { content: "B\nB" };
+            const cellC: GridItem = { content: "C" };
+            const grid = [
+                [cellA, cellB],
+                [null, cellC],
+            ];
             expect(
                 calculateRowHeights(
                     grid,
-                    [1],
+                    [1, 1],
                     {
                         autoColumns: 1,
                         autoFlow: "row",
                         autoRows: 1,
-                        columns: 1,
+                        columns: 2,
                         defaultTerminalWidth: 80,
                         gap: 0,
                         paddingLeft: 0,
@@ -142,7 +142,133 @@ describe("grid Sizing Calculations", () => {
                     alignCellContent,
                     findFirstOccurrenceRow,
                 ),
-            ).toStrictEqual([1, 1]); // Re-check this expectation based on function's behavior
+            ).toStrictEqual([2, 1]); // Row 0 needs height 2 (for cellB), Row 1 needs height 1 (for cellC)
+        });
+
+        it("handles null cells and empty rows gracefully", () => {
+            expect.assertions(1);
+
+            const cellA: GridItem = { content: "A" };
+            const grid = [[cellA, null], [], [null, null]]; // Includes empty row and null cells
+
+            expect(
+                calculateRowHeights(
+                    grid,
+                    [1, 0, 0], // Column widths needed, but row heights are calculated
+                    {
+                        autoColumns: 1,
+                        autoFlow: "row",
+                        autoRows: 1,
+                        columns: 2,
+                        defaultTerminalWidth: 80,
+                        gap: 0,
+                        paddingLeft: 0,
+                        paddingRight: 0,
+                        rows: 0,
+                        showBorders: false,
+                        truncate: false,
+                        wordWrap: false,
+                    },
+                    alignCellContent,
+                    findFirstOccurrenceRow,
+                ),
+            ).toStrictEqual([1, 1, 1]);
+        });
+
+        it("respects fixed rowHeights array option", () => {
+            expect.assertions(1);
+            const cellA: GridItem = { content: "A\nB\nC" };
+            const cellB: GridItem = { content: "D" };
+            const grid = [[cellA], [cellB]];
+            const fixedHeights = [2, 3]; // Fix row 0 height to 2, row 1 to 3
+            expect(
+                calculateRowHeights(
+                    grid,
+                    [1],
+                    {
+                        autoColumns: 1,
+                        autoFlow: "row",
+                        autoRows: 1,
+                        columns: 1,
+                        defaultTerminalWidth: 80,
+                        fixedRowHeights: fixedHeights, // Use fixed heights
+                        gap: 0,
+                        paddingLeft: 0,
+                        paddingRight: 0,
+                        rows: 0,
+                        showBorders: false,
+                        truncate: false,
+                        wordWrap: false,
+                    },
+                    alignCellContent,
+                    findFirstOccurrenceRow,
+                ),
+            ).toStrictEqual(fixedHeights);
+        });
+
+        it("respects fixed rowHeights number option (applies to all rows)", () => {
+            expect.assertions(1);
+            const cellA: GridItem = { content: "A\nB\nC" };
+            const cellB: GridItem = { content: "D" };
+            const grid = [[cellA], [cellB]];
+            const fixedHeight = 2; // Fix all rows height to 2
+            expect(
+                calculateRowHeights(
+                    grid,
+                    [1],
+                    {
+                        autoColumns: 1,
+                        autoFlow: "row",
+                        autoRows: 1,
+                        columns: 1,
+                        defaultTerminalWidth: 80,
+                        fixedRowHeights: [fixedHeight, fixedHeight], // Apply to all rows
+                        gap: 0,
+                        paddingLeft: 0,
+                        paddingRight: 0,
+                        rows: 0,
+                        showBorders: false,
+                        truncate: false,
+                        wordWrap: false,
+                    },
+                    alignCellContent,
+                    findFirstOccurrenceRow,
+                ),
+            ).toStrictEqual([fixedHeight, fixedHeight]);
+        });
+
+        it("handles fixed rowHeights shorter than actual rows (uses calculated for remainder)", () => {
+            expect.assertions(1);
+
+            const cellA: GridItem = { content: "A\nB" };
+            const cellB: GridItem = { content: "C\nD\nE" };
+            const cellC: GridItem = { content: "F" };
+            const grid = [[cellA], [cellB], [cellC]];
+            const fixedHeights = [1]; // Only fix row 0 height
+
+            expect(
+                calculateRowHeights(
+                    grid,
+                    [1],
+                    {
+                        autoColumns: 1,
+                        autoFlow: "row",
+                        autoRows: 1,
+                        columns: 1,
+                        defaultTerminalWidth: 80,
+                        fixedRowHeights: fixedHeights,
+                        gap: 0,
+                        paddingLeft: 0,
+                        paddingRight: 0,
+                        rows: 0,
+                        showBorders: false,
+                        truncate: false,
+                        wordWrap: false,
+                    },
+                    alignCellContent,
+                    findFirstOccurrenceRow,
+                ),
+            ).toStrictEqual([1, 1, 1]);
         });
     });
 
@@ -154,19 +280,19 @@ describe("grid Sizing Calculations", () => {
 
         it("should handle row with null cells", () => {
             expect.assertions(1);
-            const row: CellType[] = [null, null, null];
+            const row: TableCell[] = [null, null, null];
             expect(computeRowLogicalWidth(row)).toBe(3); // Each null cell counts as width 1
         });
 
         it("should handle row with string cells", () => {
             expect.assertions(1);
-            const row: CellType[] = ["cell1", "cell2", "cell3"];
+            const row: TableCell[] = ["cell1", "cell2", "cell3"];
             expect(computeRowLogicalWidth(row)).toBe(3); // Each string cell counts as width 1
         });
 
         it("should handle row with object cells and colSpan", () => {
             expect.assertions(1);
-            const row: CellType[] = [
+            const row: TableCell[] = [
                 { colSpan: 2, content: "wide cell" }, // Width 2
                 { content: "normal cell" }, // Width 1
                 { colSpan: 3, content: "wider cell" }, // Width 3
@@ -176,7 +302,7 @@ describe("grid Sizing Calculations", () => {
 
         it("should handle mixed row with null, string, and object cells", () => {
             expect.assertions(1);
-            const row: CellType[] = [
+            const row: TableCell[] = [
                 null, // Width 1
                 "string cell", // Width 1
                 { colSpan: 2, content: "wide cell" }, // Width 2
@@ -187,7 +313,7 @@ describe("grid Sizing Calculations", () => {
 
         it("should handle object cells without colSpan", () => {
             expect.assertions(1);
-            const row: CellType[] = [{ content: "cell1" }, { content: "cell2" }, { content: "cell3" }];
+            const row: TableCell[] = [{ content: "cell1" }, { content: "cell2" }, { content: "cell3" }];
             expect(computeRowLogicalWidth(row)).toBe(3); // Each cell defaults to width 1
         });
 
@@ -203,7 +329,7 @@ describe("grid Sizing Calculations", () => {
 
         it("should handle array cells as regular content", () => {
             expect.assertions(1);
-            const row: CellType[] = [["array1"], ["array2"], { content: "object" }];
+            const row: TableCell[] = ["array1", "array2", { content: "object" }];
             expect(computeRowLogicalWidth(row)).toBe(3); // Arrays count as width 1
         });
 
@@ -214,7 +340,13 @@ describe("grid Sizing Calculations", () => {
             // Very large colSpan
             expect(computeRowLogicalWidth([{ colSpan: 1000, content: "large" }])).toBe(1000);
             // Mix of all types
-            expect(computeRowLogicalWidth([null, "", ["array"], { colSpan: 2, content: "span" }, { content: "no span" }])).toBe(6); // 1 + 1 + 1 + 2 + 1
+            expect(computeRowLogicalWidth([null, "", "array", { colSpan: 2, content: "span" }, { content: "no span" }])).toBe(6);
+        });
+
+        it("should handle row with bigint cells", () => {
+            expect.assertions(1);
+            const row: TableCell[] = [123n, { content: 456n }, null];
+            expect(computeRowLogicalWidth(row)).toBe(3); // Each cell counts as width 1
         });
     });
 });
