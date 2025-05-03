@@ -1,0 +1,36 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`table Cell Content Handling > formatting (ANSI colors, Unicode, Newlines) > aNSI colored text > should handle word wrapping with colored text 1`] = `
+"┌─────────┬─────────┐
+│ [31mHello[39m   │ [34mI am[39m    │
+│ [31mhow are[39m │ [34mfine[39m    │
+│ [31myou?[39m    │ [34mthanks![39m │
+└─────────┴─────────┘"
+`;
+
+exports[`table Cell Content Handling > formatting (ANSI colors, Unicode, Newlines) > unicode and CJK text > should handle CJK text with truncation 1`] = `
+"┌────────┬───────────┬─────┐
+│ foobar │ English … │ baz │
+├────────┼───────────┼─────┤
+│ foobar │ 中文测试  │ baz │
+├────────┼───────────┼─────┤
+│ foobar │ 日本語テ… │ baz │
+├────────┼───────────┼─────┤
+│ foobar │ 한국어테… │ baz │
+└────────┴───────────┴─────┘"
+`;
+
+exports[`table Cell Content Handling > truncation > global truncation and complex scenarios > should handle empty and whitespace cells correctly in a truncated table 1`] = `
+"┌─────┬─────┬───────────────┐
+│     │     │Hello world th…│
+└─────┴─────┴───────────────┘"
+`;
+
+exports[`table Cell Content Handling > truncation > global truncation and complex scenarios > should handle multi-line content with truncation 1`] = `
+"┌───────────────┬────────────────────┬──────────┐
+│Authentication │This is a very long…│Active    │
+├───────────────┼────────────────────┼──────────┤
+│Authorization  │Role-based          │Pending   │
+│               │access control      │          │
+└───────────────┴────────────────────┴──────────┘"
+`;
