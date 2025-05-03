@@ -8,11 +8,13 @@ import computeRowLogicalWidth from "../../../src/utils/compute-row-logical-width
 describe("grid Sizing Calculations", () => {
     describe("calculateCellTotalWidth", () => {
         it("returns width for a single column span", () => {
+            expect.assertions(1);
             // Should return the width of the column at index 1
             expect(calculateCellTotalWidth([5, 6, 7], 1, 1)).toBe(6);
         });
 
         it("returns sum of widths for multiple columns spanned", () => {
+            expect.assertions(4);
             expect(calculateCellTotalWidth([5, 6, 7], 0, 3)).toBe(20);
             expect(calculateCellTotalWidth([5, 6], 0, 2)).toBe(12);
             expect(calculateCellTotalWidth([5], 0, 1)).toBe(5);
@@ -20,17 +22,20 @@ describe("grid Sizing Calculations", () => {
         });
 
         it("handles colSpan extending beyond available columns (should sum available ones)", () => {
+            expect.assertions(2);
             expect(calculateCellTotalWidth([5, 6], 0, 3)).toBe(13);
             expect(calculateCellTotalWidth([5, 6], 1, 2)).toBe(7);
         });
 
         it("handles zero width columns", () => {
+            expect.assertions(3);
             expect(calculateCellTotalWidth([0, 0], 0, 1)).toBe(0);
             expect(calculateCellTotalWidth([0, 0], 0, 2)).toBe(1);
             expect(calculateCellTotalWidth([5, 0, 7], 0, 3)).toBe(14);
         });
 
         it("handles empty columnWidths array", () => {
+            expect.assertions(2);
             expect(calculateCellTotalWidth([], 0, 1)).toBe(0);
             expect(calculateCellTotalWidth([], 0, 2)).toBe(1);
         });
@@ -51,6 +56,7 @@ describe("grid Sizing Calculations", () => {
         };
 
         it("returns correct heights for single row", () => {
+            expect.assertions(1);
             const cell: GridItem = { content: "A" };
             const grid = [[cell]];
             expect(
@@ -75,10 +81,11 @@ describe("grid Sizing Calculations", () => {
                     alignCellContent,
                     findFirstOccurrenceRow,
                 ),
-            ).toEqual([1]);
+            ).toStrictEqual([1]);
         });
 
         it("returns correct heights for multi-line content", () => {
+            expect.assertions(1);
             const cell: GridItem = { content: "A\nB\nC" };
             const grid = [[cell]];
             expect(
@@ -102,10 +109,11 @@ describe("grid Sizing Calculations", () => {
                     alignCellContent,
                     findFirstOccurrenceRow,
                 ),
-            ).toEqual([3]);
+            ).toStrictEqual([3]);
         });
 
         it("handles rowSpan by propagating height", () => {
+            expect.assertions(1);
             // Note: The original test might have implicitly assumed the row span calculation logic.
             // The calculateRowHeights function adjusts height based on content AND span.
             // This test currently asserts [1, 1], which might be correct if content height doesn't force expansion.
@@ -134,7 +142,7 @@ describe("grid Sizing Calculations", () => {
                     alignCellContent,
                     findFirstOccurrenceRow,
                 ),
-            ).toEqual([1, 1]); // Re-check this expectation based on function's behavior
+            ).toStrictEqual([1, 1]); // Re-check this expectation based on function's behavior
         });
     });
 

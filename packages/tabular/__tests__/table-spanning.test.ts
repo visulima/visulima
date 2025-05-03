@@ -5,6 +5,8 @@ import { createTable } from "../src/table"; // Assuming Table uses Grid internal
 describe("table Cell Spanning", () => {
     describe("colSpan", () => {
         it("should render borders correctly around cells with colSpan", () => {
+            expect.assertions(1);
+
             const colspanTable = createTable();
 
             colspanTable.setHeaders([{ colSpan: 3, content: "Header Span All (cs=3)" }]);
@@ -29,6 +31,8 @@ describe("table Cell Spanning", () => {
         });
 
         it("should render borders correctly with multiple colSpans in one row", () => {
+            expect.assertions(1);
+
             const table = createTable();
             table.addRow([{ colSpan: 2, content: "CS2" }, "C3"]);
             table.addRow(["C1", { colSpan: 2, content: "CS2" }]);
@@ -47,6 +51,8 @@ describe("table Cell Spanning", () => {
 
         // This test was originally in colspan, keep it here but note overlap with rowspan tests
         it("should render borders correctly at colSpan and rowSpan intersections", () => {
+            expect.assertions(1);
+
             const table = createTable();
             table.addRow(["A1", { colSpan: 2, content: "CS=2" }]);
             table.addRow([
@@ -171,6 +177,8 @@ describe("table Cell Spanning", () => {
     });
 
     it("should render a complex layout with multiple overlapping spans and alignments", () => {
+        expect.assertions(1);
+
         // Based on examples/complex-layout.js
         const table = createTable();
         table.addRows(

@@ -179,7 +179,7 @@ Both Table and Grid support rich cell styling:
 
 ```typescript
 import { createTable } from "@visulima/tabular";
-import { red, green, blue, bgYellow, bgBlue } from "@visulima/colorize";
+import { red, green, blue, bgYellow, bgBlue, bold, yellow, white } from "@visulima/colorize";
 
 const table = createTable();
 
@@ -231,6 +231,58 @@ table.addRow([
         },
     },
 ]);
+
+// Example 4: Demonstrating borderColor and foregroundColor
+const tableWithBorderColors = createTable({
+    style: {
+        // Apply a global border color (e.g., blue)
+        borderColor: blue,
+    },
+});
+
+tableWithBorderColors.setHeaders(["Type", "Description"]);
+
+tableWithBorderColors.addRow([
+    // Cell with default border color, custom foreground
+    { content: red("Error Text") },
+    "This text uses the default blue border.",
+]);
+
+tableWithBorderColors.addRow([
+    // Cell with custom border color (overrides global)
+    {
+        content: "Important",
+        style: {
+            borderColor: green, // Green border for this cell only
+        }
+    },
+    "This cell has a green border.",
+]);
+
+tableWithBorderColors.addRow([
+    // Cell with custom foreground and border color
+    {
+        content: bold(yellow("Warning")),
+        style: {
+            borderColor: yellow, // Yellow border for this cell
+        }
+    },
+    "Bold yellow text with a yellow border.",
+]);
+
+tableWithBorderColors.addRow([
+    // Cell with background and custom border color
+    {
+        content: "Info",
+        backgroundColor: bgBlue, // Blue background
+        style: {
+            borderColor: white, // White border for this cell
+        }
+    },
+    "White text on blue background with a white border.",
+]);
+
+console.log(tableWithBorderColors.toString());
 ```
 
 The `backgroundColor` property can be specified in two ways:

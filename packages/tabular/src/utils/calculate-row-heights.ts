@@ -47,10 +47,13 @@ const calculateRowHeights = (
     let maxRowIndex = gridLayout.length - 1;
 
     for (let r = 0; r < gridLayout.length; r++) {
+        // eslint-disable-next-line security/detect-object-injection
         const row = gridLayout[r];
+
         if (!row) {
             continue;
         }
+
         for (const [c, cell] of row.entries()) {
             if (cell && findFirstOccurrenceRow(gridLayout, r, c, cell) === r) {
                 const verticalPosition = determineCellVerticalPosition(gridLayout, r, c, cell);
@@ -65,9 +68,11 @@ const calculateRowHeights = (
     // Initial Pass - Calculate height for SINGLE-ROW cells only
     for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
         const row = gridLayout[rowIndex];
+
         if (!row) {
             continue;
         }
+
         for (let colIndex = 0; colIndex < options.columns; colIndex++) {
             const cell = row[colIndex];
             // Process only if it's the start of a SINGLE-ROW cell
@@ -87,11 +92,13 @@ const calculateRowHeights = (
     if (options.fixedRowHeights) {
         for (let index = 0; index < rowHeights.length; index++) {
             let fixedHeight: number | null | undefined;
+
             if (options.fixedRowHeights[index] !== undefined && options.fixedRowHeights[index] !== null) {
                 fixedHeight = options.fixedRowHeights[index];
             } else if (options.fixedRowHeights.length === 1 && options.fixedRowHeights[0] !== undefined && options.fixedRowHeights[0] !== null) {
                 fixedHeight = options.fixedRowHeights[0];
             }
+
             if (fixedHeight !== undefined && fixedHeight !== null) {
                 rowHeights[index] = Math.max(1, fixedHeight);
                 isRowFixed[index] = true;
@@ -103,8 +110,11 @@ const calculateRowHeights = (
     // Iterate through grid again to process spanning cells in a defined order
     for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
         const row = gridLayout[rowIndex];
-        if (!row) 
-continue;
+
+        if (!row) {
+            continue;
+        }
+
         for (let colIndex = 0; colIndex < options.columns; colIndex++) {
             const cell = row[colIndex];
             // Process only if it's the START of a SPANNING cell
@@ -120,6 +130,7 @@ continue;
 
                 let currentAllocatedHeight = 0;
                 let nonFixedRowCount = 0;
+
                 // Calculate current height and non-fixed count for the actual span range
                 for (let r = firstRow; r <= lastRow && r < rowHeights.length; r++) {
                     currentAllocatedHeight += rowHeights[r] ?? 1;
@@ -135,16 +146,21 @@ continue;
                     if (nonFixedRowCount > 0) {
                         // Distribute deficit proportionally among non-fixed rows
                         const deficitPerNonFixedRow = Math.ceil(deficit / nonFixedRowCount);
+
                         let addedDeficit = 0;
+
                         // Distribute only over the actual span range
                         for (let r = firstRow; r <= lastRow && r < rowHeights.length; r++) {
                             // Use the isRowFixed array calculated in Step 2
                             if (!isRowFixed[r]) {
                                 const amountToAdd = Math.min(deficitPerNonFixedRow, deficit - addedDeficit);
+
                                 rowHeights[r] = (rowHeights[r] ?? 1) + amountToAdd;
                                 addedDeficit += amountToAdd;
-                                if (addedDeficit >= deficit) 
-break;
+
+                                if (addedDeficit >= deficit) {
+                                    break;
+                                }
                             }
                         }
                     } else {
@@ -152,7 +168,7 @@ break;
                         console.warn(
                             `[calculateRowHeights] Content of spanning cell exceeds fixed height allocated. ` +
                                 `Cell: ${JSON.stringify(cell.content)}, ` +
-                                `Required: ${requiredTotalHeight}, Allocated: ${currentAllocatedHeight} (fixed).`,
+                                `Required: ${String(requiredTotalHeight)}, Allocated: ${String(currentAllocatedHeight)} (fixed).`,
                         );
                     }
                 }

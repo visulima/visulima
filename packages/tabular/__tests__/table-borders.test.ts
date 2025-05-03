@@ -37,6 +37,8 @@ describe("table borders", () => {
         });
 
         it("should support colored borders", () => {
+            expect.assertions(3);
+
             const table = new Table({
                 style: {
                     border: {
@@ -69,6 +71,8 @@ describe("table borders", () => {
         });
 
         it("should support multiple different colors for various border components", () => {
+            expect.assertions(6);
+
             // Based on examples/colorized-border.js
             const table = createTable({
                 style: {
@@ -117,6 +121,8 @@ describe("table borders", () => {
         });
 
         it("should support custom border characters", () => {
+            expect.assertions(2);
+
             const table = new Table({
                 style: {
                     border: {
@@ -320,15 +326,15 @@ describe("table borders", () => {
             const cells = dataLine!.split("│");
 
             expect(cells[1]).toBeDefined();
-            if (cells[1]) 
+            if (cells[1])
 expect(cells[1].trimEnd()).toBe(" 1");
 
             expect(cells[2]).toBeDefined();
-            if (cells[2]) 
+            if (cells[2])
 expect(cells[2].trim()).toBe("2");
 
             expect(cells[3]).toBeDefined();
-            if (cells[3]) 
+            if (cells[3])
 expect(cells[3].trimStart()).toBe("3 ");
 
             expect(output).toMatchSnapshot("table-alignment-with-borders");
@@ -360,6 +366,8 @@ expect(cells[3].trimStart()).toBe("3 ");
         });
 
         it("should handle zero padding", () => {
+            expect.assertions(2);
+
             const table = new Table({
                 style: {
                     paddingLeft: 0,

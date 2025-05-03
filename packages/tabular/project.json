@@ -4,5 +4,7 @@
     "sourceRoot": "packages/tabular/src",
     "projectType": "library",
     "tags": ["tabular", "type:package"],
-    "implicitDependencies": []
+    "implicitDependencies": [
+        "string"
+    ]
 }

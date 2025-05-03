@@ -1,4 +1,3 @@
-import { getStringWidth } from "@visulima/string"; // Import directly
 import { describe, expect, it } from "vitest";
 
 import { createTable, Table } from "../src";
@@ -61,6 +60,8 @@ describe("table core functionality", () => {
 
     describe("content type handling", () => {
         it("should allow numbers as content in object notation", () => {
+            expect.assertions(1);
+
             const table = createTable({
                 style: {
                     paddingLeft: 1,
@@ -76,6 +77,8 @@ describe("table core functionality", () => {
         });
 
         it("should throw if content is not a string or number", () => {
+            expect.assertions(1);
+
             const table = createTable();
 
             expect(() => {
@@ -132,7 +135,7 @@ describe("table core functionality", () => {
             expect(integrationCells[4].trim()).toBe("92%");
 
             // Additional verification for the entire table structure
-            expect(lines).toEqual(
+            expect(lines).toStrictEqual(
                 expect.arrayContaining([
                     expect.stringContaining("┌───────────┬"),
                     expect.stringContaining("Component"),
@@ -170,7 +173,7 @@ describe("table core functionality", () => {
             const lines = output.split("\n");
 
             // Verify the table contains the expected content
-            expect(lines).toEqual(
+            expect(lines).toStrictEqual(
                 expect.arrayContaining([
                     expect.stringContaining("Short"),
                     expect.stringContaining("Very Long Content"),
@@ -330,6 +333,8 @@ describe("table core functionality", () => {
     });
 
     it("should automatically apply colSpan to single-cell headers", () => {
+        expect.assertions(1);
+
         // Test case inspired by emojiTable in examples/test.js
         const table = createTable();
 

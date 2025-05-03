@@ -4,6 +4,7 @@ coverage
 
 __fixtures__
 __docs__
+__bench__
 examples
 
 vitest.config.ts
