@@ -90,10 +90,10 @@ table.addRow([
 ]);
 
 // Add multiple rows at once
-table.addRows([
+table.addRows(
     ["Bob", "25", "Chicago"],
     ["Alice", "28", "Boston"],
-]);
+);
 
 console.log(table.toString());
 ```
@@ -101,14 +101,17 @@ console.log(table.toString());
 Output:
 
 ```
-┌───────────┬─────┬────────────┐
-│ Name      │ Age │       City │
-├───────────┼─────┼────────────┤
-│ John Doe  │ 30  │   New York │
-│ Jane Smith       │ Los Angeles│
-│ Bob       │ 25  │    Chicago │
-│ Alice     │ 28  │     Boston │
-└───────────┴─────┴────────────┘
+┌──────────┬─────┬─────────────┐
+│ Name     │ Age │        City │
+├──────────┼─────┼─────────────┤
+│ John Doe │ 30  │ New York    │
+├──────────┴─────┼─────────────┤
+│ Jane Smith     │ Los Angeles │
+├──────────┬─────┼─────────────┤
+│ Bob      │ 25  │ Chicago     │
+├──────────┼─────┼─────────────┤
+│ Alice    │ 28  │ Boston      │
+└──────────┴─────┴─────────────┘
 ```
 
 ### Grid Usage
@@ -121,24 +124,6 @@ import { createGrid } from "@visulima/tabular";
 // Create a grid with 3 columns
 const grid = createGrid({
     columns: 3,
-    border: {
-        // Custom border characters
-        topBody: "─",
-        topJoin: "┬",
-        topLeft: "┌",
-        topRight: "┐",
-        bottomBody: "─",
-        bottomJoin: "┴",
-        bottomLeft: "└",
-        bottomRight: "┘",
-        bodyLeft: "│",
-        bodyRight: "│",
-        bodyJoin: "│",
-        joinBody: "─",
-        joinLeft: "├",
-        joinRight: "┤",
-        joinJoin: "┼",
-    },
     paddingLeft: 1,
     paddingRight: 1,
     gap: 1, // Gap between cells
@@ -160,8 +145,8 @@ console.log(grid.toString());
 Output:
 
 ```
-┌─────────────────────────────┐
-│           Header            │
+┌────────────────────────────┐
+│           Header           │
 ├─────────┬─────────┬────────┤
 │ Left    │ Center  │ Right  │
 │         │Multiline│        │
