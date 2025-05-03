@@ -15,7 +15,7 @@ export const getVitestConfig = (options: ViteUserConfig = {}) => {
             coverage: {
                 ...coverageConfigDefaults,
                 provider: "v8",
-                reporter: ["clover", "cobertura", "lcov", "text"],
+                reporter: ["clover", "cobertura", "lcov", "text", "html"],
                 include: ["src"],
                 exclude: ["__fixtures__/**", "__bench__/**", "scripts/**", "src/**/types.ts", "src/module.d.ts", "src/reset.d.ts"],
             },

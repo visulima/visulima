@@ -1,0 +1,8 @@
+{
+    "name": "tabular",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/tabular/src",
+    "projectType": "library",
+    "tags": ["tabular", "type:package"],
+    "implicitDependencies": ["string"]
+}

@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`table CLI Compatibility Tests > basic table layouts > should create complete table with headers and rows 1`] = `
+"┌──────┬────────────────────────┬──────────────────┬───────────────┐
+│ Rel  │ Change                 │ By               │ When          │
+├──────┼────────────────────────┼──────────────────┼───────────────┤
+│ v0.1 │ Testing something cool │ rauchg@gmail.com │ 7 minutes ago │
+├──────┼────────────────────────┼──────────────────┼───────────────┤
+│ v0.1 │ Testing something cool │ rauchg@gmail.com │ 8 minutes ago │
+└──────┴────────────────────────┴──────────────────┴───────────────┘"
+`;
