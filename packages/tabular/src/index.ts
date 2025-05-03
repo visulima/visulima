@@ -5,7 +5,6 @@ export type {
     BorderComponent,
     BorderStyle,
     BorderType,
-    CellStyle,
     Content,
     GridCell,
     GridItem,

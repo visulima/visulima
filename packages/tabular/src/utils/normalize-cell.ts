@@ -11,7 +11,7 @@ export const EMPTY_CELL_REPRESENTATION = "__EMPTY__";
  *
  * @throws {TypeError} If the input cell type is invalid.
  */
-export function normalizeGridCell(cell: GridCell): InternalGridItem {
+export const normalizeGridCell = (cell: GridCell): InternalGridItem => {
     if (typeof cell === "string") {
         return { content: cell } as InternalGridItem;
     }
@@ -24,7 +24,7 @@ export function normalizeGridCell(cell: GridCell): InternalGridItem {
         return { content: EMPTY_CELL_REPRESENTATION } as InternalGridItem; // Represent null/undefined as empty string
     }
 
-    if (typeof cell === "object" && cell !== null && "content" in cell) {
+    if (typeof cell === "object" && "content" in cell) {
         let { content } = cell;
 
         if (typeof content === "number" || typeof content === "bigint" || typeof content === "boolean") {
@@ -45,4 +45,4 @@ export function normalizeGridCell(cell: GridCell): InternalGridItem {
     throw new TypeError(
         `Invalid item type in grid cell: expected string, number, null, undefined, or GridItem object, but received ${String(cell)} (type: ${typeof cell})`,
     );
-}
+};

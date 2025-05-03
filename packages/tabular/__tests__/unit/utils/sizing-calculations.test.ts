@@ -49,8 +49,9 @@ describe("grid Sizing Calculations", () => {
 
         const findFirstOccurrenceRow = (gridLayout: (GridItem | null)[][], startRow: number, startCol: number, cell: GridItem) => {
             let firstRow = startRow;
+            // eslint-disable-next-line security/detect-object-injection
             while (firstRow > 0 && gridLayout[firstRow - 1]?.[startCol] === cell) {
-                firstRow--;
+                firstRow -= 1;
             }
             return firstRow;
         };
@@ -63,7 +64,6 @@ describe("grid Sizing Calculations", () => {
                 calculateRowHeights(
                     grid,
                     [1],
-                    // Provide a minimal GridOptionsWithDefaults mock - adjust if more properties are needed
                     {
                         autoColumns: 1,
                         autoFlow: "row",

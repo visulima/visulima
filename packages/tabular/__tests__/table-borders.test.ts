@@ -19,6 +19,7 @@ describe("table borders", () => {
             ["ROUNDED", ROUNDED_BORDER],
             ["DOTS", DOTS_BORDER],
             ["MARKDOWN", MARKDOWN_BORDER],
+            // eslint-disable-next-line unicorn/text-encoding-identifier-case
             ["ASCII", ASCII_BORDER],
             ["NO_BORDER", NO_BORDER],
         ])("renders table with %s border style", (_, borderStyle) => {
@@ -29,7 +30,7 @@ describe("table borders", () => {
                 },
             });
 
-            table.setHeaders(sampleData[0]!);
+            table.setHeaders(sampleData[0]);
             table.addRows(...sampleData.slice(1));
 
             const output = table.toString();
@@ -65,8 +66,9 @@ describe("table borders", () => {
 
             const output = table.toString();
 
-            expect(output).toMatch(/\u001B\[90m.*\u001B\[39m/);
-            expect(output).toMatch(/\u001B\[31m.*\u001B\[39m/);
+            // Use toContain for simpler ANSI code checks
+            expect(output).toContain("\u001B[90m"); // gray
+            expect(output).toContain("\u001B[31m"); // red
             expect(output).toMatchSnapshot("table-colored-borders");
         });
 
@@ -323,19 +325,21 @@ describe("table borders", () => {
             const dataLine = lines.find((line) => line.includes("1"));
             expect(dataLine).toBeDefined();
 
-            const cells = dataLine!.split("│");
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (!dataLine) {
+                throw new Error("Data line not found in table output");
+            }
+
+            const cells = dataLine.split("│");
 
             expect(cells[1]).toBeDefined();
-            if (cells[1])
-expect(cells[1].trimEnd()).toBe(" 1");
+            expect(cells[1]?.trimEnd()).toBe(" 1");
 
             expect(cells[2]).toBeDefined();
-            if (cells[2])
-expect(cells[2].trim()).toBe("2");
+            expect(cells[2]?.trim()).toBe("2");
 
             expect(cells[3]).toBeDefined();
-            if (cells[3])
-expect(cells[3].trimStart()).toBe("3 ");
+            expect(cells[3]?.trimStart()).toBe("3 ");
 
             expect(output).toMatchSnapshot("table-alignment-with-borders");
         });
@@ -343,7 +347,7 @@ expect(cells[3].trimStart()).toBe("3 ");
 
     describe("padding configuration", () => {
         it("should respect padding settings with borders", () => {
-            expect.assertions(3);
+            expect.assertions(4);
 
             const table = new Table({
                 style: {
@@ -357,7 +361,15 @@ expect(cells[3].trimStart()).toBe("3 ");
             const output = table.toString();
             const lines = output.split("\n");
 
-            const dataLine = lines.find((line) => line.includes("A"))!;
+            const dataLine = lines.find((line) => line.includes("A"));
+
+            expect(dataLine).toBeDefined();
+
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (!dataLine) {
+                throw new Error("Data line not found for padding test");
+            }
+
             const cells = dataLine.split("│");
 
             expect(cells[1]).toBe("  A  ");

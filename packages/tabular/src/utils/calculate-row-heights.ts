@@ -38,6 +38,7 @@ const calculateRowHeights = (
     options: GridOptionsWithDefaults,
     alignCellContent: AlignCellContentFunction,
     findFirstOccurrenceRow: FindFirstOccurrenceRowFunction,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ): number[] => {
     if (gridLayout.length === 0) {
         return [];
@@ -51,6 +52,7 @@ const calculateRowHeights = (
         const row = gridLayout[r];
 
         if (!row) {
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -63,17 +65,20 @@ const calculateRowHeights = (
     }
 
     // Initialize rowHeights array with minimum height 1.
-    const rowHeights: number[] = new Array(maxRowIndex + 1).fill(1);
+    const rowHeights: number[] = Array.from<number>({ length: maxRowIndex + 1 }).fill(1);
 
     // Initial Pass - Calculate height for SINGLE-ROW cells only
     for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
+        // eslint-disable-next-line security/detect-object-injection
         const row = gridLayout[rowIndex];
 
         if (!row) {
+            // eslint-disable-next-line no-continue
             continue;
         }
 
         for (let colIndex = 0; colIndex < options.columns; colIndex++) {
+            // eslint-disable-next-line security/detect-object-injection
             const cell = row[colIndex];
             // Process only if it's the start of a SINGLE-ROW cell
             if (cell && findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) === rowIndex && (cell.rowSpan ?? 1) === 1) {
@@ -81,6 +86,7 @@ const calculateRowHeights = (
                 const currentCellTotalWidth = calculateCellTotalWidth(columnWidths, colIndex, colSpan);
                 const processedLines = alignCellContent(cell, currentCellTotalWidth);
                 const requiredTotalHeight = processedLines.length;
+                // eslint-disable-next-line security/detect-object-injection
                 rowHeights[rowIndex] = Math.max(rowHeights[rowIndex] ?? 1, requiredTotalHeight);
             }
         }
@@ -91,16 +97,21 @@ const calculateRowHeights = (
 
     if (options.fixedRowHeights) {
         for (let index = 0; index < rowHeights.length; index++) {
-            let fixedHeight: number | null | undefined;
-
+            let fixedHeight: number | null | undefined = null;
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unnecessary-condition
             if (options.fixedRowHeights[index] !== undefined && options.fixedRowHeights[index] !== null) {
+                // eslint-disable-next-line security/detect-object-injection
                 fixedHeight = options.fixedRowHeights[index];
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             } else if (options.fixedRowHeights.length === 1 && options.fixedRowHeights[0] !== undefined && options.fixedRowHeights[0] !== null) {
+                // eslint-disable-next-line prefer-destructuring
                 fixedHeight = options.fixedRowHeights[0];
             }
 
             if (fixedHeight !== undefined && fixedHeight !== null) {
+                // eslint-disable-next-line security/detect-object-injection
                 rowHeights[index] = Math.max(1, fixedHeight);
+                // eslint-disable-next-line security/detect-object-injection
                 isRowFixed[index] = true;
             }
         }
@@ -109,13 +120,16 @@ const calculateRowHeights = (
     // Distribute Deficit for SPANNING Cells
     // Iterate through grid again to process spanning cells in a defined order
     for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
+        // eslint-disable-next-line security/detect-object-injection
         const row = gridLayout[rowIndex];
 
         if (!row) {
+            // eslint-disable-next-line no-continue
             continue;
         }
 
         for (let colIndex = 0; colIndex < options.columns; colIndex++) {
+            // eslint-disable-next-line security/detect-object-injection
             const cell = row[colIndex];
             // Process only if it's the START of a SPANNING cell
             if (cell && findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) === rowIndex && (cell.rowSpan ?? 1) > 1) {
@@ -133,8 +147,10 @@ const calculateRowHeights = (
 
                 // Calculate current height and non-fixed count for the actual span range
                 for (let r = firstRow; r <= lastRow && r < rowHeights.length; r++) {
+                    // eslint-disable-next-line security/detect-object-injection
                     currentAllocatedHeight += rowHeights[r] ?? 1;
                     // Use the isRowFixed array calculated in Step 2
+                    // eslint-disable-next-line security/detect-object-injection
                     if (!isRowFixed[r]) {
                         nonFixedRowCount++;
                     }
@@ -152,9 +168,11 @@ const calculateRowHeights = (
                         // Distribute only over the actual span range
                         for (let r = firstRow; r <= lastRow && r < rowHeights.length; r++) {
                             // Use the isRowFixed array calculated in Step 2
+                            // eslint-disable-next-line security/detect-object-injection
                             if (!isRowFixed[r]) {
                                 const amountToAdd = Math.min(deficitPerNonFixedRow, deficit - addedDeficit);
 
+                                // eslint-disable-next-line security/detect-object-injection
                                 rowHeights[r] = (rowHeights[r] ?? 1) + amountToAdd;
                                 addedDeficit += amountToAdd;
 
@@ -165,6 +183,7 @@ const calculateRowHeights = (
                         }
                     } else {
                         // All rows in span are fixed, content won't fit.
+                        // eslint-disable-next-line no-console
                         console.warn(
                             `[calculateRowHeights] Content of spanning cell exceeds fixed height allocated. ` +
                                 `Cell: ${JSON.stringify(cell.content)}, ` +

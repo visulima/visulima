@@ -10,7 +10,7 @@ const calculateCellTotalWidth = (columnWidths: number[], col: number, colSpan: n
 
     // Add width of all spanned columns
     for (let index = 0; index < colSpan; index++) {
-        totalWidth += columnWidths[col + index] || 0;
+        totalWidth += columnWidths[col + index] ?? 0;
     }
 
     if (colSpan > 1) {

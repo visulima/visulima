@@ -41,13 +41,10 @@ export class Table {
      * @returns The Table instance for chaining.
      */
     public setHeaders(headers: TableCell[] | TableCell[][]): this {
-        if (headers.length > 0 && !Array.isArray(headers[0])) {
-            // Input is likely a single row (TableCell[]), wrap it in an array
-            this.#headers = [headers as TableCell[]];
-        } else {
-            // Input is likely already TableCell[][] or empty
-            this.#headers = (headers as TableCell[][]).map((row) => (Array.isArray(row) ? row : [row]));
-        }
+        this.#headers =
+            headers.length > 0 && !Array.isArray(headers[0])
+                ? [headers as TableCell[]]
+                : (headers as TableCell[][]).map((row) => (Array.isArray(row) ? row : [row]));
 
         this.#isDirty = true;
         this.#cachedString = null;
@@ -114,7 +111,7 @@ export class Table {
             if (Array.isArray(row)) {
                 numberColumns = Math.max(numberColumns, computeRowLogicalWidth(row));
             } else {
-                // This case should ideally not happen now
+                // eslint-disable-next-line no-console
                 console.error(`Unexpected non-array element found while calculating columns:`, row);
             }
         }
@@ -129,17 +126,13 @@ export class Table {
         let fixedGridWidths: number[] | undefined;
 
         if (Array.isArray(this.#options.columnWidths)) {
-            // Ensure the array length matches the calculated number of columns
-            if (this.#options.columnWidths.length >= numberColumns) {
-                fixedGridWidths = this.#options.columnWidths.slice(0, numberColumns);
-            } else {
-                // Pad with a default width (e.g., 1) if the provided array is too short
-                // Or maybe throw an error? For now, pad.
-                fixedGridWidths = [...this.#options.columnWidths, ...Array.from<number>({ length: numberColumns - this.#options.columnWidths.length }).fill(1)];
-            }
+            fixedGridWidths =
+                this.#options.columnWidths.length >= numberColumns
+                    ? this.#options.columnWidths.slice(0, numberColumns)
+                    : [...this.#options.columnWidths, ...Array.from<number>({ length: numberColumns - this.#options.columnWidths.length }).fill(1)];
         } else if (typeof this.#options.columnWidths === "number") {
             // If a single number is provided, create an array with that width for all columns
-            fixedGridWidths = new Array(numberColumns).fill(this.#options.columnWidths);
+            fixedGridWidths = Array.from<number>({ length: numberColumns }).fill(this.#options.columnWidths);
         }
 
         let fixedGridRowHeights: number[] | undefined;
@@ -152,7 +145,7 @@ export class Table {
             fixedGridRowHeights = this.#options.rowHeights;
         } else if (typeof this.#options.rowHeights === "number") {
             // If a single number is provided, create an array for all rows
-            fixedGridRowHeights = new Array(numberTotalRows).fill(this.#options.rowHeights);
+            fixedGridRowHeights = Array.from<number>({ length: numberTotalRows }).fill(this.#options.rowHeights);
         }
 
         const grid = new Grid({
@@ -176,12 +169,15 @@ export class Table {
 
         const gridItems: GridItem[] = [];
 
+        // eslint-disable-next-line guard-for-in,@typescript-eslint/no-for-in-array
         for (const rowIndex in allRows) {
-            // Use index for header check
+            // eslint-disable-next-line security/detect-object-injection
             const row = allRows[rowIndex];
 
             if (!Array.isArray(row)) {
+                // eslint-disable-next-line no-console
                 console.error(`Skipping non-array row while creating GridItems:`, row);
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
@@ -189,9 +185,8 @@ export class Table {
             const isHeaderRow = this.#options.showHeader && Number.parseInt(rowIndex, 10) < this.#headers.length;
             const applyHeaderColspan = isHeaderRow && row.length === 1 && numberColumns > 1;
 
+            // eslint-disable-next-line prefer-const
             for (let [cellIndex, cellInput] of row.entries()) {
-                // Use numeric index
-
                 let cellOptions: Omit<GridItem, "content"> = {};
 
                 if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
@@ -216,7 +211,9 @@ export class Table {
                 let maxWidth: number | undefined;
 
                 // Table-level columnWidths override cell-specific maxWidth if defined
+                // eslint-disable-next-line security/detect-object-injection
                 if (fixedGridWidths?.[cellIndex] !== undefined) {
+                    // eslint-disable-next-line security/detect-object-injection
                     maxWidth = fixedGridWidths[cellIndex];
                 }
 

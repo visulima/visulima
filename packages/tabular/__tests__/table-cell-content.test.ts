@@ -1,4 +1,4 @@
-import { bgHex,blue, green, red } from "@visulima/colorize";
+import { bgHex, blue, green, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { createTable, Table } from "../src";

@@ -254,7 +254,7 @@ tableWithBorderColors.addRow([
         content: "Important",
         style: {
             borderColor: green, // Green border for this cell only
-        }
+        },
     },
     "This cell has a green border.",
 ]);
@@ -265,7 +265,7 @@ tableWithBorderColors.addRow([
         content: bold(yellow("Warning")),
         style: {
             borderColor: yellow, // Yellow border for this cell
-        }
+        },
     },
     "Bold yellow text with a yellow border.",
 ]);
@@ -277,7 +277,7 @@ tableWithBorderColors.addRow([
         backgroundColor: bgBlue, // Blue background
         style: {
             borderColor: white, // White border for this cell
-        }
+        },
     },
     "White text on blue background with a white border.",
 ]);

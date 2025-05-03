@@ -82,15 +82,18 @@ describe("table core functionality", () => {
             const table = createTable();
 
             expect(() => {
-                table.addRow([{ content: { a: "b" } }]);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                table.addRow([{ content: { a: "b" } as any }]);
                 table.toString();
-            }).toThrow();
+            }).toThrow(
+                "Invalid item type in grid cell: expected string, number, null, undefined, or GridItem object, but received [object Object] (type: object)",
+            );
         });
     });
 
     describe("column width consistency", () => {
         it("should maintain consistent column widths across rows", () => {
-            expect.assertions(7);
+            expect.assertions(10);
 
             const table = new Table();
 
@@ -117,22 +120,34 @@ describe("table core functionality", () => {
             const lines = output.split("\n");
 
             // Find the header line and data lines
-            const headerLine = lines.find((line) => line.includes("Tests"))!;
-            const unitLine = lines.find((line) => line.includes("Unit"))!;
-            const integrationLine = lines.find((line) => line.includes("Integration"))!;
+            const headerLine = lines.find((line) => line.includes("Tests"));
+            const unitLine = lines.find((line) => line.includes("Unit"));
+            const integrationLine = lines.find((line) => line.includes("Integration"));
+
+            expect(headerLine).toBeDefined();
+            expect(unitLine).toBeDefined();
+            expect(integrationLine).toBeDefined();
+
+            // Add checks to ensure lines were found
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (!headerLine || !unitLine || !integrationLine) {
+                throw new Error("Required lines not found in table output");
+            }
 
             // Extract cells from each line
+            // eslint-disable-next-line no-control-regex,regexp/no-control-character
             const unitCells = unitLine.split("│").map((cell) => cell.replaceAll(/\u001B\[\d+m/g, ""));
+            // eslint-disable-next-line no-control-regex,regexp/no-control-character
             const integrationCells = integrationLine.split("│").map((cell) => cell.replaceAll(/\u001B\[\d+m/g, ""));
 
             // Verify Unit and Integration cells have same width
-            expect(unitCells[2].trim()).toBe("Unit");
-            expect(integrationCells[2].trim()).toBe("Integration");
-            expect(unitCells[2]).toHaveLength(integrationCells[2].length);
+            expect(unitCells[2]?.trim()).toBe("Unit");
+            expect(integrationCells[2]?.trim()).toBe("Integration");
+            expect(unitCells[2]).toHaveLength(integrationCells[2]?.length ?? 0);
 
             // Verify coverage cells
-            expect(unitCells[4].trim()).toBe("100%");
-            expect(integrationCells[4].trim()).toBe("92%");
+            expect(unitCells[4]?.trim()).toBe("100%");
+            expect(integrationCells[4]?.trim()).toBe("92%");
 
             // Additional verification for the entire table structure
             expect(lines).toStrictEqual(

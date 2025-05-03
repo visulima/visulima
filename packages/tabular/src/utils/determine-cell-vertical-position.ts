@@ -16,14 +16,16 @@ const determineCellVerticalPosition = (
 ): { firstRow: number; lastRow: number; showContent: boolean } => {
     let firstRow = rowIndex;
 
+    // eslint-disable-next-line security/detect-object-injection
     while (firstRow > 0 && gridLayout[firstRow - 1]?.[col] === cell) {
-        firstRow--;
+        firstRow -= 1;
     }
 
     let lastRow = rowIndex;
 
+    // eslint-disable-next-line security/detect-object-injection
     while (lastRow < gridLayout.length - 1 && gridLayout[lastRow + 1]?.[col] === cell) {
-        lastRow++;
+        lastRow += 1;
     }
 
     let showContent = false;
