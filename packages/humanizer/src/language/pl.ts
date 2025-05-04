@@ -1,3 +1,4 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 const getPolishForm = (counter: number): number => {
@@ -16,6 +17,46 @@ const getPolishForm = (counter: number): number => {
     return 3;
 };
 
+// Map Polish aliases to standard keys
+const plUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    d: "d",
+    dni: "d",
+    dzień: "d",
+    g: "h",
+    godz: "h",
+    godzin: "h",
+    godzina: "h",
+    godziny: "h",
+    lat: "y",
+    lata: "y",
+    m: "mo",
+    mies: "mo",
+    miesiąc: "mo",
+    miesiące: "mo",
+    miesięcy: "mo",
+    milisekund: "ms",
+    milisekunda: "ms",
+    milisekundy: "ms",
+    min: "m",
+    minut: "m",
+    minuta: "m",
+    minuty: "m",
+    ms: "ms",
+    r: "y",
+    rok: "y",
+    roku: "y",
+    s: "s",
+    sek: "s",
+    sekund: "s",
+    sekunda: "s",
+    sekundy: "s",
+    t: "w",
+    tydzień: "w",
+    tyg: "w",
+    tygodni: "w",
+    tygodnie: "w",
+} as const;
+
 export const durationLanguage = createDurationLanguage(
     (counter) => ["rok", "roku", "lata", "lat"][getPolishForm(counter)] as string,
     (counter) => ["miesiąc", "miesiąca", "miesiące", "miesięcy"][getPolishForm(counter)] as string,
@@ -27,5 +68,8 @@ export const durationLanguage = createDurationLanguage(
     (counter) => ["milisekunda", "milisekundy", "milisekundy", "milisekund"][getPolishForm(counter)] as string,
     "za %s",
     "%s temu",
-    ",",
+    ",", // decimal
+    plUnitMap,
+    " ", // groupSeparator (space in Polish)
+    "_", // placeholderSeparator
 );

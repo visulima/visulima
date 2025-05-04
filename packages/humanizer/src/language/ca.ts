@@ -1,4 +1,25 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
+
+// Map Catalan aliases to standard keys
+const caUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    any: "y",
+    anys: "y",
+    dia: "d",
+    dies: "d",
+    hora: "h",
+    hores: "h",
+    mes: "mo",
+    mesos: "mo",
+    milisegon: "ms",
+    milisegons: "ms",
+    minut: "m",
+    minuts: "m",
+    segon: "s",
+    segons: "s",
+    setmana: "w",
+    setmanes: "w",
+};
 
 export const durationLanguage = createDurationLanguage(
     (counter) => `any${counter === 1 ? "" : "s"}`,
@@ -11,5 +32,8 @@ export const durationLanguage = createDurationLanguage(
     (counter) => `milisegon${counter === 1 ? "" : "s"}`,
     "d'aquí %s",
     "fa %s",
-    ",",
+    ",", // decimal
+    caUnitMap,
+    ".", // groupSeparator
+    "_", // placeholderSeparator
 );

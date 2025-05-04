@@ -1,4 +1,34 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
+
+// Map Norwegian aliases to standard keys
+const noUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    a: "y",
+    d: "d",
+    dag: "d",
+    dager: "d",
+    m: "mo",
+    millisekund: "ms",
+    millisekunder: "ms",
+    min: "m",
+    minutt: "m",
+    minutter: "m",
+    mnd: "mo",
+    ms: "ms",
+    måned: "mo",
+    måneder: "mo",
+    s: "s",
+    sek: "s",
+    sekund: "s",
+    sekunder: "s",
+    t: "h",
+    time: "h",
+    timer: "h",
+    u: "w",
+    uke: "w",
+    uker: "w",
+    år: "y",
+} as const;
 
 export const durationLanguage = createDurationLanguage(
     "år",
@@ -12,4 +42,7 @@ export const durationLanguage = createDurationLanguage(
     "om %s",
     "%s siden",
     ",",
+    noUnitMap,
+    " ",
+    "_",
 );

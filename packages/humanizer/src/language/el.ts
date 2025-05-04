@@ -1,4 +1,40 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
+
+// Map Greek aliases to standard keys
+const elUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    ms: "ms",
+    έτη: "y",
+    έτος: "y",
+    δ: "s",
+    δευτ: "s",
+    δευτερόλεπτα: "s",
+    δευτερόλεπτο: "s",
+    ε: "w",
+    εβδ: "w",
+    εβδομάδα: "w",
+    εβδομάδες: "w",
+    ημέρα: "d",
+    ημέρες: "d",
+    λ: "m",
+    λεπτά: "m",
+    λεπτό: "m",
+    μ: "mo",
+    μέρα: "d",
+    μέρες: "d",
+    μήνας: "mo",
+    μήνες: "mo",
+    μρ: "d",
+    χ: "y",
+    χιλ: "ms",
+    χιλιοστά: "ms",
+    χιλιοστό: "ms",
+    χρόνια: "y",
+    χρόνος: "y",
+    ω: "h",
+    ώρα: "h",
+    ώρες: "h",
+} as const;
 
 export const durationLanguage = createDurationLanguage(
     (counter) => (counter === 1 ? "χρόνος" : "χρόνια"),
@@ -12,4 +48,7 @@ export const durationLanguage = createDurationLanguage(
     "σε %s",
     "%s πριν",
     ",",
+    elUnitMap,
+    ".",
+    "_",
 );
