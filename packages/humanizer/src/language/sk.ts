@@ -1,5 +1,46 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 import getCzechOrSlovakForm from "./util/duration/get-czech-or-slovak-form";
+
+// Map Slovak aliases to standard keys
+const skUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    d: "d",
+    deň: "d",
+    dni: "d",
+    dní: "d",
+    h: "h",
+    hod: "h",
+    hodina: "h",
+    hodiny: "h",
+    hodín: "h",
+    m: "mo",
+    mes: "mo",
+    mesiac: "mo",
+    mesiace: "mo",
+    mesiacov: "mo",
+    milisekunda: "ms",
+    milisekundy: "ms",
+    milisekúnd: "ms",
+    min: "m",
+    minút: "m",
+    minúta: "m",
+    minúty: "m",
+    ms: "ms",
+    r: "y",
+    rok: "y",
+    rokov: "y",
+    roky: "y",
+    s: "s",
+    sek: "s",
+    sekunda: "s",
+    sekundy: "s",
+    sekúnd: "s",
+    t: "w",
+    týž: "w",
+    týždeň: "w",
+    týždne: "w",
+    týždňov: "w",
+} as const;
 
 export const durationLanguage = createDurationLanguage(
     (counter) => ["rok", "roky", "roky", "rokov"][getCzechOrSlovakForm(counter)] as string,
@@ -10,7 +51,10 @@ export const durationLanguage = createDurationLanguage(
     (counter) => ["minúta", "minúty", "minúty", "minút"][getCzechOrSlovakForm(counter)] as string,
     (counter) => ["sekunda", "sekundy", "sekundy", "sekúnd"][getCzechOrSlovakForm(counter)] as string,
     (counter) => ["milisekunda", "milisekundy", "milisekundy", "milisekúnd"][getCzechOrSlovakForm(counter)] as string,
-    "za %s",
-    "pred %s",
-    ",",
+    "za %s", // "in %s"
+    "pred %s", // "%s ago"
+    ",", // decimal separator in Slovak
+    skUnitMap,
+    " ", // group separator in Slovak
+    "_", // placeholder separator
 );

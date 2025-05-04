@@ -616,15 +616,34 @@ export interface DurationLanguage {
     _hideCountIf2?: boolean;
     _numberFirst?: boolean;
     d: DurationUnit;
+    /**
+     * Optional character used as the decimal separator for number parsing.
+     * Defaults to ".".
+     */
     decimal?: string;
     delimiter?: string;
     future?: string;
+    /**
+     * Optional character used as the grouping separator (e.g., thousands) for number parsing.
+     * Defaults to ",".
+     */
+    groupSeparator?: string;
     h: DurationUnit;
     m: DurationUnit;
     mo: DurationUnit;
     ms: DurationUnit;
     past?: string;
+    /**
+     * Optional placeholder character within numbers used during parsing.
+     * Defaults to "_".
+     */
+    placeholderSeparator?: string;
     s: DurationUnit;
+    /**
+     * Optional mapping of localized unit names/aliases (e.g., "saniye", "sec")
+     * to the standard unit keys (e.g., "s"). Used for parsing.
+     */
+    unitMap?: Record<string, keyof DurationUnitMeasures>;
     w: DurationUnit;
     y: DurationUnit;
 }
@@ -684,4 +703,21 @@ export interface FormateByteOptions<ByteSize>
      * Uses the closest unit to the given value per default.
      */
     unit?: ByteSize;
+}
+
+/**
+ * Options for the parseDuration function.
+ */
+export interface ParseDurationOptions {
+    /**
+     * The default unit to use if the input string is just a number.
+     * Uses standard unit keys (y, mo, w, d, h, m, s, ms).
+     * Defaults to 'ms'.
+     */
+    defaultUnit?: keyof DurationUnitMeasures;
+    /**
+     * The language object containing localized unit names for parsing.
+     * Defaults to English.
+     */
+    language?: DurationLanguage;
 }

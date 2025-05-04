@@ -1,4 +1,48 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
+
+// Map Slovenian aliases to standard keys
+const slUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    d: "d",
+    dan: "d",
+    dni: "d",
+    l: "y",
+    let: "y",
+    leta: "y",
+    leti: "y",
+    leto: "y",
+    m: "mo",
+    mesec: "mo",
+    meseca: "mo",
+    mesece: "mo",
+    mesecev: "mo",
+    milisekund: "ms",
+    milisekunda: "ms",
+    milisekunde: "ms",
+    milisekundi: "ms",
+    min: "m",
+    minut: "m",
+    minuta: "m",
+    minute: "m",
+    minuti: "m",
+    ms: "ms",
+    s: "s",
+    sek: "s",
+    sekund: "s",
+    sekunda: "s",
+    sekunde: "s",
+    sekundi: "s",
+    t: "w",
+    teden: "w",
+    tedna: "w",
+    tedne: "w",
+    tednov: "w",
+    u: "h",
+    ur: "h",
+    ura: "h",
+    ure: "h",
+    uri: "h",
+} as const;
 
 export const durationLanguage = createDurationLanguage(
     (counter) => {
@@ -110,4 +154,7 @@ export const durationLanguage = createDurationLanguage(
     "čez %s",
     "pred %s",
     ",",
+    slUnitMap,
+    ".",
+    "_",
 );

@@ -1,4 +1,41 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
+
+// Map Croatian aliases to standard keys
+const hrUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    d: "d",
+    dan: "d",
+    dana: "d",
+    g: "y",
+    godina: "y",
+    godine: "y",
+    godinu: "y",
+    h: "h", // Although 'h' is not common in Croatian for hour, it's good for consistency
+    milisekunda: "ms",
+    milisekunde: "ms",
+    milisekundi: "ms",
+    min: "m",
+    minuta: "m",
+    minute: "m",
+    minutu: "m",
+    mj: "mo",
+    mjesec: "mo",
+    mjeseca: "mo",
+    mjeseci: "mo",
+    ms: "ms",
+    s: "s",
+    sat: "h",
+    sata: "h",
+    sati: "h",
+    sek: "s",
+    sekunda: "s",
+    sekunde: "s",
+    sekundi: "s",
+    tj: "w",
+    tjedan: "w",
+    tjedna: "w",
+    tjedni: "w",
+} as const;
 
 export const durationLanguage = createDurationLanguage(
     (counter) => {
@@ -75,5 +112,8 @@ export const durationLanguage = createDurationLanguage(
     },
     "za %s",
     "prije %s",
-    ",",
+    ",", // decimal separator
+    hrUnitMap,
+    ".", // group separator
+    "_", // placeholder separator
 );

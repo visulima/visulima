@@ -1,5 +1,45 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 import getSlavicForm from "./util/duration/get-slavic-form";
+
+// Map Ukrainian aliases to standard keys
+const ukUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    г: "h",
+    год: "h",
+    годин: "h",
+    година: "h",
+    години: "h",
+    д: "d",
+    день: "d",
+    дні: "d",
+    днів: "d",
+    мс: "ms",
+    мілісекунд: "ms",
+    мілісекунда: "ms",
+    мілісекунди: "ms",
+    міс: "mo",
+    місяць: "mo",
+    місяці: "mo",
+    місяців: "mo",
+    р: "y",
+    роки: "y",
+    років: "y",
+    рік: "y",
+    с: "s",
+    сек: "s",
+    секунд: "s",
+    секунда: "s",
+    секунди: "s",
+    т: "w",
+    тижд: "w",
+    тиждень: "w",
+    тижні: "w",
+    тижнів: "w",
+    хв: "m",
+    хвилин: "m",
+    хвилина: "m",
+    хвилини: "m",
+} as const;
 
 export const durationLanguage = createDurationLanguage(
     (counter) => ["років", "рік", "роки"][getSlavicForm(counter)] as string,
@@ -12,5 +52,8 @@ export const durationLanguage = createDurationLanguage(
     (counter) => ["мілісекунд", "мілісекунда", "мілісекунди"][getSlavicForm(counter)] as string,
     "за %s",
     "%s тому",
-    ",",
+    ",", // decimal separator
+    ukUnitMap,
+    " ", // group separator (space is standard)
+    "_", // placeholder separator
 );

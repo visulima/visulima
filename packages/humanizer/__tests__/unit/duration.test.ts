@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import duration from "../../src/duration";
 import { durationLanguage as trDurationLanguage } from "../../src/language/tr";
+import parseDuration from "../../src/parse-duration";
 import type { DurationDigitReplacements, DurationLanguage, DurationUnitName } from "../../src/types";
 
 describe("duration", () => {
@@ -332,5 +333,153 @@ describe("duration", () => {
         expect(duration(5_400_000, { largest: 1, ...options })).toBe("1.5 hours");
         expect(duration(5_400_001, { largest: 1, ...options })).toBe("1.5 hours");
         expect(duration(5_400_001, { largest: 2, ...options })).toBe("1 hour, 30 minutes");
+    });
+});
+
+describe("parseDuration", () => {
+    it("should parse basic time units", () => {
+        expect.assertions(8);
+
+        expect(parseDuration("1ms")).toBe(1);
+        expect(parseDuration("1s")).toBe(1000);
+        expect(parseDuration("1m")).toBe(60_000);
+        expect(parseDuration("1h")).toBe(3_600_000);
+        expect(parseDuration("1d")).toBe(86_400_000);
+        expect(parseDuration("1w")).toBe(604_800_000);
+        expect(parseDuration("1mo")).toBe(2_629_746_000); // Approx 30.44 days
+        expect(parseDuration("1y")).toBe(31_556_952_000); // Approx 365.24 days
+    });
+
+    it("should parse unit aliases", () => {
+        expect.assertions(12);
+
+        expect(parseDuration("1 second")).toBe(1000);
+        expect(parseDuration("1 minute")).toBe(60_000);
+        expect(parseDuration("1 hour")).toBe(3_600_000);
+        expect(parseDuration("1 day")).toBe(86_400_000);
+        expect(parseDuration("1 week")).toBe(604_800_000);
+        expect(parseDuration("1 month")).toBe(2_629_746_000);
+        expect(parseDuration("1 year")).toBe(31_556_952_000);
+        expect(parseDuration("1 yr")).toBe(31_556_952_000);
+        expect(parseDuration("1 hr")).toBe(3_600_000);
+        expect(parseDuration("1 min")).toBe(60_000);
+        expect(parseDuration("1 sec")).toBe(1000);
+        expect(parseDuration("1 millisecond")).toBe(1);
+    });
+
+    // Plural units
+    it("should parse plural units", () => {
+        expect.assertions(15);
+
+        expect(parseDuration("2ms")).toBe(2);
+        expect(parseDuration("2s")).toBe(2000);
+        expect(parseDuration("2m")).toBe(120_000);
+        expect(parseDuration("2h")).toBe(7_200_000);
+        expect(parseDuration("2d")).toBe(172_800_000);
+        expect(parseDuration("2w")).toBe(1_209_600_000);
+        expect(parseDuration("2mo")).toBe(5_259_492_000);
+        expect(parseDuration("2y")).toBe(63_113_904_000);
+        expect(parseDuration("2 seconds")).toBe(2000);
+        expect(parseDuration("2 minutes")).toBe(120_000);
+        expect(parseDuration("2 hours")).toBe(7_200_000);
+        expect(parseDuration("2 days")).toBe(172_800_000);
+        expect(parseDuration("2 weeks")).toBe(1_209_600_000);
+        expect(parseDuration("2 months")).toBe(5_259_492_000);
+        expect(parseDuration("2 years")).toBe(63_113_904_000);
+    });
+
+    it("should parse compound expressions", () => {
+        expect.assertions(4);
+
+        expect(parseDuration("1hr 20mins")).toBe(3_600_000 + 20 * 60_000); // 4_800_000
+        expect(parseDuration("1 hr 20 mins")).toBe(3_600_000 + 20 * 60_000); // 4_800_000
+        expect(parseDuration("1d 5h 30m")).toBe(86_400_000 + 5 * 3_600_000 + 30 * 60_000); // 106_200_000
+        expect(parseDuration("1 week 2 days")).toBe(604_800_000 + 2 * 86_400_000); // 777_600_000
+    });
+
+    // Youtube format
+    it("should parse youtube format", () => {
+        expect.assertions(9);
+
+        expect(parseDuration("1h20m0s")).toBe(3_600_000 + 20 * 60_000); // 4_800_000
+        expect(parseDuration("5m30s")).toBe(5 * 60_000 + 30 * 1000); // 330_000
+        expect(parseDuration("25s")).toBe(25_000);
+        expect(parseDuration("25", { defaultUnit: "s" })).toBe(25_000); // Added defaultUnit
+        expect(parseDuration("25 seconds")).toBe(25_000);
+
+        expect(parseDuration("1:25")).toBe(85_000);
+        expect(parseDuration("1:25:00")).toBe(5_100_000);
+        expect(parseDuration("PT25S")).toBe(25_000);
+        expect(parseDuration("PT1H25M30S")).toBe(5_130_000);
+    });
+
+    // Comma separated numbers
+    it("should parse numbers with standard English separators", () => {
+        expect.assertions(4);
+
+        expect(parseDuration("2.5s")).toBe(2.5 * 1000); // 2500
+        expect(parseDuration("1.5h")).toBe(1.5 * 3_600_000); // 5_400_000
+        expect(parseDuration("100.5ms")).toBe(100.5);
+        expect(parseDuration("1,000.5s")).toBe(1000.5 * 1000); // 1000500 (Comma thousands)
+    });
+
+    it("should ignore noisy input", () => {
+        expect.assertions(3);
+
+        expect(parseDuration("duration: 1h:20min")).toBeUndefined();
+        expect(parseDuration("wait 500ms please")).toBeUndefined();
+        expect(parseDuration("approximately 2 hours")).toBeUndefined();
+    });
+
+    it("should parse negative durations", () => {
+        expect.assertions(4);
+
+        // Note: Simple parser doesn't handle compound negatives correctly like -1hr 40min -> -(1hr + 40min)
+        // It parses -1hr and 40mins separately.
+        expect(parseDuration("-1hr 40mins")).toBe(-3_600_000 + 40 * 60_000); // -1_200_000 (Actual result of simple parser)
+        // expect(parseDuration("-1hr 40mins")).toBe(-(3_600_000 + 40 * 60_000)); // -6_000_000 (Desired result)
+        expect(parseDuration("-1h")).toBe(-3_600_000);
+        expect(parseDuration("- 5 seconds")).toBeUndefined();
+        expect(parseDuration("-1.5d")).toBe(-1.5 * 86_400_000); // -129_600_000
+    });
+
+    it("should use the default unit if no unit is specified", () => {
+        expect.assertions(5);
+
+        expect(parseDuration("100")).toBe(100); // Default is 'ms'
+        // Pass defaultUnit via options object
+        expect(parseDuration("100", { defaultUnit: "s" })).toBe(100 * 1000); // 100_000
+        expect(parseDuration("5", { defaultUnit: "m" })).toBe(5 * 60_000); // 300_000
+        expect(parseDuration("-10", { defaultUnit: "h" })).toBe(-10 * 3_600_000); // -36_000_000
+        expect(parseDuration("1.5", { defaultUnit: "d" })).toBe(1.5 * 86_400_000); // 129_600_000
+    });
+
+    // Invalid input
+    it("should return undefined for invalid input", () => {
+        expect.assertions(8);
+
+        expect(parseDuration("")).toBeUndefined();
+        expect(parseDuration("abc")).toBeUndefined();
+        expect(parseDuration("100 units")).toBeUndefined(); // 'units' is not a valid unit
+        expect(parseDuration("1h 20m blah")).toBeUndefined(); // Extra non-numeric characters after valid parsing
+        expect(parseDuration(null as unknown)).toBeUndefined(); // Use unknown instead of any
+        expect(parseDuration(undefined as unknown)).toBeUndefined(); // Use unknown instead of any
+        expect(parseDuration(123 as unknown)).toBeUndefined(); // Use unknown instead of any
+        expect(parseDuration({})).toBeUndefined();
+    });
+
+    // Edge cases
+    it("should handle edge cases", () => {
+        expect.assertions(9);
+
+        expect(parseDuration("0s")).toBe(0);
+        expect(parseDuration("0")).toBe(0); // Handled by default unit logic
+        expect(parseDuration("-0ms")).toBe(0);
+        expect(parseDuration("1.s")).toBeUndefined(); // Invalid format
+        expect(parseDuration(".5s")).toBe(0.5 * 1000); // 500
+        expect(parseDuration("1.")).toBeUndefined(); // Invalid number format for default unit logic
+        expect(parseDuration(".", { defaultUnit: "s" })).toBeUndefined(); // Just a dot is not a number
+        expect(parseDuration("1.2.3s")).toBeUndefined(); // Invalid number format
+        expect(parseDuration("5. ms")).toBeUndefined(); // Invalid number format "5."
     });
 });

@@ -1,4 +1,34 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
+
+// Map Portuguese aliases to standard keys
+const ptUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    a: "y",
+    ano: "y",
+    anos: "y",
+    d: "d",
+    dia: "d",
+    dias: "d",
+    h: "h",
+    hora: "h",
+    horas: "h",
+    m: "mo",
+    meses: "mo",
+    milissegundo: "ms",
+    milissegundos: "ms",
+    min: "m",
+    minuto: "m",
+    minutos: "m",
+    ms: "ms",
+    mês: "mo",
+    s: "s",
+    seg: "s",
+    segundo: "s",
+    segundos: "s",
+    sem: "w",
+    semana: "w",
+    semanas: "w",
+} as const;
 
 export const durationLanguage = createDurationLanguage(
     (counter) => `ano${counter === 1 ? "" : "s"}`,
@@ -11,5 +41,8 @@ export const durationLanguage = createDurationLanguage(
     (counter) => `milissegundo${counter === 1 ? "" : "s"}`,
     "em %s",
     "há %s",
-    ",",
+    ",", // decimal
+    ptUnitMap,
+    ".", // groupSeparator
+    "_", // placeholderSeparator
 );

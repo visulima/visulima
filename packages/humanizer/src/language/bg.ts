@@ -1,5 +1,26 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 import getSlavicForm from "./util/duration/get-slavic-form";
+
+// Map Bulgarian aliases to standard keys
+const bgUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    година: "y",
+    години: "y",
+    ден: "d",
+    дни: "d",
+    месец: "mo",
+    месеца: "mo",
+    милисекунда: "ms",
+    милисекунди: "ms",
+    минута: "m",
+    минути: "m",
+    седмица: "w",
+    седмици: "w",
+    секунда: "s",
+    секунди: "s",
+    час: "h",
+    часа: "h",
+};
 
 export const durationLanguage = createDurationLanguage(
     (counter) => ["години", "година", "години"][getSlavicForm(counter)] as string,
@@ -12,5 +33,8 @@ export const durationLanguage = createDurationLanguage(
     (counter) => ["милисекунди", "милисекунда", "милисекунди"][getSlavicForm(counter)] as string,
     "след %s",
     "преди %s",
-    ",",
+    ",", // decimal
+    bgUnitMap,
+    " ", // groupSeparator (space)
+    "_", // placeholderSeparator
 );
