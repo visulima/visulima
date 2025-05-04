@@ -5,6 +5,7 @@ import { identifyCase } from "../../../src/case";
 describe("identifyCase", () => {
     it("should identify camelCase including variations", () => {
         expect.assertions(7);
+
         expect(identifyCase("fooBar")).toBe("camel");
         expect(identifyCase("fooBarBaz")).toBe("camel");
         expect(identifyCase("innerHTML")).toBe("camel");
@@ -16,6 +17,7 @@ describe("identifyCase", () => {
 
     it("should identify PascalCase including variations", () => {
         expect.assertions(6);
+
         expect(identifyCase("FooBar")).toBe("pascal");
         expect(identifyCase("FooBarBaz")).toBe("pascal");
         expect(identifyCase("Pascal")).toBe("pascal");
@@ -26,6 +28,7 @@ describe("identifyCase", () => {
 
     it("should identify snake_case including variations", () => {
         expect.assertions(7);
+
         expect(identifyCase("foo_bar")).toBe("snake");
         expect(identifyCase("foo_bar_baz")).toBe("snake");
         expect(identifyCase("my_variable")).toBe("snake");
@@ -36,18 +39,19 @@ describe("identifyCase", () => {
     });
 
     it("should identify kebab-case including variations", () => {
-        expect.assertions(7);
+        expect.assertions(6);
+
         expect(identifyCase("foo-bar")).toBe("kebab");
         expect(identifyCase("foo-bar-baz")).toBe("kebab");
         expect(identifyCase("my-component")).toBe("kebab");
         expect(identifyCase("my-component-1")).toBe("kebab"); // Ends with number
         expect(identifyCase("a-b-c")).toBe("kebab");
         expect(identifyCase("abc-123")).toBe("kebab"); // Mixed alphanumeric
-        expect(identifyCase("a-")).toBe("kebab"); // Ends with hyphen
     });
 
     it("should identify lowercase including variations", () => {
         expect.assertions(5);
+
         expect(identifyCase("foo")).toBe("lower");
         expect(identifyCase("foobar")).toBe("lower");
         expect(identifyCase("lowercase")).toBe("lower");
@@ -57,6 +61,7 @@ describe("identifyCase", () => {
 
     it("should identify uppercase including variations", () => {
         expect.assertions(6);
+
         expect(identifyCase("FOO")).toBe("upper");
         expect(identifyCase("FOOBAR")).toBe("upper");
         expect(identifyCase("UPPERCASE")).toBe("upper");
@@ -67,6 +72,7 @@ describe("identifyCase", () => {
 
     it("should identify UPPER_SNAKE_CASE including variations", () => {
         expect.assertions(5);
+
         expect(identifyCase("UPPER_SNAKE")).toBe("upper_snake");
         expect(identifyCase("MY_CONSTANT")).toBe("upper_snake");
         expect(identifyCase("MY_CONSTANT_1")).toBe("upper_snake"); // Ends with number
@@ -93,7 +99,7 @@ describe("identifyCase", () => {
     });
 
     it("should identify various mixed cases", () => {
-        expect.assertions(11);
+        expect.assertions(12);
 
         expect(identifyCase("a_b-c")).toBe("mixed"); // Snake and kebab
         expect(identifyCase("Fo_ob1_r")).toBe("mixed");
@@ -106,6 +112,7 @@ describe("identifyCase", () => {
         expect(identifyCase("Class1Name2")).toBe("mixed"); // Pascal with numbers
         expect(identifyCase("abc123")).toBe("mixed"); // Lowercase with number
         expect(identifyCase("a1b2c3")).toBe("mixed"); // Lowercase interleaved with numbers
+        expect(identifyCase("a-")).toBe("mixed"); // Ends with hyphen
     });
 
     it("should handle invalid/edge cases", () => {
@@ -124,11 +131,13 @@ describe("identifyCase", () => {
 
     it("should handle empty string", () => {
         expect.assertions(1);
+
         expect(identifyCase("")).toBe("unknown");
     });
 
     it("should handle null input", () => {
         expect.assertions(1);
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect(() => identifyCase(null as any)).toThrow(TypeError);
     });

@@ -1,14 +1,14 @@
 import type { IdentifyCase } from "./types";
 
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group,regexp/no-super-linear-backtracking,regexp/no-misleading-capturing-group
-const IS_PASCAL_CASE = /^([A-Z][a-zA-Z]*)+$/;
+// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
+const IS_PASCAL_CASE = /^([A-Z][a-z]*)+$/;
 const CONTAINS_LETTER_CASE_INSENSITIVE = /[a-z]/i;
 const IS_UPPER_SNAKE_CASE = /^[A-Z0-9_]+$/;
 const IS_LOWER_SNAKE_CASE = /^[a-z0-9_]+$/;
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group,regexp/no-super-linear-backtracking,regexp/no-misleading-capturing-group
-const IS_KEBAB_CASE = /^([a-z][a-z0-9-]+)+$/;
+// eslint-disable-next-line security/detect-unsafe-regex
+const IS_KEBAB_CASE = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 const IS_LOWERCASE_WITH_SPACE = /^[a-z ]+$/;
-const IS_UPPERCASE = /^[A-Z][A-Z0-9_]*$/; // Checks for all caps, allowing underscores and numbers
+const IS_UPPERCASE = /^[A-Z][A-Z0-9]*$/; // Checks for all caps, allowing underscores and numbers
 const WHITESPACE_REGEX = /\s+/;
 const IS_NUMERIC = /^\d+$/;
 // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking,regexp/no-unused-capturing-group
@@ -83,7 +83,7 @@ const identifyCase = <T extends string = string>(value?: T): IdentifyCase<T> => 
         return "title";
     }
 
-    if (words.length > 1 && IS_PASCAL_CASE.test(words[0] as string)) {
+    if (words.length > 1 && IS_PASCAL_CASE.test(words[0] as string) && /^[a-z]/.test(words[1] as string)) {
         return "sentence";
     }
 
