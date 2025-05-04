@@ -11,8 +11,8 @@ const IS_LOWERCASE_WITH_SPACE = /^[a-z ]+$/;
 const IS_UPPERCASE = /^[A-Z][A-Z0-9]*$/; // Checks for all caps, allowing underscores and numbers
 const WHITESPACE_REGEX = /\s+/;
 const IS_NUMERIC = /^\d+$/;
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking,regexp/no-unused-capturing-group
-const IS_CAMEL_CASE_LIKE = /^([a-z][a-z0-9]*[A-Z]+[a-z0-9]*)+$/;
+// eslint-disable-next-line security/detect-unsafe-regex
+const IS_CAMEL_CASE_LIKE = /^[a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)+$/;
 const CONTAINS_PUNCTUATION_MID_WORD = /[.!?;:,](?!\s|$)/;
 
 /**
