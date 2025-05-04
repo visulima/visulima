@@ -93,7 +93,7 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
 
         if (colonMatch[2] !== undefined) {
             // Format: hh:mm:ss   → groups [1]=hh, [2]=mm, [3]=ss
-            hours = Number.parseInt(colonMatch[1], 10);
+            hours = Number.parseInt(colonMatch[1] ?? "0", 10);
             minutes = Number.parseInt(colonMatch[2], 10);
         } else if (colonMatch[1] !== undefined) {
             // Format:  mm:ss     → groups [1]=mm, [3]=ss
