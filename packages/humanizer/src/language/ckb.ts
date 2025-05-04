@@ -6,11 +6,11 @@ const ckbUnitMap: Record<string, keyof DurationUnitMeasures> = {
     خولەک: "m",
     ساڵ: "y",
     مانگ: "mo",
+    "میلی چرکە": "ms",
     هەفتە: "w",
     چرکە: "s",
     ڕۆژ: "d",
     کاتژمێر: "h",
-    میلی چرکە: "ms",
 };
 
 export const durationLanguage = createDurationLanguage(

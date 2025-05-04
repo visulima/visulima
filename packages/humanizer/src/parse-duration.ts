@@ -51,15 +51,15 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
 
     const currentUnitMap = (language.unitMap ?? englishUnitMap) as Record<string, keyof DurationUnitMeasures>; // Fallback needed if englishUnitMap is not guaranteed
 
+    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
+    let processedValue = value.replaceAll(new RegExp(`(\\d)[${escapedPlaceholder}${escapedGroup}](\\d)`, "g"), "$1$2");
+
+    if (decimalSeparator !== ".") {
+        processedValue = processedValue.replace(escapedDecimal, ".");
+    }
+
     if (NUMERIC_STRING_REGEX.test(value)) {
-        // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
-        let numberCheckValue = value.replaceAll(new RegExp(`(\\d)[${escapedPlaceholder}${escapedGroup}](\\d)`, "g"), "$1$2");
-
-        if (decimalSeparator !== ".") {
-            numberCheckValue = numberCheckValue.replace(escapedDecimal, ".");
-        }
-
-        const numberOnly = Number.parseFloat(numberCheckValue.trim());
+        const numberOnly = Number.parseFloat(processedValue.trim());
 
         if (!Number.isNaN(numberOnly)) {
             // eslint-disable-next-line security/detect-object-injection
@@ -93,7 +93,7 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
 
         if (colonMatch[2] !== undefined) {
             // Format: hh:mm:ss   → groups [1]=hh, [2]=mm, [3]=ss
-            hours   = Number.parseInt(colonMatch[1], 10);
+            hours = Number.parseInt(colonMatch[1], 10);
             minutes = Number.parseInt(colonMatch[2], 10);
         } else if (colonMatch[1] !== undefined) {
             // Format:  mm:ss     → groups [1]=mm, [3]=ss
@@ -106,24 +106,14 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
 
     const currentUnitMapKeys = Object.keys(currentUnitMap);
 
-    // eslint-disable-next-line etc/no-assign-mutated-array
     const regexKeys = currentUnitMapKeys
+        // eslint-disable-next-line etc/no-assign-mutated-array
         .sort((a, b) => b.length - a.length)
-        .map((k) => k.replace(ESCAPE_REGEX, "\\$&")) // escape meta chars
+        .map((k) => k.replaceAll(ESCAPE_REGEX, "\\$&")) // escape meta chars
         .join("|");
 
     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     const durationRegex = new RegExp(`(-?\\d*\\.?\\d+)\\s*(${regexKeys})`, "gi");
-
-    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
-    let processedValue = value.replaceAll(
-        new RegExp(`(\\d)[${escapedPlaceholder}${escapedGroup}](\\d)`, "g"),
-        "$1$2",
-    );
-    // Unify decimal separator for further patterns / parseFloat
-    if (decimalSeparator !== ".") {
-        processedValue = processedValue.replaceAll(escapedDecimal, ".");
-    }
 
     let totalMs = 0;
     let match;
