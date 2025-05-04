@@ -1,4 +1,32 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
+
+// Map Danish aliases to standard keys
+const daUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    d: "d",
+    dag: "d",
+    dage: "d",
+    md: "mo",
+    millisekund: "ms",
+    millisekunder: "ms",
+    min: "m",
+    minut: "m",
+    minutter: "m",
+    ms: "ms",
+    måned: "mo",
+    måneder: "mo",
+    s: "s",
+    sek: "s",
+    sekund: "s",
+    sekunder: "s",
+    t: "h",
+    time: "h",
+    timer: "h",
+    u: "w",
+    uge: "w",
+    uger: "w",
+    år: "y",
+} as const;
 
 export const durationLanguage = createDurationLanguage(
     "år",
@@ -12,4 +40,7 @@ export const durationLanguage = createDurationLanguage(
     "om %s",
     "%s siden",
     ",",
+    daUnitMap,
+    ".",
+    "_",
 );

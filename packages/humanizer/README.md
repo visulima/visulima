@@ -46,7 +46,7 @@ pnpm add @visulima/humanizer
 Convert bytes to human-readable strings and vice versa: 1024 → 1KB and 1KB → 1024
 
 ```ts
-import { formatBytes, p } from "@visulima/humanizer";
+import { formatBytes, parseBytes } from "@visulima/humanizer";
 
 console.log(formatBytes(123412341, { decimals: 2 })); // "117.70 MB"
 console.log(parseBytes("117.70 MB")); // 123417395.2
@@ -650,26 +650,60 @@ console.log(formatBytes(123412341, { decimals: 2, base: 10 })); // "123.41 MB"
 
 ### Duration
 
-> `duration` use a modified version of [HumanizeDuration](https://github.com/EvanHahn/HumanizeDuration.js).
+> `duration` and `parseDuration` functionality is based on a modified version of [HumanizeDuration](https://github.com/EvanHahn/HumanizeDuration.js).
 
-I have the time in milliseconds and I want it to become "30 minutes" or "3 days, 1 hour".
+Format time in milliseconds into a human-readable string like "30 minutes" or "3 days, 1 hour". Parse various human-readable duration strings back into milliseconds.
 
 ```ts
-import { duration } from "@visulima/humanizer";
+import { duration, parseDuration } from "@visulima/humanizer";
+import { durationLanguage as fr } from "@visulima/humanizer/language/fr"; // Example language import
 
-duration(3000);
+// --- Formatting ---
+console.log(duration(3000));
 // => "3 seconds"
 
-duration(2250);
+console.log(duration(2250));
 // => "2.25 seconds"
 
-duration(97320000);
+console.log(duration(97320000));
 // => "1 day, 3 hours, 2 minutes"
+
+// --- Parsing ---
+console.log(parseDuration("1 day, 3 hours, 2 minutes"));
+// => 97320000
+
+console.log(parseDuration("2h 30 min"));
+// => 9000000
+
+console.log(parseDuration("-3 weeks"));
+// => -1814400000
+
+console.log(parseDuration("1.5 years"));
+// => 47335428000
+
+// Parsing with different languages (requires language object with unitMap)
+console.log(parseDuration("2 jours et 5 heures", { language: fr }));
+// => 190800000
+
+// Parsing colon format (H:MM:SS or MM:SS)
+console.log(parseDuration("1:25:05"));
+// => 5105000
+
+console.log(parseDuration("15:30"));
+// => 930000
+
+// Parsing ISO 8601 duration format (PT#H#M#S)
+console.log(parseDuration("PT2H30M5S"));
+// => 9005000
+
+// Parsing just numbers (uses defaultUnit)
+console.log(parseDuration("1500")); // Default unit is 'ms'
+// => 1500
 ```
 
-#### Options
+#### Options for `duration`
 
-You can change the settings by passing options as the second argument.
+You can change the formatting settings by passing options as the second argument to `duration`.
 
 ##### units
 
@@ -695,7 +729,7 @@ duration(3600000, { units: ["d", "h"] });
 // => "1 hour"
 ```
 
-#### largest
+##### largest
 
 Integer representing the maximum number of units to use.
 
@@ -709,7 +743,7 @@ duration(1000000000000, { largest: 2 });
 // => "31 years, 8 months"
 ```
 
-#### round
+##### round
 
 A boolean that, if `true`, rounds the smallest unit.
 
@@ -726,7 +760,7 @@ duration(1600, { round: true });
 // => "2 seconds"
 ```
 
-#### delimiter
+##### delimiter
 
 String to display between units.
 
@@ -740,7 +774,7 @@ duration(22140000, { delimiter: " and " });
 // => "6 hours and 9 minutes"
 ```
 
-#### spacer
+##### spacer
 
 String to display between the count and the word.
 
@@ -754,7 +788,7 @@ duration(260040000, { spacer: " whole " });
 // => "3 whole days, 14 whole minutes"
 ```
 
-#### decimal
+##### decimal
 
 String to display between the integer and decimal parts of a count, if relevant.
 
@@ -768,7 +802,7 @@ duration(1200, { decimal: " point " });
 // => "1 point 2 seconds"
 ```
 
-#### conjunction
+##### conjunction
 
 String to include before the final unit.
 
@@ -790,7 +824,7 @@ duration(22141000, { conjunction: " and ", serialComma: false });
 // => "6 hours, 9 minutes and 1 second"
 ```
 
-#### maxDecimalPoints
+##### maxDecimalPoints
 
 Integer that defines the maximum number of decimal points to show, if relevant. If `undefined`, the count will be converted to a string using [`Number.prototype.toString()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toString).
 
@@ -815,7 +849,7 @@ duration(7999, { maxDecimalPoints: 2 });
 // => "7.99 seconds"
 ```
 
-#### digitReplacements
+##### digitReplacements
 
 Array of ten strings to which will replace the numerals 0-9. Useful if a language uses different numerals.
 
@@ -831,7 +865,7 @@ duration(1234, {
 // => "One.TwoThreeFour seconds"
 ```
 
-#### unitMeasures
+##### unitMeasures
 
 _Use this option with care. It is an advanced feature._
 
@@ -858,14 +892,13 @@ duration(2629800000, {
 // => "1 month, 10 hours, 30 minutes"
 ```
 
-#### language
+##### language
 
-Language for unit display.
-Accepts an [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) from one of the [supported languages](#supported-languages).
+Language for unit display. Accepts an [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) from one of the [supported languages](#supported-languages), or a custom language object.
 
-Default: `"en"`.
+Default: `en` (English language object).
 
-```js
+```ts
 import { duration } from "@visulima/humanizer";
 import { durationLanguage as es } from "@visulima/humanizer/language/es";
 import { durationLanguage as ko } from "@visulima/humanizer/language/ko";
@@ -877,9 +910,57 @@ duration(5000, { language: ko });
 // => "5 초"
 ```
 
+#### Options for `parseDuration`
+
+You can pass options as the second argument to `parseDuration`.
+
+##### language
+
+Language object containing the `unitMap` for parsing localized strings. See the `language` option for the `duration` function for details on how to import language objects.
+
+If omitted or if the language object doesn't have a `unitMap`, parsing will only recognize standard English units (like "hour", "min", "d", "ms" etc.).
+
+Default: English units.
+
+```ts
+import { parseDuration } from "@visulima/humanizer";
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+import { durationLanguage as ru } from "@visulima/humanizer/language/ru";
+
+// Without language option (or if unitMap is missing)
+parseDuration("3 Stunden"); // => undefined
+parseDuration("5 часов"); // => undefined
+
+// With language option containing a unitMap
+parseDuration("3 Stunden", { language: de });
+// => 10800000
+
+parseDuration("5 часов, 10 минут", { language: ru });
+// => 18600000
+```
+
+##### defaultUnit
+
+Specifies the unit to assume if the input string is just a number (without any units).
+
+Possible values: `y`, `mo`, `w`, `d`, `h`, `m`, `s`, `ms`.
+
+Default: `"ms"`
+
+```ts
+parseDuration("1500");
+// => 1500 (interpreted as 1500 ms)
+
+parseDuration("1500", { defaultUnit: "s" });
+// => 1500000 (interpreted as 1500 s)
+
+parseDuration("-10", { defaultUnit: "d" });
+// => -864000000 (interpreted as -10 days)
+```
+
 ###### Supported languages
 
-`duration` supports the following languages:
+`duration` and `parseDuration` (when provided with a language object containing a `unitMap`) support the following languages:
 
 | Language             | Code     |
 | -------------------- | -------- |
@@ -960,8 +1041,8 @@ duration(5000, { language: ko });
 
 ## Supported Node.js Versions
 
-Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
-Here’s [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
+Libraries in this ecosystem make the best effort to track [Node.js' release schedule](https://github.com/nodejs/release#release-schedule).
+Here's [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
 ## Contributing
 

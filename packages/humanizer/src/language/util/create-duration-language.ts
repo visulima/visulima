@@ -1,4 +1,4 @@
-import type { DurationLanguage, DurationUnit } from "../../types";
+import type { DurationLanguage, DurationUnit, DurationUnitMeasures } from "../../types";
 
 const createDurationLanguage = (
     y: DurationUnit,
@@ -12,6 +12,9 @@ const createDurationLanguage = (
     future?: string,
     past?: string,
     decimal?: string,
+    unitMap?: Record<string, keyof DurationUnitMeasures>,
+    groupSeparator?: string,
+    placeholderSeparator?: string,
 ): DurationLanguage => {
     const result: DurationLanguage = {
         d,
@@ -34,6 +37,18 @@ const createDurationLanguage = (
 
     if (decimal !== undefined) {
         result.decimal = decimal;
+    }
+
+    if (unitMap !== undefined) {
+        result.unitMap = unitMap;
+    }
+
+    if (groupSeparator !== undefined) {
+        result.groupSeparator = groupSeparator;
+    }
+
+    if (placeholderSeparator !== undefined) {
+        result.placeholderSeparator = placeholderSeparator;
     }
 
     return result;

@@ -170,6 +170,7 @@ describe("localized duration", () => {
             definitionNames.map(async (fileName) => {
                 const language = basename(fileName, ".tsv");
                 const filePath = join(fixturePath, fileName);
+
                 languages.set(language, await readPairs(filePath));
             }),
         );
@@ -195,7 +196,7 @@ describe("localized duration", () => {
                         language: importedLanguages[language as keyof typeof importedLanguages] as DurationLanguage,
                         units: ["y", "mo", "w", "d", "h", "m", "s", "ms"],
                     }),
-                    `${language} localization error for ${milliseconds} milliseconds`,
+                    `${language} localization error for ${String(milliseconds)} milliseconds`,
                 ).toStrictEqual(expectedResult);
             }
         }

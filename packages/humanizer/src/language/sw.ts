@@ -1,4 +1,31 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
+
+// Map Swahili aliases to standard keys
+const swUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    dakika: "m",
+    dk: "m",
+    juma: "w", // another word for week
+    majuma: "w",
+    masaa: "h",
+    miaka: "y",
+    miezi: "mo",
+    milisekunde: "ms",
+    ms: "ms",
+    mwaka: "y",
+    mwe: "mo",
+    mwezi: "mo",
+    // Abbreviations (less common but possible)
+    mwk: "y",
+    sa: "h",
+    saa: "h",
+    sek: "s",
+    sekunde: "s",
+    siku: "d",
+    sk: "d",
+    wiki: "w",
+    wk: "w",
+} as const;
 
 export const durationLanguage = {
     _numberFirst: true,
@@ -13,5 +40,9 @@ export const durationLanguage = {
         "milisekunde",
         "%s baadaye",
         "tokea %s",
+        ".", // decimal separator
+        swUnitMap,
+        ",", // group separator
+        "_", // placeholder separator
     ),
 };

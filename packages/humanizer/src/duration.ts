@@ -24,7 +24,7 @@ const toFixed = (number_: number, fixed: number): number => {
     fixed = fixed || -1;
 
     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
-    const matches = new RegExp(`^-?\\d+(?:.\\d{0,${fixed}})?`).exec(number_.toString());
+    const matches = new RegExp(`^-?\\d+(?:.\\d{0,${String(fixed)}})?`).exec(number_.toString());
 
     if (matches === null) {
         return number_; // can be undefined when num is Number.POSITIVE_INFINITY
@@ -173,7 +173,7 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
                     const smallerUnitCount = unitCounts[smallerUnitName] as number;
 
                     // @ts-expect-error unitCounts[unitName] is defined
-                    // eslint-disable-next-line security/detect-object-injection
+                    // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/restrict-plus-operands
                     unitCounts[unitName] += (smallerUnitCount * unitMeasures[smallerUnitName]) / unitMeasures[unitName];
                     // eslint-disable-next-line security/detect-object-injection
                     unitCounts[smallerUnitName] = 0;
@@ -218,7 +218,7 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
 
             if (amountOfPreviousUnit) {
                 // @ts-expect-error unitCounts[previousUnitName] is defined
-                // eslint-disable-next-line security/detect-object-injection
+                // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/restrict-plus-operands
                 unitCounts[previousUnitName] += amountOfPreviousUnit;
                 // eslint-disable-next-line security/detect-object-injection
                 unitCounts[unitName] = 0;
@@ -315,6 +315,7 @@ const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: num
     } else if (pieces.length === 2) {
         result = renderedPieces.join(conjunction);
     } else {
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         result = renderedPieces.slice(0, -1).join(delimiter) + (serialComma ? "," : "") + conjunction + renderedPieces.at(-1);
     }
 
@@ -331,7 +332,7 @@ const duration = (milliseconds: number, options?: DurationOptions): string => {
     }
 
     if (typeof milliseconds !== "number") {
-        throw new TypeError("Expected a number");
+        throw new TypeError("Expected a number for milliseconds input");
     }
 
     const config = {

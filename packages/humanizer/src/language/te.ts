@@ -1,4 +1,34 @@
+import type { DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
+
+// Map Telugu aliases to standard keys
+const teUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    ms: "ms",
+    గం: "h",
+    గంట: "h",
+    గంటలు: "h",
+    ని: "m",
+    నిమిషం: "m",
+    నిమిషాలు: "m",
+    నె: "mo",
+    నెల: "mo",
+    నెలలు: "mo",
+    మిల్లీసెకను: "ms",
+    మిల్లీసెకన్లు: "ms",
+    మిసె: "ms",
+    రో: "d",
+    రోజు: "d",
+    రోజులు: "d",
+    వా: "w",
+    వారం: "w",
+    వారాలు: "w",
+    సం: "y",
+    సంవత్సరం: "y",
+    సంవత్సరాలు: "y",
+    సె: "s",
+    సెకను: "s",
+    సెకన్లు: "s",
+} as const;
 
 export const durationLanguage = createDurationLanguage(
     (counter) => `సంవత్స${counter === 1 ? "రం" : "రాల"}`,
@@ -11,4 +41,8 @@ export const durationLanguage = createDurationLanguage(
     (counter) => (counter === 1 ? "మిల్లీసెకన్" : "మిల్లీసెకన్లు"),
     "%s లో",
     "%s క్రితం",
+    ".", // decimal separator
+    teUnitMap,
+    ",", // group separator
+    "_", // placeholder separator
 );

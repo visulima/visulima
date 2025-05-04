@@ -281,6 +281,7 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
 
     const absoluteBytes = Math.abs(bytes);
     const space = (options?.space ?? true) ? " " : "";
+    // eslint-disable-next-line security/detect-object-injection
     const referenceTable = BYTE_SIZES[units];
 
     const requestedUnitIndex = referenceTable.findIndex((unit) => unit.short === requestedUnit);

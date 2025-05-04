@@ -39,6 +39,14 @@ const validateDurationLanguage = (language: DurationLanguage): void => {
     if (language._numberFirst && typeof language._numberFirst !== "boolean") {
         throw new TypeError("Property _numberFirst must be of type boolean");
     }
+
+    if (language.unitMap && typeof language.unitMap !== "object") {
+        throw new TypeError("Property unitMap must be an object");
+    }
+
+    if (language.unitMap && Object.values(language.unitMap).some((value) => typeof value !== "string")) {
+        throw new TypeError("All values in unitMap must be of type string");
+    }
 };
 
 export default validateDurationLanguage;
