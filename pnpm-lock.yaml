@@ -3852,8 +3852,8 @@ importers:
   packages/tabular:
     dependencies:
       '@visulima/string':
-        specifier: workspace:*
-        version: link:../string
+        specifier: 1.0.5
+        version: 1.0.5
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -3886,7 +3886,7 @@ importers:
         specifier: 18.19.71
         version: 18.19.71
       '@visulima/colorize':
-        specifier: ^1.4.21
+        specifier: 1.4.21
         version: 1.4.21
       '@visulima/packem':
         specifier: ^1.19.1
@@ -4267,6 +4267,7 @@ packages:
   '@anolilab/package-json-utils@3.0.9':
     resolution: {integrity: sha512-CYwpW2hlsOSdwtksYG5vH7Y48X7qwSnvk4yTsplce/FZFZLKRxuCbwlUqgTEYUng3nZ55A+5EC3rEttgor7e9w==}
     engines: {node: '>=18.* <=21.*'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@anolilab/prettier-config@5.0.14':
     resolution: {integrity: sha512-P7nVwARFM0SKQ0j8Q2y6Q3acHaPNtXOKEX9lgZcf5veFdvNjzK79iZcFdpQikyix4VQBs8x6wBPAD0yDfpC6pQ==}
@@ -9644,6 +9645,10 @@ packages:
 
   '@visulima/source-map@1.0.17':
     resolution: {integrity: sha512-sLZaA5s4+6Apq5pG9V9Y03WUuXRRGoL9ysd5lBTDsh/Tf4ZWQ5krZpZg5Ep748JiPPZ/lZFe2Ylp7jGz81iblQ==}
+    engines: {node: '>=18.0.0 <=23.x'}
+
+  '@visulima/string@1.0.5':
+    resolution: {integrity: sha512-J2P7NZw325Mhwu2FwykOZD3IMV2y4ZbWBsta6VRD+iRuGiPT0IOhnCLu/BB8wl++gM0PAhwwkIuWjTSpKoxslw==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/tsconfig@1.1.15':
@@ -28446,6 +28451,8 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       '@visulima/path': 1.3.4
+
+  '@visulima/string@1.0.5': {}
 
   '@visulima/tsconfig@1.1.15(yaml@2.7.0)':
     dependencies:
