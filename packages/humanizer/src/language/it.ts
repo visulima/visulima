@@ -10,7 +10,8 @@ const itUnitMap: Record<string, keyof DurationUnitMeasures> = {
     giorni: "d",
     giorno: "d",
     h: "h",
-    m: "mo",
+    // 'm.' can mean month or minute in Italian; use 'mes' for month
+    mes: "mo",
     mese: "mo",
     mesi: "mo",
     millisecondi: "ms",

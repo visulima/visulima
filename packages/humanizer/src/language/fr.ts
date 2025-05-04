@@ -23,7 +23,7 @@ const frUnitMap: Record<string, keyof DurationUnitMeasures> = {
     mn: "m",
     mois: "mo",
     ms: "ms",
-    s: "w",
+    s: "s",
     sec: "s",
     seconde: "s",
     secondes: "s",

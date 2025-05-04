@@ -91,17 +91,15 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         let minutes = 0;
         let seconds = 0;
 
-        if (colonMatch[1] !== undefined && colonMatch[2] !== undefined) {
-            // Format: 1:25:00 (hours:minutes:seconds)
-            hours = Number.parseInt(colonMatch[1], 10);
+        if (colonMatch[2] !== undefined) {
+            // Format: hh:mm:ss   → groups [1]=hh, [2]=mm, [3]=ss
+            hours   = Number.parseInt(colonMatch[1], 10);
             minutes = Number.parseInt(colonMatch[2], 10);
-            seconds = Number.parseInt(colonMatch[3] ?? "0", 10);
-        } else {
-            // Format: 1:25 (minutes:seconds)
-            minutes = Number.parseInt(colonMatch[1] ?? "0", 10);
-            seconds = Number.parseInt(colonMatch[3] ?? "0", 10);
+        } else if (colonMatch[1] !== undefined) {
+            // Format:  mm:ss     → groups [1]=mm, [3]=ss
+            minutes = Number.parseInt(colonMatch[1], 10);
         }
-
+        seconds = Number.parseInt(colonMatch[3] ?? "0", 10);
         // Calculate total milliseconds
         return hours * 3_600_000 + minutes * 60_000 + seconds * 1000;
     }
@@ -109,11 +107,23 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
     const currentUnitMapKeys = Object.keys(currentUnitMap);
 
     // eslint-disable-next-line etc/no-assign-mutated-array
-    const regexKeys = currentUnitMapKeys.sort((a, b) => b.length - a.length).join("|");
+    const regexKeys = currentUnitMapKeys
+        .sort((a, b) => b.length - a.length)
+        .map((k) => k.replace(ESCAPE_REGEX, "\\$&")) // escape meta chars
+        .join("|");
+
     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     const durationRegex = new RegExp(`(-?\\d*\\.?\\d+)\\s*(${regexKeys})`, "gi");
+
     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
-    const processedValue = value.replaceAll(new RegExp(`(\\d)[${escapedPlaceholder}${escapedGroup}](\\d)`, "g"), "$1$2");
+    let processedValue = value.replaceAll(
+        new RegExp(`(\\d)[${escapedPlaceholder}${escapedGroup}](\\d)`, "g"),
+        "$1$2",
+    );
+    // Unify decimal separator for further patterns / parseFloat
+    if (decimalSeparator !== ".") {
+        processedValue = processedValue.replaceAll(escapedDecimal, ".");
+    }
 
     let totalMs = 0;
     let match;
