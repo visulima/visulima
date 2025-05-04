@@ -1,3 +1,13 @@
+## @visulima/humanizer [1.2.0](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.1.2...@visulima/humanizer@1.2.0) (2025-05-04)
+
+### Features
+
+* **humanizer:** update duration language files and add parseDuration ([#500](https://github.com/visulima/visulima/issues/500)) ([406c965](https://github.com/visulima/visulima/commit/406c965b188195fc00758caed6c802403c5446cb))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
 ## @visulima/humanizer [1.1.2](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.1.1...@visulima/humanizer@1.1.2) (2025-03-07)
 
 ### Bug Fixes
