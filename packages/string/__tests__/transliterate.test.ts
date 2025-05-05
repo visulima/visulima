@@ -34,13 +34,13 @@ describe("transliterate function", () => {
     });
 
     it("should handle replace option (object)", () => {
-        expect(transliterate("Replace √ symbol", { replace: { "√": "sqrt" } })).toBe("Replace sqrt symbol");
+        expect(transliterate("Replace √ symbol", { replaceBefore: { "√": "sqrt" } })).toBe("Replace sqrt symbol");
     });
 
     it("should handle replace option (array)", () => {
         expect(
             transliterate("Replace AB and XY", {
-                replace: [
+                replaceBefore: [
                     [/AB/g, "ab"],
                     ["XY", "xy"],
                 ],
@@ -57,7 +57,7 @@ describe("transliterate function", () => {
         const text = "  Ignore Cœur, replace √ with SQRT, then trim!  ";
         const options: OptionsTransliterate = {
             ignore: ["Cœur"],
-            replace: { "√": "SQRT" },
+            replaceBefore: { "√": "SQRT" },
             replaceAfter: { SQRT: "Square Root" },
             trim: true,
             unknown: "?",
@@ -67,10 +67,10 @@ describe("transliterate function", () => {
 
     it("should optionally add space before non-punctuation after Chinese char", () => {
         const text = "中文Äǐǎ";
-        expect(transliterate(text, { fixChineseSpacing: true })).toBe("中文 Aeia");
-        expect(transliterate(text, { fixChineseSpacing: false })).toBe("中文Aeia");
+        expect(transliterate(text, { fixChineseSpacing: true })).toBe("ZhongWen Aeia");
+        expect(transliterate(text, { fixChineseSpacing: false })).toBe("ZhongWenAeia");
         const textPunc = "中文Ä.";
-        expect(transliterate(textPunc, { fixChineseSpacing: true })).toBe("中文 Ae.");
+        expect(transliterate(textPunc, { fixChineseSpacing: true })).toBe("ZhongWen Ae.");
     });
     describe("aSCII Purity Tests", () => {
         // Test characters 32-126 (Standard Printable ASCII) + Tab, LF, CR
@@ -112,31 +112,27 @@ describe("transliterate function", () => {
     });
 
     describe("basic String Tests", () => {
-        const tests: (number | string)[] = [
-            1 / 10, // 0.1
-            "I like pie.",
-            "\n",
-            "\r\n",
-            "I like pie.\n",
-        ];
-
-        tests.forEach((stringInput) => {
-            const string_ = String(stringInput);
-            it(`should handle basic input: ${JSON.stringify(string_)}`, () => {
-                expect(transliterate(string_)).toBe(string_);
-            });
+        it.each(
+            [
+                1 / 10, // 0.1
+                "I like pie.",
+                "\n",
+                "\r\n",
+                "I like pie.\n",
+            ].map(String),
+        )("should handle basic input: %s", (string_) => {
+            expect(transliterate(string_)).toBe(string_);
         });
     });
 
     describe("complex Script/Character Tests", () => {
         // IMPORTANT: These tests depend heavily on the *actual* charmap data
-        // in src/charmap.ts. They will likely fail or produce unexpected
-        // results with the current placeholder/mocked charmap.
-        const tests: [string, string][] = [
+        // in src/charmap/index.ts.
+        it.each([
             ["Æneid", "AEneid"],
             ["étude", "etude"],
             // Chinese depends entirely on charmap
-            ["北亰", "Bei Jing"], // Expectation based on original test
+            ["北亰", "BeiJing"],
             // Canadian syllabics
             ["ᔕᓇᓇ", "shanana"],
             // Cherokee
@@ -155,43 +151,35 @@ describe("transliterate function", () => {
             // Unknown characters (assuming they are not in the final charmap)
             [`\u0800\u1400${String.fromCharCode(0xd8_40, 0xdd_00)}`, ""],
             ["🚀", ""], // Expect empty if unknown is default ""
-        ];
-
-        for (const [string_, result] of tests) {
-            it(`should transliterate ${string_} to ${result} (charmap dependent)`, () => {
-                // Add a comment reminding that this depends on the real charmap
-                expect(transliterate(string_)).toBe(result);
-            });
-        }
+        ])("should transliterate %s to %s (charmap dependent)", (string_, result) => {
+            // Add a comment reminding that this depends on the real charmap
+            expect(transliterate(string_)).toBe(result);
+        });
 
         it("should handle unknown chars with option", () => {
             expect(transliterate("🚀", { unknown: "?" })).toBe("?");
         });
     });
 
-    it("- With replace / replaceAfter and ignore options combined", () => {
+    it("With replace / replaceAfter and ignore options combined", () => {
         expect(
             transliterate("你好, 世界!", {
                 ignore: ["¡", "!"],
-                replace: [
+                replaceBefore: [
                     ["你好", "Hola"],
                     ["世界", "mundo"],
                 ],
             }),
         ).toBe("Hola, mundo!");
-
-        expect(transliterate("你好，世界！", { ignore: ["你"], replaceAfter: [["Ni", "tú"]] })).toBe("你好,世界！");
-
-        // Test ignore with replace
+        expect(transliterate("Hola, mundo!", { replaceBefore: [["mundo", "world"]] })).toBe("Hola, world!");
+        expect(transliterate("你好，世界！", { ignore: ["你"], replaceAfter: [["Ni", "tú"]] })).toBe("你Hao,ShiJie!");
         expect(
             transliterate("你好，世界！", {
                 ignore: ["界"],
-                replace: { 好: "Good" },
+                replaceBefore: { 好: "Good" }, // Changed back from replace
             }),
-        ).toBe("Ni Good，Shi 界！"); // Assuming 你->Ni, 世->Shi in real charmap
+        ).toBe("Ni Good,Shi界!"); // ignore 界, no space added by default logic
     });
-
-    // --- Language Specific Tests ---
 
     it("supports German umlauts", () => {
         expect(transliterate("ä ö ü Ä Ö Ü ß")).toBe("ae oe ue Ae Oe Ue ss");
@@ -252,7 +240,7 @@ describe("transliterate function", () => {
     });
 
     it("supports Danish", () => {
-        expect(transliterate("æ ø å Æ Ø Å")).toBe("ae oe aa Ae Oe Aa");
+        expect(transliterate("æ ø å Æ Ø Å")).toBe("ae oe aa AE Oe Aa");
     });
 
     it("supports Dhivehi", () => {

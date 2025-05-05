@@ -615,7 +615,7 @@ export interface OptionsTransliterate {
     /** Characters/strings to ignore */
     ignore?: string[];
     /** Search/replace pairs before charmap */
-    replace?: OptionReplaceCombined;
+    replaceBefore?: OptionReplaceCombined;
     /** Search/replace pairs after charmap */
     replaceAfter?: OptionReplaceCombined;
     /** Trim leading/trailing whitespace */

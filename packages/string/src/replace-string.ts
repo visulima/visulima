@@ -38,10 +38,12 @@ const mergeIntervals = (intervals: IntervalArray): IntervalArray => {
     }
 
     const merged: IntervalArray = [];
+
     let currentMerge = [...(intervals[0] as Interval)];
 
     for (let i = 1; i < intervals.length; i++) {
         const next = intervals[i];
+
         if (next[0] <= currentMerge[1] + 1) {
             currentMerge[1] = Math.max(currentMerge[1], next[1]);
         } else {
@@ -49,7 +51,9 @@ const mergeIntervals = (intervals: IntervalArray): IntervalArray => {
             currentMerge = [...next];
         }
     }
+
     merged.push(currentMerge);
+
     return merged;
 };
 
@@ -63,11 +67,18 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     const potentialMatches: PotentialMatch[] = [];
     let matchIdCounter = 0;
     for (const item of searches) {
-        if (!item || item.length < 2) continue;
+        if (!item || item.length < 2) {
+            continue;
+        }
+
         const [searchKey, replacementValue] = item;
-        if (replacementValue === undefined) continue;
+
+        if (replacementValue === undefined) {
+            continue;
+        }
 
         let searchPattern: RegExp;
+
         try {
             if (searchKey instanceof RegExp) {
                 searchPattern = new RegExp(searchKey.source, `${searchKey.flags.replace("g", "")}g`);
@@ -77,7 +88,8 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                 continue;
             }
 
-            let match;
+            let match: RegExpExecArray | null;
+
             while ((match = searchPattern.exec(source)) !== null) {
                 const start = match.index;
                 const original = match[0];
@@ -87,10 +99,15 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
                 const end = start + original.length - 1; // Inclusive end
                 const finalReplacement = replacementValue.replace(/\$(\d+|&)/g, (_, group) => {
-                    if (group === "&") return original;
+                    if (group === "&") {
+                        return original;
+                    }
+
                     const groupIndex = parseInt(group, 10);
+
                     return groupIndex > 0 && groupIndex < match.length ? (match[groupIndex] ?? "") : "";
                 });
+
                 potentialMatches.push({ start, end, replacement: finalReplacement, original, id: matchIdCounter++ });
 
                 // Ensure regex advances even if a zero-length match was found at the start index
@@ -106,7 +123,10 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
     // Sort potential matches (start asc, length desc)
     potentialMatches.sort((a, b) => {
-        if (a.start !== b.start) return a.start - b.start;
+        if (a.start !== b.start) {
+            return a.start - b.start;
+        }
+
         return b.end - a.end; // Longer first
     });
 
@@ -140,7 +160,6 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     // with many long, overlapping matches, optimizing the overlap check (e.g.,
     // using an interval tree or sorted interval list for applied ranges) might
     // improve performance, but adds complexity.
-
     let insertionAfterEnd = ""; // Store zero-length replacements targeted *after* the last char
 
     // First, handle all zero-length matches - they insert without consuming/overlapping
@@ -149,9 +168,11 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
             if (match.start >= 0 && match.start <= processedChars.length) {
                 // Allow insertion at or after last char
                 const targetIndex = match.start;
+
                 if (processedChars[targetIndex]) {
                     // Insertion *before* an existing character
                     const targetChar = processedChars[targetIndex];
+
                     if (!targetChar.isIgnored) {
                         targetChar.insertBeforeReplacement = (targetChar.insertBeforeReplacement ?? "") + match.replacement;
                     }
@@ -201,6 +222,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     // Build result string
     let result = "";
     let currentIndex = 0;
+
     while (currentIndex < processedChars.length) {
         const pChar = processedChars[currentIndex];
 

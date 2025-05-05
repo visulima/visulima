@@ -59,7 +59,7 @@ const UNICODE_BLOCK_1000_10FF: (string | undefined)[] = [
     "N",
     "'",
     ":",
-    "",
+    undefined,
     undefined,
     undefined,
     undefined,

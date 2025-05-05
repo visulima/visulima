@@ -162,7 +162,7 @@ const UNICODE_BLOCK_FF00_FFFF: (string | undefined)[] = [
     "n",
     ":",
     ";",
-    "",
+    undefined,
     "g",
     "gg",
     "gs",
@@ -185,7 +185,7 @@ const UNICODE_BLOCK_FF00_FFFF: (string | undefined)[] = [
     "bs",
     "s",
     "ss",
-    "",
+    undefined,
     "j",
     "jj",
     "c",
@@ -254,10 +254,10 @@ const UNICODE_BLOCK_FF00_FFFF: (string | undefined)[] = [
     "{",
     "|",
     "}",
-    "",
-    "",
-    "",
-    "",
+    undefined,
+    undefined,
+    undefined,
+    undefined,
 ];
 
 export default UNICODE_BLOCK_FF00_FFFF;

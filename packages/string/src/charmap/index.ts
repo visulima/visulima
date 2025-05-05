@@ -376,7 +376,7 @@ for (const blockIndexString in blockDataMap) {
                     const charCode = baseCode + charIndex;
 
                     try {
-                        const originalChar = String.fromCharCode(charCode);
+                        const originalChar = String.fromCodePoint(charCode);
 
                         if (originalChar && !generatedCharmap[originalChar]) {
                             generatedCharmap[originalChar] = replacement;

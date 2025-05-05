@@ -4,6 +4,13 @@ import { fileURLToPath } from "node:url";
 
 import UNICODE_MAP from "../data/transliteration.json" assert { type: "json" };
 
+/**
+ * Checks if a character is Chinese.
+ * @param {number} low - The Unicode code point of the character.
+ * @returns {boolean} True if the character is Chinese, false otherwise.
+ */
+const isChinese = (low) => (low >= 0x4e && low <= 0x9f) || (low >= 0xf9 && low <= 0xfa);
+
 const inputCharmapModulePath = "./src/charmap"; // Path for import
 const outputDir = "./src/charmap"; // Output directory relative to project root
 const mapFileName = "index.ts";
@@ -40,6 +47,16 @@ async function runSplit() {
         const blockName = `UNICODE_BLOCK_${blockStart}_${blockEnd}`;
         const blockFilename = `block-${blockStart.toLowerCase()}-${blockEnd.toLowerCase()}.ts`;
         const blockFilepath = join(outputDirpath, blockFilename);
+
+        for (let i = 0; i < blockData.length; i++) {
+            const char = blockData[i];
+
+            if (char === undefined || char === null || char === "") {
+                blockData[i] = null;
+            } else if (isChinese(Number(blockIndex))) {
+                blockData[i] = char.trimEnd();
+            }
+        }
 
         // Format the array data for the TS file content
         const blockContentString = JSON.stringify(blockData, null, 4).replaceAll("null", "undefined"); // Convert null back to undefined if necessary
@@ -93,7 +110,7 @@ for (const blockIndexString in blockDataMap) {
                     const charCode = baseCode + charIndex;
 
                     try {
-                        const originalChar = String.fromCharCode(charCode);
+                        const originalChar = String.fromCodePoint(charCode);
 
                         if (originalChar && !generatedCharmap[originalChar]) {
                             generatedCharmap[originalChar] = replacement;
