@@ -50,10 +50,10 @@ export type { StringWidthOptions } from "./get-string-width";
 export { getStringWidth } from "./get-string-width";
 export type { Outdent, Options as OutdentOptions } from "./outdent";
 export { outdent } from "./outdent";
+export { default as replaceString } from "./replace-string";
 export type { SliceOptions } from "./slice";
 export { slice } from "./slice";
 export { default as transliterate } from "./transliterate";
-export { default as replaceString } from "./replace-string";
 export type { TruncateOptions } from "./truncate";
 export { truncate } from "./truncate";
 export type {

@@ -614,10 +614,10 @@ export interface OptionsTransliterate {
     fixChineseSpacing?: boolean;
     /** Characters/strings to ignore */
     ignore?: string[];
-    /** Search/replace pairs before charmap */
-    replaceBefore?: OptionReplaceCombined;
     /** Search/replace pairs after charmap */
     replaceAfter?: OptionReplaceCombined;
+    /** Search/replace pairs before charmap */
+    replaceBefore?: OptionReplaceCombined;
     /** Trim leading/trailing whitespace */
     trim?: boolean;
     /** Character to use for unknown characters */
@@ -625,4 +625,4 @@ export interface OptionsTransliterate {
 }
 
 /** Character map type used by Transliterate */
-export type Charmap = Record<string, string>;
+export type Charmap = Record<string, string | undefined>;

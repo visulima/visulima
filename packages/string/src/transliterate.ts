@@ -1,13 +1,13 @@
-import charmap from "./charmap/index";
-import type { Charmap, IntervalArray, OptionReplaceArray, OptionReplaceCombined, OptionReplaceObject, OptionsTransliterate } from "./types";
+import charmap from "./charmap";
 import replaceString from "./replace-string";
+import type { Charmap, IntervalArray, OptionReplaceArray, OptionReplaceCombined, OptionReplaceObject, OptionsTransliterate } from "./types";
 import { findStrOccurrences as findStringOccurrences, hasChinese, hasPunctuationOrSpace } from "./utils";
 
 export const defaultOptions: Required<OptionsTransliterate> = {
     fixChineseSpacing: true,
     ignore: [],
-    replaceBefore: [],
     replaceAfter: [],
+    replaceBefore: [],
     trim: false,
     unknown: "",
 };
@@ -50,35 +50,23 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
         ...optionsInput,
     });
 
-    let string_ = typeof source === "string" ? source : String(source);
+    let input = typeof source === "string" ? source : String(source);
 
     const currentCharmap: Charmap = charmap;
     const replaceOption: OptionReplaceArray = formatReplaceOption(opt.replaceBefore);
 
-    // 1. Calculate ignore ranges based on the ORIGINAL string (for replaceString)
-    const initialIgnoreRanges: IntervalArray = opt.ignore.length > 0 ? findStringOccurrences(string_, opt.ignore) : [];
+    const initialIgnoreRanges: IntervalArray = opt.ignore.length > 0 ? findStringOccurrences(input, opt.ignore) : [];
 
-    // DEBUG: Log calculated initial ignore ranges
-    // console.log("DEBUG: initialIgnoreRanges =", JSON.stringify(initialIgnoreRanges));
-
-    // 2. Pre-charmap replacements using the IMPORTED replaceString
     if (replaceOption.length > 0) {
-        string_ = replaceString(string_, replaceOption, initialIgnoreRanges);
+        input = replaceString(input, replaceOption, initialIgnoreRanges);
     }
 
-    // DEBUG: Log string after replaceBefore
-    // console.log(`DEBUG: string_ after replaceBefore = '${string_}'`);
-
-    // 3. Recalculate ignore ranges based on the MODIFIED string (for the main loop)
-    const finalIgnoreRanges: IntervalArray = opt.ignore.length > 0 ? findStringOccurrences(string_, opt.ignore) : [];
-
-    // DEBUG: Log calculated final ignore ranges
-    console.log("DEBUG: finalIgnoreRanges =", JSON.stringify(finalIgnoreRanges));
+    const finalIgnoreRanges: IntervalArray = opt.ignore.length > 0 ? findStringOccurrences(input, opt.ignore) : [];
 
     let result = "";
 
-    const stringLength = string_.length;
-    const stringContainsChinese = opt.fixChineseSpacing && hasChinese(string_);
+    const stringLength = input.length;
+    const stringContainsChinese = opt.fixChineseSpacing && hasChinese(input);
 
     let lastCharWasChinese = false;
 
@@ -87,45 +75,52 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
         let charLength = 1;
 
         // Handle surrogate pairs
-        const currentCode = string_.charCodeAt(index);
+        const currentCode = input.charCodeAt(index);
 
         if (currentCode >= 0xd8_00 && currentCode <= 0xdb_ff && index + 1 < stringLength) {
-            const nextCode = string_.charCodeAt(index + 1);
+            const nextCode = input.charCodeAt(index + 1);
 
             if (nextCode >= 0xdc_00 && nextCode <= 0xdf_ff) {
-                char = string_[index]! + string_[index + 1]!;
+                char = input[index]! + input[index + 1]!;
                 charLength = 2;
             } else {
-                char = string_[index]!;
+                char = input[index]!;
             }
         } else {
-            char = string_[index]!;
+            char = input[index]!;
         }
 
         let s: string | null | undefined;
 
         const charEndIndex = index + charLength - 1;
-        const isIgnored = finalIgnoreRanges.some((range) => {
-            // Check for overlap: !(rangeEnd < charStart || rangeStart > charEnd)
-            return !(range[1] < index || range[0] > charEndIndex);
-        });
-
-        // DEBUG: Log the character being processed, its position, and ignored status
-        // console.log(`DEBUG: Loop - char='${char}', index=${index}, charEnd=${charEndIndex}, isIgnored=${isIgnored}, finalIgnores=${JSON.stringify(finalIgnoreRanges)}`);
+        const isIgnored = finalIgnoreRanges.some(
+            (range) =>
+                // Check for overlap: !(rangeEnd < charStart || rangeStart > charEnd)
+                !(range[1] < index || range[0] > charEndIndex),
+        );
 
         if (isIgnored) {
             s = char; // Keep original character if ignored
         } else {
-            console.log({ finalIgnoreRanges, index, charEndIndex, char });
-            const found = Object.prototype.hasOwnProperty.call(currentCharmap, char);
+            const codePoint = char.codePointAt(0);
 
-            if (found) {
-                s = currentCharmap[char]; // Use mapping if found
-            } else if (hasChinese(char)) {
-                s = char; // Keep original if it's Chinese and unmapped
+            if (codePoint === undefined) {
+                // Handle cases where codePointAt returns undefined (shouldn't happen with valid strings)
+                s = opt.unknown;
+            } else {
+                const codePointString = String(codePoint); // Convert to string for lookup
+                const found = Object.prototype.hasOwnProperty.call(currentCharmap, codePointString);
+
+                if (found) {
+                    s = currentCharmap[codePointString]; // Use mapping if found (using string key)
+                } else if (hasChinese(char)) {
+                    s = char; // Keep original if it's Chinese and unmapped
+                }
             }
 
-            if (!s) {
+            // Fallback if still no value for s
+            if (s === undefined || s === null) {
+                // Check for undefined OR null from charmap
                 s = opt.unknown; // Use unknown for other unmapped characters
             }
         }
@@ -136,33 +131,32 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             const originalCharIsChinese = hasChinese(char);
 
             // Original logic: Add space only when transitioning FROM Chinese TO non-Chinese (non-punct)
-            if (lastCharWasChinese && !originalCharIsChinese && sIsDefined && s.length > 0 && !hasPunctuationOrSpace(s[0]!)) {
+            if (lastCharWasChinese && !originalCharIsChinese && sIsDefined && s.length > 0 && s[0] && !hasPunctuationOrSpace(s[0]!)) {
                 s = " " + s;
             }
 
             lastCharWasChinese = originalCharIsChinese;
         } else if (isIgnored) {
-            lastCharWasChinese = false;
+            lastCharWasChinese = false; // Reset if current char is ignored
         }
 
         result += s;
         index += charLength;
     }
 
-    string_ = result;
+    input = result;
 
-    // 4. Trim
     if (opt.trim) {
-        string_ = string_.trim();
+        input = input.trim();
     }
 
     const replaceAfterOption: OptionReplaceArray = formatReplaceOption(opt.replaceAfter);
 
     if (replaceAfterOption.length > 0) {
-        string_ = replaceString(string_, replaceAfterOption, finalIgnoreRanges);
+        input = replaceString(input, replaceAfterOption, finalIgnoreRanges);
     }
 
-    return string_;
+    return input;
 };
 
 export default transliterate;

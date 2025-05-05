@@ -371,19 +371,17 @@ for (const blockIndexString in blockDataMap) {
 
             for (let charIndex = 0; charIndex < blockLength; charIndex++) {
                 const replacement = blockData[charIndex];
+                const charCode = baseCode + charIndex;
+                const charCodeString = String(charCode);
 
-                if (typeof replacement === "string") {
-                    const charCode = baseCode + charIndex;
-
-                    try {
-                        const originalChar = String.fromCodePoint(charCode);
-
-                        if (originalChar && !generatedCharmap[originalChar]) {
-                            generatedCharmap[originalChar] = replacement;
-                        }
-                    } catch (error_) {
-                        // Ignore errors for invalid char codes (like surrogates)
-                        // console.warn(`Skipping invalid charCode ${charCode.toString(16)}: ${error_}`);
+                // Add entry if key doesn't exist, mapping null/undefined from JSON to undefined
+                if (!Object.prototype.hasOwnProperty.call(generatedCharmap, charCodeString)) {
+                    if (typeof replacement === "string") {
+                        generatedCharmap[charCodeString] = replacement;
+                    } else {
+                        // Map null/undefined from JSON to undefined in the map
+                        // This ensures the key exists for hasOwnProperty checks later
+                        generatedCharmap[charCodeString] = undefined;
                     }
                 }
             }

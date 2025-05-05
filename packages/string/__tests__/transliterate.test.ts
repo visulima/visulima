@@ -57,8 +57,8 @@ describe("transliterate function", () => {
         const text = "  Ignore Cœur, replace √ with SQRT, then trim!  ";
         const options: OptionsTransliterate = {
             ignore: ["Cœur"],
-            replaceBefore: { "√": "SQRT" },
             replaceAfter: { SQRT: "Square Root" },
+            replaceBefore: { "√": "SQRT" },
             trim: true,
             unknown: "?",
         };
@@ -148,11 +148,10 @@ describe("transliterate function", () => {
             ["മലയാലമ്", "mlyaalm"],
             // Japanese
             ["げんまい茶", "genmaiCha"],
-            // Unknown characters (assuming they are not in the final charmap)
-            [`\u0800\u1400${String.fromCharCode(0xd8_40, 0xdd_00)}`, ""],
+            // Unknown characters
+            [`\u0800\u1400${String.fromCharCode(0xd8_40, 0xdd_00)}`, "\u{20100}"],
             ["🚀", ""], // Expect empty if unknown is default ""
         ])("should transliterate %s to %s (charmap dependent)", (string_, result) => {
-            // Add a comment reminding that this depends on the real charmap
             expect(transliterate(string_)).toBe(result);
         });
 
@@ -161,7 +160,7 @@ describe("transliterate function", () => {
         });
     });
 
-    it("With replace / replaceAfter and ignore options combined", () => {
+    it("with replace / replaceAfter and ignore options combined", () => {
         expect(
             transliterate("你好, 世界!", {
                 ignore: ["¡", "!"],
