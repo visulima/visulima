@@ -596,11 +596,8 @@ export type Interval = [number, number];
 /** Array of intervals */
 export type IntervalArray = Interval[];
 
-/** OptionReplace array type: [search: string | RegExp, replace: string] */
-export type OptionReplace = [RegExp | string, string];
-
 /** Array of OptionReplace */
-export type OptionReplaceArray = OptionReplace[];
+export type OptionReplaceArray = [RegExp | string, string][];
 
 /** OptionReplace object type */
 export type OptionReplaceObject = Record<string, string>;

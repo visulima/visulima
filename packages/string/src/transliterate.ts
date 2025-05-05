@@ -1,21 +1,11 @@
 import charmap from "./charmap";
 import replaceString from "./replace-string";
 import type { Charmap, IntervalArray, OptionReplaceArray, OptionReplaceCombined, OptionReplaceObject, OptionsTransliterate } from "./types";
-import { findStrOccurrences as findStringOccurrences, hasChinese, hasPunctuationOrSpace } from "./utils";
-
-export const defaultOptions: Required<OptionsTransliterate> = {
-    fixChineseSpacing: true,
-    ignore: [],
-    replaceAfter: [],
-    replaceBefore: [],
-    trim: false,
-    unknown: "",
-};
-
+import { findStringOccurrences, hasChinese, hasPunctuationOrSpace } from "./utils";
 /**
  * Converts the object version of the 'replace' option into tuple array one.
  */
-function formatReplaceOption(option: OptionReplaceCombined): OptionReplaceArray {
+const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray => {
     if (Array.isArray(option)) {
         return structuredClone(option);
     }
@@ -24,6 +14,7 @@ function formatReplaceOption(option: OptionReplaceCombined): OptionReplaceArray 
 
     for (const key in option as OptionReplaceObject) {
         if (Object.prototype.hasOwnProperty.call(option, key)) {
+            // eslint-disable-next-line security/detect-object-injection
             const value = (option as OptionReplaceObject)[key];
             // Ensure value is a string before pushing
             if (typeof value === "string") {
@@ -33,7 +24,7 @@ function formatReplaceOption(option: OptionReplaceCombined): OptionReplaceArray 
     }
 
     return replaceArray;
-}
+};
 
 /**
  * Main transliterate function.
@@ -43,12 +34,18 @@ function formatReplaceOption(option: OptionReplaceCombined): OptionReplaceArray 
  * @param options Options object.
  * @returns The transliterated string.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const transliterate = (source: string, options?: OptionsTransliterate): string => {
     const optionsInput = typeof options === "object" ? options : {};
-    const opt: Required<OptionsTransliterate> = structuredClone({
-        ...defaultOptions,
+    const opt: Required<OptionsTransliterate> = {
+        fixChineseSpacing: true,
+        ignore: [],
+        replaceAfter: [],
+        replaceBefore: [],
+        trim: false,
+        unknown: "",
         ...optionsInput,
-    });
+    };
 
     let input = typeof source === "string" ? source : String(source);
 
@@ -75,19 +72,24 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
         let charLength = 1;
 
         // Handle surrogate pairs
+        // eslint-disable-next-line unicorn/prefer-code-point
         const currentCode = input.charCodeAt(index);
 
         if (currentCode >= 0xd8_00 && currentCode <= 0xdb_ff && index + 1 < stringLength) {
+            // eslint-disable-next-line unicorn/prefer-code-point
             const nextCode = input.charCodeAt(index + 1);
 
             if (nextCode >= 0xdc_00 && nextCode <= 0xdf_ff) {
-                char = input[index]! + input[index + 1]!;
+                // eslint-disable-next-line security/detect-object-injection
+                char = (input[index] as string) + (input[index + 1] as string);
                 charLength = 2;
             } else {
-                char = input[index]!;
+                // eslint-disable-next-line security/detect-object-injection
+                char = input[index] as string;
             }
         } else {
-            char = input[index]!;
+            // eslint-disable-next-line security/detect-object-injection
+            char = input[index] as string;
         }
 
         let s: string | null | undefined;
@@ -112,7 +114,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
                 const found = Object.prototype.hasOwnProperty.call(currentCharmap, codePointString);
 
                 if (found) {
-                    s = currentCharmap[codePointString]; // Use mapping if found (using string key)
+                    s = currentCharmap[codePointString as keyof Charmap]; // Use mapping if found (using string key)
                 } else if (hasChinese(char)) {
                     s = char; // Keep original if it's Chinese and unmapped
                 }
@@ -131,7 +133,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             const originalCharIsChinese = hasChinese(char);
 
             // Original logic: Add space only when transitioning FROM Chinese TO non-Chinese (non-punct)
-            if (lastCharWasChinese && !originalCharIsChinese && sIsDefined && s.length > 0 && s[0] && !hasPunctuationOrSpace(s[0]!)) {
+            if (lastCharWasChinese && !originalCharIsChinese && sIsDefined && s.length > 0 && s[0] && !hasPunctuationOrSpace(s[0] as string)) {
                 s = " " + s;
             }
 
