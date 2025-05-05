@@ -590,3 +590,39 @@ export type ToLowerCase<T extends string> = IsStringLiteral<T> extends true ? Lo
  * type Upper = ToUpperCase<'hello'> // type Upper = 'HELLO'
  */
 export type ToUpperCase<T extends string> = IsStringLiteral<T> extends true ? Uppercase<T> : string;
+
+export type Interval = [number, number];
+
+/** Array of intervals */
+export type IntervalArray = Interval[];
+
+/** OptionReplace array type: [search: string | RegExp, replace: string] */
+export type OptionReplace = [string | RegExp, string];
+
+/** Array of OptionReplace */
+export type OptionReplaceArray = OptionReplace[];
+
+/** OptionReplace object type */
+export type OptionReplaceObject = Record<string, string>;
+
+/** Combined OptionReplace type (object or array) */
+export type OptionReplaceCombined = OptionReplaceObject | OptionReplaceArray;
+
+/** Options for transliteration */
+export interface OptionsTransliterate {
+    /** Characters/strings to ignore */
+    ignore?: string[];
+    /** Search/replace pairs before charmap */
+    replace?: OptionReplaceCombined;
+    /** Search/replace pairs after charmap */
+    replaceAfter?: OptionReplaceCombined;
+    /** Character to use for unknown characters */
+    unknown?: string;
+    /** Trim leading/trailing whitespace */
+    trim?: boolean;
+    /** Fix spacing for Chinese characters */
+    fixChineseSpacing?: boolean;
+}
+
+/** Character map type used by Transliterate */
+export type Charmap = Record<string, string>;
