@@ -244,7 +244,7 @@ describe("transliterate function", () => {
     });
 
     it("supports Latin", () => {
-        expect(transliterate("Ä Ð Ø")).toBe("Ae D O");
+        expect(transliterate("Ä Ð Ø")).toBe("Ae D Oe");
     });
 
     it("supports Czech", () => {
@@ -264,7 +264,7 @@ describe("transliterate function", () => {
     });
 
     it("supports Hungarian", () => {
-        expect(transliterate("ű ö Ö")).toBe("u o O");
+        expect(transliterate("ű ö Ö")).toBe("u oe Oe");
     });
 
     it("supports Latvian", () => {
@@ -292,7 +292,7 @@ describe("transliterate function", () => {
     });
 
     it("supports Swedish", () => {
-        expect(transliterate("ä ö Ä Ö")).toBe("a o A O");
+        expect(transliterate("ä ö Ä Ö")).toBe("ae oe Ae Oe");
     });
 
     it("supports Ukrainian", () => {

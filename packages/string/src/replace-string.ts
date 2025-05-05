@@ -63,7 +63,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     const potentialMatches: PotentialMatch[] = [];
     let matchIdCounter = 0;
     for (const item of searches) {
-         if (!item || item.length < 2) continue;
+        if (!item || item.length < 2) continue;
         const [searchKey, replacementValue] = item;
         if (replacementValue === undefined) continue;
 
@@ -81,9 +81,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
             while ((match = searchPattern.exec(source)) !== null) {
                 const start = match.index;
                 const original = match[0];
-                 if (original.length === 0 && searchPattern.lastIndex === match.index) {
-                      searchPattern.lastIndex++; // Avoid infinite loop on zero-length matches
-                 }
+                if (original.length === 0 && searchPattern.lastIndex === match.index) {
+                    searchPattern.lastIndex++; // Avoid infinite loop on zero-length matches
+                }
 
                 const end = start + original.length - 1; // Inclusive end
                 const finalReplacement = replacementValue.replace(/\$(\d+|&)/g, (_, group) => {
@@ -95,8 +95,8 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
                 // Ensure regex advances even if a zero-length match was found at the start index
                 if (original.length === 0 && searchPattern.lastIndex === start) {
-                     searchPattern.lastIndex++;
-                 }
+                    searchPattern.lastIndex++;
+                }
             }
         } catch (error) {
             console.error(`Error processing search key ${String(searchKey)}:`, error);
@@ -146,32 +146,34 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     // First, handle all zero-length matches - they insert without consuming/overlapping
     for (const match of potentialMatches) {
         if (match.original.length === 0) {
-            if (match.start >= 0 && match.start <= processedChars.length) { // Allow insertion at or after last char
-                 const targetIndex = match.start;
-                 if (processedChars[targetIndex]) {
-                     // Insertion *before* an existing character
-                     const targetChar = processedChars[targetIndex];
-                     if (!targetChar.isIgnored) {
-                         targetChar.insertBeforeReplacement = (targetChar.insertBeforeReplacement ?? "") + match.replacement;
-                     }
-                 } else if (targetIndex === processedChars.length) {
-                      // Insertion *after* the last character
-                      insertionAfterEnd += match.replacement;
-                 }
-             }
+            if (match.start >= 0 && match.start <= processedChars.length) {
+                // Allow insertion at or after last char
+                const targetIndex = match.start;
+                if (processedChars[targetIndex]) {
+                    // Insertion *before* an existing character
+                    const targetChar = processedChars[targetIndex];
+                    if (!targetChar.isIgnored) {
+                        targetChar.insertBeforeReplacement = (targetChar.insertBeforeReplacement ?? "") + match.replacement;
+                    }
+                } else if (targetIndex === processedChars.length) {
+                    // Insertion *after* the last character
+                    insertionAfterEnd += match.replacement;
+                }
+            }
         }
     }
 
     // Now, handle non-zero-length matches, considering precedence and overlaps
     for (const match of potentialMatches) {
-         if (match.original.length === 0) {
-             continue;
-         }
+        if (match.original.length === 0) {
+            continue;
+        }
 
         let canApply = true;
         // Check for overlaps with ignores or already applied matches
         for (let i = match.start; i <= match.end; i++) {
-            if (!processedChars[i] || // Out of bounds
+            if (
+                !processedChars[i] || // Out of bounds
                 processedChars[i].isIgnored || // Overlaps ignore
                 processedChars[i].appliedMatchId !== null // Overlaps higher-priority match
             ) {
@@ -183,19 +185,19 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         if (canApply) {
             // Apply this valid match
             if (match.start >= 0 && match.start < processedChars.length) {
-                 // Mark characters covered by this match
-                 for (let i = match.start; i <= match.end; i++) {
-                     if (processedChars[i]) {
-                         processedChars[i].appliedMatchId = match.id;
-                     }
-                 }
-                 // Mark the start for replacement action
-                 processedChars[match.start].isMatchStart = true;
-                 processedChars[match.start].matchReplacement = match.replacement;
-             }
+                // Mark characters covered by this match
+                for (let i = match.start; i <= match.end; i++) {
+                    if (processedChars[i]) {
+                        processedChars[i].appliedMatchId = match.id;
+                    }
+                }
+                // Mark the start for replacement action
+                processedChars[match.start].isMatchStart = true;
+                processedChars[match.start].matchReplacement = match.replacement;
+            }
         }
     }
-    
+
     // Build result string
     let result = "";
     let currentIndex = 0;
@@ -209,8 +211,8 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
         if (pChar.isMatchStart && pChar.appliedMatchId !== null) {
             // Start of an applied non-zero-length match
-            result += pChar.matchReplacement ?? ""; 
-            
+            result += pChar.matchReplacement ?? "";
+
             // Find the end index of this match
             let matchEndIndex = currentIndex;
             for (let i = currentIndex + 1; i < processedChars.length; i++) {
@@ -226,11 +228,11 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
             result += pChar.char;
             currentIndex++;
         } else {
-             // Character is part of an applied match, but not the start - skip it.
-              currentIndex++;
-         }
+            // Character is part of an applied match, but not the start - skip it.
+            currentIndex++;
+        }
     }
-    
+
     // Append any zero-length matches that occurred after the last character
     if (insertionAfterEnd.length > 0) {
         result += insertionAfterEnd;

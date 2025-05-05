@@ -247,21 +247,24 @@ The `replaceString` function provides advanced string replacement capabilities, 
 > **Note:** Use this function when you need fine-grained control over multiple replacements, especially when needing to ignore specific index ranges or handle complex overlapping matches with defined precedence rules. For simple, non-overlapping replacements without ignore ranges, native `String.prototype.replaceAll` might be sufficient.
 
 ```typescript
-import replaceString from '@visulima/string/replace-string'; // Adjust import path if needed
+import replaceString from "@visulima/string/replace-string"; // Adjust import path if needed
 import type { IntervalArray, OptionReplaceArray } from "@visulima/string";
 
 // Basic Usage
 const source1 = "Replace AB and CD";
-const searches1: OptionReplaceArray = [["AB", "ab"], ["CD", "cd"]];
+const searches1: OptionReplaceArray = [
+    ["AB", "ab"],
+    ["CD", "cd"],
+];
 const result1 = replaceString(source1, searches1, []);
 // result1: "Replace ab and cd"
 
 // With Ignore Ranges
 const source2 = "Replace AB and ignore CD and replace XY";
 const searches2: OptionReplaceArray = [
-  ["AB", "ab"],
-  ["CD", "cd"], // This should be ignored by the range
-  ["XY", "xy"]
+    ["AB", "ab"],
+    ["CD", "cd"], // This should be ignored by the range
+    ["XY", "xy"],
 ];
 // Ignore indices 19-20 (targets "re" in "ignore")
 const ignoreRanges2: IntervalArray = [[19, 20]];
@@ -272,8 +275,8 @@ const result2 = replaceString(source2, searches2, ignoreRanges2);
 // With Overlapping Matches (Longer match takes precedence)
 const source3 = "abcde";
 const searches3: OptionReplaceArray = [
-  ["abc", "123"],       // Lower precedence
-  ["abcde", "54321"]    // Higher precedence (longer)
+    ["abc", "123"], // Lower precedence
+    ["abcde", "54321"], // Higher precedence (longer)
 ];
 const result3 = replaceString(source3, searches3, []);
 // result3: "54321"
@@ -281,8 +284,8 @@ const result3 = replaceString(source3, searches3, []);
 // With Overlapping Matches (Earlier start index takes precedence)
 const source4 = "ababab";
 const searches4: OptionReplaceArray = [
-  ["aba", "X"], // Starts at 0
-  ["bab", "Y"]  // Starts at 1
+    ["aba", "X"], // Starts at 0
+    ["bab", "Y"], // Starts at 1
 ];
 const result4 = replaceString(source4, searches4, []);
 // result4: "Xbab" (Applies "X" at 0, which covers indices 0-2. Skips "Y" at 1. Appends rest.)

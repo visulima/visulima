@@ -77,7 +77,7 @@ describe("replaceString function", () => {
             ["XY", "xy"],
         ];
         // Ignore "re" from "ignore" (indices 19, 20)
-        const ignoreRanges: IntervalArray = [[19, 20]]; 
+        const ignoreRanges: IntervalArray = [[19, 20]];
 
         expect(replaceString(source, searches, ignoreRanges)).toBe("Replace ab and ignore cd and replace xy"); // Corrected Expectation
     });
@@ -157,7 +157,7 @@ describe("replaceString function", () => {
 
     it("should handle overlapping potential matches correctly (non-ignored)", () => {
         expect.assertions(1);
-        
+
         const source = "ababab";
         const searches: OptionReplaceArray = [
             ["aba", "X"], // Matches at 0 and 2

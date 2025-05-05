@@ -160,7 +160,7 @@ const UNICODE_BLOCK_0300_03FF: (string | undefined)[] = [
     "L",
     "M",
     "N",
-    "X",
+    "KS",
     "O",
     "P",
     "R",
