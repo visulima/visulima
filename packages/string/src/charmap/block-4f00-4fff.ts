@@ -257,7 +257,7 @@ const UNICODE_BLOCK_4F00_4FFF: (string | undefined)[] = [
     "Yu ",
     "Xin ",
     "Bi ",
-    "Jian "
+    "Jian ",
 ];
 
- export default UNICODE_BLOCK_4F00_4FFF;
+export default UNICODE_BLOCK_4F00_4FFF;

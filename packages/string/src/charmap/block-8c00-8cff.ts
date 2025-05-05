@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8C00_8CFF: (string | undefined)[] = [
     "Gou ",
     "Sai ",
     "Ze ",
-    "Liao "
+    "Liao ",
 ];
 
- export default UNICODE_BLOCK_8C00_8CFF;
+export default UNICODE_BLOCK_8C00_8CFF;

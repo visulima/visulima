@@ -257,7 +257,7 @@ const UNICODE_BLOCK_B600_B6FF: (string | undefined)[] = [
     "ddwils",
     "ddwilt",
     "ddwilp",
-    "ddwilh"
+    "ddwilh",
 ];
 
- export default UNICODE_BLOCK_B600_B6FF;
+export default UNICODE_BLOCK_B600_B6FF;

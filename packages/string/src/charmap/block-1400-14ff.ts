@@ -257,7 +257,7 @@ const UNICODE_BLOCK_1400_14FF: (string | undefined)[] = [
     "swo",
     "swo",
     "swoo",
-    "swoo"
+    "swoo",
 ];
 
- export default UNICODE_BLOCK_1400_14FF;
+export default UNICODE_BLOCK_1400_14FF;

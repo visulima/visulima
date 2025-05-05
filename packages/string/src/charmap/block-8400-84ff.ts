@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8400_84FF: (string | undefined)[] = [
     "Liao ",
     "Bi ",
     "Lu ",
-    "Su "
+    "Su ",
 ];
 
- export default UNICODE_BLOCK_8400_84FF;
+export default UNICODE_BLOCK_8400_84FF;

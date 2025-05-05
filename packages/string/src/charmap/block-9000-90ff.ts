@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9000_90FF: (string | undefined)[] = [
     "Yi ",
     "Du ",
     "Yan ",
-    "Mei "
+    "Mei ",
 ];
 
- export default UNICODE_BLOCK_9000_90FF;
+export default UNICODE_BLOCK_9000_90FF;

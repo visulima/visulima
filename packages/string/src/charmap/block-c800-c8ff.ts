@@ -257,7 +257,7 @@ const UNICODE_BLOCK_C800_C8FF: (string | undefined)[] = [
     "ju",
     "jug",
     "jugg",
-    "jugs"
+    "jugs",
 ];
 
- export default UNICODE_BLOCK_C800_C8FF;
+export default UNICODE_BLOCK_C800_C8FF;

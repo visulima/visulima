@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7F00_7FFF: (string | undefined)[] = [
     "Yi ",
     "Hui ",
     "Xuan ",
-    "Dao "
+    "Dao ",
 ];
 
- export default UNICODE_BLOCK_7F00_7FFF;
+export default UNICODE_BLOCK_7F00_7FFF;

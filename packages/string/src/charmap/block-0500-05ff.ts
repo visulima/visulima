@@ -246,7 +246,7 @@ const UNICODE_BLOCK_0500_05FF: (string | undefined)[] = [
     "oy",
     "i",
     "'",
-    "\"",
+    '"',
     undefined,
     undefined,
     undefined,
@@ -257,7 +257,7 @@ const UNICODE_BLOCK_0500_05FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_0500_05FF;
+export default UNICODE_BLOCK_0500_05FF;

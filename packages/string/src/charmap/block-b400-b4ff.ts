@@ -257,7 +257,7 @@ const UNICODE_BLOCK_B400_B4FF: (string | undefined)[] = [
     "dyin",
     "dyinj",
     "dyinh",
-    "dyid"
+    "dyid",
 ];
 
- export default UNICODE_BLOCK_B400_B4FF;
+export default UNICODE_BLOCK_B400_B4FF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6500_65FF: (string | undefined)[] = [
     "Min ",
     "Tun ",
     "Chun ",
-    "Wu "
+    "Wu ",
 ];
 
- export default UNICODE_BLOCK_6500_65FF;
+export default UNICODE_BLOCK_6500_65FF;

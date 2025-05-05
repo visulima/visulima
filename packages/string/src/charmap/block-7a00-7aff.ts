@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7A00_7AFF: (string | undefined)[] = [
     "Peng ",
     "Yu ",
     "Chi ",
-    "Gan "
+    "Gan ",
 ];
 
- export default UNICODE_BLOCK_7A00_7AFF;
+export default UNICODE_BLOCK_7A00_7AFF;

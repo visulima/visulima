@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8200_82FF: (string | undefined)[] = [
     "Sheng ",
     "Gu ",
     "Bi ",
-    "Wei "
+    "Wei ",
 ];
 
- export default UNICODE_BLOCK_8200_82FF;
+export default UNICODE_BLOCK_8200_82FF;

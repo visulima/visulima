@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9C00_9CFF: (string | undefined)[] = [
     "Wen ",
     "Jian ",
     "Shi ",
-    "Yu "
+    "Yu ",
 ];
 
- export default UNICODE_BLOCK_9C00_9CFF;
+export default UNICODE_BLOCK_9C00_9CFF;

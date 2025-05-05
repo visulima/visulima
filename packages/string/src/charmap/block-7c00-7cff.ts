@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7C00_7CFF: (string | undefined)[] = [
     "Gong ",
     "Zheng ",
     "Jiu ",
-    "You "
+    "You ",
 ];
 
- export default UNICODE_BLOCK_7C00_7CFF;
+export default UNICODE_BLOCK_7C00_7CFF;

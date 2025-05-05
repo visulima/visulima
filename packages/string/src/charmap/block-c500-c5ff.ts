@@ -257,7 +257,7 @@ const UNICODE_BLOCK_C500_C5FF: (string | undefined)[] = [
     "yeom",
     "yeob",
     "yeobs",
-    "yeos"
+    "yeos",
 ];
 
- export default UNICODE_BLOCK_C500_C5FF;
+export default UNICODE_BLOCK_C500_C5FF;

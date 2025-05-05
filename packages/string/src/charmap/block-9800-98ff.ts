@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9800_98FF: (string | undefined)[] = [
     "Si ",
     "Bao ",
     "Shi ",
-    "Duo "
+    "Duo ",
 ];
 
- export default UNICODE_BLOCK_9800_98FF;
+export default UNICODE_BLOCK_9800_98FF;

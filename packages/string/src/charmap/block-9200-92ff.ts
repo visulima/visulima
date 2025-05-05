@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9200_92FF: (string | undefined)[] = [
     "Gang ",
     "Diao ",
     "Tao ",
-    "Chang "
+    "Chang ",
 ];
 
- export default UNICODE_BLOCK_9200_92FF;
+export default UNICODE_BLOCK_9200_92FF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5800_58FF: (string | undefined)[] = [
     "Kun ",
     "Shou ",
     "Mang ",
-    "Zun "
+    "Zun ",
 ];
 
- export default UNICODE_BLOCK_5800_58FF;
+export default UNICODE_BLOCK_5800_58FF;

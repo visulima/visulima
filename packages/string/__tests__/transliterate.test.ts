@@ -180,8 +180,7 @@ describe("transliterate function", () => {
             }),
         ).toBe("Hola, mundo!");
 
-        expect(transliterate("你好，世界！", { ignore: ["你"], replaceAfter: [["Ni", "tú"]] }))
-            .toBe("你好,世界！");
+        expect(transliterate("你好，世界！", { ignore: ["你"], replaceAfter: [["Ni", "tú"]] })).toBe("你好,世界！");
 
         // Test ignore with replace
         expect(

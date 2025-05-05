@@ -257,7 +257,7 @@ const UNICODE_BLOCK_3300_33FF: (string | undefined)[] = [
     "29d",
     "30d",
     "31d",
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_3300_33FF;
+export default UNICODE_BLOCK_3300_33FF;

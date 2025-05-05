@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6900_69FF: (string | undefined)[] = [
     "Gui ",
     "Cao ",
     "Man ",
-    "Jin "
+    "Jin ",
 ];
 
- export default UNICODE_BLOCK_6900_69FF;
+export default UNICODE_BLOCK_6900_69FF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_1800_18FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_1800_18FF;
+export default UNICODE_BLOCK_1800_18FF;

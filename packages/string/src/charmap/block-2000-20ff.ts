@@ -30,10 +30,10 @@ const UNICODE_BLOCK_2000_20FF: (string | undefined)[] = [
     "'",
     ",",
     "'",
-    "\"",
-    "\"",
+    '"',
+    '"',
     ",,",
-    "\"",
+    '"',
     "+",
     "++",
     "*",
@@ -257,7 +257,7 @@ const UNICODE_BLOCK_2000_20FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_2000_20FF;
+export default UNICODE_BLOCK_2000_20FF;

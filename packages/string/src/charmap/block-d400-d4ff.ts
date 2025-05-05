@@ -257,7 +257,7 @@ const UNICODE_BLOCK_D400_D4FF: (string | undefined)[] = [
     "pyuss",
     "pyung",
     "pyuj",
-    "pyuc"
+    "pyuc",
 ];
 
- export default UNICODE_BLOCK_D400_D4FF;
+export default UNICODE_BLOCK_D400_D4FF;

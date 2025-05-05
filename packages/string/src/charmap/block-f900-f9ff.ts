@@ -257,7 +257,7 @@ const UNICODE_BLOCK_F900_F9FF: (string | undefined)[] = [
     "Ci ",
     "Cip ",
     "Cha ",
-    "Chek "
+    "Chek ",
 ];
 
- export default UNICODE_BLOCK_F900_F9FF;
+export default UNICODE_BLOCK_F900_F9FF;

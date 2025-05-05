@@ -257,7 +257,7 @@ const UNICODE_BLOCK_B900_B9FF: (string | undefined)[] = [
     "maek",
     "maet",
     "maep",
-    "maeh"
+    "maeh",
 ];
 
- export default UNICODE_BLOCK_B900_B9FF;
+export default UNICODE_BLOCK_B900_B9FF;

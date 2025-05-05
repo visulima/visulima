@@ -5,9 +5,9 @@ const UNICODE_BLOCK_3000_30FF: (string | undefined)[] = [
     " ",
     ",",
     ". ",
-    "\"",
+    '"',
     "[JIS]",
-    "\"",
+    '"',
     "/",
     "0",
     "<",
@@ -159,8 +159,8 @@ const UNICODE_BLOCK_3000_30FF: (string | undefined)[] = [
     "",
     "",
     "",
-    "\"",
-    "\"",
+    '"',
+    '"',
     undefined,
     undefined,
     "a",
@@ -255,9 +255,9 @@ const UNICODE_BLOCK_3000_30FF: (string | undefined)[] = [
     "vo",
     "",
     "",
-    "\"",
-    "\"",
-    undefined
+    '"',
+    '"',
+    undefined,
 ];
 
- export default UNICODE_BLOCK_3000_30FF;
+export default UNICODE_BLOCK_3000_30FF;

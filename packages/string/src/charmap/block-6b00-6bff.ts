@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6B00_6BFF: (string | undefined)[] = [
     "He ",
     "Jian ",
     "Ta ",
-    "San "
+    "San ",
 ];
 
- export default UNICODE_BLOCK_6B00_6BFF;
+export default UNICODE_BLOCK_6B00_6BFF;

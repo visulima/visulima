@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9500_95FF: (string | undefined)[] = [
     "Ta ",
     "Min ",
     "Lu ",
-    "Kai "
+    "Kai ",
 ];
 
- export default UNICODE_BLOCK_9500_95FF;
+export default UNICODE_BLOCK_9500_95FF;

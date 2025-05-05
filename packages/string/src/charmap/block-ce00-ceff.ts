@@ -257,7 +257,7 @@ const UNICODE_BLOCK_CE00_CEFF: (string | undefined)[] = [
     "keok",
     "keot",
     "keop",
-    "keoh"
+    "keoh",
 ];
 
- export default UNICODE_BLOCK_CE00_CEFF;
+export default UNICODE_BLOCK_CE00_CEFF;

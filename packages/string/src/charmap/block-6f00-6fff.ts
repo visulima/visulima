@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6F00_6FFF: (string | undefined)[] = [
     "Luo ",
     "Zan ",
     "Lu ",
-    "Li "
+    "Li ",
 ];
 
- export default UNICODE_BLOCK_6F00_6FFF;
+export default UNICODE_BLOCK_6F00_6FFF;

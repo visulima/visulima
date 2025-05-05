@@ -18,7 +18,7 @@ const UNICODE_BLOCK_2800_28FF: (string | undefined)[] = [
     "m",
     "s",
     "p",
-    "\"",
+    '"',
     "e",
     "3",
     "h",
@@ -257,7 +257,7 @@ const UNICODE_BLOCK_2800_28FF: (string | undefined)[] = [
     "[d345678]",
     "[d1345678]",
     "[d2345678]",
-    "[d12345678]"
+    "[d12345678]",
 ];
 
- export default UNICODE_BLOCK_2800_28FF;
+export default UNICODE_BLOCK_2800_28FF;

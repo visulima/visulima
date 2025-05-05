@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8A00_8AFF: (string | undefined)[] = [
     "Xuan ",
     "Ge ",
     "Nuo ",
-    "Qi "
+    "Qi ",
 ];
 
- export default UNICODE_BLOCK_8A00_8AFF;
+export default UNICODE_BLOCK_8A00_8AFF;

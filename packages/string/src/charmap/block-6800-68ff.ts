@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6800_68FF: (string | undefined)[] = [
     "Fen ",
     "Chen ",
     "Qiong ",
-    "Nie "
+    "Nie ",
 ];
 
- export default UNICODE_BLOCK_6800_68FF;
+export default UNICODE_BLOCK_6800_68FF;

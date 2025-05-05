@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5B00_5BFF: (string | undefined)[] = [
     "Dao ",
     "Lu ",
     "Dui ",
-    "Shou "
+    "Shou ",
 ];
 
- export default UNICODE_BLOCK_5B00_5BFF;
+export default UNICODE_BLOCK_5B00_5BFF;

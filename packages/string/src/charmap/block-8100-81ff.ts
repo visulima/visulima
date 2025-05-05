@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8100_81FF: (string | undefined)[] = [
     "Jiu ",
     "Xian ",
     "Yu ",
-    "Cha "
+    "Cha ",
 ];
 
- export default UNICODE_BLOCK_8100_81FF;
+export default UNICODE_BLOCK_8100_81FF;

@@ -188,7 +188,7 @@ const UNICODE_BLOCK_0200_02FF: (string | undefined)[] = [
     "w",
     "y",
     "'",
-    "\"",
+    '"',
     "`",
     "'",
     "`",
@@ -223,7 +223,7 @@ const UNICODE_BLOCK_0200_02FF: (string | undefined)[] = [
     "@",
     ",",
     "~",
-    "\"",
+    '"',
     "R",
     "X",
     "G",
@@ -240,7 +240,7 @@ const UNICODE_BLOCK_0200_02FF: (string | undefined)[] = [
     "",
     "V",
     "=",
-    "\"",
+    '"',
     undefined,
     undefined,
     undefined,
@@ -257,7 +257,7 @@ const UNICODE_BLOCK_0200_02FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_0200_02FF;
+export default UNICODE_BLOCK_0200_02FF;

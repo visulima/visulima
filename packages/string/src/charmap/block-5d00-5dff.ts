@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5D00_5DFF: (string | undefined)[] = [
     "Phas ",
     "Xun ",
     "Jin ",
-    "Fu "
+    "Fu ",
 ];
 
- export default UNICODE_BLOCK_5D00_5DFF;
+export default UNICODE_BLOCK_5D00_5DFF;

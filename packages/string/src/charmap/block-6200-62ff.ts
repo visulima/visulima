@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6200_62FF: (string | undefined)[] = [
     "Pin ",
     "Zhuai ",
     "Shi ",
-    "Na "
+    "Na ",
 ];
 
- export default UNICODE_BLOCK_6200_62FF;
+export default UNICODE_BLOCK_6200_62FF;

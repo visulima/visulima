@@ -257,7 +257,7 @@ const UNICODE_BLOCK_C000_C0FF: (string | undefined)[] = [
     "syak",
     "syat",
     "syap",
-    "syah"
+    "syah",
 ];
 
- export default UNICODE_BLOCK_C000_C0FF;
+export default UNICODE_BLOCK_C000_C0FF;

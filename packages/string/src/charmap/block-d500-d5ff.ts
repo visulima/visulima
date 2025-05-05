@@ -257,7 +257,7 @@ const UNICODE_BLOCK_D500_D5FF: (string | undefined)[] = [
     "hek",
     "het",
     "hep",
-    "heh"
+    "heh",
 ];
 
- export default UNICODE_BLOCK_D500_D5FF;
+export default UNICODE_BLOCK_D500_D5FF;

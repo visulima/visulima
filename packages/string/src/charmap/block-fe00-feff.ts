@@ -257,7 +257,7 @@ const UNICODE_BLOCK_FE00_FEFF: (string | undefined)[] = [
     "",
     undefined,
     undefined,
-    ""
+    "",
 ];
 
- export default UNICODE_BLOCK_FE00_FEFF;
+export default UNICODE_BLOCK_FE00_FEFF;

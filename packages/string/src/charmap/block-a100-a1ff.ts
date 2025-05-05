@@ -257,7 +257,7 @@ const UNICODE_BLOCK_A100_A1FF: (string | undefined)[] = [
     "kiex",
     "kie",
     "kiep",
-    "kat"
+    "kat",
 ];
 
- export default UNICODE_BLOCK_A100_A1FF;
+export default UNICODE_BLOCK_A100_A1FF;

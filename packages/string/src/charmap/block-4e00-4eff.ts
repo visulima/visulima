@@ -257,7 +257,7 @@ const UNICODE_BLOCK_4E00_4EFF: (string | undefined)[] = [
     "Wang ",
     "Fen ",
     "Di ",
-    "Fang "
+    "Fang ",
 ];
 
- export default UNICODE_BLOCK_4E00_4EFF;
+export default UNICODE_BLOCK_4E00_4EFF;

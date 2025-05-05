@@ -257,7 +257,7 @@ const UNICODE_BLOCK_C700_C7FF: (string | undefined)[] = [
     "jyaek",
     "jyaet",
     "jyaep",
-    "jyaeh"
+    "jyaeh",
 ];
 
- export default UNICODE_BLOCK_C700_C7FF;
+export default UNICODE_BLOCK_C700_C7FF;

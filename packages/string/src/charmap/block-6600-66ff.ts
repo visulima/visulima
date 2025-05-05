@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6600_66FF: (string | undefined)[] = [
     "Man ",
     "Ceng ",
     "Ceng ",
-    "Ti "
+    "Ti ",
 ];
 
- export default UNICODE_BLOCK_6600_66FF;
+export default UNICODE_BLOCK_6600_66FF;

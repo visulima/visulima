@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8700_87FF: (string | undefined)[] = [
     "Jing ",
     "Da ",
     "Chan ",
-    "Qi "
+    "Qi ",
 ];
 
- export default UNICODE_BLOCK_8700_87FF;
+export default UNICODE_BLOCK_8700_87FF;

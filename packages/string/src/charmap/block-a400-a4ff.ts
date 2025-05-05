@@ -257,7 +257,7 @@ const UNICODE_BLOCK_A400_A4FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_A400_A4FF;
+export default UNICODE_BLOCK_A400_A4FF;

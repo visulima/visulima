@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6000_60FF: (string | undefined)[] = [
     "Bian ",
     "Hun ",
     "Zong ",
-    "Ti "
+    "Ti ",
 ];
 
- export default UNICODE_BLOCK_6000_60FF;
+export default UNICODE_BLOCK_6000_60FF;

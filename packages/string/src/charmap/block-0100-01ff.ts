@@ -257,7 +257,7 @@ const UNICODE_BLOCK_0100_01FF: (string | undefined)[] = [
     "AE",
     "ae",
     "O",
-    "o"
+    "o",
 ];
 
- export default UNICODE_BLOCK_0100_01FF;
+export default UNICODE_BLOCK_0100_01FF;

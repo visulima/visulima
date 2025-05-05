@@ -257,7 +257,7 @@ const UNICODE_BLOCK_CC00_CCFF: (string | undefined)[] = [
     "cyem",
     "cyeb",
     "cyebs",
-    "cyes"
+    "cyes",
 ];
 
- export default UNICODE_BLOCK_CC00_CCFF;
+export default UNICODE_BLOCK_CC00_CCFF;

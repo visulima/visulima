@@ -257,7 +257,7 @@ const UNICODE_BLOCK_BA00_BAFF: (string | undefined)[] = [
     "moe",
     "moeg",
     "moegg",
-    "moegs"
+    "moegs",
 ];
 
- export default UNICODE_BLOCK_BA00_BAFF;
+export default UNICODE_BLOCK_BA00_BAFF;

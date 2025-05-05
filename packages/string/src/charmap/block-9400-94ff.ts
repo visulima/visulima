@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9400_94FF: (string | undefined)[] = [
     "Lai ",
     "Te ",
     "Lian ",
-    "Keng "
+    "Keng ",
 ];
 
- export default UNICODE_BLOCK_9400_94FF;
+export default UNICODE_BLOCK_9400_94FF;

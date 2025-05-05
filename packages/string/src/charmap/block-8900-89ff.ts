@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8900_89FF: (string | undefined)[] = [
     "Jue ",
     "Xi ",
     "Yan ",
-    "Xi "
+    "Xi ",
 ];
 
- export default UNICODE_BLOCK_8900_89FF;
+export default UNICODE_BLOCK_8900_89FF;

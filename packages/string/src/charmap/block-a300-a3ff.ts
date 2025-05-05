@@ -257,7 +257,7 @@ const UNICODE_BLOCK_A300_A3FF: (string | undefined)[] = [
     "qit",
     "qix",
     "qi",
-    "qip"
+    "qip",
 ];
 
- export default UNICODE_BLOCK_A300_A3FF;
+export default UNICODE_BLOCK_A300_A3FF;

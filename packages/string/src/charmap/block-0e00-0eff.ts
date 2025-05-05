@@ -257,7 +257,7 @@ const UNICODE_BLOCK_0E00_0EFF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_0E00_0EFF;
+export default UNICODE_BLOCK_0E00_0EFF;

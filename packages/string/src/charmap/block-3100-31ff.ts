@@ -257,7 +257,7 @@ const UNICODE_BLOCK_3100_31FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_3100_31FF;
+export default UNICODE_BLOCK_3100_31FF;

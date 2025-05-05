@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9E00_9EFF: (string | undefined)[] = [
     "Fu ",
     "Min ",
     "Min ",
-    "Yuan "
+    "Yuan ",
 ];
 
- export default UNICODE_BLOCK_9E00_9EFF;
+export default UNICODE_BLOCK_9E00_9EFF;

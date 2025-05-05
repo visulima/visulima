@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8800_88FF: (string | undefined)[] = [
     "Xi ",
     "Zhi ",
     "Ju ",
-    "Qi "
+    "Qi ",
 ];
 
- export default UNICODE_BLOCK_8800_88FF;
+export default UNICODE_BLOCK_8800_88FF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7300_73FF: (string | undefined)[] = [
     "Bei ",
     "Ting ",
     "Xian ",
-    "Chuo "
+    "Chuo ",
 ];
 
- export default UNICODE_BLOCK_7300_73FF;
+export default UNICODE_BLOCK_7300_73FF;

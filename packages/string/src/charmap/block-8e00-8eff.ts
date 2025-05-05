@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8E00_8EFF: (string | undefined)[] = [
     "Yi ",
     "Qing ",
     "Shi ",
-    "Ping "
+    "Ping ",
 ];
 
- export default UNICODE_BLOCK_8E00_8EFF;
+export default UNICODE_BLOCK_8E00_8EFF;

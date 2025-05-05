@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8600_86FF: (string | undefined)[] = [
     "Che ",
     "Bai ",
     "E ",
-    "Han "
+    "Han ",
 ];
 
- export default UNICODE_BLOCK_8600_86FF;
+export default UNICODE_BLOCK_8600_86FF;

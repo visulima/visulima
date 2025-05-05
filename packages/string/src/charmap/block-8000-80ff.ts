@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8000_80FF: (string | undefined)[] = [
     "Pian ",
     "Neng ",
     "Zi ",
-    "Gui "
+    "Gui ",
 ];
 
- export default UNICODE_BLOCK_8000_80FF;
+export default UNICODE_BLOCK_8000_80FF;

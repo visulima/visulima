@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7D00_7DFF: (string | undefined)[] = [
     "Yun ",
     "Cheng ",
     "Chan ",
-    "Dai "
+    "Dai ",
 ];
 
- export default UNICODE_BLOCK_7D00_7DFF;
+export default UNICODE_BLOCK_7D00_7DFF;

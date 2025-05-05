@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6100_61FF: (string | undefined)[] = [
     "Ju ",
     "Huan ",
     "She ",
-    "Yi "
+    "Yi ",
 ];
 
- export default UNICODE_BLOCK_6100_61FF;
+export default UNICODE_BLOCK_6100_61FF;

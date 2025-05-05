@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7000_70FF: (string | undefined)[] = [
     "Hu ",
     "Feng ",
     "Chi ",
-    "Rong "
+    "Rong ",
 ];
 
- export default UNICODE_BLOCK_7000_70FF;
+export default UNICODE_BLOCK_7000_70FF;

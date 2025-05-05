@@ -257,7 +257,7 @@ const UNICODE_BLOCK_A000_A0FF: (string | undefined)[] = [
     "vy",
     "vyp",
     "vyrx",
-    "vyr"
+    "vyr",
 ];
 
- export default UNICODE_BLOCK_A000_A0FF;
+export default UNICODE_BLOCK_A000_A0FF;

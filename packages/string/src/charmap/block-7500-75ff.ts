@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7500_75FF: (string | undefined)[] = [
     "Gu ",
     "Dui ",
     "E ",
-    "Wei "
+    "Wei ",
 ];
 
- export default UNICODE_BLOCK_7500_75FF;
+export default UNICODE_BLOCK_7500_75FF;

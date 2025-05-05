@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5F00_5FFF: (string | undefined)[] = [
     "Kang ",
     "Hu ",
     "Kai ",
-    "Fen "
+    "Fen ",
 ];
 
- export default UNICODE_BLOCK_5F00_5FFF;
+export default UNICODE_BLOCK_5F00_5FFF;

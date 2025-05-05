@@ -257,7 +257,7 @@ const UNICODE_BLOCK_A200_A2FF: (string | undefined)[] = [
     "nzex",
     "nze",
     "nzux",
-    "nzu"
+    "nzu",
 ];
 
- export default UNICODE_BLOCK_A200_A2FF;
+export default UNICODE_BLOCK_A200_A2FF;

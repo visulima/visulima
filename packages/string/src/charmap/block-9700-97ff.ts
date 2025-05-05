@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9700_97FF: (string | undefined)[] = [
     "Peng ",
     "Yin ",
     "Yin ",
-    "Xiang "
+    "Xiang ",
 ];
 
- export default UNICODE_BLOCK_9700_97FF;
+export default UNICODE_BLOCK_9700_97FF;

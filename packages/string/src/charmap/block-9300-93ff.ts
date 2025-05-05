@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9300_93FF: (string | undefined)[] = [
     "Suo ",
     "Xiu ",
     "San ",
-    "Cheng "
+    "Cheng ",
 ];
 
- export default UNICODE_BLOCK_9300_93FF;
+export default UNICODE_BLOCK_9300_93FF;

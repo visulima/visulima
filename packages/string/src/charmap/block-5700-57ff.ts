@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5700_57FF: (string | undefined)[] = [
     "Qi ",
     "Sao ",
     "Ju ",
-    "Ni "
+    "Ni ",
 ];
 
- export default UNICODE_BLOCK_5700_57FF;
+export default UNICODE_BLOCK_5700_57FF;

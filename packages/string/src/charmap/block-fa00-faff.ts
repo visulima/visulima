@@ -257,7 +257,7 @@ const UNICODE_BLOCK_FA00_FAFF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_FA00_FAFF;
+export default UNICODE_BLOCK_FA00_FAFF;

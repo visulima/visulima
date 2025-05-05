@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7400_74FF: (string | undefined)[] = [
     "Sarake ",
     "Dang ",
     "Meng ",
-    "Pou "
+    "Pou ",
 ];
 
- export default UNICODE_BLOCK_7400_74FF;
+export default UNICODE_BLOCK_7400_74FF;

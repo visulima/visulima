@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6C00_6CFF: (string | undefined)[] = [
     "Po ",
     "Ze ",
     "Jing ",
-    "Yin "
+    "Yin ",
 ];
 
- export default UNICODE_BLOCK_6C00_6CFF;
+export default UNICODE_BLOCK_6C00_6CFF;

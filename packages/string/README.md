@@ -240,6 +240,72 @@ const customWrapped = wordWrap("Text with\u200Bzero-width characters and\u200Btr
 });
 ```
 
+### String Replacement with Ignore Ranges
+
+The `replaceString` function provides advanced string replacement capabilities, allowing multiple search/replace operations (using strings or RegExps) while respecting specified index ranges that should be ignored. It also handles match precedence correctly (earlier start index wins, then longer match wins if starts are identical) and ensures only the highest-priority, non-overlapping, non-ignored match is applied in any given segment.
+
+> **Note:** Use this function when you need fine-grained control over multiple replacements, especially when needing to ignore specific index ranges or handle complex overlapping matches with defined precedence rules. For simple, non-overlapping replacements without ignore ranges, native `String.prototype.replaceAll` might be sufficient.
+
+```typescript
+import replaceString from '@visulima/string/replace-string'; // Adjust import path if needed
+import type { IntervalArray, OptionReplaceArray } from "@visulima/string";
+
+// Basic Usage
+const source1 = "Replace AB and CD";
+const searches1: OptionReplaceArray = [["AB", "ab"], ["CD", "cd"]];
+const result1 = replaceString(source1, searches1, []);
+// result1: "Replace ab and cd"
+
+// With Ignore Ranges
+const source2 = "Replace AB and ignore CD and replace XY";
+const searches2: OptionReplaceArray = [
+  ["AB", "ab"],
+  ["CD", "cd"], // This should be ignored by the range
+  ["XY", "xy"]
+];
+// Ignore indices 19-20 (targets "re" in "ignore")
+const ignoreRanges2: IntervalArray = [[19, 20]];
+const result2 = replaceString(source2, searches2, ignoreRanges2);
+// result2: "Replace ab and ignore cd and replace xy"
+// Note: "CD" is replaced because it doesn't overlap the ignore range [19, 20].
+
+// With Overlapping Matches (Longer match takes precedence)
+const source3 = "abcde";
+const searches3: OptionReplaceArray = [
+  ["abc", "123"],       // Lower precedence
+  ["abcde", "54321"]    // Higher precedence (longer)
+];
+const result3 = replaceString(source3, searches3, []);
+// result3: "54321"
+
+// With Overlapping Matches (Earlier start index takes precedence)
+const source4 = "ababab";
+const searches4: OptionReplaceArray = [
+  ["aba", "X"], // Starts at 0
+  ["bab", "Y"]  // Starts at 1
+];
+const result4 = replaceString(source4, searches4, []);
+// result4: "Xbab" (Applies "X" at 0, which covers indices 0-2. Skips "Y" at 1. Appends rest.)
+
+// With Zero-Length Matches (e.g., inserting before each char)
+const source5 = "abc";
+const searches5: OptionReplaceArray = [[/(?=.)/g, "^"]]; // Lookahead for position before char
+const result5 = replaceString(source5, searches5, []);
+// result5: "^a^b^c"
+
+// Zero-Length Match at End
+const source6 = "abc";
+const searches6: OptionReplaceArray = [[/$/g, "$"]]; // Matches end of string
+const result6 = replaceString(source6, searches6, []);
+// result6: "abc$"
+
+// Using $& and $n replacements
+const source7 = "Firstname Lastname";
+const searches7: OptionReplaceArray = [[/(\w+)\s+(\w+)/, "$2, $1 ($& - Group 1: $1)"]];
+const result7 = replaceString(source7, searches7, []);
+// result7: "Lastname, Firstname (Firstname Lastname - Group 1: Firstname)"
+```
+
 ### String Splitting
 
 The `splitByCase` function is a powerful utility that splits strings based on various patterns:
@@ -853,8 +919,8 @@ The custom matcher provides detailed error messages when tests fail, showing:
 
 ## Supported Node.js Versions
 
-Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
-Here’s [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
+Libraries in this ecosystem make the best effort to track [Node.js' release schedule](https://github.com/nodejs/release#release-schedule).
+Here's [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
 ## Contributing
 

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_B000_B0FF: (string | undefined)[] = [
     "nyaem",
     "nyaeb",
     "nyaebs",
-    "nyaes"
+    "nyaes",
 ];
 
- export default UNICODE_BLOCK_B000_B0FF;
+export default UNICODE_BLOCK_B000_B0FF;

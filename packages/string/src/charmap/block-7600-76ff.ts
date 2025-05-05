@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7600_76FF: (string | undefined)[] = [
     "Pan ",
     "Feng ",
     "Dun ",
-    "Min "
+    "Min ",
 ];
 
- export default UNICODE_BLOCK_7600_76FF;
+export default UNICODE_BLOCK_7600_76FF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_3200_32FF: (string | undefined)[] = [
     "wi",
     "we",
     "wo",
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_3200_32FF;
+export default UNICODE_BLOCK_3200_32FF;

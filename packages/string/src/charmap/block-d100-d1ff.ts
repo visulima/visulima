@@ -257,7 +257,7 @@ const UNICODE_BLOCK_D100_D1FF: (string | undefined)[] = [
     "toel",
     "toelg",
     "toelm",
-    "toelb"
+    "toelb",
 ];
 
- export default UNICODE_BLOCK_D100_D1FF;
+export default UNICODE_BLOCK_D100_D1FF;

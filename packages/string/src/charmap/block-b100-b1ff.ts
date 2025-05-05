@@ -257,7 +257,7 @@ const UNICODE_BLOCK_B100_B1FF: (string | undefined)[] = [
     "nyoss",
     "nyong",
     "nyoj",
-    "nyoc"
+    "nyoc",
 ];
 
- export default UNICODE_BLOCK_B100_B1FF;
+export default UNICODE_BLOCK_B100_B1FF;

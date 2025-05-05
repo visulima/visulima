@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9A00_9AFF: (string | undefined)[] = [
     "Peng ",
     "Zhua ",
     "Shao ",
-    "Sha "
+    "Sha ",
 ];
 
- export default UNICODE_BLOCK_9A00_9AFF;
+export default UNICODE_BLOCK_9A00_9AFF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8F00_8FFF: (string | undefined)[] = [
     "Jie ",
     "Zhui ",
     "Lie ",
-    "Xun "
+    "Xun ",
 ];
 
- export default UNICODE_BLOCK_8F00_8FFF;
+export default UNICODE_BLOCK_8F00_8FFF;

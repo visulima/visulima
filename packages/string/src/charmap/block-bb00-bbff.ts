@@ -257,7 +257,7 @@ const UNICODE_BLOCK_BB00_BBFF: (string | undefined)[] = [
     "min",
     "minj",
     "minh",
-    "mid"
+    "mid",
 ];
 
- export default UNICODE_BLOCK_BB00_BBFF;
+export default UNICODE_BLOCK_BB00_BBFF;

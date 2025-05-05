@@ -142,8 +142,8 @@ const UNICODE_BLOCK_0400_04FF: (string | undefined)[] = [
     "*1.000.000*",
     undefined,
     undefined,
-    "\"",
-    "\"",
+    '"',
+    '"',
     "R'",
     "r'",
     "G'",
@@ -257,7 +257,7 @@ const UNICODE_BLOCK_0400_04FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_0400_04FF;
+export default UNICODE_BLOCK_0400_04FF;

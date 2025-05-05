@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8500_85FF: (string | undefined)[] = [
     "Xuan ",
     "Chen ",
     "Lai ",
-    "Huo "
+    "Huo ",
 ];
 
- export default UNICODE_BLOCK_8500_85FF;
+export default UNICODE_BLOCK_8500_85FF;

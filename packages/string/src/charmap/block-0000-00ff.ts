@@ -36,7 +36,7 @@ const UNICODE_BLOCK_0000_00FF: (string | undefined)[] = [
     "\u001f",
     " ",
     "!",
-    "\"",
+    '"',
     "#",
     "$",
     "%",
@@ -170,7 +170,7 @@ const UNICODE_BLOCK_0000_00FF: (string | undefined)[] = [
     "Y=",
     "|",
     "SS",
-    "\"",
+    '"',
     "(c)",
     "a",
     "<<",
@@ -257,7 +257,7 @@ const UNICODE_BLOCK_0000_00FF: (string | undefined)[] = [
     "ue",
     "y",
     "th",
-    "y"
+    "y",
 ];
 
- export default UNICODE_BLOCK_0000_00FF;
+export default UNICODE_BLOCK_0000_00FF;

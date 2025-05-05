@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6A00_6AFF: (string | undefined)[] = [
     "Jian ",
     "Yin ",
     "You ",
-    "Ying "
+    "Ying ",
 ];
 
- export default UNICODE_BLOCK_6A00_6AFF;
+export default UNICODE_BLOCK_6A00_6AFF;

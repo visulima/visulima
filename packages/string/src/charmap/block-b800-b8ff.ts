@@ -257,7 +257,7 @@ const UNICODE_BLOCK_B800_B8FF: (string | undefined)[] = [
     "russ",
     "rung",
     "ruj",
-    "ruc"
+    "ruc",
 ];
 
- export default UNICODE_BLOCK_B800_B8FF;
+export default UNICODE_BLOCK_B800_B8FF;

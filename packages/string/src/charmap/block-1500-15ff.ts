@@ -257,7 +257,7 @@ const UNICODE_BLOCK_1500_15FF: (string | undefined)[] = [
     "kko",
     "kke",
     "kkee",
-    "kki"
+    "kki",
 ];
 
- export default UNICODE_BLOCK_1500_15FF;
+export default UNICODE_BLOCK_1500_15FF;

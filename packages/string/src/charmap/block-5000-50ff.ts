@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5000_50FF: (string | undefined)[] = [
     "Feng ",
     "Zhou ",
     "Ai ",
-    "Sai "
+    "Sai ",
 ];
 
- export default UNICODE_BLOCK_5000_50FF;
+export default UNICODE_BLOCK_5000_50FF;

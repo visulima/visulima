@@ -257,7 +257,7 @@ const UNICODE_BLOCK_CA00_CAFF: (string | undefined)[] = [
     "jjwael",
     "jjwaelg",
     "jjwaelm",
-    "jjwaelb"
+    "jjwaelb",
 ];
 
- export default UNICODE_BLOCK_CA00_CAFF;
+export default UNICODE_BLOCK_CA00_CAFF;

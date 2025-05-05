@@ -257,7 +257,7 @@ const UNICODE_BLOCK_BC00_BCFF: (string | undefined)[] = [
     "bol",
     "bolg",
     "bolm",
-    "bolb"
+    "bolb",
 ];
 
- export default UNICODE_BLOCK_BC00_BCFF;
+export default UNICODE_BLOCK_BC00_BCFF;

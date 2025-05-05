@@ -257,7 +257,7 @@ const UNICODE_BLOCK_C400_C4FF: (string | undefined)[] = [
     "sseuls",
     "sseult",
     "sseulp",
-    "sseulh"
+    "sseulh",
 ];
 
- export default UNICODE_BLOCK_C400_C4FF;
+export default UNICODE_BLOCK_C400_C4FF;

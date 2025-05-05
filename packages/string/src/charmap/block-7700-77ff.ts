@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7700_77FF: (string | undefined)[] = [
     "Qiang ",
     "Xi ",
     "Fan ",
-    "Kuang "
+    "Kuang ",
 ];
 
- export default UNICODE_BLOCK_7700_77FF;
+export default UNICODE_BLOCK_7700_77FF;

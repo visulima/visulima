@@ -257,7 +257,7 @@ const UNICODE_BLOCK_BE00_BEFF: (string | undefined)[] = [
     "bbem",
     "bbeb",
     "bbebs",
-    "bbes"
+    "bbes",
 ];
 
- export default UNICODE_BLOCK_BE00_BEFF;
+export default UNICODE_BLOCK_BE00_BEFF;

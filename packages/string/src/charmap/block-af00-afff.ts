@@ -257,7 +257,7 @@ const UNICODE_BLOCK_AF00_AFFF: (string | undefined)[] = [
     "ggwels",
     "ggwelt",
     "ggwelp",
-    "ggwelh"
+    "ggwelh",
 ];
 
- export default UNICODE_BLOCK_AF00_AFFF;
+export default UNICODE_BLOCK_AF00_AFFF;

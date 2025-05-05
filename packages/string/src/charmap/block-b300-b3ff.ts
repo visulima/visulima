@@ -257,7 +257,7 @@ const UNICODE_BLOCK_B300_B3FF: (string | undefined)[] = [
     "dwae",
     "dwaeg",
     "dwaegg",
-    "dwaegs"
+    "dwaegs",
 ];
 
- export default UNICODE_BLOCK_B300_B3FF;
+export default UNICODE_BLOCK_B300_B3FF;

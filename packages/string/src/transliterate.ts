@@ -1,6 +1,7 @@
 import charmap from "./charmap/index.js";
-import type { Charmap,IntervalArray, OptionReplaceArray, OptionReplaceCombined, OptionReplaceObject, OptionsTransliterate } from "./types";
-import { escapeRegExp, findStrOccurrences as findStringOccurrences, hasChinese, hasPunctuationOrSpace, replaceString } from "./utils";
+import type { Charmap, IntervalArray, OptionReplaceArray, OptionReplaceCombined, OptionReplaceObject, OptionsTransliterate } from "./types";
+import replaceString from "./replace-string";
+import { findStrOccurrences as findStringOccurrences, hasChinese, hasPunctuationOrSpace } from "./utils";
 
 export const defaultOptions: Required<OptionsTransliterate> = {
     fixChineseSpacing: true,

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9D00_9DFF: (string | undefined)[] = [
     "Xian ",
     "Xue ",
     "Yi ",
-    "Pi "
+    "Pi ",
 ];
 
- export default UNICODE_BLOCK_9D00_9DFF;
+export default UNICODE_BLOCK_9D00_9DFF;

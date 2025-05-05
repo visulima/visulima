@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6E00_6EFF: (string | undefined)[] = [
     "Fan ",
     "Yong ",
     "Gun ",
-    "Man "
+    "Man ",
 ];
 
- export default UNICODE_BLOCK_6E00_6EFF;
+export default UNICODE_BLOCK_6E00_6EFF;

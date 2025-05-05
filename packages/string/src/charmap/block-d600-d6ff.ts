@@ -257,7 +257,7 @@ const UNICODE_BLOCK_D600_D6FF: (string | undefined)[] = [
     "hwe",
     "hweg",
     "hwegg",
-    "hwegs"
+    "hwegs",
 ];
 
- export default UNICODE_BLOCK_D600_D6FF;
+export default UNICODE_BLOCK_D600_D6FF;

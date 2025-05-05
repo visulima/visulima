@@ -257,7 +257,7 @@ const UNICODE_BLOCK_D700_D7FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_D700_D7FF;
+export default UNICODE_BLOCK_D700_D7FF;

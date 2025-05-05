@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7800_78FF: (string | undefined)[] = [
     "Za ",
     "Qiao ",
     "Di ",
-    "Li "
+    "Li ",
 ];
 
- export default UNICODE_BLOCK_7800_78FF;
+export default UNICODE_BLOCK_7800_78FF;

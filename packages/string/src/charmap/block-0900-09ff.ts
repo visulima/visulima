@@ -257,7 +257,7 @@ const UNICODE_BLOCK_0900_09FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_0900_09FF;
+export default UNICODE_BLOCK_0900_09FF;

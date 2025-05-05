@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5A00_5AFF: (string | undefined)[] = [
     "Mo ",
     "Liao ",
     "Lian ",
-    "Hua "
+    "Hua ",
 ];
 
- export default UNICODE_BLOCK_5A00_5AFF;
+export default UNICODE_BLOCK_5A00_5AFF;

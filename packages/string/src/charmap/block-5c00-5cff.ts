@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5C00_5CFF: (string | undefined)[] = [
     "Hao ",
     "Xia ",
     "Yin ",
-    "Yu "
+    "Yu ",
 ];
 
- export default UNICODE_BLOCK_5C00_5CFF;
+export default UNICODE_BLOCK_5C00_5CFF;

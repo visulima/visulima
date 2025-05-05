@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6D00_6DFF: (string | undefined)[] = [
     "Miao ",
     "Zhi ",
     "Yin ",
-    "Mi "
+    "Mi ",
 ];
 
- export default UNICODE_BLOCK_6D00_6DFF;
+export default UNICODE_BLOCK_6D00_6DFF;

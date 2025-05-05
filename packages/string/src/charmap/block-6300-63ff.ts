@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6300_63FF: (string | undefined)[] = [
     undefined,
     "Lan ",
     "Wen ",
-    "Qin "
+    "Qin ",
 ];
 
- export default UNICODE_BLOCK_6300_63FF;
+export default UNICODE_BLOCK_6300_63FF;

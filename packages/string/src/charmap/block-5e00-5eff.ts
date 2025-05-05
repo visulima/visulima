@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5E00_5EFF: (string | undefined)[] = [
     "Nai ",
     "Hui ",
     "Gong ",
-    "Nian "
+    "Nian ",
 ];
 
- export default UNICODE_BLOCK_5E00_5EFF;
+export default UNICODE_BLOCK_5E00_5EFF;

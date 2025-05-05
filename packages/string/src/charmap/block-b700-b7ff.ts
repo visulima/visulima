@@ -257,7 +257,7 @@ const UNICODE_BLOCK_B700_B7FF: (string | undefined)[] = [
     "reom",
     "reob",
     "reobs",
-    "reos"
+    "reos",
 ];
 
- export default UNICODE_BLOCK_B700_B7FF;
+export default UNICODE_BLOCK_B700_B7FF;

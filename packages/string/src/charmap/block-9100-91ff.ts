@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9100_91FF: (string | undefined)[] = [
     "Jian ",
     "Pi ",
     "Ye ",
-    "Yin "
+    "Yin ",
 ];
 
- export default UNICODE_BLOCK_9100_91FF;
+export default UNICODE_BLOCK_9100_91FF;

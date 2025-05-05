@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9B00_9BFF: (string | undefined)[] = [
     "Zong ",
     "Ji ",
     "Bian ",
-    "Bian "
+    "Bian ",
 ];
 
- export default UNICODE_BLOCK_9B00_9BFF;
+export default UNICODE_BLOCK_9B00_9BFF;

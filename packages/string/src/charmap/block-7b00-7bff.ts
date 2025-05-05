@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7B00_7BFF: (string | undefined)[] = [
     "Dou ",
     "Yu ",
     "Mie ",
-    "Zhuan "
+    "Zhuan ",
 ];
 
- export default UNICODE_BLOCK_7B00_7BFF;
+export default UNICODE_BLOCK_7B00_7BFF;

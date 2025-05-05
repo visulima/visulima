@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7E00_7EFF: (string | undefined)[] = [
     "Zong ",
     "Zhan ",
     "Wan ",
-    "Lu "
+    "Lu ",
 ];
 
- export default UNICODE_BLOCK_7E00_7EFF;
+export default UNICODE_BLOCK_7E00_7EFF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9900_99FF: (string | undefined)[] = [
     "Tu ",
     "Xuan ",
     "Tui ",
-    "Jun "
+    "Jun ",
 ];
 
- export default UNICODE_BLOCK_9900_99FF;
+export default UNICODE_BLOCK_9900_99FF;

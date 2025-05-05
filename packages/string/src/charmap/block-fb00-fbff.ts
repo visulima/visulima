@@ -257,7 +257,7 @@ const UNICODE_BLOCK_FB00_FBFF: (string | undefined)[] = [
     "",
     "",
     "",
-    ""
+    "",
 ];
 
- export default UNICODE_BLOCK_FB00_FBFF;
+export default UNICODE_BLOCK_FB00_FBFF;

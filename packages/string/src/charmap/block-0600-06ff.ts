@@ -257,7 +257,7 @@ const UNICODE_BLOCK_0600_06FF: (string | undefined)[] = [
     "Gh",
     "&",
     "+m",
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_0600_06FF;
+export default UNICODE_BLOCK_0600_06FF;

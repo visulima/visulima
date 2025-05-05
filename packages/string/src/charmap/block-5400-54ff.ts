@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5400_54FF: (string | undefined)[] = [
     "Heng ",
     "Geng ",
     "Shuo ",
-    "Ge "
+    "Ge ",
 ];
 
- export default UNICODE_BLOCK_5400_54FF;
+export default UNICODE_BLOCK_5400_54FF;

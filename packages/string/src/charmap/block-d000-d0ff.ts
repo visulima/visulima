@@ -257,7 +257,7 @@ const UNICODE_BLOCK_D000_D0FF: (string | undefined)[] = [
     "tyan",
     "tyanj",
     "tyanh",
-    "tyad"
+    "tyad",
 ];
 
- export default UNICODE_BLOCK_D000_D0FF;
+export default UNICODE_BLOCK_D000_D0FF;

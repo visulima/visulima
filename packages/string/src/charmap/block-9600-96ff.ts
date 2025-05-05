@@ -257,7 +257,7 @@ const UNICODE_BLOCK_9600_96FF: (string | undefined)[] = [
     "Dang ",
     "Xing ",
     "Wu ",
-    "Zhao "
+    "Zhao ",
 ];
 
- export default UNICODE_BLOCK_9600_96FF;
+export default UNICODE_BLOCK_9600_96FF;

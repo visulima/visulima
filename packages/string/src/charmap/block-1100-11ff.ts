@@ -257,7 +257,7 @@ const UNICODE_BLOCK_1100_11FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_1100_11FF;
+export default UNICODE_BLOCK_1100_11FF;

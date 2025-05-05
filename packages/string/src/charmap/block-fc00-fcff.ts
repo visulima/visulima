@@ -257,7 +257,7 @@ const UNICODE_BLOCK_FC00_FCFF: (string | undefined)[] = [
     "",
     "",
     "",
-    ""
+    "",
 ];
 
- export default UNICODE_BLOCK_FC00_FCFF;
+export default UNICODE_BLOCK_FC00_FCFF;

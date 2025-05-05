@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5200_52FF: (string | undefined)[] = [
     "Jiu ",
     "Bao ",
     "Gou ",
-    "Wu "
+    "Wu ",
 ];
 
- export default UNICODE_BLOCK_5200_52FF;
+export default UNICODE_BLOCK_5200_52FF;

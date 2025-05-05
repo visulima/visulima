@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5500_55FF: (string | undefined)[] = [
     "Mo ",
     "Sou ",
     "Sou ",
-    "Tan "
+    "Tan ",
 ];
 
- export default UNICODE_BLOCK_5500_55FF;
+export default UNICODE_BLOCK_5500_55FF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7200_72FF: (string | undefined)[] = [
     "Lang ",
     "Bei ",
     "Zhi ",
-    "Yan "
+    "Yan ",
 ];
 
- export default UNICODE_BLOCK_7200_72FF;
+export default UNICODE_BLOCK_7200_72FF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_CF00_CFFF: (string | undefined)[] = [
     "kweo",
     "kweog",
     "kweogg",
-    "kweogs"
+    "kweogs",
 ];
 
- export default UNICODE_BLOCK_CF00_CFFF;
+export default UNICODE_BLOCK_CF00_CFFF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7900_79FF: (string | undefined)[] = [
     "Zhu ",
     "Hui ",
     "Nong ",
-    "Fu "
+    "Fu ",
 ];
 
- export default UNICODE_BLOCK_7900_79FF;
+export default UNICODE_BLOCK_7900_79FF;

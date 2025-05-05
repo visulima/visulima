@@ -257,7 +257,7 @@ const UNICODE_BLOCK_AC00_ACFF: (string | undefined)[] = [
     "gwa",
     "gwag",
     "gwagg",
-    "gwags"
+    "gwags",
 ];
 
- export default UNICODE_BLOCK_AC00_ACFF;
+export default UNICODE_BLOCK_AC00_ACFF;

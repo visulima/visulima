@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8300_83FF: (string | undefined)[] = [
     "Tan ",
     "Shu ",
     "Tian ",
-    "Dao "
+    "Dao ",
 ];
 
- export default UNICODE_BLOCK_8300_83FF;
+export default UNICODE_BLOCK_8300_83FF;

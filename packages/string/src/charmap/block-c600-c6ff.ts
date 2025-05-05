@@ -257,7 +257,7 @@ const UNICODE_BLOCK_C600_C6FF: (string | undefined)[] = [
     "wess",
     "weng",
     "wej",
-    "wec"
+    "wec",
 ];
 
- export default UNICODE_BLOCK_C600_C6FF;
+export default UNICODE_BLOCK_C600_C6FF;

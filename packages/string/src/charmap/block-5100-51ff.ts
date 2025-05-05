@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5100_51FF: (string | undefined)[] = [
     "Dang ",
     "Han ",
     "Han ",
-    "Zao "
+    "Zao ",
 ];
 
- export default UNICODE_BLOCK_5100_51FF;
+export default UNICODE_BLOCK_5100_51FF;

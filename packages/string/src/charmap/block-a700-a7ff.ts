@@ -257,7 +257,7 @@ const UNICODE_BLOCK_A700_A7FF: (string | undefined)[] = [
     "P",
     "M",
     "I",
-    "M1"
+    "M1",
 ];
 
- export default UNICODE_BLOCK_A700_A7FF;
+export default UNICODE_BLOCK_A700_A7FF;

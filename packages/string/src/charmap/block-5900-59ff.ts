@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5900_59FF: (string | undefined)[] = [
     "Chi ",
     "Gui ",
     "Quan ",
-    "Zi "
+    "Zi ",
 ];
 
- export default UNICODE_BLOCK_5900_59FF;
+export default UNICODE_BLOCK_5900_59FF;

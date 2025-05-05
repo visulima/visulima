@@ -257,7 +257,7 @@ const UNICODE_BLOCK_C100_C1FF: (string | undefined)[] = [
     "syo",
     "syog",
     "syogg",
-    "syogs"
+    "syogs",
 ];
 
- export default UNICODE_BLOCK_C100_C1FF;
+export default UNICODE_BLOCK_C100_C1FF;

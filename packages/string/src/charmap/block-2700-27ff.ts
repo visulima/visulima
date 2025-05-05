@@ -257,7 +257,7 @@ const UNICODE_BLOCK_2700_27FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_2700_27FF;
+export default UNICODE_BLOCK_2700_27FF;

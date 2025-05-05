@@ -257,7 +257,7 @@ const UNICODE_BLOCK_AE00_AEFF: (string | undefined)[] = [
     "ggyeol",
     "ggyeolg",
     "ggyeolm",
-    "ggyeolb"
+    "ggyeolb",
 ];
 
- export default UNICODE_BLOCK_AE00_AEFF;
+export default UNICODE_BLOCK_AE00_AEFF;

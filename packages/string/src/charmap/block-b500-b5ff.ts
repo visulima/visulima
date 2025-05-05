@@ -257,7 +257,7 @@ const UNICODE_BLOCK_B500_B5FF: (string | undefined)[] = [
     "ddyel",
     "ddyelg",
     "ddyelm",
-    "ddyelb"
+    "ddyelb",
 ];
 
- export default UNICODE_BLOCK_B500_B5FF;
+export default UNICODE_BLOCK_B500_B5FF;

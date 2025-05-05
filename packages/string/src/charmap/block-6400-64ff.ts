@@ -257,7 +257,7 @@ const UNICODE_BLOCK_6400_64FF: (string | undefined)[] = [
     "Lu ",
     "Lue ",
     "Rao ",
-    "Zhi "
+    "Zhi ",
 ];
 
- export default UNICODE_BLOCK_6400_64FF;
+export default UNICODE_BLOCK_6400_64FF;

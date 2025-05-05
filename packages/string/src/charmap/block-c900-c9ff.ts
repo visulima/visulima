@@ -257,7 +257,7 @@ const UNICODE_BLOCK_C900_C9FF: (string | undefined)[] = [
     "jjaen",
     "jjaenj",
     "jjaenh",
-    "jjaed"
+    "jjaed",
 ];
 
- export default UNICODE_BLOCK_C900_C9FF;
+export default UNICODE_BLOCK_C900_C9FF;

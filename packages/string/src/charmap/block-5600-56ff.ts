@@ -257,7 +257,7 @@ const UNICODE_BLOCK_5600_56FF: (string | undefined)[] = [
     "Tai ",
     "Guo ",
     "Tu ",
-    "You "
+    "You ",
 ];
 
- export default UNICODE_BLOCK_5600_56FF;
+export default UNICODE_BLOCK_5600_56FF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_C200_C2FF: (string | undefined)[] = [
     "ssan",
     "ssanj",
     "ssanh",
-    "ssad"
+    "ssad",
 ];
 
- export default UNICODE_BLOCK_C200_C2FF;
+export default UNICODE_BLOCK_C200_C2FF;

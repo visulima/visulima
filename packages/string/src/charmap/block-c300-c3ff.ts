@@ -257,7 +257,7 @@ const UNICODE_BLOCK_C300_C3FF: (string | undefined)[] = [
     "sswal",
     "sswalg",
     "sswalm",
-    "sswalb"
+    "sswalb",
 ];
 
- export default UNICODE_BLOCK_C300_C3FF;
+export default UNICODE_BLOCK_C300_C3FF;

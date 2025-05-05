@@ -4,7 +4,7 @@
 const UNICODE_BLOCK_FF00_FFFF: (string | undefined)[] = [
     undefined,
     "!",
-    "\"",
+    '"',
     "#",
     "$",
     "%",
@@ -257,7 +257,7 @@ const UNICODE_BLOCK_FF00_FFFF: (string | undefined)[] = [
     "",
     "",
     "",
-    ""
+    "",
 ];
 
- export default UNICODE_BLOCK_FF00_FFFF;
+export default UNICODE_BLOCK_FF00_FFFF;

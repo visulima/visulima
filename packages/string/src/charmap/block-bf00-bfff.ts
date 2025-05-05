@@ -257,7 +257,7 @@ const UNICODE_BLOCK_BF00_BFFF: (string | undefined)[] = [
     "bbweoss",
     "bbweong",
     "bbweoj",
-    "bbweoc"
+    "bbweoc",
 ];
 
- export default UNICODE_BLOCK_BF00_BFFF;
+export default UNICODE_BLOCK_BF00_BFFF;

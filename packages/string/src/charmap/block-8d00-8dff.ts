@@ -257,7 +257,7 @@ const UNICODE_BLOCK_8D00_8DFF: (string | undefined)[] = [
     "Ju ",
     "Ji ",
     "Shu ",
-    "Tu "
+    "Tu ",
 ];
 
- export default UNICODE_BLOCK_8D00_8DFF;
+export default UNICODE_BLOCK_8D00_8DFF;

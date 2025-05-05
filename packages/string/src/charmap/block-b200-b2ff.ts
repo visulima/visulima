@@ -257,7 +257,7 @@ const UNICODE_BLOCK_B200_B2FF: (string | undefined)[] = [
     "dak",
     "dat",
     "dap",
-    "dah"
+    "dah",
 ];
 
- export default UNICODE_BLOCK_B200_B2FF;
+export default UNICODE_BLOCK_B200_B2FF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_D200_D2FF: (string | undefined)[] = [
     "tils",
     "tilt",
     "tilp",
-    "tilh"
+    "tilh",
 ];
 
- export default UNICODE_BLOCK_D200_D2FF;
+export default UNICODE_BLOCK_D200_D2FF;

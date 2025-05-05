@@ -257,7 +257,7 @@ const UNICODE_BLOCK_BD00_BDFF: (string | undefined)[] = [
     "byuls",
     "byult",
     "byulp",
-    "byulh"
+    "byulh",
 ];
 
- export default UNICODE_BLOCK_BD00_BDFF;
+export default UNICODE_BLOCK_BD00_BDFF;

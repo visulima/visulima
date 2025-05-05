@@ -257,7 +257,7 @@ const UNICODE_BLOCK_D300_D3FF: (string | undefined)[] = [
     "pom",
     "pob",
     "pobs",
-    "pos"
+    "pos",
 ];
 
- export default UNICODE_BLOCK_D300_D3FF;
+export default UNICODE_BLOCK_D300_D3FF;

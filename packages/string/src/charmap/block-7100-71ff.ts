@@ -257,7 +257,7 @@ const UNICODE_BLOCK_7100_71FF: (string | undefined)[] = [
     "Jin ",
     "Chou ",
     "Chou ",
-    "Yao "
+    "Yao ",
 ];
 
- export default UNICODE_BLOCK_7100_71FF;
+export default UNICODE_BLOCK_7100_71FF;

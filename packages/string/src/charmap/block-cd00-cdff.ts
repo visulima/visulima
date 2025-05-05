@@ -257,7 +257,7 @@ const UNICODE_BLOCK_CD00_CDFF: (string | undefined)[] = [
     "cwiss",
     "cwing",
     "cwij",
-    "cwic"
+    "cwic",
 ];
 
- export default UNICODE_BLOCK_CD00_CDFF;
+export default UNICODE_BLOCK_CD00_CDFF;

@@ -257,7 +257,7 @@ const UNICODE_BLOCK_CB00_CBFF: (string | undefined)[] = [
     "jjyils",
     "jjyilt",
     "jjyilp",
-    "jjyilh"
+    "jjyilh",
 ];
 
- export default UNICODE_BLOCK_CB00_CBFF;
+export default UNICODE_BLOCK_CB00_CBFF;

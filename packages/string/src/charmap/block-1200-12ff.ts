@@ -257,7 +257,7 @@ const UNICODE_BLOCK_1200_12FF: (string | undefined)[] = [
     "ddee",
     "dde",
     "ddo",
-    "ddwa"
+    "ddwa",
 ];
 
- export default UNICODE_BLOCK_1200_12FF;
+export default UNICODE_BLOCK_1200_12FF;

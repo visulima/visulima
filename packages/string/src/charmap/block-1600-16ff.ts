@@ -257,7 +257,7 @@ const UNICODE_BLOCK_1600_16FF: (string | undefined)[] = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
 ];
 
- export default UNICODE_BLOCK_1600_16FF;
+export default UNICODE_BLOCK_1600_16FF;

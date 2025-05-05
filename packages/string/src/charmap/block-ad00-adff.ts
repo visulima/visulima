@@ -257,7 +257,7 @@ const UNICODE_BLOCK_AD00_ADFF: (string | undefined)[] = [
     "geun",
     "geunj",
     "geunh",
-    "geud"
+    "geud",
 ];
 
- export default UNICODE_BLOCK_AD00_ADFF;
+export default UNICODE_BLOCK_AD00_ADFF;
