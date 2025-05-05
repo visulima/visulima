@@ -1,6 +1,6 @@
 import charmap from "./charmap/index.js";
 import type { Charmap,IntervalArray, OptionReplaceArray, OptionReplaceCombined, OptionReplaceObject, OptionsTransliterate } from "./types";
-import { escapeRegExp, findStrOccurrences as findStringOccurrences, hasChinese, hasPunctuationOrSpace,regexpReplaceCustom } from "./utils";
+import { escapeRegExp, findStrOccurrences as findStringOccurrences, hasChinese, hasPunctuationOrSpace, replaceString } from "./utils";
 
 export const defaultOptions: Required<OptionsTransliterate> = {
     fixChineseSpacing: true,
@@ -33,40 +33,6 @@ function formatReplaceOption(option: OptionReplaceCombined): OptionReplaceArray 
 }
 
 /**
- * Search and replace a list of strings/regexps and return the result string.
- */
-function replaceString(source: string, searches: OptionReplaceArray, ignoreRanges: IntervalArray): string {
-    const clonedSearches = structuredClone(searches);
-    let result = source;
-
-    for (const item of clonedSearches) {
-        if (!item || item.length < 2) 
-continue;
-
-        const [searchKey, replacementValue] = item;
-        if (replacementValue === undefined) 
-continue;
-
-        let searchPattern: RegExp;
-        switch (true) {
-            case searchKey instanceof RegExp: {
-                searchPattern = new RegExp(searchKey.source, `${searchKey.flags.replace("g", "")}g`);
-                break;
-            }
-            case typeof searchKey === "string" && searchKey.length > 0: {
-                searchPattern = new RegExp(escapeRegExp(searchKey), "g");
-                break;
-            }
-            default: {
-                searchPattern = /[^\s\S]/;
-            } // Prevent ReDos attack
-        }
-        result = regexpReplaceCustom(result, searchPattern, replacementValue, ignoreRanges);
-    }
-    return result;
-}
-
-/**
  * Main transliterate function.
  * Replaces characters in a string based on a charmap and options.
  *
@@ -83,27 +49,17 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
 
     let string_ = typeof source === "string" ? source : String(source);
     const currentCharmap: Charmap = charmap;
-
-    // --- DEBUG: Re-check specific charmap entries ---
-    console.log("Re-checking charmap values inside function:");
-    console.log(`  U+0679 (ٹ) -> ${currentCharmap["\u0679"]}`); 
-    console.log(`  U+0688 (ڈ) -> ${currentCharmap["\u0688"]}`);
-    console.log(`  U+06BE (ھ) -> ${currentCharmap["\u06BE"]}`);
-    console.log(`  U+06AB (ګ) -> ${currentCharmap["\u06AB"]}`);
-    console.log(`  U+0693 (ړ) -> ${currentCharmap["\u0693"]}`);
-    console.log(`  U+0685 (څ) -> ${currentCharmap["\u0685"]}`);
-    // --- END DEBUG ---
+    const replaceOption: OptionReplaceArray = formatReplaceOption(opt.replace);
 
     // 1. Calculate ignore ranges based on the ORIGINAL string
     const ignoreRanges: IntervalArray = opt.ignore.length > 0 ? findStringOccurrences(string_, opt.ignore) : [];
 
-    // 2. Pre-charmap replacements (respecting original ignore ranges)
-    const replaceOption: OptionReplaceArray = formatReplaceOption(opt.replace);
+    // 2. Pre-charmap replacements using the IMPORTED replaceString
     if (replaceOption.length > 0) {
         string_ = replaceString(string_, replaceOption, ignoreRanges);
     }
 
-    // 3. Reverted to manual character iteration
+    // 3. Character by character loop
     let result = "";
     const stringLength = string_.length;
     const stringContainsChinese = opt.fixChineseSpacing && hasChinese(string_);
@@ -129,7 +85,6 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
 
         let s: string;
         const charEndIndex = index + charLength - 1;
-        // Check if the *entire* character falls within an ignore range
         const isIgnored = ignoreRanges.some((range) => index >= range[0] && charEndIndex <= range[1]);
 
         if (isIgnored) {
@@ -144,7 +99,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             }
         }
 
-        // Handle Chinese spacing (only if not ignored)
+        // Handle Chinese spacing
         if (!isIgnored && stringContainsChinese) {
             const sIsDefined = typeof s === "string";
             const originalCharIsChinese = hasChinese(char);
@@ -153,22 +108,21 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             }
             lastCharWasChinese = originalCharIsChinese;
         } else if (isIgnored) {
-            // Reset Chinese flag if we are in an ignored segment
             lastCharWasChinese = false;
         }
 
         result += s;
-        index += charLength; // Increment by character length
+        index += charLength;
     }
 
-    string_ = result; // Update str after charmap loop
+    string_ = result; // Update after charmap loop
 
     // 4. Trim
     if (opt.trim) {
         string_ = string_.trim();
     }
 
-    // 5. Post-charmap replacements (respecting original ignore ranges)
+    // 5. Post-charmap replacements using the IMPORTED replaceString
     const replaceAfterOption: OptionReplaceArray = formatReplaceOption(opt.replaceAfter);
     if (replaceAfterOption.length > 0) {
         string_ = replaceString(string_, replaceAfterOption, ignoreRanges);

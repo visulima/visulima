@@ -99,50 +99,114 @@ export function findStrOccurrences(source: string, needles: string[]): IntervalA
 }
 
 /**
- * Custom RegExp replace function to replace all unnecessary strings into target replacement string
- * @param source Source string
- * @param regexp Used to search through the source string
- * @param replacement Replace matched RegExp with replacement value
- * @param ignoreRanges Ignore certain string values within the matched strings
+ * Represents a potential replacement match.
  */
-export function regexpReplaceCustom(source: string, regexp: RegExp, replacement: string, ignoreRanges: IntervalArray = []): string {
-    // clones regex and with g flag
-    const rule = new RegExp(regexp.source, regexp.flags.replace("g", "") + "g");
-    // final result
-    let result = "";
-    // used to count where
-    let lastIndex = 0;
-    while (true) {
-        const matchMain = rule.exec(source);
-        if (matchMain) {
-            const matchStartIndex = matchMain.index;
-            const matchEndIndex = matchStartIndex + matchMain[0].length - 1;
-            const matchedString = matchMain[0];
+interface PotentialMatch {
+    start: number;
+    end: number;
+    replacement: string;
+    original: string;
+}
 
-            // Check if the match overlaps with any ignore range
-            const isIgnored = ignoreRanges.some(
-                (range) =>
-                    // Check for overlap: (Range1Start <= Range2End) and (Range1End >= Range2Start)
-                    matchStartIndex <= range[1] && matchEndIndex >= range[0],
-            );
+/**
+ * Search and replace a list of strings/regexps respecting ignore ranges.
+ * Builds the string segment by segment, applying only non-overlapping, non-ignored replacements.
+ */
+export function replaceString(source: string, searches: OptionReplaceArray, ignoreRanges: IntervalArray): string {
+    // console.log(`[replaceString] Initial Source: "${source}", Ignores: ${JSON.stringify(ignoreRanges)}`); // Keep log for now
+    const potentialMatches: PotentialMatch[] = [];
 
-            let stringToAppend: string;
-            if (isIgnored) {
-                // If ignored, append the original matched string
-                stringToAppend = matchedString;
+    // 1. Find all potential matches from the original source string
+    for (const item of searches) {
+        if (!item || item.length < 2) continue;
+        const [searchKey, replacementValue] = item;
+        if (replacementValue === undefined) continue;
+
+        let searchPattern: RegExp;
+        try {
+             if (searchKey instanceof RegExp) {
+                // Ensure the regex has the global flag for exec to work correctly in a loop
+                searchPattern = new RegExp(searchKey.source, `${searchKey.flags.replace("g", "")}g`);
+            } else if (typeof searchKey === "string" && searchKey.length > 0) {
+                searchPattern = new RegExp(escapeRegExp(searchKey), "g");
             } else {
-                // If not ignored, use the replacement value
-                // (The complex logic for partial ignores within a match is removed for simplicity,
-                // as the main transliterate loop now handles ignoring character by character)
-                stringToAppend = replacement;
+                continue; // Skip invalid search keys
             }
 
-            result += source.substring(lastIndex, matchStartIndex) + stringToAppend;
-            lastIndex = rule.lastIndex;
-        } else {
-            result += source.substring(lastIndex);
-            break;
+            let match;
+            while ((match = searchPattern.exec(source)) !== null) {
+                const start = match.index;
+                const end = start + match[0].length - 1;
+                const original = match[0];
+
+                // Handle $ replacements in the replacement string here
+                const finalReplacement = replacementValue.replace(/\$(\d+|&)/g, (_, group) => {
+                    if (group === '&') return original;
+                    const groupIndex = parseInt(group, 10);
+                    return groupIndex > 0 && groupIndex < match.length ? match[groupIndex] ?? '' : '';
+                });
+
+                potentialMatches.push({ start, end, replacement: finalReplacement, original });
+
+                // Prevent infinite loops for zero-length matches
+                if (match[0].length === 0) {
+                     if (searchPattern.lastIndex >= source.length) break;
+                    searchPattern.lastIndex++;
+                }
+            }
+        } catch (error) {
+             console.error(`Error processing search key ${String(searchKey)}:`, error);
+             continue;
         }
     }
+
+    // 2. Sort potential matches by start index, then by length descending (longer matches take precedence)
+    potentialMatches.sort((a, b) => {
+        if (a.start !== b.start) {
+            return a.start - b.start;
+        }
+        return b.end - a.end; // Longer match first if starts are equal
+    });
+
+    // 3. Build the result string, applying non-overlapping, non-ignored matches
+    let result = "";
+    let lastIndex = 0;
+    const appliedRanges: IntervalArray = []; // Keep track of where replacements were made
+
+    for (const match of potentialMatches) {
+        // Check for overlap with already applied replacements
+        const overlapsApplied = appliedRanges.some(
+            (applied) => match.start <= applied[1] && match.end >= applied[0]
+        );
+        if (overlapsApplied) {
+            continue; // Skip this match if it overlaps with one already applied
+        }
+
+        // Check for overlap with ignored ranges
+        const isIgnored = ignoreRanges.some(
+            (ignored) => match.start <= ignored[1] && match.end >= ignored[0]
+        );
+        if (isIgnored) {
+            continue; // Skip this match if it overlaps with an ignored range
+        }
+
+        // If we reach here, the match is valid and should be applied
+        // Append the text from the last index up to the start of this match
+        if (match.start > lastIndex) {
+             result += source.substring(lastIndex, match.start);
+        }
+        // Append the replacement
+        result += match.replacement;
+        // Update the last index to the end of this match
+        lastIndex = match.end + 1;
+        // Record the range that was replaced
+        appliedRanges.push([match.start, match.end]);
+    }
+
+    // 4. Append any remaining part of the source string
+    if (lastIndex < source.length) {
+        result += source.substring(lastIndex);
+    }
+
     return result;
 }

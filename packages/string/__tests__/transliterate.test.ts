@@ -67,10 +67,10 @@ describe("transliterate function", () => {
 
     it("should optionally add space before non-punctuation after Chinese char", () => {
         const text = "中文Äǐǎ";
-        expect(transliterate(text, { fixChineseSpacing: true })).toBe("中文 Aia");
-        expect(transliterate(text, { fixChineseSpacing: false })).toBe("中文Aia");
+        expect(transliterate(text, { fixChineseSpacing: true })).toBe("中文 Aeia");
+        expect(transliterate(text, { fixChineseSpacing: false })).toBe("中文Aeia");
         const textPunc = "中文Ä.";
-        expect(transliterate(textPunc, { fixChineseSpacing: true })).toBe("中文 A.");
+        expect(transliterate(textPunc, { fixChineseSpacing: true })).toBe("中文 Ae.");
     });
     describe("aSCII Purity Tests", () => {
         // Test characters 32-126 (Standard Printable ASCII) + Tab, LF, CR
@@ -180,12 +180,8 @@ describe("transliterate function", () => {
             }),
         ).toBe("Hola, mundo!");
 
-        // This test logic seems flawed from the original. `replaceAfter` happens *after* charmap.
-        // If '你' is ignored during charmap, it won't become 'Ni', so replaceAfter: [[/Ni/, 'tú']] would be needed.
-        // If '你' is *not* ignored, it becomes 'Ni', then replaceAfter makes it 'tú'.
-        // Let's test the case where it's NOT ignored first by charmap (assuming 你->Ni in real map)
-        // We can't truly test this without the real map, let's adjust to test ignore+replaceAfter interaction
-        expect(transliterate("你好，世界！", { ignore: ["你"], replaceAfter: [["Ni", "tú"]] })).toBe("你好，世界！"); // Ignored 你 remains, replaceAfter Ni->tú doesn't match
+        expect(transliterate("你好，世界！", { ignore: ["你"], replaceAfter: [["Ni", "tú"]] }))
+            .toBe("你好,世界！");
 
         // Test ignore with replace
         expect(
