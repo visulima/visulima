@@ -36,10 +36,9 @@ function formatReplaceOption(option: OptionReplaceCombined): OptionReplaceArray 
 /**
  * Search and replace a list of strings/regexps and return the result string.
  */
-function replaceString(source: string, searches: OptionReplaceArray, ignore: string[]): string {
+function replaceString(source: string, searches: OptionReplaceArray, ignoreRanges: IntervalArray): string {
     const clonedSearches = structuredClone(searches);
     let result = source;
-    const ignoreList = ignore;
 
     for (let i = 0; i < clonedSearches.length; i++) {
         const item = clonedSearches[i];
@@ -59,7 +58,7 @@ function replaceString(source: string, searches: OptionReplaceArray, ignore: str
             default:
                 searchPattern = /[^\s\S]/; // Prevent ReDos attack
         }
-        result = regexpReplaceCustom(result, searchPattern, replacementValue, ignoreList);
+        result = regexpReplaceCustom(result, searchPattern, replacementValue, ignoreRanges);
     }
     return result;
 }
@@ -74,7 +73,6 @@ function replaceString(source: string, searches: OptionReplaceArray, ignore: str
  */
 const transliterate = (source: string, options?: OptionsTransliterate): string => {
     const optsInput = typeof options === "object" ? options : {};
-    // Merge options with defaults ensuring all required fields are present
     const opt: Required<OptionsTransliterate> = structuredClone({
         ...defaultOptions,
         ...optsInput,
@@ -83,77 +81,86 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
     let str = typeof source === "string" ? source : String(source);
     const currentCharmap: Charmap = charmap;
 
-    // 1. Pre-charmap replacements
-    const replaceOption: OptionReplaceArray = formatReplaceOption(opt.replace);
-    if (replaceOption.length) {
-        str = replaceString(str, replaceOption, opt.ignore);
-    }
-
-    // 2. Calculate ignore ranges
+    // 1. Calculate ignore ranges based on the ORIGINAL string
     const ignoreRanges: IntervalArray = opt.ignore.length > 0 ? findStrOccurrences(str, opt.ignore) : [];
 
-    // 3. Charmap replacement (incorporating codeMapReplace logic)
-    let index = 0;
-    let result = "";
-    const strContainsChinese = opt.fixChineseSpacing && hasChinese(str);
-    let lastCharHasChinese = false;
-    const unknownChar = opt.unknown;
+    // 2. Pre-charmap replacements (respecting original ignore ranges)
+    const replaceOption: OptionReplaceArray = formatReplaceOption(opt.replace);
+    if (replaceOption.length) {
+        str = replaceString(str, replaceOption, ignoreRanges);
+    }
 
-    for (let i = 0; i < str.length; i++) {
-        const currentIndex = i;
-        const nextIndex = i + 1;
+    // 3. Charmap replacement (character by character, respecting ignore ranges)
+    let result = "";
+    const strLength = str.length;
+    const strContainsChinese = opt.fixChineseSpacing && hasChinese(str); // Check potentially modified string
+    let lastCharWasChinese = false;
+
+    for (let index = 0; index < strLength; ) {
         let char: string;
-        if (currentIndex < str.length && nextIndex < str.length && /[\uD800-\uDBFF]/.test(str[currentIndex]!) && /[\uDC00-\uDFFF]/.test(str[nextIndex]!)) {
-            char = str[currentIndex]! + str[nextIndex]!;
-            i++;
-        } else if (currentIndex < str.length) {
-            char = str[currentIndex]!;
+        let charLength = 1;
+
+        // Handle surrogate pairs
+        const currentCode = str.charCodeAt(index);
+        if (currentCode >= 0xd800 && currentCode <= 0xdbff && index + 1 < strLength) {
+            const nextCode = str.charCodeAt(index + 1);
+            if (nextCode >= 0xdc00 && nextCode <= 0xdfff) {
+                char = str[index]! + str[index + 1]!;
+                charLength = 2;
+            } else {
+                char = str[index]!;
+            }
         } else {
-            break;
+            char = str[index]!;
         }
 
         let s: string;
-        let ignoreFixingChinese = false;
-        switch (true) {
-            case inRange(index, ignoreRanges):
-            case char.length === 2 && inRange(index + 1, ignoreRanges):
-                s = char;
-                if (!ignoreRanges.find((range) => range[1] >= index && range[0] === index)) {
-                    ignoreFixingChinese = true;
-                }
-                break;
-            default:
-                s = Object.prototype.hasOwnProperty.call(currentCharmap, char) ? currentCharmap[char]! : unknownChar;
+        const charEndIndex = index + charLength - 1;
+        // Check if the *entire* character falls within an ignore range
+        const isIgnored = ignoreRanges.some(range => index >= range[0] && charEndIndex <= range[1]);
+
+        if (isIgnored) {
+            s = char; // Keep original character if ignored
+        } else {
+            // Apply charmap or use opt.unknown
+            if (hasChinese(char)) {
+                s = char; // Pass CJK characters through directly
+            } else {
+                const found = Object.prototype.hasOwnProperty.call(currentCharmap, char);
+                s = found
+                    ? currentCharmap[char]!
+                    : opt.unknown; // Use opt.unknown directly
+            }
         }
 
-        if (strContainsChinese) {
+        // Handle Chinese spacing (only if not ignored)
+        if (!isIgnored && strContainsChinese) {
             const sIsDefined = typeof s === "string";
-
-            if (lastCharHasChinese && !ignoreFixingChinese && sIsDefined && !hasPunctuationOrSpace(s)) {
+            const originalCharIsChinese = hasChinese(char);
+            if (lastCharWasChinese && !originalCharIsChinese && sIsDefined && s.length > 0 && !hasPunctuationOrSpace(s[0]!)) {
                 s = " " + s;
             }
-
-            lastCharHasChinese = !!s && typeof char === "string" && hasChinese(char);
+            lastCharWasChinese = originalCharIsChinese;
+        } else if (isIgnored) {
+            // Reset Chinese flag if we are in an ignored segment
+            lastCharWasChinese = false;
         }
 
-        result += typeof s === "string" ? s : "";
-
-        index += char.length;
+        result += s;
+        index += charLength;
     }
 
-    str = result; // Update str with charmap result
+    str = result; // Update str after charmap loop
 
     // 4. Trim
     if (opt.trim) {
         str = str.trim();
     }
 
-    // 5. Post-charmap replacements
+    // 5. Post-charmap replacements (respecting original ignore ranges)
     const replaceAfterOption: OptionReplaceArray = formatReplaceOption(opt.replaceAfter);
-
     if (replaceAfterOption.length) {
-        // Assuming post-replace doesn't need ignore list based on previous logic
-        str = replaceString(str, replaceAfterOption, []);
+        str = replaceString(str, replaceAfterOption, ignoreRanges);
     }
 
     return str;

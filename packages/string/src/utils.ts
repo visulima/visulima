@@ -103,11 +103,9 @@ export function findStrOccurrences(source: string, needles: string[]): IntervalA
  * @param source Source string
  * @param regexp Used to search through the source string
  * @param replacement Replace matched RegExp with replacement value
- * @param ignored Ignore certain string values within the matched strings
+ * @param ignoreRanges Ignore certain string values within the matched strings
  */
-export function regexpReplaceCustom(source: string, regexp: RegExp, replacement: string, ignored: string[] = []): string {
-    // RegExp version of ignored
-    const ignoredRegexp = ignored.length ? RegExp(ignored.map(escapeRegExp).join("|"), "g") : null;
+export function regexpReplaceCustom(source: string, regexp: RegExp, replacement: string, ignoreRanges: IntervalArray = []): string {
     // clones regex and with g flag
     const rule = RegExp(regexp.source, regexp.flags.replace("g", "") + "g");
     // final result
@@ -116,36 +114,29 @@ export function regexpReplaceCustom(source: string, regexp: RegExp, replacement:
     let lastIndex = 0;
     while (true) {
         const matchMain = rule.exec(source);
-        let ignoreResult = "";
-        let ignoreLastIndex = 0;
         if (matchMain) {
+            const matchStartIndex = matchMain.index;
+            const matchEndIndex = matchStartIndex + matchMain[0].length - 1;
             const matchedString = matchMain[0];
-            if (ignoredRegexp) {
-                ignoredRegexp.lastIndex = 0; // Reset lastIndex for ignoredRegexp
-                while (true) {
-                    const matchIgnore = ignoredRegexp.exec(matchedString);
-                    if (matchIgnore) {
-                        // Add replacement for the part before the ignored string
-                        if (matchIgnore.index > ignoreLastIndex) {
-                            ignoreResult += replacement;
-                        }
-                        // Add the ignored string itself
-                        ignoreResult += matchIgnore[0];
-                        ignoreLastIndex = ignoredRegexp.lastIndex;
-                    } else {
-                        // Add replacement for the part after the last ignored string (or the whole string if no ignores)
-                        if (matchedString.length > ignoreLastIndex) {
-                            ignoreResult += replacement;
-                        }
-                        break;
-                    }
-                }
+
+            // Check if the match overlaps with any ignore range
+            const isIgnored = ignoreRanges.some(range =>
+                // Check for overlap: (Range1Start <= Range2End) and (Range1End >= Range2Start)
+                matchStartIndex <= range[1] && matchEndIndex >= range[0]
+            );
+
+            let stringToAppend: string;
+            if (isIgnored) {
+                // If ignored, append the original matched string
+                stringToAppend = matchedString;
             } else {
-                // No ignored strings, just use the replacement for the whole match
-                ignoreResult = replacement;
+                // If not ignored, use the replacement value
+                // (The complex logic for partial ignores within a match is removed for simplicity,
+                // as the main transliterate loop now handles ignoring character by character)
+                stringToAppend = replacement;
             }
 
-            result += source.substring(lastIndex, matchMain.index) + ignoreResult;
+            result += source.substring(lastIndex, matchStartIndex) + stringToAppend;
             lastIndex = rule.lastIndex;
         } else {
             result += source.substring(lastIndex);
