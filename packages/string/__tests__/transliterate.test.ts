@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { OptionsTransliterate } from "../src/types";
 
 import transliterate from "../src/transliterate";
+import type { OptionsTransliterate } from "../src/types";
 
 describe("transliterate function", () => {
     it("should return empty string for empty input", () => {
@@ -16,11 +16,11 @@ describe("transliterate function", () => {
 
     it("should use unknown character for unmapped chars", () => {
         // Use characters highly unlikely to be in the charmap
-        const unmappedStr = "\u{E000}\u{E001}🚀"; // PUA chars + emoji
+        const unmappedString = "\u{E000}\u{E001}🚀"; // PUA chars + emoji
         // With default unknown: ""
-        expect(transliterate(unmappedStr)).toBe("");
+        expect(transliterate(unmappedString)).toBe("");
         // With unknown: "?"
-        expect(transliterate(unmappedStr, { unknown: "?" })).toBe("???");
+        expect(transliterate(unmappedString, { unknown: "?" })).toBe("???");
     });
 
     it("should trim whitespace if trim option is true", () => {
@@ -72,11 +72,11 @@ describe("transliterate function", () => {
         const textPunc = "中文Ä.";
         expect(transliterate(textPunc, { fixChineseSpacing: true })).toBe("中文 A.");
     });
-    describe("ASCII Purity Tests", () => {
+    describe("aSCII Purity Tests", () => {
         // Test characters 32-126 (Standard Printable ASCII) + Tab, LF, CR
         const printableAsciiTests: number[] = [9, 10, 13];
-        for (let i = 32; i <= 126; i++) {
-            printableAsciiTests.push(i);
+        for (let index = 32; index <= 126; index++) {
+            printableAsciiTests.push(index);
         }
 
         printableAsciiTests.forEach((code) => {
@@ -89,8 +89,8 @@ describe("transliterate function", () => {
 
         // Test characters 128-159 (C1 Controls) - Default Unknown
         const c1ControlTests: number[] = [];
-        for (let i = 128; i <= 159; i++) {
-            c1ControlTests.push(i);
+        for (let index = 128; index <= 159; index++) {
+            c1ControlTests.push(index);
         }
 
         c1ControlTests.forEach((code) => {
@@ -111,8 +111,8 @@ describe("transliterate function", () => {
         });
     });
 
-    describe("Basic String Tests", () => {
-        const tests: (string | number)[] = [
+    describe("basic String Tests", () => {
+        const tests: (number | string)[] = [
             1 / 10, // 0.1
             "I like pie.",
             "\n",
@@ -120,15 +120,15 @@ describe("transliterate function", () => {
             "I like pie.\n",
         ];
 
-        tests.forEach((strInput) => {
-            const str = String(strInput);
-            it(`should handle basic input: ${JSON.stringify(str)}`, () => {
-                expect(transliterate(str)).toBe(str);
+        tests.forEach((stringInput) => {
+            const string_ = String(stringInput);
+            it(`should handle basic input: ${JSON.stringify(string_)}`, () => {
+                expect(transliterate(string_)).toBe(string_);
             });
         });
     });
 
-    describe("Complex Script/Character Tests", () => {
+    describe("complex Script/Character Tests", () => {
         // IMPORTANT: These tests depend heavily on the *actual* charmap data
         // in src/charmap.ts. They will likely fail or produce unexpected
         // results with the current placeholder/mocked charmap.
@@ -153,14 +153,14 @@ describe("transliterate function", () => {
             // Japanese
             ["げんまい茶", "genmaiCha"],
             // Unknown characters (assuming they are not in the final charmap)
-            [`\u0800\u1400${String.fromCharCode(0xd840, 0xdd00)}`, ""],
+            [`\u0800\u1400${String.fromCharCode(0xd8_40, 0xdd_00)}`, ""],
             ["🚀", ""], // Expect empty if unknown is default ""
         ];
 
-        for (const [str, result] of tests) {
-            it(`should transliterate ${str} to ${result} (charmap dependent)`, () => {
+        for (const [string_, result] of tests) {
+            it(`should transliterate ${string_} to ${result} (charmap dependent)`, () => {
                 // Add a comment reminding that this depends on the real charmap
-                expect(transliterate(str)).toBe(result);
+                expect(transliterate(string_)).toBe(result);
             });
         }
 
@@ -172,11 +172,11 @@ describe("transliterate function", () => {
     it("- With replace / replaceAfter and ignore options combined", () => {
         expect(
             transliterate("你好, 世界!", {
+                ignore: ["¡", "!"],
                 replace: [
                     ["你好", "Hola"],
                     ["世界", "mundo"],
                 ],
-                ignore: ["¡", "!"],
             }),
         ).toBe("Hola, mundo!");
 
@@ -185,117 +185,122 @@ describe("transliterate function", () => {
         // If '你' is *not* ignored, it becomes 'Ni', then replaceAfter makes it 'tú'.
         // Let's test the case where it's NOT ignored first by charmap (assuming 你->Ni in real map)
         // We can't truly test this without the real map, let's adjust to test ignore+replaceAfter interaction
-        expect(transliterate("你好，世界！", { replaceAfter: [["Ni", "tú"]], ignore: ["你"] })).toBe("你好，世界！"); // Ignored 你 remains, replaceAfter Ni->tú doesn't match
+        expect(transliterate("你好，世界！", { ignore: ["你"], replaceAfter: [["Ni", "tú"]] })).toBe("你好，世界！"); // Ignored 你 remains, replaceAfter Ni->tú doesn't match
 
         // Test ignore with replace
         expect(
             transliterate("你好，世界！", {
-                replace: { 好: "Good" },
                 ignore: ["界"],
+                replace: { 好: "Good" },
             }),
         ).toBe("Ni Good，Shi 界！"); // Assuming 你->Ni, 世->Shi in real charmap
     });
 
     // --- Language Specific Tests ---
 
-    it('supports German umlauts', () => {
-        expect(transliterate('ä ö ü Ä Ö Ü ß')).toBe('ae oe ue Ae Oe Ue ss');
+    it("supports German umlauts", () => {
+        expect(transliterate("ä ö ü Ä Ö Ü ß")).toBe("ae oe ue Ae Oe Ue ss");
     });
 
-    it('supports Vietnamese', () => {
-        expect(transliterate('ố Ừ Đ')).toBe('o U D');
+    it("supports Vietnamese", () => {
+        expect(transliterate("ố Ừ Đ")).toBe("o U D");
     });
 
-    it('supports Arabic', () => {
-        expect(transliterate('ث س و')).toBe('th s w');
+    it("supports Arabic", () => {
+        expect(transliterate("ث س و")).toBe("th s w");
     });
 
-    it('supports Persian / Farsi', () => {
-        expect(transliterate('چ ی پ')).toBe('ch y p');
+    it("supports Persian / Farsi", () => {
+        expect(transliterate("چ ی پ")).toBe("ch y p");
     });
 
-    it('supports Urdu', () => {
-        expect(transliterate('ٹ ڈ ھ')).toBe('t d h');
+    it("supports Urdu", () => {
+        const input = "ٹ ڈ ھ";
+        const expected = "t d h";
+        const result = transliterate(input);
+        expect(result).toBe(expected);
     });
 
-    it('supports Pashto', () => {
-        expect(transliterate('ګ ړ څ')).toBe('g r c');
+    it("supports Pashto", () => {
+        const input = "ګ ړ څ";
+        const expected = "g r c";
+        const result = transliterate(input);
+        expect(result).toBe(expected);
     });
 
-    it('supports Russian', () => {
-        expect(transliterate('Ж п ю')).toBe('Zh p yu');
+    it("supports Russian", () => {
+        expect(transliterate("Ж п ю")).toBe("Zh p yu");
     });
 
-    it('supports Romanian', () => {
-        expect(transliterate('ș Ț')).toBe('s T');
+    it("supports Romanian", () => {
+        expect(transliterate("ș Ț")).toBe("s T");
     });
 
-    it('supports Turkish', () => {
-        expect(transliterate('İ ı Ş ş Ç ç Ğ ğ')).toBe('I i S s C c G g');
+    it("supports Turkish", () => {
+        expect(transliterate("İ ı Ş ş Ç ç Ğ ğ")).toBe("I i S s C c G g");
     });
 
-    it('supports Armenian', () => {
-        expect(transliterate('Ե ր և ա ն')).toBe('Ye r yev a n');
+    it("supports Armenian", () => {
+        expect(transliterate("Ե ր և ա ն")).toBe("Ye r yev a n");
     });
 
-    it('supports Georgian', () => {
-        expect(transliterate('თ პ ღ')).toBe('t p gh');
+    it("supports Georgian", () => {
+        expect(transliterate("თ პ ღ")).toBe("t p gh");
     });
 
-    it('supports Latin', () => {
-        expect(transliterate('Ä Ð Ø')).toBe('Ae D O');
+    it("supports Latin", () => {
+        expect(transliterate("Ä Ð Ø")).toBe("Ae D O");
     });
 
-    it('supports Czech', () => {
-        expect(transliterate('č ž Ň')).toBe('c z N');
+    it("supports Czech", () => {
+        expect(transliterate("č ž Ň")).toBe("c z N");
     });
 
-    it('supports Danish', () => {
-        expect(transliterate('æ ø å Æ Ø Å')).toBe('ae oe aa Ae Oe Aa');
+    it("supports Danish", () => {
+        expect(transliterate("æ ø å Æ Ø Å")).toBe("ae oe aa Ae Oe Aa");
     });
 
-    it('supports Dhivehi', () => {
-        expect(transliterate('ޝ ޓ ބ')).toBe('sh t b');
+    it("supports Dhivehi", () => {
+        expect(transliterate("ޝ ޓ ބ")).toBe("sh t b");
     });
 
-    it('supports Greek', () => {
-        expect(transliterate('θ Γ Ξ')).toBe('th G KS');
+    it("supports Greek", () => {
+        expect(transliterate("θ Γ Ξ")).toBe("th G KS");
     });
 
-    it('supports Hungarian', () => {
-        expect(transliterate('ű ö Ö')).toBe('u o O');
+    it("supports Hungarian", () => {
+        expect(transliterate("ű ö Ö")).toBe("u o O");
     });
 
-    it('supports Latvian', () => {
-        expect(transliterate('ā Ņ Ģ')).toBe('a N G');
+    it("supports Latvian", () => {
+        expect(transliterate("ā Ņ Ģ")).toBe("a N G");
     });
 
-    it('supports Lithuanian', () => {
-        expect(transliterate('ą į Š')).toBe('a i S');
+    it("supports Lithuanian", () => {
+        expect(transliterate("ą į Š")).toBe("a i S");
     });
 
-    it('supports Macedonian', () => {
-        expect(transliterate('Ќ љ Тс')).toBe('Kj lj Ts');
+    it("supports Macedonian", () => {
+        expect(transliterate("Ќ љ Тс")).toBe("Kj lj Ts");
     });
 
-    it('supports Polish', () => {
-        expect(transliterate('ą Ą Ł')).toBe('a A L');
+    it("supports Polish", () => {
+        expect(transliterate("ą Ą Ł")).toBe("a A L");
     });
 
-    it('supports Serbian', () => {
-        expect(transliterate('ђ џ Ђ Љ')).toBe('dj dz Dj Lj');
+    it("supports Serbian", () => {
+        expect(transliterate("ђ џ Ђ Љ")).toBe("dj dz Dj Lj");
     });
 
-    it('supports Slovak', () => {
-        expect(transliterate('ľ Ľ Ŕ')).toBe('l L R');
+    it("supports Slovak", () => {
+        expect(transliterate("ľ Ľ Ŕ")).toBe("l L R");
     });
 
-    it('supports Swedish', () => {
-        expect(transliterate('ä ö Ä Ö')).toBe('a o A O');
+    it("supports Swedish", () => {
+        expect(transliterate("ä ö Ä Ö")).toBe("a o A O");
     });
 
-    it('supports Ukrainian', () => {
-        expect(transliterate('Є Ґ ї')).toBe('Ye G yi');
+    it("supports Ukrainian", () => {
+        expect(transliterate("Є Ґ ї")).toBe("Ye G yi");
     });
-
 });

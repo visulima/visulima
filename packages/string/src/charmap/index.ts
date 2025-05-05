@@ -10,7 +10,6 @@ import UNICODE_BLOCK_0400_04FF from "./block-0400-04ff";
 import UNICODE_BLOCK_0500_05FF from "./block-0500-05ff";
 import UNICODE_BLOCK_0600_06FF from "./block-0600-06ff";
 import UNICODE_BLOCK_0700_07FF from "./block-0700-07ff";
-import UNICODE_BLOCK_0800_08FF from "./block-0800-08ff";
 import UNICODE_BLOCK_0900_09FF from "./block-0900-09ff";
 import UNICODE_BLOCK_0A00_0AFF from "./block-0a00-0aff";
 import UNICODE_BLOCK_0B00_0BFF from "./block-0b00-0bff";
@@ -27,59 +26,19 @@ import UNICODE_BLOCK_1500_15FF from "./block-1500-15ff";
 import UNICODE_BLOCK_1600_16FF from "./block-1600-16ff";
 import UNICODE_BLOCK_1700_17FF from "./block-1700-17ff";
 import UNICODE_BLOCK_1800_18FF from "./block-1800-18ff";
-import UNICODE_BLOCK_1900_19FF from "./block-1900-19ff";
-import UNICODE_BLOCK_1A00_1AFF from "./block-1a00-1aff";
-import UNICODE_BLOCK_1B00_1BFF from "./block-1b00-1bff";
-import UNICODE_BLOCK_1C00_1CFF from "./block-1c00-1cff";
-import UNICODE_BLOCK_1D00_1DFF from "./block-1d00-1dff";
 import UNICODE_BLOCK_1E00_1EFF from "./block-1e00-1eff";
 import UNICODE_BLOCK_1F00_1FFF from "./block-1f00-1fff";
 import UNICODE_BLOCK_2000_20FF from "./block-2000-20ff";
 import UNICODE_BLOCK_2100_21FF from "./block-2100-21ff";
-import UNICODE_BLOCK_2200_22FF from "./block-2200-22ff";
-import UNICODE_BLOCK_2300_23FF from "./block-2300-23ff";
 import UNICODE_BLOCK_2400_24FF from "./block-2400-24ff";
 import UNICODE_BLOCK_2500_25FF from "./block-2500-25ff";
 import UNICODE_BLOCK_2600_26FF from "./block-2600-26ff";
 import UNICODE_BLOCK_2700_27FF from "./block-2700-27ff";
 import UNICODE_BLOCK_2800_28FF from "./block-2800-28ff";
-import UNICODE_BLOCK_2900_29FF from "./block-2900-29ff";
-import UNICODE_BLOCK_2A00_2AFF from "./block-2a00-2aff";
-import UNICODE_BLOCK_2B00_2BFF from "./block-2b00-2bff";
-import UNICODE_BLOCK_2C00_2CFF from "./block-2c00-2cff";
-import UNICODE_BLOCK_2D00_2DFF from "./block-2d00-2dff";
-import UNICODE_BLOCK_2E00_2EFF from "./block-2e00-2eff";
-import UNICODE_BLOCK_2F00_2FFF from "./block-2f00-2fff";
 import UNICODE_BLOCK_3000_30FF from "./block-3000-30ff";
 import UNICODE_BLOCK_3100_31FF from "./block-3100-31ff";
 import UNICODE_BLOCK_3200_32FF from "./block-3200-32ff";
 import UNICODE_BLOCK_3300_33FF from "./block-3300-33ff";
-import UNICODE_BLOCK_3400_34FF from "./block-3400-34ff";
-import UNICODE_BLOCK_3500_35FF from "./block-3500-35ff";
-import UNICODE_BLOCK_3600_36FF from "./block-3600-36ff";
-import UNICODE_BLOCK_3700_37FF from "./block-3700-37ff";
-import UNICODE_BLOCK_3800_38FF from "./block-3800-38ff";
-import UNICODE_BLOCK_3900_39FF from "./block-3900-39ff";
-import UNICODE_BLOCK_3A00_3AFF from "./block-3a00-3aff";
-import UNICODE_BLOCK_3B00_3BFF from "./block-3b00-3bff";
-import UNICODE_BLOCK_3C00_3CFF from "./block-3c00-3cff";
-import UNICODE_BLOCK_3D00_3DFF from "./block-3d00-3dff";
-import UNICODE_BLOCK_3E00_3EFF from "./block-3e00-3eff";
-import UNICODE_BLOCK_3F00_3FFF from "./block-3f00-3fff";
-import UNICODE_BLOCK_4000_40FF from "./block-4000-40ff";
-import UNICODE_BLOCK_4100_41FF from "./block-4100-41ff";
-import UNICODE_BLOCK_4200_42FF from "./block-4200-42ff";
-import UNICODE_BLOCK_4300_43FF from "./block-4300-43ff";
-import UNICODE_BLOCK_4400_44FF from "./block-4400-44ff";
-import UNICODE_BLOCK_4500_45FF from "./block-4500-45ff";
-import UNICODE_BLOCK_4600_46FF from "./block-4600-46ff";
-import UNICODE_BLOCK_4700_47FF from "./block-4700-47ff";
-import UNICODE_BLOCK_4800_48FF from "./block-4800-48ff";
-import UNICODE_BLOCK_4900_49FF from "./block-4900-49ff";
-import UNICODE_BLOCK_4A00_4AFF from "./block-4a00-4aff";
-import UNICODE_BLOCK_4B00_4BFF from "./block-4b00-4bff";
-import UNICODE_BLOCK_4C00_4CFF from "./block-4c00-4cff";
-import UNICODE_BLOCK_4D00_4DFF from "./block-4d00-4dff";
 import UNICODE_BLOCK_4E00_4EFF from "./block-4e00-4eff";
 import UNICODE_BLOCK_4F00_4FFF from "./block-4f00-4fff";
 import UNICODE_BLOCK_5000_50FF from "./block-5000-50ff";
@@ -167,223 +126,269 @@ import UNICODE_BLOCK_A100_A1FF from "./block-a100-a1ff";
 import UNICODE_BLOCK_A200_A2FF from "./block-a200-a2ff";
 import UNICODE_BLOCK_A300_A3FF from "./block-a300-a3ff";
 import UNICODE_BLOCK_A400_A4FF from "./block-a400-a4ff";
-import UNICODE_BLOCK_A500_A5FF from "./block-a500-a5ff";
-import UNICODE_BLOCK_A600_A6FF from "./block-a600-a6ff";
 import UNICODE_BLOCK_A700_A7FF from "./block-a700-a7ff";
-import UNICODE_BLOCK_A800_A8FF from "./block-a800-a8ff";
-import UNICODE_BLOCK_A900_A9FF from "./block-a900-a9ff";
-import UNICODE_BLOCK_AA00_AAFF from "./block-aa00-aaff";
-import UNICODE_BLOCK_AB00_ABFF from "./block-ab00-abff";
 import UNICODE_BLOCK_AC00_ACFF from "./block-ac00-acff";
 import UNICODE_BLOCK_AD00_ADFF from "./block-ad00-adff";
 import UNICODE_BLOCK_AE00_AEFF from "./block-ae00-aeff";
 import UNICODE_BLOCK_AF00_AFFF from "./block-af00-afff";
+import UNICODE_BLOCK_B000_B0FF from "./block-b000-b0ff";
+import UNICODE_BLOCK_B100_B1FF from "./block-b100-b1ff";
+import UNICODE_BLOCK_B200_B2FF from "./block-b200-b2ff";
+import UNICODE_BLOCK_B300_B3FF from "./block-b300-b3ff";
+import UNICODE_BLOCK_B400_B4FF from "./block-b400-b4ff";
+import UNICODE_BLOCK_B500_B5FF from "./block-b500-b5ff";
+import UNICODE_BLOCK_B600_B6FF from "./block-b600-b6ff";
+import UNICODE_BLOCK_B700_B7FF from "./block-b700-b7ff";
+import UNICODE_BLOCK_B800_B8FF from "./block-b800-b8ff";
+import UNICODE_BLOCK_B900_B9FF from "./block-b900-b9ff";
+import UNICODE_BLOCK_BA00_BAFF from "./block-ba00-baff";
+import UNICODE_BLOCK_BB00_BBFF from "./block-bb00-bbff";
+import UNICODE_BLOCK_BC00_BCFF from "./block-bc00-bcff";
+import UNICODE_BLOCK_BD00_BDFF from "./block-bd00-bdff";
+import UNICODE_BLOCK_BE00_BEFF from "./block-be00-beff";
+import UNICODE_BLOCK_BF00_BFFF from "./block-bf00-bfff";
+import UNICODE_BLOCK_C000_C0FF from "./block-c000-c0ff";
+import UNICODE_BLOCK_C100_C1FF from "./block-c100-c1ff";
+import UNICODE_BLOCK_C200_C2FF from "./block-c200-c2ff";
+import UNICODE_BLOCK_C300_C3FF from "./block-c300-c3ff";
+import UNICODE_BLOCK_C400_C4FF from "./block-c400-c4ff";
+import UNICODE_BLOCK_C500_C5FF from "./block-c500-c5ff";
+import UNICODE_BLOCK_C600_C6FF from "./block-c600-c6ff";
+import UNICODE_BLOCK_C700_C7FF from "./block-c700-c7ff";
+import UNICODE_BLOCK_C800_C8FF from "./block-c800-c8ff";
+import UNICODE_BLOCK_C900_C9FF from "./block-c900-c9ff";
+import UNICODE_BLOCK_CA00_CAFF from "./block-ca00-caff";
+import UNICODE_BLOCK_CB00_CBFF from "./block-cb00-cbff";
+import UNICODE_BLOCK_CC00_CCFF from "./block-cc00-ccff";
+import UNICODE_BLOCK_CD00_CDFF from "./block-cd00-cdff";
+import UNICODE_BLOCK_CE00_CEFF from "./block-ce00-ceff";
+import UNICODE_BLOCK_CF00_CFFF from "./block-cf00-cfff";
+import UNICODE_BLOCK_D000_D0FF from "./block-d000-d0ff";
+import UNICODE_BLOCK_D100_D1FF from "./block-d100-d1ff";
+import UNICODE_BLOCK_D200_D2FF from "./block-d200-d2ff";
+import UNICODE_BLOCK_D300_D3FF from "./block-d300-d3ff";
+import UNICODE_BLOCK_D400_D4FF from "./block-d400-d4ff";
+import UNICODE_BLOCK_D500_D5FF from "./block-d500-d5ff";
+import UNICODE_BLOCK_D600_D6FF from "./block-d600-d6ff";
+import UNICODE_BLOCK_D700_D7FF from "./block-d700-d7ff";
+import UNICODE_BLOCK_F900_F9FF from "./block-f900-f9ff";
+import UNICODE_BLOCK_FA00_FAFF from "./block-fa00-faff";
+import UNICODE_BLOCK_FB00_FBFF from "./block-fb00-fbff";
+import UNICODE_BLOCK_FC00_FCFF from "./block-fc00-fcff";
+import UNICODE_BLOCK_FD00_FDFF from "./block-fd00-fdff";
+import UNICODE_BLOCK_FE00_FEFF from "./block-fe00-feff";
+import UNICODE_BLOCK_FF00_FFFF from "./block-ff00-ffff";
 
-let unicodeBlocks: undefined | (string | undefined)[][] = [
-    UNICODE_BLOCK_0000_00FF,
-    UNICODE_BLOCK_0100_01FF,
-    UNICODE_BLOCK_0200_02FF,
-    UNICODE_BLOCK_0300_03FF,
-    UNICODE_BLOCK_0400_04FF,
-    UNICODE_BLOCK_0500_05FF,
-    UNICODE_BLOCK_0600_06FF,
-    UNICODE_BLOCK_0700_07FF,
-    UNICODE_BLOCK_0800_08FF,
-    UNICODE_BLOCK_0900_09FF,
-    UNICODE_BLOCK_0A00_0AFF,
-    UNICODE_BLOCK_0B00_0BFF,
-    UNICODE_BLOCK_0C00_0CFF,
-    UNICODE_BLOCK_0D00_0DFF,
-    UNICODE_BLOCK_0E00_0EFF,
-    UNICODE_BLOCK_0F00_0FFF,
-    UNICODE_BLOCK_1000_10FF,
-    UNICODE_BLOCK_1100_11FF,
-    UNICODE_BLOCK_1200_12FF,
-    UNICODE_BLOCK_1300_13FF,
-    UNICODE_BLOCK_1400_14FF,
-    UNICODE_BLOCK_1500_15FF,
-    UNICODE_BLOCK_1600_16FF,
-    UNICODE_BLOCK_1700_17FF,
-    UNICODE_BLOCK_1800_18FF,
-    UNICODE_BLOCK_1900_19FF,
-    UNICODE_BLOCK_1A00_1AFF,
-    UNICODE_BLOCK_1B00_1BFF,
-    UNICODE_BLOCK_1C00_1CFF,
-    UNICODE_BLOCK_1D00_1DFF,
-    UNICODE_BLOCK_1E00_1EFF,
-    UNICODE_BLOCK_1F00_1FFF,
-    UNICODE_BLOCK_2000_20FF,
-    UNICODE_BLOCK_2100_21FF,
-    UNICODE_BLOCK_2200_22FF,
-    UNICODE_BLOCK_2300_23FF,
-    UNICODE_BLOCK_2400_24FF,
-    UNICODE_BLOCK_2500_25FF,
-    UNICODE_BLOCK_2600_26FF,
-    UNICODE_BLOCK_2700_27FF,
-    UNICODE_BLOCK_2800_28FF,
-    UNICODE_BLOCK_2900_29FF,
-    UNICODE_BLOCK_2A00_2AFF,
-    UNICODE_BLOCK_2B00_2BFF,
-    UNICODE_BLOCK_2C00_2CFF,
-    UNICODE_BLOCK_2D00_2DFF,
-    UNICODE_BLOCK_2E00_2EFF,
-    UNICODE_BLOCK_2F00_2FFF,
-    UNICODE_BLOCK_3000_30FF,
-    UNICODE_BLOCK_3100_31FF,
-    UNICODE_BLOCK_3200_32FF,
-    UNICODE_BLOCK_3300_33FF,
-    UNICODE_BLOCK_3400_34FF,
-    UNICODE_BLOCK_3500_35FF,
-    UNICODE_BLOCK_3600_36FF,
-    UNICODE_BLOCK_3700_37FF,
-    UNICODE_BLOCK_3800_38FF,
-    UNICODE_BLOCK_3900_39FF,
-    UNICODE_BLOCK_3A00_3AFF,
-    UNICODE_BLOCK_3B00_3BFF,
-    UNICODE_BLOCK_3C00_3CFF,
-    UNICODE_BLOCK_3D00_3DFF,
-    UNICODE_BLOCK_3E00_3EFF,
-    UNICODE_BLOCK_3F00_3FFF,
-    UNICODE_BLOCK_4000_40FF,
-    UNICODE_BLOCK_4100_41FF,
-    UNICODE_BLOCK_4200_42FF,
-    UNICODE_BLOCK_4300_43FF,
-    UNICODE_BLOCK_4400_44FF,
-    UNICODE_BLOCK_4500_45FF,
-    UNICODE_BLOCK_4600_46FF,
-    UNICODE_BLOCK_4700_47FF,
-    UNICODE_BLOCK_4800_48FF,
-    UNICODE_BLOCK_4900_49FF,
-    UNICODE_BLOCK_4A00_4AFF,
-    UNICODE_BLOCK_4B00_4BFF,
-    UNICODE_BLOCK_4C00_4CFF,
-    UNICODE_BLOCK_4D00_4DFF,
-    UNICODE_BLOCK_4E00_4EFF,
-    UNICODE_BLOCK_4F00_4FFF,
-    UNICODE_BLOCK_5000_50FF,
-    UNICODE_BLOCK_5100_51FF,
-    UNICODE_BLOCK_5200_52FF,
-    UNICODE_BLOCK_5300_53FF,
-    UNICODE_BLOCK_5400_54FF,
-    UNICODE_BLOCK_5500_55FF,
-    UNICODE_BLOCK_5600_56FF,
-    UNICODE_BLOCK_5700_57FF,
-    UNICODE_BLOCK_5800_58FF,
-    UNICODE_BLOCK_5900_59FF,
-    UNICODE_BLOCK_5A00_5AFF,
-    UNICODE_BLOCK_5B00_5BFF,
-    UNICODE_BLOCK_5C00_5CFF,
-    UNICODE_BLOCK_5D00_5DFF,
-    UNICODE_BLOCK_5E00_5EFF,
-    UNICODE_BLOCK_5F00_5FFF,
-    UNICODE_BLOCK_6000_60FF,
-    UNICODE_BLOCK_6100_61FF,
-    UNICODE_BLOCK_6200_62FF,
-    UNICODE_BLOCK_6300_63FF,
-    UNICODE_BLOCK_6400_64FF,
-    UNICODE_BLOCK_6500_65FF,
-    UNICODE_BLOCK_6600_66FF,
-    UNICODE_BLOCK_6700_67FF,
-    UNICODE_BLOCK_6800_68FF,
-    UNICODE_BLOCK_6900_69FF,
-    UNICODE_BLOCK_6A00_6AFF,
-    UNICODE_BLOCK_6B00_6BFF,
-    UNICODE_BLOCK_6C00_6CFF,
-    UNICODE_BLOCK_6D00_6DFF,
-    UNICODE_BLOCK_6E00_6EFF,
-    UNICODE_BLOCK_6F00_6FFF,
-    UNICODE_BLOCK_7000_70FF,
-    UNICODE_BLOCK_7100_71FF,
-    UNICODE_BLOCK_7200_72FF,
-    UNICODE_BLOCK_7300_73FF,
-    UNICODE_BLOCK_7400_74FF,
-    UNICODE_BLOCK_7500_75FF,
-    UNICODE_BLOCK_7600_76FF,
-    UNICODE_BLOCK_7700_77FF,
-    UNICODE_BLOCK_7800_78FF,
-    UNICODE_BLOCK_7900_79FF,
-    UNICODE_BLOCK_7A00_7AFF,
-    UNICODE_BLOCK_7B00_7BFF,
-    UNICODE_BLOCK_7C00_7CFF,
-    UNICODE_BLOCK_7D00_7DFF,
-    UNICODE_BLOCK_7E00_7EFF,
-    UNICODE_BLOCK_7F00_7FFF,
-    UNICODE_BLOCK_8000_80FF,
-    UNICODE_BLOCK_8100_81FF,
-    UNICODE_BLOCK_8200_82FF,
-    UNICODE_BLOCK_8300_83FF,
-    UNICODE_BLOCK_8400_84FF,
-    UNICODE_BLOCK_8500_85FF,
-    UNICODE_BLOCK_8600_86FF,
-    UNICODE_BLOCK_8700_87FF,
-    UNICODE_BLOCK_8800_88FF,
-    UNICODE_BLOCK_8900_89FF,
-    UNICODE_BLOCK_8A00_8AFF,
-    UNICODE_BLOCK_8B00_8BFF,
-    UNICODE_BLOCK_8C00_8CFF,
-    UNICODE_BLOCK_8D00_8DFF,
-    UNICODE_BLOCK_8E00_8EFF,
-    UNICODE_BLOCK_8F00_8FFF,
-    UNICODE_BLOCK_9000_90FF,
-    UNICODE_BLOCK_9100_91FF,
-    UNICODE_BLOCK_9200_92FF,
-    UNICODE_BLOCK_9300_93FF,
-    UNICODE_BLOCK_9400_94FF,
-    UNICODE_BLOCK_9500_95FF,
-    UNICODE_BLOCK_9600_96FF,
-    UNICODE_BLOCK_9700_97FF,
-    UNICODE_BLOCK_9800_98FF,
-    UNICODE_BLOCK_9900_99FF,
-    UNICODE_BLOCK_9A00_9AFF,
-    UNICODE_BLOCK_9B00_9BFF,
-    UNICODE_BLOCK_9C00_9CFF,
-    UNICODE_BLOCK_9D00_9DFF,
-    UNICODE_BLOCK_9E00_9EFF,
-    UNICODE_BLOCK_9F00_9FFF,
-    UNICODE_BLOCK_A000_A0FF,
-    UNICODE_BLOCK_A100_A1FF,
-    UNICODE_BLOCK_A200_A2FF,
-    UNICODE_BLOCK_A300_A3FF,
-    UNICODE_BLOCK_A400_A4FF,
-    UNICODE_BLOCK_A500_A5FF,
-    UNICODE_BLOCK_A600_A6FF,
-    UNICODE_BLOCK_A700_A7FF,
-    UNICODE_BLOCK_A800_A8FF,
-    UNICODE_BLOCK_A900_A9FF,
-    UNICODE_BLOCK_AA00_AAFF,
-    UNICODE_BLOCK_AB00_ABFF,
-    UNICODE_BLOCK_AC00_ACFF,
-    UNICODE_BLOCK_AD00_ADFF,
-    UNICODE_BLOCK_AE00_AEFF,
-    UNICODE_BLOCK_AF00_AFFF,
-];
+// Map block indices (as strings) to the imported block data arrays
+const blockDataMap: Record<string, (string | undefined)[]> = Object.freeze({
+    '0': UNICODE_BLOCK_0000_00FF,
+    '1': UNICODE_BLOCK_0100_01FF,
+    '2': UNICODE_BLOCK_0200_02FF,
+    '3': UNICODE_BLOCK_0300_03FF,
+    '4': UNICODE_BLOCK_0400_04FF,
+    '5': UNICODE_BLOCK_0500_05FF,
+    '6': UNICODE_BLOCK_0600_06FF,
+    '7': UNICODE_BLOCK_0700_07FF,
+    '9': UNICODE_BLOCK_0900_09FF,
+    '10': UNICODE_BLOCK_0A00_0AFF,
+    '11': UNICODE_BLOCK_0B00_0BFF,
+    '12': UNICODE_BLOCK_0C00_0CFF,
+    '13': UNICODE_BLOCK_0D00_0DFF,
+    '14': UNICODE_BLOCK_0E00_0EFF,
+    '15': UNICODE_BLOCK_0F00_0FFF,
+    '16': UNICODE_BLOCK_1000_10FF,
+    '17': UNICODE_BLOCK_1100_11FF,
+    '18': UNICODE_BLOCK_1200_12FF,
+    '19': UNICODE_BLOCK_1300_13FF,
+    '20': UNICODE_BLOCK_1400_14FF,
+    '21': UNICODE_BLOCK_1500_15FF,
+    '22': UNICODE_BLOCK_1600_16FF,
+    '23': UNICODE_BLOCK_1700_17FF,
+    '24': UNICODE_BLOCK_1800_18FF,
+    '30': UNICODE_BLOCK_1E00_1EFF,
+    '31': UNICODE_BLOCK_1F00_1FFF,
+    '32': UNICODE_BLOCK_2000_20FF,
+    '33': UNICODE_BLOCK_2100_21FF,
+    '36': UNICODE_BLOCK_2400_24FF,
+    '37': UNICODE_BLOCK_2500_25FF,
+    '38': UNICODE_BLOCK_2600_26FF,
+    '39': UNICODE_BLOCK_2700_27FF,
+    '40': UNICODE_BLOCK_2800_28FF,
+    '48': UNICODE_BLOCK_3000_30FF,
+    '49': UNICODE_BLOCK_3100_31FF,
+    '50': UNICODE_BLOCK_3200_32FF,
+    '51': UNICODE_BLOCK_3300_33FF,
+    '78': UNICODE_BLOCK_4E00_4EFF,
+    '79': UNICODE_BLOCK_4F00_4FFF,
+    '80': UNICODE_BLOCK_5000_50FF,
+    '81': UNICODE_BLOCK_5100_51FF,
+    '82': UNICODE_BLOCK_5200_52FF,
+    '83': UNICODE_BLOCK_5300_53FF,
+    '84': UNICODE_BLOCK_5400_54FF,
+    '85': UNICODE_BLOCK_5500_55FF,
+    '86': UNICODE_BLOCK_5600_56FF,
+    '87': UNICODE_BLOCK_5700_57FF,
+    '88': UNICODE_BLOCK_5800_58FF,
+    '89': UNICODE_BLOCK_5900_59FF,
+    '90': UNICODE_BLOCK_5A00_5AFF,
+    '91': UNICODE_BLOCK_5B00_5BFF,
+    '92': UNICODE_BLOCK_5C00_5CFF,
+    '93': UNICODE_BLOCK_5D00_5DFF,
+    '94': UNICODE_BLOCK_5E00_5EFF,
+    '95': UNICODE_BLOCK_5F00_5FFF,
+    '96': UNICODE_BLOCK_6000_60FF,
+    '97': UNICODE_BLOCK_6100_61FF,
+    '98': UNICODE_BLOCK_6200_62FF,
+    '99': UNICODE_BLOCK_6300_63FF,
+    '100': UNICODE_BLOCK_6400_64FF,
+    '101': UNICODE_BLOCK_6500_65FF,
+    '102': UNICODE_BLOCK_6600_66FF,
+    '103': UNICODE_BLOCK_6700_67FF,
+    '104': UNICODE_BLOCK_6800_68FF,
+    '105': UNICODE_BLOCK_6900_69FF,
+    '106': UNICODE_BLOCK_6A00_6AFF,
+    '107': UNICODE_BLOCK_6B00_6BFF,
+    '108': UNICODE_BLOCK_6C00_6CFF,
+    '109': UNICODE_BLOCK_6D00_6DFF,
+    '110': UNICODE_BLOCK_6E00_6EFF,
+    '111': UNICODE_BLOCK_6F00_6FFF,
+    '112': UNICODE_BLOCK_7000_70FF,
+    '113': UNICODE_BLOCK_7100_71FF,
+    '114': UNICODE_BLOCK_7200_72FF,
+    '115': UNICODE_BLOCK_7300_73FF,
+    '116': UNICODE_BLOCK_7400_74FF,
+    '117': UNICODE_BLOCK_7500_75FF,
+    '118': UNICODE_BLOCK_7600_76FF,
+    '119': UNICODE_BLOCK_7700_77FF,
+    '120': UNICODE_BLOCK_7800_78FF,
+    '121': UNICODE_BLOCK_7900_79FF,
+    '122': UNICODE_BLOCK_7A00_7AFF,
+    '123': UNICODE_BLOCK_7B00_7BFF,
+    '124': UNICODE_BLOCK_7C00_7CFF,
+    '125': UNICODE_BLOCK_7D00_7DFF,
+    '126': UNICODE_BLOCK_7E00_7EFF,
+    '127': UNICODE_BLOCK_7F00_7FFF,
+    '128': UNICODE_BLOCK_8000_80FF,
+    '129': UNICODE_BLOCK_8100_81FF,
+    '130': UNICODE_BLOCK_8200_82FF,
+    '131': UNICODE_BLOCK_8300_83FF,
+    '132': UNICODE_BLOCK_8400_84FF,
+    '133': UNICODE_BLOCK_8500_85FF,
+    '134': UNICODE_BLOCK_8600_86FF,
+    '135': UNICODE_BLOCK_8700_87FF,
+    '136': UNICODE_BLOCK_8800_88FF,
+    '137': UNICODE_BLOCK_8900_89FF,
+    '138': UNICODE_BLOCK_8A00_8AFF,
+    '139': UNICODE_BLOCK_8B00_8BFF,
+    '140': UNICODE_BLOCK_8C00_8CFF,
+    '141': UNICODE_BLOCK_8D00_8DFF,
+    '142': UNICODE_BLOCK_8E00_8EFF,
+    '143': UNICODE_BLOCK_8F00_8FFF,
+    '144': UNICODE_BLOCK_9000_90FF,
+    '145': UNICODE_BLOCK_9100_91FF,
+    '146': UNICODE_BLOCK_9200_92FF,
+    '147': UNICODE_BLOCK_9300_93FF,
+    '148': UNICODE_BLOCK_9400_94FF,
+    '149': UNICODE_BLOCK_9500_95FF,
+    '150': UNICODE_BLOCK_9600_96FF,
+    '151': UNICODE_BLOCK_9700_97FF,
+    '152': UNICODE_BLOCK_9800_98FF,
+    '153': UNICODE_BLOCK_9900_99FF,
+    '154': UNICODE_BLOCK_9A00_9AFF,
+    '155': UNICODE_BLOCK_9B00_9BFF,
+    '156': UNICODE_BLOCK_9C00_9CFF,
+    '157': UNICODE_BLOCK_9D00_9DFF,
+    '158': UNICODE_BLOCK_9E00_9EFF,
+    '159': UNICODE_BLOCK_9F00_9FFF,
+    '160': UNICODE_BLOCK_A000_A0FF,
+    '161': UNICODE_BLOCK_A100_A1FF,
+    '162': UNICODE_BLOCK_A200_A2FF,
+    '163': UNICODE_BLOCK_A300_A3FF,
+    '164': UNICODE_BLOCK_A400_A4FF,
+    '167': UNICODE_BLOCK_A700_A7FF,
+    '172': UNICODE_BLOCK_AC00_ACFF,
+    '173': UNICODE_BLOCK_AD00_ADFF,
+    '174': UNICODE_BLOCK_AE00_AEFF,
+    '175': UNICODE_BLOCK_AF00_AFFF,
+    '176': UNICODE_BLOCK_B000_B0FF,
+    '177': UNICODE_BLOCK_B100_B1FF,
+    '178': UNICODE_BLOCK_B200_B2FF,
+    '179': UNICODE_BLOCK_B300_B3FF,
+    '180': UNICODE_BLOCK_B400_B4FF,
+    '181': UNICODE_BLOCK_B500_B5FF,
+    '182': UNICODE_BLOCK_B600_B6FF,
+    '183': UNICODE_BLOCK_B700_B7FF,
+    '184': UNICODE_BLOCK_B800_B8FF,
+    '185': UNICODE_BLOCK_B900_B9FF,
+    '186': UNICODE_BLOCK_BA00_BAFF,
+    '187': UNICODE_BLOCK_BB00_BBFF,
+    '188': UNICODE_BLOCK_BC00_BCFF,
+    '189': UNICODE_BLOCK_BD00_BDFF,
+    '190': UNICODE_BLOCK_BE00_BEFF,
+    '191': UNICODE_BLOCK_BF00_BFFF,
+    '192': UNICODE_BLOCK_C000_C0FF,
+    '193': UNICODE_BLOCK_C100_C1FF,
+    '194': UNICODE_BLOCK_C200_C2FF,
+    '195': UNICODE_BLOCK_C300_C3FF,
+    '196': UNICODE_BLOCK_C400_C4FF,
+    '197': UNICODE_BLOCK_C500_C5FF,
+    '198': UNICODE_BLOCK_C600_C6FF,
+    '199': UNICODE_BLOCK_C700_C7FF,
+    '200': UNICODE_BLOCK_C800_C8FF,
+    '201': UNICODE_BLOCK_C900_C9FF,
+    '202': UNICODE_BLOCK_CA00_CAFF,
+    '203': UNICODE_BLOCK_CB00_CBFF,
+    '204': UNICODE_BLOCK_CC00_CCFF,
+    '205': UNICODE_BLOCK_CD00_CDFF,
+    '206': UNICODE_BLOCK_CE00_CEFF,
+    '207': UNICODE_BLOCK_CF00_CFFF,
+    '208': UNICODE_BLOCK_D000_D0FF,
+    '209': UNICODE_BLOCK_D100_D1FF,
+    '210': UNICODE_BLOCK_D200_D2FF,
+    '211': UNICODE_BLOCK_D300_D3FF,
+    '212': UNICODE_BLOCK_D400_D4FF,
+    '213': UNICODE_BLOCK_D500_D5FF,
+    '214': UNICODE_BLOCK_D600_D6FF,
+    '215': UNICODE_BLOCK_D700_D7FF,
+    '249': UNICODE_BLOCK_F900_F9FF,
+    '250': UNICODE_BLOCK_FA00_FAFF,
+    '251': UNICODE_BLOCK_FB00_FBFF,
+    '252': UNICODE_BLOCK_FC00_FCFF,
+    '253': UNICODE_BLOCK_FD00_FDFF,
+    '254': UNICODE_BLOCK_FE00_FEFF,
+    '255': UNICODE_BLOCK_FF00_FFFF
+});
 
 const generatedCharmap: Record<string, string> = {};
 
-unicodeBlocks.forEach((block, blockIndex) => {
-    if (block) {
-        // Assuming each block constant represents 256 code points (0x100)
-        const baseCode = blockIndex * 0x100;
+for (const blockIndexString in blockDataMap) {
+    if (Object.prototype.hasOwnProperty.call(blockDataMap, blockIndexString)) {
+        const blockData = blockDataMap[blockIndexString];
 
-        block.forEach((replacement, charIndex) => {
-            if (typeof replacement === "string") { // Only map if a replacement string exists
-                const charCode = baseCode + charIndex;
+        if (blockData) {
+            const baseCode = Number(blockIndexString) * 0x100;
+            const blockLength = blockData.length;
 
-                try {
-                    const originalChar = String.fromCharCode(charCode);
+            for (let charIndex = 0; charIndex < blockLength; charIndex++) {
+                const replacement = blockData[charIndex];
 
-                    if (originalChar && !generatedCharmap[originalChar]) {
-                        generatedCharmap[originalChar] = replacement;
+                if (typeof replacement === "string") {
+                    const charCode = baseCode + charIndex;
+
+                    try {
+                        const originalChar = String.fromCharCode(charCode);
+
+                        if (originalChar && !generatedCharmap[originalChar]) {
+                            generatedCharmap[originalChar] = replacement;
+                        }
+                    } catch (error_) {
+                        // Ignore errors for invalid char codes (like surrogates)
+                        // console.warn(`Skipping invalid charCode ${charCode.toString(16)}: ${error_}`);
                     }
-                } catch (e) {
-                    // Ignore errors for invalid char codes
                 }
             }
-        });
+        }
     }
-});
+}
 
 export default Object.freeze(generatedCharmap) as Charmap;
-
-// reset memory
-unicodeBlocks = undefined;

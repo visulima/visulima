@@ -597,7 +597,7 @@ export type Interval = [number, number];
 export type IntervalArray = Interval[];
 
 /** OptionReplace array type: [search: string | RegExp, replace: string] */
-export type OptionReplace = [string | RegExp, string];
+export type OptionReplace = [RegExp | string, string];
 
 /** Array of OptionReplace */
 export type OptionReplaceArray = OptionReplace[];
@@ -606,22 +606,22 @@ export type OptionReplaceArray = OptionReplace[];
 export type OptionReplaceObject = Record<string, string>;
 
 /** Combined OptionReplace type (object or array) */
-export type OptionReplaceCombined = OptionReplaceObject | OptionReplaceArray;
+export type OptionReplaceCombined = OptionReplaceArray | OptionReplaceObject;
 
 /** Options for transliteration */
 export interface OptionsTransliterate {
+    /** Fix spacing for Chinese characters */
+    fixChineseSpacing?: boolean;
     /** Characters/strings to ignore */
     ignore?: string[];
     /** Search/replace pairs before charmap */
     replace?: OptionReplaceCombined;
     /** Search/replace pairs after charmap */
     replaceAfter?: OptionReplaceCombined;
-    /** Character to use for unknown characters */
-    unknown?: string;
     /** Trim leading/trailing whitespace */
     trim?: boolean;
-    /** Fix spacing for Chinese characters */
-    fixChineseSpacing?: boolean;
+    /** Character to use for unknown characters */
+    unknown?: string;
 }
 
 /** Character map type used by Transliterate */

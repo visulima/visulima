@@ -1,6 +1,6 @@
 import type { Interval, IntervalArray } from "./types";
 
-// eslint-disable-next-line import/prefer-default-export
+ 
 export { default as LRUCache } from "./utils/lru-cache";
 
 /**
@@ -8,9 +8,9 @@ export { default as LRUCache } from "./utils/lru-cache";
  * @param str The string to escape.
  * @returns The escaped string.
  */
-export function escapeRegExp(str: string): string {
+export function escapeRegExp(string_: string): string {
     // $& means the whole matched string
-    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return string_.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**
@@ -19,8 +19,8 @@ export function escapeRegExp(str: string): string {
  * @param ranges An array of intervals [start, end].
  * @returns True if the number is within any interval, false otherwise.
  */
-export function inRange(num: number, ranges: IntervalArray): boolean {
-    return ranges.some((range) => num >= range[0] && num <= range[1]);
+export function inRange(number_: number, ranges: IntervalArray): boolean {
+    return ranges.some((range) => number_ >= range[0] && number_ <= range[1]);
 }
 
 /**
@@ -28,9 +28,9 @@ export function inRange(num: number, ranges: IntervalArray): boolean {
  * @param str The string to check.
  * @returns True if the string contains Chinese characters, false otherwise.
  */
-export function hasChinese(str: string): boolean {
+export function hasChinese(string_: string): boolean {
     // Uses Unicode property escapes for Han script
-    return /\p{Script=Han}/u.test(str);
+    return /\p{Script=Han}/u.test(string_);
 }
 
 /**
@@ -38,9 +38,9 @@ export function hasChinese(str: string): boolean {
  * @param str The string to check.
  * @returns True if the string contains punctuation or space, false otherwise.
  */
-export function hasPunctuationOrSpace(str: string): boolean {
+export function hasPunctuationOrSpace(string_: string): boolean {
     // Uses Unicode property escapes for Punctuation and general category for Space
-    return /[\p{P}\p{Z}]/u.test(str);
+    return /[\p{P}\p{Z}]/u.test(string_);
 }
 
 /**
@@ -107,7 +107,7 @@ export function findStrOccurrences(source: string, needles: string[]): IntervalA
  */
 export function regexpReplaceCustom(source: string, regexp: RegExp, replacement: string, ignoreRanges: IntervalArray = []): string {
     // clones regex and with g flag
-    const rule = RegExp(regexp.source, regexp.flags.replace("g", "") + "g");
+    const rule = new RegExp(regexp.source, regexp.flags.replace("g", "") + "g");
     // final result
     let result = "";
     // used to count where
@@ -120,9 +120,10 @@ export function regexpReplaceCustom(source: string, regexp: RegExp, replacement:
             const matchedString = matchMain[0];
 
             // Check if the match overlaps with any ignore range
-            const isIgnored = ignoreRanges.some(range =>
-                // Check for overlap: (Range1Start <= Range2End) and (Range1End >= Range2Start)
-                matchStartIndex <= range[1] && matchEndIndex >= range[0]
+            const isIgnored = ignoreRanges.some(
+                (range) =>
+                    // Check for overlap: (Range1Start <= Range2End) and (Range1End >= Range2Start)
+                    matchStartIndex <= range[1] && matchEndIndex >= range[0],
             );
 
             let stringToAppend: string;
