@@ -952,18 +952,18 @@ Performs transliteration of characters in a string based on an extensive charact
 
 **Parameters:**
 
--   `source: string`: The input string to transliterate.
--   `options?`: Optional `OptionsTransliterate` object:
-    -   `fixChineseSpacing?: boolean`: If `true`, adds a space between transliterated Chinese Pinyin syllables. (Default: `true`).
-    -   `ignore?: string[]`: An array of strings or characters to ignore during transliteration. These segments will be preserved in their original form. (Default: `[]`).
-    -   `replaceBefore?: Array<[string | RegExp, string]> | Record<string, string>`: Custom replacement rules to apply *before* the main character map transliteration. (Default: `[]`).
-    -   `replaceAfter?: Array<[string | RegExp, string]> | Record<string, string>`: Custom replacement rules to apply *after* the main character map transliteration. (Default: `[]`).
-    -   `trim?: boolean`: If `true`, trims whitespace from the beginning and end of the result. (Default: `false`).
-    -   `unknown?: string`: The character or string to use for characters that are not found in the character map and are not covered by other rules. (Default: `""` - removes unknown characters).
+- `source: string`: The input string to transliterate.
+- `options?`: Optional `OptionsTransliterate` object:
+    - `fixChineseSpacing?: boolean`: If `true`, adds a space between transliterated Chinese Pinyin syllables. (Default: `true`).
+    - `ignore?: string[]`: An array of strings or characters to ignore during transliteration. These segments will be preserved in their original form. (Default: `[]`).
+    - `replaceBefore?: Array<[string | RegExp, string]> | Record<string, string>`: Custom replacement rules to apply _before_ the main character map transliteration. (Default: `[]`).
+    - `replaceAfter?: Array<[string | RegExp, string]> | Record<string, string>`: Custom replacement rules to apply _after_ the main character map transliteration. (Default: `[]`).
+    - `trim?: boolean`: If `true`, trims whitespace from the beginning and end of the result. (Default: `false`).
+    - `unknown?: string`: The character or string to use for characters that are not found in the character map and are not covered by other rules. (Default: `""` - removes unknown characters).
 
 **Returns:**
 
--   `string`: The transliterated string.
+- `string`: The transliterated string.
 
 **Usage:**
 
@@ -985,7 +985,7 @@ transliterate("Replace C++ before map.", { replaceBefore: { "C++": "cpp" } });
 
 // Using replaceAfter
 // Example: charmap turns é -> e, then replaceAfter turns e -> E
-transliterate("café", { replaceAfter: { "e": "E" } });
+transliterate("café", { replaceAfter: { e: "E" } });
 // Expected: 'cafE'
 
 // Handling unknown characters

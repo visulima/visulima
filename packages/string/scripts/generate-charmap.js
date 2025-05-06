@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unused-modules
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,24 +13,29 @@ import UNICODE_MAP from "../data/transliteration.json" with { type: "json" };
 const isChinese = (low) => (low >= 0x4e && low <= 0x9f) || (low >= 0xf9 && low <= 0xfa);
 
 const inputCharmapModulePath = "./src/charmap"; // Path for import
-const outputDir = "./src/charmap"; // Output directory relative to project root
+const outputDirectory = "./src/charmap"; // Output directory relative to project root
 const mapFileName = "index.ts";
 const oldCharmapFileToDelete = "./src/charmap.ts"; // Path relative to project root
 
+// eslint-disable-next-line no-underscore-dangle
 const __filename = fileURLToPath(import.meta.url);
+// eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(__filename);
 const projectRoot = resolve(join(__dirname, "..")); // Assumes script is in project root
 
-const outputDirpath = join(projectRoot, outputDir);
-const mapFilepath = join(outputDirpath, mapFileName);
+const outputDirectoryPath = join(projectRoot, outputDirectory);
+const mapFilepath = join(outputDirectoryPath, mapFileName);
 const oldCharmapFilepath = join(projectRoot, oldCharmapFileToDelete);
 
+// eslint-disable-next-line func-style
 async function runSplit() {
+    // eslint-disable-next-line no-console
     console.log(`Attempting to import UNICODE_MAP from: ${inputCharmapModulePath}`);
 
-    console.log(`Creating output directory: ${outputDirpath}`);
-    rmSync(outputDirpath, { force: true, recursive: true });
-    mkdirSync(outputDirpath, { recursive: true });
+    // eslint-disable-next-line no-console
+    console.log(`Creating output directory: ${outputDirectoryPath}`);
+    rmSync(outputDirectoryPath, { force: true, recursive: true });
+    mkdirSync(outputDirectoryPath, { recursive: true });
 
     /**
      * @type {Array<{name: string, file: string, index: string}>}
@@ -38,7 +44,9 @@ async function runSplit() {
 
     Object.entries(UNICODE_MAP).forEach(([blockIndex, blockData]) => {
         if (!Array.isArray(blockData) || blockData.length === 0) {
+            // eslint-disable-next-line no-console
             console.warn(`Skipping invalid block data at index ${blockIndex}.`);
+
             return;
         }
 
@@ -46,14 +54,18 @@ async function runSplit() {
         const blockEnd = (Number(blockIndex) * 256 + blockData.length - 1).toString(16).toUpperCase().padStart(4, "0"); // Use actual length
         const blockName = `UNICODE_BLOCK_${blockStart}_${blockEnd}`;
         const blockFilename = `block-${blockStart.toLowerCase()}-${blockEnd.toLowerCase()}.ts`;
-        const blockFilepath = join(outputDirpath, blockFilename);
+        const blockFilepath = join(outputDirectoryPath, blockFilename);
 
+        // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let index = 0; index < blockData.length; index++) {
+            // eslint-disable-next-line security/detect-object-injection
             const char = blockData[index];
 
             if (char === undefined || char === null || char === "") {
+                // eslint-disable-next-line security/detect-object-injection,no-param-reassign
                 blockData[index] = null;
             } else if (isChinese(Number(blockIndex))) {
+                // eslint-disable-next-line security/detect-object-injection,no-param-reassign
                 blockData[index] = char.trimEnd();
             }
         }
@@ -67,16 +79,20 @@ async function runSplit() {
             `const ${blockName}: (string | undefined)[] = ${blockContentString};\n\n export default ${blockName};\n`;
 
         try {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             writeFileSync(blockFilepath, fileContent, "utf8");
 
+            // eslint-disable-next-line no-console
             console.log(`Created: ${blockFilename}`);
 
             blockExports.push({ file: `./${blockFilename.replace(".ts", "")}`, index: blockIndex, name: blockName });
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error(`Error writing file ${blockFilename}:`, error);
         }
     });
 
+    // eslint-disable-next-line no-console
     console.log(`Generating ${mapFileName}...`);
 
     const importStatements = blockExports.map((exp) => `import ${exp.name} from "${exp.file}";`).join("\n");
@@ -128,17 +144,27 @@ export default Object.freeze(generatedCharmap) as Charmap;
 
     try {
         writeFileSync(mapFilepath, mapFileContent, "utf8");
+
+        // eslint-disable-next-line no-console
         console.log(`Created: ${mapFileName}`);
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`Error writing file ${mapFileName}:`, error);
     }
 
+    // eslint-disable-next-line no-console
     console.log("\n--- Script Finished ---");
-    console.log(`1. Verify the files generated in: ${outputDirpath}`);
+    // eslint-disable-next-line no-console
+    console.log(`1. Verify the files generated in: ${outputDirectoryPath}`);
+    // eslint-disable-next-line no-console
     console.log(`2. IMPORTANT: Manually delete the old file: ${oldCharmapFilepath}`);
+    // eslint-disable-next-line no-console
     console.log(`3. Update imports in 'src/transliterate.ts' and tests to point to './charmap/map' if not already done.`);
+    // eslint-disable-next-line no-console
     console.log(`4. Uncomment and adjust manual overrides in '${mapFileName}' if needed.`);
+    // eslint-disable-next-line no-console
     console.log("5. Run tests for the package.");
 }
 
+// eslint-disable-next-line no-console,unicorn/prefer-top-level-await
 runSplit().catch(console.error);

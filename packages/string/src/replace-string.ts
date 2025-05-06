@@ -61,7 +61,12 @@ const mergeIntervals = (intervals: IntervalArray): IntervalArray => {
 
 /**
  * Performs multiple string or RegExp replacements using a refined pre-processing approach.
+ * @param source - The string to search and replace in.
+ * @param searches - An array of search/replace pairs.
+ * @param ignoreRanges - An array of ignored ranges.
+ * @returns The string with replacements applied.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const replaceString = (source: string, searches: OptionReplaceArray, ignoreRanges: IntervalArray): string => {
     if (!source) {
         return "";
@@ -69,15 +74,20 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
     // Find all potential matches
     const potentialMatches: PotentialMatch[] = [];
+
     let matchIdCounter = 0;
+
     for (const item of searches) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!item || item.length < 2) {
+            // eslint-disable-next-line no-continue
             continue;
         }
 
         const [searchKey, replacementValue] = item;
 
         if (replacementValue === undefined) {
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -85,15 +95,19 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
         try {
             if (searchKey instanceof RegExp) {
+                // eslint-disable-next-line security/detect-non-literal-regexp,@rushstack/security/no-unsafe-regexp
                 searchPattern = new RegExp(searchKey.source, `${searchKey.flags.replace("g", "")}g`);
             } else if (typeof searchKey === "string" && searchKey.length > 0) {
+                // eslint-disable-next-line security/detect-non-literal-regexp,@rushstack/security/no-unsafe-regexp
                 searchPattern = new RegExp(escapeRegExp(searchKey), "g");
             } else {
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
             let match: RegExpExecArray | null;
 
+            // eslint-disable-next-line no-cond-assign
             while ((match = searchPattern.exec(source)) !== null) {
                 const start = match.index;
                 const original = match[0];
@@ -103,7 +117,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                 }
 
                 const end = start + original.length - 1; // Inclusive end
-                const finalReplacement = replacementValue.replaceAll(/\$(\d+|&)/g, (_, group) => {
+                const finalReplacement = replacementValue.replaceAll(/\$(\d+|&)/g, (matchValue, group) => {
                     if (group === "&") {
                         return original;
                     }
@@ -111,9 +125,10 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                     const groupIndex = Number.parseInt(group, 10);
 
                     // eslint-disable-next-line security/detect-object-injection
-                    return groupIndex > 0 && groupIndex < match.length ? (match[groupIndex] ?? "") : "";
+                    return groupIndex > 0 && groupIndex < matchValue.length ? (matchValue[groupIndex] ?? "") : "";
                 });
 
+                // eslint-disable-next-line no-plusplus
                 potentialMatches.push({ end, id: matchIdCounter++, original, replacement: finalReplacement, start });
 
                 // Ensure regex advances even if a zero-length match was found at the start index
@@ -123,26 +138,25 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                 }
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error(`Error processing search key ${String(searchKey)}:`, error);
             // eslint-disable-next-line no-continue
             continue;
         }
     }
 
-    // Sort potential matches (start asc, length desc)
     potentialMatches.sort((a, b) => {
         if (a.start !== b.start) {
             return a.start - b.start;
         }
 
-        return b.end - a.end; // Longer first
+        return b.end - a.end;
     });
 
-    // Sort and merge ignore ranges
     const sortedIgnores = [...ignoreRanges].sort((a, b) => a[0] - b[0]);
     const mergedIgnores = mergeIntervals(sortedIgnores);
 
-    // Create processed character array
+    // eslint-disable-next-line unicorn/prefer-spread
     const processedChars: ProcessedChar[] = source.split("").map((char, index) => {
         return {
             appliedMatchId: null,
@@ -161,7 +175,8 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         for (let index = range[0]; index <= range[1]; index++) {
             // eslint-disable-next-line security/detect-object-injection
             if (processedChars[index]) {
-                processedChars[index].isIgnored = true;
+                // eslint-disable-next-line security/detect-object-injection
+                (processedChars[index] as ProcessedChar).isIgnored = true;
             }
         }
     }
@@ -208,9 +223,12 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         // eslint-disable-next-line no-plusplus
         for (let index = match.start; index <= match.end; index++) {
             if (
+                // eslint-disable-next-line security/detect-object-injection
                 !processedChars[index] || // Out of bounds
-                processedChars[index].isIgnored || // Overlaps ignore
-                processedChars[index].appliedMatchId !== null // Overlaps higher-priority match
+                // eslint-disable-next-line security/detect-object-injection
+                (processedChars[index] as ProcessedChar).isIgnored || // Overlaps ignore
+                // eslint-disable-next-line security/detect-object-injection
+                (processedChars[index] as ProcessedChar).appliedMatchId !== null // Overlaps higher-priority match
             ) {
                 canApply = false;
                 break;
@@ -228,15 +246,14 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                 // eslint-disable-next-line security/detect-object-injection
                 if (processedChars[index]) {
                     // eslint-disable-next-line security/detect-object-injection
-                    processedChars[index].appliedMatchId = match.id;
+                    (processedChars[index] as ProcessedChar).appliedMatchId = match.id;
                 }
             }
             // Mark the start for replacement action
 
             if (processedChars[match.start]) {
-                processedChars[match.start].isMatchStart = true;
-
-                processedChars[match.start].matchReplacement = match.replacement;
+                (processedChars[match.start] as ProcessedChar).isMatchStart = true;
+                (processedChars[match.start] as ProcessedChar).matchReplacement = match.replacement;
             }
         }
     }
@@ -247,7 +264,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
     while (currentIndex < processedChars.length) {
         // eslint-disable-next-line security/detect-object-injection
-        const pChar = processedChars[currentIndex];
+        const pChar = processedChars[currentIndex] as ProcessedChar;
 
         // Append any zero-length replacements occurring before this character
         if (pChar.insertBeforeReplacement !== null) {
