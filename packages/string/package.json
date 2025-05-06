@@ -32,9 +32,6 @@
         "uppercase",
         "lowercase",
         "string-splitting",
-        "unicode",
-        "i18n",
-        "internationalization",
         "typescript",
         "type-safe"
     ],
@@ -473,6 +470,7 @@
         "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
+        "postinstall": "node ./scripts/generate-charmap.js",
         "lint:attw": "attw --pack",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
@@ -483,8 +481,7 @@
         "test": "vitest run --typecheck",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest",
-        "postinstall": "node ./scripts/generate-charmap.js"
+        "test:watch": "vitest"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "15.0.3",
@@ -500,7 +497,7 @@
         "@types/lodash": "4.17.16",
         "@types/node": "18.19.71",
         "@visulima/colorize": "1.4.21",
-        "@visulima/packem": "1.19.2",
+        "@visulima/packem": "1.19.1",
         "@vitest/coverage-v8": "3.0.9",
         "@vitest/ui": "3.0.9",
         "conventional-changelog-conventionalcommits": "8.0.0",
