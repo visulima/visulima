@@ -36,7 +36,6 @@ const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray 
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const transliterate = (source: string, options?: OptionsTransliterate): string => {
-    const optionsInput = typeof options === "object" ? options : {};
     const opt: Required<OptionsTransliterate> = {
         fixChineseSpacing: true,
         ignore: [],
@@ -44,7 +43,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
         replaceBefore: [],
         trim: false,
         unknown: "",
-        ...optionsInput,
+        ...options,
     };
 
     let input = typeof source === "string" ? source : String(source);

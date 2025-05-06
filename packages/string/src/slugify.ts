@@ -102,4 +102,4 @@ const slugify = (input: string, options?: SlugifyOptions): string => {
     return slug.replace(trimRegex, "");
 };
 
-export default slugify; 
+export default slugify;
