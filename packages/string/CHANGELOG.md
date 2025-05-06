@@ -1,3 +1,9 @@
+## @visulima/string [1.1.0](https://github.com/visulima/visulima/compare/@visulima/string@1.0.5...@visulima/string@1.1.0) (2025-05-04)
+
+### Features
+
+* **string:** enhance identifyCase function to support additional cases ([#501](https://github.com/visulima/visulima/issues/501)) ([8f8ecee](https://github.com/visulima/visulima/commit/8f8eceefef3f4ce332eb702979291a4db010256c))
+
 ## @visulima/string [1.0.5](https://github.com/visulima/visulima/compare/@visulima/string@1.0.4...@visulima/string@1.0.5) (2025-05-02)
 
 ### Bug Fixes
