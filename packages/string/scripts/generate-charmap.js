@@ -7,120 +7,164 @@ import UNICODE_MAP from "../data/transliteration.json" with { type: "json" };
 
 /**
  * Checks if a character is Chinese.
- * @param {number} blockIndex - The block index (not the code point itself here based on usage below)
+ * @param {number} low - The Unicode code point of the character.
  * @returns {boolean} True if the character is Chinese, false otherwise.
  */
-// This function's parameter seems to be misinterpreted in original, should be actual char code for typical isChinese
-// However, sticking to current script's logic where it passes blockIndex.
-const isChinese = (blockIndex) => (blockIndex >= 0x4e && blockIndex <= 0x9f) || (blockIndex >= 0xf9 && blockIndex <= 0xfa);
+const isChinese = (low) => (low >= 0x4e && low <= 0x9f) || (low >= 0xf9 && low <= 0xfa);
 
-const outputBaseDirectory = "./src/charmap"; // Base output directory
-const blocksOutputDirectory = join(outputBaseDirectory, "blocks"); // Subdirectory for block files
-const loaderFileName = "loader.ts"; // New loader file
+const inputCharmapModulePath = "./src/charmap"; // Path for import
+const outputDirectory = "./src/charmap"; // Output directory relative to project root
+const mapFileName = "index.ts";
+const oldCharmapFileToDelete = "./src/charmap.ts"; // Path relative to project root
 
 // eslint-disable-next-line no-underscore-dangle
 const __filename = fileURLToPath(import.meta.url);
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(__filename);
-const projectRoot = resolve(join(__dirname, ".."));
+const projectRoot = resolve(join(__dirname, "..")); // Assumes script is in project root
 
-const outputBaseDirectoryPath = join(projectRoot, outputBaseDirectory);
-const blocksOutputDirectoryPath = join(projectRoot, blocksOutputDirectory);
-const loaderFilepath = join(outputBaseDirectoryPath, loaderFileName);
+const outputDirectoryPath = join(projectRoot, outputDirectory);
+const mapFilepath = join(outputDirectoryPath, mapFileName);
+const oldCharmapFilepath = join(projectRoot, oldCharmapFileToDelete);
 
 // eslint-disable-next-line func-style
-async function runGenerate() {
+async function runSplit() {
     // eslint-disable-next-line no-console
-    console.log(`Creating output directories: ${outputBaseDirectoryPath} and ${blocksOutputDirectoryPath}`);
-    // Clear entire charmap directory first
-    rmSync(outputBaseDirectoryPath, { force: true, recursive: true });
-    mkdirSync(outputBaseDirectoryPath, { recursive: true });
-    mkdirSync(blocksOutputDirectoryPath, { recursive: true });
+    console.log(`Attempting to import UNICODE_MAP from: ${inputCharmapModulePath}`);
+
+    // eslint-disable-next-line no-console
+    console.log(`Creating output directory: ${outputDirectoryPath}`);
+    rmSync(outputDirectoryPath, { force: true, recursive: true });
+    mkdirSync(outputDirectoryPath, { recursive: true });
 
     /**
-     * @type {Array<string>}
+     * @type {Array<{name: string, file: string, index: string}>}
      */
-    const generatedUnicodeBlockMap = [];
+    const blockExports = [];
 
-    Object.entries(UNICODE_MAP).forEach(([blockIndexString, blockDataArray]) => {
-        const blockIndex = Number(blockIndexString);
-        if (!Array.isArray(blockDataArray) || blockDataArray.length === 0) {
+    Object.entries(UNICODE_MAP).forEach(([blockIndex, blockData]) => {
+        if (!Array.isArray(blockData) || blockData.length === 0) {
             // eslint-disable-next-line no-console
-            console.warn(`Skipping invalid block data at index ${blockIndexString}.`);
+            console.warn(`Skipping invalid block data at index ${blockIndex}.`);
+
             return;
         }
 
-        const blockStartCode = blockIndex * 256;
-        const blockEndCode = blockStartCode + blockDataArray.length - 1;
+        const blockStart = (Number(blockIndex) * 256).toString(16).toUpperCase().padStart(4, "0");
+        const blockEnd = (Number(blockIndex) * 256 + blockData.length - 1).toString(16).toUpperCase().padStart(4, "0"); // Use actual length
+        const blockName = `UNICODE_BLOCK_${blockStart}_${blockEnd}`;
+        const blockFilename = `block-${blockStart.toLowerCase()}-${blockEnd.toLowerCase()}.ts`;
+        const blockFilepath = join(outputDirectoryPath, blockFilename);
 
-        const blockStartHex = blockStartCode.toString(16).toUpperCase().padStart(4, "0");
-        const blockEndHex = blockEndCode.toString(16).toUpperCase().padStart(4, "0");
+        // eslint-disable-next-line no-loops/no-loops,no-plusplus
+        for (let index = 0; index < blockData.length; index++) {
+            // eslint-disable-next-line security/detect-object-injection
+            const char = blockData[index];
 
-        // Filename for direct import in transliterate.ts (without .ts)
-        const blockFilenameForMap = `block-${blockStartHex.toLowerCase()}-${blockEndHex.toLowerCase()}`;
-        const blockActualFilename = `${blockFilenameForMap}.ts`;
-        const blockFilepath = join(blocksOutputDirectoryPath, blockActualFilename);
-
-        /**
-         * @type {Record<string, string | undefined>}
-         */
-        const blockCharmapObject = {};
-
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const [index, charReplacement] of blockDataArray.entries()) {
-            const currentCodePoint = blockStartCode + index;
-
-            if (charReplacement === undefined || charReplacement === null || charReplacement === "") {
-                // Keep as undefined in the map, so Object.prototype.hasOwnProperty works
-                blockCharmapObject[String(currentCodePoint)] = undefined;
-            } else if (isChinese(blockIndex)) {
-                    // Original logic used blockIndex here for isChinese
-                    blockCharmapObject[String(currentCodePoint)] = charReplacement.trimEnd();
-                } else {
-                    blockCharmapObject[String(currentCodePoint)] = charReplacement;
-                }
+            if (char === undefined || char === null || char === "") {
+                // eslint-disable-next-line security/detect-object-injection,no-param-reassign
+                blockData[index] = null;
+            } else if (isChinese(Number(blockIndex))) {
+                // eslint-disable-next-line security/detect-object-injection,no-param-reassign
+                blockData[index] = char.trimEnd();
+            }
         }
 
-        const blockContentString = JSON.stringify(blockCharmapObject, null, 4);
+        // Format the array data for the TS file content
+        const blockContentString = JSON.stringify(blockData, null, 4).replaceAll("null", "undefined"); // Convert null back to undefined if necessary
 
-        const fileContent = `// This file is auto-generated by the generate-charmap.js script.\n// Do not edit this file manually.\n// Block ${blockIndexString} (U+${blockStartHex} to U+${blockEndHex})\nimport type { Charmap } from '../../types'; // Path to types relative to src/charmap/blocks/\n\nconst blockCharmap: Charmap = ${blockContentString};\n\nexport default Object.freeze(blockCharmap);\n`;
+        const fileContent =
+            "// This file is auto-generated by the generate-charmap.js script.\n// Do not edit this file manually.\n" +
+            `// Block [${blockIndex}] 0x${blockIndex.toUpperCase().padStart(2, "0")} (U+${blockStart} to U+${blockEnd})\n` +
+            `const ${blockName}: (string | undefined)[] = ${blockContentString};\n\nexport default Object.freeze(${blockName});\n`;
 
         try {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             writeFileSync(blockFilepath, fileContent, "utf8");
-            // eslint-disable-next-line no-console
-            console.log(`Created: ${blocksOutputDirectory}/${blockActualFilename}`);
 
-            generatedUnicodeBlockMap.push(`    [0x${blockStartHex}, 0x${blockEndHex}, "${blockFilenameForMap}"]`);
+            // eslint-disable-next-line no-console
+            console.log(`Created: ${blockFilename}`);
+
+            blockExports.push({ file: `./${blockFilename.replace(".ts", "")}`, index: blockIndex, name: blockName });
         } catch (error) {
             // eslint-disable-next-line no-console
-            console.error(`Error writing file ${blockActualFilename}:`, error);
+            console.error(`Error writing file ${blockFilename}:`, error);
         }
     });
 
     // eslint-disable-next-line no-console
-    console.log(`Generating ${loaderFileName}...`);
+    console.log(`Generating ${mapFileName}...`);
 
-    const loaderFileContent = `// This file is auto-generated by the generate-charmap.js script.\n// Do not edit this file manually.\n\nimport type { Charmap } from "../types"; // Path to types relative to src/charmap/\n\n// Example: Pre-load specific common blocks if desired\n// import latinBlock from './blocks/block-0000-007f'; // Adjust filename if needed\n// import latinSupplementBlock from './blocks/block-0080-00ff';\n\nexport const baseBlocksCharmap: Charmap = {\n    // ...(latinBlock || {}),\n    // ...(latinSupplementBlock || {}),\n    // Add more pre-loaded common blocks here by statically importing them from ./blocks/\n};\n\nexport const unicodeBlockMap: Array<[number, number, string]> = [\n${generatedUnicodeBlockMap.join(",\n")}\n];\n`;
+    const importStatements = blockExports.map((exp) => `import ${exp.name} from "${exp.file}";`).join("\n");
+    const blockDataMapEntries = blockExports.map((exp) => `    '${exp.index}': ${exp.name}`).join(",\n");
+
+    const mapFileContent = `// This file is auto-generated by the generate-charmap.js script.
+// Do not edit this file manually.
+
+import type { Charmap } from "../types";
+${importStatements}
+
+// Map block indices (as strings) to the imported block data arrays
+const blockDataMap: Record<string, (string | undefined)[]> = Object.freeze({
+${blockDataMapEntries}
+});
+
+const generatedCharmap: Record<string, string | undefined> = {};
+
+for (const blockIndexString in blockDataMap) {
+    if (Object.prototype.hasOwnProperty.call(blockDataMap, blockIndexString)) {
+        const blockData = blockDataMap[blockIndexString];
+
+        if (blockData) {
+            const baseCode = Number(blockIndexString) * 0x100;
+            const blockLength = blockData.length;
+
+            for (let charIndex = 0; charIndex < blockLength; charIndex++) {
+                const replacement = blockData[charIndex];
+                const charCode = baseCode + charIndex;
+                const charCodeString = String(charCode);
+
+                // Add entry if key doesn't exist, mapping null/undefined from JSON to undefined
+                if (!Object.prototype.hasOwnProperty.call(generatedCharmap, charCodeString)) {
+                    if (typeof replacement === "string") {
+                        generatedCharmap[charCodeString] = replacement;
+                    } else {
+                        // Map null/undefined from JSON to undefined in the map
+                        // This ensures the key exists for hasOwnProperty checks later
+                        generatedCharmap[charCodeString] = undefined;
+                    }
+                }
+            }
+        }
+    }
+}
+
+export default Object.freeze(generatedCharmap) as Charmap;
+`;
 
     try {
-        writeFileSync(loaderFilepath, loaderFileContent, "utf8");
+        writeFileSync(mapFilepath, mapFileContent, "utf8");
+
         // eslint-disable-next-line no-console
-        console.log(`Created: ${outputBaseDirectory}/${loaderFileName}`);
+        console.log(`Created: ${mapFileName}`);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error(`Error writing file ${loaderFileName}:`, error);
+        console.error(`Error writing file ${mapFileName}:`, error);
     }
 
     // eslint-disable-next-line no-console
     console.log("\n--- Script Finished ---");
     // eslint-disable-next-line no-console
-    console.log(`1. Verify files in: ${blocksOutputDirectoryPath} and ${loaderFilepath}`);
+    console.log(`1. Verify the files generated in: ${outputDirectoryPath}`);
     // eslint-disable-next-line no-console
-    console.log(`2. Update imports in 'src/transliterate.ts' to use './charmap/loader'.`);
+    console.log(`2. IMPORTANT: Manually delete the old file: ${oldCharmapFilepath}`);
     // eslint-disable-next-line no-console
-    console.log("3. Update and run all tests and benchmarks.");
+    console.log(`3. Update imports in 'src/transliterate.ts' and tests to point to './charmap/map' if not already done.`);
+    // eslint-disable-next-line no-console
+    console.log(`4. Uncomment and adjust manual overrides in '${mapFileName}' if needed.`);
+    // eslint-disable-next-line no-console
+    console.log("5. Run tests for the package.");
 }
 
 // eslint-disable-next-line no-console,unicorn/prefer-top-level-await
-runGenerate().catch(console.error);
+runSplit().catch(console.error);
