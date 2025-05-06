@@ -946,3 +946,83 @@ The visulima string is open-sourced software licensed under the [MIT][license-ur
 [license-url]: LICENSE.md "license"
 [npm-image]: https://img.shields.io/npm/v/@visulima/string/latest.svg?style=for-the-badge&logo=npm
 [npm-url]: https://www.npmjs.com/package/@visulima/string/v/latest "npm"
+
+### `replaceString(source, searches, ignoreRanges?)`
+
+Replaces occurrences of search patterns within a string, respecting ignored ranges.
+This function is designed to handle overlapping matches and ignore ranges correctly.
+It prioritizes matches that start earlier and, for matches starting at the same position,
+prefers longer matches. Replacements within ignored ranges are skipped.
+
+**Parameters:**
+
+*   `source`: The input string.
+*   `searches`: An array of search pairs. Each pair can be:
+    *   `[string | RegExp, string]`: A literal string or regex to search for, and its replacement string.
+        Regex flags like `g` (global) are respected.
+*   `ignoreRanges?`: Optional. An array of `[start, end]` index pairs (inclusive) specifying ranges within the
+    `source` string that should be ignored during replacement.
+
+**Returns:**
+
+*   `string`: The string with replacements applied, respecting ignore ranges.
+
+**Usage:**
+
+```typescript
+import { replaceString } from '@visulima/string';
+
+const text = "abc abc abc";
+const searches = [
+    [/a/g, "X"],
+    ["abc", "YYY"],
+];
+const ignoreRanges = [[4, 6]]; // Ignore the second "abc"
+
+const result = replaceString(text, searches, ignoreRanges);
+// result will be: "YYY abc YYY"
+// First 'abc' is replaced by 'YYY' (longer match takes precedence over 'X').
+// Second 'abc' is ignored.
+// Third 'abc' is replaced by 'YYY'.
+```
+
+### `slugify(input, options?)`
+
+Converts a string into a URL-friendly slug.
+
+It transliterates non-ASCII characters using the `transliterate` function, optionally converts case,
+removes disallowed characters (replacing with separator), and collapses separators.
+
+**Parameters:**
+
+*   `input`: The string to convert.
+*   `options?`: Optional `SlugifyOptions` object:
+    *   `allowedChars?: string`: A string of characters that should be allowed in the final slug. Any character *not* in this string (or the `separator`) will be replaced by the `separator` (default: `"a-zA-Z0-9-_.~"`). Remember to include the `separator` itself if you change the default.
+    *   `fixChineseSpacing?: boolean`: Passed to `transliterate`. Determines if a space is added between transliterated Chinese characters (default: `true`).
+    *   `ignore?: string[]`: Passed to `transliterate`. Characters/strings to ignore during the initial transliteration phase (default: `[]`).
+    *   `lowercase?: boolean`: Convert the resulting slug to lowercase. Cannot be true if `uppercase` is true (default: `true`).
+    *   `replaceAfter?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply *after* the character map transliteration but *before* slugification logic (default: `[]`).
+    *   `replaceBefore?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply *before* any transliteration (default: `[]`).
+    *   `separator?: string`: The character to use as a separator (default: `"-"`).
+    *   `unknown?: string`: Passed to `transliterate`. Character to use for unknown characters during transliteration (default: `""`).
+    *   `uppercase?: boolean`: Convert the resulting slug to uppercase. Cannot be true if `lowercase` is true (default: `false`).
+
+**Returns:**
+
+*   `string`: The generated slug.
+
+**Usage:**
+
+```typescript
+import { slugify } from '@visulima/string';
+
+slugify("你好 World!"); // 'ni-hao-world' (fixChineseSpacing=true by default)
+slugify("你好World!", { fixChineseSpacing: false }); // 'nihaoworld'
+slugify("Crème Brûlée"); // 'creme-brulee'
+slugify("foo & bar * baz"); // 'foo-bar-baz' (&, *, space are disallowed)
+slugify("FOO BAR", { lowercase: false, uppercase: true }); // 'FOO-BAR'
+slugify("foo bar baz", { separator: '_', allowedChars: 'a-z_' }); // 'foo_bar_baz'
+slugify("Keep C++", { replaceBefore: { 'C++': 'cpp' } }); // 'keep-cpp'
+slugify("Keep !@#$", { allowedChars: "a-z!@$" }); // 'keep!@$'
+
+```
