@@ -27,7 +27,7 @@ const removeDisallowedChars = (input: string, allowedChars: string, separator: s
  * @param options Optional configuration options.
  * @returns The generated slug.
  */
-const slugify = (input: string, options?: SlugifyOptions): string => {
+const slugify = async (input: string, options?: SlugifyOptions): Promise<string> => {
     const config: Required<SlugifyOptions> = {
         allowedChars: "a-zA-Z0-9-_.~",
         fixChineseSpacing: true,
@@ -49,7 +49,7 @@ const slugify = (input: string, options?: SlugifyOptions): string => {
         config.uppercase = false;
     }
 
-    let slug = config.transliterate ? transliterate(input, config) : input.normalize("NFC");
+    let slug = config.transliterate ? await transliterate(input, config) : input.normalize("NFC");
 
     // Convert case if required FIRST
     if (config.lowercase) {

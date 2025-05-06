@@ -6,6 +6,7 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
+        "@sindresorhus/transliterate": "1.6.0",
         "transliteration": "2.3.5",
         "@visulima/string": "workspace:*",
         "ansi-truncate": "1.2.0",

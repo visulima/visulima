@@ -500,7 +500,7 @@
         "@types/lodash": "4.17.16",
         "@types/node": "18.19.71",
         "@visulima/colorize": "1.4.21",
-        "@visulima/packem": "1.19.1",
+        "@visulima/packem": "1.19.2",
         "@vitest/coverage-v8": "3.0.9",
         "@vitest/ui": "3.0.9",
         "conventional-changelog-conventionalcommits": "8.0.0",

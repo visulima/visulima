@@ -29,20 +29,19 @@ const visulimaDefaultOptions = {};
 const sindresorhusDefaultOptions = {}; // Their default is decamelize:true, lowercase:true
 const simovDefaultOptionsOurComparison = { lower: true }; // To match our common case (lowercase output)
 const simovActualDefaultOptions = { lower: false }; // Their actual library default
-const transliterationPkgDefaultOptions = {}; // Assuming default behavior is transliteration ON
+const transliterationPackageDefaultOptions = {}; // Assuming default behavior is transliteration ON
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 describe("Slugify Benchmark Comparison by Feature", () => {
     describe("Default Behavior (Transliteration generally ON by default for libs)", () => {
-        bench("@visulima/string (default: transliterate ON)", () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, visulimaDefaultOptions);
+        bench("@visulima/string (default: transliterate ON)", async () => {
+            for await (const item of testStrings) {
+                await visulimaSlugify(item, visulimaDefaultOptions);
             }
         });
 
-        bench("@visulima/string (transliterate: false)", () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
+        bench("@visulima/string (transliterate: false)", async () => {
+            for await (const item of testStrings) {
+                await visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
             }
         });
 
@@ -66,15 +65,15 @@ describe("Slugify Benchmark Comparison by Feature", () => {
 
         bench("transliteration slugify (default: transliterate ON)", () => {
             for (const item of testStrings) {
-                transliterationSlugify(item, transliterationPkgDefaultOptions);
+                transliterationSlugify(item, transliterationPackageDefaultOptions);
             }
         });
     });
 
     describe("Separator Option: '_'", () => {
-        bench("@visulima/string", () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "_" });
+        bench("@visulima/string", async () => {
+            for await (const item of testStrings) {
+                await visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "_" });
             }
         });
 
@@ -92,8 +91,7 @@ describe("Slugify Benchmark Comparison by Feature", () => {
 
         bench("transliteration slugify", () => {
             for (const item of testStrings) {
-                // Assuming 'separator' option, adjust if different for this package
-                transliterationSlugify(item, { ...transliterationPkgDefaultOptions, separator: "_" });
+                transliterationSlugify(item, { ...transliterationPackageDefaultOptions, separator: "_" });
             }
         });
     });
@@ -102,9 +100,9 @@ describe("Slugify Benchmark Comparison by Feature", () => {
     // Sindresorhus: separator must be a non-empty string.
     // Simov: empty replacement effectively joins words if no other logic separates them.
     describe("Separator Option: '' (Empty - where supported)", () => {
-        bench("@visulima/string", () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "" });
+        bench("@visulima/string", async () => {
+            for await (const item of testStrings) {
+                await visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "" });
             }
         });
         // Simov can achieve this by setting replacement to '' and ensuring no space-based logic interferes
@@ -115,16 +113,15 @@ describe("Slugify Benchmark Comparison by Feature", () => {
         });
         bench("transliteration slugify", () => {
             for (const item of testStrings) {
-                // Assuming 'separator' option and it supports empty, adjust if different
-                transliterationSlugify(item, { ...transliterationPkgDefaultOptions, separator: "" });
+                transliterationSlugify(item, { ...transliterationPackageDefaultOptions, separator: "" });
             }
         });
     });
 
     describe("Case Option: Output Lowercase (Common Expectation)", () => {
-        bench("@visulima/string (default is lowercase)", () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: true, uppercase: false });
+        bench("@visulima/string (default is lowercase)", async () => {
+            for await (const item of testStrings) {
+                await visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: true, uppercase: false });
             }
         });
 
@@ -142,16 +139,15 @@ describe("Slugify Benchmark Comparison by Feature", () => {
 
         bench("transliteration slugify", () => {
             for (const item of testStrings) {
-                // Assuming 'lowercase' or 'lower' option, adjust if different
-                transliterationSlugify(item, { ...transliterationPkgDefaultOptions, lowercase: true });
+                transliterationSlugify(item, { ...transliterationPackageDefaultOptions, lowercase: true });
             }
         });
     });
 
     describe("Case Option: Preserve/Output Uppercase (from UC input)", () => {
-        bench("@visulima/string", () => {
-            for (const item of uppercaseTestStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: false, uppercase: true });
+        bench("@visulima/string", async () => {
+            for await (const item of uppercaseTestStrings) {
+                await visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: false, uppercase: true });
             }
         });
 
@@ -169,22 +165,21 @@ describe("Slugify Benchmark Comparison by Feature", () => {
 
         bench("transliteration slugify", () => {
             for (const item of uppercaseTestStrings) {
-                // Assuming 'lowercase: false' or similar achieves this, adjust if different
-                transliterationSlugify(item, { ...transliterationPkgDefaultOptions, lowercase: false });
+                transliterationSlugify(item, { ...transliterationPackageDefaultOptions, lowercase: false });
             }
         });
     });
 
     // This block is specific to visulima as others don't have a simple on/off toggle for all transliteration
     describe("Transliteration Control (Visulima Specific Focus)", () => {
-        bench("@visulima/string (transliterate: true - default)", () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: true });
+        bench("@visulima/string (transliterate: true - default)", async () => {
+            for await (const item of testStrings) {
+                await visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: true });
             }
         });
-        bench("@visulima/string (transliterate: false)", () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
+        bench("@visulima/string (transliterate: false)", async () => {
+            for await (const item of testStrings) {
+                await visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
             }
         });
     });
