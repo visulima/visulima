@@ -8,7 +8,7 @@ import type { OptionsTransliterate } from "./types";
  */
 function escapeRegExpClassChars(input: string): string {
     // Escape -, \, ], ^
-    return input.replace(/[/\\-\\]\\^]/g, "\\$&");
+    return input.replaceAll(/[/\\]\\^\]/g, "\\$&");
 }
 
 /**
@@ -55,46 +55,46 @@ export interface SlugifyOptions extends OptionsTransliterate {
  * @returns The generated slug.
  */
 const slugify = (input: string, options?: SlugifyOptions): string => {
-    const opts: Required<SlugifyOptions> = {
-        separator: "-",
-        lowercase: true,
-        uppercase: false,
+    const options_: Required<SlugifyOptions> = {
         allowedChars: "a-zA-Z0-9-_.~",
         fixChineseSpacing: true,
         ignore: [],
+        lowercase: true,
         replaceAfter: [],
         replaceBefore: [],
-        unknown: "",
+        separator: "-",
         trim: false,
+        unknown: "",
+        uppercase: false,
         ...options,
     };
 
-    if (opts.lowercase && opts.uppercase) {
+    if (options_.lowercase && options_.uppercase) {
         console.warn("slugify: Both lowercase and uppercase options are true. Defaulting to lowercase.");
-        opts.uppercase = false;
+        options_.uppercase = false;
     }
 
-    let slug = transliterate(input, opts);
+    let slug = transliterate(input, options_);
 
     // Convert case if required FIRST
-    if (opts.lowercase) {
+    if (options_.lowercase) {
         slug = slug.toLowerCase();
-    } else if (opts.uppercase) {
+    } else if (options_.uppercase) {
         slug = slug.toUpperCase();
     }
 
     // Replace disallowed characters with separator
     // Escape allowedChars for regex and add the separator itself to the allowed list
-    const escapedAllowed = escapeRegExpClassChars(opts.allowedChars + opts.separator);
+    const escapedAllowed = escapeRegExpClassChars(options_.allowedChars + options_.separator);
     const disallowedRegex = new RegExp(`[^${escapedAllowed}]+`, "g");
-    slug = slug.replace(disallowedRegex, opts.separator);
+    slug = slug.replace(disallowedRegex, options_.separator);
 
     // Collapse multiple separators
     // Escape separator for regex
-    const escapedSeparator = opts.separator.replace(/[.*+?^${}()|[\]\\\\]/g, "\\$&");
+    const escapedSeparator = options_.separator.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const separatorRegex = new RegExp(`${escapedSeparator}+`, "g");
 
-    slug = slug.replace(separatorRegex, opts.separator);
+    slug = slug.replace(separatorRegex, options_.separator);
 
     // Trim leading/trailing separators
     const trimRegex = new RegExp(`^${escapedSeparator}+|${escapedSeparator}+$`, "g");

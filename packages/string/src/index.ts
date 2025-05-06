@@ -53,8 +53,8 @@ export { outdent } from "./outdent";
 export { default as replaceString } from "./replace-string";
 export type { SliceOptions } from "./slice";
 export { slice } from "./slice";
-export { default as transliterate } from "./transliterate";
 export { default as slugify } from "./slugify";
+export { default as transliterate } from "./transliterate";
 export type { TruncateOptions } from "./truncate";
 export { truncate } from "./truncate";
 export type {
