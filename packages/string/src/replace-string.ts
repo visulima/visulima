@@ -110,28 +110,36 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
             // eslint-disable-next-line no-cond-assign
             while ((match = searchPattern.exec(source)) !== null) {
                 const start = match.index;
-                const original = match[0];
+                const original = match[0] as string;
+
                 if (original.length === 0 && searchPattern.lastIndex === match.index) {
                     // eslint-disable-next-line no-plusplus
                     searchPattern.lastIndex++; // Avoid infinite loop on zero-length matches
                 }
 
                 const end = start + original.length - 1; // Inclusive end
-                const finalReplacement = replacementValue.replaceAll(/\$(\d+|&)/g, (matchValue, group) => {
-                    if (group === "&") {
+
+                const finalReplacement = replacementValue.replaceAll(/\$(\d+|&|\$)/g, (substringFound, capturedSymbolOrDigits) => {
+                    if (capturedSymbolOrDigits === "&") {
                         return original;
                     }
 
-                    const groupIndex = Number.parseInt(group, 10);
+                    if (capturedSymbolOrDigits === "$") {
+                        return "$";
+                    }
 
-                    // eslint-disable-next-line security/detect-object-injection
-                    return groupIndex > 0 && groupIndex < matchValue.length ? (matchValue[groupIndex] ?? "") : "";
+                    const groupIndex = Number.parseInt(capturedSymbolOrDigits, 10);
+
+                    if (match && groupIndex > 0 && groupIndex < match.length) {
+                        return match[groupIndex] ?? "";
+                    }
+
+                    return substringFound;
                 });
 
                 // eslint-disable-next-line no-plusplus
                 potentialMatches.push({ end, id: matchIdCounter++, original, replacement: finalReplacement, start });
 
-                // Ensure regex advances even if a zero-length match was found at the start index
                 if (original.length === 0 && searchPattern.lastIndex === start) {
                     // eslint-disable-next-line no-plusplus
                     searchPattern.lastIndex++;
