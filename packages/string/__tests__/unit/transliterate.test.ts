@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import transliterate from "../src/transliterate";
-import type { OptionsTransliterate } from "../src/types";
+import transliterate from "../../src/transliterate";
+import type { OptionsTransliterate } from "../../src/types";
 
 describe("transliterate function", () => {
     it("should return empty string for empty input", () => {
@@ -87,10 +87,10 @@ describe("transliterate function", () => {
         expect.assertions(3);
 
         const text = "中文Äǐǎ";
-        expect(transliterate(text, { fixChineseSpacing: true })).toBe("ZhongWen Aeia");
+        expect(transliterate(text, { fixChineseSpacing: true })).toBe("Zhong Wen Aeia");
         expect(transliterate(text, { fixChineseSpacing: false })).toBe("ZhongWenAeia");
         const textPunc = "中文Ä.";
-        expect(transliterate(textPunc, { fixChineseSpacing: true })).toBe("ZhongWen Ae.");
+        expect(transliterate(textPunc, { fixChineseSpacing: true })).toBe("Zhong Wen Ae.");
     });
     describe("aSCII Purity Tests", () => {
         // Test characters 32-126 (Standard Printable ASCII) + Tab, LF, CR
@@ -154,7 +154,7 @@ describe("transliterate function", () => {
             ["Æneid", "AEneid"],
             ["étude", "etude"],
             // Chinese depends entirely on charmap
-            ["北亰", "BeiJing"],
+            ["北亰", "Bei Jing"],
             // Canadian syllabics
             ["ᔕᓇᓇ", "shanana"],
             // Cherokee
@@ -199,7 +199,7 @@ describe("transliterate function", () => {
             }),
         ).toBe("Hola, mundo!");
         expect(transliterate("Hola, mundo!", { replaceBefore: [["mundo", "world"]] })).toBe("Hola, world!");
-        expect(transliterate("你好，世界！", { ignore: ["你"], replaceAfter: [["Ni", "tú"]] })).toBe("你Hao,ShiJie!");
+        expect(transliterate("你好，世界！", { ignore: ["你"], replaceAfter: [["Ni", "tú"]] })).toBe("你Hao,Shi Jie!");
         expect(
             transliterate("你好，世界！", {
                 ignore: ["界"],

@@ -233,11 +233,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
             }
             // Mark the start for replacement action
 
-             
             if (processedChars[match.start]) {
-                 
                 processedChars[match.start].isMatchStart = true;
-                 
+
                 processedChars[match.start].matchReplacement = match.replacement;
             }
         }

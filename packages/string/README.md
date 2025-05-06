@@ -956,21 +956,21 @@ prefers longer matches. Replacements within ignored ranges are skipped.
 
 **Parameters:**
 
-*   `source`: The input string.
-*   `searches`: An array of search pairs. Each pair can be:
-    *   `[string | RegExp, string]`: A literal string or regex to search for, and its replacement string.
-        Regex flags like `g` (global) are respected.
-*   `ignoreRanges?`: Optional. An array of `[start, end]` index pairs (inclusive) specifying ranges within the
-    `source` string that should be ignored during replacement.
+- `source`: The input string.
+- `searches`: An array of search pairs. Each pair can be:
+    - `[string | RegExp, string]`: A literal string or regex to search for, and its replacement string.
+      Regex flags like `g` (global) are respected.
+- `ignoreRanges?`: Optional. An array of `[start, end]` index pairs (inclusive) specifying ranges within the
+  `source` string that should be ignored during replacement.
 
 **Returns:**
 
-*   `string`: The string with replacements applied, respecting ignore ranges.
+- `string`: The string with replacements applied, respecting ignore ranges.
 
 **Usage:**
 
 ```typescript
-import { replaceString } from '@visulima/string';
+import { replaceString } from "@visulima/string";
 
 const text = "abc abc abc";
 const searches = [
@@ -995,34 +995,33 @@ removes disallowed characters (replacing with separator), and collapses separato
 
 **Parameters:**
 
-*   `input`: The string to convert.
-*   `options?`: Optional `SlugifyOptions` object:
-    *   `allowedChars?: string`: A string of characters that should be allowed in the final slug. Any character *not* in this string (or the `separator`) will be replaced by the `separator` (default: `"a-zA-Z0-9-_.~"`). Remember to include the `separator` itself if you change the default.
-    *   `fixChineseSpacing?: boolean`: Passed to `transliterate`. Determines if a space is added between transliterated Chinese characters (default: `true`).
-    *   `ignore?: string[]`: Passed to `transliterate`. Characters/strings to ignore during the initial transliteration phase (default: `[]`).
-    *   `lowercase?: boolean`: Convert the resulting slug to lowercase. Cannot be true if `uppercase` is true (default: `true`).
-    *   `replaceAfter?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply *after* the character map transliteration but *before* slugification logic (default: `[]`).
-    *   `replaceBefore?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply *before* any transliteration (default: `[]`).
-    *   `separator?: string`: The character to use as a separator (default: `"-"`).
-    *   `unknown?: string`: Passed to `transliterate`. Character to use for unknown characters during transliteration (default: `""`).
-    *   `uppercase?: boolean`: Convert the resulting slug to uppercase. Cannot be true if `lowercase` is true (default: `false`).
+- `input`: The string to convert.
+- `options?`: Optional `SlugifyOptions` object:
+    - `allowedChars?: string`: A string of characters that should be allowed in the final slug. Any character _not_ in this string (or the `separator`) will be replaced by the `separator` (default: `"a-zA-Z0-9-_.~"`). Remember to include the `separator` itself if you change the default.
+    - `fixChineseSpacing?: boolean`: Passed to `transliterate`. Determines if a space is added between transliterated Chinese characters (default: `true`).
+    - `ignore?: string[]`: Passed to `transliterate`. Characters/strings to ignore during the initial transliteration phase (default: `[]`).
+    - `lowercase?: boolean`: Convert the resulting slug to lowercase. Cannot be true if `uppercase` is true (default: `true`).
+    - `replaceAfter?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply _after_ the character map transliteration but _before_ slugification logic (default: `[]`).
+    - `replaceBefore?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply _before_ any transliteration (default: `[]`).
+    - `separator?: string`: The character to use as a separator (default: `"-"`).
+    - `unknown?: string`: Passed to `transliterate`. Character to use for unknown characters during transliteration (default: `""`).
+    - `uppercase?: boolean`: Convert the resulting slug to uppercase. Cannot be true if `lowercase` is true (default: `false`).
 
 **Returns:**
 
-*   `string`: The generated slug.
+- `string`: The generated slug.
 
 **Usage:**
 
 ```typescript
-import { slugify } from '@visulima/string';
+import { slugify } from "@visulima/string";
 
 slugify("你好 World!"); // 'ni-hao-world' (fixChineseSpacing=true by default)
 slugify("你好World!", { fixChineseSpacing: false }); // 'nihaoworld'
 slugify("Crème Brûlée"); // 'creme-brulee'
 slugify("foo & bar * baz"); // 'foo-bar-baz' (&, *, space are disallowed)
 slugify("FOO BAR", { lowercase: false, uppercase: true }); // 'FOO-BAR'
-slugify("foo bar baz", { separator: '_', allowedChars: 'a-z_' }); // 'foo_bar_baz'
-slugify("Keep C++", { replaceBefore: { 'C++': 'cpp' } }); // 'keep-cpp'
+slugify("foo bar baz", { separator: "_", allowedChars: "a-z_" }); // 'foo_bar_baz'
+slugify("Keep C++", { replaceBefore: { "C++": "cpp" } }); // 'keep-cpp'
 slugify("Keep !@#$", { allowedChars: "a-z!@$" }); // 'keep!@$'
-
 ```

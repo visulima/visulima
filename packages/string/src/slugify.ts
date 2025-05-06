@@ -76,18 +76,18 @@ const slugify = (input: string, options?: SlugifyOptions): string => {
 
     let slug = transliterate(input, opts);
 
-    // Replace disallowed characters with separator
-    // Escape allowedChars for regex and add the separator itself to the allowed list
-    const escapedAllowed = escapeRegExpClassChars(opts.allowedChars + opts.separator);
-    const disallowedRegex = new RegExp(`[^${escapedAllowed}]+`, "g");
-    slug = slug.replace(disallowedRegex, opts.separator);
-
-    // Convert case if required
+    // Convert case if required FIRST
     if (opts.lowercase) {
         slug = slug.toLowerCase();
     } else if (opts.uppercase) {
         slug = slug.toUpperCase();
     }
+
+    // Replace disallowed characters with separator
+    // Escape allowedChars for regex and add the separator itself to the allowed list
+    const escapedAllowed = escapeRegExpClassChars(opts.allowedChars + opts.separator);
+    const disallowedRegex = new RegExp(`[^${escapedAllowed}]+`, "g");
+    slug = slug.replace(disallowedRegex, opts.separator);
 
     // Collapse multiple separators
     // Escape separator for regex

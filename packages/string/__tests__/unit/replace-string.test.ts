@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import replaceString from "../src/replace-string";
-import type { IntervalArray, OptionReplaceArray } from "../src/types";
+import replaceString from "../../src/replace-string";
+import type { IntervalArray, OptionReplaceArray } from "../../src/types";
 
 describe("replaceString function", () => {
     it("should handle basic string replacements", () => {

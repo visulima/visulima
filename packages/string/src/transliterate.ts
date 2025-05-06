@@ -127,18 +127,25 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
         }
 
         // Handle Chinese spacing
-        if (!isIgnored && stringContainsChinese) {
-            const sIsDefined = typeof s === "string";
-            const originalCharIsChinese = hasChinese(char);
+        const determinedCharWasChinese = !isIgnored && hasChinese(char); // True if current original char is Chinese and not ignored
 
-            // Original logic: Add space only when transitioning FROM Chinese TO non-Chinese (non-punct)
-            if (lastCharWasChinese && !originalCharIsChinese && sIsDefined && s.length > 0 && s[0] && !hasPunctuationOrSpace(s[0] as string)) {
-                s = " " + s;
+        if (opt.fixChineseSpacing && !isIgnored) {
+            // Only apply spacing logic if fixChineseSpacing is true and char is not ignored
+            const sIsDefinedAndNotEmpty = typeof s === "string" && s.length > 0;
+
+            if (lastCharWasChinese) {
+                // If the previous character successfully processed was Chinese
+                if (determinedCharWasChinese && sIsDefinedAndNotEmpty) {
+                    // Prev Chinese, Current Chinese: "CN CN" -> Add space before current `s`
+                    result += " ";
+                } else if (!determinedCharWasChinese && sIsDefinedAndNotEmpty && s[0] && !hasPunctuationOrSpace(s[0] as string)) {
+                    // Prev Chinese, Current NOT Chinese (and not a leading space/punct in `s`): "CN EN" -> Add space before current `s`
+                    result += " ";
+                }
             }
-
-            lastCharWasChinese = originalCharIsChinese;
-        } else if (isIgnored) {
-            lastCharWasChinese = false; // Reset if current char is ignored
+            lastCharWasChinese = determinedCharWasChinese; // Update for next iteration
+        } else {
+            lastCharWasChinese = false; // Reset if fixChineseSpacing is off or char is ignored
         }
 
         result += s;

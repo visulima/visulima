@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import slugify, { type SlugifyOptions } from "../src/slugify";
+import slugify, { type SlugifyOptions } from "../../src/slugify";
 
 describe("slugify function", () => {
     it("should convert basic strings", () => {
@@ -43,7 +43,7 @@ describe("slugify function", () => {
     it("should handle leading/trailing separators", () => {
         expect.assertions(3);
         expect(slugify("- foo - bar -")).toBe("foo-bar");
-        expect(slugify("__foo__bar__", { separator: '_', allowedChars: 'a-z_' })).toBe("foo_bar");
+        expect(slugify("__foo__bar__", { separator: "_", allowedChars: "a-z_" })).toBe("foo_bar");
         expect(slugify("--foo--bar--")).toBe("foo-bar");
     });
 
@@ -118,7 +118,7 @@ describe("slugify function", () => {
             ["你好, 世界!", {}, "ni-hao-shi-jie"],
             ["你好, 世界!", undefined, "ni-hao-shi-jie"],
             // Note: separator must be in allowedChars for this to work as expected
-            ["你好, 世界!", { separator: '_', allowedChars: 'a-z_' }, "ni_hao_shi_jie"],
+            ["你好, 世界!", { separator: "_", allowedChars: "a-z_" }, "ni_hao_shi_jie"],
             ["你好, 世界!", { lowercase: false }, "Ni-Hao-Shi-Jie"],
             ["你好, 世界!", { uppercase: true, lowercase: false }, "NI-HAO-SHI-JIE"],
             // ignore is passed to transliterate
@@ -152,7 +152,7 @@ describe("slugify function", () => {
             ],
             // Duplicates from original data - kept for consistency
             ["你好, 世界!", {}, "ni-hao-shi-jie"],
-            ["你好, 世界!", { separator: '_', allowedChars: 'a-z_' }, "ni_hao_shi_jie"],
+            ["你好, 世界!", { separator: "_", allowedChars: "a-z_" }, "ni_hao_shi_jie"],
             ["你好, 世界!", { lowercase: false }, "Ni-Hao-Shi-Jie"],
             ["你好, 世界!", { ignore: ["!", ","] }, "ni-hao-shi-jie"],
             ["你好, 世界!", { replaceBefore: [["世界", "未来"]] }, "ni-hao-wei-lai"],

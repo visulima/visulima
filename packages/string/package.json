@@ -485,7 +485,8 @@
         "test:bench": "vitest bench --run",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "postinstall": "node ./scripts/generate-charmap.js"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "15.0.3",

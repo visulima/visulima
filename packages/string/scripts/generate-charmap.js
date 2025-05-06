@@ -2,7 +2,7 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import UNICODE_MAP from "../data/transliteration.json" assert { type: "json" };
+import UNICODE_MAP from "../data/transliteration.json" with { type: "json" };
 
 /**
  * Checks if a character is Chinese.
