@@ -1,15 +1,6 @@
 import transliterate from "./transliterate";
 import type { OptionsTransliterate } from "./types";
-
-/**
- * Escapes characters in a string for use within a RegExp character class.
- * @param input The string to escape.
- * @returns The escaped string.
- */
-function escapeRegExpClassChars(input: string): string {
-    // Escape -, \, ], ^
-    return input.replaceAll(/[/\\]\\^\]/g, "\\$&");
-}
+import { escapeRegExp } from "./utils";
 
 /**
  * Options for the slugify function.
@@ -42,6 +33,26 @@ export interface SlugifyOptions extends OptionsTransliterate {
      * @default false
      */
     uppercase?: boolean;
+
+    /**
+     * Whether to transliterate the input string.
+     * @default true
+     */
+    transliterate?: boolean;
+}
+
+/**
+ * Removes all characters from a string that are not in the allowed characters list
+ * @param {string} input - The string to sanitize
+ * @param {string} allowedChars - String containing allowed characters or patterns like "a-zA-Z0-9"
+ * @return {string} - The sanitized string with only allowed characters
+ */
+const removeDisallowedChars = (input: string, allowedChars: string, separator: string): string => {
+    const escapedChars = escapeRegExp(allowedChars).replaceAll(/\\\-/g, '-'); // Restore dashes
+
+    const pattern = new RegExp(`[^${escapedChars}]`, 'g');
+
+    return input.replaceAll(pattern, separator);
 }
 
 /**
@@ -66,6 +77,7 @@ const slugify = (input: string, options?: SlugifyOptions): string => {
         trim: false,
         unknown: "",
         uppercase: false,
+        transliterate: true,
         ...options,
     };
 
@@ -74,7 +86,7 @@ const slugify = (input: string, options?: SlugifyOptions): string => {
         options_.uppercase = false;
     }
 
-    let slug = transliterate(input, options_);
+    let slug = options_.transliterate ? transliterate(input, options_) : input;
 
     // Convert case if required FIRST
     if (options_.lowercase) {
@@ -83,23 +95,15 @@ const slugify = (input: string, options?: SlugifyOptions): string => {
         slug = slug.toUpperCase();
     }
 
-    // Replace disallowed characters with separator
-    // Escape allowedChars for regex and add the separator itself to the allowed list
-    const escapedAllowed = escapeRegExpClassChars(options_.allowedChars + options_.separator);
-    const disallowedRegex = new RegExp(`[^${escapedAllowed}]+`, "g");
-    slug = slug.replace(disallowedRegex, options_.separator);
+    slug = removeDisallowedChars(slug, options_.allowedChars, options_.separator)
 
-    // Collapse multiple separators
-    // Escape separator for regex
-    const escapedSeparator = options_.separator.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escapedSeparator = escapeRegExp(options_.separator);
     const separatorRegex = new RegExp(`${escapedSeparator}+`, "g");
 
     slug = slug.replace(separatorRegex, options_.separator);
 
     // Trim leading/trailing separators
-    const trimRegex = new RegExp(`^${escapedSeparator}+|${escapedSeparator}+$`, "g");
-
-    return slug.replace(trimRegex, "");
+    return slug.replace(new RegExp(`^${escapedSeparator}+|${escapedSeparator}+$`, "g"), "");
 };
 
 export default slugify;

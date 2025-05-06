@@ -907,46 +907,6 @@ The custom matcher provides detailed error messages when tests fail, showing:
 - Whether the visible content matches but the colors differ
 - Length information for both strings
 
-## Related
-
-- [change-case](https://github.com/blakeembrey/change-case) - Simple string case utilities
-- [lodash](https://lodash.com/) - Comprehensive utility library with string manipulation
-- [scule](https://github.com/unjs/scule) - 🧵 String Case Utils
-- [case-anything](https://github.com/mesqueeb/case-anything) - camelCase, kebab-case, PascalCase... a simple integration with nano package size. (SMALL footprint!)
-- [cli-truncate](https://github.com/sindresorhus/cli-truncate) - Truncate strings for terminal output
-- [string-width](https://github.com/sindresorhus/string-width) - Measure string width
-- [ansi-slice](https://github.com/sindresorhus/ansi-slice) - Slice strings with ANSI escape codes
-- [fast-string-truncated-width](https://github.com/fabiospampinato/fast-string-truncated-width) - Fast string truncated width
-- [ansi-truncate](https://github.com/fabiospampinato/ansi-truncate) - Truncate strings with ANSI escape codes
-- [string-ts](https://github.com/gustavoguichard/string-ts) - Strongly typed string functions
-
-## Supported Node.js Versions
-
-Libraries in this ecosystem make the best effort to track [Node.js' release schedule](https://github.com/nodejs/release#release-schedule).
-Here's [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
-
-## Contributing
-
-If you would like to help, take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](.github/CONTRIBUTING.md) guidelines.
-
-> **Note:** please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
-
-## Credits
-
-- [Daniel Bannert](https://github.com/prisis)
-- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
-
-## License
-
-The visulima string is open-sourced software licensed under the [MIT][license-url]
-
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript"
-[license-image]: https://img.shields.io/npm/l/@visulima/string?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/string/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/string/v/latest "npm"
-
 ### `replaceString(source, searches, ignoreRanges?)`
 
 Replaces occurrences of search patterns within a string, respecting ignored ranges.
@@ -986,26 +946,72 @@ const result = replaceString(text, searches, ignoreRanges);
 // Third 'abc' is replaced by 'YYY'.
 ```
 
+### `transliterate(source, options?)`
+
+Performs transliteration of characters in a string based on an extensive character map and provided options. This function is useful for converting characters from one script to another (e.g., Latin with diacritics to basic Latin, Cyrillic to Latin) or for custom character replacements.
+
+**Parameters:**
+
+-   `source: string`: The input string to transliterate.
+-   `options?`: Optional `OptionsTransliterate` object:
+    -   `fixChineseSpacing?: boolean`: If `true`, adds a space between transliterated Chinese Pinyin syllables. (Default: `true`).
+    -   `ignore?: string[]`: An array of strings or characters to ignore during transliteration. These segments will be preserved in their original form. (Default: `[]`).
+    -   `replaceBefore?: Array<[string | RegExp, string]> | Record<string, string>`: Custom replacement rules to apply *before* the main character map transliteration. (Default: `[]`).
+    -   `replaceAfter?: Array<[string | RegExp, string]> | Record<string, string>`: Custom replacement rules to apply *after* the main character map transliteration. (Default: `[]`).
+    -   `trim?: boolean`: If `true`, trims whitespace from the beginning and end of the result. (Default: `false`).
+    -   `unknown?: string`: The character or string to use for characters that are not found in the character map and are not covered by other rules. (Default: `""` - removes unknown characters).
+
+**Returns:**
+
+-   `string`: The transliterated string.
+
+**Usage:**
+
+```typescript
+import { transliterate } from "@visulima/string"; // Assuming named export from package root
+
+// Basic transliteration
+transliterate("Crème brûlée"); // Expected: 'Creme brulee'
+transliterate("你好世界"); // Expected: 'Ni Hao Shi Jie' (due to fixChineseSpacing: true)
+transliterate("你好世界", { fixChineseSpacing: false }); // Expected: 'NiHaoShiJie'
+
+// Using ignore
+transliterate("Don't change THIS, but change that.", { ignore: ["THIS"] });
+// Expected: 'Dont change THIS, but change that.'
+
+// Using replaceBefore
+transliterate("Replace C++ before map.", { replaceBefore: { "C++": "cpp" } });
+// Expected: 'Replace cpp before map.'
+
+// Using replaceAfter
+// Example: charmap turns é -> e, then replaceAfter turns e -> E
+transliterate("café", { replaceAfter: { "e": "E" } });
+// Expected: 'cafE'
+
+// Handling unknown characters
+transliterate("a🚀b", { unknown: "[?]" }); // Expected: 'a[?]b'
+```
+
 ### `slugify(input, options?)`
 
 Converts a string into a URL-friendly slug.
 
-It transliterates non-ASCII characters using the `transliterate` function, optionally converts case,
-removes disallowed characters (replacing with separator), and collapses separators.
+It transliterates non-ASCII characters using the `transliterate` function (if enabled), optionally converts case, removes disallowed characters (replacing with separator), and collapses separators.
 
 **Parameters:**
 
 - `input`: The string to convert.
 - `options?`: Optional `SlugifyOptions` object:
-    - `allowedChars?: string`: A string of characters that should be allowed in the final slug. Any character _not_ in this string (or the `separator`) will be replaced by the `separator` (default: `"a-zA-Z0-9-_.~"`). Remember to include the `separator` itself if you change the default.
+    - `allowedChars?: string`: Characters allowed in the slug. Others are replaced by `separator`. (Default: `"a-zA-Z0-9-_.~"`)
     - `fixChineseSpacing?: boolean`: Passed to `transliterate`. Determines if a space is added between transliterated Chinese characters (default: `true`).
     - `ignore?: string[]`: Passed to `transliterate`. Characters/strings to ignore during the initial transliteration phase (default: `[]`).
-    - `lowercase?: boolean`: Convert the resulting slug to lowercase. Cannot be true if `uppercase` is true (default: `true`).
+    - `lowercase?: boolean`: Convert to lowercase. (Default: `true`). Cannot be true if `uppercase` is true.
     - `replaceAfter?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply _after_ the character map transliteration but _before_ slugification logic (default: `[]`).
     - `replaceBefore?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply _before_ any transliteration (default: `[]`).
-    - `separator?: string`: The character to use as a separator (default: `"-"`).
+    - `separator?: string`: Custom separator. (Default: `"-"`).
+    - `transliterate?: boolean`: Whether to perform the initial transliteration of non-ASCII characters. If `false`, only case conversion and character filtering/replacement are performed on the input string. (Default: `true`).
     - `unknown?: string`: Passed to `transliterate`. Character to use for unknown characters during transliteration (default: `""`).
-    - `uppercase?: boolean`: Convert the resulting slug to uppercase. Cannot be true if `lowercase` is true (default: `false`).
+    - `uppercase?: boolean`: Convert to uppercase. (Default: `false`). Cannot be true if `lowercase` is true.
 
 **Returns:**
 
@@ -1025,3 +1031,48 @@ slugify("foo bar baz", { separator: "_", allowedChars: "a-z_" }); // 'foo_bar_ba
 slugify("Keep C++", { replaceBefore: { "C++": "cpp" } }); // 'keep-cpp'
 slugify("Keep !@#$", { allowedChars: "a-z!@$" }); // 'keep!@$'
 ```
+
+## Related
+
+- [change-case](https://github.com/blakeembrey/change-case) - Simple string case utilities
+- [lodash](https://lodash.com/) - Comprehensive utility library with string manipulation
+- [scule](https://github.com/unjs/scule) - 🧵 String Case Utils
+- [case-anything](https://github.com/mesqueeb/case-anything) - camelCase, kebab-case, PascalCase... a simple integration with nano package size. (SMALL footprint!)
+- [cli-truncate](https://github.com/sindresorhus/cli-truncate) - Truncate strings for terminal output
+- [string-width](https://github.com/sindresorhus/string-width) - Measure string width
+- [ansi-slice](https://github.com/sindresorhus/ansi-slice) - Slice strings with ANSI escape codes
+- [fast-string-truncated-width](https://github.com/fabiospampinato/fast-string-truncated-width) - Fast string truncated width
+- [ansi-truncate](https://github.com/fabiospampinato/ansi-truncate) - Truncate strings with ANSI escape codes
+- [string-ts](https://github.com/gustavoguichard/string-ts) - Strongly typed string functions
+- [@sindresorhus/slugify](https://github.com/sindresorhus/slugify) - Slugify a string
+- [slugify](https://github.com/simov/slugify) - Slugify a string
+- [@sindresorhus/transliterate](https://github.com/sindresorhus/transliterate) - Convert Unicode characters to Latin characters using transliteration
+- [transliteration](https://github.com/yf-hk/transliteration/tree/main) - UTF-8 to ASCII transliteration / slugify module for node.js, browser, Web Worker, React Native, Electron and CLI.
+- [unidecode](https://github.com/FGRibreau/node-unidecode) - 📃 ASCII transliterations of Unicode text
+
+## Supported Node.js Versions
+
+Libraries in this ecosystem make the best effort to track [Node.js' release schedule](https://github.com/nodejs/release#release-schedule).
+Here's [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
+
+## Contributing
+
+If you would like to help, take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](.github/CONTRIBUTING.md) guidelines.
+
+> **Note:** please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
+
+## Credits
+
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+
+## License
+
+The visulima string is open-sourced software licensed under the [MIT][license-url]
+
+[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/ "TypeScript"
+[license-image]: https://img.shields.io/npm/l/@visulima/string?color=blueviolet&style=for-the-badge
+[license-url]: LICENSE.md "license"
+[npm-image]: https://img.shields.io/npm/v/@visulima/string/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/string/v/latest "npm"
