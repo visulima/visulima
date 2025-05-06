@@ -119,6 +119,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
                 const end = start + original.length - 1; // Inclusive end
 
+                // eslint-disable-next-line @typescript-eslint/no-loop-func
                 const finalReplacement = replacementValue.replaceAll(/\$(\d+|&|\$)/g, (substringFound, capturedSymbolOrDigits) => {
                     if (capturedSymbolOrDigits === "&") {
                         return original;
@@ -131,6 +132,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                     const groupIndex = Number.parseInt(capturedSymbolOrDigits, 10);
 
                     if (match && groupIndex > 0 && groupIndex < match.length) {
+                        // eslint-disable-next-line security/detect-object-injection
                         return match[groupIndex] ?? "";
                     }
 

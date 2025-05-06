@@ -3,7 +3,6 @@ import simovSlugify from "slugify";
 import { slugify as transliterationSlugify } from "transliteration";
 import { bench, describe } from "vitest";
 
-// eslint-disable-next-line import/no-relative-packages
 import visulimaSlugify from "../src/slugify";
 
 const testStrings = [
@@ -34,14 +33,14 @@ const transliterationPackageDefaultOptions = {}; // Assuming default behavior is
 describe("Slugify Benchmark Comparison by Feature", () => {
     describe("Default Behavior (Transliteration generally ON by default for libs)", () => {
         bench("@visulima/string (default: transliterate ON)", async () => {
-            for await (const item of testStrings) {
-                await visulimaSlugify(item, visulimaDefaultOptions);
+            for (const item of testStrings) {
+                visulimaSlugify(item, visulimaDefaultOptions);
             }
         });
 
         bench("@visulima/string (transliterate: false)", async () => {
-            for await (const item of testStrings) {
-                await visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
+            for (const item of testStrings) {
+                visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
             }
         });
 
@@ -72,8 +71,8 @@ describe("Slugify Benchmark Comparison by Feature", () => {
 
     describe("Separator Option: '_'", () => {
         bench("@visulima/string", async () => {
-            for await (const item of testStrings) {
-                await visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "_" });
+            for (const item of testStrings) {
+                visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "_" });
             }
         });
 
@@ -101,8 +100,8 @@ describe("Slugify Benchmark Comparison by Feature", () => {
     // Simov: empty replacement effectively joins words if no other logic separates them.
     describe("Separator Option: '' (Empty - where supported)", () => {
         bench("@visulima/string", async () => {
-            for await (const item of testStrings) {
-                await visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "" });
+            for (const item of testStrings) {
+                visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "" });
             }
         });
         // Simov can achieve this by setting replacement to '' and ensuring no space-based logic interferes
@@ -120,8 +119,8 @@ describe("Slugify Benchmark Comparison by Feature", () => {
 
     describe("Case Option: Output Lowercase (Common Expectation)", () => {
         bench("@visulima/string (default is lowercase)", async () => {
-            for await (const item of testStrings) {
-                await visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: true, uppercase: false });
+            for (const item of testStrings) {
+                visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: true, uppercase: false });
             }
         });
 
@@ -146,8 +145,8 @@ describe("Slugify Benchmark Comparison by Feature", () => {
 
     describe("Case Option: Preserve/Output Uppercase (from UC input)", () => {
         bench("@visulima/string", async () => {
-            for await (const item of uppercaseTestStrings) {
-                await visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: false, uppercase: true });
+            for (const item of uppercaseTestStrings) {
+                visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: false, uppercase: true });
             }
         });
 
@@ -173,13 +172,13 @@ describe("Slugify Benchmark Comparison by Feature", () => {
     // This block is specific to visulima as others don't have a simple on/off toggle for all transliteration
     describe("Transliteration Control (Visulima Specific Focus)", () => {
         bench("@visulima/string (transliterate: true - default)", async () => {
-            for await (const item of testStrings) {
-                await visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: true });
+            for (const item of testStrings) {
+                visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: true });
             }
         });
         bench("@visulima/string (transliterate: false)", async () => {
-            for await (const item of testStrings) {
-                await visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
+            for (const item of testStrings) {
+                visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
             }
         });
     });

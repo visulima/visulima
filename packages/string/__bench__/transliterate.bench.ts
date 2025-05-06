@@ -2,7 +2,6 @@ import sindresorhusTransliterate from "@sindresorhus/transliterate";
 import { transliterate as externalTransliterate } from "transliteration";
 import { bench, describe } from "vitest";
 
-// eslint-disable-next-line import/no-relative-packages
 import visulimaTransliterate from "../src/transliterate";
 
 // Reusing testStrings from slugify.bench.ts; consider tailoring if needed for translit specifics
@@ -29,8 +28,8 @@ const sindresorhusTranslitOptions = {}; // Options for '@sindresorhus/transliter
 
 describe("Transliterate Function Benchmark", () => {
     bench("@visulima/string transliterate", async () => {
-        for await (const item of testStrings) {
-            await visulimaTransliterate(item, visulimaTranslitOptions);
+        for (const item of testStrings) {
+            visulimaTransliterate(item, visulimaTranslitOptions);
         }
     });
 
