@@ -1,7 +1,9 @@
 import charmap from "./charmap";
+import { RE_THAI } from "./constants";
 import replaceString from "./replace-string";
 import type { Charmap, Interval, IntervalArray, OptionReplaceArray, OptionReplaceCombined, OptionReplaceObject, OptionsTransliterate } from "./types";
 import { findStringOccurrences, hasChinese, hasPunctuationOrSpace } from "./utils";
+import thaiReplacement from "./utils/thai-replacement";
 
 /**
  * Converts the object version of the 'replace' option into tuple array one.
@@ -30,6 +32,35 @@ const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray 
     return replaceArray;
 };
 
+const applyThaiRomanization = (input: string): string => {
+    let output = input;
+
+    for (const entry of thaiReplacement) {
+        const [search, replace, type] = entry;
+
+        if (typeof search !== "string" || typeof replace !== "string") {
+            // eslint-disable-next-line no-continue
+            continue;
+        }
+
+        if (type === "r") {
+            // eslint-disable-next-line security/detect-non-literal-regexp,@rushstack/security/no-unsafe-regexp
+            const regex = new RegExp(search, "g");
+
+            output = output.replace(regex, (_, p1: string) => {
+                // Find consonant replacement for the captured group
+                const consonantReplace = thaiReplacement.find(([c, , t]) => c === p1 && (!t || t === "c"));
+
+                return consonantReplace && typeof consonantReplace[1] === "string" ? (consonantReplace[1] as string) + replace : p1 + replace;
+            });
+        } else {
+            output = output.split(search).join(replace);
+        }
+    }
+
+    return output;
+};
+
 /**
  * Main transliterate function.
  * Replaces characters in a string based on a charmap and options.
@@ -53,6 +84,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
     let input = typeof source === "string" ? source : String(source);
 
     let replaceOptionBefore: OptionReplaceArray = [];
+
     if (Array.isArray(opt.replaceBefore) ? opt.replaceBefore.length > 0 : Object.keys(opt.replaceBefore).length > 0) {
         replaceOptionBefore = formatReplaceOption(opt.replaceBefore);
     }
@@ -71,6 +103,10 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
     } else {
         // Input has NOT changed, finalIgnoreRanges can be the same as initialIgnoreRanges
         finalIgnoreRanges = initialIgnoreRanges;
+    }
+
+    if (RE_THAI.test(input)) {
+        input = applyThaiRomanization(input);
     }
 
     let result = "";
