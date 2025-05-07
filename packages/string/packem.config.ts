@@ -13,6 +13,9 @@ export default defineConfig({
             writeToPackageJson: true,
             typeScriptVersion: ">=5.0",
         },
+        dynamicVars: {
+            include: [],
+        },
     },
     transformer,
     cjsInterop: true,

@@ -115,6 +115,9 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
         return "";
     }
 
+    // eslint-disable-next-line no-param-reassign
+    input = input.normalize("NFC");
+
     // Destructure options with defaults
     const { ellipsis = DEFAULT_ELLIPSIS, position = "end", preferTruncationOnSpace = false } = options;
 

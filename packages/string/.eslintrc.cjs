@@ -111,6 +111,7 @@ module.exports = defineConfig({
             rules: {
                 "@typescript-eslint/restrict-template-expressions": "off",
                 "import/no-extraneous-dependencies": "off",
+                "import/no-relative-packages": "off",
                 "import/no-unused-modules": "off",
                 "no-loops/no-loops": "off",
                 "no-restricted-syntax": "off",

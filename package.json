@@ -17,7 +17,7 @@
         "bench:inspector": "pnpm --filter \"inspector-bench\" run test:bench",
         "bench:pail": "pnpm --filter \"pail-bench\" run test:bench",
         "bench:redact": "pnpm --filter \"redact-bench\" run test:bench",
-        "bench:string": "pnpm --filter \"string\" run test:bench",
+        "bench:string": "pnpm --filter \"string-bench\" run test:bench",
         "bench:tabular": "pnpm --filter \"tabular\" run test:bench",
         "build": "nx run-many --target=build --all --parallel",
         "build:affected:packages": "nx affected --target=build --exclude=*-bench,docs,storybook --nxBail",

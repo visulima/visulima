@@ -240,6 +240,75 @@ const customWrapped = wordWrap("Text with\u200Bzero-width characters and\u200Btr
 });
 ```
 
+### String Replacement with Ignore Ranges
+
+The `replaceString` function provides advanced string replacement capabilities, allowing multiple search/replace operations (using strings or RegExps) while respecting specified index ranges that should be ignored. It also handles match precedence correctly (earlier start index wins, then longer match wins if starts are identical) and ensures only the highest-priority, non-overlapping, non-ignored match is applied in any given segment.
+
+> **Note:** Use this function when you need fine-grained control over multiple replacements, especially when needing to ignore specific index ranges or handle complex overlapping matches with defined precedence rules. For simple, non-overlapping replacements without ignore ranges, native `String.prototype.replaceAll` might be sufficient.
+
+```typescript
+import replaceString from "@visulima/string/replace-string"; // Adjust import path if needed
+import type { IntervalArray, OptionReplaceArray } from "@visulima/string";
+
+// Basic Usage
+const source1 = "Replace AB and CD";
+const searches1: OptionReplaceArray = [
+    ["AB", "ab"],
+    ["CD", "cd"],
+];
+const result1 = replaceString(source1, searches1, []);
+// result1: "Replace ab and cd"
+
+// With Ignore Ranges
+const source2 = "Replace AB and ignore CD and replace XY";
+const searches2: OptionReplaceArray = [
+    ["AB", "ab"],
+    ["CD", "cd"], // This should be ignored by the range
+    ["XY", "xy"],
+];
+// Ignore indices 19-20 (targets "re" in "ignore")
+const ignoreRanges2: IntervalArray = [[19, 20]];
+const result2 = replaceString(source2, searches2, ignoreRanges2);
+// result2: "Replace ab and ignore cd and replace xy"
+// Note: "CD" is replaced because it doesn't overlap the ignore range [19, 20].
+
+// With Overlapping Matches (Longer match takes precedence)
+const source3 = "abcde";
+const searches3: OptionReplaceArray = [
+    ["abc", "123"], // Lower precedence
+    ["abcde", "54321"], // Higher precedence (longer)
+];
+const result3 = replaceString(source3, searches3, []);
+// result3: "54321"
+
+// With Overlapping Matches (Earlier start index takes precedence)
+const source4 = "ababab";
+const searches4: OptionReplaceArray = [
+    ["aba", "X"], // Starts at 0
+    ["bab", "Y"], // Starts at 1
+];
+const result4 = replaceString(source4, searches4, []);
+// result4: "Xbab" (Applies "X" at 0, which covers indices 0-2. Skips "Y" at 1. Appends rest.)
+
+// With Zero-Length Matches (e.g., inserting before each char)
+const source5 = "abc";
+const searches5: OptionReplaceArray = [[/(?=.)/g, "^"]]; // Lookahead for position before char
+const result5 = replaceString(source5, searches5, []);
+// result5: "^a^b^c"
+
+// Zero-Length Match at End
+const source6 = "abc";
+const searches6: OptionReplaceArray = [[/$/g, "$"]]; // Matches end of string
+const result6 = replaceString(source6, searches6, []);
+// result6: "abc$"
+
+// Using $& and $n replacements
+const source7 = "Firstname Lastname";
+const searches7: OptionReplaceArray = [[/(\w+)\s+(\w+)/, "$2, $1 ($& - Group 1: $1)"]];
+const result7 = replaceString(source7, searches7, []);
+// result7: "Lastname, Firstname (Firstname Lastname - Group 1: Firstname)"
+```
+
 ### String Splitting
 
 The `splitByCase` function is a powerful utility that splits strings based on various patterns:
@@ -838,6 +907,131 @@ The custom matcher provides detailed error messages when tests fail, showing:
 - Whether the visible content matches but the colors differ
 - Length information for both strings
 
+### `replaceString(source, searches, ignoreRanges?)`
+
+Replaces occurrences of search patterns within a string, respecting ignored ranges.
+This function is designed to handle overlapping matches and ignore ranges correctly.
+It prioritizes matches that start earlier and, for matches starting at the same position,
+prefers longer matches. Replacements within ignored ranges are skipped.
+
+**Parameters:**
+
+- `source`: The input string.
+- `searches`: An array of search pairs. Each pair can be:
+    - `[string | RegExp, string]`: A literal string or regex to search for, and its replacement string.
+      Regex flags like `g` (global) are respected.
+- `ignoreRanges?`: Optional. An array of `[start, end]` index pairs (inclusive) specifying ranges within the
+  `source` string that should be ignored during replacement.
+
+**Returns:**
+
+- `string`: The string with replacements applied, respecting ignore ranges.
+
+**Usage:**
+
+```typescript
+import { replaceString } from "@visulima/string";
+
+const text = "abc abc abc";
+const searches = [
+    [/a/g, "X"],
+    ["abc", "YYY"],
+];
+const ignoreRanges = [[4, 6]]; // Ignore the second "abc"
+
+const result = replaceString(text, searches, ignoreRanges);
+// result will be: "YYY abc YYY"
+// First 'abc' is replaced by 'YYY' (longer match takes precedence over 'X').
+// Second 'abc' is ignored.
+// Third 'abc' is replaced by 'YYY'.
+```
+
+### `transliterate(source, options?)`
+
+Performs transliteration of characters in a string based on an extensive character map and provided options. This function is useful for converting characters from one script to another (e.g., Latin with diacritics to basic Latin, Cyrillic to Latin) or for custom character replacements.
+
+**Parameters:**
+
+- `source: string`: The input string to transliterate.
+- `options?`: Optional `OptionsTransliterate` object:
+    - `fixChineseSpacing?: boolean`: If `true`, adds a space between transliterated Chinese Pinyin syllables. (Default: `true`).
+    - `ignore?: string[]`: An array of strings or characters to ignore during transliteration. These segments will be preserved in their original form. (Default: `[]`).
+    - `replaceBefore?: Array<[string | RegExp, string]> | Record<string, string>`: Custom replacement rules to apply _before_ the main character map transliteration. (Default: `[]`).
+    - `replaceAfter?: Array<[string | RegExp, string]> | Record<string, string>`: Custom replacement rules to apply _after_ the main character map transliteration. (Default: `[]`).
+    - `trim?: boolean`: If `true`, trims whitespace from the beginning and end of the result. (Default: `false`).
+    - `unknown?: string`: The character or string to use for characters that are not found in the character map and are not covered by other rules. (Default: `""` - removes unknown characters).
+
+**Returns:**
+
+- `string`: The transliterated string.
+
+**Usage:**
+
+```typescript
+import { transliterate } from "@visulima/string"; // Assuming named export from package root
+
+// Basic transliteration
+transliterate("Crème brûlée"); // Expected: 'Creme brulee'
+transliterate("你好世界"); // Expected: 'Ni Hao Shi Jie' (due to fixChineseSpacing: true)
+transliterate("你好世界", { fixChineseSpacing: false }); // Expected: 'NiHaoShiJie'
+
+// Using ignore
+transliterate("Don't change THIS, but change that.", { ignore: ["THIS"] });
+// Expected: 'Dont change THIS, but change that.'
+
+// Using replaceBefore
+transliterate("Replace C++ before map.", { replaceBefore: { "C++": "cpp" } });
+// Expected: 'Replace cpp before map.'
+
+// Using replaceAfter
+// Example: charmap turns é -> e, then replaceAfter turns e -> E
+transliterate("café", { replaceAfter: { e: "E" } });
+// Expected: 'cafE'
+
+// Handling unknown characters
+transliterate("a🚀b", { unknown: "[?]" }); // Expected: 'a[?]b'
+```
+
+### `slugify(input, options?)`
+
+Converts a string into a URL-friendly slug.
+
+It transliterates non-ASCII characters using the `transliterate` function (if enabled), optionally converts case, removes disallowed characters (replacing with separator), and collapses separators.
+
+**Parameters:**
+
+- `input`: The string to convert.
+- `options?`: Optional `SlugifyOptions` object:
+    - `allowedChars?: string`: Characters allowed in the slug. Others are replaced by `separator`. (Default: `"a-zA-Z0-9-_.~"`)
+    - `fixChineseSpacing?: boolean`: Passed to `transliterate`. Determines if a space is added between transliterated Chinese characters (default: `true`).
+    - `ignore?: string[]`: Passed to `transliterate`. Characters/strings to ignore during the initial transliteration phase (default: `[]`).
+    - `lowercase?: boolean`: Convert to lowercase. (Default: `true`). Cannot be true if `uppercase` is true.
+    - `replaceAfter?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply _after_ the character map transliteration but _before_ slugification logic (default: `[]`).
+    - `replaceBefore?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply _before_ any transliteration (default: `[]`).
+    - `separator?: string`: Custom separator. (Default: `"-"`).
+    - `transliterate?: boolean`: Whether to perform the initial transliteration of non-ASCII characters. If `false`, only case conversion and character filtering/replacement are performed on the input string. (Default: `true`).
+    - `unknown?: string`: Passed to `transliterate`. Character to use for unknown characters during transliteration (default: `""`).
+    - `uppercase?: boolean`: Convert to uppercase. (Default: `false`). Cannot be true if `lowercase` is true.
+
+**Returns:**
+
+- `string`: The generated slug.
+
+**Usage:**
+
+```typescript
+import { slugify } from "@visulima/string";
+
+slugify("你好 World!"); // 'ni-hao-world' (fixChineseSpacing=true by default)
+slugify("你好World!", { fixChineseSpacing: false }); // 'nihaoworld'
+slugify("Crème Brûlée"); // 'creme-brulee'
+slugify("foo & bar * baz"); // 'foo-bar-baz' (&, *, space are disallowed)
+slugify("FOO BAR", { lowercase: false, uppercase: true }); // 'FOO-BAR'
+slugify("foo bar baz", { separator: "_", allowedChars: "a-z_" }); // 'foo_bar_baz'
+slugify("Keep C++", { replaceBefore: { "C++": "cpp" } }); // 'keep-cpp'
+slugify("Keep !@#$", { allowedChars: "a-z!@$" }); // 'keep!@$'
+```
+
 ## Related
 
 - [change-case](https://github.com/blakeembrey/change-case) - Simple string case utilities
@@ -850,11 +1044,16 @@ The custom matcher provides detailed error messages when tests fail, showing:
 - [fast-string-truncated-width](https://github.com/fabiospampinato/fast-string-truncated-width) - Fast string truncated width
 - [ansi-truncate](https://github.com/fabiospampinato/ansi-truncate) - Truncate strings with ANSI escape codes
 - [string-ts](https://github.com/gustavoguichard/string-ts) - Strongly typed string functions
+- [@sindresorhus/slugify](https://github.com/sindresorhus/slugify) - Slugify a string
+- [slugify](https://github.com/simov/slugify) - Slugify a string
+- [@sindresorhus/transliterate](https://github.com/sindresorhus/transliterate) - Convert Unicode characters to Latin characters using transliteration
+- [transliteration](https://github.com/yf-hk/transliteration/tree/main) - UTF-8 to ASCII transliteration / slugify module for node.js, browser, Web Worker, React Native, Electron and CLI.
+- [unidecode](https://github.com/FGRibreau/node-unidecode) - 📃 ASCII transliterations of Unicode text
 
 ## Supported Node.js Versions
 
-Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
-Here’s [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
+Libraries in this ecosystem make the best effort to track [Node.js' release schedule](https://github.com/nodejs/release#release-schedule).
+Here's [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
 ## Contributing
 

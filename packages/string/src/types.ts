@@ -590,3 +590,72 @@ export type ToLowerCase<T extends string> = IsStringLiteral<T> extends true ? Lo
  * type Upper = ToUpperCase<'hello'> // type Upper = 'HELLO'
  */
 export type ToUpperCase<T extends string> = IsStringLiteral<T> extends true ? Uppercase<T> : string;
+
+export type Interval = [number, number];
+
+/** Array of intervals */
+export type IntervalArray = Interval[];
+
+/** Array of OptionReplace */
+export type OptionReplaceArray = [RegExp | string, string | undefined][];
+
+/** OptionReplace object type */
+export type OptionReplaceObject = Record<string, string>;
+
+/** Combined OptionReplace type (object or array) */
+export type OptionReplaceCombined = OptionReplaceArray | OptionReplaceObject;
+
+/** Options for transliteration */
+export interface OptionsTransliterate {
+    /** Fix spacing for Chinese characters */
+    fixChineseSpacing?: boolean;
+    /** Characters/strings to ignore */
+    ignore?: string[];
+    /** Search/replace pairs after charmap */
+    replaceAfter?: OptionReplaceCombined;
+    /** Search/replace pairs before charmap */
+    replaceBefore?: OptionReplaceCombined;
+    /** Trim leading/trailing whitespace */
+    trim?: boolean;
+    /** Character to use for unknown characters */
+    unknown?: string;
+}
+
+/** Character map type used by Transliterate */
+export type Charmap = Record<string, string | undefined>;
+
+export interface SlugifyOptions extends OptionsTransliterate {
+    /**
+     * Allowed characters. Other characters will be converted to `separator`.
+     * @default "a-zA-Z0-9-_.~"
+     */
+    allowedChars?: string;
+    /**
+     * Fix Chinese spacing passed to transliterate. If you don't need to transliterate Chinese characters, set it to false to improve performance.
+     * @default true // Matches transliterate's default
+     */
+    fixChineseSpacing?: boolean;
+    /**
+     * Whether the result should be converted into lowercase.
+     * Cannot be true if `uppercase` is true.
+     * @default true
+     */
+    lowercase?: boolean;
+    /**
+     * Custom separator string.
+     * @default "-"
+     */
+    separator?: string;
+    /**
+     * Whether to transliterate the input string.
+     * @default true
+     */
+    transliterate?: boolean;
+
+    /**
+     * Whether the result should be converted into uppercase.
+     * Cannot be true if `lowercase` is true.
+     * @default false
+     */
+    uppercase?: boolean;
+}
