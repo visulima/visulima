@@ -110,18 +110,30 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                     const end = start + original.length - 1;
 
                     // eslint-disable-next-line @typescript-eslint/no-loop-func
-                    const finalReplacement = replacementValue.replaceAll(/\$(\d+|&|\$)/g, (substringFound, capturedSymbolOrDigits) => {
+                    const finalReplacement = replacementValue.replaceAll(/\$([\d&$`'])/g, (substringFound, capturedSymbolOrDigits) => {
                         if (capturedSymbolOrDigits === "&") {
                             return original;
                         }
+
                         if (capturedSymbolOrDigits === "$") {
                             return "$";
                         }
+
+                        if (capturedSymbolOrDigits === "`") {
+                            return source.substring(0, start);
+                        }
+
+                        if (capturedSymbolOrDigits === "'") {
+                            return source.substring(start + original.length);
+                        }
+
                         const groupIndex = Number.parseInt(capturedSymbolOrDigits, 10);
+
                         if (match && groupIndex > 0 && groupIndex < match.length) {
                             // eslint-disable-next-line security/detect-object-injection
                             return match[groupIndex] ?? "";
                         }
+
                         return substringFound;
                     });
 

@@ -83,29 +83,23 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
     for (let index = 0; index < input.length; ) {
         let char: string;
         let charLength = 1;
+        let s: string | null | undefined;
 
-        // Handle surrogate pairs
-        const currentCode = input.codePointAt(index);
+        const codePoint = input.codePointAt(index);
 
-        if (currentCode && currentCode >= 0xd8_00 && currentCode <= 0xdb_ff && index + 1 < input.length) {
-            const nextCode = input.codePointAt(index + 1);
-
-            if (nextCode && nextCode >= 0xdc_00 && nextCode <= 0xdf_ff) {
-                // eslint-disable-next-line security/detect-object-injection
-                char = (input[index] as string) + (input[index + 1] as string);
-                charLength = 2;
-            } else {
-                // eslint-disable-next-line security/detect-object-injection
-                char = input[index] as string;
-            }
-        } else {
+        if (codePoint === undefined) {
+            // Should not happen with valid strings if index is always valid.
             // eslint-disable-next-line security/detect-object-injection
-            char = input[index] as string;
+            char = input[index] as string; // This might be undefined if index is out of bounds, handled by `result += s` later if s remains undefined
+            charLength = 1;
+            s = opt.unknown; // Directly assign if codePoint is undefined
+        } else {
+            char = String.fromCodePoint(codePoint);
+            charLength = char.length; // Correctly 1 for BMP, 2 for astral (like emoji)
+            // s will be determined by subsequent logic (ignore, charmap, etc.)
         }
 
         const isCurrentCharChinese = hasChinese(char);
-
-        let s: string | null | undefined;
         const charEndIndex = index + charLength - 1;
 
         let isIgnored = false;
@@ -135,25 +129,33 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
         if (isIgnored) {
             s = char; // Keep original character if ignored
         } else {
-            const codePoint = char.codePointAt(0);
-            if (codePoint === undefined) {
-                s = opt.unknown;
+            // Re-check codePoint as it's in the !isIgnored block and might not have been set if char was from undefined codePoint path
+            const currentActualCodePoint = char.codePointAt(0); // Use the derived `char`
+
+            if (currentActualCodePoint === undefined) {
+                s = opt.unknown; // Should be rare if char is valid
             } else {
-                const codePointString = String(codePoint);
+                const codePointString = String(currentActualCodePoint);
                 const found = Object.prototype.hasOwnProperty.call(currentCharmap, codePointString);
+
                 if (found) {
                     s = currentCharmap[codePointString as keyof Charmap];
                 } else if (isCurrentCharChinese) {
-                    // Use cached value
                     s = char;
+                } else {
+                    // Explicitly set to unknown if not found and not Chinese
+                    s = opt.unknown;
                 }
             }
+
+            // Fallback if s is still undefined or became null (e.g. from charmap)
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (s === undefined || s === null) {
                 s = opt.unknown;
             }
         }
 
-        const determinedCharWasChinese = !isIgnored && isCurrentCharChinese; // Use cached value
+        const determinedCharWasChinese = !isIgnored && isCurrentCharChinese;
 
         if (opt.fixChineseSpacing && !isIgnored) {
             // Only apply spacing logic if fixChineseSpacing is true and char is not ignored
@@ -173,7 +175,8 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             lastCharWasChinese = false; // Reset if fixChineseSpacing is off or char is ignored
         }
 
-        result += s;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        result += s ?? "";
         index += charLength;
     }
 
