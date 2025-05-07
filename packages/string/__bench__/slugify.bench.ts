@@ -2,6 +2,7 @@ import sindresorhusSlugify from "@sindresorhus/slugify";
 import simovSlugify from "slugify";
 import { slugify as transliterationSlugify } from "transliteration";
 import { bench, describe } from "vitest";
+import slugPackage from "slug";
 
 import visulimaSlugify from "../src/slugify";
 
@@ -67,6 +68,12 @@ describe("Slugify Benchmark Comparison by Feature", () => {
                 transliterationSlugify(item, transliterationPackageDefaultOptions);
             }
         });
+
+        bench("slug (default: transliterate ON)", () => {
+            for (const item of testStrings) {
+                slugPackage(item);
+            }
+        });
     });
 
     describe("Separator Option: '_'", () => {
@@ -93,6 +100,12 @@ describe("Slugify Benchmark Comparison by Feature", () => {
                 transliterationSlugify(item, { ...transliterationPackageDefaultOptions, separator: "_" });
             }
         });
+
+        bench("slug", () => {
+            for (const item of testStrings) {
+                slugPackage(item, { replacement: "_" });
+            }
+        });
     });
 
     // Note: Sindresorhus & Simov might not support empty string separator in the same way
@@ -113,6 +126,11 @@ describe("Slugify Benchmark Comparison by Feature", () => {
         bench("transliteration slugify", () => {
             for (const item of testStrings) {
                 transliterationSlugify(item, { ...transliterationPackageDefaultOptions, separator: "" });
+            }
+        });
+        bench("slug (replacement: '')", () => {
+            for (const item of testStrings) {
+                slugPackage(item, { replacement: "" });
             }
         });
     });
@@ -141,6 +159,12 @@ describe("Slugify Benchmark Comparison by Feature", () => {
                 transliterationSlugify(item, { ...transliterationPackageDefaultOptions, lowercase: true });
             }
         });
+
+        bench("slug (lower: true)", () => {
+            for (const item of testStrings) {
+                slugPackage(item, { lower: true });
+            }
+        });
     });
 
     describe("Case Option: Preserve/Output Uppercase (from UC input)", () => {
@@ -165,6 +189,12 @@ describe("Slugify Benchmark Comparison by Feature", () => {
         bench("transliteration slugify", () => {
             for (const item of uppercaseTestStrings) {
                 transliterationSlugify(item, { ...transliterationPackageDefaultOptions, lowercase: false });
+            }
+        });
+
+        bench("slug (lower: false)", () => {
+            for (const item of uppercaseTestStrings) {
+                slugPackage(item, { lower: false });
             }
         });
     });

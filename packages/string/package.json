@@ -33,7 +33,16 @@
         "lowercase",
         "string-splitting",
         "typescript",
-        "type-safe"
+        "type-safe",
+        "thai",
+        "romanization",
+        "transliteration",
+        "thai-romanization",
+        "slug",
+        "slugify",
+        "utf8",
+        "utf-8",
+        "unicode"
     ],
     "homepage": "https://visulima.com/packages/string",
     "bugs": {

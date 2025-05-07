@@ -113,6 +113,33 @@ The implementations are optimized for:
     - Boundary conditions
     - Invalid inputs
 
+
+### Slugify
+
+Compares performance against:
+
+- [@visulima/string](https://github.com/visulima/packages/tree/main/packages/string) (this package)
+- [@sindresorhus/slugify](https://github.com/sindresorhus/slugify)
+- [slugify (simov)](https://github.com/simov/slugify)
+- [transliteration](https://github.com/yf-hk/transliteration/tree/main)
+- [slug](https://www.npmjs.com/package/slug)
+
+The `slug` package is benchmarked for default behavior, separator (using the `replacement` option), and case (using the `lower` option). It is included in all relevant feature blocks for a comprehensive comparison.
+
+Benchmark file: `slugify.bench.ts`
+
+### Transliterate
+
+Compares performance against:
+
+- [@visulima/string](https://github.com/visulima/packages/tree/main/packages/string) (this package)
+- [transliteration](https://github.com/yf-hk/transliteration/tree/main)
+- [slug](https://www.npmjs.com/package/slug) (where applicable)
+
+Benchmarks focus on the speed and accuracy of converting non-ASCII characters to their closest ASCII equivalents. Each library is tested with a variety of scripts and edge cases.
+
+Benchmark file: `transliterate.bench.ts`
+
 ## Notes
 
 - Built with Vitest's bench utilities
