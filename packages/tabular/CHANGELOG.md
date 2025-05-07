@@ -1,3 +1,10 @@
+## @visulima/tabular [1.0.2](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.1...@visulima/tabular@1.0.2) (2025-05-07)
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 1.2.0
+
 ## @visulima/tabular [1.0.1](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.0...@visulima/tabular@1.0.1) (2025-05-04)
 
 
