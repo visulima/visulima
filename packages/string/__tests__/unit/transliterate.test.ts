@@ -168,6 +168,8 @@ describe("transliterate function", () => {
             // Malayalam
             ["അഭിജീത", "abhijiit"],
             ["മലയാലമ്", "mlyaalm"],
+            // Latin with circumflex below
+            ["ṉṉ", "nn"],
             // Japanese
             ["げんまい茶", "genmaiCha"],
             // Unknown characters
@@ -177,6 +179,12 @@ describe("transliterate function", () => {
             expect.assertions(1);
 
             expect(transliterate(string_)).toBe(result);
+        });
+
+        it("should correctly transliterate tamil ன", async () => {
+            expect.assertions(1);
+
+            expect(transliterate("கன்னியாகுமரி")).toBe("kannnniyaakaumri");
         });
 
         it("should handle unknown chars with option", async () => {
@@ -218,6 +226,24 @@ describe("transliterate function", () => {
         expect.assertions(1);
 
         expect(transliterate("ố Ừ Đ")).toBe("o U D");
+    });
+
+    it("supports Thai", async () => {
+        expect.assertions(1);
+        // Ideal: ochiangmai, Current: oechiiyngaihm
+        expect(transliterate("ốเชียงใหม่")).toBe("ochianghaim");
+    });
+
+    describe("more Thai examples (based on current charmap behavior)", () => {
+        it.each([
+            ["สวัสดี", "swasdi"],
+            ["ขอบคุณ", "khobkhun"],
+            ["ไม่เป็นไร", "maipunrai"],
+            ["ประเทศไทย", "prathesthai"],
+        ])("should transliterate Thai '%s' to '%s' (target behavior)", async (input, expected) => {
+            expect.assertions(1);
+            expect(transliterate(input)).toBe(expected);
+        });
     });
 
     it("supports Arabic", async () => {
