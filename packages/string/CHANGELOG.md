@@ -1,3 +1,9 @@
+## @visulima/string [1.2.2](https://github.com/visulima/visulima/compare/@visulima/string@1.2.1...@visulima/string@1.2.2) (2025-05-07)
+
+### Bug Fixes
+
+* **string:** add new keywords, extended slug benchmarks ([71c02b0](https://github.com/visulima/visulima/commit/71c02b047731694c6246a6365f061880c07d1071))
+
 ## @visulima/string [1.2.1](https://github.com/visulima/visulima/compare/@visulima/string@1.2.0...@visulima/string@1.2.1) (2025-05-07)
 
 ### Bug Fixes
