@@ -105,7 +105,7 @@ import type { Charmap } from "../types";
 ${importStatements}
 
 // Map block indices (as strings) to the imported block data arrays
-const blockDataMap: Record<string, (string | undefined)[]> = Object.freeze({
+const blockDataMap: Record<string, readonly (string | undefined)[]> = Object.freeze({
 ${blockDataMapEntries}
 });
 
