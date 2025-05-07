@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tabular",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Create beautiful ASCII tables and grids with customizable borders, padding, and alignment. Supports Unicode, colors, and ANSI escape codes.",
     "keywords": [
         "cli",
@@ -107,7 +107,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/string": "1.2.0"
+        "@visulima/string": "1.2.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
