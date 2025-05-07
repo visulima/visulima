@@ -50,17 +50,23 @@ export type { StringWidthOptions } from "./get-string-width";
 export { getStringWidth } from "./get-string-width";
 export type { Outdent, Options as OutdentOptions } from "./outdent";
 export { outdent } from "./outdent";
+export { default as replaceString } from "./replace-string";
 export type { SliceOptions } from "./slice";
 export { slice } from "./slice";
+export { default as slugify } from "./slugify";
+export { default as transliterate } from "./transliterate";
 export type { TruncateOptions } from "./truncate";
 export { truncate } from "./truncate";
 export type {
     All,
     Any,
     CharAt,
+    Charmap,
     Concat,
     EndsWith,
     Includes,
+    Interval,
+    IntervalArray,
     IsBooleanLiteral,
     IsNumberLiteral,
     IsStringLiteral,
@@ -69,6 +75,10 @@ export type {
     Length,
     Math,
     NodeLocale,
+    OptionReplaceArray,
+    OptionReplaceCombined,
+    OptionReplaceObject,
+    OptionsTransliterate,
     PadEnd,
     PadStart,
     Repeat,
@@ -76,6 +86,7 @@ export type {
     ReplaceAll,
     Reverse,
     Slice,
+    SlugifyOptions,
     Split,
     StartsWith,
     ToLowerCase,
