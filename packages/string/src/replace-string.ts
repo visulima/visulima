@@ -1,5 +1,4 @@
 import type { Interval, IntervalArray, OptionReplaceArray } from "./types";
-import { escapeRegExp } from "./utils";
 
 /**
  * Represents a potential replacement match found during processing.
@@ -91,65 +90,90 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
             continue;
         }
 
-        let searchPattern: RegExp;
-
         try {
             if (searchKey instanceof RegExp) {
                 // eslint-disable-next-line security/detect-non-literal-regexp,@rushstack/security/no-unsafe-regexp
-                searchPattern = new RegExp(searchKey.source, `${searchKey.flags.replace("g", "")}g`);
+                const searchPattern = new RegExp(searchKey.source, `${searchKey.flags.replace("g", "")}g`);
+
+                let match: RegExpExecArray | null;
+
+                // eslint-disable-next-line no-cond-assign
+                while ((match = searchPattern.exec(source)) !== null) {
+                    const start = match.index;
+                    const original = match[0] as string;
+
+                    if (original.length === 0 && searchPattern.lastIndex === match.index) {
+                        // eslint-disable-next-line no-plusplus
+                        searchPattern.lastIndex++; // Avoid infinite loop on zero-length matches
+                    }
+
+                    const end = start + original.length - 1;
+
+                    // eslint-disable-next-line @typescript-eslint/no-loop-func
+                    const finalReplacement = replacementValue.replaceAll(/\$(\d+|&|\$)/g, (substringFound, capturedSymbolOrDigits) => {
+                        if (capturedSymbolOrDigits === "&") {
+                            return original;
+                        }
+                        if (capturedSymbolOrDigits === "$") {
+                            return "$";
+                        }
+                        const groupIndex = Number.parseInt(capturedSymbolOrDigits, 10);
+                        if (match && groupIndex > 0 && groupIndex < match.length) {
+                            // eslint-disable-next-line security/detect-object-injection
+                            return match[groupIndex] ?? "";
+                        }
+                        return substringFound;
+                    });
+
+                    // eslint-disable-next-line no-plusplus
+                    potentialMatches.push({ end, id: matchIdCounter++, original, replacement: finalReplacement, start });
+
+                    if (original.length === 0 && searchPattern.lastIndex === start) {
+                        // eslint-disable-next-line no-plusplus
+                        searchPattern.lastIndex++;
+                    }
+                }
             } else if (typeof searchKey === "string" && searchKey.length > 0) {
-                // eslint-disable-next-line security/detect-non-literal-regexp,@rushstack/security/no-unsafe-regexp
-                searchPattern = new RegExp(escapeRegExp(searchKey), "g");
+                // eslint-disable-next-line no-plusplus,no-cond-assign
+                for (let index = 0; (index = source.indexOf(searchKey, index)) !== -1; index++) {
+                    const start = index;
+                    const original = searchKey;
+                    const end = start + original.length - 1;
+
+                    // Mock a match object for the replacement logic ($& and $$ are supported)
+                    const mockMatch: RegExpExecArray = Object.assign([original], { index: start, input: source }) as RegExpExecArray;
+
+                    const finalReplacement = replacementValue.replaceAll(/\$(\d+|&|\$)/g, (substringFound, capturedSymbolOrDigits) => {
+                        if (capturedSymbolOrDigits === "&") {
+                            return original; // original is match[0]
+                        }
+
+                        if (capturedSymbolOrDigits === "$") {
+                            return "$";
+                        }
+
+                        // For string searchKey, mockMatch has length 1 (only the full string).
+                        // So, groupIndex > 0 will effectively not find $1, $2, etc.
+                        // Literal $1, $2 in replacementValue will pass through if not caught by this regex.
+                        const groupIndex = Number.parseInt(capturedSymbolOrDigits, 10);
+
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                        if (mockMatch && groupIndex > 0 && groupIndex < mockMatch.length) {
+                            // This branch will likely not be hit for $N with N > 0 for string searches
+                            // eslint-disable-next-line security/detect-object-injection
+                            return mockMatch[groupIndex] ?? "";
+                        }
+                        return substringFound; // Returns $N as is, or the original char if not $& or $$
+                    });
+
+                    // eslint-disable-next-line no-plusplus
+                    potentialMatches.push({ end, id: matchIdCounter++, original, replacement: finalReplacement, start });
+                }
             } else {
                 // eslint-disable-next-line no-continue
                 continue;
             }
-
-            let match: RegExpExecArray | null;
-
-            // eslint-disable-next-line no-cond-assign
-            while ((match = searchPattern.exec(source)) !== null) {
-                const start = match.index;
-                const original = match[0] as string;
-
-                if (original.length === 0 && searchPattern.lastIndex === match.index) {
-                    // eslint-disable-next-line no-plusplus
-                    searchPattern.lastIndex++; // Avoid infinite loop on zero-length matches
-                }
-
-                const end = start + original.length - 1; // Inclusive end
-
-                // eslint-disable-next-line @typescript-eslint/no-loop-func
-                const finalReplacement = replacementValue.replaceAll(/\$(\d+|&|\$)/g, (substringFound, capturedSymbolOrDigits) => {
-                    if (capturedSymbolOrDigits === "&") {
-                        return original;
-                    }
-
-                    if (capturedSymbolOrDigits === "$") {
-                        return "$";
-                    }
-
-                    const groupIndex = Number.parseInt(capturedSymbolOrDigits, 10);
-
-                    if (match && groupIndex > 0 && groupIndex < match.length) {
-                        // eslint-disable-next-line security/detect-object-injection
-                        return match[groupIndex] ?? "";
-                    }
-
-                    return substringFound;
-                });
-
-                // eslint-disable-next-line no-plusplus
-                potentialMatches.push({ end, id: matchIdCounter++, original, replacement: finalReplacement, start });
-
-                if (original.length === 0 && searchPattern.lastIndex === start) {
-                    // eslint-disable-next-line no-plusplus
-                    searchPattern.lastIndex++;
-                }
-            }
-        } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error(`Error processing search key ${String(searchKey)}:`, error);
+        } catch {
             // eslint-disable-next-line no-continue
             continue;
         }

@@ -157,23 +157,15 @@ describe("replaceString function", () => {
 
     it("should handle overlapping potential matches correctly (non-ignored)", () => {
         expect.assertions(1);
-
-        const source = "ababab";
-        const searches: OptionReplaceArray = [
-            ["aba", "X"], // Matches at 0 and 2
-            ["bab", "Y"], // Matches at 1 and 3
-        ];
-        // Expected behavior: Find all matches: X at 0, Y at 1, X at 2, Y at 3
-        // Sort: [X at 0], [Y at 1], [X at 2], [Y at 3]
-        // Apply X at 0. Applied range [0, 2]. lastIndex = 3.
-        // Skip Y at 1 (overlaps [0, 2])
-        // Skip X at 2 (overlaps [0, 2])
-        // Apply Y at 3. Append source[3:3]="". Append "Y". Applied range [3, 5]. lastIndex = 6.
-        // Append remaining source[6:]=""
-        // Result: XY
-        const ignoreRanges: IntervalArray = [];
-
-        expect(replaceString(source, searches, ignoreRanges)).toBe("Xbab"); // Reverted Expectation
+        const result = replaceString(
+            "ababab",
+            [
+                ["aba", "X"],
+                ["bab", "Y"],
+            ],
+            [],
+        );
+        expect(result).toBe("XY");
     });
 
     it("should handle overlapping potential matches correctly (with ignores)", () => {
@@ -189,10 +181,16 @@ describe("replaceString function", () => {
         // Expected behavior based on previous runs/failures with this logic:
         // Match X at 0 overlaps ignore at 2 -> skip X at 0
         // Match Y at 1 overlaps ignore at 2 -> skip Y at 1
-        // Match X at 2 overlaps ignore at 2 -> skip X at 2
         // Match Y at 3 doesn't overlap -> Apply Y?
         // Let's assume original text expected if ignores interfere.
-        expect(replaceString(source, searches, ignoreRanges)).toBe("ababab"); // Reverted Expectation
+        // With new string search (indexOf i++):
+        // PMs: aba@0, bab@1, bab@3
+        // ignore: s[2]
+        // aba@0 (needs s[0,1,2]) is blocked by ignore on s[2].
+        // bab@1 (needs s[1,2,3]) is blocked by ignore on s[2].
+        // bab@3 (needs s[3,4,5]) is NOT blocked. It's applied.
+        // Result: s[0]s[1]s[2] (original) + Y (for s[3,4,5]) -> "aba" + "Y" = "abaY"
+        expect(replaceString(source, searches, ignoreRanges)).toBe("abaY");
     });
 
     it("should handle empty source string", () => {
