@@ -1,3 +1,9 @@
+## @visulima/string [1.2.0](https://github.com/visulima/visulima/compare/@visulima/string@1.1.0...@visulima/string@1.2.0) (2025-05-07)
+
+### Features
+
+* added transliterate, slugify and replaceString ([#502](https://github.com/visulima/visulima/issues/502)) ([d2b1918](https://github.com/visulima/visulima/commit/d2b1918dd9ed87584ed3c05b11aceca581437c89))
+
 ## @visulima/string [1.1.0](https://github.com/visulima/visulima/compare/@visulima/string@1.0.5...@visulima/string@1.1.0) (2025-05-04)
 
 ### Features
