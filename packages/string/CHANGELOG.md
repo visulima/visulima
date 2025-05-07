@@ -1,3 +1,9 @@
+## @visulima/string [1.2.1](https://github.com/visulima/visulima/compare/@visulima/string@1.2.0...@visulima/string@1.2.1) (2025-05-07)
+
+### Bug Fixes
+
+* **string:** fixed Thai transliteration support ([84aab42](https://github.com/visulima/visulima/commit/84aab427a6248725d71f475bddb45dcbf64d470e))
+
 ## @visulima/string [1.2.0](https://github.com/visulima/visulima/compare/@visulima/string@1.1.0...@visulima/string@1.2.0) (2025-05-07)
 
 ### Features
