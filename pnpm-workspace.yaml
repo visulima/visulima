@@ -27,6 +27,8 @@ packages:
   - packages/pail/__fixtures__/package/cjs
   - packages/pail/__fixtures__/package/mjs
   - packages/pail/__bench__
+  - packages/string/__bench__
+  - packages/fs/__bench__
   - packages/path/__fixtures__/package/cjs
   - packages/path/__fixtures__/package/mjs
   - packages/redact/__bench__
@@ -34,6 +36,7 @@ packages:
   - packages/redact/__fixtures__/package/mjs
   - packages/tsconfig/__fixtures__/package/cjs
   - packages/tsconfig/__fixtures__/package/mjs
+
 onlyBuiltDependencies:
   - '@pnpm/exe'
   - '@prisma/client'
@@ -41,6 +44,7 @@ onlyBuiltDependencies:
   - '@scarf/scarf'
   - '@swc/core'
   - '@tree-sitter-grammars/tree-sitter-yaml'
+  - '@visulima/string'
   - core-js
   - core-js-pure
   - dtrace-provider
@@ -55,9 +59,3 @@ onlyBuiltDependencies:
   - tree-sitter
   - tree-sitter-json
   - yarn
-ignoredBuiltDependencies:
-  - '@anolilab/commitlint-config'
-  - '@anolilab/eslint-config'
-  - '@anolilab/lint-staged-config'
-  - '@anolilab/prettier-config'
-  - '@anolilab/textlint-config'

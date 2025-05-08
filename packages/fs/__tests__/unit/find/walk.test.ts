@@ -38,15 +38,22 @@ describe("walk", () => {
 
         const root = resolve(fixture, "single_file");
 
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for await (const entry of await walk(root)) {
             if (entry.isFile()) {
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(entry.isFile()).toBeTruthy();
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(entry.isDirectory()).toBeFalsy();
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(entry.isSymbolicLink()).toBeFalsy();
             } else {
                 // Directory entry checks
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(entry.isFile()).toBeFalsy();
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(entry.isDirectory()).toBeTruthy();
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(entry.isSymbolicLink()).toBeFalsy();
             }
         }

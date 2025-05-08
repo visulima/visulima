@@ -14,10 +14,12 @@ import { toPath } from "@visulima/path/utils";
  */
 const fileExists = (input: string): boolean => {
     if (isAbsolute(input)) {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         return existsSync(input);
     }
 
     try {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         return existsSync(resolve(input));
     } catch {
         return false;
@@ -75,6 +77,7 @@ const processInputEfficiently = async (
 
         if (fileExists(path)) {
             // For files, we create a readable stream to process them in chunks
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             const fileStream = Readable.from(await readFile(path));
             return await streamProcessor(fileStream);
         }
@@ -133,6 +136,7 @@ export const gzipSizeSync = (input: Buffer | URL | string, options?: ZlibOptions
         const path = toPath(input);
 
         if (fileExists(path)) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             return gzipSync(readFileSync(path), options).length;
         }
 
@@ -153,6 +157,7 @@ export const brotliSizeSync = (input: Buffer | URL | string, options?: BrotliOpt
         const path = toPath(input);
 
         if (fileExists(path)) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             return brotliCompressSync(readFileSync(path), options).length;
         }
 
@@ -173,6 +178,7 @@ export const rawSizeSync = (input: Buffer | URL | string): number => {
         const path = toPath(input);
 
         if (fileExists(path)) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             return statSync(path).size;
         }
 
