@@ -27,7 +27,7 @@
         "@code-hike/mdx": "^0.9.0",
         "@next/env": "^15.2.2",
         "@t3-oss/env-nextjs": "^0.12.0",
-        "@vercel/og": "^0.6.5",
+        "@vercel/og": "^0.6.8",
         "@visulima/fs": "workspace:*",
         "@visulima/nextra-theme-docs": "4.0.26",
         "clsx": "^2.1.1",
@@ -37,11 +37,11 @@
         "lucide-react": "^0.479.0",
         "next": "^15.2.1",
         "nextra": "4.2.16",
-        "publint": "^0.3.9",
+        "publint": "^0.3.12",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "yargs": "^17.7.2",
-        "zod": "^3.24.2"
+        "zod": "^3.24.4"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
