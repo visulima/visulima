@@ -112,7 +112,7 @@
         "@visulima/packem": "1.19.1",
         "@vitest/coverage-v8": "^3.0.8",
         "@vitest/ui": "^3.0.8",
-        "binary-extensions": "^3.0.0",
+        "binary-extensions": "^3.1.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
         "esbuild": "0.25.0",
