@@ -161,7 +161,7 @@
         "eslint-plugin-vitest": "0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
         "fast-copy": "^3.0.2",
-        "jsdom": "^26.0.0",
+        "jsdom": "^26.1.0",
         "lodash.clonedeep": "^4.5.0",
         "nano-copy": "^0.1.1",
         "nanoclone": "^1.0.2",
