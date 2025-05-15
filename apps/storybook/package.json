@@ -22,7 +22,7 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@arthurgeron/eslint-plugin-react-usememo": "^2.4.4",
+        "@arthurgeron/eslint-plugin-react-usememo": "^2.5.0",
         "@babel/core": "^7.26.10",
         "@mdx-js/react": "^3.1.0",
         "@secretlint/secretlint-rule-preset-recommend": "^9.2.0",
@@ -64,7 +64,7 @@
         "postcss": "^8.5.3",
         "publint": "^0.3.9",
         "serve": "^14.2.4",
-        "sort-package-json": "^3.0.0",
+        "sort-package-json": "^3.2.1",
         "storybook": "^8.6.4",
         "tailwindcss": "^4.0.13",
         "tailwindcss-animate": "^1.0.7",
