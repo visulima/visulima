@@ -498,7 +498,7 @@
         "@anolilab/semantic-release-pnpm": "1.1.10",
         "@anolilab/semantic-release-preset": "10.0.3",
         "@arcanis/slice-ansi": "2.0.1",
-        "@arethetypeswrong/cli": "0.17.4",
+        "@arethetypeswrong/cli": "0.18.1",
         "@babel/core": "7.26.10",
         "@rushstack/eslint-plugin-security": "0.10.0",
         "@secretlint/secretlint-rule-preset-recommend": "9.2.0",
