@@ -99,7 +99,7 @@
         "@babel/core": "^7.26.10",
         "@rushstack/eslint-plugin-security": "^0.10.0",
         "@types/http-errors": "^2.0.4",
-        "@types/node": "18.19.71",
+        "@types/node": "18.19.100",
         "@visulima/nextra-theme-docs": "4.0.26",
         "@visulima/packem": "1.19.1",
         "@vitest/coverage-v8": "^3.0.8",
@@ -121,7 +121,7 @@
         "prettier": "^3.5.3",
         "rimraf": "6.0.1",
         "semantic-release": "24.2.3",
-        "typescript": "5.8.2",
+        "typescript": "5.8.3",
         "vitest": "^3.0.8",
         "zod": "^3.24.2"
     },

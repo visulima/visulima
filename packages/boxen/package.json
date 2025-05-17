@@ -97,7 +97,7 @@
         "@arethetypeswrong/cli": "^0.17.4",
         "@babel/core": "^7.26.10",
         "@rushstack/eslint-plugin-security": "^0.10.0",
-        "@types/node": "18.19.71",
+        "@types/node": "18.19.100",
         "@visulima/colorize": "1.4.21",
         "@visulima/packem": "1.19.1",
         "@visulima/path": "1.3.5",
@@ -119,7 +119,7 @@
         "semantic-release": "24.2.3",
         "string-width": "^7.2.0",
         "terminal-size": "^4.0.0",
-        "typescript": "5.8.2",
+        "typescript": "5.8.3",
         "vitest": "^3.0.8",
         "wrap-ansi": "^9.0.0"
     },
