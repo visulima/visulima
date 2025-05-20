@@ -21,6 +21,6 @@ export {
 } from "./cursor";
 export { eraseDown, eraseLine, eraseLineEnd, eraseLines, eraseLineStart, eraseScreen, eraseUp } from "./erase";
 export { default as image } from "./image";
-export { default as link } from "./link";
+export { default as link } from "./hyperlink";
 export { scrollDown, scrollUp } from "./scroll";
 export { default as strip } from "./strip";

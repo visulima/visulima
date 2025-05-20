@@ -1,43 +1,60 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { clearLine, clearScreen, clearScrollbar, clearTerminal, fullReset } from "../../src/clear";
-import { isWindows } from "../../src/helpers";
+import { clearLineAndHomeCursor, clearScreenAndHomeCursor, clearScreenFromTopLeft, resetTerminal } from "../../src/clear";
+import { CSI } from "../../src/constants";
 
-describe(`clear`, () => {
-    it("should return the correct ansi for clear screen", () => {
-        expect.assertions(1);
+const mocked = vi.hoisted(() => {
+    return {
+        isWindows: vi.fn(),
+    };
+});
 
-        expect(clearScreen).toBe("\u001BH\u001B2J");
+vi.mock("../../src/helpers", async (importOriginal) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const actualHelpers = await importOriginal<any>();
+
+    return {
+        ...actualHelpers,
+        isWindows: mocked.isWindows,
+    };
+});
+
+describe("clear utilities", () => {
+    afterEach(() => {
+        vi.resetAllMocks();
     });
 
-    it("should return the correct ansi for clear line", () => {
-        expect.assertions(1);
-
-        expect(clearLine).toBe("\u001B[2K\u001B[0D");
+    describe("clearScreenFromTopLeft", () => {
+        it("should be the combination of cursorTo(0,0) and eraseDisplay(ToEnd)", async () => {
+            expect(clearScreenFromTopLeft).toBe(CSI + "1;1H" + CSI + "J");
+        });
     });
 
-    it("should return the correct ansi for clear terminal", () => {
-        expect.assertions(1);
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (isWindows) {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            expect(clearTerminal).toBe("\u001B[2J\u001B0f");
-        } else {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            expect(clearTerminal).toBe("\u001B[2J\u001B3J\u001BH\u001Bc");
-        }
+    describe("clearLineAndHomeCursor", () => {
+        it("should be the combination of eraseLine(EntireLine) and cursorToColumn(0)", async () => {
+            expect(clearLineAndHomeCursor).toBe(CSI + "2K" + CSI + "G");
+        });
     });
 
-    it("should return the correct ansi for clear scrollbar", () => {
-        expect.assertions(1);
-
-        expect(clearScrollbar).toBe("\u001B2J");
+    describe("clearScreenAndHomeCursor", () => {
+        it("should be the combination of cursorTo(0,0) and eraseDisplay(EntireScreen)", async () => {
+            expect(clearScreenAndHomeCursor).toBe(CSI + "H" + CSI + "2J");
+        });
     });
 
-    it("should return the correct ansi for full reset", () => {
-        expect.assertions(1);
+    describe("resetTerminal", () => {
+        it("should produce correct sequence when isWindows is false", async () => {
+            mocked.isWindows.mockReturnValue(false);
 
-        expect(fullReset).toBe("\u001B1;1H\u001BJ");
+            expect(resetTerminal).toBe(CSI + "2J" + CSI + "0f");
+        });
+
+        it("should produce correct sequence when isWindows is true", async () => {
+            mocked.isWindows.mockReturnValue(true);
+
+            const expectedWinReset = CSI + "2J" + CSI + "0f";
+
+            expect(resetTerminal).toBe(expectedWinReset);
+        });
     });
 });

@@ -1,8 +1,9 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "extends": "../../tsconfig.base.json",
-    "include": ["src/**/*", "*.d.ts"],
+    "include": ["src/**/*", "*.d.ts", "__tests__/**/*"],
     "compilerOptions": {
-        "moduleResolution": "bundler"
+        "moduleResolution": "bundler",
+        "types": ["node", "vitest/globals"]
     }
 }
