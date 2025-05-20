@@ -78,7 +78,7 @@ export const deleteLine = (count = 1): string => CSI + (count <= 1 ? "" : count)
  * process.stdout.write(setTopBottomMargins(5, 20)); // CSI 5;20r
  *
  * // Reset to default margins (full screen)
- * process.stdout.write(setTopBottomMargins()); // CSI r
+ * process.stdout.write(setTopBottomMargins()); // CSI ;r
  * \`\`\`
  */
 export const setTopBottomMargins = (top?: number | null, bottom?: number | null): string => {
@@ -86,7 +86,7 @@ export const setTopBottomMargins = (top?: number | null, bottom?: number | null)
     const bottomString = bottom && bottom > 0 ? bottom.toString() : "";
 
     if (topString === "" && bottomString === "") {
-        return CSI + "r"; // CSI r (reset to default)
+        return CSI + SEP + "r"; // CSI ;r (reset to default)
     }
     return CSI + topString + SEP + bottomString + "r";
 };
@@ -117,7 +117,7 @@ export const setTopBottomMargins = (top?: number | null, bottom?: number | null)
  * process.stdout.write(setLeftRightMargins(10, 70)); // CSI 10;70s
  *
  * // Reset to default margins (full width)
- * process.stdout.write(setLeftRightMargins());      // CSI s
+ * process.stdout.write(setLeftRightMargins());      // CSI ;s
  * \`\`\`
  */
 export const setLeftRightMargins = (left?: number | null, right?: number | null): string => {
@@ -125,7 +125,7 @@ export const setLeftRightMargins = (left?: number | null, right?: number | null)
     const rightString = right && right > 0 ? right.toString() : "";
 
     if (leftString === "" && rightString === "") {
-        return CSI + "s"; // CSI s (reset to default)
+        return CSI + SEP + "s"; // CSI ;s (reset to default)
     }
     return CSI + leftString + SEP + rightString + "s";
 };
