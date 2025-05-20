@@ -1,6 +1,6 @@
-import { createInitialSixelPalette,decodeSixelColor, updatePalette } from "./color";
+import { createInitialSixelPalette, decodeSixelColor, updatePalette } from "./color";
 import type { SixelRaster } from "./raster";
-import { decodeSixelRaster, SIXEL_MAX_RASTER_HEIGHT,SIXEL_MAX_RASTER_WIDTH } from "./raster";
+import { decodeSixelRaster, SIXEL_MAX_RASTER_HEIGHT, SIXEL_MAX_RASTER_WIDTH } from "./raster";
 import { decodeSixelRepeat } from "./repeat";
 import { CARRIAGE_RETURN, COLOR_INTRODUCER, LINE_BREAK, RASTER_ATTRIBUTE, REPEAT_INTRODUCER, SIXEL_CHAR_MAX, SIXEL_CHAR_OFFSET } from "./sixel-constants";
 import type { RawImageData, SixelColor, SixelPalette } from "./types";
@@ -189,7 +189,8 @@ export class SixelDecoder {
                 this.pos++;
             } else {
                 switch (this.data[this.pos]) {
-                    case "#": { // DECGSC - Set Color
+                    case "#": {
+                        // DECGSC - Set Color
                         const colorParseResult = decodeSixelColor(this.data, this.pos);
                         if (colorParseResult) {
                             const newColorIndex = colorParseResult.cmd.paletteIndex;
@@ -216,7 +217,8 @@ export class SixelDecoder {
                         break;
                     }
 
-                    case "!": { // DECGRI - Graphics Repeat Introducer
+                    case "!": {
+                        // DECGRI - Graphics Repeat Introducer
                         const repeatParseResult = decodeSixelRepeat(this.data, this.pos);
                         if (repeatParseResult) {
                             const { charToRepeat, count } = repeatParseResult.cmd;
@@ -261,13 +263,15 @@ export class SixelDecoder {
                         break;
                     }
 
-                    case "$": { // DECGCR - Graphics Carriage Return
+                    case "$": {
+                        // DECGCR - Graphics Carriage Return
                         this.currentX = 0;
                         this.pos++;
                         break;
                     }
 
-                    case "-": { // DECGNL - Graphics New Line
+                    case "-": {
+                        // DECGNL - Graphics New Line
                         this.currentX = 0;
                         this.currentY += 6;
                         this.pos++;
@@ -360,7 +364,8 @@ export class SixelDecoder {
                 scanPos++;
             } else {
                 switch (char) {
-                    case "#": { // COLOR_INTRODUCER
+                    case "#": {
+                        // COLOR_INTRODUCER
                         const colorParseResult = decodeSixelColor(this.data, scanPos);
                         if (colorParseResult) {
                             scanPos += colorParseResult.consumed;
@@ -369,7 +374,8 @@ export class SixelDecoder {
                         }
                         break;
                     }
-                    case "!": { // REPEAT_INTRODUCER
+                    case "!": {
+                        // REPEAT_INTRODUCER
                         const repeatParseResult = decodeSixelRepeat(this.data, scanPos);
                         if (repeatParseResult) {
                             const { charToRepeat, count } = repeatParseResult.cmd;
@@ -387,19 +393,22 @@ export class SixelDecoder {
                         }
                         break;
                     }
-                    case "$": { // CARRIAGE_RETURN
+                    case "$": {
+                        // CARRIAGE_RETURN
                         currentX = 0;
                         scanPos++;
                         break;
                     }
-                    case "-": { // LINE_BREAK
+                    case "-": {
+                        // LINE_BREAK
                         currentX = 0;
                         currentY += 6;
                         maxY = Math.max(maxY, currentY + 6); // After moving to new line, this is the new extent
                         scanPos++;
                         break;
                     }
-                    case '"': { // RASTER_ATTRIBUTE
+                    case '"': {
+                        // RASTER_ATTRIBUTE
                         // If scanning encounters a raster attribute, it means the primary raster parse
                         // either didn't happen or this is an unexpected one.
                         // For scanning dimensions, we primarily care about pixel data extent.
@@ -414,7 +423,8 @@ export class SixelDecoder {
                         scanPos = endOfScanRaster;
                         break;
                     }
-                    default: { // Unknown char, skip
+                    default: {
+                        // Unknown char, skip
                         scanPos++;
                         break;
                     }

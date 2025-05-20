@@ -1,7 +1,7 @@
 import { DCS, ST } from "./constants";
-import type {SixelDecoderOptions as InternalDecoderOptions} from "./sixel/decoder";
+import type { SixelDecoderOptions as InternalDecoderOptions } from "./sixel/decoder";
 import { SixelDecoder as SixelDecoderInternal } from "./sixel/decoder";
-import type {SixelEncoderOptions as InternalEncoderOptions} from "./sixel/encoder";
+import type { SixelEncoderOptions as InternalEncoderOptions } from "./sixel/encoder";
 import { SixelEncoder as SixelEncoderInternal } from "./sixel/encoder";
 import type { RawImageData } from "./sixel/types";
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { BEL,OSC } from "../../src/constants";
-import type {IITerm2Payload, ITerm2FileProps as ITerm2FileProperties} from "../../src/iterm2";
+import { BEL, OSC } from "../../src/constants";
+import type { IITerm2Payload, ITerm2FileProps as ITerm2FileProperties } from "../../src/iterm2";
 import {
     IT2_AUTO,
     it2Cells,
@@ -11,7 +11,7 @@ import {
     ITerm2File,
     ITerm2FileEnd,
     ITerm2FilePart,
-    ITerm2MultipartFileStart
+    ITerm2MultipartFileStart,
 } from "../../src/iterm2";
 
 describe("iTerm2 Integration", () => {

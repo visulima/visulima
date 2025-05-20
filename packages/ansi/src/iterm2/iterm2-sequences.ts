@@ -57,13 +57,16 @@ const formatITerm2FileProps = (props: Partial<ITerm2FileProps>): string => {
     }
     // Note: iTerm2 default is to preserve aspect ratio if 'preserveAspectRatio' is absent.
     // So, we only add 'preserveAspectRatio=0' if ignoreAspectRatio is true.
-    if (props.ignoreAspectRatio) { // maps to preserveAspectRatio=0
+    if (props.ignoreAspectRatio) {
+        // maps to preserveAspectRatio=0
         opts.push("preserveAspectRatio=0");
     }
-    if (props.inline) { // Results in inline=1
+    if (props.inline) {
+        // Results in inline=1
         opts.push("inline=1");
     }
-    if (props.doNotMoveCursor) { // Results in doNotMoveCursor=1
+    if (props.doNotMoveCursor) {
+        // Results in doNotMoveCursor=1
         opts.push("doNotMoveCursor=1");
     }
     return opts.join(";");

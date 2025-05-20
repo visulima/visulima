@@ -141,14 +141,10 @@ export const encodeMouseButtonByte = (button: MouseButtonType, motion: boolean, 
         return 0xff; // Invalid button
     }
 
-    if (modifiers.shift)
-callback |= MOUSE_BIT_SHIFT;
-    if (modifiers.alt)
-callback |= MOUSE_BIT_ALT;
-    if (modifiers.ctrl)
-callback |= MOUSE_BIT_CTRL;
-    if (motion)
-callback |= MOUSE_BIT_MOTION;
+    if (modifiers.shift) callback |= MOUSE_BIT_SHIFT;
+    if (modifiers.alt) callback |= MOUSE_BIT_ALT;
+    if (modifiers.ctrl) callback |= MOUSE_BIT_CTRL;
+    if (motion) callback |= MOUSE_BIT_MOTION;
 
     return callback;
 };
@@ -179,8 +175,7 @@ const X10_MOUSE_OFFSET = 32;
  * \`\`\`
  */
 export const mouseX10Sequence = (callback: number, x: number, y: number): string => {
-    if (callback === 0xff)
-return ""; // Don't generate sequence for invalid button byte
+    if (callback === 0xff) return ""; // Don't generate sequence for invalid button byte
     // Coordinates are 1-based for the protocol
     const charCallback = String.fromCharCode(callback + X10_MOUSE_OFFSET);
     const charCx = String.fromCharCode(x + 1 + X10_MOUSE_OFFSET);
@@ -229,8 +224,7 @@ return ""; // Don't generate sequence for invalid button byte
  * \`\`\`
  */
 export const mouseSgrSequence = (callback: number, x: number, y: number, isRelease: boolean): string => {
-    if (callback === 0xff)
-return ""; // Don't generate sequence for invalid button byte
+    if (callback === 0xff) return ""; // Don't generate sequence for invalid button byte
     // Coordinates are 1-based for the protocol
     const finalChar = isRelease ? "m" : "M";
     return `${ESC}[<${callback};${x + 1};${y + 1}${finalChar}`;

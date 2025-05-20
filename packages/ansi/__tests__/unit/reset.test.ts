@@ -1,4 +1,4 @@
-import { describe, expect,it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { ESC } from "../../src/constants";
 import { RESET_INITIAL_STATE, RIS } from "../../src/reset";

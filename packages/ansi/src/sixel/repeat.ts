@@ -12,8 +12,7 @@ export interface DecodedSixelRepeatCommand {
  */
 export function decodeSixelRepeat(sixelData: string, currentPosition: number): { cmd: DecodedSixelRepeatCommand; consumed: number } | null {
     let pos = currentPosition;
-    if (sixelData[pos] !== "!") 
-return null;
+    if (sixelData[pos] !== "!") return null;
     pos++; // Consume '!'
 
     let countString = "";

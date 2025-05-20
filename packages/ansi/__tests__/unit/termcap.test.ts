@@ -1,7 +1,7 @@
-import { describe, expect,it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { DCS, SEP,ST } from "../../src/constants";
-import { requestTermcap, requestTerminfo,XTGETTCAP } from "../../src/termcap";
+import { DCS, SEP, ST } from "../../src/constants";
+import { requestTermcap, requestTerminfo, XTGETTCAP } from "../../src/termcap";
 
 describe("termcap/Terminfo XTGETTCAP", () => {
     it("should return an empty string if no capabilities are provided", () => {

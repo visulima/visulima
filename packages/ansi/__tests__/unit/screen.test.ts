@@ -1,6 +1,6 @@
-import { describe, expect,it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { CSI, ESC,SEP } from "../../src/constants";
+import { CSI, ESC, SEP } from "../../src/constants";
 import {
     clearTabStop,
     deleteCharacter,

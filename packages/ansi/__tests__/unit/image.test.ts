@@ -1,4 +1,4 @@
-import { describe, expect,it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { BEL, OSC } from "../../src/constants";
 import image from "../../src/image";

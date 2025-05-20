@@ -1,9 +1,7 @@
-import { describe, expect,it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { CSI, SEP } from "../../src/constants";
-import type {
-    AnsiStatusReport,
-    DecStatusReport} from "../../src/status";
+import type { AnsiStatusReport, DecStatusReport } from "../../src/status";
 import {
     CPR,
     createAnsiStatusReport,

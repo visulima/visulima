@@ -33,8 +33,7 @@ export function encodeToSixel(imageData: RawImageData, options?: SixelEncoderOpt
 
     // 1. Quantize image to get a palette
     const palette = medianCutQuantize(imageData, maxColors);
-    if (palette.length === 0) 
-return ""; // No colors, empty Sixel
+    if (palette.length === 0) return ""; // No colors, empty Sixel
 
     // Create a reverse map for quick palette index lookup
     const paletteIndexMap = new Map<string, number>();
@@ -56,8 +55,7 @@ return ""; // No colors, empty Sixel
                 minDistanceSq = distanceSq;
                 bestIndex = index;
             }
-            if (minDistanceSq === 0) 
-break; // Exact match
+            if (minDistanceSq === 0) break; // Exact match
         }
         return bestIndex;
     };

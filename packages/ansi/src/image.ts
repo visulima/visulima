@@ -80,10 +80,7 @@ export interface ImageOptions {
  * @see {@link https://iterm2.com/documentation-images.html} iTerm2 Inline Images Protocol.
  * @see {@link ImageOptions}
  */
-export const image = (
-    data: Uint8Array,
-    options: ImageOptions = {},
-): string => {
+export const image = (data: Uint8Array, options: ImageOptions = {}): string => {
     // It's good practice to handle potential null/undefined data, though type system should catch this.
     // if (!data) {
     //     return "";
@@ -91,7 +88,8 @@ export const image = (
 
     let returnValue = `${OSC}1337;File=inline=1`;
 
-    if (options.width !== undefined) { // Check for undefined to allow 0 or "0px"
+    if (options.width !== undefined) {
+        // Check for undefined to allow 0 or "0px"
         returnValue += `;width=${options.width}`;
     }
 

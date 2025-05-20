@@ -1,11 +1,11 @@
-import { beforeEach,describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import {
     decodeSixelColor,
     updatePalette,
     // hslToRgb is not exported, so test it indirectly via decodeSixelColor HLS cases or add specific tests if exposed
 } from "../../src/sixel/color";
-import type { DecodedSixelColorCommand,SixelColor, SixelPalette } from "../../src/sixel/types";
+import type { DecodedSixelColorCommand, SixelColor, SixelPalette } from "../../src/sixel/types";
 
 // Helper to access hslToRgb for direct testing if needed, or make it exportable for testing
 // For now, testing it via decodeSixelColor's HLS path.

@@ -67,8 +67,7 @@ export function resetKeyModifierOptions(resource: number): string {
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Functions-using-CSI-_-ordered-by-the-final-character_s_}
  */
 export function queryKeyModifierOptions(resource: number): string {
-    if (resource < 0)
-return ""; // Resource must be non-negative
+    if (resource < 0) return ""; // Resource must be non-negative
     const pp = resource.toString();
     return `${CSI}?${pp}m`;
 }

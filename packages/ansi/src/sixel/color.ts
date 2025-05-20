@@ -16,22 +16,19 @@ function hslToRgb(h: number, s: number, l: number): SixelColor {
     const lNormalized = l / 100;
     const hNormalized = (h % 360) / 360; // Normalize hue to 0-1, handling h >= 360
 
-    let r: number; let g: number; let b: number;
+    let r: number;
+    let g: number;
+    let b: number;
 
     if (sNormalized === 0) {
         r = g = b = lNormalized; // achromatic
     } else {
         const hue2rgb = (p: number, q: number, t: number): number => {
-            if (t < 0) 
-t += 1;
-            if (t > 1) 
-t -= 1;
-            if (t < 1 / 6) 
-return p + (q - p) * 6 * t;
-            if (t < 1 / 2) 
-return q;
-            if (t < 2 / 3) 
-return p + (q - p) * (2 / 3 - t) * 6;
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
             return p;
         };
 
@@ -60,8 +57,7 @@ return p + (q - p) * (2 / 3 - t) * 6;
  */
 export function decodeSixelColor(sixelData: string, currentPosition: number): { cmd: DecodedSixelColorCommand; consumed: number } | null {
     let pos = currentPosition;
-    if (sixelData[pos] !== "#") 
-return null;
+    if (sixelData[pos] !== "#") return null;
     pos++; // Consume '#'
 
     const parameters: number[] = [];
@@ -102,8 +98,7 @@ return null;
         parameters.push(sign * Number.parseInt(currentParameter, 10));
     }
 
-    if (parameters.length === 0 || isNaN(parameters[0])) 
-return null;
+    if (parameters.length === 0 || isNaN(parameters[0])) return null;
 
     const paletteIndex = parameters[0];
     const result: DecodedSixelColorCommand = { paletteIndex };
@@ -115,8 +110,7 @@ return null;
             const p1 = parameters[2]; // H or R
             const p2 = parameters[3]; // L or G
             const p3 = parameters[4]; // S or B
-            if ([p1, p2, p3].some(isNaN)) 
-return null; // Invalid sub-param
+            if ([p1, p2, p3].some(isNaN)) return null; // Invalid sub-param
 
             result.colorSpace = pu === 1 ? "HLS" : "RGB";
             if (result.colorSpace === "RGB") {
@@ -197,5 +191,4 @@ export function createInitialSixelPalette(): SixelPalette {
 
 // Re-export types for convenience if SixelDecoder imports primarily from color.ts
 
-
-export {type SixelColor, type SixelPalette} from "./types";
+export { type SixelColor, type SixelPalette } from "./types";

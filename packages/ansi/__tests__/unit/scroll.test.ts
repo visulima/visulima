@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { CSI } from "../../src/constants";
-import { SCROLL_DOWN_1,SCROLL_UP_1, scrollDown, scrollUp } from "../../src/scroll";
+import { SCROLL_DOWN_1, SCROLL_UP_1, scrollDown, scrollUp } from "../../src/scroll";
 
 describe("scroll utilities", () => {
     describe("scrollUp", () => {

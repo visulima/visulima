@@ -1,4 +1,4 @@
-import { describe, expect,it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { BEL, OSC, SEP } from "../../src/constants";
 import { hyperlink } from "../../src/hyperlink";

@@ -99,7 +99,7 @@ describe("encodeToSixel", () => {
     it("should handle multi-band image (e.g., 1x7 image)", () => {
         const B_PIXEL_DATA = [0, 0, 255, 255]; // Blue
         const imageData: RawImageData = {
-            data: new Uint8ClampedArray(Array.from({length: 7}).fill(B_PIXEL_DATA).flat()),
+            data: new Uint8ClampedArray(Array.from({ length: 7 }).fill(B_PIXEL_DATA).flat()),
             height: 7,
             width: 1,
         };
@@ -311,7 +311,7 @@ describe("encodeToSixel", () => {
         it("should handle a leading empty (black) band in a 1x12 image", () => {
             const BLACK_PIXEL = [0, 0, 0, 255];
             const RED_PIXEL = [255, 0, 0, 255];
-            const dataValues = [...Array.from({length: 6}).fill(BLACK_PIXEL).flat(), ...Array.from({length: 6}).fill(RED_PIXEL).flat()];
+            const dataValues = [...Array.from({ length: 6 }).fill(BLACK_PIXEL).flat(), ...Array.from({ length: 6 }).fill(RED_PIXEL).flat()];
             const imageData: RawImageData = { data: new Uint8ClampedArray(dataValues), height: 12, width: 1 };
             const options: SixelEncoderOptions = { maxColors: 2 };
             const actual = encodeToSixel(imageData, options);
@@ -336,7 +336,7 @@ describe("encodeToSixel", () => {
         it("should handle a trailing empty (black) band in a 1x12 image", () => {
             const RED_PIXEL = [255, 0, 0, 255];
             const BLACK_PIXEL = [0, 0, 0, 255];
-            const dataValues = [...Array.from({length: 6}).fill(RED_PIXEL).flat(), ...Array.from({length: 6}).fill(BLACK_PIXEL).flat()];
+            const dataValues = [...Array.from({ length: 6 }).fill(RED_PIXEL).flat(), ...Array.from({ length: 6 }).fill(BLACK_PIXEL).flat()];
             const imageData: RawImageData = { data: new Uint8ClampedArray(dataValues), height: 12, width: 1 };
             const options: SixelEncoderOptions = { maxColors: 2 };
             const actual = encodeToSixel(imageData, options);
@@ -362,9 +362,9 @@ describe("encodeToSixel", () => {
             const RED_PIXEL = [255, 0, 0, 255];
             const BLACK_PIXEL = [0, 0, 0, 255];
             const dataValues = [
-                ...Array.from({length: 6}).fill(RED_PIXEL).flat(), // Band 1: Red
-                ...Array.from({length: 6}).fill(BLACK_PIXEL).flat(), // Band 2: Black
-                ...Array.from({length: 6}).fill(RED_PIXEL).flat(), // Band 3: Red
+                ...Array.from({ length: 6 }).fill(RED_PIXEL).flat(), // Band 1: Red
+                ...Array.from({ length: 6 }).fill(BLACK_PIXEL).flat(), // Band 2: Black
+                ...Array.from({ length: 6 }).fill(RED_PIXEL).flat(), // Band 3: Red
             ];
             const imageData: RawImageData = { data: new Uint8ClampedArray(dataValues), height: 18, width: 1 };
             const options: SixelEncoderOptions = { maxColors: 2 };
@@ -391,7 +391,7 @@ describe("encodeToSixel", () => {
 
         it("should handle an entirely empty (black) image spanning multiple bands (1x12)", () => {
             const BLACK_PIXEL = [0, 0, 0, 255];
-            const dataValues = Array.from({length: 12}).fill(BLACK_PIXEL).flat();
+            const dataValues = Array.from({ length: 12 }).fill(BLACK_PIXEL).flat();
             const imageData: RawImageData = { data: new Uint8ClampedArray(dataValues), height: 12, width: 1 };
             const options: SixelEncoderOptions = { maxColors: 1 }; // Force black to be #0
             const actual = encodeToSixel(imageData, options);
@@ -416,9 +416,9 @@ describe("encodeToSixel", () => {
             const GREEN_PIXEL = [0, 255, 0, 255];
 
             const dataValues = [
-                ...Array.from({length: 6}).fill(RED_PIXEL).flat(), // Band 1: Red
-                ...Array.from({length: 6}).fill(BLACK_PIXEL).flat(), // Band 2: Black
-                ...Array.from({length: 6}).fill(GREEN_PIXEL).flat(), // Band 3: Green
+                ...Array.from({ length: 6 }).fill(RED_PIXEL).flat(), // Band 1: Red
+                ...Array.from({ length: 6 }).fill(BLACK_PIXEL).flat(), // Band 2: Black
+                ...Array.from({ length: 6 }).fill(GREEN_PIXEL).flat(), // Band 3: Green
             ];
             const imageData: RawImageData = { data: new Uint8ClampedArray(dataValues), height: 18, width: 1 };
             const options: SixelEncoderOptions = { maxColors: 3 };

@@ -1,4 +1,4 @@
-import { DCS, SEP,ST } from "./constants";
+import { DCS, SEP, ST } from "./constants";
 
 /**
  * @internal

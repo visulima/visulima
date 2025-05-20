@@ -34,8 +34,7 @@ class CubePriorityQueue {
     }
 
     pop(): QuantizationCube | undefined {
-        if (this.heap.length === 0) 
-return undefined;
+        if (this.heap.length === 0) return undefined;
         // Sorting ensures the highest score is at the beginning if we want a true pop from end of sorted by score descending
         // Or, if always sorted, can just pop. Current sort is b.score - a.score, so largest is first.
         return this.heap.shift(); // Pop the one with highest score (if sorted descending)
@@ -54,8 +53,7 @@ return undefined;
  * @returns An array of SixelColor representing the quantized palette.
  */
 export function medianCutQuantize(imageData: RawImageData, maxColors: number): SixelColor[] {
-    if (maxColors <= 0) 
-return [];
+    if (maxColors <= 0) return [];
 
     const uniqueColorsMap = new Map<string, { color: SixelColor; count: number }>();
 
@@ -92,8 +90,7 @@ return [];
     while (pq.len() < maxColors && pq.len() > 0) {
         // pq.len() > 0 to prevent infinite loop if pop fails
         const cubeToSplit = pq.pop();
-        if (!cubeToSplit) 
-break; // Should not happen if pq.len() > 0 was true
+        if (!cubeToSplit) break; // Should not happen if pq.len() > 0 was true
 
         // Combine colors and their counts for sorting
         const combinedEntries: { color: SixelColor; count: number }[] = [];
@@ -118,23 +115,19 @@ break; // Should not happen if pq.len() > 0 was true
             }
         }
         // Ensure at least one color in each new cube if possible, unless original cube had only one color
-        if (combinedEntries.length > 1 && medianIndex === combinedEntries.length - 1) 
-medianIndex--;
-        if (combinedEntries.length > 1 && medianIndex < 0) 
-medianIndex = 0; // Should not happen with logic above
+        if (combinedEntries.length > 1 && medianIndex === combinedEntries.length - 1) medianIndex--;
+        if (combinedEntries.length > 1 && medianIndex < 0) medianIndex = 0; // Should not happen with logic above
 
         const leftEntries = combinedEntries.slice(0, medianIndex + 1);
         const rightEntries = combinedEntries.slice(medianIndex + 1);
 
         if (leftEntries.length > 0) {
             const leftCube = createQuantizationCube(leftEntries);
-            if (leftCube) 
-pq.push(leftCube);
+            if (leftCube) pq.push(leftCube);
         }
         if (rightEntries.length > 0) {
             const rightCube = createQuantizationCube(rightEntries);
-            if (rightCube) 
-pq.push(rightCube);
+            if (rightCube) pq.push(rightCube);
         }
     }
 
@@ -143,12 +136,11 @@ pq.push(rightCube);
     let count = 0;
     while (count < maxColors) {
         const cube = pq.pop(); // Pop will get from the internal heap, which might not be maxColors if loop exited early
-        if (!cube) 
-break;
+        if (!cube) break;
 
         let rSum = 0;
-            let gSum = 0;
-            let bSum = 0;
+        let gSum = 0;
+        let bSum = 0;
         let currentCubeTotalPixels = 0;
         for (let index = 0; index < cube.colors.length; index++) {
             const color = cube.colors[index];
@@ -173,15 +165,14 @@ break;
 }
 
 function createQuantizationCube(colorEntries: { color: SixelColor; count: number }[]): QuantizationCube | null {
-    if (colorEntries.length === 0) 
-return null;
+    if (colorEntries.length === 0) return null;
 
     let rMin = 255;
-        let rMax = 0;
+    let rMax = 0;
     let gMin = 255;
-        let gMax = 0;
+    let gMax = 0;
     let bMin = 255;
-        let bMax = 0;
+    let bMax = 0;
     let totalPixelCount = 0;
 
     const colors: SixelColor[] = [];

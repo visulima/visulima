@@ -79,7 +79,7 @@ describe("mouseX10Sequence", () => {
     it("should generate correct X10 sequence for left click at (0,0)", () => {
         const callback = encodeMouseButtonByte(MouseButton.LEFT, false);
         const x = 0;
-            const y = 0;
+        const y = 0;
         // Cb = 0, Cx = 1, Cy = 1 (0-indexed + 1)
         // Chars: (0+32), (0+1+32), (0+1+32) => 32, 33, 33 => ' ', '!', '!'
         expect(mouseX10Sequence(callback, x, y)).toBe(
@@ -90,7 +90,7 @@ describe("mouseX10Sequence", () => {
     it("should generate correct X10 sequence for wheel up at (10,20) with shift", () => {
         const callback = encodeMouseButtonByte(MouseButton.WHEEL_UP, false, { shift: true }); // 0b0100_0100 = 68
         const x = 10;
-            const y = 20;
+        const y = 20;
         // Cx = 11, Cy = 21
         // Chars: (68+32), (10+1+32), (20+1+32) => 100, 43, 53 => 'd', '+', '5'
         expect(mouseX10Sequence(callback, x, y)).toBe(
@@ -105,7 +105,7 @@ describe("mouseX10Sequence", () => {
     it("should generate correct X10 sequence for max coordinates (222,222)", () => {
         const callback = encodeMouseButtonByte(MouseButton.LEFT, false);
         const x = 222;
-            const y = 222;
+        const y = 222;
         // Max coord for X10 before char issues: 255 - 1 - 32 = 222
         // Cx = 223, Cy = 223
         // Chars: (cb+32), (222+1+32), (222+1+32) => (cb+32), 255, 255
@@ -119,7 +119,7 @@ describe("mouseX10Sequence", () => {
         const callback = encodeMouseButtonByte(MouseButton.MIDDLE, true, modifiers);
         // Middle(1) + Shift(4) + Alt(8) + Ctrl(16) + Motion(32) = 61
         const x = 5;
-            const y = 10;
+        const y = 10;
         // Chars: (61+32), (5+1+32), (10+1+32) => 93, 38, 43 => ']', '&', '+'
         expect(mouseX10Sequence(callback, x, y)).toBe(
             `${ESC}[M${String.fromCharCode(callback + X10_OFFSET)}${String.fromCharCode(x + 1 + X10_OFFSET)}${String.fromCharCode(y + 1 + X10_OFFSET)}`,
@@ -131,7 +131,7 @@ describe("mouseSgrSequence", () => {
     it("should generate correct SGR sequence for left click press at (0,0)", () => {
         const callback = encodeMouseButtonByte(MouseButton.LEFT, false); // 0
         const x = 0;
-            const y = 0;
+        const y = 0;
         // Expect: ESC[<0;1;1M
         expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}M`);
     });
@@ -139,7 +139,7 @@ describe("mouseSgrSequence", () => {
     it("should generate correct SGR sequence for right click release at (5,8)", () => {
         const callback = encodeMouseButtonByte(MouseButton.RIGHT, false); // 2
         const x = 5;
-            const y = 8;
+        const y = 8;
         // Expect: ESC[<2;6;9m
         expect(mouseSgrSequence(callback, x, y, true)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}m`);
     });
@@ -147,7 +147,7 @@ describe("mouseSgrSequence", () => {
     it("should generate correct SGR sequence for motion with middle button at (15,25) with Ctrl", () => {
         const callback = encodeMouseButtonByte(MouseButton.MIDDLE, true, { ctrl: true }); // Middle(1) + Ctrl(16) + Motion(32) = 49
         const x = 15;
-            const y = 25;
+        const y = 25;
         // Expect: ESC[<49;16;26M
         expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}M`);
     });
@@ -159,7 +159,7 @@ describe("mouseSgrSequence", () => {
     it("should generate correct SGR sequence with high coordinates (e.g., 1000, 1000)", () => {
         const callback = encodeMouseButtonByte(MouseButton.LEFT, false); // 0
         const x = 999;
-            const y = 999; // 0-indexed, so 1000th pixel
+        const y = 999; // 0-indexed, so 1000th pixel
         // Expect: ESC[<0;1000;1000M
         expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}M`);
     });
@@ -169,7 +169,7 @@ describe("mouseSgrSequence", () => {
         const callback = encodeMouseButtonByte(MouseButton.RIGHT, true, modifiers);
         // Right(2) + Shift(4) + Alt(8) + Ctrl(16) + Motion(32) = 62
         const x = 10;
-            const y = 20;
+        const y = 20;
         // Expect: ESC[<62;11;21M
         expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}M`);
     });
@@ -182,7 +182,7 @@ describe("mouseSgrSequence", () => {
         // Release(3) + Shift(4) + Alt(8) + Ctrl(16) = 31
         const callback = encodeMouseButtonByte(MouseButton.RELEASE, false, modifiers);
         const x = 10;
-            const y = 20;
+        const y = 20;
         // Expect: ESC[<31;11;21m
         expect(mouseSgrSequence(callback, x, y, true)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}m`);
     });
@@ -190,7 +190,7 @@ describe("mouseSgrSequence", () => {
     it("should generate correct SGR sequence for motion during a release event (uncommon but possible)", () => {
         const callback = encodeMouseButtonByte(MouseButton.LEFT, true, { alt: true }); // Left(0) + Alt(8) + Motion(32) = 40
         const x = 1;
-            const y = 1;
+        const y = 1;
         // Expect: ESC[<40;2;2m (note the 'm' for release)
         expect(mouseSgrSequence(callback, x, y, true)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}m`);
     });

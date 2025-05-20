@@ -532,8 +532,7 @@ export enum CursorStyle {
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Set-cursor-style-DECSCUSR} XTerm DECSCUSR documentation.
  * @see {@link https://vt100.net/docs/vt510-rm/DECSCUSR.html} VT510 DECSCUSR documentation.
  */
-export const setCursorStyle = (style: CursorStyle | number): string =>
-    CSI + style + " q"; // Note the space before 'q'
+export const setCursorStyle = (style: CursorStyle | number): string => CSI + style + " q"; // Note the space before 'q'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 export { default as restoreCursor } from "restore-cursor";

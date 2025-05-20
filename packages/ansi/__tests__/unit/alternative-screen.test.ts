@@ -1,6 +1,6 @@
-import { describe, expect,it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { ALT_SCREEN_OFF, ALT_SCREEN_ON, alternativeScreenOff,alternativeScreenOn } from "../../src/alternative-screen";
+import { ALT_SCREEN_OFF, ALT_SCREEN_ON, alternativeScreenOff, alternativeScreenOn } from "../../src/alternative-screen";
 import { CSI } from "../../src/constants";
 
 describe("alternative-screen utilities", () => {
