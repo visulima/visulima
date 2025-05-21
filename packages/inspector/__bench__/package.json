@@ -12,7 +12,7 @@
     },
     "devDependencies": {
         "@types/object-inspect": "^1.13.0",
-        "typescript": "5.8.2",
-        "vitest": "^3.0.8"
+        "typescript": "5.8.3",
+        "vitest": "^3.1.4"
     }
 }
