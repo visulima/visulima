@@ -101,17 +101,19 @@ const tsconfig = await readTsConfig("/Users/../Projects/visulima/packages/tsconf
 type TsConfigJson = object;
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.37.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1
+Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1
 
 Type for [TypeScript's `tsconfig.json` file](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html) (TypeScript 3.7).
 
-#### Type declaration
+#### Properties
 
 ##### compileOnSave?
 
 ```ts
 optional compileOnSave: boolean;
 ```
+
+Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1264
 
 Enable Compile-on-Save for this project.
 
@@ -121,6 +123,8 @@ Enable Compile-on-Save for this project.
 optional compilerOptions: CompilerOptions;
 ```
 
+Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1249
+
 Instructs the TypeScript compiler how to compile `.ts` files.
 
 ##### exclude?
@@ -128,6 +132,8 @@ Instructs the TypeScript compiler how to compile `.ts` files.
 ```ts
 optional exclude: string[];
 ```
+
+Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1281
 
 Specifies a list of files to be excluded from compilation. The `exclude` property only affects the files included via the `include` property and not the `files` property.
 
@@ -139,6 +145,8 @@ Glob patterns require TypeScript version 2.0 or later.
 optional extends: string | string[];
 ```
 
+Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1269
+
 Path to base configuration file to inherit from.
 
 ##### files?
@@ -147,6 +155,8 @@ Path to base configuration file to inherit from.
 optional files: string[];
 ```
 
+Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1274
+
 If no `files` or `include` property is present in a `tsconfig.json`, the compiler defaults to including all files in the containing directory and subdirectories except those specified by `exclude`. When a `files` property is specified, only those files and those specified by `include` are included.
 
 ##### include?
@@ -154,6 +164,8 @@ If no `files` or `include` property is present in a `tsconfig.json`, the compile
 ```ts
 optional include: string[];
 ```
+
+Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1288
 
 Specifies a list of glob patterns that match files to be included in compilation.
 
@@ -165,6 +177,8 @@ If no `files` or `include` property is present in a `tsconfig.json`, the compile
 optional references: References[];
 ```
 
+Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1293
+
 Referenced projects.
 
 ##### typeAcquisition?
@@ -172,6 +186,8 @@ Referenced projects.
 ```ts
 optional typeAcquisition: TypeAcquisition;
 ```
+
+Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1259
 
 Auto type (.d.ts) acquisition options for this project.
 
@@ -181,6 +197,8 @@ Auto type (.d.ts) acquisition options for this project.
 optional watchOptions: WatchOptions;
 ```
 
+Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1254
+
 Instructs the TypeScript compiler how to watch files.
 
 ## Other
@@ -188,10 +206,10 @@ Instructs the TypeScript compiler how to watch files.
 ### findTsConfig()
 
 ```ts
-function findTsConfig(cwd?, options?): Promise<TsConfigResult>
+function findTsConfig(cwd?, options?): Promise<TsConfigResult>;
 ```
 
-Defined in: [packages/tsconfig/src/find-tsconfig.ts:30](https://github.com/visulima/visulima/blob/42d125b7375c0e9dd31126960c869b6781132fd1/packages/tsconfig/src/find-tsconfig.ts#L30)
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:30](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/find-tsconfig.ts#L30)
 
 An asynchronous function that retrieves the TSConfig by searching for the "tsconfig.json" first,
 second attempt is to look for the "jsconfig.json" file from a given current working directory.
@@ -207,11 +225,11 @@ Optional. The current working directory from which to search for the "tsconfig.j
 
 ##### options?
 
-[`FindTsConfigOptions`](README.md#findtsconfigoptions) = `{}`
+[`FindTsConfigOptions`](#findtsconfigoptions) = `{}`
 
 #### Returns
 
-`Promise`\<[`TsConfigResult`](README.md#tsconfigresult)\>
+`Promise`\<[`TsConfigResult`](#tsconfigresult)\>
 
 A `Promise` that resolves to the TSConfig result object.
          The return type of the function is `Promise<TsConfigResult>`.
@@ -225,10 +243,10 @@ An `Error` when the "tsconfig.json" file is not found.
 ### findTsConfigSync()
 
 ```ts
-function findTsConfigSync(cwd?, options?): TsConfigResult
+function findTsConfigSync(cwd?, options?): TsConfigResult;
 ```
 
-Defined in: [packages/tsconfig/src/find-tsconfig.ts:69](https://github.com/visulima/visulima/blob/42d125b7375c0e9dd31126960c869b6781132fd1/packages/tsconfig/src/find-tsconfig.ts#L69)
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:69](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/find-tsconfig.ts#L69)
 
 #### Parameters
 
@@ -238,21 +256,21 @@ Defined in: [packages/tsconfig/src/find-tsconfig.ts:69](https://github.com/visul
 
 ##### options?
 
-[`FindTsConfigOptions`](README.md#findtsconfigoptions) = `{}`
+[`FindTsConfigOptions`](#findtsconfigoptions) = `{}`
 
 #### Returns
 
-[`TsConfigResult`](README.md#tsconfigresult)
+[`TsConfigResult`](#tsconfigresult)
 
 ***
 
 ### readTsConfig()
 
 ```ts
-function readTsConfig(tsconfigPath, options?): object
+function readTsConfig(tsconfigPath, options?): object;
 ```
 
-Defined in: [packages/tsconfig/src/read-tsconfig.ts:460](https://github.com/visulima/visulima/blob/42d125b7375c0e9dd31126960c869b6781132fd1/packages/tsconfig/src/read-tsconfig.ts#L460)
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:460](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/read-tsconfig.ts#L460)
 
 #### Parameters
 
@@ -262,11 +280,9 @@ Defined in: [packages/tsconfig/src/read-tsconfig.ts:460](https://github.com/visu
 
 ##### options?
 
-[`ReadTsConfigOptions`](README.md#readtsconfigoptions)
+[`ReadTsConfigOptions`](#readtsconfigoptions)
 
 #### Returns
-
-`object`
 
 ##### compileOnSave?
 
@@ -341,10 +357,10 @@ Instructs the TypeScript compiler how to watch files.
 ### writeTsConfig()
 
 ```ts
-function writeTsConfig(tsConfig, options): Promise<void>
+function writeTsConfig(tsConfig, options): Promise<void>;
 ```
 
-Defined in: [packages/tsconfig/src/write-tsconfig.ts:17](https://github.com/visulima/visulima/blob/42d125b7375c0e9dd31126960c869b6781132fd1/packages/tsconfig/src/write-tsconfig.ts#L17)
+Defined in: [packages/tsconfig/src/write-tsconfig.ts:17](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/write-tsconfig.ts#L17)
 
 An asynchronous function that writes the provided TypeScript configuration object to a tsconfig.json file.
 
@@ -352,7 +368,7 @@ An asynchronous function that writes the provided TypeScript configuration objec
 
 ##### tsConfig
 
-[`TsConfigJson`](README.md#tsconfigjson)
+[`TsConfigJson`](#tsconfigjson)
 
 The TypeScript configuration object to write. The type of `tsConfig` is `TsConfigJson`.
 
@@ -375,10 +391,10 @@ The return type of function is `Promise<void>`.
 ### writeTsConfigSync()
 
 ```ts
-function writeTsConfigSync(tsConfig, options): void
+function writeTsConfigSync(tsConfig, options): void;
 ```
 
-Defined in: [packages/tsconfig/src/write-tsconfig.ts:35](https://github.com/visulima/visulima/blob/42d125b7375c0e9dd31126960c869b6781132fd1/packages/tsconfig/src/write-tsconfig.ts#L35)
+Defined in: [packages/tsconfig/src/write-tsconfig.ts:35](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/write-tsconfig.ts#L35)
 
 A function that writes the provided TypeScript configuration object to a tsconfig.json file.
 
@@ -386,7 +402,7 @@ A function that writes the provided TypeScript configuration object to a tsconfi
 
 ##### tsConfig
 
-[`TsConfigJson`](README.md#tsconfigjson)
+[`TsConfigJson`](#tsconfigjson)
 
 The TypeScript configuration object to write. The type of `tsConfig` is `TsConfigJson`.
 
@@ -412,7 +428,7 @@ The return type of function is `Promise<void>`.
 const implicitBaseUrlSymbol: typeof implicitBaseUrlSymbol;
 ```
 
-Defined in: [packages/tsconfig/src/read-tsconfig.ts:457](https://github.com/visulima/visulima/blob/42d125b7375c0e9dd31126960c869b6781132fd1/packages/tsconfig/src/read-tsconfig.ts#L457)
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:457](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/read-tsconfig.ts#L457)
 
 ***
 
@@ -422,7 +438,7 @@ Defined in: [packages/tsconfig/src/read-tsconfig.ts:457](https://github.com/visu
 type FindTsConfigOptions = ReadTsConfigOptions & object;
 ```
 
-Defined in: [packages/tsconfig/src/find-tsconfig.ts:10](https://github.com/visulima/visulima/blob/42d125b7375c0e9dd31126960c869b6781132fd1/packages/tsconfig/src/find-tsconfig.ts#L10)
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:10](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/find-tsconfig.ts#L10)
 
 #### Type declaration
 
@@ -448,15 +464,17 @@ optional configFileName: string;
 type ReadTsConfigOptions = object;
 ```
 
-Defined in: [packages/tsconfig/src/read-tsconfig.ts:444](https://github.com/visulima/visulima/blob/42d125b7375c0e9dd31126960c869b6781132fd1/packages/tsconfig/src/read-tsconfig.ts#L444)
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:444](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/read-tsconfig.ts#L444)
 
-#### Type declaration
+#### Properties
 
 ##### tscCompatible?
 
 ```ts
 optional tscCompatible: "5.3" | "5.4" | "5.5" | "5.6" | true;
 ```
+
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:452](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/read-tsconfig.ts#L452)
 
 Make the configuration compatible with the specified TypeScript version.
 
@@ -476,7 +494,7 @@ undefined
 type TsConfigJsonResolved = Except<TsConfigJson, "extends">;
 ```
 
-Defined in: [packages/tsconfig/src/types.ts:3](https://github.com/visulima/visulima/blob/42d125b7375c0e9dd31126960c869b6781132fd1/packages/tsconfig/src/types.ts#L3)
+Defined in: [packages/tsconfig/src/types.ts:3](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/types.ts#L3)
 
 ***
 
@@ -486,9 +504,9 @@ Defined in: [packages/tsconfig/src/types.ts:3](https://github.com/visulima/visul
 type TsConfigResult = object;
 ```
 
-Defined in: [packages/tsconfig/src/find-tsconfig.ts:15](https://github.com/visulima/visulima/blob/42d125b7375c0e9dd31126960c869b6781132fd1/packages/tsconfig/src/find-tsconfig.ts#L15)
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:15](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/find-tsconfig.ts#L15)
 
-#### Type declaration
+#### Properties
 
 ##### config
 
@@ -496,11 +514,15 @@ Defined in: [packages/tsconfig/src/find-tsconfig.ts:15](https://github.com/visul
 config: TsConfigJsonResolved;
 ```
 
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:16](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/find-tsconfig.ts#L16)
+
 ##### path
 
 ```ts
 path: string;
 ```
+
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:17](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/find-tsconfig.ts#L17)
 
 <!-- /TYPEDOC -->
 

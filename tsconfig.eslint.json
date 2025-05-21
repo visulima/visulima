@@ -4,22 +4,6 @@
     "compilerOptions": {
         "baseUrl": "."
     },
-    "include": [
-        "**/*.ts",
-        "**/*.tsx",
-        "**/*.js",
-        "**/*.jsx",
-        "**/*.cjs",
-        "**/*.mjs",
-        "plopfile.js"
-    ],
-    "exclude": [
-        "dist/**/*",
-        "node_modules/**/*",
-        "build/**/*",
-        "scripts/setup-git-hooks.js",
-        "verify-node-version.js",
-        ".nx/**/*",
-        ".history/**/*"
-    ]
+    "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.cjs", "**/*.mjs", "plopfile.js"],
+    "exclude": ["dist/**/*", "node_modules/**/*", "build/**/*", "scripts/setup-git-hooks.js", "verify-node-version.js", ".nx/**/*", ".history/**/*"]
 }

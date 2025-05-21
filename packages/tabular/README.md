@@ -90,10 +90,7 @@ table.addRow([
 ]);
 
 // Add multiple rows at once
-table.addRows(
-    ["Bob", "25", "Chicago"],
-    ["Alice", "28", "Boston"],
-);
+table.addRows(["Bob", "25", "Chicago"], ["Alice", "28", "Boston"]);
 
 console.log(table.toString());
 ```
@@ -314,19 +311,19 @@ const grid = createGrid({
 
 ### Grid
 
-Defined in: [grid.ts:40](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L40)
+Defined in: [grid.ts:65](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L65)
 
 A class that represents a grid layout with support for cell spanning, alignment, and borders
 
 #### Constructors
 
-##### new Grid()
+##### Constructor
 
 ```ts
-new Grid(options): Grid
+new Grid(options): Grid;
 ```
 
-Defined in: [grid.ts:53](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L53)
+Defined in: [grid.ts:90](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L90)
 
 Creates a new Grid instance
 
@@ -334,23 +331,23 @@ Creates a new Grid instance
 
 ###### options
 
-[`GridOptions`](index.md#gridoptions)
+[`GridOptions`](#gridoptions)
 
 Configuration options for the grid
 
 ###### Returns
 
-[`Grid`](index.md#grid)
+[`Grid`](#grid)
 
 #### Methods
 
 ##### addItem()
 
 ```ts
-addItem(cell): this
+addItem(cell): this;
 ```
 
-Defined in: [grid.ts:100](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L100)
+Defined in: [grid.ts:138](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L138)
 
 Adds a single item to the grid
 
@@ -358,7 +355,7 @@ Adds a single item to the grid
 
 ###### cell
 
-[`GridCell`](index.md#gridcell)
+[`GridCell`](#gridcell)
 
 The cell to add
 
@@ -371,10 +368,10 @@ The grid instance for method chaining
 ##### addItems()
 
 ```ts
-addItems(items): this
+addItems(items): this;
 ```
 
-Defined in: [grid.ts:110](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L110)
+Defined in: [grid.ts:148](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L148)
 
 Adds multiple items to the grid
 
@@ -382,7 +379,7 @@ Adds multiple items to the grid
 
 ###### items
 
-[`GridCell`](index.md#gridcell)[]
+[`GridCell`](#gridcell)[]
 
 Array of items to add
 
@@ -395,10 +392,10 @@ The grid instance for method chaining
 ##### setBorder()
 
 ```ts
-setBorder(border): this
+setBorder(border): this;
 ```
 
-Defined in: [grid.ts:140](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L140)
+Defined in: [grid.ts:178](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L178)
 
 Sets the border style for the grid
 
@@ -406,7 +403,7 @@ Sets the border style for the grid
 
 ###### border
 
-[`BorderStyle`](index.md#borderstyle)
+[`BorderStyle`](#borderstyle)
 
 Border style configuration
 
@@ -419,10 +416,10 @@ The grid instance for method chaining
 ##### setColumns()
 
 ```ts
-setColumns(columns): this
+setColumns(columns): this;
 ```
 
-Defined in: [grid.ts:120](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L120)
+Defined in: [grid.ts:158](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L158)
 
 Sets the number of columns in the grid
 
@@ -443,10 +440,10 @@ The grid instance for method chaining
 ##### setMaxWidth()
 
 ```ts
-setMaxWidth(width): this
+setMaxWidth(width): this;
 ```
 
-Defined in: [grid.ts:161](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L161)
+Defined in: [grid.ts:198](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L198)
 
 Sets the maximum width for the grid
 
@@ -467,10 +464,10 @@ The grid instance for method chaining
 ##### setRows()
 
 ```ts
-setRows(rows): this
+setRows(rows): this;
 ```
 
-Defined in: [grid.ts:130](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L130)
+Defined in: [grid.ts:168](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L168)
 
 Sets the number of rows in the grid
 
@@ -491,10 +488,10 @@ The grid instance for method chaining
 ##### setShowBorders()
 
 ```ts
-setShowBorders(show): this
+setShowBorders(show): this;
 ```
 
-Defined in: [grid.ts:151](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L151)
+Defined in: [grid.ts:188](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L188)
 
 Sets whether borders should be shown
 
@@ -515,10 +512,10 @@ The grid instance for method chaining
 ##### toString()
 
 ```ts
-toString(): string
+toString(): string;
 ```
 
-Defined in: [grid.ts:170](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L170)
+Defined in: [grid.ts:207](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L207)
 
 Converts the grid to a string representation
 
@@ -528,23 +525,23 @@ Converts the grid to a string representation
 
 A string containing the rendered grid
 
----
+***
 
 ### Table
 
-Defined in: [table.ts:9](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/table.ts#L9)
+Defined in: [table.ts:9](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/table.ts#L9)
 
 A versatile table generator for CLI applications.
 
 #### Constructors
 
-##### new Table()
+##### Constructor
 
 ```ts
-new Table(options): Table
+new Table(options): Table;
 ```
 
-Defined in: [table.ts:20](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/table.ts#L20)
+Defined in: [table.ts:24](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/table.ts#L24)
 
 Initializes a new Table instance.
 
@@ -552,23 +549,23 @@ Initializes a new Table instance.
 
 ###### options
 
-[`TableOptions`](index.md#tableoptions) = `{}`
+[`TableOptions`](#tableoptions) = `{}`
 
 Configuration options for the table.
 
 ###### Returns
 
-[`Table`](index.md#table)
+[`Table`](#table)
 
 #### Methods
 
 ##### addRow()
 
 ```ts
-addRow(row): this
+addRow(row): this;
 ```
 
-Defined in: [table.ts:59](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/table.ts#L59)
+Defined in: [table.ts:60](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/table.ts#L60)
 
 Adds a single row to the table body.
 
@@ -576,7 +573,7 @@ Adds a single row to the table body.
 
 ###### row
 
-[`TableCell`](index.md#tablecell)[]
+[`TableCell`](#tablecell)[]
 
 Array of cells representing the row.
 
@@ -589,10 +586,10 @@ The Table instance for chaining.
 ##### addRows()
 
 ```ts
-addRows(...rows): this
+addRows(...rows): this;
 ```
 
-Defined in: [table.ts:72](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/table.ts#L72)
+Defined in: [table.ts:77](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/table.ts#L77)
 
 Adds multiple rows to the table body.
 
@@ -600,7 +597,7 @@ Adds multiple rows to the table body.
 
 ###### rows
 
-...[`TableCell`](index.md#tablecell)[][]
+...[`TableCell`](#tablecell)[][]
 
 Array of rows to add.
 
@@ -613,10 +610,10 @@ The Table instance for chaining.
 ##### setHeaders()
 
 ```ts
-setHeaders(headers): this
+setHeaders(headers): this;
 ```
 
-Defined in: [table.ts:39](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/table.ts#L39)
+Defined in: [table.ts:43](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/table.ts#L43)
 
 Sets the header rows for the table.
 Replaces any existing headers.
@@ -627,7 +624,7 @@ Replaces any existing headers.
 
 Array of header rows OR a single header row.
 
-[`TableCell`](index.md#tablecell)[] | [`TableCell`](index.md#tablecell)[][]
+[`TableCell`](#tablecell)[] | [`TableCell`](#tablecell)[][]
 
 ###### Returns
 
@@ -638,10 +635,10 @@ The Table instance for chaining.
 ##### toString()
 
 ```ts
-toString(): string
+toString(): string;
 ```
 
-Defined in: [table.ts:88](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/table.ts#L88)
+Defined in: [table.ts:93](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/table.ts#L93)
 
 Renders the table to a string.
 
@@ -659,7 +656,7 @@ The string representation of the table.
 function createGrid(options): Grid;
 ```
 
-Defined in: [grid.ts:1313](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/grid.ts#L1313)
+Defined in: [grid.ts:1416](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/grid.ts#L1416)
 
 Creates a new grid instance with the specified options
 
@@ -667,17 +664,17 @@ Creates a new grid instance with the specified options
 
 ##### options
 
-[`GridOptions`](index.md#gridoptions)
+[`GridOptions`](#gridoptions)
 
 Configuration options for the grid
 
 #### Returns
 
-[`Grid`](index.md#grid)
+[`Grid`](#grid)
 
 A new Grid instance
 
----
+***
 
 ### createTable()
 
@@ -685,7 +682,7 @@ A new Grid instance
 function createTable(options?): Table;
 ```
 
-Defined in: [table.ts:239](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/table.ts#L239)
+Defined in: [table.ts:257](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/table.ts#L257)
 
 Creates a new Table instance.
 
@@ -693,13 +690,13 @@ Creates a new Table instance.
 
 ##### options?
 
-[`TableOptions`](index.md#tableoptions)
+[`TableOptions`](#tableoptions)
 
 Configuration options for the table.
 
 #### Returns
 
-[`Table`](index.md#table)
+[`Table`](#table)
 
 A new Table instance.
 
@@ -707,7 +704,7 @@ A new Table instance.
 
 ### BorderComponent
 
-Defined in: [types.ts:74](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L74)
+Defined in: [types.ts:70](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L70)
 
 #### Properties
 
@@ -717,7 +714,7 @@ Defined in: [types.ts:74](https://github.com/visulima/visulima/blob/0a4d6fa5adff
 char: string;
 ```
 
-Defined in: [types.ts:75](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L75)
+Defined in: [types.ts:71](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L71)
 
 ##### width
 
@@ -725,13 +722,13 @@ Defined in: [types.ts:75](https://github.com/visulima/visulima/blob/0a4d6fa5adff
 width: number;
 ```
 
-Defined in: [types.ts:76](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L76)
+Defined in: [types.ts:72](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L72)
 
----
+***
 
 ### BorderStyle
 
-Defined in: [types.ts:82](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L82)
+Defined in: [types.ts:78](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L78)
 
 Represents the style of the border for a table or grid.
 
@@ -743,7 +740,7 @@ Represents the style of the border for a table or grid.
 bodyJoin: BorderComponent;
 ```
 
-Defined in: [types.ts:84](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L84)
+Defined in: [types.ts:80](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L80)
 
 Box vertical character.
 
@@ -753,7 +750,7 @@ Box vertical character.
 bodyLeft: BorderComponent;
 ```
 
-Defined in: [types.ts:86](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L86)
+Defined in: [types.ts:82](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L82)
 
 Box vertical character.
 
@@ -763,7 +760,7 @@ Box vertical character.
 bodyRight: BorderComponent;
 ```
 
-Defined in: [types.ts:88](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L88)
+Defined in: [types.ts:84](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L84)
 
 Box vertical character.
 
@@ -773,7 +770,7 @@ Box vertical character.
 bottomBody: BorderComponent;
 ```
 
-Defined in: [types.ts:90](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L90)
+Defined in: [types.ts:86](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L86)
 
 Box horizontal character.
 
@@ -783,7 +780,7 @@ Box horizontal character.
 bottomJoin: BorderComponent;
 ```
 
-Defined in: [types.ts:92](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L92)
+Defined in: [types.ts:88](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L88)
 
 Box bottom join character.
 
@@ -793,7 +790,7 @@ Box bottom join character.
 bottomLeft: BorderComponent;
 ```
 
-Defined in: [types.ts:94](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L94)
+Defined in: [types.ts:90](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L90)
 
 Box bottom left character.
 
@@ -803,7 +800,7 @@ Box bottom left character.
 bottomRight: BorderComponent;
 ```
 
-Defined in: [types.ts:96](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L96)
+Defined in: [types.ts:92](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L92)
 
 Box bottom right character.
 
@@ -813,7 +810,7 @@ Box bottom right character.
 joinBody: BorderComponent;
 ```
 
-Defined in: [types.ts:98](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L98)
+Defined in: [types.ts:94](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L94)
 
 Box horizontal character.
 
@@ -823,7 +820,7 @@ Box horizontal character.
 joinJoin: BorderComponent;
 ```
 
-Defined in: [types.ts:100](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L100)
+Defined in: [types.ts:96](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L96)
 
 Box horizontal join character.
 
@@ -833,7 +830,7 @@ Box horizontal join character.
 joinLeft: BorderComponent;
 ```
 
-Defined in: [types.ts:102](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L102)
+Defined in: [types.ts:98](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L98)
 
 Box left join character.
 
@@ -843,7 +840,7 @@ Box left join character.
 joinRight: BorderComponent;
 ```
 
-Defined in: [types.ts:104](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L104)
+Defined in: [types.ts:100](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L100)
 
 Box right join character.
 
@@ -853,7 +850,7 @@ Box right join character.
 topBody: BorderComponent;
 ```
 
-Defined in: [types.ts:106](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L106)
+Defined in: [types.ts:102](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L102)
 
 Box horizontal character.
 
@@ -863,7 +860,7 @@ Box horizontal character.
 topJoin: BorderComponent;
 ```
 
-Defined in: [types.ts:108](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L108)
+Defined in: [types.ts:104](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L104)
 
 Box top join character.
 
@@ -873,7 +870,7 @@ Box top join character.
 topLeft: BorderComponent;
 ```
 
-Defined in: [types.ts:110](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L110)
+Defined in: [types.ts:106](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L106)
 
 Box top left character.
 
@@ -883,34 +880,29 @@ Box top left character.
 topRight: BorderComponent;
 ```
 
-Defined in: [types.ts:112](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L112)
+Defined in: [types.ts:108](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L108)
 
 Box top right character.
 
----
+***
 
 ### GridItem
 
-Defined in: [types.ts:30](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L30)
+Defined in: [types.ts:29](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L29)
 
 #### Extended by
 
-- [`TableItem`](index.md#tableitem)
+- [`TableItem`](#tableitem)
 
 #### Properties
 
 ##### backgroundColor?
 
 ```ts
-optional backgroundColor:
-  | {
-  close: string;
-  open: string;
- }
-  | (text) => string;
+optional backgroundColor: AnsiColorObject | AnsiColorFunction;
 ```
 
-Defined in: [types.ts:32](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L32)
+Defined in: [types.ts:31](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L31)
 
 Background color for the entire cell (including padding)
 
@@ -920,7 +912,7 @@ Background color for the entire cell (including padding)
 optional colSpan: number;
 ```
 
-Defined in: [types.ts:34](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L34)
+Defined in: [types.ts:33](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L33)
 
 Number of columns this cell spans
 
@@ -930,9 +922,19 @@ Number of columns this cell spans
 content: Content;
 ```
 
-Defined in: [types.ts:36](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L36)
+Defined in: [types.ts:35](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L35)
 
 Content to display in the cell
+
+##### foregroundColor?
+
+```ts
+optional foregroundColor: AnsiColorObject | AnsiColorFunction;
+```
+
+Defined in: [types.ts:37](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L37)
+
+Foreground color for the entire cell (including padding)
 
 ##### hAlign?
 
@@ -940,7 +942,7 @@ Content to display in the cell
 optional hAlign: HorizontalAlignment;
 ```
 
-Defined in: [types.ts:38](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L38)
+Defined in: [types.ts:39](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L39)
 
 Horizontal alignment of the content
 
@@ -950,7 +952,7 @@ Horizontal alignment of the content
 optional maxWidth: number;
 ```
 
-Defined in: [types.ts:40](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L40)
+Defined in: [types.ts:41](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L41)
 
 Maximum width of the cell content before truncation
 
@@ -960,7 +962,7 @@ Maximum width of the cell content before truncation
 optional rowSpan: number;
 ```
 
-Defined in: [types.ts:42](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L42)
+Defined in: [types.ts:43](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L43)
 
 Number of rows this cell spans
 
@@ -970,7 +972,7 @@ Number of rows this cell spans
 optional truncate: boolean | TruncateOptions;
 ```
 
-Defined in: [types.ts:44](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L44)
+Defined in: [types.ts:46](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L46)
 
 Options for controlling how text is truncated when it exceeds maxWidth
 
@@ -980,7 +982,7 @@ Options for controlling how text is truncated when it exceeds maxWidth
 optional vAlign: VerticalAlignment;
 ```
 
-Defined in: [types.ts:46](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L46)
+Defined in: [types.ts:48](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L48)
 
 Vertical alignment of the content
 
@@ -990,21 +992,21 @@ Vertical alignment of the content
 optional wordWrap: boolean | Omit<WordWrapOptions, "width">;
 ```
 
-Defined in: [types.ts:48](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L48)
+Defined in: [types.ts:50](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L50)
 
 Options for controlling word wrapping (takes precedence over truncate)
 
----
+***
 
 ### GridOptions
 
-Defined in: [types.ts:210](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L210)
+Defined in: [types.ts:157](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L157)
 
-Defines the style options.
+Options specific to Grid construction.
 
 #### Extends
 
-- [`Style`](index.md#style)
+- `BaseRenderingOptions`.[`Style`](#style)
 
 #### Properties
 
@@ -1014,7 +1016,7 @@ Defines the style options.
 optional autoColumns: number;
 ```
 
-Defined in: [types.ts:212](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L212)
+Defined in: [types.ts:159](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L159)
 
 Default number of columns for auto-generated cells
 
@@ -1024,7 +1026,7 @@ Default number of columns for auto-generated cells
 optional autoFlow: AutoFlowDirection;
 ```
 
-Defined in: [types.ts:214](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L214)
+Defined in: [types.ts:161](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L161)
 
 Direction of auto-flow when adding items
 
@@ -1034,9 +1036,23 @@ Direction of auto-flow when adding items
 optional autoRows: number;
 ```
 
-Defined in: [types.ts:216](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L216)
+Defined in: [types.ts:163](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L163)
 
 Default number of rows for auto-generated cells
+
+##### backgroundColor?
+
+```ts
+optional backgroundColor: AnsiColorObject | AnsiColorFunction;
+```
+
+Defined in: [types.ts:114](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L114)
+
+Global background color
+
+###### Inherited from
+
+[`Style`](#style).[`backgroundColor`](#backgroundcolor-2)
 
 ##### border?
 
@@ -1044,13 +1060,27 @@ Default number of rows for auto-generated cells
 optional border: BorderStyle;
 ```
 
-Defined in: [types.ts:122](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L122)
+Defined in: [types.ts:116](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L116)
 
 Border style configuration.
 
 ###### Inherited from
 
-[`Style`](index.md#style).[`border`](index.md#border-1)
+[`Style`](#style).[`border`](#border-1)
+
+##### borderColor?
+
+```ts
+optional borderColor: AnsiColorObject | AnsiColorFunction;
+```
+
+Defined in: [types.ts:118](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L118)
+
+Global border color
+
+###### Inherited from
+
+[`Style`](#style).[`borderColor`](#bordercolor-1)
 
 ##### columns
 
@@ -1058,7 +1088,7 @@ Border style configuration.
 columns: number;
 ```
 
-Defined in: [types.ts:218](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L218)
+Defined in: [types.ts:165](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L165)
 
 Number of columns in the grid
 
@@ -1068,9 +1098,15 @@ Number of columns in the grid
 optional defaultTerminalWidth: number;
 ```
 
-Defined in: [types.ts:220](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L220)
+Defined in: [types.ts:6](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L6)
 
-Default terminal width to use for calculations (defaults to 80)
+Default terminal width if detection fails (defaults to 80)
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.defaultTerminalWidth
+```
 
 ##### fixedColumnWidths?
 
@@ -1078,7 +1114,7 @@ Default terminal width to use for calculations (defaults to 80)
 optional fixedColumnWidths: number[];
 ```
 
-Defined in: [types.ts:222](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L222)
+Defined in: [types.ts:167](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L167)
 
 Fixed column widths
 
@@ -1088,9 +1124,23 @@ Fixed column widths
 optional fixedRowHeights: number[];
 ```
 
-Defined in: [types.ts:224](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L224)
+Defined in: [types.ts:169](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L169)
 
 Fixed row heights
+
+##### foregroundColor?
+
+```ts
+optional foregroundColor: AnsiColorObject | AnsiColorFunction;
+```
+
+Defined in: [types.ts:120](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L120)
+
+Global foreground color
+
+###### Inherited from
+
+[`Style`](#style).[`foregroundColor`](#foregroundcolor-2)
 
 ##### gap?
 
@@ -1098,9 +1148,15 @@ Fixed row heights
 optional gap: number;
 ```
 
-Defined in: [types.ts:226](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L226)
+Defined in: [types.ts:8](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L8)
 
 Gap between cells
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.gap
+```
 
 ##### maxWidth?
 
@@ -1108,9 +1164,15 @@ Gap between cells
 optional maxWidth: number;
 ```
 
-Defined in: [types.ts:228](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L228)
+Defined in: [types.ts:10](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L10)
 
-Maximum width for the entire grid
+Maximum width for the entire table/grid.
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.maxWidth
+```
 
 ##### paddingLeft?
 
@@ -1118,13 +1180,13 @@ Maximum width for the entire grid
 optional paddingLeft: number;
 ```
 
-Defined in: [types.ts:127](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L127)
+Defined in: [types.ts:122](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L122)
 
-Left padding for all cells.
+Global left padding
 
 ###### Inherited from
 
-[`Style`](index.md#style).[`paddingLeft`](index.md#paddingleft-1)
+[`Style`](#style).[`paddingLeft`](#paddingleft-1)
 
 ##### paddingRight?
 
@@ -1132,13 +1194,13 @@ Left padding for all cells.
 optional paddingRight: number;
 ```
 
-Defined in: [types.ts:132](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L132)
+Defined in: [types.ts:124](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L124)
 
-Right padding for all cells.
+Global right padding
 
 ###### Inherited from
 
-[`Style`](index.md#style).[`paddingRight`](index.md#paddingright-1)
+[`Style`](#style).[`paddingRight`](#paddingright-1)
 
 ##### rows?
 
@@ -1146,7 +1208,7 @@ Right padding for all cells.
 optional rows: number;
 ```
 
-Defined in: [types.ts:230](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L230)
+Defined in: [types.ts:171](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L171)
 
 Number of rows in the grid (0 for auto)
 
@@ -1156,7 +1218,7 @@ Number of rows in the grid (0 for auto)
 optional showBorders: boolean;
 ```
 
-Defined in: [types.ts:232](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L232)
+Defined in: [types.ts:173](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L173)
 
 Whether to show borders (only relevant if border is defined)
 
@@ -1166,9 +1228,15 @@ Whether to show borders (only relevant if border is defined)
 optional terminalWidth: number;
 ```
 
-Defined in: [types.ts:234](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L234)
+Defined in: [types.ts:12](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L12)
 
-Terminal width to use for calculations (defaults to actual terminal width)
+Explicit terminal width (overrides detected)
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.terminalWidth
+```
 
 ##### truncate?
 
@@ -1176,33 +1244,55 @@ Terminal width to use for calculations (defaults to actual terminal width)
 optional truncate: boolean | TruncateOptions;
 ```
 
-Defined in: [types.ts:236](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L236)
+Defined in: [types.ts:15](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L15)
 
-Whether to truncate content
+Global truncation options/flag
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.truncate
+```
 
 ##### wordWrap?
 
 ```ts
-optional wordWrap: boolean | WordWrapOptions;
+optional wordWrap: boolean | Omit<WordWrapOptions, "width">;
 ```
 
-Defined in: [types.ts:238](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L238)
+Defined in: [types.ts:17](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L17)
 
-Whether to wrap content in cells (takes precedence over truncate)
+Global word wrap options/flag
 
----
+###### Inherited from
+
+```ts
+BaseRenderingOptions.wordWrap
+```
+
+***
 
 ### Style
 
-Defined in: [types.ts:118](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L118)
+Defined in: [types.ts:112](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L112)
 
-Defines the style options.
+Base style properties applicable globally
 
 #### Extended by
 
-- [`GridOptions`](index.md#gridoptions)
+- [`GridOptions`](#gridoptions)
 
 #### Properties
+
+##### backgroundColor?
+
+```ts
+optional backgroundColor: AnsiColorObject | AnsiColorFunction;
+```
+
+Defined in: [types.ts:114](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L114)
+
+Global background color
 
 ##### border?
 
@@ -1210,9 +1300,29 @@ Defines the style options.
 optional border: BorderStyle;
 ```
 
-Defined in: [types.ts:122](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L122)
+Defined in: [types.ts:116](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L116)
 
 Border style configuration.
+
+##### borderColor?
+
+```ts
+optional borderColor: AnsiColorObject | AnsiColorFunction;
+```
+
+Defined in: [types.ts:118](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L118)
+
+Global border color
+
+##### foregroundColor?
+
+```ts
+optional foregroundColor: AnsiColorObject | AnsiColorFunction;
+```
+
+Defined in: [types.ts:120](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L120)
+
+Global foreground color
 
 ##### paddingLeft?
 
@@ -1220,9 +1330,9 @@ Border style configuration.
 optional paddingLeft: number;
 ```
 
-Defined in: [types.ts:127](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L127)
+Defined in: [types.ts:122](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L122)
 
-Left padding for all cells.
+Global left padding
 
 ##### paddingRight?
 
@@ -1230,40 +1340,35 @@ Left padding for all cells.
 optional paddingRight: number;
 ```
 
-Defined in: [types.ts:132](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L132)
+Defined in: [types.ts:124](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L124)
 
-Right padding for all cells.
+Global right padding
 
----
+***
 
 ### TableItem
 
-Defined in: [types.ts:59](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L59)
+Defined in: [types.ts:61](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L61)
 
 #### Extends
 
-- [`GridItem`](index.md#griditem)
+- [`GridItem`](#griditem)
 
 #### Properties
 
 ##### backgroundColor?
 
 ```ts
-optional backgroundColor:
-  | {
-  close: string;
-  open: string;
- }
-  | (text) => string;
+optional backgroundColor: AnsiColorObject | AnsiColorFunction;
 ```
 
-Defined in: [types.ts:32](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L32)
+Defined in: [types.ts:31](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L31)
 
 Background color for the entire cell (including padding)
 
 ###### Inherited from
 
-[`GridItem`](index.md#griditem).[`backgroundColor`](index.md#backgroundcolor)
+[`GridItem`](#griditem).[`backgroundColor`](#backgroundcolor)
 
 ##### colSpan?
 
@@ -1271,13 +1376,13 @@ Background color for the entire cell (including padding)
 optional colSpan: number;
 ```
 
-Defined in: [types.ts:34](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L34)
+Defined in: [types.ts:33](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L33)
 
 Number of columns this cell spans
 
 ###### Inherited from
 
-[`GridItem`](index.md#griditem).[`colSpan`](index.md#colspan)
+[`GridItem`](#griditem).[`colSpan`](#colspan)
 
 ##### content
 
@@ -1285,13 +1390,27 @@ Number of columns this cell spans
 content: Content;
 ```
 
-Defined in: [types.ts:36](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L36)
+Defined in: [types.ts:35](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L35)
 
 Content to display in the cell
 
 ###### Inherited from
 
-[`GridItem`](index.md#griditem).[`content`](index.md#content)
+[`GridItem`](#griditem).[`content`](#content)
+
+##### foregroundColor?
+
+```ts
+optional foregroundColor: AnsiColorObject | AnsiColorFunction;
+```
+
+Defined in: [types.ts:37](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L37)
+
+Foreground color for the entire cell (including padding)
+
+###### Inherited from
+
+[`GridItem`](#griditem).[`foregroundColor`](#foregroundcolor)
 
 ##### hAlign?
 
@@ -1299,13 +1418,13 @@ Content to display in the cell
 optional hAlign: HorizontalAlignment;
 ```
 
-Defined in: [types.ts:38](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L38)
+Defined in: [types.ts:39](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L39)
 
 Horizontal alignment of the content
 
 ###### Inherited from
 
-[`GridItem`](index.md#griditem).[`hAlign`](index.md#halign)
+[`GridItem`](#griditem).[`hAlign`](#halign)
 
 ##### href?
 
@@ -1313,7 +1432,7 @@ Horizontal alignment of the content
 optional href: string;
 ```
 
-Defined in: [types.ts:63](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L63)
+Defined in: [types.ts:65](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L65)
 
 Optional URL for making the cell content a hyperlink.
 
@@ -1323,13 +1442,13 @@ Optional URL for making the cell content a hyperlink.
 optional maxWidth: number;
 ```
 
-Defined in: [types.ts:40](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L40)
+Defined in: [types.ts:41](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L41)
 
 Maximum width of the cell content before truncation
 
 ###### Inherited from
 
-[`GridItem`](index.md#griditem).[`maxWidth`](index.md#maxwidth)
+[`GridItem`](#griditem).[`maxWidth`](#maxwidth)
 
 ##### rowSpan?
 
@@ -1337,24 +1456,13 @@ Maximum width of the cell content before truncation
 optional rowSpan: number;
 ```
 
-Defined in: [types.ts:42](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L42)
+Defined in: [types.ts:43](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L43)
 
 Number of rows this cell spans
 
 ###### Inherited from
 
-[`GridItem`](index.md#griditem).[`rowSpan`](index.md#rowspan)
-
-##### style?
-
-```ts
-optional style: CellStyle;
-```
-
-Defined in: [types.ts:69](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L69)
-
-TODO: Check if this is needed
-Style options for the cell.
+[`GridItem`](#griditem).[`rowSpan`](#rowspan)
 
 ##### truncate?
 
@@ -1362,13 +1470,13 @@ Style options for the cell.
 optional truncate: boolean | TruncateOptions;
 ```
 
-Defined in: [types.ts:44](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L44)
+Defined in: [types.ts:46](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L46)
 
 Options for controlling how text is truncated when it exceeds maxWidth
 
 ###### Inherited from
 
-[`GridItem`](index.md#griditem).[`truncate`](index.md#truncate)
+[`GridItem`](#griditem).[`truncate`](#truncate)
 
 ##### vAlign?
 
@@ -1376,13 +1484,13 @@ Options for controlling how text is truncated when it exceeds maxWidth
 optional vAlign: VerticalAlignment;
 ```
 
-Defined in: [types.ts:46](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L46)
+Defined in: [types.ts:48](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L48)
 
 Vertical alignment of the content
 
 ###### Inherited from
 
-[`GridItem`](index.md#griditem).[`vAlign`](index.md#valign)
+[`GridItem`](#griditem).[`vAlign`](#valign)
 
 ##### wordWrap?
 
@@ -1390,21 +1498,25 @@ Vertical alignment of the content
 optional wordWrap: boolean | Omit<WordWrapOptions, "width">;
 ```
 
-Defined in: [types.ts:48](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L48)
+Defined in: [types.ts:50](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L50)
 
 Options for controlling word wrapping (takes precedence over truncate)
 
 ###### Inherited from
 
-[`GridItem`](index.md#griditem).[`wordWrap`](index.md#wordwrap)
+[`GridItem`](#griditem).[`wordWrap`](#wordwrap)
 
----
+***
 
 ### TableOptions
 
-Defined in: [types.ts:138](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L138)
+Defined in: [types.ts:130](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L130)
 
-Defines the options for table construction.
+Options specific to Table construction.
+
+#### Extends
+
+- `BaseRenderingOptions`
 
 #### Properties
 
@@ -1414,11 +1526,10 @@ Defines the options for table construction.
 optional columnWidths: number | number[];
 ```
 
-Defined in: [types.ts:144](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L144)
+Defined in: [types.ts:135](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L135)
 
-Fixed column widths for specific columns. Content exceeding the width will be truncated
-based on the truncate options.
-Can specify width for all columns with a single number or for specific columns with an array.
+Fixed column widths.
+Can be a single number for all columns or an array for specific columns.
 
 ##### defaultTerminalWidth?
 
@@ -1426,9 +1537,15 @@ Can specify width for all columns with a single number or for specific columns w
 optional defaultTerminalWidth: number;
 ```
 
-Defined in: [types.ts:147](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L147)
+Defined in: [types.ts:6](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L6)
 
-Default terminal width to use for calculations (defaults to 80)
+Default terminal width if detection fails (defaults to 80)
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.defaultTerminalWidth
+```
 
 ##### gap?
 
@@ -1436,9 +1553,15 @@ Default terminal width to use for calculations (defaults to 80)
 optional gap: number;
 ```
 
-Defined in: [types.ts:152](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L152)
+Defined in: [types.ts:8](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L8)
 
-Gap between cells (overrides style.gap)
+Gap between cells
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.gap
+```
 
 ##### maxWidth?
 
@@ -1446,9 +1569,15 @@ Gap between cells (overrides style.gap)
 optional maxWidth: number;
 ```
 
-Defined in: [types.ts:157](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L157)
+Defined in: [types.ts:10](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L10)
 
-Maximum width for the entire table.
+Maximum width for the entire table/grid.
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.maxWidth
+```
 
 ##### rowHeights?
 
@@ -1456,11 +1585,10 @@ Maximum width for the entire table.
 optional rowHeights: number | number[];
 ```
 
-Defined in: [types.ts:164](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L164)
+Defined in: [types.ts:140](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L140)
 
-Fixed row heights for specific rows. Content exceeding the height will be truncated
-with an ellipsis symbol on the last line.
-Can specify height for all rows with a single number or for specific rows with an array.
+Fixed row heights.
+Can be a single number for all rows or an array for specific rows.
 
 ##### showHeader?
 
@@ -1468,19 +1596,19 @@ Can specify height for all rows with a single number or for specific rows with a
 optional showHeader: boolean;
 ```
 
-Defined in: [types.ts:169](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L169)
+Defined in: [types.ts:142](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L142)
 
 Whether to show the header of the table
 
 ##### style?
 
 ```ts
-optional style: Partial<Style & object>;
+optional style: Partial<Style>;
 ```
 
-Defined in: [types.ts:174](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L174)
+Defined in: [types.ts:144](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L144)
 
-The style options for the table
+Global style options for the table
 
 ##### terminalWidth?
 
@@ -1488,9 +1616,15 @@ The style options for the table
 optional terminalWidth: number;
 ```
 
-Defined in: [types.ts:186](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L186)
+Defined in: [types.ts:12](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L12)
 
-Terminal width to use for calculations (defaults to actual terminal width)
+Explicit terminal width (overrides detected)
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.terminalWidth
+```
 
 ##### transformTabToSpace?
 
@@ -1498,19 +1632,25 @@ Terminal width to use for calculations (defaults to actual terminal width)
 optional transformTabToSpace: number;
 ```
 
-Defined in: [types.ts:191](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L191)
+Defined in: [types.ts:146](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L146)
 
-The number of spaces to use for tab characters.
+Number of spaces for tab characters
 
 ##### truncate?
 
 ```ts
-optional truncate: TruncateOptions;
+optional truncate: boolean | TruncateOptions;
 ```
 
-Defined in: [types.ts:196](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L196)
+Defined in: [types.ts:15](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L15)
 
-Options for controlling how text is truncated when it exceeds maxWidth
+Global truncation options/flag
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.truncate
+```
 
 ##### wordWrap?
 
@@ -1518,9 +1658,15 @@ Options for controlling how text is truncated when it exceeds maxWidth
 optional wordWrap: boolean | Omit<WordWrapOptions, "width">;
 ```
 
-Defined in: [types.ts:201](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L201)
+Defined in: [types.ts:17](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L17)
 
-Whether to enable word wrapping.
+Global word wrap options/flag
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.wordWrap
+```
 
 ## Type Aliases
 
@@ -1530,9 +1676,9 @@ Whether to enable word wrapping.
 type AutoFlowDirection = "column" | "row";
 ```
 
-Defined in: [types.ts:206](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L206)
+Defined in: [types.ts:151](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L151)
 
----
+***
 
 ### BorderType
 
@@ -1540,55 +1686,9 @@ Defined in: [types.ts:206](https://github.com/visulima/visulima/blob/0a4d6fa5adf
 type BorderType = "bottom" | "middle" | "top";
 ```
 
-Defined in: [types.ts:207](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L207)
+Defined in: [types.ts:152](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L152)
 
----
-
-### CellStyle
-
-```ts
-type CellStyle = object;
-```
-
-Defined in: [types.ts:8](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L8)
-
-Style options for a cell.
-
-#### Type declaration
-
-##### border?
-
-```ts
-optional border: string[];
-```
-
-Array of style names for the cell's border.
-
-##### head?
-
-```ts
-optional head: string[];
-```
-
-Array of style names for the cell's head.
-
-##### paddingLeft?
-
-```ts
-optional paddingLeft: number;
-```
-
-Left padding of the cell content.
-
-##### paddingRight?
-
-```ts
-optional paddingRight: number;
-```
-
-Right padding of the cell content.
-
----
+***
 
 ### Content
 
@@ -1596,9 +1696,9 @@ Right padding of the cell content.
 type Content = bigint | boolean | number | string | null | undefined;
 ```
 
-Defined in: [types.ts:3](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L3)
+Defined in: [types.ts:27](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L27)
 
----
+***
 
 ### GridCell
 
@@ -1606,11 +1706,11 @@ Defined in: [types.ts:3](https://github.com/visulima/visulima/blob/0a4d6fa5adff8
 type GridCell = Content | GridItem;
 ```
 
-Defined in: [types.ts:52](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L52)
+Defined in: [types.ts:54](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L54)
 
 Input type for a cell, can be primitive or an options object
 
----
+***
 
 ### HorizontalAlignment
 
@@ -1618,9 +1718,9 @@ Input type for a cell, can be primitive or an options object
 type HorizontalAlignment = "center" | "left" | "right";
 ```
 
-Defined in: [types.ts:205](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L205)
+Defined in: [types.ts:150](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L150)
 
----
+***
 
 ### TableCell
 
@@ -1628,9 +1728,9 @@ Defined in: [types.ts:205](https://github.com/visulima/visulima/blob/0a4d6fa5adf
 type TableCell = Content | TableItem;
 ```
 
-Defined in: [types.ts:72](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L72)
+Defined in: [types.ts:68](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L68)
 
----
+***
 
 ### VerticalAlignment
 
@@ -1638,105 +1738,152 @@ Defined in: [types.ts:72](https://github.com/visulima/visulima/blob/0a4d6fa5adff
 type VerticalAlignment = "bottom" | "middle" | "top";
 ```
 
-Defined in: [types.ts:204](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/types.ts#L204)
-
+Defined in: [types.ts:149](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L149)
 # style
 
 ## Variables
 
-### ASCII_BORDER
+### ASCII\_BORDER
 
 ```ts
 const ASCII_BORDER: BorderStyle;
 ```
 
-Defined in: [style.ts:132](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/style.ts#L132)
+Defined in: [style.ts:132](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L132)
 
 ASCII border style using only ASCII characters.
 
----
+***
 
-### DEFAULT_BORDER
+### BLOCK\_BORDER
+
+```ts
+const BLOCK_BORDER: BorderStyle;
+```
+
+Defined in: [style.ts:174](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L174)
+
+Block border style.
+
+***
+
+### DEFAULT\_BORDER
 
 ```ts
 const DEFAULT_BORDER: BorderStyle;
 ```
 
-Defined in: [style.ts:6](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/style.ts#L6)
+Defined in: [style.ts:6](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L6)
 
 Default border style using standard box-drawing characters.
 
----
+***
 
-### DOTS_BORDER
+### DOTS\_BORDER
 
 ```ts
 const DOTS_BORDER: BorderStyle;
 ```
 
-Defined in: [style.ts:90](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/style.ts#L90)
+Defined in: [style.ts:90](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L90)
 
 Border style using dots for the border.
 
----
+***
 
-### DOUBLE_BORDER
+### DOUBLE\_BORDER
 
 ```ts
 const DOUBLE_BORDER: BorderStyle;
 ```
 
-Defined in: [style.ts:48](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/style.ts#L48)
+Defined in: [style.ts:48](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L48)
 
 Double-line border style using Unicode box-drawing characters.
 
----
+***
 
-### MARKDOWN_BORDER
+### INNER\_HALF\_BLOCK\_BORDER
+
+```ts
+const INNER_HALF_BLOCK_BORDER: BorderStyle;
+```
+
+Defined in: [style.ts:216](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L216)
+
+Inner half block border style.
+
+***
+
+### MARKDOWN\_BORDER
 
 ```ts
 const MARKDOWN_BORDER: BorderStyle;
 ```
 
-Defined in: [style.ts:111](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/style.ts#L111)
+Defined in: [style.ts:111](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L111)
 
 Border style using Markdown syntax.
 
----
+***
 
-### MINIMAL_BORDER
+### MINIMAL\_BORDER
 
 ```ts
 const MINIMAL_BORDER: BorderStyle;
 ```
 
-Defined in: [style.ts:27](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/style.ts#L27)
+Defined in: [style.ts:27](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L27)
 
 Minimal border style using only horizontal lines.
 
----
+***
 
-### NO_BORDER
+### NO\_BORDER
 
 ```ts
 const NO_BORDER: BorderStyle;
 ```
 
-Defined in: [style.ts:153](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/style.ts#L153)
+Defined in: [style.ts:153](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L153)
 
 No border style.
 
----
+***
 
-### ROUNDED_BORDER
+### OUTER\_HALF\_BLOCK\_BORDER
+
+```ts
+const OUTER_HALF_BLOCK_BORDER: BorderStyle;
+```
+
+Defined in: [style.ts:195](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L195)
+
+Outer half block border style.
+
+***
+
+### ROUNDED\_BORDER
 
 ```ts
 const ROUNDED_BORDER: BorderStyle;
 ```
 
-Defined in: [style.ts:69](https://github.com/visulima/visulima/blob/0a4d6fa5adff817cbf8f5e64536603c63d8ee7b4/packages/tabular/src/style.ts#L69)
+Defined in: [style.ts:69](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L69)
 
 Border style with rounded corners using Unicode box-drawing characters.
+
+***
+
+### THICK\_BORDER
+
+```ts
+const THICK_BORDER: BorderStyle;
+```
+
+Defined in: [style.ts:237](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/style.ts#L237)
+
+Thick line border style.
 
 <!-- /TYPEDOC -->
 
