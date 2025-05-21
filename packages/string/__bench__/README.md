@@ -113,7 +113,6 @@ The implementations are optimized for:
     - Boundary conditions
     - Invalid inputs
 
-
 ### Slugify
 
 Compares performance against:

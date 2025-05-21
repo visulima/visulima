@@ -129,7 +129,6 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 >
 >
->
 > # Licenses of bundled dependencies
 > The published @visulima/path artifact additionally contains code with the following licenses:
 > MIT

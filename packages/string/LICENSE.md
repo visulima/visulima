@@ -23,21 +23,18 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/string artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
-
 ## emoji-regex-xs
-
 License: MIT
 By: Steven Levithan
 Repository: git+https://github.com/slevithan/emoji-regex-xs.git
 
 > MIT License
 >
-> Copyright (c) 2024 Steven Levithan
+> Copyright (c) 2025 Steven Levithan
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -57,10 +54,9 @@ Repository: git+https://github.com/slevithan/emoji-regex-xs.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
----
+---------------------------------------
 
 ## get-east-asian-width
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/get-east-asian-width
