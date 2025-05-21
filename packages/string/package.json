@@ -475,11 +475,10 @@
         "CHANGELOG.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development packem build",
-        "build:prod": "cross-env NODE_ENV=production packem build",
+        "build": "pnpm run generate:charmap && cross-env NODE_ENV=development packem build",
+        "build:prod": "pnpm run generate:charmap && cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
-        "postinstall": "node ./scripts/generate-charmap.js",
         "lint:attw": "attw --pack",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
@@ -487,10 +486,11 @@
         "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
-        "test": "vitest run --typecheck",
-        "test:coverage": "vitest run --coverage",
-        "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
+        "test": "pnpm run generate:charmap && vitest run --typecheck",
+        "test:coverage": "pnpm run generate:charmap && vitest run --coverage",
+        "test:ui": "pnpm run generate:charmap && vitest --ui --coverage.enabled=true",
+        "test:watch": "pnpm run generate:charmap && vitest",
+        "generate:charmap": "node ./scripts/generate-charmap.mjs"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "15.0.3",
