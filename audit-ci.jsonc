@@ -7,6 +7,7 @@
     "allowlist": [
         // This advisory is for a package that use the cnpm as a dev dependency for tests.
         "GHSA-p8p7-x288-28g6|packages/package > cnpm@7.1.1 > *",
+        "GHSA-p6mc-m468-83gw|packages__redact____bench__>@qiwi/masker>@qiwi/masker-schema>lodash.set",
         // This advisory is for a package that use the cnpm as a dev dependency for tests.
         "GHSA-p6mc-m468-83gw|packages/redact/__bench__ > @qiwi/masker@2.0.1 > @qiwi/masker-schema@2.0.1 > lodash.set@4.3.2"
     ]
