@@ -142,13 +142,13 @@ const isSingleReference = (field: DMMF.Field) => field.kind !== "scalar" && !fie
 const getEnumListByDMMFType =
     (modelMetaData: ModelMetaData) =>
     (field: DMMF.Field): string[] | undefined => {
-        const enumItem = modelMetaData.enums.find(({ name }) => name === field.type);
+        const enumItem = modelMetaData.enums.find(({ name }: { name: string }) => name === field.type);
 
         if (!enumItem) {
             return undefined;
         }
 
-        return enumItem.values.map((item) => item.name);
+        return enumItem.values.map((item: { name: string }) => item.name);
     };
 
 const getDescription = (field: DMMF.Field) => field.documentation;
