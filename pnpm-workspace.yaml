@@ -36,7 +36,6 @@ packages:
   - packages/redact/__fixtures__/package/mjs
   - packages/tsconfig/__fixtures__/package/cjs
   - packages/tsconfig/__fixtures__/package/mjs
-
 onlyBuiltDependencies:
   - '@pnpm/exe'
   - '@prisma/client'
