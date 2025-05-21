@@ -1,9 +1,5 @@
 import type { VisulimaError } from "@visulima/error/error";
 import { getErrorCauses } from "@visulima/error/error";
-// eslint-disable-next-line import/extensions
-import clipboardJs from "inline:../../node_modules/clipboard/dist/clipboard.min.js";
-// eslint-disable-next-line import/extensions
-import prelineJs from "inline:../../node_modules/preline/dist/preline.js";
 
 import type { Editor, SolutionError, SolutionFinder, Theme } from "../types";
 import process from "../util/process";
@@ -47,7 +43,7 @@ const template = async (
         css: inlineCss.trim(),
         description: "Error",
         error: mainCause,
-        scripts: [prelineJs, clipboardJs, headerBarScript, ...errorCardScripts],
+        scripts: [headerBarScript, ...errorCardScripts],
         title: "Error",
     });
 };
