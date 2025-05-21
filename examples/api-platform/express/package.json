@@ -9,15 +9,15 @@
     "dependencies": {
         "@visulima/api-platform": "workspace:*",
         "cors": "2.8.5",
-        "dotenv": "^16.4.7",
-        "express": "^4.21.2",
+        "dotenv": "^16.5.0",
+        "express": "^5.1.0",
         "winston": "^3.17.0"
     },
     "devDependencies": {
-        "@types/cors": "^2.8.17",
-        "@types/express": "^5.0.0",
+        "@types/cors": "^2.8.18",
+        "@types/express": "^5.0.2",
         "rimraf": "^6.0.1",
-        "tsx": "^4.19.3",
-        "typescript": "5.8.2"
+        "tsx": "^4.19.4",
+        "typescript": "5.8.3"
     }
 }
