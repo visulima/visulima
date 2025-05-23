@@ -220,7 +220,7 @@
         "yaml": "^2.8.0"
     },
     "peerDependencies": {
-        "yaml": "^2.7.0"
+        "yaml": "^2.8.0"
     },
     "peerDependenciesMeta": {
         "yaml": {
