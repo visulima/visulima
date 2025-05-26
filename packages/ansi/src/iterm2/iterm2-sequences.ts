@@ -37,40 +37,40 @@ import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-props";
  * \`\`\`
  * @internal
  */
-const formatITerm2FileProperties = (props: Partial<ITerm2FileProperties>): string => {
+const formatITerm2FileProperties = (properties: Partial<ITerm2FileProperties>): string => {
     const options: string[] = [];
 
     // Order can matter for readability or specific terminal quirks, though generally flexible.
     // Prioritizing common/identifying properties first.
-    if (props.name) {
-        options.push(`name=${props.name}`);
+    if (properties.name) {
+        options.push(`name=${properties.name}`);
     }
 
-    if (props.size !== undefined) {
-        options.push(`size=${props.size}`);
+    if (properties.size !== undefined) {
+        options.push(`size=${properties.size}`);
     }
 
-    if (props.width !== undefined) {
-        options.push(`width=${props.width.toString()}`);
+    if (properties.width !== undefined) {
+        options.push(`width=${properties.width.toString()}`);
     }
 
-    if (props.height !== undefined) {
-        options.push(`height=${props.height.toString()}`);
+    if (properties.height !== undefined) {
+        options.push(`height=${properties.height.toString()}`);
     }
 
     // Note: iTerm2 default is to preserve aspect ratio if 'preserveAspectRatio' is absent.
     // So, we only add 'preserveAspectRatio=0' if ignoreAspectRatio is true.
-    if (props.ignoreAspectRatio) {
+    if (properties.ignoreAspectRatio) {
         // maps to preserveAspectRatio=0
         options.push("preserveAspectRatio=0");
     }
 
-    if (props.inline) {
+    if (properties.inline) {
         // Results in inline=1
         options.push("inline=1");
     }
 
-    if (props.doNotMoveCursor) {
+    if (properties.doNotMoveCursor) {
         // Results in doNotMoveCursor=1
         options.push("doNotMoveCursor=1");
     }

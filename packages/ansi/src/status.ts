@@ -1,4 +1,4 @@
-import { CSI, SEP } from "./constants";
+import { CSI, DCS, SEP, ST } from "./constants";
 
 /** Represents an ANSI terminal status report type. */
 export type AnsiStatusReport = StatusReport;
@@ -34,8 +34,8 @@ class DecStatusReportImpl implements StatusReport {
  * ```typescript
  * import { createAnsiStatusReport, deviceStatusReport } from "@visulima/ansi";
  *
- * const report = createAnsiStatusReport(5); // Request for terminal status
- * const sequence = deviceStatusReport(report); // CSI 5 n
+ * const report = createAnsiStatusReport(5);
+ * const sequence = deviceStatusReport(report);
  * console.log(sequence);
  * ```
  */
@@ -50,8 +50,8 @@ export const createAnsiStatusReport = (code: number): AnsiStatusReport => new An
  * ```typescript
  * import { createDecStatusReport, deviceStatusReport } from "@visulima/ansi";
  *
- * const report = createDecStatusReport(15); // Request for printer status (DEC)
- * const sequence = deviceStatusReport(report); // CSI ? 15 n
+ * const report = createDecStatusReport(15);
+ * const sequence = deviceStatusReport(report);
  * console.log(sequence);
  * ```
  */
@@ -75,20 +75,16 @@ export const createDecStatusReport = (code: number): DecStatusReport => new DecS
  * ```typescript
  * import { deviceStatusReport, createAnsiStatusReport, createDecStatusReport } from "@visulima/ansi";
  *
- * const ansiReport = createAnsiStatusReport(5); // Terminal status
- * const decReport = createDecStatusReport(25); // UDK status
+ * const ansiReport = createAnsiStatusReport(5);
+ * const decReport = createDecStatusReport(25);
  *
- * console.log(deviceStatusReport(ansiReport)); // Output: "\x1b[5n"
- * console.log(deviceStatusReport(decReport));  // Output: "\x1b[?25n"
- * console.log(deviceStatusReport(ansiReport, decReport)); // Output: "\x1b[?5;25n"
+ * console.log(deviceStatusReport(ansiReport));
+ * console.log(deviceStatusReport(decReport));
+ * console.log(deviceStatusReport(ansiReport, decReport));
  * ```
  */
 export const deviceStatusReport = (...reports: StatusReport[]): string => {
     if (reports.length === 0) {
-        // Although the Go version doesn't explicitly handle this, returning empty for no reports seems reasonable.
-        // Or, one could argue a DSR without specific parameters is just `CSI n` (which implies a general status request, often cursor position).
-        // For now, matching Go's structure which implies parameters are usually given for DSR.
-        // If a generic DSR is needed, it would typically be a specific constant like RequestCursorPositionReport.
         return "";
     }
 
@@ -105,10 +101,6 @@ export const deviceStatusReport = (...reports: StatusReport[]): string => {
     let seq = CSI;
 
     if (hasDecReport) {
-        // Note: The Go code sets `dec = true` if *any* report is DECStatusReport, and prefixes the whole sequence.
-        // This implies that mixing ANSI and DEC report types in a single DSR sequence (e.g., CSI 5;?6n) is not standard.
-        // Typically, a DSR is either all standard (CSI Ps;Ps n) or all DEC-private (CSI ?Ps;Ps n).
-        // The current implementation follows Go's logic of a single prefix if any report is DEC.
         seq += "?";
     }
 
@@ -125,8 +117,7 @@ export const deviceStatusReport = (...reports: StatusReport[]): string => {
  * ```typescript
  * import { DSR, requestTerminalStatus } from "@visulima/ansi";
  *
- * // requestTerminalStatus is a pre-defined StatusReport object
- * console.log(DSR(requestTerminalStatus)); // Output: "\x1b[5n"
+ * console.log(DSR(requestTerminalStatus));
  * ```
  */
 export const DSR = (report: StatusReport): string => deviceStatusReport(report);
@@ -143,7 +134,6 @@ export const DSR = (report: StatusReport): string => deviceStatusReport(report);
  * import { requestCursorPositionReport } from "@visulima/ansi";
  *
  * process.stdout.write(requestCursorPositionReport);
- * // Terminal expected to respond with e.g., "\x1b[10;5R" if cursor is at line 10, column 5.
  * ```
  */
 export const requestCursorPositionReport = `${CSI}6n`;
@@ -160,7 +150,6 @@ export const requestCursorPositionReport = `${CSI}6n`;
  * import { requestExtendedCursorPositionReport } from "@visulima/ansi";
  *
  * process.stdout.write(requestExtendedCursorPositionReport);
- * // Terminal expected to respond with e.g., "\x1b[?10;5;1R" if cursor is at line 10, column 5, page 1.
  * ```
  */
 export const requestExtendedCursorPositionReport = `${CSI}?6n`;
@@ -179,8 +168,7 @@ export const requestExtendedCursorPositionReport = `${CSI}?6n`;
  * ```typescript
  * import { cursorPositionReport } from "@visulima/ansi";
  *
- * // Cursor at line 10, column 5
- * console.log(cursorPositionReport(10, 5)); // Output: "\x1b[10;5R"
+ * console.log(cursorPositionReport(10, 5));
  * ```
  */
 export const cursorPositionReport = (line: number, column: number): string => {
@@ -198,7 +186,7 @@ export const cursorPositionReport = (line: number, column: number): string => {
  * ```typescript
  * import { CPR } from "@visulima/ansi";
  *
- * console.log(CPR(10, 5)); // Equivalent to cursorPositionReport(10, 5)
+ * console.log(CPR(10, 5));
  * ```
  */
 export const CPR = cursorPositionReport;
@@ -213,11 +201,9 @@ export const CPR = cursorPositionReport;
  * ```typescript
  * import { extendedCursorPositionReport } from "@visulima/ansi";
  *
- * // Cursor at line 10, column 5, page 1
- * console.log(extendedCursorPositionReport(10, 5, 1)); // Output: "\x1b[?10;5;1R"
+ * console.log(extendedCursorPositionReport(10, 5, 1));
  *
- * // Cursor at line 10, column 5 (page omitted)
- * console.log(extendedCursorPositionReport(10, 5, 0)); // Output: "\x1b[?10;5R"
+ * console.log(extendedCursorPositionReport(10, 5, 0));
  * ```
  */
 export const extendedCursorPositionReport = (line: number, column: number, page: number): string => {
@@ -244,11 +230,244 @@ export const extendedCursorPositionReport = (line: number, column: number, page:
  * ```typescript
  * import { DECXCPR } from "@visulima/ansi";
  *
- * console.log(DECXCPR(10, 5, 1)); // Equivalent to extendedCursorPositionReport(10, 5, 1)
+ * console.log(DECXCPR(10, 5, 1));
  * ```
  */
 export const DECXCPR = extendedCursorPositionReport;
 
+/**
+ * ANSI escape sequence to request the terminal's name and version (XTVERSION).
+ * Sequence: `CSI > 0 q`
+ * The terminal typically responds with a DCS sequence: `DCS > | text ST`
+ * Where `text` is the terminal name and version.
+ * @see https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-PC-Style-Function-Keys
+ * @example
+ * ```typescript
+ * import { RequestNameVersion } from "@visulima/ansi";
+ *
+ * process.stdout.write(RequestNameVersion);
+ * ```
+ */
+export const RequestNameVersion = `${CSI}>0q`;
+
+/**
+ * Alias for {@link RequestNameVersion}.
+ * @see RequestNameVersion
+ */
+export const XTVERSION = RequestNameVersion;
+
+// Primary Device Attributes (DA1)
+// https://vt100.net/docs/vt510-rm/DA1.html
+
+/**
+ * ANSI escape sequence to request Primary Device Attributes (DA1).
+ * Sequence: `CSI c` or `CSI 0 c`. Using `CSI c` as it's the more common base form.
+ * The terminal responds with `CSI ? Pn ; Pn ; ... c`.
+ * @example
+ * ```typescript
+ * import { requestPrimaryDeviceAttributes } from "@visulima/ansi";
+ *
+ * process.stdout.write(requestPrimaryDeviceAttributes);
+ * ```
+ */
+export const requestPrimaryDeviceAttributes = `${CSI}c`;
+
+/**
+ * Alias for {@link requestPrimaryDeviceAttributes}.
+ */
+export const DA1 = requestPrimaryDeviceAttributes;
+
+/**
+ * Generates the response sequence for Primary Device Attributes (DA1).
+ * Sequence: `CSI ? Ps ; ... c`
+ *
+ * Common attributes include:
+ * - 1	132 columns
+ * - 2	Printer port
+ * - 4	Sixel
+ * - 6	Selective erase
+ * - 7	Soft character set (DRCS)
+ * - 8	User-defined keys (UDKs)
+ * - 9	National replacement character sets (NRCS) (International terminal only)
+ * - 12	Yugoslavian (SCS)
+ * - 15	Technical character set
+ * - 18	Windowing capability
+ * - 21	Horizontal scrolling
+ * - 23	Greek
+ * - 24	Turkish
+ * - 42	ISO Latin-2 character set
+ * - 44	PCTerm
+ * - 45	Soft key map
+ * - 46	ASCII emulation
+ * @param attributes Numeric attribute codes.
+ * @returns The DA1 response sequence.
+ * @example
+ * ```typescript
+ * import { reportPrimaryDeviceAttributes } from "@visulima/ansi";
+ *
+ * console.log(reportPrimaryDeviceAttributes(1, 9));
+ * console.log(reportPrimaryDeviceAttributes(61));
+ * ```
+ */
+export const reportPrimaryDeviceAttributes = (...attributes: number[]): string => {
+    if (attributes.length === 0) {
+        return "";
+    }
+
+    return `${CSI}?${attributes.join(SEP)}c`;
+};
+
+// Secondary Device Attributes (DA2)
+// https://vt100.net/docs/vt510-rm/DA2.html
+
+/**
+ * ANSI escape sequence to request Secondary Device Attributes (DA2).
+ * Sequence: `CSI > c` or `CSI > 0 c`. Using `CSI > c` as the base.
+ * The terminal responds with `CSI > Pv ; Pl ; Pc c` (Version; Level; Cartridge).
+ * @example
+ * ```typescript
+ * import { requestSecondaryDeviceAttributes } from "@visulima/ansi";
+ *
+ * process.stdout.write(requestSecondaryDeviceAttributes);
+ * ```
+ */
+export const requestSecondaryDeviceAttributes = `${CSI}>c`;
+
+/**
+ * Alias for {@link requestSecondaryDeviceAttributes}.
+ */
+export const DA2 = requestSecondaryDeviceAttributes;
+
+/**
+ * Generates the response sequence for Secondary Device Attributes (DA2).
+ * Sequence: `CSI > Pv ; Pl ; Pc c`
+ * @param version Terminal version number.
+ * @param level Terminal model/level number.
+ * @param cartridge ROM cartridge (0 for none).
+ * @returns The DA2 response sequence.
+ * @example
+ * ```typescript
+ * import { reportSecondaryDeviceAttributes } from "@visulima/ansi";
+ *
+ * console.log(reportSecondaryDeviceAttributes(0, 2, 0));
+ * console.log(reportSecondaryDeviceAttributes(41, 370, 0));
+ * ```
+ */
+export const reportSecondaryDeviceAttributes = (version: number, level: number, cartridge = 0): string => {
+    const pv = Math.max(0, version);
+    const pl = Math.max(0, level);
+    const pc = Math.max(0, cartridge);
+
+    return `${CSI}>${pv}${SEP}${pl}${SEP}${pc}c`;
+};
+
+// Tertiary Device Attributes (DA3)
+// https://vt100.net/docs/vt510-rm/DA3.html
+
+/**
+ * ANSI escape sequence to request Tertiary Device Attributes (DA3).
+ * Sequence: `CSI = c` or `CSI = 0 c`. Using `CSI = c` as the base.
+ * The terminal responds with `DCS ! | unitID ST`. (DECRPTUI - Report Unit ID)
+ * @example
+ * ```typescript
+ * import { requestTertiaryDeviceAttributes } from "@visulima/ansi";
+ *
+ * process.stdout.write(requestTertiaryDeviceAttributes);
+ * ```
+ */
+export const requestTertiaryDeviceAttributes = `${CSI}=c`;
+
+/**
+ * Alias for {@link requestTertiaryDeviceAttributes}.
+ */
+export const DA3 = requestTertiaryDeviceAttributes;
+
+/**
+ * Generates the response sequence for Tertiary Device Attributes (DA3), which is a DECRPTUI.
+ * Sequence: `DCS ! | unitID ST`
+ * @param unitID The unit ID string for the terminal.
+ * @returns The DA3 response sequence (DECRPTUI).
+ * If unitID is empty, it's arguably an invalid report, but we'll return `DCS ! | ST` to match some behaviors.
+ * @example
+ * ```typescript
+ * import { reportTertiaryDeviceAttributes } from "@visulima/ansi";
+ *
+ * console.log(reportTertiaryDeviceAttributes("MYTERM001"));
+ * console.log(reportTertiaryDeviceAttributes(""));
+ * ```
+ */
+export const reportTertiaryDeviceAttributes = (unitID: string): string =>
+    `${DCS}!|${unitID}${ST}`;
+
+// For user convenience, re-exporting some constants if they are direct requests
+// This part is more about aligning with other direct constants if they differ from the `request*` functions.
+// However, our `request*` functions are already constants.
+
+// For requests like `CSI > 0 q` (RequestNameVersion / XTVERSION)
+// it's a direct constant, already defined above.
+
+// For `CSI c` (RequestPrimaryDeviceAttributes)
+// `requestPrimaryDeviceAttributes` is already `CSIc`.
+
+// For `CSI > c` (RequestSecondaryDeviceAttributes)
+// `requestSecondaryDeviceAttributes` is already `CSI>c`.
+
+// For `CSI = c` (RequestTertiaryDeviceAttributes)
+// `requestTertiaryDeviceAttributes` is already `CSI=c`.
+
+// Some terminals also have functions like PrimaryDeviceAttributes(attrs ...int) string
+// which can *generate* a request with parameters (e.g., CSI 0 c or CSI ? Ps ; ... c).
+// Our current `requestPrimaryDeviceAttributes` is just `CSI c`.
+// To fully match, we might need functions that can take a `0` or other params if the request form varies.
+
+// Let's ensure the `sendDeviceAttributes` `CSI ? Ps ; ... c` is covered by `reportPrimaryDeviceAttributes`. It is.
+// The request `CSI c` or `CSI 0 c`.
+// We have `requestPrimaryDeviceAttributes = CSI c`.
+// To add `CSI 0 c`, we can make a new constant or a function.
+// Let's add specific request constants if they are different forms.
+
+/**
+ * ANSI escape sequence to request Primary Device Attributes (DA1) with explicit parameter 0.
+ * Sequence: `CSI 0 c`.
+ * This is an alternative form of {@link requestPrimaryDeviceAttributes}.
+ * @example
+ * ```typescript
+ * import { requestPrimaryDeviceAttributesParam0 } from "@visulima/ansi";
+ *
+ * process.stdout.write(requestPrimaryDeviceAttributesParam0);
+ * ```
+ */
+export const requestPrimaryDeviceAttributesParam0 = `${CSI}0c`;
+
+/**
+ * ANSI escape sequence to request Secondary Device Attributes (DA2) with explicit parameter 0.
+ * Sequence: `CSI > 0 c`.
+ * This is an alternative form of {@link requestSecondaryDeviceAttributes}.
+ * Note: This is also what XTerm uses for `sendDeviceAttributes` with no arguments in some contexts,
+ * but it's different from `XTVERSION` (`CSI > 0 q`).
+ * @example
+ * ```typescript
+ * import { requestSecondaryDeviceAttributesParam0 } from "@visulima/ansi";
+ *
+ * process.stdout.write(requestSecondaryDeviceAttributesParam0);
+ * ```
+ */
+export const requestSecondaryDeviceAttributesParam0 = `${CSI}>0c`;
+
+/**
+ * ANSI escape sequence to request Tertiary Device Attributes (DA3) with explicit parameter 0.
+ * Sequence: `CSI = 0 c`.
+ * This is an alternative form of {@link requestTertiaryDeviceAttributes}.
+ * @example
+ * ```typescript
+ * import { requestTertiaryDeviceAttributesParam0 } from "@visulima/ansi";
+ *
+ * process.stdout.write(requestTertiaryDeviceAttributesParam0);
+ * ```
+ */
+export const requestTertiaryDeviceAttributesParam0 = `${CSI}=0c`;
+
+// Restore the original content for DSRs that were deleted
 // Other common DSR codes (often as requests)
 // These are typically single parameter DSRs
 
@@ -264,7 +483,7 @@ export const DECXCPR = extendedCursorPositionReport;
  * import { DSR, requestTerminalStatus } from "@visulima/ansi";
  *
  * const reportSequence = DSR(requestTerminalStatus);
- * console.log(reportSequence); // Output: "\x1b[5n"
+ * console.log(reportSequence);
  * ```
  */
 export const requestTerminalStatus: StatusReport = createAnsiStatusReport(5);
@@ -278,7 +497,6 @@ export const requestTerminalStatus: StatusReport = createAnsiStatusReport(5);
  * import { DSR_TerminalStatus } from "@visulima/ansi";
  *
  * process.stdout.write(DSR_TerminalStatus);
- * // Terminal expected to respond with CSI 0 n (OK) or CSI 3 n (Failure).
  * ```
  */
 export const DSR_TerminalStatus = deviceStatusReport(requestTerminalStatus); // CSI 5 n
@@ -312,7 +530,7 @@ export const reportTerminalNotOK = `${CSI}3n`;
  * import { DSR, requestPrinterStatusDEC } from "@visulima/ansi";
  *
  * const reportSequence = DSR(requestPrinterStatusDEC);
- * console.log(reportSequence); // Output: "\x1b[?15n"
+ * console.log(reportSequence);
  * ```
  */
 export const requestPrinterStatusDEC: StatusReport = createDecStatusReport(15);
@@ -326,7 +544,6 @@ export const requestPrinterStatusDEC: StatusReport = createDecStatusReport(15);
  * import { DSR_PrinterStatusDEC } from "@visulima/ansi";
  *
  * process.stdout.write(DSR_PrinterStatusDEC);
- * // Terminal expected to respond with e.g., CSI ? 10 n (Ready).
  * ```
  */
 export const DSR_PrinterStatusDEC = deviceStatusReport(requestPrinterStatusDEC); // CSI ? 15 n
@@ -374,7 +591,6 @@ export const requestUDKStatusDEC: StatusReport = createDecStatusReport(25);
  * import { DSR_UDKStatusDEC } from "@visulima/ansi";
  *
  * process.stdout.write(DSR_UDKStatusDEC);
- * // Terminal expected to respond with e.g., CSI ? 21 n (UDKs unlocked).
  * ```
  */
 export const DSR_UDKStatusDEC = deviceStatusReport(requestUDKStatusDEC); // CSI ? 25 n
@@ -412,11 +628,9 @@ export const requestKeyboardLanguageDEC: StatusReport = createDecStatusReport(26
  * import { DSR_KeyboardLanguageDEC } from "@visulima/ansi";
  *
  * process.stdout.write(DSR_KeyboardLanguageDEC);
- * // Terminal might respond with a sequence like CSI ? 27 ; 1 n (for US English).
  * ```
  */
 export const DSR_KeyboardLanguageDEC = deviceStatusReport(requestKeyboardLanguageDEC); // CSI ? 26 n
-// Example response for US English: CSI ? 27 ; 1 n
 
 /**
  * Generates a DEC Keyboard Language Report sequence.
@@ -430,21 +644,7 @@ export const DSR_KeyboardLanguageDEC = deviceStatusReport(requestKeyboardLanguag
  * ```typescript
  * import { reportKeyboardLanguageDEC } from "@visulima/ansi";
  *
- * // Report US English (hypothetical code 1)
- * console.log(reportKeyboardLanguageDEC(1)); // Output: "\x1b[?27;1n"
+ * console.log(reportKeyboardLanguageDEC(1));
  * ```
  */
 export const reportKeyboardLanguageDEC = (langCode: number): string => `${CSI}?27${SEP}${langCode.toString()}n`;
-
-/** DSR: Report Data Integrity (DEC specific) */
-// This is often DECPRR - Report presentation state reply, CSI ? Pi $ r
-// Not typically a 'n' terminated DSR. But if it were, it'd be:
-// export const requestDataIntegrityDEC: StatusReport = createDecStatusReport(75);
-// export const DSR_DataIntegrityDEC = deviceStatusReport(requestDataIntegrityDEC); // CSI ? 75 n
-// Responses: CSI ? 70 n (No errors), CSI ? 7x n (errors)
-
-/** DSR: Report Multi-Session Configuration (DEC specific) */
-// DECRQSS - Request Session State, typically OSC sequence, not DSR.
-
-// The Go file only covers the general DSR mechanism and cursor position reports.
-// Adding a few common DSRs for completeness but will stick to Go's scope for primary testing.

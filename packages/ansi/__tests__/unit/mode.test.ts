@@ -161,14 +161,14 @@ describe("mode Utilities", () => {
     describe("modeSetting helpers", () => {
         it("isModeNotRecognized should work", () => {
             expect.assertions(2);
-            
+
             expect(isModeNotRecognized(ModeSetting.NotRecognized)).toBe(true);
             expect(isModeNotRecognized(ModeSetting.Set)).toBe(false);
         });
 
         it("isModeSet should work", () => {
             expect.assertions(3);
-            
+
             expect(isModeSet(ModeSetting.Set)).toBe(true);
             expect(isModeSet(ModeSetting.PermanentlySet)).toBe(true);
             expect(isModeSet(ModeSetting.Reset)).toBe(false);
@@ -176,7 +176,7 @@ describe("mode Utilities", () => {
 
         it("isModeReset should work", () => {
             expect.assertions(3);
-            
+
             expect(isModeReset(ModeSetting.Reset)).toBe(true);
             expect(isModeReset(ModeSetting.PermanentlyReset)).toBe(true);
             expect(isModeReset(ModeSetting.Set)).toBe(false);
@@ -184,14 +184,14 @@ describe("mode Utilities", () => {
 
         it("isModePermanentlySet should work", () => {
             expect.assertions(2);
-            
+
             expect(isModePermanentlySet(ModeSetting.PermanentlySet)).toBe(true);
             expect(isModePermanentlySet(ModeSetting.Set)).toBe(false);
         });
 
         it("isModePermanentlyReset should work", () => {
             expect.assertions(2);
-            
+
             expect(isModePermanentlyReset(ModeSetting.PermanentlyReset)).toBe(true);
             expect(isModePermanentlyReset(ModeSetting.Reset)).toBe(false);
         });
@@ -201,7 +201,6 @@ describe("mode Utilities", () => {
         it("should create ANSI mode", () => {
             expect.assertions(2);
 
-            
             const mode = createAnsiMode(4);
 
             expect(mode.code).toBe(4);
@@ -211,7 +210,6 @@ describe("mode Utilities", () => {
         it("should create DEC mode", () => {
             expect.assertions(2);
 
-            
             const mode = createDecMode(25);
 
             expect(mode.code).toBe(25);
@@ -222,14 +220,14 @@ describe("mode Utilities", () => {
     describe("setMode (SM)", () => {
         it("should set a single ANSI mode", () => {
             expect.assertions(2);
-            
+
             expect(setMode(InsertReplaceMode)).toBe(`${CSI}4h`);
             expect(SM(InsertReplaceMode)).toBe(`${CSI}4h`);
         });
 
         it("should set a single DEC mode", () => {
             expect.assertions(2);
-            
+
             expect(setMode(TextCursorEnableMode)).toBe(`${CSI}?25h`);
             expect(SM(TextCursorEnableMode)).toBe(`${CSI}?25h`);
         });
@@ -237,7 +235,6 @@ describe("mode Utilities", () => {
         it("should set multiple ANSI modes", () => {
             expect.assertions(1);
 
-            
             const irm = createAnsiMode(4);
             const kam = createAnsiMode(2);
 
@@ -247,7 +244,6 @@ describe("mode Utilities", () => {
         it("should set multiple DEC modes", () => {
             expect.assertions(1);
 
-            
             const dec25 = createDecMode(25);
             const dec7 = createDecMode(7); // AutoWrapMode
 
@@ -257,7 +253,6 @@ describe("mode Utilities", () => {
         it("should set mixed ANSI and DEC modes", () => {
             expect.assertions(1);
 
-            
             const irm = createAnsiMode(4); // InsertReplaceMode
             const dec25 = createDecMode(25); // TextCursorEnableMode
             const kam = createAnsiMode(2); // KeyboardActionMode
@@ -271,7 +266,7 @@ describe("mode Utilities", () => {
 
         it("should return empty string for no modes", () => {
             expect.assertions(1);
-            
+
             expect(setMode()).toBe("");
         });
     });
@@ -279,14 +274,14 @@ describe("mode Utilities", () => {
     describe("resetMode (RM)", () => {
         it("should reset a single ANSI mode", () => {
             expect.assertions(2);
-            
+
             expect(resetMode(InsertReplaceMode)).toBe(`${CSI}4l`);
             expect(RM(InsertReplaceMode)).toBe(`${CSI}4l`);
         });
 
         it("should reset a single DEC mode", () => {
             expect.assertions(2);
-            
+
             expect(resetMode(TextCursorEnableMode)).toBe(`${CSI}?25l`);
             expect(RM(TextCursorEnableMode)).toBe(`${CSI}?25l`);
         });
@@ -294,7 +289,6 @@ describe("mode Utilities", () => {
         it("should reset multiple ANSI modes", () => {
             expect.assertions(1);
 
-            
             const irm = createAnsiMode(4);
             const kam = createAnsiMode(2);
 
@@ -304,7 +298,6 @@ describe("mode Utilities", () => {
         it("should reset multiple DEC modes", () => {
             expect.assertions(1);
 
-            
             const dec25 = createDecMode(25);
             const dec7 = createDecMode(7);
 
@@ -314,7 +307,6 @@ describe("mode Utilities", () => {
         it("should reset mixed ANSI and DEC modes", () => {
             expect.assertions(1);
 
-            
             const irm = createAnsiMode(4);
             const dec25 = createDecMode(25);
             const result = resetMode(irm, dec25);
@@ -326,7 +318,7 @@ describe("mode Utilities", () => {
 
         it("should return empty string for no modes", () => {
             expect.assertions(1);
-            
+
             expect(resetMode()).toBe("");
         });
     });
@@ -334,14 +326,14 @@ describe("mode Utilities", () => {
     describe("requestMode (DECRQM)", () => {
         it("should request an ANSI mode", () => {
             expect.assertions(2);
-            
+
             expect(requestMode(InsertReplaceMode)).toBe(`${CSI}4$p`);
             expect(DECRQM(InsertReplaceMode)).toBe(`${CSI}4$p`);
         });
 
         it("should request a DEC mode", () => {
             expect.assertions(2);
-            
+
             expect(requestMode(TextCursorEnableMode)).toBe(`${CSI}?25$p`);
             expect(DECRQM(TextCursorEnableMode)).toBe(`${CSI}?25$p`);
         });
@@ -350,38 +342,38 @@ describe("mode Utilities", () => {
     describe("reportMode (DECRPM)", () => {
         it("should report an ANSI mode as Set", () => {
             expect.assertions(2);
-            
+
             expect(reportMode(InsertReplaceMode, ModeSetting.Set)).toBe(`${CSI}4;1$y`);
             expect(DECRPM(InsertReplaceMode, ModeSetting.Set)).toBe(`${CSI}4;1$y`);
         });
 
         it("should report a DEC mode as Reset", () => {
             expect.assertions(1);
-            
+
             expect(reportMode(TextCursorEnableMode, ModeSetting.Reset)).toBe(`${CSI}?25;2$y`);
         });
 
         it("should report PermanentlySet", () => {
             expect.assertions(1);
-            
+
             expect(reportMode(TextCursorEnableMode, ModeSetting.PermanentlySet)).toBe(`${CSI}?25;3$y`);
         });
 
         it("should report PermanentlyReset", () => {
             expect.assertions(1);
-            
+
             expect(reportMode(TextCursorEnableMode, ModeSetting.PermanentlyReset)).toBe(`${CSI}?25;4$y`);
         });
 
         it("should report NotRecognized for invalid value > 4", () => {
             expect.assertions(1);
-            
+
             expect(reportMode(InsertReplaceMode, 5 as ModeSetting)).toBe(`${CSI}4;0$y`);
         });
 
         it("should report NotRecognized for ModeSetting.NotRecognized", () => {
             expect.assertions(1);
-            
+
             expect(reportMode(InsertReplaceMode, ModeSetting.NotRecognized)).toBe(`${CSI}4;0$y`);
         });
     });
@@ -390,7 +382,7 @@ describe("mode Utilities", () => {
         // ANSI Modes
         it("keyboardActionMode (KAM) - ANSI Mode 2", () => {
             expect.assertions(9);
-            
+
             expect(KeyboardActionMode.code).toBe(2);
             expect(KeyboardActionMode.isDecMode).toBe(false);
             expect(KAM.code).toBe(2);
@@ -404,7 +396,7 @@ describe("mode Utilities", () => {
 
         it("insertReplaceMode (IRM) - ANSI Mode 4", () => {
             expect.assertions(9);
-            
+
             expect(InsertReplaceMode.code).toBe(4);
             expect(InsertReplaceMode.isDecMode).toBe(false);
             expect(IRM.code).toBe(4);
@@ -418,8 +410,7 @@ describe("mode Utilities", () => {
 
         it("biDirectionalSupportMode (BDSM) - ANSI Mode 8", () => {
             expect.assertions(9);
-            
-            
+
             expect(BiDirectionalSupportMode.code).toBe(8);
             expect(BiDirectionalSupportMode.isDecMode).toBe(false);
             expect(BDSM.code).toBe(8);
@@ -434,7 +425,6 @@ describe("mode Utilities", () => {
         it("sendReceiveMode (SRM/LocalEchoMode) - ANSI Mode 12", () => {
             expect.assertions(13);
 
-            
             expect(SendReceiveMode.code).toBe(12);
             expect(SendReceiveMode.isDecMode).toBe(false);
             expect(SRM.code).toBe(12);
@@ -452,7 +442,7 @@ describe("mode Utilities", () => {
 
         it("lineFeedNewLineMode (LNM) - ANSI Mode 20", () => {
             expect.assertions(9);
-            
+
             expect(LineFeedNewLineMode.code).toBe(20);
             expect(LineFeedNewLineMode.isDecMode).toBe(false);
             expect(LNM.code).toBe(20);
@@ -467,7 +457,7 @@ describe("mode Utilities", () => {
         // DEC Modes
         it("cursorKeysMode (DECCKM) - DEC Mode 1", () => {
             expect.assertions(9);
-            
+
             expect(CursorKeysMode.code).toBe(1);
             expect(CursorKeysMode.isDecMode).toBe(true);
             expect(DECCKM.code).toBe(1);
@@ -481,7 +471,7 @@ describe("mode Utilities", () => {
 
         it("originMode (DECOM) - DEC Mode 6", () => {
             expect.assertions(9);
-            
+
             expect(OriginMode.code).toBe(6);
             expect(OriginMode.isDecMode).toBe(true);
             expect(DECOM.code).toBe(6);
@@ -495,7 +485,7 @@ describe("mode Utilities", () => {
 
         it("autoWrapMode (DECAWM) - DEC Mode 7", () => {
             expect.assertions(9);
-            
+
             expect(AutoWrapMode.code).toBe(7);
             expect(AutoWrapMode.isDecMode).toBe(true);
             expect(DECAWM.code).toBe(7);
@@ -509,7 +499,7 @@ describe("mode Utilities", () => {
 
         it("x10MouseMode - DEC Mode 9", () => {
             expect.assertions(8);
-            
+
             expect(X10MouseMode.code).toBe(9);
             expect(X10MouseMode.isDecMode).toBe(true);
             expect(setMode(X10MouseMode)).toBe(SetX10MouseMode);
@@ -522,7 +512,7 @@ describe("mode Utilities", () => {
 
         it("textCursorEnableMode (DECTCEM) - DEC Mode 25", () => {
             expect.assertions(11);
-            
+
             expect(TextCursorEnableMode.code).toBe(25);
             expect(TextCursorEnableMode.isDecMode).toBe(true);
             expect(DECTCEM.code).toBe(25);
@@ -538,7 +528,7 @@ describe("mode Utilities", () => {
 
         it("numericKeypadMode (DECNKM) - DEC Mode 66", () => {
             expect.assertions(9);
-            
+
             expect(NumericKeypadMode.code).toBe(66);
             expect(NumericKeypadMode.isDecMode).toBe(true);
             expect(DECNKM.code).toBe(66);
@@ -552,7 +542,7 @@ describe("mode Utilities", () => {
 
         it("backarrowKeyMode (DECBKM) - DEC Mode 67", () => {
             expect.assertions(9);
-            
+
             expect(BackarrowKeyMode.code).toBe(67);
             expect(BackarrowKeyMode.isDecMode).toBe(true);
             expect(DECBKM.code).toBe(67);
@@ -566,7 +556,7 @@ describe("mode Utilities", () => {
 
         it("leftRightMarginMode (DECLRMM) - DEC Mode 69", () => {
             expect.assertions(9);
-            
+
             expect(LeftRightMarginMode.code).toBe(69);
             expect(LeftRightMarginMode.isDecMode).toBe(true);
             expect(DECLRMM.code).toBe(69);
@@ -580,7 +570,7 @@ describe("mode Utilities", () => {
 
         it("normalMouseMode - DEC Mode 1000", () => {
             expect.assertions(8);
-            
+
             expect(NormalMouseMode.code).toBe(1000);
             expect(NormalMouseMode.isDecMode).toBe(true);
             expect(setMode(NormalMouseMode)).toBe(SetNormalMouseMode);
@@ -593,7 +583,7 @@ describe("mode Utilities", () => {
 
         it("highlightMouseMode - DEC Mode 1001", () => {
             expect.assertions(8);
-            
+
             expect(HighlightMouseMode.code).toBe(1001);
             expect(HighlightMouseMode.isDecMode).toBe(true);
             expect(setMode(HighlightMouseMode)).toBe(SetHighlightMouseMode);
@@ -606,7 +596,7 @@ describe("mode Utilities", () => {
 
         it("buttonEventMouseMode - DEC Mode 1002", () => {
             expect.assertions(8);
-            
+
             expect(ButtonEventMouseMode.code).toBe(1002);
             expect(ButtonEventMouseMode.isDecMode).toBe(true);
             expect(setMode(ButtonEventMouseMode)).toBe(SetButtonEventMouseMode);
@@ -619,7 +609,7 @@ describe("mode Utilities", () => {
 
         it("anyEventMouseMode - DEC Mode 1003", () => {
             expect.assertions(8);
-            
+
             expect(AnyEventMouseMode.code).toBe(1003);
             expect(AnyEventMouseMode.isDecMode).toBe(true);
             expect(setMode(AnyEventMouseMode)).toBe(SetAnyEventMouseMode);
@@ -632,7 +622,7 @@ describe("mode Utilities", () => {
 
         it("focusEventMode - DEC Mode 1004", () => {
             expect.assertions(8);
-            
+
             expect(FocusEventMode.code).toBe(1004);
             expect(FocusEventMode.isDecMode).toBe(true);
             expect(setMode(FocusEventMode)).toBe(SetFocusEventMode);
@@ -645,7 +635,7 @@ describe("mode Utilities", () => {
 
         it("utf8ExtMouseMode - DEC Mode 1005", () => {
             expect.assertions(8);
-            
+
             expect(Utf8ExtensionMouseMode.code).toBe(1005);
             expect(Utf8ExtensionMouseMode.isDecMode).toBe(true);
             expect(setMode(Utf8ExtensionMouseMode)).toBe(SetUtf8ExtensionMouseMode);
@@ -658,7 +648,7 @@ describe("mode Utilities", () => {
 
         it("sgrExtMouseMode - DEC Mode 1006", () => {
             expect.assertions(8);
-            
+
             expect(SgrExtensionMouseMode.code).toBe(1006);
             expect(SgrExtensionMouseMode.isDecMode).toBe(true);
             expect(setMode(SgrExtensionMouseMode)).toBe(SetSgrExtensionMouseMode);
@@ -671,7 +661,7 @@ describe("mode Utilities", () => {
 
         it("urxvtExtMouseMode - DEC Mode 1015", () => {
             expect.assertions(8);
-            
+
             expect(UrxvtExtensionMouseMode.code).toBe(1015);
             expect(UrxvtExtensionMouseMode.isDecMode).toBe(true);
             expect(setMode(UrxvtExtensionMouseMode)).toBe(SetUrxvtExtensionMouseMode);
@@ -684,7 +674,7 @@ describe("mode Utilities", () => {
 
         it("sgrPixelExtMouseMode - DEC Mode 1016", () => {
             expect.assertions(8);
-            
+
             expect(SgrPixelExtensionMouseMode.code).toBe(1016);
             expect(SgrPixelExtensionMouseMode.isDecMode).toBe(true);
             expect(setMode(SgrPixelExtensionMouseMode)).toBe(SetSgrPixelExtensionMouseMode);
@@ -697,7 +687,7 @@ describe("mode Utilities", () => {
 
         it("altScreenMode - DEC Mode 1047", () => {
             expect.assertions(8);
-            
+
             expect(AltScreenMode.code).toBe(1047);
             expect(AltScreenMode.isDecMode).toBe(true);
             expect(setMode(AltScreenMode)).toBe(SetAltScreenMode);
@@ -710,7 +700,7 @@ describe("mode Utilities", () => {
 
         it("saveCursorMode - DEC Mode 1048", () => {
             expect.assertions(8);
-            
+
             expect(SaveCursorMode.code).toBe(1048);
             expect(SaveCursorMode.isDecMode).toBe(true);
             expect(setMode(SaveCursorMode)).toBe(SetSaveCursorMode);
@@ -723,7 +713,7 @@ describe("mode Utilities", () => {
 
         it("altScreenSaveCursorMode - DEC Mode 1049", () => {
             expect.assertions(8);
-            
+
             expect(AltScreenSaveCursorMode.code).toBe(1049);
             expect(AltScreenSaveCursorMode.isDecMode).toBe(true);
             expect(setMode(AltScreenSaveCursorMode)).toBe(SetAltScreenSaveCursorMode);
@@ -736,7 +726,7 @@ describe("mode Utilities", () => {
 
         it("bracketedPasteMode - DEC Mode 2004", () => {
             expect.assertions(8);
-            
+
             expect(BracketedPasteMode.code).toBe(2004);
             expect(BracketedPasteMode.isDecMode).toBe(true);
             expect(setMode(BracketedPasteMode)).toBe(SetBracketedPasteMode);
@@ -749,7 +739,7 @@ describe("mode Utilities", () => {
 
         it("synchronizedOutputMode - DEC Mode 2026", () => {
             expect.assertions(8);
-            
+
             expect(SynchronizedOutputMode.code).toBe(2026);
             expect(SynchronizedOutputMode.isDecMode).toBe(true);
             expect(setMode(SynchronizedOutputMode)).toBe(SetSynchronizedOutputMode);
@@ -762,7 +752,7 @@ describe("mode Utilities", () => {
 
         it("graphemeClusteringMode - DEC Mode 2027", () => {
             expect.assertions(8);
-            
+
             expect(GraphemeClusteringMode.code).toBe(2027);
             expect(GraphemeClusteringMode.isDecMode).toBe(true);
             expect(setMode(GraphemeClusteringMode)).toBe(SetGraphemeClusteringMode);
@@ -775,7 +765,7 @@ describe("mode Utilities", () => {
 
         it("win32InputMode - DEC Mode 9001", () => {
             expect.assertions(8);
-            
+
             expect(Win32InputMode.code).toBe(9001);
             expect(Win32InputMode.isDecMode).toBe(true);
             expect(setMode(Win32InputMode)).toBe(SetWin32InputMode);

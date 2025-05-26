@@ -89,8 +89,6 @@ export {
     DECRQM,
     InsertReplaceMode,
     IRM,
-    // decset, // Not directly found in snippets, user might have specific context
-    // decrst, // Not directly found in snippets
     isModeNotRecognized,
     isModePermanentlyReset,
     isModePermanentlySet,
@@ -219,19 +217,20 @@ export {
     requestDeviceAttributes,
     requestExtendedCursorPositionReport,
     requestExtendedDeviceAttributes,
+    RequestNameVersion,
     requestPrimaryDeviceAttributes,
     requestPrinterStatus,
+    requestPrinterStatusDEC,
     requestSecondaryDeviceAttributes,
+    requestSecondaryDeviceAttributesParam0,
     requestTerminalIdentity,
     requestTerminalParameters,
     requestTerminalStatus,
     requestTertiaryDeviceAttributes,
     requestUDKStatus,
     sendDeviceAttributes,
-    // RequestCursorPosition, // This is an alias for requestCursorPositionReport constant in status.ts
-    // RequestPrinterStatus, // This would be a specific constant if defined
-    // RequestTerminalStatus, // This would be a specific constant if defined
-    // RequestUDKStatus, // This would be a specific constant if defined
+    sendDeviceAttributes,
+    XTVERSION,
 } from "./status";
 export { default as strip } from "./strip";
 export {

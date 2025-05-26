@@ -26,10 +26,11 @@ import {
     requestCursorPositionReport,
     requestExtendedCursorPositionReport,
     requestKeyboardLanguageDEC,
+    RequestNameVersion,
     requestPrinterStatusDEC,
     requestTerminalStatus,
     requestUDKStatusDEC,
-    StatusReport,
+    XTVERSION,
 } from "../../src/status";
 
 describe("status Reports", () => {
@@ -81,8 +82,6 @@ describe("status Reports", () => {
 
         it("should prefix with ? if any report is DEC (mixed reports)", () => {
             expect.assertions(2);
-            // Standard doesn't typically mix like CSI 5;?6n. It's usually CSI ?5;6n if any are DEC.
-            // This test reflects the implemented logic which prefixes if *any* are DEC.
             expect(deviceStatusReport(ansiReport5, decReport15)).toBe(`${CSI}?5${SEP}15n`);
             expect(deviceStatusReport(decReport15, ansiReport5)).toBe(`${CSI}?15${SEP}5n`);
         });
@@ -196,5 +195,21 @@ describe("status Reports", () => {
             expect(reportKeyboardLanguageDEC(1)).toBe(`${CSI}?27${SEP}1n`); // US English example
             expect(reportKeyboardLanguageDEC(7)).toBe(`${CSI}?27${SEP}7n`); // German example
         });
+    });
+
+    describe("requestNameVersion (XTVERSION)", () => {
+        it("should return the correct sequence for RequestNameVersion", () => {
+            expect.assertions(1);
+            expect(RequestNameVersion).toBe(`${CSI}>0q`);
+        });
+
+        it("xTVERSION should be an alias for RequestNameVersion", () => {
+            expect.assertions(1);
+            expect(XTVERSION).toBe(RequestNameVersion);
+        });
+    });
+
+    describe("primary Device Attributes (DA1)", () => {
+        // ... existing code ...
     });
 });
