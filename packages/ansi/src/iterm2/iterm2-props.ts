@@ -70,7 +70,7 @@ export interface IITerm2Payload {
  * @see {@link https://iterm2.com/documentation-escape-codes.html} iTerm2 Escape Codes (search for `File=`)
  * @see {@link https://iterm2.com/documentation-images.html} iTerm2 Inline Images Protocol
  */
-export interface ITerm2FileProps {
+export interface ITerm2FileProperties {
     /**
      * The Base64 encoded content of the file or image.
      * This is typically used when `inline=1` is set for images, or for transferring small files directly

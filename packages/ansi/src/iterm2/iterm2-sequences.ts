@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
 
-import type { IITerm2Payload, ITerm2FileProps } from "./iterm2-props";
+import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-props";
 
 /**
  * Formats the core properties part of an iTerm2 file-related sequence string.
@@ -37,45 +37,45 @@ import type { IITerm2Payload, ITerm2FileProps } from "./iterm2-props";
  * \`\`\`
  * @internal
  */
-const formatITerm2FileProps = (props: Partial<ITerm2FileProps>): string => {
-    const opts: string[] = [];
+const formatITerm2FileProperties = (props: Partial<ITerm2FileProperties>): string => {
+    const options: string[] = [];
 
     // Order can matter for readability or specific terminal quirks, though generally flexible.
     // Prioritizing common/identifying properties first.
     if (props.name) {
-        opts.push(`name=${props.name}`);
+        options.push(`name=${props.name}`);
     }
 
     if (props.size !== undefined) {
-        opts.push(`size=${props.size}`);
+        options.push(`size=${props.size}`);
     }
 
     if (props.width !== undefined) {
-        opts.push(`width=${props.width.toString()}`);
+        options.push(`width=${props.width.toString()}`);
     }
 
     if (props.height !== undefined) {
-        opts.push(`height=${props.height.toString()}`);
+        options.push(`height=${props.height.toString()}`);
     }
 
     // Note: iTerm2 default is to preserve aspect ratio if 'preserveAspectRatio' is absent.
     // So, we only add 'preserveAspectRatio=0' if ignoreAspectRatio is true.
     if (props.ignoreAspectRatio) {
         // maps to preserveAspectRatio=0
-        opts.push("preserveAspectRatio=0");
+        options.push("preserveAspectRatio=0");
     }
 
     if (props.inline) {
         // Results in inline=1
-        opts.push("inline=1");
+        options.push("inline=1");
     }
 
     if (props.doNotMoveCursor) {
         // Results in doNotMoveCursor=1
-        opts.push("doNotMoveCursor=1");
+        options.push("doNotMoveCursor=1");
     }
 
-    return opts.join(";");
+    return options.join(";");
 };
 
 /**
@@ -90,7 +90,7 @@ const formatITerm2FileProps = (props: Partial<ITerm2FileProps>): string => {
  * @see {@link iTerm2} for the function that wraps this payload into a full escape sequence.
  */
 export class ITerm2File implements IITerm2Payload {
-    private readonly fileProps: ITerm2FileProps;
+    private readonly fileProps: ITerm2FileProperties;
 
     /**
      * Constructs an `ITerm2File` payload object.
@@ -103,9 +103,9 @@ export class ITerm2File implements IITerm2Payload {
      * Base64 encoded and used as the `content` of the file transfer. The `size` property
      * will also be automatically set from `fileData.byteLength` if not specified in `props`.
      */
-    public constructor(props: ITerm2FileProps, fileData?: Uint8Array) {
+    public constructor(properties: ITerm2FileProperties, fileData?: Uint8Array) {
         // Clone props to avoid modifying the original object, especially if fileData is processed.
-        this.fileProps = { ...props };
+        this.fileProps = { ...properties };
 
         if (fileData) {
             this.fileProps.content = Buffer.from(fileData).toString("base64");
@@ -124,7 +124,7 @@ export class ITerm2File implements IITerm2Payload {
     public toString(): string {
         let s = "File=";
 
-        s += formatITerm2FileProps(this.fileProps);
+        s += formatITerm2FileProperties(this.fileProps);
 
         // Only append content if it exists. props.content could be an empty string for an empty file.
         if (this.fileProps.content !== undefined) {
@@ -196,13 +196,13 @@ export class ITerm2MultipartFileStart implements IITerm2Payload {
      * The `name` property within `props` should be pre-Base64 encoded by the caller if it might
      * contain special characters.
      */
-    public constructor(private readonly props: Omit<ITerm2FileProps, "content">) {}
+    public constructor(private readonly properties: Omit<ITerm2FileProperties, "content">) {}
 
     /**
      * Converts the file properties into the string payload suitable for the iTerm2 `MultipartFile=` command.
      * @returns The string payload (e.g., `"MultipartFile=name=...;size=..."`).
      */
     public toString(): string {
-        return `MultipartFile=${formatITerm2FileProps(this.props)}`;
+        return `MultipartFile=${formatITerm2FileProperties(this.properties)}`;
     }
 }

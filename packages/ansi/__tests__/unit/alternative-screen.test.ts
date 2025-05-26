@@ -4,14 +4,15 @@ import { ALT_SCREEN_OFF, ALT_SCREEN_ON, alternativeScreenOff, alternativeScreenO
 import { CSI } from "../../src/constants";
 
 describe("alternative-screen utilities", () => {
-    const expectedOn = CSI + "?1049h";
-    const expectedOff = CSI + "?1049l";
+    const expectedOn = `${CSI}?1049h`;
+    const expectedOff = `${CSI}?1049l`;
 
     describe("constants", () => {
         it("aLT_SCREEN_ON should be correct", () => {
             expect.assertions(1);
             expect(ALT_SCREEN_ON).toBe(expectedOn);
         });
+
         it("aLT_SCREEN_OFF should be correct", () => {
             expect.assertions(1);
             expect(ALT_SCREEN_OFF).toBe(expectedOff);
@@ -23,6 +24,7 @@ describe("alternative-screen utilities", () => {
             expect.assertions(1);
             expect(alternativeScreenOn()).toBe(expectedOn);
         });
+
         it("alternativeScreenOff() should return ALT_SCREEN_OFF", () => {
             expect.assertions(1);
             expect(alternativeScreenOff()).toBe(expectedOff);

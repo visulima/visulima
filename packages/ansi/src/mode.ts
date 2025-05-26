@@ -67,8 +67,8 @@ const generateModeSequence = (reset: boolean, ...modes: Mode[]): string => {
         return seq + mode.code + command;
     }
 
-    const ansiModes = modes.filter(m => !m.isDecMode).map(m => m.code);
-    const decModes = modes.filter(m => m.isDecMode).map(m => m.code);
+    const ansiModes = modes.filter((m) => !m.isDecMode).map((m) => m.code);
+    const decModes = modes.filter((m) => m.isDecMode).map((m) => m.code);
 
     let s = "";
 

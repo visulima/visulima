@@ -7,9 +7,9 @@ describe(`ansi`, () => {
      * Modified copy of https://github.com/chalk/strip-ansi/blob/main/test.js
      *
      * MIT License
-     * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+     * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
      */
-    describe("strip", () => {
+    describe(strip, () => {
         it("should strip color from string", () => {
             expect.assertions(1);
 

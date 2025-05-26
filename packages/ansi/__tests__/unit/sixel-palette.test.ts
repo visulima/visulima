@@ -1,45 +1,54 @@
 import { describe, expect, it } from "vitest";
 
-import { medianCutQuantize } from "../../src/sixel/palette";
+import medianCutQuantize from "../../src/sixel/palette";
 import type { RawImageData } from "../../src/sixel/types";
 
 const createMockImageData = function (pixels: [number, number, number, number][], width: number, height: number): RawImageData {
     const data = new Uint8ClampedArray(pixels.flat());
+
     return { data, height, width };
 };
 
-describe("medianCutQuantize", () => {
+describe(medianCutQuantize, () => {
     it("should return empty array for maxColors <= 0", () => {
         expect.assertions(2);
+
         const imageData = createMockImageData([[0, 0, 0, 255]], 1, 1);
-        expect(medianCutQuantize(imageData, 0)).toEqual([]);
-        expect(medianCutQuantize(imageData, -1)).toEqual([]);
+
+        expect(medianCutQuantize(imageData, 0)).toStrictEqual([]);
+        expect(medianCutQuantize(imageData, -1)).toStrictEqual([]);
     });
 
     it("should return empty array for empty image data", () => {
         expect.assertions(1);
+
         const imageData = createMockImageData([], 0, 0);
-        expect(medianCutQuantize(imageData, 16)).toEqual([]);
+
+        expect(medianCutQuantize(imageData, 16)).toStrictEqual([]);
     });
 
     it("should return unique colors if their count is <= maxColors", () => {
         expect.assertions(4);
+
         const pixels: [number, number, number, number][] = [
             [255, 0, 0, 255], // Red
             [0, 255, 0, 255], // Green
         ];
         const imageData = createMockImageData(pixels, 2, 1);
         const palette = medianCutQuantize(imageData, 2);
+
         expect(palette).toHaveLength(2);
         expect(palette).toContainEqual({ b: 0, g: 0, r: 255 });
         expect(palette).toContainEqual({ b: 0, g: 255, r: 0 });
 
         const palette3 = medianCutQuantize(imageData, 3);
+
         expect(palette3).toHaveLength(2); // Still 2 unique colors
     });
 
     it("should return exactly maxColors unique colors if input has exactly maxColors", () => {
         expect.assertions(4);
+
         const pixels: [number, number, number, number][] = [
             [255, 0, 0, 255], // Red
             [0, 255, 0, 255], // Green
@@ -47,6 +56,7 @@ describe("medianCutQuantize", () => {
         ];
         const imageData = createMockImageData(pixels, 3, 1);
         const palette = medianCutQuantize(imageData, 3);
+
         expect(palette).toHaveLength(3);
         expect(palette).toContainEqual({ b: 0, g: 0, r: 255 });
         expect(palette).toContainEqual({ b: 0, g: 255, r: 0 });
@@ -55,6 +65,7 @@ describe("medianCutQuantize", () => {
 
     it("should quantize to maxColors when unique colors > maxColors", () => {
         expect.assertions(3);
+
         const pixels: [number, number, number, number][] = [
             [250, 0, 0, 255], // Dark Red (many)
             [250, 0, 0, 255],
@@ -67,25 +78,31 @@ describe("medianCutQuantize", () => {
         ];
         const imageData = createMockImageData(pixels, pixels.length, 1);
         const palette = medianCutQuantize(imageData, 2);
+
         expect(palette).toHaveLength(2);
+
         // Expect colors to be averages of the dominant groups
         // The exact values depend on the median cut logic, but they should be representative.
         // One color should be close to dark red, the other close to dark green.
         const hasReddish = palette.some((c) => c.r > 150 && c.g < 100 && c.b < 100);
         const hasGreenish = palette.some((c) => c.r < 100 && c.g > 150 && c.b < 100);
-        expect(hasReddish).toBeTruthy();
-        expect(hasGreenish).toBeTruthy();
+
+        expect(hasReddish).toBe(true);
+        expect(hasGreenish).toBe(true);
     });
 
     it("should handle maxColors = 1 (average of all colors)", () => {
         expect.assertions(4);
+
         const pixels: [number, number, number, number][] = [
             [255, 0, 0, 255], // Red
             [0, 0, 255, 255], // Blue
         ];
         const imageData = createMockImageData(pixels, 2, 1);
         const palette = medianCutQuantize(imageData, 1);
+
         expect(palette).toHaveLength(1);
+
         if (palette.length > 0 && palette[0]) {
             expect(palette[0].r).toBe(128); // Math.round((255+0)/2)
             expect(palette[0].g).toBe(0);
@@ -95,6 +112,7 @@ describe("medianCutQuantize", () => {
 
     it("should handle an image with uniform color", () => {
         expect.assertions(2);
+
         const pixels: [number, number, number, number][] = [
             [100, 150, 200, 255],
             [100, 150, 200, 255],
@@ -103,14 +121,17 @@ describe("medianCutQuantize", () => {
         ];
         const imageData = createMockImageData(pixels, 2, 2);
         const palette = medianCutQuantize(imageData, 4); // Request more colors than unique
+
         expect(palette).toHaveLength(1);
+
         if (palette.length > 0 && palette[0]) {
-            expect(palette[0]).toEqual({ b: 200, g: 150, r: 100 });
+            expect(palette[0]).toStrictEqual({ b: 200, g: 150, r: 100 });
         }
     });
 
     it("should handle a grayscale image quantization", () => {
         expect.assertions(3);
+
         const pixels: [number, number, number, number][] = [
             [10, 10, 10, 255], // Dark gray
             [10, 10, 10, 255],
@@ -120,16 +141,20 @@ describe("medianCutQuantize", () => {
         ];
         const imageData = createMockImageData(pixels, pixels.length, 1);
         const palette = medianCutQuantize(imageData, 2);
+
         expect(palette).toHaveLength(2);
+
         // Check if one color is darkish and one is lightish gray
         const hasDarkGray = palette.some((c) => c.r < 80 && c.g < 80 && c.b < 80);
         const hasLightGray = palette.some((c) => c.r > 150 && c.g > 150 && c.b > 150);
-        expect(hasDarkGray).toBeTruthy();
-        expect(hasLightGray).toBeTruthy();
+
+        expect(hasDarkGray).toBe(true);
+        expect(hasLightGray).toBe(true);
     });
 
     it("should prioritize splitting the largest dimension (range of color values)", () => {
         expect.assertions(4);
+
         // R has large range (0-250), G and B have small ranges
         const pixels: [number, number, number, number][] = [
             [0, 10, 20, 255],
@@ -139,10 +164,13 @@ describe("medianCutQuantize", () => {
         ];
         const imageData = createMockImageData(pixels, 4, 1);
         const palette = medianCutQuantize(imageData, 2);
+
         expect(palette).toHaveLength(2);
+
         if (palette.length >= 2 && palette[0] && palette[1]) {
             const p1 = palette[0];
             const p2 = palette[1];
+
             expect(Math.abs(p1.r - p2.r)).toBeGreaterThan(100);
             expect(Math.abs(p1.g - p2.g)).toBeLessThan(5); // G values should be close
             expect(Math.abs(p1.b - p2.b)).toBeLessThan(5); // B values should be close
@@ -151,6 +179,7 @@ describe("medianCutQuantize", () => {
 
     it("should correctly average colors in final cubes", () => {
         expect.assertions(3);
+
         // Create an image with two distinct color groups that will form the final cubes
         const pixels: [number, number, number, number][] = [
             // Group 1 (Dark Red)
@@ -162,6 +191,7 @@ describe("medianCutQuantize", () => {
         ];
         const imageData = createMockImageData(pixels, pixels.length, 1);
         const palette = medianCutQuantize(imageData, 2);
+
         expect(palette).toHaveLength(2);
 
         const avgRed = { b: 0, g: 0, r: (10 + 20) / 2 }; // 15,0,0
@@ -170,23 +200,28 @@ describe("medianCutQuantize", () => {
         // Check if one palette color is close to avgRed and the other to avgBlue
         const foundRed = palette.some((c) => Math.abs(c.r - avgRed.r) < 2 && Math.abs(c.g - avgRed.g) < 2 && Math.abs(c.b - avgRed.b) < 2);
         const foundBlue = palette.some((c) => Math.abs(c.r - avgBlue.r) < 2 && Math.abs(c.g - avgBlue.g) < 2 && Math.abs(c.b - avgBlue.b) < 2);
-        expect(foundRed).toBeTruthy();
-        expect(foundBlue).toBeTruthy();
+
+        expect(foundRed).toBe(true);
+        expect(foundBlue).toBe(true);
     });
 
     it("should handle an image where all pixels are identical", () => {
         expect.assertions(2);
-        const pixels: [number, number, number, number][] = new Array(100).fill([50, 100, 150, 255]);
+
+        const pixels: [number, number, number, number][] = Array.from({ length: 100 }).fill([50, 100, 150, 255]);
         const imageData = createMockImageData(pixels, 10, 10);
         const palette = medianCutQuantize(imageData, 4);
+
         expect(palette).toHaveLength(1);
+
         if (palette.length > 0 && palette[0]) {
-            expect(palette[0]).toEqual({ b: 150, g: 100, r: 50 });
+            expect(palette[0]).toStrictEqual({ b: 150, g: 100, r: 50 });
         }
     });
 
     it("should handle image with alpha (alpha is currently ignored in keying and averaging)", () => {
         expect.assertions(3);
+
         const pixels: [number, number, number, number][] = [
             [255, 0, 0, 255], // Red, opaque
             [255, 0, 0, 128], // Red, semi-transparent
@@ -195,6 +230,7 @@ describe("medianCutQuantize", () => {
         const imageData = createMockImageData(pixels, 3, 1);
         // Quantize to 2 colors. Expect red and green, alpha ignored.
         const palette = medianCutQuantize(imageData, 2);
+
         expect(palette).toHaveLength(2);
         expect(palette).toContainEqual({ b: 0, g: 0, r: 255 });
         expect(palette).toContainEqual({ b: 0, g: 255, r: 0 });

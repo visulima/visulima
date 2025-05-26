@@ -12,11 +12,11 @@ const SIXEL_COLOR_INTRODUCER = 0x23; // '#' CharHash
 const SIXEL_REPEAT_INTRODUCER = 0x21; // '!' CharExclamation
 const SIXEL_RASTER_ATTRIBUTES = 0x22; // '"' CharQuote
 const SIXEL_DOLLAR_SIGN = 0x24; // '$' CharDollarSign (CR)
-const SIXEL_HYPHEN = 0x2d; // '-' CharMinus (CR+LF to next band)
+const SIXEL_HYPHEN = 0x2D; // '-' CharMinus (CR+LF to next band)
 
 // Character range for Sixel data characters '?' to '~'
-const SIXEL_DATA_START = 0x3f; // '?'
-const SIXEL_DATA_END = 0x7e; // '~'
+const SIXEL_DATA_START = 0x3F; // '?'
+const SIXEL_DATA_END = 0x7E; // '~'
 
 /** Represents a decoded Sixel image. */
 export interface DecodedSixelImage {
@@ -121,8 +121,6 @@ export class SixelDecoder {
         const potentialRaster = this.data.slice(0, Math.max(0, endOfRasterIndex)).trim();
 
         if (potentialRaster.length > 0) {
-            rasterParseAttempted = true;
-
             if (potentialRaster.startsWith("\"")) {
                 // Standard Sixel Raster Introducer
                 try {
@@ -180,7 +178,7 @@ export class SixelDecoder {
         while (this.pos < this.data.length) {
             const charCode = this.data.charCodeAt(this.pos);
 
-            if (charCode >= 0x3f && charCode <= 0x7e) {
+            if (charCode >= 0x3F && charCode <= 0x7E) {
                 // Sixel data chars ('?' to '~')
                 const sixelPattern = charCode - SIXEL_CHAR_OFFSET;
 
@@ -463,7 +461,7 @@ export class SixelDecoder {
 
         // If maxX is > 0 but maxY is 0 (e.g. only "@@@"), then height is at least 6.
         // If both are 0, dimensions are 0,0.
-        return { height: maxY > 0 ? maxY : maxX > 0 ? 6 : 0, width: maxX };
+        return { height: maxY > 0 ? maxY : (maxX > 0 ? 6 : 0), width: maxX };
     }
 
     // Helper for _scanForDimensions to find the next Sixel command or data character

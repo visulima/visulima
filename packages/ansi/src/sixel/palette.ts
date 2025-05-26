@@ -146,7 +146,7 @@ const medianCutQuantize = (imageData: RawImageData, maxColors: number): SixelCol
     const uniqueColorEntries = [...uniqueColorsMap.values()];
 
     if (uniqueColorEntries.length <= maxColors) {
-        return uniqueColorEntries.map(entry => entry.color);
+        return uniqueColorEntries.map((entry) => entry.color);
     }
 
     const pq = new CubePriorityQueue();

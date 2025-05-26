@@ -2,48 +2,62 @@ import { describe, expect, it } from "vitest";
 
 import { decodeSixelRepeat } from "../../src/sixel/repeat";
 
-describe("decodeSixelRepeat", () => {
+describe(decodeSixelRepeat, () => {
     describe("valid sequences", () => {
         it("should parse valid repeat with count and char", () => {
             expect.assertions(1);
+
             const result = decodeSixelRepeat("!10?", 0);
-            expect(result).toEqual({ cmd: { charToRepeat: "?", count: 10 }, consumed: 4 });
+
+            expect(result).toStrictEqual({ cmd: { charToRepeat: "?", count: 10 }, consumed: 4 });
         });
 
         it("should parse valid repeat with missing count (defaults to 1)", () => {
             expect.assertions(1);
+
             const result = decodeSixelRepeat("!?", 0);
-            expect(result).toEqual({ cmd: { charToRepeat: "?", count: 1 }, consumed: 2 });
+
+            expect(result).toStrictEqual({ cmd: { charToRepeat: "?", count: 1 }, consumed: 2 });
         });
 
         it("should parse valid repeat with count 0 (defaults to 1)", () => {
             expect.assertions(1);
+
             const result = decodeSixelRepeat("!0@", 0);
-            expect(result).toEqual({ cmd: { charToRepeat: "@", count: 1 }, consumed: 3 });
+
+            expect(result).toStrictEqual({ cmd: { charToRepeat: "@", count: 1 }, consumed: 3 });
         });
 
         it("should parse valid repeat with max Sixel char '~'", () => {
             expect.assertions(1);
+
             const result = decodeSixelRepeat("!1~", 0);
-            expect(result).toEqual({ cmd: { charToRepeat: "~", count: 1 }, consumed: 3 });
+
+            expect(result).toStrictEqual({ cmd: { charToRepeat: "~", count: 1 }, consumed: 3 });
         });
 
         it("should parse valid repeat with min Sixel char '?'", () => {
             expect.assertions(1);
+
             const result = decodeSixelRepeat("!1?", 0);
-            expect(result).toEqual({ cmd: { charToRepeat: "?", count: 1 }, consumed: 3 });
+
+            expect(result).toStrictEqual({ cmd: { charToRepeat: "?", count: 1 }, consumed: 3 });
         });
 
         it("should parse valid repeat with large count", () => {
             expect.assertions(1);
+
             const result = decodeSixelRepeat("!999A", 0);
-            expect(result).toEqual({ cmd: { charToRepeat: "A", count: 999 }, consumed: 5 });
+
+            expect(result).toStrictEqual({ cmd: { charToRepeat: "A", count: 999 }, consumed: 5 });
         });
 
         it("should parse valid repeat with char 'A' (ASCII 65)", () => {
             expect.assertions(1);
+
             const result = decodeSixelRepeat("!3A", 0);
-            expect(result).toEqual({ cmd: { charToRepeat: "A", count: 3 }, consumed: 3 });
+
+            expect(result).toStrictEqual({ cmd: { charToRepeat: "A", count: 3 }, consumed: 3 });
         });
     });
 
@@ -62,9 +76,11 @@ describe("decodeSixelRepeat", () => {
 
         it("should parse '!abc?' as count 1 for char 'a'", () => {
             expect.assertions(1);
+
             // 'a' is not a digit, so count defaults to 1. 'a' becomes the charToRepeat.
             const result = decodeSixelRepeat("!abc?", 0);
-            expect(result).toEqual({ cmd: { charToRepeat: "a", count: 1 }, consumed: 2 });
+
+            expect(result).toStrictEqual({ cmd: { charToRepeat: "a", count: 1 }, consumed: 2 });
         });
 
         it("should return null for negative count (if sign parsing was added and resulted in negative)", () => {
@@ -95,10 +111,13 @@ describe("decodeSixelRepeat", () => {
     describe("edge cases for consumed length", () => {
         it("should correctly report consumed length with trailing characters", () => {
             expect.assertions(2);
+
             const result = decodeSixelRepeat("!?trailing", 0);
+
             expect(result?.consumed).toBe(2);
 
             const result2 = decodeSixelRepeat("!10?trailing", 0);
+
             expect(result2?.consumed).toBe(4);
         });
     });

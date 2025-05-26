@@ -20,14 +20,17 @@ describe("iTerm2 Integration", () => {
             expect.assertions(1);
             expect(IT2_AUTO).toBe("auto");
         });
+
         it("it2Cells should format correctly", () => {
             expect.assertions(1);
             expect(it2Cells(100)).toBe("100");
         });
+
         it("it2Pixels should format correctly", () => {
             expect.assertions(1);
             expect(it2Pixels(150)).toBe("150px");
         });
+
         it("it2Percent should format correctly", () => {
             expect.assertions(1);
             expect(it2Percent(50)).toBe("50%");
@@ -38,7 +41,9 @@ describe("iTerm2 Integration", () => {
         describe("iTerm2 main function", () => {
             it("should correctly format a sequence with a valid payload", () => {
                 expect.assertions(1);
+
                 const payload: IITerm2Payload = { toString: () => "TestPayload" };
+
                 expect(indexTerm2(payload)).toBe(`${OSC}1337;TestPayload${BEL}`);
             });
 
@@ -54,7 +59,9 @@ describe("iTerm2 Integration", () => {
 
             it("should return an empty string for a payload with Object.prototype.toString", () => {
                 expect.assertions(1);
+
                 const payload = { foo: "bar" }; // Uses Object.prototype.toString
+
                 expect(indexTerm2(payload as any)).toBe("");
             });
         });
@@ -62,14 +69,17 @@ describe("iTerm2 Integration", () => {
         describe("iTerm2File", () => {
             it("should format with minimal props (content only)", () => {
                 expect.assertions(2);
+
                 const properties: ITerm2FileProperties = { content: "QWxhZGRpbjpvcGVuIHNlc2FtZQ==" }; // "Aladdin:open sesame"
                 const file = new ITerm2File(properties);
+
                 expect(file.toString()).toBe("File=:QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
                 expect(indexTerm2(file)).toBe(`${OSC}1337;File=:QWxhZGRpbjpvcGVuIHNlc2FtZQ==${BEL}`);
             });
 
             it("should format with all props", () => {
                 expect.assertions(2);
+
                 const properties: ITerm2FileProperties = {
                     content: "SGVsbG8gd29ybGQ=", // "Hello world"
                     doNotMoveCursor: true,
@@ -81,16 +91,19 @@ describe("iTerm2 Integration", () => {
                     width: it2Pixels(100),
                 };
                 const file = new ITerm2File(properties);
-                const expectedPayload =
-                    "File=name=my file.txt;size=12345;width=100px;height=50%;preserveAspectRatio=0;inline=1;doNotMoveCursor=1:SGVsbG8gd29ybGQ=";
+                const expectedPayload
+                    = "File=name=my file.txt;size=12345;width=100px;height=50%;preserveAspectRatio=0;inline=1;doNotMoveCursor=1:SGVsbG8gd29ybGQ=";
+
                 expect(file.toString()).toBe(expectedPayload);
                 expect(indexTerm2(file)).toBe(`${OSC}1337;${expectedPayload}${BEL}`);
             });
 
             it("should format with numeric width/height (interpreted as cells)", () => {
                 expect.assertions(1);
+
                 const properties: ITerm2FileProperties = { content: "YQ==", height: 24, width: 80 };
                 const file = new ITerm2File(properties);
+
                 expect(file.toString()).toBe("File=width=80;height=24:YQ==");
             });
         });
@@ -98,6 +111,7 @@ describe("iTerm2 Integration", () => {
         describe("iTerm2MultipartFileStart", () => {
             it("should format with name and size", () => {
                 expect.assertions(2);
+
                 const properties: Omit<ITerm2FileProperties, "content"> = {
                     inline: true, // Should be included
                     name: "archive.zip",
@@ -105,6 +119,7 @@ describe("iTerm2 Integration", () => {
                 };
                 const start = new ITerm2MultipartFileStart(properties);
                 const expectedPayload = "MultipartFile=name=archive.zip;size=98765;inline=1";
+
                 expect(start.toString()).toBe(expectedPayload);
                 expect(indexTerm2(start)).toBe(`${OSC}1337;${expectedPayload}${BEL}`);
             });
@@ -113,9 +128,11 @@ describe("iTerm2 Integration", () => {
         describe("iTerm2FilePart", () => {
             it("should format with base64 chunk", () => {
                 expect.assertions(2);
+
                 const chunk = "Y2h1bmsx";
                 const part = new ITerm2FilePart(chunk);
                 const expectedPayload = `FilePart=${chunk}`;
+
                 expect(part.toString()).toBe(expectedPayload);
                 expect(indexTerm2(part)).toBe(`${OSC}1337;${expectedPayload}${BEL}`);
             });
@@ -124,8 +141,10 @@ describe("iTerm2 Integration", () => {
         describe("iTerm2FileEnd", () => {
             it("should format correctly", () => {
                 expect.assertions(2);
+
                 const end = new ITerm2FileEnd();
                 const expectedPayload = "FileEnd";
+
                 expect(end.toString()).toBe(expectedPayload);
                 expect(indexTerm2(end)).toBe(`${OSC}1337;${expectedPayload}${BEL}`);
             });

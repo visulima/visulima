@@ -34,13 +34,17 @@ describe("title and Icon Name Sequences", () => {
 
         it("decswt should format correctly (OSC 2 ; 1;<name> BEL)", () => {
             expect.assertions(1);
+
             const decName = "DEC Window";
+
             expect(decswt(decName)).toBe(`${OSC}2;1;${decName}${BEL}`);
         });
 
         it("decsin should format correctly (OSC 2 ; L;<name> BEL - replicating Go behavior)", () => {
             expect.assertions(1);
+
             const decName = "DEC Icon";
+
             expect(decsin(decName)).toBe(`${OSC}2;L;${decName}${BEL}`);
         });
     });
@@ -72,14 +76,18 @@ describe("title and Icon Name Sequences", () => {
 
         it("should handle titles with semicolons", () => {
             expect.assertions(1);
+
             const titleWithSemicolon = "Title;Subtitle";
+
             // Semicolons are part of the string parameter in OSC, not parameter separators for OSC 0, 1, 2
             expect(setWindowTitle(titleWithSemicolon)).toBe(`${OSC}2;${titleWithSemicolon}${BEL}`);
         });
 
         it("should handle titles with other special characters", () => {
             expect.assertions(1);
+
             const specialTitle = "!@#$%^&*()_+";
+
             expect(setWindowTitle(specialTitle)).toBe(`${OSC}2;${specialTitle}${BEL}`);
         });
     });

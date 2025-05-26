@@ -23,7 +23,7 @@ import {
     XTWINOPS,
 } from "../../src/window-ops";
 
-describe("xtermWindowOp", () => {
+describe(xtermWindowOp, () => {
     it("should generate a basic window operation sequence", () => {
         expect.assertions(1);
         expect(xtermWindowOp(1)).toBe(`${CSI}1t`);
