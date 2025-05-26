@@ -1,13 +1,61 @@
 // Mouse Event Handling - Sequence Generation
 // Based on X11 mouse button codes and Xterm mouse tracking protocols.
 // See: https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#Mouse%20Tracking
-
 import { ESC } from "./constants";
+
+// Bit masks for encoding the button byte (Cb)
+
+/**
+ * Bit mask for the Shift key modifier in mouse events.
+ * @internal
+ */
+const MOUSE_BIT_SHIFT = 0b0000_0100; // Shift key
+
+/**
+ * Bit mask for the Alt (Meta) key modifier in mouse events.
+ * @internal
+ */
+const MOUSE_BIT_ALT = 0b0000_1000; // Alt (Meta) key
+
+/**
+ * Bit mask for the Ctrl key modifier in mouse events.
+ * @internal
+ */
+const MOUSE_BIT_CTRL = 0b0001_0000; // Ctrl key
+
+/**
+ * Bit mask indicating a mouse motion event.
+ * @internal
+ */
+const MOUSE_BIT_MOTION = 0b0010_0000; // Motion event
+
+/**
+ * Bit mask indicating a mouse wheel event, modifying the interpretation of button bits 0-3.
+ * @internal
+ */
+const MOUSE_BIT_WHEEL = 0b0100_0000; // Indicates a wheel event (modifies button bits 0-3)
+
+/**
+ * Bit mask indicating additional buttons 8-11, modifying the interpretation of button bits 0-3.
+ * @internal
+ */
+const MOUSE_BIT_ADDITIONAL = 0b1000_0000; // Indicates additional buttons 8-11 (modifies button bits 0-3)
+
+/**
+ * Bit mask for extracting the raw button part (0-3) from an encoded button byte.
+ * @internal
+ */
+const MOUSE_BUTTON_BITS_MASK = 0b0000_0011; // For extracting the raw button part (0-3)
+
+/**
+ * Offset used for character encoding in X10 mouse protocol.
+ * @internal
+ */
+const X10_MOUSE_OFFSET = 32;
 
 /**
  * Defines codes for various mouse buttons and actions.
  * These are based on X11 button codes and common terminal mouse reporting extensions.
- *
  * @property {number} LEFT - Left mouse button (typically button 1).
  * @property {number} MIDDLE - Middle mouse button (typically button 2).
  * @property {number} RIGHT - Right mouse button (typically button 3).
@@ -63,7 +111,6 @@ export type MouseButtonType = (typeof MouseButton)[keyof typeof MouseButton];
 
 /**
  * Interface representing modifier keys (Shift, Alt, Ctrl) that might be active during a mouse event.
- *
  * @property {boolean} [alt] - `true` if the Alt (or Meta) key was pressed, `false` or `undefined` otherwise.
  * @property {boolean} [ctrl] - `true` if the Control key was pressed, `false` or `undefined` otherwise.
  * @property {boolean} [shift] - `true` if the Shift key was pressed, `false` or `undefined` otherwise.
@@ -74,33 +121,15 @@ export interface MouseModifiers {
     shift?: boolean;
 }
 
-// Bit masks for encoding the button byte (Cb)
-/** @internal Bit mask for the Shift key modifier in mouse events. */
-const MOUSE_BIT_SHIFT = 0b0000_0100; // Shift key
-/** @internal Bit mask for the Alt (Meta) key modifier in mouse events. */
-const MOUSE_BIT_ALT = 0b0000_1000; // Alt (Meta) key
-/** @internal Bit mask for the Ctrl key modifier in mouse events. */
-const MOUSE_BIT_CTRL = 0b0001_0000; // Ctrl key
-/** @internal Bit mask indicating a mouse motion event. */
-const MOUSE_BIT_MOTION = 0b0010_0000; // Motion event
-/** @internal Bit mask indicating a mouse wheel event, modifying the interpretation of button bits 0-3. */
-const MOUSE_BIT_WHEEL = 0b0100_0000; // Indicates a wheel event (modifies button bits 0-3)
-/** @internal Bit mask indicating additional buttons 8-11, modifying the interpretation of button bits 0-3. */
-const MOUSE_BIT_ADDITIONAL = 0b1000_0000; // Indicates additional buttons 8-11 (modifies button bits 0-3)
-
-/** @internal Bit mask for extracting the raw button part (0-3) from an encoded button byte. */
-const MOUSE_BUTTON_BITS_MASK = 0b0000_0011; // For extracting the raw button part (0-3)
-
 /**
  * Encodes a mouse button, motion status, and modifiers into a single byte (Cb)
  * for use in X10 and SGR mouse tracking protocols.
  *
  * The encoded byte combines button information, whether it's a motion event,
  * and the state of Shift, Alt, and Ctrl keys.
- *
- * @param button - The {@link MouseButtonType} representing the button pressed or wheel action.
- * @param motion - `true` if this is a motion event, `false` otherwise.
- * @param modifiers - An optional {@link MouseModifiers} object indicating active modifier keys.
+ * @param button The {@link MouseButtonType} representing the button pressed or wheel action.
+ * @param motion `true` if this is a motion event, `false` otherwise.
+ * @param modifiers An optional {@link MouseModifiers} object indicating active modifier keys.
  * @returns The encoded byte (Cb). Returns `0xFF` (255) if the provided `button` is invalid or not recognized.
  * @example
  * \`\`\`typescript
@@ -132,25 +161,39 @@ export const encodeMouseButtonByte = (button: MouseButtonType, motion: boolean, 
         callback = button - MouseButton.LEFT;
     } else if (button >= MouseButton.WHEEL_UP && button <= MouseButton.WHEEL_RIGHT) {
         callback = button - MouseButton.WHEEL_UP;
+        // eslint-disable-next-line no-bitwise
         callback |= MOUSE_BIT_WHEEL;
     } else if (button >= MouseButton.BACKWARD && button <= MouseButton.BUTTON_11) {
         // Adjust for the fact that BACKWARD (8) is the first in this range
         callback = button - MouseButton.BACKWARD;
+        // eslint-disable-next-line no-bitwise
         callback |= MOUSE_BIT_ADDITIONAL;
     } else {
         return 0xff; // Invalid button
     }
 
-    if (modifiers.shift) callback |= MOUSE_BIT_SHIFT;
-    if (modifiers.alt) callback |= MOUSE_BIT_ALT;
-    if (modifiers.ctrl) callback |= MOUSE_BIT_CTRL;
-    if (motion) callback |= MOUSE_BIT_MOTION;
+    if (modifiers.shift) {
+        // eslint-disable-next-line no-bitwise
+        callback |= MOUSE_BIT_SHIFT;
+    }
+
+    if (modifiers.alt) {
+        // eslint-disable-next-line no-bitwise
+        callback |= MOUSE_BIT_ALT;
+    }
+
+    if (modifiers.ctrl) {
+        // eslint-disable-next-line no-bitwise
+        callback |= MOUSE_BIT_CTRL;
+    }
+
+    if (motion) {
+        // eslint-disable-next-line no-bitwise
+        callback |= MOUSE_BIT_MOTION;
+    }
 
     return callback;
 };
-
-/** @internal Offset used for character encoding in X10 mouse protocol. */
-const X10_MOUSE_OFFSET = 32;
 
 /**
  * Generates an X10 mouse tracking escape sequence.
@@ -159,10 +202,9 @@ const X10_MOUSE_OFFSET = 32;
  * encoded button byte, 1-based X coordinate, and 1-based Y coordinate, respectively.
  *
  * This is an older mouse reporting protocol, primarily reporting button presses.
- *
- * @param cb - The encoded button byte, typically from {@link encodeMouseButtonByte}.
- * @param x - The 0-indexed X coordinate of the mouse event.
- * @param y - The 0-indexed Y coordinate of the mouse event.
+ * @param callback The encoded button byte, typically from {@link encodeMouseButtonByte}.
+ * @param x The 0-indexed X coordinate of the mouse event.
+ * @param y The 0-indexed Y coordinate of the mouse event.
  * @returns The X10 mouse sequence string. Returns an empty string if `cb` is `0xFF` (invalid).
  * @example
  * \`\`\`typescript
@@ -175,11 +217,15 @@ const X10_MOUSE_OFFSET = 32;
  * \`\`\`
  */
 export const mouseX10Sequence = (callback: number, x: number, y: number): string => {
-    if (callback === 0xff) return ""; // Don't generate sequence for invalid button byte
+    if (callback === 0xff) {
+        return ""; // Don't generate sequence for invalid button byte
+    }
+
     // Coordinates are 1-based for the protocol
     const charCallback = String.fromCharCode(callback + X10_MOUSE_OFFSET);
     const charCx = String.fromCharCode(x + 1 + X10_MOUSE_OFFSET);
     const charCy = String.fromCharCode(y + 1 + X10_MOUSE_OFFSET);
+
     return `${ESC}[M${charCallback}${charCx}${charCy}`;
 };
 
@@ -192,12 +238,11 @@ export const mouseX10Sequence = (callback: number, x: number, y: number): string
  *
  * `Cb` is the encoded button byte (see {@link encodeMouseButtonByte}).
  * `Px` and `Py` are 1-based X and Y coordinates.
- *
- * @param cb - The encoded button byte from {@link encodeMouseButtonByte}.
- * @param x - The 0-indexed X coordinate of the mouse event.
- * @param y - The 0-indexed Y coordinate of the mouse event.
- * @param isRelease - `true` if this is a button release event (sequence ends with `m`),
- *                    `false` for press or motion events (sequence ends with `M`).
+ * @param callback The encoded button byte from {@link encodeMouseButtonByte}.
+ * @param x The 0-indexed X coordinate of the mouse event.
+ * @param y The 0-indexed Y coordinate of the mouse event.
+ * @param isRelease `true` if this is a button release event (sequence ends with `m`),
+ * `false` for press or motion events (sequence ends with `M`).
  * @returns The SGR mouse sequence string. Returns an empty string if `cb` is `0xFF` (invalid).
  * @example
  * \`\`\`typescript
@@ -224,9 +269,13 @@ export const mouseX10Sequence = (callback: number, x: number, y: number): string
  * \`\`\`
  */
 export const mouseSgrSequence = (callback: number, x: number, y: number, isRelease: boolean): string => {
-    if (callback === 0xff) return ""; // Don't generate sequence for invalid button byte
+    if (callback === 0xff) {
+        return ""; // Don't generate sequence for invalid button byte
+    }
+
     // Coordinates are 1-based for the protocol
     const finalChar = isRelease ? "m" : "M";
+
     return `${ESC}[<${callback};${x + 1};${y + 1}${finalChar}`;
 };
 
@@ -241,6 +290,7 @@ export const mouseSgrSequence = (callback: number, x: number, y: number, isRelea
  * @see {@link mouseX10Sequence}
  */
 export const enableX10Mouse = `${ESC}[?9h`;
+
 /**
  * Disables X10 compatibility mouse reporting (DECRST 9).
  * @see {@link enableX10Mouse}
@@ -254,6 +304,7 @@ export const disableX10Mouse = `${ESC}[?9l`;
  * @see {@link disableNormalMouse}
  */
 export const enableNormalMouse = `${ESC}[?1000h`;
+
 /**
  * Disables Normal Tracking mode / VT200 mouse reporting (DECRST 1000).
  * @see {@link enableNormalMouse}
@@ -266,6 +317,7 @@ export const disableNormalMouse = `${ESC}[?1000l`;
  * @see {@link disableButtonEventMouse}
  */
 export const enableButtonEventMouse = `${ESC}[?1002h`;
+
 /**
  * Disables Button-Event tracking mouse reporting (DECRST 1002).
  * @see {@link enableButtonEventMouse}
@@ -279,6 +331,7 @@ export const disableButtonEventMouse = `${ESC}[?1002l`;
  * @see {@link disableAnyEventMouse}
  */
 export const enableAnyEventMouse = `${ESC}[?1003h`;
+
 /**
  * Disables Any-Event mouse reporting (DECRST 1003).
  * @see {@link enableAnyEventMouse}
@@ -294,6 +347,7 @@ export const disableAnyEventMouse = `${ESC}[?1003l`;
  * @see {@link mouseSgrSequence}
  */
 export const enableSgrMouse = `${ESC}[?1006h`;
+
 /**
  * Disables SGR Extended mouse reporting (DECRST 1006).
  * @see {@link enableSgrMouse}
@@ -306,6 +360,7 @@ export const disableSgrMouse = `${ESC}[?1006l`;
  * @see {@link disableFocusTracking}
  */
 export const enableFocusTracking = `${ESC}[?1004h`;
+
 /**
  * Disables FocusIn/FocusOut event reporting (DECRST 1004).
  * @see {@link enableFocusTracking}

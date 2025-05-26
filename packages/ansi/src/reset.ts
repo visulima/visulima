@@ -13,7 +13,6 @@
  *
  * This is a more comprehensive reset than `CSI 0 m` (which only resets SGR) or `CSI 2 J` (which only clears the screen).
  * It is often referred to as a "hard reset".
- *
  * @see {@link https://vt100.net/docs/vt510-rm/RIS.html VT510 RIS Documentation}
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Reset} Xterm Control Sequences - Reset
  */
@@ -23,7 +22,6 @@ export const RESET_INITIAL_STATE = "\u001Bc";
  * Alias for {@link RESET_INITIAL_STATE} (Reset Initial State).
  *
  * Provides a shorter name for the RIS sequence `ESC c`.
- *
  * @see {@link RESET_INITIAL_STATE}
  */
 export const RIS = RESET_INITIAL_STATE;

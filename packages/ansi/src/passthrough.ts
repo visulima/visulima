@@ -2,7 +2,7 @@ import { DCS, ESC, ST } from "./constants";
 
 /**
  * Default value for the `limit` parameter in {@link screenPassthrough}, indicating no chunking.
- * When this value is used (or any value <= 0), the passthrough sequence is not split into smaller chunks.
+ * When this value is used (or any value &lt;= 0), the passthrough sequence is not split into smaller chunks.
  */
 export const SCREEN_MAX_LEN_DEFAULT = 0; // Default 0 means no limit for chunking logic itself
 
@@ -19,16 +19,15 @@ export const SCREEN_TYPICAL_LIMIT = 768; // Actual Screen limit mentioned in com
  * specifically for GNU Screen. This allows raw escape sequences to be sent to the
  * terminal emulator that is hosting Screen, bypassing Screen's own interpretation.
  *
- * The basic format is: `DCS <data> ST` (where `DCS` is `ESC P` and `ST` is `ESC \`).
+ * The basic format is: `DCS &lt;data> ST` (where `DCS` is `ESC P` and `ST` is `ESC \`).
  *
  * GNU Screen has limitations on the length of string sequences it can handle (often around 768 bytes).
  * This function can optionally chunk the input `sequence` into smaller parts, each wrapped
  * in its own `DCS...ST` sequence, to work around this limitation.
- *
- * @param sequence - The ANSI escape sequence string to be wrapped.
- * @param limit - The maximum length for each chunk of the `sequence` before it's wrapped.
- *                If `0` or a negative number, the sequence is not chunked. Defaults to {@link SCREEN_MAX_LEN_DEFAULT} (0).
- *                Consider using {@link SCREEN_TYPICAL_LIMIT} (768) for practical chunking with Screen.
+ * @param sequence The ANSI escape sequence string to be wrapped.
+ * @param limit The maximum length for each chunk of the `sequence` before it's wrapped.
+ * If `0` or a negative number, the sequence is not chunked. Defaults to {@link SCREEN_MAX_LEN_DEFAULT} (0).
+ * Consider using {@link SCREEN_TYPICAL_LIMIT} (768) for practical chunking with Screen.
  * @returns The wrapped string, possibly chunked into multiple `DCS...ST` sequences if `limit` is positive and the `sequence` exceeds it.
  * @see {@link https://www.gnu.org/software/screen/manual/screen.html#String-Escapes} GNU Screen Manual - String Escapes.
  * @example
@@ -55,7 +54,9 @@ export function screenPassthrough(sequence: string, limit: number = SCREEN_MAX_L
     if (limit > 0 && sequence.length > limit) {
         for (let index = 0; index < sequence.length; index += limit) {
             const end = Math.min(index + limit, sequence.length);
+
             result += sequence.substring(index, end);
+
             if (end < sequence.length) {
                 // Close current DCS and start a new one for the next chunk
                 result += ST + DCS;
@@ -66,6 +67,7 @@ export function screenPassthrough(sequence: string, limit: number = SCREEN_MAX_L
     }
 
     result += ST;
+
     return result;
 }
 
@@ -74,16 +76,15 @@ export function screenPassthrough(sequence: string, limit: number = SCREEN_MAX_L
  * designed for tmux (Terminal Multiplexer). This allows raw escape sequences to be sent to the
  * terminal emulator hosting tmux, bypassing tmux's own interpretation.
  *
- * The format is: `DCS tmux ; <escaped-data> ST`
+ * The format is: `DCS tmux ; &lt;escaped-data> ST`
  * (where `DCS` is `ESC P`, and `ST` is `ESC \`).
  *
- * The `<escaped-data>` is the original `sequence` with all occurrences of the ESC character (`\u001B`)
+ * The `&lt;escaped-data>` is the original `sequence` with all occurrences of the ESC character (`\u001B`)
  * doubled (i.e., `ESC` becomes `ESC ESC`).
  *
  * **Note:** For this to work, the tmux option `allow-passthrough` must be enabled (`on`) in the tmux configuration.
  * By default, it might be off.
- *
- * @param sequence - The ANSI escape sequence string to be wrapped and properly escaped for tmux.
+ * @param sequence The ANSI escape sequence string to be wrapped and properly escaped for tmux.
  * @returns The wrapped and escaped string suitable for tmux passthrough.
  * @see {@link https://github.com/tmux/tmux/wiki/FAQ#what-is-the-passthrough-escape-sequence-and-how-do-i-use-it} Tmux FAQ on Passthrough.
  * @example
@@ -101,8 +102,10 @@ export function screenPassthrough(sequence: string, limit: number = SCREEN_MAX_L
  */
 export function tmuxPassthrough(sequence: string): string {
     let escapedSequence = "";
+
     for (const element of sequence) {
         escapedSequence += element === ESC ? ESC + ESC : element;
     }
-    return DCS + "tmux;" + escapedSequence + ST;
+
+    return `${DCS}tmux;${escapedSequence}${ST}`;
 }

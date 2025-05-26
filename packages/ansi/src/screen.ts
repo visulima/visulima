@@ -9,9 +9,8 @@ import { CSI, SEP } from "./constants";
  * If the parameter `count` is 0 or 1, it defaults to inserting one line.
  *
  * Sequence: `CSI Pn L`
- *  - `Pn`: Number of lines to insert (default: 1).
- *
- * @param count - The number of blank lines to insert. Defaults to 1.
+ * - `Pn`: Number of lines to insert (default: 1).
+ * @param count The number of blank lines to insert. Defaults to 1.
  * @returns The ANSI escape sequence for inserting lines.
  * @see {@link https://vt100.net/docs/vt510-rm/IL.html VT510 IL Documentation}
  * @example
@@ -25,7 +24,7 @@ import { CSI, SEP } from "./constants";
  * process.stdout.write(insertLine(5)); // CSI 5L
  * \`\`\`
  */
-export const insertLine = (count = 1): string => CSI + (count <= 1 ? "" : count) + "L";
+export const insertLine = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}L`;
 
 /**
  * Deletes a specified number of lines starting from the line with the cursor.
@@ -36,9 +35,8 @@ export const insertLine = (count = 1): string => CSI + (count <= 1 ? "" : count)
  * If the parameter `count` is 0 or 1, it defaults to deleting one line.
  *
  * Sequence: `CSI Pn M`
- *  - `Pn`: Number of lines to delete (default: 1).
- *
- * @param count - The number of lines to delete. Defaults to 1.
+ * - `Pn`: Number of lines to delete (default: 1).
+ * @param count The number of lines to delete. Defaults to 1.
  * @returns The ANSI escape sequence for deleting lines.
  * @see {@link https://vt100.net/docs/vt510-rm/DL.html VT510 DL Documentation}
  * @example
@@ -52,7 +50,7 @@ export const insertLine = (count = 1): string => CSI + (count <= 1 ? "" : count)
  * process.stdout.write(deleteLine(3)); // CSI 3M
  * \`\`\`
  */
-export const deleteLine = (count = 1): string => CSI + (count <= 1 ? "" : count) + "M";
+export const deleteLine = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}M`;
 
 /**
  * Sets the top and bottom margins, defining the scrolling region.
@@ -63,11 +61,10 @@ export const deleteLine = (count = 1): string => CSI + (count <= 1 ? "" : count)
  * screen's current extents (e.g., line 1 for top, last line for bottom).
  *
  * Sequence: `CSI Pt ; Pb r`
- *  - `Pt`: Line number for the top margin (1-indexed). Default: 1.
- *  - `Pb`: Line number for the bottom margin (1-indexed). Default: screen height.
- *
- * @param top - The line number for the top margin (1-indexed). If `null`, `undefined`, or `< 1`, it's omitted, implying default.
- * @param bottom - The line number for the bottom margin (1-indexed). If `null`, `undefined`, or `< 1`, it's omitted, implying default.
+ * - `Pt`: Line number for the top margin (1-indexed). Default: 1.
+ * - `Pb`: Line number for the bottom margin (1-indexed). Default: screen height.
+ * @param top The line number for the top margin (1-indexed). If `null`, `undefined`, or `< 1`, it's omitted, implying default.
+ * @param bottom The line number for the bottom margin (1-indexed). If `null`, `undefined`, or `< 1`, it's omitted, implying default.
  * @returns The ANSI escape sequence for DECSTBM.
  * @see {@link https://vt100.net/docs/vt510-rm/DECSTBM.html VT510 DECSTBM Documentation}
  * @example
@@ -86,9 +83,10 @@ export const setTopBottomMargins = (top?: number | null, bottom?: number | null)
     const bottomString = bottom && bottom > 0 ? bottom.toString() : "";
 
     if (topString === "" && bottomString === "") {
-        return CSI + SEP + "r"; // CSI ;r (reset to default)
+        return `${CSI + SEP}r`; // CSI ;r (reset to default)
     }
-    return CSI + topString + SEP + bottomString + "r";
+
+    return `${CSI + topString + SEP + bottomString}r`;
 };
 
 /**
@@ -100,13 +98,12 @@ export const setTopBottomMargins = (top?: number | null, bottom?: number | null)
  * (e.g., column 1 for left, last column for right).
  *
  * Sequence: `CSI Pl ; Pr s`
- *  - `Pl`: Column number for the left margin (1-indexed). Default: 1.
- *  - `Pr`: Column number for the right margin (1-indexed). Default: screen width.
+ * - `Pl`: Column number for the left margin (1-indexed). Default: 1.
+ * - `Pr`: Column number for the right margin (1-indexed). Default: screen width.
  *
  * Note: The final character 's' should not be confused with save cursor sequences.
- *
- * @param left - The column number for the left margin (1-indexed). If `null`, `undefined`, or `< 1`, it's omitted.
- * @param right - The column number for the right margin (1-indexed). If `null`, `undefined`, or `< 1`, it's omitted.
+ * @param left The column number for the left margin (1-indexed). If `null`, `undefined`, or `< 1`, it's omitted.
+ * @param right The column number for the right margin (1-indexed). If `null`, `undefined`, or `< 1`, it's omitted.
  * @returns The ANSI escape sequence for DECSLRM.
  * @see {@link https://vt100.net/docs/vt510-rm/DECSLRM.html VT510 DECSLRM Documentation}
  * @example
@@ -125,9 +122,10 @@ export const setLeftRightMargins = (left?: number | null, right?: number | null)
     const rightString = right && right > 0 ? right.toString() : "";
 
     if (leftString === "" && rightString === "") {
-        return CSI + SEP + "s"; // CSI ;s (reset to default)
+        return `${CSI + SEP}s`; // CSI ;s (reset to default)
     }
-    return CSI + leftString + SEP + rightString + "s";
+
+    return `${CSI + leftString + SEP + rightString}s`;
 };
 
 /**
@@ -139,9 +137,8 @@ export const setLeftRightMargins = (left?: number | null, right?: number | null)
  * If the parameter `count` is 0 or 1, it defaults to inserting one character.
  *
  * Sequence: `CSI Pn @`
- *  - `Pn`: Number of blank characters to insert (default: 1).
- *
- * @param count - The number of blank characters to insert. Defaults to 1.
+ * - `Pn`: Number of blank characters to insert (default: 1).
+ * @param count The number of blank characters to insert. Defaults to 1.
  * @returns The ANSI escape sequence for inserting characters.
  * @see {@link https://vt100.net/docs/vt510-rm/ICH.html VT510 ICH Documentation}
  * @example
@@ -155,7 +152,7 @@ export const setLeftRightMargins = (left?: number | null, right?: number | null)
  * process.stdout.write(insertCharacter(10)); // CSI 10@
  * \`\`\`
  */
-export const insertCharacter = (count = 1): string => CSI + (count <= 1 ? "" : count) + "@";
+export const insertCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}@`;
 
 /**
  * Deletes a specified number of characters starting from the current cursor position.
@@ -167,9 +164,8 @@ export const insertCharacter = (count = 1): string => CSI + (count <= 1 ? "" : c
  * If the parameter `count` is 0 or 1, it defaults to deleting one character.
  *
  * Sequence: `CSI Pn P`
- *  - `Pn`: Number of characters to delete (default: 1).
- *
- * @param count - The number of characters to delete. Defaults to 1.
+ * - `Pn`: Number of characters to delete (default: 1).
+ * @param count The number of characters to delete. Defaults to 1.
  * @returns The ANSI escape sequence for deleting characters.
  * @see {@link https://vt100.net/docs/vt510-rm/DCH.html VT510 DCH Documentation}
  * @example
@@ -183,19 +179,18 @@ export const insertCharacter = (count = 1): string => CSI + (count <= 1 ? "" : c
  * process.stdout.write(deleteCharacter(5)); // CSI 5P
  * \`\`\`
  */
-export const deleteCharacter = (count = 1): string => CSI + (count <= 1 ? "" : count) + "P";
+export const deleteCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}P`;
 
 /**
  * Clears horizontal tab stops.
  * (TBC - Tabulation Clear)
  *
  * Sequence: `CSI Ps g`
- *  - `Ps = 0` (or omitted): Clear horizontal tab stop at the current column (default).
- *  - `Ps = 3`: Clear all horizontal tab stops in the current line (or all lines, terminal-dependent).
- *
- * @param mode - Specifies which tab stops to clear:
- *               - `0`: Clear tab stop at the current cursor column (default).
- *               - `3`: Clear all horizontal tab stops.
+ * - `Ps = 0` (or omitted): Clear horizontal tab stop at the current column (default).
+ * - `Ps = 3`: Clear all horizontal tab stops in the current line (or all lines, terminal-dependent).
+ * @param mode Specifies which tab stops to clear:
+ * - `0`: Clear tab stop at the current cursor column (default).
+ * - `3`: Clear all horizontal tab stops.
  * @returns The ANSI escape sequence for clearing tab stops.
  * @see {@link https://vt100.net/docs/vt510-rm/TBC.html VT510 TBC Documentation}
  * @example
@@ -210,7 +205,7 @@ export const deleteCharacter = (count = 1): string => CSI + (count <= 1 ? "" : c
  * process.stdout.write(clearTabStop(3)); // CSI 3g
  * \`\`\`
  */
-export const clearTabStop = (mode: 0 | 3 = 0): string => CSI + mode + "g";
+export const clearTabStop = (mode: 0 | 3 = 0): string => `${CSI + mode}g`;
 
 /**
  * Requests a report of the terminal's presentation state.
@@ -220,14 +215,13 @@ export const clearTabStop = (mode: 0 | 3 = 0): string => CSI + mode + "g";
  * This is useful for querying current SGR settings, color palette, etc.
  *
  * Sequence: `CSI Ps $ u`
- *  - `Ps = 0`: Report Text Presentation State (DECTPSSR) - font, decoration, etc.
- *  - `Ps = 1`: Report SGR State (DECSGRSR) - current graphic rendition attributes.
- *  - `Ps = 2`: Report Color Palette State (DECCPSR) - color table contents.
- *
- * @param mode - Specifies the type of presentation state report requested:
- *               - `0`: Text Presentation State (DECTPSSR).
- *               - `1`: SGR State (DECSGRSR).
- *               - `2`: Color Palette State (DECCPSR).
+ * - `Ps = 0`: Report Text Presentation State (DECTPSSR) - font, decoration, etc.
+ * - `Ps = 1`: Report SGR State (DECSGRSR) - current graphic rendition attributes.
+ * - `Ps = 2`: Report Color Palette State (DECCPSR) - color table contents.
+ * @param mode Specifies the type of presentation state report requested:
+ * - `0`: Text Presentation State (DECTPSSR).
+ * - `1`: SGR State (DECSGRSR).
+ * - `2`: Color Palette State (DECCPSR).
  * @returns The ANSI escape sequence to request the presentation state report.
  * @see {@link https://vt100.net/docs/vt510-rm/DECRQPSR.html VT510 DECRQPSR Documentation}
  * @example
@@ -238,7 +232,7 @@ export const clearTabStop = (mode: 0 | 3 = 0): string => CSI + mode + "g";
  * process.stdout.write(requestPresentationStateReport(1)); // CSI 1$u
  * \`\`\`
  */
-export const requestPresentationStateReport = (mode: 0 | 1 | 2): string => CSI + mode + "$u";
+export const requestPresentationStateReport = (mode: 0 | 1 | 2): string => `${CSI + mode}$u`;
 
 /**
  * Repeats the preceding graphic character a specified number of times.
@@ -248,9 +242,8 @@ export const requestPresentationStateReport = (mode: 0 | 1 | 2): string => CSI +
  * If the parameter `count` is 0 or 1, it defaults to repeating one time (i.e., printing it again).
  *
  * Sequence: `CSI Pn b`
- *  - `Pn`: Number of times to repeat the character (default: 1).
- *
- * @param count - The number of times to repeat the preceding graphic character. Defaults to 1.
+ * - `Pn`: Number of times to repeat the character (default: 1).
+ * @param count The number of times to repeat the preceding graphic character. Defaults to 1.
  * @returns The ANSI escape sequence for repeating the previous character.
  * @see {@link https://vt100.net/docs/vt510-rm/REP.html VT510 REP Documentation (though REP is less common or behavior varies)}
  * @example
@@ -266,4 +259,4 @@ export const requestPresentationStateReport = (mode: 0 | 1 | 2): string => CSI +
  * process.stdout.write(repeatPreviousCharacter()); // Output: BB (total 2 'B's)
  * \`\`\`
  */
-export const repeatPreviousCharacter = (count = 1): string => CSI + (count <= 1 ? "" : count) + "b";
+export const repeatPreviousCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}b`;

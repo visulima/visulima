@@ -19,15 +19,18 @@ export interface SixelRaster {
      * For now, this field is unused by the decoder.
      */
     backgroundColorIndex?: number; // Optional, as it's non-standard and unused by decoder.
+
     /**
      * GridH is the height of the pixel grid.
      */
     gridHeight: number;
+
     /**
      * GridW is the width of the pixel grid.
      */
     gridWidth: number;
     pixelAspectRatioDenominator: number;
+
     /**
      * PxlAspect is the pixel aspect ratio Px / Py.
      * Defaults to 2 (1:2 aspect ratio typically, though interpretation varies).
@@ -38,6 +41,7 @@ export interface SixelRaster {
 
 /** Maximum width of a Sixel image, as per Charm's Go implementation. */
 export const SIXEL_MAX_RASTER_WIDTH = 4096;
+
 /** Maximum height of a Sixel image, as per Charm's Go implementation. */
 export const SIXEL_MAX_RASTER_HEIGHT = 4096;
 
@@ -49,36 +53,40 @@ export const SIXEL_MAX_RASTER_HEIGHT = 4096;
  * Pn3 - Grid Width (Ph)
  * Pn4 - Grid Height (Pv)
  *
- * Standard DECGRA for VT330/VT340 is: P<sub>an</sub>;P<sub>ad</sub>;P<sub>h</sub>;P<sub>v</sub>
- * P<sub>an</sub>: pixel aspect ratio numerator (default 1)
- * P<sub>ad</sub>: pixel aspect ratio denominator (default 2)
- * P<sub>h</sub>: page width (horizontal measure) in pixels (default terminal width)
- * P<sub>v</sub>: page height (vertical measure) in pixels (default terminal height)
+ * Standard DECGRA for VT330/VT340 is: P&lt;sub>an&lt;/sub>;P&lt;sub>ad&lt;/sub>;P&lt;sub>h&lt;/sub>;P&lt;sub>v&lt;/sub>
+ * P&lt;sub>an&lt;/sub>: pixel aspect ratio numerator (default 1)
+ * P&lt;sub>ad&lt;/sub>: pixel aspect ratio denominator (default 2)
+ * P&lt;sub>h&lt;/sub>: page width (horizontal measure) in pixels (default terminal width)
+ * P&lt;sub>v&lt;/sub>: page height (vertical measure) in pixels (default terminal height)
  *
  * We will parse according to the VT330/VT340 standard and how the encoder is setting it,
  * Pn1;Pn2;Pn3;Pn4 -> Pan;Pad;Ph;Pv.
- *
  * @param s The raster attribute string.
  * @returns The decoded SixelRaster object.
  * @throws Error if the string is malformed.
  */
-export function decodeSixelRaster(s: string): SixelRaster {
+export const decodeSixelRaster = (s: string): SixelRaster => {
     const parts = s.split(";");
+
     if (parts.length > 4) {
         throw new Error(`sixel: too many raster attributes: ${s}`);
     }
 
     const nums: (number | undefined)[] = [undefined, undefined, undefined, undefined];
+
     for (const [index, p] of parts.entries()) {
         if (p === "") {
             // Default values will be applied later
             nums[index] = undefined;
             continue;
         }
+
         const n = Number.parseInt(p, 10);
-        if (isNaN(n)) {
+
+        if (Number.isNaN(n)) {
             throw new TypeError(`sixel: invalid raster attribute "${p}"`);
         }
+
         nums[index] = n;
     }
 
@@ -101,6 +109,7 @@ export function decodeSixelRaster(s: string): SixelRaster {
     if (gridWidth > SIXEL_MAX_RASTER_WIDTH) {
         gridWidth = SIXEL_MAX_RASTER_WIDTH;
     }
+
     if (gridHeight > SIXEL_MAX_RASTER_HEIGHT) {
         gridHeight = SIXEL_MAX_RASTER_HEIGHT;
     }
@@ -112,4 +121,4 @@ export function decodeSixelRaster(s: string): SixelRaster {
         pixelAspectRatioDenominator,
         pixelAspectRatioNumerator,
     };
-}
+};

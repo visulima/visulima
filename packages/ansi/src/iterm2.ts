@@ -1,10 +1,21 @@
+/* eslint-disable no-secrets/no-secrets */
 import { BEL, OSC } from "./constants";
 import type { IITerm2Payload } from "./iterm2/iterm2-props";
 
 // Re-export specific payload types and props for easier use by consumers
 export type { IITerm2Payload, ITerm2FileProps } from "./iterm2/iterm2-props";
-export { IT2_AUTO, it2Cells, it2Percent, it2Pixels } from "./iterm2/iterm2-props";
-export { ITerm2File, ITerm2FileEnd, ITerm2FilePart, ITerm2MultipartFileStart } from "./iterm2/iterm2-sequences";
+export {
+    IT2_AUTO,
+    it2Cells,
+    it2Percent,
+    it2Pixels,
+} from "./iterm2/iterm2-props";
+export {
+    ITerm2File,
+    ITerm2FileEnd,
+    ITerm2FilePart,
+    ITerm2MultipartFileStart,
+} from "./iterm2/iterm2-sequences";
 
 /**
  * Generates a complete iTerm2 proprietary escape sequence (OSC 1337).
@@ -14,23 +25,20 @@ export { ITerm2File, ITerm2FileEnd, ITerm2FilePart, ITerm2MultipartFileStart } f
  * The `toString()` method of this payload object is responsible for generating the
  * specific command and arguments part of the sequence (e.g., `File=...`, `ShellIntegrationVersion=...`).
  *
- * The overall structure of the generated sequence is: `OSC 1337 ; <PAYLOAD_STRING> BEL`
+ * The overall structure of the generated sequence is: `OSC 1337 ; &lt;PAYLOAD_STRING> BEL`
  * (`OSC` is `\x1b]`, `BEL` is `\x07`).
- *
  * @param payload An object that implements the {@link IITerm2Payload} interface.
- *                This object must have a `toString()` method that returns the string representation
- *                of the iTerm2 command-specific payload.
- *                Examples include instances of `ITerm2File`, `ITerm2MultipartFileStart`, etc.
+ * This object must have a `toString()` method that returns the string representation
+ * of the iTerm2 command-specific payload.
+ * Examples include instances of `ITerm2File`, `ITerm2MultipartFileStart`, etc.
  * @returns The fully formed ANSI escape sequence for the iTerm2 command.
- *          Returns an empty string if the provided `payload` is invalid (e.g., null, undefined,
- *          lacks a proper `toString` method, or its `toString` method is the generic `Object.prototype.toString`).
- *
+ * Returns an empty string if the provided `payload` is invalid (e.g., null, undefined,
+ * lacks a proper `toString` method, or its `toString` method is the generic `Object.prototype.toString`).
  * @see {@link https://iterm2.com/documentation-escape-codes.html iTerm2 Escape Codes Documentation}
  *      for a comprehensive list of supported commands and their payloads.
  * @see {@link IITerm2Payload} for the interface requirement.
  * @see Classes like {@link ITerm2File}, {@link ITerm2MultipartFileStart}, {@link ITerm2FilePart}, {@link ITerm2FileEnd}
  *      for concrete examples of payload objects.
- *
  * @example
  * \`\`\`typescript
  * import { iTerm2, ITerm2File, ITerm2FileProps } from '@visulima/ansi/iterm2'; // ITerm2FileProps can be used for options
@@ -70,5 +78,6 @@ export const iTerm2 = (payload: IITerm2Payload): string => {
         // console.warn("Invalid payload provided to iTerm2 function. Payload must implement IITerm2Payload with a custom toString method.");
         return "";
     }
+
     return `${OSC}1337;${payload.toString()}${BEL}`;
 };

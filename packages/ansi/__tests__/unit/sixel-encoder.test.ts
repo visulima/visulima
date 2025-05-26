@@ -9,11 +9,13 @@ const UNICODE_ESC = "\u001B";
 
 describe("encodeToSixel", () => {
     it("should return an empty string for an empty image (0x0)", () => {
+        expect.assertions(1);
         const imageData: RawImageData = { data: new Uint8ClampedArray([]), height: 0, width: 0 };
         expect(encodeToSixel(imageData)).toBe(""); // Palette will be empty
     });
 
     it("should encode a 1x1 red pixel image", () => {
+        expect.assertions(1);
         const imageData: RawImageData = {
             data: new Uint8ClampedArray([255, 0, 0, 255]), // Red pixel
             height: 1,
@@ -25,6 +27,7 @@ describe("encodeToSixel", () => {
     });
 
     it("should encode a 1x6 blue pixel image (full sixel char)", () => {
+        expect.assertions(1);
         const blue = [0, 0, 255, 255];
         const imageData: RawImageData = {
             data: new Uint8ClampedArray([...blue, ...blue, ...blue, ...blue, ...blue, ...blue]),
@@ -41,6 +44,7 @@ describe("encodeToSixel", () => {
     });
 
     it("should encode a 2x1 image with two different colors (Red, Green)", () => {
+        expect.assertions(1);
         const R_PIXEL = [255, 0, 0, 255];
         const G_PIXEL = [0, 255, 0, 255];
         const imageData: RawImageData = {
@@ -57,6 +61,7 @@ describe("encodeToSixel", () => {
     });
 
     it("should encode a 2x6 image with two different colors (Red column, Green column)", () => {
+        expect.assertions(1);
         const R_PIXEL = [255, 0, 0, 255];
         const G_PIXEL = [0, 255, 0, 255];
         const columnData: number[] = [];
@@ -80,6 +85,7 @@ describe("encodeToSixel", () => {
     });
 
     it("should use repeat operator for a 3x1 single color image", () => {
+        expect.assertions(1);
         const R_PIXEL_DATA = [255, 0, 0, 255]; // Red
         const imageData: RawImageData = {
             data: new Uint8ClampedArray([...R_PIXEL_DATA, ...R_PIXEL_DATA, ...R_PIXEL_DATA]),
@@ -97,6 +103,7 @@ describe("encodeToSixel", () => {
     });
 
     it("should handle multi-band image (e.g., 1x7 image)", () => {
+        expect.assertions(1);
         const B_PIXEL_DATA = [0, 0, 255, 255]; // Blue
         const imageData: RawImageData = {
             data: new Uint8ClampedArray(Array.from({ length: 7 }).fill(B_PIXEL_DATA).flat()),
@@ -115,6 +122,7 @@ describe("encodeToSixel", () => {
     });
 
     it("should handle image height not perfectly divisible by 6 (e.g., 1x3)", () => {
+        expect.assertions(1);
         const R_PIXEL_DATA = [255, 0, 0, 255]; // Red
         const imageData: RawImageData = {
             data: new Uint8ClampedArray([
@@ -135,6 +143,7 @@ describe("encodeToSixel", () => {
     });
 
     it("should encode a 1x2 red pixel image (height not div by 6)", () => {
+        expect.assertions(1);
         const R_PIXEL_DATA = [255, 0, 0, 255]; // Red
         const imageData: RawImageData = {
             data: new Uint8ClampedArray([
@@ -151,6 +160,7 @@ describe("encodeToSixel", () => {
     });
 
     it("should encode a 1x4 red pixel image (height not div by 6)", () => {
+        expect.assertions(1);
         const R_PIXEL_DATA = [255, 0, 0, 255]; // Red
         const imageData: RawImageData = {
             data: new Uint8ClampedArray([...R_PIXEL_DATA, ...R_PIXEL_DATA, ...R_PIXEL_DATA, ...R_PIXEL_DATA]),
@@ -164,6 +174,7 @@ describe("encodeToSixel", () => {
     });
 
     it("should encode a 1x5 red pixel image (height not div by 6)", () => {
+        expect.assertions(1);
         const R_PIXEL_DATA = [255, 0, 0, 255]; // Red
         const imageData: RawImageData = {
             data: new Uint8ClampedArray([...R_PIXEL_DATA, ...R_PIXEL_DATA, ...R_PIXEL_DATA, ...R_PIXEL_DATA, ...R_PIXEL_DATA]),
@@ -180,6 +191,7 @@ describe("encodeToSixel", () => {
         const baseExpectedSixelData = `#0@-${UNICODE_ESC}\\`; // For a single red pixel at color index 0
 
         it("should use default raster attributes if none provided", () => {
+            expect.assertions(1);
             const options = { maxColors: 1 }; // Ensure palette is just [Red]
             // The actual content of sixel data depends on the full image. For this test, let's use a 1x1 red pixel
             // and check that its raster attributes are based on its dimensions.
@@ -189,6 +201,7 @@ describe("encodeToSixel", () => {
         });
 
         it("should use custom pixel aspect ratio", () => {
+            expect.assertions(1);
             const options: SixelEncoderOptions = {
                 maxColors: 1,
                 pixelAspectRatioDenominator: 3,
@@ -199,6 +212,7 @@ describe("encodeToSixel", () => {
         });
 
         it("should use overrideWidth and overrideHeight", () => {
+            expect.assertions(1);
             const options: SixelEncoderOptions = {
                 maxColors: 1,
                 overrideHeight: 200,
@@ -209,6 +223,7 @@ describe("encodeToSixel", () => {
         });
 
         it("should use combination of custom aspect ratio and override dimensions", () => {
+            expect.assertions(1);
             const options: SixelEncoderOptions = {
                 maxColors: 1,
                 overrideHeight: 40,
@@ -234,6 +249,7 @@ describe("encodeToSixel", () => {
         };
 
         it("should use all actual colors if maxColors > actual colors", () => {
+            expect.assertions(4);
             const options: SixelEncoderOptions = { maxColors: 5 }; // 5 > 3 actual colors
             const actualSixel = encodeToSixel(threeColorImageData, options);
             // Expect 3 colors in palette. Order can vary.
@@ -247,6 +263,7 @@ describe("encodeToSixel", () => {
         });
 
         it("should limit palette size if maxColors < actual colors", () => {
+            expect.assertions(4);
             const options: SixelEncoderOptions = { maxColors: 2 }; // 2 < 3 actual colors
             const actualSixel = encodeToSixel(threeColorImageData, options);
             // Expect 2 colors in palette. One of R,G,B will be mapped to one of the other two.
@@ -271,11 +288,13 @@ describe("encodeToSixel", () => {
     });
 
     it("should return an empty string for a 0-height image (width > 0)", () => {
+        expect.assertions(1);
         const imageData: RawImageData = { data: new Uint8ClampedArray([]), height: 0, width: 5 };
         expect(encodeToSixel(imageData)).toBe("");
     });
 
     it("should handle varied widths with height not perfectly divisible by 6 (e.g., 2x3 Red, Green)", () => {
+        expect.assertions(1);
         const R_PIXEL = [255, 0, 0, 255];
         const G_PIXEL = [0, 255, 0, 255];
         const imageData: RawImageData = {
@@ -309,6 +328,7 @@ describe("encodeToSixel", () => {
 
     describe("empty Bands", () => {
         it("should handle a leading empty (black) band in a 1x12 image", () => {
+            expect.assertions(1);
             const BLACK_PIXEL = [0, 0, 0, 255];
             const RED_PIXEL = [255, 0, 0, 255];
             const dataValues = [...Array.from({ length: 6 }).fill(BLACK_PIXEL).flat(), ...Array.from({ length: 6 }).fill(RED_PIXEL).flat()];
@@ -334,6 +354,7 @@ describe("encodeToSixel", () => {
         });
 
         it("should handle a trailing empty (black) band in a 1x12 image", () => {
+            expect.assertions(1);
             const RED_PIXEL = [255, 0, 0, 255];
             const BLACK_PIXEL = [0, 0, 0, 255];
             const dataValues = [...Array.from({ length: 6 }).fill(RED_PIXEL).flat(), ...Array.from({ length: 6 }).fill(BLACK_PIXEL).flat()];
@@ -359,6 +380,7 @@ describe("encodeToSixel", () => {
         });
 
         it("should handle a middle empty (black) band in a 1x18 image", () => {
+            expect.assertions(1);
             const RED_PIXEL = [255, 0, 0, 255];
             const BLACK_PIXEL = [0, 0, 0, 255];
             const dataValues = [
@@ -390,6 +412,7 @@ describe("encodeToSixel", () => {
         });
 
         it("should handle an entirely empty (black) image spanning multiple bands (1x12)", () => {
+            expect.assertions(1);
             const BLACK_PIXEL = [0, 0, 0, 255];
             const dataValues = Array.from({ length: 12 }).fill(BLACK_PIXEL).flat();
             const imageData: RawImageData = { data: new Uint8ClampedArray(dataValues), height: 12, width: 1 };
@@ -411,6 +434,7 @@ describe("encodeToSixel", () => {
         });
 
         it("should handle multiple, separated uniform color bands (Red, Black, Green) in a 1x18 image", () => {
+            expect.assertions(1);
             const RED_PIXEL = [255, 0, 0, 255];
             const BLACK_PIXEL = [0, 0, 0, 255];
             const GREEN_PIXEL = [0, 255, 0, 255];

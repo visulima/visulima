@@ -9,18 +9,22 @@ describe("alternative-screen utilities", () => {
 
     describe("constants", () => {
         it("aLT_SCREEN_ON should be correct", () => {
+            expect.assertions(1);
             expect(ALT_SCREEN_ON).toBe(expectedOn);
         });
         it("aLT_SCREEN_OFF should be correct", () => {
+            expect.assertions(1);
             expect(ALT_SCREEN_OFF).toBe(expectedOff);
         });
     });
 
     describe("functions", () => {
         it("alternativeScreenOn() should return ALT_SCREEN_ON", () => {
+            expect.assertions(1);
             expect(alternativeScreenOn()).toBe(expectedOn);
         });
         it("alternativeScreenOff() should return ALT_SCREEN_OFF", () => {
+            expect.assertions(1);
             expect(alternativeScreenOff()).toBe(expectedOff);
         });
     });

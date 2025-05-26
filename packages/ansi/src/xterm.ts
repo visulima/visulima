@@ -1,15 +1,14 @@
-import { CSI, SEP } from "./constants";
+import { CSI } from "./constants";
 
 /**
- * XTerm Key Modifier Options (XTMODKEYS).
+ * XTerm Key Modifier Options XTMODKEYS.
  * Sets or resets XTerm key modifier resources.
  *
  * Sequence: `CSI > Pp m` (to reset resource Pp)
  * Sequence: `CSI > Pp ; Pv m` (to set resource Pp to value Pv)
- *
  * @param resource The resource parameter (Pp), a non-negative integer.
  * @param value Optional. The value parameter (Pv), a non-negative integer. If omitted, the resource is reset.
- *              If provided and not positive, it's treated as if omitted (resource is reset).
+ * If provided and not positive, it's treated as if omitted (resource is reset).
  * @returns The ANSI escape sequence.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Functions-using-CSI-_-ordered-by-the-final-character_s_}
  */
@@ -24,8 +23,10 @@ export const keyModifierOptions = (resource: number, value?: number): string => 
     // If 'Pv' is provided (even 0), the resource is set to that value.
     if (value !== undefined) {
         const pv = value.toString();
+
         return `${CSI}>${pp};${pv}m`;
     }
+
     // Reset: value is undefined
     return `${CSI}>${pp}m`;
 };
@@ -38,45 +39,45 @@ export const keyModifierOptions = (resource: number, value?: number): string => 
 export const XTMODKEYS = keyModifierOptions;
 
 /**
- * Sets an XTerm key modifier resource to a specific value.
- * This is a more explicit alias for `keyModifierOptions(resource, value)`.
- * @param resource The resource parameter (Pp).
- * @param value The value parameter (Pv).
+ * Query XTerm Key Modifier Options (XTQMODKEYS).
+ * Requests the current setting of an XTerm key modifier resource.
+ *
+ * Sequence: `CSI ? Pp m`
+ * @param resource The resource parameter (Pp), a non-negative integer.
+ * @returns The ANSI escape sequence.
+ * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Functions-using-CSI-_-ordered-by-the-final-character_s_}
  */
-export function setKeyModifierOptions(resource: number, value: number): string {
-    return keyModifierOptions(resource, value);
-}
+export const queryKeyModifierOptions = (resource: number): string => {
+    if (resource < 0) {
+        return ""; // Resource must be non-negative
+    }
+
+    const pp = resource.toString();
+
+    return `${CSI}?${pp}m`;
+};
 
 /**
  * Resets an XTerm key modifier resource to its initial value.
  * This is an alias for `keyModifierOptions(resource)`.
  * @param resource The resource parameter (Pp).
  */
-export function resetKeyModifierOptions(resource: number): string {
-    return keyModifierOptions(resource); // Omitting value causes a reset
-}
+export const resetKeyModifierOptions = (resource: number): string => keyModifierOptions(resource); // Omitting value causes a reset
 
 /**
- * Query XTerm Key Modifier Options (XTQMODKEYS).
- * Requests the current setting of an XTerm key modifier resource.
- *
- * Sequence: `CSI ? Pp m`
- *
- * @param resource The resource parameter (Pp), a non-negative integer.
- * @returns The ANSI escape sequence.
- * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Functions-using-CSI-_-ordered-by-the-final-character_s_}
+ * Sets an XTerm key modifier resource to a specific value.
+ * This is a more explicit alias for `keyModifierOptions(resource, value)`.
+ * @param resource The resource parameter (Pp).
+ * @param value The value parameter (Pv).
  */
-export function queryKeyModifierOptions(resource: number): string {
-    if (resource < 0) return ""; // Resource must be non-negative
-    const pp = resource.toString();
-    return `${CSI}?${pp}m`;
-}
+export const setKeyModifierOptions = (resource: number, value: number): string => keyModifierOptions(resource, value);
 
 /** Alias for {@link queryKeyModifierOptions}. */
 export const XTQMODKEYS = queryKeyModifierOptions;
 
 // --- Modify Other Keys ---
 // This relates to resource 4 of XTMODKEYS.
+// eslint-disable-next-line no-secrets/no-secrets
 // See: https://invisible-island.net/xterm/manpage/xterm.html#VT100-Widget-Resources:modifyOtherKeys
 
 /**
@@ -132,83 +133,3 @@ export const resetModifyOtherKeys = `${CSI}>4m`;
  * ```
  */
 export const queryModifyOtherKeys = `${CSI}?4m`;
-
-/**
- * Modifies XTerm "modifyOtherKeys" mode.
- * - `0`: Disable modifyOtherKeys mode. Prefer {@link resetModifyOtherKeys} or `setKeyModifierOptions(4, 0)`.
- * - `1`: Enable modifyOtherKeys mode 1. Prefer {@link setModifyOtherKeys1} or `setKeyModifierOptions(4, 1)`.
- * - `2`: Enable modifyOtherKeys mode 2. Prefer {@link setModifyOtherKeys2} or `setKeyModifierOptions(4, 2)`.
- *
- * Sequence: `CSI > 4 ; mode m`
- *
- * @param mode The mode to set (0, 1, or 2).
- * @returns The ANSI escape sequence.
- * @deprecated Prefer using {@link setModifyOtherKeys1}, {@link setModifyOtherKeys2}, {@link resetModifyOtherKeys}, or `setKeyModifierOptions(4, mode)` for clarity and better alignment with modern XTerm practices.
- * @example
- * ```typescript
- * import { modifyOtherKeys } from "@visulima/ansi";
- *
- * // Enable mode 1 (deprecated usage)
- * process.stdout.write(modifyOtherKeys(1)); // Sends: "\x1b[>4;1m"
- * ```
- */
-export const modifyOtherKeys = (mode: 0 | 1 | 2): string => {
-    return `${CSI}>4;${mode.toString()}m`;
-};
-
-/**
- * Disables the XTerm "modifyOtherKeys" mode.
- * Sequence: `CSI > 4 ; 0 m`
- * @deprecated Use {@link resetModifyOtherKeys} or call `setKeyModifierOptions(4, 0)` for better clarity and consistency.
- * The sequence `CSI > 4 m` ({@link resetModifyOtherKeys}) is generally preferred for resetting.
- * @example
- * ```typescript
- * import { disableModifyOtherKeys } from "@visulima/ansi";
- *
- * // Disable modifyOtherKeys (deprecated usage)
- * process.stdout.write(disableModifyOtherKeys); // Sends: "\x1b[>4;0m"
- * ```
- */
-export const disableModifyOtherKeys = `${CSI}>4;0m`;
-
-/**
- * Enables XTerm "modifyOtherKeys" mode 1.
- * Sequence: `CSI > 4 ; 1 m`
- * @deprecated Use the non-deprecated constant {@link setModifyOtherKeys1} or call `setKeyModifierOptions(4, 1)`.
- * @example
- * ```typescript
- * import { enableModifyOtherKeys1 } from "@visulima/ansi";
- *
- * // Enable modifyOtherKeys mode 1 (deprecated usage)
- * process.stdout.write(enableModifyOtherKeys1); // Sends: "\x1b[>4;1m"
- * ```
- */
-export const enableModifyOtherKeys1: string = setModifyOtherKeys1;
-
-/**
- * Enables XTerm "modifyOtherKeys" mode 2.
- * Sequence: `CSI > 4 ; 2 m`
- * @deprecated Use the non-deprecated constant {@link setModifyOtherKeys2} or call `setKeyModifierOptions(4, 2)`.
- * @example
- * ```typescript
- * import { enableModifyOtherKeys2 } from "@visulima/ansi";
- *
- * // Enable modifyOtherKeys mode 2 (deprecated usage)
- * process.stdout.write(enableModifyOtherKeys2); // Sends: "\x1b[>4;2m"
- * ```
- */
-export const enableModifyOtherKeys2: string = setModifyOtherKeys2;
-
-/**
- * Requests the XTerm "modifyOtherKeys" mode status.
- * Sequence: `CSI ? 4 m`
- * @deprecated Use the non-deprecated constant {@link queryModifyOtherKeys} or call `queryKeyModifierOptions(4)`.
- * @example
- * ```typescript
- * import { requestModifyOtherKeys } from "@visulima/ansi";
- *
- * // Query modifyOtherKeys status (deprecated usage)
- * process.stdout.write(requestModifyOtherKeys); // Sends: "\x1b[?4m"
- * ```
- */
-export const requestModifyOtherKeys: string = queryModifyOtherKeys;

@@ -1,6 +1,6 @@
 import { DCS, ST } from "../constants"; // Sixel introducer ESC P q, terminator ESC \
-import { medianCutQuantize } from "./palette";
-import type { RawImageData, SixelColor } from "./types";
+import medianCutQuantize from "./palette";
+import type { RawImageData } from "./types";
 
 // Sixel uses DCS (ESC P) + "q" + params + ST (ESC \)
 const SIXEL_INTRODUCER = `${DCS}q`;
@@ -11,34 +11,41 @@ const SIXEL_CHAR_OFFSET = 63;
 export interface SixelEncoderOptions {
     /** Maximum number of colors in the Sixel palette (e.g., 16, 256). Defaults to 256. */
     maxColors?: number;
+
     /** Override vertical image size (Pv) in Sixel raster attributes. Defaults to image data height. */
     overrideHeight?: number;
+
     /** Override horizontal image size (Ph) in Sixel raster attributes. Defaults to image data width. */
     overrideWidth?: number;
+
     /** Pixel aspect ratio denominator (Pasp). Defaults to 1. */
     pixelAspectRatioDenominator?: number;
+
     /** Pixel aspect ratio numerator (Pan). Defaults to 1. */
     pixelAspectRatioNumerator?: number;
 }
 
 /**
  * Encodes raw image data into a Sixel string.
- *
  * @param imageData The raw image data.
  * @param options Encoding options.
  * @returns A string representing the Sixel image.
  */
-export function encodeToSixel(imageData: RawImageData, options?: SixelEncoderOptions): string {
+export const encodeToSixel = (imageData: RawImageData, options?: SixelEncoderOptions): string => {
     const maxColors = options?.maxColors ?? 256;
 
     // 1. Quantize image to get a palette
     const palette = medianCutQuantize(imageData, maxColors);
-    if (palette.length === 0) return ""; // No colors, empty Sixel
+
+    if (palette.length === 0) 
+return ""; // No colors, empty Sixel
 
     // Create a reverse map for quick palette index lookup
     const paletteIndexMap = new Map<string, number>();
+
     palette.forEach((color, index) => {
         const key = `${color.r}-${color.g}-${color.b}`;
+
         paletteIndexMap.set(key, index);
     });
 
@@ -46,17 +53,23 @@ export function encodeToSixel(imageData: RawImageData, options?: SixelEncoderOpt
     const findClosestPaletteIndex = (r: number, g: number, b: number): number => {
         let minDistanceSq = Number.POSITIVE_INFINITY;
         let bestIndex = 0;
+
         for (const [index, pColor] of palette.entries()) {
             const dR = r - pColor.r;
             const dG = g - pColor.g;
             const dB = b - pColor.b;
             const distanceSq = dR * dR + dG * dG + dB * dB;
+
             if (distanceSq < minDistanceSq) {
                 minDistanceSq = distanceSq;
                 bestIndex = index;
             }
-            if (minDistanceSq === 0) break; // Exact match
+
+            if (minDistanceSq === 0) {
+                break; // Exact match
+            }
         }
+
         return bestIndex;
     };
 
@@ -87,18 +100,21 @@ export function encodeToSixel(imageData: RawImageData, options?: SixelEncoderOpt
     // Helper to flush pending repeat sequence
     const flushRepeat = () => {
         let data = "";
+
         if (sixelRepeatCount > 0) {
             if (sixelRepeatCount >= 3) {
                 // Threshold for using repeat operator
                 data += `!${sixelRepeatCount}${sixelRepeatChar}`;
             } else {
-                for (let k = 0; k < sixelRepeatCount; k++) {
+                for (let k = 0; k < sixelRepeatCount; k += 1) {
                     data += sixelRepeatChar;
                 }
             }
+
             sixelRepeatChar = "\0";
             sixelRepeatCount = 0;
         }
+
         return data;
     };
 
@@ -106,26 +122,29 @@ export function encodeToSixel(imageData: RawImageData, options?: SixelEncoderOpt
 
     for (let y = 0; y < imageData.height; y += 6) {
         let bandSixelData = "";
+
         currentSixelColorIndex = -1; // Reset color state at the start of each new band
 
         // At the start of a new band, the current color is undefined by Sixel spec,
         // but practically, we should set one. Let's not reset currentSixelColorIndex here
         // to allow color to persist across $ if possible, unless first char of band is different.
 
-        for (let x = 0; x < imageData.width; x++) {
+        for (let x = 0; x < imageData.width; x += 1) {
             // For this column, determine the required palette indices for its 6 pixels
             const columnPixelPaletteIndices: (number | null)[] = [];
             const uniquePaletteIndicesInColumn = new Set<number>();
             let hasVisiblePixel = false;
 
-            for (let bit = 0; bit < 6; bit++) {
+            for (let bit = 0; bit < 6; bit += 1) {
                 const currentY = y + bit;
+
                 if (currentY < imageData.height) {
                     const pixelOffset = (currentY * imageData.width + x) * 4;
                     const r = imageData.data[pixelOffset];
                     const g = imageData.data[pixelOffset + 1];
                     const b = imageData.data[pixelOffset + 2];
                     const pIndex = findClosestPaletteIndex(r, g, b);
+
                     columnPixelPaletteIndices.push(pIndex);
                     uniquePaletteIndicesInColumn.add(pIndex);
                     hasVisiblePixel = true;
@@ -144,13 +163,14 @@ export function encodeToSixel(imageData: RawImageData, options?: SixelEncoderOpt
                 if (currentSixelColorIndex !== -1) {
                     // if a color is active
                     if (sixelRepeatChar === String.fromCharCode(SIXEL_CHAR_OFFSET + 0) && sixelRepeatChar !== "\0") {
-                        sixelRepeatCount++;
+                        sixelRepeatCount += 1;
                     } else {
                         bandSixelData += flushRepeat();
                         sixelRepeatChar = String.fromCharCode(SIXEL_CHAR_OFFSET + 0);
                         sixelRepeatCount = 1;
                     }
                 }
+
                 continue;
             }
 
@@ -173,7 +193,8 @@ export function encodeToSixel(imageData: RawImageData, options?: SixelEncoderOpt
             for (const targetPaletteIndex of sortedUniqueIndices) {
                 let columnSixelPattern = 0;
                 let hasTargetColorPixelInColumn = false;
-                for (let bit = 0; bit < 6; bit++) {
+
+                for (let bit = 0; bit < 6; bit += 1) {
                     if (columnPixelPaletteIndices[bit] === targetPaletteIndex) {
                         columnSixelPattern |= 1 << bit;
                         hasTargetColorPixelInColumn = true;
@@ -197,7 +218,7 @@ export function encodeToSixel(imageData: RawImageData, options?: SixelEncoderOpt
                 const sixelChar = String.fromCharCode(SIXEL_CHAR_OFFSET + columnSixelPattern);
 
                 if (sixelChar === sixelRepeatChar && sixelRepeatChar !== "\0") {
-                    sixelRepeatCount++;
+                    sixelRepeatCount += 1;
                 } else {
                     bandSixelData += flushRepeat();
                     sixelRepeatChar = sixelChar;
@@ -205,12 +226,14 @@ export function encodeToSixel(imageData: RawImageData, options?: SixelEncoderOpt
                 }
             }
         }
+
         bandSixelData += flushRepeat(); // Flush any pending repeats at end of band
         sixelString += bandSixelData;
 
         if (bandSixelData.length > 0) {
             // Only add terminator if band had data
             previousSixelChars = bandSixelData;
+
             if (y + 6 < imageData.height) {
                 sixelString += "$";
             }
@@ -229,5 +252,6 @@ export function encodeToSixel(imageData: RawImageData, options?: SixelEncoderOpt
     }
 
     sixelString += ST;
+
     return sixelString;
-}
+};

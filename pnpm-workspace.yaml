@@ -57,4 +57,7 @@ onlyBuiltDependencies:
   - sharp
   - tree-sitter
   - tree-sitter-json
+  - unrs-resolver
   - yarn
+ignoredBuiltDependencies:
+  - '@anolilab/eslint-config'

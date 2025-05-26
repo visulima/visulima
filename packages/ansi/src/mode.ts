@@ -1,9 +1,91 @@
+// eslint-disable-next-line max-classes-per-file
 import { CSI } from "./constants";
+
+/**
+ * @internal
+ */
+class AnsiModeImpl implements Mode {
+    /** The numeric code of the ANSI mode. */
+    public readonly code: number;
+
+    /** For ANSI modes, this is always `false`. */
+    public readonly isDecMode = false;
+
+    /**
+     * Creates an instance of an ANSI mode.
+     * @param code The numeric code for the ANSI mode.
+     */
+    public constructor(code: number) {
+        this.code = code;
+    }
+}
+
+/**
+ * @internal
+ */
+class DecModeImpl implements Mode {
+    /** The numeric code of the DEC private mode. */
+    public readonly code: number;
+
+    /** For DEC private modes, this is always `true`. */
+    public readonly isDecMode = true;
+
+    /**
+     * Creates an instance of a DEC private mode.
+     * @param code The numeric code for the DEC mode.
+     */
+    public constructor(code: number) {
+        this.code = code;
+    }
+}
+
+/**
+ * Internal helper function to generate mode sequences (SM or RM).
+ *
+ * It separates ANSI and DEC modes and constructs the appropriate CSI sequences.
+ * If a single mode is provided, it generates a simpler sequence.
+ * @param reset If `true`, generates a reset sequence (ending in `l`); otherwise, a set sequence (ending in `h`).
+ * @param modes An array of {@link Mode} objects to include in the sequence.
+ * @returns The complete ANSI escape sequence string.
+ * @internal
+ */
+const generateModeSequence = (reset: boolean, ...modes: Mode[]): string => {
+    if (modes.length === 0) {
+        return "";
+    }
+
+    const command = reset ? "l" : "h";
+
+    if (modes.length === 1) {
+        const mode = modes[0] as Mode; // Linter expects this to be possibly undefined otherwise
+        let seq = CSI;
+
+        if (mode.isDecMode) {
+            seq += "?";
+        }
+
+        return seq + mode.code + command;
+    }
+
+    const ansiModes = modes.filter(m => !m.isDecMode).map(m => m.code);
+    const decModes = modes.filter(m => m.isDecMode).map(m => m.code);
+
+    let s = "";
+
+    if (ansiModes.length > 0) {
+        s += `${CSI}${ansiModes.join(";")}${command}`;
+    }
+
+    if (decModes.length > 0) {
+        s += `${CSI}?${decModes.join(";")}${command}`;
+    }
+
+    return s;
+};
 
 /**
  * Represents the reported setting of a terminal mode, typically received in response to a DECRQM (Request Mode) query.
  * The terminal responds with a DECRPM (Report Mode) sequence containing one of these values.
- *
  * @see {@link requestMode} (DECRQM) for how to query a mode's state.
  * @see {@link reportMode} (DECRPM) for how a terminal might report these states.
  * @see {@link https://vt100.net/docs/vt510-rm/DECRPM.html} VT510 DECRPM Documentation.
@@ -16,77 +98,84 @@ export enum ModeSetting {
      * (Parameter `Ps = 0` in DECRPM)
      */
     NotRecognized = 0,
-    /**
-     * Mode is currently set.
-     * (Parameter `Ps = 1` in DECRPM)
-     */
-    Set = 1,
-    /**
-     * Mode is currently reset (not set).
-     * (Parameter `Ps = 2` in DECRPM)
-     */
-    Reset = 2,
-    /**
-     * Mode is permanently set and cannot be changed (e.g., by RM or SM sequences).
-     * (Parameter `Ps = 3` in DECRPM)
-     */
-    PermanentlySet = 3,
+
     /**
      * Mode is permanently reset and cannot be changed (e.g., by RM or SM sequences).
      * (Parameter `Ps = 4` in DECRPM)
      */
     PermanentlyReset = 4,
+
+    /**
+     * Mode is permanently set and cannot be changed (e.g., by RM or SM sequences).
+     * (Parameter `Ps = 3` in DECRPM)
+     */
+    PermanentlySet = 3,
+
+    /**
+     * Mode is currently reset (not set).
+     * (Parameter `Ps = 2` in DECRPM)
+     */
+    Reset = 2,
+
+    /**
+     * Mode is currently set.
+     * (Parameter `Ps = 1` in DECRPM)
+     */
+    Set = 1,
 }
 
 /**
  * Checks if the reported mode setting indicates that the mode is not recognized by the terminal.
- *
- * @param m - The `ModeSetting` value reported by the terminal.
+ * @param m The `ModeSetting` value reported by the terminal.
  * @returns `true` if the mode is {@link ModeSetting.NotRecognized}, `false` otherwise.
  */
-export const isModeNotRecognized = (m: ModeSetting): boolean => {
-    return m === ModeSetting.NotRecognized;
-};
+export const isModeNotRecognized = (m: ModeSetting): boolean => m === ModeSetting.NotRecognized;
 
 /**
  * Checks if the reported mode setting indicates that the mode is currently set or permanently set.
- *
- * @param m - The `ModeSetting` value reported by the terminal.
+ * @param m The `ModeSetting` value reported by the terminal.
  * @returns `true` if the mode is {@link ModeSetting.Set} or {@link ModeSetting.PermanentlySet}, `false` otherwise.
  */
-export const isModeSet = (m: ModeSetting): boolean => {
-    return m === ModeSetting.Set || m === ModeSetting.PermanentlySet;
-};
+export const isModeSet = (m: ModeSetting): boolean => m === ModeSetting.Set || m === ModeSetting.PermanentlySet;
 
 /**
  * Checks if the reported mode setting indicates that the mode is currently reset or permanently reset.
- *
- * @param m - The `ModeSetting` value reported by the terminal.
+ * @param m The `ModeSetting` value reported by the terminal.
  * @returns `true` if the mode is {@link ModeSetting.Reset} or {@link ModeSetting.PermanentlyReset}, `false` otherwise.
  */
-export const isModeReset = (m: ModeSetting): boolean => {
-    return m === ModeSetting.Reset || m === ModeSetting.PermanentlyReset;
-};
+export const isModeReset = (m: ModeSetting): boolean => m === ModeSetting.Reset || m === ModeSetting.PermanentlyReset;
 
 /**
  * Checks if the reported mode setting indicates that the mode is permanently set and cannot be changed.
- *
- * @param m - The `ModeSetting` value reported by the terminal.
+ * @param m The `ModeSetting` value reported by the terminal.
  * @returns `true` if the mode is {@link ModeSetting.PermanentlySet}, `false` otherwise.
  */
-export const isModePermanentlySet = (m: ModeSetting): boolean => {
-    return m === ModeSetting.PermanentlySet;
-};
+export const isModePermanentlySet = (m: ModeSetting): boolean => m === ModeSetting.PermanentlySet;
 
 /**
  * Checks if the reported mode setting indicates that the mode is permanently reset and cannot be changed.
- *
- * @param m - The `ModeSetting` value reported by the terminal.
+ * @param m The `ModeSetting` value reported by the terminal.
  * @returns `true` if the mode is {@link ModeSetting.PermanentlyReset}, `false` otherwise.
  */
-export const isModePermanentlyReset = (m: ModeSetting): boolean => {
-    return m === ModeSetting.PermanentlyReset;
-};
+export const isModePermanentlyReset = (m: ModeSetting): boolean => m === ModeSetting.PermanentlyReset;
+
+/**
+ * Represents a standard ANSI terminal mode (e.g., IRM, KAM). These modes are controlled by
+ * sequences like `CSI Pn h` (Set) and `CSI Pn l` (Reset), without a `?` prefix.
+ * This is a type alias for the base {@link Mode} interface, specialized for ANSI modes.
+ * @see {@link Mode}
+ * @see {@link createAnsiMode} to create instances.
+ */
+export type AnsiMode = Mode;
+
+/**
+ * Represents a private DEC terminal mode (e.g., DECTCEM, DECAWM). These modes are controlled by
+ * sequences like `CSI ? Pn h` (Set) and `CSI ? Pn l` (Reset), identified by the `?` prefix.
+ * This is a type alias for the base {@link Mode} interface, specialized for DEC modes.
+ * @see {@link Mode}
+ * @see {@link createDecMode} to create instances.
+ */
+export type DecMode = Mode;
 
 /**
  * Interface representing a terminal mode, characterized by its numeric code
@@ -98,6 +187,7 @@ export const isModePermanentlyReset = (m: ModeSetting): boolean => {
 export interface Mode {
     /** The numeric code of the terminal mode (e.g., `4` for Insert/Replace Mode, `25` for Text Cursor Enable Mode). */
     readonly code: number;
+
     /**
      * Indicates if this is a private DEC mode.
      * - `true`: It's a DEC mode (sequence uses `?`, e.g., `CSI ?25h`).
@@ -107,65 +197,8 @@ export interface Mode {
 }
 
 /**
- * @internal We don't export this directly; use {@link createAnsiMode} factory.
- */
-class AnsiModeImpl implements Mode {
-    /** The numeric code of the ANSI mode. */
-    public readonly code: number;
-    /** For ANSI modes, this is always `false`. */
-    public readonly isDecMode = false;
-
-    /**
-     * Creates an instance of an ANSI mode.
-     * @param code - The numeric code for the ANSI mode.
-     */
-    constructor(code: number) {
-        this.code = code;
-    }
-}
-
-/**
- * @internal We don't export this directly; use {@link createDecMode} factory.
- */
-class DecModeImpl implements Mode {
-    /** The numeric code of the DEC private mode. */
-    public readonly code: number;
-    /** For DEC private modes, this is always `true`. */
-    public readonly isDecMode = true;
-
-    /**
-     * Creates an instance of a DEC private mode.
-     * @param code - The numeric code for the DEC mode.
-     */
-    constructor(code: number) {
-        this.code = code;
-    }
-}
-
-/**
- * Represents a standard ANSI terminal mode (e.g., IRM, KAM). These modes are controlled by
- * sequences like `CSI Pn h` (Set) and `CSI Pn l` (Reset), without a `?` prefix.
- * This is a type alias for the base {@link Mode} interface, specialized for ANSI modes.
- *
- * @see {@link Mode}
- * @see {@link createAnsiMode} to create instances.
- */
-export type AnsiMode = Mode;
-
-/**
- * Represents a private DEC terminal mode (e.g., DECTCEM, DECAWM). These modes are controlled by
- * sequences like `CSI ? Pn h` (Set) and `CSI ? Pn l` (Reset), identified by the `?` prefix.
- * This is a type alias for the base {@link Mode} interface, specialized for DEC modes.
- *
- * @see {@link Mode}
- * @see {@link createDecMode} to create instances.
- */
-export type DecMode = Mode;
-
-/**
  * Factory function to create a standard ANSI mode object.
- *
- * @param code - The numeric code for the ANSI mode (e.g., `4` for Insert/Replace Mode).
+ * @param code The numeric code for the ANSI mode (e.g., `4` for Insert/Replace Mode).
  * @returns An `AnsiMode` object representing the specified ANSI mode.
  * @example
  * ```typescript
@@ -178,14 +211,11 @@ export type DecMode = Mode;
  * process.stdout.write(resetMode(srmMode));      // CSI 12l
  * ```
  */
-export const createAnsiMode = (code: number): AnsiMode => {
-    return new AnsiModeImpl(code);
-};
+export const createAnsiMode = (code: number): AnsiMode => new AnsiModeImpl(code);
 
 /**
  * Factory function to create a private DEC mode object.
- *
- * @param code - The numeric code for the DEC mode (e.g., `25` for Text Cursor Enable Mode DECTCEM).
+ * @param code The numeric code for the DEC mode (e.g., `25` for Text Cursor Enable Mode DECTCEM).
  * @returns A `DecMode` object representing the specified DEC private mode.
  * @example
  * ```typescript
@@ -198,9 +228,7 @@ export const createAnsiMode = (code: number): AnsiMode => {
  * process.stdout.write(resetMode(originMode));    // CSI ?6l
  * ```
  */
-export const createDecMode = (code: number): DecMode => {
-    return new DecModeImpl(code);
-};
+export const createDecMode = (code: number): DecMode => new DecModeImpl(code);
 
 /**
  * Generates the ANSI/DEC sequence to set one or more terminal modes.
@@ -212,8 +240,7 @@ export const createDecMode = (code: number): DecMode => {
  * If a mix of ANSI and DEC modes are provided (e.g., `setMode(ansiMode1, decMode1, ansiMode2)`),
  * it produces two separate sequences concatenated (e.g., `CSI Pn(A1);Pn(A2)hCSI ?Pn(D1)h`).
  * The order of ANSI vs. DEC sequences in the output depends on the current implementation (ANSI first).
- *
- * @param modes - A list of {@link Mode} objects (either `AnsiMode` or `DecMode`) to set.
+ * @param modes A list of {@link Mode} objects (either `AnsiMode` or `DecMode`) to set.
  * @returns The ANSI escape sequence(s) to set the specified modes. Returns an empty string if no modes are provided.
  * @see {@link https://vt100.net/docs/vt510-rm/SM.html Set Mode (SM) documentation}
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Functions-using-CSI-Ps-space-letter} (DECSET related section)
@@ -231,9 +258,7 @@ export const createDecMode = (code: number): DecMode => {
  * console.log(setMode(OriginMode, InsertReplaceMode)); // e.g., CSI 4hCSI ?6h (order of groups may vary)
  * ```
  */
-export const setMode = (...modes: Mode[]): string => {
-    return generateModeSequence(false, ...modes);
-};
+export const setMode = (...modes: Mode[]): string => generateModeSequence(false, ...modes);
 
 /** Alias for {@link setMode}. Generates the SM (Set Mode) sequence. */
 export const SM = setMode;
@@ -248,8 +273,7 @@ export const SM = setMode;
  * If a mix of ANSI and DEC modes are provided (e.g., `resetMode(ansiMode1, decMode1, ansiMode2)`),
  * it produces two separate sequences concatenated (e.g., `CSI Pn(A1);Pn(A2)lCSI ?Pn(D1)l`).
  * The order of ANSI vs. DEC sequences in the output depends on the current implementation (ANSI first).
- *
- * @param modes - A list of {@link Mode} objects (either `AnsiMode` or `DecMode`) to reset.
+ * @param modes A list of {@link Mode} objects (either `AnsiMode` or `DecMode`) to reset.
  * @returns The ANSI escape sequence(s) to reset the specified modes. Returns an empty string if no modes are provided.
  * @see {@link https://vt100.net/docs/vt510-rm/RM.html Reset Mode (RM) documentation}
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Functions-using-CSI-Ps-space-letter} (DECRST related section)
@@ -267,52 +291,10 @@ export const SM = setMode;
  * console.log(resetMode(OriginMode, InsertReplaceMode)); // e.g., CSI 4lCSI ?6l (order of groups may vary)
  * ```
  */
-export const resetMode = (...modes: Mode[]): string => {
-    return generateModeSequence(true, ...modes);
-};
+export const resetMode = (...modes: Mode[]): string => generateModeSequence(true, ...modes);
 
 /** Alias for {@link resetMode}. Generates the RM (Reset Mode) sequence. */
 export const RM = resetMode;
-
-/**
- * Internal helper function to generate mode sequences (SM or RM).
- *
- * It separates ANSI and DEC modes and constructs the appropriate CSI sequences.
- * If a single mode is provided, it generates a simpler sequence.
- *
- * @param reset - If `true`, generates a reset sequence (ending in `l`); otherwise, a set sequence (ending in `h`).
- * @param modes - An array of {@link Mode} objects to include in the sequence.
- * @returns The complete ANSI escape sequence string.
- * @internal
- */
-const generateModeSequence = (reset: boolean, ...modes: Mode[]): string => {
-    if (modes.length === 0) {
-        return "";
-    }
-
-    const command = reset ? "l" : "h";
-
-    if (modes.length === 1) {
-        const mode = modes[0] as Mode; // Linter expects this to be possibly undefined otherwise
-        let seq = CSI;
-        if (mode.isDecMode) {
-            seq += "?";
-        }
-        return seq + mode.code + command;
-    }
-
-    const ansiModes = modes.filter((m) => !m.isDecMode).map((m) => m.code);
-    const decModes = modes.filter((m) => m.isDecMode).map((m) => m.code);
-
-    let s = "";
-    if (ansiModes.length > 0) {
-        s += `${CSI}${ansiModes.join(";")}${command}`;
-    }
-    if (decModes.length > 0) {
-        s += `${CSI}?${decModes.join(";")}${command}`;
-    }
-    return s;
-};
 
 /**
  * Generates the DECRQM (Request Mode) sequence to query the state of a specific terminal mode.
@@ -321,8 +303,7 @@ const generateModeSequence = (reset: boolean, ...modes: Mode[]): string => {
  *
  * - For a standard ANSI mode, the format is `CSI Pn $ p`.
  * - For a private DEC mode, the format is `CSI ? Pn $ p`.
- *
- * @param mode - The {@link Mode} object (either `AnsiMode` or `DecMode`) to query.
+ * @param mode The {@link Mode} object (either `AnsiMode` or `DecMode`) to query.
  * @returns The DECRQM escape sequence to request the mode state.
  * @see {@link https://vt100.net/docs/vt510-rm/DECRQM.html DECRQM documentation}
  * @see {@link reportMode} for the corresponding response sequence (DECRPM).
@@ -340,10 +321,12 @@ const generateModeSequence = (reset: boolean, ...modes: Mode[]): string => {
  */
 export const requestMode = (mode: Mode): string => {
     let seq = CSI;
+
     if (mode.isDecMode) {
         seq += "?";
     }
-    return seq + mode.code + "$p";
+
+    return `${seq + mode.code}$p`;
 };
 
 /** Alias for {@link requestMode}. Generates the DECRQM (Request Mode) sequence. */
@@ -360,9 +343,8 @@ export const DECRQM = requestMode;
  *
  * This function is typically used for testing or simulating terminal behavior,
  * as applications usually receive this sequence from the terminal, not generate it.
- *
- * @param mode - The {@link Mode} object (either `AnsiMode` or `DecMode`) whose state is being reported.
- * @param value - The {@link ModeSetting} value indicating the current state of the mode.
+ * @param mode The {@link Mode} object (either `AnsiMode` or `DecMode`) whose state is being reported.
+ * @param value The {@link ModeSetting} value indicating the current state of the mode.
  * @returns The DECRPM escape sequence reporting the mode state.
  * @see {@link https://vt100.net/docs/vt510-rm/DECRPM.html DECRPM documentation}
  * @see {@link requestMode} for the corresponding request sequence (DECRQM).
@@ -383,6 +365,7 @@ export const DECRQM = requestMode;
  */
 export const reportMode = (mode: Mode, value: ModeSetting): string => {
     let effectiveValue = value;
+
     // Ensure value is within the defined ModeSetting enum range (0-4).
     // If not, default to NotRecognized as per common terminal behavior for invalid report parameters.
     if (value < ModeSetting.NotRecognized || value > ModeSetting.PermanentlyReset) {
@@ -390,9 +373,11 @@ export const reportMode = (mode: Mode, value: ModeSetting): string => {
     }
 
     let seq = CSI;
+
     if (mode.isDecMode) {
         seq += "?";
     }
+
     return `${seq}${mode.code};${effectiveValue}$y`;
 };
 
@@ -407,12 +392,16 @@ export const DECRPM = reportMode;
  * @see {@link https://vt100.net/docs/vt510-rm/KAM.html}
  */
 export const KeyboardActionMode = createAnsiMode(2);
+
 /** Alias for {@link KeyboardActionMode}. */
 export const KAM = KeyboardActionMode;
+
 /** Sequence to set Keyboard Action Mode: `CSI 2 h` */
 export const SetKeyboardActionMode = `${CSI}2h`;
+
 /** Sequence to reset Keyboard Action Mode: `CSI 2 l` */
 export const ResetKeyboardActionMode = `${CSI}2l`;
+
 /** Sequence to request Keyboard Action Mode state: `CSI 2 $ p` */
 export const RequestKeyboardActionMode = `${CSI}2$p`;
 
@@ -422,12 +411,16 @@ export const RequestKeyboardActionMode = `${CSI}2$p`;
  * @see {@link https://vt100.net/docs/vt510-rm/IRM.html}
  */
 export const InsertReplaceMode = createAnsiMode(4);
+
 /** Alias for {@link InsertReplaceMode}. */
 export const IRM = InsertReplaceMode;
+
 /** Sequence to set Insert/Replace Mode: `CSI 4 h` */
 export const SetInsertReplaceMode = `${CSI}4h`;
+
 /** Sequence to reset Insert/Replace Mode: `CSI 4 l` */
 export const ResetInsertReplaceMode = `${CSI}4l`;
+
 /** Sequence to request Insert/Replace Mode state: `CSI 4 $ p` */
 export const RequestInsertReplaceMode = `${CSI}4$p`;
 
@@ -437,12 +430,16 @@ export const RequestInsertReplaceMode = `${CSI}4$p`;
  * @see ECMA-48 7.2.1.
  */
 export const BiDirectionalSupportMode = createAnsiMode(8);
+
 /** Alias for {@link BiDirectionalSupportMode}. */
 export const BDSM = BiDirectionalSupportMode;
+
 /** Sequence to set BiDirectional Support Mode: `CSI 8 h` */
 export const SetBiDirectionalSupportMode = `${CSI}8h`;
+
 /** Sequence to reset BiDirectional Support Mode: `CSI 8 l` */
 export const ResetBiDirectionalSupportMode = `${CSI}8l`;
+
 /** Sequence to request BiDirectional Support Mode state: `CSI 8 $ p` */
 export const RequestBiDirectionalSupportMode = `${CSI}8$p`;
 
@@ -452,20 +449,28 @@ export const RequestBiDirectionalSupportMode = `${CSI}8$p`;
  * @see {@link https://vt100.net/docs/vt510-rm/SRM.html}
  */
 export const SendReceiveMode = createAnsiMode(12);
+
 /** Alias for {@link SendReceiveMode}. */
 export const LocalEchoMode = SendReceiveMode;
+
 /** Alias for {@link SendReceiveMode}. */
 export const SRM = SendReceiveMode;
+
 /** Sequence to set Send/Receive Mode: `CSI 12 h` */
 export const SetSendReceiveMode = `${CSI}12h`;
+
 /** Sequence to reset Send/Receive Mode: `CSI 12 l` */
 export const ResetSendReceiveMode = `${CSI}12l`;
+
 /** Sequence to request Send/Receive Mode state: `CSI 12 $ p` */
 export const RequestSendReceiveMode = `${CSI}12$p`;
+
 /** Alias for {@link SetSendReceiveMode}. */
 export const SetLocalEchoMode = SetSendReceiveMode;
+
 /** Alias for {@link ResetSendReceiveMode}. */
 export const ResetLocalEchoMode = ResetSendReceiveMode;
+
 /** Alias for {@link RequestSendReceiveMode}. */
 export const RequestLocalEchoMode = RequestSendReceiveMode;
 
@@ -477,12 +482,16 @@ export const RequestLocalEchoMode = RequestSendReceiveMode;
  * @see {@link https://vt100.net/docs/vt510-rm/LNM.html}
  */
 export const LineFeedNewLineMode = createAnsiMode(20);
+
 /** Alias for {@link LineFeedNewLineMode}. */
 export const LNM = LineFeedNewLineMode;
+
 /** Sequence to set Line Feed/New Line Mode: `CSI 20 h` */
 export const SetLineFeedNewLineMode = `${CSI}20h`;
+
 /** Sequence to reset Line Feed/New Line Mode: `CSI 20 l` */
 export const ResetLineFeedNewLineMode = `${CSI}20l`;
+
 /** Sequence to request Line Feed/New Line Mode state: `CSI 20 $ p` */
 export const RequestLineFeedNewLineMode = `${CSI}20$p`;
 
@@ -496,12 +505,16 @@ export const RequestLineFeedNewLineMode = `${CSI}20$p`;
  * @see {@link https://vt100.net/docs/vt510-rm/DECCKM.html}
  */
 export const CursorKeysMode = createDecMode(1);
+
 /** Alias for {@link CursorKeysMode}. */
 export const DECCKM = CursorKeysMode;
+
 /** Sequence to set Cursor Keys Mode: `CSI ? 1 h` */
 export const SetCursorKeysMode = `${CSI}?1h`;
+
 /** Sequence to reset Cursor Keys Mode: `CSI ? 1 l` */
 export const ResetCursorKeysMode = `${CSI}?1l`;
+
 /** Sequence to request Cursor Keys Mode state: `CSI ? 1 $ p` */
 export const RequestCursorKeysMode = `${CSI}?1$p`;
 
@@ -513,12 +526,16 @@ export const RequestCursorKeysMode = `${CSI}?1$p`;
  * @see {@link https://vt100.net/docs/vt510-rm/DECOM.html}
  */
 export const OriginMode = createDecMode(6);
+
 /** Alias for {@link OriginMode}. */
 export const DECOM = OriginMode;
+
 /** Sequence to set Origin Mode: `CSI ? 6 h` */
 export const SetOriginMode = `${CSI}?6h`;
+
 /** Sequence to reset Origin Mode: `CSI ? 6 l` */
 export const ResetOriginMode = `${CSI}?6l`;
+
 /** Sequence to request Origin Mode state: `CSI ? 6 $ p` */
 export const RequestOriginMode = `${CSI}?6$p`;
 
@@ -530,12 +547,16 @@ export const RequestOriginMode = `${CSI}?6$p`;
  * @see {@link https://vt100.net/docs/vt510-rm/DECAWM.html}
  */
 export const AutoWrapMode = createDecMode(7);
+
 /** Alias for {@link AutoWrapMode}. */
 export const DECAWM = AutoWrapMode;
+
 /** Sequence to set Auto Wrap Mode: `CSI ? 7 h` */
 export const SetAutoWrapMode = `${CSI}?7h`;
+
 /** Sequence to reset Auto Wrap Mode: `CSI ? 7 l` */
 export const ResetAutoWrapMode = `${CSI}?7l`;
+
 /** Sequence to request Auto Wrap Mode state: `CSI ? 7 $ p` */
 export const RequestAutoWrapMode = `${CSI}?7$p`;
 
@@ -546,10 +567,13 @@ export const RequestAutoWrapMode = `${CSI}?7$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
 export const X10MouseMode = createDecMode(9);
+
 /** Sequence to set X10 Mouse Mode: `CSI ? 9 h` */
 export const SetX10MouseMode = `${CSI}?9h`;
+
 /** Sequence to reset X10 Mouse Mode: `CSI ? 9 l` */
 export const ResetX10MouseMode = `${CSI}?9l`;
+
 /** Sequence to request X10 Mouse Mode state: `CSI ? 9 $ p` */
 export const RequestX10MouseMode = `${CSI}?9$p`;
 
@@ -561,19 +585,24 @@ export const RequestX10MouseMode = `${CSI}?9$p`;
  * @see {@link https://vt100.net/docs/vt510-rm/DECTCEM.html}
  */
 export const TextCursorEnableMode = createDecMode(25);
+
 /** Alias for {@link TextCursorEnableMode}. */
 export const DECTCEM = TextCursorEnableMode;
+
 /** Sequence to set Text Cursor Enable Mode (show cursor): `CSI ? 25 h` */
 export const SetTextCursorEnableMode = `${CSI}?25h`;
+
 /** Sequence to reset Text Cursor Enable Mode (hide cursor): `CSI ? 25 l` */
 export const ResetTextCursorEnableMode = `${CSI}?25l`;
+
 /** Sequence to request Text Cursor Enable Mode state: `CSI ? 25 $ p` */
 export const RequestTextCursorEnableMode = `${CSI}?25$p`;
+
 /** Alias for {@link SetTextCursorEnableMode} (shows cursor). */
 export const ShowCursor = SetTextCursorEnableMode;
+
 /** Alias for {@link ResetTextCursorEnableMode} (hides cursor). */
 export const HideCursor = ResetTextCursorEnableMode;
-
 
 /**
  * DEC Private Mode 66: Numeric Keypad Mode (DECNKM).
@@ -581,12 +610,16 @@ export const HideCursor = ResetTextCursorEnableMode;
  * @see {@link https://vt100.net/docs/vt510-rm/DECNKM.html}
  */
 export const NumericKeypadMode = createDecMode(66);
+
 /** Alias for {@link NumericKeypadMode}. */
 export const DECNKM = NumericKeypadMode;
+
 /** Sequence to set Numeric Keypad Mode: `CSI ? 66 h` */
 export const SetNumericKeypadMode = `${CSI}?66h`;
+
 /** Sequence to reset Numeric Keypad Mode: `CSI ? 66 l` */
 export const ResetNumericKeypadMode = `${CSI}?66l`;
+
 /** Sequence to request Numeric Keypad Mode state: `CSI ? 66 $ p` */
 export const RequestNumericKeypadMode = `${CSI}?66$p`;
 
@@ -598,12 +631,16 @@ export const RequestNumericKeypadMode = `${CSI}?66$p`;
  * @see {@link https://vt100.net/docs/vt510-rm/DECBKM.html}
  */
 export const BackarrowKeyMode = createDecMode(67);
+
 /** Alias for {@link BackarrowKeyMode}. */
 export const DECBKM = BackarrowKeyMode;
+
 /** Sequence to set Backarrow Key Mode: `CSI ? 67 h` */
 export const SetBackarrowKeyMode = `${CSI}?67h`;
+
 /** Sequence to reset Backarrow Key Mode: `CSI ? 67 l` */
 export const ResetBackarrowKeyMode = `${CSI}?67l`;
+
 /** Sequence to request Backarrow Key Mode state: `CSI ? 67 $ p` */
 export const RequestBackarrowKeyMode = `${CSI}?67$p`;
 
@@ -613,12 +650,16 @@ export const RequestBackarrowKeyMode = `${CSI}?67$p`;
  * @see {@link https://vt100.net/docs/vt510-rm/DECLRMM.html}
  */
 export const LeftRightMarginMode = createDecMode(69);
+
 /** Alias for {@link LeftRightMarginMode}. */
 export const DECLRMM = LeftRightMarginMode;
+
 /** Sequence to set Left/Right Margin Mode: `CSI ? 69 h` */
 export const SetLeftRightMarginMode = `${CSI}?69h`;
+
 /** Sequence to reset Left/Right Margin Mode: `CSI ? 69 l` */
 export const ResetLeftRightMarginMode = `${CSI}?69l`;
+
 /** Sequence to request Left/Right Margin Mode state: `CSI ? 69 $ p` */
 export const RequestLeftRightMarginMode = `${CSI}?69$p`;
 
@@ -629,10 +670,13 @@ export const RequestLeftRightMarginMode = `${CSI}?69$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
 export const NormalMouseMode = createDecMode(1000);
+
 /** Sequence to set Normal Mouse Mode: `CSI ? 1000 h` */
 export const SetNormalMouseMode = `${CSI}?1000h`;
+
 /** Sequence to reset Normal Mouse Mode: `CSI ? 1000 l` */
 export const ResetNormalMouseMode = `${CSI}?1000l`;
+
 /** Sequence to request Normal Mouse Mode state: `CSI ? 1000 $ p` */
 export const RequestNormalMouseMode = `${CSI}?1000$p`;
 
@@ -642,10 +686,13 @@ export const RequestNormalMouseMode = `${CSI}?1000$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
 export const HighlightMouseMode = createDecMode(1001);
+
 /** Sequence to set Highlight Mouse Tracking: `CSI ? 1001 h` */
 export const SetHighlightMouseMode = `${CSI}?1001h`;
+
 /** Sequence to reset Highlight Mouse Tracking: `CSI ? 1001 l` */
 export const ResetHighlightMouseMode = `${CSI}?1001l`;
+
 /** Sequence to request Highlight Mouse Tracking state: `CSI ? 1001 $ p` */
 export const RequestHighlightMouseMode = `${CSI}?1001$p`;
 
@@ -655,10 +702,13 @@ export const RequestHighlightMouseMode = `${CSI}?1001$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
 export const ButtonEventMouseMode = createDecMode(1002);
+
 /** Sequence to set Button Event Mouse Tracking: `CSI ? 1002 h` */
 export const SetButtonEventMouseMode = `${CSI}?1002h`;
+
 /** Sequence to reset Button Event Mouse Tracking: `CSI ? 1002 l` */
 export const ResetButtonEventMouseMode = `${CSI}?1002l`;
+
 /** Sequence to request Button Event Mouse Tracking state: `CSI ? 1002 $ p` */
 export const RequestButtonEventMouseMode = `${CSI}?1002$p`;
 
@@ -668,10 +718,13 @@ export const RequestButtonEventMouseMode = `${CSI}?1002$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
 export const AnyEventMouseMode = createDecMode(1003);
+
 /** Sequence to set Any Event Mouse Tracking: `CSI ? 1003 h` */
 export const SetAnyEventMouseMode = `${CSI}?1003h`;
+
 /** Sequence to reset Any Event Mouse Tracking: `CSI ? 1003 l` */
 export const ResetAnyEventMouseMode = `${CSI}?1003l`;
+
 /** Sequence to request Any Event Mouse Tracking state: `CSI ? 1003 $ p` */
 export const RequestAnyEventMouseMode = `${CSI}?1003$p`;
 
@@ -681,10 +734,13 @@ export const RequestAnyEventMouseMode = `${CSI}?1003$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Focus-Tracking}
  */
 export const FocusEventMode = createDecMode(1004);
+
 /** Sequence to set Focus Event Mode: `CSI ? 1004 h` */
 export const SetFocusEventMode = `${CSI}?1004h`;
+
 /** Sequence to reset Focus Event Mode: `CSI ? 1004 l` */
 export const ResetFocusEventMode = `${CSI}?1004l`;
+
 /** Sequence to request Focus Event Mode state: `CSI ? 1004 $ p` */
 export const RequestFocusEventMode = `${CSI}?1004$p`;
 
@@ -694,10 +750,13 @@ export const RequestFocusEventMode = `${CSI}?1004$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
 export const Utf8ExtMouseMode = createDecMode(1005);
+
 /** Sequence to set UTF-8 Extended Mouse Mode: `CSI ? 1005 h` */
 export const SetUtf8ExtMouseMode = `${CSI}?1005h`;
+
 /** Sequence to reset UTF-8 Extended Mouse Mode: `CSI ? 1005 l` */
 export const ResetUtf8ExtMouseMode = `${CSI}?1005l`;
+
 /** Sequence to request UTF-8 Extended Mouse Mode state: `CSI ? 1005 $ p` */
 export const RequestUtf8ExtMouseMode = `${CSI}?1005$p`;
 
@@ -708,10 +767,13 @@ export const RequestUtf8ExtMouseMode = `${CSI}?1005$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
 export const SgrExtMouseMode = createDecMode(1006);
+
 /** Sequence to set SGR Extended Mouse Mode: `CSI ? 1006 h` */
 export const SetSgrExtMouseMode = `${CSI}?1006h`;
+
 /** Sequence to reset SGR Extended Mouse Mode: `CSI ? 1006 l` */
 export const ResetSgrExtMouseMode = `${CSI}?1006l`;
+
 /** Sequence to request SGR Extended Mouse Mode state: `CSI ? 1006 $ p` */
 export const RequestSgrExtMouseMode = `${CSI}?1006$p`;
 
@@ -721,10 +783,13 @@ export const RequestSgrExtMouseMode = `${CSI}?1006$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
 export const UrxvtExtMouseMode = createDecMode(1015);
+
 /** Sequence to set URXVT Extended Mouse Mode: `CSI ? 1015 h` */
 export const SetUrxvtExtMouseMode = `${CSI}?1015h`;
+
 /** Sequence to reset URXVT Extended Mouse Mode: `CSI ? 1015 l` */
 export const ResetUrxvtExtMouseMode = `${CSI}?1015l`;
+
 /** Sequence to request URXVT Extended Mouse Mode state: `CSI ? 1015 $ p` */
 export const RequestUrxvtExtMouseMode = `${CSI}?1015$p`;
 
@@ -734,10 +799,13 @@ export const RequestUrxvtExtMouseMode = `${CSI}?1015$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
 export const SgrPixelExtMouseMode = createDecMode(1016);
+
 /** Sequence to set SGR Pixel Extended Mouse Mode: `CSI ? 1016 h` */
 export const SetSgrPixelExtMouseMode = `${CSI}?1016h`;
+
 /** Sequence to reset SGR Pixel Extended Mouse Mode: `CSI ? 1016 l` */
 export const ResetSgrPixelExtMouseMode = `${CSI}?1016l`;
+
 /** Sequence to request SGR Pixel Extended Mouse Mode state: `CSI ? 1016 $ p` */
 export const RequestSgrPixelExtMouseMode = `${CSI}?1016$p`;
 
@@ -747,10 +815,13 @@ export const RequestSgrPixelExtMouseMode = `${CSI}?1016$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-The-Alternate-Screen-Buffer}
  */
 export const AltScreenMode = createDecMode(1047);
+
 /** Sequence to set Alternate Screen Mode: `CSI ? 1047 h` */
 export const SetAltScreenMode = `${CSI}?1047h`;
+
 /** Sequence to reset Alternate Screen Mode: `CSI ? 1047 l` */
 export const ResetAltScreenMode = `${CSI}?1047l`;
+
 /** Sequence to request Alternate Screen Mode state: `CSI ? 1047 $ p` */
 export const RequestAltScreenMode = `${CSI}?1047$p`;
 
@@ -760,10 +831,13 @@ export const RequestAltScreenMode = `${CSI}?1047$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-The-Alternate-Screen-Buffer}
  */
 export const SaveCursorMode = createDecMode(1048);
+
 /** Sequence to set Save Cursor Mode: `CSI ? 1048 h` */
 export const SetSaveCursorMode = `${CSI}?1048h`;
+
 /** Sequence to reset Save Cursor Mode: `CSI ? 1048 l` */
 export const ResetSaveCursorMode = `${CSI}?1048l`;
+
 /** Sequence to request Save Cursor Mode state: `CSI ? 1048 $ p` */
 export const RequestSaveCursorMode = `${CSI}?1048$p`;
 
@@ -774,10 +848,13 @@ export const RequestSaveCursorMode = `${CSI}?1048$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-The-Alternate-Screen-Buffer}
  */
 export const AltScreenSaveCursorMode = createDecMode(1049);
+
 /** Sequence to set Alternate Screen Save Cursor Mode: `CSI ? 1049 h` */
 export const SetAltScreenSaveCursorMode = `${CSI}?1049h`;
+
 /** Sequence to reset Alternate Screen Save Cursor Mode: `CSI ? 1049 l` */
 export const ResetAltScreenSaveCursorMode = `${CSI}?1049l`;
+
 /** Sequence to request Alternate Screen Save Cursor Mode state: `CSI ? 1049 $ p` */
 export const RequestAltScreenSaveCursorMode = `${CSI}?1049$p`;
 
@@ -789,10 +866,13 @@ export const RequestAltScreenSaveCursorMode = `${CSI}?1049$p`;
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Bracketed-Paste-Mode}
  */
 export const BracketedPasteMode = createDecMode(2004);
+
 /** Sequence to set Bracketed Paste Mode: `CSI ? 2004 h` */
 export const SetBracketedPasteMode = `${CSI}?2004h`;
+
 /** Sequence to reset Bracketed Paste Mode: `CSI ? 2004 l` */
 export const ResetBracketedPasteMode = `${CSI}?2004l`;
+
 /** Sequence to request Bracketed Paste Mode state: `CSI ? 2004 $ p` */
 export const RequestBracketedPasteMode = `${CSI}?2004$p`;
 
@@ -803,10 +883,13 @@ export const RequestBracketedPasteMode = `${CSI}?2004$p`;
  * @see {@link https://gist.github.com/christianparpart/d8a62cc1ab659194337d73e399004036}
  */
 export const SynchronizedOutputMode = createDecMode(2026);
+
 /** Sequence to set Synchronized Output Mode: `CSI ? 2026 h` */
 export const SetSynchronizedOutputMode = `${CSI}?2026h`;
+
 /** Sequence to reset Synchronized Output Mode: `CSI ? 2026 l` */
 export const ResetSynchronizedOutputMode = `${CSI}?2026l`;
+
 /** Sequence to request Synchronized Output Mode state: `CSI ? 2026 $ p` */
 export const RequestSynchronizedOutputMode = `${CSI}?2026$p`;
 
@@ -817,10 +900,13 @@ export const RequestSynchronizedOutputMode = `${CSI}?2026$p`;
  * @see {@link https://github.com/contour-terminal/terminal-unicode-core}
  */
 export const GraphemeClusteringMode = createDecMode(2027);
+
 /** Sequence to set Grapheme Clustering Mode: `CSI ? 2027 h` */
 export const SetGraphemeClusteringMode = `${CSI}?2027h`;
+
 /** Sequence to reset Grapheme Clustering Mode: `CSI ? 2027 l` */
 export const ResetGraphemeClusteringMode = `${CSI}?2027l`;
+
 /** Sequence to request Grapheme Clustering Mode state: `CSI ? 2027 $ p` */
 export const RequestGraphemeClusteringMode = `${CSI}?2027$p`;
 
@@ -830,9 +916,12 @@ export const RequestGraphemeClusteringMode = `${CSI}?2027$p`;
  * @see {@link https://github.com/microsoft/terminal/blob/main/doc/specs/%234999%20-%20Improved%20keyboard%20handling%20in%20Conpty.md}
  */
 export const Win32InputMode = createDecMode(9001);
+
 /** Sequence to set Win32 Input Mode: `CSI ? 9001 h` */
 export const SetWin32InputMode = `${CSI}?9001h`;
+
 /** Sequence to reset Win32 Input Mode: `CSI ? 9001 l` */
 export const ResetWin32InputMode = `${CSI}?9001l`;
+
 /** Sequence to request Win32 Input Mode state: `CSI ? 9001 $ p` */
 export const RequestWin32InputMode = `${CSI}?9001$p`;

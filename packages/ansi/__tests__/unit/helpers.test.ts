@@ -31,6 +31,7 @@ describe("helper Constants", () => {
 
     describe("isTerminalApp", () => {
         it("should be true when TERM_PROGRAM is Apple_Terminal and not in browser", async () => {
+            expect.assertions(1);
             environmentSpy.mockReturnValue({ ...originalEnvironment, TERM_PROGRAM: "Apple_Terminal" });
             // globalThis.window is already undefined from beforeEach
             const { isTerminalApp } = await import("../../src/helpers");
@@ -38,12 +39,14 @@ describe("helper Constants", () => {
         });
 
         it("should be false when TERM_PROGRAM is not Apple_Terminal", async () => {
+            expect.assertions(1);
             environmentSpy.mockReturnValue({ ...originalEnvironment, TERM_PROGRAM: "iTerm.app" });
             const { isTerminalApp } = await import("../../src/helpers");
             expect(isTerminalApp).toBeFalsy();
         });
 
         it("should be false when in a browser-like environment", async () => {
+            expect.assertions(1);
             environmentSpy.mockReturnValue({ ...originalEnvironment, TERM_PROGRAM: "Apple_Terminal" });
             (globalThis as any).window = { document: {} }; // Simulate browser
             const { isTerminalApp } = await import("../../src/helpers");
@@ -53,18 +56,21 @@ describe("helper Constants", () => {
 
     describe("isWindows", () => {
         it("should be true when platform is win32 and not in browser", async () => {
+            expect.assertions(1);
             platformSpy.mockReturnValue("win32");
             const { isWindows } = await import("../../src/helpers");
             expect(isWindows).toBeTruthy();
         });
 
         it("should be false when platform is not win32", async () => {
+            expect.assertions(1);
             platformSpy.mockReturnValue("linux");
             const { isWindows } = await import("../../src/helpers");
             expect(isWindows).toBeFalsy();
         });
 
         it("should be false when in a browser-like environment", async () => {
+            expect.assertions(1);
             platformSpy.mockReturnValue("win32");
             (globalThis as any).window = { document: {} }; // Simulate browser
             const { isWindows } = await import("../../src/helpers");

@@ -1,5 +1,11 @@
 import { CSI, SEP } from "./constants";
 
+/** Represents an ANSI terminal status report type. */
+export type AnsiStatusReport = StatusReport;
+
+/** Represents a DEC terminal status report type. */
+export type DecStatusReport = StatusReport;
+
 /**
  * Interface for terminal status reports.
  */
@@ -13,22 +19,15 @@ class AnsiStatusReportImpl implements StatusReport {
 
     public readonly isDecReport = false;
 }
-
 class DecStatusReportImpl implements StatusReport {
     constructor(public readonly reportCode: number) {}
 
     public readonly isDecReport = true;
 }
 
-/** Represents an ANSI terminal status report type. */
-export type AnsiStatusReport = StatusReport;
-/** Represents a DEC terminal status report type. */
-export type DecStatusReport = StatusReport;
-
 /**
  * Creates an ANSI-type status report object.
  * These reports are typically requested using `CSI Ps n`.
- *
  * @param code The numeric code for the ANSI status report.
  * @returns An object implementing the {@link StatusReport} interface, marked as not DEC-specific.
  * @example
@@ -40,14 +39,11 @@ export type DecStatusReport = StatusReport;
  * console.log(sequence);
  * ```
  */
-export const createAnsiStatusReport = (code: number): AnsiStatusReport => {
-    return new AnsiStatusReportImpl(code);
-};
+export const createAnsiStatusReport = (code: number): AnsiStatusReport => new AnsiStatusReportImpl(code);
 
 /**
  * Creates a DEC private status report object.
  * These reports are typically requested using `CSI ? Ps n`.
- *
  * @param code The numeric code for the DEC private status report.
  * @returns An object implementing the {@link StatusReport} interface, marked as DEC-specific.
  * @example
@@ -59,9 +55,7 @@ export const createAnsiStatusReport = (code: number): AnsiStatusReport => {
  * console.log(sequence);
  * ```
  */
-export const createDecStatusReport = (code: number): DecStatusReport => {
-    return new DecStatusReportImpl(code);
-};
+export const createDecStatusReport = (code: number): DecStatusReport => new DecStatusReportImpl(code);
 
 /**
  * Generates a Device Status Report (DSR) sequence to request terminal status information.
@@ -73,9 +67,8 @@ export const createDecStatusReport = (code: number): DecStatusReport => {
  * the entire sequence will be prefixed with `?`, indicating a DEC private DSR query.
  * Mixing standard and DEC-specific report types in a single request is handled by this logic,
  * but typically, a DSR query is either entirely standard or entirely DEC-specific.
- *
  * @param reports One or more {@link StatusReport} objects indicating the statuses to request.
- *                If no reports are provided, an empty string is returned.
+ * If no reports are provided, an empty string is returned.
  * @returns The DSR sequence string (e.g., `"\x1b[5n"`, `"\x1b[?1;2n"`).
  * @see https://vt100.net/docs/vt510-rm/DSR.html
  * @example
@@ -105,6 +98,7 @@ export const deviceStatusReport = (...reports: StatusReport[]): string => {
         if (report.isDecReport) {
             hasDecReport = true;
         }
+
         return report.reportCode.toString();
     });
 
@@ -118,13 +112,12 @@ export const deviceStatusReport = (...reports: StatusReport[]): string => {
         seq += "?";
     }
 
-    return seq + reportCodes.join(SEP) + "n";
+    return `${seq + reportCodes.join(SEP)}n`;
 };
 
 /**
  * DSR (Device Status Report) alias.
  * This function serves as a shorthand for {@link deviceStatusReport} when requesting a single status.
- *
  * @param report A single {@link StatusReport} object.
  * @returns The DSR sequence string.
  * @see deviceStatusReport
@@ -136,9 +129,7 @@ export const deviceStatusReport = (...reports: StatusReport[]): string => {
  * console.log(DSR(requestTerminalStatus)); // Output: "\x1b[5n"
  * ```
  */
-export const DSR = (report: StatusReport): string => {
-    return deviceStatusReport(report);
-};
+export const DSR = (report: StatusReport): string => deviceStatusReport(report);
 
 /**
  * ANSI escape sequence to request the cursor's current position (row and column).
@@ -155,7 +146,7 @@ export const DSR = (report: StatusReport): string => {
  * // Terminal expected to respond with e.g., "\x1b[10;5R" if cursor is at line 10, column 5.
  * ```
  */
-export const requestCursorPositionReport: string = CSI + "6n";
+export const requestCursorPositionReport = `${CSI}6n`;
 
 /**
  * ANSI escape sequence to request the cursor's current position including page number (DEC private).
@@ -172,16 +163,15 @@ export const requestCursorPositionReport: string = CSI + "6n";
  * // Terminal expected to respond with e.g., "\x1b[?10;5;1R" if cursor is at line 10, column 5, page 1.
  * ```
  */
-export const requestExtendedCursorPositionReport: string = CSI + "?6n";
+export const requestExtendedCursorPositionReport = `${CSI}?6n`;
 
 /**
  * Generates the Cursor Position Report (CPR) response sequence.
  * This sequence is typically sent by the terminal in response to a DSR CPR request (`CSI 6 n`).
  *
  * Sequence: `CSI Pl ; Pc R`
- *  - `Pl`: Line number (1-based).
- *  - `Pc`: Column number (1-based).
- *
+ * - `Pl`: Line number (1-based).
+ * - `Pc`: Column number (1-based).
  * @param line The line number (1-based). Values less than 1 are treated as 1.
  * @param column The column number (1-based). Values less than 1 are treated as 1.
  * @returns The CPR sequence string.
@@ -196,7 +186,8 @@ export const requestExtendedCursorPositionReport: string = CSI + "?6n";
 export const cursorPositionReport = (line: number, column: number): string => {
     const r = Math.max(1, line);
     const c = Math.max(1, column);
-    return CSI + r.toString() + SEP + c.toString() + "R";
+
+    return `${CSI + r.toString() + SEP + c.toString()}R`;
 };
 
 /**
@@ -232,12 +223,16 @@ export const CPR = cursorPositionReport;
 export const extendedCursorPositionReport = (line: number, column: number, page: number): string => {
     const r = Math.max(1, line);
     const c = Math.max(1, column);
-    let seq = CSI + "?";
+    let seq = `${CSI}?`;
+
     seq += r.toString() + SEP + c.toString();
+
     if (page > 0) {
         seq += SEP + page.toString();
     }
+
     seq += "R";
+
     return seq;
 };
 
@@ -294,14 +289,15 @@ export const DSR_TerminalStatus = deviceStatusReport(requestTerminalStatus); // 
  * @see requestTerminalStatus
  * @see DSR_TerminalStatus
  */
-export const reportTerminalOK: string = CSI + "0n";
+export const reportTerminalOK = `${CSI}0n`;
+
 /**
  * ANSI escape sequence `CSI 3 n` indicating Terminal is NOT OK (Malfunction).
  * This is a typical response to {@link DSR_TerminalStatus} (`CSI 5 n`) or `deviceStatusReport(requestTerminalStatus)`.
  * @see requestTerminalStatus
  * @see DSR_TerminalStatus
  */
-export const reportTerminalNotOK: string = CSI + "3n";
+export const reportTerminalNotOK = `${CSI}3n`;
 
 /**
  * A DEC-specific {@link StatusReport} object to request printer status.
@@ -341,21 +337,23 @@ export const DSR_PrinterStatusDEC = deviceStatusReport(requestPrinterStatusDEC);
  * @see requestPrinterStatusDEC
  * @see DSR_PrinterStatusDEC
  */
-export const reportPrinterReadyDEC: string = CSI + "?10n";
+export const reportPrinterReadyDEC = `${CSI}?10n`;
+
 /**
  * ANSI escape sequence `CSI ? 11 n` indicating Printer is Not Ready (DEC-specific response).
  * Typical response to {@link DSR_PrinterStatusDEC} or `deviceStatusReport(requestPrinterStatusDEC)`.
  * @see requestPrinterStatusDEC
  * @see DSR_PrinterStatusDEC
  */
-export const reportPrinterNotReadyDEC: string = CSI + "?11n";
+export const reportPrinterNotReadyDEC = `${CSI}?11n`;
+
 /**
  * ANSI escape sequence `CSI ? 13 n` indicating Printer has No Paper (DEC-specific response).
  * Typical response to {@link DSR_PrinterStatusDEC} or `deviceStatusReport(requestPrinterStatusDEC)`.
  * @see requestPrinterStatusDEC
  * @see DSR_PrinterStatusDEC
  */
-export const reportPrinterNoPaperDEC: string = CSI + "?13n";
+export const reportPrinterNoPaperDEC = `${CSI}?13n`;
 
 /**
  * A DEC-specific {@link StatusReport} object to request User Defined Keys (UDK) status.
@@ -385,12 +383,13 @@ export const DSR_UDKStatusDEC = deviceStatusReport(requestUDKStatusDEC); // CSI 
  * ANSI escape sequence `CSI ? 20 n` indicating User Defined Keys (UDKs) are locked (DEC-specific response).
  * Typical response to {@link DSR_UDKStatusDEC}.
  */
-export const reportUDKLockedDEC: string = CSI + "?20n";
+export const reportUDKLockedDEC = `${CSI}?20n`;
+
 /**
  * ANSI escape sequence `CSI ? 21 n` indicating User Defined Keys (UDKs) are unlocked (DEC-specific response).
  * Typical response to {@link DSR_UDKStatusDEC}.
  */
-export const reportUDKUnlockedDEC: string = CSI + "?21n";
+export const reportUDKUnlockedDEC = `${CSI}?21n`;
 
 /**
  * A DEC-specific {@link StatusReport} object to request keyboard language status.
@@ -418,13 +417,13 @@ export const requestKeyboardLanguageDEC: StatusReport = createDecStatusReport(26
  */
 export const DSR_KeyboardLanguageDEC = deviceStatusReport(requestKeyboardLanguageDEC); // CSI ? 26 n
 // Example response for US English: CSI ? 27 ; 1 n
+
 /**
  * Generates a DEC Keyboard Language Report sequence.
  * This is an example of how a terminal might report its keyboard language.
  * Sequence: `CSI ? Pl ; Pv n` (example format)
- *  - `Pl`: Parameter indicating language report (e.g., 27).
- *  - `Pv`: Value representing the language code.
- *
+ * - `Pl`: Parameter indicating language report (e.g., 27).
+ * - `Pv`: Value representing the language code.
  * @param langCode The numeric code representing the keyboard language.
  * @returns The keyboard language report sequence string.
  * @example
@@ -435,7 +434,7 @@ export const DSR_KeyboardLanguageDEC = deviceStatusReport(requestKeyboardLanguag
  * console.log(reportKeyboardLanguageDEC(1)); // Output: "\x1b[?27;1n"
  * ```
  */
-export const reportKeyboardLanguageDEC = (langCode: number): string => CSI + "?27" + SEP + langCode.toString() + "n";
+export const reportKeyboardLanguageDEC = (langCode: number): string => `${CSI}?27${SEP}${langCode.toString()}n`;
 
 /** DSR: Report Data Integrity (DEC specific) */
 // This is often DECPRR - Report presentation state reply, CSI ? Pi $ r

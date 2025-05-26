@@ -13,6 +13,7 @@ describe("sixelDecoder", () => {
     });
 
     it("should decode a simple Sixel image with raster, color, and data", () => {
+        expect.assertions(5);
         // Simplified Sixel String: Width 3, Height 6.
         // Color 0: Red (#0;2;100;0;0)
         // Color 1: Gray (#1;2;70;80;90)
@@ -66,12 +67,14 @@ describe("sixelDecoder", () => {
     });
 
     it("should handle an empty Sixel string", () => {
+        expect.assertions(1);
         // Expect it to throw or return a default/empty image based on implementation.
         // Current SixelDecoder throws if dimensions are invalid.
         expect(() => decoder.decode("")).toThrow("Sixel image dimensions are invalid or could not be determined (empty input).");
     });
 
     it("should handle Sixel string with only raster attributes", () => {
+        expect.assertions(6);
         const sixelString = '"1;1;100;200'; // Pan=1, Pad=1, Ph=100, Pv=200
         const decoded = decoder.decode(sixelString);
         expect(decoded.width).toBe(100);
@@ -87,12 +90,14 @@ describe("sixelDecoder", () => {
     });
 
     it("should handle Sixel string with only color changes", () => {
+        expect.assertions(1);
         const sixelString = "#0;2;255;0;0#1;2;0;255;0"; // Define color 0 Red, color 1 Green
         // This should now throw an error because dimensions cannot be determined from colors only.
         expect(() => decoder.decode(sixelString)).toThrow("Sixel image dimensions are invalid or could not be determined.");
     });
 
     it("should handle Sixel string with only data (using default raster/palette)", () => {
+        expect.assertions(4);
         const sixelString = "@"; // Paints 1 pixel (0,0) with default color 0
         // Dimensions will be scanned. '@' has x=1. So width=1, height=6 (default band height).
         const decoded = decoder.decode(sixelString);
@@ -107,6 +112,7 @@ describe("sixelDecoder", () => {
     });
 
     it("should correctly decode the repeat operator (!)", () => {
+        expect.assertions(5);
         // Sixel string: width 3, height 6. Color 0 (default).
         // !3@  -> repeat '@' (pattern 000001) three times.
         // This should paint (0,0), (1,0), (2,0) with color 0.
@@ -169,6 +175,7 @@ describe("sixelDecoder", () => {
     });
 
     it("should correctly decode the carriage return ($)", () => {
+        expect.assertions(6);
         // Sixel: width 3, height 6. Default color 0.
         // "1;2;3;6 @ $ @ @"  -> Ph=3, Pv=6
         // '@' (x=0) -> paints (0,0) with color 0. currentX becomes 1.
@@ -214,6 +221,7 @@ describe("sixelDecoder", () => {
     });
 
     it("should correctly decode the new line (-)", () => {
+        expect.assertions(6);
         // Sixel: width 3, height 12. Default color 0.
         // "1;2;3;12 @ - @ @"
         // '@' (x=0, y=0) -> paints (0,0) with color 0. currentX=1, currentY=0.
@@ -261,6 +269,7 @@ describe("sixelDecoder", () => {
     });
 
     it("should clamp dimensions to SIXEL_MAX_RASTER_WIDTH/HEIGHT if raster attributes exceed them", () => {
+        expect.assertions(8);
         const W_TOO_LARGE = SIXEL_MAX_RASTER_WIDTH + 100;
         const H_TOO_LARGE = SIXEL_MAX_RASTER_HEIGHT + 100;
 
@@ -288,6 +297,7 @@ describe("sixelDecoder", () => {
     });
 
     it("should clamp dimensions from _scanForDimensions if they exceed max limits", () => {
+        expect.assertions(6);
         // Create a sixel string that implies very large dimensions via data content
         // e.g., many characters without newline, or many newlines
         // This is harder to precisely control to hit *exactly* MAX+1 without also being enormous string
@@ -322,6 +332,7 @@ describe("sixelDecoder", () => {
     });
 
     it("should handle palette color definitions and selections near limits", () => {
+        expect.assertions(10);
         const MAX_PALETTE_INDEX = 255; // Sixel typically 0-255
 
         // 1. Define color at max valid index
@@ -363,6 +374,7 @@ describe("sixelDecoder", () => {
     });
 
     it("should correctly parse and store pixel aspect ratio from raster attributes", () => {
+        expect.assertions(10);
         // 1. Default aspect ratio if not specified (Pan=1, Pad=2)
         let sixelString = '"@'; // Minimal raster (empty params), then data
         let decoded = decoder.decode(sixelString);
@@ -393,6 +405,7 @@ describe("sixelDecoder", () => {
     });
 
     it("should handle heights that are not multiples of 6", () => {
+        expect.assertions(7);
         // Raster height is 7. One Sixel band is 6 pixels high.
         // First band (y=0 to y=5) will be drawn.
         // Second band (starts at y=6). Data will try to draw from y=6 to y=11.
@@ -439,6 +452,7 @@ describe("sixelDecoder", () => {
 
     describe("malformed Sixel Strings", () => {
         it("should handle malformed color string and attempt to recover", () => {
+            expect.assertions(5);
             // "1;1;2;6 #X;2;0;0;100 @ #0 @@ "  -> Malformed #X..., then valid data, then valid color, then valid data.
             // Expect '@' to be drawn with initial color 0. Then '@@' with color 0.
             const sixelString = '"1;1;2;6#X;2;0;0;100@#0@@';
@@ -465,6 +479,7 @@ describe("sixelDecoder", () => {
         });
 
         it("should handle malformed repeat string and attempt to recover", () => {
+            expect.assertions(4);
             // "1;1;2;6 !X@ @ !3# @@ " -> Malformed !X@, then valid data, then malformed !3#, then valid data.
             // '@' after !X@ should be drawn with color 0.
             // '@@' after !3# should be drawn with color 0.
@@ -497,6 +512,7 @@ describe("sixelDecoder", () => {
         });
 
         it("should handle string ending abruptly in command", () => {
+            expect.assertions(7);
             // "1;1;1;6#1;2;10;20" -> ends mid-color def. Color 1 not fully defined by this command.
             // currentColorIndex becomes 1 due to #1 part.
             // The subsequent '@' uses this currentColorIndex 1.
@@ -516,6 +532,7 @@ describe("sixelDecoder", () => {
         });
 
         it("should skip unexpected characters gracefully", () => {
+            expect.assertions(4);
             // "1;1;2;6 @ ^&*( @@"
             // '@' (0,0) color 0. currentX=1.
             // Skips ^&*(

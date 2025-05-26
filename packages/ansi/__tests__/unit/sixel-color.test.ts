@@ -13,11 +13,13 @@ import type { DecodedSixelColorCommand, SixelColor, SixelPalette } from "../../s
 describe("sixel Color Utilities", () => {
     describe("decodeSixelColor", () => {
         it("should parse simple palette selection", () => {
+            expect.assertions(1);
             const result = decodeSixelColor("#5", 0);
             expect(result).toEqual({ cmd: { paletteIndex: 5 }, consumed: 2 });
         });
 
         it("should parse RGB definition", () => {
+            expect.assertions(4);
             const result = decodeSixelColor("#1;2;100;0;0", 0);
             expect(result?.cmd.paletteIndex).toBe(1);
             expect(result?.cmd.colorSpace).toBe("RGB");
@@ -26,6 +28,7 @@ describe("sixel Color Utilities", () => {
         });
 
         it("should parse HLS definition and convert to RGB", () => {
+            expect.assertions(4);
             // H:120 (Green), L:50, S:100
             const result = decodeSixelColor("#2;1;120;50;100", 0);
             expect(result?.cmd.paletteIndex).toBe(2);
@@ -35,27 +38,32 @@ describe("sixel Color Utilities", () => {
         });
 
         it("should parse HLS definition for black (L=0)", () => {
+            expect.assertions(1);
             const result = decodeSixelColor("#3;1;0;0;0", 0); // H:0, L:0, S:0
             expect(result?.cmd.colorDefinition).toEqual({ b: 0, g: 0, r: 0 });
         });
 
         it("should parse HLS definition for white (L=100, S=0)", () => {
+            expect.assertions(1);
             const result = decodeSixelColor("#4;1;0;100;0", 0); // H:0, L:100, S:0
             expect(result?.cmd.colorDefinition).toEqual({ b: 255, g: 255, r: 255 });
         });
 
         it("should parse HLS definition for gray (L=50, S=0)", () => {
+            expect.assertions(1);
             const result = decodeSixelColor("#5;1;0;50;0", 0); // H:0, L:50, S:0
             expect(result?.cmd.colorDefinition).toEqual({ b: 128, g: 128, r: 128 }); // Or 127 due to rounding
         });
 
         it("should handle RGB parameter clamping (values 0-100)", () => {
+            expect.assertions(1);
             const result = decodeSixelColor("#3;2;120;-20;50", 0);
             // Expected: R=100 (scaled to 255), G=0 (scaled to 0), B=50 (scaled to 128)
             expect(result?.cmd.colorDefinition).toEqual({ b: 128, g: 0, r: 255 });
         });
 
         it("should handle HLS parameter clamping", () => {
+            expect.assertions(2);
             // H:400 (becomes 40), L:150 (becomes 100), S:-10 (becomes 0)
             const result = decodeSixelColor("#4;1;400;150;0", 0);
             // Expected: H:40, L:100, S:0 => White
@@ -68,6 +76,7 @@ describe("sixel Color Utilities", () => {
         });
 
         it("should handle non-numeric Px,Py,Pz gracefully", () => {
+            expect.assertions(5);
             const result = decodeSixelColor("#1;2;10;foo;30", 0);
             expect(result).not.toBeNull();
             expect(result?.cmd.paletteIndex).toBe(1);
@@ -77,11 +86,13 @@ describe("sixel Color Utilities", () => {
         });
 
         it("should return null for invalid Pc or missing Pc", () => {
+            expect.assertions(2);
             expect(decodeSixelColor("#", 0)).toBeNull();
             expect(decodeSixelColor("#abc", 0)).toBeNull(); // non-numeric Pc
         });
 
         it("should handle missing optional parameters gracefully", () => {
+            expect.assertions(6);
             let result = decodeSixelColor("#10;2", 0); // Pc, Pu, but no Px,Py,Pz
             expect(result?.cmd.paletteIndex).toBe(10);
             expect(result?.cmd.colorDefinition).toBeUndefined();
@@ -94,6 +105,7 @@ describe("sixel Color Utilities", () => {
         });
 
         it("should handle invalid Pu gracefully", () => {
+            expect.assertions(4);
             const result = decodeSixelColor("#12;3;10;20;30", 0); // Pu=3 is invalid
             expect(result?.cmd.paletteIndex).toBe(12);
             expect(result?.cmd.colorDefinition).toBeUndefined();
@@ -102,6 +114,7 @@ describe("sixel Color Utilities", () => {
         });
 
         it("should correctly report consumed characters", () => {
+            expect.assertions(4);
             expect(decodeSixelColor("#1", 0)?.consumed).toBe(2);
             expect(decodeSixelColor("#12", 0)?.consumed).toBe(3);
             expect(decodeSixelColor("#1;2;3;4;5", 0)?.consumed).toBe(10); // #1;2;3;4;5
@@ -120,6 +133,7 @@ describe("sixel Color Utilities", () => {
         });
 
         it("should update color at a valid index", () => {
+            expect.assertions(3);
             const color: SixelColor = { b: 30, g: 20, r: 10 };
             updatePalette(palette, 0, color);
             expect(palette.colors[0]).toEqual(color);
@@ -135,6 +149,7 @@ describe("sixel Color Utilities", () => {
         });
 
         it("should not update color for negative index", () => {
+            expect.assertions(2);
             const color: SixelColor = { b: 30, g: 20, r: 10 };
             updatePalette(palette, -1, color);
             expect(palette.colors[-1]).toBeUndefined();
@@ -143,6 +158,7 @@ describe("sixel Color Utilities", () => {
         });
 
         it("should not update if index equals or exceeds maxSize", () => {
+            expect.assertions(5);
             const color: SixelColor = { b: 30, g: 20, r: 10 };
             // Test at maxSize
             updatePalette(palette, 256, color);

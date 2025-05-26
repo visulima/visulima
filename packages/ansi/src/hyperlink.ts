@@ -11,7 +11,6 @@ import { BEL, OSC, SEP } from "./constants";
  * [Gist by Egmont Kob](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda).
  * To programmatically check for hyperlink support in the current environment,
  * consider using a library like [`supports-hyperlinks`](https://github.com/jamestalmage/supports-hyperlinks).
- *
  * @param text The visible text of the link.
  * @param url The URL the link should point to.
  * @returns A string representing the ANSI escape sequence for the hyperlink.
@@ -26,5 +25,7 @@ import { BEL, OSC, SEP } from "./constants";
  * \`\`\`
  * @see {@link https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda} for supported terminals.
  */
-// eslint-disable-next-line no-secrets/no-secrets
-export const hyperlink = (text: string, url: string): string => [OSC, "8", SEP, SEP, url, BEL, text, OSC, "8", SEP, SEP, BEL].join("");
+
+const hyperlink = (text: string, url: string): string => [OSC, "8", SEP, SEP, url, BEL, text, OSC, "8", SEP, SEP, BEL].join("");
+
+export default hyperlink;

@@ -9,9 +9,8 @@ import { CSI } from "./constants";
  * The cursor position is not affected by this command.
  *
  * Sequence: `CSI Pn S`
- *  - `Pn`: Number of lines to scroll up (default: 1).
- *
- * @param count - The number of lines to scroll up. Defaults to 1. If 0, an empty string is returned as no operation is performed.
+ * - `Pn`: Number of lines to scroll up (default: 1).
+ * @param count The number of lines to scroll up. Defaults to 1. If 0, an empty string is returned as no operation is performed.
  * @returns The ANSI escape sequence for scrolling up.
  * @see {@link https://vt100.net/docs/vt510-rm/SU.html VT510 SU Documentation}
  * @example
@@ -33,8 +32,9 @@ export const scrollUp = (count = 1): string => {
     if (count === 0) {
         return "";
     }
+
     // Standard is CSI Pn S. Omitting Pn or Pn=1 implies 1.
-    return CSI + (count <= 1 ? "" : count) + "S";
+    return `${CSI + (count <= 1 ? "" : count)}S`;
 };
 
 /**
@@ -46,9 +46,8 @@ export const scrollUp = (count = 1): string => {
  * The cursor position is not affected by this command.
  *
  * Sequence: `CSI Pn T`
- *  - `Pn`: Number of lines to scroll down (default: 1).
- *
- * @param count - The number of lines to scroll down. Defaults to 1. If 0, an empty string is returned.
+ * - `Pn`: Number of lines to scroll down (default: 1).
+ * @param count The number of lines to scroll down. Defaults to 1. If 0, an empty string is returned.
  * @returns The ANSI escape sequence for scrolling down.
  * @see {@link https://vt100.net/docs/vt510-rm/SD.html VT510 SD Documentation}
  * @example
@@ -67,8 +66,9 @@ export const scrollDown = (count = 1): string => {
     if (count === 0) {
         return "";
     }
+
     // Standard is CSI Pn T. Omitting Pn or Pn=1 implies 1.
-    return CSI + (count <= 1 ? "" : count) + "T";
+    return `${CSI + (count <= 1 ? "" : count)}T`;
 };
 
 /**
@@ -76,11 +76,11 @@ export const scrollDown = (count = 1): string => {
  * This is equivalent to `scrollUp(1)`.
  * @see {@link scrollUp}
  */
-export const SCROLL_UP_1 = CSI + "S";
+export const SCROLL_UP_1 = `${CSI}S`;
 
 /**
  * ANSI escape sequence to scroll down one line: `CSI T`.
  * This is equivalent to `scrollDown(1)`.
  * @see {@link scrollDown}
  */
-export const SCROLL_DOWN_1 = CSI + "T";
+export const SCROLL_DOWN_1 = `${CSI}T`;

@@ -2,7 +2,7 @@
  * Checks if the current environment is a browser-like environment.
  * It specifically checks for the presence of `globalThis.window.document`.
  */
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
 const isBrowser = globalThis?.window?.document !== undefined;
 
 /**

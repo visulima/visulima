@@ -10,20 +10,18 @@ import { CSI } from "./constants";
  * When this mode is activated, the original screen content is typically saved by the terminal,
  * and a blank screen is presented. Operations then occur on this alternative buffer.
  *
- * @remarks
  * The specific behavior (like whether the screen is cleared on switch) can sometimes vary
  * slightly between terminal emulators. `?1049h` generally includes saving the cursor position
  * along with the screen content and clearing the alternative screen.
  * It is closely related to mode `?47h`, which also switches to an alternative buffer but might
  * have different semantics regarding screen clearing and cursor saving.
  * Mode `?1049h` is generally preferred for a more robust alternative screen experience.
- *
  * @see {@link ALT_SCREEN_OFF} for the sequence to disable the alternative screen buffer.
  * @see {@link alternativeScreenOn} for a function that returns this sequence.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-The-Alternate-Screen-Buffer} Xterm Control Sequences documentation.
  * @see {@link https://vt100.net/docs/vt510-rm/DECSLPP.html} (related DEC modes, though 1049 is more common for this behavior).
  */
-export const ALT_SCREEN_ON = CSI + "?1049h";
+export const ALT_SCREEN_ON = `${CSI}?1049h`;
 
 /**
  * ANSI escape sequence to disable the alternative screen buffer.
@@ -35,11 +33,10 @@ export const ALT_SCREEN_ON = CSI + "?1049h";
  *
  * This is used when a full-screen application exits, allowing the user to return to their
  * previous shell session seamlessly.
- *
  * @see {@link ALT_SCREEN_ON} for the sequence to enable the alternative screen buffer.
  * @see {@link alternativeScreenOff} for a function that returns this sequence.
  */
-export const ALT_SCREEN_OFF = CSI + "?1049l";
+export const ALT_SCREEN_OFF = `${CSI}?1049l`;
 
 /**
  * Returns the ANSI escape sequence to enable the alternative screen buffer.
@@ -48,7 +45,6 @@ export const ALT_SCREEN_OFF = CSI + "?1049l";
  * It provides a more descriptive way to obtain the sequence for enabling the
  * alternative screen, often used at the initialization phase of a full-screen
  * terminal application.
- *
  * @returns The ANSI escape sequence (`CSI ?1049h`) for enabling the alternative screen buffer.
  * @example
  * \`\`\`typescript
@@ -69,7 +65,6 @@ export const alternativeScreenOn = (): string => ALT_SCREEN_ON;
  * It provides a more descriptive way to obtain the sequence for disabling the
  * alternative screen, typically used when a full-screen terminal application is exiting
  * to restore the user's original terminal state.
- *
  * @returns The ANSI escape sequence (`CSI ?1049l`) for disabling the alternative screen buffer.
  * @example
  * \`\`\`typescript

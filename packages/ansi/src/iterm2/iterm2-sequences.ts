@@ -1,24 +1,22 @@
 import { Buffer } from "node:buffer";
-import type { ITerm2FileProps, IITerm2Payload } from "./iterm2-props";
+
+import type { IITerm2Payload, ITerm2FileProps } from "./iterm2-props";
 
 /**
  * Formats the core properties part of an iTerm2 file-related sequence string.
  * This function takes an object of {@link ITerm2FileProps} and constructs a semicolon-separated
  * string of key-value pairs (e.g., `name=...;size=...;inline=1`).
  * This formatted string is then used as part of commands like `File=` or `MultipartFile=`.
- *
- * @param props - An object containing a subset of {@link ITerm2FileProps}.
- *                Only properties that are set in this object will be included in the output string.
+ * @param props An object containing a subset of {@link ITerm2FileProps}.
+ * Only properties that are set in this object will be included in the output string.
  * @returns A string of semicolon-separated key-value pairs for iTerm2 file properties.
- *          Returns an empty string if no relevant properties are provided in the `props` object.
- *
+ * Returns an empty string if no relevant properties are provided in the `props` object.
  * @remarks
  * - The `name` property within `props` is expected to be Base64 encoded by the caller if it contains
  *   special characters (like `;`, `=`, or non-ASCII characters) to ensure the sequence is parsed correctly by iTerm2.
  * - The function correctly handles boolean flags like `inline` (becomes `inline=1`) and
  *   `ignoreAspectRatio` (becomes `preserveAspectRatio=0`).
  * - `width` and `height` are converted to strings if they are numbers.
- *
  * @example
  * \`\`\`typescript
  * const props1: Partial<ITerm2FileProps> = {
@@ -41,34 +39,42 @@ import type { ITerm2FileProps, IITerm2Payload } from "./iterm2-props";
  */
 const formatITerm2FileProps = (props: Partial<ITerm2FileProps>): string => {
     const opts: string[] = [];
+
     // Order can matter for readability or specific terminal quirks, though generally flexible.
     // Prioritizing common/identifying properties first.
     if (props.name) {
         opts.push(`name=${props.name}`);
     }
+
     if (props.size !== undefined) {
         opts.push(`size=${props.size}`);
     }
+
     if (props.width !== undefined) {
         opts.push(`width=${props.width.toString()}`);
     }
+
     if (props.height !== undefined) {
         opts.push(`height=${props.height.toString()}`);
     }
+
     // Note: iTerm2 default is to preserve aspect ratio if 'preserveAspectRatio' is absent.
     // So, we only add 'preserveAspectRatio=0' if ignoreAspectRatio is true.
     if (props.ignoreAspectRatio) {
         // maps to preserveAspectRatio=0
         opts.push("preserveAspectRatio=0");
     }
+
     if (props.inline) {
         // Results in inline=1
         opts.push("inline=1");
     }
+
     if (props.doNotMoveCursor) {
         // Results in doNotMoveCursor=1
         opts.push("doNotMoveCursor=1");
     }
+
     return opts.join(";");
 };
 
@@ -80,7 +86,6 @@ const formatITerm2FileProps = (props: Partial<ITerm2FileProps>): string => {
  * - `File=[PROPERTIES]` (if content is not provided directly, e.g., for a download announcement)
  *
  * Implements {@link IITerm2Payload} for use with the generic `iTerm2` function.
- *
  * @see {@link ITerm2FileProps} for property details.
  * @see {@link iTerm2} for the function that wraps this payload into a full escape sequence.
  */
@@ -89,22 +94,22 @@ export class ITerm2File implements IITerm2Payload {
 
     /**
      * Constructs an `ITerm2File` payload object.
-     *
-     * @param props - An object containing properties for the file/image, as defined by {@link ITerm2FileProps}.
-     *                The `name` property within `props` should be pre-Base64 encoded by the caller if it might
-     *                contain special characters (like `;`, `=`, or non-ASCII characters).
-     *                If `fileData` is provided, `props.content` will be overridden, and `props.size` will be
-     *                set from `fileData.byteLength` if not already present in `props`.
-     * @param fileData - (Optional) A `Uint8Array` containing the raw file data. If provided, this data will be
-     *                   Base64 encoded and used as the `content` of the file transfer. The `size` property
-     *                   will also be automatically set from `fileData.byteLength` if not specified in `props`.
+     * @param props An object containing properties for the file/image, as defined by {@link ITerm2FileProps}.
+     * The `name` property within `props` should be pre-Base64 encoded by the caller if it might
+     * contain special characters (like `;`, `=`, or non-ASCII characters).
+     * If `fileData` is provided, `props.content` will be overridden, and `props.size` will be
+     * set from `fileData.byteLength` if not already present in `props`.
+     * @param fileData (Optional) A `Uint8Array` containing the raw file data. If provided, this data will be
+     * Base64 encoded and used as the `content` of the file transfer. The `size` property
+     * will also be automatically set from `fileData.byteLength` if not specified in `props`.
      */
-    constructor(props: ITerm2FileProps, fileData?: Uint8Array) {
+    public constructor(props: ITerm2FileProps, fileData?: Uint8Array) {
         // Clone props to avoid modifying the original object, especially if fileData is processed.
         this.fileProps = { ...props };
 
         if (fileData) {
             this.fileProps.content = Buffer.from(fileData).toString("base64");
+
             if (this.fileProps.size === undefined) {
                 this.fileProps.size = fileData.byteLength;
             }
@@ -114,49 +119,37 @@ export class ITerm2File implements IITerm2Payload {
     /**
      * Converts the file properties and its content (if any) into the string payload
      * suitable for the iTerm2 `File=` command.
-     *
      * @returns The string payload (e.g., `"File=name=...;size=...:BASE64_CONTENT"` or `"File=name=...;size=..."`).
      */
     public toString(): string {
         let s = "File=";
+
         s += formatITerm2FileProps(this.fileProps);
 
         // Only append content if it exists. props.content could be an empty string for an empty file.
         if (this.fileProps.content !== undefined) {
             s += `:${this.fileProps.content}`;
         }
+
         return s;
     }
 }
 
 /**
- * Represents the payload for starting an iTerm2 multipart file transfer.
- * This class is used to construct the part of the OSC 1337 sequence that follows `MultipartFile=`.
- * This command initiates a transfer; the actual file data is sent in subsequent `FilePart` commands.
+ * Represents the payload for ending an iTerm2 multipart file transfer.
+ * This class is used to construct the part of the OSC 1337 sequence that is simply `FileEnd`.
  *
  * Implements {@link IITerm2Payload} for use with the generic `iTerm2` function.
- *
- * @see {@link ITerm2FileProps} for property details (omitting `content`).
+ * @see {@link ITerm2MultipartFileStart} to initiate the transfer.
  * @see {@link ITerm2FilePart} for sending file chunks.
- * @see {@link ITerm2FileEnd} for finalizing the transfer.
  */
-export class ITerm2MultipartFileStart implements IITerm2Payload {
+export class ITerm2FileEnd implements IITerm2Payload {
     /**
-     * Constructs an `ITerm2MultipartFileStart` payload object.
-     *
-     * @param props - Properties for the multipart file (e.g., `name`, `size`). Content is not part of this command.
-     *                The `name` property within `props` should be pre-Base64 encoded by the caller if it might
-     *                contain special characters.
-     */
-    constructor(private readonly props: Omit<ITerm2FileProps, "content">) {}
-
-    /**
-     * Converts the file properties into the string payload suitable for the iTerm2 `MultipartFile=` command.
-     *
-     * @returns The string payload (e.g., `"MultipartFile=name=...;size=..."`).
+     * Generates the string payload for the iTerm2 `FileEnd` command.
+     * @returns The string `"FileEnd"`.
      */
     public toString(): string {
-        return `MultipartFile=${formatITerm2FileProps(this.props)}`;
+        return "FileEnd";
     }
 }
 
@@ -166,22 +159,19 @@ export class ITerm2MultipartFileStart implements IITerm2Payload {
  * The provided chunk must already be Base64 encoded.
  *
  * Implements {@link IITerm2Payload} for use with the generic `iTerm2` function.
- *
  * @see {@link ITerm2MultipartFileStart} to initiate the transfer.
  * @see {@link ITerm2FileEnd} to finalize the transfer.
  */
 export class ITerm2FilePart implements IITerm2Payload {
     /**
      * Constructs an `ITerm2FilePart` payload object.
-     *
-     * @param base64Chunk - A string containing a Base64 encoded chunk of the file data.
-     *                      The caller is responsible for chunking the file and Base64 encoding each chunk.
+     * @param base64Chunk A string containing a Base64 encoded chunk of the file data.
+     * The caller is responsible for chunking the file and Base64 encoding each chunk.
      */
-    constructor(private readonly base64Chunk: string) {}
+    public constructor(private readonly base64Chunk: string) {}
 
     /**
      * Converts the Base64 encoded chunk into the string payload suitable for the iTerm2 `FilePart=` command.
-     *
      * @returns The string payload (e.g., `"FilePart=U09NRURBVEE="`).
      */
     public toString(): string {
@@ -190,21 +180,29 @@ export class ITerm2FilePart implements IITerm2Payload {
 }
 
 /**
- * Represents the payload for ending an iTerm2 multipart file transfer.
- * This class is used to construct the part of the OSC 1337 sequence that is simply `FileEnd`.
+ * Represents the payload for starting an iTerm2 multipart file transfer.
+ * This class is used to construct the part of the OSC 1337 sequence that follows `MultipartFile=`.
+ * This command initiates a transfer; the actual file data is sent in subsequent `FilePart` commands.
  *
  * Implements {@link IITerm2Payload} for use with the generic `iTerm2` function.
- *
- * @see {@link ITerm2MultipartFileStart} to initiate the transfer.
+ * @see {@link ITerm2FileProps} for property details (omitting `content`).
  * @see {@link ITerm2FilePart} for sending file chunks.
+ * @see {@link ITerm2FileEnd} for finalizing the transfer.
  */
-export class ITerm2FileEnd implements IITerm2Payload {
+export class ITerm2MultipartFileStart implements IITerm2Payload {
     /**
-     * Generates the string payload for the iTerm2 `FileEnd` command.
-     *
-     * @returns The string `"FileEnd"`.
+     * Constructs an `ITerm2MultipartFileStart` payload object.
+     * @param props Properties for the multipart file (e.g., `name`, `size`). Content is not part of this command.
+     * The `name` property within `props` should be pre-Base64 encoded by the caller if it might
+     * contain special characters.
+     */
+    public constructor(private readonly props: Omit<ITerm2FileProps, "content">) {}
+
+    /**
+     * Converts the file properties into the string payload suitable for the iTerm2 `MultipartFile=` command.
+     * @returns The string payload (e.g., `"MultipartFile=name=...;size=..."`).
      */
     public toString(): string {
-        return "FileEnd";
+        return `MultipartFile=${formatITerm2FileProps(this.props)}`;
     }
 }

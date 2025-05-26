@@ -1,5 +1,6 @@
-import type { LiteralUnion } from "type-fest";
 import { Buffer } from "node:buffer"; // Explicit import for Buffer
+
+import type { LiteralUnion } from "type-fest";
 
 import { BEL, OSC } from "./constants";
 
@@ -38,15 +39,13 @@ export interface ImageOptions {
 /**
  * Generates an ANSI escape sequence for displaying an image inline, primarily for iTerm2.
  *
- * This function constructs a proprietary iTerm2 escape sequence (`OSC 1337 ; File = [arguments] : <base64_data> BEL`)
+ * This function constructs a proprietary iTerm2 escape sequence (`OSC 1337 ; File = [arguments] : &lt;base64_data> BEL`)
  * that allows raw image data to be displayed directly in the terminal.
- *
- * @param data - The raw image data as a `Uint8Array`. This data will be Base64 encoded.
- * @param options - Optional parameters to control how the image is displayed (e.g., width, height, aspect ratio).
- *                  See {@link ImageOptions}.
+ * @param data The raw image data as a `Uint8Array`. This data will be Base64 encoded.
+ * @param options Optional parameters to control how the image is displayed (e.g., width, height, aspect ratio).
+ * See {@link ImageOptions}.
  * @returns A string containing the ANSI escape sequence for displaying the image in iTerm2.
- *          Returns an empty string if `data` is null or undefined, though TypeScript should prevent this.
- *
+ * Returns an empty string if `data` is null or undefined, though TypeScript should prevent this.
  * @example
  * \`\`\`typescript
  * import { image } from '@visulima/ansi/image'; // Adjust import path
@@ -68,7 +67,6 @@ export interface ImageOptions {
  *
  * displayImage();
  * \`\`\`
- *
  * @remarks
  * - This sequence is specific to iTerm2 and may not work in other terminal emulators.
  * - For Node.js environments, `Buffer.from(data).toString("base64")` is used for Base64 encoding.
@@ -81,10 +79,9 @@ export interface ImageOptions {
  * @see {@link ImageOptions}
  */
 export const image = (data: Uint8Array, options: ImageOptions = {}): string => {
-    // It's good practice to handle potential null/undefined data, though type system should catch this.
-    // if (!data) {
-    //     return "";
-    // }
+    if (!data) {
+        return "";
+    }
 
     let returnValue = `${OSC}1337;File=inline=1`;
 
@@ -106,9 +103,5 @@ export const image = (data: Uint8Array, options: ImageOptions = {}): string => {
     // For browsers, ensure Buffer polyfill or use alternative Base64 encoding for Uint8Array.
     const base64Data = Buffer.from(data).toString("base64");
 
-    return returnValue + ":" + base64Data + BEL;
+    return `${returnValue}:${base64Data}${BEL}`;
 };
-
-// Default export for backward compatibility or specific import styles.
-// It is generally recommended to use named exports.
-export default image;
