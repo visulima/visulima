@@ -11,8 +11,5 @@ export default defineConfig({
             loaders: [postcssLoader, sourceMapLoader],
             minifier: cssnanoMinifier,
         },
-        url: {
-            exclude: []
-        }
     },
 });
