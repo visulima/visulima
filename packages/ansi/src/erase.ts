@@ -143,7 +143,7 @@ export const eraseInLine = (mode: EraseLineMode | 0 | 1 | 2): string => {
  * @see {@link eraseDisplay}
  * @see {@link EraseDisplayMode.ToEnd}
  */
-export const eraseDown = eraseDisplay(EraseDisplayMode.ToEnd);
+export const eraseDown: string = eraseDisplay(EraseDisplayMode.ToEnd);
 
 /**
  * Erases the entire current line. The cursor position does not change.
@@ -153,7 +153,7 @@ export const eraseDown = eraseDisplay(EraseDisplayMode.ToEnd);
  * @see {@link eraseInLine}
  * @see {@link EraseLineMode.EntireLine}
  */
-export const eraseLine = eraseInLine(EraseLineMode.EntireLine);
+export const eraseLine: string = eraseInLine(EraseLineMode.EntireLine);
 
 /**
  * Erases from the current cursor position to the end of the current line (inclusive).
@@ -164,7 +164,7 @@ export const eraseLine = eraseInLine(EraseLineMode.EntireLine);
  * @see {@link eraseInLine}
  * @see {@link EraseLineMode.ToEnd}
  */
-export const eraseLineEnd = eraseInLine(EraseLineMode.ToEnd);
+export const eraseLineEnd: string = eraseInLine(EraseLineMode.ToEnd);
 
 /**
  * Erases from the current cursor position to the beginning of the current line (inclusive).
@@ -175,7 +175,7 @@ export const eraseLineEnd = eraseInLine(EraseLineMode.ToEnd);
  * @see {@link eraseInLine}
  * @see {@link EraseLineMode.ToBeginning}
  */
-export const eraseLineStart = eraseInLine(EraseLineMode.ToBeginning);
+export const eraseLineStart: string = eraseInLine(EraseLineMode.ToBeginning);
 
 /**
  * Erases a specified number of lines, starting from the current line and moving upwards,
@@ -235,7 +235,7 @@ export const eraseLines = (count: number): string => {
  * @see {@link eraseDisplay}
  * @see {@link EraseDisplayMode.EntireScreen}
  */
-export const eraseScreen = eraseDisplay(EraseDisplayMode.EntireScreen);
+export const eraseScreen: string = eraseDisplay(EraseDisplayMode.EntireScreen);
 
 /**
  * Erases the screen from the current cursor position up to the top of the screen (inclusive).
@@ -245,4 +245,4 @@ export const eraseScreen = eraseDisplay(EraseDisplayMode.EntireScreen);
  * @see {@link eraseDisplay}
  * @see {@link EraseDisplayMode.ToBeginning}
  */
-export const eraseUp = eraseDisplay(EraseDisplayMode.ToBeginning);
+export const eraseUp: string = eraseDisplay(EraseDisplayMode.ToBeginning);

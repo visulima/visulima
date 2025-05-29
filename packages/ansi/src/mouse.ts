@@ -9,49 +9,49 @@ import { ESC } from "./constants";
  * Bit mask for the Shift key modifier in mouse events.
  * @internal
  */
-const MOUSE_BIT_SHIFT = 0b0000_0100; // Shift key
+const MOUSE_BIT_SHIFT: number = 0b0000_0100; // Shift key
 
 /**
  * Bit mask for the Alt (Meta) key modifier in mouse events.
  * @internal
  */
-const MOUSE_BIT_ALT = 0b0000_1000; // Alt (Meta) key
+const MOUSE_BIT_ALT: number = 0b0000_1000; // Alt (Meta) key
 
 /**
  * Bit mask for the Ctrl key modifier in mouse events.
  * @internal
  */
-const MOUSE_BIT_CTRL = 0b0001_0000; // Ctrl key
+const MOUSE_BIT_CTRL: number = 0b0001_0000; // Ctrl key
 
 /**
  * Bit mask indicating a mouse motion event.
  * @internal
  */
-const MOUSE_BIT_MOTION = 0b0010_0000; // Motion event
+const MOUSE_BIT_MOTION: number = 0b0010_0000; // Motion event
 
 /**
  * Bit mask indicating a mouse wheel event, modifying the interpretation of button bits 0-3.
  * @internal
  */
-const MOUSE_BIT_WHEEL = 0b0100_0000; // Indicates a wheel event (modifies button bits 0-3)
+const MOUSE_BIT_WHEEL: number = 0b0100_0000; // Indicates a wheel event (modifies button bits 0-3)
 
 /**
  * Bit mask indicating additional buttons 8-11, modifying the interpretation of button bits 0-3.
  * @internal
  */
-const MOUSE_BIT_ADDITIONAL = 0b1000_0000; // Indicates additional buttons 8-11 (modifies button bits 0-3)
+const MOUSE_BIT_ADDITIONAL: number = 0b1000_0000; // Indicates additional buttons 8-11 (modifies button bits 0-3)
 
 /**
  * Bit mask for extracting the raw button part (0-3) from an encoded button byte.
  * @internal
  */
-const MOUSE_BUTTON_BITS_MASK = 0b0000_0011; // For extracting the raw button part (0-3)
+const MOUSE_BUTTON_BITS_MASK: number = 0b0000_0011; // For extracting the raw button part (0-3)
 
 /**
  * Offset used for character encoding in X10 mouse protocol.
  * @internal
  */
-const X10_MOUSE_OFFSET = 32;
+const X10_MOUSE_OFFSET: number = 32;
 
 /**
  * Defines codes for various mouse buttons and actions.
@@ -289,13 +289,13 @@ export const mouseSgrSequence = (callback: number, x: number, y: number, isRelea
  * @see {@link disableX10Mouse}
  * @see {@link mouseX10Sequence}
  */
-export const enableX10Mouse = `${ESC}[?9h`;
+export const enableX10Mouse: string = `${ESC}[?9h`;
 
 /**
  * Disables X10 compatibility mouse reporting (DECRST 9).
  * @see {@link enableX10Mouse}
  */
-export const disableX10Mouse = `${ESC}[?9l`;
+export const disableX10Mouse: string = `${ESC}[?9l`;
 
 /**
  * Enables Normal Tracking mode, also known as VT200 mouse reporting (DECSET 1000).
@@ -303,26 +303,26 @@ export const disableX10Mouse = `${ESC}[?9l`;
  * Uses X10-style coordinate encoding if SGR mode is not also active.
  * @see {@link disableNormalMouse}
  */
-export const enableNormalMouse = `${ESC}[?1000h`;
+export const enableNormalMouse: string = `${ESC}[?1000h`;
 
 /**
  * Disables Normal Tracking mode / VT200 mouse reporting (DECRST 1000).
  * @see {@link enableNormalMouse}
  */
-export const disableNormalMouse = `${ESC}[?1000l`;
+export const disableNormalMouse: string = `${ESC}[?1000l`;
 
 /**
  * Enables Button-Event tracking mouse reporting (DECSET 1002).
  * Reports press, release, and mouse motion when a button is held down.
  * @see {@link disableButtonEventMouse}
  */
-export const enableButtonEventMouse = `${ESC}[?1002h`;
+export const enableButtonEventMouse: string = `${ESC}[?1002h`;
 
 /**
  * Disables Button-Event tracking mouse reporting (DECRST 1002).
  * @see {@link enableButtonEventMouse}
  */
-export const disableButtonEventMouse = `${ESC}[?1002l`;
+export const disableButtonEventMouse: string = `${ESC}[?1002l`;
 
 /**
  * Enables Any-Event mouse reporting (DECSET 1003).
@@ -330,13 +330,13 @@ export const disableButtonEventMouse = `${ESC}[?1002l`;
  * This is the most comprehensive mouse motion tracking mode (excluding pixel-level reporting).
  * @see {@link disableAnyEventMouse}
  */
-export const enableAnyEventMouse = `${ESC}[?1003h`;
+export const enableAnyEventMouse: string = `${ESC}[?1003h`;
 
 /**
  * Disables Any-Event mouse reporting (DECRST 1003).
  * @see {@link enableAnyEventMouse}
  */
-export const disableAnyEventMouse = `${ESC}[?1003l`;
+export const disableAnyEventMouse: string = `${ESC}[?1003l`;
 
 /**
  * Enables SGR (Select Graphic Rendition) Extended mouse reporting (DECSET 1006).
@@ -346,23 +346,23 @@ export const disableAnyEventMouse = `${ESC}[?1003l`;
  * @see {@link disableSgrMouse}
  * @see {@link mouseSgrSequence}
  */
-export const enableSgrMouse = `${ESC}[?1006h`;
+export const enableSgrMouse: string = `${ESC}[?1006h`;
 
 /**
  * Disables SGR Extended mouse reporting (DECRST 1006).
  * @see {@link enableSgrMouse}
  */
-export const disableSgrMouse = `${ESC}[?1006l`;
+export const disableSgrMouse: string = `${ESC}[?1006l`;
 
 /**
  * Enables FocusIn/FocusOut event reporting (DECSET 1004).
  * The terminal will send `CSI I` when it gains focus and `CSI O` when it loses focus.
  * @see {@link disableFocusTracking}
  */
-export const enableFocusTracking = `${ESC}[?1004h`;
+export const enableFocusTracking: string = `${ESC}[?1004h`;
 
 /**
  * Disables FocusIn/FocusOut event reporting (DECRST 1004).
  * @see {@link enableFocusTracking}
  */
-export const disableFocusTracking = `${ESC}[?1004l`;
+export const disableFocusTracking: string = `${ESC}[?1004l`;

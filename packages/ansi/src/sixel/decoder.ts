@@ -5,7 +5,7 @@ import { decodeSixelRepeat } from "./repeat";
 import type { SixelPalette } from "./types";
 
 /** First Sixel pixel data character ('?' = 0b000000). */
-const SIXEL_CHAR_OFFSET = "?".charCodeAt(0); // 63
+const SIXEL_CHAR_OFFSET = "?".codePointAt(0); // 63
 
 // Sixel command characters from specification (e.g., VT340 Screen Definition Manual)
 const SIXEL_COLOR_INTRODUCER = 0x23; // '#' CharHash
@@ -53,7 +53,7 @@ export class SixelDecoder {
 
     private currentY = 0;
 
-    private rasterAttributes: SixelRaster | null = null;
+    private rasterAttributes: SixelRaster | undefined;
 
     public constructor(private readonly options?: SixelDecoderOptions) {}
 
@@ -69,7 +69,7 @@ export class SixelDecoder {
         this.palette = createInitialSixelPalette();
         this.currentX = 0;
         this.currentY = 0;
-        this.rasterAttributes = null;
+        this.rasterAttributes = undefined;
     }
 
     /**
@@ -129,14 +129,14 @@ export class SixelDecoder {
                     rasterParseSuccessful = true;
                 } catch {
                     // Failed to parse raster string, treat as if no raster string found
-                    this.rasterAttributes = null;
+                    this.rasterAttributes = undefined;
                     this.pos = 0; // Reset main parser position to start of data
                     // console.warn(`Sixel raster parsing error: ${(e as Error).message}`); // Optional: log error
                 }
             } else {
                 // String exists before Sixel data/commands but doesn't start with '"'.
                 // This is not a valid Sixel raster string. Treat as no raster found.
-                this.rasterAttributes = null;
+                this.rasterAttributes = undefined;
                 this.pos = 0; // Main parser starts from beginning of data.
             }
         } // If potentialRaster is empty, this.pos remains 0, this.rasterAttributes remains null.
@@ -180,7 +180,7 @@ export class SixelDecoder {
 
             if (charCode >= 0x3F && charCode <= 0x7E) {
                 // Sixel data chars ('?' to '~')
-                const sixelPattern = charCode - SIXEL_CHAR_OFFSET;
+                const sixelPattern = charCode - (SIXEL_CHAR_OFFSET as number);
 
                 for (let bit = 0; bit < 6; bit += 1) {
                     if ((sixelPattern >> bit) & 1) {
@@ -204,7 +204,7 @@ export class SixelDecoder {
                                 const repeatCharCode = charToRepeat.charCodeAt(0);
 
                                 if (repeatCharCode >= SIXEL_DATA_START && repeatCharCode <= SIXEL_DATA_END) {
-                                    const repeatSixelPattern = repeatCharCode - SIXEL_CHAR_OFFSET;
+                                    const repeatSixelPattern = repeatCharCode - (SIXEL_CHAR_OFFSET as number);
 
                                     for (let r = 0; r < count; r += 1) {
                                         if (this.currentX >= this.width) {

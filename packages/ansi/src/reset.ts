@@ -16,7 +16,7 @@
  * @see {@link https://vt100.net/docs/vt510-rm/RIS.html VT510 RIS Documentation}
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Reset} Xterm Control Sequences - Reset
  */
-export const RESET_INITIAL_STATE = "\u001Bc";
+export const RESET_INITIAL_STATE: string = "\u001Bc";
 
 /**
  * Alias for {@link RESET_INITIAL_STATE} (Reset Initial State).
@@ -24,4 +24,4 @@ export const RESET_INITIAL_STATE = "\u001Bc";
  * Provides a shorter name for the RIS sequence `ESC c`.
  * @see {@link RESET_INITIAL_STATE}
  */
-export const RIS = RESET_INITIAL_STATE;
+export const RIS: string = RESET_INITIAL_STATE;

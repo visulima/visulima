@@ -40,10 +40,10 @@ export interface SixelRaster {
 }
 
 /** Maximum width of a Sixel image, as per Charm's Go implementation. */
-export const SIXEL_MAX_RASTER_WIDTH = 4096;
+export const SIXEL_MAX_RASTER_WIDTH: number = 4096;
 
 /** Maximum height of a Sixel image, as per Charm's Go implementation. */
-export const SIXEL_MAX_RASTER_HEIGHT = 4096;
+export const SIXEL_MAX_RASTER_HEIGHT: number = 4096;
 
 /**
  * Decodes a Sixel raster attribute string.

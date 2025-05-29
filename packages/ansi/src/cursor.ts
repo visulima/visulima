@@ -11,7 +11,7 @@ import { isTerminalApp } from "./helpers";
  * @see {@link RESTORE_CURSOR_DEC}
  * @see {@link cursorSave} (provides a version that adapts to Terminal.app)
  */
-export const SAVE_CURSOR_DEC = `${ESC}7`;
+export const SAVE_CURSOR_DEC: string = `${ESC}7`;
 
 /**
  * Restores the previously saved cursor position, character attributes, and character set.
@@ -22,7 +22,7 @@ export const SAVE_CURSOR_DEC = `${ESC}7`;
  * @see {@link SAVE_CURSOR_DEC}
  * @see {@link cursorRestore} (provides a version that adapts to Terminal.app)
  */
-export const RESTORE_CURSOR_DEC = `${ESC}8`;
+export const RESTORE_CURSOR_DEC: string = `${ESC}8`;
 
 /**
  * Moves the cursor up one line in the same column. If the cursor is at the top line, behavior is undefined (may ignore or scroll).
@@ -32,7 +32,7 @@ export const RESTORE_CURSOR_DEC = `${ESC}8`;
  * @see {@link CURSOR_FORWARD_1}
  * @see {@link CURSOR_BACKWARD_1}
  */
-export const CURSOR_UP_1 = `${CSI}A`;
+export const CURSOR_UP_1: string = `${CSI}A`;
 
 /**
  * Moves the cursor down one line in the same column. If the cursor is at the bottom line, behavior is undefined (may ignore or scroll).
@@ -42,7 +42,7 @@ export const CURSOR_UP_1 = `${CSI}A`;
  * @see {@link CURSOR_FORWARD_1}
  * @see {@link CURSOR_BACKWARD_1}
  */
-export const CURSOR_DOWN_1 = `${CSI}B`;
+export const CURSOR_DOWN_1: string = `${CSI}B`;
 
 /**
  * Moves the cursor forward (right) one column in the same line. If the cursor is at the rightmost column, behavior is terminal-dependent (may wrap if DECAWM is set, or ignore).
@@ -52,7 +52,7 @@ export const CURSOR_DOWN_1 = `${CSI}B`;
  * @see {@link CURSOR_DOWN_1}
  * @see {@link CURSOR_BACKWARD_1}
  */
-export const CURSOR_FORWARD_1 = `${CSI}C`;
+export const CURSOR_FORWARD_1: string = `${CSI}C`;
 
 /**
  * Moves the cursor backward (left) one column in the same line. If the cursor is at the leftmost column, behavior is undefined (may ignore).
@@ -62,7 +62,7 @@ export const CURSOR_FORWARD_1 = `${CSI}C`;
  * @see {@link CURSOR_DOWN_1}
  * @see {@link CURSOR_FORWARD_1}
  */
-export const CURSOR_BACKWARD_1 = `${CSI}D`;
+export const CURSOR_BACKWARD_1: string = `${CSI}D`;
 
 /**
  * Asks the terminal to report its current cursor position using the DSR (Device Status Report) sequence.
@@ -77,7 +77,7 @@ export const CURSOR_BACKWARD_1 = `${CSI}D`;
  * @see {@link https://vt100.net/docs/vt510-rm/DSR-CPR.html} DSR/CPR documentation.
  * @returns The ANSI escape sequence `CSI 6n`.
  */
-export const REQUEST_CURSOR_POSITION = `${CSI}6n`;
+export const REQUEST_CURSOR_POSITION: string = `${CSI}6n`;
 
 /**
  * Asks the terminal to report its extended cursor position, potentially including the page number.
@@ -92,7 +92,7 @@ export const REQUEST_CURSOR_POSITION = `${CSI}6n`;
  * @see {@link REQUEST_CURSOR_POSITION} for the standard cursor position report.
  * @returns The ANSI escape sequence `CSI ?6n`.
  */
-export const REQUEST_EXTENDED_CURSOR_POSITION = `${CSI}?6n`;
+export const REQUEST_EXTENDED_CURSOR_POSITION: string = `${CSI}?6n`;
 
 /**
  * Moves the cursor backward (left) a specific number of columns from its current position.
@@ -152,7 +152,7 @@ export const cursorForward = (count = 1): string => `${CSI + count}C`;
  * @see {@link TextCursorEnableMode} in `mode.ts` (represents DEC Mode 25).
  * @returns The ANSI escape sequence `CSI ?25l`.
  */
-export const cursorHide = `${CSI}?25l`;
+export const cursorHide: string = `${CSI}?25l`;
 
 /**
  * Moves the cursor to column 1 (the beginning) of the current line.
@@ -164,7 +164,7 @@ export const cursorHide = `${CSI}?25l`;
  * @see {@link cursorHorizontalAbsolute} for moving to any absolute column.
  * @returns The ANSI escape sequence `CSI G`.
  */
-export const cursorToColumn1 = `${CSI}G`;
+export const cursorToColumn1: string = `${CSI}G`;
 
 /**
  * Moves the cursor left by `count` columns. This is an alias for {@link cursorBackward}.
@@ -283,7 +283,7 @@ export const cursorPreviousLine = (count = 1): string => `${CSI + count}F`;
  * @see {@link RESTORE_CURSOR_DEC}
  * @see {@link isTerminalApp}
  */
-export const cursorRestore = isTerminalApp ? RESTORE_CURSOR_DEC : `${ESC}u`;
+export const cursorRestore: string = isTerminalApp ? RESTORE_CURSOR_DEC : `${ESC}u`;
 
 /**
  * Saves the current cursor position, character attributes, and character set state.
@@ -298,7 +298,7 @@ export const cursorRestore = isTerminalApp ? RESTORE_CURSOR_DEC : `${ESC}u`;
  * @see {@link RESTORE_CURSOR_DEC}
  * @see {@link isTerminalApp}
  */
-export const cursorSave = isTerminalApp ? SAVE_CURSOR_DEC : `${ESC}s`;
+export const cursorSave: string = isTerminalApp ? SAVE_CURSOR_DEC : `${ESC}s`;
 
 /**
  * Shows the cursor. This uses the DECTCEM (Text Cursor Enable Mode) sequence `CSI ?25h` to set the mode to "visible".
@@ -309,7 +309,7 @@ export const cursorSave = isTerminalApp ? SAVE_CURSOR_DEC : `${ESC}s`;
  * @see {@link TextCursorEnableMode} in `mode.ts` (represents DEC Mode 25).
  * @returns The ANSI escape sequence `CSI ?25h`.
  */
-export const cursorShow = `${CSI}?25h`;
+export const cursorShow: string = `${CSI}?25h`;
 
 /**
  * Moves the cursor to a specific coordinate (0-indexed) on the screen.

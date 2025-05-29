@@ -4,7 +4,7 @@ import { DCS, ESC, ST } from "./constants";
  * Default value for the `limit` parameter in {@link screenPassthrough}, indicating no chunking.
  * When this value is used (or any value &lt;= 0), the passthrough sequence is not split into smaller chunks.
  */
-export const SCREEN_MAX_LEN_DEFAULT = 0; // Default 0 means no limit for chunking logic itself
+export const SCREEN_MAX_LEN_DEFAULT: number = 0; // Default 0 means no limit for chunking logic itself
 
 /**
  * A typical limit for string sequences in GNU Screen (e.g., 768 bytes).
@@ -12,7 +12,7 @@ export const SCREEN_MAX_LEN_DEFAULT = 0; // Default 0 means no limit for chunkin
  * to avoid issues with Screen's internal buffers, though the function itself defaults to no limit.
  * It's provided for informational purposes and as a suggested practical chunking limit.
  */
-export const SCREEN_TYPICAL_LIMIT = 768; // Actual Screen limit mentioned in comments
+export const SCREEN_TYPICAL_LIMIT: number = 768; // Actual Screen limit mentioned in comments
 
 /**
  * Wraps a given ANSI escape sequence in a DCS (Device Control String) passthrough sequence

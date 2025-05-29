@@ -165,7 +165,7 @@ function hslToRgb(h: number, s: number, l: number): SixelColor {
     };
 }
 
-export const SIXEL_STANDARD_PALETTE_SIZE = 16;
+export const SIXEL_STANDARD_PALETTE_SIZE: number = 16;
 
 // Standard 16-color Sixel palette (approximations)
 // Based on typical VT340 default palette

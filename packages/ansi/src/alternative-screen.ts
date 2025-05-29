@@ -21,7 +21,7 @@ import { CSI } from "./constants";
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-The-Alternate-Screen-Buffer} Xterm Control Sequences documentation.
  * @see {@link https://vt100.net/docs/vt510-rm/DECSLPP.html} (related DEC modes, though 1049 is more common for this behavior).
  */
-export const ALT_SCREEN_ON = `${CSI}?1049h`;
+export const ALT_SCREEN_ON: string = `${CSI}?1049h`;
 
 /**
  * ANSI escape sequence to disable the alternative screen buffer.
@@ -36,7 +36,7 @@ export const ALT_SCREEN_ON = `${CSI}?1049h`;
  * @see {@link ALT_SCREEN_ON} for the sequence to enable the alternative screen buffer.
  * @see {@link alternativeScreenOff} for a function that returns this sequence.
  */
-export const ALT_SCREEN_OFF = `${CSI}?1049l`;
+export const ALT_SCREEN_OFF: string = `${CSI}?1049l`;
 
 /**
  * Returns the ANSI escape sequence to enable the alternative screen buffer.

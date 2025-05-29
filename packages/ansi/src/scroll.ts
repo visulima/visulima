@@ -76,11 +76,11 @@ export const scrollDown = (count = 1): string => {
  * This is equivalent to `scrollUp(1)`.
  * @see {@link scrollUp}
  */
-export const SCROLL_UP_1 = `${CSI}S`;
+export const SCROLL_UP_1: string = `${CSI}S`;
 
 /**
  * ANSI escape sequence to scroll down one line: `CSI T`.
  * This is equivalent to `scrollDown(1)`.
  * @see {@link scrollDown}
  */
-export const SCROLL_DOWN_1 = `${CSI}T`;
+export const SCROLL_DOWN_1: string = `${CSI}T`;

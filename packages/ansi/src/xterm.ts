@@ -36,7 +36,7 @@ export const keyModifierOptions = (resource: number, value?: number): string => 
  * Provides a shorthand for setting or resetting XTerm key modifier resources.
  * @see keyModifierOptions
  */
-export const XTMODKEYS = keyModifierOptions;
+export const XTMODKEYS: (resource: number, value?: number) => string = keyModifierOptions;
 
 /**
  * Query XTerm Key Modifier Options (XTQMODKEYS).
@@ -73,7 +73,7 @@ export const resetKeyModifierOptions = (resource: number): string => keyModifier
 export const setKeyModifierOptions = (resource: number, value: number): string => keyModifierOptions(resource, value);
 
 /** Alias for {@link queryKeyModifierOptions}. */
-export const XTQMODKEYS = queryKeyModifierOptions;
+export const XTQMODKEYS: (resource: number) => string = queryKeyModifierOptions;
 
 // --- Modify Other Keys ---
 // This relates to resource 4 of XTMODKEYS.
@@ -91,7 +91,7 @@ export const XTQMODKEYS = queryKeyModifierOptions;
  * // Sends: "\x1b[>4;1m"
  * ```
  */
-export const setModifyOtherKeys1 = `${CSI}>4;1m`;
+export const setModifyOtherKeys1: string = `${CSI}>4;1m`;
 
 /**
  * Set XTerm "modifyOtherKeys" mode to mode 2 (alternative modified escape sequences).
@@ -104,7 +104,7 @@ export const setModifyOtherKeys1 = `${CSI}>4;1m`;
  * // Sends: "\x1b[>4;2m"
  * ```
  */
-export const setModifyOtherKeys2 = `${CSI}>4;2m`;
+export const setModifyOtherKeys2: string = `${CSI}>4;2m`;
 
 /**
  * Reset XTerm "modifyOtherKeys" to its default behavior (mode 0 or initial value).
@@ -117,7 +117,7 @@ export const setModifyOtherKeys2 = `${CSI}>4;2m`;
  * // Sends: "\x1b[>4m"
  * ```
  */
-export const resetModifyOtherKeys = `${CSI}>4m`;
+export const resetModifyOtherKeys: string = `${CSI}>4m`;
 
 /**
  * Query the current XTerm "modifyOtherKeys" mode.
@@ -132,4 +132,4 @@ export const resetModifyOtherKeys = `${CSI}>4m`;
  * // Expect a response like: "\x1b[>4;1m" if mode 1 is set.
  * ```
  */
-export const queryModifyOtherKeys = `${CSI}?4m`;
+export const queryModifyOtherKeys: string = `${CSI}?4m`;

@@ -6,7 +6,7 @@ import type { LiteralUnion } from "type-fest"; // Retain LiteralUnion if used by
  * based on the image's inherent size or other context.
  * @example `width: IT2_AUTO`
  */
-export const IT2_AUTO = "auto";
+export const IT2_AUTO: string = "auto";
 
 /**
  * Formats a number as a string representing a dimension in character cells for iTerm2.

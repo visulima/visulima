@@ -21,7 +21,7 @@ import { isWindows } from "./helpers";
  * @see {@link eraseDisplay}
  * @see {@link EraseDisplayMode.ToEnd}
  */
-export const clearScreenFromTopLeft = cursorTo(0, 0) + eraseDisplay(EraseDisplayMode.ToEnd);
+export const clearScreenFromTopLeft: string = cursorTo(0, 0) + eraseDisplay(EraseDisplayMode.ToEnd);
 
 /**
  * Erases the entire current line and moves the cursor to the beginning of that line (column 1).
@@ -35,7 +35,7 @@ export const clearScreenFromTopLeft = cursorTo(0, 0) + eraseDisplay(EraseDisplay
  * @see {@link eraseInLine}
  * @see {@link EraseLineMode.EntireLine}
  */
-export const clearLineAndHomeCursor = `${eraseInLine(EraseLineMode.EntireLine) + CSI}G`; // Or use "\r" for carriage return
+export const clearLineAndHomeCursor: string = `${eraseInLine(EraseLineMode.EntireLine) + CSI}G`; // Or use "\r" for carriage return
 
 /**
  * Homes the cursor to the top-left position (row 1, column 1) and erases the entire screen.
@@ -50,7 +50,7 @@ export const clearLineAndHomeCursor = `${eraseInLine(EraseLineMode.EntireLine) +
  * @see {@link eraseDisplay}
  * @see {@link EraseDisplayMode.EntireScreen}
  */
-export const clearScreenAndHomeCursor = `${CSI}H${eraseDisplay(EraseDisplayMode.EntireScreen)}`;
+export const clearScreenAndHomeCursor: string = `${CSI}H${eraseDisplay(EraseDisplayMode.EntireScreen)}`;
 
 /**
  * Clears the entire terminal display, including the scrollback buffer on supported terminals,
@@ -87,7 +87,7 @@ export const clearScreenAndHomeCursor = `${CSI}H${eraseDisplay(EraseDisplayMode.
  * @see {@link EraseDisplayMode.EntireScreenAndScrollback}
  * @see {@link https://vt100.net/docs/vt510-rm/RIS.html} RIS documentation.
  */
-export const resetTerminal = isWindows
+export const resetTerminal: string = isWindows
     ? `${eraseDisplay(EraseDisplayMode.EntireScreen) + CSI}0f` // `0f` for cursor to (0,0) might be specific or non-standard
     // 1. Erases the screen (as a fallback/part of comprehensive clear)
     // 2. Erases the whole screen including scrollback buffer (XTerm)

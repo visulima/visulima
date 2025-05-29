@@ -1,3 +1,4 @@
+/* eslint-disable no-secrets/no-secrets */
 import { CSI, SEP } from "./constants";
 
 /**
@@ -109,6 +110,7 @@ export enum XTermWindowOp {
      * Response: `CSI 4 ; height ; width t`
      * Should be REPORT_TEXT_AREA_SIZE_PIXELS (18) for XTerm, but using Go's value.
      */
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
     REQUEST_WINDOW_SIZE_WIN_OP_COMPAT = 14, // From Go code
 
     /**
@@ -147,7 +149,7 @@ export enum XTermWindowOp {
  * @returns The ANSI sequence string, or an empty string if `p` is invalid.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h4-Functions-using-CSI-_-ordered-by-the-final-character-lparen-s-rparen:CSI-Ps;Ps;Ps-t.1EB0}
  */
-export function xtermWindowOp(p: number, ...ps: number[]): string {
+export const xtermWindowOp: (p: number, ...ps: number[]) => string = (p: number, ...ps: number[]): string => {
     const allowedFloats = [XTermWindowOp.MAXIMIZE_WINDOW_VERTICALLY, XTermWindowOp.MAXIMIZE_WINDOW_HORIZONTALLY, XTermWindowOp.UNDO_FULL_SCREEN_MODE];
 
     if (allowedFloats.includes(p)) {
@@ -172,7 +174,7 @@ export function xtermWindowOp(p: number, ...ps: number[]): string {
 /**
  * Alias for {@link xtermWindowOp}.
  */
-export const XTWINOPS = xtermWindowOp;
+export const XTWINOPS: (p: number, ...ps: number[]) => string = xtermWindowOp;
 
 // Helper functions based on Go code constants
 

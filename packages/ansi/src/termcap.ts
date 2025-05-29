@@ -59,7 +59,7 @@ export const XTGETTCAP = (...caps: string[]): string => {
  * process.stdout.write(seq);
  * ```
  */
-export const requestTermcap = XTGETTCAP;
+export const requestTermcap: (...caps: string[]) => string = XTGETTCAP;
 
 /**
  * Alias for {@link XTGETTCAP}.
@@ -75,4 +75,4 @@ export const requestTermcap = XTGETTCAP;
  * process.stdout.write(seq);
  * ```
  */
-export const requestTerminfo = XTGETTCAP;
+export const requestTerminfo: (...caps: string[]) => string = XTGETTCAP;

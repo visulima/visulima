@@ -132,18 +132,18 @@ export {
 } from "./mode";
 export type { MouseButtonType, MouseModifiers } from "./mouse";
 export {
-    disableMouseAllEventTracking,
-    disableMouseButtonEventTracking,
-    disableMouseHighlightEventTracking,
-    disableMouseSGRModeEventTracking,
-    disableMouseURXVTModeEventTracking,
-    disableMouseX10EventTracking,
-    enableMouseAllEventTracking,
-    enableMouseButtonEventTracking,
-    enableMouseCellMotionEventTracking,
-    enableMouseSGRModeEventTracking,
-    enableMouseURXVTModeEventTracking,
-    enableMouseX10EventTracking,
+    disableAnyEventMouse,
+    disableButtonEventMouse,
+    disableFocusTracking,
+    disableNormalMouse,
+    disableSgrMouse,
+    disableX10Mouse,
+    enableAnyEventMouse,
+    enableButtonEventMouse,
+    enableFocusTracking,
+    enableNormalMouse,
+    enableSgrMouse,
+    enableX10Mouse,
     encodeMouseButtonByte,
     MouseButton,
     mouseSgrSequence,
@@ -188,7 +188,7 @@ export {
     SixelEncoder,
     sixelGraphics,
 } from "./sixel";
-export type { AnsiStatusReport, DecStatusReport, StatusReport /* , TerminalAttributes, TerminalFeatures, TerminalParameters */ } from "./status";
+export type { AnsiStatusReport, DecStatusReport, StatusReport } from "./status";
 export {
     CPR,
     createAnsiStatusReport,
@@ -200,36 +200,35 @@ export {
     DECXCPR,
     deviceStatusReport,
     DSR,
+    DSR_KeyboardLanguageDEC,
+    DSR_PrinterStatusDEC,
+    DSR_TerminalStatus,
+    DSR_UDKStatusDEC,
     extendedCursorPositionReport,
-    reportDeviceAttributes,
-    reportExtendedDeviceAttributes,
-    reportKeyboardLanguage,
     reportKeyboardLanguageDEC,
     reportPrimaryDeviceAttributes,
-    reportPrinterStatus,
+    reportPrinterNoPaperDEC,
+    reportPrinterNotReadyDEC,
+    reportPrinterReadyDEC,
     reportSecondaryDeviceAttributes,
-    reportTerminalIdentity,
-    reportTerminalParameters,
-    reportTerminalStatus,
+    reportTerminalNotOK,
+    reportTerminalOK,
     reportTertiaryDeviceAttributes,
-    reportUDKStatus,
+    reportUDKLockedDEC,
+    reportUDKUnlockedDEC,
     requestCursorPositionReport,
-    requestDeviceAttributes,
     requestExtendedCursorPositionReport,
-    requestExtendedDeviceAttributes,
+    requestKeyboardLanguageDEC,
     RequestNameVersion,
     requestPrimaryDeviceAttributes,
-    requestPrinterStatus,
+    requestPrimaryDeviceAttributesParam0,
     requestPrinterStatusDEC,
     requestSecondaryDeviceAttributes,
     requestSecondaryDeviceAttributesParam0,
-    requestTerminalIdentity,
-    requestTerminalParameters,
     requestTerminalStatus,
     requestTertiaryDeviceAttributes,
-    requestUDKStatus,
-    sendDeviceAttributes,
-    sendDeviceAttributes,
+    requestTertiaryDeviceAttributesParam0,
+    requestUDKStatusDEC,
     XTVERSION,
 } from "./status";
 export { default as strip } from "./strip";
@@ -281,12 +280,3 @@ export {
     XTMODKEYS,
     XTQMODKEYS,
 } from "./xterm";
-
-// Notes:
-// - Exports from constants.ts and helpers.ts are not included as they are likely internal.
-// - Some specific mode constants from user edits (e.g., BracketedPasteMode) were not directly visible in
-//   the provided snippets of mode.ts. If they are indeed exported from mode.ts, they should be added
-//   to the mode.ts export block above.
-// - Some assumed types from user edits (e.g., TerminalAttributes) are commented out in the status.ts
-//   type exports as they were not directly visible in the snippets.
-// - Ensured `export type` is used for type-only exports where identified.

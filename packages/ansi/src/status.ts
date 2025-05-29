@@ -1,4 +1,17 @@
+/* eslint-disable no-secrets/no-secrets */
+/* eslint-disable max-classes-per-file */
 import { CSI, DCS, SEP, ST } from "./constants";
+
+class AnsiStatusReportImpl implements StatusReport {
+    public readonly isDecReport = false;
+
+    public constructor(public readonly reportCode: number) {}
+}
+class DecStatusReportImpl implements StatusReport {
+    public readonly isDecReport = true;
+
+    public constructor(public readonly reportCode: number) {}
+}
 
 /** Represents an ANSI terminal status report type. */
 export type AnsiStatusReport = StatusReport;
@@ -12,17 +25,6 @@ export type DecStatusReport = StatusReport;
 export interface StatusReport {
     readonly isDecReport: boolean;
     readonly reportCode: number;
-}
-
-class AnsiStatusReportImpl implements StatusReport {
-    constructor(public readonly reportCode: number) {}
-
-    public readonly isDecReport = false;
-}
-class DecStatusReportImpl implements StatusReport {
-    constructor(public readonly reportCode: number) {}
-
-    public readonly isDecReport = true;
 }
 
 /**
@@ -136,7 +138,7 @@ export const DSR = (report: StatusReport): string => deviceStatusReport(report);
  * process.stdout.write(requestCursorPositionReport);
  * ```
  */
-export const requestCursorPositionReport = `${CSI}6n`;
+export const requestCursorPositionReport: string = `${CSI}6n`;
 
 /**
  * ANSI escape sequence to request the cursor's current position including page number (DEC private).
@@ -152,7 +154,7 @@ export const requestCursorPositionReport = `${CSI}6n`;
  * process.stdout.write(requestExtendedCursorPositionReport);
  * ```
  */
-export const requestExtendedCursorPositionReport = `${CSI}?6n`;
+export const requestExtendedCursorPositionReport: string = `${CSI}?6n`;
 
 /**
  * Generates the Cursor Position Report (CPR) response sequence.
@@ -189,7 +191,7 @@ export const cursorPositionReport = (line: number, column: number): string => {
  * console.log(CPR(10, 5));
  * ```
  */
-export const CPR = cursorPositionReport;
+export const CPR: (line: number, column: number) => string = cursorPositionReport;
 
 /**
  * Extended Cursor Position Report (DECXCPR) response format.
@@ -233,7 +235,7 @@ export const extendedCursorPositionReport = (line: number, column: number, page:
  * console.log(DECXCPR(10, 5, 1));
  * ```
  */
-export const DECXCPR = extendedCursorPositionReport;
+export const DECXCPR: (line: number, column: number, page: number) => string = extendedCursorPositionReport;
 
 /**
  * ANSI escape sequence to request the terminal's name and version (XTVERSION).
@@ -248,13 +250,13 @@ export const DECXCPR = extendedCursorPositionReport;
  * process.stdout.write(RequestNameVersion);
  * ```
  */
-export const RequestNameVersion = `${CSI}>0q`;
+export const RequestNameVersion: string = `${CSI}>0q`;
 
 /**
  * Alias for {@link RequestNameVersion}.
  * @see RequestNameVersion
  */
-export const XTVERSION = RequestNameVersion;
+export const XTVERSION: string = RequestNameVersion;
 
 // Primary Device Attributes (DA1)
 // https://vt100.net/docs/vt510-rm/DA1.html
@@ -270,35 +272,35 @@ export const XTVERSION = RequestNameVersion;
  * process.stdout.write(requestPrimaryDeviceAttributes);
  * ```
  */
-export const requestPrimaryDeviceAttributes = `${CSI}c`;
+export const requestPrimaryDeviceAttributes: string = `${CSI}c`;
 
 /**
  * Alias for {@link requestPrimaryDeviceAttributes}.
  */
-export const DA1 = requestPrimaryDeviceAttributes;
+export const DA1: string = requestPrimaryDeviceAttributes;
 
 /**
  * Generates the response sequence for Primary Device Attributes (DA1).
  * Sequence: `CSI ? Ps ; ... c`
  *
  * Common attributes include:
- * - 1	132 columns
- * - 2	Printer port
- * - 4	Sixel
- * - 6	Selective erase
- * - 7	Soft character set (DRCS)
- * - 8	User-defined keys (UDKs)
- * - 9	National replacement character sets (NRCS) (International terminal only)
- * - 12	Yugoslavian (SCS)
- * - 15	Technical character set
- * - 18	Windowing capability
- * - 21	Horizontal scrolling
- * - 23	Greek
- * - 24	Turkish
- * - 42	ISO Latin-2 character set
- * - 44	PCTerm
- * - 45	Soft key map
- * - 46	ASCII emulation
+ * - 1  132 columns
+ * - 2  Printer port
+ * - 4  Sixel
+ * - 6  Selective erase
+ * - 7  Soft character set (DRCS)
+ * - 8  User-defined keys (UDKs)
+ * - 9  National replacement character sets (NRCS) (International terminal only)
+ * - 12 Yugoslavian (SCS)
+ * - 15 Technical character set
+ * - 18 Windowing capability
+ * - 21 Horizontal scrolling
+ * - 23 Greek
+ * - 24 Turkish
+ * - 42 ISO Latin-2 character set
+ * - 44 PCTerm
+ * - 45 Soft key map
+ * - 46 ASCII emulation
  * @param attributes Numeric attribute codes.
  * @returns The DA1 response sequence.
  * @example
@@ -331,12 +333,12 @@ export const reportPrimaryDeviceAttributes = (...attributes: number[]): string =
  * process.stdout.write(requestSecondaryDeviceAttributes);
  * ```
  */
-export const requestSecondaryDeviceAttributes = `${CSI}>c`;
+export const requestSecondaryDeviceAttributes: string = `${CSI}>c`;
 
 /**
  * Alias for {@link requestSecondaryDeviceAttributes}.
  */
-export const DA2 = requestSecondaryDeviceAttributes;
+export const DA2: string = requestSecondaryDeviceAttributes;
 
 /**
  * Generates the response sequence for Secondary Device Attributes (DA2).
@@ -375,12 +377,12 @@ export const reportSecondaryDeviceAttributes = (version: number, level: number, 
  * process.stdout.write(requestTertiaryDeviceAttributes);
  * ```
  */
-export const requestTertiaryDeviceAttributes = `${CSI}=c`;
+export const requestTertiaryDeviceAttributes: string = `${CSI}=c`;
 
 /**
  * Alias for {@link requestTertiaryDeviceAttributes}.
  */
-export const DA3 = requestTertiaryDeviceAttributes;
+export const DA3: string = requestTertiaryDeviceAttributes;
 
 /**
  * Generates the response sequence for Tertiary Device Attributes (DA3), which is a DECRPTUI.
@@ -437,7 +439,7 @@ export const reportTertiaryDeviceAttributes = (unitID: string): string =>
  * process.stdout.write(requestPrimaryDeviceAttributesParam0);
  * ```
  */
-export const requestPrimaryDeviceAttributesParam0 = `${CSI}0c`;
+export const requestPrimaryDeviceAttributesParam0: string = `${CSI}0c`;
 
 /**
  * ANSI escape sequence to request Secondary Device Attributes (DA2) with explicit parameter 0.
@@ -452,7 +454,7 @@ export const requestPrimaryDeviceAttributesParam0 = `${CSI}0c`;
  * process.stdout.write(requestSecondaryDeviceAttributesParam0);
  * ```
  */
-export const requestSecondaryDeviceAttributesParam0 = `${CSI}>0c`;
+export const requestSecondaryDeviceAttributesParam0: string = `${CSI}>0c`;
 
 /**
  * ANSI escape sequence to request Tertiary Device Attributes (DA3) with explicit parameter 0.
@@ -465,7 +467,7 @@ export const requestSecondaryDeviceAttributesParam0 = `${CSI}>0c`;
  * process.stdout.write(requestTertiaryDeviceAttributesParam0);
  * ```
  */
-export const requestTertiaryDeviceAttributesParam0 = `${CSI}=0c`;
+export const requestTertiaryDeviceAttributesParam0: string = `${CSI}=0c`;
 
 // Restore the original content for DSRs that were deleted
 // Other common DSR codes (often as requests)
@@ -499,7 +501,7 @@ export const requestTerminalStatus: StatusReport = createAnsiStatusReport(5);
  * process.stdout.write(DSR_TerminalStatus);
  * ```
  */
-export const DSR_TerminalStatus = deviceStatusReport(requestTerminalStatus); // CSI 5 n
+export const DSR_TerminalStatus: string = deviceStatusReport(requestTerminalStatus); // CSI 5 n
 
 /**
  * ANSI escape sequence `CSI 0 n` indicating Terminal is OK (Operating Normally).
@@ -507,7 +509,7 @@ export const DSR_TerminalStatus = deviceStatusReport(requestTerminalStatus); // 
  * @see requestTerminalStatus
  * @see DSR_TerminalStatus
  */
-export const reportTerminalOK = `${CSI}0n`;
+export const reportTerminalOK: string = `${CSI}0n`;
 
 /**
  * ANSI escape sequence `CSI 3 n` indicating Terminal is NOT OK (Malfunction).
@@ -515,7 +517,7 @@ export const reportTerminalOK = `${CSI}0n`;
  * @see requestTerminalStatus
  * @see DSR_TerminalStatus
  */
-export const reportTerminalNotOK = `${CSI}3n`;
+export const reportTerminalNotOK: string = `${CSI}3n`;
 
 /**
  * A DEC-specific {@link StatusReport} object to request printer status.
@@ -546,7 +548,7 @@ export const requestPrinterStatusDEC: StatusReport = createDecStatusReport(15);
  * process.stdout.write(DSR_PrinterStatusDEC);
  * ```
  */
-export const DSR_PrinterStatusDEC = deviceStatusReport(requestPrinterStatusDEC); // CSI ? 15 n
+export const DSR_PrinterStatusDEC: string = deviceStatusReport(requestPrinterStatusDEC); // CSI ? 15 n
 
 /**
  * ANSI escape sequence `CSI ? 10 n` indicating Printer is Ready (DEC-specific response).
@@ -554,7 +556,7 @@ export const DSR_PrinterStatusDEC = deviceStatusReport(requestPrinterStatusDEC);
  * @see requestPrinterStatusDEC
  * @see DSR_PrinterStatusDEC
  */
-export const reportPrinterReadyDEC = `${CSI}?10n`;
+export const reportPrinterReadyDEC: string = `${CSI}?10n`;
 
 /**
  * ANSI escape sequence `CSI ? 11 n` indicating Printer is Not Ready (DEC-specific response).
@@ -562,7 +564,7 @@ export const reportPrinterReadyDEC = `${CSI}?10n`;
  * @see requestPrinterStatusDEC
  * @see DSR_PrinterStatusDEC
  */
-export const reportPrinterNotReadyDEC = `${CSI}?11n`;
+export const reportPrinterNotReadyDEC: string = `${CSI}?11n`;
 
 /**
  * ANSI escape sequence `CSI ? 13 n` indicating Printer has No Paper (DEC-specific response).
@@ -570,7 +572,7 @@ export const reportPrinterNotReadyDEC = `${CSI}?11n`;
  * @see requestPrinterStatusDEC
  * @see DSR_PrinterStatusDEC
  */
-export const reportPrinterNoPaperDEC = `${CSI}?13n`;
+export const reportPrinterNoPaperDEC: string = `${CSI}?13n`;
 
 /**
  * A DEC-specific {@link StatusReport} object to request User Defined Keys (UDK) status.
@@ -593,19 +595,19 @@ export const requestUDKStatusDEC: StatusReport = createDecStatusReport(25);
  * process.stdout.write(DSR_UDKStatusDEC);
  * ```
  */
-export const DSR_UDKStatusDEC = deviceStatusReport(requestUDKStatusDEC); // CSI ? 25 n
+export const DSR_UDKStatusDEC: string = deviceStatusReport(requestUDKStatusDEC); // CSI ? 25 n
 
 /**
  * ANSI escape sequence `CSI ? 20 n` indicating User Defined Keys (UDKs) are locked (DEC-specific response).
  * Typical response to {@link DSR_UDKStatusDEC}.
  */
-export const reportUDKLockedDEC = `${CSI}?20n`;
+export const reportUDKLockedDEC: string = `${CSI}?20n`;
 
 /**
  * ANSI escape sequence `CSI ? 21 n` indicating User Defined Keys (UDKs) are unlocked (DEC-specific response).
  * Typical response to {@link DSR_UDKStatusDEC}.
  */
-export const reportUDKUnlockedDEC = `${CSI}?21n`;
+export const reportUDKUnlockedDEC: string = `${CSI}?21n`;
 
 /**
  * A DEC-specific {@link StatusReport} object to request keyboard language status.
@@ -630,7 +632,7 @@ export const requestKeyboardLanguageDEC: StatusReport = createDecStatusReport(26
  * process.stdout.write(DSR_KeyboardLanguageDEC);
  * ```
  */
-export const DSR_KeyboardLanguageDEC = deviceStatusReport(requestKeyboardLanguageDEC); // CSI ? 26 n
+export const DSR_KeyboardLanguageDEC: string = deviceStatusReport(requestKeyboardLanguageDEC); // CSI ? 26 n
 
 /**
  * Generates a DEC Keyboard Language Report sequence.
@@ -647,4 +649,4 @@ export const DSR_KeyboardLanguageDEC = deviceStatusReport(requestKeyboardLanguag
  * console.log(reportKeyboardLanguageDEC(1));
  * ```
  */
-export const reportKeyboardLanguageDEC = (langCode: number): string => `${CSI}?27${SEP}${langCode.toString()}n`;
+export const reportKeyboardLanguageDEC: (langCode: number) => string = (langCode: number): string => `${CSI}?27${SEP}${langCode.toString()}n`;
