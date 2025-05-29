@@ -28,7 +28,7 @@ const errorCard = async ({
         )[0]}.x/docs/api/" class="text-blue-500 hover:underline inline-flex items-center text-sm" target="_blank" rel="noopener noreferrer">${runtime.replace(
             "NODE",
             "Node.js",
-        )}${(externalLinkIcon as string).replace("lucide-external-link", "lucide-external-link h-4 w-4 ml-1")}</a>`;
+        )}<img src="${externalLinkIcon}" alt="External Link" class="w-4 h-4 ml-1" /></a>`;
     }
 
     const { html: solutionsHtml, script: solutionsScript } = await solutions(error, solutionFinders);

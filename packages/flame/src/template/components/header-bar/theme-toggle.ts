@@ -13,10 +13,10 @@ const themeToggle = (
         html: `
 <div class="flex ml-6">
     <button type="button" class="hs-dark-mode-active:hidden hs-dark-mode group flex items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-400 dark:hover:text-gray-500" data-hs-theme-click-value="dark">
-        ${moonStarIcon}
+        <img src="${moonStarIcon}" alt="Moon Star" class="w-4 h-4" />
     </button>
     <button type="button" class="hs-dark-mode-active:flex hidden hs-dark-mode group items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-400 dark:hover:text-gray-500" data-hs-theme-click-value="light">
-        ${sunIcon}
+        <img src="${sunIcon}" alt="Sun" class="w-4 h-4" />
     </button>
 </div>
 `,

@@ -54,8 +54,8 @@ const solutions = async (error: Error | SolutionError | VisulimaError, solutionF
     return {
         html: `<div id="flame-solution-wrapper" class="px-6 pb-6 relative w-full transition-all">
     <button id="flame-solution-button" type="button" class="bg-green-300 rounded-lg p-2 absolute top-2 right-9 z-10">
-        ${(closeIcon as string).replace("lucide-x", "lucide-x h-5 w-5")}
-        ${(infoIcon as string).replace("lucide-info", "lucide-info h-5 w-5 hidden")}
+        <img src="${closeIcon}" alt="Close" class="w-4 h-4" />
+        <img src="${infoIcon}" alt="Info" class="w-4 h-4 hidden" />
     </button>
     <div id="flame-solution-content" class="bg-green-300 rounded-lg shadow-2xl shadow-gray-500/20 overflow-hidden transition-[height] duration-300">
         <div class="hs-collapse p-6 prose prose-sm prose-ul:list-none prose-hr:my-6 prose-hr:border-green-400 max-w-full relative">

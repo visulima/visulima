@@ -7,11 +7,16 @@ const cache = new Map<string, string>();
 const streamToString = async (stream: Readable) => {
     const chunks = [];
 
-    for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk));
+    try {
+        for await (const chunk of stream) {
+            chunks.push(Buffer.from(chunk));
+        }
+        return Buffer.concat(chunks).toString("utf-8");
+    } finally {
+        if (stream.destroy) {
+            stream.destroy();
+        }
     }
-
-    return Buffer.concat(chunks).toString("utf-8");
 }
 
 const getFileSource = async (file: string): Promise<string | undefined> => {
@@ -27,7 +32,8 @@ const getFileSource = async (file: string): Promise<string | undefined> => {
     try {
         const fileContent = await getUri(file);
 
-        const source = await streamToString(fileContent);
+        // TODO: fix this
+        const source = "" //await streamToString(fileContent);
 
         cache.set(file, source);
 
