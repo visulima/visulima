@@ -1,43 +1,42 @@
 import { describe, expect, it } from "vitest";
 
-import { clearLine, clearScreen, clearScrollbar, clearTerminal, fullReset } from "../../src/clear";
+import { clearLineAndHomeCursor, clearScreenAndHomeCursor, clearScreenFromTopLeft, resetTerminal } from "../../src/clear";
+import { CSI, ESC } from "../../src/constants";
 import { isWindows } from "../../src/helpers";
 
-describe(`clear`, () => {
-    it("should return the correct ansi for clear screen", () => {
-        expect.assertions(1);
-
-        expect(clearScreen).toBe("\u001BH\u001B2J");
+describe("clear utilities", () => {
+    describe(clearScreenFromTopLeft, () => {
+        it("should be the combination of cursorTo(0,0) and eraseDisplay(ToEnd)", async () => {
+            expect.assertions(1);
+            expect(clearScreenFromTopLeft).toBe(`${CSI}1;1H${CSI}J`);
+        });
     });
 
-    it("should return the correct ansi for clear line", () => {
-        expect.assertions(1);
-
-        expect(clearLine).toBe("\u001B[2K\u001B[0D");
+    describe(clearLineAndHomeCursor, () => {
+        it("should be the combination of eraseLine(EntireLine) and cursorToColumn(0)", async () => {
+            expect.assertions(1);
+            expect(clearLineAndHomeCursor).toBe(`${CSI}2K${CSI}G`);
+        });
     });
 
-    it("should return the correct ansi for clear terminal", () => {
-        expect.assertions(1);
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (isWindows) {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            expect(clearTerminal).toBe("\u001B[2J\u001B0f");
-        } else {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            expect(clearTerminal).toBe("\u001B[2J\u001B3J\u001BH\u001Bc");
-        }
+    describe(clearScreenAndHomeCursor, () => {
+        it("should be the combination of cursorTo(0,0) and eraseDisplay(EntireScreen)", async () => {
+            expect.assertions(1);
+            expect(clearScreenAndHomeCursor).toBe(`${CSI}H${CSI}2J`);
+        });
     });
 
-    it("should return the correct ansi for clear scrollbar", () => {
-        expect.assertions(1);
+    describe(resetTerminal, () => {
+        it.runIf(!isWindows)("should produce correct sequence when isWindows is false", async () => {
+            expect.assertions(1);
 
-        expect(clearScrollbar).toBe("\u001B2J");
-    });
+            expect(resetTerminal).toBe(`${CSI}2J${CSI}3J${CSI}H${ESC}c`);
+        });
 
-    it("should return the correct ansi for full reset", () => {
-        expect.assertions(1);
+        it.runIf(isWindows)("should produce correct sequence when isWindows is true", async () => {
+            expect.assertions(1);
 
-        expect(fullReset).toBe("\u001B1;1H\u001BJ");
+            expect(resetTerminal).toBe(`${CSI}2J${CSI}0f`);
+        });
     });
 });

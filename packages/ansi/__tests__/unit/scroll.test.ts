@@ -1,21 +1,62 @@
 import { describe, expect, it } from "vitest";
 
-import { scrollDown, scrollUp } from "../../src/scroll";
+import { CSI } from "../../src/constants";
+import { SCROLL_DOWN_1, SCROLL_UP_1, scrollDown, scrollUp } from "../../src/scroll";
 
-describe(`scroll`, () => {
-    it("should return the correct ansi for up", () => {
-        expect.assertions(3);
+describe("scroll utilities", () => {
+    describe(scrollUp, () => {
+        it("should return correct ANSI for scrollUp() (default 1)", () => {
+            expect.assertions(1);
+            expect(scrollUp()).toBe(`${CSI}S`);
+        });
 
-        expect(scrollUp()).toBe(`\u001B[S`);
-        expect(scrollUp(2)).toBe(`\u001B[S\u001B[S`);
-        expect(scrollUp(0)).toBe(``);
+        it("should return correct ANSI for scrollUp(1)", () => {
+            expect.assertions(1);
+            expect(scrollUp(1)).toBe(`${CSI}S`);
+        });
+
+        it("should return correct ANSI for scrollUp(2)", () => {
+            expect.assertions(1);
+            expect(scrollUp(2)).toBe(`${CSI}2S`);
+        });
+
+        it("should return empty string for scrollUp(0)", () => {
+            expect.assertions(1);
+            expect(scrollUp(0)).toBe("");
+        });
     });
 
-    it("should return the correct ansi for down", () => {
-        expect.assertions(3);
+    describe(scrollDown, () => {
+        it("should return correct ANSI for scrollDown() (default 1)", () => {
+            expect.assertions(1);
+            expect(scrollDown()).toBe(`${CSI}T`);
+        });
 
-        expect(scrollDown()).toBe(`\u001B[T`);
-        expect(scrollDown(2)).toBe(`\u001B[T\u001B[T`);
-        expect(scrollDown(0)).toBe(``);
+        it("should return correct ANSI for scrollDown(1)", () => {
+            expect.assertions(1);
+            expect(scrollDown(1)).toBe(`${CSI}T`);
+        });
+
+        it("should return correct ANSI for scrollDown(2)", () => {
+            expect.assertions(1);
+            expect(scrollDown(2)).toBe(`${CSI}2T`);
+        });
+
+        it("should return empty string for scrollDown(0)", () => {
+            expect.assertions(1);
+            expect(scrollDown(0)).toBe("");
+        });
+    });
+
+    describe("scroll Constants", () => {
+        it("sCROLL_UP_1 should be correct", () => {
+            expect.assertions(1);
+            expect(SCROLL_UP_1).toBe(`${CSI}S`);
+        });
+
+        it("sCROLL_DOWN_1 should be correct", () => {
+            expect.assertions(1);
+            expect(SCROLL_DOWN_1).toBe(`${CSI}T`);
+        });
     });
 });
