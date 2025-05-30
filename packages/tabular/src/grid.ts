@@ -1,6 +1,7 @@
 import type { TruncateOptions, WordWrapOptions } from "@visulima/string";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { getStringWidth, truncate, wordWrap } from "@visulima/string";
+import terminalSize from 'terminal-size';
 
 import type {
     AnsiColorFunction,
@@ -19,7 +20,6 @@ import calculateCellTotalWidth from "./utils/calculate-cell-total-width";
 import calculateRowHeights from "./utils/calculate-row-heights";
 import determineCellVerticalPosition from "./utils/determine-cell-vertical-position";
 import findFirstOccurrenceRow from "./utils/find-first-occurrence-row";
-import getTerminalWidth from "./utils/get-terminal-width";
 import { EMPTY_CELL_REPRESENTATION, normalizeGridCell } from "./utils/normalize-cell";
 import padAndAlignContent from "./utils/pad-and-align-content";
 
@@ -105,6 +105,14 @@ export class Grid {
             wordWrap: false,
         };
 
+        let fixedRowHeights: number[] | undefined;
+
+        if (Array.isArray(options.fixedRowHeights)) {
+            fixedRowHeights = options.fixedRowHeights;
+        } else if (typeof options.fixedRowHeights === "number") {
+            fixedRowHeights = [options.fixedRowHeights];
+        }
+
         this.#options = {
             ...defaultOptions,
             ...options, // User options override defaults
@@ -112,17 +120,24 @@ export class Grid {
 
             columns: options.columns ?? 1, // Default columns to 1 if not provided
             // Ensure fixedRowHeights is an array if provided as a number
-            fixedRowHeights: Array.isArray(options.fixedRowHeights)
-                ? options.fixedRowHeights
-                : (typeof options.fixedRowHeights === "number"
-                  ? [options.fixedRowHeights] // Convert single number to array
-                  : undefined),
+            fixedRowHeights,
             // Recalculate showBorders based on final border presence
             showBorders: options.border !== undefined || (options.showBorders ?? false),
         };
 
-        // Calculate terminal width after options are merged
-        this.#terminalWidth = this.#options.terminalWidth ?? getTerminalWidth(this.#options.defaultTerminalWidth);
+        let { terminalWidth } = this.#options;
+
+        if (terminalWidth === undefined) {
+            let { columns } = terminalSize();
+
+            if (columns === 80) {
+                columns = this.#options.defaultTerminalWidth;
+            }
+
+            terminalWidth = columns;
+        }
+
+        this.#terminalWidth = terminalWidth;
 
         // Handle optional maxWidth relative to terminal width
         if (this.#options.maxWidth) {
