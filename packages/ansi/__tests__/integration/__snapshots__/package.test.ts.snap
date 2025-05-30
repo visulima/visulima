@@ -1,5 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`usage \`@visulima/ansi\` npm package > should work as CommonJS package 1`] = `"[2A[G"`;
+exports[`usage \`@visulima/ansi\` npm package > should work as CommonJS package 1`] = `"[2A[1D"`;
 
-exports[`usage \`@visulima/ansi\` npm package > should work as ESM package 1`] = `"[2A[G"`;
+exports[`usage \`@visulima/ansi\` npm package > should work as ESM package 1`] = `"[2A[1D"`;
