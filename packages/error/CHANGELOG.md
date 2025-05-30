@@ -1,3 +1,18 @@
+## @visulima/error [4.4.17](https://github.com/visulima/visulima/compare/@visulima/error@4.4.16...@visulima/error@4.4.17) (2025-05-30)
+
+### Bug Fixes
+
+* **error:** update dependencies ([9357477](https://github.com/visulima/visulima/commit/93574770142c8471e19e46b768421b011a0e7681))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.3.6
+
 ## @visulima/error [4.4.16](https://github.com/visulima/visulima/compare/@visulima/error@4.4.15...@visulima/error@4.4.16) (2025-03-07)
 
 ### Bug Fixes
