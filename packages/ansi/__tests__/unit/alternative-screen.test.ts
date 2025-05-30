@@ -1,17 +1,33 @@
 import { describe, expect, it } from "vitest";
 
-import { alternativeScreenEnter, alternativeScreenExit } from "../../src/alternative-screen";
+import { ALT_SCREEN_OFF, ALT_SCREEN_ON, alternativeScreenOff, alternativeScreenOn } from "../../src/alternative-screen";
+import { CSI } from "../../src/constants";
 
-describe("alternativeScreen", () => {
-    it("should return correct escape sequence for entering alternative screen", () => {
-        expect.assertions(1);
+describe("alternative-screen utilities", () => {
+    const expectedOn = `${CSI}?1049h`;
+    const expectedOff = `${CSI}?1049l`;
 
-        expect(alternativeScreenEnter).toBe("\u001B?1049h");
+    describe("constants", () => {
+        it("aLT_SCREEN_ON should be correct", () => {
+            expect.assertions(1);
+            expect(ALT_SCREEN_ON).toBe(expectedOn);
+        });
+
+        it("aLT_SCREEN_OFF should be correct", () => {
+            expect.assertions(1);
+            expect(ALT_SCREEN_OFF).toBe(expectedOff);
+        });
     });
 
-    it("should return correct escape sequence for exiting alternative screen", () => {
-        expect.assertions(1);
+    describe("functions", () => {
+        it("alternativeScreenOn() should return ALT_SCREEN_ON", () => {
+            expect.assertions(1);
+            expect(alternativeScreenOn()).toBe(expectedOn);
+        });
 
-        expect(alternativeScreenExit).toBe("\u001B?1049l");
+        it("alternativeScreenOff() should return ALT_SCREEN_OFF", () => {
+            expect.assertions(1);
+            expect(alternativeScreenOff()).toBe(expectedOff);
+        });
     });
 });
