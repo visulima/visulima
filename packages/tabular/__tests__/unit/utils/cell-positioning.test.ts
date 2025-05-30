@@ -6,7 +6,7 @@ import findFirstOccurrenceRow from "../../../src/utils/find-first-occurrence-row
 import padAndAlignContent from "../../../src/utils/pad-and-align-content";
 
 describe("grid Cell Positioning and Content", () => {
-    describe("padAndAlignContent", () => {
+    describe(padAndAlignContent, () => {
         it("left aligns with padding", () => {
             expect.assertions(1);
             // Width = 1 + 7 + 2 = 10
@@ -43,64 +43,78 @@ describe("grid Cell Positioning and Content", () => {
         });
     });
 
-    describe("determineCellVerticalPosition", () => {
+    describe(determineCellVerticalPosition, () => {
         it("returns showContent true for single row", () => {
             expect.assertions(1);
+
             const cell: GridItem = { content: "A" };
             const grid = [[cell]];
+
             expect(determineCellVerticalPosition(grid, 0, 0, cell)).toStrictEqual({ firstRow: 0, lastRow: 0, showContent: true });
         });
 
         it("returns correct for top alignment", () => {
             expect.assertions(3);
+
             const cell: GridItem = { content: "A", vAlign: "top" };
             const grid = [[cell], [cell], [cell]];
-            expect(determineCellVerticalPosition(grid, 0, 0, cell).showContent).toBeTruthy();
-            expect(determineCellVerticalPosition(grid, 1, 0, cell).showContent).toBeFalsy();
-            expect(determineCellVerticalPosition(grid, 2, 0, cell).showContent).toBeFalsy();
+
+            expect(determineCellVerticalPosition(grid, 0, 0, cell).showContent).toBe(true);
+            expect(determineCellVerticalPosition(grid, 1, 0, cell).showContent).toBe(false);
+            expect(determineCellVerticalPosition(grid, 2, 0, cell).showContent).toBe(false);
         });
 
         it("returns correct for bottom alignment", () => {
             expect.assertions(3);
+
             const cell: GridItem = { content: "A", vAlign: "bottom" };
             const grid = [[cell], [cell], [cell]];
-            expect(determineCellVerticalPosition(grid, 0, 0, cell).showContent).toBeFalsy();
-            expect(determineCellVerticalPosition(grid, 1, 0, cell).showContent).toBeFalsy();
-            expect(determineCellVerticalPosition(grid, 2, 0, cell).showContent).toBeTruthy();
+
+            expect(determineCellVerticalPosition(grid, 0, 0, cell).showContent).toBe(false);
+            expect(determineCellVerticalPosition(grid, 1, 0, cell).showContent).toBe(false);
+            expect(determineCellVerticalPosition(grid, 2, 0, cell).showContent).toBe(true);
         });
 
         it("returns correct for middle alignment", () => {
             expect.assertions(3);
+
             const cell: GridItem = { content: "A", vAlign: "middle" };
             const grid = [[cell], [cell], [cell]];
-            expect(determineCellVerticalPosition(grid, 1, 0, cell).showContent).toBeTruthy();
-            expect(determineCellVerticalPosition(grid, 0, 0, cell).showContent).toBeFalsy();
-            expect(determineCellVerticalPosition(grid, 2, 0, cell).showContent).toBeFalsy();
+
+            expect(determineCellVerticalPosition(grid, 1, 0, cell).showContent).toBe(true);
+            expect(determineCellVerticalPosition(grid, 0, 0, cell).showContent).toBe(false);
+            expect(determineCellVerticalPosition(grid, 2, 0, cell).showContent).toBe(false);
         });
 
         it("defaults to top alignment if vAlign is not set", () => {
             expect.assertions(3);
+
             const cell: GridItem = { content: "A" };
             const grid = [[cell], [cell], [cell]];
-            expect(determineCellVerticalPosition(grid, 0, 0, cell).showContent).toBeTruthy();
-            expect(determineCellVerticalPosition(grid, 1, 0, cell).showContent).toBeFalsy();
-            expect(determineCellVerticalPosition(grid, 2, 0, cell).showContent).toBeFalsy();
+
+            expect(determineCellVerticalPosition(grid, 0, 0, cell).showContent).toBe(true);
+            expect(determineCellVerticalPosition(grid, 1, 0, cell).showContent).toBe(false);
+            expect(determineCellVerticalPosition(grid, 2, 0, cell).showContent).toBe(false);
         });
     });
 
-    describe("findFirstOccurrenceRow", () => {
+    describe(findFirstOccurrenceRow, () => {
         it("returns the same row if cell does not span upwards", () => {
             expect.assertions(1);
+
             const cell: GridItem = { content: "A" };
             const grid = [[cell], [{ content: "B" }], [{ content: "C" }]];
+
             // Use a non-null assertion as grid[1][0] is guaranteed to exist here
             expect(findFirstOccurrenceRow(grid, 1, 0, (grid[1] as GridItem[])[0] as GridItem)).toBe(1);
         });
 
         it("returns the first row of a vertical span", () => {
             expect.assertions(3);
+
             const cell: GridItem = { content: "A", rowSpan: 3 };
             const grid = [[cell], [cell], [cell]];
+
             expect(findFirstOccurrenceRow(grid, 2, 0, cell)).toBe(0);
             expect(findFirstOccurrenceRow(grid, 1, 0, cell)).toBe(0);
             expect(findFirstOccurrenceRow(grid, 0, 0, cell)).toBe(0);
@@ -108,6 +122,7 @@ describe("grid Cell Positioning and Content", () => {
 
         it("handles mixed cells", () => {
             expect.assertions(2);
+
             const cellA: GridItem = { content: "A", rowSpan: 2 };
             const cellB: GridItem = { content: "B" };
             const grid: GridItem[][] = [
@@ -115,6 +130,7 @@ describe("grid Cell Positioning and Content", () => {
                 [cellA, cellB],
                 [{ content: "C" }, cellB],
             ];
+
             expect(findFirstOccurrenceRow(grid, 1, 0, cellA)).toBe(0);
             // Test finding the cell in the last row
             expect(findFirstOccurrenceRow(grid, 2, 1, (grid[2] as GridItem[])[1] as GridItem)).toBe(0);

@@ -5,6 +5,7 @@ import { DOTS_BORDER } from "../dist/style.mjs";
 
 console.log("Test 1: Basic Table with Spanning Cells");
 const table = createTable();
+
 table
     .addRow([{ colSpan: 3, content: "Wide Header" }])
     .addRow(["Short", { colSpan: 2, content: "Very Long Content Here" }])
@@ -16,6 +17,7 @@ console.log();
 
 console.log("Test 2: Optimized Space Usage");
 const table2 = createTable();
+
 table2
     .addRow(["ID", "Name", "Status"])
     .addRow(["1", { colSpan: 2, content: "John Smith" }])
@@ -27,6 +29,7 @@ console.log();
 
 console.log("Test 3: Mixed Content Lengths");
 const table3 = createTable();
+
 table3
     .addRow(["Col 1", { colSpan: 2, content: "Spanning Header" }])
     .addRow(["Short", "Medium Length", "Longer Content"])
@@ -75,6 +78,7 @@ table5.addRow([
 console.log(table5.toString());
 
 const table6 = createTable({ columnWidths: 5 });
+
 table6.addRow([{ colSpan: 2, content: "This is a wide cell spanning two columns" }]);
 
 console.log(table6.toString());
@@ -104,6 +108,7 @@ console.log(table7.toString());
 
 console.log("Test 8: Middle Alignment with Row Span");
 const table8 = createTable();
+
 table8
     .addRow([
         { colSpan: 2, content: "hello" },
@@ -125,6 +130,7 @@ console.log(table8.toString());
 // └───┴───┴──┴──┴────┘
 
 const table9 = createTable({ rowHeights: [1, 2] });
+
 table9.addRow(["first\nsecond"]).addRow(["another\nmultiline\ntext"]);
 
 console.log(table9.toString());
@@ -191,6 +197,7 @@ table13.addRow([red("Hello how are you?"), blue("I am fine thanks!")]);
 console.log(table13.toString());
 
 const table14 = createTable({ rowHeights: [2, 1] });
+
 table14.addRow([{ content: "spanning\ncell\nwith\nmore\nlines", rowSpan: 2 }, "regular"]).addRow(["second"]);
 
 console.log(table14.toString());
@@ -208,6 +215,7 @@ const table15 = createTable({
         backgroundColor: bgHex("#3d239d"),
     },
 });
+
 table15
     .addRow(["hello", { content: "greetings", rowSpan: 2 }, { content: "greetings", href: "https://example.com", rowSpan: 2, vAlign: "bottom" }])
     .addRow(["howdy"]);
@@ -226,6 +234,7 @@ const table16 = createTable({
         foregroundColor: blue,
     },
 });
+
 table16.addRow([{ content: "spanning\ncell\nwith\nmore\nlines", rowSpan: 2 }, "regular"]).addRow(["second"]);
 
 console.log(table16.toString());
@@ -289,6 +298,7 @@ tableLink.addRow([{ content: linkText, href: url }]);
 console.log(tableLink.toString());
 
 const table18 = createTable();
+
 table18
     .addRow([{ colSpan: 3, content: "Wide Header" }])
     .addRow(["Short", { colSpan: 2, content: "Very Long Content Here" }])

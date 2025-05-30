@@ -15,7 +15,7 @@ export class Table {
 
     #isDirty = true;
 
-    #cachedString: string | null = null;
+    #cachedString: string | undefined = undefined;
 
     /**
      * Initializes a new Table instance.
@@ -41,13 +41,13 @@ export class Table {
      * @returns The Table instance for chaining.
      */
     public setHeaders(headers: TableCell[] | TableCell[][]): this {
-        this.#headers =
-            headers.length > 0 && !Array.isArray(headers[0])
+        this.#headers
+            = headers.length > 0 && !Array.isArray(headers[0])
                 ? [headers as TableCell[]]
                 : (headers as TableCell[][]).map((row) => (Array.isArray(row) ? row : [row]));
 
         this.#isDirty = true;
-        this.#cachedString = null;
+        this.#cachedString = undefined;
 
         return this;
     }
@@ -64,7 +64,7 @@ export class Table {
 
         this.#rows.push(row);
         this.#isDirty = true;
-        this.#cachedString = null;
+        this.#cachedString = undefined;
 
         return this;
     }
@@ -80,7 +80,7 @@ export class Table {
         }
 
         this.#isDirty = true;
-        this.#cachedString = null;
+        this.#cachedString = undefined;
 
         return this;
     }
@@ -92,7 +92,7 @@ export class Table {
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public toString(): string {
         // Use cached string if available and not dirty
-        if (!this.#isDirty && this.#cachedString !== null) {
+        if (!this.#isDirty && this.#cachedString !== undefined) {
             return this.#cachedString;
         }
 
@@ -104,6 +104,7 @@ export class Table {
         if (allRows.length === 0) {
             this.#cachedString = "";
             this.#isDirty = false;
+
             return "";
         }
 
@@ -123,6 +124,7 @@ export class Table {
         if (numberColumns === 0) {
             this.#cachedString = "";
             this.#isDirty = false;
+
             return "";
         }
 
@@ -130,8 +132,8 @@ export class Table {
         let fixedGridWidths: number[] | undefined;
 
         if (Array.isArray(this.#options.columnWidths)) {
-            fixedGridWidths =
-                this.#options.columnWidths.length >= numberColumns
+            fixedGridWidths
+                = this.#options.columnWidths.length >= numberColumns
                     ? this.#options.columnWidths.slice(0, numberColumns)
                     : [...this.#options.columnWidths, ...Array.from<number>({ length: numberColumns - this.#options.columnWidths.length }).fill(1)];
         } else if (typeof this.#options.columnWidths === "number") {
@@ -173,15 +175,14 @@ export class Table {
 
         const gridItems: GridItem[] = [];
 
-        // eslint-disable-next-line guard-for-in,@typescript-eslint/no-for-in-array
+        // eslint-disable-next-line guard-for-in
         for (const rowIndex in allRows) {
-            // eslint-disable-next-line security/detect-object-injection
             const row = allRows[rowIndex];
 
             if (!Array.isArray(row)) {
                 // eslint-disable-next-line no-console
                 console.error(`Skipping non-array row while creating GridItems:`, row);
-                // eslint-disable-next-line no-continue
+
                 continue;
             }
 
@@ -209,15 +210,14 @@ export class Table {
                 }
 
                 if (this.#options.transformTabToSpace && typeof cellInput === "string") {
-                    cellInput = cellInput.replaceAll("\\t", " ".repeat(this.#options.transformTabToSpace));
+                    cellInput = cellInput.replaceAll(String.raw`\t`, " ".repeat(this.#options.transformTabToSpace));
                 }
 
                 let maxWidth: number | undefined;
 
                 // Table-level columnWidths override cell-specific maxWidth if defined
-                // eslint-disable-next-line security/detect-object-injection
+
                 if (fixedGridWidths?.[cellIndex] !== undefined) {
-                    // eslint-disable-next-line security/detect-object-injection
                     maxWidth = fixedGridWidths[cellIndex];
                 }
 
@@ -245,6 +245,7 @@ export class Table {
 
         this.#cachedString = grid.toString();
         this.#isDirty = false;
+
         return this.#cachedString;
     }
 }

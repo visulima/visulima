@@ -16,14 +16,12 @@ const determineCellVerticalPosition = (
 ): { firstRow: number; lastRow: number; showContent: boolean } => {
     let firstRow = rowIndex;
 
-    // eslint-disable-next-line security/detect-object-injection
     while (firstRow > 0 && gridLayout[firstRow - 1]?.[col] === cell) {
         firstRow -= 1;
     }
 
     let lastRow = rowIndex;
 
-    // eslint-disable-next-line security/detect-object-injection
     while (lastRow < gridLayout.length - 1 && gridLayout[lastRow + 1]?.[col] === cell) {
         lastRow += 1;
     }
@@ -36,17 +34,18 @@ const determineCellVerticalPosition = (
         showContent = true;
     } else {
         switch (cell.vAlign) {
-            case "top": {
-                showContent = rowIndex === firstRow;
+            case "bottom": {
+                showContent = rowIndex === lastRow;
                 break;
             }
             case "middle": {
                 const middleRow = firstRow + Math.floor(rowSpan / 2);
+
                 showContent = rowIndex === middleRow;
                 break;
             }
-            case "bottom": {
-                showContent = rowIndex === lastRow;
+            case "top": {
+                showContent = rowIndex === firstRow;
                 break;
             }
             default: {

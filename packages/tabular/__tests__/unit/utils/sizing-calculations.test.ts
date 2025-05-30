@@ -6,7 +6,7 @@ import calculateRowHeights from "../../../src/utils/calculate-row-heights";
 import computeRowLogicalWidth from "../../../src/utils/compute-row-logical-width";
 
 describe("grid Sizing Calculations", () => {
-    describe("calculateCellTotalWidth", () => {
+    describe(calculateCellTotalWidth, () => {
         it("returns width for a single column span", () => {
             expect.assertions(1);
             // Should return the width of the column at index 1
@@ -41,7 +41,7 @@ describe("grid Sizing Calculations", () => {
         });
     });
 
-    describe("calculateRowHeights", () => {
+    describe(calculateRowHeights, () => {
         // Helper functions (consider moving to a shared test util if used elsewhere)
         const alignCellContent = (cell: GridItem) =>
             // Simulate content split by newlines
@@ -49,17 +49,21 @@ describe("grid Sizing Calculations", () => {
 
         const findFirstOccurrenceRow = (gridLayout: (GridItem | null)[][], startRow: number, startCol: number, cell: GridItem) => {
             let firstRow = startRow;
+
             // eslint-disable-next-line security/detect-object-injection
             while (firstRow > 0 && gridLayout[firstRow - 1]?.[startCol] === cell) {
                 firstRow -= 1;
             }
+
             return firstRow;
         };
 
         it("returns correct heights for single row", () => {
             expect.assertions(1);
+
             const cell: GridItem = { content: "A" };
             const grid = [[cell]];
+
             expect(
                 calculateRowHeights(
                     grid,
@@ -86,8 +90,10 @@ describe("grid Sizing Calculations", () => {
 
         it("returns correct heights for multi-line row", () => {
             expect.assertions(1);
+
             const cell: GridItem = { content: "A\nB\nC" };
             const grid = [[cell]];
+
             expect(
                 calculateRowHeights(
                     grid,
@@ -114,6 +120,7 @@ describe("grid Sizing Calculations", () => {
 
         it("returns correct heights with row spans", () => {
             expect.assertions(1);
+
             const cellA: GridItem = { content: "A", rowSpan: 2 };
             const cellB: GridItem = { content: "B\nB" };
             const cellC: GridItem = { content: "C" };
@@ -121,6 +128,7 @@ describe("grid Sizing Calculations", () => {
                 [cellA, cellB],
                 [null, cellC],
             ];
+
             expect(
                 calculateRowHeights(
                     grid,
@@ -177,10 +185,12 @@ describe("grid Sizing Calculations", () => {
 
         it("respects fixed rowHeights array option", () => {
             expect.assertions(1);
+
             const cellA: GridItem = { content: "A\nB\nC" };
             const cellB: GridItem = { content: "D" };
             const grid = [[cellA], [cellB]];
             const fixedHeights = [2, 3]; // Fix row 0 height to 2, row 1 to 3
+
             expect(
                 calculateRowHeights(
                     grid,
@@ -208,10 +218,12 @@ describe("grid Sizing Calculations", () => {
 
         it("respects fixed rowHeights number option (applies to all rows)", () => {
             expect.assertions(1);
+
             const cellA: GridItem = { content: "A\nB\nC" };
             const cellB: GridItem = { content: "D" };
             const grid = [[cellA], [cellB]];
             const fixedHeight = 2; // Fix all rows height to 2
+
             expect(
                 calculateRowHeights(
                     grid,
@@ -272,7 +284,7 @@ describe("grid Sizing Calculations", () => {
         });
     });
 
-    describe("computeRowLogicalWidth", () => {
+    describe(computeRowLogicalWidth, () => {
         it("should handle empty row", () => {
             expect.assertions(1);
             expect(computeRowLogicalWidth([])).toBe(0);
@@ -280,40 +292,50 @@ describe("grid Sizing Calculations", () => {
 
         it("should handle row with null cells", () => {
             expect.assertions(1);
+
             const row: TableCell[] = [null, null, null];
+
             expect(computeRowLogicalWidth(row)).toBe(3); // Each null cell counts as width 1
         });
 
         it("should handle row with string cells", () => {
             expect.assertions(1);
+
             const row: TableCell[] = ["cell1", "cell2", "cell3"];
+
             expect(computeRowLogicalWidth(row)).toBe(3); // Each string cell counts as width 1
         });
 
         it("should handle row with object cells and colSpan", () => {
             expect.assertions(1);
+
             const row: TableCell[] = [
                 { colSpan: 2, content: "wide cell" }, // Width 2
                 { content: "normal cell" }, // Width 1
                 { colSpan: 3, content: "wider cell" }, // Width 3
             ];
+
             expect(computeRowLogicalWidth(row)).toBe(6); // 2 + 1 + 3
         });
 
         it("should handle mixed row with null, string, and object cells", () => {
             expect.assertions(1);
+
             const row: TableCell[] = [
                 null, // Width 1
                 "string cell", // Width 1
                 { colSpan: 2, content: "wide cell" }, // Width 2
                 null, // Width 1
             ];
+
             expect(computeRowLogicalWidth(row)).toBe(5); // 1 + 1 + 2 + 1
         });
 
         it("should handle object cells without colSpan", () => {
             expect.assertions(1);
+
             const row: TableCell[] = [{ content: "cell1" }, { content: "cell2" }, { content: "cell3" }];
+
             expect(computeRowLogicalWidth(row)).toBe(3); // Each cell defaults to width 1
         });
 
@@ -329,7 +351,9 @@ describe("grid Sizing Calculations", () => {
 
         it("should handle array cells as regular content", () => {
             expect.assertions(1);
+
             const row: TableCell[] = ["array1", "array2", { content: "object" }];
+
             expect(computeRowLogicalWidth(row)).toBe(3); // Arrays count as width 1
         });
 
@@ -345,7 +369,9 @@ describe("grid Sizing Calculations", () => {
 
         it("should handle row with bigint cells", () => {
             expect.assertions(1);
+
             const row: TableCell[] = [123n, { content: 456n }, null];
+
             expect(computeRowLogicalWidth(row)).toBe(3); // Each cell counts as width 1
         });
     });

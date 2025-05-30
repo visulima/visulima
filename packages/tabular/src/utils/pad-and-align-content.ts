@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { getStringWidth } from "@visulima/string";
 
 import type { HorizontalAlignment } from "../types";

@@ -5,10 +5,8 @@ export const EMPTY_CELL_REPRESENTATION = "__EMPTY__";
 /**
  * Normalizes a GridCell input into an InternalGridItem.
  * Ensures the 'content' property is always a string.
- *
- * @param cell - The input cell (string, number, null, undefined, or GridItem object).
+ * @param cell The input cell (string, number, null, undefined, or GridItem object).
  * @returns The normalized InternalGridItem.
- *
  * @throws {TypeError} If the input cell type is invalid.
  */
 export const normalizeGridCell = (cell: GridCell): InternalGridItem => {

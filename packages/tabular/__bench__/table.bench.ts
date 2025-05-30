@@ -1,27 +1,28 @@
-import { describe, bench } from "vitest";
-import { default as Table3 } from "cli-table3";
+import Table3 from "cli-table3";
 import { table } from "table";
+import { bench, describe } from "vitest";
+
 import { createTable } from "../src";
 
 interface CellOptions {
-    x: number;
-    y: number;
     colSpan?: number;
     rowSpan?: number;
+    x: number;
+    y: number;
 }
 
-const cellContent = ({ x, y, colSpan = 1, rowSpan = 1 }: CellOptions): string => {
-    return `${y}-${x} (${rowSpan}x${colSpan})`;
-};
+const cellContent = ({ colSpan = 1, rowSpan = 1, x, y }: CellOptions): string => `${y}-${x} (${rowSpan}x${colSpan})`;
 
 const generateBasicTable = (rows: number, cols: number, Table: any, options = {}) => {
     const table = new Table(options);
 
     for (let y = 0; y < rows; y++) {
         const row = [];
+
         for (let x = 0; x < cols; x++) {
-            row.push(cellContent({ y, x }));
+            row.push(cellContent({ x, y }));
         }
+
         table.push(row);
     }
 
@@ -47,8 +48,8 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
         ]);
 
         // Generate 1763 rows of mock data
-        for (let i = 1; i <= 1763; i++) {
-            table.addRow([i.toString(), `User ${i}`, `user${i}@example.com`, i % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, i).toISOString()]);
+        for (let index = 1; index <= 1763; index++) {
+            table.addRow([index.toString(), `User ${index}`, `user${index}@example.com`, index % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, index).toISOString()]);
         }
 
         // Render the table
@@ -59,14 +60,14 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
         const table = new Table3({
             head: ["ID", "Name", "Email", "Status", "Created At"],
             style: {
-                head: [],
                 border: [],
+                head: [],
             },
         });
 
         // Generate 1763 rows of mock data
-        for (let i = 1; i <= 1763; i++) {
-            table.push([i.toString(), `User ${i}`, `user${i}@example.com`, i % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, i).toISOString()]);
+        for (let index = 1; index <= 1763; index++) {
+            table.push([index.toString(), `User ${index}`, `user${index}@example.com`, index % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, index).toISOString()]);
         }
 
         // Render the table
@@ -77,8 +78,8 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
         const data = [["ID", "Name", "Email", "Status", "Created At"]];
 
         // Generate 1763 rows of mock data
-        for (let i = 1; i <= 1763; i++) {
-            data.push([i.toString(), `User ${i}`, `user${i}@example.com`, i % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, i).toISOString()]);
+        for (let index = 1; index <= 1763; index++) {
+            data.push([index.toString(), `User ${index}`, `user${index}@example.com`, index % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, index).toISOString()]);
         }
 
         // Render the table
@@ -89,7 +90,8 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
 describe("Table Rendering basic table (100x10)", () => {
     bench("@visulima/tabular", () => {
         const table = createTable();
-        //Generate 100x10 table
+
+        // Generate 100x10 table
         for (let y = 0; y < 100; y++) {
             const row = [];
 
@@ -109,6 +111,7 @@ describe("Table Rendering basic table (100x10)", () => {
 
     bench("table", () => {
         const data = [];
+
         // Generate 100x10 table
         for (let y = 0; y < 100; y++) {
             const row = [];
@@ -128,14 +131,14 @@ describe("Table Rendering with word wrap", () => {
     const wrapHeaders = ["Description", "Status", "Notes"];
     const wrapRows = [
         [
-            { content: "This is a very long description that should be automatically wrapped to fit within the cell width", wordWrap: true, maxWidth: 40 },
-            { content: "Active and pending review from the team", wordWrap: true, maxWidth: 30 },
-            { content: "Multiple notes need to be added here for context", wordWrap: true, maxWidth: 40 },
+            { content: "This is a very long description that should be automatically wrapped to fit within the cell width", maxWidth: 40, wordWrap: true },
+            { content: "Active and pending review from the team", maxWidth: 30, wordWrap: true },
+            { content: "Multiple notes need to be added here for context", maxWidth: 40, wordWrap: true },
         ],
         [
-            { content: "A shorter description", wordWrap: true, maxWidth: 40 },
-            { content: "Completed", wordWrap: true, maxWidth: 30 },
-            { content: "This is a very long note that will be wrapped automatically to demonstrate the word wrap feature", wordWrap: true, maxWidth: 40 },
+            { content: "A shorter description", maxWidth: 40, wordWrap: true },
+            { content: "Completed", maxWidth: 30, wordWrap: true },
+            { content: "This is a very long note that will be wrapped automatically to demonstrate the word wrap feature", maxWidth: 40, wordWrap: true },
         ],
     ];
 
@@ -149,20 +152,22 @@ describe("Table Rendering with word wrap", () => {
 
     bench("cli-table3", () => {
         const table = new Table3({
-            head: wrapHeaders,
-            wordWrap: true,
             colWidths: [40, 30, 40],
+            head: wrapHeaders,
             style: {
-                head: [],
                 border: [],
+                head: [],
             },
+            wordWrap: true,
         });
+
         table.push(...wrapRows.map((row) => row.map((cell) => cell.content)));
         table.toString();
     });
 
     bench("table", () => {
         const data = [wrapHeaders];
+
         data.push(...wrapRows.map((row) => row.map((cell) => cell.content)));
         table(data, {
             columns: [
@@ -179,14 +184,14 @@ describe("Table Rendering with spanning cells", () => {
         const table = createTable();
 
         // Add header with colspan
-        table.setHeaders([{ content: "Span All", colSpan: 3 }]);
+        table.setHeaders([{ colSpan: 3, content: "Span All" }]);
 
         // Add rows with various spans
         table.addRows(
-            [{ content: "Span Two", colSpan: 2 }, "C"],
-            ["A", { content: "Span Two", colSpan: 2 }],
+            [{ colSpan: 2, content: "Span Two" }, "C"],
+            ["A", { colSpan: 2, content: "Span Two" }],
             ["A", "B", "C"],
-            [{ content: "Span All", colSpan: 3 }],
+            [{ colSpan: 3, content: "Span All" }],
         );
 
         table.toString();
@@ -195,18 +200,18 @@ describe("Table Rendering with spanning cells", () => {
     bench("cli-table3", () => {
         const table = new Table3({
             style: {
-                head: [],
                 border: [],
+                head: [],
             },
         });
 
         // cli-table3 uses a different approach for spans
         table.push(
-            [{ content: "Span All", colSpan: 3 }],
-            [{ content: "Span Two", colSpan: 2 }, "C"],
-            ["A", { content: "Span Two", colSpan: 2 }],
+            [{ colSpan: 3, content: "Span All" }],
+            [{ colSpan: 2, content: "Span Two" }, "C"],
+            ["A", { colSpan: 2, content: "Span Two" }],
             ["A", "B", "C"],
-            [{ content: "Span All", colSpan: 3 }],
+            [{ colSpan: 3, content: "Span All" }],
         );
 
         table.toString();
@@ -222,12 +227,13 @@ describe("Table Rendering with spanning cells", () => {
             ["A", "B", "C"],
             ["Span All", "", ""],
         ];
+
         table(data, {
             spanningCells: [
-                { col: 0, row: 0, colSpan: 3 },
-                { col: 0, row: 1, colSpan: 2 },
-                { col: 1, row: 2, colSpan: 2 },
-                { col: 0, row: 4, colSpan: 3 },
+                { col: 0, colSpan: 3, row: 0 },
+                { col: 0, colSpan: 2, row: 1 },
+                { col: 1, colSpan: 2, row: 2 },
+                { col: 0, colSpan: 3, row: 4 },
             ],
         });
     });
@@ -238,6 +244,7 @@ describe("Table Rendering with truncation", () => {
 
     bench("@visulima/tabular", () => {
         const table = createTable();
+
         table.setHeaders([{ content: longText, maxWidth: 20 }, { content: "Normal" }]);
         table.addRow([{ content: longText, maxWidth: 20 }, "Short"]);
         table.toString();
@@ -245,14 +252,15 @@ describe("Table Rendering with truncation", () => {
 
     bench("cli-table3", () => {
         const table = new Table3({
-            head: [longText, "Normal"],
             colWidths: [20, 10],
-            truncate: "…",
+            head: [longText, "Normal"],
             style: {
-                head: [],
                 border: [],
+                head: [],
             },
+            truncate: "…",
         });
+
         table.push([longText, "Short"]);
         table.toString();
     });
@@ -262,8 +270,9 @@ describe("Table Rendering with truncation", () => {
             [longText, "Normal"],
             [longText, "Short"],
         ];
+
         table(data, {
-            columns: [{ width: 20, truncate: 20 }, { width: 10 }],
+            columns: [{ truncate: 20, width: 20 }, { width: 10 }],
         });
     });
 });
