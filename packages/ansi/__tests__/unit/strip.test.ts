@@ -7,9 +7,9 @@ describe(`ansi`, () => {
      * Modified copy of https://github.com/chalk/strip-ansi/blob/main/test.js
      *
      * MIT License
-     * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+     * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
      */
-    describe("strip", () => {
+    describe(strip, () => {
         it("should strip color from string", () => {
             expect.assertions(1);
 
@@ -34,7 +34,6 @@ describe(`ansi`, () => {
             expect(strip("\u001B]8;;https://github.com\u0007click\u001B]8;;\u0007")).toBe("click");
         });
 
-        // eslint-disable-next-line no-secrets/no-secrets
         // According to https://en.wikipedia.org/wiki/ANSI_escape_code#OSC_(Operating_System_Command)_sequences, '\x1B]0;<TEXT>\x07' sequence should be stripped.
         it("should strip 'ESC ]0;<TEXT> BEL'", () => {
             expect.assertions(1);
