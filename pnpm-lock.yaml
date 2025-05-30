@@ -615,14 +615,14 @@ importers:
         specifier: 22.15.24
         version: 22.15.24
       '@visulima/colorize':
-        specifier: 1.4.21
-        version: 1.4.21
+        specifier: 1.4.22
+        version: 1.4.22
       '@visulima/packem':
         specifier: 1.19.2
-        version: 1.19.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.24)(@visulima/redact@1.0.14)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.24)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -684,14 +684,14 @@ importers:
   packages/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 3.0.19
-        version: 3.0.19(zod@3.25.29)
+        specifier: 3.0.20
+        version: 3.0.20(zod@3.25.29)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.78
-        version: 2.0.78(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)
+        specifier: 2.0.79
+        version: 2.0.79(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
       accepts:
         specifier: ^1.3.8
         version: 1.3.8
@@ -805,11 +805,11 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.15))
       '@visulima/crud':
-        specifier: 2.0.37
-        version: 2.0.37(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3))(prisma@6.8.2(typescript@5.8.3))
+        specifier: 2.0.38
+        version: 2.0.38(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3))(prisma@6.8.2(typescript@5.8.3))
       '@visulima/fs':
-        specifier: 3.1.2
-        version: 3.1.2(yaml@2.8.0)
+        specifier: 3.1.3
+        version: 3.1.3(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -979,14 +979,14 @@ importers:
         specifier: 18.19.71
         version: 18.19.71
       '@visulima/colorize':
-        specifier: 1.4.21
-        version: 1.4.21
+        specifier: 1.4.22
+        version: 1.4.22
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -1063,17 +1063,17 @@ importers:
   packages/cerebro:
     dependencies:
       '@visulima/boxen':
-        specifier: 1.0.30
-        version: 1.0.30
+        specifier: 1.0.31
+        version: 1.0.31
       '@visulima/colorize':
-        specifier: 1.4.21
-        version: 1.4.21
+        specifier: 1.4.22
+        version: 1.4.22
       '@visulima/find-cache-dir':
-        specifier: 1.0.28
-        version: 1.0.28(yaml@2.8.0)
+        specifier: 1.0.29
+        version: 1.0.29(yaml@2.8.0)
       '@visulima/pail':
-        specifier: 2.1.22
-        version: 2.1.22(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)
+        specifier: 2.1.23
+        version: 2.1.23(rotating-file-stream@3.2.6)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -1134,10 +1134,10 @@ importers:
         version: 4.0.26(csstype@3.1.3)(next@15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nextra@4.2.17(acorn@8.14.1)(next@15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@3.25.29)
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -1202,8 +1202,8 @@ importers:
   packages/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: 2.2.13
-        version: 2.2.13
+        specifier: 2.2.14
+        version: 2.2.14
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -1234,10 +1234,10 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -1403,7 +1403,7 @@ importers:
         version: 4.0.26(csstype@3.1.3)(next@15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nextra@4.2.17(acorn@8.14.1)(next@15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@3.25.29)
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -1477,8 +1477,8 @@ importers:
         specifier: 3.0.27
         version: 3.0.27
       '@visulima/prisma-dmmf-transformer':
-        specifier: 2.0.28
-        version: 2.0.28(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3))(prisma@6.8.2(typescript@5.8.3))
+        specifier: 2.0.29
+        version: 2.0.29(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3))(prisma@6.8.2(typescript@5.8.3))
       http-errors:
         specifier: ^2.0.0
         version: 2.0.0
@@ -1653,7 +1653,7 @@ importers:
         version: 1.3.0
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -1794,10 +1794,10 @@ importers:
         version: 4.0.26(csstype@3.1.3)(next@15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nextra@4.2.17(acorn@8.14.1)(next@15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@3.25.29)
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -1853,11 +1853,11 @@ importers:
   packages/find-cache-dir:
     dependencies:
       '@visulima/fs':
-        specifier: 3.1.2
-        version: 3.1.2(yaml@2.8.0)
+        specifier: 3.1.3
+        version: 3.1.3(yaml@2.8.0)
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -1891,7 +1891,7 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -1978,7 +1978,7 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -2037,8 +2037,8 @@ importers:
   packages/fs:
     dependencies:
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -2065,8 +2065,8 @@ importers:
         specifier: 18.19.71
         version: 18.19.71
       '@visulima/error':
-        specifier: 4.4.16
-        version: 4.4.16
+        specifier: 4.4.17
+        version: 4.4.17
       '@visulima/packem':
         specifier: 1.19.1
         version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.4(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.4(typescript@5.8.3)))(typedoc@0.28.4(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
@@ -2243,7 +2243,7 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -2367,10 +2367,10 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -2477,11 +2477,11 @@ importers:
         specifier: 18.19.71
         version: 18.19.71
       '@visulima/colorize':
-        specifier: 1.4.21
-        version: 1.4.21
+        specifier: 1.4.22
+        version: 1.4.22
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/browser':
         specifier: ^3.1.4
         version: 3.1.4(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(playwright@1.52.0)(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))(vitest@3.1.4)(webdriverio@9.14.0)
@@ -2602,7 +2602,7 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -2664,8 +2664,8 @@ importers:
         specifier: ^10.1.1
         version: 10.1.1(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 3.1.2
-        version: 3.1.2(yaml@2.8.0)
+        specifier: 3.1.3
+        version: 3.1.3(yaml@2.8.0)
       comment-parser:
         specifier: ^1.4.1
         version: 1.4.1
@@ -2811,7 +2811,7 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: ^1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -2888,11 +2888,11 @@ importers:
         specifier: ^5.1.10
         version: 5.1.12(@types/node@18.19.71)
       '@visulima/fs':
-        specifier: 3.1.2
-        version: 3.1.2(yaml@2.8.0)
+        specifier: 3.1.3
+        version: 3.1.3(yaml@2.8.0)
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
       normalize-package-data:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2941,7 +2941,7 @@ importers:
         version: 2.4.4
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -3055,7 +3055,7 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -3117,17 +3117,17 @@ importers:
   packages/pail:
     dependencies:
       '@visulima/colorize':
-        specifier: 1.4.21
-        version: 1.4.21
+        specifier: 1.4.22
+        version: 1.4.22
       '@visulima/error':
-        specifier: 4.4.16
-        version: 4.4.16
+        specifier: 4.4.17
+        version: 4.4.17
       '@visulima/fmt':
         specifier: 1.1.15
         version: 1.1.15
       '@visulima/inspector':
-        specifier: 1.0.21
-        version: 1.0.21
+        specifier: 1.0.22
+        version: 1.0.22
       safe-stable-stringify:
         specifier: ^2.5.0
         version: 2.5.0
@@ -3164,10 +3164,10 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@visulima/redact':
-        specifier: 1.0.14
-        version: 1.0.14
+        specifier: 1.0.15
+        version: 1.0.15
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -3430,7 +3430,7 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: 3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -3527,7 +3527,7 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -3629,8 +3629,8 @@ importers:
         specifier: ^0.3.25
         version: 0.3.25
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -3664,7 +3664,7 @@ importers:
         version: 18.19.71
       '@visulima/packem':
         specifier: 1.19.1
-        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -3759,11 +3759,11 @@ importers:
         specifier: 18.19.71
         version: 18.19.71
       '@visulima/colorize':
-        specifier: 1.4.21
-        version: 1.4.21
+        specifier: 1.4.22
+        version: 1.4.22
       '@visulima/packem':
         specifier: 1.19.4
-        version: 1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: 3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -3916,14 +3916,14 @@ importers:
         specifier: 22.15.27
         version: 22.15.27
       '@visulima/colorize':
-        specifier: 1.4.21
-        version: 1.4.21
+        specifier: 1.4.22
+        version: 1.4.22
       '@visulima/packem':
         specifier: ^1.19.4
-        version: 1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.27)(@visulima/redact@1.0.14)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+        version: 1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.27)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@visulima/string':
-        specifier: workspace:*
-        version: link:../string
+        specifier: 1.2.3
+        version: 1.2.3
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -4006,11 +4006,11 @@ importers:
   packages/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 3.1.2
-        version: 3.1.2(yaml@2.8.0)
+        specifier: 3.1.3
+        version: 3.1.3(yaml@2.8.0)
       '@visulima/path':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.6
+        version: 1.3.6
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
@@ -7147,9 +7147,6 @@ packages:
   '@prisma/config@6.8.2':
     resolution: {integrity: sha512-ZJY1fF4qRBPdLQ/60wxNtX+eu89c3AkYEcP7L3jkp0IPXCNphCYxikTg55kPJLDOG6P0X+QG5tCv6CmsBRZWFQ==}
 
-  '@prisma/debug@6.4.1':
-    resolution: {integrity: sha512-Q9xk6yjEGIThjSD8zZegxd5tBRNHYd13GOIG0nLsanbTXATiPXCLyvlYEfvbR2ft6dlRsziQXfQGxAgv7zcMUA==}
-
   '@prisma/debug@6.8.2':
     resolution: {integrity: sha512-4muBSSUwJJ9BYth5N8tqts8JtiLT8QI/RSAzEogwEfpbYGFo9mYsInsVo8dqXdPO2+Rm5OG5q0qWDDE3nyUbVg==}
 
@@ -7167,9 +7164,6 @@ packages:
 
   '@prisma/fetch-engine@6.8.2':
     resolution: {integrity: sha512-lCvikWOgaLOfqXGacEKSNeenvj0n3qR5QvZUOmPE2e1Eh8cMYSobxonCg9rqM6FSdTfbpqp9xwhSAOYfNqSW0g==}
-
-  '@prisma/generator-helper@6.4.1':
-    resolution: {integrity: sha512-rf16mIHOBtgyEVfUXkqfGt94mU8Wp93yyC3iUltO7JSnnydwRNisJD/zygNCXjW7prEmKlJS4Ky5w/9z26tiLg==}
 
   '@prisma/generator-helper@6.8.2':
     resolution: {integrity: sha512-KBLW47sbwFBKKYMiICIAEWsG6TdpPapPT7e7hpmpF3xMgYAm6YIXu4JGwfQVDY9Vbcb+0vPdPdSEQtInYOOe5g==}
@@ -9901,6 +9895,11 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
+  '@visulima/boxen@1.0.31':
+    resolution: {integrity: sha512-h4l4XCxXGaj1zoKa9DuX7ULLpWsc/tvzAFbQ2bs4gpS0ePtFOpV0Sqp8SqtGuI1U9pU+FSyCpUWXll7J209pdQ==}
+    engines: {node: '>=18.0.0 <=23.x'}
+    os: [darwin, linux, win32]
+
   '@visulima/cerebro@1.1.39':
     resolution: {integrity: sha512-KaV0omK5CSkVrCLqhu7w0hCRaBlO0uZ49WKF8EYBt+/552TPZFKXsfE3hFILubacSKAdlhoNk3TXTak6rlBP1A==}
     engines: {node: '>=18.0.0 <=23.x'}
@@ -9921,15 +9920,20 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/connect@3.0.19':
-    resolution: {integrity: sha512-BZkFdnZJEYm259nql3ysFauKSt+8ZI0DKCbHN8LFschKDWUAov+WAOfEbI6Azsxyb8ZsKmN06VuibMzH5NhamQ==}
+  '@visulima/colorize@1.4.22':
+    resolution: {integrity: sha512-fdh0XTKa1ZEQdkm5rvw8HIjHaOL1QNZnl+m+c1pYN4ITOjhQ0yMto1c8ZxlR8H0GsP3ZoBdHQzV6FnsKsfA7mw==}
+    engines: {node: '>=18.0.0 <=23.x'}
+    os: [darwin, linux, win32]
+
+  '@visulima/connect@3.0.20':
+    resolution: {integrity: sha512-fvmtyFO0Dw4LMf8OPa2Epmcybs7p8tgHnJNlF4aiqhmi46O7CSixNZy9je5xrAMFceqNJplV6IR5Gf8Jjs1KZw==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
     peerDependencies:
       zod: ^3.22.4
 
-  '@visulima/crud@2.0.37':
-    resolution: {integrity: sha512-43UoScLFVs9MLnK2vm+VLl4oUE32G5z+rzYJSIzOkYjMUX6K2T3IYMlKAeGuuWpphviDVi4Hum7iTBzuehnRjQ==}
+  '@visulima/crud@2.0.38':
+    resolution: {integrity: sha512-XqmibfpsFXdsn9V1etMPh+QXa05uNACDwgUwE9PyGL7glnUJr1PrysSCdC5AYBw4n6/FcusRc46BbuvBUQrGrg==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
@@ -9943,12 +9947,21 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
+  '@visulima/error@4.4.17':
+    resolution: {integrity: sha512-aak9s96g8IpFwvarIDxdYtdZjiaCGtrJNMEH2nrleHfczM3k7defRmN+gDwQgFTuGXmfvCq1yNQWXdQrmYp8tA==}
+    engines: {node: '>=18.0.0 <=23.x'}
+    os: [darwin, linux, win32]
+
   '@visulima/find-cache-dir@1.0.27':
     resolution: {integrity: sha512-CJYhVJq6Payfbn3JIQ4ULm/jVLbFMvPxUkF50Ox48h69bIYdb7Dw8FcLQGIBBLZsZEeAWpWkYg0uAmfpwEQXaw==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/find-cache-dir@1.0.28':
     resolution: {integrity: sha512-fwpwqk/lBlU3XI9frjw8HkU0hCPICFyUgSvcnxIMjI1ty7G5ykqjxpGDHjClpTM4CfbLHEWCyVsv6ObI1CKa7Q==}
+    engines: {node: '>=18.0.0 <=23.x'}
+
+  '@visulima/find-cache-dir@1.0.29':
+    resolution: {integrity: sha512-HrwX608dTbY3ErB5r3WlG5nWjlvmgt4H1OZMiBHRQ+awCBBqOZryjM1nDiDDSv/l0SL35YBw5u5nEi1M/Z8x1Q==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/fmt@1.1.14':
@@ -9981,6 +9994,16 @@ packages:
       yaml:
         optional: true
 
+  '@visulima/fs@3.1.3':
+    resolution: {integrity: sha512-AA1DZIAwtg5v4nT5ABJnrgq/YWPiqndeaTG/qePE1h7Tr+ZwOlsrqZ6CGzwjgHsbblNG05US4beNaqmzdC6whQ==}
+    engines: {node: '>=18.0.0 <=23.x'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      yaml: ^2.7.0
+    peerDependenciesMeta:
+      yaml:
+        optional: true
+
   '@visulima/humanizer@1.1.1':
     resolution: {integrity: sha512-9FZ1WdiyVD8umO948r2UIlrmhniHkaQNrDuuM6u3MkQjCbITJ1no4aGMJxcem8VnGT5ywF+x5KuTxX4lCzU9kQ==}
     engines: {node: '>=18.0.0 <=23.x'}
@@ -9997,6 +10020,10 @@ packages:
     resolution: {integrity: sha512-nE1v2esoQV2wuhW7GcxGiDqEhWTu/O3af0uSqUMIqCYj1WXv+ki8n5twphQDwEYA0VuDguFBjZGjTutuLnUJhQ==}
     engines: {node: '>=18.0.0 <=23.x'}
 
+  '@visulima/inspector@1.0.22':
+    resolution: {integrity: sha512-6ZYs8U3BIezT76ynWeOv5r0+U4vBpBQOt/zeYXmv2Ct6nznwD/T3sErGOb2FBxBq3aeHEZyrRUkGZCU5/Ds72w==}
+    engines: {node: '>=18.0.0 <=23.x'}
+
   '@visulima/is-ansi-color-supported@2.2.12':
     resolution: {integrity: sha512-wWdpUVFqWJTqrWMMonskLCUrvrkZVlMsNkkjLxZebrCDfhWew+SfAwY9XHCrQidJex/XPsZfNn/cpctQscas4A==}
     engines: {node: '>=18.0.0 <=23.x'}
@@ -10007,8 +10034,13 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.78':
-    resolution: {integrity: sha512-JeqmhKmVOE2DVSTbRopcl8NGFa5BIuNvs02X6Eagb8gSVWT/VP4ru61Fo+NvwV4W6M+wgkBpebXZp2fZZwARsg==}
+  '@visulima/is-ansi-color-supported@2.2.14':
+    resolution: {integrity: sha512-5Z3V97wvXl+0b4uykb0jKG7nPhLfXG0pl5mdyAhIuUzCNRqwk6Tn7Upb16WyWafeKd7kTHY9nr78uTiPtOYuXg==}
+    engines: {node: '>=18.0.0 <=23.x'}
+    os: [darwin, linux, win32]
+
+  '@visulima/jsdoc-open-api@2.0.79':
+    resolution: {integrity: sha512-po+Q/XYZ4DENV08X4DTBXHbEp+z1gH3Z8FEBTGIA2UtrMnqa+C9t4R8yDVsYXueWj7BWuTPEbZncQOgExr5ecA==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -10301,6 +10333,19 @@ packages:
       rotating-file-stream:
         optional: true
 
+  '@visulima/pail@2.1.23':
+    resolution: {integrity: sha512-Vv+7mpsOAm9+XRMuaFsmORUOtn32RYhRdaoZ68KtyR3qFZdxoFweOUoS4ObGz3uZNOBZ7KFdv5JDbZHVzuE7/Q==}
+    engines: {node: '>=18.0.0 <=23.x'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      '@visulima/redact': 1.0.15
+      rotating-file-stream: ^3.1.1
+    peerDependenciesMeta:
+      '@visulima/redact':
+        optional: true
+      rotating-file-stream:
+        optional: true
+
   '@visulima/path@1.3.4':
     resolution: {integrity: sha512-aSSHjSMFK2/+TBbo029LpwVhi4+inZ/Q8AUiuBKE5T4vsXqQn/zQdGl2JViHBSjUWo7gEj5I1yF/iY3FdIupew==}
     engines: {node: '>=18.0.0 <=23.x'}
@@ -10311,16 +10356,21 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/prisma-dmmf-transformer@2.0.28':
-    resolution: {integrity: sha512-SdbQ7RF2I/sKaO2Q+8sKuosnnUzS9qGmMf4ZO3OxBZLjSdENbYo0OU2ZF7QImYQ/NKgKvXdeHaba5Oz8o+c2xA==}
+  '@visulima/path@1.3.6':
+    resolution: {integrity: sha512-qQAtyUNQU/weg7oVY0BYBZzQOY2p9+kgAshXNWJHf6zCoJkx6YS3gTPbhG495QuEqXXuH5POEIWDwhrNbEtQww==}
+    engines: {node: '>=18.0.0 <=23.x'}
+    os: [darwin, linux, win32]
+
+  '@visulima/prisma-dmmf-transformer@2.0.29':
+    resolution: {integrity: sha512-4Io8IPyf7H/KpryvGjZWY5HRoGDB1UEku9VJy+O4AlP/tAB2bjwxd5MwYw5CU9N7vuKCrohRdvhAQvRhkv44kg==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
     peerDependencies:
       '@prisma/client': 3.* || 4.*
       prisma: 3.* || 4.*
 
-  '@visulima/redact@1.0.14':
-    resolution: {integrity: sha512-qw9EmFOhHoRRTGYhDEl2fuNOCT601KL0KQ+3z6kiBbjsgOsxeBouO/wQLqv9RUTcof51FT9Bc3XINxfBDw/R8A==}
+  '@visulima/redact@1.0.15':
+    resolution: {integrity: sha512-G8YfLcgzFbw6vgdI/O4K0RnIq6cT7aB3DIhrn7UuuxwgeknRRO1Tba9kklyyY+K4xtXr3hfLsJg78jDbd6Zp8g==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/source-map@1.0.17':
@@ -10329,6 +10379,10 @@ packages:
 
   '@visulima/source-map@1.0.18':
     resolution: {integrity: sha512-4uoRjOamOBx7WNiOFn4eLtEkEbKHLHApciB6z5ZnKfnQ1VQ+YPw/SIRhYJOrrgl8X55XTcGGjhklMEvjN9gOgQ==}
+    engines: {node: '>=18.0.0 <=23.x'}
+
+  '@visulima/string@1.2.3':
+    resolution: {integrity: sha512-IzL0YDpWs/KSLUpQh0de2Bvo4b2dFYlfyDlnuNYJHqGxot4ozHBpUBssB3p0WNZ7vkPwCLEDOwIMIfVY0G6QSw==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/tsconfig@1.1.15':
@@ -11569,10 +11623,6 @@ packages:
   commander@10.0.1:
     resolution: {integrity: sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==}
     engines: {node: '>=14'}
-
-  commander@13.1.0:
-    resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
-    engines: {node: '>=18'}
 
   commander@14.0.0:
     resolution: {integrity: sha512-2uM9rYjPvyq39NwLRqaiLtWHyDC1FvryJDa2ATTVims5YAS4PupsEQsDvP14FqhFr0P49CYDugi59xaxJlTXRA==}
@@ -21457,8 +21507,8 @@ snapshots:
 
   '@anolilab/rc@1.1.7(yaml@2.8.0)':
     dependencies:
-      '@visulima/fs': 3.1.2(yaml@2.8.0)
-      '@visulima/path': 1.3.5
+      '@visulima/fs': 3.1.3(yaml@2.8.0)
+      '@visulima/path': 1.3.6
       ini: 5.0.0
       ts-deepmerge: 7.0.3
     transitivePeerDependencies:
@@ -21467,8 +21517,8 @@ snapshots:
   '@anolilab/semantic-release-clean-package-json@2.0.2(yaml@2.8.0)':
     dependencies:
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 3.1.2(yaml@2.8.0)
-      '@visulima/path': 1.3.5
+      '@visulima/fs': 3.1.3(yaml@2.8.0)
+      '@visulima/path': 1.3.6
     transitivePeerDependencies:
       - yaml
 
@@ -21478,7 +21528,7 @@ snapshots:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.2(yaml@2.8.0)
       '@visulima/package': 3.5.4(@types/node@18.19.71)(yaml@2.8.0)
-      '@visulima/path': 1.3.5
+      '@visulima/path': 1.3.6
       execa: 9.6.0
       ini: 5.0.0
       normalize-url: 8.0.1
@@ -21494,7 +21544,7 @@ snapshots:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.2(yaml@2.8.0)
       '@visulima/package': 3.5.4(@types/node@22.15.21)(yaml@2.8.0)
-      '@visulima/path': 1.3.5
+      '@visulima/path': 1.3.6
       execa: 9.6.0
       ini: 5.0.0
       normalize-url: 8.0.1
@@ -21510,7 +21560,7 @@ snapshots:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.2(yaml@2.8.0)
       '@visulima/package': 3.5.4(@types/node@22.15.24)(yaml@2.8.0)
-      '@visulima/path': 1.3.5
+      '@visulima/path': 1.3.6
       execa: 9.6.0
       ini: 5.0.0
       normalize-url: 8.0.1
@@ -21526,7 +21576,7 @@ snapshots:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.2(yaml@2.8.0)
       '@visulima/package': 3.5.4(@types/node@22.15.27)(yaml@2.8.0)
-      '@visulima/path': 1.3.5
+      '@visulima/path': 1.3.6
       execa: 9.6.0
       ini: 5.0.0
       normalize-url: 8.0.1
@@ -24782,8 +24832,6 @@ snapshots:
     dependencies:
       jiti: 2.4.2
 
-  '@prisma/debug@6.4.1': {}
-
   '@prisma/debug@6.8.2': {}
 
   '@prisma/dmmf@6.8.2': {}
@@ -24806,10 +24854,6 @@ snapshots:
       '@prisma/debug': 6.8.2
       '@prisma/engines-version': 6.8.0-43.2060c79ba17c6bb9f5823312b6f6b7f4a845738e
       '@prisma/get-platform': 6.8.2
-
-  '@prisma/generator-helper@6.4.1':
-    dependencies:
-      '@prisma/debug': 6.4.1
 
   '@prisma/generator-helper@6.8.2':
     dependencies:
@@ -28657,12 +28701,14 @@ snapshots:
 
   '@visulima/boxen@1.0.30': {}
 
-  '@visulima/cerebro@1.1.39(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)(yaml@2.8.0)':
+  '@visulima/boxen@1.0.31': {}
+
+  '@visulima/cerebro@1.1.39(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)(yaml@2.8.0)':
     dependencies:
       '@visulima/boxen': 1.0.29
       '@visulima/colorize': 1.4.20
       '@visulima/find-cache-dir': 1.0.27(yaml@2.8.0)
-      '@visulima/pail': 2.1.21(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)
+      '@visulima/pail': 2.1.21(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)
       cli-table3: 0.6.5
       command-line-args: 6.0.1
       fastest-levenshtein: 1.0.16
@@ -28672,12 +28718,12 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/cerebro@1.1.40(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)(yaml@2.8.0)':
+  '@visulima/cerebro@1.1.40(rotating-file-stream@3.2.6)(yaml@2.8.0)':
     dependencies:
       '@visulima/boxen': 1.0.30
       '@visulima/colorize': 1.4.21
       '@visulima/find-cache-dir': 1.0.28(yaml@2.8.0)
-      '@visulima/pail': 2.1.22(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)
+      '@visulima/pail': 2.1.22(rotating-file-stream@3.2.6)
       cli-table3: 0.6.5
       command-line-args: 6.0.1
       fastest-levenshtein: 1.0.16
@@ -28695,16 +28741,20 @@ snapshots:
     dependencies:
       '@visulima/is-ansi-color-supported': 2.2.13
 
-  '@visulima/connect@3.0.19(zod@3.25.29)':
+  '@visulima/colorize@1.4.22':
+    dependencies:
+      '@visulima/is-ansi-color-supported': 2.2.14
+
+  '@visulima/connect@3.0.20(zod@3.25.29)':
     dependencies:
       http-errors: 2.0.0
       regexparam: 3.0.0
       zod: 3.25.29
 
-  '@visulima/crud@2.0.37(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3))(prisma@6.8.2(typescript@5.8.3))':
+  '@visulima/crud@2.0.38(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3))(prisma@6.8.2(typescript@5.8.3))':
     dependencies:
       '@visulima/pagination': 3.0.27
-      '@visulima/prisma-dmmf-transformer': 2.0.28(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3))(prisma@6.8.2(typescript@5.8.3))
+      '@visulima/prisma-dmmf-transformer': 2.0.29(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3))(prisma@6.8.2(typescript@5.8.3))
       http-errors: 2.0.0
       path-to-regexp: 8.2.0
     transitivePeerDependencies:
@@ -28714,6 +28764,8 @@ snapshots:
   '@visulima/error@4.4.15': {}
 
   '@visulima/error@4.4.16': {}
+
+  '@visulima/error@4.4.17': {}
 
   '@visulima/find-cache-dir@1.0.27(yaml@2.8.0)':
     dependencies:
@@ -28726,6 +28778,13 @@ snapshots:
     dependencies:
       '@visulima/fs': 3.1.2(yaml@2.8.0)
       '@visulima/path': 1.3.5
+    transitivePeerDependencies:
+      - yaml
+
+  '@visulima/find-cache-dir@1.0.29(yaml@2.8.0)':
+    dependencies:
+      '@visulima/fs': 3.1.3(yaml@2.8.0)
+      '@visulima/path': 1.3.6
     transitivePeerDependencies:
       - yaml
 
@@ -28745,6 +28804,12 @@ snapshots:
     optionalDependencies:
       yaml: 2.8.0
 
+  '@visulima/fs@3.1.3(yaml@2.8.0)':
+    dependencies:
+      '@visulima/path': 1.3.6
+    optionalDependencies:
+      yaml: 2.8.0
+
   '@visulima/humanizer@1.1.1': {}
 
   '@visulima/humanizer@1.2.0': {}
@@ -28753,21 +28818,25 @@ snapshots:
 
   '@visulima/inspector@1.0.21': {}
 
+  '@visulima/inspector@1.0.22': {}
+
   '@visulima/is-ansi-color-supported@2.2.12': {}
 
   '@visulima/is-ansi-color-supported@2.2.13': {}
 
-  '@visulima/jsdoc-open-api@2.0.78(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
+  '@visulima/is-ansi-color-supported@2.2.14': {}
+
+  '@visulima/jsdoc-open-api@2.0.79(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.1(openapi-types@12.1.3)
-      '@visulima/fs': 3.1.2(yaml@2.8.0)
+      '@visulima/fs': 3.1.3(yaml@2.8.0)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       read-pkg-up: 7.0.1
       yaml: 2.8.0
     optionalDependencies:
       cli-progress: 3.12.0
-      commander: 13.1.0
+      commander: 14.0.0
       webpack: 5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15))
     transitivePeerDependencies:
       - '@swc/core'
@@ -28873,7 +28942,7 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/packem@1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
+  '@visulima/packem@1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
     dependencies:
       '@antfu/install-pkg': 1.0.0
       '@babel/parser': 7.26.9
@@ -28890,13 +28959,13 @@ snapshots:
       '@rollup/plugin-replace': 6.0.2(rollup@4.34.9)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.34.9)
       '@rollup/pluginutils': 5.1.4(rollup@4.34.9)
-      '@visulima/cerebro': 1.1.39(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)(yaml@2.8.0)
+      '@visulima/cerebro': 1.1.39(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)(yaml@2.8.0)
       '@visulima/colorize': 1.4.20
       '@visulima/find-cache-dir': 1.0.27(yaml@2.8.0)
       '@visulima/fs': 3.1.1(yaml@2.8.0)
       '@visulima/humanizer': 1.1.1
       '@visulima/package': 3.5.2(@types/node@18.19.71)(yaml@2.8.0)
-      '@visulima/pail': 2.1.21(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)
+      '@visulima/pail': 2.1.21(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)
       '@visulima/path': 1.3.4
       '@visulima/source-map': 1.0.17
       '@visulima/tsconfig': 1.1.15(yaml@2.8.0)
@@ -28963,13 +29032,13 @@ snapshots:
       '@rollup/plugin-replace': 6.0.2(rollup@4.34.9)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.34.9)
       '@rollup/pluginutils': 5.1.4(rollup@4.34.9)
-      '@visulima/cerebro': 1.1.39(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)(yaml@2.8.0)
+      '@visulima/cerebro': 1.1.39(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)(yaml@2.8.0)
       '@visulima/colorize': 1.4.20
       '@visulima/find-cache-dir': 1.0.27(yaml@2.8.0)
       '@visulima/fs': 3.1.1(yaml@2.8.0)
       '@visulima/humanizer': 1.1.1
       '@visulima/package': 3.5.2(@types/node@18.19.71)(yaml@2.8.0)
-      '@visulima/pail': 2.1.21(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)
+      '@visulima/pail': 2.1.21(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)
       '@visulima/path': 1.3.4
       '@visulima/source-map': 1.0.17
       '@visulima/tsconfig': 1.1.15(yaml@2.8.0)
@@ -29036,13 +29105,13 @@ snapshots:
       '@rollup/plugin-replace': 6.0.2(rollup@4.34.9)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.34.9)
       '@rollup/pluginutils': 5.1.4(rollup@4.34.9)
-      '@visulima/cerebro': 1.1.39(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)(yaml@2.8.0)
+      '@visulima/cerebro': 1.1.39(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)(yaml@2.8.0)
       '@visulima/colorize': 1.4.20
       '@visulima/find-cache-dir': 1.0.27(yaml@2.8.0)
       '@visulima/fs': 3.1.1(yaml@2.8.0)
       '@visulima/humanizer': 1.1.1
       '@visulima/package': 3.5.2(@types/node@22.15.21)(yaml@2.8.0)
-      '@visulima/pail': 2.1.21(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)
+      '@visulima/pail': 2.1.21(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)
       '@visulima/path': 1.3.4
       '@visulima/source-map': 1.0.17
       '@visulima/tsconfig': 1.1.15(yaml@2.8.0)
@@ -29092,7 +29161,7 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/packem@1.19.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.24)(@visulima/redact@1.0.14)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
+  '@visulima/packem@1.19.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.24)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@babel/parser': 7.27.3
@@ -29109,13 +29178,13 @@ snapshots:
       '@rollup/plugin-replace': 6.0.2(rollup@4.41.1)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.41.1)
       '@rollup/pluginutils': 5.1.4(rollup@4.41.1)
-      '@visulima/cerebro': 1.1.40(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)(yaml@2.8.0)
+      '@visulima/cerebro': 1.1.40(rotating-file-stream@3.2.6)(yaml@2.8.0)
       '@visulima/colorize': 1.4.21
       '@visulima/find-cache-dir': 1.0.28(yaml@2.8.0)
       '@visulima/fs': 3.1.2(yaml@2.8.0)
       '@visulima/humanizer': 1.2.0
       '@visulima/package': 3.5.4(@types/node@22.15.24)(yaml@2.8.0)
-      '@visulima/pail': 2.1.22(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)
+      '@visulima/pail': 2.1.22(rotating-file-stream@3.2.6)
       '@visulima/path': 1.3.5
       '@visulima/source-map': 1.0.18
       '@visulima/tsconfig': 1.1.16(yaml@2.8.0)
@@ -29165,7 +29234,7 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/packem@1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.14)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
+  '@visulima/packem@1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@babel/parser': 7.27.3
@@ -29182,13 +29251,13 @@ snapshots:
       '@rollup/plugin-replace': 6.0.2(rollup@4.41.1)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.41.1)
       '@rollup/pluginutils': 5.1.4(rollup@4.41.1)
-      '@visulima/cerebro': 1.1.40(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)(yaml@2.8.0)
+      '@visulima/cerebro': 1.1.40(rotating-file-stream@3.2.6)(yaml@2.8.0)
       '@visulima/colorize': 1.4.21
       '@visulima/find-cache-dir': 1.0.28(yaml@2.8.0)
       '@visulima/fs': 3.1.2(yaml@2.8.0)
       '@visulima/humanizer': 1.2.0
       '@visulima/package': 3.5.4(@types/node@18.19.71)(yaml@2.8.0)
-      '@visulima/pail': 2.1.22(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)
+      '@visulima/pail': 2.1.22(rotating-file-stream@3.2.6)
       '@visulima/path': 1.3.5
       '@visulima/source-map': 1.0.18
       '@visulima/tsconfig': 1.1.16(yaml@2.8.0)
@@ -29238,7 +29307,7 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/packem@1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.27)(@visulima/redact@1.0.14)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
+  '@visulima/packem@1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.27)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.0.5(postcss@8.5.3))(postcss-modules-scope@3.2.0(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@babel/parser': 7.27.3
@@ -29255,13 +29324,13 @@ snapshots:
       '@rollup/plugin-replace': 6.0.2(rollup@4.41.1)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.41.1)
       '@rollup/pluginutils': 5.1.4(rollup@4.41.1)
-      '@visulima/cerebro': 1.1.40(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)(yaml@2.8.0)
+      '@visulima/cerebro': 1.1.40(rotating-file-stream@3.2.6)(yaml@2.8.0)
       '@visulima/colorize': 1.4.21
       '@visulima/find-cache-dir': 1.0.28(yaml@2.8.0)
       '@visulima/fs': 3.1.2(yaml@2.8.0)
       '@visulima/humanizer': 1.2.0
       '@visulima/package': 3.5.4(@types/node@22.15.27)(yaml@2.8.0)
-      '@visulima/pail': 2.1.22(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)
+      '@visulima/pail': 2.1.22(rotating-file-stream@3.2.6)
       '@visulima/path': 1.3.5
       '@visulima/source-map': 1.0.18
       '@visulima/tsconfig': 1.1.16(yaml@2.8.0)
@@ -29313,7 +29382,7 @@ snapshots:
 
   '@visulima/pagination@3.0.27': {}
 
-  '@visulima/pail@2.1.21(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)':
+  '@visulima/pail@2.1.21(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)':
     dependencies:
       '@visulima/colorize': 1.4.20
       '@visulima/error': 4.4.15
@@ -29321,10 +29390,10 @@ snapshots:
       '@visulima/inspector': 1.0.20
       safe-stable-stringify: 2.5.0
     optionalDependencies:
-      '@visulima/redact': 1.0.14
+      '@visulima/redact': 1.0.15
       rotating-file-stream: 3.2.6
 
-  '@visulima/pail@2.1.22(@visulima/redact@1.0.14)(rotating-file-stream@3.2.6)':
+  '@visulima/pail@2.1.22(rotating-file-stream@3.2.6)':
     dependencies:
       '@visulima/colorize': 1.4.21
       '@visulima/error': 4.4.16
@@ -29332,20 +29401,31 @@ snapshots:
       '@visulima/inspector': 1.0.21
       safe-stable-stringify: 2.5.0
     optionalDependencies:
-      '@visulima/redact': 1.0.14
+      rotating-file-stream: 3.2.6
+
+  '@visulima/pail@2.1.23(rotating-file-stream@3.2.6)':
+    dependencies:
+      '@visulima/colorize': 1.4.22
+      '@visulima/error': 4.4.17
+      '@visulima/fmt': 1.1.15
+      '@visulima/inspector': 1.0.22
+      safe-stable-stringify: 2.5.0
+    optionalDependencies:
       rotating-file-stream: 3.2.6
 
   '@visulima/path@1.3.4': {}
 
   '@visulima/path@1.3.5': {}
 
-  '@visulima/prisma-dmmf-transformer@2.0.28(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3))(prisma@6.8.2(typescript@5.8.3))':
+  '@visulima/path@1.3.6': {}
+
+  '@visulima/prisma-dmmf-transformer@2.0.29(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3))(prisma@6.8.2(typescript@5.8.3))':
     dependencies:
       '@prisma/client': 6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3)
-      '@prisma/generator-helper': 6.4.1
+      '@prisma/generator-helper': 6.8.2
       prisma: 6.8.2(typescript@5.8.3)
 
-  '@visulima/redact@1.0.14':
+  '@visulima/redact@1.0.15':
     dependencies:
       compromise: 14.14.4
 
@@ -29358,6 +29438,8 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       '@visulima/path': 1.3.5
+
+  '@visulima/string@1.2.3': {}
 
   '@visulima/tsconfig@1.1.15(yaml@2.8.0)':
     dependencies:
@@ -30906,9 +30988,6 @@ snapshots:
       typical: 7.3.0
 
   commander@10.0.1: {}
-
-  commander@13.1.0:
-    optional: true
 
   commander@14.0.0: {}
 
