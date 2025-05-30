@@ -31,6 +31,10 @@ import {
     requestTerminalStatus,
     requestUDKStatusDEC,
     XTVERSION,
+    requestPrimaryDeviceAttributes,
+    reportPrimaryDeviceAttributes,
+    DA1,
+    requestPrimaryDeviceAttributesParam0,
 } from "../../src/status";
 
 describe("status Reports", () => {
@@ -210,6 +214,27 @@ describe("status Reports", () => {
     });
 
     describe("primary Device Attributes (DA1)", () => {
-        // ... existing code ...
+        it("requestPrimaryDeviceAttributes (DA1) should be correct", () => {
+            expect.assertions(2);
+            expect(requestPrimaryDeviceAttributes).toBe(`${CSI}c`);
+            expect(DA1).toBe(requestPrimaryDeviceAttributes);
+        });
+
+        it("requestPrimaryDeviceAttributesParam0 should be correct", () => {
+            expect.assertions(1);
+            expect(requestPrimaryDeviceAttributesParam0).toBe(`${CSI}0c`);
+        });
+
+        it("reportPrimaryDeviceAttributes should format correctly", () => {
+            expect.assertions(3);
+            expect(reportPrimaryDeviceAttributes(1, 6, 9)).toBe(`${CSI}?1${SEP}6${SEP}9c`);
+            expect(reportPrimaryDeviceAttributes(61)).toBe(`${CSI}?61c`);
+            expect(reportPrimaryDeviceAttributes(2, 15, 42)).toBe(`${CSI}?2${SEP}15${SEP}42c`);
+        });
+
+        it("reportPrimaryDeviceAttributes should return empty string if no attributes are provided", () => {
+            expect.assertions(1);
+            expect(reportPrimaryDeviceAttributes()).toBe("");
+        });
     });
 });
