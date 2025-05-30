@@ -1,3 +1,13 @@
+## @visulima/connect [3.0.20](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.19...@visulima/connect@3.0.20) (2025-05-30)
+
+### Bug Fixes
+
+* **connect:** update dependencies ([76d5963](https://github.com/visulima/visulima/commit/76d5963b1ed59632a80e02a653c3f46163aa6d25))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
 ## @visulima/connect [3.0.19](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.18...@visulima/connect@3.0.19) (2025-03-07)
 
 ### Bug Fixes
