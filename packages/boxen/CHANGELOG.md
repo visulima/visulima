@@ -1,3 +1,20 @@
+## @visulima/boxen [1.0.31](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.30...@visulima/boxen@1.0.31) (2025-05-30)
+
+### Bug Fixes
+
+* **boxen:** update dependencies ([2604613](https://github.com/visulima/visulima/commit/26046137036cfd7b2fbe27221f1132896fd2cc5e))
+
+### Miscellaneous Chores
+
+* remove quick-format-unescaped dependency from package.json ([059c35d](https://github.com/visulima/visulima/commit/059c35d1c8a861b2c8f2406fc2040ed309d7fd32))
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.22
+* **@visulima/path:** upgraded to 1.3.6
+
 ## @visulima/boxen [1.0.30](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.29...@visulima/boxen@1.0.30) (2025-03-07)
 
 ### Bug Fixes
