@@ -1,3 +1,25 @@
+## @visulima/fs [3.1.3](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.2...@visulima/fs@3.1.3) (2025-05-30)
+
+### Bug Fixes
+
+* **fs:** update dependencies ([3a35af3](https://github.com/visulima/visulima/commit/3a35af359d55461ca158061020508668cc397d55))
+
+### Styles
+
+* cs fixes ([6570d56](https://github.com/visulima/visulima/commit/6570d568a80bd3fd4bfd73c824dc78f7e3a372f8))
+
+### Miscellaneous Chores
+
+* **fs-bench:** update devDependencies ([a7ec775](https://github.com/visulima/visulima/commit/a7ec775fe1a918a7724f3edc9cc8139cd7233b0e))
+* **fs:** add benchmarking for file operations and find-up functionality ([d9ab1ee](https://github.com/visulima/visulima/commit/d9ab1eedff8a0ea1960c6c4549bf791c52780d26))
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.3.6
+* **@visulima/error:** upgraded to 4.4.17
+
 ## @visulima/fs [3.1.2](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.1...@visulima/fs@3.1.2) (2025-03-07)
 
 ### Bug Fixes
