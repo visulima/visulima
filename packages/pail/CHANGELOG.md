@@ -1,3 +1,22 @@
+## @visulima/pail [2.1.23](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.22...@visulima/pail@2.1.23) (2025-05-30)
+
+### Bug Fixes
+
+* **pail:** update dependencies ([99bd792](https://github.com/visulima/visulima/commit/99bd792fabc031fdba81c9d7f38a53124f233578))
+
+### Miscellaneous Chores
+
+* **pail-bench:** update devDependencies ([94c563c](https://github.com/visulima/visulima/commit/94c563cf673865dcfe927d399ca4b9a8615facb2))
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.22
+* **@visulima/error:** upgraded to 4.4.17
+* **@visulima/inspector:** upgraded to 1.0.22
+* **@visulima/redact:** upgraded to 1.0.15
+
 ## @visulima/pail [2.1.22](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.21...@visulima/pail@2.1.22) (2025-03-07)
 
 ### Bug Fixes
