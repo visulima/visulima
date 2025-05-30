@@ -14,6 +14,7 @@ import type { RawImageData } from "./sixel/types";
  * @see RawImageData from './sixel/types'
  */
 export type { RawImageData, SixelColor, SixelPalette } from "./sixel/types";
+
 /**
  * Public type for Sixel Decoder options.
  * Currently an alias to the internal {@link InternalDecoderOptions}.

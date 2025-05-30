@@ -106,8 +106,8 @@ describe("sixel Color Utilities", () => {
 
         it("should return null for invalid Pc or missing Pc", () => {
             expect.assertions(2);
-            expect(decodeSixelColor("#", 0)).toBeNull();
-            expect(decodeSixelColor("#abc", 0)).toBeNull(); // non-numeric Pc
+            expect(decodeSixelColor("#", 0)).toBeUndefined();
+            expect(decodeSixelColor("#abc", 0)).toBeUndefined(); // non-numeric Pc
         });
 
         it("should handle missing optional parameters gracefully", () => {

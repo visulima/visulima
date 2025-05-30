@@ -169,7 +169,7 @@ export const xtermWindowOp: (p: number, ...ps: number[]) => string = (p: number,
     }
 
     return `${CSI}${parameters.join(";")}t`;
-}
+};
 
 /**
  * Alias for {@link xtermWindowOp}.

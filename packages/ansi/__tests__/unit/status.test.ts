@@ -7,6 +7,7 @@ import {
     createAnsiStatusReport,
     createDecStatusReport,
     cursorPositionReport,
+    DA1,
     DECXCPR,
     deviceStatusReport,
     DSR,
@@ -16,6 +17,7 @@ import {
     DSR_UDKStatusDEC,
     extendedCursorPositionReport,
     reportKeyboardLanguageDEC,
+    reportPrimaryDeviceAttributes,
     reportPrinterNoPaperDEC,
     reportPrinterNotReadyDEC,
     reportPrinterReadyDEC,
@@ -27,14 +29,12 @@ import {
     requestExtendedCursorPositionReport,
     requestKeyboardLanguageDEC,
     RequestNameVersion,
+    requestPrimaryDeviceAttributes,
+    requestPrimaryDeviceAttributesParam0 as requestPrimaryDeviceAttributesParameter0,
     requestPrinterStatusDEC,
     requestTerminalStatus,
     requestUDKStatusDEC,
     XTVERSION,
-    requestPrimaryDeviceAttributes,
-    reportPrimaryDeviceAttributes,
-    DA1,
-    requestPrimaryDeviceAttributesParam0,
 } from "../../src/status";
 
 describe("status Reports", () => {
@@ -222,7 +222,7 @@ describe("status Reports", () => {
 
         it("requestPrimaryDeviceAttributesParam0 should be correct", () => {
             expect.assertions(1);
-            expect(requestPrimaryDeviceAttributesParam0).toBe(`${CSI}0c`);
+            expect(requestPrimaryDeviceAttributesParameter0).toBe(`${CSI}0c`);
         });
 
         it("reportPrimaryDeviceAttributes should format correctly", () => {

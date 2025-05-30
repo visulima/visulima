@@ -18,7 +18,7 @@ import { BEL, OSC, SEP } from "./constants";
  * \`\`\`typescript
  * import { hyperlink } from "@visulima/ansi/hyperlink"; // Adjust import path as needed
  *
- * const aLink = link("Visulima", "https://www.visulima.com");
+ * const aLink = hyperlink("Visulima", "https://www.visulima.com");
  * console.log(`Visit ${aLink} for more information.`);
  * // In a supported terminal, this will output:
  * // Visit Visulima for more information. (where "Visulima" is a clickable link)

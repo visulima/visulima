@@ -1,29 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { clearLineAndHomeCursor, clearScreenAndHomeCursor, clearScreenFromTopLeft, resetTerminal } from "../../src/clear";
-import { CSI } from "../../src/constants";
-
-const mocked = vi.hoisted(() => {
-    return {
-        isWindows: vi.fn(),
-    };
-});
-
-vi.mock("../../src/helpers", async (importOriginal) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const actualHelpers = await importOriginal<any>();
-
-    return {
-        ...actualHelpers,
-        isWindows: mocked.isWindows,
-    };
-});
+import { CSI, ESC } from "../../src/constants";
+import { isWindows } from "../../src/helpers";
 
 describe("clear utilities", () => {
-    afterEach(() => {
-        vi.resetAllMocks();
-    });
-
     describe(clearScreenFromTopLeft, () => {
         it("should be the combination of cursorTo(0,0) and eraseDisplay(ToEnd)", async () => {
             expect.assertions(1);
@@ -46,22 +27,16 @@ describe("clear utilities", () => {
     });
 
     describe(resetTerminal, () => {
-        it("should produce correct sequence when isWindows is false", async () => {
+        it.runIf(!isWindows)("should produce correct sequence when isWindows is false", async () => {
             expect.assertions(1);
 
-            mocked.isWindows.mockReturnValue(false);
-
-            expect(resetTerminal).toBe(`${CSI}2J${CSI}0f`);
+            expect(resetTerminal).toBe(`${CSI}2J${CSI}3J${CSI}H${ESC}c`);
         });
 
-        it("should produce correct sequence when isWindows is true", async () => {
+        it.runIf(isWindows)("should produce correct sequence when isWindows is true", async () => {
             expect.assertions(1);
 
-            mocked.isWindows.mockReturnValue(true);
-
-            const expectedWinReset = `${CSI}2J${CSI}0f`;
-
-            expect(resetTerminal).toBe(expectedWinReset);
+            expect(resetTerminal).toBe(`${CSI}2J${CSI}0f`);
         });
     });
 });
