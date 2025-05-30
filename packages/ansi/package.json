@@ -156,6 +156,116 @@
                 "default": "./dist/strip.mjs"
             }
         },
+        "./termcap": {
+            "require": {
+                "types": "./dist/termcap.d.cts",
+                "default": "./dist/termcap.cjs"
+            },
+            "import": {
+                "types": "./dist/termcap.d.mts",
+                "default": "./dist/termcap.mjs"
+            }
+        },
+        "./title": {
+            "require": {
+                "types": "./dist/title.d.cts",
+                "default": "./dist/title.cjs"
+            },
+            "import": {
+                "types": "./dist/title.d.mts",
+                "default": "./dist/title.mjs"
+            }
+        },
+        "./window-ops": {
+            "require": {
+                "types": "./dist/window-ops.d.cts",
+                "default": "./dist/window-ops.cjs"
+            },
+            "import": {
+                "types": "./dist/window-ops.d.mts",
+                "default": "./dist/window-ops.mjs"
+            }
+        },
+        "./xterm": {
+            "require": {
+                "types": "./dist/xterm.d.cts",
+                "default": "./dist/xterm.cjs"
+            },
+            "import": {
+                "types": "./dist/xterm.d.mts",
+                "default": "./dist/xterm.mjs"
+            }
+        },
+        "./iterm2": {
+            "require": {
+                "types": "./dist/iterm2.d.cts",
+                "default": "./dist/iterm2.cjs"
+            },
+            "import": {
+                "types": "./dist/iterm2.d.mts",
+                "default": "./dist/iterm2.mjs"
+            }
+        },
+        "./mode": {
+            "require": {
+                "types": "./dist/mode.d.cts",
+                "default": "./dist/mode.cjs"
+            },
+            "import": {
+                "types": "./dist/mode.d.mts",
+                "default": "./dist/mode.mjs"
+            }
+        },
+        "./mouse": {
+            "require": {
+                "types": "./dist/mouse.d.cts",
+                "default": "./dist/mouse.cjs"
+            },
+            "import": {
+                "types": "./dist/mouse.d.mts",
+                "default": "./dist/mouse.mjs"
+            }
+        },
+        "./passthrough": {
+            "require": {
+                "types": "./dist/passthrough.d.cts",
+                "default": "./dist/passthrough.cjs"
+            },
+            "import": {
+                "types": "./dist/passthrough.d.mts",
+                "default": "./dist/passthrough.mjs"
+            }
+        },
+        "./reset": {
+            "require": {
+                "types": "./dist/reset.d.cts",
+                "default": "./dist/reset.cjs"
+            },
+            "import": {
+                "types": "./dist/reset.d.mts",
+                "default": "./dist/reset.mjs"
+            }
+        },
+        "./screen": {
+            "require": {
+                "types": "./dist/screen.d.cts",
+                "default": "./dist/screen.cjs"
+            },
+            "import": {
+                "types": "./dist/screen.d.mts",
+                "default": "./dist/screen.mjs"
+            }
+        },
+        "./status": {
+            "require": {
+                "types": "./dist/status.d.cts",
+                "default": "./dist/status.cjs"
+            },
+            "import": {
+                "types": "./dist/status.d.mts",
+                "default": "./dist/status.mjs"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
@@ -190,6 +300,39 @@
             ],
             "strip": [
                 "./dist/strip.d.ts"
+            ],
+            "termcap": [
+                "./dist/termcap.d.ts"
+            ],
+            "title": [
+                "./dist/title.d.ts"
+            ],
+            "window-ops": [
+                "./dist/window-ops.d.ts"
+            ],
+            "xterm": [
+                "./dist/xterm.d.ts"
+            ],
+            "iterm2": [
+                "./dist/iterm2.d.ts"
+            ],
+            "mode": [
+                "./dist/mode.d.ts"
+            ],
+            "mouse": [
+                "./dist/mouse.d.ts"
+            ],
+            "passthrough": [
+                "./dist/passthrough.d.ts"
+            ],
+            "reset": [
+                "./dist/reset.d.ts"
+            ],
+            "screen": [
+                "./dist/screen.d.ts"
+            ],
+            "status": [
+                "./dist/status.d.ts"
             ]
         }
     },
@@ -216,7 +359,6 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
-        "jiti": "^2.4.2",
         "@anolilab/eslint-config": "16.2.4",
         "@anolilab/semantic-release-pnpm": "1.1.11",
         "@anolilab/semantic-release-preset": "^10.0.5",
@@ -235,6 +377,7 @@
         "cross-env": "^7.0.3",
         "esbuild": "0.25.5",
         "eslint": "9.27.0",
+        "jiti": "^2.4.2",
         "restore-cursor": "^5.1.0",
         "rimraf": "6.0.1",
         "secretlint": "9.3.3",
