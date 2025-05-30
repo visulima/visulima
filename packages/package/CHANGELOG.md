@@ -1,3 +1,26 @@
+## @visulima/package [3.5.5](https://github.com/visulima/visulima/compare/@visulima/package@3.5.4...@visulima/package@3.5.5) (2025-05-30)
+
+### Bug Fixes
+
+* **package-fixture-pkg-json:** update dependencies ([be59bd9](https://github.com/visulima/visulima/commit/be59bd979606f5ac5938e2d43d96e482e1a6ab04))
+* **package:** @antfu/install-pkg is now bundled into the code ([67ee109](https://github.com/visulima/visulima/commit/67ee1090747caa99400adff0af66f1ddf7c9fd88))
+* **package:** update dependencies ([ab398fe](https://github.com/visulima/visulima/commit/ab398fe3d891b91ea7c0a751c83a3d44bdb021c9))
+
+### Styles
+
+* cs fixes ([6570d56](https://github.com/visulima/visulima/commit/6570d568a80bd3fd4bfd73c824dc78f7e3a372f8))
+* **package:** cs fix ([605d0fc](https://github.com/visulima/visulima/commit/605d0fc030334277c4a55eed06631ab95f470bdd))
+
+### Miscellaneous Chores
+
+* **package-fixture-ws-bad:** update fixture ([c10275b](https://github.com/visulima/visulima/commit/c10275bb3e02f2deab0c6897adbdfc192ef8d8e3))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 3.1.3
+* **@visulima/path:** upgraded to 1.3.6
+
 ## @visulima/package [3.5.4](https://github.com/visulima/visulima/compare/@visulima/package@3.5.3...@visulima/package@3.5.4) (2025-03-12)
 
 ### Bug Fixes
