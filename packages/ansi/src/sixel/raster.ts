@@ -99,9 +99,22 @@ export const decodeSixelRaster = (s: string): SixelRaster => {
     // Pan default 1, Pad default 2
     // Ph, Pv default to current window size (not handled here, use fallback if zero)
     const pixelAspectRatioNumerator = nums[0] === undefined ? 1 : nums[0];
-    const pixelAspectRatioDenominator = nums[1] === undefined ? 2 : nums[1];
-    let gridWidth = nums[2] === undefined ? 0 : nums[2]; // 0 means use fallback
-    let gridHeight = nums[3] === undefined ? 0 : nums[3]; // 0 means use fallback
+    const pixelAspectRatioDenominator = (() => {
+        const d = nums[1] ?? 2;
+
+        if (d <= 0) {
+            throw new RangeError(`sixel: Pad/denominator must be >=1, got ${d}`);
+        }
+
+        return d;
+    })();
+
+    let gridWidth = nums[2] ?? 0;
+    let gridHeight = nums[3] ?? 0;
+
+    if (gridWidth < 0 || gridHeight < 0) {
+        throw new RangeError(`sixel: negative raster dimensions (${gridWidth}x${gridHeight}) are invalid`);
+    }
 
     // Clamp to maximums if provided values are too large
     // If width/height are explicitly 0, they should use a fallback (e.g. image dimensions)

@@ -31,7 +31,6 @@ export const keyModifierOptions = (resource: number, value?: number): string => 
         return `${CSI}>${pp};${pv}m`;
     }
 
-    // Reset: value is undefined
     return `${CSI}>${pp}m`;
 };
 

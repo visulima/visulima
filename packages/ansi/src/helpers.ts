@@ -15,4 +15,4 @@ export const isTerminalApp: boolean = !isBrowser && process.env.TERM_PROGRAM ===
  * Indicates whether the current platform is Windows.
  * This is true if not in a browser and `process.platform` is "win32".
  */
-export const isWindows: boolean = !isBrowser && process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
+export const isWindows: boolean = !isBrowser && (process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE));

@@ -1,15 +1,15 @@
 /* eslint-disable no-secrets/no-secrets */
 import { BEL, OSC } from "./constants";
-import type { IITerm2Payload } from "./iterm2/iterm2-props";
+import type { IITerm2Payload } from "./iterm2/iterm2-properties";
 
 // Re-export specific payload types and props for easier use by consumers
-export type { IITerm2Payload, ITerm2FileProps } from "./iterm2/iterm2-props";
+export type { IITerm2Payload, ITerm2FileProps } from "./iterm2/iterm2-properties";
 export {
     IT2_AUTO,
     it2Cells,
     it2Percent,
     it2Pixels,
-} from "./iterm2/iterm2-props";
+} from "./iterm2/iterm2-properties";
 export {
     ITerm2File,
     ITerm2FileEnd,
@@ -70,13 +70,10 @@ export {
  * // Output: OSC1337;ShellIntegrationVersion=15;Shell=zshBEL
  * ```
  */
+// eslint-disable-next-line unicorn/prevent-abbreviations
 export const iTerm2 = (payload: IITerm2Payload): string => {
-    // Validate the payload to ensure it's usable.
-    // It must exist, have a `toString` method, and that method must be a custom one (not Object.prototype.toString).
     if (!payload || typeof payload.toString !== "function" || payload.toString === Object.prototype.toString) {
-        // If the payload is invalid, log a warning or return an empty string to prevent malformed sequences.
-        // console.warn("Invalid payload provided to iTerm2 function. Payload must implement IITerm2Payload with a custom toString method.");
-        return "";
+        throw new Error("Invalid payload: must implement IITerm2Payload with a custom toString method");
     }
 
     return `${OSC}1337;${payload.toString()}${BEL}`;

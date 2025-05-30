@@ -18,21 +18,25 @@ describe("iTerm2 Integration", () => {
     describe("dimension Helpers", () => {
         it("iT2_AUTO should be correct", () => {
             expect.assertions(1);
+
             expect(IT2_AUTO).toBe("auto");
         });
 
         it("it2Cells should format correctly", () => {
             expect.assertions(1);
+
             expect(it2Cells(100)).toBe("100");
         });
 
         it("it2Pixels should format correctly", () => {
             expect.assertions(1);
+
             expect(it2Pixels(150)).toBe("150px");
         });
 
         it("it2Percent should format correctly", () => {
             expect.assertions(1);
+
             expect(it2Percent(50)).toBe("50%");
         });
     });
@@ -49,12 +53,14 @@ describe("iTerm2 Integration", () => {
 
             it("should return an empty string for a null payload", () => {
                 expect.assertions(1);
-                expect(indexTerm2(null as any)).toBe("");
+
+                expect(() => indexTerm2(null as any)).toThrow("Invalid payload: must implement IITerm2Payload with a custom toString method");
             });
 
             it("should return an empty string for a payload with no toString", () => {
                 expect.assertions(1);
-                expect(indexTerm2({} as any)).toBe("");
+
+                expect(() => indexTerm2({} as any)).toThrow("Invalid payload: must implement IITerm2Payload with a custom toString method");
             });
 
             it("should return an empty string for a payload with Object.prototype.toString", () => {
@@ -62,7 +68,7 @@ describe("iTerm2 Integration", () => {
 
                 const payload = { foo: "bar" }; // Uses Object.prototype.toString
 
-                expect(indexTerm2(payload as any)).toBe("");
+                expect(() => indexTerm2(payload as any)).toThrow("Invalid payload: must implement IITerm2Payload with a custom toString method");
             });
         });
 

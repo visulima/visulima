@@ -2,7 +2,7 @@
 /* eslint-disable max-classes-per-file */
 import { Buffer } from "node:buffer";
 
-import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-props";
+import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-properties";
 
 /**
  * Formats the core properties part of an iTerm2 file-related sequence string.
@@ -110,10 +110,20 @@ export class ITerm2File implements IITerm2Payload {
         this.fileProps = { ...properties };
 
         if (fileData) {
+            // Add reasonable size limit (e.g., 10MB)
+            if (fileData.byteLength > 10 * 1024 * 1024) {
+                throw new Error("File size exceeds maximum limit of 10MB");
+            }
+
             this.fileProps.content = Buffer.from(fileData).toString("base64");
 
             if (this.fileProps.size === undefined) {
                 this.fileProps.size = fileData.byteLength;
+            }
+
+            // Verify size consistency if both are provided
+            if (this.fileProps.size !== fileData.byteLength) {
+                throw new Error("File size property doesn't match actual data length");
             }
         }
     }

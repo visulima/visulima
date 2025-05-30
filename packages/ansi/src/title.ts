@@ -1,6 +1,21 @@
 import { BEL, OSC, ST } from "./constants";
 
 /**
+ * Validates and sanitizes a title string for use in OSC sequences.
+ * @param title The title string to validate
+ * @returns The sanitized title string
+ */
+const validateTitle = (title: string): string => {
+    if (typeof title !== "string") {
+        throw new TypeError("Title must be a string");
+    }
+
+    // Remove or escape potentially problematic characters
+    // OSC sequences can be terminated by BEL or ST, so we should escape these
+    return title.replaceAll(/[\u0007\u001B]/g, "");
+};
+
+/**
  * Sets the icon name and window title using an OSC (Operating System Command) sequence.
  * This typically affects the title shown in the window's title bar and the name used for the icon
  * when the window is minimized or in a taskbar.
@@ -21,7 +36,8 @@ import { BEL, OSC, ST } from "./constants";
  * // Sends: "\x1b]0;My Application\x07"
  * ```
  */
-export const setIconNameAndWindowTitle = (title: string): string => `${OSC}0;${title}${BEL}`;
+export const setIconNameAndWindowTitle = (title: string): string =>
+    `${OSC}0;${validateTitle(title)}${BEL}`;
 
 /**
  * Sets the icon name using an OSC (Operating System Command) sequence.

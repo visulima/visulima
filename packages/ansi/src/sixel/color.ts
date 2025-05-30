@@ -179,6 +179,10 @@ export const decodeSixelColor = (sixelData: string, currentPosition: number): { 
  */
 export const updatePalette = (palette: SixelPalette, paletteIndex: number, colorDef: SixelColor): void => {
     if (paletteIndex >= 0 && paletteIndex < palette.maxSize) {
+        while (palette.colors.length <= paletteIndex) {
+            palette.colors.push({ b: 0, g: 0, r: 0 });
+        }
+
         palette.colors[paletteIndex] = colorDef;
     }
 };
