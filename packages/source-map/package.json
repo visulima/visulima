@@ -1,6 +1,6 @@
 {
     "name": "@visulima/source-map",
-    "version": "1.0.18",
+    "version": "1.0.19",
     "description": "Provides functionality related to source maps.",
     "keywords": [
         "visulima",
@@ -80,7 +80,7 @@
     },
     "dependencies": {
         "@jridgewell/trace-mapping": "^0.3.25",
-        "@visulima/path": "1.3.5"
+        "@visulima/path": "1.3.6"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
