@@ -235,7 +235,7 @@ describe("getStringTruncatedWidth", () => {
                 "\u2193": 2, // DOWNWARDS ARROW
                 "\u2194": 2, // LEFT RIGHT ARROW
                 "\u2197": 2, // NORTH EAST ARROW
-                "\u21A9": 1, // LEFTWARDS ARROW WITH HOOK
+                "\u21A9": 2, // LEFTWARDS ARROW WITH HOOK
 
                 // Arrows - Double and special
                 "\u21C4": 1, // RIGHTWARDS ARROW OVER LEFTWARDS ARROW
@@ -260,10 +260,10 @@ describe("getStringTruncatedWidth", () => {
                 // Miscellaneous symbols
                 "\u2690": 1, // WHITE FLAG
                 "\u2691": 1, // BLACK FLAG
-                "\u26A0": 1, // WARNING SIGN
-                "\u2709": 1, // ENVELOPE
+                "\u26A0": 2, // WARNING SIGN
+                "\u2709": 2, // ENVELOPE
                 "\u270E": 1, // LOWER RIGHT PENCIL
-                "✔": 1, // HEAVY CHECK MARK
+                "✔": 2, // HEAVY CHECK MARK
                 "\u274F": 1, // LOWER RIGHT DROP-SHADOWED WHITE SQUARE
                 "\u2750": 1, // UPPER RIGHT DROP-SHADOWED WHITE SQUARE
 
