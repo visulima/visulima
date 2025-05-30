@@ -48,6 +48,7 @@ describe("numbers", () => {
             expect(inspect(3.141_592_654, { numericSeparator: false, truncate: 9 })).toBe("3.141592…");
             expect(inspect(3.141_592_654, { truncate: 9 })).toBe("3.141_59…");
         });
+
         it("truncates numbers longer than truncate (8)", () => {
             expect.assertions(2);
 

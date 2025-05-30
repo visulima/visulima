@@ -34,7 +34,7 @@ const inspectMap: InspectType<Map<unknown, unknown>> = (
         returnValue = indentedJoin(returnValue, indent);
     }
 
-    return "Map (" + map.size + ") {" + (indent ? "" : " ") + returnValue + (indent ? "" : " ") + "}";
+    return `Map (${map.size}) {${indent ? "" : " "}${returnValue}${indent ? "" : " "}}`;
 };
 
 export default inspectMap;

@@ -32,14 +32,12 @@ const inspectList = (
     let peek = "";
     let truncated = "";
 
-    // eslint-disable-next-line no-loops/no-loops
     for (let index = 0; index < size; index += 1) {
         const last = index + 1 === list.length;
         const secondToLast = index + 2 === list.length;
 
         truncated = `${TRUNCATOR}(${list.length - index})`;
 
-        // eslint-disable-next-line security/detect-object-injection
         let value = list[index];
 
         // If there is more than one remaining we need to account for a separator of `, `

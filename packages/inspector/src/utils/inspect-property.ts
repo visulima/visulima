@@ -8,10 +8,10 @@ const quoteComplexKey = (key: string, options: Options): string => {
     const stringifiedKey = JSON.stringify(key);
 
     if (options.quoteStyle === "double") {
-        return stringifiedKey.replaceAll('"', '\\"');
+        return stringifiedKey.replaceAll("\"", String.raw`\"`);
     }
 
-    return stringifiedKey.replaceAll("'", "\\'").replaceAll('\\"', '"').replaceAll(/^"|"$/g, "'");
+    return stringifiedKey.replaceAll("'", String.raw`\'`).replaceAll(String.raw`\"`, "\"").replaceAll(/^"|"$/g, "'");
 };
 
 const inspectProperty = ([key, value]: [unknown, unknown], object: unknown, options: Options, inspect: InternalInspect): string => {
@@ -32,7 +32,6 @@ const inspectProperty = ([key, value]: [unknown, unknown], object: unknown, opti
     // eslint-disable-next-line no-param-reassign
     value = inspect(value, object, options);
 
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `${key}: ${value}`;
 };
 

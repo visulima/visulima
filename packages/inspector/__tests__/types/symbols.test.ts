@@ -19,19 +19,19 @@ describe("symbols", () => {
     it("escapes single quotes", () => {
         expect.assertions(1);
 
-        expect(inspect("ab'c")).toBe("'ab\\'c'");
+        expect(inspect("ab'c")).toBe(String.raw`'ab\'c'`);
     });
 
     it("does not escape double quotes", () => {
         expect.assertions(1);
 
-        expect(inspect('ab"c')).toBe("'ab\"c'");
+        expect(inspect("ab\"c")).toBe("'ab\"c'");
     });
 
     it("escapes unicode characters", () => {
         expect.assertions(1);
 
-        expect(inspect("\u001B")).toBe("'\\u001b'");
+        expect(inspect("\u001B")).toBe(String.raw`'\u001b'`);
     });
 
     it("should return the correct Symbol.toStringTag", () => {
@@ -46,6 +46,7 @@ describe("symbols", () => {
         expect(inspect(object), "object with Symbol.toStringTag").toBe("{ a: 1, [Symbol(Symbol.toStringTag)]: 'foo' }");
 
         const dict = { __proto__: null, a: 1 };
+
         expect(inspect(dict), "null object with Symbol.toStringTag").toBe("[Object: null prototype] { a: 1 }");
 
         dict[Symbol.toStringTag] = "Dict";

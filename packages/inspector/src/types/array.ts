@@ -4,7 +4,6 @@ import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
 
 const multiLineValues = (values: unknown[]): boolean => {
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const value of values) {
         if (Array.isArray(value) || (typeof value === "object" && value !== null)) {
             return true;
@@ -49,7 +48,7 @@ const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options
         listContents = indentedJoin(listContents, indent);
     }
 
-    return "[" + (hasIndent ? "" : " ") + listContents + (propertyContents ? `, ${propertyContents}` : "") + (hasIndent ? "" : " ") + "]";
+    return `[${hasIndent ? "" : " "}${listContents}${propertyContents ? `, ${propertyContents}` : ""}${hasIndent ? "" : " "}]`;
 };
 
 export default inspectArray;

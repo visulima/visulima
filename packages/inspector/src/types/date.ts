@@ -4,7 +4,6 @@ import truncate from "../utils/truncate";
 const inspectDate: InspectType<Date> = (dateObject: Date, options: Options): string => {
     const stringRepresentation = dateObject.toJSON();
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (stringRepresentation === null) {
         return "Invalid Date";
     }

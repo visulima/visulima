@@ -45,76 +45,91 @@ describe("arguments", () => {
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 16 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (15)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 15 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (14)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 14 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (13)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 13 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (12)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 12 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (11)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 11 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (10)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 10 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (9)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 9 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (8)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 8 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (7)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 7 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (6)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 6 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (5)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 5 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (4)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 4 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (3)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 3 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (2)", () => {
             expect.assertions(1);
 
             expect(inspect(arguments_(1, 2, 3), { truncate: 2 })).toBe("Arguments [ …(3) ]");
         });
+
         it("truncates arguments values longer than truncate (1)", () => {
             expect.assertions(1);
 

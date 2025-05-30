@@ -14,7 +14,7 @@ describe("arrays", () => {
 
         const object = [1, 2, 3, "asdf\nsdf"];
 
-        const expected = "[ 1, 2, 3, 'asdf\\nsdf' ]";
+        const expected = String.raw`[ 1, 2, 3, 'asdf\nsdf' ]`;
 
         expect(inspect(object, { indent: 2 })).toBe(expected);
         expect(inspect(object, { indent: "\t" })).toBe(expected);
@@ -26,9 +26,9 @@ describe("arrays", () => {
         const value = [1, { a: 1, b: { c: 1 } }, "asdf\nsdf"];
 
         expect(inspect(value, { indent: 2 })).toBe(
-            ["[", "  1,", "  {", "    a: 1,", "    b: {", "      c: 1", "    }", "  },", "  'asdf\\nsdf'", "]"].join("\n"),
+            ["[", "  1,", "  {", "    a: 1,", "    b: {", "      c: 1", "    }", "  },", String.raw`  'asdf\nsdf'`, "]"].join("\n"),
         );
-        expect(inspect(value, { indent: "\t" })).toBe(["[", "	1,", "	{", "		a: 1,", "		b: {", "			c: 1", "		}", "	},", "	'asdf\\nsdf'", "]"].join("\n"));
+        expect(inspect(value, { indent: "\t" })).toBe(["[", "	1,", "	{", "		a: 1,", "		b: {", "			c: 1", "		}", "	},", String.raw`	'asdf\nsdf'`, "]"].join("\n"));
     });
 
     it("should return a values array with indent", () => {
@@ -137,6 +137,7 @@ describe("arrays", () => {
             expect.assertions(1);
 
             const array = ["a", "b", "c"];
+
             // @ts-expect-error - TS doesn't allow this
             array.foo = "bar";
 
@@ -148,6 +149,7 @@ describe("arrays", () => {
         expect.assertions(1);
 
         const xs = ["a", "b"];
+
         xs[5] = "f";
         xs[7] = "j";
         xs[8] = "k";

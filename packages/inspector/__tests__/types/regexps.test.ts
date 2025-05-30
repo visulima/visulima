@@ -37,6 +37,7 @@ describe("regexps", () => {
             // eslint-disable-next-line regexp/no-useless-flag
             expect(inspect(/foobarbaz/gim, { truncate: 12 })).toBe("/foobar…/gim");
         });
+
         it("truncates strings longer than truncate (11)", () => {
             expect.assertions(1);
 

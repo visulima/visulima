@@ -16,7 +16,7 @@ const inspectSet: InspectType<Set<unknown>> = (set: Set<unknown>, options: Optio
         returnValue = indentedJoin(returnValue, indent);
     }
 
-    return "Set (" + set.size + ") {" + (indent ? "" : " ") + returnValue + (indent ? "" : " ") + "}";
+    return `Set (${set.size}) {${indent ? "" : " "}${returnValue}${indent ? "" : " "}}`;
 };
 
 export default inspectSet;

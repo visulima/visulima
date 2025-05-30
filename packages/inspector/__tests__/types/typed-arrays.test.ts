@@ -142,6 +142,7 @@ describe.each([Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray])("typed 
             expect.assertions(1);
 
             const array = new TypedArray([1, 2, 3]);
+
             // @ts-expect-error - missing reference
             array.foo = "bar";
 

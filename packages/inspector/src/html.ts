@@ -1,5 +1,5 @@
 import { TRUNCATOR } from "./constants";
-import type { InternalInspect, Options } from "./types";
+import type { Indent, InspectType, InternalInspect, Options } from "./types";
 import inspectList from "./utils/inspect-list";
 
 const inspectAttribute = ([key, value]: [unknown, unknown], _: unknown, options: Options): string => {
@@ -13,9 +13,22 @@ const inspectAttribute = ([key, value]: [unknown, unknown], _: unknown, options:
     return `${options.stylize(String(key), "yellow")}=${options.stylize(`"${value as string}"`, "string")}`;
 };
 
-export const inspectHTMLCollection = (collection: ArrayLike<Element>, options: Options, inspect: InternalInspect): string =>
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    inspectList(collection, collection, options, inspect, inspectHTMLElement, "\n");
+export const inspectNode = (node: Node, inspect: InternalInspect, options: Options): string => {
+    switch (node.nodeType) {
+        case 1: {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            return inspectHTMLElement(node as Element, node, options, inspect);
+        }
+        case 3: {
+            return inspect((node as Text).data, inspect, options);
+        }
+        default: {
+            return inspect(node, inspect, options);
+        }
+    }
+};
+
+export const inspectNodeCollection: InspectType<ArrayLike<Node>> = (collection: ArrayLike<Node>, options: Options, inspect: InternalInspect, _: Indent | undefined): string => inspectList(collection, collection, options, inspect, inspectNode, "\n");
 
 export const inspectHTMLElement = (element: Element, object: unknown, options: Options, inspect: InternalInspect): string => {
     const properties = element.getAttributeNames();
@@ -46,7 +59,7 @@ export const inspectHTMLElement = (element: Element, object: unknown, options: O
 
     const { truncate } = options;
 
-    let children = inspectHTMLCollection(element.children, options, inspect);
+    let children = inspectNodeCollection(element.children, options, inspect, undefined);
 
     if (children && children.length > truncate) {
         children = `${TRUNCATOR}(${element.children.length})`;

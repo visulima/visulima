@@ -26,7 +26,7 @@ describe("classes", () => {
         expect.assertions(1);
 
         class Bar {
-            // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+            // eslint-disable-next-line class-methods-use-this
             public get [Symbol.toStringTag]() {
                 return "Baz";
             }
@@ -41,6 +41,7 @@ describe("classes", () => {
             expect.assertions(1);
 
             const foo = new Foo();
+
             // @ts-expect-error - testing non-standard property
             foo.bar = 1;
             // @ts-expect-error - testing non-standard property
@@ -53,6 +54,7 @@ describe("classes", () => {
             expect.assertions(1);
 
             const foo = new Foo();
+
             // @ts-expect-error - testing non-standard property
             foo[Symbol("foo")] = 1;
 
@@ -60,7 +62,7 @@ describe("classes", () => {
         });
     });
 
-    it('should print "Symbol.toStringTag" on a instances', () => {
+    it("should print \"Symbol.toStringTag\" on a instances", () => {
         expect.assertions(4);
 
         // eslint-disable-next-line func-style

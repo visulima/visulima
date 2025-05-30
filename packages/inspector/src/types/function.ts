@@ -1,7 +1,7 @@
 import type { InspectType, Options } from "../types";
 import truncate from "../utils/truncate";
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type ToStringable = Function & { [Symbol.toStringTag]: string };
 
 const inspectFunction: InspectType<ToStringable> = (function_: ToStringable, options: Options): string => {

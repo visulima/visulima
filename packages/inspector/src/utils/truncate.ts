@@ -12,6 +12,7 @@ const truncate = (string: number | string, length: number, tail: typeof TRUNCATO
     if (tailLength > length && stringLength > tailLength) {
         return tail;
     }
+
     if (stringLength > length && stringLength > tailLength) {
         let end = length - tailLength;
 

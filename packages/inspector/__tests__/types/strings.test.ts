@@ -12,32 +12,32 @@ describe("strings", () => {
     it("escapes single quotes", () => {
         expect.assertions(1);
 
-        expect(inspect("ab'c")).toBe("'ab\\'c'");
+        expect(inspect("ab'c")).toBe(String.raw`'ab\'c'`);
     });
 
     it("does not escape double quotes", () => {
         expect.assertions(2);
 
-        expect(inspect('ab"c')).toBe("'ab\"c'");
+        expect(inspect("ab\"c")).toBe("'ab\"c'");
         expect(
-            inspect('ab"c', {
+            inspect("ab\"c", {
                 quoteStyle: "double",
             }),
-        ).toBe('"ab"c"');
+        ).toBe("\"ab\"c\"");
     });
 
     it("escapes unicode characters", () => {
         expect.assertions(1);
 
-        expect(inspect("\u001B")).toBe("'\\u001b'");
+        expect(inspect("\u001B")).toBe(String.raw`'\u001b'`);
     });
 
     it("should interpolate low bytes", () => {
         expect.assertions(2);
 
-        expect(inspect("a\r\nb")).toBe("'a\\r\\nb'");
+        expect(inspect("a\r\nb")).toBe(String.raw`'a\r\nb'`);
         // eslint-disable-next-line unicorn/no-hex-escape,unicorn/escape-case
-        expect(inspect("\x05! \x1f \x12")).toBe("'\\u0005! \\u001f \\u0012'");
+        expect(inspect("\x05! \x1f \x12")).toBe(String.raw`'\u0005! \u001f \u0012'`);
     });
 
     describe("truncate", () => {
@@ -58,6 +58,7 @@ describe("strings", () => {
 
             expect(inspect("foobarbaz", { truncate: 9 })).toBe("'foobar…'");
         });
+
         it("truncates strings longer than truncate (8)", () => {
             expect.assertions(1);
 

@@ -3,7 +3,7 @@ import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
 import truncate from "../utils/truncate";
 
-const errorKeys = new Set(["stack", "line", "column", "name", "message", "fileName", "lineNumber", "columnNumber", "number", "description"]);
+const errorKeys = new Set(["column", "columnNumber", "description", "fileName", "line", "lineNumber", "message", "name", "number", "stack"]);
 
 const inspectObject: InspectType<Error> = (error: Error, options: Options, inspect: InternalInspect): string => {
     const properties = Object.getOwnPropertyNames(error).filter((key) => !errorKeys.has(key));

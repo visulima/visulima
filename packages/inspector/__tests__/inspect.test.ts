@@ -33,7 +33,7 @@ describe("objects", () => {
     it("correctly inspects properties and Symbols as object keys", () => {
         expect.assertions(1);
 
-        expect(inspect({ [Symbol("foo")]: 1, foo: 1 })).toBe("{ foo: 1, [Symbol(foo)]: 1 }");
+        expect(inspect({ foo: 1, [Symbol("foo")]: 1 })).toBe("{ foo: 1, [Symbol(foo)]: 1 }");
     });
 
     it("does not use custom inspect functions if `customInspect` is turned off", () => {
@@ -42,6 +42,7 @@ describe("objects", () => {
         const object = {
             inspect: () => 1,
         };
+
         expect(inspect(object, { customInspect: false })).toBe("{ inspect: [Function: () => 1] }");
     });
 
@@ -51,6 +52,7 @@ describe("objects", () => {
         const object = {
             inspect: () => 1,
         };
+
         expect(inspect(object, { customInspect: true })).toBe("1");
     });
 
@@ -60,6 +62,7 @@ describe("objects", () => {
         const object = {
             inspect: () => "abc",
         };
+
         expect(inspect(object, { customInspect: true })).toBe("abc");
     });
 
@@ -69,6 +72,7 @@ describe("objects", () => {
         const object = {
             inspect: () => ["foobarbazbing"],
         };
+
         expect(inspect(object, { customInspect: true, truncate: 15 })).toBe("[ 'foobarba…' ]");
     });
 
@@ -80,6 +84,7 @@ describe("objects", () => {
                 inspect: (_depth: never, options: Options) => options.stylize("Object content", "string"),
             },
         };
+
         expect(inspect(object, { customInspect: true })).toBe("{ sub: Object content }");
     });
 
@@ -99,27 +104,27 @@ describe("objects", () => {
         expect(inspect(object, { customInspect: true })).toBe("{ sub: { foo: 'bar' } }");
     });
 
-    it.skipIf(typeof window !== "undefined")("should inspect custom util.inspect symbols", async () => {
+    it.skipIf(globalThis.window !== undefined)("should inspect custom util.inspect symbols", async () => {
         expect.assertions(4);
 
-        const utilInspect = await import("node:util").then((m) => m.inspect);
+        const utilityInspect = await import("node:util").then((m) => m.inspect);
 
         const object = {
             inspect: function stringInspect() {
                 return "string";
             },
         };
-        object[utilInspect.custom] = function custom() {
+
+        object[utilityInspect.custom] = function custom() {
             return "symbol";
         };
 
         const symbolResult = "[ symbol, [] ]";
         const stringResult = "[ string, [] ]";
-        const falseResult =
-            '[ { inspect: [Function: function stringInspect() {\n        return "string";\n      }], [Symbol(nodejs.util.inspect.custom)]: [Function: function custom() {\n      return "symbol";\n    }] }, [] ]';
+        const falseResult
+            = "[ { inspect: [Function: function stringInspect() {\n        return \"string\";\n      }], [Symbol(nodejs.util.inspect.custom)]: [Function: function custom() {\n      return \"symbol\";\n    }] }, [] ]";
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const symbolStringFallback = utilInspect.custom ? symbolResult : stringResult;
+        const symbolStringFallback = utilityInspect.custom ? symbolResult : stringResult;
 
         expect(inspect([object, []])).toBe(symbolStringFallback);
         expect(inspect([object, []], { customInspect: true })).toBe(symbolStringFallback);
@@ -130,6 +135,7 @@ describe("objects", () => {
                 return "string";
             },
         };
+
         object2[Symbol.for("nodejs.util.inspect.custom")] = function custom() {
             return "symbol";
         };

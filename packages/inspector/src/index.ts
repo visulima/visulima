@@ -1,4 +1,4 @@
-import { inspectHTMLCollection, inspectHTMLElement } from "./html";
+import { inspectHTMLElement, inspectNodeCollection } from "./html";
 import type { Inspect, InspectType, InternalInspect, Options } from "./types";
 import inspectArguments from "./types/arguments";
 import inspectArray from "./types/array";
@@ -18,7 +18,7 @@ import inspectSymbol from "./types/symbol";
 import inspectTypedArray from "./types/typed-array";
 import { getIndent } from "./utils/indent";
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 const constructorMap = new WeakMap<Function, Inspect>();
 const stringTagMap: Record<string, Inspect> = {};
 
@@ -30,7 +30,10 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     ArrayBuffer: () => "",
     BigInt: inspectBigInt,
 
+    bigint: inspectBigInt,
     Boolean: (value: boolean, options: Options) => options.stylize(String(value), "boolean"),
+
+    boolean: (value: boolean, options: Options) => options.stylize(String(value), "boolean"),
     DataView: () => "",
 
     Date: inspectDate,
@@ -40,50 +43,47 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     Float64Array: inspectTypedArray,
 
     Function: inspectFunction,
+    function: inspectFunction,
+
     Generator: () => "",
-
-    HTMLCollection: inspectHTMLCollection,
+    HTMLCollection: inspectNodeCollection,
     Int8Array: inspectTypedArray,
-
     Int16Array: inspectTypedArray,
     Int32Array: inspectTypedArray,
     Map: inspectMap,
-    NodeList: inspectHTMLCollection,
-    Number: inspectNumber,
-    Promise: inspectPromise,
 
+    NodeList: inspectNodeCollection,
+    null: (_value: null, options: Options) => options.stylize("null", "null"),
+
+    Number: inspectNumber,
+    number: inspectNumber,
+    Promise: inspectPromise,
     RegExp: inspectRegExp,
     Set: inspectSet,
-
     String: inspectString,
+    string: inspectString,
     // A Symbol polyfill will return `Symbol` not `symbol` from typedetect
     Symbol: inspectSymbol,
+    symbol: inspectSymbol,
     Uint8Array: inspectTypedArray,
+
     Uint8ClampedArray: inspectTypedArray,
     Uint16Array: inspectTypedArray,
     Uint32Array: inspectTypedArray,
+
+    undefined: (_value: undefined, options: Options) => options.stylize("undefined", "undefined"),
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     WeakMap: (_value: WeakMap<any, unknown>, options: Options) => options.stylize("WeakMap{…}", "special"),
     // WeakSet, WeakMap are totally opaque to us
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     WeakSet: (_value: WeakSet<any>, options: Options) => options.stylize("WeakSet{…}", "special"),
-    bigint: inspectBigInt,
-    boolean: (value: boolean, options: Options) => options.stylize(String(value), "boolean"),
-
-    function: inspectFunction,
-    null: (_value: null, options: Options) => options.stylize("null", "null"),
-    number: inspectNumber,
-
-    string: inspectString,
-
-    symbol: inspectSymbol,
-    undefined: (_value: undefined, options: Options) => options.stylize("undefined", "undefined"),
 } as const;
 
 const inspectCustom = (value: object, options: Options, type: string, depth: number): string => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (typeof window === "undefined" && typeof (value as any)[Symbol.for("nodejs.util.inspect.custom")] === "function") {
-        // eslint-disable-next-line @typescript-eslint/ban-types,@typescript-eslint/no-explicit-any
+    if (globalThis.window === undefined && typeof (value as any)[Symbol.for("nodejs.util.inspect.custom")] === "function") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type
         return ((value as any)[Symbol.for("nodejs.util.inspect.custom")] as Function)(depth, options);
     }
 
@@ -95,9 +95,7 @@ const inspectCustom = (value: object, options: Options, type: string, depth: num
         return constructorMap.get(value.constructor)?.(value, options) ?? "unknown";
     }
 
-    // eslint-disable-next-line security/detect-object-injection
     if (stringTagMap[type]) {
-        // eslint-disable-next-line security/detect-object-injection
         return (stringTagMap[type] as Inspect)(value, options);
     }
 
@@ -197,20 +195,20 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         quoteStyle: "single",
         showHidden: false,
         showProxy: false,
-        stylize: <S extends string>(s: S) => s + "",
+        stylize: <S extends string>(s: S) => s.toString(),
         truncate: Number.POSITIVE_INFINITY,
         ...options_,
     } satisfies Options;
 
     // @ts-expect-error - use can put a string in the indent option
     if (options.indent !== undefined && options.indent !== "\t" && !(Number.parseInt(options.indent, 10) === options.indent && options.indent > 0)) {
-        throw new TypeError('option "indent" must be "\\t", an integer > 0, or `undefined`');
+        throw new TypeError("option \"indent\" must be \"\\t\", an integer > 0, or `undefined`");
     }
 
     return internalInspect(value, options, 0, []);
 };
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const registerConstructor = (constructor: Function, inspector: Inspect): boolean => {
     if (constructorMap.has(constructor)) {
         return false;
@@ -226,7 +224,6 @@ export const registerStringTag = (stringTag: string, inspector: Inspect): boolea
         return false;
     }
 
-    // eslint-disable-next-line security/detect-object-injection
     stringTagMap[stringTag] = inspector;
 
     return true;
