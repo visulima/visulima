@@ -1,3 +1,26 @@
+## @visulima/api-platform [3.0.42](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.41...@visulima/api-platform@3.0.42) (2025-05-30)
+
+### Bug Fixes
+
+* **api-platform-fixture-express:** update dependencies ([b207956](https://github.com/visulima/visulima/commit/b207956122bd822c7a5d834e8484776efcd34203))
+* **api-platform-fixture-fastify:** update dependencies ([b7a1bc1](https://github.com/visulima/visulima/commit/b7a1bc13bf0e9258a85c970c94da86fc5f4aee5f))
+* **api-platform-fixture-next:** update dependencies ([ce72013](https://github.com/visulima/visulima/commit/ce72013ccd2cbb04da670843a3a3372e6e1155e3))
+* **api-platform:** downgrade swagger-ui-react and swagger-ui-dist to compatible versions ([bb5eb18](https://github.com/visulima/visulima/commit/bb5eb18940aabd10e4fd5ace90d1696bdd10ce09))
+* **api-platform:** update dependencies ([77a3958](https://github.com/visulima/visulima/commit/77a395838839934738cf3634684861bb8e4adab3))
+
+### Miscellaneous Chores
+
+* **api-platform:** downgrade express back to v4 ([695b553](https://github.com/visulima/visulima/commit/695b553dccfa886b8057106ec9351a1a79cd0c58))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.20
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.79
+* **@visulima/path:** upgraded to 1.3.6
+* **@visulima/crud:** upgraded to 2.0.38
+* **@visulima/fs:** upgraded to 3.1.3
+
 ## @visulima/api-platform [3.0.41](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.40...@visulima/api-platform@3.0.41) (2025-04-30)
 
 ### Miscellaneous Chores
