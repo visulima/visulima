@@ -9,7 +9,6 @@ describe("helper Constants", () => {
 
     beforeEach(() => {
         platformSpy = vi.spyOn(process, "platform", "get").mockReturnValue("linux");
-        // @ts-expect-error - process.env is typically readonly
         environmentSpy = vi.spyOn(process, "env", "get").mockReturnValue({ ...originalEnvironment });
         // Ensure a clean slate for window, default to non-browser for most tests
         (globalThis as any).window = undefined;

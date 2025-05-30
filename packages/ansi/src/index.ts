@@ -63,7 +63,7 @@ export {
 export { default as hyperlink } from "./hyperlink";
 export type { ImageOptions } from "./image";
 export { image } from "./image";
-export type { IITerm2Payload, ITerm2FileProps } from "./iterm2";
+export type { IITerm2Payload, ITerm2FileProperties } from "./iterm2";
 export {
     IT2_AUTO,
     it2Cells,

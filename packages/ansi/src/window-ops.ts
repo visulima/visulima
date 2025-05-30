@@ -426,6 +426,20 @@ export const maximizeWindow = (): string => xtermWindowOp(XTermWindowOp.MAXIMIZE
  * Report window position.
  * Response: `CSI 3 ; x ; y t`
  * `CSI 1 3 t`
+ *
+ * Requests a report of the terminal window's position on the screen.
+ * The terminal responds with `CSI 3 ; x ; y t` where x and y are the window coordinates.
+ * @returns The ANSI escape sequence to request window position.
+ * @see xtermWindowOp
+ * @see XTermWindowOp.REPORT_WINDOW_POSITION
+ * @example
+ * ```typescript
+ * import { reportWindowPosition } from "@visulima/ansi";
+ *
+ * process.stdout.write(reportWindowPosition());
+ * // Sends: "\x1b[13t"
+ * // Expect response like: "\x1b[3;100;50t" if window is at position (100, 50)
+ * ```
  */
 export const reportWindowPosition = (): string => xtermWindowOp(XTermWindowOp.REPORT_WINDOW_POSITION);
 
@@ -434,6 +448,20 @@ export const reportWindowPosition = (): string => xtermWindowOp(XTermWindowOp.RE
  * Response: `CSI 1 t` if de-iconified, `CSI 2 t` if iconified.
  * (XTerm doc uses `CSI ? 1 t` and `CSI ? 2 t`, but general form `CSI Ps t` is also listed for 11)
  * `CSI 1 1 t`
+ *
+ * Requests a report of the terminal window's state (iconified/minimized or de-iconified/normal).
+ * The terminal responds with `CSI 1 t` if de-iconified or `CSI 2 t` if iconified.
+ * @returns The ANSI escape sequence to request window state.
+ * @see xtermWindowOp
+ * @see XTermWindowOp.REPORT_WINDOW_STATE
+ * @example
+ * ```typescript
+ * import { reportWindowState } from "@visulima/ansi";
+ *
+ * process.stdout.write(reportWindowState());
+ * // Sends: "\x1b[11t"
+ * // Expect response: "\x1b[1t" (de-iconified) or "\x1b[2t" (iconified)
+ * ```
  */
 export const reportWindowState = (): string => xtermWindowOp(XTermWindowOp.REPORT_WINDOW_STATE);
 
@@ -443,5 +471,16 @@ export const reportWindowState = (): string => xtermWindowOp(XTermWindowOp.REPOR
  * XTerm extends this to `CSI > lines ; width ; height t` where width/height are in pixels.
  * `CSI 24 ; lines t`
  * @param lines The number of lines for the page.
+ * @returns The ANSI escape sequence to set page size.
+ * @see xtermWindowOp
+ * @see XTermWindowOp.RESIZE_SCREEN_AND_TEXT_AREA
+ * @example
+ * ```typescript
+ * import { setPageSizeLines } from "@visulima/ansi";
+ *
+ * // Set page size to 30 lines
+ * process.stdout.write(setPageSizeLines(30));
+ * // Sends: "\x1b[24;30t"
+ * ```
  */
 export const setPageSizeLines = (lines: number): string => xtermWindowOp(XTermWindowOp.RESIZE_SCREEN_AND_TEXT_AREA, lines);

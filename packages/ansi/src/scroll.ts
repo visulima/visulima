@@ -5,7 +5,7 @@ import { CSI } from "./constants";
  * (SU - Scroll Up)
  *
  * New blank lines are added at the bottom of the scrolling region.
- * If the parameter `count` is 0 or 1, it defaults to scrolling one line.
+ * If the parameter `count` is 1 or omitted, it defaults to scrolling one line.
  * The cursor position is not affected by this command.
  *
  * Sequence: `CSI Pn S`
@@ -42,7 +42,7 @@ export const scrollUp = (count = 1): string => {
  * (SD - Scroll Down)
  *
  * New blank lines are added at the top of the scrolling region.
- * If the parameter `count` is 0 or 1, it defaults to scrolling one line.
+ * If the parameter `count` is 1 or omitted, it defaults to scrolling one line.
  * The cursor position is not affected by this command.
  *
  * Sequence: `CSI Pn T`

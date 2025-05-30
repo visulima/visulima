@@ -3,7 +3,7 @@ import { BEL, OSC } from "./constants";
 import type { IITerm2Payload } from "./iterm2/iterm2-properties";
 
 // Re-export specific payload types and props for easier use by consumers
-export type { IITerm2Payload, ITerm2FileProps } from "./iterm2/iterm2-properties";
+export type { IITerm2Payload, ITerm2FileProperties } from "./iterm2/iterm2-properties";
 export {
     IT2_AUTO,
     it2Cells,

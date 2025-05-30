@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { BEL, OSC } from "../../src/constants";
-import type { IITerm2Payload, ITerm2FileProps as ITerm2FileProperties } from "../../src/iterm2";
+import type { IITerm2Payload, ITerm2FileProperties } from "../../src/iterm2";
 import {
     IT2_AUTO,
     it2Cells,
