@@ -1,3 +1,24 @@
+## @visulima/ansi [1.1.0](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.18...@visulima/ansi@1.1.0) (2025-05-30)
+
+### Features
+
+* **ansi:** introduces a significant number of changes, including refactoring of exports, renaming of functions for clarity and consistency ([d80d2db](https://github.com/visulima/visulima/commit/d80d2dba2580e208cbf21f60d27bfb4e95417281))
+
+### Bug Fixes
+
+* **ansi:** improved readme, added all files as export ([a70ad00](https://github.com/visulima/visulima/commit/a70ad0026e05552b4c56b0be355bf439a40c3c3e))
+* **ansi:** update dependencies ([85478c4](https://github.com/visulima/visulima/commit/85478c4614b3fe78ee80e090b36829bc64f6e4c1))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.22
+* **@visulima/path:** upgraded to 1.3.6
+
 ## @visulima/ansi [1.0.18](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.17...@visulima/ansi@1.0.18) (2025-03-07)
 
 ### Bug Fixes
