@@ -1,3 +1,4 @@
+/* eslint-disable no-secrets/no-secrets */
 import { BEL, OSC, ST } from "./constants";
 
 /**
@@ -12,6 +13,7 @@ const validateTitle = (title: string): string => {
 
     // Remove or escape potentially problematic characters
     // OSC sequences can be terminated by BEL or ST, so we should escape these
+    // eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
     return title.replaceAll(/[\u0007\u001B]/g, "");
 };
 
@@ -142,8 +144,6 @@ export const decswt = (title: string): string => setWindowTitle(`1;${title}`);
  * ```
  */
 export const decsin = (name: string): string => setWindowTitle(`L;${name}`);
-
-// Alternative versions using ST as terminator for completeness, though Go uses BEL.
 
 /**
  * Sets the icon name and window title using an OSC sequence, terminated with ST (String Terminator).

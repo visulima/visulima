@@ -19,7 +19,12 @@ const stringToHex = (input: string): string => {
     let hex = "";
 
     for (let index = 0; index < input.length; index += 1) {
-        const charCode = input.charCodeAt(index);
+        const charCode = input.codePointAt(index);
+
+        if (charCode === undefined) {
+            continue;
+        }
+
         const byteHex = charCode.toString(16).toUpperCase();
 
         hex += byteHex.length === 1 ? `0${byteHex}` : byteHex;
@@ -40,7 +45,7 @@ export const XTGETTCAP = (...caps: string[]): string => {
         return "";
     }
 
-    const hexCaps = caps.map(stringToHex);
+    const hexCaps = caps.map((cap) => stringToHex(cap));
 
     return `${DCS}+q${hexCaps.join(SEP)}${ST}`;
 };

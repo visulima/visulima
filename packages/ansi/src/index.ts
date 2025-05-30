@@ -57,6 +57,7 @@ export {
     eraseLines,
     eraseLineStart,
     eraseScreen,
+    eraseScreenAndScrollback,
     eraseUp,
 } from "./erase";
 export { default as hyperlink } from "./hyperlink";
@@ -176,18 +177,6 @@ export {
     scrollDown,
     scrollUp,
 } from "./scroll";
-export type {
-    RawImageData,
-    SixelColor,
-    SixelDecoderOptions,
-    SixelEncoderOptions,
-    SixelPalette,
-} from "./sixel";
-export {
-    SixelDecoder,
-    SixelEncoder,
-    sixelGraphics,
-} from "./sixel";
 export type { AnsiStatusReport, DecStatusReport, StatusReport } from "./status";
 export {
     CPR,

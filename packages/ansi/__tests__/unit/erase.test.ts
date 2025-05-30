@@ -1,8 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CSI } from "../../src/constants";
-import * as cursorModule from "../../src/cursor"; // Import as module for spy
-import { cursorToColumn1 } from "../../src/cursor"; // Import the constant for use
+// eslint-disable-next-line import/no-namespace
+import * as cursorModule from "../../src/cursor";
+import { cursorToColumn1 } from "../../src/cursor";
 import {
     eraseDisplay,
     EraseDisplayMode,

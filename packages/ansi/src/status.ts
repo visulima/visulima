@@ -501,6 +501,7 @@ export const requestTerminalStatus: StatusReport = createAnsiStatusReport(5);
  * process.stdout.write(DSR_TerminalStatus);
  * ```
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const DSR_TerminalStatus: string = deviceStatusReport(requestTerminalStatus); // CSI 5 n
 
 /**
@@ -548,6 +549,7 @@ export const requestPrinterStatusDEC: StatusReport = createDecStatusReport(15);
  * process.stdout.write(DSR_PrinterStatusDEC);
  * ```
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const DSR_PrinterStatusDEC: string = deviceStatusReport(requestPrinterStatusDEC); // CSI ? 15 n
 
 /**
@@ -595,6 +597,7 @@ export const requestUDKStatusDEC: StatusReport = createDecStatusReport(25);
  * process.stdout.write(DSR_UDKStatusDEC);
  * ```
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const DSR_UDKStatusDEC: string = deviceStatusReport(requestUDKStatusDEC); // CSI ? 25 n
 
 /**
@@ -632,6 +635,7 @@ export const requestKeyboardLanguageDEC: StatusReport = createDecStatusReport(26
  * process.stdout.write(DSR_KeyboardLanguageDEC);
  * ```
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const DSR_KeyboardLanguageDEC: string = deviceStatusReport(requestKeyboardLanguageDEC); // CSI ? 26 n
 
 /**

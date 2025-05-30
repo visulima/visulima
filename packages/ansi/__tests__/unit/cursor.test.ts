@@ -77,7 +77,7 @@ describe(`cursor`, () => {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(function_(value[0] as number, value[1] as number)).toBe(expected);
         } else if (typeof function_ === "function") {
-            // eslint-disable-next-line vitest/no-conditional-expect, @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect((function_ as (value: any) => string)(value)).toBe(expected);
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect

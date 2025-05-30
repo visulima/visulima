@@ -246,3 +246,15 @@ export const eraseScreen: string = eraseDisplay(EraseDisplayMode.EntireScreen);
  * @see {@link EraseDisplayMode.ToBeginning}
  */
 export const eraseUp: string = eraseDisplay(EraseDisplayMode.ToBeginning);
+
+/**
+ * Erases the entire screen and, on supported terminals (like XTerm and derivatives),
+ * also deletes all lines saved in the scrollback buffer.
+ * This is a convenience constant for `eraseDisplay(EraseDisplayMode.EntireScreenAndScrollback)`.
+ * Sequence: `CSI 3J` (an XTerm extension, widely adopted).
+ * @returns The ANSI escape sequence `CSI 3J`.
+ * @remarks This mode is particularly useful for a more complete "reset" of the terminal view.
+ * @see {@link eraseDisplay}
+ * @see {@link EraseDisplayMode.EntireScreenAndScrollback}
+ */
+export const eraseScreenAndScrollback: string = eraseDisplay(EraseDisplayMode.EntireScreenAndScrollback);

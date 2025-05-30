@@ -98,7 +98,7 @@ describe(mouseX10Sequence, () => {
         // Cb = 0, Cx = 1, Cy = 1 (0-indexed + 1)
         // Chars: (0+32), (0+1+32), (0+1+32) => 32, 33, 33 => ' ', '!', '!'
         expect(mouseX10Sequence(callback, x, y)).toBe(
-            `${ESC}[M${String.fromCharCode(callback + X10_OFFSET)}${String.fromCharCode(x + 1 + X10_OFFSET)}${String.fromCharCode(y + 1 + X10_OFFSET)}`,
+            `${ESC}[M${String.fromCodePoint(callback + X10_OFFSET)}${String.fromCodePoint(x + 1 + X10_OFFSET)}${String.fromCodePoint(y + 1 + X10_OFFSET)}`,
         );
     });
 
@@ -112,7 +112,7 @@ describe(mouseX10Sequence, () => {
         // Cx = 11, Cy = 21
         // Chars: (68+32), (10+1+32), (20+1+32) => 100, 43, 53 => 'd', '+', '5'
         expect(mouseX10Sequence(callback, x, y)).toBe(
-            `${ESC}[M${String.fromCharCode(callback + X10_OFFSET)}${String.fromCharCode(x + 1 + X10_OFFSET)}${String.fromCharCode(y + 1 + X10_OFFSET)}`,
+            `${ESC}[M${String.fromCodePoint(callback + X10_OFFSET)}${String.fromCodePoint(x + 1 + X10_OFFSET)}${String.fromCodePoint(y + 1 + X10_OFFSET)}`,
         );
     });
 
@@ -132,7 +132,7 @@ describe(mouseX10Sequence, () => {
         // Cx = 223, Cy = 223
         // Chars: (cb+32), (222+1+32), (222+1+32) => (cb+32), 255, 255
         expect(mouseX10Sequence(callback, x, y)).toBe(
-            `${ESC}[M${String.fromCharCode(callback + X10_OFFSET)}${String.fromCharCode(x + 1 + X10_OFFSET)}${String.fromCharCode(y + 1 + X10_OFFSET)}`,
+            `${ESC}[M${String.fromCodePoint(callback + X10_OFFSET)}${String.fromCodePoint(x + 1 + X10_OFFSET)}${String.fromCodePoint(y + 1 + X10_OFFSET)}`,
         );
     });
 
@@ -147,7 +147,7 @@ describe(mouseX10Sequence, () => {
 
         // Chars: (61+32), (5+1+32), (10+1+32) => 93, 38, 43 => ']', '&', '+'
         expect(mouseX10Sequence(callback, x, y)).toBe(
-            `${ESC}[M${String.fromCharCode(callback + X10_OFFSET)}${String.fromCharCode(x + 1 + X10_OFFSET)}${String.fromCharCode(y + 1 + X10_OFFSET)}`,
+            `${ESC}[M${String.fromCodePoint(callback + X10_OFFSET)}${String.fromCodePoint(x + 1 + X10_OFFSET)}${String.fromCodePoint(y + 1 + X10_OFFSET)}`,
         );
     });
 });

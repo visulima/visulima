@@ -70,11 +70,11 @@ export interface ImageOptions {
  * @remarks
  * - This sequence is specific to iTerm2 and may not work in other terminal emulators.
  * - For Node.js environments, `Buffer.from(data).toString("base64")` is used for Base64 encoding.
- *   In browser environments, a polyfill or an alternative method for Base64 encoding `Uint8Array` would be necessary
- *   if `Buffer` is not available (e.g., `btoa(String.fromCharCode(...data))` after careful handling of binary data).
+ * In browser environments, a polyfill or an alternative method for Base64 encoding `Uint8Array` would be necessary
+ * if `Buffer` is not available (e.g., `btoa(String.fromCharCode(...data))` after careful handling of binary data).
  * - The `name` parameter (for filename) is not directly supported by this simplified helper but is part of the
- *   full iTerm2 inline image protocol. For more advanced features, consider using the more detailed iTerm2 sequence
- *   builders in `iterm2/` files.
+ * full iTerm2 inline image protocol. For more advanced features, consider using the more detailed iTerm2 sequence
+ * builders in `iterm2/` files.
  * @see {@link https://iterm2.com/documentation-images.html} iTerm2 Inline Images Protocol.
  * @see {@link ImageOptions}
  */

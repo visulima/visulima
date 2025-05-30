@@ -9,15 +9,15 @@ import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-properties";
  * This function takes an object of {@link ITerm2FileProps} and constructs a semicolon-separated
  * string of key-value pairs (e.g., `name=...;size=...;inline=1`).
  * This formatted string is then used as part of commands like `File=` or `MultipartFile=`.
- * @param props An object containing a subset of {@link ITerm2FileProps}.
+ * @param properties An object containing a subset of {@link ITerm2FileProps}.
  * Only properties that are set in this object will be included in the output string.
  * @returns A string of semicolon-separated key-value pairs for iTerm2 file properties.
  * Returns an empty string if no relevant properties are provided in the `props` object.
  * @remarks
  * - The `name` property within `props` is expected to be Base64 encoded by the caller if it contains
- *   special characters (like `;`, `=`, or non-ASCII characters) to ensure the sequence is parsed correctly by iTerm2.
+ * special characters (like `;`, `=`, or non-ASCII characters) to ensure the sequence is parsed correctly by iTerm2.
  * - The function correctly handles boolean flags like `inline` (becomes `inline=1`) and
- *   `ignoreAspectRatio` (becomes `preserveAspectRatio=0`).
+ * `ignoreAspectRatio` (becomes `preserveAspectRatio=0`).
  * - `width` and `height` are converted to strings if they are numbers.
  * @example
  * ```typescript
@@ -96,7 +96,7 @@ export class ITerm2File implements IITerm2Payload {
 
     /**
      * Constructs an `ITerm2File` payload object.
-     * @param props An object containing properties for the file/image, as defined by {@link ITerm2FileProps}.
+     * @param properties An object containing properties for the file/image, as defined by {@link ITerm2FileProps}.
      * The `name` property within `props` should be pre-Base64 encoded by the caller if it might
      * contain special characters (like `;`, `=`, or non-ASCII characters).
      * If `fileData` is provided, `props.content` will be overridden, and `props.size` will be
@@ -205,7 +205,7 @@ export class ITerm2FilePart implements IITerm2Payload {
 export class ITerm2MultipartFileStart implements IITerm2Payload {
     /**
      * Constructs an `ITerm2MultipartFileStart` payload object.
-     * @param props Properties for the multipart file (e.g., `name`, `size`). Content is not part of this command.
+     * @param properties Properties for the multipart file (e.g., `name`, `size`). Content is not part of this command.
      * The `name` property within `props` should be pre-Base64 encoded by the caller if it might
      * contain special characters.
      */

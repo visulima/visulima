@@ -1,5 +1,5 @@
 /* eslint-disable no-secrets/no-secrets */
-import { CSI, SEP } from "./constants";
+import { CSI } from "./constants";
 
 /**
  * Enum for XTerm Window Operations (XTWINOPS).
@@ -427,9 +427,7 @@ export const maximizeWindow = (): string => xtermWindowOp(XTermWindowOp.MAXIMIZE
  * Response: `CSI 3 ; x ; y t`
  * `CSI 1 3 t`
  */
-export function reportWindowPosition(): string {
-    return xtermWindowOp(XTermWindowOp.REPORT_WINDOW_POSITION);
-}
+export const reportWindowPosition = (): string => xtermWindowOp(XTermWindowOp.REPORT_WINDOW_POSITION);
 
 /**
  * Report window state.
@@ -437,9 +435,7 @@ export function reportWindowPosition(): string {
  * (XTerm doc uses `CSI ? 1 t` and `CSI ? 2 t`, but general form `CSI Ps t` is also listed for 11)
  * `CSI 1 1 t`
  */
-export function reportWindowState(): string {
-    return xtermWindowOp(XTermWindowOp.REPORT_WINDOW_STATE);
-}
+export const reportWindowState = (): string => xtermWindowOp(XTermWindowOp.REPORT_WINDOW_STATE);
 
 /**
  * Set page size (DECSLPP - Set Lines Per Page), often used for resizing the screen.
@@ -448,6 +444,4 @@ export function reportWindowState(): string {
  * `CSI 24 ; lines t`
  * @param lines The number of lines for the page.
  */
-export function setPageSizeLines(lines: number): string {
-    return xtermWindowOp(XTermWindowOp.RESIZE_SCREEN_AND_TEXT_AREA, lines);
-}
+export const setPageSizeLines = (lines: number): string => xtermWindowOp(XTermWindowOp.RESIZE_SCREEN_AND_TEXT_AREA, lines);

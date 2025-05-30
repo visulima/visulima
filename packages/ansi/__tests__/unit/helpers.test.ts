@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Store original process properties
-const originalPlatform = process.platform;
 const originalEnvironment = { ...process.env };
 const originalWindow = (globalThis as any).window;
 

@@ -222,9 +222,9 @@ export const mouseX10Sequence = (callback: number, x: number, y: number): string
     }
 
     // Coordinates are 1-based for the protocol
-    const charCallback = String.fromCharCode(callback + X10_MOUSE_OFFSET);
-    const charCx = String.fromCharCode(x + 1 + X10_MOUSE_OFFSET);
-    const charCy = String.fromCharCode(y + 1 + X10_MOUSE_OFFSET);
+    const charCallback = String.fromCodePoint(callback + X10_MOUSE_OFFSET);
+    const charCx = String.fromCodePoint(x + 1 + X10_MOUSE_OFFSET);
+    const charCy = String.fromCodePoint(y + 1 + X10_MOUSE_OFFSET);
 
     return `${ESC}[M${charCallback}${charCx}${charCy}`;
 };

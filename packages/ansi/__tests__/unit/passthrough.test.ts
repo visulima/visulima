@@ -70,14 +70,14 @@ describe(tmuxPassthrough, () => {
 
         const seq = "HelloTmux";
 
-        expect(tmuxPassthrough(seq)).toBe(`${DCS}tmux;` + `HelloTmux${ST}`);
+        expect(tmuxPassthrough(seq)).toBe(`${DCS}tmux;HelloTmux${ST}`);
     });
 
     it("should wrap and escape a sequence with one ESC character", () => {
         expect.assertions(1);
 
         const seq = `Before${ESC}After`;
-        const expected = `${DCS}tmux;` + `Before${ESC}${ESC}After${ST}`;
+        const expected = `${DCS}tmux;Before${ESC}${ESC}After${ST}`;
 
         expect(tmuxPassthrough(seq)).toBe(expected);
     });
@@ -104,7 +104,7 @@ describe(tmuxPassthrough, () => {
         expect.assertions(1);
 
         const seq = `End${ESC}`;
-        const expected = `${DCS}tmux;` + `End${ESC}${ESC}${ST}`;
+        const expected = `${DCS}tmux;End${ESC}${ESC}${ST}`;
 
         expect(tmuxPassthrough(seq)).toBe(expected);
     });

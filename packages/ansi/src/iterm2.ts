@@ -35,10 +35,10 @@ export {
  * Returns an empty string if the provided `payload` is invalid (e.g., null, undefined,
  * lacks a proper `toString` method, or its `toString` method is the generic `Object.prototype.toString`).
  * @see {@link https://iterm2.com/documentation-escape-codes.html iTerm2 Escape Codes Documentation}
- *      for a comprehensive list of supported commands and their payloads.
+ * for a comprehensive list of supported commands and their payloads.
  * @see {@link IITerm2Payload} for the interface requirement.
  * @see Classes like {@link ITerm2File}, {@link ITerm2MultipartFileStart}, {@link ITerm2FilePart}, {@link ITerm2FileEnd}
- *      for concrete examples of payload objects.
+ * for concrete examples of payload objects.
  * @example
  * ```typescript
  * import { iTerm2, ITerm2File, ITerm2FileProps } from '@visulima/ansi/iterm2'; // ITerm2FileProps can be used for options

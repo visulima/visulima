@@ -48,14 +48,14 @@ export const SCREEN_TYPICAL_LIMIT: number = 768; // Actual Screen limit mentione
  * console.log(JSON.stringify(limitedPassthrough));
  * ```
  */
-export function screenPassthrough(sequence: string, limit: number = SCREEN_MAX_LEN_DEFAULT): string {
+export const screenPassthrough = (sequence: string, limit: number = SCREEN_MAX_LEN_DEFAULT): string => {
     let result = DCS;
 
     if (limit > 0 && sequence.length > limit) {
         for (let index = 0; index < sequence.length; index += limit) {
             const end = Math.min(index + limit, sequence.length);
 
-            result += sequence.substring(index, end);
+            result += sequence.slice(index, end);
 
             if (end < sequence.length) {
                 // Close current DCS and start a new one for the next chunk
@@ -69,7 +69,7 @@ export function screenPassthrough(sequence: string, limit: number = SCREEN_MAX_L
     result += ST;
 
     return result;
-}
+};
 
 /**
  * Wraps a given ANSI escape sequence in a special DCS (Device Control String) passthrough sequence
@@ -100,7 +100,7 @@ export function screenPassthrough(sequence: string, limit: number = SCREEN_MAX_L
  * console.log(JSON.stringify(passthrough));
  * ```
  */
-export function tmuxPassthrough(sequence: string): string {
+export const tmuxPassthrough = (sequence: string): string => {
     let escapedSequence = "";
 
     for (const element of sequence) {
@@ -108,4 +108,4 @@ export function tmuxPassthrough(sequence: string): string {
     }
 
     return `${DCS}tmux;${escapedSequence}${ST}`;
-}
+};
