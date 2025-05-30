@@ -1,3 +1,13 @@
+## @visulima/path [1.3.6](https://github.com/visulima/visulima/compare/@visulima/path@1.3.5...@visulima/path@1.3.6) (2025-05-30)
+
+### Bug Fixes
+
+* **path:** update dependencies ([d0e4c71](https://github.com/visulima/visulima/commit/d0e4c71ccfbc45701735a10e666c0af7860d0563))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
 ## @visulima/path [1.3.5](https://github.com/visulima/visulima/compare/@visulima/path@1.3.4...@visulima/path@1.3.5) (2025-03-07)
 
 ### Bug Fixes
