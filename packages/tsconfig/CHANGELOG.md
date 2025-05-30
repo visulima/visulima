@@ -1,3 +1,20 @@
+## @visulima/tsconfig [1.1.17](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.16...@visulima/tsconfig@1.1.17) (2025-05-30)
+
+### Styles
+
+* cs fixes ([6570d56](https://github.com/visulima/visulima/commit/6570d568a80bd3fd4bfd73c824dc78f7e3a372f8))
+
+### Miscellaneous Chores
+
+* **tsconfig:** update devDependencies ([7c12ca5](https://github.com/visulima/visulima/commit/7c12ca59b30981d5f2048b2ef2a44234efe39c77))
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 3.1.3
+* **@visulima/path:** upgraded to 1.3.6
+
 ## @visulima/tsconfig [1.1.16](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.15...@visulima/tsconfig@1.1.16) (2025-03-07)
 
 ### Bug Fixes
