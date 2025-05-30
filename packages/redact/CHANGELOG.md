@@ -1,3 +1,18 @@
+## @visulima/redact [1.0.15](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.14...@visulima/redact@1.0.15) (2025-05-30)
+
+### Bug Fixes
+
+* **redact:** update dependencies ([d4942d2](https://github.com/visulima/visulima/commit/d4942d2fcb1d3249f85524bf335b5191b7eab12f))
+
+### Styles
+
+* cs fixes ([6570d56](https://github.com/visulima/visulima/commit/6570d568a80bd3fd4bfd73c824dc78f7e3a372f8))
+
+### Miscellaneous Chores
+
+* **redact-bench:** update devDependencies ([54e7141](https://github.com/visulima/visulima/commit/54e714111de2f420d0fa6c39c9e3adb61f2c71e9))
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
 ## @visulima/redact [1.0.14](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.13...@visulima/redact@1.0.14) (2025-03-07)
 
 ### Bug Fixes
