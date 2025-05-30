@@ -1,3 +1,24 @@
+## @visulima/string [1.2.3](https://github.com/visulima/visulima/compare/@visulima/string@1.2.2...@visulima/string@1.2.3) (2025-05-30)
+
+### Bug Fixes
+
+* **string:** move postinstall scrip into a command ([af74390](https://github.com/visulima/visulima/commit/af743905042ece78028b2e2b1205898e4d8fc72d))
+* **string:** update dependencies ([f19d726](https://github.com/visulima/visulima/commit/f19d7267f689c9e45064aacdd19033c19e9c3a5a))
+
+### Styles
+
+* cs fixes ([6570d56](https://github.com/visulima/visulima/commit/6570d568a80bd3fd4bfd73c824dc78f7e3a372f8))
+
+### Miscellaneous Chores
+
+* **string-bench:** update devDependencies ([e316f82](https://github.com/visulima/visulima/commit/e316f829b2e0917138cca678ecd2094fe7f8d532))
+* **string:** update dependencies in package.json and adjust test cases for string width calculations ([96b28e4](https://github.com/visulima/visulima/commit/96b28e46eb977b5f11be0adf13116ef318fea022))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.22
+
 ## @visulima/string [1.2.2](https://github.com/visulima/visulima/compare/@visulima/string@1.2.1...@visulima/string@1.2.2) (2025-05-07)
 
 ### Bug Fixes
