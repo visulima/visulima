@@ -8,9 +8,9 @@ describe("booleans", () => {
 
         expect(inspect(false)).toBe("false");
         expect(inspect(true)).toBe("true");
-        // eslint-disable-next-line no-new-wrappers,unicorn/new-for-builtins
+        // eslint-disable-next-line no-new-wrappers,unicorn/new-for-builtins,sonarjs/no-primitive-wrappers
         expect(inspect(new Boolean(1))).toBe("true");
-        // eslint-disable-next-line no-new-wrappers,unicorn/new-for-builtins
+        // eslint-disable-next-line no-new-wrappers,unicorn/new-for-builtins,sonarjs/no-primitive-wrappers
         expect(inspect(new Boolean(false))).toBe("false");
     });
 

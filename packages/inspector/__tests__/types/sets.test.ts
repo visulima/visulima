@@ -20,8 +20,8 @@ describe("sets", () => {
         const expectedStringSpaces = ["Set (2) {", "  {", "    a: 1", "  },", "  [ 'b' ]", "}"].join("\n");
         const expectedStringTabs = ["Set (2) {", "	{", "		a: 1", "	},", "	[ 'b' ]", "}"].join("\n");
 
-        expect(inspect(set, { indent: 2 }), 'new Set([{ a: 1 }, ["b"]]) should show size and contents (two)').toBe(expectedStringSpaces);
-        expect(inspect(set, { indent: "\t" }), 'new Set([{ a: 1 }, ["b"]]) should show size and contents (tabs)').toBe(expectedStringTabs);
+        expect(inspect(set, { indent: 2 }), "new Set([{ a: 1 }, [\"b\"]]) should show size and contents (two)").toBe(expectedStringSpaces);
+        expect(inspect(set, { indent: "\t" }), "new Set([{ a: 1 }, [\"b\"]]) should show size and contents (tabs)").toBe(expectedStringTabs);
 
         expect(inspect(new Set(), { indent: 2 }), "empty Set should show as empty (two)").toBe("Set (0) {}");
         expect(inspect(new Set(), { indent: "\t" }), "empty Set should show as empty (tabs)").toBe("Set (0) {}");

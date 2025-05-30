@@ -12,7 +12,6 @@ const getArrayName = (array: TypedArray) => {
         return "Buffer";
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (array[Symbol.toStringTag]) {
         return array[Symbol.toStringTag];
     }
@@ -38,17 +37,14 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
     // stylise the toString() value of them
     let output = "";
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    // eslint-disable-next-line no-plusplus
     for (let index = 0; index < array.length; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         const string = `${options.stylize(truncate(array[index] as number, options.truncate), "number")}${index === array.length - 1 ? "" : ", "}`;
 
         // eslint-disable-next-line no-param-reassign
         options.truncate -= string.length;
 
-        // eslint-disable-next-line security/detect-object-injection
         if (array[index] !== array.length && options.truncate <= 3) {
-            // eslint-disable-next-line security/detect-object-injection
             output += `${TRUNCATOR}(${array.length - (array[index] as number) + 1})`;
             break;
         }

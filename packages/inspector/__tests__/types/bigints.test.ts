@@ -37,6 +37,7 @@ describe("bigints", () => {
             expect(inspect(3_141_592_654n, { numericSeparator: false, truncate: 9 })).toBe("3141592…n");
             expect(inspect(3_141_592_654n, { truncate: 9 })).toBe("3_141_592…n");
         });
+
         it("truncates numbers longer than truncate (8)", () => {
             expect.assertions(2);
 

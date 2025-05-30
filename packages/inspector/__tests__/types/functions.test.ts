@@ -45,6 +45,7 @@ describe("functions", () => {
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { truncate: 15 })).toBe("[Function foo…]");
         });
+
         it("truncates function names longer than truncate (14)", () => {
             expect.assertions(1);
 
@@ -114,14 +115,14 @@ describe("async functions", () => {
     it("returns the functions name wrapped in `[AsyncFunction ]`", () => {
         expect.assertions(1);
 
-        /* eslint-disable-next-line prefer-arrow-callback,@typescript-eslint/no-empty-function */
+        /* eslint-disable-next-line prefer-arrow-callback */
         expect(inspect(async function foo() {})).toBe("[AsyncFunction: async function foo() {\n    }]");
     });
 
     it("returns the `[AsyncFunction]` if given anonymous function", () => {
         expect.assertions(1);
 
-        /* eslint-disable-next-line prefer-arrow-callback,@typescript-eslint/no-empty-function,func-names */
+        /* eslint-disable-next-line prefer-arrow-callback,func-names */
         expect(inspect(async function () {})).toBe("[AsyncFunction: async function() {\n    }]");
     });
 });
@@ -130,14 +131,13 @@ describe("generator functions", () => {
     it("returns the functions name wrapped in `[GeneratorFunction ]`", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
         expect(inspect(function* foo() {})).toBe("[GeneratorFunction: function* foo() {\n    }]");
     });
 
     it("returns the `[GeneratorFunction]` if given a generator function", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-empty-function,func-names
+        // eslint-disable-next-line func-names
         expect(inspect(function* () {})).toBe("[GeneratorFunction: function* () {\n    }]");
     });
 });
@@ -146,14 +146,13 @@ describe("async generator functions", () => {
     it("returns the functions name wrapped in `[AsyncGeneratorFunction ]`", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
         expect(inspect(async function* foo() {})).toBe("[AsyncGeneratorFunction: async function* foo() {\n    }]");
     });
 
     it("returns the `[AsyncGeneratorFunction]` if given a async generator function", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line func-names,@typescript-eslint/no-empty-function
+        // eslint-disable-next-line func-names
         expect(inspect(async function* () {})).toBe("[AsyncGeneratorFunction: async function* () {\n    }]");
     });
 });

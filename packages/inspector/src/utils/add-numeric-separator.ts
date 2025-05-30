@@ -3,7 +3,6 @@ const addNumericSeparator = (number_: bigint | number, string_: string): string 
         return string_;
     }
 
-    // eslint-disable-next-line security/detect-unsafe-regex
     const separatorRegex = /\d(?=(?:\d{3})+(?!\d))/g;
 
     if (typeof number_ === "number") {
@@ -15,7 +14,7 @@ const addNumericSeparator = (number_: bigint | number, string_: string): string 
 
             return (
                 // eslint-disable-next-line unicorn/prefer-string-replace-all
-                intString.replace(separatorRegex, "$&_") + "." + dec.replace(/\d{3}/g, "$&_").replace(/_$/, "")
+                `${intString.replace(separatorRegex, "$&_")}.${dec.replace(/\d{3}/g, "$&_").replace(/_$/, "")}`
             );
         }
     }

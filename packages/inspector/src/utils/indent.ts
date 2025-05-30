@@ -13,7 +13,7 @@ export const getIndent = (indent: Options["indent"], depth: Options["depth"]): I
 
     return {
         base: baseIndent,
-        prev: "\n" + Array.from({ length: depth + 1 }).join(baseIndent),
+        prev: `\n${Array.from({ length: depth + 1 }).join(baseIndent)}`,
     };
 };
 
@@ -24,5 +24,5 @@ export const indentedJoin = (values: string, indent: Indent): string => {
 
     const lineJoiner = indent.prev + indent.base;
 
-    return lineJoiner + values.split(", ").join("," + lineJoiner) + indent.prev;
+    return lineJoiner + values.split(", ").join(`,${lineJoiner}`) + indent.prev;
 };

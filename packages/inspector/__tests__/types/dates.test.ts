@@ -9,7 +9,7 @@ describe("date", () => {
         expect(inspect(new Date(1_475_318_637_123))).toBe("2016-10-01T10:43:57.123Z");
     });
 
-    it('returns "Invalid Date" if given an invalid Date object', () => {
+    it("returns \"Invalid Date\" if given an invalid Date object", () => {
         expect.assertions(1);
 
         // See: https://github.com/chaijs/loupe/issues/58

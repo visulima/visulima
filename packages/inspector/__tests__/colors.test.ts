@@ -8,7 +8,7 @@ import h from "./utils/h";
 
 const stylize: Options["stylize"] = <S extends string>(
     value: S,
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     styleType: string | "bigint" | "boolean" | "date" | "null" | "number" | "regexp" | "special" | "string" | "symbol" | "undefined",
 ): string => {
     const mapped = {
@@ -24,11 +24,10 @@ const stylize: Options["stylize"] = <S extends string>(
         undefined: grey,
     };
 
-    // eslint-disable-next-line security/detect-object-injection
     return (mapped[styleType] as ColorizeType)(value);
 };
 
-describe.runIf(typeof window === "undefined")("colors", () => {
+describe.runIf(globalThis.window === undefined)("colors", () => {
     it("should return a date colorized if color is set to true", () => {
         expect.assertions(1);
 
@@ -110,7 +109,7 @@ describe.runIf(typeof window === "undefined")("colors", () => {
 
         expect(inspect(h("div", { id: "foo" }), { colors: true, stylize })).toBe(
             // eslint-disable-next-line no-useless-concat
-            "\u001B[36m<div\u001B[39m \u001B[33mid\u001B[39m=\u001B[32m" + '"foo"\u001B[39m\u001B[36m>\u001B[39m\u001B[36m</div>\u001B[39m',
+            "\u001B[36m<div\u001B[39m \u001B[33mid\u001B[39m=\u001B[32m" + "\"foo\"\u001B[39m\u001B[36m>\u001B[39m\u001B[36m</div>\u001B[39m",
         );
     });
 });

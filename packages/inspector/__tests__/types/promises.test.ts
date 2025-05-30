@@ -12,14 +12,12 @@ describe.skipIf(isNode && canInspectPromises)("promises", () => {
         it("returns `Promise{…}` for a Promise", () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line compat/compat
             expect(inspect(Promise.resolve())).toBe("Promise{…}");
         });
 
         it("returns `Promise{…}` for a rejected Promise", () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line compat/compat
             const prom = Promise.reject(new Error("Foo!"));
 
             expect(inspect(prom)).toBe("Promise{…}");
@@ -32,23 +30,14 @@ describe.skipIf(isNode && canInspectPromises)("promises", () => {
             it("returns the full string representation regardless of truncate", () => {
                 expect.assertions(9);
 
-                // eslint-disable-next-line compat/compat
                 expect(inspect(Promise.resolve(), { truncate: 9 })).toBe("Promise{…}");
-                // eslint-disable-next-line compat/compat
                 expect(inspect(Promise.resolve(), { truncate: 8 })).toBe("Promise{…}");
-                // eslint-disable-next-line compat/compat
                 expect(inspect(Promise.resolve(), { truncate: 7 })).toBe("Promise{…}");
-                // eslint-disable-next-line compat/compat
                 expect(inspect(Promise.resolve(), { truncate: 6 })).toBe("Promise{…}");
-                // eslint-disable-next-line compat/compat
                 expect(inspect(Promise.resolve(), { truncate: 5 })).toBe("Promise{…}");
-                // eslint-disable-next-line compat/compat
                 expect(inspect(Promise.resolve(), { truncate: 4 })).toBe("Promise{…}");
-                // eslint-disable-next-line compat/compat
                 expect(inspect(Promise.resolve(), { truncate: 3 })).toBe("Promise{…}");
-                // eslint-disable-next-line compat/compat
                 expect(inspect(Promise.resolve(), { truncate: 2 })).toBe("Promise{…}");
-                // eslint-disable-next-line compat/compat
                 expect(inspect(Promise.resolve(), { truncate: 1 })).toBe("Promise{…}");
             });
         });

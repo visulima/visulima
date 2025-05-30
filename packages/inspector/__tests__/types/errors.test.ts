@@ -31,7 +31,7 @@ describe("errors", () => {
         expect(inspect(new ReferenceError())).toBe("ReferenceError");
     });
 
-    it('returns `Error{"message"}` for an Error("message")', () => {
+    it("returns `Error{\"message\"}` for an Error(\"message\")", () => {
         expect.assertions(1);
 
         expect(inspect(new Error("message"))).toBe("Error: message");
@@ -42,6 +42,7 @@ describe("errors", () => {
             expect.assertions(1);
 
             const error = new Error("message") as Error & { code: number };
+
             error.code = 404;
 
             expect(inspect(error)).toBe("Error: message { code: 404 }");
@@ -51,6 +52,7 @@ describe("errors", () => {
             expect.assertions(1);
 
             const error = new Error("message") as Error & { message: { code: number } };
+
             // @ts-expect-error - testing non-standard property
             error.message = { code: 404 };
 

@@ -54,7 +54,7 @@ describe("maps", () => {
                     quoteStyle: "double",
                 },
             ),
-        ).toBe('Map (3) { "a" => 1, "b" => 2, "c" => 3 }');
+        ).toBe("Map (3) { \"a\" => 1, \"b\" => 2, \"c\" => 3 }");
     });
 
     it("should render a Map with indent", () => {
@@ -67,7 +67,7 @@ describe("maps", () => {
 
         const expectedStringSpaces = ["Map (2) {", "  {\n    a: 1\n  } => [ 'b' ],", "  3 => NaN", "}"].join("\n");
         const expectedStringTabs = ["Map (2) {", "	{\n		a: 1\n	} => [ 'b' ],", "	3 => NaN", "}"].join("\n");
-        const expectedStringTabsDoubleQuotes = ["Map (2) {", '	{\n		a: 1\n	} => [ "b" ],', "	3 => NaN", "}"].join("\n");
+        const expectedStringTabsDoubleQuotes = ["Map (2) {", "	{\n		a: 1\n	} => [ \"b\" ],", "	3 => NaN", "}"].join("\n");
 
         expect(inspect(map, { indent: 2 }), "Map keys are not indented (two)").toBe(expectedStringSpaces);
         expect(inspect(map, { indent: "\t" }), "Map keys are not indented (tabs)").toBe(expectedStringTabs);
