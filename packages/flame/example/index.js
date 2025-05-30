@@ -23,7 +23,7 @@ const server = createServer(async (request, response) => {
         })
     });
 
-    //error.hint = "This is a hint message";
+    error.hint = "This is a hint message";
 
     try {
         const displayerHandler = await httpDisplayer(error, [
