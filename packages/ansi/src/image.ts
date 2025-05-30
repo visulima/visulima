@@ -47,7 +47,7 @@ export interface ImageOptions {
  * @returns A string containing the ANSI escape sequence for displaying the image in iTerm2.
  * Returns an empty string if `data` is null or undefined, though TypeScript should prevent this.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { image } from '@visulima/ansi/image'; // Adjust import path
  * import { promises as fs } from 'fs';
  *
@@ -66,7 +66,7 @@ export interface ImageOptions {
  * }
  *
  * displayImage();
- * \`\`\`
+ * ```
  * @remarks
  * - This sequence is specific to iTerm2 and may not work in other terminal emulators.
  * - For Node.js environments, `Buffer.from(data).toString("base64")` is used for Base64 encoding.

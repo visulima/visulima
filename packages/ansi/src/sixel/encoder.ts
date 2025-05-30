@@ -27,12 +27,20 @@ export interface SixelEncoderOptions {
 
 /**
  * Encodes raw image data into a Sixel string.
+ * Note: The alpha channel is ignored; all pixels are treated as fully opaque.
  * @param imageData The raw image data.
  * @param options Encoding options.
  * @returns A string representing the Sixel image.
  */
 export const encodeToSixel = (imageData: RawImageData, options?: SixelEncoderOptions): string => {
     const maxColors = options?.maxColors ?? 256;
+
+    // Validate input data
+    const expectedLength = imageData.width * imageData.height * 4;
+
+    if (imageData.data.length !== expectedLength) {
+        throw new Error(`Invalid image data: expected ${expectedLength} bytes, got ${imageData.data.length}`);
+    }
 
     // 1. Quantize image to get a palette
     const palette = medianCutQuantize(imageData, maxColors);
@@ -74,8 +82,8 @@ export const encodeToSixel = (imageData: RawImageData, options?: SixelEncoderOpt
 
     let sixelString = SIXEL_INTRODUCER;
 
-    // TODO: Add raster attributes if specified in options
-    // Example: Pan; Hosp; Pv; Ph  (Aspect Numerator; Aspect Denominator; Vert Pixels; Horiz Pixels)
+    // Add raster attributes if image has dimensions
+    // Format: Pan;Pasp;Ph;Pv (Aspect Numerator; Aspect Denominator; Horizontal size; Vertical size)
     // Common: "1;1;width;height
     if (imageData.width > 0 && imageData.height > 0) {
         const pan = options?.pixelAspectRatioNumerator ?? 1;
@@ -124,10 +132,8 @@ export const encodeToSixel = (imageData: RawImageData, options?: SixelEncoderOpt
 
         currentSixelColorIndex = -1; // Reset color state at the start of each new band
 
-        // At the start of a new band, the current color is undefined by Sixel spec,
-        // but practically, we should set one. Let's not reset currentSixelColorIndex here
-        // to allow color to persist across $ if possible, unless first char of band is different.
-
+        // According to Sixel spec, the current color is undefined at the start of a new band,
+        // so we reset it to ensure predictable behavior and explicit color selection
         for (let x = 0; x < imageData.width; x += 1) {
             // For this column, determine the required palette indices for its 6 pixels
             const columnPixelPaletteIndices: (number | null)[] = [];

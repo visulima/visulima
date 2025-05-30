@@ -14,10 +14,10 @@ export const IT2_AUTO: string = "auto";
  * @param n The number of character cells.
  * @returns A string representation of the number (e.g., `10` becomes `"10"`).
  * @example
- * \`\`\`typescript
+ * ```typescript
  * const widthInCells = it2Cells(20); // "20"
  * const sequence = `File=width=${widthInCells}`;
- * \`\`\`
+ * ```
  */
 export const it2Cells = (n: number): string => n.toString();
 
@@ -27,10 +27,10 @@ export const it2Cells = (n: number): string => n.toString();
  * @param n The number of pixels.
  * @returns A string representing the dimension in pixels (e.g., `100` becomes `"100px"`).
  * @example
- * \`\`\`typescript
+ * ```typescript
  * const heightInPixels = it2Pixels(150);
  * const sequence = `File=height=${heightInPixels}`;
- * \`\`\`
+ * ```
  */
 export const it2Pixels = (n: number): string => `${n}px`;
 
@@ -40,10 +40,10 @@ export const it2Pixels = (n: number): string => `${n}px`;
  * @param n The percentage value (e.g., `50` for 50%).
  * @returns A string representing the dimension as a percentage (e.g., `50` becomes `"50%"`).
  * @example
- * \`\`\`typescript
+ * ```typescript
  * const widthAsPercentage = it2Percent(75);
  * const sequence = `File=width=${widthAsPercentage}`;
- * \`\`\`
+ * ```
  */
 export const it2Percent = (n: number): string => `${n}%`;
 

@@ -1,3 +1,5 @@
+/* eslint-disable no-secrets/no-secrets */
+/* eslint-disable max-classes-per-file */
 import { Buffer } from "node:buffer";
 
 import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-props";
@@ -18,7 +20,7 @@ import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-props";
  *   `ignoreAspectRatio` (becomes `preserveAspectRatio=0`).
  * - `width` and `height` are converted to strings if they are numbers.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * const props1: Partial<ITerm2FileProps> = {
  *   name: "Zm9vLnR4dA==", // Base64 for "foo.txt"
  *   size: 1024,
@@ -34,7 +36,7 @@ import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-props";
  *
  * const props3: Partial<ITerm2FileProps> = { doNotMoveCursor: true };
  * formatITerm2FileProps(props3); // Output: "doNotMoveCursor=1"
- * \`\`\`
+ * ```
  * @internal
  */
 const formatITerm2FileProperties = (properties: Partial<ITerm2FileProperties>): string => {
@@ -148,6 +150,7 @@ export class ITerm2FileEnd implements IITerm2Payload {
      * Generates the string payload for the iTerm2 `FileEnd` command.
      * @returns The string `"FileEnd"`.
      */
+    // eslint-disable-next-line class-methods-use-this
     public toString(): string {
         return "FileEnd";
     }

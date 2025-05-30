@@ -13,8 +13,8 @@ import { CSI } from "./constants";
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Functions-using-CSI-_-ordered-by-the-final-character_s_}
  */
 export const keyModifierOptions = (resource: number, value?: number): string => {
-    if (resource < 0) {
-        return ""; // Resource must be non-negative
+    if (resource < 0 || !Number.isInteger(resource)) {
+        return ""; // Resource must be a non-negative integer
     }
 
     const pp = resource.toString();
@@ -22,6 +22,10 @@ export const keyModifierOptions = (resource: number, value?: number): string => 
     // XTerm documentation implies that if 'Pv' is omitted, the resource is reset.
     // If 'Pv' is provided (even 0), the resource is set to that value.
     if (value !== undefined) {
+        if (!Number.isInteger(value)) {
+            return ""; // Value must be an integer
+        }
+
         const pv = value.toString();
 
         return `${CSI}>${pp};${pv}m`;
@@ -48,8 +52,8 @@ export const XTMODKEYS: (resource: number, value?: number) => string = keyModifi
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Functions-using-CSI-_-ordered-by-the-final-character_s_}
  */
 export const queryKeyModifierOptions = (resource: number): string => {
-    if (resource < 0) {
-        return ""; // Resource must be non-negative
+    if (resource < 0 || !Number.isInteger(resource)) {
+        return ""; // Resource must be a non-negative integer
     }
 
     const pp = resource.toString();

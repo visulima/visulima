@@ -101,10 +101,10 @@ export const REQUEST_EXTENDED_CURSOR_POSITION: string = `${CSI}?6n`;
  * If `count` is 0 or negative, it might be treated as 1 by some terminals or ignored.
  * @returns The ANSI escape sequence for moving the cursor backward.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorBackward(5); // Moves cursor 5 columns to the left.
  * cursorBackward();  // Moves cursor 1 column to the left.
- * \`\`\`
+ * ```
  * @see {@link CURSOR_BACKWARD_1}
  * @see {@link cursorForward}
  * @see {@link cursorLeft} (alias for this function)
@@ -118,10 +118,10 @@ export const cursorBackward = (count = 1): string => `${CSI + count}D`;
  * If `count` is 0 or negative, it might be treated as 1 by some terminals or ignored.
  * @returns The ANSI escape sequence for moving the cursor down.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorDown(3); // Moves cursor 3 rows down.
  * cursorDown();  // Moves cursor 1 row down.
- * \`\`\`
+ * ```
  * @see {@link CURSOR_DOWN_1}
  * @see {@link cursorUp}
  */
@@ -134,10 +134,10 @@ export const cursorDown = (count = 1): string => `${CSI + count}B`;
  * If `count` is 0 or negative, it might be treated as 1 by some terminals or ignored.
  * @returns The ANSI escape sequence for moving the cursor forward.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorForward(4); // Moves cursor 4 columns to the right.
  * cursorForward();  // Moves cursor 1 column to the right.
- * \`\`\`
+ * ```
  * @see {@link CURSOR_FORWARD_1}
  * @see {@link cursorBackward}
  */
@@ -183,10 +183,10 @@ export const cursorLeft = (count = 1): string => cursorBackward(count);
  * Defaults to `1` if not provided.
  * @returns The ANSI escape sequence.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorHorizontalAbsolute(10); // Moves to column 10 of the current line.
  * cursorHorizontalAbsolute();   // Moves to column 1 of the current line.
- * \`\`\`
+ * ```
  * @see {@link cursorToColumn1} (moves to column 1 specifically).
  * @see {@link cursorTo} for moving to an (x,y) coordinate, which can also use CHA for x-only movement.
  */
@@ -209,14 +209,14 @@ export const cursorHorizontalAbsolute = (column = 1): string => `${CSI + column}
  * @returns A string containing the necessary ANSI escape sequence(s) to perform the relative move,
  * or an empty string if no movement (`x=0`, `y=0`).
  * @example
- * \`\`\`typescript
+ * ```typescript
  * console.log(cursorMove(5, -2));  // Moves 5 columns right and 2 rows up.
  *                                // Output: CSI 5C CSI 2A (or similar)
  * console.log(cursorMove(-3, 0)); // Moves 3 columns left.
  *                                // Output: CSI 3D
  * console.log(cursorMove(0, 4));  // Moves 4 rows down.
  *                                // Output: CSI 4B
- * \`\`\`
+ * ```
  */
 export const cursorMove = (x: number, y: number): string => {
     let returnValue = "";
@@ -243,10 +243,10 @@ export const cursorMove = (x: number, y: number): string => {
  * If `count` is 0 or negative, it might be treated as 1 by some terminals or ignored.
  * @returns The ANSI escape sequence.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorNextLine(2); // Moves to the beginning of the line 2 lines down.
  * cursorNextLine();  // Moves to the beginning of the next line.
- * \`\`\`
+ * ```
  */
 export const cursorNextLine = (count = 1): string => `${CSI + count}E`;
 
@@ -257,10 +257,10 @@ export const cursorNextLine = (count = 1): string => `${CSI + count}E`;
  * If `count` is 0 or negative, it might be treated as 1 by some terminals or ignored.
  * @returns The ANSI escape sequence.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorPreviousLine(3); // Moves to the beginning of the line 3 lines up.
  * cursorPreviousLine();  // Moves to the beginning of the previous line.
- * \`\`\`
+ * ```
  */
 export const cursorPreviousLine = (count = 1): string => `${CSI + count}F`;
 
@@ -325,11 +325,11 @@ export const cursorShow: string = `${CSI}?25h`;
  * If undefined, only horizontal movement to column `x` occurs.
  * @returns The ANSI escape sequence for moving the cursor.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorTo(0, 0);       // Moves to top-left (row 0, col 0) -> CSI 1;1H
  * cursorTo(10, 5);      // Moves to row 5, col 10 -> CSI 6;11H
  * cursorTo(7);          // Moves to column 7 of the current line -> CSI 8G
- * \`\`\`
+ * ```
  * @see {@link cursorPosition} for a 1-indexed version of CUP.
  * @see {@link cursorHorizontalAbsolute} for 1-indexed horizontal positioning.
  */
@@ -355,11 +355,11 @@ export const cursorTo = (x: number, y?: number): string => {
  * If undefined, the cursor moves to column 1 of the specified `row`.
  * @returns The ANSI escape sequence.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorPosition(1, 1);    // Moves to top-left (row 1, col 1) -> CSI 1;1H
  * cursorPosition(5, 10);   // Moves to row 5, col 10 -> CSI 5;10H
  * cursorPosition(3);       // Moves to row 3, col 1 -> CSI 3H
- * \`\`\`
+ * ```
  * @see {@link cursorTo} for a 0-indexed version.
  */
 export const cursorPosition = (row: number, column?: number): string => {
@@ -378,10 +378,10 @@ export const cursorPosition = (row: number, column?: number): string => {
  * If `count` is 0 or negative, it might be treated as 1 by some terminals or ignored.
  * @returns The ANSI escape sequence.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorHorizontalForwardTab(2); // Advances two tab stops.
  * cursorHorizontalForwardTab();  // Advances one tab stop.
- * \`\`\`
+ * ```
  * @see {@link cursorBackwardTab}
  */
 export const cursorHorizontalForwardTab = (count = 1): string => `${CSI + count}I`;
@@ -394,10 +394,10 @@ export const cursorHorizontalForwardTab = (count = 1): string => `${CSI + count}
  * If `count` is 0 or negative, it might be treated as 1 by some terminals or ignored.
  * @returns The ANSI escape sequence.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorBackwardTab(2); // Moves back two tab stops.
  * cursorBackwardTab();  // Moves back one tab stop.
- * \`\`\`
+ * ```
  * @see {@link cursorHorizontalForwardTab}
  */
 export const cursorBackwardTab = (count = 1): string => `${CSI + count}Z`;
@@ -410,10 +410,10 @@ export const cursorBackwardTab = (count = 1): string => `${CSI + count}Z`;
  * If `count` is 0 or negative, it might be treated as 1 by some terminals or ignored.
  * @returns The ANSI escape sequence.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * // Assuming text "Hello World" and cursor at 'H':
  * process.stdout.write(eraseCharacter(5)); // Erases "Hello", leaves "     World"
- * \`\`\`
+ * ```
  */
 export const eraseCharacter = (count = 1): string => `${CSI + count}X`;
 
@@ -424,10 +424,10 @@ export const eraseCharacter = (count = 1): string => `${CSI + count}X`;
  * If `row` is less than 1, behavior is terminal-dependent (often treated as 1).
  * @returns The ANSI escape sequence.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorVerticalAbsolute(10); // Moves to row 10, same column.
  * cursorVerticalAbsolute();   // Moves to row 1, same column.
- * \`\`\`
+ * ```
  */
 export const cursorVerticalAbsolute = (row = 1): string => `${CSI + row}d`;
 
@@ -438,10 +438,10 @@ export const cursorVerticalAbsolute = (row = 1): string => `${CSI + row}d`;
  * If `count` is 0 or negative, it might be treated as 1 by some terminals or ignored.
  * @returns The ANSI escape sequence for moving the cursor up.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * cursorUp(2); // Moves cursor 2 rows up.
  * cursorUp();  // Moves cursor 1 row up.
- * \`\`\`
+ * ```
  * @see {@link CURSOR_UP_1}
  * @see {@link cursorDown}
  */
@@ -488,13 +488,13 @@ export enum CursorStyle {
  * or a raw number corresponding to the `Ps` parameter of DECSCUSR.
  * @returns The ANSI escape sequence to set the cursor style.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { setCursorStyle, CursorStyle } from '@visulima/ansi/cursor';
  *
  * process.stdout.write(setCursorStyle(CursorStyle.BlinkingUnderline)); // Sets blinking underline: CSI 3 q
  * process.stdout.write(setCursorStyle(CursorStyle.SteadyBar));       // Sets steady bar: CSI 6 q
  * process.stdout.write(setCursorStyle(0));                           // Sets default (usually blinking block): CSI 0 q
- * \`\`\`
+ * ```
  * @remarks
  * - Support for DECSCUSR and specific styles can vary between terminal emulators.
  * - `0` and `1` often both result in a blinking block, with `0` sometimes being a more explicit "reset to default."

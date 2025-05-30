@@ -47,12 +47,12 @@ export const ALT_SCREEN_OFF: string = `${CSI}?1049l`;
  * terminal application.
  * @returns The ANSI escape sequence (`CSI ?1049h`) for enabling the alternative screen buffer.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { alternativeScreenOn } from '@visulima/ansi/alternative-screen';
  *
  * process.stdout.write(alternativeScreenOn());
  * // Terminal switches to the alternative screen buffer.
- * \`\`\`
+ * ```
  * @see {@link ALT_SCREEN_ON}
  * @see {@link alternativeScreenOff}
  */
@@ -67,12 +67,12 @@ export const alternativeScreenOn = (): string => ALT_SCREEN_ON;
  * to restore the user's original terminal state.
  * @returns The ANSI escape sequence (`CSI ?1049l`) for disabling the alternative screen buffer.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { alternativeScreenOff } from '@visulima/ansi/alternative-screen';
  *
  * process.stdout.write(alternativeScreenOff());
  * // Terminal switches back to the main screen buffer, restoring previous content.
- * \`\`\`
+ * ```
  * @see {@link ALT_SCREEN_OFF}
  * @see {@link alternativeScreenOn}
  */

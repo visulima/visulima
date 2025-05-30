@@ -31,7 +31,7 @@ export const SCREEN_TYPICAL_LIMIT: number = 768; // Actual Screen limit mentione
  * @returns The wrapped string, possibly chunked into multiple `DCS...ST` sequences if `limit` is positive and the `sequence` exceeds it.
  * @see {@link https://www.gnu.org/software/screen/manual/screen.html#String-Escapes} GNU Screen Manual - String Escapes.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { screenPassthrough, SCREEN_TYPICAL_LIMIT } from \'@visulima/ansi/passthrough\';
  * import { cursorShow, cursorHide } from \'@visulima/ansi/cursor\';
  *
@@ -46,7 +46,7 @@ export const SCREEN_TYPICAL_LIMIT: number = 768; // Actual Screen limit mentione
  * // Example output if longSequence was "0123456789abcde" and limit 10:
  * // "\u001bP0123456789\u001b\\\u001bPabcde\u001b\\"
  * console.log(JSON.stringify(limitedPassthrough));
- * \`\`\`
+ * ```
  */
 export function screenPassthrough(sequence: string, limit: number = SCREEN_MAX_LEN_DEFAULT): string {
     let result = DCS;
@@ -88,7 +88,7 @@ export function screenPassthrough(sequence: string, limit: number = SCREEN_MAX_L
  * @returns The wrapped and escaped string suitable for tmux passthrough.
  * @see {@link https://github.com/tmux/tmux/wiki/FAQ#what-is-the-passthrough-escape-sequence-and-how-do-i-use-it} Tmux FAQ on Passthrough.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { tmuxPassthrough } from \'@visulima/ansi/passthrough\';
  * import { cursorShow } from \'@visulima/ansi/cursor\';
  *
@@ -98,7 +98,7 @@ export function screenPassthrough(sequence: string, limit: number = SCREEN_MAX_L
  * // Expected: "\u001bPtmux;\u001b\u001b[?25h\u001b\\"
  * // (ESC P tmux ; ESC ESC [ ? 2 5 h ESC \)
  * console.log(JSON.stringify(passthrough));
- * \`\`\`
+ * ```
  */
 export function tmuxPassthrough(sequence: string): string {
     let escapedSequence = "";

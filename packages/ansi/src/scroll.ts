@@ -14,7 +14,7 @@ import { CSI } from "./constants";
  * @returns The ANSI escape sequence for scrolling up.
  * @see {@link https://vt100.net/docs/vt510-rm/SU.html VT510 SU Documentation}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { scrollUp } from \'@visulima/ansi/scroll\';
  *
  * // Scroll up 1 line
@@ -26,7 +26,7 @@ import { CSI } from "./constants";
  *
  * // No operation
  * process.stdout.write(scrollUp(0));  // ""
- * \`\`\`
+ * ```
  */
 export const scrollUp = (count = 1): string => {
     if (count === 0) {
@@ -51,7 +51,7 @@ export const scrollUp = (count = 1): string => {
  * @returns The ANSI escape sequence for scrolling down.
  * @see {@link https://vt100.net/docs/vt510-rm/SD.html VT510 SD Documentation}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { scrollDown } from \'@visulima/ansi/scroll\';
  *
  * // Scroll down 1 line
@@ -60,7 +60,7 @@ export const scrollUp = (count = 1): string => {
  *
  * // Scroll down 3 lines
  * process.stdout.write(scrollDown(3));  // CSI 3T
- * \`\`\`
+ * ```
  */
 export const scrollDown = (count = 1): string => {
     if (count === 0) {

@@ -40,7 +40,7 @@ export {
  * @see Classes like {@link ITerm2File}, {@link ITerm2MultipartFileStart}, {@link ITerm2FilePart}, {@link ITerm2FileEnd}
  *      for concrete examples of payload objects.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { iTerm2, ITerm2File, ITerm2FileProps } from '@visulima/ansi/iterm2'; // ITerm2FileProps can be used for options
  * import { Buffer } from 'node:buffer';
  *
@@ -68,7 +68,7 @@ export {
  * const shellSequence = iTerm2(shellIntegrationPayload);
  * console.log(shellSequence);
  * // Output: OSC1337;ShellIntegrationVersion=15;Shell=zshBEL
- * \`\`\`
+ * ```
  */
 export const iTerm2 = (payload: IITerm2Payload): string => {
     // Validate the payload to ensure it's usable.

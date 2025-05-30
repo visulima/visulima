@@ -174,24 +174,6 @@ describe("sixelDecoder", () => {
 
         expect(decodedWithColor.palette.colors[1]).toStrictEqual({ b: 255, g: 0, r: 0 }); // Blue
 
-        const expectedPixelsWithColor = new Uint8Array(3 * 6).fill(0);
-
-        // 'A' is charCode 65. Offset 63. Pattern 2 (000010). Bit 1 is set.
-        // So, (0,1), (1,1), (2,1) should be color 1 (Blue).
-        // All other pixels should be the initial fill color 0.
-        expectedPixelsWithColor[0 * decodedWithColor.width + 0 + 1] = 1; // (0,1) -> Blue
-        expectedPixelsWithColor[1 * decodedWithColor.width + 0 + 1] = 1; // (1,1) -> Blue
-        expectedPixelsWithColor[2 * decodedWithColor.width + 0 + 1] = 1; // (2,1) -> Blue
-
-        // Correction: x is the first index, y is the second
-        // pixel at (x, y) is imageBuffer[y * width + x]
-        // A (pattern 000010) paints pixel at currentX, currentY + 1
-        const expectedPixelsCorrected = new Uint8Array(3 * 6).fill(0);
-
-        expectedPixelsCorrected[0 * 3 + 0 + 1] = 1; // (0,1) -> Blue
-        expectedPixelsCorrected[1 * 3 + 0 + 1] = 1; // (1,1) -> Blue
-        expectedPixelsCorrected[2 * 3 + 0 + 1] = 1; // (2,1) -> Blue
-
         // Ah, my calculation for expectedPixelsWithColor was wrong.
         // The imageBuffer is filled with 0 (first palette color).
         // We define color 1 as Blue.

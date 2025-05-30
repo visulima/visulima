@@ -14,7 +14,7 @@ import { CSI, SEP } from "./constants";
  * @returns The ANSI escape sequence for inserting lines.
  * @see {@link https://vt100.net/docs/vt510-rm/IL.html VT510 IL Documentation}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { insertLine } from \'@visulima/ansi/screen\';
  *
  * // Insert 1 line (default)
@@ -22,7 +22,7 @@ import { CSI, SEP } from "./constants";
  *
  * // Insert 5 lines
  * process.stdout.write(insertLine(5)); // CSI 5L
- * \`\`\`
+ * ```
  */
 export const insertLine = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}L`;
 
@@ -40,7 +40,7 @@ export const insertLine = (count = 1): string => `${CSI + (count <= 1 ? "" : cou
  * @returns The ANSI escape sequence for deleting lines.
  * @see {@link https://vt100.net/docs/vt510-rm/DL.html VT510 DL Documentation}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { deleteLine } from \'@visulima/ansi/screen\';
  *
  * // Delete 1 line (default)
@@ -48,7 +48,7 @@ export const insertLine = (count = 1): string => `${CSI + (count <= 1 ? "" : cou
  *
  * // Delete 3 lines
  * process.stdout.write(deleteLine(3)); // CSI 3M
- * \`\`\`
+ * ```
  */
 export const deleteLine = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}M`;
 
@@ -68,7 +68,7 @@ export const deleteLine = (count = 1): string => `${CSI + (count <= 1 ? "" : cou
  * @returns The ANSI escape sequence for DECSTBM.
  * @see {@link https://vt100.net/docs/vt510-rm/DECSTBM.html VT510 DECSTBM Documentation}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { setTopBottomMargins } from \'@visulima/ansi/screen\';
  *
  * // Set scrolling region from line 5 to 20
@@ -76,7 +76,7 @@ export const deleteLine = (count = 1): string => `${CSI + (count <= 1 ? "" : cou
  *
  * // Reset to default margins (full screen)
  * process.stdout.write(setTopBottomMargins()); // CSI ;r
- * \`\`\`
+ * ```
  */
 export const setTopBottomMargins = (top?: number | null, bottom?: number | null): string => {
     const topString = top && top > 0 ? top.toString() : "";
@@ -107,7 +107,7 @@ export const setTopBottomMargins = (top?: number | null, bottom?: number | null)
  * @returns The ANSI escape sequence for DECSLRM.
  * @see {@link https://vt100.net/docs/vt510-rm/DECSLRM.html VT510 DECSLRM Documentation}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { setLeftRightMargins } from \'@visulima/ansi/screen\';
  *
  * // Set left margin to 10, right margin to 70
@@ -115,7 +115,7 @@ export const setTopBottomMargins = (top?: number | null, bottom?: number | null)
  *
  * // Reset to default margins (full width)
  * process.stdout.write(setLeftRightMargins());      // CSI ;s
- * \`\`\`
+ * ```
  */
 export const setLeftRightMargins = (left?: number | null, right?: number | null): string => {
     const leftString = left && left > 0 ? left.toString() : "";
@@ -142,7 +142,7 @@ export const setLeftRightMargins = (left?: number | null, right?: number | null)
  * @returns The ANSI escape sequence for inserting characters.
  * @see {@link https://vt100.net/docs/vt510-rm/ICH.html VT510 ICH Documentation}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { insertCharacter } from \'@visulima/ansi/screen\';
  *
  * // Insert 1 character (default)
@@ -150,7 +150,7 @@ export const setLeftRightMargins = (left?: number | null, right?: number | null)
  *
  * // Insert 10 characters
  * process.stdout.write(insertCharacter(10)); // CSI 10@
- * \`\`\`
+ * ```
  */
 export const insertCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}@`;
 
@@ -169,7 +169,7 @@ export const insertCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" 
  * @returns The ANSI escape sequence for deleting characters.
  * @see {@link https://vt100.net/docs/vt510-rm/DCH.html VT510 DCH Documentation}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { deleteCharacter } from \'@visulima/ansi/screen\';
  *
  * // Delete 1 character (default)
@@ -177,7 +177,7 @@ export const insertCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" 
  *
  * // Delete 5 characters
  * process.stdout.write(deleteCharacter(5)); // CSI 5P
- * \`\`\`
+ * ```
  */
 export const deleteCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}P`;
 
@@ -194,7 +194,7 @@ export const deleteCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" 
  * @returns The ANSI escape sequence for clearing tab stops.
  * @see {@link https://vt100.net/docs/vt510-rm/TBC.html VT510 TBC Documentation}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { clearTabStop } from \'@visulima/ansi/screen\';
  *
  * // Clear tab stop at current column
@@ -203,7 +203,7 @@ export const deleteCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" 
  *
  * // Clear all tab stops
  * process.stdout.write(clearTabStop(3)); // CSI 3g
- * \`\`\`
+ * ```
  */
 export const clearTabStop = (mode: 0 | 3 = 0): string => `${CSI + mode}g`;
 
@@ -225,12 +225,12 @@ export const clearTabStop = (mode: 0 | 3 = 0): string => `${CSI + mode}g`;
  * @returns The ANSI escape sequence to request the presentation state report.
  * @see {@link https://vt100.net/docs/vt510-rm/DECRQPSR.html VT510 DECRQPSR Documentation}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { requestPresentationStateReport } from \'@visulima/ansi/screen\';
  *
  * // Request SGR state
  * process.stdout.write(requestPresentationStateReport(1)); // CSI 1$u
- * \`\`\`
+ * ```
  */
 export const requestPresentationStateReport = (mode: 0 | 1 | 2): string => `${CSI + mode}$u`;
 
@@ -247,7 +247,7 @@ export const requestPresentationStateReport = (mode: 0 | 1 | 2): string => `${CS
  * @returns The ANSI escape sequence for repeating the previous character.
  * @see {@link https://vt100.net/docs/vt510-rm/REP.html VT510 REP Documentation (though REP is less common or behavior varies)}
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { repeatPreviousCharacter } from \'@visulima/ansi/screen\';
  *
  * process.stdout.write("A");
@@ -257,6 +257,6 @@ export const requestPresentationStateReport = (mode: 0 | 1 | 2): string => `${CS
  * process.stdout.write("B");
  * // Repeat 'B' 1 time (default)
  * process.stdout.write(repeatPreviousCharacter()); // Output: BB (total 2 'B's)
- * \`\`\`
+ * ```
  */
 export const repeatPreviousCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}b`;

@@ -51,7 +51,7 @@ export enum EraseDisplayMode {
  * @param mode The erase mode, specified as a value from `EraseDisplayMode` or its corresponding number (0, 1, 2, 3).
  * @returns The ANSI escape sequence string for erasing in display.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { eraseDisplay, EraseDisplayMode } from '@visulima/ansi/erase';
  *
  * // Erase from cursor to end of screen
@@ -62,7 +62,7 @@ export enum EraseDisplayMode {
  *
  * // Erase entire screen and scrollback buffer
  * process.stdout.write(eraseDisplay(EraseDisplayMode.EntireScreenAndScrollback)); // or eraseDisplay(3)
- * \`\`\`
+ * ```
  * @see {@link EraseDisplayMode}
  * @see {@link https://vt100.net/docs/vt510-rm/ED.html} VT510 Erase in Display (ED) documentation.
  */
@@ -115,7 +115,7 @@ export enum EraseLineMode {
  * @param mode The erase mode, specified as a value from `EraseLineMode` or its corresponding number (0, 1, 2).
  * @returns The ANSI escape sequence string for erasing in line.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { eraseInLine, EraseLineMode } from '@visulima/ansi/erase';
  *
  * // Erase from cursor to end of line
@@ -123,7 +123,7 @@ export enum EraseLineMode {
  *
  * // Erase entire current line
  * process.stdout.write(eraseInLine(EraseLineMode.EntireLine)); // or eraseInLine(2)
- * \`\`\`
+ * ```
  * @see {@link EraseLineMode}
  * @see {@link https://vt100.net/docs/vt510-rm/EL.html} VT510 Erase in Line (EL) documentation.
  */
@@ -188,7 +188,7 @@ export const eraseLineStart: string = eraseInLine(EraseLineMode.ToBeginning);
  * If `count` is 0 or negative, an empty string is returned (no operation).
  * @returns A string of concatenated ANSI escape sequences to perform the operation.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { eraseLines } from '@visulima/ansi/erase';
  *
  * // To erase the current line and the 2 lines above it (total 3 lines):
@@ -200,7 +200,7 @@ export const eraseLineStart: string = eraseInLine(EraseLineMode.ToBeginning);
  * // 4. Cursor up
  * // 5. Erase current line (which was two lines above the original)
  * // 6. Cursor to column 1 (on this topmost erased line)
- * \`\`\`
+ * ```
  */
 export const eraseLines = (count: number): string => {
     if (count <= 0) {

@@ -76,12 +76,12 @@ export const clearScreenAndHomeCursor: string = `${CSI}H${eraseDisplay(EraseDisp
  * to its power-on state, clearing character sets, SGR attributes, modes, and more.
  * @returns A string containing the ANSI escape sequence(s) for resetting the terminal.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { resetTerminal } from '@visulima/ansi/clear';
  *
  * process.stdout.write(resetTerminal);
  * // The terminal attempts a full reset.
- * \`\`\`
+ * ```
  * @see {@link eraseDisplay}
  * @see {@link EraseDisplayMode.EntireScreen}
  * @see {@link EraseDisplayMode.EntireScreenAndScrollback}

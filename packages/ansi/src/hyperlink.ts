@@ -15,14 +15,14 @@ import { BEL, OSC, SEP } from "./constants";
  * @param url The URL the link should point to.
  * @returns A string representing the ANSI escape sequence for the hyperlink.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { hyperlink } from "@visulima/ansi/hyperlink"; // Adjust import path as needed
  *
  * const aLink = hyperlink("Visulima", "https://www.visulima.com");
  * console.log(`Visit ${aLink} for more information.`);
  * // In a supported terminal, this will output:
  * // Visit Visulima for more information. (where "Visulima" is a clickable link)
- * \`\`\`
+ * ```
  * @see {@link https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda} for supported terminals.
  */
 

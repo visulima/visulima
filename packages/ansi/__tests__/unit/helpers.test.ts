@@ -14,7 +14,7 @@ describe("helper Constants", () => {
         // @ts-expect-error - process.env is typically readonly
         environmentSpy = vi.spyOn(process, "env", "get").mockReturnValue({ ...originalEnvironment });
         // Ensure a clean slate for window, default to non-browser for most tests
-        delete (globalThis as any).window;
+        (globalThis as any).window = undefined;
     });
 
     afterEach(() => {
@@ -23,7 +23,7 @@ describe("helper Constants", () => {
 
         // Restore original window object if it existed
         if (originalWindow === undefined) {
-            delete (globalThis as any).window;
+            (globalThis as any).window = undefined;
         } else {
             (globalThis as any).window = originalWindow;
         }

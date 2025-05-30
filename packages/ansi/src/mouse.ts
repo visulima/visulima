@@ -132,7 +132,7 @@ export interface MouseModifiers {
  * @param modifiers An optional {@link MouseModifiers} object indicating active modifier keys.
  * @returns The encoded byte (Cb). Returns `0xFF` (255) if the provided `button` is invalid or not recognized.
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { encodeMouseButtonByte, MouseButton, MouseModifiers } from \'@visulima/ansi/mouse\';
  *
  * // Left button press, no motion, no modifiers
@@ -150,7 +150,7 @@ export interface MouseModifiers {
  * // Release event
  * const cb4 = encodeMouseButtonByte(MouseButton.RELEASE, false);
  * console.log(cb4); // Output: 3
- * \`\`\`
+ * ```
  */
 export const encodeMouseButtonByte = (button: MouseButtonType, motion: boolean, modifiers: MouseModifiers = {}): number => {
     let callback: number;
@@ -207,14 +207,14 @@ export const encodeMouseButtonByte = (button: MouseButtonType, motion: boolean, 
  * @param y The 0-indexed Y coordinate of the mouse event.
  * @returns The X10 mouse sequence string. Returns an empty string if `cb` is `0xFF` (invalid).
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { mouseX10Sequence, encodeMouseButtonByte, MouseButton } from \'@visulima/ansi/mouse\';
  *
  * const cb = encodeMouseButtonByte(MouseButton.LEFT, false);
  * const seq = mouseX10Sequence(cb, 10, 20); // Coordinates are 0-indexed
  * // Result: "\u001b[M!+5" (Cb=0 -> char 32, Cx=11 -> char 43, Cy=21 -> char 53)
  * console.log(seq);
- * \`\`\`
+ * ```
  */
 export const mouseX10Sequence = (callback: number, x: number, y: number): string => {
     if (callback === 0xFF) {
@@ -245,7 +245,7 @@ export const mouseX10Sequence = (callback: number, x: number, y: number): string
  * `false` for press or motion events (sequence ends with `M`).
  * @returns The SGR mouse sequence string. Returns an empty string if `cb` is `0xFF` (invalid).
  * @example
- * \`\`\`typescript
+ * ```typescript
  * import { mouseSgrSequence, encodeMouseButtonByte, MouseButton } from \'@visulima/ansi/mouse\';
  *
  * // Left button press at (10, 20)
@@ -266,7 +266,7 @@ export const mouseX10Sequence = (callback: number, x: number, y: number): string
  * const cbMotion = encodeMouseButtonByte(MouseButton.MIDDLE, true, { shift: true });
  * const seqMotion = mouseSgrSequence(cbMotion, 5, 5, false);
  * console.log(seqMotion); // Output: "\u001b[<37;6;6M"
- * \`\`\`
+ * ```
  */
 export const mouseSgrSequence = (callback: number, x: number, y: number, isRelease: boolean): string => {
     if (callback === 0xFF) {
