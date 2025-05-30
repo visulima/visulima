@@ -16,17 +16,17 @@ describe("table Cell Spanning", () => {
             colspanTable.addRow([{ colSpan: 3, content: "Row 4 Span All (cs=3)" }]);
 
             expect(colspanTable.toString()).toMatchInlineSnapshot(`
-              "┌──────────────────────────────┐
-              │ Header Span All (cs=3)       │
-              ├────────────────────┬─────────┤
-              │ Row 1 Span (cs=2)  │ R1C3    │
-              ├─────────┬──────────┴─────────┤
-              │ R2C1    │ Row 2 Span (cs=2)  │
-              ├─────────┼──────────┬─────────┤
-              │ R3C1    │ R3C2     │ R3C3    │
-              ├─────────┴──────────┴─────────┤
-              │ Row 4 Span All (cs=3)        │
-              └──────────────────────────────┘"
+                "┌──────────────────────────────┐
+                │ Header Span All (cs=3)       │
+                ├────────────────────┬─────────┤
+                │ Row 1 Span (cs=2)  │ R1C3    │
+                ├─────────┬──────────┴─────────┤
+                │ R2C1    │ Row 2 Span (cs=2)  │
+                ├─────────┼──────────┬─────────┤
+                │ R3C1    │ R3C2     │ R3C3    │
+                ├─────────┴──────────┴─────────┤
+                │ Row 4 Span All (cs=3)        │
+                └──────────────────────────────┘"
             `);
         });
 
@@ -34,18 +34,19 @@ describe("table Cell Spanning", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table.addRow([{ colSpan: 2, content: "CS2" }, "C3"]);
             table.addRow(["C1", { colSpan: 2, content: "CS2" }]);
             table.addRow(["A", "B", "C"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌────────┬────┐
-              │ CS2    │ C3 │
-              ├────┬───┴────┤
-              │ C1 │ CS2    │
-              ├────┼───┬────┤
-              │ A  │ B │ C  │
-              └────┴───┴────┘"
+                "┌────────┬────┐
+                │ CS2    │ C3 │
+                ├────┬───┴────┤
+                │ C1 │ CS2    │
+                ├────┼───┬────┤
+                │ A  │ B │ C  │
+                └────┴───┴────┘"
             `);
         });
 
@@ -54,6 +55,7 @@ describe("table Cell Spanning", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table.addRow(["A1", { colSpan: 2, content: "CS=2" }]);
             table.addRow([
                 { content: "RS=2", rowSpan: 2 },
@@ -61,12 +63,12 @@ describe("table Cell Spanning", () => {
             ]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌──────┬─────────────┐
-              │ A1   │ CS=2        │
-              ├──────┼─────────────┤
-              │ RS=2 │ CS=2, RS=2  │
-              │      │             │
-              └──────┴─────────────┘"
+                "┌──────┬─────────────┐
+                │ A1   │ CS=2        │
+                ├──────┼─────────────┤
+                │ RS=2 │ CS=2, RS=2  │
+                │      │             │
+                └──────┴─────────────┘"
             `);
         });
     });
@@ -76,6 +78,7 @@ describe("table Cell Spanning", () => {
             expect.assertions(9);
 
             const table = createTable();
+
             table
                 .addRow([{ content: "Span 3", rowSpan: 3 }, "B1", { content: "Span 2", rowSpan: 2 }])
                 .addRow([null, "B2", null])
@@ -96,6 +99,7 @@ describe("table Cell Spanning", () => {
 
             // Additional test to check individual lines
             const lines = output.split("\n");
+
             expect(lines).toHaveLength(7);
             expect(lines[0]).toBe("┌────────┬────┬────────┐"); // Top border
             expect(lines[1]).toBe("│ Span 3 │ B1 │ Span 2 │"); // First row
@@ -110,6 +114,7 @@ describe("table Cell Spanning", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table
                 .addRow([{ content: "A1", rowSpan: 2 }, "B1", { content: "C1", rowSpan: 3 }])
                 .addRow([null, "B2", null])
@@ -133,6 +138,7 @@ describe("table Cell Spanning", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table
                 .addRow([{ content: "Long Span", rowSpan: 2 }, "Short"])
                 .addRow([null, "B2"])
@@ -156,6 +162,7 @@ describe("table Cell Spanning", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table
                 .addRow(["A1", { content: "Span to Bottom", rowSpan: 3 }])
                 .addRow(["A2", null])
@@ -181,6 +188,7 @@ describe("table Cell Spanning", () => {
 
         // Based on examples/complex-layout.js
         const table = createTable();
+
         table.addRows(
             [{ colSpan: 9, content: "TOP", hAlign: "center" }],
             [
@@ -220,29 +228,29 @@ describe("table Cell Spanning", () => {
         );
 
         expect(table.toString()).toMatchInlineSnapshot(`
-          "┌────────────────────────────────────────────┐
-          │                    TOP                     │
-          ├────┬────┬────┬────┬────┬────┬────┬────┬────┤
-          │    │ A1 │ B1 │ C1 │    │ E1 │ F1 │ G1 │    │
-          │    │    ├────┼────┤    ├────┴────┤    │    │
-          │    │    │ B2 │ C2 │ D1 │ E2      │    │    │
-          │ TL │    │    ├────┤    │         │    │ TR │
-          │    │    │    │ C3 │    │         │    │    │
-          │    ├────┴────┴────┴────┴─────────┴────┤    │
-          │    │                A2                │    │
-          ├────┴──────────────────────────────────┴────┤
-          │                   CLEAR                    │
-          ├────┬──────────────────────────────────┬────┤
-          │    │                A3                │    │
-          │    ├──────────────┬────┬─────────┬────┤    │
-          │    │      A4      │    │   E3    │    │    │
-          │ BL ├────┬─────────┤ D2 ├────┬────┤    │ BR │
-          │    │    │   B3    │    │    │    │ G2 │    │
-          │    │ A5 ├────┬────┴────┤ E4 │ F3 │    │    │
-          │    │    │ B4 │   C4    │    │    │    │    │
-          ├────┴────┴────┴─────────┴────┴────┴────┴────┤
-          │                   BOTTOM                   │
-          └────────────────────────────────────────────┘"
+            "┌────────────────────────────────────────────┐
+            │                    TOP                     │
+            ├────┬────┬────┬────┬────┬────┬────┬────┬────┤
+            │    │ A1 │ B1 │ C1 │    │ E1 │ F1 │ G1 │    │
+            │    │    ├────┼────┤    ├────┴────┤    │    │
+            │    │    │ B2 │ C2 │ D1 │ E2      │    │    │
+            │ TL │    │    ├────┤    │         │    │ TR │
+            │    │    │    │ C3 │    │         │    │    │
+            │    ├────┴────┴────┴────┴─────────┴────┤    │
+            │    │                A2                │    │
+            ├────┴──────────────────────────────────┴────┤
+            │                   CLEAR                    │
+            ├────┬──────────────────────────────────┬────┤
+            │    │                A3                │    │
+            │    ├──────────────┬────┬─────────┬────┤    │
+            │    │      A4      │    │   E3    │    │    │
+            │ BL ├────┬─────────┤ D2 ├────┬────┤    │ BR │
+            │    │    │   B3    │    │    │    │ G2 │    │
+            │    │ A5 ├────┬────┴────┤ E4 │ F3 │    │    │
+            │    │    │ B4 │   C4    │    │    │    │    │
+            ├────┴────┴────┴─────────┴────┴────┴────┴────┤
+            │                   BOTTOM                   │
+            └────────────────────────────────────────────┘"
         `);
     });
 });

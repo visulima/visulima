@@ -58,7 +58,9 @@ const updateDisplay = () => {
     if (rowCount > 0) {
         clearAndMoveCursor(rowCount);
     }
+
     const output = table.toString();
+
     console.log(output);
     rowCount = output.split("\n").length;
 };
@@ -72,15 +74,15 @@ await simulateDataStream(
         // Add color based on status
         const status = (() => {
             switch (data.status) {
-                case "Running": {
-                    return `\u001B[33m${data.status}\u001B[0m`;
-                } // Yellow
                 case "Completed": {
                     return `\u001B[32m${data.status}\u001B[0m`;
                 } // Green
                 case "Failed": {
                     return `\u001B[31m${data.status}\u001B[0m`;
                 } // Red
+                case "Running": {
+                    return `\u001B[33m${data.status}\u001B[0m`;
+                } // Yellow
                 default: {
                     return `\u001B[90m${data.status}\u001B[0m`;
                 } // Gray

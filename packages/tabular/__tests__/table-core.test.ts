@@ -12,11 +12,11 @@ describe("table core functionality", () => {
         table.addRow(["", "", ""]);
 
         expect(table.toString()).toMatchInlineSnapshot(`
-          "┌┬┬┐
-          ││││
-          ├┼┼┤
-          ││││
-          └┴┴┘"
+            "┌┬┬┐
+            ││││
+            ├┼┼┤
+            ││││
+            └┴┴┘"
         `);
     });
 
@@ -30,13 +30,13 @@ describe("table core functionality", () => {
         table.addRow(["", "", ""]);
 
         expect(table.toString()).toMatchInlineSnapshot(`
-          "┌┬┬┐
-          ││││
-          ├┼┼┤
-          ││││
-          ├┼┼┤
-          ││││
-          └┴┴┘"
+            "┌┬┬┐
+            ││││
+            ├┼┼┤
+            ││││
+            ├┼┼┤
+            ││││
+            └┴┴┘"
         `);
     });
 
@@ -50,11 +50,11 @@ describe("table core functionality", () => {
         table.addRow(["", "", ""]);
 
         expect(table.toString()).toMatchInlineSnapshot(`
-          "┌┬┬┐
-          ││││
-          ├┼┼┤
-          ││││
-          └┴┴┘"
+            "┌┬┬┐
+            ││││
+            ├┼┼┤
+            ││││
+            └┴┴┘"
         `);
     });
 
@@ -135,9 +135,9 @@ describe("table core functionality", () => {
             }
 
             // Extract cells from each line
-            // eslint-disable-next-line no-control-regex,regexp/no-control-character
+            // eslint-disable-next-line no-control-regex
             const unitCells = unitLine.split("│").map((cell) => cell.replaceAll(/\u001B\[\d+m/g, ""));
-            // eslint-disable-next-line no-control-regex,regexp/no-control-character
+            // eslint-disable-next-line no-control-regex
             const integrationCells = integrationLine.split("│").map((cell) => cell.replaceAll(/\u001B\[\d+m/g, ""));
 
             // Verify Unit and Integration cells have same width
@@ -165,6 +165,7 @@ describe("table core functionality", () => {
 
             // Verify the complete header structure
             const headerPattern = /^│\s*Component\s*│\s*Tests\s*│\s*Coverage\s*│/;
+
             expect(headerLine).toMatch(headerPattern);
         });
 
@@ -205,12 +206,13 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ columnWidths: 5, style: { paddingLeft: 0, paddingRight: 0 } });
+
             table.addRow(["Short", "This is a very long text", "Another long text"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─────┬─────┬─────┐
-              │Short│This…│Anot…│
-              └─────┴─────┴─────┘"
+                "┌─────┬─────┬─────┐
+                │Short│This…│Anot…│
+                └─────┴─────┴─────┘"
             `);
         });
 
@@ -218,12 +220,13 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ columnWidths: [10, 5, 10], style: { paddingLeft: 0, paddingRight: 0 } });
+
             table.addRow(["Short text", { content: "This is a very long text" }, "Medium length"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌──────────┬─────┬──────────┐
-              │Short text│This…│Medium le…│
-              └──────────┴─────┴──────────┘"
+                "┌──────────┬─────┬──────────┐
+                │Short text│This…│Medium le…│
+                └──────────┴─────┴──────────┘"
             `);
         });
 
@@ -231,16 +234,17 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ columnWidths: [5, 10, 5], style: { paddingLeft: 0, paddingRight: 0 }, wordWrap: true });
+
             table.addRow(["Short", { content: "This is a very long text that should wrap" }, "Test"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─────┬──────────┬─────┐
-              │Short│This is a │Test │
-              │     │very long │     │
-              │     │text that │     │
-              │     │should    │     │
-              │     │wrap      │     │
-              └─────┴──────────┴─────┘"
+                "┌─────┬──────────┬─────┐
+                │Short│This is a │Test │
+                │     │very long │     │
+                │     │text that │     │
+                │     │should    │     │
+                │     │wrap      │     │
+                └─────┴──────────┴─────┘"
             `);
         });
 
@@ -248,12 +252,13 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ columnWidths: 7, style: { paddingLeft: 0, paddingRight: 0 } });
+
             table.addRow(["Test", { content: "こんにちは" }, { content: "🌟🌟🌟🌟🌟" }]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───────┬───────┬───────┐
-              │Test   │こんに…│🌟🌟🌟…│
-              └───────┴───────┴───────┘"
+                "┌───────┬───────┬───────┐
+                │Test   │こんに…│🌟🌟🌟…│
+                └───────┴───────┴───────┘"
             `);
         });
 
@@ -261,12 +266,13 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ columnWidths: 5, style: { paddingLeft: 0, paddingRight: 0 } });
+
             table.addRow([{ content: "Test" }, { content: "\u001B[31mThis is red text\u001B[0m" }, { content: "\u001B[32mGreen\u001B[0m" }]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─────┬─────┬─────┐
-              │Test │[31mThis[0m…│[32mGreen[0m│
-              └─────┴─────┴─────┘"
+                "┌─────┬─────┬─────┐
+                │Test │[31mThis[0m…│[32mGreen[0m│
+                └─────┴─────┴─────┘"
             `);
         });
 
@@ -274,12 +280,13 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ columnWidths: [5, 6, 7], style: { paddingLeft: 0, paddingRight: 0 } });
+
             table.addRow([{ content: 12_345_678_901 }, { content: "Mixed 🌟 Text" }, { content: "\u001B[31mColored\u001B[0m Text" }]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─────┬──────┬───────┐
-              │1234…│Mixed…│[31mColore[0m…│
-              └─────┴──────┴───────┘"
+                "┌─────┬──────┬───────┐
+                │1234…│Mixed…│[31mColore[0m…│
+                └─────┴──────┴───────┘"
             `);
         });
 
@@ -287,12 +294,13 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ columnWidths: 5, style: { paddingLeft: 0, paddingRight: 0 } });
+
             table.addRow(["", { content: "   " }, { content: "\t" }]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─────┬─────┬─────┐
-              │     │     │	…│
-              └─────┴─────┴─────┘"
+                "┌─────┬─────┬─────┐
+                │     │     │	…│
+                └─────┴─────┴─────┘"
             `);
         });
 
@@ -300,13 +308,14 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ columnWidths: 5, style: { paddingLeft: 0, paddingRight: 0 } });
+
             table.addRow(["", { content: "   " }, { content: "\t\n" }]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─────┬─────┬─────┐
-              │     │     │	…│
-              │     │     │     │
-              └─────┴─────┴─────┘"
+                "┌─────┬─────┬─────┐
+                │     │     │	…│
+                │     │     │     │
+                └─────┴─────┴─────┘"
             `);
         });
 
@@ -314,16 +323,17 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ columnWidths: 5, style: { paddingLeft: 0, paddingRight: 0 }, wordWrap: true });
+
             table.setHeaders(["H1", "Header2", "H3"]);
             table.addRow(["Data", "Long Data", "End"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─────┬─────┬─────┐
-              │H1   │Head…│H3   │
-              ├─────┼─────┼─────┤
-              │Data │Long │End  │
-              │     │Data │     │
-              └─────┴─────┴─────┘"
+                "┌─────┬─────┬─────┐
+                │H1   │Head…│H3   │
+                ├─────┼─────┼─────┤
+                │Data │Long │End  │
+                │     │Data │     │
+                └─────┴─────┴─────┘"
             `);
         });
     });
@@ -333,6 +343,7 @@ describe("table core functionality", () => {
             expect.assertions(1);
 
             const table = new Table({ style: { paddingLeft: 0, paddingRight: 0 } });
+
             table.addRow([
                 { content: "Left", hAlign: "left", maxWidth: 6 },
                 { content: "Center", hAlign: "center", maxWidth: 6 },
@@ -359,13 +370,13 @@ describe("table core functionality", () => {
 
         // Expect the header "Single Header" to span both columns
         expect(table.toString()).toMatchInlineSnapshot(`
-          "┌───────────────────────────┐
-          │ Single Header             │
-          ├─────────────┬─────────────┤
-          │ Body Cell 1 │ Body Cell 2 │
-          ├─────────────┼─────────────┤
-          │ Another 1   │ Another 2   │
-          └─────────────┴─────────────┘"
+            "┌───────────────────────────┐
+            │ Single Header             │
+            ├─────────────┬─────────────┤
+            │ Body Cell 1 │ Body Cell 2 │
+            ├─────────────┼─────────────┤
+            │ Another 1   │ Another 2   │
+            └─────────────┴─────────────┘"
         `);
     });
 });
@@ -373,7 +384,9 @@ describe("table core functionality", () => {
 describe("error handling and edge cases", () => {
     it("should throw if addRow receives non-array input", () => {
         expect.assertions(1);
+
         const table = createTable();
+
         expect(() => {
             // @ts-expect-error - Testing invalid input
             table.addRow("not an array");
@@ -382,43 +395,52 @@ describe("error handling and edge cases", () => {
 
     it("should render empty string if table has no rows and showHeader is false", () => {
         expect.assertions(1);
+
         const table = new Table({ showHeader: false });
+
         expect(table.toString()).toBe("");
     });
 
     it("should render empty string if table has no rows and no headers set", () => {
         expect.assertions(1);
+
         const table = new Table(); // showHeader defaults to true
+
         // No setHeaders called, no addRow called
         expect(table.toString()).toBe("");
     });
 
     it("should render only header if headers are set but no rows added", () => {
         expect.assertions(1);
+
         const table = createTable();
+
         table.setHeaders(["H1", "H2"]);
+
         expect(table.toString()).toMatchInlineSnapshot(`
-          "┌────┬────┐
-          │ H1 │ H2 │
-          └────┴────┘"
+            "┌────┬────┐
+            │ H1 │ H2 │
+            └────┴────┘"
         `);
     });
 
     it("should handle adding an empty array row", () => {
         expect.assertions(1);
+
         const table = createTable();
+
         table.setHeaders(["A", "B"]);
         table.addRow(["", ""]); // Add empty row
         table.addRow(["r2c1", "r2c2"]);
 
         expect(table.toString()).toMatchInlineSnapshot(`
-          "┌──────┬──────┐
-          │ A    │ B    │
-          ├──────┼──────┤
-          │      │      │
-          ├──────┼──────┤
-          │ r2c1 │ r2c2 │
-          └──────┴──────┘"
+            "┌──────┬──────┐
+            │ A    │ B    │
+            ├──────┼──────┤
+            │      │      │
+            ├──────┼──────┤
+            │ r2c1 │ r2c2 │
+            └──────┴──────┘"
         `);
     });
 });

@@ -65,3 +65,6 @@ storybook-static/
 
 # Package build output
 dist
+
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md

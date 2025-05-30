@@ -8,6 +8,7 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table.addRow(["Single"]);
 
             const expected = ["┌────────┐", "│ Single │", "└────────┘"].join("\n");
@@ -19,6 +20,7 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table.addRows(["A1", "B1", "C1"], ["A2", "B2", "C2"], ["A3", "B3", "C3"]);
 
             const expected = [
@@ -40,14 +42,15 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table.addRow([{ colSpan: 2, content: "Spanning Two Columns" }, "Normal"]).addRow(["A", "B", "C"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───────────────────────┬────────┐
-              │ Spanning Two Columns  │ Normal │
-              ├───────────┬───────────┼────────┤
-              │ A         │ B         │ C      │
-              └───────────┴───────────┴────────┘"
+                "┌───────────────────────┬────────┐
+                │ Spanning Two Columns  │ Normal │
+                ├───────────┬───────────┼────────┤
+                │ A         │ B         │ C      │
+                └───────────┴───────────┴────────┘"
             `);
         });
 
@@ -55,19 +58,20 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table
                 .addRow([{ colSpan: 3, content: "Span All" }])
                 .addRow([{ colSpan: 2, content: "Span Two" }, "C"])
                 .addRow(["A", "B", "C"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───────────────┐
-              │ Span All      │
-              ├───────────┬───┤
-              │ Span Two  │ C │
-              ├─────┬─────┼───┤
-              │ A   │ B   │ C │
-              └─────┴─────┴───┘"
+                "┌───────────────┐
+                │ Span All      │
+                ├───────────┬───┤
+                │ Span Two  │ C │
+                ├─────┬─────┼───┤
+                │ A   │ B   │ C │
+                └─────┴─────┴───┘"
             `);
         });
     });
@@ -77,6 +81,7 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table.addRow([{ content: "Span", rowSpan: 2 }, "B1", "C1"]).addRow([null, "B2", "C2"]);
 
             const expected = ["┌──────┬────┬────┐", "│ Span │ B1 │ C1 │", "│      ├────┼────┤", "│      │ B2 │ C2 │", "└──────┴────┴────┘"].join("\n");
@@ -88,6 +93,7 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table
                 .addRow([{ content: "Span 3", rowSpan: 3 }, "B1", { content: "Span 2", rowSpan: 2 }])
                 .addRow([null, "B2", null])
@@ -112,6 +118,7 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table
                 .addRow([{ colSpan: 3, content: "Header", hAlign: "center" }])
                 .addRow([
@@ -121,13 +128,13 @@ describe("table layout", () => {
                 .addRow([null, "Bottom Left", "Bottom Right"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───────────────────────────────────┐
-              │              Header               │
-              ├──────┬────────────────────────────┤
-              │      │            Top             │
-              │ Side ├─────────────┬──────────────┤
-              │      │ Bottom Left │ Bottom Right │
-              └──────┴─────────────┴──────────────┘"
+                "┌───────────────────────────────────┐
+                │              Header               │
+                ├──────┬────────────────────────────┤
+                │      │            Top             │
+                │ Side ├─────────────┬──────────────┤
+                │      │ Bottom Left │ Bottom Right │
+                └──────┴─────────────┴──────────────┘"
             `);
         });
 
@@ -207,16 +214,17 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table
                 .addRow([{ content: "Centered", hAlign: "center" }, "Normal"])
                 .addRow([{ content: "This is a longer centered text", hAlign: "center" }, "Second row"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌────────────────────────────────┬────────────┐
-              │            Centered            │ Normal     │
-              ├────────────────────────────────┼────────────┤
-              │ This is a longer centered text │ Second row │
-              └────────────────────────────────┴────────────┘"
+                "┌────────────────────────────────┬────────────┐
+                │            Centered            │ Normal     │
+                ├────────────────────────────────┼────────────┤
+                │ This is a longer centered text │ Second row │
+                └────────────────────────────────┴────────────┘"
             `);
         });
 
@@ -224,16 +232,17 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table
                 .addRow([{ content: "Left Aligned", hAlign: "left" }, "Normal"])
                 .addRow([{ content: "This is a longer left aligned text", hAlign: "left" }, "Second row"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌────────────────────────────────────┬────────────┐
-              │ Left Aligned                       │ Normal     │
-              ├────────────────────────────────────┼────────────┤
-              │ This is a longer left aligned text │ Second row │
-              └────────────────────────────────────┴────────────┘"
+                "┌────────────────────────────────────┬────────────┐
+                │ Left Aligned                       │ Normal     │
+                ├────────────────────────────────────┼────────────┤
+                │ This is a longer left aligned text │ Second row │
+                └────────────────────────────────────┴────────────┘"
             `);
         });
 
@@ -241,16 +250,17 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table
                 .addRow([{ content: "Right Aligned", hAlign: "right" }, "Normal"])
                 .addRow([{ content: "This is a longer right aligned text", hAlign: "right" }, "Second row"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─────────────────────────────────────┬────────────┐
-              │                       Right Aligned │ Normal     │
-              ├─────────────────────────────────────┼────────────┤
-              │ This is a longer right aligned text │ Second row │
-              └─────────────────────────────────────┴────────────┘"
+                "┌─────────────────────────────────────┬────────────┐
+                │                       Right Aligned │ Normal     │
+                ├─────────────────────────────────────┼────────────┤
+                │ This is a longer right aligned text │ Second row │
+                └─────────────────────────────────────┴────────────┘"
             `);
         });
     });
@@ -267,11 +277,11 @@ describe("table layout", () => {
             const output = table.toString();
 
             expect(output).toMatchInlineSnapshot(`
-              "┌┬┬┐
-              ││││
-              ├┼┼┤
-              ││││
-              └┴┴┘"
+                "┌┬┬┐
+                ││││
+                ├┼┼┤
+                ││││
+                └┴┴┘"
             `);
         });
 
@@ -287,13 +297,13 @@ describe("table layout", () => {
             const output = table.toString();
 
             expect(output).toMatchInlineSnapshot(`
-              "┌──┬──┬──┐
-              │  │  │  │
-              ├──┼──┼──┤
-              │  │  │  │
-              ├──┼──┼──┤
-              │  │  │  │
-              └──┴──┴──┘"
+                "┌──┬──┬──┐
+                │  │  │  │
+                ├──┼──┼──┤
+                │  │  │  │
+                ├──┼──┼──┤
+                │  │  │  │
+                └──┴──┴──┘"
             `);
         });
 
@@ -301,6 +311,7 @@ describe("table layout", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table
                 .addRow([{ content: "Span", rowSpan: 2 }, "B1"])
                 .addRow([null, "B2"]) // null for rowSpan
@@ -344,6 +355,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table
                     .addRow([{ colSpan: 2, content: "greetings" }])
                     .addRow([{ colSpan: 2, content: "greetings" }])
@@ -366,6 +378,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table
                     .addRow(["hello", "howdy"])
                     .addRow([{ colSpan: 2, content: "greetings" }])
@@ -390,6 +403,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table.addRow([{ content: "greetings", rowSpan: 2 }, { content: "greetings", rowSpan: 2, vAlign: "middle" }, "hello"]).addRow(["howdy"]);
 
                 const expected = [
@@ -407,6 +421,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table.addRow(["hello", { content: "greetings", rowSpan: 2 }, { content: "greetings", rowSpan: 2, vAlign: "bottom" }]).addRow(["howdy"]);
 
                 const expected = [
@@ -426,6 +441,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table
                     .addRow([
                         { colSpan: 2, content: "hello" },
@@ -452,6 +468,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table.addRow(["hello", { content: "greetings\nfriends", rowSpan: 2 }, { content: "greetings\nfriends", rowSpan: 2 }]).addRow(["howdy"]);
 
                 const expected = [
@@ -469,6 +486,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table
                     .addRow([
                         { colSpan: 2, content: "hello" },
@@ -495,6 +513,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table
                     .addRow([{ content: "a", rowSpan: 2 }, "b"])
                     .addRow([{ content: "c", rowSpan: 2 }])
@@ -511,6 +530,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table
                     .addRow([{ content: "a", rowSpan: 3 }, "b", { content: "", rowSpan: 2 }])
                     .addRow([])
@@ -518,15 +538,15 @@ describe("table layout", () => {
                     .addRow([""]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌───┬───┬──┐
-                  │ a │ b │  │
-                  │   ├───┤  │
-                  │   │   │  │
-                  │   ├───┴──┤
-                  │   │ c    │
-                  ├───┤      │
-                  │   │      │
-                  └───┴──────┘"
+                    "┌───┬───┬──┐
+                    │ a │ b │  │
+                    │   ├───┤  │
+                    │   │   │  │
+                    │   ├───┴──┤
+                    │   │ c    │
+                    ├───┤      │
+                    │   │      │
+                    └───┴──────┘"
                 `);
             });
         });
@@ -536,13 +556,14 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable({ rowHeights: [2] });
+
                 table.addRow(["hello\nhi\nsup"]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌───────┐
-                  │ hello │
-                  │ hi    │
-                  └───────┘"
+                    "┌───────┐
+                    │ hello │
+                    │ hi    │
+                    └───────┘"
                 `);
             });
 
@@ -550,14 +571,15 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable({ rowHeights: 1 });
+
                 table.addRow(["first\nsecond"]).addRow(["another\nmultiline\ntext"]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌───────────┐
-                  │ first     │
-                  ├───────────┤
-                  │ another   │
-                  └───────────┘"
+                    "┌───────────┐
+                    │ first     │
+                    ├───────────┤
+                    │ another   │
+                    └───────────┘"
                 `);
             });
 
@@ -565,15 +587,16 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable({ rowHeights: [1, 2] });
+
                 table.addRow(["first\nsecond"]).addRow(["another\nmultiline\ntext"]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌───────────┐
-                  │ first     │
-                  ├───────────┤
-                  │ another   │
-                  │ multiline │
-                  └───────────┘"
+                    "┌───────────┐
+                    │ first     │
+                    ├───────────┤
+                    │ another   │
+                    │ multiline │
+                    └───────────┘"
                 `);
             });
 
@@ -581,15 +604,16 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable({ rowHeights: [2, 1] });
+
                 table.addRow([{ content: "spanning\ncell\nwith\nmore\nlines", rowSpan: 2 }, "regular"]).addRow(["second"]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌──────────┬─────────┐
-                  │ spanning │ regular │
-                  │ cell     │         │
-                  │ with     ├─────────┤
-                  │ more     │ second  │
-                  └──────────┴─────────┘"
+                    "┌──────────┬─────────┐
+                    │ spanning │ regular │
+                    │ cell     │         │
+                    │ with     ├─────────┤
+                    │ more     │ second  │
+                    └──────────┴─────────┘"
                 `);
             });
 
@@ -597,6 +621,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable({ columnWidths: 6 });
+
                 table.addRow(["Column 1", "Column 2", "Column 3"]);
 
                 const expected = ["┌──────┬──────┬──────┐", "│ Col… │ Col… │ Col… │", "└──────┴──────┴──────┘"].join("\n");
@@ -608,12 +633,13 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable({ columnWidths: [6, 10, 6] });
+
                 table.addRow(["Col1", "Column 2", "Col 3"]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌──────┬──────────┬──────┐
-                  │ Col1 │ Column 2 │ Col… │
-                  └──────┴──────────┴──────┘"
+                    "┌──────┬──────────┬──────┐
+                    │ Col1 │ Column 2 │ Col… │
+                    └──────┴──────────┴──────┘"
                 `);
             });
 
@@ -621,6 +647,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable({ columnWidths: [5] });
+
                 table.addRow(["This is a very long text that should be truncated"]);
 
                 const expected = ["┌─────┐", "│ Th… │", "└─────┘"].join("\n");
@@ -632,12 +659,13 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable({ columnWidths: 5 });
+
                 table.addRow([{ colSpan: 2, content: "This is a wide cell spanning two columns" }]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌───────────┐
-                  │ This is … │
-                  └───────────┘"
+                    "┌───────────┐
+                    │ This is … │
+                    └───────────┘"
                 `);
             });
 
@@ -645,6 +673,7 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable({ columnWidths: 10, rowHeights: 1 });
+
                 table.addRow(["This is a\nmultiline\ntext with\nvery long content"]);
 
                 const expected = ["┌──────────┐", "│ This is… │", "└──────────┘"].join("\n");
@@ -656,14 +685,15 @@ describe("table layout", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table.addRow([{ colSpan: 2, content: "hello there" }]).addRow(["hi", "hi"]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌─────────────┐
-                  │ hello there │
-                  ├──────┬──────┤
-                  │ hi   │ hi   │
-                  └──────┴──────┘"
+                    "┌─────────────┐
+                    │ hello there │
+                    ├──────┬──────┤
+                    │ hi   │ hi   │
+                    └──────┴──────┘"
                 `);
             });
         });
@@ -672,6 +702,7 @@ describe("table layout", () => {
     describe("maxWidth and width constraints", () => {
         it("should return columns of width 1 when fixed border/gap width exceeds maxWidth", () => {
             expect.assertions(1);
+
             const table = createTable({
                 gap: 1, // Gap adds width
                 maxWidth: 5, // Max width less than potential border+gap
@@ -698,12 +729,13 @@ describe("table layout", () => {
                     paddingRight: 0,
                 },
             });
+
             table.addRow(["a", "b"]); // 2 columns
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "+--+--+
-              |a | b|
-              +--+--+"
+                "+--+--+
+                |a | b|
+                +--+--+"
             `);
         });
     });

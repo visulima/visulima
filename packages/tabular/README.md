@@ -70,13 +70,13 @@ import { createTable } from "@visulima/tabular";
 
 // Create a basic table
 const table = createTable({
+    maxWidth: 100, // Maximum table width
+    showHeader: true, // Show headers (default: true)
     style: {
         paddingLeft: 1,
         paddingRight: 1,
     },
-    showHeader: true, // Show headers (default: true)
     wordWrap: true, // Enable word wrapping
-    maxWidth: 100, // Maximum table width
 });
 
 // Add headers
@@ -85,7 +85,7 @@ table.setHeaders(["Name", { content: "Age", hAlign: "center" }, { content: "City
 // Add rows
 table.addRow(["John Doe", "30", "New York"]);
 table.addRow([
-    { content: "Jane Smith", colSpan: 2 }, // Span two columns
+    { colSpan: 2, content: "Jane Smith" }, // Span two columns
     "Los Angeles",
 ]);
 
@@ -121,16 +121,16 @@ import { createGrid } from "@visulima/tabular";
 // Create a grid with 3 columns
 const grid = createGrid({
     columns: 3,
+    gap: 1, // Gap between cells
     paddingLeft: 1,
     paddingRight: 1,
-    gap: 1, // Gap between cells
 });
 
 // Add items with complex layouts
 grid.addItems([
-    { content: "Header", colSpan: 3, hAlign: "center" },
+    { colSpan: 3, content: "Header", hAlign: "center" },
     { content: "Left", vAlign: "top" },
-    { content: "Center\nMultiline", vAlign: "middle", rowSpan: 2 },
+    { content: "Center\nMultiline", rowSpan: 2, vAlign: "middle" },
     { content: "Right", vAlign: "bottom" },
     { content: "Bottom Left" },
     { content: "Bottom Right" },
@@ -160,57 +160,57 @@ Output:
 Both Table and Grid support rich cell styling:
 
 ```typescript
+import { bgBlue, bgYellow, blue, bold, green, red, white, yellow } from "@visulima/colorize";
 import { createTable } from "@visulima/tabular";
-import { red, green, blue, bgYellow, bgBlue, bold, yellow, white } from "@visulima/colorize";
 
 const table = createTable();
 
 // Example 1: Using function-based background color
 table.addRow([
     {
-        content: "Warning",
         backgroundColor: bgYellow, // Function that applies background color
+        content: "Warning",
         hAlign: "center",
         vAlign: "middle",
     },
     {
-        content: "Error",
         backgroundColor: (text) => bgBlue(red(text)), // Custom color function
         colSpan: 2,
+        content: "Error",
     },
 ]);
 
 // Example 2: Using ANSI escape sequences directly
 table.addRow([
     {
-        content: "Custom",
         backgroundColor: {
-            open: "\u001B[44m", // Blue background
             close: "\u001B[49m", // Reset background
+            open: "\u001B[44m", // Blue background
         },
+        content: "Custom",
     },
     {
-        content: "Status",
         backgroundColor: {
-            open: "\u001B[42m", // Green background
             close: "\u001B[49m", // Reset background
+            open: "\u001B[42m", // Green background
         },
+        content: "Status",
     },
 ]);
 
 // Example 3: Combining with other styling options
 table.addRow([
     {
-        content: "Important Notice",
         backgroundColor: bgYellow,
         colSpan: 2,
+        content: "Important Notice",
         maxWidth: 20, // Maximum cell width
-        truncate: true, // Enable truncation
-        wordWrap: true, // Enable word wrapping
         style: {
             border: ["bold"],
             paddingLeft: 2,
         },
+        truncate: true, // Enable truncation
+        wordWrap: true, // Enable word wrapping
     },
 ]);
 
@@ -255,8 +255,8 @@ tableWithBorderColors.addRow([
 tableWithBorderColors.addRow([
     // Cell with background and custom border color
     {
-        content: "Info",
         backgroundColor: bgBlue, // Blue background
+        content: "Info",
         style: {
             borderColor: white, // White border for this cell
         },
@@ -289,6 +289,8 @@ Control column and row sizes:
 import { createGrid } from "@visulima/tabular";
 
 const grid = createGrid({
+    // Auto-flow direction
+    autoFlow: "row", // or "column"
     columns: 3,
     // Fixed column widths
     fixedColumnWidths: [10, 20, 15],
@@ -296,8 +298,6 @@ const grid = createGrid({
     fixedRowHeights: [1, 2, 1],
     // Maximum width (will scale down if needed)
     maxWidth: 100,
-    // Auto-flow direction
-    autoFlow: "row", // or "column"
 });
 ```
 
@@ -1105,7 +1105,7 @@ Default terminal width if detection fails (defaults to 80)
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.defaultTerminalWidth
+BaseRenderingOptions.defaultTerminalWidth;
 ```
 
 ##### fixedColumnWidths?
@@ -1155,7 +1155,7 @@ Gap between cells
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.gap
+BaseRenderingOptions.gap;
 ```
 
 ##### maxWidth?
@@ -1171,7 +1171,7 @@ Maximum width for the entire table/grid.
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.maxWidth
+BaseRenderingOptions.maxWidth;
 ```
 
 ##### paddingLeft?
@@ -1235,7 +1235,7 @@ Explicit terminal width (overrides detected)
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.terminalWidth
+BaseRenderingOptions.terminalWidth;
 ```
 
 ##### truncate?
@@ -1251,7 +1251,7 @@ Global truncation options/flag
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.truncate
+BaseRenderingOptions.truncate;
 ```
 
 ##### wordWrap?
@@ -1267,7 +1267,7 @@ Global word wrap options/flag
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.wordWrap
+BaseRenderingOptions.wordWrap;
 ```
 
 ***
@@ -1544,7 +1544,7 @@ Default terminal width if detection fails (defaults to 80)
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.defaultTerminalWidth
+BaseRenderingOptions.defaultTerminalWidth;
 ```
 
 ##### gap?
@@ -1560,7 +1560,7 @@ Gap between cells
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.gap
+BaseRenderingOptions.gap;
 ```
 
 ##### maxWidth?
@@ -1576,7 +1576,7 @@ Maximum width for the entire table/grid.
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.maxWidth
+BaseRenderingOptions.maxWidth;
 ```
 
 ##### rowHeights?
@@ -1623,7 +1623,7 @@ Explicit terminal width (overrides detected)
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.terminalWidth
+BaseRenderingOptions.terminalWidth;
 ```
 
 ##### transformTabToSpace?
@@ -1649,7 +1649,7 @@ Global truncation options/flag
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.truncate
+BaseRenderingOptions.truncate;
 ```
 
 ##### wordWrap?
@@ -1665,7 +1665,7 @@ Global word wrap options/flag
 ###### Inherited from
 
 ```ts
-BaseRenderingOptions.wordWrap
+BaseRenderingOptions.wordWrap;
 ```
 
 ## Type Aliases

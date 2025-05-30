@@ -35,6 +35,7 @@ import { createTable } from "../dist";
 console.log("\nExample with complex layout:");
 
 const table = createTable();
+
 table.addRows(
     [{ colSpan: 9, content: "TOP", hAlign: "center" }],
     [

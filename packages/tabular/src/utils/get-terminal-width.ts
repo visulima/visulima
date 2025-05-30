@@ -1,11 +1,11 @@
 /**
  * Get terminal width with multiple fallback methods
- * @param defaultWidth - The default width to return if detection fails.
+ * @param defaultWidth The default width to return if detection fails.
  * @returns The detected or default terminal width.
  */
 const getTerminalWidth = (defaultWidth = 80): number => {
     // Try to get the terminal width from process.stdout.getWindowSize
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
     if (process.stdout && typeof process.stdout.getWindowSize === "function") {
         const size = process.stdout.getWindowSize();
 
@@ -15,7 +15,7 @@ const getTerminalWidth = (defaultWidth = 80): number => {
     }
 
     // Try to get the terminal width from process.stdout.columns
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
     if (process.stdout && process.stdout.columns) {
         return process.stdout.columns - 3;
     }

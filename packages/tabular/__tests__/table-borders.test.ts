@@ -41,6 +41,7 @@ describe("table borders", () => {
             ["THICK", THICK_BORDER],
         ])("renders table with %s border style", (_, borderStyle) => {
             expect.assertions(1);
+
             const table = createTable({
                 style: {
                     border: borderStyle,
@@ -57,6 +58,7 @@ describe("table borders", () => {
             table.addRows(...sampleData.slice(1));
 
             const output = table.toString();
+
             expect(output).toMatchSnapshot();
         });
 
@@ -182,6 +184,7 @@ describe("table borders", () => {
 
         it("should support disabled decoration lines (NO_BORDER specific)", () => {
             expect.assertions(1);
+
             const table = createTable({ style: { border: NO_BORDER, paddingLeft: 1, paddingRight: 1 } });
 
             table.addRows(["foo", "bar", "baz"], ["frobnicate", "bar", "quuz"]);
@@ -191,6 +194,7 @@ describe("table borders", () => {
 
         it("renders table with spanning cells using DEFAULT border style", () => {
             expect.assertions(1);
+
             const table = createTable({
                 style: {
                     border: DEFAULT_BORDER,
@@ -201,11 +205,13 @@ describe("table borders", () => {
             table.addRows([{ colSpan: 2, content: "Spanning Content" }], ["Regular Cell 1", "Regular Cell 2"]);
 
             const output = table.toString();
+
             expect(output).toMatchSnapshot();
         });
 
         it("renders table with multiline content using DOUBLE border style", () => {
             expect.assertions(1);
+
             const table = createTable({
                 style: {
                     border: DOUBLE_BORDER,
@@ -216,11 +222,13 @@ describe("table borders", () => {
             table.addRows(["Line 1\nLine 2\nLine 3", "Regular Cell"], ["Regular Cell 1", "Regular Cell 2"]);
 
             const output = table.toString();
+
             expect(output).toMatchSnapshot();
         });
 
         it("renders table with mixed alignments using ROUNDED border style", () => {
             expect.assertions(1);
+
             const table = createTable({
                 style: {
                     border: ROUNDED_BORDER,
@@ -235,11 +243,13 @@ describe("table borders", () => {
             table.addRows(["Short", "Medium Text", "Longer Text Here"], ["A", "BB", "CCC"]);
 
             const output = table.toString();
+
             expect(output).toMatchSnapshot();
         });
 
         it("renders table with vertical alignments using DOTS border style", () => {
             expect.assertions(1);
+
             const table = createTable({
                 style: {
                     border: DOTS_BORDER,
@@ -258,11 +268,13 @@ describe("table borders", () => {
             ]);
 
             const output = table.toString();
+
             expect(output).toMatchSnapshot();
         });
 
         it("renders table with word wrapping using MARKDOWN border style", () => {
             expect.assertions(1);
+
             const table = createTable({
                 columnWidths: [8, 13],
                 style: {
@@ -278,11 +290,13 @@ describe("table borders", () => {
             );
 
             const output = table.toString();
+
             expect(output).toMatchSnapshot();
         });
 
         it("renders table with truncated content using ASCII border style", () => {
             expect.assertions(1);
+
             const table = createTable({
                 style: {
                     border: ASCII_BORDER,
@@ -296,11 +310,13 @@ describe("table borders", () => {
             );
 
             const output = table.toString();
+
             expect(output).toMatchSnapshot();
         });
 
         it("renders table with mixed styling using NO_BORDER style", () => {
             expect.assertions(1);
+
             const table = createTable({
                 style: {
                     border: NO_BORDER,
@@ -321,6 +337,7 @@ describe("table borders", () => {
             ]);
 
             const output = table.toString();
+
             expect(output).toMatchSnapshot();
         });
     });
@@ -346,6 +363,7 @@ describe("table borders", () => {
             const output = table.toString();
             const lines = output.split("\n");
             const dataLine = lines.find((line) => line.includes("1"));
+
             expect(dataLine).toBeDefined();
 
             // eslint-disable-next-line vitest/no-conditional-in-test
@@ -427,13 +445,14 @@ describe("table borders", () => {
 
             table.addRow([{ colSpan: 2, content: "Span Above" }]);
             table.addRow(["A", "B"]);
+
             // Expecting '┬' (topJoin) between A and B in the middle border
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─────────────┐
-              │ Span Above  │
-              ├──────┬──────┤
-              │ A    │ B    │
-              └──────┴──────┘"
+                "┌─────────────┐
+                │ Span Above  │
+                ├──────┬──────┤
+                │ A    │ B    │
+                └──────┴──────┘"
             `);
         });
 
@@ -444,13 +463,14 @@ describe("table borders", () => {
 
             table.addRow(["A", "B"]);
             table.addRow([{ colSpan: 2, content: "Span Below" }]);
+
             // Expecting '┴' (bottomJoin) between A and B in the middle border
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌──────┬──────┐
-              │ A    │ B    │
-              ├──────┴──────┤
-              │ Span Below  │
-              └─────────────┘"
+                "┌──────┬──────┐
+                │ A    │ B    │
+                ├──────┴──────┤
+                │ Span Below  │
+                └─────────────┘"
             `);
         });
 
@@ -461,13 +481,14 @@ describe("table borders", () => {
 
             table.addRow([{ colSpan: 2, content: "Span Above" }]);
             table.addRow([{ colSpan: 2, content: "Span Below" }]);
+
             // Expecting '─' (joinBody) between A and B in the middle border
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─────────────┐
-              │ Span Above  │
-              ├─────────────┤
-              │ Span Below  │
-              └─────────────┘"
+                "┌─────────────┐
+                │ Span Above  │
+                ├─────────────┤
+                │ Span Below  │
+                └─────────────┘"
             `);
         });
 
@@ -478,13 +499,14 @@ describe("table borders", () => {
 
             table.addRow([{ content: "Span Left", rowSpan: 2 }, "A"]);
             table.addRow(["B"]);
+
             // Expecting '├' (joinLeft) on the left edge of the middle border
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───────────┬───┐
-              │ Span Left │ A │
-              │           ├───┤
-              │           │ B │
-              └───────────┴───┘"
+                "┌───────────┬───┐
+                │ Span Left │ A │
+                │           ├───┤
+                │           │ B │
+                └───────────┴───┘"
             `);
         });
 
@@ -495,13 +517,14 @@ describe("table borders", () => {
 
             table.addRow(["A", { content: "Span Right", rowSpan: 2 }]);
             table.addRow(["B"]);
+
             // Expecting '┤' (joinRight) on the right edge of the middle border
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───┬────────────┐
-              │ A │ Span Right │
-              ├───┤            │
-              │ B │            │
-              └───┴────────────┘"
+                "┌───┬────────────┐
+                │ A │ Span Right │
+                ├───┤            │
+                │ B │            │
+                └───┴────────────┘"
             `);
         });
 
@@ -514,12 +537,13 @@ describe("table borders", () => {
                 { content: "Span Left", rowSpan: 2 },
                 { content: "Span Right", rowSpan: 2 },
             ]);
+
             // Expecting '│' (bodyJoin) in the middle of the middle border
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───────────┬────────────┐
-              │ Span Left │ Span Right │
-              │           │            │
-              └───────────┴────────────┘"
+                "┌───────────┬────────────┐
+                │ Span Left │ Span Right │
+                │           │            │
+                └───────────┴────────────┘"
             `);
         });
 
@@ -529,12 +553,13 @@ describe("table borders", () => {
             const table = createTable();
 
             table.addRow([{ colSpan: 2, content: "Span Both", rowSpan: 2 }]);
+
             // Expecting space where the internal border would be
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───────────┐
-              │ Span Both │
-              │           │
-              └───────────┘"
+                "┌───────────┐
+                │ Span Both │
+                │           │
+                └───────────┘"
             `);
         });
     });
@@ -544,6 +569,7 @@ describe("table borders", () => {
             expect.assertions(1);
 
             const table = createTable({ style: { border: NO_BORDER } }); // Use NO_BORDER style
+
             table.addRow(["A", "B"]);
             table.addRow(["C", "D"]);
 

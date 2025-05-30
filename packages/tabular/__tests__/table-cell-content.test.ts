@@ -52,6 +52,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = new Table();
+
                 table.setHeaders(["📊 Metrics", "Value"]).addRow(["代码覆盖率", "80%"]).addRow(["性能测试", "95%"]);
 
                 const output = table.toString();
@@ -73,6 +74,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ truncate: true });
+
                 table.addRows(
                     ["foobar", { content: "English test", maxWidth: 9 }, "baz"],
                     ["foobar", { content: "中文测试", maxWidth: 9 }, "baz"],
@@ -89,6 +91,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table.setHeaders(["Test", "1\n2\n3"]);
 
                 const expected = ["┌──────┬───┐", "│ Test │ 1 │", "│      │ 2 │", "│      │ 3 │", "└──────┴───┘"].join("\n");
@@ -100,6 +103,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table.addRow(["something\nwith\nnewlines"]);
 
                 const expected = ["┌───────────┐", "│ something │", "│ with      │", "│ newlines  │", "└───────────┘"].join("\n");
@@ -138,6 +142,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable();
+
                 table.setHeaders(["Test\nWidth"]);
 
                 // Compute the total width including borders and padding
@@ -158,6 +163,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 5] });
+
                 table.addRow(["", "   ", { content: testString, truncate: { position: "end" } }]);
 
                 expect(table.toString()).toContain("This…");
@@ -167,6 +173,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 5] });
+
                 table.addRow(["", "   ", { content: testString, truncate: { position: "start" } }]);
 
                 expect(table.toString()).toContain("…ring");
@@ -176,6 +183,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 5] });
+
                 table.addRow(["", "   ", { content: testString, truncate: { position: "middle" } }]);
 
                 expect(table.toString()).toContain("Th…ng");
@@ -187,6 +195,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 5] });
+
                 table.addRow(["", "   ", { content: testString, truncate: { ellipsis: "+", position: "end" } }]);
 
                 expect(table.toString()).toContain("This+");
@@ -196,6 +205,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 5] });
+
                 table.addRow(["", "   ", { content: testString, truncate: { ellipsis: " >", position: "end" } }]);
 
                 expect(table.toString()).toContain("Thi >");
@@ -207,6 +217,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 15] });
+
                 table.addRow(["", "   ", { content: longTestString, truncate: { position: "end", preferTruncationOnSpace: true } }]);
 
                 expect(table.toString()).toContain("Hello world…");
@@ -216,6 +227,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 15] });
+
                 table.addRow(["", "   ", { content: longTestString, truncate: { position: "end", preferTruncationOnSpace: false } }]);
 
                 expect(table.toString()).toContain("Hello world th…");
@@ -225,6 +237,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 15] });
+
                 table.addRow([
                     "",
                     "   ",
@@ -246,6 +259,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 5] });
+
                 // "This is a long string" -> "This…"
                 table.addRow(["", "   ", { content: testString, truncate: { position: "end", preferTruncationOnSpace: true } }]);
 
@@ -258,13 +272,14 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 15], truncate: true });
+
                 // No cell-specific truncate, should default to end truncation with default ellipsis
                 table.addRow(["", "   ", longTestString]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌┬─────┬───────────────┐
-                  ││     │Hello world th…│
-                  └┴─────┴───────────────┘"
+                    "┌┬─────┬───────────────┐
+                    ││     │Hello world th…│
+                    └┴─────┴───────────────┘"
                 `);
             });
 
@@ -272,12 +287,13 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 15], truncate: { ellipsis: "..." } });
+
                 table.addRow(["", "   ", longTestString]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌┬─────┬───────────────┐
-                  ││     │Hello world ...│
-                  └┴─────┴───────────────┘"
+                    "┌┬─────┬───────────────┐
+                    ││     │Hello world ...│
+                    └┴─────┴───────────────┘"
                 `);
             });
 
@@ -285,13 +301,14 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [0, 5, 10], truncate: true });
+
                 // Cell specific should override global true
                 table.addRow(["", "   ", { content: longTestString, truncate: { ellipsis: "<-", position: "start" } }]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌┬─────┬──────────┐
-                  ││     │<-s a test│
-                  └┴─────┴──────────┘"
+                    "┌┬─────┬──────────┐
+                    ││     │<-s a test│
+                    └┴─────┴──────────┘"
                 `);
             });
 
@@ -299,6 +316,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [15, 20, 10], truncate: "..." });
+
                 table.addRow([
                     "Authentication",
                     "This is a very long description that needs truncation", // Will be truncated
@@ -317,6 +335,7 @@ describe("table Cell Content Handling", () => {
                 expect.assertions(1);
 
                 const table = createTable({ ...baseOptions, columnWidths: [5, 5, 15], truncate: true });
+
                 table.addRow(["", "   ", longTestString]); // Whitespace cell, empty cell, truncated cell
 
                 expect(table.toString()).toMatchSnapshot();
@@ -330,12 +349,13 @@ describe("table Cell Content Handling", () => {
                     columnWidths: [10, 10],
                     style: { backgroundColor: { close: "\u001B[49m", open: "\u001B[41m" } }, // Red BG
                 });
+
                 table.addRow(["Cell A", "Cell B"]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "[41m┌[49m[41m──────────[49m[41m┬[49m[41m──────────[49m[41m┐[49m
-                  [41m│[49m[41m Cell A   [49m[41m│[49m[41m Cell B   [49m[41m│[49m
-                  [41m└[49m[41m──────────[49m[41m┴[49m[41m──────────[49m[41m┘[49m"
+                    "[41m┌[49m[41m──────────[49m[41m┬[49m[41m──────────[49m[41m┐[49m
+                    [41m│[49m[41m Cell A   [49m[41m│[49m[41m Cell B   [49m[41m│[49m
+                    [41m└[49m[41m──────────[49m[41m┴[49m[41m──────────[49m[41m┘[49m"
                 `);
             });
 
@@ -347,12 +367,13 @@ describe("table Cell Content Handling", () => {
                     columnWidths: [10, 10],
                     style: { foregroundColor: { close: "\u001B[39m", open: "\u001B[94m" } }, // Bright Blue FG
                 });
+
                 table.addRow(["Cell A", "Cell B"]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌──────────┬──────────┐
-                  [94m│[39m[94m Cell A   [39m[94m│[39m[94m Cell B   [39m[94m│[39m
-                  └──────────┴──────────┘"
+                    "┌──────────┬──────────┐
+                    [94m│[39m[94m Cell A   [39m[94m│[39m[94m Cell B   [39m[94m│[39m
+                    └──────────┴──────────┘"
                 `);
             });
 
@@ -367,12 +388,13 @@ describe("table Cell Content Handling", () => {
                         foregroundColor: { close: "\u001B[39m", open: "\u001B[94m" }, // Bright Blue FG
                     },
                 });
+
                 table.addRow(["Cell A", "Cell B"]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "[41m┌[49m[41m──────────[49m[41m┬[49m[41m──────────[49m[41m┐[49m
-                  [41m[94m│[39m[49m[41m[94m Cell A   [39m[49m[41m[94m│[39m[49m[41m[94m Cell B   [39m[49m[41m[94m│[39m[49m
-                  [41m└[49m[41m──────────[49m[41m┴[49m[41m──────────[49m[41m┘[49m"
+                    "[41m┌[49m[41m──────────[49m[41m┬[49m[41m──────────[49m[41m┐[49m
+                    [41m[94m│[39m[49m[41m[94m Cell A   [39m[49m[41m[94m│[39m[49m[41m[94m Cell B   [39m[49m[41m[94m│[39m[49m
+                    [41m└[49m[41m──────────[49m[41m┴[49m[41m──────────[49m[41m┘[49m"
                 `);
             });
 
@@ -384,15 +406,16 @@ describe("table Cell Content Handling", () => {
                     columnWidths: [10, 10],
                     style: { backgroundColor: { close: "\u001B[49m", open: "\u001B[41m" } }, // Red BG (Global)
                 });
+
                 table.addRow([
                     "Cell A",
                     { backgroundColor: { close: "\u001B[49m", open: "\u001B[42m" }, content: "Cell B" }, // Green BG (Cell)
                 ]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "[41m┌[49m[41m──────────[49m[41m┬[49m[41m──────────[49m[41m┐[49m
-                  [41m│[49m[41m Cell A   [49m[41m│[49m[42m Cell B   [49m[41m│[49m
-                  [41m└[49m[41m──────────[49m[41m┴[49m[41m──────────[49m[41m┘[49m"
+                    "[41m┌[49m[41m──────────[49m[41m┬[49m[41m──────────[49m[41m┐[49m
+                    [41m│[49m[41m Cell A   [49m[41m│[49m[42m Cell B   [49m[41m│[49m
+                    [41m└[49m[41m──────────[49m[41m┴[49m[41m──────────[49m[41m┘[49m"
                 `);
             });
 
@@ -404,15 +427,16 @@ describe("table Cell Content Handling", () => {
                     columnWidths: [10, 10],
                     style: { foregroundColor: { close: "\u001B[39m", open: "\u001B[94m" } }, // Bright Blue FG (Global)
                 });
+
                 table.addRow([
                     "Cell A",
                     { content: "Cell B", foregroundColor: { close: "\u001B[39m", open: "\u001B[91m" } }, // Bright Red FG (Cell)
                 ]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "┌──────────┬──────────┐
-                  [94m│[39m[94m Cell A   [39m[94m│[39m[91m Cell B   [39m[94m│[39m
-                  └──────────┴──────────┘"
+                    "┌──────────┬──────────┐
+                    [94m│[39m[94m Cell A   [39m[94m│[39m[91m Cell B   [39m[94m│[39m
+                    └──────────┴──────────┘"
                 `);
             });
 
@@ -427,6 +451,7 @@ describe("table Cell Content Handling", () => {
                         foregroundColor: { close: "\u001B[39m", open: "\u001B[94m" }, // Bright Blue FG (Global)
                     },
                 });
+
                 table.addRow([
                     "Cell A", // Should inherit global Red BG / Blue FG
                     {
@@ -437,9 +462,9 @@ describe("table Cell Content Handling", () => {
                 ]);
 
                 expect(table.toString()).toMatchInlineSnapshot(`
-                  "[41m┌[49m[41m──────────[49m[41m┬[49m[41m──────────[49m[41m┐[49m
-                  [41m[94m│[39m[49m[41m[94m Cell A   [39m[49m[41m[94m│[39m[49m[42m[91m Cell B   [39m[49m[41m[94m│[39m[49m
-                  [41m└[49m[41m──────────[49m[41m┴[49m[41m──────────[49m[41m┘[49m"
+                    "[41m┌[49m[41m──────────[49m[41m┬[49m[41m──────────[49m[41m┐[49m
+                    [41m[94m│[39m[49m[41m[94m Cell A   [39m[49m[41m[94m│[39m[49m[42m[91m Cell B   [39m[49m[41m[94m│[39m[49m
+                    [41m└[49m[41m──────────[49m[41m┴[49m[41m──────────[49m[41m┘[49m"
                 `);
             });
         });
@@ -450,18 +475,19 @@ describe("table Cell Content Handling", () => {
             expect.assertions(1);
 
             const table = createTable();
+
             table.setHeaders(["EmptyStrH", null, undefined, "ContentH"]);
             table.addRow(["", null, { content: undefined }, "Content"]);
             table.addRow([" ", { content: "" }, "Explicit", "Stuff"]); // Space vs empty
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───────────┬──┬──────────┬──────────┐
-              │ EmptyStrH │  │          │ ContentH │
-              ├───────────┼──┼──────────┼──────────┤
-              │           │  │          │ Content  │
-              ├───────────┼──┼──────────┼──────────┤
-              │           │  │ Explicit │ Stuff    │
-              └───────────┴──┴──────────┴──────────┘"
+                "┌───────────┬──┬──────────┬──────────┐
+                │ EmptyStrH │  │          │ ContentH │
+                ├───────────┼──┼──────────┼──────────┤
+                │           │  │          │ Content  │
+                ├───────────┼──┼──────────┼──────────┤
+                │           │  │ Explicit │ Stuff    │
+                └───────────┴──┴──────────┴──────────┘"
             `);
         });
     });
@@ -486,9 +512,9 @@ describe("table Cell Content Handling", () => {
             expect(expectedOutput).toContain(`${osc8Start}${linkText}${osc8End}`);
 
             expect(expectedOutput).toMatchInlineSnapshot(`
-              "┌─────────┐
-              │ ]8;;https://example.com\\Example]8;;\\ │
-              └─────────┘"
+                "┌─────────┐
+                │ ]8;;https://example.com\\Example]8;;\\ │
+                └─────────┘"
             `); // Snapshot will contain the escape codes
         });
     });
@@ -504,13 +530,14 @@ describe("table Cell Content Handling", () => {
                     paddingRight: 0,
                 },
             });
+
             table.addRow(["Cell A", { content: "Cell B", foregroundColor: blue }]); // Blue FG on Cell B
 
             // Expect border to be red, Cell A default FG, Cell B blue FG
             expect(table.toString()).toMatchInlineSnapshot(`
-              "[31m┌[39m[31m──────[39m[31m┬[39m[31m──────[39m[31m┐[39m
-              [31m│[39mCell A[31m│[39m[34mCell B[39m[31m│[39m
-              [31m└[39m[31m──────[39m[31m┴[39m[31m──────[39m[31m┘[39m"
+                "[31m┌[39m[31m──────[39m[31m┬[39m[31m──────[39m[31m┐[39m
+                [31m│[39mCell A[31m│[39m[34mCell B[39m[31m│[39m
+                [31m└[39m[31m──────[39m[31m┴[39m[31m──────[39m[31m┘[39m"
             `);
         });
 
@@ -526,15 +553,16 @@ describe("table Cell Content Handling", () => {
                     paddingRight: 0,
                 },
             });
+
             table.addRow([{ content: "spanning", rowSpan: 2 }, "regular"]).addRow(["second"]);
 
             // Expect border red, background blue, foreground white
             expect(table.toString()).toMatchInlineSnapshot(`
-              "[44m[31m┌[39m[49m[44m[31m────────[39m[49m[44m[31m┬[39m[49m[44m[31m───────[39m[49m[44m[31m┐[39m[49m
-              [44m[31m│[39m[49m[44m[97mspanning[39m[49m[44m[31m│[39m[49m[44m[97mregular[39m[49m[44m[31m│[39m[49m
-              [44m[31m│[39m[49m[44m[31m        [39m[49m[44m[31m├[39m[49m[44m[31m───────[39m[49m[44m[31m┤[39m[49m
-              [44m[31m│[39m[49m[44m[97m        [39m[49m[44m[31m│[39m[49m[44m[97msecond [39m[49m[44m[31m│[39m[49m
-              [44m[31m└[39m[49m[44m[31m────────[39m[49m[44m[31m┴[39m[49m[44m[31m───────[39m[49m[44m[31m┘[39m[49m"
+                "[44m[31m┌[39m[49m[44m[31m────────[39m[49m[44m[31m┬[39m[49m[44m[31m───────[39m[49m[44m[31m┐[39m[49m
+                [44m[31m│[39m[49m[44m[97mspanning[39m[49m[44m[31m│[39m[49m[44m[97mregular[39m[49m[44m[31m│[39m[49m
+                [44m[31m│[39m[49m[44m[31m        [39m[49m[44m[31m├[39m[49m[44m[31m───────[39m[49m[44m[31m┤[39m[49m
+                [44m[31m│[39m[49m[44m[97m        [39m[49m[44m[31m│[39m[49m[44m[97msecond [39m[49m[44m[31m│[39m[49m
+                [44m[31m└[39m[49m[44m[31m────────[39m[49m[44m[31m┴[39m[49m[44m[31m───────[39m[49m[44m[31m┘[39m[49m"
             `);
         });
 
@@ -550,13 +578,14 @@ describe("table Cell Content Handling", () => {
                     paddingRight: 0,
                 },
             });
+
             table.addRow(["Cell 1", { content: "Cell 2", foregroundColor: green }]); // Green FG (Cell)
 
             // Expect border red, BG blue, Cell 1 white FG, Cell 2 green FG
             expect(table.toString()).toMatchInlineSnapshot(`
-              "[44m[31m┌[39m[49m[44m[31m──────[39m[49m[44m[31m┬[39m[49m[44m[31m──────[39m[49m[44m[31m┐[39m[49m
-              [44m[31m│[39m[49m[44m[97mCell 1[39m[49m[44m[31m│[39m[49m[44m[32mCell 2[39m[49m[44m[31m│[39m[49m
-              [44m[31m└[39m[49m[44m[31m──────[39m[49m[44m[31m┴[39m[49m[44m[31m──────[39m[49m[44m[31m┘[39m[49m"
+                "[44m[31m┌[39m[49m[44m[31m──────[39m[49m[44m[31m┬[39m[49m[44m[31m──────[39m[49m[44m[31m┐[39m[49m
+                [44m[31m│[39m[49m[44m[97mCell 1[39m[49m[44m[31m│[39m[49m[44m[32mCell 2[39m[49m[44m[31m│[39m[49m
+                [44m[31m└[39m[49m[44m[31m──────[39m[49m[44m[31m┴[39m[49m[44m[31m──────[39m[49m[44m[31m┘[39m[49m"
             `);
         });
 
@@ -572,17 +601,18 @@ describe("table Cell Content Handling", () => {
                     paddingRight: 0,
                 },
             });
+
             table.addRow([{ content: "spanning\ncell\nwith\nmore\nlines", rowSpan: 2 }, "regular"]).addRow(["second"]);
 
             // Expect border red, background blue, foreground blue, handles rowSpan
             expect(table.toString()).toMatchInlineSnapshot(`
-              "[48;2;61;35;157m[31m┌[39m[49m[48;2;61;35;157m[31m────────[39m[49m[48;2;61;35;157m[31m┬[39m[49m[48;2;61;35;157m[31m───────[39m[49m[48;2;61;35;157m[31m┐[39m[49m
-              [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mspanning[39m[49m[48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mregular[39m[49m[48;2;61;35;157m[31m│[39m[49m
-              [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mcell    [39m[49m[48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34m       [39m[49m[48;2;61;35;157m[31m│[39m[49m
-              [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mwith    [39m[49m[48;2;61;35;157m[31m├[39m[49m[48;2;61;35;157m[31m───────[39m[49m[48;2;61;35;157m[31m┤[39m[49m
-              [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mmore    [39m[49m[48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34msecond [39m[49m[48;2;61;35;157m[31m│[39m[49m
-              [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mlines   [39m[49m[48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34m       [39m[49m[48;2;61;35;157m[31m│[39m[49m
-              [48;2;61;35;157m[31m└[39m[49m[48;2;61;35;157m[31m────────[39m[49m[48;2;61;35;157m[31m┴[39m[49m[48;2;61;35;157m[31m───────[39m[49m[48;2;61;35;157m[31m┘[39m[49m"
+                "[48;2;61;35;157m[31m┌[39m[49m[48;2;61;35;157m[31m────────[39m[49m[48;2;61;35;157m[31m┬[39m[49m[48;2;61;35;157m[31m───────[39m[49m[48;2;61;35;157m[31m┐[39m[49m
+                [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mspanning[39m[49m[48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mregular[39m[49m[48;2;61;35;157m[31m│[39m[49m
+                [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mcell    [39m[49m[48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34m       [39m[49m[48;2;61;35;157m[31m│[39m[49m
+                [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mwith    [39m[49m[48;2;61;35;157m[31m├[39m[49m[48;2;61;35;157m[31m───────[39m[49m[48;2;61;35;157m[31m┤[39m[49m
+                [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mmore    [39m[49m[48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34msecond [39m[49m[48;2;61;35;157m[31m│[39m[49m
+                [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mlines   [39m[49m[48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34m       [39m[49m[48;2;61;35;157m[31m│[39m[49m
+                [48;2;61;35;157m[31m└[39m[49m[48;2;61;35;157m[31m────────[39m[49m[48;2;61;35;157m[31m┴[39m[49m[48;2;61;35;157m[31m───────[39m[49m[48;2;61;35;157m[31m┘[39m[49m"
             `);
         });
 
@@ -598,17 +628,18 @@ describe("table Cell Content Handling", () => {
                     paddingRight: 0,
                 },
             });
+
             table.addRow(["Cell 1"]);
             table.addRow(["Cell 2"]);
             table.addRow([{ colSpan: 2, content: "Cell 3", foregroundColor: green }]);
 
             // Expect border red, BG blue, Cell 1/2 blue FG, Cell 3 green FG (spanning 2 cols)
             expect(table.toString()).toMatchInlineSnapshot(`
-              "[48;2;61;35;157m[31m┌[39m[49m[48;2;61;35;157m[31m──────[39m[49m[48;2;61;35;157m[31m┬[39m[49m[48;2;61;35;157m[31m──────[39m[49m[48;2;61;35;157m[31m┐[39m[49m
-              [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mCell 1[39m[49m[48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mCell 2[39m[49m[48;2;61;35;157m[31m│[39m[49m
-              [48;2;61;35;157m[31m├[39m[49m[48;2;61;35;157m[31m──────[39m[49m[48;2;61;35;157m[31m┴[39m[49m[48;2;61;35;157m[31m──────[39m[49m[48;2;61;35;157m[31m┤[39m[49m
-              [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[32mCell 3       [39m[49m[48;2;61;35;157m[31m│[39m[49m
-              [48;2;61;35;157m[31m└[39m[49m[48;2;61;35;157m[31m─────────────[39m[49m[48;2;61;35;157m[31m┘[39m[49m"
+                "[48;2;61;35;157m[31m┌[39m[49m[48;2;61;35;157m[31m──────[39m[49m[48;2;61;35;157m[31m┬[39m[49m[48;2;61;35;157m[31m──────[39m[49m[48;2;61;35;157m[31m┐[39m[49m
+                [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mCell 1[39m[49m[48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[34mCell 2[39m[49m[48;2;61;35;157m[31m│[39m[49m
+                [48;2;61;35;157m[31m├[39m[49m[48;2;61;35;157m[31m──────[39m[49m[48;2;61;35;157m[31m┴[39m[49m[48;2;61;35;157m[31m──────[39m[49m[48;2;61;35;157m[31m┤[39m[49m
+                [48;2;61;35;157m[31m│[39m[49m[48;2;61;35;157m[32mCell 3       [39m[49m[48;2;61;35;157m[31m│[39m[49m
+                [48;2;61;35;157m[31m└[39m[49m[48;2;61;35;157m[31m─────────────[39m[49m[48;2;61;35;157m[31m┘[39m[49m"
             `);
         });
     });

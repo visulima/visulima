@@ -1,4 +1,5 @@
 import type { TruncateOptions, WordWrapOptions } from "@visulima/string";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { getStringWidth, truncate, wordWrap } from "@visulima/string";
 
 import type {
@@ -36,7 +37,6 @@ const applyColor = (char: string, color: AnsiColorFunction | AnsiColorObject | n
 
 /**
  * Represents GridOptions after defaults have been applied
- *
  * @internal
  */
 export type GridOptionsWithDefaults = Omit<GridOptions, "border" | "fixedRowHeights" | "showBorders"> & {
@@ -53,9 +53,9 @@ export type GridOptionsWithDefaults = Omit<GridOptions, "border" | "fixedRowHeig
     rows: number;
     showBorders: boolean;
     terminalWidth?: number;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     truncate: TruncateOptions | boolean;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     wordWrap: WordWrapOptions | boolean;
 };
 
@@ -85,7 +85,7 @@ export class Grid {
 
     /**
      * Creates a new Grid instance
-     * @param options - Configuration options for the grid
+     * @param options Configuration options for the grid
      */
     public constructor(options: GridOptions) {
         // Apply defaults
@@ -109,14 +109,14 @@ export class Grid {
             ...defaultOptions,
             ...options, // User options override defaults
             // Ensure required options are present or derived if possible
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
             columns: options.columns ?? 1, // Default columns to 1 if not provided
             // Ensure fixedRowHeights is an array if provided as a number
             fixedRowHeights: Array.isArray(options.fixedRowHeights)
                 ? options.fixedRowHeights
-                : typeof options.fixedRowHeights === "number"
+                : (typeof options.fixedRowHeights === "number"
                   ? [options.fixedRowHeights] // Convert single number to array
-                  : undefined,
+                  : undefined),
             // Recalculate showBorders based on final border presence
             showBorders: options.border !== undefined || (options.showBorders ?? false),
         };
@@ -132,71 +132,78 @@ export class Grid {
 
     /**
      * Adds a single item to the grid
-     * @param cell - The cell to add
+     * @param cell The cell to add
      * @returns The grid instance for method chaining
      */
     public addItem(cell: GridCell): this {
         this.#items.push(normalizeGridCell(cell));
+
         return this;
     }
 
     /**
      * Adds multiple items to the grid
-     * @param items - Array of items to add
+     * @param items Array of items to add
      * @returns The grid instance for method chaining
      */
     public addItems(items: GridCell[]): this {
         this.#items.push(...items.map((item) => normalizeGridCell(item)));
+
         return this;
     }
 
     /**
      * Sets the number of columns in the grid
-     * @param columns - Number of columns
+     * @param columns Number of columns
      * @returns The grid instance for method chaining
      */
     public setColumns(columns: number): this {
         this.#options.columns = columns;
+
         return this;
     }
 
     /**
      * Sets the number of rows in the grid
-     * @param rows - Number of rows
+     * @param rows Number of rows
      * @returns The grid instance for method chaining
      */
     public setRows(rows: number): this {
         this.#options.rows = rows;
+
         return this;
     }
 
     /**
      * Sets the border style for the grid
-     * @param border - Border style configuration
+     * @param border Border style configuration
      * @returns The grid instance for method chaining
      */
     public setBorder(border: BorderStyle): this {
         this.#options.border = border;
+
         return this;
     }
 
     /**
      * Sets whether borders should be shown
-     * @param show - Whether to show borders
+     * @param show Whether to show borders
      * @returns The grid instance for method chaining
      */
     public setShowBorders(show: boolean): this {
         this.#options.showBorders = show;
+
         return this;
     }
 
     /**
      * Sets the maximum width for the grid
-     * @param width - Maximum width
+     * @param width Maximum width
      * @returns The grid instance for method chaining
      */
     public setMaxWidth(width: number): this {
         this.#options.maxWidth = width;
+
         return this;
     }
 
@@ -222,6 +229,7 @@ export class Grid {
         if (initialTotalGridWidth > effectiveMaxWidth) {
             columnWidths = this.adjustColumnWidthsForTerminal(columnWidths, initialTotalGridWidth);
         }
+
         // Call the separate renderGrid method
         return this.renderGrid(gridLayout, columnWidths);
     }
@@ -232,9 +240,8 @@ export class Grid {
      * It iterates through items and searches row-by-row or column-by-column
      * (depending on autoFlow) for a position where the item fits according
      * to its colSpan and rowSpan, using `canPlaceItem`.
-     *
-     * @param gridLayout - The grid layout array (initially empty or partially filled).
-     *                     Will be modified by placing items into it.
+     * @param gridLayout The grid layout array (initially empty or partially filled).
+     * Will be modified by placing items into it.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
     private placeItems(gridLayout: (GridItem | null)[][]): void {
@@ -268,7 +275,6 @@ export class Grid {
                     }
                 }
 
-                // eslint-disable-next-line no-continue
                 continue;
             }
 
@@ -304,6 +310,7 @@ export class Grid {
                         // Move cursor to the right of the placed item on the same row
                         currentCol = searchCol + itemColSpan;
                         currentRow = searchRow;
+
                         // Wrap to the beginning of the next row if necessary
                         if (currentCol >= this.#options.columns) {
                             currentCol = 0;
@@ -344,6 +351,7 @@ export class Grid {
                     if (searchRow >= effectiveMaxRows) {
                         searchRow = 0;
                         searchCol++;
+
                         // Stop searching if we go past the last column
                         if (searchCol >= this.#options.columns) {
                             // This indicates no place could be found within reasonable bounds
@@ -359,10 +367,12 @@ export class Grid {
                 console.warn(
                     `@visulima/tabular: Could not find position for item: ${JSON.stringify(item)} after ${String(attempts)} attempts. Grid might be too small or layout impossible.`,
                 );
+
                 // Advance the main cursor slightly to prevent potential infinite loops
                 // if multiple items cannot be placed consecutively.
                 if (this.#options.autoFlow === "row") {
                     currentCol++;
+
                     if (currentCol >= this.#options.columns) {
                         currentCol = 0;
                         currentRow++;
@@ -370,12 +380,14 @@ export class Grid {
                 } else {
                     currentRow++;
                     const effectiveMaxRows = gridLayout.length > 0 ? gridLayout.length : maxRows;
+
                     if (currentRow >= effectiveMaxRows) {
                         currentRow = 0;
                         currentCol++;
                     }
                 }
             }
+
             // Add safeguard against potential infinite loops in the outer loop
             if (attempts >= maxAttempts) {
                 break;
@@ -392,12 +404,12 @@ export class Grid {
 
     /**
      * Checks if an item can be placed at a specific position
-     * @param gridLayout - The grid layout array
-     * @param startRow - Starting row index
-     * @param startCol - Starting column index
-     * @param colSpan - Number of columns to span
-     * @param rowSpan - Number of rows to span
-     * @param allowDynamicHeight - If true, doesn't fail if startRow+rowSpan exceeds current gridLayout height
+     * @param gridLayout The grid layout array
+     * @param startRow Starting row index
+     * @param startCol Starting column index
+     * @param colSpan Number of columns to span
+     * @param rowSpan Number of rows to span
+     * @param allowDynamicHeight If true, doesn't fail if startRow+rowSpan exceeds current gridLayout height
      * @returns True if the item can be placed at the position
      */
     private canPlaceItem(
@@ -414,7 +426,6 @@ export class Grid {
 
         for (let row = startRow; row < startRow + rowSpan; row++) {
             if (row < gridLayout.length) {
-                // eslint-disable-next-line security/detect-object-injection
                 if (!gridLayout[row]) {
                     // eslint-disable-next-line no-console
                     console.warn(`Grid layout unexpectedly missing row ${String(row)} during canPlaceItem check.`);
@@ -423,7 +434,6 @@ export class Grid {
                 }
 
                 for (let col = startCol; col < startCol + colSpan; col++) {
-                    // eslint-disable-next-line security/detect-object-injection
                     if (gridLayout[row]?.[col] !== null) {
                         return false;
                     }
@@ -438,10 +448,10 @@ export class Grid {
 
     /**
      * Places an item in the grid layout
-     * @param gridLayout - The grid layout array
-     * @param startRow - Starting row index
-     * @param startCol - Starting column index
-     * @param item - The item to place
+     * @param gridLayout The grid layout array
+     * @param startRow Starting row index
+     * @param startCol Starting column index
+     * @param item The item to place
      */
     private placeItem(gridLayout: (GridItem | null)[][], startRow: number, startCol: number, item: GridItem): void {
         const rowSpan = item.rowSpan ?? 1;
@@ -454,13 +464,13 @@ export class Grid {
 
             for (let col = startCol; col < startCol + colSpan; col++) {
                 if (col < this.#options.columns) {
-                    // eslint-disable-next-line security/detect-object-injection
                     if (!gridLayout[row]) {
                         // eslint-disable-next-line no-console
                         console.error(`Logic error: Row ${String(row)} not found in placeItem despite check.`);
-                        // eslint-disable-next-line security/detect-object-injection,no-param-reassign
+                        // eslint-disable-next-line no-param-reassign
                         gridLayout[row] = Array.from<GridItem | null>({ length: this.#options.columns }).fill(null);
                     }
+
                     // eslint-disable-next-line no-param-reassign,security/detect-object-injection
                     (gridLayout[row] as GridItem[])[col] = item;
                 }
@@ -470,8 +480,7 @@ export class Grid {
 
     /**
      * Calculates the total width of the grid including columns, gaps, and borders.
-     *
-     * @param columnWidths - The array of calculated column widths.
+     * @param columnWidths The array of calculated column widths.
      * @returns The total width of the grid.
      */
     private calculateTotalGridWidth(columnWidths: number[]): number {
@@ -485,11 +494,10 @@ export class Grid {
         }
 
         const numberColumns = columnWidths.length;
-        const borderJoinWidth = this.#options.showBorders ? (borderStyle?.bodyJoin.width ?? 0) : 0;
+        const borderJoinWidth = this.#options.showBorders ? borderStyle?.bodyJoin.width ?? 0 : 0;
         const gapWidth = this.#options.gap;
 
         for (let colIndex = 0; colIndex < numberColumns; colIndex++) {
-            // eslint-disable-next-line security/detect-object-injection
             totalWidth += columnWidths[colIndex] ?? 0;
 
             if (colIndex < numberColumns - 1) {
@@ -503,9 +511,8 @@ export class Grid {
 
     /**
      * Adjusts column widths proportionally if the total grid width exceeds the available terminal width or maxWidth.
-     *
-     * @param columnWidths - The initial column widths.
-     * @param totalGridWidth - The calculated total width of the grid including borders and gaps.
+     * @param columnWidths The initial column widths.
+     * @param totalGridWidth The calculated total width of the grid including borders and gaps.
      * @returns The adjusted column widths.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -565,8 +572,9 @@ export class Grid {
             const indices = adjustedWidths
                 .map((_, index) => {
                     // Calculate proportion safely, avoiding division by zero
-                    // eslint-disable-next-line security/detect-object-injection
+
                     const proportion = currentTotalContentWidth > 0 ? (columnWidths[index] ?? 0) / currentTotalContentWidth : 1 / numberColumns;
+
                     return {
                         index,
                         remainder: (availableWidth * proportion) % 1,
@@ -578,10 +586,10 @@ export class Grid {
                 if (remainingWidth <= 0) {
                     break;
                 }
+
                 // Add safety check for index bounds before incrementing
-                // eslint-disable-next-line security/detect-object-injection
+
                 if (adjustedWidths[index] !== undefined) {
-                    // eslint-disable-next-line security/detect-object-injection
                     adjustedWidths[index] += 1;
                     remainingWidth--;
                 }
@@ -595,7 +603,7 @@ export class Grid {
      * Calculate column widths based on content, handling colSpan iteratively.
      * This version prioritizes minimum width based on single-cell content first,
      * then iteratively adjusts for cells spanning multiple columns.
-     * @param gridLayout - The grid layout.
+     * @param gridLayout The grid layout.
      * @returns Array of column widths.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -607,23 +615,21 @@ export class Grid {
 
         const columnWidths: number[] = Array.from<number>({ length: this.#options.columns }).fill(0);
         const totalPadding = this.#options.paddingLeft + this.#options.paddingRight;
-        const singleInternalJoinWidth = this.#options.gap + (this.#options.showBorders ? (this.#options.border?.bodyJoin.width ?? 0) : 0);
+        const singleInternalJoinWidth = this.#options.gap + (this.#options.showBorders ? this.#options.border?.bodyJoin.width ?? 0 : 0);
 
         // Calculate minimum width needed for non-spanning cells
         // and track the maximum content width for each column
         for (let colIndex = 0; colIndex < this.#options.columns; colIndex++) {
             for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
-                // eslint-disable-next-line security/detect-object-injection
                 const cell = gridLayout[rowIndex]?.[colIndex];
 
                 // Skip if not a cell start position
                 if (
-                    !cell ||
-                    findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex ||
-                    // eslint-disable-next-line security/detect-object-injection
-                    (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
+                    !cell
+                    || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
+
+                    || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
                 ) {
-                    // eslint-disable-next-line no-continue
                     continue;
                 }
 
@@ -638,7 +644,6 @@ export class Grid {
                 }
 
                 if (colSpan === 1) {
-                    // eslint-disable-next-line security/detect-object-injection
                     columnWidths[colIndex] = Math.max(columnWidths[colIndex] ?? 0, contentWidth + totalPadding);
                 }
             }
@@ -647,17 +652,15 @@ export class Grid {
         // Handle spanning cells more efficiently
         for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
             for (let colIndex = 0; colIndex < this.#options.columns; colIndex++) {
-                // eslint-disable-next-line security/detect-object-injection
                 const cell = gridLayout[rowIndex]?.[colIndex];
 
                 // Skip if not a cell start position
                 if (
-                    !cell ||
-                    findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex ||
-                    // eslint-disable-next-line security/detect-object-injection
-                    (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
+                    !cell
+                    || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
+
+                    || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
                 ) {
-                    // eslint-disable-next-line no-continue
                     continue;
                 }
 
@@ -746,7 +749,6 @@ export class Grid {
         columnWidths: number[],
         rowHeights: number[],
     ): string {
-        // eslint-disable-next-line security/detect-object-injection
         const row = gridLayout[rowIndex];
 
         if (!row) {
@@ -769,7 +771,6 @@ export class Grid {
         let col = 0;
 
         while (col < this.#options.columns) {
-            // eslint-disable-next-line security/detect-object-injection
             const cell: GridItem | null = row[col] ?? null;
 
             let currentCellColSpan = 1; // Track the span of the segment being processed
@@ -777,6 +778,7 @@ export class Grid {
 
             if (cell) {
                 const colSpan: number = cell.colSpan ?? 1;
+
                 currentCellColSpan = colSpan; // Use the cell's actual span
 
                 const firstOccurrenceRow = findFirstOccurrenceRow(gridLayout, rowIndex, col, cell);
@@ -800,7 +802,6 @@ export class Grid {
 
                 for (let index = firstOccurrenceRow; index < rowIndex; index++) {
                     if (index < rowHeights.length) {
-                        // eslint-disable-next-line security/detect-object-injection
                         relativeVisualLineIndex += rowHeights[index] ?? 1;
                     }
 
@@ -817,8 +818,16 @@ export class Grid {
                 let renderContentOnRow = false;
 
                 switch (vAlign) {
-                    case "top": {
-                        targetContentIndex = relativeVisualLineIndex;
+                    case "bottom": {
+                        let visualLineWithinSpan = visualLineIndex;
+
+                        for (let index = firstOccurrenceRow; index < rowIndex; index++) {
+                            visualLineWithinSpan += rowHeights[index] ?? 1;
+                        }
+
+                        const contentStartIndexInSpan = totalRowSpanHeight - actualContentHeight;
+
+                        targetContentIndex = visualLineWithinSpan >= contentStartIndexInSpan ? visualLineWithinSpan - contentStartIndexInSpan : -1;
                         break;
                     }
                     case "middle": {
@@ -829,27 +838,18 @@ export class Grid {
                         let visualLineWithinSpan = visualLineIndex;
 
                         for (let index = firstOccurrenceRow; index < rowIndex; index++) {
-                            // eslint-disable-next-line security/detect-object-injection
                             visualLineWithinSpan += rowHeights[index] ?? 1;
                         }
 
-                        targetContentIndex =
-                            visualLineWithinSpan >= paddingTop && visualLineWithinSpan < paddingTop + actualContentHeight
+                        targetContentIndex
+                            = visualLineWithinSpan >= paddingTop && visualLineWithinSpan < paddingTop + actualContentHeight
                                 ? visualLineWithinSpan - paddingTop
                                 : -1;
 
                         break;
                     }
-                    case "bottom": {
-                        let visualLineWithinSpan = visualLineIndex;
-                        for (let index = firstOccurrenceRow; index < rowIndex; index++) {
-                            // eslint-disable-next-line security/detect-object-injection
-                            visualLineWithinSpan += rowHeights[index] ?? 1;
-                        }
-
-                        const contentStartIndexInSpan = totalRowSpanHeight - actualContentHeight;
-
-                        targetContentIndex = visualLineWithinSpan >= contentStartIndexInSpan ? visualLineWithinSpan - contentStartIndexInSpan : -1;
+                    case "top": {
+                        targetContentIndex = relativeVisualLineIndex;
                         break;
                     }
                     default: {
@@ -873,7 +873,6 @@ export class Grid {
                     }
 
                     if (!skipRender) {
-                        // eslint-disable-next-line security/detect-object-injection
                         segmentToRender = processedLines[targetContentIndex] ?? segmentToRender;
                     }
                 }
@@ -897,7 +896,7 @@ export class Grid {
                 // Handle null cell (part of another cell's span)
 
                 const totalPadding = this.#options.paddingLeft + this.#options.paddingRight;
-                // eslint-disable-next-line security/detect-object-injection
+
                 const contentWidth = Math.max(0, (columnWidths[col] ?? 0) - totalPadding);
                 const emptyCellContent = " ".repeat(this.#options.paddingLeft + contentWidth + this.#options.paddingRight);
 
@@ -937,13 +936,14 @@ export class Grid {
 
     /**
      * Aligns cell content, applies word wrap or truncation, and returns an array of processed lines.
-     * @param cell - The cell to align
-     * @param totalWidth - Total width available for the cell (including padding)
+     * @param cell The cell to align
+     * @param totalWidth Total width available for the cell (including padding)
      * @returns An array of aligned content strings, one for each line after processing.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
     private alignCellContent(cell: GridItem, totalWidth: number): string[] {
         const cellCache = this.#alignCellContentCache.get(cell);
+
         if (cellCache?.has(totalWidth)) {
             return cellCache.get(totalWidth) as string[];
         }
@@ -954,11 +954,13 @@ export class Grid {
 
         if (baseContentWidth <= 0) {
             const emptyResult: string[] = [" ".repeat(horizontalPadding + this.#options.gap)]; // Original empty result
+
             if (cellCache) {
                 cellCache.set(totalWidth, emptyResult);
             } else {
                 this.#alignCellContentCache.set(cell, new Map([[totalWidth, emptyResult]]));
             }
+
             return emptyResult;
         }
 
@@ -969,13 +971,15 @@ export class Grid {
 
         // Apply word wrap
         if (this.#options.wordWrap && cell.wordWrap !== false) {
-            const wrapOptions = typeof cell.wordWrap === "object" ? cell.wordWrap : typeof this.#options.wordWrap === "object" ? this.#options.wordWrap : {};
+            const wrapOptions = typeof cell.wordWrap === "object" ? cell.wordWrap : (typeof this.#options.wordWrap === "object" ? this.#options.wordWrap : {});
+
             processedLines = wordWrap(contentString, { ...wrapOptions, width: baseContentWidth }).split("\n");
         }
 
         if (this.#options.truncate && cell.truncate !== false) {
-            const truncateOptions =
-                typeof cell.truncate === "object" ? cell.truncate : typeof this.#options.truncate === "object" ? this.#options.truncate : {};
+            const truncateOptions
+                = typeof cell.truncate === "object" ? cell.truncate : (typeof this.#options.truncate === "object" ? this.#options.truncate : {});
+
             processedLines = processedLines.map((line) => truncate(line, baseContentWidth, truncateOptions));
         } else {
             // Ensure lines fit even if truncate/wrap are off
@@ -995,12 +999,12 @@ export class Grid {
 
     /**
      * Renders a horizontal border line
-     * @param gridLayout - The grid layout array
-     * @param rowHeights - Array of row heights
-     * @param rowIndex - Row index *above* the border being drawn
-     * @param columnWidths - Pre-calculated column widths
-     * @param borderType - Type of border to render ('top', 'middle', 'bottom')
-     * @param nextRowIndex - Index of the next row (used for 'middle' borders)
+     * @param gridLayout The grid layout array
+     * @param rowHeights Array of row heights
+     * @param rowIndex Row index *above* the border being drawn
+     * @param columnWidths Pre-calculated column widths
+     * @param borderType Type of border to render ('top', 'middle', 'bottom')
+     * @param nextRowIndex Index of the next row (used for 'middle' borders)
      * @returns String representation of the border line
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -1031,9 +1035,8 @@ export class Grid {
 
         // Adjust edge characters for vertical spans
         if (borderType === "middle" && nextRowIndex !== -1) {
-            // eslint-disable-next-line security/detect-object-injection
             const cellAboveLeftmost = gridLayout[rowIndex]?.[0] ?? null;
-            // eslint-disable-next-line security/detect-object-injection
+
             const cellBelowLeftmost = gridLayout[nextRowIndex]?.[0] ?? null;
 
             if (cellAboveLeftmost && cellBelowLeftmost && cellAboveLeftmost === cellBelowLeftmost) {
@@ -1041,9 +1044,9 @@ export class Grid {
             }
 
             const lastColIndex = this.#options.columns - 1;
-            // eslint-disable-next-line security/detect-object-injection
+
             const cellAboveRightmost = gridLayout[rowIndex]?.[lastColIndex] ?? null;
-            // eslint-disable-next-line security/detect-object-injection
+
             const cellBelowRightmost = gridLayout[nextRowIndex]?.[lastColIndex] ?? null;
 
             if (cellAboveRightmost && cellBelowRightmost && cellAboveRightmost === cellBelowRightmost) {
@@ -1053,6 +1056,7 @@ export class Grid {
 
         const middleSegments: string[] = [];
         const gapString = " ".repeat(this.#options.gap);
+
         // Add left border character initially
         if (finalLeftChar) {
             middleSegments.push(applyColor(applyColor(finalLeftChar, this.#options.borderColor), this.#options.backgroundColor));
@@ -1061,28 +1065,26 @@ export class Grid {
         let segment = "";
 
         for (let col = 0; col < this.#options.columns; col++) {
-            // eslint-disable-next-line security/detect-object-injection
             const cellAbove: GridItem | null = gridLayout[rowIndex]?.[col] ?? null;
-            // eslint-disable-next-line security/detect-object-injection
-            const cellBelow: GridItem | null = borderType === "middle" && nextRowIndex !== -1 ? (gridLayout[nextRowIndex]?.[col] ?? null) : null;
+
+            const cellBelow: GridItem | null = borderType === "middle" && nextRowIndex !== -1 ? gridLayout[nextRowIndex]?.[col] ?? null : null;
 
             let definingCell: GridItem | null = null;
             let isStartCol = false;
 
-            // eslint-disable-next-line security/detect-object-injection
             if (cellAbove && (col === 0 || gridLayout[rowIndex]?.[col - 1] !== cellAbove)) {
                 definingCell = cellAbove;
                 isStartCol = true;
             }
+
             // Optimization: Skip if this column is part of a previous cell's span
             if (cellAbove && !isStartCol) {
-                // eslint-disable-next-line no-continue
                 continue; // Covered by prior span
             }
 
             if (!cellAbove) {
                 // Empty column in the row above the border
-                // eslint-disable-next-line security/detect-object-injection
+
                 const width = columnWidths[col] ?? 0;
 
                 segment = bodyWidth > 0 ? bodyChar.repeat(width) : " ".repeat(width);
@@ -1099,7 +1101,6 @@ export class Grid {
                     }
                 }
 
-                // eslint-disable-next-line no-continue
                 continue;
             }
 
@@ -1133,13 +1134,14 @@ export class Grid {
                     let heightUpToBorder = 0;
 
                     for (let index = firstRow; index <= rowIndex; index++) {
-                        // eslint-disable-next-line security/detect-object-injection
                         heightUpToBorder += rowHeights[index] ?? 1; // Sum heights of rows *within the span* up to the border
+
                         // Add 1 for each border crossed *within* the span before this one
                         if (index < rowIndex) {
                             heightUpToBorder++;
                         }
                     }
+
                     // The target index is the visual line index *within the cell's total visual height* that corresponds to the border
                     // Note: For vAlign=middle/even, this calculation might target a line index that differs from the one
                     // rendered in SUBCASE 1 if contentHeight is odd, but this logic handles rendering the *correct* line
@@ -1147,23 +1149,22 @@ export class Grid {
                     const targetContentLineIndex = heightUpToBorder;
 
                     if (targetContentLineIndex >= 0 && targetContentLineIndex < actualContentHeight) {
-                        // eslint-disable-next-line security/detect-object-injection
                         segment = applyColor(processedLines[targetContentLineIndex] ?? "", this.#options.foregroundColor); // Use the already padded line directly
                     } else {
                         // No content line falls here, render spaces covering the full width including internal structure
-                        const segmentWidth =
-                            columnWidths.slice(col, col + colSpan).reduce((sum, w) => sum + w, 0) +
-                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                            (colSpan - 1) * (this.#options.gap + (this.#options.showBorders ? this.#options.border.bodyJoin.width : 0));
+                        const segmentWidth
+                            = columnWidths.slice(col, col + colSpan).reduce((sum, w) => sum + w, 0)
+
+                                + (colSpan - 1) * (this.#options.gap + (this.#options.showBorders ? this.#options.border.bodyJoin.width : 0));
+
                         segment = applyColor(" ".repeat(segmentWidth), this.#options.borderColor);
                     }
                 }
 
                 middleSegments.push(applyColor(segment, this.#options.backgroundColor));
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             } else if (cellAbove === null && borderType !== "top" && borderType !== "bottom") {
                 // CASE: Empty cell in the row above a MIDDLE border
-                // eslint-disable-next-line security/detect-object-injection
+
                 const width = columnWidths[col] ?? 0;
 
                 segment = bodyWidth > 0 ? bodyChar.repeat(width) : " ".repeat(width);
@@ -1174,7 +1175,6 @@ export class Grid {
                 const segmentParts: string[] = [];
 
                 for (let innerCol = col; innerCol < col + colSpan; innerCol++) {
-                    // eslint-disable-next-line security/detect-object-injection
                     const innerWidth = columnWidths[innerCol] ?? 0;
                     const charToRepeat = bodyWidth > 0 ? bodyChar : " "; // Use dash or space
 
@@ -1183,6 +1183,7 @@ export class Grid {
                     // Add gap and internal join char if not the last column of the current span
                     if (innerCol < col + colSpan - 1) {
                         const joinCharDefinition = this.determineJoinChar(borderType, gridLayout, rowIndex, nextRowIndex, innerCol, innerCol + 1);
+
                         // Use the determined join char (could be T, +, -, etc. or just space)
                         if (joinCharDefinition.width > 0) {
                             segmentParts.push(joinCharDefinition.char);
@@ -1243,16 +1244,17 @@ export class Grid {
         // Logic for non-middle borders (top/bottom)
         if (borderType !== "middle") {
             const hChars = getHorizontalBorderChars(borderStyle, borderType);
-            // eslint-disable-next-line security/detect-object-injection
+
             const cellLeft = gridLayout[rowIndex]?.[colIndex] ?? null;
             const checkRightCol = rightColIndex === -1 ? colIndex + 1 : rightColIndex;
-            // eslint-disable-next-line security/detect-object-injection
+
             const cellRight = gridLayout[rowIndex]?.[checkRightCol] ?? null;
             const spansHorizontally = cellLeft !== null && cellRight !== null && cellLeft === cellRight;
 
             const joinCharDefinition = spansHorizontally ? hChars.body : hChars.join;
 
             const { char, width } = joinCharDefinition;
+
             return { char, width: width > 0 ? width : this.#options.gap };
         }
 
@@ -1262,13 +1264,13 @@ export class Grid {
         }
 
         const verticalJoinCharDefinition = borderStyle.bodyJoin;
-        // eslint-disable-next-line security/detect-object-injection
+
         const cellAboveLeft = gridLayout[rowIndex]?.[colIndex] ?? null;
-        // eslint-disable-next-line security/detect-object-injection
+
         const cellBelowLeft = gridLayout[nextRowIndex]?.[colIndex] ?? null;
-        // eslint-disable-next-line security/detect-object-injection
+
         const cellAboveRight = gridLayout[rowIndex]?.[rightColIndex] ?? null;
-        // eslint-disable-next-line security/detect-object-injection
+
         const cellBelowRight = gridLayout[nextRowIndex]?.[rightColIndex] ?? null;
 
         const leftSpansVertically = cellAboveLeft !== null && cellBelowLeft !== null && cellAboveLeft === cellBelowLeft;
@@ -1311,8 +1313,8 @@ export class Grid {
 
     /**
      * Renders the complete grid
-     * @param gridLayout - The grid layout array
-     * @param columnWidths - Array of column widths
+     * @param gridLayout The grid layout array
+     * @param columnWidths Array of column widths
      * @returns String representation of the grid
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -1330,7 +1332,6 @@ export class Grid {
         }
 
         for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
-            // eslint-disable-next-line security/detect-object-injection
             const visualHeight = rowHeights[rowIndex] ?? 1;
 
             for (let visualLineIndex = 0; visualLineIndex < visualHeight; visualLineIndex++) {
@@ -1341,7 +1342,7 @@ export class Grid {
 
             if (rowIndex < gridLayout.length - 1 && middleBorderChars && middleBorderChars.body.width > 0) {
                 // Check if any cell in the current row does not continue into the next row
-                // eslint-disable-next-line security/detect-object-injection
+
                 const currentRow = gridLayout[rowIndex];
 
                 const nextRow = gridLayout[rowIndex + 1];
@@ -1350,9 +1351,8 @@ export class Grid {
 
                 if (currentRow && nextRow) {
                     for (let col = 0; col < this.#options.columns; col++) {
-                        // eslint-disable-next-line security/detect-object-injection
                         const currentCell = currentRow[col];
-                        // eslint-disable-next-line security/detect-object-injection
+
                         const nextCell = nextRow[col];
 
                         // If cells are different or one is null while the other isn't, we need a border
@@ -1410,7 +1410,7 @@ export class Grid {
 
 /**
  * Creates a new grid instance with the specified options
- * @param options - Configuration options for the grid
+ * @param options Configuration options for the grid
  * @returns A new Grid instance
  */
 export const createGrid = (options: GridOptions): Grid => new Grid(options);

@@ -5,18 +5,18 @@ import determineCellVerticalPosition from "./determine-cell-vertical-position";
 
 /**
  * A function that aligns cell content based on available width.
- * @param cell - The grid item containing content and options.
- * @param totalWidth - The total calculated width available for the cell.
+ * @param cell The grid item containing content and options.
+ * @param totalWidth The total calculated width available for the cell.
  * @returns An array of strings, each representing a processed line.
  */
 type AlignCellContentFunction = (cell: GridItem, totalWidth: number) => string[];
 
 /**
  * A function that finds the first row index where a given cell instance appears.
- * @param gridLayout - The grid layout.
- * @param rowIndex - The starting row index for the search.
- * @param colIndex - The starting column index for the search.
- * @param cell - The cell instance to find.
+ * @param gridLayout The grid layout.
+ * @param rowIndex The starting row index for the search.
+ * @param colIndex The starting column index for the search.
+ * @param cell The cell instance to find.
  * @returns The row index of the first occurrence.
  */
 type FindFirstOccurrenceRowFunction = (gridLayout: (GridItem | null)[][], rowIndex: number, colIndex: number, cell: GridItem) => number;
@@ -48,17 +48,16 @@ const calculateRowHeights = (
     let maxRowIndex = gridLayout.length - 1;
 
     for (let r = 0; r < gridLayout.length; r++) {
-        // eslint-disable-next-line security/detect-object-injection
         const row = gridLayout[r];
 
         if (!row) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         for (const [c, cell] of row.entries()) {
             if (cell && findFirstOccurrenceRow(gridLayout, r, c, cell) === r) {
                 const verticalPosition = determineCellVerticalPosition(gridLayout, r, c, cell);
+
                 maxRowIndex = Math.max(maxRowIndex, verticalPosition.lastRow);
             }
         }
@@ -69,24 +68,22 @@ const calculateRowHeights = (
 
     // Initial Pass - Calculate height for SINGLE-ROW cells only
     for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
-        // eslint-disable-next-line security/detect-object-injection
         const row = gridLayout[rowIndex];
 
         if (!row) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         for (let colIndex = 0; colIndex < options.columns; colIndex++) {
-            // eslint-disable-next-line security/detect-object-injection
             const cell = row[colIndex];
+
             // Process only if it's the start of a SINGLE-ROW cell
             if (cell && findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) === rowIndex && (cell.rowSpan ?? 1) === 1) {
                 const colSpan = cell.colSpan ?? 1;
                 const currentCellTotalWidth = calculateCellTotalWidth(columnWidths, colIndex, colSpan);
                 const processedLines = alignCellContent(cell, currentCellTotalWidth);
                 const requiredTotalHeight = processedLines.length;
-                // eslint-disable-next-line security/detect-object-injection
+
                 rowHeights[rowIndex] = Math.max(rowHeights[rowIndex] ?? 1, requiredTotalHeight);
             }
         }
@@ -98,20 +95,17 @@ const calculateRowHeights = (
     if (options.fixedRowHeights) {
         for (let index = 0; index < rowHeights.length; index++) {
             let fixedHeight: number | null | undefined = null;
-            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unnecessary-condition
+
             if (options.fixedRowHeights[index] !== undefined && options.fixedRowHeights[index] !== null) {
-                // eslint-disable-next-line security/detect-object-injection
                 fixedHeight = options.fixedRowHeights[index];
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             } else if (options.fixedRowHeights.length === 1 && options.fixedRowHeights[0] !== undefined && options.fixedRowHeights[0] !== null) {
                 // eslint-disable-next-line prefer-destructuring
                 fixedHeight = options.fixedRowHeights[0];
             }
 
             if (fixedHeight !== undefined && fixedHeight !== null) {
-                // eslint-disable-next-line security/detect-object-injection
                 rowHeights[index] = Math.max(1, fixedHeight);
-                // eslint-disable-next-line security/detect-object-injection
+
                 isRowFixed[index] = true;
             }
         }
@@ -120,17 +114,15 @@ const calculateRowHeights = (
     // Distribute Deficit for SPANNING Cells
     // Iterate through grid again to process spanning cells in a defined order
     for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
-        // eslint-disable-next-line security/detect-object-injection
         const row = gridLayout[rowIndex];
 
         if (!row) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         for (let colIndex = 0; colIndex < options.columns; colIndex++) {
-            // eslint-disable-next-line security/detect-object-injection
             const cell = row[colIndex];
+
             // Process only if it's the START of a SPANNING cell
             if (cell && findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) === rowIndex && (cell.rowSpan ?? 1) > 1) {
                 const colSpan = cell.colSpan ?? 1;
@@ -147,10 +139,10 @@ const calculateRowHeights = (
 
                 // Calculate current height and non-fixed count for the actual span range
                 for (let r = firstRow; r <= lastRow && r < rowHeights.length; r++) {
-                    // eslint-disable-next-line security/detect-object-injection
                     currentAllocatedHeight += rowHeights[r] ?? 1;
+
                     // Use the isRowFixed array calculated in Step 2
-                    // eslint-disable-next-line security/detect-object-injection
+
                     if (!isRowFixed[r]) {
                         nonFixedRowCount++;
                     }
@@ -168,11 +160,10 @@ const calculateRowHeights = (
                         // Distribute only over the actual span range
                         for (let r = firstRow; r <= lastRow && r < rowHeights.length; r++) {
                             // Use the isRowFixed array calculated in Step 2
-                            // eslint-disable-next-line security/detect-object-injection
+
                             if (!isRowFixed[r]) {
                                 const amountToAdd = Math.min(deficitPerNonFixedRow, deficit - addedDeficit);
 
-                                // eslint-disable-next-line security/detect-object-injection
                                 rowHeights[r] = (rowHeights[r] ?? 1) + amountToAdd;
                                 addedDeficit += amountToAdd;
 
@@ -185,9 +176,9 @@ const calculateRowHeights = (
                         // All rows in span are fixed, content won't fit.
                         // eslint-disable-next-line no-console
                         console.warn(
-                            `[calculateRowHeights] Content of spanning cell exceeds fixed height allocated. ` +
-                                `Cell: ${JSON.stringify(cell.content)}, ` +
-                                `Required: ${String(requiredTotalHeight)}, Allocated: ${String(currentAllocatedHeight)} (fixed).`,
+                            `[calculateRowHeights] Content of spanning cell exceeds fixed height allocated. `
+                            + `Cell: ${JSON.stringify(cell.content)}, `
+                            + `Required: ${String(requiredTotalHeight)}, Allocated: ${String(currentAllocatedHeight)} (fixed).`,
                         );
                     }
                 }

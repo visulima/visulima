@@ -145,6 +145,7 @@ const tableWithHiddenHeaders = createTable({
         border: DEFAULT_BORDER,
     },
 });
+
 tableWithHiddenHeaders.setHeaders(["Column 1", "Column 2", "Column 3"]);
 tableWithHiddenHeaders.addRow(["Value 1", "Value 2", "Value 3"]);
 tableWithHiddenHeaders.addRow(["Value 4", "Value 5", "Value 6"]);
@@ -234,17 +235,20 @@ console.log(colspanTable.toString());
 
 console.log("\nTable with newlines:");
 const newLinesTable = createTable();
+
 newLinesTable.addRow(["something\nwith\nnewlines"]);
 
 console.log(newLinesTable.toString());
 
 const table3 = createTable();
+
 table3.addRow([{ colSpan: 2, content: "Spanning Two Columns" }, "Normal"]).addRow(["A", "B", "C"]);
 console.log(table3.toString());
 
 // Example with truncated cells
 console.log("\nTable with truncated cells:");
 const truncatedTable = createTable();
+
 truncatedTable.setHeaders([
     { content: "Short Header", maxWidth: 10 },
     { content: "This is a very long header that will be truncated", maxWidth: 15 },
@@ -256,6 +260,7 @@ console.log(truncatedTable.toString());
 // Example with truncated colored cells
 console.log("\nTable with truncated colored cells:");
 const coloredTable = createTable();
+
 coloredTable.setHeaders([
     { content: "\u001B[31mRed Header That Will Be Truncated\u001B[0m", maxWidth: 15 },
     { content: "\u001B[32mGreen Header That Will Be Truncated\u001B[0m", maxWidth: 15 },
