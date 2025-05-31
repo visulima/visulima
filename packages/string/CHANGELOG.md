@@ -1,3 +1,9 @@
+## @visulima/string [1.4.1](https://github.com/visulima/visulima/compare/@visulima/string@1.4.0...@visulima/string@1.4.1) (2025-05-31)
+
+### Bug Fixes
+
+* **string:** add align-text and word-wrap modules to package.json ([6c9db17](https://github.com/visulima/visulima/commit/6c9db174387e9da6bd5f99b6e4e48c12aa19b313))
+
 ## @visulima/string [1.4.0](https://github.com/visulima/visulima/compare/@visulima/string@1.3.0...@visulima/string@1.4.0) (2025-05-31)
 
 ### Features
