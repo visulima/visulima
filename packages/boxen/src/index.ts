@@ -172,10 +172,10 @@ const makeContentText = (
 
         // eslint-disable-next-line no-restricted-syntax
         for (const line of lines) {
-            const createdLines = wordWrap(line, { width: max, wrapMode: WrapMode.BREAK_WORDS }) as string;
+            const createdLines = wordWrap(line, { width: max, wrapMode: WrapMode.STRICT_WIDTH }) as string;
             const alignedLines = alignText(createdLines, { align: textAlignment });
             const alignedLinesArray = (alignedLines as string).split("\n");
-            const longestLength = Math.max(...alignedLinesArray.map((s) => getStringWidth(s) as number));
+            const longestLength = Math.max(...alignedLinesArray.map((s) => getStringWidth(s)));
 
             // eslint-disable-next-line no-restricted-syntax
             for (const alignedLine of alignedLinesArray) {
@@ -216,8 +216,9 @@ const makeContentText = (
 
     lines = lines.map((line) => {
         const newLine = paddingLeft + line + paddingRight;
+        const remainingWidth = width - getStringWidth(newLine);
 
-        return newLine + PAD.repeat(width - getStringWidth(newLine));
+        return newLine + PAD.repeat(remainingWidth <= 0 ? 0 : remainingWidth);
     });
 
     if (padding.top > 0) {
@@ -363,7 +364,7 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
     const borderWidth = getBorderWidth(options.borderStyle);
     const maxWidth = columnsWidth - options.margin.left - options.margin.right - borderWidth;
 
-    const widest = widestLine(wordWrap(text, { width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS, trim: false })) + options.padding.left + options.padding.right;
+    const widest = widestLine(wordWrap(text, { width: columnsWidth - borderWidth, wrapMode: WrapMode.STRICT_WIDTH, trim: false })) + options.padding.left + options.padding.right;
 
     // If title and width are provided, title adheres to fixed width
     if (options.headerText && widthOverride) {
