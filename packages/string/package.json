@@ -4,6 +4,13 @@
     "description": "Functions for manipulating strings.",
     "keywords": [
         "visulima",
+        "align",
+        "align-text",
+        "align-text-left",
+        "align-text-center",
+        "align-text-right",
+        "align-text-justify",
+        "align-text-start",
         "string",
         "string-manipulation",
         "unicode",
@@ -474,8 +481,8 @@
         "CHANGELOG.md"
     ],
     "scripts": {
-        "build": "pnpm run generate:charmap && cross-env NODE_ENV=development packem build",
-        "build:prod": "pnpm run generate:charmap && cross-env NODE_ENV=production packem build",
+        "build": "pnpm run generate:charmap && packem build --development",
+        "build:prod": "pnpm run generate:charmap && packem build --production",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "generate:charmap": "node ./scripts/generate-charmap.mjs",
@@ -509,7 +516,6 @@
         "@vitest/coverage-v8": "3.1.4",
         "@vitest/ui": "3.1.4",
         "conventional-changelog-conventionalcommits": "9.0.0",
-        "cross-env": "7.0.3",
         "emoji-regex-xs": "2.0.1",
         "esbuild": "0.25.5",
         "eslint": "8.57.0",
