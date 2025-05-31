@@ -7,13 +7,10 @@
  */
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import stringWidth from "string-width";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import wrapAnsi from "wrap-ansi";
 
-import { alignAnsi } from "./align";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { alignText, getStringWidth, wordWrap, WrapMode } from "@visulima/string";
 import type { BorderPosition, BorderStyle, DimensionOptions, Options, Spacer } from "./types";
 import cliBoxes from "./vendor/cli-boxes/boxes";
 import { widestLine } from "./widest-line";
@@ -109,17 +106,17 @@ const wrapText = (
     // eslint-disable-next-line no-param-reassign
     text = colorizeText(text);
 
-    const textWidth = stringWidth(text);
+    const textWidth = getStringWidth(text);
 
     switch (alignment) {
         case "left": {
-            title = text + colorizeBorder(horizontal.slice(textWidth), stringWidth(horizontal.slice(textWidth)));
+            title = text + colorizeBorder(horizontal.slice(textWidth), getStringWidth(horizontal.slice(textWidth)));
 
             break;
         }
 
         case "right": {
-            title = colorizeBorder(horizontal.slice(textWidth + 2), stringWidth(horizontal.slice(textWidth)) + 2) + " " + text + " ";
+            title = colorizeBorder(horizontal.slice(textWidth + 2), getStringWidth(horizontal.slice(textWidth)) + 2) + " " + text + " ";
 
             break;
         }
@@ -133,12 +130,12 @@ const wrapText = (
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(Math.floor(horizontal.length / 2));
 
-                title = colorizeBorder(horizontal.slice(1), stringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, stringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
+                title = colorizeBorder(horizontal.slice(1), getStringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
             } else {
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(horizontal.length / 2);
 
-                const horizontalLength = stringWidth(horizontal);
+                const horizontalLength = getStringWidth(horizontal);
 
                 title = colorizeBorder(horizontal, horizontalLength) + text + colorizeBorder(horizontal, horizontalLength);
             }
@@ -163,7 +160,7 @@ const makeContentText = (
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     // eslint-disable-next-line no-param-reassign
-    text = alignAnsi(text, { align: textAlignment }) as string;
+    text = alignText(text, { align: textAlignment }) as string;
 
     let lines: string[] = text.split(NEWLINE);
 
@@ -175,10 +172,10 @@ const makeContentText = (
 
         // eslint-disable-next-line no-restricted-syntax
         for (const line of lines) {
-            const createdLines = wrapAnsi(line, max, { hard: true }) as string;
-            const alignedLines = alignAnsi(createdLines, { align: textAlignment });
+            const createdLines = wordWrap(line, { width: max, wrapMode: WrapMode.PRESERVE_WORDS }) as string;
+            const alignedLines = alignText(createdLines, { align: textAlignment });
             const alignedLinesArray = (alignedLines as string).split("\n");
-            const longestLength = Math.max(...alignedLinesArray.map((s) => stringWidth(s) as number));
+            const longestLength = Math.max(...alignedLinesArray.map((s) => getStringWidth(s) as number));
 
             // eslint-disable-next-line no-restricted-syntax
             for (const alignedLine of alignedLinesArray) {
@@ -220,7 +217,7 @@ const makeContentText = (
     lines = lines.map((line) => {
         const newLine = paddingLeft + line + paddingRight;
 
-        return newLine + PAD.repeat(width - stringWidth(newLine));
+        return newLine + PAD.repeat(width - getStringWidth(newLine));
     });
 
     if (padding.top > 0) {
@@ -279,9 +276,9 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
             );
         }
 
-        const topBorder = colorizeBorder(marginLeft + chars.topLeft, "topLeft", stringWidth(marginLeft + chars.topLeft));
+        const topBorder = colorizeBorder(marginLeft + chars.topLeft, "topLeft", getStringWidth(marginLeft + chars.topLeft));
 
-        result += topBorder + headerText + colorizeBorder(chars.topRight, "topRight", stringWidth(chars.topRight)) + NEWLINE;
+        result += topBorder + headerText + colorizeBorder(chars.topRight, "topRight", getStringWidth(chars.topRight)) + NEWLINE;
     }
 
     const lines = content.split(NEWLINE);
@@ -290,14 +287,14 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
         .map(
             (line) =>
                 marginLeft +
-                colorizeBorder(chars.left, "left", stringWidth(chars.left)) +
+                colorizeBorder(chars.left, "left", getStringWidth(chars.left)) +
                 colorizeContent(line) +
-                colorizeBorder(chars.right, "right", stringWidth(chars.right)),
+                colorizeBorder(chars.right, "right", getStringWidth(chars.right)),
         )
         .join(NEWLINE);
 
     if (options.borderStyle !== NONE || options.footerText) {
-        const bottomBorder = NEWLINE + colorizeBorder(marginLeft + chars.bottomLeft, "bottomLeft", stringWidth(marginLeft + chars.bottomLeft));
+        const bottomBorder = NEWLINE + colorizeBorder(marginLeft + chars.bottomLeft, "bottomLeft", getStringWidth(marginLeft + chars.bottomLeft));
         let footerText = colorizeBorder(chars.bottom.repeat(contentWidth), "bottom", contentWidth);
 
         if (options.footerText) {
@@ -310,7 +307,7 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
             );
         }
 
-        result += bottomBorder + footerText + colorizeBorder(chars.bottomRight, "bottomRight", stringWidth(chars.bottomRight));
+        result += bottomBorder + footerText + colorizeBorder(chars.bottomRight, "bottomRight", getStringWidth(chars.bottomRight));
     }
 
     if (options.margin.bottom) {
@@ -366,7 +363,7 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
     const borderWidth = getBorderWidth(options.borderStyle);
     const maxWidth = columnsWidth - options.margin.left - options.margin.right - borderWidth;
 
-    const widest = widestLine(wrapAnsi(text, columnsWidth - borderWidth, { hard: true, trim: false })) + options.padding.left + options.padding.right;
+    const widest = widestLine(wordWrap(text, { width: columnsWidth - borderWidth, wrapMode: WrapMode.PRESERVE_WORDS, trim: false })) + options.padding.left + options.padding.right;
 
     // If title and width are provided, title adheres to fixed width
     if (options.headerText && widthOverride) {
@@ -386,9 +383,9 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
             // eslint-disable-next-line no-param-reassign
             options.headerText = formatTitle(options.headerText, options.borderStyle);
             // If the title is larger than content, box adheres to title width
-            if (stringWidth(options.headerText) > widest) {
+            if (getStringWidth(options.headerText) > widest) {
                 // eslint-disable-next-line no-param-reassign
-                options.width = stringWidth(options.headerText);
+                options.width = getStringWidth(options.headerText);
             }
         }
     }
