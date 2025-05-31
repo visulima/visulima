@@ -2183,6 +2183,8 @@ importers:
         specifier: ^3.1.4
         version: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/browser@3.1.4)(@vitest/ui@3.1.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
 
+  packages/fs/__bench__/fixtures/a/b: {}
+
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
@@ -3747,9 +3749,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: 7.0.3
-        version: 7.0.3
       emoji-regex-xs:
         specifier: 2.0.1
         version: 2.0.1
