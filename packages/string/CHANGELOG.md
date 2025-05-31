@@ -1,3 +1,14 @@
+## @visulima/string [1.3.0](https://github.com/visulima/visulima/compare/@visulima/string@1.2.3...@visulima/string@1.3.0) (2025-05-31)
+
+### Features
+
+* **string:** add alignText function for text alignment and create unit tests ([688d1c4](https://github.com/visulima/visulima/commit/688d1c4056f9ef93484f9780c02b83b4507241f7))
+
+### Miscellaneous Chores
+
+* **string:** update package.json to add new alignment keywords and modify build scripts ([03365cf](https://github.com/visulima/visulima/commit/03365cf3b1b533e9e0ba497b8e278b8065f7bca7))
+* **string:** updated readme ([54dd1ff](https://github.com/visulima/visulima/commit/54dd1ff16a13bf1ed100b46b7c8628cbca152d96))
+
 ## @visulima/string [1.2.3](https://github.com/visulima/visulima/compare/@visulima/string@1.2.2...@visulima/string@1.2.3) (2025-05-30)
 
 ### Bug Fixes
