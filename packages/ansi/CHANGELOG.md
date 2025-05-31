@@ -1,3 +1,89 @@
+## @visulima/ansi [2.0.0](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.18...@visulima/ansi@2.0.0) (2025-05-31)
+
+### ⚠ BREAKING CHANGES
+
+* **ansi:** Version 2.0.0 of `@visulima/ansi` introduces a significant number of changes, including refactoring of exports, renaming of functions for clarity and consistency, and the addition of many new features. Users upgrading from v1.x must review the following breaking changes carefully and update their code accordingly.
+
+Many functions and constants have been renamed or their export style has changed. Below is a list of common v1 exports and their v2 equivalents:
+
+| v1 Export                | v2 Status                                                  | Notes for Migration                                                                                                                               |
+| :----------------------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `alternativeScreenEnter` | Renamed to `alternativeScreenOn` (function) / `ALT_SCREEN_ON` (const) | Update function calls to `alternativeScreenOn()`. The direct sequence is `ALT_SCREEN_ON`.                                                       |
+| `alternativeScreenExit`  | Renamed to `alternativeScreenOff` (function) / `ALT_SCREEN_OFF` (const) | Update function calls to `alternativeScreenOff()`. The direct sequence is `ALT_SCREEN_OFF`.                                                     |
+| `clearLine`              | Effectively `eraseLine`                                    | While `clearLine` is not directly exported, `eraseLine` provides the same functionality.                                                          |
+| `clearScreen`            | Effectively `eraseScreen`                                  | Use `eraseScreen`.                                                                                                                                |
+| `clearTerminal`          | Renamed to `resetTerminal`                                 | Replace calls to `clearTerminal()` with `resetTerminal()`.                                                                                          |
+| `fullReset`              | Replaced by `RIS` (const) or `RESET_INITIAL_STATE` (const) | `RIS` (Reset to Initial State) is the recommended constant for the `ESC c` sequence.                                                              |
+| `image` (default export) | Named export `image`                                       | Change import from `import image from "@visulima/ansi";` to `import { image } from "@visulima/ansi";`.                                             |
+| `link` (default export)  | Renamed to `hyperlink` (default export)                    | Change import from `import link from "@visulima/ansi";` to `import hyperlink from "@visulima/ansi";`. The function usage remains similar.         |
+
+**The following v1 exports are still available in v2 with the same name and generally the same behavior (though always test):**
+
+*   `beep`
+*   `cursorBackward`
+*   `cursorDown`
+*   `cursorForward`
+*   `cursorHide`
+*   `cursorLeft`
+*   `cursorMove`
+*   `cursorNextLine`
+*   `cursorPreviousLine`
+*   `cursorRestore` (function, v2 also adds `RESTORE_CURSOR_DEC` constant)
+*   `cursorSave` (function, v2 also adds `SAVE_CURSOR_DEC` constant)
+*   `cursorShow`
+*   `cursorTo`
+*   `cursorUp`
+*   `eraseDown`
+*   `eraseLine`
+*   `eraseLineEnd`
+*   `eraseLines`
+*   `eraseLineStart`
+*   `eraseScreen`
+*   `eraseUp`
+*   `scrollDown`
+*   `scrollUp`
+*   `strip` (default export)
+
+*   **`clearScrollbar`**:
+    *   This export from v1 (which was `ESC + "2J"`, i.e., `CSI 2J`) has been removed.
+    *   The name was misleading, as `CSI 2J` clears the visible screen, and its effect on the scrollback buffer is not standard across all terminals.
+    *   The functionality of `CSI 2J` (erase entire screen) is available via the `eraseScreen` constant or `eraseDisplay(EraseDisplayMode.EntireScreen)`.
+    *   **For clearing the scrollback buffer (and screen)**: v2 provides the accurately named `eraseScreenAndScrollback` constant (sequence `CSI 3J`), or you can use `eraseDisplay(EraseDisplayMode.EntireScreenAndScrollback)`. Note that `CSI 3J` is an XTerm extension but widely adopted.
+
+*   **`decswt(title: string)` and `decsin(name: string)`**:
+    *   These functions, if you were using similar named functions or expecting specific DEC behavior in v1, are now explicitly implemented in v2 to generate OSC sequences (`OSC 2 ; 1;<title> BEL` for `decswt` and `OSC 2 ; L;<name> BEL` for `decsin`) aligned with DEC VT520/VT525 behavior.
+    *   **Impact**: This provides accurate VT520/VT525 emulation but may not be supported by other terminals.
+    *   **Recommendation**: Test thoroughly. For broader compatibility for window/icon titles, consider using the v2 functions `setWindowTitle(title)`, `setIconName(name)`, or `setIconNameAndWindowTitle(title)`.
+
+Version 2 introduces a vast number of new exports and features, providing much finer-grained control over terminal behavior. Some notable areas of expansion include:
+
+*   **Cursor Control**: Additional functions like `cursorToColumn1`, `cursorHorizontalAbsolute`, `cursorVerticalAbsolute`, `setCursorStyle`, and constants like `REQUEST_CURSOR_POSITION`.
+*   **Erasing**: More specific erase functions like `eraseCharacter`, `eraseInLine`, and the new `eraseScreenAndScrollback`.
+*   **Terminal Modes**: Comprehensive support for setting, resetting, and reporting ANSI and DEC private modes (e.g., `setMode`, `resetMode`, `InsertReplaceMode`, `LineFeedNewLineMode`, etc.).
+*   **Mouse Support**: Functions to enable/disable various mouse tracking modes (X10, SGR, Focus, Button-event) and encode mouse sequences.
+*   **Status Reports**: Extensive support for Device Status Reports (DSR) and Device Attributes (DA), including `DA1`, `DA2`, `DA3`, `CPR` (Cursor Position Report), `DECXCPR`, `XTVERSION`, and requests/reports for printer status, UDK status, keyboard language, etc.
+*   **iTerm2 Integration**: Specific functions and constants for iTerm2's proprietary escape codes, including file and image display.
+*   **Termcap/Terminfo**: Functions to request termcap/terminfo strings (`XTGETTCAP`).
+*   **Window Operations**: Expanded title-setting functions (`setWindowTitle`, `setIconName`, `setIconNameAndWindowTitle`, including `ST` terminated versions) and other XTerm window operations.
+
+1.  **Review Imports**: Carefully check all your imports from `@visulima/ansi` and update them according to the changes listed above.
+2.  **Test Thoroughly**: Due to the nature of terminal control sequences, it's crucial to test your application on all target terminal emulators after upgrading.
+3.  **Consult v2 `index.ts`**: The file `packages/ansi/src/index.ts` in the v2 codebase is the source of truth for all exported members.
+4.  **Update Default Imports**: For `image` and `link` (now `hyperlink`), change your default imports to named imports or update the new default import name.
+
+### Features
+
+* **ansi:** introduces a significant number of changes, including refactoring of exports, renaming of functions for clarity and consistency ([c3514c6](https://github.com/visulima/visulima/commit/c3514c6de41603d0a8da0d0fa707e8a9466eeeaa))
+
+### Bug Fixes
+
+* **ansi:** improved readme, added all files as export ([d5a789f](https://github.com/visulima/visulima/commit/d5a789fe8a583a130d8dd6dbf742fa0dba151b8f))
+* **ansi:** update dependencies ([85478c4](https://github.com/visulima/visulima/commit/85478c4614b3fe78ee80e090b36829bc64f6e4c1))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
 ## @visulima/ansi [1.0.18](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.17...@visulima/ansi@1.0.18) (2025-03-07)
 
 ### Bug Fixes
