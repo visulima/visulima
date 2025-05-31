@@ -1076,3 +1076,53 @@ The visulima string is open-sourced software licensed under the [MIT][license-ur
 [license-url]: LICENSE.md "license"
 [npm-image]: https://img.shields.io/npm/v/@visulima/string/latest.svg?style=for-the-badge&logo=npm
 [npm-url]: https://www.npmjs.com/package/@visulima/string/v/latest "npm"
+
+### Text Alignment
+
+The `alignText` function aligns text (including multi-line strings and strings with ANSI escape codes) to the left, center, or right. It can handle both single strings (which can be split into lines based on the `split` option) and arrays of strings.
+
+```typescript
+import { alignText } from "@visulima/string";
+// For type information, you might also import:
+// import type { AlignTextOptions, StringWidthOptions } from "@visulima/string";
+
+// Example 1: Aligning a single multi-line string to the right
+const text1 = "First line\nSecond, much longer line";
+const alignedText1 = alignText(text1, { align: "right" });
+// alignedText1 (string output, exact padding depends on calculated widths):
+// "          First line\nSecond, much longer line"
+
+// Example 2: Aligning an array of strings to the center
+const textArray = ["Short", "Medium length", "A very very long line indeed"];
+const alignedArray = alignText(textArray, { align: "center" });
+// alignedArray (array output, exact padding depends on calculated widths):
+// [
+//   "           Short            ",
+//   "        Medium length       ",
+//   "A very very long line indeed"
+// ]
+
+// Example 3: Custom padding, split, and stringWidthOptions for emojis
+const emojiText = "Line1😊*WiderLine😊😊";
+const alignedEmojiText = alignText(emojiText, {
+    align: "center",
+    split: "*",
+    pad: "-",
+    stringWidthOptions: { emojiWidth: 2 } // Crucial for correct width calculation with emojis
+});
+// alignedEmojiText (string output, exact padding depends on calculated widths):
+// "--Line1😊---\nWiderLine😊😊"
+```
+
+#### Alignment Options
+
+The `alignText` function accepts an `options` object of type `AlignTextOptions` with the following properties:
+
+-   `align?: "center" | "left" | "right"`: Specifies the alignment direction. Defaults to `"center"`. Note: `left` alignment primarily ensures line splitting if `text` is a single string; it doesn't typically add padding on the left unless the string was not pre-split.
+-   `pad?: string`: The character or string to use for padding. Defaults to `" "`.
+-   `split?: string`: The character or string used to split the input `text` into multiple lines if it's provided as a single string. Defaults to `"\n"`.
+-   `stringWidthOptions?: StringWidthOptions`: Options passed to an internal string width calculation function (similar to `getStringWidth`) for determining the visual width of each line. This is important for accurately handling ANSI escape codes, CJK characters, emojis, etc. Refer to the `getStringWidth` documentation for details on `StringWidthOptions`.
+
+```typescript
+// ... existing code ...
+```

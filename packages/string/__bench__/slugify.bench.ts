@@ -1,8 +1,8 @@
 import sindresorhusSlugify from "@sindresorhus/slugify";
+import slugPackage from "slug";
 import simovSlugify from "slugify";
 import { slugify as transliterationSlugify } from "transliteration";
 import { bench, describe } from "vitest";
-import slugPackage from "slug";
 
 import visulimaSlugify from "../src/slugify";
 

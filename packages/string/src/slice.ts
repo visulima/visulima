@@ -5,7 +5,7 @@ import LRUCache from "./utils/lru-cache";
 
 const segmentCache = new LRUCache<string, StyledSegment[]>(100);
 
-// eslint-disable-next-line compat/compat
+ 
 const defaultSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
 
 /** Represents a segment of text with its associated ANSI styling sequences. */
