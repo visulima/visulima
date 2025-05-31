@@ -1,3 +1,5 @@
+export type { AlignTextOptions } from "./align-text";
+export { alignText } from "./align-text";
 export { default as camelCase } from "./case/camel-case";
 export { default as capitalCase } from "./case/capital-case";
 export { default as constantCase } from "./case/constant-case";
