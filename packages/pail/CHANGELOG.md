@@ -1,3 +1,10 @@
+## @visulima/pail [2.1.24](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.23...@visulima/pail@2.1.24) (2025-05-31)
+
+
+### Dependencies
+
+* **@visulima/inspector:** upgraded to 1.0.23
+
 ## @visulima/pail [2.1.23](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.22...@visulima/pail@2.1.23) (2025-05-30)
 
 ### Bug Fixes
