@@ -1,3 +1,10 @@
+## @visulima/inspector [1.0.23](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.22...@visulima/inspector@1.0.23) (2025-05-31)
+
+### Bug Fixes
+
+* **inspector:** add isolated declaration transformer to packem configuration ([adf2da6](https://github.com/visulima/visulima/commit/adf2da6ce853ba7cb14ff698a84fb52954028b3e))
+* **inspector:** do not treat a NodeList as HTMLCollection ([240fd87](https://github.com/visulima/visulima/commit/240fd873105effd81e482594d88af8235a2d7aa2))
+
 ## @visulima/inspector [1.0.22](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.21...@visulima/inspector@1.0.22) (2025-05-30)
 
 ### Bug Fixes
