@@ -1,3 +1,9 @@
+## @visulima/string [1.4.0](https://github.com/visulima/visulima/compare/@visulima/string@1.3.0...@visulima/string@1.4.0) (2025-05-31)
+
+### Features
+
+* **string:** implement BREAK_WORDS wrap mode for word wrapping functionality ([996b9aa](https://github.com/visulima/visulima/commit/996b9aa1ed0b728534558bad5b88e6e1ea505a05))
+
 ## @visulima/string [1.3.0](https://github.com/visulima/visulima/compare/@visulima/string@1.2.3...@visulima/string@1.3.0) (2025-05-31)
 
 ### Features
