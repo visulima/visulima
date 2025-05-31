@@ -1,3 +1,18 @@
+## @visulima/object [1.0.11](https://github.com/visulima/visulima/compare/@visulima/object@1.0.10...@visulima/object@1.0.11) (2025-05-31)
+
+### Bug Fixes
+
+* **object:** add isolated declaration transformer to packem configuration ([a41159c](https://github.com/visulima/visulima/commit/a41159c5190cd36c3975d85de1212cdedcdaba50))
+
+### Styles
+
+* cs fixes ([6570d56](https://github.com/visulima/visulima/commit/6570d568a80bd3fd4bfd73c824dc78f7e3a372f8))
+
+### Miscellaneous Chores
+
+* **object:** update devDependencies ([558be06](https://github.com/visulima/visulima/commit/558be06a10de3d08125c53ce85234560ce83795a))
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
 ## @visulima/object [1.0.10](https://github.com/visulima/visulima/compare/@visulima/object@1.0.9...@visulima/object@1.0.10) (2025-03-07)
 
 ### Bug Fixes
