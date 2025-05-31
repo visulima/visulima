@@ -411,7 +411,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
             }
 
             const brokenLines = wrapWithBreakAtWidth(token, width, trim);
-            console.log(JSON.stringify(brokenLines));
+
             if (brokenLines.length > 0) {
                 for (let i = 0; i < brokenLines.length - 1; i++) {
                     rows.push(brokenLines[i] as string);
