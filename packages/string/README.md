@@ -1032,51 +1032,6 @@ slugify("Keep C++", { replaceBefore: { "C++": "cpp" } }); // 'keep-cpp'
 slugify("Keep !@#$", { allowedChars: "a-z!@$" }); // 'keep!@$'
 ```
 
-## Related
-
-- [change-case](https://github.com/blakeembrey/change-case) - Simple string case utilities
-- [lodash](https://lodash.com/) - Comprehensive utility library with string manipulation
-- [scule](https://github.com/unjs/scule) - 🧵 String Case Utils
-- [case-anything](https://github.com/mesqueeb/case-anything) - camelCase, kebab-case, PascalCase... a simple integration with nano package size. (SMALL footprint!)
-- [cli-truncate](https://github.com/sindresorhus/cli-truncate) - Truncate strings for terminal output
-- [string-width](https://github.com/sindresorhus/string-width) - Measure string width
-- [ansi-slice](https://github.com/sindresorhus/ansi-slice) - Slice strings with ANSI escape codes
-- [fast-string-truncated-width](https://github.com/fabiospampinato/fast-string-truncated-width) - Fast string truncated width
-- [ansi-truncate](https://github.com/fabiospampinato/ansi-truncate) - Truncate strings with ANSI escape codes
-- [string-ts](https://github.com/gustavoguichard/string-ts) - Strongly typed string functions
-- [@sindresorhus/slugify](https://github.com/sindresorhus/slugify) - Slugify a string
-- [slugify](https://github.com/simov/slugify) - Slugify a string
-- [@sindresorhus/transliterate](https://github.com/sindresorhus/transliterate) - Convert Unicode characters to Latin characters using transliteration
-- [transliteration](https://github.com/yf-hk/transliteration/tree/main) - UTF-8 to ASCII transliteration / slugify module for node.js, browser, Web Worker, React Native, Electron and CLI.
-- [unidecode](https://github.com/FGRibreau/node-unidecode) - 📃 ASCII transliterations of Unicode text
-
-## Supported Node.js Versions
-
-Libraries in this ecosystem make the best effort to track [Node.js' release schedule](https://github.com/nodejs/release#release-schedule).
-Here's [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
-
-## Contributing
-
-If you would like to help, take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](.github/CONTRIBUTING.md) guidelines.
-
-> **Note:** please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
-
-## Credits
-
-- [Daniel Bannert](https://github.com/prisis)
-- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
-
-## License
-
-The visulima string is open-sourced software licensed under the [MIT][license-url]
-
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript"
-[license-image]: https://img.shields.io/npm/l/@visulima/string?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/string/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/string/v/latest "npm"
-
 ### Text Alignment
 
 The `alignText` function aligns text (including multi-line strings and strings with ANSI escape codes) to the left, center, or right. It can handle both single strings (which can be split into lines based on the `split` option) and arrays of strings.
@@ -1123,6 +1078,47 @@ The `alignText` function accepts an `options` object of type `AlignTextOptions` 
 -   `split?: string`: The character or string used to split the input `text` into multiple lines if it's provided as a single string. Defaults to `"\n"`.
 -   `stringWidthOptions?: StringWidthOptions`: Options passed to an internal string width calculation function (similar to `getStringWidth`) for determining the visual width of each line. This is important for accurately handling ANSI escape codes, CJK characters, emojis, etc. Refer to the `getStringWidth` documentation for details on `StringWidthOptions`.
 
-```typescript
-// ... existing code ...
-```
+## Related
+
+- [change-case](https://github.com/blakeembrey/change-case) - Simple string case utilities
+- [lodash](https://lodash.com/) - Comprehensive utility library with string manipulation
+- [scule](https://github.com/unjs/scule) - 🧵 String Case Utils
+- [case-anything](https://github.com/mesqueeb/case-anything) - camelCase, kebab-case, PascalCase... a simple integration with nano package size. (SMALL footprint!)
+- [cli-truncate](https://github.com/sindresorhus/cli-truncate) - Truncate strings for terminal output
+- [string-width](https://github.com/sindresorhus/string-width) - Measure string width
+- [ansi-slice](https://github.com/sindresorhus/ansi-slice) - Slice strings with ANSI escape codes
+- [fast-string-truncated-width](https://github.com/fabiospampinato/fast-string-truncated-width) - Fast string truncated width
+- [ansi-truncate](https://github.com/fabiospampinato/ansi-truncate) - Truncate strings with ANSI escape codes
+- [string-ts](https://github.com/gustavoguichard/string-ts) - Strongly typed string functions
+- [@sindresorhus/slugify](https://github.com/sindresorhus/slugify) - Slugify a string
+- [slugify](https://github.com/simov/slugify) - Slugify a string
+- [@sindresorhus/transliterate](https://github.com/sindresorhus/transliterate) - Convert Unicode characters to Latin characters using transliteration
+- [transliteration](https://github.com/yf-hk/transliteration/tree/main) - UTF-8 to ASCII transliteration / slugify module for node.js, browser, Web Worker, React Native, Electron and CLI.
+- [unidecode](https://github.com/FGRibreau/node-unidecode) - 📃 ASCII transliterations of Unicode text
+
+## Supported Node.js Versions
+
+Libraries in this ecosystem make the best effort to track [Node.js' release schedule](https://github.com/nodejs/release#release-schedule).
+Here's [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
+
+## Contributing
+
+If you would like to help, take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](.github/CONTRIBUTING.md) guidelines.
+
+> **Note:** please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
+
+## Credits
+
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+
+## License
+
+The visulima string is open-sourced software licensed under the [MIT][license-url]
+
+[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/ "TypeScript"
+[license-image]: https://img.shields.io/npm/l/@visulima/string?color=blueviolet&style=for-the-badge
+[license-url]: LICENSE.md "license"
+[npm-image]: https://img.shields.io/npm/v/@visulima/string/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/string/v/latest "npm"
