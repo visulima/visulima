@@ -2183,8 +2183,6 @@ importers:
         specifier: ^3.1.4
         version: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/browser@3.1.4)(@vitest/ui@3.1.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
 
-  packages/fs/__bench__/fixtures/a/b: {}
-
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
@@ -3895,8 +3893,8 @@ importers:
         specifier: ^1.19.4
         version: 1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.27)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.2.0(postcss@8.5.3))(postcss-modules-scope@3.2.1(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@visulima/string':
-        specifier: 1.2.3
-        version: 1.2.3
+        specifier: 1.3.0
+        version: 1.3.0
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -10304,8 +10302,8 @@ packages:
     resolution: {integrity: sha512-4uoRjOamOBx7WNiOFn4eLtEkEbKHLHApciB6z5ZnKfnQ1VQ+YPw/SIRhYJOrrgl8X55XTcGGjhklMEvjN9gOgQ==}
     engines: {node: '>=18.0.0 <=23.x'}
 
-  '@visulima/string@1.2.3':
-    resolution: {integrity: sha512-IzL0YDpWs/KSLUpQh0de2Bvo4b2dFYlfyDlnuNYJHqGxot4ozHBpUBssB3p0WNZ7vkPwCLEDOwIMIfVY0G6QSw==}
+  '@visulima/string@1.3.0':
+    resolution: {integrity: sha512-IUkC614QZJImJFpBcOXG40m2Hi/jJaurG5XF5uKy4CD6TycmhW3iLgHnHRQ1rGI8QyWrfFoc7/P1xpMfaTj7xg==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/tsconfig@1.1.15':
@@ -29501,7 +29499,7 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.25
       '@visulima/path': 1.3.5
 
-  '@visulima/string@1.2.3': {}
+  '@visulima/string@1.3.0': {}
 
   '@visulima/tsconfig@1.1.15(yaml@2.8.0)':
     dependencies:
