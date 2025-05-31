@@ -56,18 +56,18 @@ describe("wordWrap", () => {
           uick
           brown
           [31mfox j[39m
-          [31m[31mumped[39m
-          [31m[31mover[39m
+          [31mumped[39m
+          [31mover[39m
           the l
           azy [32md[39m
-          [32m[32mog an[39m
-          [32m[32md the[39m
-          [32m[32mn ran[39m
-          [32m[32maway[39m
-          [32m[32mwith[39m
-          [32m[32mthe u[39m
-          [32m[32mnicor[39m
-          [32m[32mn.[39m"
+          [32mog an[39m
+          [32md the[39m
+          [32mn ran[39m
+          [32maway[39m
+          [32mwith[39m
+          [32mthe u[39m
+          [32mnicor[39m
+          [32mn.[39m"
         `);
         expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 5)).toBeTruthy();
     });
@@ -253,6 +253,62 @@ describe("wordWrap", () => {
                         wrapMode: WrapMode.STRICT_WIDTH,
                     }),
                 ).toBe("super\ncalif\nragil\nistic");
+            });
+        });
+
+        describe("wrapMode.BREAK_WORDS option", () => {
+            it("should wrap at word boundaries and break long words", () => {
+                expect.assertions(3);
+
+                expect(wordWrap("hello supercalifragilisticexpialidocious world", { width: 20, wrapMode: WrapMode.BREAK_WORDS })).toBe(
+                    "hello\nsupercalifragilistic\nexpialidocious world",
+                );
+                // eslint-disable-next-line no-secrets/no-secrets
+                expect(wordWrap("short thenThisIsAVeryLongWordWithoutSpaces anothertest", { width: 15, wrapMode: WrapMode.BREAK_WORDS })).toBe(
+                    "short\nthenThisIsAVery\nLongWordWithout\nSpaces\nanothertest",
+                );
+                // Test with ANSI codes
+                expect(
+                    wordWrap(`hello ${red("supercalifragilisticexpialidocious")} world`, {
+                        width: 20,
+                        wrapMode: WrapMode.BREAK_WORDS,
+                    }),
+                ).toEqualAnsi(`hello\n${red("supercalifragilistic")}\n${red("expialidocious")} world`);
+            });
+
+            it("should handle trim option correctly with BREAK_WORDS", () => {
+                expect.assertions(2);
+                expect(wordWrap("  leading supercalifragilistic trailing  ", { trim: true, width: 10, wrapMode: WrapMode.BREAK_WORDS })).toBe(
+                    "leading\nsupercalif\nragilistic\ntrailing",
+                );
+                expect(wordWrap("  leading supercalifragilistic trailing  ", { trim: false, width: 10, wrapMode: WrapMode.BREAK_WORDS })).toBe(
+                    "  leading \nsupercalif\nragilistic\n trailing \n ",
+                );
+            });
+
+            it("should handle multiple long words and spaces with BREAK_WORDS", () => {
+                expect.assertions(1);
+                expect(
+                    wordWrap("onelongword anotherverylongword      thirdsuperlongword", {
+                        width: 12,
+                        wrapMode: WrapMode.BREAK_WORDS,
+                    }),
+                ).toBe("onelongword\nanotherveryl\nongword\nthirdsuperlo\nngword");
+            });
+
+            it("should correctly break words with ANSI codes when they exceed width", () => {
+                expect.assertions(1);
+                const text = `word ${green("anotherlongwordthatneedsbreaking")} final`;
+                // Width is set such that "anotherlongwordthatneedsbreaking" must break
+                expect(wordWrap(text, { width: 15, wrapMode: WrapMode.BREAK_WORDS })).toEqualAnsi(
+                    `word\n${green("anotherlongword")}\n${green("thatneedsbreaki")}\n${green("ng")} final`,
+                );
+            });
+
+            it("should handle empty string and very small width with BREAK_WORDS", () => {
+                expect.assertions(2);
+                expect(wordWrap("", { width: 10, wrapMode: WrapMode.BREAK_WORDS })).toBe("");
+                expect(wordWrap("test", { width: 1, wrapMode: WrapMode.BREAK_WORDS })).toBe("t\ne\ns\nt");
             });
         });
     });

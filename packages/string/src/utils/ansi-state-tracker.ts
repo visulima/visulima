@@ -80,9 +80,55 @@ class AnsiStateTracker {
      * Gets all active escape sequences to apply
      * @returns String with all active escapes
      */
-    public getActiveEscapes(): string {
+    public getStartEscapesForAllActiveAttributes(): string {
         // First add background, then foreground, then all formatting
         return [this.activeBackground, this.activeForeground, ...this.activeFormatting].filter(Boolean).join("");
+    }
+
+    /**
+     * Gets all closing escape sequences for the currently active attributes.
+     * The order is generally reverse of application: formatting, foreground, background.
+     * @returns String with all necessary closing escapes.
+     */
+    public getEndEscapesForAllActiveAttributes(): string {
+        const closingEscapes: string[] = [];
+
+        // Close formatting attributes - in reverse order of common application for nesting
+        // This simple approach might need refinement for perfectly nested SGR codes,
+        // but for typical usage (bold, italic, underline) it's often sufficient.
+        // A more robust solution would track exact pairs or use a stack.
+        if (this.activeFormatting.length > 0) {
+            // General reset for formatting can be complex if not just resetting all (22, 23, etc.)
+            // For simplicity, we'll add specific resets if we know the opening code.
+            // This part needs to be smarter based on how activeFormatting stores codes.
+            // Assuming activeFormatting stores codes like "\x1B[1m", "\x1B[3m"
+            const formatResetMap: { [key: string]: string } = {
+                "\x1B[1m": "\x1B[22m", // Bold
+                "\x1B[2m": "\x1B[22m", // Faint/Dim (also reset by 22)
+                "\x1B[3m": "\x1B[23m", // Italic
+                "\x1B[4m": "\x1B[24m", // Underline
+                "\x1B[7m": "\x1B[27m", // Inverse
+                "\x1B[8m": "\x1B[28m", // Hidden/Conceal
+                "\x1B[9m": "\x1B[29m", // Strikethrough
+            };
+            // Iterate in reverse for arguably better visual nesting behavior on reset
+            [...this.activeFormatting].reverse().forEach(formatCode => {
+                const resetCode = formatResetMap[formatCode];
+                if (resetCode) {
+                    closingEscapes.push(resetCode);
+                }
+            });
+        }
+
+        if (this.activeForeground) {
+            closingEscapes.push("\x1B[39m"); // Default foreground color
+        }
+
+        if (this.activeBackground) {
+            closingEscapes.push("\x1B[49m"); // Default background color
+        }
+
+        return closingEscapes.join("");
     }
 }
 
