@@ -565,7 +565,7 @@ describe("table borders", () => {
     });
 
     describe("border rendering variations", () => {
-        it("should render no borders if borderType is 'none' in renderHorizontalBorder", () => {
+        it("should render no borders if borderType is 'none' in renderHorizontalBorder", async () => {
             expect.assertions(1);
 
             const table = createTable({ style: { border: NO_BORDER } }); // Use NO_BORDER style
@@ -573,7 +573,7 @@ describe("table borders", () => {
             table.addRow(["A", "B"]);
             table.addRow(["C", "D"]);
 
-            expect(table.toString()).toMatchFileSnapshot("table-no-borders");
+            await expect(table.toString()).toMatchFileSnapshot("table-no-borders");
         });
     });
 });

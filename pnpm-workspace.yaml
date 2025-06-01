@@ -21,7 +21,9 @@ packages:
   - packages/inspector/__bench__
   - packages/pail/__bench__
   - packages/string/__bench__
+  - packages/tabular/__bench__
   - packages/fs/__bench__
+  - packages/redact/__bench__
 
   - packages/colorize/__fixtures__/package/cjs
   - packages/colorize/__fixtures__/package/mjs
@@ -35,7 +37,6 @@ packages:
   - packages/boxen/__fixtures__/package/mjs
   - packages/path/__fixtures__/package/cjs
   - packages/path/__fixtures__/package/mjs
-  - packages/redact/__bench__
   - packages/redact/__fixtures__/package/cjs
   - packages/redact/__fixtures__/package/mjs
   - packages/tsconfig/__fixtures__/package/cjs

@@ -1,3 +1,4 @@
+import Table from "cli-table";
 import Table3 from "cli-table3";
 import { table } from "table";
 import { bench, describe } from "vitest";
@@ -85,6 +86,26 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
         // Render the table
         table(data);
     });
+
+    bench("cli-table", () => {
+        const table = new Table({
+            head: ["ID", "Name", "Email", "Status", "Created At"],
+            style: {
+                border: [], // cli-table applies default styling to border if not specified
+                head: [], // cli-table applies default styling to head if not specified
+                "padding-left": 1,
+                "padding-right": 1,
+            },
+        });
+
+        // Generate 1763 rows of mock data
+        for (let index = 1; index <= 1763; index++) {
+            table.push([index.toString(), `User ${index}`, `user${index}@example.com`, index % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, index).toISOString()]);
+        }
+
+        // Render the table
+        table.toString();
+    });
 });
 
 describe("Table Rendering basic table (100x10)", () => {
@@ -124,6 +145,10 @@ describe("Table Rendering basic table (100x10)", () => {
         }
 
         table(data);
+    });
+
+    bench("cli-table", () => {
+        generateBasicTable(100, 10, Table).toString();
     });
 });
 
@@ -274,5 +299,21 @@ describe("Table Rendering with truncation", () => {
         table(data, {
             columns: [{ truncate: 20, width: 20 }, { width: 10 }],
         });
+    });
+
+    bench("cli-table", () => {
+        const table = new Table({
+            colWidths: [20, 10],
+            head: [longText, "Normal"],
+            style: {
+                border: [],
+                head: [],
+            },
+            // cli-table does not have a direct equivalent for `truncate: '...'` like cli-table3
+            // It truncates by default if colWidths are set and text overflows.
+        });
+
+        table.push([longText, "Short"]);
+        table.toString();
     });
 });
