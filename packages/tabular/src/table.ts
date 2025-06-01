@@ -175,7 +175,7 @@ export class Table {
 
         const gridItems: GridItem[] = [];
 
-        // eslint-disable-next-line guard-for-in
+        // eslint-disable-next-line guard-for-in, no-restricted-syntax
         for (const rowIndex in allRows) {
             const row = allRows[rowIndex];
 
@@ -197,6 +197,7 @@ export class Table {
                 if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
                     const { content, href, ...rest } = cellInput as TableItem;
 
+                    // eslint-disable-next-line sonarjs/updated-loop-counter
                     cellInput = href ? `\u001B]8;;${href}\u001B\\${String(content)}\u001B]8;;\u001B\\` : content;
 
                     cellOptions = rest;
@@ -210,6 +211,7 @@ export class Table {
                 }
 
                 if (this.#options.transformTabToSpace && typeof cellInput === "string") {
+                    // eslint-disable-next-line sonarjs/updated-loop-counter
                     cellInput = cellInput.replaceAll(String.raw`\t`, " ".repeat(this.#options.transformTabToSpace));
                 }
 

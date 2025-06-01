@@ -1,7 +1,8 @@
 import type { TruncateOptions, WordWrapOptions } from "@visulima/string";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { getStringWidth, truncate, wordWrap } from "@visulima/string";
-import terminalSize from 'terminal-size';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import terminalSize from "terminal-size";
 
 import type {
     AnsiColorFunction,
@@ -15,7 +16,7 @@ import type {
     GridOptions,
     InternalGridItem,
 } from "./types";
-import { getHorizontalBorderChars, getVerticalBorderChars } from "./utils/border-utils";
+import { getHorizontalBorderChars, getVerticalBorderChars } from "./utils/border-utilities.ts";
 import calculateCellTotalWidth from "./utils/calculate-cell-total-width";
 import calculateRowHeights from "./utils/calculate-row-heights";
 import determineCellVerticalPosition from "./utils/determine-cell-vertical-position";
@@ -269,24 +270,24 @@ export class Grid {
             // Skip placement for designated empty cells that don't span
             if (item.content === EMPTY_CELL_REPRESENTATION && !(item.rowSpan && item.rowSpan > 1) && !(item.colSpan && item.colSpan > 1)) {
                 if (this.#options.autoFlow === "row") {
-                    currentCol++;
+                    currentCol += 1;
 
                     if (currentCol >= this.#options.columns) {
                         currentCol = 0;
-                        currentRow++;
+                        currentRow += 1;
                     }
                 } else {
                     // autoFlow === "column"
-                    currentRow++;
+                    currentRow += 1;
                     // Wrap based on current grid height or maxRows
                     const effectiveMaxRows = gridLayout.length > 0 ? gridLayout.length : maxRows;
 
                     if (currentRow >= effectiveMaxRows && effectiveMaxRows !== Number.POSITIVE_INFINITY) {
                         currentRow = 0;
-                        currentCol++;
+                        currentCol += 1;
                     } else if (gridLayout.length === 0 && effectiveMaxRows === Number.POSITIVE_INFINITY) {
                         // Special case for column flow in an initially empty grid with no row limit
-                        currentCol++; // Just advance column
+                        currentCol += 1; // Just advance column
                     }
                 }
 
@@ -307,7 +308,7 @@ export class Grid {
             const maxAttempts = (gridLayout.length + itemRowSpan + 5) * this.#options.columns;
 
             while (!foundPosition && searchRow < maxRows && attempts < maxAttempts) {
-                attempts++;
+                attempts += 1;
                 // Ensure the grid layout array is tall enough for the placement check
                 while (searchRow + itemRowSpan > gridLayout.length) {
                     gridLayout.push(Array.from<GridItem | null>({ length: this.#options.columns }).fill(null));
@@ -329,7 +330,7 @@ export class Grid {
                         // Wrap to the beginning of the next row if necessary
                         if (currentCol >= this.#options.columns) {
                             currentCol = 0;
-                            currentRow++;
+                            currentRow += 1;
                         }
                     } else {
                         // autoFlow === "column"
@@ -342,20 +343,20 @@ export class Grid {
 
                         if (currentRow >= effectiveMaxRows) {
                             currentRow = 0;
-                            currentCol++;
+                            currentCol += 1;
                         }
                     }
                     // Item cannot be placed here, advance the search position
                 } else if (this.#options.autoFlow === "row") {
-                    searchCol++;
+                    searchCol += 1;
 
                     if (searchCol >= this.#options.columns) {
                         searchCol = 0;
-                        searchRow++;
+                        searchRow += 1;
                     }
                 } else {
                     // autoFlow === "column"
-                    searchRow++;
+                    searchRow += 1;
                     // Ensure grid is tall enough for the *next* check
                     while (searchRow + itemRowSpan > gridLayout.length) {
                         gridLayout.push(Array.from<GridItem | null>({ length: this.#options.columns }).fill(null));
@@ -365,7 +366,7 @@ export class Grid {
 
                     if (searchRow >= effectiveMaxRows) {
                         searchRow = 0;
-                        searchCol++;
+                        searchCol += 1;
 
                         // Stop searching if we go past the last column
                         if (searchCol >= this.#options.columns) {
@@ -386,19 +387,19 @@ export class Grid {
                 // Advance the main cursor slightly to prevent potential infinite loops
                 // if multiple items cannot be placed consecutively.
                 if (this.#options.autoFlow === "row") {
-                    currentCol++;
+                    currentCol += 1;
 
                     if (currentCol >= this.#options.columns) {
                         currentCol = 0;
-                        currentRow++;
+                        currentRow += 1;
                     }
                 } else {
-                    currentRow++;
+                    currentRow += 1;
                     const effectiveMaxRows = gridLayout.length > 0 ? gridLayout.length : maxRows;
 
                     if (currentRow >= effectiveMaxRows) {
                         currentRow = 0;
-                        currentCol++;
+                        currentCol += 1;
                     }
                 }
             }
@@ -439,7 +440,7 @@ export class Grid {
             return false;
         }
 
-        for (let row = startRow; row < startRow + rowSpan; row++) {
+        for (let row = startRow; row < startRow + rowSpan; row += 1) {
             if (row < gridLayout.length) {
                 if (!gridLayout[row]) {
                     // eslint-disable-next-line no-console
@@ -448,7 +449,7 @@ export class Grid {
                     return false;
                 }
 
-                for (let col = startCol; col < startCol + colSpan; col++) {
+                for (let col = startCol; col < startCol + colSpan; col += 1) {
                     if (gridLayout[row]?.[col] !== null) {
                         return false;
                     }
@@ -472,12 +473,12 @@ export class Grid {
         const rowSpan = item.rowSpan ?? 1;
         const colSpan = item.colSpan ?? 1;
 
-        for (let row = startRow; row < startRow + rowSpan; row++) {
+        for (let row = startRow; row < startRow + rowSpan; row += 1) {
             while (row >= gridLayout.length) {
                 gridLayout.push(Array.from<GridItem | null>({ length: this.#options.columns }).fill(null));
             }
 
-            for (let col = startCol; col < startCol + colSpan; col++) {
+            for (let col = startCol; col < startCol + colSpan; col += 1) {
                 if (col < this.#options.columns) {
                     if (!gridLayout[row]) {
                         // eslint-disable-next-line no-console
@@ -486,7 +487,7 @@ export class Grid {
                         gridLayout[row] = Array.from<GridItem | null>({ length: this.#options.columns }).fill(null);
                     }
 
-                    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                    // eslint-disable-next-line no-param-reassign
                     (gridLayout[row] as GridItem[])[col] = item;
                 }
             }
@@ -495,7 +496,7 @@ export class Grid {
 
     /**
      * Calculates the total width of the grid including columns, gaps, and borders.
-     * @param columnWidths The array of calculated column widths.
+     * @param columnWidths {number[]} The array of calculated column widths.
      * @returns The total width of the grid.
      */
     private calculateTotalGridWidth(columnWidths: number[]): number {
@@ -512,7 +513,7 @@ export class Grid {
         const borderJoinWidth = this.#options.showBorders ? borderStyle?.bodyJoin.width ?? 0 : 0;
         const gapWidth = this.#options.gap;
 
-        for (let colIndex = 0; colIndex < numberColumns; colIndex++) {
+        for (let colIndex = 0; colIndex < numberColumns; colIndex += 1) {
             totalWidth += columnWidths[colIndex] ?? 0;
 
             if (colIndex < numberColumns - 1) {
@@ -606,7 +607,7 @@ export class Grid {
 
                 if (adjustedWidths[index] !== undefined) {
                     adjustedWidths[index] += 1;
-                    remainingWidth--;
+                    remainingWidth -= 1;
                 }
             }
         }
@@ -618,7 +619,7 @@ export class Grid {
      * Calculate column widths based on content, handling colSpan iteratively.
      * This version prioritizes minimum width based on single-cell content first,
      * then iteratively adjusts for cells spanning multiple columns.
-     * @param gridLayout The grid layout.
+     * @param gridLayout {GridItem[][]} The grid layout.
      * @returns Array of column widths.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -634,8 +635,8 @@ export class Grid {
 
         // Calculate minimum width needed for non-spanning cells
         // and track the maximum content width for each column
-        for (let colIndex = 0; colIndex < this.#options.columns; colIndex++) {
-            for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
+        for (let colIndex = 0; colIndex < this.#options.columns; colIndex += 1) {
+            for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex += 1) {
                 const cell = gridLayout[rowIndex]?.[colIndex];
 
                 // Skip if not a cell start position
@@ -665,8 +666,8 @@ export class Grid {
         }
 
         // Handle spanning cells more efficiently
-        for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
-            for (let colIndex = 0; colIndex < this.#options.columns; colIndex++) {
+        for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex += 1) {
+            for (let colIndex = 0; colIndex < this.#options.columns; colIndex += 1) {
                 const cell = gridLayout[rowIndex]?.[colIndex];
 
                 // Skip if not a cell start position
@@ -718,7 +719,7 @@ export class Grid {
 
                         let totalAdded = 0;
 
-                        for (let index = 0; index < colSpan && colIndex + index < this.#options.columns; index++) {
+                        for (let index = 0; index < colSpan && colIndex + index < this.#options.columns; index += 1) {
                             // Add the calculated base width, but don't exceed the total needed
                             const widthToAdd = Math.min(baseAdditionalWidth, additionalWidthNeeded - totalAdded);
 
@@ -749,7 +750,7 @@ export class Grid {
 
     /**
      * Renders a single *visual* line for a given logical row index.
-     * @param gridLayout The grid layout.
+     * @param gridLayout {GridItem[][]} The grid layout.
      * @param rowIndex The logical row index.
      * @param visualLineIndex The index of the visual line within the logical row to render (0-based).
      * @param columnWidths Calculated column widths.
@@ -815,13 +816,13 @@ export class Grid {
                 let relativeVisualLineIndex = visualLineIndex;
                 let bordersCrossed = 0;
 
-                for (let index = firstOccurrenceRow; index < rowIndex; index++) {
+                for (let index = firstOccurrenceRow; index < rowIndex; index += 1) {
                     if (index < rowHeights.length) {
                         relativeVisualLineIndex += rowHeights[index] ?? 1;
                     }
 
                     if (index < verticalPosition.lastRow) {
-                        bordersCrossed++;
+                        bordersCrossed += 1;
                     }
                 }
 
@@ -836,7 +837,7 @@ export class Grid {
                     case "bottom": {
                         let visualLineWithinSpan = visualLineIndex;
 
-                        for (let index = firstOccurrenceRow; index < rowIndex; index++) {
+                        for (let index = firstOccurrenceRow; index < rowIndex; index += 1) {
                             visualLineWithinSpan += rowHeights[index] ?? 1;
                         }
 
@@ -852,7 +853,7 @@ export class Grid {
                         // Determine the current visual line index RELATIVE to the start of the span
                         let visualLineWithinSpan = visualLineIndex;
 
-                        for (let index = firstOccurrenceRow; index < rowIndex; index++) {
+                        for (let index = firstOccurrenceRow; index < rowIndex; index += 1) {
                             visualLineWithinSpan += rowHeights[index] ?? 1;
                         }
 
@@ -986,14 +987,15 @@ export class Grid {
 
         // Apply word wrap
         if (this.#options.wordWrap && cell.wordWrap !== false) {
-            const wrapOptions = typeof cell.wordWrap === "object" ? cell.wordWrap : (typeof this.#options.wordWrap === "object" ? this.#options.wordWrap : {});
+            const optionsWordWrap = typeof this.#options.wordWrap === "object" ? this.#options.wordWrap : {};
+            const wrapOptions = typeof cell.wordWrap === "object" ? cell.wordWrap : optionsWordWrap;
 
             processedLines = wordWrap(contentString, { ...wrapOptions, width: baseContentWidth }).split("\n");
         }
 
         if (this.#options.truncate && cell.truncate !== false) {
-            const truncateOptions
-                = typeof cell.truncate === "object" ? cell.truncate : (typeof this.#options.truncate === "object" ? this.#options.truncate : {});
+            const optionsTruncate = typeof this.#options.truncate === "object" ? this.#options.truncate : {};
+            const truncateOptions = typeof cell.truncate === "object" ? cell.truncate : optionsTruncate;
 
             processedLines = processedLines.map((line) => truncate(line, baseContentWidth, truncateOptions));
         } else {
@@ -1079,7 +1081,7 @@ export class Grid {
 
         let segment = "";
 
-        for (let col = 0; col < this.#options.columns; col++) {
+        for (let col = 0; col < this.#options.columns; col += 1) {
             const cellAbove: GridItem | null = gridLayout[rowIndex]?.[col] ?? null;
 
             const cellBelow: GridItem | null = borderType === "middle" && nextRowIndex !== -1 ? gridLayout[nextRowIndex]?.[col] ?? null : null;
@@ -1120,7 +1122,7 @@ export class Grid {
             }
 
             // cellAbove starts here (isStartCol is true)
-            definingCell = cellAbove;
+            // = cellAbove;
 
             const colSpan = definingCell.colSpan ?? 1;
             const isVerticalSpan = borderType === "middle" && cellBelow && cellAbove === cellBelow;
@@ -1148,12 +1150,12 @@ export class Grid {
                     // Calculate which content line falls on this border naturally
                     let heightUpToBorder = 0;
 
-                    for (let index = firstRow; index <= rowIndex; index++) {
+                    for (let index = firstRow; index <= rowIndex; index += 1) {
                         heightUpToBorder += rowHeights[index] ?? 1; // Sum heights of rows *within the span* up to the border
 
                         // Add 1 for each border crossed *within* the span before this one
                         if (index < rowIndex) {
-                            heightUpToBorder++;
+                            heightUpToBorder += 1;
                         }
                     }
 
@@ -1189,7 +1191,7 @@ export class Grid {
                 // CASE: Top/Bottom border OR cell does NOT span vertically across middle border
                 const segmentParts: string[] = [];
 
-                for (let innerCol = col; innerCol < col + colSpan; innerCol++) {
+                for (let innerCol = col; innerCol < col + colSpan; innerCol += 1) {
                     const innerWidth = columnWidths[innerCol] ?? 0;
                     const charToRepeat = bodyWidth > 0 ? bodyChar : " "; // Use dash or space
 
@@ -1225,6 +1227,7 @@ export class Grid {
                 }
             }
 
+            // eslint-disable-next-line sonarjs/updated-loop-counter
             col += colSpan - 1; // Advance loop counter
         }
 
@@ -1346,10 +1349,10 @@ export class Grid {
             lines.push(this.renderHorizontalBorder(gridLayout, rowHeights, 0, columnWidths, "top"));
         }
 
-        for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
+        for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex += 1) {
             const visualHeight = rowHeights[rowIndex] ?? 1;
 
-            for (let visualLineIndex = 0; visualLineIndex < visualHeight; visualLineIndex++) {
+            for (let visualLineIndex = 0; visualLineIndex < visualHeight; visualLineIndex += 1) {
                 lines.push(this.renderVisualRowContent(gridLayout, rowIndex, visualLineIndex, columnWidths, rowHeights));
             }
 
@@ -1365,7 +1368,7 @@ export class Grid {
                 let needsBorder = false;
 
                 if (currentRow && nextRow) {
-                    for (let col = 0; col < this.#options.columns; col++) {
+                    for (let col = 0; col < this.#options.columns; col += 1) {
                         const currentCell = currentRow[col];
 
                         const nextCell = nextRow[col];
@@ -1397,7 +1400,7 @@ export class Grid {
 
     /**
      * Gets the vertical position (first and last row) of a cell, using a cache.
-     * @param gridLayout The grid layout.
+     * @param gridLayout {GridItem[][]} The grid layout.
      * @param rowIndex Current row index (used as context, not start row).
      * @param colIndex Column index.
      * @param cell The cell item.

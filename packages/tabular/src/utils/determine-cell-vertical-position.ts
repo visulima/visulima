@@ -2,10 +2,10 @@ import type { GridItem } from "../types";
 
 /**
  * Determines the vertical position and content visibility of a cell in a grid layout.
- * @param gridLayout The grid layout array.
- * @param rowIndex Row index of the cell.
- * @param col Column index of the cell.
- * @param cell The cell to check.
+ * @param gridLayout {GridItem[][]} The grid layout array.
+ * @param rowIndex {number} Row index of the cell.
+ * @param col {number} Column index of the cell.
+ * @param cell {GridItem} The cell to check.
  * @returns Object containing content visibility and row bounds.
  */
 const determineCellVerticalPosition = (

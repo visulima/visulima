@@ -13,10 +13,10 @@ type AlignCellContentFunction = (cell: GridItem, totalWidth: number) => string[]
 
 /**
  * A function that finds the first row index where a given cell instance appears.
- * @param gridLayout The grid layout.
- * @param rowIndex The starting row index for the search.
- * @param colIndex The starting column index for the search.
- * @param cell The cell instance to find.
+ * @param gridLayout {GridItem[][]} The grid layout.
+ * @param rowIndex {number} The starting row index for the search.
+ * @param colIndex {number} The starting column index for the search.
+ * @param cell {GridItem} The cell instance to find.
  * @returns The row index of the first occurrence.
  */
 type FindFirstOccurrenceRowFunction = (gridLayout: (GridItem | null)[][], rowIndex: number, colIndex: number, cell: GridItem) => number;
@@ -25,11 +25,11 @@ type FindFirstOccurrenceRowFunction = (gridLayout: (GridItem | null)[][], rowInd
  * Calculates the required visual height (number of lines) for each logical row in a grid.
  * Handles cells spanning multiple rows and ensures enough total height is allocated,
  * considering fixed row heights.
- * @param gridLayout The grid layout array, potentially sparse.
- * @param columnWidths The calculated widths for each column.
- * @param options Grid options with defaults applied.
- * @param alignCellContent Function to align cell content and return lines.
- * @param findFirstOccurrenceRow Function to find the first row a cell appears in.
+ * @param gridLayout {GridItem[][]} The grid layout array, potentially sparse.
+ * @param columnWidths {number[]} The calculated widths for each column.
+ * @param options {GridOptionsWithDefaults} Grid options with defaults applied.
+ * @param alignCellContent {AlignCellContentFunction} Function to align cell content and return lines.
+ * @param findFirstOccurrenceRow {FindFirstOccurrenceRowFunction} Function to find the first row a cell appears in.
  * @returns An array where each index corresponds to a logical row index and the value is its visual height.
  */
 const calculateRowHeights = (
@@ -47,7 +47,7 @@ const calculateRowHeights = (
     // Determine the maximum row index occupied by any cell.
     let maxRowIndex = gridLayout.length - 1;
 
-    for (let r = 0; r < gridLayout.length; r++) {
+    for (let r = 0; r < gridLayout.length; r += 1) {
         const row = gridLayout[r];
 
         if (!row) {
@@ -67,14 +67,14 @@ const calculateRowHeights = (
     const rowHeights: number[] = Array.from<number>({ length: maxRowIndex + 1 }).fill(1);
 
     // Initial Pass - Calculate height for SINGLE-ROW cells only
-    for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
+    for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex += 1) {
         const row = gridLayout[rowIndex];
 
         if (!row) {
             continue;
         }
 
-        for (let colIndex = 0; colIndex < options.columns; colIndex++) {
+        for (let colIndex = 0; colIndex < options.columns; colIndex += 1) {
             const cell = row[colIndex];
 
             // Process only if it's the start of a SINGLE-ROW cell
@@ -93,8 +93,8 @@ const calculateRowHeights = (
     const isRowFixed: boolean[] = Array.from<boolean>({ length: rowHeights.length }).fill(false);
 
     if (options.fixedRowHeights) {
-        for (let index = 0; index < rowHeights.length; index++) {
-            let fixedHeight: number | null | undefined = null;
+        for (let index = 0; index < rowHeights.length; index += 1) {
+            let fixedHeight: number | null | undefined;
 
             if (options.fixedRowHeights[index] !== undefined && options.fixedRowHeights[index] !== null) {
                 fixedHeight = options.fixedRowHeights[index];
@@ -113,14 +113,14 @@ const calculateRowHeights = (
 
     // Distribute Deficit for SPANNING Cells
     // Iterate through grid again to process spanning cells in a defined order
-    for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex++) {
+    for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex += 1) {
         const row = gridLayout[rowIndex];
 
         if (!row) {
             continue;
         }
 
-        for (let colIndex = 0; colIndex < options.columns; colIndex++) {
+        for (let colIndex = 0; colIndex < options.columns; colIndex += 1) {
             const cell = row[colIndex];
 
             // Process only if it's the START of a SPANNING cell
@@ -138,13 +138,13 @@ const calculateRowHeights = (
                 let nonFixedRowCount = 0;
 
                 // Calculate current height and non-fixed count for the actual span range
-                for (let r = firstRow; r <= lastRow && r < rowHeights.length; r++) {
+                for (let r = firstRow; r <= lastRow && r < rowHeights.length; r += 1) {
                     currentAllocatedHeight += rowHeights[r] ?? 1;
 
                     // Use the isRowFixed array calculated in Step 2
 
                     if (!isRowFixed[r]) {
-                        nonFixedRowCount++;
+                        nonFixedRowCount += 1;
                     }
                 }
 
@@ -158,7 +158,7 @@ const calculateRowHeights = (
                         let addedDeficit = 0;
 
                         // Distribute only over the actual span range
-                        for (let r = firstRow; r <= lastRow && r < rowHeights.length; r++) {
+                        for (let r = firstRow; r <= lastRow && r < rowHeights.length; r += 1) {
                             // Use the isRowFixed array calculated in Step 2
 
                             if (!isRowFixed[r]) {
