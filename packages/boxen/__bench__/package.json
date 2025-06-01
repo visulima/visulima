@@ -1,5 +1,5 @@
 {
-    "name": "@visulima/boxen-bench",
+    "name": "boxen-bench",
     "private": true,
     "type": "module",
     "scripts": {

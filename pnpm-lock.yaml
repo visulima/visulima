@@ -509,15 +509,6 @@ importers:
         specifier: 5.8.3
         version: 5.8.3
 
-  examples/boxen:
-    dependencies:
-      '@visulima/boxen':
-        specifier: workspace:*
-        version: link:../../packages/boxen
-      '@visulima/colorize':
-        specifier: workspace:*
-        version: link:../../packages/colorize
-
   examples/cerebro:
     dependencies:
       '@visulima/cerebro':
