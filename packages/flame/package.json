@@ -117,9 +117,10 @@
         "get-uri": "^6.0.4"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.2.6",
+        "@anolilab/eslint-config": "^16.2.8",
         "@anolilab/semantic-release-preset": "^10.0.5",
         "@babel/core": "^7.27.4",
+        "@eslint/css": "0.8.1",
         "@tailwindcss/forms": "^0.5.10",
         "@tailwindcss/postcss": "4.1.8",
         "@tailwindcss/typography": "^0.5.16",
