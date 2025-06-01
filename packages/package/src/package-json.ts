@@ -320,6 +320,10 @@ export const ensurePackages = async (
         nonExistingPackages.push(packageName);
     }
 
+    if (nonExistingPackages.length === 0) {
+        return;
+    }
+
     if (typeof config.confirm?.message === "function") {
         config.confirm.message = config.confirm.message(nonExistingPackages);
     }
