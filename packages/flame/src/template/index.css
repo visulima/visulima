@@ -12,3 +12,8 @@
 .shiki {
     @apply overflow-y-auto pb-6 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-track]:bg-slate-700 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500;
 }
+
+.dark [type="checkbox"]:checked,
+.dark [type="radio"]:checked {
+    background-color: currentColor;
+}
