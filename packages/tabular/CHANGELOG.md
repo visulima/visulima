@@ -1,3 +1,24 @@
+## @visulima/tabular [1.0.8](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.7...@visulima/tabular@1.0.8) (2025-05-31)
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 1.4.1
+
+## @visulima/tabular [1.0.7](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.6...@visulima/tabular@1.0.7) (2025-05-31)
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 1.4.0
+
+## @visulima/tabular [1.0.6](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.5...@visulima/tabular@1.0.6) (2025-05-31)
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 1.3.0
+
 ## @visulima/tabular [1.0.5](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.4...@visulima/tabular@1.0.5) (2025-05-30)
 
 ### Bug Fixes

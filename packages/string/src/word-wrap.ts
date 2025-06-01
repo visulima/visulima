@@ -69,9 +69,10 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     }
 
     const rows: string[] = [];
+    const ansiTracker = new AnsiStateTracker();
+
     let currentLine = "";
     let currentWidth = 0;
-    const ansiTracker = new AnsiStateTracker();
     let isInsideEscape = false;
     let isInsideLinkEscape = false;
     let escapeBuffer = "";
@@ -126,12 +127,12 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             // Only add to rows if the current line is not empty
             // This fixes the issue with the extra newline at the beginning
             if (currentLine) {
-                rows.push(resetAnsiAtLineBreak(currentLine));
+                rows.push(currentLine + ansiTracker.getEndEscapesForAllActiveAttributes());
             }
 
             // Start a new line with active ANSI codes
-            currentLine = ansiTracker.getActiveEscapes();
-            currentWidth = 0;
+            currentLine = ansiTracker.getStartEscapesForAllActiveAttributes();
+            currentWidth = getStringWidth(currentLine); // Recalculate width of ANSI codes
 
             // Handle spaces at wrap points
             if (isSpace && trim) {
@@ -162,11 +163,11 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
         // If we've reached exactly the width limit, wrap
         if (currentWidth === width && index < string.length - 1) {
-            rows.push(resetAnsiAtLineBreak(currentLine));
+            rows.push(currentLine + ansiTracker.getEndEscapesForAllActiveAttributes());
 
             // Start a new line with active ANSI codes
-            currentLine = ansiTracker.getActiveEscapes();
-            currentWidth = 0;
+            currentLine = ansiTracker.getStartEscapesForAllActiveAttributes();
+            currentWidth = getStringWidth(currentLine); // Recalculate width of ANSI codes
 
             // Handle spaces after a wrap at exact width
             if (index + 1 < string.length && string[index + 1] === " " && trim) {
@@ -185,7 +186,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
     // Add the final line if not empty
     if (currentLine) {
-        rows.push(currentLine);
+        rows.push(currentLine + ansiTracker.getEndEscapesForAllActiveAttributes());
     }
 
     // Apply trim on the right side of each line if needed
@@ -236,13 +237,11 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
                 // Check if we need to wrap
                 if (currentWidth + segment.width > width) {
-                    // Only add the current line to rows if it's not empty
-                    // This fixes the issue with leading newlines
                     if (currentLine) {
-                        rows.push(resetAnsiAtLineBreak(currentLine));
+                        rows.push(currentLine);
                     }
 
-                    currentLine = stateTracker.getActiveEscapes();
+                    currentLine = stateTracker.getStartEscapesForAllActiveAttributes();
                     currentWidth = 0;
 
                     // Special handling for spaces at wrap points
@@ -254,7 +253,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
                         // For trim=false, space gets its own line
                         // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                        rows.push(stateTracker.getActiveEscapes() + segment.text);
+                        rows.push(stateTracker.getStartEscapesForAllActiveAttributes() + segment.text);
 
                         return true;
                     }
@@ -307,7 +306,6 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
     let index = 0;
 
     // Process each token (word or space)
-
     while (index < tokens.length) {
         // eslint-disable-next-line security/detect-object-injection
         const token = tokens[index] as string;
@@ -366,6 +364,97 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
 };
 
 /**
+ * Wraps text respecting word boundaries. If a word is longer than the width, it will be broken.
+ * @param string - The string to wrap
+ * @param width - Maximum width
+ * @param trim - Whether to trim whitespace
+ * @returns Array of wrapped lines
+ */
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const wrapAndBreakWords = (string: string, width: number, trim: boolean): string[] => {
+    if (string.length === 0) {
+        return [];
+    }
+
+    const inputToProcess = trim ? string.trim() : string;
+
+    if (inputToProcess.length === 0) {
+        return [];
+    }
+
+    const tokens = inputToProcess.split(/(?=\s)|(?<=\s)/);
+    const rows: string[] = [];
+
+    let currentLine = "";
+    let currentWidth = 0;
+    let index = 0;
+
+    while (index < tokens.length) {
+        const token = tokens[index] as string;
+        const isSpace = /^\s+$/.test(token);
+        const tokenVisibleWidth = getStringWidth(token);
+
+        if (token.length === 0) {
+            index++;
+            continue;
+        }
+
+        if (trim && isSpace && currentWidth === 0) {
+            index++;
+            continue;
+        }
+
+        // If the token itself is wider than the line width
+        if (tokenVisibleWidth > width) {
+            if (currentLine) { // Push any existing line before processing the long token
+                rows.push(resetAnsiAtLineBreak(trim ? stringVisibleTrimSpacesRight(currentLine) : currentLine));
+            }
+
+            const brokenLines = wrapWithBreakAtWidth(token, width, trim);
+
+            if (brokenLines.length > 0) {
+                for (let i = 0; i < brokenLines.length - 1; i++) {
+                    rows.push(brokenLines[i] as string);
+                }
+
+                currentLine = brokenLines[brokenLines.length - 1] as string;
+                currentWidth = getStringWidth(currentLine);
+            } else {
+                currentLine = ""; // Should not happen if tokenVisibleWidth > 0
+                currentWidth = 0;
+            }
+
+            index++;
+            continue;
+        }
+
+        // If adding this token would exceed width (and it's not the first thing on the line)
+        if (currentWidth + tokenVisibleWidth > width && currentWidth > 0) {
+            rows.push(resetAnsiAtLineBreak(trim ? stringVisibleTrimSpacesRight(currentLine) : currentLine));
+
+            currentLine = "";
+            currentWidth = 0;
+
+            if (trim && isSpace) {
+                index++;
+                continue;
+            }
+        }
+
+        currentLine += token;
+        currentWidth += tokenVisibleWidth;
+
+        index++;
+    }
+
+    if (currentLine) {
+        rows.push(resetAnsiAtLineBreak(trim ? stringVisibleTrimSpacesRight(currentLine) : currentLine));
+    }
+
+    return rows;
+};
+
+/**
  * Enum representing different wrapping strategies for text
  */
 export const WrapMode = {
@@ -383,6 +472,11 @@ export const WrapMode = {
      * Enforces strict adherence to the width limit by breaking at exact width
      */
     STRICT_WIDTH: "STRICT_WIDTH",
+
+    /**
+     * Breaks lines at word boundaries. If a word is longer than the width, it will be broken.
+     */
+    BREAK_WORDS: "BREAK_WORDS",
 } as const;
 
 /**
@@ -412,6 +506,7 @@ export interface WordWrapOptions {
      * - PRESERVE_WORDS: Words are kept intact even if they exceed width (default)
      * - BREAK_AT_CHARACTERS: Words are broken at character boundaries to fit width
      * - STRICT_WIDTH: Forces breaking exactly at width limit, always
+     * - BREAK_WORDS: Breaks at word boundaries, but breaks words if they are too long
      * @default WrapMode.PRESERVE_WORDS
      */
     wrapMode?: keyof typeof WrapMode;
@@ -453,6 +548,10 @@ export const wordWrap = (string: string, options: WordWrapOptions = {}): string 
             }
             case WrapMode.BREAK_AT_CHARACTERS: {
                 wrappedLines = wrapCharByChar(line, width, trim);
+                break;
+            }
+            case WrapMode.BREAK_WORDS: {
+                wrappedLines = wrapAndBreakWords(line, width, trim);
                 break;
             }
             default: {

@@ -1,6 +1,6 @@
 {
     "name": "@visulima/string",
-    "version": "1.2.3",
+    "version": "1.4.1",
     "description": "Functions for manipulating strings.",
     "keywords": [
         "visulima",
@@ -215,6 +215,26 @@
                 "default": "./dist/case/pascal-case.mjs"
             }
         },
+        "./align-text": {
+            "require": {
+                "types": "./dist/align-text.d.cts",
+                "default": "./dist/align-text.cjs"
+            },
+            "import": {
+                "types": "./dist/align-text.d.mts",
+                "default": "./dist/align-text.mjs"
+            }
+        },
+        "./word-wrap": {
+            "require": {
+                "types": "./dist/word-wrap.d.cts",
+                "default": "./dist/word-wrap.cjs"
+            },
+            "import": {
+                "types": "./dist/word-wrap.d.mts",
+                "default": "./dist/word-wrap.mjs"
+            }
+        },
         "./slice": {
             "require": {
                 "types": "./dist/slice.d.cts",
@@ -424,6 +444,12 @@
             ],
             "case/pascal-case": [
                 "./dist/case/pascal-case.d.ts"
+            ],
+            "align-text": [
+                "./dist/align-text.d.ts"
+            ],
+            "word-wrap": [
+                "./dist/word-wrap.d.ts"
             ],
             "slice": [
                 "./dist/slice.d.ts"
