@@ -1,3 +1,13 @@
+## @visulima/boxen [2.0.0](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.31...@visulima/boxen@2.0.0) (2025-06-01)
+
+### ⚠ BREAKING CHANGES
+
+* **boxen:** Changed wrap-ansi, string-width to @visulima/string, changed min version of node to 20.18
+
+### Features
+
+* **boxen:** changing wrap-ansi, string-width to @visulima/string ([#505](https://github.com/visulima/visulima/issues/505)) ([133510d](https://github.com/visulima/visulima/commit/133510da7409d7a67c8a423432f60b3df307331b))
+
 ## @visulima/boxen [1.0.31](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.30...@visulima/boxen@1.0.31) (2025-05-30)
 
 ### Bug Fixes
