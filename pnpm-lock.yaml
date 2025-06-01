@@ -979,8 +979,8 @@ importers:
         specifier: 1.3.6
         version: 1.3.6
       '@visulima/string':
-        specifier: workspace:*
-        version: link:../string
+        specifier: 1.4.1
+        version: 1.4.1
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.1.4(@vitest/browser@3.1.4)(vitest@3.1.4)
@@ -10350,6 +10350,10 @@ packages:
 
   '@visulima/string@1.2.3':
     resolution: {integrity: sha512-IzL0YDpWs/KSLUpQh0de2Bvo4b2dFYlfyDlnuNYJHqGxot4ozHBpUBssB3p0WNZ7vkPwCLEDOwIMIfVY0G6QSw==}
+    engines: {node: '>=18.0.0 <=23.x'}
+
+  '@visulima/string@1.4.1':
+    resolution: {integrity: sha512-OtUEbBTxPzG2kA2BhN2ueIvCDFfwG7Xb5AwiBWHNKP12NTPATx/E3Y5MHh8n5MIUZJtbSO8Y+fYOMKow+6YxWw==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/tsconfig@1.1.15':
@@ -29617,6 +29621,8 @@ snapshots:
       '@visulima/path': 1.3.5
 
   '@visulima/string@1.2.3': {}
+
+  '@visulima/string@1.4.1': {}
 
   '@visulima/tsconfig@1.1.15(yaml@2.8.0)':
     dependencies:
