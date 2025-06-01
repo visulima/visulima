@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { boxen } from "../../src";
 
-const longText =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas id erat arcu. Integer urna mauris, sodales vel egestas eu, consequat id turpis. Vivamus faucibus est mattis tincidunt lobortis. In aliquam placerat nunc eget viverra. Duis aliquet faucibus diam, blandit tincidunt magna congue eu. Sed vel ante vestibulum, maximus risus eget, iaculis velit. Quisque id dapibus purus, ut sodales lorem. Aenean laoreet iaculis tellus at malesuada. Donec imperdiet eu lacus vitae fringilla.";
+const longText
+    = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas id erat arcu. Integer urna mauris, sodales vel egestas eu, consequat id turpis. Vivamus faucibus est mattis tincidunt lobortis. In aliquam placerat nunc eget viverra. Duis aliquet faucibus diam, blandit tincidunt magna congue eu. Sed vel ante vestibulum, maximus risus eget, iaculis velit. Quisque id dapibus purus, ut sodales lorem. Aenean laoreet iaculis tellus at malesuada. Donec imperdiet eu lacus vitae fringilla.";
 
 vi.mock("terminal-size", () => {
     return {
@@ -21,7 +21,6 @@ describe("text option", () => {
     it("textColor option", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const box = boxen("foo", { textColor: (text: string) => bgRed(text) });
 
         expect(box).toMatchSnapshot();
@@ -30,7 +29,6 @@ describe("text option", () => {
     it("headerTextColor option", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const box = boxen("foo", { headerText: "Header Text", headerTextColor: (text: string) => bgRed(text) });
 
         expect(box).toMatchSnapshot();
@@ -39,7 +37,6 @@ describe("text option", () => {
     it("footerTextColor option", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const box = boxen("foo", { footerText: "Footer Text", footerTextColor: (text: string) => bgRed(text) });
 
         expect(box).toMatchSnapshot();
@@ -49,10 +46,9 @@ describe("text option", () => {
         expect.assertions(1);
 
         expect(() => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
             // @ts-ignore - intentional error for testing
             boxen("foo", { textColor: "dark-yellow" });
-        }).toThrow('"textColor" is not a valid function');
+        }).toThrow("\"textColor\" is not a valid function");
     });
 
     it("text alignement option (left)", () => {

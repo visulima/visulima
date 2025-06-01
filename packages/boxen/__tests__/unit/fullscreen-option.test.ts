@@ -12,6 +12,7 @@ vi.mock("terminal-size", () => {
         },
     };
 });
+
 describe("fullscreen option", () => {
     it("fullscreen option", () => {
         expect.assertions(1);
