@@ -90,7 +90,6 @@
         "ts:coverage": "typescript-coverage-report"
     },
     "devDependencies": {
-        "eslint-plugin-playwright": "2.2.0",
         "@anolilab/eslint-config": "^16.2.4",
         "@anolilab/semantic-release-pnpm": "1.1.11",
         "@anolilab/semantic-release-preset": "^10.0.5",
@@ -107,6 +106,7 @@
         "cross-env": "^7.0.3",
         "esbuild": "0.25.5",
         "eslint": "9.28.0",
+        "eslint-plugin-playwright": "2.2.0",
         "playwright": "^1.52.0",
         "rimraf": "6.0.1",
         "secretlint": "9.3.3",
