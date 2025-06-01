@@ -1,6 +1,10 @@
-interface BaseOptions {
+export type Alignment = "center" | "left" | "right";
+
+export type BorderPosition = "bottom" | "bottomLeft" | "bottomRight" | "horizontal" | "left" | "right" | "top" | "topLeft" | "topRight";
+
+export interface BaseOptions {
     borderColor?: (border: string, position: BorderPosition, length: number) => string;
-    float?: "center" | "left" | "right";
+    float?: Alignment;
     footerText?: string;
     footerTextColor?: (text: string) => string;
     fullscreen?: boolean | ((width: number, height: number) => { columns: number; rows: number });
@@ -32,22 +36,20 @@ export interface BorderStyle {
     vertical?: string;
 }
 
-export type BorderPosition = "bottom" | "bottomLeft" | "bottomRight" | "horizontal" | "left" | "right" | "top" | "topLeft" | "topRight";
-
 export interface Options extends BaseOptions {
     borderStyle?: BorderStyle | "arrow" | "bold" | "classic" | "double" | "doubleSingle" | "none" | "round" | "single" | "singleDouble";
-    footerAlignment?: "center" | "left" | "right";
-    headerAlignment?: "center" | "left" | "right";
+    footerAlignment?: Alignment;
+    headerAlignment?: Alignment;
     margin?: Partial<Spacer> | number;
     padding?: Partial<Spacer> | number;
-    textAlignment?: "center" | "left" | "right";
+    textAlignment?: Alignment;
 }
 
 export interface DimensionOptions extends BaseOptions {
     borderStyle: BorderStyle | string;
-    footerAlignment: "center" | "left" | "right";
-    headerAlignment: "center" | "left" | "right";
+    footerAlignment: Alignment;
+    headerAlignment: Alignment;
     margin: Spacer;
     padding: Spacer;
-    textAlignment: "center" | "left" | "right";
+    textAlignment: Alignment;
 }

@@ -9,26 +9,30 @@ packages:
   - '!packages/package/__fixtures__/which-package-manager/**'
   - '!packages/package/__fixtures__/workspaces/**'
   - '!packages/readdir/__fixtures__/**'
+
   - apps/**
   - examples/**
   - packages/**
-  - packages/boxen/__fixtures__/package/cjs
-  - packages/boxen/__fixtures__/package/mjs
-  - packages/colorize/__fixtures__/package/cjs
-  - packages/colorize/__fixtures__/package/mjs
+
+  - packages/boxen/__bench__
   - packages/colorize/__bench__
-  - packages/cerebro/__fixtures__/package/cjs
-  - packages/cerebro/__fixtures__/package/mjs
   - packages/deep-clone/__bench__
   - packages/fmt/__bench__
   - packages/inspector/__bench__
+  - packages/pail/__bench__
+  - packages/string/__bench__
+  - packages/fs/__bench__
+
+  - packages/colorize/__fixtures__/package/cjs
+  - packages/colorize/__fixtures__/package/mjs
+  - packages/cerebro/__fixtures__/package/cjs
+  - packages/cerebro/__fixtures__/package/mjs
   - packages/package/__fixtures__/package/cjs
   - packages/package/__fixtures__/package/mjs
   - packages/pail/__fixtures__/package/cjs
   - packages/pail/__fixtures__/package/mjs
-  - packages/pail/__bench__
-  - packages/string/__bench__
-  - packages/fs/__bench__
+  - packages/boxen/__fixtures__/package/cjs
+  - packages/boxen/__fixtures__/package/mjs
   - packages/path/__fixtures__/package/cjs
   - packages/path/__fixtures__/package/mjs
   - packages/redact/__bench__
