@@ -160,9 +160,9 @@
         "rimraf": "^6.0.1",
         "sanitize-html": "^2.17.0",
         "semantic-release": "^24.2.5",
-        "shikiji": "^0.10.2",
+        "shiki": "^3.4.2",
         "sort-package-json": "^3.2.1",
-        "tailwindcss": "^4.1.8",
+        "tailwindcss": "^3",
         "typescript": "^5.8.3",
         "vitest": "^3.1.4"
     },
@@ -172,7 +172,7 @@
         "open-editor": "^4.1.1",
         "openai": "4.20.1",
         "sanitize-html": "^2.11.0",
-        "shikiji": "^0.7.5"
+        "shiki": "^3.4.0"
     },
     "peerDependenciesMeta": {
         "openai": {
@@ -190,7 +190,7 @@
         "sanitize-html": {
             "optional": true
         },
-        "shikiji": {
+        "shiki": {
             "optional": true
         }
     },

@@ -1,7 +1,5 @@
 import { codeFrame, parseStacktrace } from "@visulima/error";
-import { getHighlighterCore } from "shikiji/core";
-import nord from "shikiji/themes/nord.mjs";
-import { getWasmInlined } from "shikiji";
+import { createHighlighter } from "shiki";
 
 import findLanguageBasedOnExtension from "../../../util/find-language-based-on-extension";
 import getFileSource from "../../../util/get-file-source";
@@ -14,24 +12,23 @@ import revisionHash from "../../../util/revision-hash";
 const stackTraceViewer = async (error: Error): Promise<string> => {
     const uniqueKey = revisionHash(error.name + error.message + error.stack);
 
-    const shiki = await getHighlighterCore({
+    const highlighter = await createHighlighter({
         langs: [
-            import("shikiji/langs/javascript.mjs"),
-            import("shikiji/langs/typescript.mjs"),
-            import("shikiji/langs/jsx.mjs"),
-            import("shikiji/langs/tsx.mjs"),
-            import("shikiji/langs/json.mjs"),
-            import("shikiji/langs/jsonc.mjs"),
-            import("shikiji/langs/json5.mjs"),
-            import("shikiji/langs/xml.mjs"),
-            import("shikiji/langs/sql.mjs"),
+            "javascript",
+            "typescript",
+            "jsx",
+            "tsx",
+            "json",
+            "jsonc",
+            "json5",
+            "xml",
+            "sql",
         ],
-        loadWasm: getWasmInlined,
         themes: [
             // instead of strings, you need to pass the imported module
-            nord,
+            "nord",
             // or a dynamic import if you want to do chunk splitting
-            import("shikiji/themes/github-light.mjs"),
+            "github-light"
         ],
     });
 
@@ -62,7 +59,7 @@ const stackTraceViewer = async (error: Error): Promise<string> => {
               )
             : defaultSource;
 
-        const code = shiki.codeToHtml(sourceCodeFrame, {
+        const code = highlighter.codeToHtml(sourceCodeFrame, {
             lang: findLanguageBasedOnExtension(trace.file || ""),
             theme: "nord",
         });
