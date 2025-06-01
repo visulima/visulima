@@ -2147,6 +2147,8 @@ importers:
         specifier: ^3.1.4
         version: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/browser@3.1.4)(@vitest/ui@3.1.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
 
+  packages/fs/__bench__/fixtures/a/b: {}
+
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
@@ -10344,10 +10346,6 @@ packages:
 
   '@visulima/source-map@1.0.18':
     resolution: {integrity: sha512-4uoRjOamOBx7WNiOFn4eLtEkEbKHLHApciB6z5ZnKfnQ1VQ+YPw/SIRhYJOrrgl8X55XTcGGjhklMEvjN9gOgQ==}
-    engines: {node: '>=18.0.0 <=23.x'}
-
-  '@visulima/string@1.4.1':
-    resolution: {integrity: sha512-OtUEbBTxPzG2kA2BhN2ueIvCDFfwG7Xb5AwiBWHNKP12NTPATx/E3Y5MHh8n5MIUZJtbSO8Y+fYOMKow+6YxWw==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/string@1.4.1':
@@ -29617,8 +29615,6 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       '@visulima/path': 1.3.5
-
-  '@visulima/string@1.4.1': {}
 
   '@visulima/string@1.4.1': {}
 
