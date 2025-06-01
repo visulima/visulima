@@ -1,3 +1,9 @@
+## @visulima/package [3.5.6](https://github.com/visulima/visulima/compare/@visulima/package@3.5.5...@visulima/package@3.5.6) (2025-06-01)
+
+### Bug Fixes
+
+* **package-json:** add check to prevent installation of already installed packages ([8c0d9ff](https://github.com/visulima/visulima/commit/8c0d9ff20aaa598642ef3c6e6620dcd036770799))
+
 ## @visulima/package [3.5.5](https://github.com/visulima/visulima/compare/@visulima/package@3.5.4...@visulima/package@3.5.5) (2025-05-30)
 
 ### Bug Fixes
