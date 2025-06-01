@@ -18,9 +18,9 @@ const server = createServer(async (request, response) => {
     const error = new Error("This is a error message", {
         cause: new Error("This is a cause message", {
             cause: new Error("This is a nested cause message", {
-                cause: ["This is a nested cause string message", new Error("This is a nested cause message")]
-            })
-        })
+                cause: ["This is a nested cause string message", new Error("This is a nested cause message")],
+            }),
+        }),
     });
 
     error.hint = "This is a hint message";
@@ -29,10 +29,12 @@ const server = createServer(async (request, response) => {
         const displayerHandler = await httpDisplayer(error, [
             // openAiFinder()
         ]);
+
         // Assuming displayerHandler is a function that might be async or return a promise
         await displayerHandler(request, response);
-    } catch (e) {
-        console.error("Error in flame's httpDisplayer or its handler:", e);
+    } catch (error_) {
+        console.error("Error in flame's httpDisplayer or its handler:", error_);
+
         // Attempt to send a fallback response
         if (!response.headersSent) {
             response.writeHead(500, { "Content-Type": "text/plain" });

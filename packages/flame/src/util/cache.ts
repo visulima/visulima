@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, readdirSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+
 import revisionHash from "./revision-hash";
 
 const mapCache = new Map<string, string>();
@@ -36,14 +37,27 @@ const cache = (
     }
 
     return {
-        has: (key: string): boolean => {
+        clear: (): void => {
+            mapCache.clear();
+
+            readdirSync(cachePath).forEach((file) => {
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
+                unlinkSync(join(cachePath, file));
+            });
+        },
+        delete: (key: string): void => {
             const hashKey = revisionHash(key);
 
-            if (mapCache.has(hashKey)) {
-                return true;
+            mapCache.delete(hashKey);
+
+            const cacheFile = join(cachePath, hashKey);
+
+            if (!existsSync(cacheFile)) {
+                return;
             }
 
-            return existsSync(join(cachePath, hashKey));
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            unlinkSync(cacheFile);
         },
         get: (key: string): string | undefined => {
             const hashKey = revisionHash(key);
@@ -61,6 +75,15 @@ const cache = (
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             return readFileSync(cacheFile, "utf8");
         },
+        has: (key: string): boolean => {
+            const hashKey = revisionHash(key);
+
+            if (mapCache.has(hashKey)) {
+                return true;
+            }
+
+            return existsSync(join(cachePath, hashKey));
+        },
         set: (key: string, value: string): void => {
             const hashKey = revisionHash(key);
 
@@ -70,28 +93,6 @@ const cache = (
 
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             writeFileSync(cacheFile, value, "utf8");
-        },
-        delete: (key: string): void => {
-            const hashKey = revisionHash(key);
-
-            mapCache.delete(hashKey);
-
-            const cacheFile = join(cachePath, hashKey);
-
-            if (!existsSync(cacheFile)) {
-                return;
-            }
-
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            unlinkSync(cacheFile);
-        },
-        clear: (): void => {
-            mapCache.clear();
-
-            readdirSync(cachePath).forEach((file) => {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
-                unlinkSync(join(cachePath, file));
-            });
         },
     };
 };

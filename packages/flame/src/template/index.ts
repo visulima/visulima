@@ -4,11 +4,11 @@ import { getErrorCauses } from "@visulima/error/error";
 import type { Editor, SolutionError, SolutionFinder, Theme } from "../types";
 import process from "../util/process";
 import runtimeName from "../util/runtimes";
+import causesViewer from "./components/causes-viewer";
 import errorCard from "./components/error-card";
 import headerBar from "./components/header-bar";
 import rawStackTrace from "./components/raw-stack-trace";
 import stackTraceViewer from "./components/stack-trace-viewer";
-import causesViewer from "./components/causes-viewer";
 import inlineCss from "./index.css";
 import layout from "./layout";
 

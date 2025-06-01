@@ -1,7 +1,7 @@
 import type { Editor, Theme } from "../../../types";
+import tooltip from "../tooltip";
 import editorSelector from "./editor-selector";
 import themeToggle from "./theme-toggle";
-import tooltip from "../tooltip";
 
 const headerBar = (options: Partial<{ editor: Editor; theme: Theme }>): {
     html: string;
@@ -12,7 +12,7 @@ const headerBar = (options: Partial<{ editor: Editor; theme: Theme }>): {
 
     return {
         html: `<div class="my-4 w-full flex">
-    <div class="flex-grow"></div>
+    <div class="grow"></div>
     ${editorSelector(options.editor)}
     ${toggle.html}
     ${tooltipHtml}

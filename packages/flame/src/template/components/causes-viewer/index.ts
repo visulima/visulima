@@ -9,12 +9,12 @@ const causes = async (causes: any[]): Promise<{ html: string; script: string }> 
         };
     }
 
-    let content = [];
+    const content = [];
 
     for await (const [index, cause] of causes.entries()) {
         if (cause instanceof Error) {
             content.push(`<details aria-label="Cause ${index + 1}" class="bg-white border border-transparent rounded-xl dark:border-gray-700 dark:bg-gray-800 dark:border-transparent mb-2 last:mb-0 dark:shadow-none shadow-2xl shadow-gray-500/20 group">
-    <summary class="focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-all inline-flex justify-between items-center gap-x-3 w-full font-semibold text-start text-gray-800 py-4 px-5 hover:text-gray-500 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:text-gray-200 dark:hover:text-gray-400 dark:focus:outline-none dark:focus:text-gray-400 cursor-pointer">
+    <summary class="focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-all inline-flex justify-between items-center gap-x-3 w-full font-semibold text-start text-gray-800 py-4 px-5 hover:text-gray-500 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:text-gray-200 dark:hover:text-gray-400 dark:focus:outline-hidden dark:focus:text-gray-400 cursor-pointer">
       ${cause.name}: ${cause.message}
       <svg class="block group-open:hidden w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
       <svg class="hidden group-open:block! w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>

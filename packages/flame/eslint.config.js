@@ -1,0 +1,13 @@
+import { createConfig } from "@anolilab/eslint-config";
+
+export default createConfig({
+    ignores: ["dist", "node_modules", "coverage", "__fixtures__", "__docs__", "examples", "vitest.config.ts", "packem.config.ts", ".secretlintrc.cjs", "tsconfig.eslint.json", "package.json", "README.md"],
+}, {
+    files: ["**/*.test.ts"],
+    rules: {
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-secrets/no-secrets": "off",
+        "sonarjs/no-nested-functions": "off",
+        "unicorn/no-null": "off",
+    },
+});

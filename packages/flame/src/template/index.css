@@ -1,6 +1,6 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import 'tailwindcss';
+
+@config '../../tailwind.config.cjs';
 
 .flame {
     @apply bg-red-500;

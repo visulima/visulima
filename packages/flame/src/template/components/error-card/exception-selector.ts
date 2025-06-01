@@ -1,5 +1,5 @@
 const exceptionSelector = () => `<div>
 
-</div>`
+</div>`;
 
 export default exceptionSelector;

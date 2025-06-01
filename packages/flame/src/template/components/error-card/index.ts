@@ -37,12 +37,12 @@ const errorCard = async ({
     return {
         html: `<section id="error-card" class="container bg-white dark:shadow-none from-gray-700/50 via-transparent rounded-lg shadow-2xl shadow-gray-500/20 mb-6">
     <div class="xl:flex items-stretch">
-        <main id="error-card" class="z-10 flex-grow min-w-0">
+        <main id="error-card" class="z-10 grow min-w-0">
         <div class="px-6 pt-6 flex flex-row">
             <h1 class="text-lg font-semibold text-gray-500 dark:text-white bg-gray-100 py-1 px-2">
             ${error.name}
             </h1>
-            <div class="flex-grow"></div>
+            <div class="grow"></div>
             <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 py-1 px-2">
             ${runtime}
             </div>

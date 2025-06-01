@@ -5,8 +5,20 @@ const findLanguageBasedOnExtension = (file: string): string => {
         case "js": {
             return "javascript";
         }
+        case "json": {
+            return "json";
+        }
+        case "json5": {
+            return "json5";
+        }
+        case "jsonc": {
+            return "jsonc";
+        }
         case "jsx": {
             return "jsx";
+        }
+        case "sql": {
+            return "sql";
         }
         case "ts": {
             return "typescript";
@@ -14,20 +26,8 @@ const findLanguageBasedOnExtension = (file: string): string => {
         case "tsx": {
             return "tsx";
         }
-        case "json": {
-            return "json";
-        }
-        case "jsonc": {
-            return "jsonc";
-        }
-        case "json5": {
-            return "json5";
-        }
         case "xml": {
             return "xml";
-        }
-        case "sql": {
-            return "sql";
         }
         default: {
             return "javascript";

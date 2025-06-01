@@ -1,9 +1,9 @@
-import type { VisulimaError, Trace } from "@visulima/error/error";
+import type { Trace, VisulimaError } from "@visulima/error/error";
 import { parseStacktrace } from "@visulima/error/stacktrace";
+import infoIcon from "lucide-static/icons/info.svg";
+import closeIcon from "lucide-static/icons/x.svg";
 import { parse } from "marked";
 import sanitizeHtml from "sanitize-html";
-import closeIcon from "lucide-static/icons/x.svg";
-import infoIcon from "lucide-static/icons/info.svg";
 
 import errorHintFinder from "../../../solution/error-hint-finder";
 import type { Solution, SolutionError, SolutionFinder } from "../../../types";
@@ -28,7 +28,7 @@ const solutions = async (error: Error | SolutionError | VisulimaError, solutionF
             break;
         }
 
-        const {handle: solutionHandler, name} = handler;
+        const { handle: solutionHandler, name } = handler;
 
         debugLog(`Running solution finder: ${name}`);
 
@@ -97,8 +97,7 @@ const solutions = async (error: Error | SolutionError | VisulimaError, solutionF
             button.querySelector('.lucide-info').classList.toggle('hidden');
         });
 });`,
-    }
-
+    };
 };
 
 export default solutions;

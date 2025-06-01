@@ -1,12 +1,12 @@
+import { findCacheDirSync } from "@visulima/find-cache-dir";
 import OpenAI from "openai";
 import type { ChatCompletionCreateParamsBase } from "openai/resources/chat/completions";
-import { findCacheDirSync } from "@visulima/find-cache-dir";
 
 import type { Solution, SolutionFinder, SolutionFinderFile } from "../../types";
-import openAiPrompt from "./open-ai-prompt";
-import openAiSolutionResponse from "./open-ai-solution-response";
 import cache from "../../util/cache";
 import debugLog from "../../util/debug-log";
+import openAiPrompt from "./open-ai-prompt";
+import openAiSolutionResponse from "./open-ai-solution-response";
 
 const findCache = findCacheDirSync("visulima-flame");
 
@@ -56,7 +56,7 @@ const OpenAiFinder: (
                     return DEFAULT_ERROR_MESSAGE;
                 });
 
-            const choices = (chatCompletion as OpenAI.Chat.Completions.ChatCompletion).choices;
+            const { choices } = chatCompletion as OpenAI.Chat.Completions.ChatCompletion;
 
             if (choices === undefined) {
                 return {

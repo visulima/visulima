@@ -17,6 +17,7 @@ const groupSimilarTypes = (list: Item[]): (Item | Item[])[] => {
                 // Otherwise, add the single item
                 result.push(...currentGroup);
             }
+
             // Reset the group for the next items
             currentGroup = [];
         }
