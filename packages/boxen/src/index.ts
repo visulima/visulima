@@ -3,18 +3,15 @@
  *
  * MIT License
  *
- * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
  */
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import stringWidth from "string-width";
+import { alignText, getStringWidth, wordWrap, WrapMode } from "@visulima/string";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import wrapAnsi from "wrap-ansi";
 
-import { alignAnsi } from "./align";
-import type { BorderPosition, BorderStyle, DimensionOptions, Options, Spacer } from "./types";
+import type { Alignment, BorderPosition, BorderStyle, DimensionOptions, Options, Spacer } from "./types";
 import cliBoxes from "./vendor/cli-boxes/boxes";
 import { widestLine } from "./widest-line";
 
@@ -25,18 +22,18 @@ const NONE = "none";
 const getObject = (detail: Partial<Spacer> | number | undefined): Spacer =>
     (typeof detail === "number"
         ? {
-              bottom: detail,
-              left: detail * 3,
-              right: detail * 3,
-              top: detail,
-          }
+            bottom: detail,
+            left: detail * 3,
+            right: detail * 3,
+            top: detail,
+        }
         : {
-              bottom: 0,
-              left: 0,
-              right: 0,
-              top: 0,
-              ...detail,
-          });
+            bottom: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+            ...detail,
+        });
 
 const getBorderWidth = (borderStyle: BorderStyle | string) => (borderStyle === NONE ? 0 : 2);
 
@@ -51,7 +48,6 @@ const getBorderChars = (borderStyle: BorderStyle | string): BorderStyle => {
         // eslint-disable-next-line no-param-reassign
         borderStyle = {};
 
-        // eslint-disable-next-line no-restricted-syntax
         for (const side of sides) {
             // eslint-disable-next-line no-param-reassign
             borderStyle[side as keyof BorderStyle] = "";
@@ -83,9 +79,7 @@ const getBorderChars = (borderStyle: BorderStyle | string): BorderStyle => {
             borderStyle.bottom = borderStyle.horizontal;
         }
 
-        // eslint-disable-next-line no-restricted-syntax
         for (const side of sides) {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (borderStyle[side as keyof BorderStyle] === null || typeof borderStyle[side as keyof BorderStyle] !== "string") {
                 throw new TypeError(`Invalid border style: ${side}`);
             }
@@ -109,17 +103,17 @@ const wrapText = (
     // eslint-disable-next-line no-param-reassign
     text = colorizeText(text);
 
-    const textWidth = stringWidth(text);
+    const textWidth = getStringWidth(text);
 
     switch (alignment) {
         case "left": {
-            title = text + colorizeBorder(horizontal.slice(textWidth), stringWidth(horizontal.slice(textWidth)));
+            title = text + colorizeBorder(horizontal.slice(textWidth), getStringWidth(horizontal.slice(textWidth)));
 
             break;
         }
 
         case "right": {
-            title = colorizeBorder(horizontal.slice(textWidth + 2), stringWidth(horizontal.slice(textWidth)) + 2) + " " + text + " ";
+            title = `${colorizeBorder(horizontal.slice(textWidth + 2), getStringWidth(horizontal.slice(textWidth)) + 2)} ${text} `;
 
             break;
         }
@@ -133,12 +127,12 @@ const wrapText = (
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(Math.floor(horizontal.length / 2));
 
-                title = colorizeBorder(horizontal.slice(1), stringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, stringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
+                title = colorizeBorder(horizontal.slice(1), getStringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
             } else {
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(horizontal.length / 2);
 
-                const horizontalLength = stringWidth(horizontal);
+                const horizontalLength = getStringWidth(horizontal);
 
                 title = colorizeBorder(horizontal, horizontalLength) + text + colorizeBorder(horizontal, horizontalLength);
             }
@@ -153,7 +147,7 @@ const wrapText = (
 type ContentTextOptions = {
     height: number | undefined;
     padding: Spacer;
-    textAlignment: "center" | "left" | "right";
+    textAlignment: Alignment;
     width: number;
 };
 
@@ -163,7 +157,7 @@ const makeContentText = (
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     // eslint-disable-next-line no-param-reassign
-    text = alignAnsi(text, { align: textAlignment }) as string;
+    text = alignText(text, { align: textAlignment }) as string;
 
     let lines: string[] = text.split(NEWLINE);
 
@@ -173,14 +167,12 @@ const makeContentText = (
     if (textWidth > max) {
         const newLines = [];
 
-        // eslint-disable-next-line no-restricted-syntax
         for (const line of lines) {
-            const createdLines = wrapAnsi(line, max, { hard: true }) as string;
-            const alignedLines = alignAnsi(createdLines, { align: textAlignment });
+            const createdLines = wordWrap(line, { width: max, wrapMode: WrapMode.BREAK_WORDS }) as string;
+            const alignedLines = alignText(createdLines, { align: textAlignment });
             const alignedLinesArray = (alignedLines as string).split("\n");
-            const longestLength = Math.max(...alignedLinesArray.map((s) => stringWidth(s) as number));
+            const longestLength = Math.max(...alignedLinesArray.map((s) => getStringWidth(s)));
 
-            // eslint-disable-next-line no-restricted-syntax
             for (const alignedLine of alignedLinesArray) {
                 let paddedLine;
 
@@ -219,8 +211,9 @@ const makeContentText = (
 
     lines = lines.map((line) => {
         const newLine = paddingLeft + line + paddingRight;
+        const remainingWidth = width - getStringWidth(newLine);
 
-        return newLine + PAD.repeat(width - stringWidth(newLine));
+        return newLine + PAD.repeat(Math.max(remainingWidth, 0));
     });
 
     if (padding.top > 0) {
@@ -240,7 +233,6 @@ const makeContentText = (
     return lines.join(NEWLINE);
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const boxContent = (content: string, contentWidth: number, columnsWidth: number, options: DimensionOptions): string => {
     const colorizeBorder = (border: string, position: BorderPosition, length: number): string =>
         (options.borderColor ? options.borderColor(border, position, length) : border);
@@ -254,9 +246,11 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
 
     if (options.float === "center") {
         const marginWidth = Math.max((columnsWidth - contentWidth - getBorderWidth(options.borderStyle)) / 2, 0);
+
         marginLeft = PAD.repeat(marginWidth);
     } else if (options.float === "right") {
         const marginWidth = Math.max(columnsWidth - contentWidth - options.margin.right - getBorderWidth(options.borderStyle), 0);
+
         marginLeft = PAD.repeat(marginWidth);
     }
 
@@ -279,9 +273,9 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
             );
         }
 
-        const topBorder = colorizeBorder(marginLeft + chars.topLeft, "topLeft", stringWidth(marginLeft + chars.topLeft));
+        const topBorder = colorizeBorder(marginLeft + chars.topLeft, "topLeft", getStringWidth(marginLeft + chars.topLeft));
 
-        result += topBorder + headerText + colorizeBorder(chars.topRight, "topRight", stringWidth(chars.topRight)) + NEWLINE;
+        result += topBorder + headerText + colorizeBorder(chars.topRight, "topRight", getStringWidth(chars.topRight)) + NEWLINE;
     }
 
     const lines = content.split(NEWLINE);
@@ -289,15 +283,15 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
     result += lines
         .map(
             (line) =>
-                marginLeft +
-                colorizeBorder(chars.left, "left", stringWidth(chars.left)) +
-                colorizeContent(line) +
-                colorizeBorder(chars.right, "right", stringWidth(chars.right)),
+                marginLeft
+                + colorizeBorder(chars.left, "left", getStringWidth(chars.left))
+                + colorizeContent(line)
+                + colorizeBorder(chars.right, "right", getStringWidth(chars.right)),
         )
         .join(NEWLINE);
 
     if (options.borderStyle !== NONE || options.footerText) {
-        const bottomBorder = NEWLINE + colorizeBorder(marginLeft + chars.bottomLeft, "bottomLeft", stringWidth(marginLeft + chars.bottomLeft));
+        const bottomBorder = NEWLINE + colorizeBorder(marginLeft + chars.bottomLeft, "bottomLeft", getStringWidth(marginLeft + chars.bottomLeft));
         let footerText = colorizeBorder(chars.bottom.repeat(contentWidth), "bottom", contentWidth);
 
         if (options.footerText) {
@@ -310,7 +304,7 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
             );
         }
 
-        result += bottomBorder + footerText + colorizeBorder(chars.bottomRight, "bottomRight", stringWidth(chars.bottomRight));
+        result += bottomBorder + footerText + colorizeBorder(chars.bottomRight, "bottomRight", getStringWidth(chars.bottomRight));
     }
 
     if (options.margin.bottom) {
@@ -366,7 +360,7 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
     const borderWidth = getBorderWidth(options.borderStyle);
     const maxWidth = columnsWidth - options.margin.left - options.margin.right - borderWidth;
 
-    const widest = widestLine(wrapAnsi(text, columnsWidth - borderWidth, { hard: true, trim: false })) + options.padding.left + options.padding.right;
+    const widest = widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS })) + options.padding.left + options.padding.right;
 
     // If title and width are provided, title adheres to fixed width
     if (options.headerText && widthOverride) {
@@ -385,16 +379,17 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
         if (options.headerText) {
             // eslint-disable-next-line no-param-reassign
             options.headerText = formatTitle(options.headerText, options.borderStyle);
+
             // If the title is larger than content, box adheres to title width
-            if (stringWidth(options.headerText) > widest) {
+            if (getStringWidth(options.headerText) > widest) {
                 // eslint-disable-next-line no-param-reassign
-                options.width = stringWidth(options.headerText);
+                options.width = getStringWidth(options.headerText);
             }
         }
     }
 
     // If fixed width is provided, use it or content width as reference
-    // eslint-disable-next-line no-param-reassign,@typescript-eslint/prefer-nullish-coalescing
+    // eslint-disable-next-line no-param-reassign
     options.width = options.width || widest;
 
     if (!widthOverride) {
@@ -403,6 +398,7 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
             const spaceForMargins = columnsWidth - options.width - borderWidth;
             // Let's assume we have space = 4
             const multiplier = spaceForMargins / (options.margin.left + options.margin.right);
+
             // Here: multiplier = 4/8 = 0.5
             // eslint-disable-next-line no-param-reassign
             options.margin.left = Math.max(0, Math.floor(options.margin.left * multiplier));
@@ -435,7 +431,6 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
     return options;
 };
 
-// eslint-disable-next-line import/prefer-default-export
 export const boxen = (text: string, options: Options = {}): string => {
     if (options.borderColor !== undefined && typeof options.borderColor !== "function") {
         throw new Error(`"borderColor" is not a valid function`);
@@ -471,3 +466,5 @@ export const boxen = (text: string, options: Options = {}): string => {
 
     return boxContent(makeContentText(text, config as ContentTextOptions), config.width as number, columns, config);
 };
+
+export type { Alignment, BaseOptions, BorderPosition, BorderStyle, DimensionOptions, Options, Spacer } from "./types";

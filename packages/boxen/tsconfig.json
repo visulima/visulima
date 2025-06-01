@@ -2,8 +2,8 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "display": "Node 16",
     "extends": "../../tsconfig.base.json",
-    "include": ["src/**/*", "*.d.ts"],
     "compilerOptions": {
         "moduleResolution": "bundler"
-    }
+    },
+    "include": ["src/**/*", "*.d.ts"]
 }

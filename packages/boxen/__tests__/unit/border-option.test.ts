@@ -8,7 +8,7 @@ describe("border option", () => {
         expect.assertions(1);
 
         const box = boxen("foo", {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
             borderColor: (border: string) => red(border),
         });
 
@@ -21,21 +21,17 @@ describe("border option", () => {
         const box = boxen("foo", {
             borderColor: (border, position): string => {
                 if (position === "top") {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return red(border);
                 }
 
                 if (position === "left") {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return yellow(border);
                 }
 
                 if (position === "right") {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return green(border);
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return blue(border);
             },
         });
@@ -47,10 +43,9 @@ describe("border option", () => {
         expect.assertions(1);
 
         expect(() => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
             // @ts-ignore - intentional error for testing
             boxen("foo", { borderColor: "greasy-white" });
-        }).toThrow('"borderColor" is not a valid function');
+        }).toThrow("\"borderColor\" is not a valid function");
     });
 
     it("border style (single)", () => {
@@ -156,7 +151,6 @@ describe("border option", () => {
         expect.assertions(1);
 
         expect(() => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
             // @ts-ignore - intentional error for testing
             boxen("foo", { borderStyle: "shakenSnake" });
         }).toThrow("s");

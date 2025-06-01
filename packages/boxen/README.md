@@ -99,7 +99,7 @@ console.log(
 */
 ```
 
-Check more examples in the [examples/boxen](./examples/boxen) folder.
+Check more examples in the [examples folder](./examples).
 
 ## API
 
@@ -119,7 +119,7 @@ Type: `object`
 
 Type: `(border: string, position: BorderPosition, length: number) => string`\
 
-Color of the box border.
+Set the color of the box border.
 
 ```js
 import { boxen } from "@visulima/boxen";
@@ -245,7 +245,7 @@ Can be any of the above predefined styles or an object with the following keys:
 
 Type: `string`
 
-Display a title at the top of the box.
+Display text at the top of the box.
 If needed, the box will horizontally expand to fit the text.
 
 Example:
@@ -315,7 +315,7 @@ Values:
 
 Type: `string`
 
-Display a text at the bottom of the box.
+Display text at the bottom of the box.
 If needed, the box will horizontally expand to fit the text.
 
 Example:
@@ -487,13 +487,12 @@ Align the text in the box based on the widest line.
 ##### transformTabToSpace
 
 Type: `false | number`\
-Default: `'4'`
+Default: `4`
 
 Transform tab characters to spaces. Set to `false` to disable.
 
 ## Supported Node.js Versions
 
-26.3 15:00
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
 Here’s [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
