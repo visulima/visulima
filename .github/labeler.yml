@@ -1,56 +1,56 @@
-'package: ansi':
-  - 'packages/ansi/**/*'
-'package: api-platform':
-  - 'packages/api-platform/**/*'
-'package: boxen':
-  - 'packages/boxen/**/*'
-'package: cerebro':
-  - 'packages/cerebro/**/*'
-'package: colorize':
-  - 'packages/colorize/**/*'
-'package: connect':
-  - 'packages/connect/**/*'
-'package: crud':
-  - 'packages/crud/**/*'
-'package: deep-clone':
-  - 'packages/deep-clone/**/*'
-'package: error':
-  - 'packages/error/**/*'
-'package: find-cache-dir':
-  - 'packages/find-cache-dir/**/*'
-'package: fmt':
-  - 'packages/fmt/**/*'
-'package: fs':
-  - 'packages/fs/**/*'
-'package: health-check':
-  - 'packages/health-check/**/*'
-'package: humanizer':
-  - 'packages/humanizer/**/*'
-'package: inspector':
-  - 'packages/inspector/**/*'
-'package: is-ansi-color-supported':
-  - 'packages/is-ansi-color-supported/**/*'
-'package: jsdoc-open-api':
-  - 'packages/jsdoc-open-api/**/*'
-'package: object':
-  - 'packages/object/**/*'
-'package: package':
-  - 'packages/package/**/*'
-'package: pagination':
-  - 'packages/pagination/**/*'
-'package: pail':
-  - 'packages/pail/**/*'
-'package: path':
-  - 'packages/path/**/*'
-'package: prisma-dmmf-transformer':
-  - 'packages/prisma-dmmf-transformer/**/*'
-'package: redact':
-  - 'packages/redact/**/*'
-'package: source-map':
-  - 'packages/source-map/**/*'
-'package: string':
-  - 'packages/string/**/*'
-'package: tabular':
-  - 'packages/tabular/**/*'
-'package: tsconfig':
-  - 'packages/tsconfig/**/*'
+"package: ansi":
+    - "packages/ansi/**/*"
+"package: api-platform":
+    - "packages/api-platform/**/*"
+"package: boxen":
+    - "packages/boxen/**/*"
+"package: cerebro":
+    - "packages/cerebro/**/*"
+"package: colorize":
+    - "packages/colorize/**/*"
+"package: connect":
+    - "packages/connect/**/*"
+"package: crud":
+    - "packages/crud/**/*"
+"package: deep-clone":
+    - "packages/deep-clone/**/*"
+"package: error":
+    - "packages/error/**/*"
+"package: find-cache-dir":
+    - "packages/find-cache-dir/**/*"
+"package: fmt":
+    - "packages/fmt/**/*"
+"package: fs":
+    - "packages/fs/**/*"
+"package: health-check":
+    - "packages/health-check/**/*"
+"package: humanizer":
+    - "packages/humanizer/**/*"
+"package: inspector":
+    - "packages/inspector/**/*"
+"package: is-ansi-color-supported":
+    - "packages/is-ansi-color-supported/**/*"
+"package: jsdoc-open-api":
+    - "packages/jsdoc-open-api/**/*"
+"package: object":
+    - "packages/object/**/*"
+"package: package":
+    - "packages/package/**/*"
+"package: pagination":
+    - "packages/pagination/**/*"
+"package: pail":
+    - "packages/pail/**/*"
+"package: path":
+    - "packages/path/**/*"
+"package: prisma-dmmf-transformer":
+    - "packages/prisma-dmmf-transformer/**/*"
+"package: redact":
+    - "packages/redact/**/*"
+"package: source-map":
+    - "packages/source-map/**/*"
+"package: string":
+    - "packages/string/**/*"
+"package: tabular":
+    - "packages/tabular/**/*"
+"package: tsconfig":
+    - "packages/tsconfig/**/*"
