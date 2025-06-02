@@ -37,7 +37,6 @@ const stackTraceViewer = async (error: Error): Promise<string> => {
     const tabs: { html: string; type: GroupType }[] = [];
     const sourceCode: string[] = [];
 
-    // eslint-disable-next-line no-loops/no-loops
     for await (const [index, trace] of traces.entries()) {
         const defaultSource = `// Unable to load source code for ${trace.file}:${trace.line}:${trace.column}`;
 
@@ -115,17 +114,16 @@ const stackTraceViewer = async (error: Error): Promise<string> => {
                 ${groupSimilarTypes(tabs)
                     .map((tab) => {
                         if (Array.isArray(tab)) {
-                            return `<button type="button" class="hs-collapse-toggle py-3 px-6 border-b border-gray-100 inline-flex items-center gap-x-2 text-sm disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-gray-600" id="hs-${uniqueKey}-${
-                                (tab[0] as Item).type
-                            }" data-hs-collapse="#hs-${uniqueKey}-${(tab[0] as Item).type}-heading">
-${tab.length} ${(tab[0] as Item).type === "internal" ? "internal" : "node_modules"} frames
-    <svg class="hs-collapse-open:rotate-180 shrink-0 w-4 h-4 " xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-</button>
-<div id="hs-${uniqueKey}-${(tab[0] as Item).type}-heading" class="hs-collapse hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-${uniqueKey}-${
-    (tab[0] as Item).type
-}">
-  <div class="flex flex-col">${tab.map((item) => item.html).join("")}</div>
-</div>`;
+                            // Cast to Item to satisfy TypeScript, knowing it's an array of Item
+                            const firstItem = tab[0] as Item;
+
+                            return `<details class="border-b border-gray-100 dark:border-gray-700">
+<summary class="py-3 px-6 cursor-pointer flex items-center justify-between text-sm dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 focus:outline-hidden focus:ring-1 focus:ring-gray-600">
+    <span>${tab.length} ${firstItem.type === "internal" ? "internal" : "node_modules"} frames</span>
+    <svg class="shrink-0 w-4 h-4 transition-transform duration-300 details-open:rotate-180" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+</summary>
+<div class="flex flex-col">${tab.map((item) => item.html).join("")}</div>
+</details>`;
                         }
 
                         return tab.html;

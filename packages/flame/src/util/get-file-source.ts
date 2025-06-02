@@ -31,7 +31,7 @@ const getFileSource = async (file: string): Promise<string | undefined> => {
 
     try {
         const fileContent = await getUri(file);
-
+console.log(fileContent)
         // TODO: fix this
         const source = ""; // await streamToString(fileContent);
 

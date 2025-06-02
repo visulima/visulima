@@ -117,7 +117,7 @@
         "get-uri": "^6.0.4"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.2.8",
+        "@anolilab/eslint-config": "^16.2.9",
         "@anolilab/semantic-release-preset": "^10.0.5",
         "@babel/core": "^7.27.4",
         "@eslint/css": "0.8.1",
@@ -153,6 +153,7 @@
         "sort-package-json": "^3.2.1",
         "tailwindcss": "^4.1.8",
         "typescript": "^5.8.3",
+        "vite": "^6.3.5",
         "vitest": "^3.1.4"
     },
     "peerDependencies": {
