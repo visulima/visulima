@@ -3,36 +3,42 @@ import { describe, expect, it } from "vitest";
 import { titleCase } from "../../../src/case";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("titleCase", () => {
+describe(titleCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call should cache
             const result1 = titleCase(input, { cache: true, cacheStore: customCache });
+
             expect(result1).toBe("Test String");
             expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = titleCase(input, { cache: true, cacheStore: customCache });
+
             expect(result2).toBe("Test String");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call without cache
             const result1 = titleCase(input, { cache: false, cacheStore: customCache });
+
             expect(result1).toBe("Test String");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = titleCase(input, { cache: false, cacheStore: customCache });
+
             expect(result2).toBe("Test String");
             expect(customCache.size()).toBe(0);
         });
@@ -45,6 +51,7 @@ describe("titleCase", () => {
 
             // Use custom cache
             titleCase(input, { cache: true, cacheStore: customCache });
+
             expect(customCache.size()).toBe(1);
         });
     });

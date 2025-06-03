@@ -9,14 +9,11 @@ import normalizeGermanEszett from "./utils/normalize-german-eszett";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 
-// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to PascalCase.
- *
- * @param value - The string to convert.
- * @param options - Options for case conversion.
+ * @param value The string to convert.
+ * @param options Options for case conversion.
  * @returns The string in PascalCase.
- *
  * @example
  * ```typescript
  * pascalCase('foo bar') // 'FooBar'
@@ -27,7 +24,7 @@ const defaultCacheStore = new LRUCache<string, string>(1000);
  * pascalCase('QueryXML123String') // 'QueryXml123String'
  * ```
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const pascalCase = <T extends string = string>(value?: T, options?: CaseOptions): PascalCase<T> => {
     if (typeof value !== "string" || !value) {
         return "" as PascalCase<T>;

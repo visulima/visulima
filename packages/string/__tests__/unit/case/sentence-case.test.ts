@@ -3,36 +3,42 @@ import { describe, expect, it } from "vitest";
 import { sentenceCase } from "../../../src/case";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("sentenceCase", () => {
+describe(sentenceCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
 
             // First call should cache
             const result1 = sentenceCase(input, { cache: true, cacheStore: customCache });
+
             expect(result1).toBe("Test string");
             expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = sentenceCase(input, { cache: true, cacheStore: customCache });
+
             expect(result2).toBe("Test string");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
 
             // First call without cache
             const result1 = sentenceCase(input, { cache: false, cacheStore: customCache });
+
             expect(result1).toBe("Test string");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = sentenceCase(input, { cache: false, cacheStore: customCache });
+
             expect(result2).toBe("Test string");
             expect(customCache.size()).toBe(0);
         });
@@ -45,6 +51,7 @@ describe("sentenceCase", () => {
 
             // Use custom cache
             sentenceCase(input, { cache: true, cacheStore: customCache });
+
             expect(customCache.size()).toBe(1);
         });
     });
@@ -176,14 +183,18 @@ describe("sentenceCase", () => {
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             expect.assertions(2);
+
             const locale = "tr-TR";
+
             expect(sentenceCase("istanbul_city", { locale })).toBe("İstanbul city");
             expect(sentenceCase("İZMİR_CITY", { locale })).toBe("İzmir cıty");
         });
 
         it("should handle German specific cases", () => {
             expect.assertions(3);
+
             const locale = "de-DE";
+
             expect(sentenceCase("GROSSE STRAßE", { locale })).toBe("Große straße");
             expect(sentenceCase("GROSSE STRASSE", { locale })).toBe("Große straße");
             expect(sentenceCase("GROßE STRAßE", { locale })).toBe("Große straße");

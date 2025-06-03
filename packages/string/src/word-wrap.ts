@@ -6,7 +6,7 @@ import AnsiStateTracker from "./utils/ansi-state-tracker";
 
 /**
  * Helper function to reset ANSI sequences at line breaks
- * @param currentLine - Current line of text
+ * @param currentLine Current line of text
  * @returns Line with reset codes if needed
  */
 const resetAnsiAtLineBreak = (currentLine: string): string => {
@@ -15,10 +15,12 @@ const resetAnsiAtLineBreak = (currentLine: string): string => {
     }
 
     let result = currentLine;
+
     // Add reset codes in reverse order of how they were applied
     if (currentLine.includes("\u001B[30m")) {
         result += "\u001B[39m"; // foreground reset
     }
+
     if (currentLine.includes("\u001B[42m")) {
         result += "\u001B[49m"; // background reset
     }
@@ -28,7 +30,7 @@ const resetAnsiAtLineBreak = (currentLine: string): string => {
 
 /**
  * Trims spaces from a string's right side while preserving ANSI sequences
- * @param string - The string to trim
+ * @param string The string to trim
  * @returns The trimmed string
  */
 const stringVisibleTrimSpacesRight = (string: string): string => {
@@ -51,9 +53,9 @@ const stringVisibleTrimSpacesRight = (string: string): string => {
 /**
  * Wraps text based on the breakAtWidth option using precise character-level control
  * with proper ANSI sequence handling
- * @param string - The string to wrap
- * @param width - Maximum width
- * @param trim - Whether to trim whitespace
+ * @param string The string to wrap
+ * @param width Maximum width
+ * @param trim Whether to trim whitespace
  * @returns Array of wrapped lines
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -80,7 +82,6 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     // For each character in the input string
     // eslint-disable-next-line no-plusplus
     for (let index = 0; index < string.length; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         const char = string[index] as string;
 
         // Handle escape sequences
@@ -90,8 +91,9 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             currentLine += char;
 
             const escapeInfo = checkEscapeSequence([...string], index);
+
             isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
-            // eslint-disable-next-line no-continue
+
             continue;
         }
 
@@ -108,7 +110,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
                 isInsideEscape = false;
                 ansiTracker.processEscape(escapeBuffer);
             }
-            // eslint-disable-next-line no-continue
+
             continue;
         }
 
@@ -118,7 +120,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
         // Skip zero-width characters
         if (charWidth === 0) {
             currentLine += char;
-            // eslint-disable-next-line no-continue
+
             continue;
         }
 
@@ -137,10 +139,10 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             // Handle spaces at wrap points
             if (isSpace && trim) {
                 // Skip all spaces when trim=true
-                // eslint-disable-next-line security/detect-object-injection
+
                 while (index < string.length && string[index] === " ") {
-                    // eslint-disable-next-line no-plusplus
-                    index++;
+                    index += 1;
+
                     // Prevent infinite loop by breaking out if we've reached the end
                     if (index >= string.length) {
                         break;
@@ -152,7 +154,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
                     // eslint-disable-next-line no-plusplus
                     index--;
                 }
-                // eslint-disable-next-line no-continue
+
                 continue;
             }
         }
@@ -171,12 +173,10 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
             // Handle spaces after a wrap at exact width
             if (index + 1 < string.length && string[index + 1] === " " && trim) {
-                // eslint-disable-next-line no-plusplus
-                index++;
-                // eslint-disable-next-line security/detect-object-injection
+                index += 1;
+
                 while (index < string.length && string[index] === " ") {
-                    // eslint-disable-next-line no-plusplus
-                    index++;
+                    index += 1;
                 }
                 // eslint-disable-next-line no-plusplus
                 index--; // Adjust for the loop increment
@@ -196,12 +196,12 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 /**
  * Wraps text character by character (word boundaries ignored)
  * with proper handling of spaces when trim=false
- * @param string - The string to wrap
- * @param width - Maximum width
- * @param trim - Whether to trim whitespace
+ * @param string The string to wrap
+ * @param width Maximum width
+ * @param trim Whether to trim whitespace
  * @returns Array of wrapped lines
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const wrapCharByChar = (string: string, width: number, trim: boolean): string[] => {
     // Handle empty string
     if (string.length === 0) {
@@ -210,6 +210,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
     // Trim the input if needed
     const inputToProcess = trim ? string.trim() : string;
+
     if (inputToProcess.length === 0) {
         return [];
     }
@@ -223,15 +224,14 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
         getWidth: getStringWidth,
         onSegment: (segment, stateTracker: AnsiStateTracker) => {
             if (segment.isEscapeSequence) {
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 currentLine += segment.text;
             } else {
                 const isSpace = segment.text === " ";
 
                 // Skip zero-width characters
                 if (segment.width === 0) {
-                    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                     currentLine += segment.text;
+
                     return true;
                 }
 
@@ -252,14 +252,13 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
                         }
 
                         // For trim=false, space gets its own line
-                        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+
                         rows.push(stateTracker.getStartEscapesForAllActiveAttributes() + segment.text);
 
                         return true;
                     }
                 }
 
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 currentLine += segment.text;
                 currentWidth += segment.width;
             }
@@ -278,9 +277,9 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
 /**
  * Wraps text respecting word boundaries with proper ANSI escape sequence handling
- * @param string - The string to wrap
- * @param width - Maximum width
- * @param trim - Whether to trim whitespace
+ * @param string The string to wrap
+ * @param width Maximum width
+ * @param trim Whether to trim whitespace
  * @returns Array of wrapped lines
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -292,6 +291,7 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
 
     // Trim the input if needed
     const inputToProcess = trim ? string.trim() : string;
+
     if (inputToProcess.length === 0) {
         return [];
     }
@@ -307,24 +307,21 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
 
     // Process each token (word or space)
     while (index < tokens.length) {
-        // eslint-disable-next-line security/detect-object-injection
         const token = tokens[index] as string;
         const isSpace = /^\s+$/.test(token);
         const tokenVisibleWidth = getStringWidth(token);
 
         // Skip empty tokens
         if (token.length === 0) {
-            // eslint-disable-next-line no-plusplus
-            index++;
-            // eslint-disable-next-line no-continue
+            index += 1;
+
             continue;
         }
 
         // Skip leading spaces if trim is true and we're at line start
         if (trim && isSpace && currentWidth === 0) {
-            // eslint-disable-next-line no-plusplus
-            index++;
-            // eslint-disable-next-line no-continue
+            index += 1;
+
             continue;
         }
 
@@ -341,14 +338,14 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
             currentWidth = 0;
 
             // Don't increment i - process this token again for the new line
-            // eslint-disable-next-line no-continue
+
             continue;
         }
 
         currentLine += token;
         currentWidth += tokenVisibleWidth;
-        // eslint-disable-next-line no-plusplus
-        index++;
+
+        index += 1;
     }
 
     // Add final line if not empty
@@ -365,9 +362,9 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
 
 /**
  * Wraps text respecting word boundaries. If a word is longer than the width, it will be broken.
- * @param string - The string to wrap
- * @param width - Maximum width
- * @param trim - Whether to trim whitespace
+ * @param string The string to wrap
+ * @param width Maximum width
+ * @param trim Whether to trim whitespace
  * @returns Array of wrapped lines
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -395,12 +392,12 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
         const tokenVisibleWidth = getStringWidth(token);
 
         if (token.length === 0) {
-            index++;
+            index += 1;
             continue;
         }
 
         if (trim && isSpace && currentWidth === 0) {
-            index++;
+            index += 1;
             continue;
         }
 
@@ -413,8 +410,8 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
             const brokenLines = wrapWithBreakAtWidth(token, width, trim);
 
             if (brokenLines.length > 0) {
-                for (let i = 0; i < brokenLines.length - 1; i++) {
-                    rows.push(brokenLines[i] as string);
+                for (let index_ = 0; index_ < brokenLines.length - 1; index_++) {
+                    rows.push(brokenLines[index_] as string);
                 }
 
                 currentLine = brokenLines[brokenLines.length - 1] as string;
@@ -424,7 +421,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
                 currentWidth = 0;
             }
 
-            index++;
+            index += 1;
             continue;
         }
 
@@ -436,7 +433,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
             currentWidth = 0;
 
             if (trim && isSpace) {
-                index++;
+                index += 1;
                 continue;
             }
         }
@@ -444,7 +441,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
         currentLine += token;
         currentWidth += tokenVisibleWidth;
 
-        index++;
+        index += 1;
     }
 
     if (currentLine) {
@@ -464,6 +461,11 @@ export const WrapMode = {
     BREAK_AT_CHARACTERS: "BREAK_AT_CHARACTERS",
 
     /**
+     * Breaks lines at word boundaries. If a word is longer than the width, it will be broken.
+     */
+    BREAK_WORDS: "BREAK_WORDS",
+
+    /**
      * Preserves word boundaries, words are kept intact even if they exceed width
      */
     PRESERVE_WORDS: "PRESERVE_WORDS",
@@ -472,11 +474,6 @@ export const WrapMode = {
      * Enforces strict adherence to the width limit by breaking at exact width
      */
     STRICT_WIDTH: "STRICT_WIDTH",
-
-    /**
-     * Breaks lines at word boundaries. If a word is longer than the width, it will be broken.
-     */
-    BREAK_WORDS: "BREAK_WORDS",
 } as const;
 
 /**
@@ -514,8 +511,8 @@ export interface WordWrapOptions {
 
 /**
  * Word wrap implementation with multiple wrapping strategies
- * @param string - The string to wrap
- * @param options - Wrapping options
+ * @param string The string to wrap
+ * @param options Wrapping options
  * @returns The wrapped string
  */
 export const wordWrap = (string: string, options: WordWrapOptions = {}): string => {
@@ -542,16 +539,16 @@ export const wordWrap = (string: string, options: WordWrapOptions = {}): string 
         let wrappedLines: string[];
 
         switch (wrapMode) {
-            case WrapMode.STRICT_WIDTH: {
-                wrappedLines = wrapWithBreakAtWidth(line, width, trim);
-                break;
-            }
             case WrapMode.BREAK_AT_CHARACTERS: {
                 wrappedLines = wrapCharByChar(line, width, trim);
                 break;
             }
             case WrapMode.BREAK_WORDS: {
                 wrappedLines = wrapAndBreakWords(line, width, trim);
+                break;
+            }
+            case WrapMode.STRICT_WIDTH: {
+                wrappedLines = wrapWithBreakAtWidth(line, width, trim);
                 break;
             }
             default: {

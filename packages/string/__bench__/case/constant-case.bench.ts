@@ -1,8 +1,8 @@
+import { constantCase } from "@visulima/string/dist/case/case";
 import { constantCase as stringTsConstantCase } from "string-ts";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
-import { constantCase } from "../../dist/case";
 
 describe("constantCase", () => {
     bench("visulima/string constantCase (no cache)", () => {

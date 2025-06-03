@@ -61,32 +61,32 @@ export interface HyperlinkSegment extends Omit<AnsiSegment, "text"> {
 export interface ProcessAnsiStringOptions {
     /**
      * Function to get the width of a character or grapheme cluster
-     * @param text - The text to measure
+     * @param text The text to measure
      * @returns The visual width
      */
     getWidth?: (text: string) => number;
 
     /**
      * Function to process each ANSI escape sequence
-     * @param sequence - The ANSI sequence
-     * @param stateTracker - The ANSI state tracker
+     * @param sequence The ANSI sequence
+     * @param stateTracker The ANSI state tracker
      * @returns Whether to continue processing or not
      */
     onEscapeSequence?: (sequence: string, stateTracker: AnsiStateTracker) => boolean | undefined;
 
     /**
      * Function to process each grapheme cluster
-     * @param grapheme - The grapheme cluster
-     * @param width - Visual width of the grapheme
-     * @param stateTracker - The ANSI state tracker
+     * @param grapheme The grapheme cluster
+     * @param width Visual width of the grapheme
+     * @param stateTracker The ANSI state tracker
      * @returns Whether to continue processing or not
      */
     onGrapheme?: (grapheme: string, width: number, stateTracker: AnsiStateTracker) => boolean | undefined;
 
     /**
      * Function to process each character segment
-     * @param segment - The segment to process
-     * @param stateTracker - The ANSI state tracker
+     * @param segment The segment to process
+     * @param stateTracker The ANSI state tracker
      * @returns Whether to continue processing or not
      */
     onSegment?: (segment: AnsiSegment | HyperlinkSegment, stateTracker: AnsiStateTracker) => boolean | undefined;

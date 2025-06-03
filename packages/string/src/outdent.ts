@@ -8,7 +8,7 @@ import {
 } from "./constants";
 
 // Safe hasOwnProperty
-// eslint-disable-next-line @typescript-eslint/unbound-method
+
 const hop = Object.prototype.hasOwnProperty;
 const has = (object: object, property: string): boolean => hop.call(object, property);
 
@@ -18,7 +18,7 @@ const extend = <T, S extends object>(target: T, source: S): S & T => {
 
     for (const property in source) {
         if (has(source, property)) {
-            // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any,security/detect-object-injection
+            // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any
             (target as any)[property] = source[property];
         }
     }
@@ -29,10 +29,9 @@ const extend = <T, S extends object>(target: T, source: S): S & T => {
 /**
  * Internal helper to remove indentation from an array of strings (from template literal parts).
  * Handles indentation level detection and normalization based on options.
- *
- * @param strings - Array of string parts from a template literal.
- * @param firstInterpolatedValueSetsIndentationLevel - Flag indicating special indentation handling.
- * @param options - Outdent options.
+ * @param strings Array of string parts from a template literal.
+ * @param firstInterpolatedValueSetsIndentationLevel Flag indicating special indentation handling.
+ * @param options Outdent options.
  * @returns Array of strings with indentation removed.
  */
 const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedValueSetsIndentationLevel: boolean, options: Options): string[] => {
@@ -47,14 +46,14 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
 
     // Fast path for common case where there's no indentation or simple indentation
     const match = RE_DETECT_INDENTATION.exec(strings[0] as string);
+
     if (match) {
         indentationLevel = (match[1] as string).length;
     }
 
     // Build regex only once with the determined indentation level
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+
     const reSource = `(\\r\\n|\\r|\\n).{0,${indentationLevel}}`;
-    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     const reMatchIndent = new RegExp(reSource, "g");
 
     if (firstInterpolatedValueSetsIndentationLevel) {
@@ -72,7 +71,6 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
     // Process all strings
     // eslint-disable-next-line no-plusplus
     for (let index = 0; index < l; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         let v = strings[index] as string;
 
         // Remove leading indentation from all lines (most expensive operation)
@@ -93,7 +91,6 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
             v = v.replaceAll(RE_MATCH_NEWLINES, newline as string);
         }
 
-        // eslint-disable-next-line security/detect-object-injection
         outdentedStrings[index] = v;
     }
 
@@ -102,9 +99,8 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
 
 /**
  * Internal helper to efficiently concatenate alternating strings and values.
- *
- * @param strings - Array of string parts.
- * @param values - Array of interpolated values.
+ * @param strings Array of string parts.
+ * @param values Array of interpolated values.
  * @returns The concatenated string.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -117,13 +113,11 @@ const concatStringsAndValues = (strings: ReadonlyArray<string>, values: Readonly
 
     // eslint-disable-next-line no-plusplus
     for (; index < l - 1; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         chunks[index * 2] = strings[index] as string;
-        // eslint-disable-next-line security/detect-object-injection
+
         chunks[index * 2 + 1] = String(values[index]);
     }
 
-    // eslint-disable-next-line security/detect-object-injection
     chunks[index * 2] = strings[index] as string;
 
     // Join is faster than repeated string concatenation
@@ -140,14 +134,13 @@ const templateCache = new WeakMap<TemplateStringsArray, string[]>();
 /**
  * Creates an outdent function instance with specific configuration options.
  * This allows for customizing behavior like newline normalization and caching.
- *
- * @param options - The configuration options for the outdent instance.
+ * @param options The configuration options for the outdent instance.
  * @returns An Outdent function tailored to the provided options.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const createInstance = (options: Options): Outdent => {
     const enableCache = options.cache !== false;
-    const cache = enableCache ? (options.cacheStore ?? templateCache) : null;
+    const cache = enableCache ? options.cacheStore ?? templateCache : null;
     const hasNewlineOption = options.newline !== undefined;
 
     // Define the actual outdent function returned by the factory
@@ -155,7 +148,8 @@ const createInstance = (options: Options): Outdent => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function outdent(stringsOrOptions: TemplateStringsArray, ...values: any[]): string;
     function outdent(stringsOrOptions: Options): Outdent;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,func-style
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function outdent(stringsOrOptions: Options | TemplateStringsArray, ...values: any[]): Outdent | string {
         // Call signature: outdent`template literal`
         if (isTemplateStringsArray(stringsOrOptions)) {
@@ -170,32 +164,38 @@ const createInstance = (options: Options): Outdent => {
             if (valuesLength === 0) {
                 if (enableCache && cache && !hasNewlineOption) {
                     const cached = cache.get(strings);
+
                     if (cached) {
                         return cached[0] as string;
                     }
                 }
+
                 const result = internalOutdentArray(strings, false, options);
+
                 if (enableCache && cache) {
                     cache.set(strings, result);
                 }
+
                 return result[0] as string;
             }
 
             // Special case: indentation level set by the first interpolated value (if it's also outdent)
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
             const firstValueIsOutdent = values[0] === outdent || values[0] === defaultOutdent;
-            const firstInterpolatedValueSetsIndentationLevel =
-                firstValueIsOutdent &&
-                RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE.test(strings[0] as string) &&
-                RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY.test(strings[1] as string);
+            const firstInterpolatedValueSetsIndentationLevel
+                = firstValueIsOutdent
+                    && RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE.test(strings[0] as string)
+                    && RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY.test(strings[1] as string);
 
             let renderedArray: string[] | undefined;
+
             if (enableCache && cache && !hasNewlineOption) {
                 renderedArray = cache.get(strings);
             }
 
             if (!renderedArray) {
                 renderedArray = internalOutdentArray(strings, firstInterpolatedValueSetsIndentationLevel, options);
+
                 if (enableCache && cache) {
                     cache.set(strings, renderedArray);
                 }
@@ -215,6 +215,7 @@ const createInstance = (options: Options): Outdent => {
             if (string_ === "" || !string_) {
                 return "";
             }
+
             return internalOutdentArray([string_], false, options)[0] as string;
         },
     });
@@ -239,22 +240,23 @@ export interface Outdent {
     /**
      * Remove indentation from a template literal.
      * Tag function for template literals.
-     * @param strings - The static string parts of the template literal.
-     * @param values - The interpolated values.
+     * @param strings The static string parts of the template literal.
+     * @param values The interpolated values.
      * @returns The processed string with indentation removed.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (strings: TemplateStringsArray, ...values: any[]): string;
+
     /**
      * Create and return a new Outdent instance with the given options.
-     * @param options - Configuration options for the new instance.
+     * @param options Configuration options for the new instance.
      * @returns A new Outdent function instance.
      */
     (options: Options): Outdent;
 
     /**
      * Remove indentation from a string
-     * @param string_ - The raw string to process.
+     * @param string_ The raw string to process.
      * @returns The processed string with indentation removed.
      */
     string: (string_: string) => string;
@@ -270,14 +272,12 @@ export interface Options {
      *
      * Enabling caching can significantly improve performance when the same template
      * is used repeatedly, such as in loops or frequently called functions.
-     *
      * @example
      * // Create an outdent function with caching enabled (default)
      * const dedent = outdent();
      *
      * // Create an outdent function with caching disabled
      * const noCacheDedent = outdent({ cache: false });
-     *
      * @default true
      */
     cache?: boolean;
@@ -289,7 +289,6 @@ export interface Options {
      * This allows you to provide your own WeakMap instance for caching,
      * which can be useful for advanced use cases or for sharing cache
      * between multiple outdent instances.
-     *
      * @example
      * // Create a custom cache
      * const customCache = new WeakMap();
@@ -310,7 +309,6 @@ export interface Options {
      *
      * Although intended for normalizing to '\n' or '\r\n',
      * you can also set to any string; for example ' '.
-     *
      * @default null
      */
     newline?: string | null;

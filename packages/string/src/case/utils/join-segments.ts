@@ -2,9 +2,8 @@ import { RE_FAST_ANSI } from "../../constants";
 
 /**
  * Joins segments with a joiner, handling ANSI sequences and emojis correctly
- *
- * @param segments - Array of segments to join
- * @param options - Join options
+ * @param segments Array of segments to join
+ * @param options Join options
  * @returns Joined string with proper handling of ANSI and emoji sequences
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -26,7 +25,6 @@ const joinSegments = <T extends string = string>(segments: string[], joiner: str
 
     // eslint-disable-next-line no-plusplus
     for (let index = 0; index < length; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         const segment = segments[index] as string;
 
         if (RE_FAST_ANSI.test(segment)) {
@@ -44,7 +42,6 @@ const joinSegments = <T extends string = string>(segments: string[], joiner: str
                 ansiStart = segment;
             }
 
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -60,6 +57,7 @@ const joinSegments = <T extends string = string>(segments: string[], joiner: str
             if (result.length > 0) {
                 result.push(joiner);
             }
+
             result.push(segment);
         }
     }

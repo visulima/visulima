@@ -16,7 +16,7 @@ const testStrings = [
     "你好世界 Welcome to the Jungle Привет мир",
     // eslint-disable-next-line no-secrets/no-secrets
     "ThisIsALongStringWithoutSpacesOrSpecialCharactersToTestPerformanceOnSimpleStrings",
-    "a_b-c.d~e f/g\\h'i\"j[k]l{m}n(o)p|q@r#s$t%u^v&w*x(y)z",
+    String.raw`a_b-c.d~e f/g\h'i"j[k]l{m}n(o)p|q@r#s$t%u^v&w*x(y)z`,
     "long string with many words ".repeat(20).trim(),
     "重複字符重複字符重複字符重複字符 ".repeat(10).trim(),
 ];

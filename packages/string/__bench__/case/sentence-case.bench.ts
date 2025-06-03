@@ -1,7 +1,7 @@
+import { sentenceCase } from "@visulima/string/dist/case/case";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
-import { sentenceCase } from "../../dist/case";
 
 describe("sentenceCase", () => {
     bench("visulima/string sentenceCase (no cache)", () => {

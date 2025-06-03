@@ -9,7 +9,7 @@ import { SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 import { slice } from "../src/slice";
 
 // Create test strings with ANSI colors
-// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+
 const coloredString = red("the ") + green("quick ") + blue("brown ") + cyan("fox ") + yellow("jumped ");
 const longColoredString = Array.from({ length: 10 }, (_, index) => colorize[["red", "green", "blue", "cyan", "yellow"][index % 5]](`part-${index} `)).join("");
 const hyperlink = "\u001B]8;;https://example.com\u0007Example Link\u001B]8;;\u0007";
@@ -140,7 +140,7 @@ describe("slice", () => {
         const edgeCases = [
             { begin: 0, end: 0, str: "" },
             { begin: 0, end: 0, str: coloredString },
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+
             { begin: coloredString.length, end: coloredString.length + 10, str: coloredString },
             { begin: unicodeString.length, end: undefined, str: unicodeString },
             { begin: 100, end: 200, str: emojiString },
@@ -170,6 +170,7 @@ describe("slice", () => {
         bench("visulima/string slice output correctness", () => {
             for (const testCase of sliceTestCases) {
                 const result = slice(testCase.str, testCase.begin, testCase.end);
+
                 // Verify that the visible content matches what we'd expect
                 stripVTControlCharacters(result);
             }
@@ -178,6 +179,7 @@ describe("slice", () => {
         bench("slice-ansi output correctness", () => {
             for (const testCase of sliceTestCases) {
                 const result = sliceAnsi(testCase.str, testCase.begin, testCase.end);
+
                 // Verify that the visible content matches what we'd expect
                 stripVTControlCharacters(result);
             }
@@ -186,6 +188,7 @@ describe("slice", () => {
         bench("@arcanis/slice-ansi output correctness", () => {
             for (const testCase of sliceTestCases) {
                 const result = arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
+
                 // Verify that the visible content matches what we'd expect
                 stripVTControlCharacters(result);
             }

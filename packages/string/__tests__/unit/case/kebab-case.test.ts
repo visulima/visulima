@@ -3,36 +3,42 @@ import { describe, expect, it } from "vitest";
 import { kebabCase } from "../../../src/case";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("kebabCase", () => {
+describe(kebabCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
 
             // First call should cache
             const result1 = kebabCase(input, { cache: true, cacheStore: customCache });
+
             expect(result1).toBe("test-string");
             expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = kebabCase(input, { cache: true, cacheStore: customCache });
+
             expect(result2).toBe("test-string");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
 
             // First call without cache
             const result1 = kebabCase(input, { cache: false, cacheStore: customCache });
+
             expect(result1).toBe("test-string");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = kebabCase(input, { cache: false, cacheStore: customCache });
+
             expect(result2).toBe("test-string");
             expect(customCache.size()).toBe(0);
         });
@@ -45,6 +51,7 @@ describe("kebabCase", () => {
 
             // Use custom cache
             kebabCase(input, { cache: true, cacheStore: customCache });
+
             expect(customCache.size()).toBe(1);
         });
     });
@@ -159,7 +166,9 @@ describe("kebabCase", () => {
     describe("locale support", () => {
         it("should handle German specific cases", () => {
             expect.assertions(3);
+
             const locale = "de-DE";
+
             expect(kebabCase("großeStrasse", { locale })).toBe("große-strasse");
             expect(kebabCase("GROSSE", { locale })).toBe("große");
             expect(kebabCase("GROßE STRAßE", { locale })).toBe("große-straße");

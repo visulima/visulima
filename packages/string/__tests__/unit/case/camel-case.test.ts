@@ -3,47 +3,55 @@ import { describe, expect, it } from "vitest";
 import { camelCase } from "../../../src/case";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("camelCase", () => {
+describe(camelCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call should cache
             const result1 = camelCase(input, { cache: true, cacheStore: customCache });
+
             expect(result1).toBe("testString");
             expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = camelCase(input, { cache: true, cacheStore: customCache });
+
             expect(result2).toBe("testString");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call without cache
             const result1 = camelCase(input, { cache: false, cacheStore: customCache });
+
             expect(result1).toBe("testString");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = camelCase(input, { cache: false, cacheStore: customCache });
+
             expect(result2).toBe("testString");
             expect(customCache.size()).toBe(0);
         });
 
         it("should handle custom cache store", () => {
             expect.assertions(1);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // Use custom cache
             camelCase(input, { cache: true, cacheStore: customCache });
+
             expect(customCache.size()).toBe(1);
         });
     });
@@ -190,14 +198,18 @@ describe("camelCase", () => {
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             expect.assertions(2);
+
             const locale = "tr-TR";
+
             expect(camelCase("istanbul_city", { locale })).toBe("istanbulCity");
             expect(camelCase("İZMİR_CITY", { locale })).toBe("izmirCıty");
         });
 
         it("should handle German specific cases", () => {
             expect.assertions(3);
+
             const locale = "de-DE";
+
             expect(camelCase("GROSSE STRAßE", { locale })).toBe("großeStraße");
             expect(camelCase("GROSSE STRASSE", { locale })).toBe("großeStraße");
             expect(camelCase("GROßE STRAßE", { locale })).toBe("großeStraße");

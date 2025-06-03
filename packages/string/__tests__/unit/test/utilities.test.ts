@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { compareAnsiStrings, expectAnsiStrings, formatAnsiString } from "../../../src/test/utils";
 
 describe("aNSI string test utilities", () => {
-    describe("formatAnsiString", () => {
+    describe(formatAnsiString, () => {
         it("should format a simple ANSI string", () => {
             expect.assertions(5);
 
@@ -16,14 +16,13 @@ describe("aNSI string test utilities", () => {
             expect(formatted.stripped).toBe("Hello");
             expect(formatted.ansi).toBe(redText);
             expect(formatted.json).toBe(JSON.stringify(redText));
-            expect(formatted.visible).toContain("\\u001B");
+            expect(formatted.visible).toContain(String.raw`\u001B`);
             expect(formatted.lengthDifference).toBeGreaterThan(0);
         });
 
         it("should handle complex ANSI strings with multiple colors", () => {
             expect.assertions(3);
 
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             const complexText = red("Error: ") + yellow("Something ") + green("went ") + blue("wrong!");
             const formatted = formatAnsiString(complexText);
 
@@ -47,8 +46,7 @@ describe("aNSI string test utilities", () => {
         it("should handle nested and combined styling", () => {
             expect.assertions(3);
 
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-            const nestedText = bold(red("Bold and red") + " just bold");
+            const nestedText = bold(`${red("Bold and red")} just bold`);
             const formatted = formatAnsiString(nestedText);
 
             expect(formatted.stripped).toBe("Bold and red just bold");
@@ -77,7 +75,7 @@ describe("aNSI string test utilities", () => {
             expect(formatted.stripped).toBe("");
             expect(formatted.ansi).toBe("");
             expect(formatted.lengthDifference).toBe(0);
-            expect(formatted.json).toBe('""');
+            expect(formatted.json).toBe("\"\"");
         });
 
         it("should handle ANSI strings with special characters", () => {
@@ -91,7 +89,7 @@ describe("aNSI string test utilities", () => {
         });
     });
 
-    describe("compareAnsiStrings", () => {
+    describe(compareAnsiStrings, () => {
         it("should correctly identify identical ANSI strings", () => {
             expect.assertions(3);
 
@@ -100,8 +98,8 @@ describe("aNSI string test utilities", () => {
 
             const comparison = compareAnsiStrings(string1, string2);
 
-            expect(comparison.ansiEqual).toBeTruthy();
-            expect(comparison.strippedEqual).toBeTruthy();
+            expect(comparison.ansiEqual).toBe(true);
+            expect(comparison.strippedEqual).toBe(true);
             expect(comparison.summary.actualLength).toBe(comparison.summary.expectedLength);
         });
 
@@ -113,8 +111,8 @@ describe("aNSI string test utilities", () => {
 
             const comparison = compareAnsiStrings(string1, string2);
 
-            expect(comparison.ansiEqual).toBeFalsy();
-            expect(comparison.strippedEqual).toBeTruthy();
+            expect(comparison.ansiEqual).toBe(false);
+            expect(comparison.strippedEqual).toBe(true);
             expect(comparison.summary.actualStrippedLength).toBe(comparison.summary.expectedStrippedLength);
         });
 
@@ -126,22 +124,21 @@ describe("aNSI string test utilities", () => {
 
             const comparison = compareAnsiStrings(string1, string2);
 
-            expect(comparison.ansiEqual).toBeFalsy();
-            expect(comparison.strippedEqual).toBeFalsy();
+            expect(comparison.ansiEqual).toBe(false);
+            expect(comparison.strippedEqual).toBe(false);
         });
 
         it("should handle complex multi-color strings", () => {
             expect.assertions(2);
 
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             const string1 = red("Error: ") + yellow("Something ") + green("went ") + blue("wrong!");
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+
             const string2 = red("Error: ") + yellow("Something ") + green("went ") + blue("wrong!");
 
             const comparison = compareAnsiStrings(string1, string2);
 
-            expect(comparison.ansiEqual).toBeTruthy();
-            expect(comparison.strippedEqual).toBeTruthy();
+            expect(comparison.ansiEqual).toBe(true);
+            expect(comparison.strippedEqual).toBe(true);
         });
 
         it("should handle different styling with same content", () => {
@@ -152,8 +149,8 @@ describe("aNSI string test utilities", () => {
 
             const comparison = compareAnsiStrings(string1, string2);
 
-            expect(comparison.ansiEqual).toBeFalsy();
-            expect(comparison.strippedEqual).toBeTruthy();
+            expect(comparison.ansiEqual).toBe(false);
+            expect(comparison.strippedEqual).toBe(true);
             expect(comparison.summary.actualStrippedLength).toBe(comparison.summary.expectedStrippedLength);
         });
 
@@ -164,8 +161,8 @@ describe("aNSI string test utilities", () => {
             const string2 = "";
             const comparison = compareAnsiStrings(string1, string2);
 
-            expect(comparison.ansiEqual).toBeTruthy();
-            expect(comparison.strippedEqual).toBeTruthy();
+            expect(comparison.ansiEqual).toBe(true);
+            expect(comparison.strippedEqual).toBe(true);
             expect(comparison.summary.actualLength).toBe(0);
             expect(comparison.summary.expectedLength).toBe(0);
         });
@@ -178,8 +175,8 @@ describe("aNSI string test utilities", () => {
 
             const comparison = compareAnsiStrings(string1, string2);
 
-            expect(comparison.ansiEqual).toBeFalsy();
-            expect(comparison.strippedEqual).toBeFalsy();
+            expect(comparison.ansiEqual).toBe(false);
+            expect(comparison.strippedEqual).toBe(false);
             expect(comparison.summary.actualLength).toBe(0);
             expect(comparison.summary.expectedLength).toBeGreaterThan(0);
         });
@@ -193,8 +190,8 @@ describe("aNSI string test utilities", () => {
 
             const comparison = compareAnsiStrings(string1, string2);
 
-            expect(comparison.ansiEqual).toBeFalsy();
-            expect(comparison.strippedEqual).toBeTruthy();
+            expect(comparison.ansiEqual).toBe(false);
+            expect(comparison.strippedEqual).toBe(true);
         });
 
         it("should handle strings with inverse styling", () => {
@@ -205,12 +202,12 @@ describe("aNSI string test utilities", () => {
 
             const comparison = compareAnsiStrings(string1, string2);
 
-            expect(comparison.ansiEqual).toBeFalsy();
-            expect(comparison.strippedEqual).toBeTruthy();
+            expect(comparison.ansiEqual).toBe(false);
+            expect(comparison.strippedEqual).toBe(true);
         });
     });
 
-    describe("expectAnsiStrings", () => {
+    describe(expectAnsiStrings, () => {
         it("should return passing result for identical strings", () => {
             expect.assertions(2);
 
@@ -219,7 +216,7 @@ describe("aNSI string test utilities", () => {
 
             const result = expectAnsiStrings(string1, string2);
 
-            expect(result.pass).toBeTruthy();
+            expect(result.pass).toBe(true);
             expect(result.message()).toBe("ANSI strings are identical");
         });
 
@@ -231,7 +228,7 @@ describe("aNSI string test utilities", () => {
 
             const result = expectAnsiStrings(string1, string2);
 
-            expect(result.pass).toBeFalsy();
+            expect(result.pass).toBe(false);
             expect(result.message()).toContain("ANSI string comparison failed");
             expect(result.message()).toContain("Visible content is identical, but escape codes differ");
         });
@@ -244,7 +241,7 @@ describe("aNSI string test utilities", () => {
 
             const result = expectAnsiStrings(string1, string2);
 
-            expect(result.pass).toBeFalsy();
+            expect(result.pass).toBe(false);
             expect(result.message()).toContain("ANSI string comparison failed");
             expect(result.message()).toContain("Visible content differs");
         });
@@ -257,7 +254,8 @@ describe("aNSI string test utilities", () => {
 
             const result = expectAnsiStrings(string1, string2);
 
-            expect(result.pass).toBeFalsy();
+            expect(result.pass).toBe(false);
+
             const message = result.message();
 
             // Check that the message contains all the expected sections

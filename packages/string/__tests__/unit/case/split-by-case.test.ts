@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { splitByCase } from "../../../src/case/split-by-case";
 
-describe("splitByCase", () => {
+describe(splitByCase, () => {
     it("should handle empty string", () => {
         expect.assertions(1);
         expect(splitByCase("")).toStrictEqual([]);
@@ -77,6 +77,8 @@ describe("splitByCase", () => {
         expect(splitByCase("foo/bar/baz")).toStrictEqual(["foo", "bar", "baz"]);
         expect(splitByCase("some/mixed/Case/test")).toStrictEqual(["some", "mixed", "Case", "test"]);
 
+        // TODO: Fix this
+
         // expect(splitByCase("../foo/bar")).toStrictEqual(["..", "foo", "bar"]);
         // expect(splitByCase("foo/../../bar")).toStrictEqual(["foo", "..", "..", "bar"]);
     });
@@ -90,7 +92,7 @@ describe("splitByCase", () => {
 
     it("should handle custom splitters", () => {
         expect.assertions(3);
-        expect(splitByCase("foo\\Bar.fuzz-FIZz", { separators: ["\\", ".", "-"] })).toStrictEqual(["foo", "Bar", "fuzz", "FI", "Zz"]);
+        expect(splitByCase(String.raw`foo\Bar.fuzz-FIZz`, { separators: ["\\", ".", "-"] })).toStrictEqual(["foo", "Bar", "fuzz", "FI", "Zz"]);
         expect(splitByCase("new-name-value", { separators: ["_"] })).toStrictEqual(["new-name-value"]);
         expect(splitByCase("foo|bar|baz", { separators: ["|"] })).toStrictEqual(["foo", "bar", "baz"]);
     });
@@ -100,182 +102,232 @@ describe("splitByCase", () => {
         expect(splitByCase("__FOO__BAR__")).toStrictEqual(["FOO", "BAR"]);
         expect(splitByCase("...test...case...")).toStrictEqual(["test", "case"]);
         expect(splitByCase("///path///case///")).toStrictEqual(["path", "case"]);
-        // eslint-disable-next-line no-secrets/no-secrets
+
         expect(splitByCase("MixedXMLAndJSON123Data")).toStrictEqual(["Mixed", "XML", "And", "JSON", "123", "Data"]);
     });
 
     describe("locale support", () => {
         it("should handle Afrikaans cases", () => {
             expect.assertions(2);
+
             const locale = "af";
+
             expect(splitByCase("grootWoord", { locale })).toStrictEqual(["groot", "Woord"]);
             expect(splitByCase("kleinLetters", { locale })).toStrictEqual(["klein", "Letters"]);
         });
 
         it("should handle Amharic cases", () => {
             expect.assertions(2);
+
             const locale = "am";
+
             expect(splitByCase("ሰላምWorld", { locale })).toStrictEqual(["ሰላም", "World"]);
             expect(splitByCase("ኢትዮጵያText", { locale })).toStrictEqual(["ኢትዮጵያ", "Text"]);
         });
 
         it("should handle Arabic cases", () => {
             expect.assertions(2);
+
             const locale = "ar";
+
             expect(splitByCase("مرحباWorld", { locale })).toStrictEqual(["مرحبا", "World"]);
             expect(splitByCase("عربيText", { locale })).toStrictEqual(["عربي", "Text"]);
         });
 
         it("should handle Bengali cases", () => {
             expect.assertions(2);
+
             const locale = "bn";
+
             expect(splitByCase("স্বাগতWorld", { locale })).toStrictEqual(["স্বাগত", "World"]);
             expect(splitByCase("বাংলাText", { locale })).toStrictEqual(["বাংলা", "Text"]);
         });
 
         it("should handle Bosnian cases", () => {
             expect.assertions(2);
+
             const locale = "bs";
+
             expect(splitByCase("zdravoSvijete", { locale })).toStrictEqual(["zdravo", "Svijete"]);
             expect(splitByCase("bosanskiText", { locale })).toStrictEqual(["bosanski", "Text"]);
         });
 
         it("should handle Catalan cases", () => {
             expect.assertions(2);
+
             const locale = "ca";
+
             expect(splitByCase("holaMón", { locale })).toStrictEqual(["hola", "Món"]);
             expect(splitByCase("catalàText", { locale })).toStrictEqual(["català", "Text"]);
         });
 
         it("should handle Czech cases", () => {
             expect.assertions(2);
+
             const locale = "cs";
+
             expect(splitByCase("ahojSvěte", { locale })).toStrictEqual(["ahoj", "Světe"]);
             expect(splitByCase("českýText", { locale })).toStrictEqual(["český", "Text"]);
         });
 
         it("should handle Danish cases", () => {
             expect.assertions(2);
+
             const locale = "da";
+
             expect(splitByCase("halloVerden", { locale })).toStrictEqual(["hallo", "Verden"]);
             expect(splitByCase("danskText", { locale })).toStrictEqual(["dansk", "Text"]);
         });
 
         it("should handle Dutch cases", () => {
             expect.assertions(2);
+
             const locale = "nl";
+
             expect(splitByCase("halloWereld", { locale })).toStrictEqual(["hallo", "Wereld"]);
             expect(splitByCase("nederlandsText", { locale })).toStrictEqual(["nederlands", "Text"]);
         });
 
         it("should handle Estonian cases", () => {
             expect.assertions(2);
+
             const locale = "et";
+
             expect(splitByCase("tereMailm", { locale })).toStrictEqual(["tere", "Mailm"]);
             expect(splitByCase("eestiText", { locale })).toStrictEqual(["eesti", "Text"]);
         });
 
         it("should handle Finnish cases", () => {
             expect.assertions(2);
+
             const locale = "fi";
+
             expect(splitByCase("heiMaailma", { locale })).toStrictEqual(["hei", "Maailma"]);
             expect(splitByCase("suomiText", { locale })).toStrictEqual(["suomi", "Text"]);
         });
 
         it("should handle Filipino cases", () => {
             expect.assertions(2);
+
             const locale = "fil";
+
             expect(splitByCase("helloMundo", { locale })).toStrictEqual(["hello", "Mundo"]);
             expect(splitByCase("filipinoText", { locale })).toStrictEqual(["filipino", "Text"]);
         });
 
         it("should handle French cases", () => {
             expect.assertions(2);
+
             const locale = "fr";
+
             expect(splitByCase("bonjourMonde", { locale })).toStrictEqual(["bonjour", "Monde"]);
             expect(splitByCase("françaisText", { locale })).toStrictEqual(["français", "Text"]);
         });
 
         it("should handle Galician cases", () => {
             expect.assertions(2);
+
             const locale = "gl";
+
             expect(splitByCase("holaMundo", { locale })).toStrictEqual(["hola", "Mundo"]);
             expect(splitByCase("galegoText", { locale })).toStrictEqual(["galego", "Text"]);
         });
 
         it("should handle Georgian cases", () => {
             expect.assertions(2);
+
             const locale = "ka";
+
             expect(splitByCase("გამარჯობაWorld", { locale })).toStrictEqual(["გამარჯობა", "World"]);
             expect(splitByCase("ქართულიText", { locale })).toStrictEqual(["ქართული", "Text"]);
         });
 
         it("should handle Greek cases", () => {
             expect.assertions(2);
+
             const locale = "el";
+
             expect(splitByCase("γειαΣας", { locale })).toStrictEqual(["γεια", "Σας"]);
             expect(splitByCase("ελληνικάText", { locale })).toStrictEqual(["ελληνικά", "Text"]);
         });
 
         it("should handle Gujarati cases", () => {
             expect.assertions(2);
+
             const locale = "gu";
+
             expect(splitByCase("નમસ્તેWorld", { locale })).toStrictEqual(["નમસ્તે", "World"]);
             expect(splitByCase("ગુજરાતીText", { locale })).toStrictEqual(["ગુજરાતી", "Text"]);
         });
 
         it("should handle Hebrew cases", () => {
             expect.assertions(2);
+
             const locale = "he";
+
             expect(splitByCase("שלוםWorld", { locale })).toStrictEqual(["שלום", "World"]);
             expect(splitByCase("עבריתטקסט", { locale })).toStrictEqual(["עבריתטקסט"]);
         });
 
         it("should handle Hindi cases", () => {
             expect.assertions(2);
+
             const locale = "hi";
+
             expect(splitByCase("नमस्तेWorld", { locale })).toStrictEqual(["नमस्ते", "World"]);
             expect(splitByCase("हिंदीText", { locale })).toStrictEqual(["हिंदी", "Text"]);
         });
 
         it("should handle Hungarian cases", () => {
             expect.assertions(2);
+
             const locale = "hu";
+
             expect(splitByCase("hellóVilág", { locale })).toStrictEqual(["helló", "Világ"]);
             expect(splitByCase("magyarText", { locale })).toStrictEqual(["magyar", "Text"]);
         });
 
         it("should handle Icelandic cases", () => {
             expect.assertions(2);
+
             const locale = "is";
+
             expect(splitByCase("hallóHeimur", { locale })).toStrictEqual(["halló", "Heimur"]);
             expect(splitByCase("íslenskaText", { locale })).toStrictEqual(["íslenska", "Text"]);
         });
 
         it("should handle Indonesian cases", () => {
             expect.assertions(2);
+
             const locale = "id";
+
             expect(splitByCase("haloDunia", { locale })).toStrictEqual(["halo", "Dunia"]);
             expect(splitByCase("bahasaText", { locale })).toStrictEqual(["bahasa", "Text"]);
         });
 
         it("should handle Irish cases", () => {
             expect.assertions(2);
+
             const locale = "ga";
+
             expect(splitByCase("diaDuit", { locale })).toStrictEqual(["dia", "Duit"]);
             expect(splitByCase("gaeilgeText", { locale })).toStrictEqual(["gaeilge", "Text"]);
         });
 
         it("should handle Italian cases", () => {
             expect.assertions(2);
+
             const locale = "it";
+
             expect(splitByCase("ciaoMondo", { locale })).toStrictEqual(["ciao", "Mondo"]);
             expect(splitByCase("italianoText", { locale })).toStrictEqual(["italiano", "Text"]);
         });
 
         it("should handle Japanese cases", () => {
             expect.assertions(3);
+
             const locale = "ja";
+
             expect(splitByCase("こんにちはWorld", { locale })).toStrictEqual(["こんにちは", "World"]);
             expect(splitByCase("日本語Text", { locale })).toStrictEqual(["日本語", "Text"]);
             expect(splitByCase("テストデータ", { locale })).toStrictEqual(["テストデータ"]);
@@ -283,28 +335,36 @@ describe("splitByCase", () => {
 
         it("should handle Kazakh cases", () => {
             expect.assertions(2);
+
             const locale = "kk";
+
             expect(splitByCase("сәлемWorld", { locale })).toStrictEqual(["сәлем", "World"]);
             expect(splitByCase("қазақText", { locale })).toStrictEqual(["қазақ", "Text"]);
         });
 
         it("should handle Khmer cases", () => {
             expect.assertions(2);
+
             const locale = "km";
+
             expect(splitByCase("ជំរាបសួរWorld", { locale })).toStrictEqual(["ជំរាបសួរ", "World"]);
             expect(splitByCase("ខ្មែរText", { locale })).toStrictEqual(["ខ្មែរ", "Text"]);
         });
 
         it("should handle Kannada cases", () => {
             expect.assertions(2);
+
             const locale = "kn";
+
             expect(splitByCase("ನಮಸ್ಕಾರWorld", { locale })).toStrictEqual(["ನಮಸ್ಕಾರ", "World"]);
             expect(splitByCase("ಕನ್ನಡText", { locale })).toStrictEqual(["ಕನ್ನಡ", "Text"]);
         });
 
         it("should handle Korean cases", () => {
             expect.assertions(3);
+
             const locale = "ko";
+
             expect(splitByCase("안녕하세요World", { locale })).toStrictEqual(["안녕하세요", "World"]);
             expect(splitByCase("한국어Text", { locale })).toStrictEqual(["한국어", "Text"]);
             expect(splitByCase("테스트데이터", { locale })).toStrictEqual(["테스트데이터"]);
@@ -312,203 +372,261 @@ describe("splitByCase", () => {
 
         it("should handle Kyrgyz cases", () => {
             expect.assertions(2);
+
             const locale = "ky";
+
             expect(splitByCase("саламWorld", { locale })).toStrictEqual(["салам", "World"]);
             expect(splitByCase("кыргызText", { locale })).toStrictEqual(["кыргыз", "Text"]);
         });
 
         it("should handle Lao cases", () => {
             expect.assertions(2);
+
             const locale = "lo";
+
             expect(splitByCase("ສະບາຍດີWorld", { locale })).toStrictEqual(["ສະບາຍດີ", "World"]);
             expect(splitByCase("ລາວText", { locale })).toStrictEqual(["ລາວ", "Text"]);
         });
 
         it("should handle Lithuanian cases", () => {
             expect.assertions(2);
+
             const locale = "lt";
+
             expect(splitByCase("labasŠviesa", { locale })).toStrictEqual(["labas", "Šviesa"]);
             expect(splitByCase("lietuviųText", { locale })).toStrictEqual(["lietuvių", "Text"]);
         });
 
         it("should handle Latvian cases", () => {
             expect.assertions(2);
+
             const locale = "lv";
+
             expect(splitByCase("sveikiPasaule", { locale })).toStrictEqual(["sveiki", "Pasaule"]);
             expect(splitByCase("latviešuText", { locale })).toStrictEqual(["latviešu", "Text"]);
         });
 
         it("should handle Malayalam cases", () => {
             expect.assertions(2);
+
             const locale = "ml";
+
             expect(splitByCase("നമസ്കാരംWorld", { locale })).toStrictEqual(["നമസ്കാരം", "World"]);
             expect(splitByCase("മലയാളംText", { locale })).toStrictEqual(["മലയാളം", "Text"]);
         });
 
         it("should handle Mongolian cases", () => {
             expect.assertions(2);
+
             const locale = "mn";
+
             expect(splitByCase("сайнWorld", { locale })).toStrictEqual(["сайн", "World"]);
             expect(splitByCase("монголText", { locale })).toStrictEqual(["монгол", "Text"]);
         });
 
         it("should handle Marathi cases", () => {
             expect.assertions(2);
+
             const locale = "mr";
+
             expect(splitByCase("नमस्कारWorld", { locale })).toStrictEqual(["नमस्कार", "World"]);
             expect(splitByCase("मराठीText", { locale })).toStrictEqual(["मराठी", "Text"]);
         });
 
         it("should handle Malay cases", () => {
             expect.assertions(2);
+
             const locale = "ms";
+
             expect(splitByCase("haloDunia", { locale })).toStrictEqual(["halo", "Dunia"]);
             expect(splitByCase("malayText", { locale })).toStrictEqual(["malay", "Text"]);
         });
 
         it("should handle Maltese cases", () => {
             expect.assertions(2);
+
             const locale = "mt";
+
             expect(splitByCase("bonguDinja", { locale })).toStrictEqual(["bongu", "Dinja"]);
             expect(splitByCase("maltiText", { locale })).toStrictEqual(["malti", "Text"]);
         });
 
         it("should handle Nepali cases", () => {
             expect.assertions(2);
+
             const locale = "ne";
+
             expect(splitByCase("नमस्तेWorld", { locale })).toStrictEqual(["नमस्ते", "World"]);
             expect(splitByCase("नेपालीText", { locale })).toStrictEqual(["नेपाली", "Text"]);
         });
 
         it("should handle Norwegian cases", () => {
             expect.assertions(2);
+
             const locale = "no";
+
             expect(splitByCase("heiVerden", { locale })).toStrictEqual(["hei", "Verden"]);
             expect(splitByCase("norskText", { locale })).toStrictEqual(["norsk", "Text"]);
         });
 
         it("should handle Persian cases", () => {
             expect.assertions(2);
+
             const locale = "fa";
+
             expect(splitByCase("سلامWorld", { locale })).toStrictEqual(["سلام", "World"]);
             expect(splitByCase("فارسیText", { locale })).toStrictEqual(["فارسی", "Text"]);
         });
 
         it("should handle Polish cases", () => {
             expect.assertions(2);
+
             const locale = "pl";
+
             expect(splitByCase("cześćŚwiat", { locale })).toStrictEqual(["cześć", "Świat"]);
             expect(splitByCase("polskiText", { locale })).toStrictEqual(["polski", "Text"]);
         });
 
         it("should handle Portuguese cases", () => {
             expect.assertions(2);
+
             const locale = "pt";
+
             expect(splitByCase("oláMundo", { locale })).toStrictEqual(["olá", "Mundo"]);
             expect(splitByCase("portuguêsText", { locale })).toStrictEqual(["português", "Text"]);
         });
 
         it("should handle Punjabi cases", () => {
             expect.assertions(2);
+
             const locale = "pa";
+
             expect(splitByCase("ਸਤਿਸ੍ਰੀWorld", { locale })).toStrictEqual(["ਸਤਿਸ੍ਰੀ", "World"]);
             expect(splitByCase("ਪੰਜਾਬੀText", { locale })).toStrictEqual(["ਪੰਜਾਬੀ", "Text"]);
         });
 
         it("should handle Romanian cases", () => {
             expect.assertions(2);
+
             const locale = "ro";
+
             expect(splitByCase("salutLume", { locale })).toStrictEqual(["salut", "Lume"]);
             expect(splitByCase("românăText", { locale })).toStrictEqual(["română", "Text"]);
         });
 
         it("should handle Russian cases", () => {
             expect.assertions(2);
+
             const locale = "ru";
+
             expect(splitByCase("приветМир", { locale })).toStrictEqual(["привет", "Мир"]);
             expect(splitByCase("русскийText", { locale })).toStrictEqual(["русский", "Text"]);
         });
 
         it("should handle Serbian cases", () => {
             expect.assertions(2);
+
             const locale = "sr";
+
             expect(splitByCase("здравоСвете", { locale })).toStrictEqual(["здраво", "Свете"]);
             expect(splitByCase("српскиText", { locale })).toStrictEqual(["српски", "Text"]);
         });
 
         it("should handle Sinhala cases", () => {
             expect.assertions(2);
+
             const locale = "si";
+
             expect(splitByCase("ආයුබෝවන්දWorld", { locale })).toStrictEqual(["ආයුබෝවන්ද", "World"]);
             expect(splitByCase("සිංහලයText", { locale })).toStrictEqual(["සිංහලය", "Text"]);
         });
 
         it("should handle Slovak cases", () => {
             expect.assertions(2);
+
             const locale = "sk";
+
             expect(splitByCase("ahojSvet", { locale })).toStrictEqual(["ahoj", "Svet"]);
             expect(splitByCase("slovenskýText", { locale })).toStrictEqual(["slovenský", "Text"]);
         });
 
         it("should handle Slovenian cases", () => {
             expect.assertions(2);
+
             const locale = "sl";
+
             expect(splitByCase("zdravoSvet", { locale })).toStrictEqual(["zdravo", "Svet"]);
             expect(splitByCase("slovenskiČText", { locale })).toStrictEqual(["slovenski", "Č", "Text"]);
         });
 
         it("should handle Albanian cases", () => {
             expect.assertions(2);
+
             const locale = "sq";
+
             expect(splitByCase("përshëndetjeBotë", { locale })).toStrictEqual(["përshëndetje", "Botë"]);
             expect(splitByCase("shqipText", { locale })).toStrictEqual(["shqip", "Text"]);
         });
 
         it("should handle Swedish cases", () => {
             expect.assertions(2);
+
             const locale = "sv";
+
             expect(splitByCase("hejVärlden", { locale })).toStrictEqual(["hej", "Världen"]);
             expect(splitByCase("svenskaText", { locale })).toStrictEqual(["svenska", "Text"]);
         });
 
         it("should handle Tamil cases", () => {
             expect.assertions(2);
+
             const locale = "ta";
+
             expect(splitByCase("வணக்கம்World", { locale })).toStrictEqual(["வணக்கம்", "World"]);
             expect(splitByCase("தமிழ்Text", { locale })).toStrictEqual(["தமிழ்", "Text"]);
         });
 
         it("should handle Telugu cases", () => {
             expect.assertions(2);
+
             const locale = "te";
+
             expect(splitByCase("నమస్కారంWorld", { locale })).toStrictEqual(["నమస్కారం", "World"]);
             expect(splitByCase("తెలుగుText", { locale })).toStrictEqual(["తెలుగు", "Text"]);
         });
 
         it("should handle Thai cases", () => {
             expect.assertions(2);
+
             const locale = "th";
+
             expect(splitByCase("สวัสดีWorld", { locale })).toStrictEqual(["สวัสดี", "World"]);
             expect(splitByCase("ไทยText", { locale })).toStrictEqual(["ไทย", "Text"]);
         });
 
         it("should handle Turkish cases", () => {
             expect.assertions(2);
+
             const locale = "tr";
+
             expect(splitByCase("merhabaDünya", { locale })).toStrictEqual(["merhaba", "Dünya"]);
             expect(splitByCase("türkçeText", { locale })).toStrictEqual(["türkçe", "Text"]);
         });
 
         it("should handle Ukrainian cases", () => {
             expect.assertions(2);
+
             const locale = "uk";
+
             expect(splitByCase("привітСвіт", { locale })).toStrictEqual(["привіт", "Світ"]);
             expect(splitByCase("українськаText", { locale })).toStrictEqual(["українська", "Text"]);
         });
 
         it("should handle Urdu cases", () => {
             expect.assertions(2);
+
             const locale = "ur";
+
             expect(splitByCase("سلامWorld", { locale })).toStrictEqual(["سلام", "World"]);
             expect(splitByCase("اردوText", { locale })).toStrictEqual(["اردو", "Text"]);
         });
@@ -542,20 +660,25 @@ describe("splitByCase", () => {
             expect.assertions(2);
 
             const locale = "vi";
+
             expect(splitByCase("xin chàoThếGiới", { locale })).toStrictEqual(["xin", "chào", "Thế", "Giới"]);
             expect(splitByCase("tiếngViệtText", { locale })).toStrictEqual(["tiếng", "Việt", "Text"]);
         });
 
         it("should handle Chinese cases", () => {
             expect.assertions(2);
+
             const locale = "zh";
+
             expect(splitByCase("你好World", { locale })).toStrictEqual(["你好", "World"]);
             expect(splitByCase("中文Text", { locale })).toStrictEqual(["中文", "Text"]);
         });
 
         it("should handle Turkish specific cases", () => {
             expect.assertions(4);
+
             const locale = "tr-TR";
+
             expect(splitByCase("İstanbulCity", { locale })).toStrictEqual(["İstanbul", "City"]);
             expect(splitByCase("izmirŞehir", { locale })).toStrictEqual(["izmir", "Şehir"]);
             expect(splitByCase("türkçeTest", { locale })).toStrictEqual(["türkçe", "Test"]);
@@ -564,7 +687,9 @@ describe("splitByCase", () => {
 
         it("should handle Azerbaijani specific cases", () => {
             expect.assertions(3);
+
             const locale = "az-AZ";
+
             expect(splitByCase("İlkinTest", { locale })).toStrictEqual(["İlkin", "Test"]);
             expect(splitByCase("bakıŞəhər", { locale })).toStrictEqual(["bakı", "Şəhər"]);
             expect(splitByCase("IıİiTest", { locale })).toStrictEqual(["Iı", "İi", "Test"]);
@@ -614,7 +739,9 @@ describe("splitByCase", () => {
 
         it("should handle Greek specific cases", () => {
             expect.assertions(5);
+
             const locale = "el-GR";
+
             expect(splitByCase("καλημέραΚόσμε", { locale })).toStrictEqual(["καλημέρα", "Κόσμε"]);
             expect(splitByCase("ΕλληνικάTest", { locale })).toStrictEqual(["Ελληνικά", "Test"]);
             expect(splitByCase("αβγΔΕΖ", { locale })).toStrictEqual(["αβγ", "ΔΕΖ"]);
@@ -624,7 +751,9 @@ describe("splitByCase", () => {
 
         it("should handle Russian specific cases", () => {
             expect.assertions(3);
+
             const locale = "ru-RU";
+
             expect(splitByCase("привет Мир", { locale })).toStrictEqual(["привет", "Мир"]);
             expect(splitByCase("РусскийText", { locale })).toStrictEqual(["Русский", "Text"]);
             expect(splitByCase("тестКейс", { locale })).toStrictEqual(["тест", "Кейс"]);
@@ -632,7 +761,9 @@ describe("splitByCase", () => {
 
         it("should handle Ukrainian specific cases", () => {
             expect.assertions(3);
+
             const locale = "uk-UA";
+
             expect(splitByCase("привітСвіт", { locale })).toStrictEqual(["привіт", "Світ"]);
             expect(splitByCase("УкраїнськаMова", { locale })).toStrictEqual(["Українська", "Mова"]);
             expect(splitByCase("тестКейс", { locale })).toStrictEqual(["тест", "Кейс"]);
@@ -640,7 +771,9 @@ describe("splitByCase", () => {
 
         it("should handle Bulgarian specific cases", () => {
             expect.assertions(3);
+
             const locale = "bg-BG";
+
             expect(splitByCase("здравейСвят", { locale })).toStrictEqual(["здравей", "Свят"]);
             expect(splitByCase("БългарскиText", { locale })).toStrictEqual(["Български", "Text"]);
             expect(splitByCase("тестКейс", { locale })).toStrictEqual(["тест", "Кейс"]);
@@ -648,7 +781,9 @@ describe("splitByCase", () => {
 
         it("should handle Serbian specific cases", () => {
             expect.assertions(3);
+
             const locale = "sr-RS";
+
             expect(splitByCase("здравоСвете", { locale })).toStrictEqual(["здраво", "Свете"]);
             expect(splitByCase("СрпскиText", { locale })).toStrictEqual(["Српски", "Text"]);
             expect(splitByCase("тестКейс", { locale })).toStrictEqual(["тест", "Кейс"]);
@@ -656,7 +791,9 @@ describe("splitByCase", () => {
 
         it("should handle Macedonian specific cases", () => {
             expect.assertions(3);
+
             const locale = "mk-MK";
+
             expect(splitByCase("здравоСвету", { locale })).toStrictEqual(["здраво", "Свету"]);
             expect(splitByCase("МакедонскиText", { locale })).toStrictEqual(["Македонски", "Text"]);
             expect(splitByCase("тестКејс", { locale })).toStrictEqual(["тест", "Кејс"]);
@@ -664,7 +801,9 @@ describe("splitByCase", () => {
 
         it("should handle Belarusian specific cases", () => {
             expect.assertions(3);
+
             const locale = "be-BY";
+
             expect(splitByCase("прывітанеСвет", { locale })).toStrictEqual(["прывітане", "Свет"]);
             expect(splitByCase("БеларускаяText", { locale })).toStrictEqual(["Беларуская", "Text"]);
             expect(splitByCase("тэстКейс", { locale })).toStrictEqual(["тэст", "Кейс"]);
@@ -672,7 +811,9 @@ describe("splitByCase", () => {
 
         it("should handle Chinese (Simplified) specific cases", () => {
             expect.assertions(3);
+
             const locale = "zh-CN";
+
             expect(splitByCase("你好World", { locale })).toStrictEqual(["你好", "World"]);
             expect(splitByCase("测试Test", { locale })).toStrictEqual(["测试", "Test"]);
             expect(splitByCase("中文English混合", { locale })).toStrictEqual(["中文", "English", "混合"]);
@@ -680,7 +821,9 @@ describe("splitByCase", () => {
 
         it("should handle Chinese (Traditional) specific cases", () => {
             expect.assertions(3);
+
             const locale = "zh-TW";
+
             expect(splitByCase("你好World", { locale })).toStrictEqual(["你好", "World"]);
             expect(splitByCase("測試Test", { locale })).toStrictEqual(["測試", "Test"]);
             expect(splitByCase("中文English混合", { locale })).toStrictEqual(["中文", "English", "混合"]);
@@ -688,7 +831,9 @@ describe("splitByCase", () => {
 
         it("should handle Chinese (Hong Kong) specific cases", () => {
             expect.assertions(3);
+
             const locale = "zh-HK";
+
             expect(splitByCase("你好World", { locale })).toStrictEqual(["你好", "World"]);
             expect(splitByCase("測試Test", { locale })).toStrictEqual(["測試", "Test"]);
             expect(splitByCase("中文English混合", { locale })).toStrictEqual(["中文", "English", "混合"]);
@@ -696,7 +841,9 @@ describe("splitByCase", () => {
 
         it("should handle Japanese specific cases", () => {
             expect.assertions(4);
+
             const locale = "ja-JP";
+
             expect(splitByCase("こんにちは World", { locale })).toStrictEqual(["こんにちは", "World"]);
             expect(splitByCase("テストTest", { locale })).toStrictEqual(["テスト", "Test"]);
             expect(splitByCase("ひらがなカタカナABC", { locale })).toStrictEqual(["ひらがな", "カタカナ", "ABC"]);
@@ -705,7 +852,9 @@ describe("splitByCase", () => {
 
         it("should handle Arabic specific cases", () => {
             expect.assertions(3);
+
             const locale = "ar-SA";
+
             expect(splitByCase("مرحباWorld", { locale })).toStrictEqual(["مرحبا", "World"]);
             expect(splitByCase("اختبارTest", { locale })).toStrictEqual(["اختبار", "Test"]);
             expect(splitByCase("عربيEnglishمختلط", { locale })).toStrictEqual(["عربي", "English", "مختلط"]);
@@ -713,7 +862,9 @@ describe("splitByCase", () => {
 
         it("should handle Persian specific cases", () => {
             expect.assertions(3);
+
             const locale = "fa-IR";
+
             expect(splitByCase("سلامWorld", { locale })).toStrictEqual(["سلام", "World"]);
             expect(splitByCase("تستTest", { locale })).toStrictEqual(["تست", "Test"]);
             expect(splitByCase("فارسیEnglishمخلوط", { locale })).toStrictEqual(["فارسی", "English", "مخلوط"]);
@@ -721,7 +872,9 @@ describe("splitByCase", () => {
 
         it("should handle Hebrew specific cases", () => {
             expect.assertions(3);
+
             const locale = "he-IL";
+
             expect(splitByCase("שלוםWorld", { locale })).toStrictEqual(["שלום", "World"]);
             expect(splitByCase("בדיקהTest", { locale })).toStrictEqual(["בדיקה", "Test"]);
             expect(splitByCase("עבריתEnglishמעורב", { locale })).toStrictEqual(["עברית", "English", "מעורב"]);
@@ -729,7 +882,9 @@ describe("splitByCase", () => {
 
         it("should handle Thai specific cases", () => {
             expect.assertions(3);
+
             const locale = "th-TH";
+
             expect(splitByCase("สวัสดีWorld", { locale })).toStrictEqual(["สวัสดี", "World"]);
             expect(splitByCase("ทดสอบTest", { locale })).toStrictEqual(["ทดสอบ", "Test"]);
             expect(splitByCase("ไทยEnglishผสม", { locale })).toStrictEqual(["ไทย", "English", "ผสม"]);
@@ -737,7 +892,9 @@ describe("splitByCase", () => {
 
         it("should handle Hindi specific cases", () => {
             expect.assertions(3);
+
             const locale = "hi-IN";
+
             expect(splitByCase("नमस्तेWorld", { locale })).toStrictEqual(["नमस्ते", "World"]);
             expect(splitByCase("परीक्षणTest", { locale })).toStrictEqual(["परीक्षण", "Test"]);
             expect(splitByCase("हिंदीEnglishमिश्रित", { locale })).toStrictEqual(["हिंदी", "English", "मिश्रित"]);
@@ -745,7 +902,9 @@ describe("splitByCase", () => {
 
         it("should handle Marathi specific cases", () => {
             expect.assertions(3);
+
             const locale = "mr-IN";
+
             expect(splitByCase("नमस्कारWorld", { locale })).toStrictEqual(["नमस्कार", "World"]);
             expect(splitByCase("चाचणीTest", { locale })).toStrictEqual(["चाचणी", "Test"]);
             expect(splitByCase("मराठीEnglishमिश्र", { locale })).toStrictEqual(["मराठी", "English", "मिश्र"]);
@@ -753,7 +912,9 @@ describe("splitByCase", () => {
 
         it("should handle Nepali specific cases", () => {
             expect.assertions(3);
+
             const locale = "ne-NP";
+
             expect(splitByCase("नमस्तेWorld", { locale })).toStrictEqual(["नमस्ते", "World"]);
             expect(splitByCase("परीक्षणTest", { locale })).toStrictEqual(["परीक्षण", "Test"]);
             expect(splitByCase("नेपालीEnglishमिश्रित", { locale })).toStrictEqual(["नेपाली", "English", "मिश्रित"]);
@@ -761,7 +922,9 @@ describe("splitByCase", () => {
 
         it("should handle Korean specific cases", () => {
             expect.assertions(4);
+
             const locale = "ko-KR";
+
             expect(splitByCase("안녕하세요World", { locale })).toStrictEqual(["안녕하세요", "World"]);
             expect(splitByCase("테스트Test", { locale })).toStrictEqual(["테스트", "Test"]);
             expect(splitByCase("한글English혼합", { locale })).toStrictEqual(["한글", "English", "혼합"]);
@@ -874,7 +1037,7 @@ describe("splitByCase", () => {
             expect.assertions(6);
             expect(splitByCase("C3POAndR2D2")).toStrictEqual(["C", "3", "PO", "And", "R", "2", "D", "2"]);
             expect(splitByCase("C-3PO_and_R2-D2")).toStrictEqual(["C", "3PO", "and", "R2", "D2"]);
-            // eslint-disable-next-line no-secrets/no-secrets
+
             expect(splitByCase("Episode7TheForceAwakens")).toStrictEqual(["Episode", "7", "The", "Force", "Awakens"]);
             expect(splitByCase("iPhone12ProMax")).toStrictEqual(["i", "Phone", "12", "Pro", "Max"]);
             expect(splitByCase("iPhone12_Pro_Max")).toStrictEqual(["i", "Phone", "12", "Pro", "Max"]);

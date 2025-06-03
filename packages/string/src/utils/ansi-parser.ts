@@ -4,8 +4,8 @@ import type { AnsiSegment, HyperlinkSegment, ProcessAnsiStringOptions } from "./
 
 /**
  * Helper function to check if a character is inside an ANSI escape sequence
- * @param chars - Array of characters
- * @param index - Current index
+ * @param chars Array of characters
+ * @param index Current index
  * @returns Object with isInsideEscape and isInsideLinkEscape flags
  */
 export const checkEscapeSequence = (
@@ -15,7 +15,6 @@ export const checkEscapeSequence = (
     isInsideEscape: boolean;
     isInsideLinkEscape: boolean;
 } => {
-    // eslint-disable-next-line security/detect-object-injection
     if (!ESCAPES.has(chars[index] as string)) {
         return { isInsideEscape: false, isInsideLinkEscape: false };
     }
@@ -30,8 +29,8 @@ export const checkEscapeSequence = (
 
 /**
  * Process a string with ANSI escape codes character by character
- * @param string - The string to process
- * @param options - Processing options
+ * @param string The string to process
+ * @param options Processing options
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const processAnsiString = (string: string, options: ProcessAnsiStringOptions = {}): void => {
@@ -45,9 +44,9 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
     let isInHyperlink = false;
 
     const chars = [...string];
+
     // eslint-disable-next-line no-plusplus
     for (let index = 0; index < chars.length; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         const character = chars[index] as string;
 
         if (character && ESCAPES.has(character)) {
@@ -79,15 +78,16 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
 
             // Check for hyperlink sequence
             const escapeInfo = checkEscapeSequence(chars, index);
+
             isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
 
             if (isInsideLinkEscape) {
                 // Extract URL from hyperlink sequence
                 let urlEnd = index + 1;
+
                 currentUrl = "";
 
                 while (urlEnd < chars.length) {
-                    // eslint-disable-next-line security/detect-object-injection
                     const nextChar = chars[urlEnd] as string;
 
                     if (nextChar === ANSI_ESCAPE_BELL) {
@@ -95,8 +95,8 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     }
 
                     currentUrl += nextChar;
-                    // eslint-disable-next-line no-plusplus
-                    urlEnd++;
+
+                    urlEnd += 1;
                 }
 
                 // Remove the "]8;;" prefix
@@ -121,7 +121,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                 isInsideLinkEscape = false;
                 escapeBuffer = "";
 
-                // eslint-disable-next-line no-continue
                 continue;
             }
 
@@ -141,11 +140,11 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
 
                 isInHyperlink = false;
                 currentUrl = "";
-                // eslint-disable-next-line no-plusplus
-                index++; // Skip the backslash
+
+                index += 1; // Skip the backslash
                 isInsideEscape = false;
                 escapeBuffer = "";
-                // eslint-disable-next-line no-continue
+
                 continue;
             }
         }
@@ -173,7 +172,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
 
                 escapeBuffer = "";
             }
-            // eslint-disable-next-line no-continue
+
             continue;
         }
 

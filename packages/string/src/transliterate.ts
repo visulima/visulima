@@ -2,12 +2,11 @@ import charmap from "./charmap";
 import { RE_THAI } from "./constants";
 import replaceString from "./replace-string";
 import type { Charmap, Interval, IntervalArray, OptionReplaceArray, OptionReplaceCombined, OptionReplaceObject, OptionsTransliterate } from "./types";
-import { findStringOccurrences, hasChinese, hasPunctuationOrSpace } from "./utils";
+import { findStringOccurrences, hasChinese, hasPunctuationOrSpace } from "./utilities";
 import thaiReplacement from "./utils/thai-replacement";
 
 /**
  * Converts the object version of the 'replace' option into tuple array one.
- *
  * @param option The object version of the 'replace' option.
  * @returns The tuple array version of the 'replace' option.
  */
@@ -20,8 +19,8 @@ const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray 
 
     for (const key in option as OptionReplaceObject) {
         if (Object.prototype.hasOwnProperty.call(option, key)) {
-            // eslint-disable-next-line security/detect-object-injection
             const value = (option as OptionReplaceObject)[key];
+
             // Ensure value is a string before pushing
             if (typeof value === "string") {
                 replaceArray.push([key, value]);
@@ -39,12 +38,10 @@ const applyThaiRomanization = (input: string): string => {
         const [search, replace, type] = entry;
 
         if (typeof search !== "string" || typeof replace !== "string") {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         if (type === "r") {
-            // eslint-disable-next-line security/detect-non-literal-regexp,@rushstack/security/no-unsafe-regexp
             const regex = new RegExp(search, "g");
 
             output = output.replace(regex, (_, p1: string) => {
@@ -64,7 +61,6 @@ const applyThaiRomanization = (input: string): string => {
 /**
  * Main transliterate function.
  * Replaces characters in a string based on a charmap and options.
- *
  * @param source The string which is being transliterated.
  * @param options Options object.
  * @returns The transliterated string.
@@ -116,7 +112,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
     let lastCharWasChinese = false;
     let currentIgnoreRangeIndex = 0;
 
-    for (let index = 0; index < input.length; ) {
+    for (let index = 0; index < input.length;) {
         let char: string;
         let charLength = 1;
         let s: string | null | undefined;
@@ -125,7 +121,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
 
         if (codePoint === undefined) {
             // Should not happen with valid strings if index is always valid.
-            // eslint-disable-next-line security/detect-object-injection
+
             char = input[index] as string; // This might be undefined if index is out of bounds, handled by `result += s` later if s remains undefined
             charLength = 1;
             s = opt.unknown; // Directly assign if codePoint is undefined
@@ -143,17 +139,15 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
         if (finalIgnoreRanges.length > 0) {
             // Advance currentIgnoreRangeIndex if current char `index` is past the current ignore range
             while (
-                currentIgnoreRangeIndex < finalIgnoreRanges.length &&
-                // eslint-disable-next-line security/detect-object-injection
-                (finalIgnoreRanges[currentIgnoreRangeIndex] as Interval)[1] < index
+                currentIgnoreRangeIndex < finalIgnoreRanges.length
+
+                && (finalIgnoreRanges[currentIgnoreRangeIndex] as Interval)[1] < index
             ) {
-                // eslint-disable-next-line no-plusplus
-                currentIgnoreRangeIndex++;
+                currentIgnoreRangeIndex += 1;
             }
 
             // Check if current char (or its range) falls into the current relevant ignore range
             if (currentIgnoreRangeIndex < finalIgnoreRanges.length) {
-                // eslint-disable-next-line security/detect-object-injection
                 const currentRange = finalIgnoreRanges[currentIgnoreRangeIndex] as Interval;
 
                 if (!(currentRange[1] < index || currentRange[0] > charEndIndex)) {
@@ -185,7 +179,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             }
 
             // Fallback if s is still undefined or became null (e.g. from charmap)
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
             if (s === undefined || s === null) {
                 s = opt.unknown;
             }
@@ -198,9 +192,9 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             const sIsDefinedAndNotEmpty = typeof s === "string" && s.length > 0;
 
             if (
-                lastCharWasChinese && // If the previous character successfully processed was Chinese
-                ((determinedCharWasChinese && sIsDefinedAndNotEmpty) ||
-                    (!determinedCharWasChinese && sIsDefinedAndNotEmpty && s[0] && !hasPunctuationOrSpace(s[0] as string)))
+                lastCharWasChinese // If the previous character successfully processed was Chinese
+                && ((determinedCharWasChinese && sIsDefinedAndNotEmpty)
+                    || (!determinedCharWasChinese && sIsDefinedAndNotEmpty && s[0] && !hasPunctuationOrSpace(s[0] as string)))
             ) {
                 // Prev Chinese, Current Chinese: "CN CN" -> Add space before current `s`
                 result += " ";
@@ -211,7 +205,6 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             lastCharWasChinese = false; // Reset if fixChineseSpacing is off or char is ignored
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         result += s ?? "";
         index += charLength;
     }

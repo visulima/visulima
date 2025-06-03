@@ -4,7 +4,6 @@ import { getStringTruncatedWidth } from "./get-string-truncated-width";
 /**
  * Configuration options for string width calculation without truncation support.
  * This type excludes truncation-related options from StringTruncatedWidthOptions.
- *
  * @example
  * ```typescript
  * // Basic usage with defaults
@@ -29,7 +28,6 @@ export type StringWidthOptions = Omit<StringTruncatedWidthOptions, "ellipsis" | 
 
 /**
  * Calculate the visual width of a string, taking into account Unicode characters, emojis, and ANSI escape codes.
- *
  * @example
  * ```typescript
  * // Basic usage
@@ -59,9 +57,8 @@ export type StringWidthOptions = Omit<StringTruncatedWidthOptions, "ellipsis" | 
  * - Accurate width calculation for emoji sequences
  * - ANSI escape code handling
  * - Customizable character widths
- *
- * @param input - The string to calculate the width for
- * @param options - Configuration options for width calculation
+ * @param input The string to calculate the width for
+ * @param options Configuration options for width calculation
  * @returns The calculated visual width of the string
  */
 export const getStringWidth = (input: string, options: StringWidthOptions = {}): number =>

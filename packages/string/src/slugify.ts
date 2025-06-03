@@ -1,17 +1,15 @@
 import transliterate from "./transliterate";
 import type { SlugifyOptions } from "./types";
-import { escapeRegExp } from "./utils";
+import { escapeRegExp } from "./utilities";
 
 /**
  * Removes all characters from a string that are not in the allowed characters list
- * @param {string} input - The string to sanitize
- * @param {string} allowedChars - String containing allowed characters or patterns like "a-zA-Z0-9"
- * @return {string} - The sanitized string with only allowed characters
+ * @param input The string to sanitize
+ * @param allowedChars String containing allowed characters or patterns like "a-zA-Z0-9"
+ * @returns - The sanitized string with only allowed characters
  */
 const removeDisallowedChars = (input: string, allowedChars: string, separator: string): string => {
-    const escapedChars = escapeRegExp(allowedChars).replaceAll("\\-", "-"); // Restore dashes
-
-    // eslint-disable-next-line security/detect-non-literal-regexp,@rushstack/security/no-unsafe-regexp
+    const escapedChars = escapeRegExp(allowedChars).replaceAll(String.raw`\-`, "-"); // Restore dashes
     const pattern = new RegExp(`[^${escapedChars}]`, "g");
 
     return input.replaceAll(pattern, separator);
@@ -22,7 +20,6 @@ const removeDisallowedChars = (input: string, allowedChars: string, separator: s
  *
  * It transliterates non-ASCII characters, optionally converts case,
  * removes disallowed characters (replacing with separator), and collapses separators.
- *
  * @param input The string to convert.
  * @param options Optional configuration options.
  * @returns The generated slug.
@@ -63,7 +60,6 @@ const slugify = (input: string, options?: SlugifyOptions): string => {
     const escapedSeparator = escapeRegExp(config.separator);
 
     if (escapedSeparator) {
-        // eslint-disable-next-line security/detect-non-literal-regexp,@rushstack/security/no-unsafe-regexp
         const separatorRegex = new RegExp(`${escapedSeparator}+`, "g");
 
         slug = slug.replace(separatorRegex, config.separator);
@@ -71,7 +67,6 @@ const slugify = (input: string, options?: SlugifyOptions): string => {
 
     // Trim leading/trailing separators
     if (escapedSeparator) {
-        // eslint-disable-next-line security/detect-non-literal-regexp,@rushstack/security/no-unsafe-regexp
         return slug.replaceAll(new RegExp(`^${escapedSeparator}+|${escapedSeparator}+$`, "g"), "");
     }
 

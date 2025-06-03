@@ -79,12 +79,10 @@ describe("Outdent Benchmarks", () => {
     });
 
     bench("With nested outdent", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         nestedTemplate;
     });
 
     bench("First value is outdent", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         firstValueIsOutdent;
     });
 
@@ -98,7 +96,6 @@ describe("Outdent Benchmarks", () => {
     });
 
     bench("Custom options", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         outdent({
             newline: "\r\n",
             trimLeadingNewline: false,

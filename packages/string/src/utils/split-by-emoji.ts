@@ -2,8 +2,7 @@ import { RE_EMOJI } from "../constants";
 
 /**
  * Split text by emoji characters
- *
- * @param text - The text to split by emoji characters
+ * @param text The text to split by emoji characters
  * @returns An array of string segments, with emoji characters as separate segments
  */
 const splitByEmoji = (text: string): string[] => {

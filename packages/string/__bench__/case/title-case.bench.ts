@@ -1,9 +1,9 @@
+import { titleCase } from "@visulima/string/dist/case/case";
 import { titleCase as sculeTitleCase } from "scule";
 import { titleCase as stringTsTitleCase } from "string-ts";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
-import { titleCase } from "../../dist/case";
 
 describe("titleCase", () => {
     bench("visulima/string titleCase (no cache)", () => {

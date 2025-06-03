@@ -22,6 +22,7 @@ describe("transliterate function", () => {
         expect.assertions(2);
 
         const unmappedString = "\u{E000}\u{E001}🚀";
+
         expect(transliterate(unmappedString)).toBe("");
         expect(transliterate(unmappedString, { unknown: "?" })).toBe("???");
     });
@@ -77,6 +78,7 @@ describe("transliterate function", () => {
             trim: true,
             unknown: "?",
         };
+
         expect(transliterate(text, options)).toBe("Ignore Cœur, replace Square Root with Square Root, then trim!");
     });
 
@@ -84,11 +86,15 @@ describe("transliterate function", () => {
         expect.assertions(3);
 
         const text = "中文Äǐǎ";
+
         expect(transliterate(text, { fixChineseSpacing: true })).toBe("Zhong Wen Aeia");
         expect(transliterate(text, { fixChineseSpacing: false })).toBe("ZhongWenAeia");
+
         const textPunc = "中文Ä.";
+
         expect(transliterate(textPunc, { fixChineseSpacing: true })).toBe("Zhong Wen Ae.");
     });
+
     describe("aSCII Purity Tests", () => {
         // Test characters 32-126 (Standard Printable ASCII) + Tab, LF, CR
         const printableAsciiCodes: number[] = [9, 10, 13];
@@ -103,12 +109,14 @@ describe("transliterate function", () => {
             expect.assertions(1);
 
             const char = String.fromCodePoint(code);
+
             // Assuming these characters map to themselves in the real charmap
             expect(transliterate(char)).toBe(char);
         });
 
         // Test characters 128-159 (C1 Controls) - Default Unknown
         const c1ControlCodes: number[] = [];
+
         // eslint-disable-next-line no-plusplus
         for (let index = 128; index <= 159; index++) {
             c1ControlCodes.push(index);
@@ -119,6 +127,7 @@ describe("transliterate function", () => {
             expect.assertions(1);
 
             const char = String.fromCodePoint(code);
+
             expect(transliterate(char)).toBe(""); // Default unknown is empty string
         });
 
@@ -127,6 +136,7 @@ describe("transliterate function", () => {
             expect.assertions(1);
 
             const char = String.fromCodePoint(code);
+
             expect(transliterate(char, { unknown: "?" })).toBe("?");
         });
     });
@@ -173,7 +183,7 @@ describe("transliterate function", () => {
             // Japanese
             ["げんまい茶", "genmaiCha"],
             // Unknown characters
-            [`\u0800\u1400${String.fromCodePoint(0xd8_40, 0xdd_00)}`, "\u{20100}"],
+            [`\u0800\u1400${String.fromCodePoint(0xD8_40, 0xDD_00)}`, "\u{20100}"],
             ["🚀", ""], // Expect empty if unknown is default ""
         ])("should transliterate %s to %s (charmap dependent)", async (string_, result) => {
             expect.assertions(1);
@@ -264,6 +274,7 @@ describe("transliterate function", () => {
         const input = "ٹ ڈ ھ";
         const expected = "t d h";
         const result = transliterate(input);
+
         expect(result).toBe(expected);
     });
 
@@ -273,6 +284,7 @@ describe("transliterate function", () => {
         const input = "ګ ړ څ";
         const expected = "g r c";
         const result = transliterate(input);
+
         expect(result).toBe(expected);
     });
 

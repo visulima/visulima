@@ -30,7 +30,9 @@ describe("string Type Utils", () => {
         });
 
         it("should return string type for non-literal inputs", () => {
+            // eslint-disable-next-line sonarjs/redundant-type-aliases
             type DynamicString = string;
+
             expectTypeOf<CharAt<DynamicString, 0>>().toEqualTypeOf<string>();
         });
     });
@@ -80,7 +82,9 @@ describe("string Type Utils", () => {
         });
 
         it("should return number for non-literal strings", () => {
+            // eslint-disable-next-line sonarjs/redundant-type-aliases
             type DynamicString = string;
+
             expectTypeOf<Length<DynamicString>>().toEqualTypeOf<number>();
         });
     });
@@ -160,7 +164,9 @@ describe("string Type Utils", () => {
         });
 
         it("should return string type for non-literal inputs", () => {
+            // eslint-disable-next-line sonarjs/redundant-type-aliases
             type DynamicString = string;
+
             expectTypeOf<ToLowerCase<DynamicString>>().toEqualTypeOf<string>();
             expectTypeOf<ToUpperCase<DynamicString>>().toEqualTypeOf<string>();
         });

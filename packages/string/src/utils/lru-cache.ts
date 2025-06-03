@@ -34,6 +34,7 @@ class LRUCache<K, V> {
         } else if (this.cache.size >= this.capacity) {
             // Remove least recently used item
             const lruKey = this.keyOrder.shift();
+
             if (lruKey !== undefined) {
                 this.cache.delete(lruKey);
             }

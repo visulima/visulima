@@ -1,19 +1,22 @@
 import type { Interval, IntervalArray } from "./types";
 
+/**
+ * @deprecated This will be removed in the next major version.
+ */
 export { default as LRUCache } from "./utils/lru-cache";
 
 /**
  * Escapes characters with special meaning in regular expressions.
- * @param str The string to escape.
+ * @param char The string to escape.
  * @returns The escaped string.
  */
 export const escapeRegExp = (char: string): string =>
     // $& means the whole matched string
-    char.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    char.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 
 /**
  * Checks if a number falls within any of the specified intervals.
- * @param num The number to check.
+ * @param number_ The number to check.
  * @param ranges An array of intervals [start, end].
  * @returns True if the number is within any interval, false otherwise.
  */
@@ -21,7 +24,7 @@ export const inRange = (number_: number, ranges: IntervalArray): boolean => rang
 
 /**
  * Checks if a string contains Chinese characters (Han script).
- * @param str The string to check.
+ * @param char The string to check.
  * @returns True if the string contains Chinese characters, false otherwise.
  */
 export const hasChinese = (char: string): boolean =>
@@ -31,7 +34,7 @@ export const hasChinese = (char: string): boolean =>
 
 /**
  * Checks if a string contains punctuation or space characters.
- * @param str The string to check.
+ * @param char The string to check.
  * @returns True if the string contains punctuation or space, false otherwise.
  */
 export const hasPunctuationOrSpace = (char: string): boolean =>
@@ -58,6 +61,7 @@ export const findStringOccurrences = (source: string, needles: string[]): Interv
 
         let startIndex = 0;
         let index;
+
         // eslint-disable-next-line no-cond-assign
         while ((index = source.indexOf(needle, startIndex)) > -1) {
             const end = index + needle.length - 1;
@@ -76,10 +80,10 @@ export const findStringOccurrences = (source: string, needles: string[]): Interv
 
     const merged: IntervalArray = [];
 
-    let currentRange: Interval | null = null;
+    let currentRange: Interval | undefined;
 
     for (const range of ranges) {
-        if (currentRange === null) {
+        if (currentRange === undefined) {
             currentRange = [...range];
         } else if (range[0] <= currentRange[1] + 1) {
             // Merge overlapping or adjacent ranges
@@ -91,7 +95,7 @@ export const findStringOccurrences = (source: string, needles: string[]): Interv
         }
     }
 
-    if (currentRange !== null) {
+    if (currentRange !== undefined) {
         merged.push(currentRange);
     }
 

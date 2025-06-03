@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { noCase } from "../../../src/case";
 
-describe("noCase", () => {
+describe(noCase, () => {
     it("should handle empty string", () => {
         expect.assertions(1);
         expect(noCase("")).toBe("");
@@ -113,14 +113,18 @@ describe("noCase", () => {
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             expect.assertions(2);
+
             const locale = "tr-TR";
+
             expect(noCase("istanbul_city", { locale })).toBe("istanbul city");
             expect(noCase("İZMİR_CITY", { locale })).toBe("izmir cıty");
         });
 
         it("should handle German specific cases", () => {
             expect.assertions(3);
+
             const locale = "de-DE";
+
             expect(noCase("GROSSE STRAßE", { locale })).toBe("große straße");
             expect(noCase("GROSSE STRASSE", { locale })).toBe("große straße");
             expect(noCase("GROßE STRAßE", { locale })).toBe("große straße");

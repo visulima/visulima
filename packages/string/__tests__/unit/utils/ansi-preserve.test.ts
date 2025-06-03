@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import preserveAnsi from "../../../src/utils/ansi-preserve";
 
-describe("preserveAnsi", () => {
+describe(preserveAnsi, () => {
     describe("basic functionality", () => {
         it("should handle empty array", () => {
             expect.assertions(1);
@@ -34,8 +34,8 @@ describe("preserveAnsi", () => {
             expect.assertions(1);
 
             expect(preserveAnsi(["\u001B[31m\u001B[42mColored", "Text\u001B[0m"])).toMatchInlineSnapshot(`
-              "\u001B[31m\u001B[42mColored\u001B[49m
-              \u001B[42mText\u001B[0m"
+                "\u001B[31m\u001B[42mColored\u001B[49m
+                \u001B[42mText\u001B[0m"
             `);
         });
 
@@ -45,8 +45,8 @@ describe("preserveAnsi", () => {
             const input = ["\u001B[31mRed \u001B[34mBlue", "Still Blue\u001B[31m Red Again\u001B[0m"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-              "\u001B[31mRed \u001B[34mBlue\u001B[39m
-              \u001B[34mStill Blue\u001B[31m Red Again\u001B[0m"
+                "\u001B[31mRed \u001B[34mBlue\u001B[39m
+                \u001B[34mStill Blue\u001B[31m Red Again\u001B[0m"
             `);
         });
     });
@@ -58,8 +58,8 @@ describe("preserveAnsi", () => {
             const input = ["\u001B]8;;https://example.com\u0007Link", "Continues\u001B]8;;\u0007"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-              "\u001B]8;;https://example.com\u0007Link\u001B]8;;\u0007
-              \u001B]8;;https://example.com\u0007Continues\u001B]8;;\u0007"
+                "\u001B]8;;https://example.com\u0007Link\u001B]8;;\u0007
+                \u001B]8;;https://example.com\u0007Continues\u001B]8;;\u0007"
             `);
         });
 
@@ -69,8 +69,8 @@ describe("preserveAnsi", () => {
             const input = ["\u001B[31m\u001B]8;;https://example.com\u0007Colored", "Link\u001B]8;;\u0007\u001B[0m"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-              "\u001B[31m\u001B]8;;https://example.com\u0007Colored\u001B]8;;\u0007\u001B[39m
-              \u001B[31m\u001B]8;;https://example.com\u0007Link\u001B]8;;\u0007\u001B[0m"
+                "\u001B[31m\u001B]8;;https://example.com\u0007Colored\u001B]8;;\u0007\u001B[39m
+                \u001B[31m\u001B]8;;https://example.com\u0007Link\u001B]8;;\u0007\u001B[0m"
             `);
         });
     });
@@ -82,9 +82,9 @@ describe("preserveAnsi", () => {
             const input = ["\u001B[31mRed", "", "Still Red\u001B[0m"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-              "\u001B[31mRed\u001B[39m
-              \u001B[39m
-              \u001B[31mStill Red\u001B[0m"
+                "\u001B[31mRed\u001B[39m
+                \u001B[39m
+                \u001B[31mStill Red\u001B[0m"
             `);
         });
 
@@ -94,9 +94,9 @@ describe("preserveAnsi", () => {
             const input = ["\u001B[31m", "\u001B[42m", "\u001B[0m"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-              "\u001B[31m\u001B[39m
-              \u001B[31m\u001B[42m\u001B[49m
-              \u001B[42m\u001B[0m"
+                "\u001B[31m\u001B[39m
+                \u001B[31m\u001B[42m\u001B[49m
+                \u001B[42m\u001B[0m"
             `);
         });
 
@@ -106,8 +106,8 @@ describe("preserveAnsi", () => {
             const input = ["\u001B[31m\u001B[1m\u001B[42mText", "More\u001B[0m"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-              "\u001B[31m\u001B[1m\u001B[42mText\u001B[49m
-              \u001B[42mMore\u001B[0m"
+                "\u001B[31m\u001B[1m\u001B[42mText\u001B[49m
+                \u001B[42mMore\u001B[0m"
             `);
         });
 
@@ -117,8 +117,8 @@ describe("preserveAnsi", () => {
             const input = ["\u001B[31mText\u001B[", "More Text\u001B[0m"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-              "\u001B[31mText\u001B[
-              More Text\u001B[0m"
+                "\u001B[31mText\u001B[
+                More Text\u001B[0m"
             `);
         });
     });
@@ -130,8 +130,8 @@ describe("preserveAnsi", () => {
             const input = ["\u001B[31mRed Text\u001B[39m", "Normal Text"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-              "\u001B[31mRed Text\u001B[39m
-              Normal Text"
+                "\u001B[31mRed Text\u001B[39m
+                Normal Text"
             `);
         });
 
@@ -141,8 +141,8 @@ describe("preserveAnsi", () => {
             const input = ["\u001B[42mGreen BG\u001B[49m", "Normal BG"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-              "\u001B[42mGreen BG\u001B[49m
-              Normal BG"
+                "\u001B[42mGreen BG\u001B[49m
+                Normal BG"
             `);
         });
 
@@ -152,8 +152,8 @@ describe("preserveAnsi", () => {
             const input = ["\u001B[31m\u001B[42mColored\u001B[39m\u001B[49m", "Normal"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-              "\u001B[31m\u001B[42mColored\u001B[39m\u001B[49m
-              Normal"
+                "\u001B[31m\u001B[42mColored\u001B[39m\u001B[49m
+                Normal"
             `);
         });
     });

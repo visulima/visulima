@@ -3,9 +3,10 @@ import { describe, expect, it } from "vitest";
 import { checkEscapeSequence, processAnsiString } from "../../../src/utils/ansi-parser";
 import type { AnsiSegment, HyperlinkSegment } from "../../../src/utils/types";
 
-describe("checkEscapeSequence", () => {
+describe(checkEscapeSequence, () => {
     it("should detect regular ANSI escape sequences", () => {
         expect.assertions(1);
+
         const text = "\u001B[31mHello";
         const chars = [...text];
 
@@ -19,6 +20,7 @@ describe("checkEscapeSequence", () => {
 
     it("should detect hyperlink start sequences", () => {
         expect.assertions(1);
+
         const text = "\u001B]8;;https://example.com\u0007Hello";
         const chars = [...text];
 
@@ -32,6 +34,7 @@ describe("checkEscapeSequence", () => {
 
     it("should return false for non-escape sequences", () => {
         expect.assertions(1);
+
         const text = "Hello World";
         const chars = [...text];
 
@@ -44,10 +47,11 @@ describe("checkEscapeSequence", () => {
     });
 });
 
-describe("processAnsiString", () => {
+describe(processAnsiString, () => {
     describe("regular ANSI sequences", () => {
         it("should process basic ANSI color codes", () => {
             expect.assertions(2);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B[31mHello\u001B[0m";
 
@@ -55,6 +59,7 @@ describe("processAnsiString", () => {
                 getWidth: (string_) => string_.length,
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return true;
                 },
             });
@@ -65,6 +70,7 @@ describe("processAnsiString", () => {
 
         it("should handle nested ANSI sequences", () => {
             expect.assertions(2);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B[31m\u001B[1mBold Red\u001B[0m";
 
@@ -72,6 +78,7 @@ describe("processAnsiString", () => {
                 getWidth: (string_) => string_.length,
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return true;
                 },
             });
@@ -84,6 +91,7 @@ describe("processAnsiString", () => {
     describe("hyperlink handling", () => {
         it("should process hyperlink sequences", () => {
             expect.assertions(2);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B]8;;https://example.com\u0007Click here\u001B\\";
 
@@ -91,6 +99,7 @@ describe("processAnsiString", () => {
                 getWidth: (string_) => string_.length,
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return true;
                 },
             });
@@ -101,6 +110,7 @@ describe("processAnsiString", () => {
 
         it("should handle nested ANSI sequences within hyperlinks", () => {
             expect.assertions(3);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B]8;;https://example.com\u0007\u001B[31mRed Link\u001B[0m\u001B\\";
 
@@ -108,6 +118,7 @@ describe("processAnsiString", () => {
                 getWidth: (string_) => string_.length,
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return true;
                 },
             });
@@ -119,6 +130,7 @@ describe("processAnsiString", () => {
 
         it("should handle multiple hyperlinks", () => {
             expect.assertions(2);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B]8;;https://example1.com\u0007Link 1\u001B\\ and \u001B]8;;https://example2.com\u0007Link 2\u001B\\";
 
@@ -126,6 +138,7 @@ describe("processAnsiString", () => {
                 getWidth: (string_) => string_.length,
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return true;
                 },
             });
@@ -138,6 +151,7 @@ describe("processAnsiString", () => {
     describe("grapheme handling", () => {
         it("should handle combining characters", () => {
             expect.assertions(3);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "e\u0301"; // é using combining acute accent
 
@@ -145,6 +159,7 @@ describe("processAnsiString", () => {
                 getWidth: (string_) => string_.length,
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return true;
                 },
             });
@@ -162,6 +177,7 @@ describe("processAnsiString", () => {
 
         it("should handle emoji sequences", () => {
             expect.assertions(8);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "👨‍👩‍👧‍👦"; // family emoji
 
@@ -169,14 +185,16 @@ describe("processAnsiString", () => {
                 getWidth: (string_) => string_.length,
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return true;
                 },
             });
 
             // Each ZWJ-connected emoji component should be a separate segment
             expect(segments.length).toBeGreaterThan(1);
+
             segments.forEach((segment) => {
-                expect(segment.isGrapheme).toBeTruthy();
+                expect(segment.isGrapheme).toBe(true);
             });
         });
     });
@@ -184,6 +202,7 @@ describe("processAnsiString", () => {
     describe("error handling", () => {
         it("should handle incomplete ANSI sequences", () => {
             expect.assertions(2);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B[31"; // Incomplete color code
 
@@ -191,6 +210,7 @@ describe("processAnsiString", () => {
                 getWidth: (string_) => string_.length,
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return true;
                 },
             });
@@ -204,6 +224,7 @@ describe("processAnsiString", () => {
 
         it("should handle incomplete hyperlink sequences", () => {
             expect.assertions(2);
+
             const segments: (AnsiSegment | HyperlinkSegment)[] = [];
             const text = "\u001B]8;;https://example.com"; // Missing BEL
 
@@ -211,6 +232,7 @@ describe("processAnsiString", () => {
                 getWidth: (string_) => string_.length,
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return true;
                 },
             });
@@ -234,6 +256,7 @@ describe("processAnsiString", () => {
                 getWidth: (string_) => string_.length,
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return segments.length < 2; // Stop after 2 segments
                 },
             });
@@ -250,6 +273,7 @@ describe("processAnsiString", () => {
             processAnsiString(text, {
                 onSegment: (segment) => {
                     segments.push(segment);
+
                     return true;
                 },
             });

@@ -3,36 +3,42 @@ import { describe, expect, it } from "vitest";
 import { trainCase } from "../../../src/case";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("trainCase", () => {
+describe(trainCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
 
             // First call should cache
             const result1 = trainCase(input, { cache: true, cacheStore: customCache });
+
             expect(result1).toBe("Test-String");
             expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = trainCase(input, { cache: true, cacheStore: customCache });
+
             expect(result2).toBe("Test-String");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
 
             // First call without cache
             const result1 = trainCase(input, { cache: false, cacheStore: customCache });
+
             expect(result1).toBe("Test-String");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = trainCase(input, { cache: false, cacheStore: customCache });
+
             expect(result2).toBe("Test-String");
             expect(customCache.size()).toBe(0);
         });
@@ -45,6 +51,7 @@ describe("trainCase", () => {
 
             // Use custom cache
             trainCase(input, { cache: true, cacheStore: customCache });
+
             expect(customCache.size()).toBe(1);
         });
     });
@@ -199,6 +206,7 @@ describe("trainCase", () => {
 
         it("should handle German specific cases", () => {
             expect.assertions(3);
+
             const locale = "de-DE";
 
             expect(trainCase("GROSSE STRAßE", { locale })).toBe("GROSSE-STRAßE");

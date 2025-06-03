@@ -1,8 +1,8 @@
+import { flatCase } from "@visulima/string/dist/case/case";
 import { flatCase as sculeFlatCase } from "scule";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
-import { flatCase } from "../../dist/case";
 
 describe("flatCase", () => {
     bench("visulima/string flatCase (no cache)", () => {

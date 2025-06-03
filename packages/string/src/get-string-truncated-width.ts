@@ -20,38 +20,38 @@ const RE_LATIN_CHARS = /(?:[\u0020-\u007E\u00A0-\u00FF](?!\uFE0F)){1,1000}/y;
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const getCharType = (codePoint: number): "control" | "latin" | "other" | "wide" | "zero" => {
     // ASCII printable range (most common case first for performance)
-    if (codePoint >= 0x00_20 && codePoint <= 0x00_7e) {
+    if (codePoint >= 0x00_20 && codePoint <= 0x00_7E) {
         return "latin";
     }
 
     // Unicode range for Zero Width characters
-    if (codePoint === 0x20_0b || codePoint === 0x20_0c || codePoint === 0x20_0d || codePoint === 0x20_60) {
+    if (codePoint === 0x20_0B || codePoint === 0x20_0C || codePoint === 0x20_0D || codePoint === 0x20_60) {
         return "zero";
     }
 
     // Control characters
-    if (codePoint <= 0x00_1f || (codePoint >= 0x00_7f && codePoint <= 0x00_9f)) {
+    if (codePoint <= 0x00_1F || (codePoint >= 0x00_7F && codePoint <= 0x00_9F)) {
         return "control";
     }
 
     // Latin-1 Supplement (also common in western text)
-    if (codePoint >= 0x00_a0 && codePoint <= 0x00_ff) {
+    if (codePoint >= 0x00_A0 && codePoint <= 0x00_FF) {
         return "latin";
     }
 
     // Box Drawing block (U+2500-U+257F) should be treated as width 1
-    if (codePoint >= 0x25_00 && codePoint <= 0x25_7f) {
+    if (codePoint >= 0x25_00 && codePoint <= 0x25_7F) {
         return "latin"; // Treat as regular width 1
     }
 
     // Full-width and CJK characters (wide)
     if (
-        (codePoint >= 0x11_00 && codePoint <= 0x11_ff) || // Hangul Jamo
-        (codePoint >= 0x2e_80 && codePoint <= 0x9f_ff) || // CJK & radicals
-        (codePoint >= 0xac_00 && codePoint <= 0xd7_af) || // Hangul Syllables
-        (codePoint >= 0xf9_00 && codePoint <= 0xfa_ff) || // CJK Compatibility Ideographs
-        (codePoint >= 0xff_00 && codePoint <= 0xff_ef && !(codePoint >= 0xff_61 && codePoint <= 0xff_9f)) || // Full-width Forms (excluding half-width katakana)
-        (codePoint >= 0x30_40 && codePoint <= 0x30_ff) // Hiragana & Katakana
+        (codePoint >= 0x11_00 && codePoint <= 0x11_FF) // Hangul Jamo
+        || (codePoint >= 0x2E_80 && codePoint <= 0x9F_FF) // CJK & radicals
+        || (codePoint >= 0xAC_00 && codePoint <= 0xD7_AF) // Hangul Syllables
+        || (codePoint >= 0xF9_00 && codePoint <= 0xFA_FF) // CJK Compatibility Ideographs
+        || (codePoint >= 0xFF_00 && codePoint <= 0xFF_EF && !(codePoint >= 0xFF_61 && codePoint <= 0xFF_9F)) // Full-width Forms (excluding half-width katakana)
+        || (codePoint >= 0x30_40 && codePoint <= 0x30_FF) // Hiragana & Katakana
     ) {
         return "wide";
     }
@@ -87,9 +87,8 @@ type StringTruncatedWidthConfig = {
 
 /**
  * Gets the width of a character from cache or calculates it using a two-level caching strategy.
- *
- * @param codePoint - Unicode code point to get width for
- * @param config - Character width configuration
+ * @param codePoint Unicode code point to get width for
+ * @param config Character width configuration
  * @returns The visual width of the character
  */
 const getCachedCharWidth = (codePoint: number, config: StringTruncatedWidthConfig): number => {
@@ -125,16 +124,16 @@ const getCachedCharWidth = (codePoint: number, config: StringTruncatedWidthConfi
         const eaw = eastAsianWidthType(codePoint);
 
         switch (eaw) {
+            case "ambiguous": {
+                width = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
+                break;
+            }
             case "fullwidth": {
                 width = config.width.fullWidth;
                 break;
             }
             case "wide": {
                 width = config.width.wide;
-                break;
-            }
-            case "ambiguous": {
-                width = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
                 break;
             }
             default: {
@@ -145,6 +144,7 @@ const getCachedCharWidth = (codePoint: number, config: StringTruncatedWidthConfi
 
     // Cache the result
     lowMap.set(lowBits, width);
+
     return width;
 };
 
@@ -152,6 +152,7 @@ const getCachedCharWidth = (codePoint: number, config: StringTruncatedWidthConfi
  * Fast character type check using code point ranges
  * Optimized for performance by checking common cases first
  */
+
 /**
  * Checks if a Unicode code point represents a combining character, variation selector, or diacritic mark.
  *
@@ -164,26 +165,24 @@ const getCachedCharWidth = (codePoint: number, config: StringTruncatedWidthConfi
  * - Hebrew
  * - Tibetan
  * - Vietnamese
- *
  * @example
  * ```typescript
  * isCombiningCharacter(0x0300); // true (combining grave accent)
  * isCombiningCharacter(0x0E31); // true (Thai vowel mark)
  * isCombiningCharacter(0x0061); // false (Latin 'a')
  * ```
- *
- * @param codePoint - The Unicode code point to check
+ * @param codePoint The Unicode code point to check
  * @returns True if the code point is a combining character
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const isCombiningCharacter = (codePoint: number): boolean => {
     // Universal combining marks
     if (
-        (codePoint >= 0x03_00 && codePoint <= 0x03_6f) || // Combining Diacritical Marks
-        (codePoint >= 0x1a_b0 && codePoint <= 0x1a_ff) || // Combining Diacritical Marks Extended
-        (codePoint >= 0x1d_c0 && codePoint <= 0x1d_ff) || // Combining Diacritical Marks Supplement
-        (codePoint >= 0x20_d0 && codePoint <= 0x20_ff) || // Combining Diacritical Marks for Symbols
-        (codePoint >= 0xfe_20 && codePoint <= 0xfe_2f)
+        (codePoint >= 0x03_00 && codePoint <= 0x03_6F) // Combining Diacritical Marks
+        || (codePoint >= 0x1A_B0 && codePoint <= 0x1A_FF) // Combining Diacritical Marks Extended
+        || (codePoint >= 0x1D_C0 && codePoint <= 0x1D_FF) // Combining Diacritical Marks Supplement
+        || (codePoint >= 0x20_D0 && codePoint <= 0x20_FF) // Combining Diacritical Marks for Symbols
+        || (codePoint >= 0xFE_20 && codePoint <= 0xFE_2F)
     ) {
         // Combining Half Marks
         return true;
@@ -191,8 +190,8 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Variation and VS selectors
     if (
-        (codePoint >= 0xe_01_00 && codePoint <= 0xe_01_ef) || // Variation Selectors Supplement
-        (codePoint >= 0xfe_00 && codePoint <= 0xfe_0f)
+        (codePoint >= 0xE_01_00 && codePoint <= 0xE_01_EF) // Variation Selectors Supplement
+        || (codePoint >= 0xFE_00 && codePoint <= 0xFE_0F)
     ) {
         // Variation Selectors
         return true;
@@ -200,11 +199,11 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Southeast Asian scripts
     if (
-        (codePoint >= 0x0e_31 && codePoint <= 0x0e_3a) || // Thai vowel marks and tone marks
-        (codePoint >= 0x0e_47 && codePoint <= 0x0e_4e) || // Thai diacritics
-        (codePoint >= 0x0e_b1 && codePoint <= 0x0e_b9) || // Lao vowel marks
-        (codePoint >= 0x0e_bb && codePoint <= 0x0e_bc) || // Lao vowel signs
-        (codePoint >= 0x0e_c8 && codePoint <= 0x0e_cd)
+        (codePoint >= 0x0E_31 && codePoint <= 0x0E_3A) // Thai vowel marks and tone marks
+        || (codePoint >= 0x0E_47 && codePoint <= 0x0E_4E) // Thai diacritics
+        || (codePoint >= 0x0E_B1 && codePoint <= 0x0E_B9) // Lao vowel marks
+        || (codePoint >= 0x0E_BB && codePoint <= 0x0E_BC) // Lao vowel signs
+        || (codePoint >= 0x0E_C8 && codePoint <= 0x0E_CD)
     ) {
         // Lao tone marks
         return true;
@@ -212,15 +211,15 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Indic scripts
     if (
-        (codePoint >= 0x09_00 && codePoint <= 0x09_03) || // Devanagari signs
-        (codePoint >= 0x09_3a && codePoint <= 0x09_4f) || // Devanagari vowel signs and virama
-        (codePoint >= 0x09_51 && codePoint <= 0x09_57) || // Devanagari stress marks
-        (codePoint >= 0x09_62 && codePoint <= 0x09_63) || // Devanagari vowel signs
-        (codePoint >= 0x09_81 && codePoint <= 0x09_83) || // Bengali signs
-        (codePoint >= 0x09_bc && codePoint <= 0x09_c4) || // Bengali vowel signs
-        (codePoint >= 0x09_cd && codePoint <= 0x09_cd) || // Bengali virama
-        (codePoint >= 0x0a_01 && codePoint <= 0x0a_03) || // Gurmukhi signs
-        (codePoint >= 0x0a_3c && codePoint <= 0x0a_4d)
+        (codePoint >= 0x09_00 && codePoint <= 0x09_03) // Devanagari signs
+        || (codePoint >= 0x09_3A && codePoint <= 0x09_4F) // Devanagari vowel signs and virama
+        || (codePoint >= 0x09_51 && codePoint <= 0x09_57) // Devanagari stress marks
+        || (codePoint >= 0x09_62 && codePoint <= 0x09_63) // Devanagari vowel signs
+        || (codePoint >= 0x09_81 && codePoint <= 0x09_83) // Bengali signs
+        || (codePoint >= 0x09_BC && codePoint <= 0x09_C4) // Bengali vowel signs
+        || (codePoint >= 0x09_CD && codePoint <= 0x09_CD) // Bengali virama
+        || (codePoint >= 0x0A_01 && codePoint <= 0x0A_03) // Gurmukhi signs
+        || (codePoint >= 0x0A_3C && codePoint <= 0x0A_4D)
     ) {
         // Gurmukhi modifiers
         return true;
@@ -228,10 +227,10 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Arabic and Persian
     if (
-        (codePoint >= 0x06_4b && codePoint <= 0x06_5f) || // Arabic diacritics
-        (codePoint >= 0x06_70 && codePoint <= 0x06_70) || // Arabic letter superscript alef
-        (codePoint >= 0x06_d6 && codePoint <= 0x06_ed) || // Arabic small high signs
-        (codePoint >= 0x08_e4 && codePoint <= 0x08_fe)
+        (codePoint >= 0x06_4B && codePoint <= 0x06_5F) // Arabic diacritics
+        || (codePoint >= 0x06_70 && codePoint <= 0x06_70) // Arabic letter superscript alef
+        || (codePoint >= 0x06_D6 && codePoint <= 0x06_ED) // Arabic small high signs
+        || (codePoint >= 0x08_E4 && codePoint <= 0x08_FE)
     ) {
         // Arabic mark extensions
         return true;
@@ -239,11 +238,11 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Hebrew
     if (
-        (codePoint >= 0x05_91 && codePoint <= 0x05_bd) || // Hebrew points
-        (codePoint >= 0x05_bf && codePoint <= 0x05_bf) || // Hebrew point rafe
-        (codePoint >= 0x05_c1 && codePoint <= 0x05_c2) || // Hebrew points
-        (codePoint >= 0x05_c4 && codePoint <= 0x05_c5) || // Hebrew marks
-        (codePoint >= 0x05_c7 && codePoint <= 0x05_c7)
+        (codePoint >= 0x05_91 && codePoint <= 0x05_BD) // Hebrew points
+        || (codePoint >= 0x05_BF && codePoint <= 0x05_BF) // Hebrew point rafe
+        || (codePoint >= 0x05_C1 && codePoint <= 0x05_C2) // Hebrew points
+        || (codePoint >= 0x05_C4 && codePoint <= 0x05_C5) // Hebrew marks
+        || (codePoint >= 0x05_C7 && codePoint <= 0x05_C7)
     ) {
         // Hebrew point qamats qatan
         return true;
@@ -251,12 +250,12 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Tibetan
     if (
-        (codePoint >= 0x0f_35 && codePoint <= 0x0f_35) || // Tibetan mark nada
-        (codePoint >= 0x0f_37 && codePoint <= 0x0f_37) || // Tibetan mark nada
-        (codePoint >= 0x0f_39 && codePoint <= 0x0f_39) || // Tibetan mark tsa phru
-        (codePoint >= 0x0f_71 && codePoint <= 0x0f_7e) || // Tibetan vowel signs
-        (codePoint >= 0x0f_80 && codePoint <= 0x0f_84) || // Tibetan vowel signs and virama
-        (codePoint >= 0x0f_86 && codePoint <= 0x0f_87)
+        (codePoint >= 0x0F_35 && codePoint <= 0x0F_35) // Tibetan mark nada
+        || (codePoint >= 0x0F_37 && codePoint <= 0x0F_37) // Tibetan mark nada
+        || (codePoint >= 0x0F_39 && codePoint <= 0x0F_39) // Tibetan mark tsa phru
+        || (codePoint >= 0x0F_71 && codePoint <= 0x0F_7E) // Tibetan vowel signs
+        || (codePoint >= 0x0F_80 && codePoint <= 0x0F_84) // Tibetan vowel signs and virama
+        || (codePoint >= 0x0F_86 && codePoint <= 0x0F_87)
     ) {
         // Tibetan signs
         return true;
@@ -264,14 +263,13 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Vietnamese
     return (
-        (codePoint >= 0x03_00 && codePoint <= 0x03_09) || // Combining diacritical marks used in Vietnamese
-        (codePoint >= 0x03_23 && codePoint <= 0x03_23)
+        (codePoint >= 0x03_00 && codePoint <= 0x03_09) // Combining diacritical marks used in Vietnamese
+        || (codePoint >= 0x03_23 && codePoint <= 0x03_23)
     );
 };
 
 /**
  * Configuration options for string width calculation and truncation.
- *
  * @example
  * ```typescript
  * // Basic usage with defaults
@@ -374,7 +372,6 @@ export interface StringTruncatedWidthOptions {
 
 /**
  * Result object returned by getStringTruncatedWidth containing width calculation and the truncation details.
- *
  * @example
  * ```typescript
  * // No truncation
@@ -418,7 +415,6 @@ export interface StringTruncatedWidthResult {
 
 /**
  * Calculate the visual width of a string with optional truncation, handling various Unicode character types.
- *
  * @example
  * ```typescript
  * // Basic width calculation
@@ -453,14 +449,13 @@ export interface StringTruncatedWidthResult {
  * - ANSI escape code handling
  * - Customizable character widths
  * - Optional string truncation with ellipsis
- *
- * @param input - The string to calculate the width for
- * @param options - Configuration options for width calculation and truncation
+ * @param input The string to calculate the width for
+ * @param options Configuration options for width calculation and truncation
  * @returns Result object containing:
- *          - width: The calculated visual width of the string
- *          - truncated: Whether the string was truncated
- *          - ellipsed: Whether an ellipsis was added
- *          - index: The index at which truncation occurred (if any)
+ * - width: The calculated visual width of the string
+ * - truncated: Whether the string was truncated
+ * - ellipsed: Whether an ellipsis was added
+ * - index: The index at which truncation occurred (if any)
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const getStringTruncatedWidth = (input: string, options: StringTruncatedWidthOptions = {}): StringTruncatedWidthResult => {
@@ -473,14 +468,14 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             countAnsiEscapeCodes: options.countAnsiEscapeCodes ?? false,
             ellipsis: options.ellipsis ?? "",
             ellipsisWidth:
-                options.ellipsisWidth ??
-                (options.ellipsis
+                options.ellipsisWidth
+                ?? (options.ellipsis
                     ? getStringTruncatedWidth(options.ellipsis, {
-                          ...options,
-                          ellipsis: "",
-                          ellipsisWidth: 0,
-                          limit: Number.POSITIVE_INFINITY,
-                      }).width
+                        ...options,
+                        ellipsis: "",
+                        ellipsisWidth: 0,
+                        limit: Number.POSITIVE_INFINITY,
+                    }).width
                     : 0),
             limit: options.limit ?? Number.POSITIVE_INFINITY,
         },
@@ -514,12 +509,12 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
     // Process characters until end or truncation point
     while (index < length) {
         // Handle ANSI escape sequences - only check if we know there's at least one present
-        // eslint-disable-next-line security/detect-object-injection
+
         if (hasAnsi && (input[index] === "\u001B" || input[index] === "\u009B")) {
             // --- Check for OSC 8 Hyperlink ---
             if (input.startsWith("\u001B]8;;", index)) {
                 const BELL = "\u0007";
-                const OSC8_CLOSER = "\u001B]8;;" + BELL;
+                const OSC8_CLOSER = `\u001B]8;;${BELL}`;
                 const OSC8_CLOSER_LEN = OSC8_CLOSER.length;
 
                 const endOfParametersIndex = input.indexOf(BELL, index + 5); // Find first BELL after \u001B]8;;
@@ -583,7 +578,6 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
                             break;
                         }
 
-                        // eslint-disable-next-line no-continue
                         continue;
                     }
                 }
@@ -609,7 +603,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
 
                 width += ansiWidth;
                 index = RE_ANSI.lastIndex;
-                // eslint-disable-next-line no-continue
+
                 continue;
             }
         }
@@ -617,10 +611,9 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
         // Fast path for zero-width characters
         const charCode = input.codePointAt(index) as number;
 
-        if (charCode === 0x20_0b || charCode === 0xfe_ff || (charCode >= 0x20_60 && charCode <= 0x20_64)) {
-            // eslint-disable-next-line no-plusplus
-            index++;
-            // eslint-disable-next-line no-continue
+        if (charCode === 0x20_0B || charCode === 0xFE_FF || (charCode >= 0x20_60 && charCode <= 0x20_64)) {
+            index += 1;
+
             continue;
         }
 
@@ -637,14 +630,15 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             }
 
             width += config.width.tab;
-            // eslint-disable-next-line no-plusplus
-            index++;
-            // eslint-disable-next-line no-continue
+
+            index += 1;
+
             continue;
         }
 
         // Handle Latin character sequences efficiently - most common case for western text
         RE_LATIN_CHARS.lastIndex = index;
+
         if (RE_LATIN_CHARS.test(input)) {
             const latinLength = RE_LATIN_CHARS.lastIndex - index;
             const latinWidth = latinLength * config.width.regular;
@@ -653,6 +647,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             if (width + latinWidth > truncationLimit) {
                 // Calculate exact character that crosses the limit
                 const charsToLimit = Math.floor((truncationLimit - width) / config.width.regular);
+
                 truncationIndex = Math.min(truncationIndex, index + charsToLimit);
 
                 if (width + latinWidth > config.truncation.limit) {
@@ -663,13 +658,14 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
 
             width += latinWidth;
             index = RE_LATIN_CHARS.lastIndex;
-            // eslint-disable-next-line no-continue
+
             continue;
         }
 
         // Handle control characters
-        if (charCode <= 0x00_1f || (charCode >= 0x00_7f && charCode <= 0x00_9f)) {
+        if (charCode <= 0x00_1F || (charCode >= 0x00_7F && charCode <= 0x00_9F)) {
             RE_CONTROL.lastIndex = index;
+
             if (RE_CONTROL.test(input)) {
                 const controlLength = RE_CONTROL.lastIndex - index;
                 const controlWidth = controlLength * config.width.control;
@@ -685,13 +681,14 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
 
                 width += controlWidth;
                 index = RE_CONTROL.lastIndex;
-                // eslint-disable-next-line no-continue
+
                 continue;
             }
         }
 
         // Handle emoji characters - defer to emoji regex since emoji detection is complex
         RE_EMOJI.lastIndex = index;
+
         if (RE_EMOJI.test(input)) {
             if (width + config.width.emoji > truncationLimit) {
                 truncationIndex = Math.min(truncationIndex, index);
@@ -704,7 +701,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
 
             width += config.width.emoji;
             index = RE_EMOJI.lastIndex;
-            // eslint-disable-next-line no-continue
+
             continue;
         }
 
@@ -713,8 +710,8 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
         if (isCombiningCharacter(codePoint)) {
             // Variation Selectors
             // Combining characters should not add to width
-            index += codePoint > 0xff_ff ? 2 : 1;
-            // eslint-disable-next-line no-continue
+            index += codePoint > 0xFF_FF ? 2 : 1;
+
             continue;
         }
 
@@ -726,13 +723,13 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             const charType = getCharType(codePoint);
 
             switch (charType) {
-                case "latin": {
-                    charWidth = config.width.regular;
+                case "control": {
+                    charWidth = config.width.control;
 
                     break;
                 }
-                case "control": {
-                    charWidth = config.width.control;
+                case "latin": {
+                    charWidth = config.width.regular;
 
                     break;
                 }
@@ -749,18 +746,17 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
                 default: {
                     const eaw = eastAsianWidthType(codePoint);
 
-                    // eslint-disable-next-line sonarjs/no-nested-switch
                     switch (eaw) {
+                        case "ambiguous": {
+                            charWidth = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
+                            break;
+                        }
                         case "fullwidth": {
                             charWidth = config.width.fullWidth;
                             break;
                         }
                         case "wide": {
                             charWidth = config.width.wide;
-                            break;
-                        }
-                        case "ambiguous": {
-                            charWidth = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
                             break;
                         }
                         default: {
@@ -782,7 +778,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
 
         width += charWidth;
         // Use the actual character length to handle surrogate pairs correctly
-        index += codePoint > 0xff_ff ? 2 : 1;
+        index += codePoint > 0xFF_FF ? 2 : 1;
     }
 
     let finalWidth = width;

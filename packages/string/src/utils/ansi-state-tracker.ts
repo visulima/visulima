@@ -11,12 +11,12 @@ class AnsiStateTracker {
 
     /**
      * Processes an escape sequence and updates the internal state
-     * @param sequence - The escape sequence to process
+     * @param sequence The escape sequence to process
      */
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
     public processEscape(sequence: string): void {
         // Extract the numeric code from the sequence
-        // eslint-disable-next-line no-control-regex,regexp/no-control-character, unicorn/no-hex-escape
+        // eslint-disable-next-line no-control-regex, unicorn/no-hex-escape
         const match = /\x1B\[(\d+)m/.exec(sequence);
 
         if (!match) {
@@ -65,7 +65,6 @@ class AnsiStateTracker {
                         29: "[9m", // Reset strikethrough
                     };
 
-                    // eslint-disable-next-line security/detect-object-injection
                     const formatToRemove = formatResetMap[code] as string;
 
                     if (formatToRemove) {
@@ -103,17 +102,19 @@ class AnsiStateTracker {
             // This part needs to be smarter based on how activeFormatting stores codes.
             // Assuming activeFormatting stores codes like "\x1B[1m", "\x1B[3m"
             const formatResetMap: { [key: string]: string } = {
-                "\x1B[1m": "\x1B[22m", // Bold
-                "\x1B[2m": "\x1B[22m", // Faint/Dim (also reset by 22)
-                "\x1B[3m": "\x1B[23m", // Italic
-                "\x1B[4m": "\x1B[24m", // Underline
-                "\x1B[7m": "\x1B[27m", // Inverse
-                "\x1B[8m": "\x1B[28m", // Hidden/Conceal
-                "\x1B[9m": "\x1B[29m", // Strikethrough
+                "\u001B[1m": "\u001B[22m", // Bold
+                "\u001B[2m": "\u001B[22m", // Faint/Dim (also reset by 22)
+                "\u001B[3m": "\u001B[23m", // Italic
+                "\u001B[4m": "\u001B[24m", // Underline
+                "\u001B[7m": "\u001B[27m", // Inverse
+                "\u001B[8m": "\u001B[28m", // Hidden/Conceal
+                "\u001B[9m": "\u001B[29m", // Strikethrough
             };
+
             // Iterate in reverse for arguably better visual nesting behavior on reset
-            [...this.activeFormatting].reverse().forEach(formatCode => {
+            [...this.activeFormatting].reverse().forEach((formatCode) => {
                 const resetCode = formatResetMap[formatCode];
+
                 if (resetCode) {
                     closingEscapes.push(resetCode);
                 }
@@ -121,11 +122,11 @@ class AnsiStateTracker {
         }
 
         if (this.activeForeground) {
-            closingEscapes.push("\x1B[39m"); // Default foreground color
+            closingEscapes.push("\u001B[39m"); // Default foreground color
         }
 
         if (this.activeBackground) {
-            closingEscapes.push("\x1B[49m"); // Default background color
+            closingEscapes.push("\u001B[49m"); // Default background color
         }
 
         return closingEscapes.join("");

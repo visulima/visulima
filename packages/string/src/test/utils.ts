@@ -20,7 +20,7 @@ export const formatAnsiString = (ansiString: string): { ansi: string; json: stri
         // String with ANSI codes stripped
         stripped,
         // String with ANSI escape codes shown as visible characters
-        visible: ansiString.replaceAll("", "\\u001B"),
+        visible: ansiString.replaceAll("", String.raw`\u001B`),
     };
 };
 
@@ -53,18 +53,18 @@ export const expectAnsiStrings = (actual: string, expected: string): Expectation
             const strippedEqual = actualFormatted.stripped === expectedFormatted.stripped;
 
             return format(
-                "ANSI string comparison failed:\n\n" +
-                    "Actual:\n" +
-                    "  - Visible content: %s\n" +
-                    "  - With escape codes: %s\n" +
-                    "  - JSON: %s\n" +
-                    "  - Length: %d\n\n" +
-                    "Expected:\n" +
-                    "  - Visible content: %s\n" +
-                    "  - With escape codes: %s\n" +
-                    "  - JSON: %s\n" +
-                    "  - Length: %d\n\n" +
-                    "%s\n",
+                "ANSI string comparison failed:\n\n"
+                + "Actual:\n"
+                + "  - Visible content: %s\n"
+                + "  - With escape codes: %s\n"
+                + "  - JSON: %s\n"
+                + "  - Length: %d\n\n"
+                + "Expected:\n"
+                + "  - Visible content: %s\n"
+                + "  - With escape codes: %s\n"
+                + "  - JSON: %s\n"
+                + "  - Length: %d\n\n"
+                + "%s\n",
                 actualFormatted.stripped,
                 actualFormatted.visible,
                 actualFormatted.json,

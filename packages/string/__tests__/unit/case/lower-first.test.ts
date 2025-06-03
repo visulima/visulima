@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { lowerFirst } from "../../../src/case";
 
-describe("lowerFirst", () => {
+describe(lowerFirst, () => {
     it("should handle empty string", () => {
         expect.assertions(1);
         expect(lowerFirst("")).toBe("");

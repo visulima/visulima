@@ -15,77 +15,84 @@ const fixture4 = "12345678\n ";
 // Helper function for testing
 const hasAnsi = (string_: string): boolean => RE_FAST_ANSI.test(string_);
 
-describe("wordWrap", () => {
+describe(wordWrap, () => {
     expect.extend({ toEqualAnsi });
 
     it("should wrap string at 20 characters", () => {
         expect.assertions(2);
+
         const result = wordWrap(fixture, { width: 20 });
 
         expect(result).toBe(
             `The quick brown ${red("fox")}\n${red("jumped over")} the lazy\n${green("dog and then ran")}\n${green("away with the")}\n${green("unicorn.")}`,
         );
-        expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 20)).toBeTruthy();
+        expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 20)).toBe(true);
     });
 
     it("should wrap string at 30 characters", () => {
         expect.assertions(2);
+
         const result = wordWrap(fixture, { width: 30 });
 
         expect(result).toBe(`The quick brown ${red("fox jumped")}\n${red("over")} the lazy ${green("dog and then ran")}\n${green("away with the unicorn.")}`);
-        expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 30)).toBeTruthy();
+        expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 30)).toBe(true);
     });
 
     // Word wrapping behavior tests
     it("should not break strings longer than width when using PRESERVE_WORDS mode", () => {
         expect.assertions(2);
+
         const result = wordWrap(fixture, { width: 5, wrapMode: WrapMode.PRESERVE_WORDS });
 
         expect(result).toBe(
             `The\nquick\nbrown\n${red("fox")}\n${red("jumped")}\n${red("over")}\nthe\nlazy\n${green("dog")}\n${green("and")}\n${green("then")}\n${green("ran")}\n${green("away")}\n${green("with")}\n${green("the")}\n${green("unicorn.")}`,
         );
-        expect(result.split("\n").some((line) => stripVTControlCharacters(line).length > 5)).toBeTruthy();
+        expect(result.split("\n").some((line) => stripVTControlCharacters(line).length > 5)).toBe(true);
     });
 
     it("should break strings longer than width when using STRICT_WIDTH mode", () => {
         expect.assertions(2);
+
         const result = wordWrap(fixture, { width: 5, wrapMode: WrapMode.STRICT_WIDTH });
 
         expect(result).toMatchInlineSnapshot(`
-          "The q
-          uick
-          brown
-          [31mfox j[39m
-          [31mumped[39m
-          [31mover[39m
-          the l
-          azy [32md[39m
-          [32mog an[39m
-          [32md the[39m
-          [32mn ran[39m
-          [32maway[39m
-          [32mwith[39m
-          [32mthe u[39m
-          [32mnicor[39m
-          [32mn.[39m"
+            "The q
+            uick
+            brown
+            [31mfox j[39m
+            [31mumped[39m
+            [31mover[39m
+            the l
+            azy [32md[39m
+            [32mog an[39m
+            [32md the[39m
+            [32mn ran[39m
+            [32maway[39m
+            [32mwith[39m
+            [32mthe u[39m
+            [32mnicor[39m
+            [32mn.[39m"
         `);
-        expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 5)).toBeTruthy();
+        expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 5)).toBe(true);
     });
 
     // ANSI handling tests
     it("should handle colored string that wraps onto multiple lines", () => {
         expect.assertions(3);
+
         const result = wordWrap(`${green("hello world")} hey!`, { width: 5, wrapMode: WrapMode.PRESERVE_WORDS });
         const lines = result.split("\n");
 
-        expect(hasAnsi(lines[0])).toBeTruthy();
-        expect(hasAnsi(lines[1])).toBeTruthy();
-        expect(hasAnsi(lines[2])).toBeFalsy();
+        expect(hasAnsi(lines[0])).toBe(true);
+        expect(hasAnsi(lines[1])).toBe(true);
+        expect(hasAnsi(lines[2])).toBe(false);
     });
 
     it("should not prepend newline if first string is greater than width", () => {
         expect.assertions(1);
+
         const result = wordWrap(`${green("hello")}-world`, { width: 5, wrapMode: WrapMode.PRESERVE_WORDS });
+
         expect(result.split("\n")).toHaveLength(1);
     });
 
@@ -100,12 +107,15 @@ describe("wordWrap", () => {
         expect(wordWrap("supercalifragilistic", { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("super\ncalif\nragil\nistic");
 
         const result = wordWrap(fixture3, { width: 15, wrapMode: WrapMode.BREAK_AT_CHARACTERS });
+
         expect(result).toBe("12345678\n901234567890 12\n345");
 
         const result2 = wordWrap(fixture3, { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS });
+
         expect(result2).toBe("12345\n678\n90123\n45678\n90 12\n345");
 
         const result3 = wordWrap(fixture4, { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS });
+
         expect(result3).toBe("12345\n678\n");
     });
 
@@ -156,6 +166,7 @@ describe("wordWrap", () => {
 
     it("should handle tab characters correctly", () => {
         expect.assertions(4);
+
         const textWithTabs = "\t\t\t\ttestingtesting";
 
         expect(wordWrap(textWithTabs, { width: 10 })).toBe("testingtesting");
@@ -263,7 +274,7 @@ describe("wordWrap", () => {
                 expect(wordWrap("hello supercalifragilisticexpialidocious world", { width: 20, wrapMode: WrapMode.BREAK_WORDS })).toBe(
                     "hello\nsupercalifragilistic\nexpialidocious world",
                 );
-                // eslint-disable-next-line no-secrets/no-secrets
+
                 expect(wordWrap("short thenThisIsAVeryLongWordWithoutSpaces anothertest", { width: 15, wrapMode: WrapMode.BREAK_WORDS })).toBe(
                     "short\nthenThisIsAVery\nLongWordWithout\nSpaces\nanothertest",
                 );
@@ -298,7 +309,9 @@ describe("wordWrap", () => {
 
             it("should correctly break words with ANSI codes when they exceed width", () => {
                 expect.assertions(1);
+
                 const text = `word ${green("anotherlongwordthatneedsbreaking")} final`;
+
                 // Width is set such that "anotherlongwordthatneedsbreaking" must break
                 expect(wordWrap(text, { width: 15, wrapMode: WrapMode.BREAK_WORDS })).toEqualAnsi(
                     `word\n${green("anotherlongword")}\n${green("thatneedsbreaki")}\n${green("ng")} final`,
