@@ -69,10 +69,10 @@ In order to use them, you can import from `@visulima/path/utils` subpath:
 
 ```js
 // ESM / Typescript
-import { filename, normalizeAliases, resolveAlias, reverseResolveAlias, isRelative, isBinaryPath, toPath } from "@visulima/path/utils";
+import { filename, normalizeAliases, resolveAlias, reverseResolveAlias, isRelative, isBinaryPath, toPath, isWindows } from "@visulima/path/utils";
 
 // CommonJS
-const { filename, normalizeAliases, resolveAlias, reverseResolveAlias, isRelative, isBinaryPath, toPath } = require("@visulima/path/utils");
+const { filename, normalizeAliases, resolveAlias, reverseResolveAlias, isRelative, isBinaryPath, toPath, isWindows } = require("@visulima/path/utils");
 ```
 
 ## Related

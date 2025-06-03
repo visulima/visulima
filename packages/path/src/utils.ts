@@ -162,3 +162,29 @@ export const isRelative = (path: string): boolean => /^(?:\.?\.[/\\]|\.\.\B)/.te
 export const isBinaryPath = (path: string): boolean => extensions.has(extname(path).slice(1).toLowerCase());
 
 export const toPath = (urlOrPath: URL | string): string => normalizeWindowsPath(urlOrPath instanceof URL ? fileURLToPath(urlOrPath) : urlOrPath);
+
+/**
+ * Detect if the current platform uses Windows-style paths.
+ *
+ * This used automatically in functions prefixed by `sys` to get system-dependent behavior.
+ */
+export const isWindows = (): boolean => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!globalThis?.process) {
+        return false;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (globalThis?.process?.platform === "win32" || globalThis?.process?.platform === "cygwin") {
+        return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const osType = globalThis?.process?.env.OSTYPE;
+
+    if (!(typeof osType === "string")) {
+        return false;
+    }
+
+    return /^(?:msys|cygwin)$/.test(osType);
+};
