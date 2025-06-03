@@ -26,9 +26,9 @@ import internalMoveFileSync from "./utils/internal-move-file-sync";
  *
  * @example
  * ```
- * import { moveFile } from '@visulima/fs';
+ * import { move } from '@visulima/fs';
  *
- * await moveFile('source/test.png', 'destination/test.png');
+ * await move('source/test.png', 'destination/test.png');
  * console.log('The file has been moved');
  * ```
  */
@@ -52,9 +52,9 @@ export const move = async (sourcePath: string, destinationPath: string, options:
  *
  * @example
  * ```
- * import { moveFileSync } from '@visulima/fs';
+ * import { moveSync } from '@visulima/fs';
  *
- * moveFileSync('source/test.png', 'destination/test.png');
+ * moveSync('source/test.png', 'destination/test.png');
  * console.log('The file has been moved');
  * ```
  */
@@ -76,9 +76,9 @@ export const moveSync = (sourcePath: string, destinationPath: string, options?: 
  *
  * @example
  * ```
- * import { renameFile } from '@visulima/fs';
+ * import { rename } from '@visulima/fs';
  *
- * await renameFile('test.png', 'tests.png', {cwd: 'source'});
+ * await rename('test.png', 'tests.png', {cwd: 'source'});
  * console.log('The file has been renamed');
  * ```
  */
@@ -100,9 +100,9 @@ export const rename = async (source: string, destination: string, options?: Opti
  *
  * @example
  * ```
- * import {renameFileSync} from '@visulima/fs';
+ * import { renameSync } from '@visulima/fs';
  *
- * renameFileSync('test.png', 'tests.png', {cwd: 'source'});
+ * renameSync('test.png', 'tests.png', {cwd: 'source'});
  * console.log('The file has been renamed');
  * ```
  */

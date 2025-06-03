@@ -11,7 +11,15 @@ import { getFileInfoType } from "./utils/get-file-info-type";
 /**
  * Ensures that the file exists.
  * If the file that is requested to be created is in directories that do not exist,
- * these directories are created. If the file already exists, it is NOTMODIFIED.
+ * these directories are created. If the file already exists, it is NOT MODIFIED.
+ * @param filePath The path to the file to ensure exists.
+ * @example
+ * ```javascript
+ * import { ensureFileSync } from "@visulima/fs";
+ *
+ * ensureFileSync("/tmp/foo/bar/baz.txt");
+ * // Creates the file /tmp/foo/bar/baz.txt and any missing parent directories if they don't exist
+ * ```
  */
 const ensureFileSync = (filePath: URL | string): void => {
     assertValidFileOrDirectoryPath(filePath);

@@ -2,6 +2,47 @@
 
 import { INTERNAL_STRIP_JSON_REGEX } from "../constants";
 
+/**
+ * Strips comments from a JSON string.
+ * Handles both single-line (//) and multi-line (/* ... *&#47;) comments.
+ *
+ * @param jsonString The JSON string possibly containing comments.
+ * @param [options] Optional configuration for stripping comments.
+ * @param [options.whitespace=true] If `true` (default), comments are replaced with whitespace to preserve line numbers and character positions. If `false`, comments are removed entirely.
+ * @returns The JSON string with comments stripped.
+ * @example
+ * ```javascript
+ * import { stripJsonComments } from "@visulima/fs"; // Assuming this util is exported
+ *
+ * const jsonWithComments = `{
+ *   // This is a single-line comment
+ *   "name": "John Doe",
+ *   "age": 30, /* This is a
+ *   multi-line comment *&#47;
+ *   "city": "New York"
+ * }`;
+ *
+ * const stripped = stripJsonComments(jsonWithComments);
+ * console.log(stripped);
+ * // Output (with whitespace=true):
+ * // {
+ * //
+ * //   "name": "John Doe",
+ * //   "age": 30, /*
+ * //
+ * //   "city": "New York"
+ * // }
+ *
+ * const strippedWithoutWhitespace = stripJsonComments(jsonWithComments, { whitespace: false });
+ * console.log(strippedWithoutWhitespace);
+ * // Output (with whitespace=false):
+ * // {
+ * //   "name": "John Doe",
+ * //   "age": 30,
+ * //   "city": "New York"
+ * // }
+ * ```
+ */
 const stripJsonComments = (jsonString: string, { whitespace = true } = {}): string =>
     // This regular expression translates to:
     //

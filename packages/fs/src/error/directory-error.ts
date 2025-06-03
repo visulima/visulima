@@ -1,5 +1,37 @@
 /**
- * Error thrown when an operation is not allowed on a directory.
+ * Error thrown when an operation that is not allowed on a directory is attempted.
+ * This typically occurs when a file-specific operation is used on a directory path.
+ * @example
+ * ```javascript
+ * import { DirectoryError } from "@visulima/fs/error";
+ * import { readFile } from "@visulima/fs"; // Or any function that might throw this
+ * import { join } from "node:path";
+ *
+ * const attemptToReadFileFromDir = async () => {
+ *   try {
+ *     // Attempting to read a directory as if it were a file
+ *     // This is a conceptual example; readFile might throw a different error first
+ *     // depending on its internal checks, but EISDIR is the underlying system error.
+ *     // Forcing the scenario:
+ *     const pretendReadFileOnDir = (path) => {
+ *       if (path === "/tmp/my-directory") { // Simulate a directory path
+ *         throw new DirectoryError(`read '/tmp/my-directory'`);
+ *       }
+ *     }
+ *     pretendReadFileOnDir("/tmp/my-directory");
+ *     // await readFile(join("/tmp", "my-directory"));
+ *   } catch (error) {
+ *     if (error instanceof DirectoryError) {
+ *       console.error(`Operation failed, path is a directory: ${error.message}`);
+ *       console.error(`Error code: ${error.code}`); // EISDIR
+ *     } else {
+ *       console.error("An unexpected error occurred:", error);
+ *     }
+ *   }
+ * };
+ *
+ * attemptToReadFileFromDir();
+ * ```
  */
 class DirectoryError extends Error {
     /**

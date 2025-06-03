@@ -59,6 +59,59 @@ const addCodePointToUnexpectedToken = (message: string): string =>
 
 function parseJson<T = JsonValue>(string: string, filename?: string, options?: CodeFrameOptions): T;
 function parseJson<T = JsonValue>(string: string, reviver: JsonReviver, fileName?: string, options?: CodeFrameOptions): T;
+/**
+ * Parses a JSON string, constructing the JavaScript value or object described by the string.
+ * This is a modified version of `parse-json` from `https://github.com/sindresorhus/parse-json/blob/main/index.js`.
+ * It provides more detailed error messages including code frames.
+ *
+ * @template T The type of the parsed JSON value.
+ * @param string The JSON string to parse.
+ * @param [reviver] An optional reviver function that can transform the results, or a filename string if no reviver is used.
+ * @param [fileName] An optional filename string (if reviver is provided), or CodeFrameOptions (if reviver is not provided and this is the third argument).
+ * @param [options] Optional options for generating the code frame on error.
+ * @returns {T} The JavaScript value or object described by the JSON string.
+ * @throws {JsonError} If the string to parse is not valid JSON, or if any other parsing error occurs.
+ * @example
+ * ```javascript
+ * import { parseJson } from "@visulima/fs"; // Assuming this util is exported or re-exported
+ *
+ * const jsonString = '{"name": "John Doe", "age": 30, "city": "New York"}';
+ * const malformedJson = '{"name": "Jane Doe", "age": "thirty}'; // Missing quote
+ *
+ * try {
+ *   const data = parseJson(jsonString);
+ *   console.log(data.name); // Output: John Doe
+ *
+ *   const dataWithReviver = parseJson(jsonString, (key, value) => {
+ *     if (key === "age") {
+ *       return value + 5;
+ *     }
+ *     return value;
+ *   });
+ *   console.log(dataWithReviver.age); // Output: 35
+ *
+ *   // With filename for better error reporting
+ *   const user = parseJson(malformedJson, "user-data.json");
+ *
+ * } catch (error) {
+ *   // error will be an instance of JsonError
+ *   console.error(error.message);
+ *   // Example error message:
+ *   // Unexpected token } in JSON at position 37 in user-data.json
+ *   //
+ *   //   35 |   "name": "Jane Doe",
+ *   // > 36 |   "age": "thirty}
+ *   //      |                 ^
+ *   //   37 |
+ *   if (error.fileName) {
+ *     console.error(`Error in file: ${error.fileName}`);
+ *   }
+ *   if (error.codeFrame) {
+ *     console.error(error.codeFrame);
+ *   }
+ * }
+ * ```
+ */
 // eslint-disable-next-line func-style
 function parseJson<T = JsonValue>(string: string, reviver?: JsonReviver | string, fileName?: CodeFrameOptions | string, options?: CodeFrameOptions): T {
     if (typeof reviver === "string") {

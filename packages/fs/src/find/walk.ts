@@ -33,17 +33,32 @@ const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
 };
 
 /**
- * Walks the file tree rooted at root, yielding each file or directory in the
- * tree filtered according to the given options.
- * Options:
- * - maxDepth?: number = Infinity;
- * - includeFiles?: boolean = true;
- * - includeDirs?: boolean = true;
- * - includeSymlinks?: boolean = true;
- * - followSymlinks?: boolean = false;
- * - extensions?: string[];
- * - match?: string | ReadonlyArray<string>;
- * - skip?: string | ReadonlyArray<string>;
+ * Asynchronously walks the file tree rooted at `directory`, yielding each file or directory that matches the criteria specified in `options`.
+ *
+ * @param directory The root directory to start walking from.
+ * @param options Optional configuration to control the walking process. See {@link WalkOptions}.
+ * @returns An async iterable iterator yielding {@link WalkEntry} objects for each matching file or directory.
+ * @example
+ * ```javascript
+ * import { walk } from "@visulima/fs";
+ * import { join } from "node:path";
+ *
+ * const printEntries = async () => {
+ *   // Walk through /tmp/my-project, looking for .ts files, max depth 2
+ *   for await (const entry of walk(join("/tmp", "my-project"), { extensions: ["ts"], maxDepth: 2 })) {
+ *     console.log(`Found: ${entry.path} (Type: ${entry.isFile() ? 'file' : 'directory'})`);
+ *   }
+ *
+ *   // Walk, including only directories, and skip any node_modules folders
+ *   for await (const entry of walk(join("/tmp", "another-project"), { includeFiles: false, skip: [/node_modules/] })) {
+ *     if (entry.isDirectory()) {
+ *        console.log(`Directory: ${entry.path}`);
+ *     }
+ *   }
+ * };
+ *
+ * printEntries();
+ * ```
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export default async function* walk(

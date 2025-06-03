@@ -7,6 +7,14 @@ import { getFileInfoType } from "./utils/get-file-info-type";
 /**
  * Ensures that the directory exists.
  * If the directory structure does not exist, it is created. Like mkdir -p.
+ * @param directory The path to the directory to ensure exists.
+ * @example
+ * ```javascript
+ * import ensureDir from "@visulima/fs/ensure/ensure-dir";
+ *
+ * await ensureDir("/tmp/foo/bar/baz");
+ * // Creates the directory structure /tmp/foo/bar/baz if it doesn't exist
+ * ```
  */
 // eslint-disable-next-line unicorn/prevent-abbreviations
 const ensureDir = async (directory: URL | string): Promise<void> => {
