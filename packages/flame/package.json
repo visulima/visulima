@@ -117,7 +117,7 @@
         "get-uri": "^6.0.4"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.2.9",
+        "@anolilab/eslint-config": "^16.2.10",
         "@anolilab/semantic-release-preset": "^10.0.5",
         "@babel/core": "^7.27.4",
         "@eslint/css": "0.8.1",
@@ -128,7 +128,7 @@
         "@types/node": "22.15.29",
         "@types/sanitize-html": "^2.16.0",
         "@visulima/packem": "1.19.4",
-        "@vitest/coverage-v8": "^3.1.4",
+        "@vitest/coverage-v8": "^3.2.1",
         "cross-env": "^7.0.3",
         "cssnano": "7.0.7",
         "esbuild": "0.25.5",
@@ -137,7 +137,7 @@
         "lucide-static": "^0.511.0",
         "marked": "^15.0.12",
         "open-editor": "^5.1.0",
-        "openai": "5.0.1",
+        "openai": "5.1.0",
         "postcss": "^8.5.4",
         "postcss-focus-visible": "^10.0.1",
         "postcss-load-config": "6.0.1",
@@ -154,7 +154,7 @@
         "tailwindcss": "^4.1.8",
         "typescript": "^5.8.3",
         "vite": "^6.3.5",
-        "vitest": "^3.1.4"
+        "vitest": "^3.2.1"
     },
     "peerDependencies": {
         "clipboard": "^2.0.11",

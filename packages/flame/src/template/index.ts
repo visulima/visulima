@@ -12,13 +12,20 @@ import stackTraceViewer from "./components/stack-trace-viewer";
 import inlineCss from "./index.css";
 import layout from "./layout";
 
+type ErrorType = Error | SolutionError | VisulimaError;
+
 const template = async (
-    error: Error | SolutionError | VisulimaError,
+    error: ErrorType,
     solutionFinders: SolutionFinder[] = [],
     options: Partial<{ editor: Editor; openInBrowserUrl?: string; theme: Theme }> = {},
 ): Promise<string> => {
-    const causes = getErrorCauses(error);
-    const mainCause = causes.shift() as Error | SolutionError | VisulimaError;
+    const allCauses = getErrorCauses(error);
+
+    if (allCauses.length === 0) {
+        throw new Error("No error causes found");
+    }
+
+    const [mainCause, ...causes] = allCauses;
 
     let html = "";
 
@@ -27,25 +34,25 @@ const template = async (
     html += headerBarHtml;
 
     const { html: errorCardHtml, scripts: errorCardScripts } = await errorCard({
-        error: mainCause,
+        error: mainCause as ErrorType,
         runtimeName,
         solutionFinders,
         version: process.version,
     });
 
     html += errorCardHtml;
-    html += await stackTraceViewer(mainCause);
+    html += await stackTraceViewer(mainCause as ErrorType);
 
     const { html: causesViewerHtml, script: causesViewerScript } = await causesViewer(causes);
 
     html += causesViewerHtml;
-    html += rawStackTrace(mainCause.stack);
+    html += rawStackTrace((mainCause as ErrorType).stack);
 
     return layout({
         content: html.trim(),
         css: inlineCss.trim(),
         description: "Error",
-        error: mainCause,
+        error: mainCause as ErrorType,
         scripts: [headerBarScript, ...errorCardScripts, causesViewerScript],
         title: "Error",
     });
