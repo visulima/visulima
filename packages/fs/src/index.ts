@@ -28,7 +28,8 @@ export { default as remove } from "./remove/remove";
 export { default as removeSync } from "./remove/remove-sync";
 export type {
     CodeFrameLocation,
-    EmptyDirOptions,
+    CodeFrameOptions,
+    ContentType,
     FindUpName,
     FindUpNameFnResult,
     FindUpNameSync,
