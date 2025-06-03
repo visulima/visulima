@@ -10,6 +10,12 @@
         "apps/*"
     ],
     "scripts": {
+        "lint:eslint:bytes": "pnpm --filter \"bytes\" run lint:eslint",
+        "lint:eslint:fix:bytes": "pnpm --filter \"bytes\" run lint:eslint:fix",
+        "lint:types:bytes": "pnpm --filter \"bytes\" run lint:types",
+        "test:bytes": "pnpm --filter \"bytes\" run test",
+        "test:coverage:bytes": "pnpm --filter \"bytes\" run test:coverage",
+        "test:ui:bytes": "pnpm --filter \"bytes\" run test:ui",
         "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",

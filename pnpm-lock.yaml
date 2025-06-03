@@ -1025,6 +1025,75 @@ importers:
         specifier: workspace:*
         version: link:../../..
 
+  packages/bytes:
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: ^16.2.10
+        version: 16.2.10(@babel/core@7.27.4)(@types/node@22.15.29)(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-playwright@2.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-storybook@0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.0)(yaml@2.8.0)
+      '@anolilab/semantic-release-pnpm':
+        specifier: 1.1.11
+        version: 1.1.11(@types/node@22.15.29)(yaml@2.8.0)
+      '@anolilab/semantic-release-preset':
+        specifier: ^10.0.5
+        version: 10.0.5(@anolilab/semantic-release-pnpm@1.1.11(@types/node@22.15.29)(yaml@2.8.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.5(typescript@5.8.3)))(semantic-release@24.2.5(typescript@5.8.3))(yaml@2.8.0)
+      '@arethetypeswrong/cli':
+        specifier: ^0.18.1
+        version: 0.18.1
+      '@babel/core':
+        specifier: ^7.27.4
+        version: 7.27.4
+      '@secretlint/secretlint-rule-preset-recommend':
+        specifier: ^9.3.3
+        version: 9.3.3
+      '@std/bytes':
+        specifier: jsr:1.0.6
+        version: '@jsr/std__bytes@1.0.6'
+      '@total-typescript/ts-reset':
+        specifier: ^0.6.1
+        version: 0.6.1
+      '@types/node':
+        specifier: 22.15.29
+        version: 22.15.29
+      '@visulima/packem':
+        specifier: ^1.19.4
+        version: 1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.29)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.2.0(postcss@8.5.3))(postcss-modules-scope@3.2.1(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+      '@vitest/coverage-v8':
+        specifier: ^3.2.0
+        version: 3.2.0(@vitest/browser@3.2.0)(vitest@3.2.0)
+      '@vitest/ui':
+        specifier: ^3.2.0
+        version: 3.2.0(vitest@3.2.0)
+      conventional-changelog-conventionalcommits:
+        specifier: 9.0.0
+        version: 9.0.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      esbuild:
+        specifier: ^0.25.5
+        version: 0.25.5
+      eslint:
+        specifier: 9.28.0
+        version: 9.28.0(jiti@2.4.2)
+      prettier:
+        specifier: ^3.5.3
+        version: 3.5.3
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.0.1
+      secretlint:
+        specifier: 9.3.3
+        version: 9.3.3
+      semantic-release:
+        specifier: ^24.2.5
+        version: 24.2.5(typescript@5.8.3)
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.0(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/browser@3.2.0)(@vitest/ui@3.2.0)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+
   packages/cerebro:
     dependencies:
       '@visulima/boxen':
@@ -2147,6 +2216,11 @@ importers:
       vitest:
         specifier: ^3.1.4
         version: 3.2.0(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/browser@3.2.0)(@vitest/ui@3.2.0)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+<<<<<<< HEAD
+=======
+
+  packages/fs/__bench__/fixtures/a/b: {}
+>>>>>>> 98c119f8 (feat(bytes): add utility functions for Uint8Array manipulation)
 
   packages/fs/__fixtures__/find-up: {}
 
@@ -6208,6 +6282,9 @@ packages:
 
   '@jsenv/eslint-import-resolver@8.1.2':
     resolution: {integrity: sha512-aNcojKCojwOMHu5R46Bdce0S1Xvgaa5WPO7t3JRZmmyUJELe6kwtUoLjDLhFbuin8g9x6kmKaUK0/IDiGzmzKg==}
+
+  '@jsr/std__bytes@1.0.6':
+    resolution: {integrity: sha512-St6yKggjFGhxS52IFLJWvkchRFbAKg2Xh8UxA4S1EGz7GJ2Ui+ssDDldj/w2c8vCxvl6qgR0HaYbKeFJNqujmA==, tarball: https://npm.jsr.io/~/11/@jsr/std__bytes/1.0.6.tgz}
 
   '@juggle/resize-observer@3.4.0':
     resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
@@ -23896,6 +23973,8 @@ snapshots:
   '@jsdevtools/ono@7.1.3': {}
 
   '@jsenv/eslint-import-resolver@8.1.2': {}
+
+  '@jsr/std__bytes@1.0.6': {}
 
   '@juggle/resize-observer@3.4.0': {}
 
