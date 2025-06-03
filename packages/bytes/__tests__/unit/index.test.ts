@@ -225,7 +225,7 @@ describe("@visulima/bytes", () => {
             // eslint-disable-next-line vitest/no-conditional-in-test
             if (bufferExisted) {
                 // @ts-expect-error Simulate Buffer not being available only if it exists
-                delete globalThis.Buffer;
+                globalThis.Buffer = undefined as unknown;
             }
 
             try {
@@ -233,7 +233,7 @@ describe("@visulima/bytes", () => {
                 expect(() => toUint8Array(123)).toThrow("UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array");
             } finally {
                 if (bufferExisted) {
-                    globalThis.Buffer = originalBuffer; // Restore Buffer only if it existed and was deleted
+                    globalThis.Buffer = originalBuffer; // Restore Buffer only if it existed and was modified
                 }
             }
         });
