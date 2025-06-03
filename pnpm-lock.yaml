@@ -14,6 +14,7 @@ overrides:
   next@>=15.0.0 <15.2.3: '>=15.2.3'
   prismjs@<1.30.0: '>=1.30.0'
   vite@>=6.3.0 <=6.3.3: '>=6.3.4'
+  tar-fs@>=3.0.0 <3.0.9: '>=3.0.9'
 
 importers:
 
@@ -19622,8 +19623,8 @@ packages:
     resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
     engines: {node: '>=6'}
 
-  tar-fs@3.0.8:
-    resolution: {integrity: sha512-ZoROL70jptorGAlgAYiLoBLItEKw/fUxg9BSYK/dF/GAGYFJOJJJMvjPAKDJraCXFwadD456FCuvLWgfhMsPwg==}
+  tar-fs@3.0.9:
+    resolution: {integrity: sha512-XF4w9Xp+ZQgifKakjZYmFdkLoSWd34VGKcsTCwlNWM7QG3ZbaxnTsaBwnjFZqHRf/rROxaR8rXnbtwdvaDI+lA==}
 
   tar-stream@2.2.0:
     resolution: {integrity: sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ==}
@@ -24677,7 +24678,7 @@ snapshots:
       progress: 2.0.3
       proxy-agent: 6.4.0
       semver: 7.7.2
-      tar-fs: 3.0.8
+      tar-fs: 3.0.9
       unbzip2-stream: 1.4.3
       yargs: 17.7.2
     transitivePeerDependencies:
@@ -33933,7 +33934,7 @@ snapshots:
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
       node-fetch: 3.3.2
-      tar-fs: 3.0.8
+      tar-fs: 3.0.9
       which: 5.0.0
     transitivePeerDependencies:
       - bare-buffer
@@ -41555,7 +41556,7 @@ snapshots:
 
   tapable@2.2.1: {}
 
-  tar-fs@3.0.8:
+  tar-fs@3.0.9:
     dependencies:
       pump: 3.0.0
       tar-stream: 3.1.7
