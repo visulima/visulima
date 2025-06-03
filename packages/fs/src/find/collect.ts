@@ -1,4 +1,4 @@
-import type { WalkEntry, WalkOptions } from "../types";
+import type { WalkOptions } from "../types";
 import walk from "./walk";
 
 /**
