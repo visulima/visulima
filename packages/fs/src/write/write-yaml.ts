@@ -76,7 +76,7 @@ async function writeYaml(
         space = options as number | string | undefined;
     }
 
-    const content = stringify(data, effectiveReplacer, space ?? (stringifyOptions as ToStringOptions));
+    const content = stringify(data, effectiveReplacer, space ?? (stringifyOptions as WriteYamlOptions));
 
     await writeFile(path, content, stringifyOptions);
 }

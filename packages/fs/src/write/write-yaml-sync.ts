@@ -1,4 +1,4 @@
-import { stringify, type ToStringOptions } from "yaml";
+import { stringify } from "yaml";
 
 import type { WriteYamlOptions, YamlReplacer } from "../types";
 import writeFileSync from "./write-file-sync";
@@ -76,7 +76,7 @@ function writeYamlSync(
         space = options as number | string | undefined;
     }
 
-    const content = stringify(data, effectiveReplacer, space ?? (stringifyOptions as ToStringOptions));
+    const content = stringify(data, effectiveReplacer, space ?? (stringifyOptions as WriteYamlOptions));
 
     writeFileSync(path, content, stringifyOptions);
 }

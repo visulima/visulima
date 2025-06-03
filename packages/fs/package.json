@@ -161,6 +161,9 @@
             ],
             "size": [
                 "./dist/size.d.ts"
+            ],
+            "eol": [
+                "./dist/eol.d.ts"
             ]
         }
     },
