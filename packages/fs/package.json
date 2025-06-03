@@ -1,6 +1,6 @@
 {
     "name": "@visulima/fs",
-    "version": "3.1.3",
+    "version": "3.1.4",
     "description": "Human friendly file system utilities for Node.js",
     "keywords": [
         "anolilab",

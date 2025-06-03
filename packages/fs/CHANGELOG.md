@@ -1,3 +1,14 @@
+## @visulima/fs [3.1.4](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.3...@visulima/fs@3.1.4) (2025-06-03)
+
+### Bug Fixes
+
+* **fs:** enhance file system utilities with detailed documentation updates ([678fb90](https://github.com/visulima/visulima/commit/678fb90a7799ceb78729414054be1ff499cc008b))
+* **fs:** enhance file system utilities with new documentation updates ([926a4fe](https://github.com/visulima/visulima/commit/926a4fe993cd82a6e40abbc54a301ba9ed05b227))
+
+### Miscellaneous Chores
+
+* **fs:** formatting utilities with documentation updates ([cc473c2](https://github.com/visulima/visulima/commit/cc473c21e707f7a425742f83137d10934465c6d1))
+
 ## @visulima/fs [3.1.3](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.2...@visulima/fs@3.1.3) (2025-05-30)
 
 ### Bug Fixes
