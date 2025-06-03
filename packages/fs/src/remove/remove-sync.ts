@@ -1,26 +1,37 @@
 import { rmSync, unlinkSync } from "node:fs";
 
+import type { RetryOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 
+/**
+ * Synchronously removes a file or directory (recursively).
+ * If the path does not exist, it does nothing.
+ *
+ * @param path The path to the file or directory to remove.
+ * @param options Optional configuration for the operation. See {@link RetryOptions}.
+ * @returns void
+ * @example
+ * ```javascript
+ * import { removeSync } from "@visulima/fs";
+ * import { join } from "node:path";
+ *
+ * try {
+ *   removeSync(join("/tmp", "my-file.txt"));
+ *   console.log("File /tmp/my-file.txt removed.");
+ *
+ *   removeSync(join("/tmp", "my-empty-dir"));
+ *   console.log("Directory /tmp/my-empty-dir removed.");
+ *
+ *   removeSync(join("/tmp", "my-dir-with-contents"));
+ *   console.log("Directory /tmp/my-dir-with-contents and its contents removed.");
+ * } catch (error) {
+ *   console.error("Failed to remove path:", error);
+ * }
+ * ```
+ */
 const removeSync = (
     path: URL | string,
-    options: {
-        /**
-         * If an `EBUSY`, `EMFILE`, `ENFILE`, `ENOTEMPTY`, or
-         * `EPERM` error is encountered, Node.js will retry the operation with a linear
-         * backoff wait of `retryDelay` ms longer on each try. This option represents the
-         * number of retries. This option is ignored if the `recursive` option is not
-         * `true`.
-         * @default 0
-         */
-        maxRetries?: number | undefined;
-        /**
-         * The amount of time in milliseconds to wait between retries.
-         * This option is ignored if the `recursive` option is not `true`.
-         * @default 100
-         */
-        retryDelay?: number | undefined;
-    } = {},
+    options: RetryOptions = {},
 ): void => {
     assertValidFileOrDirectoryPath(path);
 

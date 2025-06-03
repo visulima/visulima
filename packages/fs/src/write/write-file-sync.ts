@@ -11,6 +11,34 @@ import assertValidFileContents from "../utils/assert-valid-file-contents";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import toUint8Array from "./utils/to-uint-8-array";
 
+/**
+ * Synchronously writes data to a file, replacing the file if it already exists.
+ * This function includes safeguards like writing to a temporary file first and then renaming, and handling permissions.
+ *
+ * @param path The path to the file to write. Can be a file URL or a string path.
+ * @param content The data to write. Can be a string, Buffer, ArrayBuffer, or ArrayBufferView.
+ * @param options Optional configuration for writing the file. See {@link WriteFileOptions}.
+ * @returns void
+ * @example
+ * ```javascript
+ * import { writeFileSync } from "@visulima/fs";
+ * import { join } from "node:path";
+ *
+ * const writeMyFileSync = () => {
+ *   try {
+ *     writeFileSync(join("/tmp", "my-new-file-sync.txt"), "Hello World Synchronously!");
+ *     console.log("File written successfully (sync).");
+ *
+ *     writeFileSync(join("/tmp", "another-file-sync.txt"), "Some other sync content", { encoding: 'utf16le', mode: 0o600 });
+ *     console.log("Another file written with specific options (sync).");
+ *   } catch (error) {
+ *     console.error("Failed to write file (sync):", error);
+ *   }
+ * };
+ *
+ * writeMyFileSync();
+ * ```
+ */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): void => {
     // eslint-disable-next-line no-param-reassign

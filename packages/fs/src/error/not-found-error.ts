@@ -1,5 +1,34 @@
 /**
- * Error thrown when a file or directory is not found.
+ * Error thrown when a file or directory is not found at a specified path.
+ * @example
+ * ```javascript
+ * import { NotFoundError } from "@visulima/fs/error";
+ * import { readFile } from "@visulima/fs"; // Or any function that might throw this
+ * import { join } from "node:path";
+ *
+ * const tryReadingNonExistentFile = async () => {
+ *   const filePath = join("/tmp", "this-file-does-not-exist.txt");
+ *   try {
+ *     // Forcing the scenario for demonstration, as readFile itself would throw this.
+ *     const simulateNotFound = (path) => {
+ *        if (path === filePath) {
+ *           throw new NotFoundError(`no such file or directory, open '${filePath}'`);
+ *        }
+ *     }
+ *     simulateNotFound(filePath);
+ *     // await readFile(filePath);
+ *   } catch (error) {
+ *     if (error instanceof NotFoundError) {
+ *       console.error(`Operation failed, path not found: ${error.message}`);
+ *       console.error(`Error code: ${error.code}`); // ENOENT
+ *     } else {
+ *       console.error("An unexpected error occurred:", error);
+ *     }
+ *   }
+ * };
+ *
+ * tryReadingNonExistentFile();
+ * ```
  */
 class NotFoundError extends Error {
     /**

@@ -11,6 +11,16 @@ import isStatsIdentical from "./utils/is-stats-identical";
 /**
  * Ensures that the hard link exists.
  * If the directory structure does not exist, it is created.
+ * @param source The path to the source file or directory.
+ * @param destination The path to the destination link.
+ * @example
+ * ```javascript
+ * import { ensureLink } from "@visulima/fs";
+ * import { join } from "node:path";
+ *
+ * // ensure the link /tmp/foo/bar-link.txt points to /tmp/foo/bar.txt
+ * await ensureLink(join("/tmp", "foo", "bar.txt"), join("/tmp", "foo", "bar-link.txt"));
+ * ```
  */
 const ensureLink = async (source: URL | string, destination: URL | string): Promise<void> => {
     assertValidFileOrDirectoryPath(source);

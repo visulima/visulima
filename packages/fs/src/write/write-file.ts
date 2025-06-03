@@ -11,6 +11,34 @@ import assertValidFileContents from "../utils/assert-valid-file-contents";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import toUint8Array from "./utils/to-uint-8-array";
 
+/**
+ * Asynchronously writes data to a file, replacing the file if it already exists.
+ * This function includes safeguards like writing to a temporary file first and then renaming, and handling permissions.
+ *
+ * @param path The path to the file to write. Can be a file URL or a string path.
+ * @param content The data to write. Can be a string, Buffer, ArrayBuffer, or ArrayBufferView.
+ * @param options Optional configuration for writing the file. See {@link WriteFileOptions}.
+ * @returns A promise that resolves when the file has been written.
+ * @example
+ * ```javascript
+ * import { writeFile } from "@visulima/fs";
+ * import { join } from "node:path";
+ *
+ * const writeMyFile = async () => {
+ *   try {
+ *     await writeFile(join("/tmp", "my-new-file.txt"), "Hello World!");
+ *     console.log("File written successfully.");
+ *
+ *     await writeFile(join("/tmp", "another-file.txt"), "Some other content", { encoding: 'utf16le', mode: 0o600 });
+ *     console.log("Another file written with specific options.");
+ *   } catch (error) {
+ *     console.error("Failed to write file:", error);
+ *   }
+ * };
+ *
+ * writeMyFile();
+ * ```
+ */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): Promise<void> => {
     // eslint-disable-next-line no-param-reassign

@@ -17,6 +17,43 @@ const decompressionMethods = {
     },
 } as const;
 
+/**
+ * Asynchronously reads the entire contents of a file.
+ * It can also decompress the file content if a `compression` option is provided.
+ *
+ * @template O - The type of the options object, extending {@link ReadFileOptions}.
+ * @param path The path to the file to read. Can be a file URL or a string path.
+ * @param options Optional configuration for reading the file. See {@link ReadFileOptions}.
+ *                Available `compression` methods: "brotli", "gzip", "none" (default).
+ * @returns A promise that resolves with the file content. The type of the content (string or Buffer)
+ *          depends on the `buffer` option (defaults to string if `buffer` is false or not set).
+ * @example
+ * ```javascript
+ * import { readFile } from "@visulima/fs";
+ * import { join } from "node:path";
+ *
+ * const readMyFile = async () => {
+ *   try {
+ *     // Read a regular text file
+ *     const content = await readFile(join("path", "to", "my-file.txt"));
+ *     console.log("File content:", content);
+ *
+ *     // Read a file as a Buffer
+ *     const bufferContent = await readFile(join("path", "to", "another-file.bin"), { buffer: true });
+ *     console.log("Buffer length:", bufferContent.length);
+ *
+ *     // Read and decompress a gzipped file
+ *     // Assume my-archive.txt.gz exists
+ *     // const decompressedContent = await readFile(join("path", "to", "my-archive.txt.gz"), { compression: "gzip", encoding: "utf8" });
+ *     // console.log("Decompressed content:", decompressedContent);
+ *   } catch (error) {
+ *     console.error("Failed to read file:", error);
+ *   }
+ * };
+ *
+ * readMyFile();
+ * ```
+ */
 const readFile = async <O extends ReadFileOptions<keyof typeof decompressionMethods> | undefined = undefined>(
     path: URL | string,
     options?: O,

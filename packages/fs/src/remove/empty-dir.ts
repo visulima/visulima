@@ -6,7 +6,7 @@ import { join } from "@visulima/path";
 import { toPath } from "@visulima/path/utils";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import type { EmptyDirOptions } from "../types";
+import type { RetryOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 
 /**
@@ -14,9 +14,28 @@ import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-direct
  * Deletes directory contents if the directory is not empty.
  * If the directory does not exist, it is created.
  * The directory itself is not deleted.
+ * @param dir The path to the directory to empty.
+ * @param options Optional configuration for the operation. See {@link RetryOptions}.
+ * @returns A promise that resolves when the directory is empty.
+ * @example
+ * ```javascript
+ * import { emptyDir } from "@visulima/fs";
+ * import { join } from "node:path";
+ *
+ * const clearTempDir = async () => {
+ *   try {
+ *     await emptyDir(join("/tmp", "my-app-temp"));
+ *     console.log("Temporary directory emptied or created.");
+ *   } catch (error) {
+ *     console.error("Failed to empty directory:", error);
+ *   }
+ * };
+ *
+ * clearTempDir();
+ * ```
  */
 // eslint-disable-next-line unicorn/prevent-abbreviations
-const emptyDir = async (dir: URL | string, options?: EmptyDirOptions): Promise<void> => {
+const emptyDir = async (dir: URL | string, options?: RetryOptions): Promise<void> => {
     assertValidFileOrDirectoryPath(dir);
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename

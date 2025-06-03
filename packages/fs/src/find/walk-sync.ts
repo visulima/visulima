@@ -35,7 +35,31 @@ const _createWalkEntry = (path: string): WalkEntry => {
     };
 };
 
-/** Same as {@linkcode walk} but uses synchronous ops */
+/**
+ * Synchronously walks the file tree rooted at `directory`, yielding each file or directory that matches the criteria specified in `options`.
+ * This is the synchronous version of the {@link walk} function.
+ *
+ * @param directory The root directory to start walking from.
+ * @param options Optional configuration to control the walking process. See {@link WalkOptions}.
+ * @returns An iterable iterator yielding {@link WalkEntry} objects for each matching file or directory.
+ * @example
+ * ```javascript
+ * import { walkSync } from "@visulima/fs";
+ * import { join } from "node:path";
+ *
+ * // Walk through /tmp/my-project, looking for .ts files, max depth 2
+ * for (const entry of walkSync(join("/tmp", "my-project"), { extensions: ["ts"], maxDepth: 2 })) {
+ *   console.log(`Found: ${entry.path} (Type: ${entry.isFile() ? 'file' : 'directory'})`);
+ * }
+ *
+ * // Walk, including only directories, and skip any node_modules folders
+ * for (const entry of walkSync(join("/tmp", "another-project"), { includeFiles: false, skip: [/node_modules/] })) {
+ *   if (entry.isDirectory()) {
+ *      console.log(`Directory: ${entry.path}`);
+ *   }
+ * }
+ * ```
+ */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export default function* walkSync(
     directory: URL | string,

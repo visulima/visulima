@@ -11,6 +11,21 @@ import { toPath } from "@visulima/path/utils";
 /**
  * Checks if a file exists at the given path.
  * Note: This function checks for actual file existence, not just path syntax validity.
+ * It correctly handles both absolute and relative paths.
+ *
+ * @param input The path to the file (string).
+ * @returns True if the file exists, false otherwise.
+ * @example
+ * ```javascript
+ * // Assuming fileExists is accessible (e.g. exported or used internally)
+ * // import { fileExists } from "@visulima/fs"; // if it were exported
+ *
+ * if (fileExists("./my-file.txt")) {
+ *   console.log("File exists.");
+ * } else {
+ *   console.log("File does not exist.");
+ * }
+ * ```
  */
 const fileExists = (input: string): boolean => {
     if (isAbsolute(input)) {

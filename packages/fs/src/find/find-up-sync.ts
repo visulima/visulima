@@ -8,6 +8,46 @@ import { toPath } from "@visulima/path/utils";
 import { FIND_UP_STOP } from "../constants";
 import type { FindUpNameSync, FindUpOptions } from "../types";
 
+/**
+ * Synchronously finds a file or directory by walking up parent directories.
+ *
+ * @param name The name(s) of the file or directory to find. Can be a string, an array of strings, or a function that returns a name or `FIND_UP_STOP`.
+ * @param options Optional configuration for the search. See {@link FindUpOptions}.
+ * @returns The absolute path of the first found file/directory, or `undefined` if not found.
+ * @example
+ * ```javascript
+ * import { findUpSync } from "@visulima/fs";
+ * import { join } from "node:path";
+ *
+ * // Find the closest package.json, starting from /tmp/foo/bar/baz
+ * const projectRoot = findUpSync("package.json", {
+ *   cwd: join("/tmp", "foo", "bar", "baz"),
+ *   type: "file",
+ * });
+ * console.log(projectRoot); // e.g., /tmp/foo/package.json or undefined
+ *
+ * // Find the closest .git directory or a README.md file
+ * const gitDirOrReadme = findUpSync([".git", "README.md"], {
+ *   cwd: join("/tmp", "foo", "bar"),
+ * });
+ * console.log(gitDirOrReadme);
+ *
+ * // Find using a custom function, stopping at /tmp
+ * const customFound = findUpSync(
+ *   (directory) => {
+ *     if (directory === join("/tmp", "foo")) {
+ *       return "found-it-here.txt"; // Pretend this file exists in /tmp/foo
+ *     }
+ *     return undefined;
+ *   },
+ *   {
+ *     cwd: join("/tmp", "foo", "bar", "baz"),
+ *     stopAt: join("/tmp"),
+ *   }
+ * );
+ * console.log(customFound);
+ * ```
+ */
 const findUpSync = (
     name: FindUpNameSync,
     options: FindUpOptions = {},

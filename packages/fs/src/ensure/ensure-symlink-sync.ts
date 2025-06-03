@@ -23,6 +23,17 @@ const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<stri
  * @param linkName the destination link path
  * @param type the type of the symlink, or null to use automatic detection
  * @returns A void.
+ * @example
+ * ```javascript
+ * import { ensureSymlinkSync } from "@visulima/fs";
+ * import { join } from "node:path";
+ *
+ * // Ensure a symlink /tmp/foo/link-to-bar.txt points to /tmp/foo/bar.txt
+ * ensureSymlinkSync(join("/tmp", "foo", "bar.txt"), join("/tmp", "foo", "link-to-bar.txt"));
+ *
+ * // Ensure a directory symlink /tmp/foo/link-to-baz-dir points to /tmp/foo/baz-dir
+ * ensureSymlinkSync(join("/tmp", "foo", "baz-dir"), join("/tmp", "foo", "link-to-baz-dir"), "dir");
+ * ```
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: symlink.Type): void => {

@@ -130,6 +130,16 @@
                 "default": "./dist/size.mjs"
             }
         },
+        "./eol": {
+            "require": {
+                "types": "./dist/eol.d.cts",
+                "default": "./dist/eol.cjs"
+            },
+            "import": {
+                "types": "./dist/eol.d.mts",
+                "default": "./dist/eol.mjs"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
