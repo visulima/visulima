@@ -1,6 +1,6 @@
 {
     "name": "@visulima/bytes",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "Utility functions to make dealing with Uint8Arrays easier",
     "keywords": [
         "visulima",
