@@ -23,21 +23,20 @@ import {
 import { slice } from "../../src/slice";
 import { toEqualAnsi } from "../../src/test/vitest";
 
-// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 const fixture = red("the ") + green("quick ") + blue("brown ") + cyan("fox ") + yellow("jumped ");
 const stripped = stripVTControlCharacters(fixture);
 
+// eslint-disable-next-line sonarjs/pseudo-random
 const randomItem = <T>(array: T[]): T => array[Math.floor(Math.random() * array.length)];
 
 const generate = (string: number | string) => {
     const random1 = randomItem(["rock", "paper", "scissors"]);
     const random2 = randomItem(["blue", "green", "yellow", "red"]);
 
-    // eslint-disable-next-line security/detect-object-injection
     return `${string}:${colorize[random2](random1)} `;
 };
 
-describe("slice", () => {
+describe(slice, () => {
     expect.extend({ toEqualAnsi });
 
     it("should behave exactly like regular JavaScript string slice", () => {
@@ -63,37 +62,37 @@ describe("slice", () => {
         expect(slice(fixture, 10, 20)).toEqualAnsi(b);
         expect(slice(fixture, 3, 20)).toEqualAnsi(c);
 
-        const string =
-            generate(1) +
-            generate(2) +
-            generate(3) +
-            generate(4) +
-            generate(5) +
-            generate(6) +
-            generate(7) +
-            generate(8) +
-            generate(9) +
-            generate(10) +
-            generate(11) +
-            generate(12) +
-            generate(13) +
-            generate(14) +
-            generate(15) +
-            generate(1) +
-            generate(2) +
-            generate(3) +
-            generate(4) +
-            generate(5) +
-            generate(6) +
-            generate(7) +
-            generate(8) +
-            generate(9) +
-            generate(10) +
-            generate(11) +
-            generate(12) +
-            generate(13) +
-            generate(14) +
-            generate(15);
+        const string
+            = generate(1)
+                + generate(2)
+                + generate(3)
+                + generate(4)
+                + generate(5)
+                + generate(6)
+                + generate(7)
+                + generate(8)
+                + generate(9)
+                + generate(10)
+                + generate(11)
+                + generate(12)
+                + generate(13)
+                + generate(14)
+                + generate(15)
+                + generate(1)
+                + generate(2)
+                + generate(3)
+                + generate(4)
+                + generate(5)
+                + generate(6)
+                + generate(7)
+                + generate(8)
+                + generate(9)
+                + generate(10)
+                + generate(11)
+                + generate(12)
+                + generate(13)
+                + generate(14)
+                + generate(15);
 
         const native = stripVTControlCharacters(string).slice(0, 55);
         const ansi = stripVTControlCharacters(slice(string, 0, 55));
@@ -106,11 +105,13 @@ describe("slice", () => {
 
         // Family emoji (👨‍👩‍👧‍👦) is a single grapheme made up of multiple code points
         const family = "👨‍👩‍👧‍👦";
+
         expect(slice(family, 0, 1)).toEqualAnsi("");
         expect(slice(family, 0, 2)).toEqualAnsi(family);
 
         // Combining characters
         const combined = "e\u0301"; // é (e + acute accent)
+
         expect(slice(combined, 0, 1)).toEqualAnsi(combined);
     });
 
@@ -119,6 +120,7 @@ describe("slice", () => {
 
         // Woman technologist emoji (👩‍💻) uses ZWJ
         const technologist = "👩‍💻";
+
         expect(slice(technologist, 0, 1)).toEqualAnsi("");
     });
 
@@ -172,7 +174,7 @@ describe("slice", () => {
     it("should handle null issue correctly when slicing special emoji strings", () => {
         expect.assertions(1);
 
-        const s = '\u001B[1mautotune.flipCoin("easy as") ? 🎂 : 🍰 \u001B[33m★\u001B[39m\u001B[22m';
+        const s = "\u001B[1mautotune.flipCoin(\"easy as\") ? 🎂 : 🍰 \u001B[33m★\u001B[39m\u001B[22m";
         const result = slice(s, 38);
 
         expect(result).not.toContain("null");
@@ -193,7 +195,7 @@ describe("slice", () => {
 
         expect(slice(output, 0, 7)).toEqualAnsi(`${black.bgYellow(" RUNS ")} `);
         expect(slice(output, 0, 8)).toEqualAnsi(`${black.bgYellow(" RUNS ")}  `);
-        expect(slice("\u001B[31m" + output, 0, 4)).toBe(black.bgYellow(" RUN"));
+        expect(slice(`\u001B[31m${output}`, 0, 4)).toBe(black.bgYellow(" RUN"));
     });
 
     it("should not lose fullwidth characters when slicing multibyte strings", () => {
@@ -212,6 +214,7 @@ describe("slice", () => {
         expect.assertions(2);
 
         const link = "\u001B]8;;https://google.com\u0007Google\u001B]8;;\u0007";
+
         expect(slice(link, 0, 6)).toEqualAnsi(link);
 
         expect(
@@ -255,6 +258,7 @@ describe("slice", () => {
                     expect.assertions(3);
 
                     const text = JAPANESE_STRINGS[0]; // "ひらがなカタカナABC"
+
                     expect(slice(text, 0, 5)).toEqualAnsi("ひら");
                     expect(slice(text, 2, 7)).toEqualAnsi("らが");
                     expect(slice("日本語テスト", 0, 7)).toEqualAnsi("日本語");
@@ -274,6 +278,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = JAPANESE_STRINGS[4]; // "テストString"
+
                     expect(slice(text, 0, 5)).toEqualAnsi("テス");
                     expect(slice(text, 2, 8)).toEqualAnsi("ストSt");
                 });
@@ -284,6 +289,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = KOREAN_STRINGS[0]; // "대문자UPPER"
+
                     expect(slice(text, 0, 3)).toEqualAnsi("대");
                     expect(slice(text, 2, 6)).toEqualAnsi("문자");
                 });
@@ -302,6 +308,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = KOREAN_STRINGS[2]; // "테스트String"
+
                     expect(slice(text, 0, 5)).toEqualAnsi("테스");
                     expect(slice(text, 2, 8)).toEqualAnsi("스트St");
                 });
@@ -312,6 +319,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = CHINESE_SIMPLIFIED_STRINGS[0]; // "中文Text"
+
                     expect(slice(text, 0, 3)).toEqualAnsi("中");
                     expect(slice(text, 1, 5)).toEqualAnsi("文T");
                 });
@@ -330,6 +338,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = CHINESE_SIMPLIFIED_STRINGS[4]; // "测试Test"
+
                     expect(slice(text, 0, 3)).toEqualAnsi("测");
                     expect(slice(text, 1, 5)).toEqualAnsi("试T");
                 });
@@ -350,6 +359,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = THAI_STRINGS[0]; // "ไทยText"
+
                     expect(slice(text, 0, 3)).toEqualAnsi("ไทย");
                     expect(slice(text, 1, 5)).toEqualAnsi("ทยTe");
                 });
@@ -373,6 +383,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = ARABIC_STRINGS[0]; // "عربيText"
+
                     expect(slice(text, 0, 4)).toEqualAnsi("عربي");
                     expect(slice(text, 2, 6)).toEqualAnsi("بيTe");
                 });
@@ -393,6 +404,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = HEBREW_STRINGS[0]; // "עבריתText"
+
                     expect(slice(text, 0, 4)).toEqualAnsi("עברי");
                     expect(slice(text, 2, 6)).toEqualAnsi("ריתT");
                 });
@@ -413,6 +425,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = HINDI_STRINGS[0]; // "हिन्दीText"
+
                     expect(slice(text, 0, 5)).toEqualAnsi("हिंदीTex");
                     expect(slice(text, 2, 7)).toEqualAnsi("Text");
                 });
@@ -433,6 +446,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = BENGALI_STRINGS[0]; // "বাংলাText"
+
                     expect(slice(text, 0, 5)).toEqualAnsi("বাংলাTex");
                     expect(slice(text, 2, 7)).toEqualAnsi("Text");
                 });
@@ -456,6 +470,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = GERMAN_STRINGS[0]; // "straßeName"
+
                     expect(slice(text, 0, 6)).toEqualAnsi("straße");
                     expect(slice(text, 3, 9)).toEqualAnsi("aßeNam");
                 });
@@ -476,6 +491,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = GREEK_STRINGS[0]; // "ΕλληνικάText"
+
                     expect(slice(text, 0, 5)).toEqualAnsi("Ελ");
                     expect(slice(text, 3, 8)).toEqualAnsi("λη");
                 });
@@ -496,6 +512,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = RUSSIAN_STRINGS[0]; // "русскийText"
+
                     expect(slice(text, 0, 5)).toEqualAnsi("Ру");
                     expect(slice(text, 3, 8)).toEqualAnsi("сс");
                 });
@@ -516,6 +533,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = UKRAINIAN_STRINGS[0]; // "УкраїнськаMова"
+
                     expect(slice(text, 0, 5)).toEqualAnsi("Ук");
                     expect(slice(text, 3, 8)).toEqualAnsi("ра");
                 });
@@ -539,6 +557,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = TURKISH_STRINGS[0]; // "İstanbulCity"
+
                     expect(slice(text, 0, 5)).toEqualAnsi("İstan");
                     expect(slice(text, 3, 8)).toEqualAnsi("anbul");
                 });
@@ -559,6 +578,7 @@ describe("slice", () => {
                     expect.assertions(2);
 
                     const text = LAO_STRINGS[0]; // "ລາວText"
+
                     expect(slice(text, 0, 3)).toEqualAnsi("ລາວT");
                     expect(slice(text, 1, 5)).toEqualAnsi("າວTex");
                 });
@@ -592,9 +612,8 @@ describe("slice", () => {
 
                 const mixedColoredText = `${red("English")}${green("日本語")}${yellow("한국어")}${blue("العربية")}`;
 
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                 expect(slice(mixedColoredText, 0, 10)).toEqualAnsi(red("English") + green("日本語"));
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+
                 expect(slice(mixedColoredText, 7, 15)).toEqualAnsi(green("日本語") + yellow("한국어") + blue("ال"));
             });
         });

@@ -5,7 +5,6 @@ import LRUCache from "./utils/lru-cache";
 
 const segmentCache = new LRUCache<string, StyledSegment[]>(100);
 
- 
 const defaultSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
 
 /** Represents a segment of text with its associated ANSI styling sequences. */
@@ -54,6 +53,7 @@ const FORMAT_RESET_CODES = new Map([
 
 /** Checks if an ANSI code string represents a foreground color code. */
 const isForegroundColor = (code: string): boolean => (code >= "30" && code <= "37") || (code >= "90" && code <= "97") || code.startsWith("38;");
+
 /** Checks if an ANSI code string represents a background color code. */
 const isBackgroundColor = (code: string): boolean => (code >= "40" && code <= "47") || (code >= "100" && code <= "107") || code.startsWith("48;");
 
@@ -79,7 +79,8 @@ const findFirstPositionOfAny = (input: string, substrings: string[]): number => 
 
     for (const substring of substrings) {
         const pos = input.indexOf(substring);
-        if (pos >= 0 && (firstPos === -1 || pos < firstPos)) {
+
+        if (pos !== -1 && (firstPos === -1 || pos < firstPos)) {
             firstPos = pos;
         }
     }
@@ -90,9 +91,8 @@ const findFirstPositionOfAny = (input: string, substrings: string[]): number => 
 /**
  * Process a string with ANSI escape sequences into styled segments.
  * Uses LRU caching for improved performance on repeated strings.
- *
- * @param input - String with ANSI escape sequences
- * @param options - Configuration options
+ * @param input String with ANSI escape sequences
+ * @param options Configuration options
  * @returns Segments with ANSI styling information
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -142,7 +142,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
         // Fast checks for common patterns
         if (ansi === "\u001B[0m" || ansi === "\u001B]8;;\u0007") {
             closingSequences.push(ansi);
-            // eslint-disable-next-line no-continue
+
             continue;
         }
 
@@ -153,7 +153,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
             // Use our set for fast lookups
             if (ANSI_RESET_CODES.has(code)) {
                 closingSequences.push(ansi);
-                // eslint-disable-next-line no-continue
+
                 continue;
             }
         }
@@ -187,28 +187,28 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     for (const style of activeStylesSet) {
                         if (style.startsWith("\u001B[") && style.endsWith("m")) {
                             const styleCode = style.slice(2, -1);
+
                             if (isForegroundColor(styleCode)) {
                                 activeStylesSet.delete(style);
                                 break; // Only one foreground color can be active
                             }
                         }
                     }
-                }
                 // Handle background color reset
-                else if (code === "49") {
+                } else if (code === "49") {
                     // Efficient removal of background color styles
                     for (const style of activeStylesSet) {
                         if (style.startsWith("\u001B[") && style.endsWith("m")) {
                             const styleCode = style.slice(2, -1);
+
                             if (isBackgroundColor(styleCode)) {
                                 activeStylesSet.delete(style);
                                 break; // Only one background color can be active
                             }
                         }
                     }
-                }
                 // Handle other style resets
-                else if (FORMAT_RESET_CODES.has(code)) {
+                } else if (FORMAT_RESET_CODES.has(code)) {
                     const targetCode = FORMAT_RESET_CODES.get(code);
 
                     // Efficiently find and remove the matching style
@@ -225,28 +225,28 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                         for (const style of activeStylesSet) {
                             if (style.startsWith("\u001B[") && style.endsWith("m")) {
                                 const styleCode = style.slice(2, -1);
+
                                 if (isForegroundColor(styleCode)) {
                                     activeStylesSet.delete(style);
                                     break;
                                 }
                             }
                         }
-                    }
-                    // Check for background color replacement
-                    else if (isBackgroundColor(code)) {
+                        // Check for background color replacement
+                    } else if (isBackgroundColor(code)) {
                         // Remove any existing background color
                         for (const style of activeStylesSet) {
                             if (style.startsWith("\u001B[") && style.endsWith("m")) {
                                 const styleCode = style.slice(2, -1);
+
                                 if (isBackgroundColor(styleCode)) {
                                     activeStylesSet.delete(style);
                                     break;
                                 }
                             }
                         }
-                    }
-                    // Check for style attribute replacement
-                    else if (STYLE_CODES.has(code)) {
+                        // Check for style attribute replacement
+                    } else if (STYLE_CODES.has(code)) {
                         // Remove any existing style of the same type
                         const targetStyle = `\u001B[${code}m`;
 
@@ -272,7 +272,6 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
         }
 
         if (text === "") {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -304,6 +303,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                 for (const style of activeStylesSet) {
                     if (style.startsWith("\u001B[") && style.endsWith("m")) {
                         const styleCode = style.slice(2, -1);
+
                         if (isForegroundColor(styleCode)) {
                             needsForegroundClose = true;
                         } else if (isBackgroundColor(styleCode)) {
@@ -355,12 +355,12 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     // Use the original input's order for consistency
                     if (input.indexOf("\u001B[39m") < input.indexOf("\u001B[49m")) {
                         // Remove fg/bg closings we've already added
-                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/no-gratuitous-expressions
+                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions
                         closingParts.length -= needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0;
                         closingParts.push("\u001B[39m", "\u001B[49m");
                     } else if (input.indexOf("\u001B[49m") < input.indexOf("\u001B[39m")) {
                         // Remove fg/bg closings we've already added
-                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/no-gratuitous-expressions
+                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions
                         closingParts.length -= needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0;
                         closingParts.push("\u001B[49m", "\u001B[39m");
                     }
@@ -413,7 +413,6 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
  * - Handles combining characters
  * - Supports complex scripts (e.g. CJK, Indic)
  * - Width-aware slicing
- *
  * @example
  * ```typescript
  * // Basic usage
@@ -425,11 +424,10 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
  * // With width options
  * fastSlice('Hello', 0, 3, { width: { fullWidth: 2 } });
  * ```
- *
- * @param inputString - String to slice
- * @param startIndex - Start index in visual width units (default: 0)
- * @param endIndex - End index in visual width units (default: string length)
- * @param options - Configuration options
+ * @param inputString String to slice
+ * @param startIndex Start index in visual width units (default: 0)
+ * @param endIndex End index in visual width units (default: string length)
+ * @param options Configuration options
  * @returns Sliced string with preserved character boundaries
  */
 const fastSlice = (inputString: string, startIndex: number, endIndex: number, options: SliceOptions): string => {
@@ -447,7 +445,7 @@ const fastSlice = (inputString: string, startIndex: number, endIndex: number, op
         if (!startFound) {
             if (positionBefore < startIndex) {
                 currentWidth = positionAfter;
-                // eslint-disable-next-line no-continue
+
                 continue;
             } else {
                 startFound = true;
@@ -473,7 +471,6 @@ const fastSlice = (inputString: string, startIndex: number, endIndex: number, op
 
 /**
  * Configuration options for string slicing operations.
- *
  * @example
  * ```typescript
  * const options: SliceOptions = {
@@ -502,7 +499,6 @@ export type SliceOptions = {
  *
  * Handles complex scenarios including grapheme clusters, full-width characters,
  * and ANSI styling (colors, formatting, hyperlinks).
- *
  * @example
  * ```typescript
  * const styledString = "\u001B[31mHello\u001B[39m \u001B[1mWorld\u001B[22m!";
@@ -515,11 +511,10 @@ export type SliceOptions = {
  * slice(styledString, 7);
  * // => "\u001B[1morld\u001B[22m!"
  * ```
- *
- * @param inputString - The string to slice.
- * @param startIndex - The starting visible character index (inclusive). Defaults to 0.
- * @param endIndex - The ending visible character index (exclusive). Defaults to the end of the string.
- * @param options - Slicing options.
+ * @param inputString The string to slice.
+ * @param startIndex The starting visible character index (inclusive). Defaults to 0.
+ * @param endIndex The ending visible character index (exclusive). Defaults to the end of the string.
+ * @param options Slicing options.
  * @returns The sliced string with ANSI codes preserved.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -545,7 +540,7 @@ export const slice = (inputString: string, startIndex = 0, endIndex = Number.MAX
 
     if (!inputString.includes("\u001B")) {
         // ASCII-only strings can be sliced directly
-        // eslint-disable-next-line regexp/no-control-character,no-control-regex
+        // eslint-disable-next-line no-control-regex
         if (/^[\u0000-\u007F]*$/.test(inputString)) {
             return inputString.slice(startIndex, endIndex);
         }
@@ -602,7 +597,6 @@ export const slice = (inputString: string, startIndex = 0, endIndex = Number.MAX
     // Build result from visible segments
     // eslint-disable-next-line no-plusplus
     for (let index = 0; index < visibleSegments.length; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         const { end, segment, start } = visibleSegments[index] as VisibleSegment;
 
         // Only use expensive grapheme segmentation when necessary

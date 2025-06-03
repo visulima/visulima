@@ -1,10 +1,8 @@
 /**
  * Converts German "SS" to "ß" when appropriate for German locales.
  * This is used to handle special cases in German text where "SS" should be converted to "ß".
- *
- * @param value - The string to process
+ * @param value The string to process
  * @returns The processed string with appropriate eszett conversions
- *
  * @example
  * ```typescript
  * normalizeGermanEszett("GROSSE") // => "GROßE"

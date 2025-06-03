@@ -6,7 +6,6 @@ import generateCacheKey from "./utils/generate-cache-key";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 
-// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to Pascal_Snake_Case.
  * @example

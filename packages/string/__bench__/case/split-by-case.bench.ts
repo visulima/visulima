@@ -1,3 +1,4 @@
+import { splitByCase } from "@visulima/string/dist/case/case";
 import { splitByCase as sculeSplitByCase } from "scule";
 import { bench, describe } from "vitest";
 
@@ -74,7 +75,6 @@ import {
     WELSH_STRINGS,
 } from "../../__fixtures__/locale-test-strings";
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
-import { splitByCase } from "../../dist/case";
 
 describe("splitByCase", () => {
     bench("visulima/string splitByCase (no cache)", () => {

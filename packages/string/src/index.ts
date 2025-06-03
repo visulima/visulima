@@ -46,10 +46,15 @@ export type {
 } from "./case/types";
 export { default as upperFirst } from "./case/upper-first";
 export { default as joinSegments } from "./case/utils/join-segments";
+export type { ClosestStringOptions } from "./closest-string";
+export { closestString } from "./closest-string";
+export type { CompareSimilarityOptions } from "./compare-similarity";
+export { compareSimilarity } from "./compare-similarity";
 export type { StringTruncatedWidthOptions, StringTruncatedWidthResult } from "./get-string-truncated-width";
 export { getStringTruncatedWidth } from "./get-string-truncated-width";
 export type { StringWidthOptions } from "./get-string-width";
 export { getStringWidth } from "./get-string-width";
+export { closest, closestN, distance } from "./levenshtein";
 export type { Outdent, Options as OutdentOptions } from "./outdent";
 export { outdent } from "./outdent";
 export { default as replaceString } from "./replace-string";
@@ -97,5 +102,8 @@ export type {
     TrimEnd,
     TrimStart,
 } from "./types";
+export { escapeRegExp, findStringOccurrences, hasChinese, hasPunctuationOrSpace, inRange } from "./utilities";
+export type { WordSimilaritySortOptions } from "./word-similarity-sort";
+export { wordSimilaritySort } from "./word-similarity-sort";
 export type { WordWrapOptions } from "./word-wrap";
 export { wordWrap, WrapMode } from "./word-wrap";

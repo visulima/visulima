@@ -1,8 +1,8 @@
+import { upperFirst } from "@visulima/string/dist/case/case";
 import { upperFirst as sculeUpperFirst } from "scule";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
-import { upperFirst } from "../../dist/case";
 
 describe("upperFirst", () => {
     bench("visulima/string upperFirst (no cache)", () => {

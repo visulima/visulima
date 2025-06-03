@@ -42,13 +42,13 @@ type InternalSliceType<T extends string, StartIndex extends number, EndIndex ext
                           Result
                       >
                 : EndIndex | StartIndex extends 0
-                  ? Result
-                  : string // Head is non-literal
+                    ? Result
+                    : string // Head is non-literal
             : IsStringLiteral<T> extends true // Couldn't be split into head/tail
-              ? Result // T ran out
-              : EndIndex | StartIndex extends 0
-                ? Result // Eg: Slice<`abc${string}`, 1, 3> -> 'bc'
-                : string // Head is non-literal
+                ? Result // T ran out
+                : EndIndex | StartIndex extends 0
+                    ? Result // Eg: Slice<`abc${string}`, 1, 3> -> 'bc'
+                    : string // Head is non-literal
         : string;
 
 /**
@@ -67,10 +67,10 @@ type SliceStartType<T extends string, StartIndex extends number, Result extends 
                     : SliceStartType<Rest, Math.Subtract<Math.GetPositiveIndex<T, StartIndex>, 1>, Result>
                 : string
             : IsStringLiteral<T> extends true
-              ? Result
-              : StartIndex extends 0
                 ? Result
-                : string
+                : StartIndex extends 0
+                    ? Result
+                    : string
         : string;
 
 type InternalEndsWithType<T extends string, S extends string, P extends number> =
@@ -106,7 +106,7 @@ namespace Math {
      * @template B - The subtrahend (number to subtract)
      * @returns The difference as a number type
      */
-    // eslint-disable-next-line import/no-unused-modules
+
     export type Subtract<A extends number, B extends number> = number extends A | B ? number : TupleOf<A> extends [...infer U, ...TupleOf<B>] ? U["length"] : 0;
 
     /**
@@ -114,7 +114,7 @@ namespace Math {
      * @template T - The number type to check
      * @returns true if T is negative, false otherwise
      */
-    // eslint-disable-next-line import/no-unused-modules
+
     export type IsNegative<T extends number> = number extends T ? boolean : `${T}` extends `-${number}` ? true : false;
 
     /**
@@ -122,7 +122,7 @@ namespace Math {
      * @template T - The number type to get the absolute value of
      * @returns The absolute value as a number type
      */
-    // eslint-disable-next-line import/no-unused-modules
+
     export type Abs<T extends number> = `${T}` extends `-${infer U extends number}` ? U : T;
 
     /**
@@ -131,7 +131,7 @@ namespace Math {
      * @template I - The index to convert
      * @returns A positive index as a number type
      */
-    // eslint-disable-next-line import/no-unused-modules
+
     export type GetPositiveIndex<T extends string, I extends number> = IsNegative<I> extends false ? I : Subtract<Length<T>, Abs<I>>;
 }
 
@@ -139,7 +139,7 @@ export type { Math };
 
 /**
  * Type predicate that determines if a number type is a literal type rather than the general 'number' type.
- * For example: IsNumberLiteral<42> is true, but IsNumberLiteral<number> is false.
+ * For example: IsNumberLiteral&lt;42> is true, but IsNumberLiteral&lt;number> is false.
  * @template T - The number type to check
  * @returns true if T is a number literal type, false otherwise
  */
@@ -160,8 +160,8 @@ export type IsBooleanLiteral<T extends boolean> = [T] extends [boolean] ? ([bool
 export type Reverse<T extends string, Accumulator extends string = ""> = T extends `${infer Head}${infer Tail}`
     ? Reverse<Tail, `${Head}${Accumulator}`>
     : Accumulator extends ""
-      ? T
-      : `${T}${Accumulator}`;
+        ? T
+        : `${T}${Accumulator}`;
 
 /**
  * Type predicate that checks if any element in a boolean array type is the literal 'true'.
@@ -211,10 +211,10 @@ export type IsStringLiteral<T extends string> = [T] extends [string]
     ? [string] extends [T]
         ? false
         : Uppercase<T> extends Uppercase<Lowercase<T>>
-          ? Lowercase<T> extends Lowercase<Uppercase<T>>
-              ? true
-              : false
-          : false
+            ? Lowercase<T> extends Lowercase<Uppercase<T>>
+                ? true
+                : false
+            : false
     : false;
 
 export type IsStringLiteralArray<StringArray extends ReadonlyArray<string>> = IsStringLiteral<StringArray[number]> extends true ? true : false;
@@ -268,12 +268,12 @@ export type EndsWith<T extends string, S extends string, P extends number | unde
 export type Includes<T extends string, S extends string, P extends number = 0> = string extends S | T
     ? boolean
     : Math.IsNegative<P> extends false
-      ? P extends 0
-          ? T extends `${string}${S}${string}`
-              ? true
-              : false
-          : Includes<Slice<T, P>, S> // P is >0, slice
-      : Includes<T, S>; // P is negative, ignore it
+        ? P extends 0
+            ? T extends `${string}${S}${string}`
+                ? true
+                : false
+            : Includes<Slice<T, P>, S> // P is >0, slice
+        : Includes<T, S>; // P is negative, ignore it
 
 /**
  * Type-level implementation of Array.join() functionality for string tuples.
@@ -354,8 +354,8 @@ export type Repeat<T extends string, Times extends number = 0> =
         ? Times extends 0
             ? ""
             : Math.IsNegative<Times> extends false
-              ? Join<TupleOf<Times, T>>
-              : never
+                ? Join<TupleOf<Times, T>>
+                : never
         : string;
 
 /**
@@ -423,8 +423,8 @@ export type Split<T extends string, Delimiter extends string = ""> =
         ? T extends `${infer First}${Delimiter}${infer Rest}`
             ? [First, ...Split<Rest, Delimiter>]
             : T extends ""
-              ? []
-              : [T]
+                ? []
+                : [T]
         : string[];
 
 /**
@@ -450,8 +450,8 @@ export type StartsWith<T extends string, S extends string, P extends number = 0>
                                 : false // Heads weren't equal
                             : boolean // THead is non-literal
                         : IsStringLiteral<T> extends true // Couldn't split T
-                          ? false // T ran out, but we still have S
-                          : boolean // T (or TRest) is not a literal
+                            ? false // T ran out, but we still have S
+                            : boolean // T (or TRest) is not a literal
                     : true // Couldn't split S, we've already ruled out non-literal
                 : StartsWith<Slice<T, P>, S> // P is >0, slice
             : StartsWith<T, S> // P is negative, ignore it
@@ -488,7 +488,7 @@ export type TrimStart<T extends string> = T extends ` ${infer Rest}` ? TrimStart
 export type Trim<T extends string> = TrimEnd<TrimStart<T>>;
 
 export type NodeLocale =
-    // eslint-disable-next-line @typescript-eslint/sort-type-constituents
+
     | "af" // Afrikaans
     | "am" // Amharic
     | "ar" // Arabic
@@ -609,14 +609,19 @@ export type OptionReplaceCombined = OptionReplaceArray | OptionReplaceObject;
 export interface OptionsTransliterate {
     /** Fix spacing for Chinese characters */
     fixChineseSpacing?: boolean;
+
     /** Characters/strings to ignore */
     ignore?: string[];
+
     /** Search/replace pairs after charmap */
     replaceAfter?: OptionReplaceCombined;
+
     /** Search/replace pairs before charmap */
     replaceBefore?: OptionReplaceCombined;
+
     /** Trim leading/trailing whitespace */
     trim?: boolean;
+
     /** Character to use for unknown characters */
     unknown?: string;
 }
@@ -630,22 +635,26 @@ export interface SlugifyOptions extends OptionsTransliterate {
      * @default "a-zA-Z0-9-_.~"
      */
     allowedChars?: string;
+
     /**
      * Fix Chinese spacing passed to transliterate. If you don't need to transliterate Chinese characters, set it to false to improve performance.
      * @default true // Matches transliterate's default
      */
     fixChineseSpacing?: boolean;
+
     /**
      * Whether the result should be converted into lowercase.
      * Cannot be true if `uppercase` is true.
      * @default true
      */
     lowercase?: boolean;
+
     /**
      * Custom separator string.
      * @default "-"
      */
     separator?: string;
+
     /**
      * Whether to transliterate the input string.
      * @default true

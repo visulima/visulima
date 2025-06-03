@@ -3,36 +3,42 @@ import { describe, expect, it } from "vitest";
 import { capitalCase } from "../../../src/case";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("capitalCase", () => {
+describe(capitalCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call should cache
             const result1 = capitalCase(input, { cache: true, cacheStore: customCache });
+
             expect(result1).toBe("Test String");
             expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = capitalCase(input, { cache: true, cacheStore: customCache });
+
             expect(result2).toBe("Test String");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call without cache
             const result1 = capitalCase(input, { cache: false, cacheStore: customCache });
+
             expect(result1).toBe("Test String");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = capitalCase(input, { cache: false, cacheStore: customCache });
+
             expect(result2).toBe("Test String");
             expect(customCache.size()).toBe(0);
         });
@@ -45,6 +51,7 @@ describe("capitalCase", () => {
 
             // Use custom cache
             capitalCase(input, { cache: true, cacheStore: customCache });
+
             expect(customCache.size()).toBe(1);
         });
     });
@@ -179,14 +186,18 @@ describe("capitalCase", () => {
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             expect.assertions(2);
+
             const locale = "tr-TR";
+
             expect(capitalCase("istanbul_city", { locale })).toBe("İstanbul City");
             expect(capitalCase("İZMİR_CITY", { locale })).toBe("İzmir Cıty");
         });
 
         it("should handle German specific cases", () => {
             expect.assertions(3);
+
             const locale = "de-DE";
+
             expect(capitalCase("GROSSE STRAßE", { locale })).toBe("Große Straße");
             expect(capitalCase("GROSSE STRASSE", { locale })).toBe("Große Straße");
             expect(capitalCase("GROßE STRAßE", { locale })).toBe("Große Straße");

@@ -4,7 +4,6 @@ import type { CaseOptions, NoCase } from "./types";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 
-// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to no case (space separated words).
  * @example

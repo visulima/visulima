@@ -42,7 +42,6 @@ const mergeIntervals = (intervals: IntervalArray): IntervalArray => {
 
     // eslint-disable-next-line no-plusplus
     for (let index = 1; index < intervals.length; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         const next = intervals[index];
 
         if (next && next[0] <= (currentMerge[1] as number) + 1) {
@@ -60,9 +59,9 @@ const mergeIntervals = (intervals: IntervalArray): IntervalArray => {
 
 /**
  * Performs multiple string or RegExp replacements using a refined pre-processing approach.
- * @param source - The string to search and replace in.
- * @param searches - An array of search/replace pairs.
- * @param ignoreRanges - An array of ignored ranges.
+ * @param source The string to search and replace in.
+ * @param searches An array of search/replace pairs.
+ * @param ignoreRanges An array of ignored ranges.
  * @returns The string with replacements applied.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -77,22 +76,18 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     let matchIdCounter = 0;
 
     for (const item of searches) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!item || item.length < 2) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         const [searchKey, replacementValue] = item;
 
         if (replacementValue === undefined) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         try {
             if (searchKey instanceof RegExp) {
-                // eslint-disable-next-line security/detect-non-literal-regexp,@rushstack/security/no-unsafe-regexp
                 const searchPattern = new RegExp(searchKey.source, `${searchKey.flags.replace("g", "")}g`);
 
                 let match: RegExpExecArray | null;
@@ -103,13 +98,11 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                     const original = match[0] as string;
 
                     if (original.length === 0 && searchPattern.lastIndex === match.index) {
-                        // eslint-disable-next-line no-plusplus
-                        searchPattern.lastIndex++; // Avoid infinite loop on zero-length matches
+                        searchPattern.lastIndex += 1; // Avoid infinite loop on zero-length matches
                     }
 
                     const end = start + original.length - 1;
 
-                    // eslint-disable-next-line @typescript-eslint/no-loop-func
                     const finalReplacement = replacementValue.replaceAll(/\$([\d&$`'])/g, (substringFound, capturedSymbolOrDigits) => {
                         if (capturedSymbolOrDigits === "&") {
                             return original;
@@ -120,17 +113,16 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                         }
 
                         if (capturedSymbolOrDigits === "`") {
-                            return source.substring(0, start);
+                            return source.slice(0, Math.max(0, start));
                         }
 
                         if (capturedSymbolOrDigits === "'") {
-                            return source.substring(start + original.length);
+                            return source.slice(Math.max(0, start + original.length));
                         }
 
                         const groupIndex = Number.parseInt(capturedSymbolOrDigits, 10);
 
                         if (match && groupIndex > 0 && groupIndex < match.length) {
-                            // eslint-disable-next-line security/detect-object-injection
                             return match[groupIndex] ?? "";
                         }
 
@@ -141,8 +133,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                     potentialMatches.push({ end, id: matchIdCounter++, original, replacement: finalReplacement, start });
 
                     if (original.length === 0 && searchPattern.lastIndex === start) {
-                        // eslint-disable-next-line no-plusplus
-                        searchPattern.lastIndex++;
+                        searchPattern.lastIndex += 1;
                     }
                 }
             } else if (typeof searchKey === "string" && searchKey.length > 0) {
@@ -169,12 +160,12 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                         // Literal $1, $2 in replacementValue will pass through if not caught by this regex.
                         const groupIndex = Number.parseInt(capturedSymbolOrDigits, 10);
 
-                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         if (mockMatch && groupIndex > 0 && groupIndex < mockMatch.length) {
                             // This branch will likely not be hit for $N with N > 0 for string searches
-                            // eslint-disable-next-line security/detect-object-injection
+
                             return mockMatch[groupIndex] ?? "";
                         }
+
                         return substringFound; // Returns $N as is, or the original char if not $& or $$
                     });
 
@@ -182,11 +173,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                     potentialMatches.push({ end, id: matchIdCounter++, original, replacement: finalReplacement, start });
                 }
             } else {
-                // eslint-disable-next-line no-continue
                 continue;
             }
         } catch {
-            // eslint-disable-next-line no-continue
             continue;
         }
     }
@@ -219,9 +208,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     for (const range of mergedIgnores) {
         // eslint-disable-next-line no-plusplus
         for (let index = range[0]; index <= range[1]; index++) {
-            // eslint-disable-next-line security/detect-object-injection
             if (processedChars[index]) {
-                // eslint-disable-next-line security/detect-object-injection
                 (processedChars[index] as ProcessedChar).isIgnored = true;
             }
         }
@@ -241,10 +228,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
             // Allow insertion at or after last char
             const targetIndex = match.start;
 
-            // eslint-disable-next-line security/detect-object-injection
             if (processedChars[targetIndex]) {
                 // Insertion *before* an existing character
-                // eslint-disable-next-line security/detect-object-injection
+
                 const targetChar = processedChars[targetIndex];
 
                 if (!targetChar.isIgnored) {
@@ -260,21 +246,21 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     // Now, handle non-zero-length matches, considering precedence and overlaps
     for (const match of potentialMatches) {
         if (match.original.length === 0) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         let canApply = true;
+
         // Check for overlaps with ignores or already applied matches
         // eslint-disable-next-line no-plusplus
         for (let index = match.start; index <= match.end; index++) {
             if (
-                // eslint-disable-next-line security/detect-object-injection
-                !processedChars[index] || // Out of bounds
-                // eslint-disable-next-line security/detect-object-injection
-                (processedChars[index] as ProcessedChar).isIgnored || // Overlaps ignore
-                // eslint-disable-next-line security/detect-object-injection
-                (processedChars[index] as ProcessedChar).appliedMatchId !== null // Overlaps higher-priority match
+
+                !processedChars[index] // Out of bounds
+
+                || (processedChars[index] as ProcessedChar).isIgnored // Overlaps ignore
+
+                || (processedChars[index] as ProcessedChar).appliedMatchId !== null // Overlaps higher-priority match
             ) {
                 canApply = false;
                 break;
@@ -282,16 +268,14 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         }
 
         if (
-            canApply && // Apply this valid match
-            match.start >= 0 &&
-            match.start < processedChars.length
+            canApply // Apply this valid match
+            && match.start >= 0
+            && match.start < processedChars.length
         ) {
             // Mark characters covered by this match
             // eslint-disable-next-line no-plusplus
             for (let index = match.start; index <= match.end; index++) {
-                // eslint-disable-next-line security/detect-object-injection
                 if (processedChars[index]) {
-                    // eslint-disable-next-line security/detect-object-injection
                     (processedChars[index] as ProcessedChar).appliedMatchId = match.id;
                 }
             }
@@ -309,7 +293,6 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     let currentIndex = 0;
 
     while (currentIndex < processedChars.length) {
-        // eslint-disable-next-line security/detect-object-injection
         const pChar = processedChars[currentIndex] as ProcessedChar;
 
         // Append any zero-length replacements occurring before this character
@@ -323,25 +306,26 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
             // Find the end index of this match
             let matchEndIndex = currentIndex;
+
             // eslint-disable-next-line no-plusplus
             for (let index = currentIndex + 1; index < processedChars.length; index++) {
-                // eslint-disable-next-line security/detect-object-injection
                 if (processedChars[index]?.appliedMatchId === pChar.appliedMatchId) {
                     matchEndIndex = index;
                 } else {
                     break;
                 }
             }
+
             currentIndex = matchEndIndex + 1; // Advance index past the entire match
         } else if (pChar.appliedMatchId === null) {
             // Append character if not part of an applied match (includes ignored characters)
             result += pChar.char;
-            // eslint-disable-next-line no-plusplus
-            currentIndex++;
+
+            currentIndex += 1;
         } else {
             // Character is part of an applied match, but not the start - skip it.
-            // eslint-disable-next-line no-plusplus
-            currentIndex++;
+
+            currentIndex += 1;
         }
     }
 

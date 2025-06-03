@@ -3,36 +3,42 @@ import { describe, expect, it } from "vitest";
 import { pathCase } from "../../../src/case";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("pathCase", () => {
+describe(pathCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
 
             // First call should cache
             const result1 = pathCase(input, { cache: true, cacheStore: customCache });
+
             expect(result1).toBe("test/string");
             expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = pathCase(input, { cache: true, cacheStore: customCache });
+
             expect(result2).toBe("test/string");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
 
             // First call without cache
             const result1 = pathCase(input, { cache: false, cacheStore: customCache });
+
             expect(result1).toBe("test/string");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = pathCase(input, { cache: false, cacheStore: customCache });
+
             expect(result2).toBe("test/string");
             expect(customCache.size()).toBe(0);
         });
@@ -45,6 +51,7 @@ describe("pathCase", () => {
 
             // Use custom cache
             pathCase(input, { cache: true, cacheStore: customCache });
+
             expect(customCache.size()).toBe(1);
         });
     });
@@ -162,14 +169,18 @@ describe("pathCase", () => {
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             expect.assertions(2);
+
             const locale = "tr-TR";
+
             expect(pathCase("istanbul_city", { locale })).toBe("istanbul/city");
             expect(pathCase("İZMİR_CITY", { locale })).toBe("izmir/cıty");
         });
 
         it("should handle German specific cases", () => {
             expect.assertions(3);
+
             const locale = "de-DE";
+
             expect(pathCase("GROSSE STRAßE", { locale })).toBe("große/straße");
             expect(pathCase("GROSSE STRASSE", { locale })).toBe("große/straße");
             expect(pathCase("GROßE STRAßE", { locale })).toBe("große/straße");

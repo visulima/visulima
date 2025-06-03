@@ -19,16 +19,19 @@ export type AlignTextOptions = {
      * @default "center"
      */
     align?: "center" | "left" | "right";
+
     /**
      * The character to use for padding.
      * @default " "
      */
     pad?: string;
+
     /**
      * The character to split the input string by, if it's a single string.
      * @default "\n"
      */
     split?: string;
+
     /**
      * Options to pass to `getStringWidth` for calculating the width of each line.
      */
@@ -37,7 +40,6 @@ export type AlignTextOptions = {
 
 /**
  * Aligns text (including multi-line strings with ANSI escape codes) to the left, center, or right.
- *
  * @example
  * ```typescript
  * alignText("Hello\nWorld!", { align: "right" });
@@ -49,9 +51,8 @@ export type AlignTextOptions = {
  * //   "Boop\n Bop"
  * // ]
  * ```
- *
- * @param text - The string or array of strings to align.
- * @param options - Options for controlling the alignment.
+ * @param text The string or array of strings to align.
+ * @param options Options for controlling the alignment.
  * @returns The aligned string or array of strings, matching the input type.
  */
 export const alignText = (

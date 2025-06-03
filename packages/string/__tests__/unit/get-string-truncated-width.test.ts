@@ -12,24 +12,26 @@ const getTruncated = (input: string, options: StringTruncatedWidthOptions): stri
     return `${input.slice(0, result.index)}${result.ellipsed ? ellipsis : ""}`;
 };
 
-describe("getStringTruncatedWidth", () => {
+describe(getStringTruncatedWidth, () => {
     describe("calculating the raw result", () => {
         it("supports strings that do not need to be truncated", () => {
             expect.assertions(4);
+
             const result = getStringTruncatedWidth("\u001B[31mhello", { ellipsis: "…", limit: Number.POSITIVE_INFINITY });
 
-            expect(result.truncated).toBeFalsy();
-            expect(result.ellipsed).toBeFalsy();
+            expect(result.truncated).toBe(false);
+            expect(result.ellipsed).toBe(false);
             expect(result.width).toBe(5);
             expect(result.index).toBe(10);
         });
 
         it("supports strings that do need to be truncated", () => {
             expect.assertions(4);
+
             const result = getStringTruncatedWidth("\u001B[31mhello", { ellipsis: "…", limit: 3 });
 
-            expect(result.truncated).toBeTruthy();
-            expect(result.ellipsed).toBeTruthy();
+            expect(result.truncated).toBe(true);
+            expect(result.ellipsed).toBe(true);
             expect(result.width).toBe(3);
             expect(result.index).toBe(7);
         });
@@ -164,31 +166,35 @@ describe("getStringTruncatedWidth", () => {
 
             // Test case 1: No truncation
             let result = getStringTruncatedWidth(input, { limit: Number.POSITIVE_INFINITY });
+
             expect(result.width).toBe(13); // 6 (Google) + 7 (Example)
-            expect(result.truncated).toBeFalsy();
-            expect(result.ellipsed).toBeFalsy();
+            expect(result.truncated).toBe(false);
+            expect(result.ellipsed).toBe(false);
             expect(result.index).toBe(input.length); // Index should be end of string
 
             // Test case 2: Truncate within the second link's text
             result = getStringTruncatedWidth(input, { ellipsis: "...", limit: 10 }); // Limit 10, ellipsis width 3
+
             expect(result.width).toBe(10); // Should be capped at the limit
-            expect(result.truncated).toBeTruthy();
-            expect(result.ellipsed).toBeTruthy();
+            expect(result.truncated).toBe(true);
+            expect(result.ellipsed).toBe(true);
             expect(result.index).toBeLessThan(input.indexOf("Example")); // A basic check
 
             // Test case 3: Truncate exactly after the first link's text
             result = getStringTruncatedWidth(input, { limit: 6 });
+
             expect(result.width).toBe(6);
-            expect(result.truncated).toBeTruthy();
-            expect(result.ellipsed).toBeTruthy();
+            expect(result.truncated).toBe(true);
+            expect(result.ellipsed).toBe(true);
             // Expect truncation index right after "Google" text inside the first hyperlink
             expect(result.index).toBe(36); // TODO: Check if this is correct
 
             // Test case 4: Truncate after first link but before second link's text starts
             result = getStringTruncatedWidth(input, { ellipsis: ".", limit: 7 }); // Ellipsis width 1
+
             expect(result.width).toBe(7); // Width should be exactly the limit
-            expect(result.truncated).toBeTruthy();
-            expect(result.ellipsed).toBeTruthy(); // Ellipsis should be added
+            expect(result.truncated).toBe(true);
+            expect(result.ellipsed).toBe(true); // Ellipsis should be added
             // Index should still be considered within the first hyperlink sequence
             expect(result.index).toBeLessThan(input.indexOf("Example"));
         });
@@ -196,24 +202,20 @@ describe("getStringTruncatedWidth", () => {
         it("supports all basic emojis", async () => {
             expect.assertions(1);
 
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
             const response = await fetch("https://raw.githubusercontent.com/muan/unicode-emoji-json/main/data-by-group.json");
             const data = await response.json();
             // eslint-disable-next-line @typescript-eslint/no-shadow
             const emojis = data.flatMap(({ emojis }) => emojis.map(({ emoji }) => emoji));
 
-            const failures = emojis.filter((emoji: string) => {
-                if (getWidth(emoji) !== 2) {
-                    return true;
-                }
-
-                return false;
-            });
+            const failures = emojis.filter((emoji: string) => getWidth(emoji) !== 2);
 
             expect(failures).toStrictEqual([]);
         });
 
         it("supports unicode characters", () => {
             expect.assertions(44);
+
             // Map of Unicode characters to their expected display widths
             const unicodeChars = {
                 // Whitespace and special spaces
@@ -225,38 +227,41 @@ describe("getStringTruncatedWidth", () => {
                 // Dashes and punctuation
                 "\u2013": 2, // EN DASH
                 "\u2014": 2, // EM DASH
-                "\u2022": 2, // BULLET
                 "…": 1, // HORIZONTAL ELLIPSIS
+                // Brackets and delimiters
+                "\u2770": 1, // HEAVY LEFT-POINTING ANGLE BRACKET ORNAMENT
 
+                "\u2771": 1, // HEAVY RIGHT-POINTING ANGLE BRACKET ORNAMENT
+                "\u2022": 2, // BULLET
                 // Arrows - Basic directional
                 "\u2190": 2, // LEFTWARDS ARROW
-                "\u2191": 2, // UPWARDS ARROW
                 "\u2192": 2, // RIGHTWARDS ARROW
+                "\u2191": 2, // UPWARDS ARROW
                 "\u2193": 2, // DOWNWARDS ARROW
                 "\u2194": 2, // LEFT RIGHT ARROW
+
                 "\u2197": 2, // NORTH EAST ARROW
                 "\u21A9": 2, // LEFTWARDS ARROW WITH HOOK
-
                 // Arrows - Double and special
                 "\u21C4": 1, // RIGHTWARDS ARROW OVER LEFTWARDS ARROW
                 "\u21C5": 1, // UPWARDS ARROW LEFTWARDS OF DOWNWARDS ARROW
                 "\u21C6": 1, // LEFTWARDS ARROW OVER RIGHTWARDS ARROW
                 "\u21CB": 1, // LEFTWARDS HARPOON OVER RIGHTWARDS HARPOON
                 "\u21CC": 1, // RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON
-                "\u21CE": 1, // LEFT RIGHT DOUBLE ARROW WITH STROKE
                 "\u21D0": 1, // LEFTWARDS DOUBLE ARROW
                 "\u21D2": 2, // RIGHTWARDS DOUBLE ARROW
                 "\u21D4": 2, // LEFT RIGHT DOUBLE ARROW
+                "\u21CE": 1, // LEFT RIGHT DOUBLE ARROW WITH STROKE
+
                 "\u21E8": 1, // RIGHTWARDS WHITE ARROW
                 "\u21F5": 1, // DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW
-
                 // Mathematical and technical symbols
                 "\u2217": 1, // ASTERISK OPERATOR
                 "\u2261": 2, // IDENTICAL TO
                 "\u226A": 2, // MUCH LESS-THAN
+
                 "\u226B": 2, // MUCH GREATER-THAN
                 "\u22EF": 1, // MIDLINE HORIZONTAL ELLIPSIS
-
                 // Miscellaneous symbols
                 "\u2690": 1, // WHITE FLAG
                 "\u2691": 1, // BLACK FLAG
@@ -264,12 +269,9 @@ describe("getStringTruncatedWidth", () => {
                 "\u2709": 2, // ENVELOPE
                 "\u270E": 1, // LOWER RIGHT PENCIL
                 "✔": 2, // HEAVY CHECK MARK
+
                 "\u274F": 1, // LOWER RIGHT DROP-SHADOWED WHITE SQUARE
                 "\u2750": 1, // UPPER RIGHT DROP-SHADOWED WHITE SQUARE
-
-                // Brackets and delimiters
-                "\u2770": 1, // HEAVY LEFT-POINTING ANGLE BRACKET ORNAMENT
-                "\u2771": 1, // HEAVY RIGHT-POINTING ANGLE BRACKET ORNAMENT
 
                 // Additional arrows and symbols
                 "\u27A4": 1, // BLACK RIGHTWARDS ARROWHEAD
@@ -390,7 +392,7 @@ describe("getStringTruncatedWidth", () => {
         // Input: \\u001B[abc31mtest\\u001B[39m (Visible: [abc31mtest)
         // Limit: 4 (Truncation limit: 4)
         // Expected width: [=1, a=2, b=3 -> Truncation index 4
-        expect(getStringTruncatedWidth("\\u001B[abc31mtest\\u001B[39m", { limit: 4 })).toStrictEqual({
+        expect(getStringTruncatedWidth(String.raw`\u001B[abc31mtest\u001B[39m`, { limit: 4 })).toStrictEqual({
             ellipsed: true,
             index: 4, // Index after 'b'
             truncated: true,
@@ -400,7 +402,7 @@ describe("getStringTruncatedWidth", () => {
         // Limit: 8, Ellipsis: "..." (width 3) -> Truncation Limit: 5
         // Expected width: [=1, a=2, b=3, c=4, 3=5 -> Truncation index 5
         // Final width: 5 + 3 = 8
-        expect(getStringTruncatedWidth("\\u001B[abc31mtest\\u001B[39m", { ellipsis: "...", limit: 8 })).toStrictEqual({
+        expect(getStringTruncatedWidth(String.raw`\u001B[abc31mtest\u001B[39m`, { ellipsis: "...", limit: 8 })).toStrictEqual({
             ellipsed: true,
             index: 5, // Index after 'c'
             truncated: true,
@@ -415,7 +417,7 @@ describe("getStringTruncatedWidth", () => {
         // T(1) a(2) b(3) \\t(to 4) T(5) e(6!) -> Truncation Limit 5. Truncate before 'e' at index 5.
         // Final width = 5 (width at index 5) + 3 (ellipsis) = 8.
         expect(
-            getStringTruncatedWidth("Tab\\tTest", {
+            getStringTruncatedWidth(String.raw`Tab\tTest`, {
                 ellipsis: "...",
                 limit: 8,
                 width: { tabWidth: 4 },
@@ -457,8 +459,8 @@ describe("getStringTruncatedWidth", () => {
         // Expected width = width("Google") + width("Google") = 6 + 6 = 12
 
         expect(result.width).toBe(12);
-        expect(result.truncated).toBeFalsy();
-        expect(result.ellipsed).toBeFalsy();
+        expect(result.truncated).toBe(false);
+        expect(result.ellipsed).toBe(false);
         expect(result.index).toBe(input.length);
     });
 
@@ -470,8 +472,8 @@ describe("getStringTruncatedWidth", () => {
         const result = getStringTruncatedWidth(input, { ellipsis: "...", limit: 10 });
 
         expect(result.width).toBe(10);
-        expect(result.truncated).toBeTruthy();
-        expect(result.ellipsed).toBeTruthy();
+        expect(result.truncated).toBe(true);
+        expect(result.ellipsed).toBe(true);
         expect(result.index).toBe(36); // TODO: Check if this is correct
     });
 });

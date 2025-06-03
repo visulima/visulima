@@ -6,6 +6,7 @@ import { alignText } from "../../src/align-text";
 describe(alignText, () => {
     it("aligns center, splits line feed, and pads with space by default", () => {
         expect.assertions(1);
+
         // one two three
         //   four five
         const out = alignText("one two three\nfour five");
@@ -15,6 +16,7 @@ describe(alignText, () => {
 
     it("supports ansi", () => {
         expect.assertions(1);
+
         // first line has four ansi escape sequences
         // second line has two ansi escape sequences
         const inp = `${red("one")} two ${bold("three")}\n${cyan("four ")}five`;
@@ -25,6 +27,7 @@ describe(alignText, () => {
 
     it("returns array if given array", () => {
         expect.assertions(1);
+
         //     one two
         // three four five
         const inp = [green("one two"), "three four five"];
@@ -35,6 +38,7 @@ describe(alignText, () => {
 
     it("accepts opts for split, pad, and align", () => {
         expect.assertions(1);
+
         // ........one two
         // three four five
         const inp = "one two\tthree four five";
@@ -45,6 +49,7 @@ describe(alignText, () => {
 
     it("should supports `align: 'left'` as no-op", () => {
         expect.assertions(1);
+
         const inp = "one two three\nfour five";
         const out = alignText(inp, { align: "left" });
 
@@ -53,6 +58,7 @@ describe(alignText, () => {
 
     it("should center align", () => {
         expect.assertions(1);
+
         //    one
         //    two
         // three four
@@ -65,6 +71,7 @@ describe(alignText, () => {
 
     it("should support right align", () => {
         expect.assertions(1);
+
         //       one
         // two three
         //      four

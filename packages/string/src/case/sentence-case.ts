@@ -9,7 +9,6 @@ import normalizeGermanEszett from "./utils/normalize-german-eszett";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 
-// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to Sentence case.
  * @example
@@ -22,7 +21,7 @@ const defaultCacheStore = new LRUCache<string, string>(1000);
  * sentenceCase("QueryXML123String") // => "Query xml 123 string"
  * ```
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const sentenceCase = <T extends string = string>(value?: T, options?: CaseOptions): SentenceCase<T> => {
     if (typeof value !== "string") {
         return "" as SentenceCase<T>;

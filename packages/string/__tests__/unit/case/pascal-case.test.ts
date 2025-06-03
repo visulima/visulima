@@ -3,36 +3,42 @@ import { describe, expect, it } from "vitest";
 import { pascalCase } from "../../../src/case";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("pascalCase", () => {
+describe(pascalCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call should cache
             const result1 = pascalCase(input, { cache: true, cacheStore: customCache });
+
             expect(result1).toBe("TestString");
             expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = pascalCase(input, { cache: true, cacheStore: customCache });
+
             expect(result2).toBe("TestString");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call without cache
             const result1 = pascalCase(input, { cache: false, cacheStore: customCache });
+
             expect(result1).toBe("TestString");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = pascalCase(input, { cache: false, cacheStore: customCache });
+
             expect(result2).toBe("TestString");
             expect(customCache.size()).toBe(0);
         });
@@ -45,6 +51,7 @@ describe("pascalCase", () => {
 
             // Use custom cache
             pascalCase(input, { cache: true, cacheStore: customCache });
+
             expect(customCache.size()).toBe(1);
         });
     });
@@ -162,14 +169,18 @@ describe("pascalCase", () => {
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             expect.assertions(2);
+
             const locale = "tr-TR";
+
             expect(pascalCase("istanbul_city", { locale })).toBe("İstanbulCity");
             expect(pascalCase("izmir_city", { locale })).toBe("İzmirCity");
         });
 
         it("should handle German specific cases", () => {
             expect.assertions(3);
+
             const locale = "de-DE";
+
             expect(pascalCase("GROSSE STRAßE", { locale })).toBe("GroßeStraße");
             expect(pascalCase("GROSSE STRASSE", { locale })).toBe("GroßeStraße");
             expect(pascalCase("GROßE STRAßE", { locale })).toBe("GroßeStraße");

@@ -61,6 +61,7 @@ describe("replaceString function", () => {
         expect.assertions(1);
 
         const source = "Firstname Lastname";
+        // eslint-disable-next-line sonarjs/slow-regex
         const searches: OptionReplaceArray = [[/(\w+)\s+(\w+)/, "$2, $1"]];
         const ignoreRanges: IntervalArray = [];
 
@@ -139,6 +140,7 @@ describe("replaceString function", () => {
             [0, 6], // "Ignore1"
             [21, 27], // "Ignore2"
         ];
+
         expect(replaceString(source, searches, ignoreRanges)).toBe("Ignore1 ab Replacecd Ignore2 ef"); // Corrected Expectation
     });
 
@@ -157,6 +159,7 @@ describe("replaceString function", () => {
 
     it("should handle overlapping potential matches correctly (non-ignored)", () => {
         expect.assertions(1);
+
         const result = replaceString(
             "ababab",
             [
@@ -165,6 +168,7 @@ describe("replaceString function", () => {
             ],
             [],
         );
+
         expect(result).toBe("XY");
     });
 
@@ -178,6 +182,7 @@ describe("replaceString function", () => {
         ];
         // Ignore the second 'a' (index 2)
         const ignoreRanges: IntervalArray = [[2, 2]];
+
         // Expected behavior based on previous runs/failures with this logic:
         // Match X at 0 overlaps ignore at 2 -> skip X at 0
         // Match Y at 1 overlaps ignore at 2 -> skip Y at 1
@@ -218,6 +223,7 @@ describe("replaceString function", () => {
         // Matches the boundary before each character
         const searches: OptionReplaceArray = [[/(?=.)/g, "^"]];
         const ignoreRanges: IntervalArray = [];
+
         // Expect ^a^b^c
         expect(replaceString(source, searches, ignoreRanges)).toBe("^a^b^c");
     });
@@ -229,6 +235,7 @@ describe("replaceString function", () => {
         // Matches the boundary after the last character
         const searches: OptionReplaceArray = [[/$/g, "$"]]; // Use $ anchor
         const ignoreRanges: IntervalArray = [];
+
         // Expect abc$
         expect(replaceString(source, searches, ignoreRanges)).toBe("abc$");
     });

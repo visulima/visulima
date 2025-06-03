@@ -4,7 +4,7 @@ import wrapAnsiHyperlink from "./wrap-ansi-hyperlink";
 
 /**
  * Preserves ANSI escape codes when joining wrapped lines
- * @param rawLines - Array of wrapped lines
+ * @param rawLines Array of wrapped lines
  * @returns String with preserved ANSI codes
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -36,6 +36,7 @@ const preserveAnsi = (rawLines: string[]): string => {
 
             if (groups.code !== undefined) {
                 const code = Number.parseFloat(groups.code);
+
                 escapeCode = code === END_CODE ? undefined : code;
             } else if (groups.uri !== undefined) {
                 escapeUrl = groups.uri.length === 0 ? undefined : groups.uri;

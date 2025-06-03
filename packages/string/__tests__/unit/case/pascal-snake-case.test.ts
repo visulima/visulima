@@ -3,36 +3,42 @@ import { describe, expect, it } from "vitest";
 import { pascalSnakeCase } from "../../../src/case";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("pascalSnakeCase", () => {
+describe(pascalSnakeCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call should cache
             const result1 = pascalSnakeCase(input, { cache: true, cacheStore: customCache });
+
             expect(result1).toBe("Test_String");
             expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = pascalSnakeCase(input, { cache: true, cacheStore: customCache });
+
             expect(result2).toBe("Test_String");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "test-string";
 
             // First call without cache
             const result1 = pascalSnakeCase(input, { cache: false, cacheStore: customCache });
+
             expect(result1).toBe("Test_String");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = pascalSnakeCase(input, { cache: false, cacheStore: customCache });
+
             expect(result2).toBe("Test_String");
             expect(customCache.size()).toBe(0);
         });
@@ -45,6 +51,7 @@ describe("pascalSnakeCase", () => {
 
             // Use custom cache
             pascalSnakeCase(input, { cache: true, cacheStore: customCache });
+
             expect(customCache.size()).toBe(1);
         });
     });
@@ -147,14 +154,18 @@ describe("pascalSnakeCase", () => {
     describe("locale support", () => {
         it("should handle Turkish specific cases", () => {
             expect.assertions(2);
+
             const locale = "tr-TR";
+
             expect(pascalSnakeCase("istanbul_city", { locale })).toBe("İstanbul_City");
             expect(pascalSnakeCase("İZMİR_CITY", { locale })).toBe("İzmir_Cıty");
         });
 
         it("should handle German specific cases", () => {
             expect.assertions(3);
+
             const locale = "de-DE";
+
             expect(pascalSnakeCase("GROSSE STRAßE", { locale })).toBe("Große_Straße");
             expect(pascalSnakeCase("GROSSE STRASSE", { locale })).toBe("Große_Straße");
             expect(pascalSnakeCase("GROßE STRAßE", { locale })).toBe("Große_Straße");

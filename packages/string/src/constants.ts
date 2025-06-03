@@ -41,7 +41,6 @@ export const RE_ZERO_WIDTH = /[\u200B\uFEFF\u2060-\u2064]/g;
  * RegExp pattern for ANSI escape sequences
  * Compiled once for better performance
  */
-// eslint-disable-next-line regexp/no-control-character,@rushstack/security/no-unsafe-regexp
 export const RE_ESCAPE_PATTERN = new RegExp(`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`);
 
 /**
@@ -80,12 +79,16 @@ export const ANSI_RESET_CODES = Object.freeze(
 
 /** Regular expression to match leading newlines and surrounding whitespace. */
 export const RE_LEADING_NEWLINE = /^[ \t]*(?:\r\n|\r|\n)/;
+
 /** Regular expression to match trailing newlines and surrounding whitespace. */
 export const RE_TRAILING_NEWLINE = /(?:\r\n|\r|\n)[ \t]*$/;
+
 /** Regular expression to match strings that start with a newline or are empty. */
 export const RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY = /^(?:[\r\n]|$)/;
+
 /** Regular expression to detect indentation after a newline. Captures the indentation whitespace. */
 export const RE_DETECT_INDENTATION = /(?:\r\n|\r|\n)([ \t]*)(?:[^ \t\r\n]|$)/;
+
 /** Regular expression to match strings containing only whitespace but at least one newline character. */
 export const RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE = /^[ \t]*[\r\n][ \t\r\n]*$/;
 
@@ -96,24 +99,24 @@ export const RE_MATCH_NEWLINES = /\r\n|\n|\r/g;
  * Regular expression for ANSI escape sequences
  * Used for parsing and handling ANSI color codes and formatting
  */
-// eslint-disable-next-line no-control-regex,regexp/no-control-character,security/detect-unsafe-regex
+// eslint-disable-next-line no-control-regex
 export const RE_ANSI = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;[^\u0007\u001B]{0,100}(?:\u0007|\u001B\\))/g;
 
 /**
  * Regular expression for valid ANSI color/style sequences with proper open/close pairs
  * Matches sequences like '\u001B[31mtext\u001B[39m'
  */
-// eslint-disable-next-line regexp/no-control-character, no-control-regex,security/detect-unsafe-regex
+// eslint-disable-next-line no-control-regex
 export const RE_VALID_ANSI_PAIRS = /\u001B\[(\d+(?:;\d+)*)?m[^\u001B]*(?:\u001B\[(?:\d+(?:;\d+)*)?m|$)/g;
 
 // Matches OSC 8 hyperlinks and captures the *text* part (group 1)
-// eslint-disable-next-line regexp/no-control-character, no-control-regex
+// eslint-disable-next-line no-control-regex
 export const RE_VALID_HYPERLINKS = /\u001B\]8;[^\u0007\u001B]*(?:\u0007|\u001B\\)(.*?)\u001B\]8;;(?:\u0007|\u001B\\)/g;
 
 /**
  * Regular expression for control characters
  */
-// eslint-disable-next-line no-control-regex,regexp/no-control-character,regexp/no-obscure-range
+// eslint-disable-next-line no-control-regex,regexp/no-obscure-range
 export const RE_CONTROL = /[\u0000-\u0008\n-\u001F\u007F-\u009F]{1,1000}/y;
 
 /**
@@ -129,70 +132,95 @@ export const RE_SEPARATORS = /[-_./\s]+/g;
 /**
  * Fast ANSI regex for quick checks
  */
-// eslint-disable-next-line no-control-regex,regexp/no-control-character
+// eslint-disable-next-line no-control-regex
 export const RE_FAST_ANSI = /(\u001B\[[0-9;]*[a-z])/i;
 
 /** Regular expression to match characters belonging to the Arabic script. */
 export const RE_ARABIC = /\p{Script=Arabic}/u;
+
 /** Regular expression to match characters belonging to the Bengali script. */
 export const RE_BENGALI = /\p{Script=Bengali}/u;
+
 /** Regular expression to match characters belonging to the Cyrillic script. */
 export const RE_CYRILLIC = /\p{Script=Cyrillic}/u;
+
 /** Regular expression to match characters belonging to the Devanagari script. */
 export const RE_DEVANAGARI = /\p{Script=Devanagari}/u;
+
 /** Regular expression to match characters belonging to the Ethiopic script. */
 export const RE_ETHIOPIC = /\p{Script=Ethiopic}/u;
 // Precompiled regex patterns for Greek script handling
+
 /** Regular expression to match characters belonging to the Greek script. */
 export const RE_GREEK = /\p{Script=Greek}/u;
+
 /** Regular expression to split a string by segments of Greek, Latin, or other characters. */
 export const RE_GREEK_LATIN_SPLIT = /\p{Script=Greek}+|\p{Script=Latin}+|[^\p{Script=Greek}\p{Script=Latin}]+/gu;
+
 /** Regular expression to match characters belonging to the Gujarati script. */
 export const RE_GUJARATI = /\p{Script=Gujarati}/u;
+
 /** Regular expression to match characters belonging to the Gurmukhi script. */
 export const RE_GURMUKHI = /\p{Script=Gurmukhi}/u;
+
 /** Regular expression to match characters belonging to the Hangul script. */
 export const RE_HANGUL = /\p{Script=Hangul}/u;
+
 /** Regular expression to match characters belonging to the Hebrew script. */
 export const RE_HEBREW = /\p{Script=Hebrew}/u;
+
 /** Regular expression to match characters belonging to the Hiragana script. */
 export const RE_HIRAGANA = /\p{Script=Hiragana}/u;
+
 /** Regular expression to match characters belonging to the Han (Kanji) script. */
 export const RE_KANJI = /\p{Script=Han}/u;
+
 /** Regular expression to match characters belonging to the Kannada script. */
 export const RE_KANNADA = /\p{Script=Kannada}/u;
+
 /** Regular expression to match characters belonging to the Katakana script. */
 export const RE_KATAKANA = /\p{Script=Katakana}/u;
+
 /** Regular expression to match characters belonging to the Khmer script. */
 export const RE_KHMER = /\p{Script=Khmer}/u;
+
 /** Regular expression to match characters belonging to the Lao script. */
 export const RE_LAO = /\p{Script=Lao}/u;
+
 /** Regular expression to match characters belonging to the Latin script. */
 export const RE_LATIN = /\p{Script=Latin}/u;
+
 /** Regular expression to match characters belonging to the Malayalam script. */
 export const RE_MALAYALAM = /\p{Script=Malayalam}/u;
+
 /** Regular expression to match characters belonging to the Myanmar script. */
 export const RE_MYANMAR = /\p{Script=Myanmar}/u;
+
 /** Regular expression to match characters belonging to the Oriya script. */
 export const RE_ORIYA = /\p{Script=Oriya}/u;
+
 /** Regular expression to match characters belonging to the Sinhala script. */
 export const RE_SINHALA = /\p{Script=Sinhala}/u;
+
 /** Regular expression to match characters belonging to the Tamil script. */
 export const RE_TAMIL = /\p{Script=Tamil}/u;
+
 /** Regular expression to match characters belonging to the Telugu script. */
 export const RE_TELUGU = /\p{Script=Telugu}/u;
+
 /** Regular expression to match characters belonging to the Thai script. */
 export const RE_THAI = /\p{Script=Thai}/u;
+
 /** Regular expression to match characters belonging to the Tibetan script. */
 export const RE_TIBETAN = /\p{Script=Tibetan}/u;
 // Special modifiers for Uzbek Latin script
+
 /** Regular expression to match special modifier characters used in the Uzbek Latin script. */
 export const RE_UZBEK_LATIN_MODIFIER = /[\u02BB\u02BC\u0027]/u;
 
 /**
  * Strips emoji characters from a string.
- *
- * @param stringValue - The string to strip emoji from
+ * @param stringValue The string to strip emoji from
  * @returns The string without emoji characters
  */
 export const stripEmoji = (stringValue: string): string => stringValue.replace(RE_EMOJI, "");

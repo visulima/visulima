@@ -1,8 +1,8 @@
+import { pascalCase } from "@visulima/string/dist/case/case";
 import { pascalCase as stringTsPascalCase } from "string-ts";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
-import { pascalCase } from "../../dist/case";
 
 describe("pascalCase", () => {
     bench("visulima/string pascalCase (no cache)", () => {

@@ -3,36 +3,42 @@ import { describe, expect, it } from "vitest";
 import { flipCase } from "../../../src/case";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("flipCase", () => {
+describe(flipCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
 
             // First call should cache
             const result1 = flipCase(input, { cache: true, cacheStore: customCache });
+
             expect(result1).toBe("TESTsTRING");
             expect(customCache.size()).toBe(1);
 
             // Second call should use cache
             const result2 = flipCase(input, { cache: true, cacheStore: customCache });
+
             expect(result2).toBe("TESTsTRING");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
 
             // First call without cache
             const result1 = flipCase(input, { cache: false, cacheStore: customCache });
+
             expect(result1).toBe("TESTsTRING");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = flipCase(input, { cache: false, cacheStore: customCache });
+
             expect(result2).toBe("TESTsTRING");
             expect(customCache.size()).toBe(0);
         });

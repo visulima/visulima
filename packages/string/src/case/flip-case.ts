@@ -60,43 +60,36 @@ export const flipCase = <T extends string = string>(value?: T, options?: FlipOpt
 
     while (index < processedValue.length) {
         // Handle ANSI sequences if we didn't strip them
-        // eslint-disable-next-line security/detect-object-injection
+
         if (options?.handleAnsi && processedValue[index] === "\u001B") {
-            // eslint-disable-next-line security/detect-object-injection
             let ansiSequence = processedValue[index] as string;
 
-            // eslint-disable-next-line no-plusplus
-            index++;
+            index += 1;
 
-            // eslint-disable-next-line security/detect-object-injection
             while (index < processedValue.length && processedValue[index] !== "m") {
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands,security/detect-object-injection
                 ansiSequence += processedValue[index];
-                // eslint-disable-next-line no-plusplus
-                index++;
+
+                index += 1;
             }
 
             if (index < processedValue.length) {
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands,security/detect-object-injection
                 ansiSequence += processedValue[index];
                 result += ansiSequence;
             }
 
-            // eslint-disable-next-line no-plusplus
-            index++;
+            index += 1;
 
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         // Handle regular characters
-        // eslint-disable-next-line security/detect-object-injection
+
         const char = processedValue[index] as string;
         const lowerChar = options?.locale ? char.toLocaleLowerCase(options.locale) : char.toLowerCase();
 
         result += char === lowerChar ? (options?.locale ? char.toLocaleUpperCase(options.locale) : char.toUpperCase()) : lowerChar;
-        // eslint-disable-next-line no-plusplus
-        index++;
+
+        index += 1;
     }
 
     // Cache the result for future use if caching is enabled

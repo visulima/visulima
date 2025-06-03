@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { toEqualAnsi } from "../../src/test/vitest";
 import { truncate } from "../../src/truncate";
 
-describe("truncate", () => {
+describe(truncate, () => {
     expect.extend({ toEqualAnsi });
 
     describe("basic functionality", () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getStringWidth } from "../../src";
 
-describe("getStringWidth", () => {
+describe(getStringWidth, () => {
     it("should handle various string types correctly", () => {
         expect.assertions(28);
 
@@ -28,7 +28,7 @@ describe("getStringWidth", () => {
         expect(getStringWidth("葛󠄀")).toBe(2);
         expect(getStringWidth("ปฏัก")).toBe(3);
         expect(getStringWidth("_\u0E34")).toBe(1);
-        expect(getStringWidth('"', { ambiguousIsNarrow: false })).toBe(1);
+        expect(getStringWidth("\"", { ambiguousIsNarrow: false })).toBe(1);
         expect(getStringWidth(" ")).toBe(1);
         expect(getStringWidth("🔀")).toBe(2);
         expect(getStringWidth("🇪")).toBe(2);
@@ -78,16 +78,22 @@ describe("getStringWidth", () => {
         // Dotted/dashed lines
         const dashedH = "┈"; // U+2508 (Light quadrupled dash horizontal) - Check if used
         const dashedV = "┊"; // U+250A (Light quadrupled dash vertical) - Check if used
+
         // Note: DOTS_BORDER uses ┈ (U+2508) and ┊ (U+250A)
         expect(getStringWidth(dashedH)).toBe(1);
         expect(getStringWidth(dashedV)).toBe(1);
 
         // Mixed string with new characters
         const mixed2 = "╔═╦═╗║ ║╠═╬═╣╚═╩═╝";
+
         expect(getStringWidth(mixed2)).toBe(mixed2.length);
+
         const mixed3 = "╭─┬─╮│ │├─┼─┤╰─┴─╯";
+
         expect(getStringWidth(mixed3)).toBe(mixed3.length);
+
         const mixed4 = "┌┈┬┈┐┊ ┊├┈┼┈┤└┈┴┈┘"; // Using DOTS_BORDER chars
+
         expect(getStringWidth(mixed4)).toBe(mixed4.length);
     });
 

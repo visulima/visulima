@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { identifyCase } from "../../../src/case";
 
-describe("identifyCase", () => {
+describe(identifyCase, () => {
     it("should identify camelCase including variations", () => {
         expect.assertions(7);
 
@@ -138,7 +138,6 @@ describe("identifyCase", () => {
     it("should handle null input", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect(() => identifyCase(null as any)).toThrow(TypeError);
     });
 });

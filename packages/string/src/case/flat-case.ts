@@ -4,7 +4,6 @@ import type { CaseOptions, FlatCase } from "./types";
 
 const defaultCacheStore = new LRUCache<string, string>(1000);
 
-// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Converts a string to flat case (all lowercase, no separators).
  * @example

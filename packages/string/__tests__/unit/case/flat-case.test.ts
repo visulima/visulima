@@ -4,39 +4,45 @@ import { flatCase } from "../../../src/case";
 import generateCacheKey from "../../../src/case/utils/generate-cache-key";
 import LRUCache from "../../../src/utils/lru-cache";
 
-describe("flatCase", () => {
+describe(flatCase, () => {
     describe("caching", () => {
         it("should use cache when enabled", () => {
             expect.assertions(5);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
             const options = { cache: true, cacheStore: customCache };
 
             // First call should cache
             const result1 = flatCase(input, options);
+
             expect(result1).toBe("teststring");
             expect(customCache.size()).toBe(1);
             expect(customCache.get(generateCacheKey(input, options))).toBe(result1);
 
             // Second call should use cache
             const result2 = flatCase(input, options);
+
             expect(result2).toBe("teststring");
             expect(customCache.size()).toBe(1);
         });
 
         it("should not use cache when disabled", () => {
             expect.assertions(4);
+
             const customCache = new LRUCache<string, string>(50);
             const input = "testString";
             const options = { cache: false, cacheStore: customCache };
 
             // First call without cache
             const result1 = flatCase(input, options);
+
             expect(result1).toBe("teststring");
             expect(customCache.size()).toBe(0);
 
             // Second call without cache
             const result2 = flatCase(input, options);
+
             expect(result2).toBe("teststring");
             expect(customCache.size()).toBe(0);
         });
@@ -50,6 +56,7 @@ describe("flatCase", () => {
 
             // Use custom cache
             flatCase(input, options);
+
             expect(customCache.size()).toBe(1);
         });
     });
@@ -174,7 +181,9 @@ describe("flatCase", () => {
     describe("locale support", () => {
         it("should handle German specific cases", () => {
             expect.assertions(2);
+
             const locale = "de-DE";
+
             expect(flatCase("großeStrasse", { locale })).toBe("großestrasse");
             expect(flatCase("GROßE", { locale })).toBe("große");
         });

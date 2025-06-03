@@ -2,11 +2,9 @@ import type { LocaleOptions, UpperFirst } from "./types";
 
 /**
  * Converts first character to upper case.
- *
- * @param value - The string to convert.
- * @param options - Options for case conversion.
+ * @param value The string to convert.
+ * @param options Options for case conversion.
  * @returns The string with its first character converted to uppercase.
- *
  * @example
  * ```typescript
  * upperFirst("hello world!") // => "Hello world!"

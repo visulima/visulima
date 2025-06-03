@@ -5,8 +5,8 @@ import wrapAnsi from "wrap-ansi";
 import { wordWrap, WrapMode } from "../src/word-wrap";
 
 const shortText = "The quick brown fox jumped over the lazy dog";
-const mediumText =
-    "The quick brown fox jumped over the lazy dog and then ran away with the unicorn. The quick brown fox jumped over the lazy dog and then ran away with the unicorn.";
+const mediumText
+    = "The quick brown fox jumped over the lazy dog and then ran away with the unicorn. The quick brown fox jumped over the lazy dog and then ran away with the unicorn.";
 const longText = `The quick brown fox jumped over the lazy dog and then ran away with the unicorn.
 This is a multi-line text with several paragraphs.
 Each paragraph might have different lengths and wrapping needs.
