@@ -6,9 +6,14 @@
         "visulima",
         "bytes"
     ],
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "homepage": "https://visulima.com/packages/bytes",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/bytes"
     },
     "funding": [
         {
@@ -20,8 +25,11 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.com/packages/bytes",
     "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "type": "module",
     "exports": {
@@ -41,19 +49,18 @@
     "module": "dist/index.mjs",
     "browser": "./dist/index.mjs",
     "types": "dist/index.d.ts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ]
+        }
+    },
     "files": [
         "dist",
         "README.md",
         "CHANGELOG.md"
     ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/bytes"
-    },
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
     "scripts": {
         "build": "cross-env NODE_ENV=development packem build",
         "build:prod": "cross-env NODE_ENV=production packem build",
@@ -69,21 +76,14 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "engines": {
-        "node": ">=20.18 <=24.x"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "devDependencies": {
-        "@std/bytes": "jsr:1.0.6",
         "@anolilab/eslint-config": "^16.2.10",
         "@anolilab/semantic-release-pnpm": "1.1.11",
         "@anolilab/semantic-release-preset": "^10.0.5",
         "@arethetypeswrong/cli": "^0.18.1",
         "@babel/core": "^7.27.4",
         "@secretlint/secretlint-rule-preset-recommend": "^9.3.3",
+        "@std/bytes": "jsr:1.0.6",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "22.15.29",
         "@visulima/packem": "^1.19.4",
@@ -100,11 +100,11 @@
         "typescript": "^5.8.3",
         "vitest": "^3.2.0"
     },
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/index.d.ts"
-            ]
-        }
+    "engines": {
+        "node": ">=20.18 <=24.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     }
 }
