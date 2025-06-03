@@ -319,8 +319,6 @@ assert.deepStrictEqual(utf8Array, new Uint8Array([228, 189, 160, 229, 165, 189])
 const templateUtf8 = utf8ToUint8Array`🌍`; // Globe emoji
 assert.deepStrictEqual(templateUtf8, new Uint8Array([240, 159, 140, 141]));
 
-### `toUint8Array`
-
 Attempts to convert various data types to a `Uint8Array`.
 
 ```typescript
