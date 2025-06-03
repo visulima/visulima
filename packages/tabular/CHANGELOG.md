@@ -1,3 +1,15 @@
+## @visulima/tabular [1.0.9](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.8...@visulima/tabular@1.0.9) (2025-06-03)
+
+### Miscellaneous Chores
+
+* **tabular:** update package.json and pnpm-lock.yaml for tabular package ([67a3bb4](https://github.com/visulima/visulima/commit/67a3bb473cf9a8d2460a25bc5638e88a5e7c8ec4))
+* update ESLint configuration and dependencies ([1cf0391](https://github.com/visulima/visulima/commit/1cf0391cf67757844387b4d98b1f28d458e7f233))
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 1.5.0
+
 ## @visulima/tabular [1.0.8](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.7...@visulima/tabular@1.0.8) (2025-05-31)
 
 
