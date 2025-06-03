@@ -263,10 +263,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        "src/index.ts",
-        "src/error.ts",
-        "src/utils.ts"
-    ]
+    }
 }
