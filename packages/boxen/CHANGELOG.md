@@ -1,3 +1,14 @@
+## @visulima/boxen [2.0.1](https://github.com/visulima/visulima/compare/@visulima/boxen@2.0.0...@visulima/boxen@2.0.1) (2025-06-03)
+
+### Miscellaneous Chores
+
+* update ESLint configuration and dependencies ([1cf0391](https://github.com/visulima/visulima/commit/1cf0391cf67757844387b4d98b1f28d458e7f233))
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 1.5.0
+
 ## @visulima/boxen [2.0.0](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.31...@visulima/boxen@2.0.0) (2025-06-01)
 
 ### ⚠ BREAKING CHANGES
