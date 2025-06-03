@@ -83,8 +83,9 @@ export const toUint8Array = (data: unknown): Uint8Array => {
     }
 
     if (typeof Buffer === "function") {
-        if (Buffer.isBuffer(data))
+        if (Buffer.isBuffer(data)) {
             return bufferToUint8Array(data); // Use our converter for consistency
+        }
 
         // Attempt to convert string via Buffer.from.
         // Other Buffer-compatible types like ArrayBuffer or ArrayBufferView (which Buffer is)
