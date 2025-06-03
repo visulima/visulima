@@ -1,3 +1,9 @@
+## @visulima/string [1.5.0](https://github.com/visulima/visulima/compare/@visulima/string@1.4.1...@visulima/string@1.5.0) (2025-06-03)
+
+### Features
+
+* **string:** added new functions closestString, compareSimilarity and wordSimilaritySort, added new exports to the package.json ([4f01ec4](https://github.com/visulima/visulima/commit/4f01ec4b0cc8863c6bbb591ac14c895c143e65d2))
+
 ## @visulima/string [1.4.1](https://github.com/visulima/visulima/compare/@visulima/string@1.4.0...@visulima/string@1.4.1) (2025-05-31)
 
 ### Bug Fixes
