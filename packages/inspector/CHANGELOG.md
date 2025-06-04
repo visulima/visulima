@@ -1,3 +1,18 @@
+## @visulima/inspector [1.0.24](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.23...@visulima/inspector@1.0.24) (2025-06-04)
+
+### Styles
+
+* **inspector:** cs fixes ([5a1d0ad](https://github.com/visulima/visulima/commit/5a1d0ad860fabd9d0994b8957b5967ec8c6a1b40))
+
+### Miscellaneous Chores
+
+* update ESLint configuration and dependencies ([1cf0391](https://github.com/visulima/visulima/commit/1cf0391cf67757844387b4d98b1f28d458e7f233))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.23
+
 ## @visulima/inspector [1.0.23](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.22...@visulima/inspector@1.0.23) (2025-05-31)
 
 ### Bug Fixes
