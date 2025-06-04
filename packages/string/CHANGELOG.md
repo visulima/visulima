@@ -1,3 +1,10 @@
+## @visulima/string [1.5.1](https://github.com/visulima/visulima/compare/@visulima/string@1.5.0...@visulima/string@1.5.1) (2025-06-04)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.23
+
 ## @visulima/string [1.5.0](https://github.com/visulima/visulima/compare/@visulima/string@1.4.1...@visulima/string@1.5.0) (2025-06-03)
 
 ### Features
