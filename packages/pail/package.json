@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "2.1.24",
+    "version": "2.1.25",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "ansi",
@@ -242,10 +242,10 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "1.4.22",
-        "@visulima/error": "4.4.17",
+        "@visulima/colorize": "1.4.23",
+        "@visulima/error": "4.4.18",
         "@visulima/fmt": "1.1.15",
-        "@visulima/inspector": "1.0.23",
+        "@visulima/inspector": "1.0.24",
         "safe-stable-stringify": "^2.5.0"
     },
     "devDependencies": {
