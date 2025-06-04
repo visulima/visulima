@@ -1,3 +1,11 @@
+## @visulima/tabular [1.0.10](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.9...@visulima/tabular@1.0.10) (2025-06-04)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.23
+* **@visulima/string:** upgraded to 1.5.1
+
 ## @visulima/tabular [1.0.9](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.8...@visulima/tabular@1.0.9) (2025-06-03)
 
 ### Miscellaneous Chores
