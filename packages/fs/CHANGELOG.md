@@ -1,3 +1,15 @@
+## @visulima/fs [3.1.5](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.4...@visulima/fs@3.1.5) (2025-06-04)
+
+### Miscellaneous Chores
+
+* **fs:** clear up ([e30b80d](https://github.com/visulima/visulima/commit/e30b80d7fc39b0d8db5bf234dd1840b63c4b8b7d))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.4.0
+* **@visulima/error:** upgraded to 4.4.18
+
 ## @visulima/fs [3.1.4](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.3...@visulima/fs@3.1.4) (2025-06-03)
 
 ### Bug Fixes
