@@ -1,3 +1,10 @@
+## @visulima/error [4.4.18](https://github.com/visulima/visulima/compare/@visulima/error@4.4.17...@visulima/error@4.4.18) (2025-06-04)
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.4.0
+
 ## @visulima/error [4.4.17](https://github.com/visulima/visulima/compare/@visulima/error@4.4.16...@visulima/error@4.4.17) (2025-05-30)
 
 ### Bug Fixes
