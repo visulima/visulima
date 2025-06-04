@@ -31,7 +31,7 @@ Here are a few guidelines that will help you along the way.
 
 ## [Code of Conduct](https://github.com/visulima/visulima/blob/main/.github/CODE_OF_CONDUCT.md)
 
-<\**ORGANIZATIONS*uppercase\*> has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) as its Code of Conduct, and we expect project participants to adhere to it.
+**Visulima** has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) as its Code of Conduct, and we expect project participants to adhere to it.
 Please read [the full text](https://github.com/visulima/visulima/blob/main/.github/CODE_OF_CONDUCT.md) so that you can understand what actions will and will not be tolerated.
 
 ## Introduction
@@ -103,7 +103,7 @@ To help you get your feet wet and get you familiar with our contribution process
 This is a great place to get started.
 
 If you decide to fix an issue, please be sure to check the comment thread in case somebody is already working on a fix.
-If nobody is working on it at the moment, please leave a comment stating that you intend to work on it so other people don’t accidentally duplicate your effort.
+If nobody is working on it at the moment, please leave a comment stating that you intend to work on it so other people don't accidentally duplicate your effort.
 
 If somebody claims an issue but doesn't follow up after more than a week, it's fine to take over, but you should still leave a comment.
 If there has been no activity on the issue for 7 to 14 days, then it's safe to assume that nobody is working on it.
@@ -133,6 +133,33 @@ And you should be ready to go!
 
 > If you run into any issue with the setup, check first the [TROUBLESHOOT.md](https://github.com/visulima/visulima/blob/main/.github/TROUBLESHOOT.md)
 
+## <a name="branching-model"></a> Branching Model
+
+This project uses a sophisticated branching model that integrates with `semantic-release` to manage different types of releases. Understanding these branches is key to contributing effectively.
+
+-   **`main` branch:** Represents the latest stable production release. `semantic-release` publishes full releases from this branch.
+-   **`next` branch:** Used for upcoming minor or patch releases. Commits here will trigger pre-releases (e.g., `v1.2.0-next.1`). This branch allows for staging and testing the next version before it's merged to `main`.
+-   **`next-major` branch:** Similar to `next`, but specifically for upcoming major versions that include breaking changes. Commits here will trigger pre-releases for the next major (e.g., `v2.0.0-next.1`).
+-   **`alpha` branch:** This is the primary development branch for cutting-edge features and initial integration. `semantic-release` creates alpha pre-releases from this branch (e.g., `v1.2.0-alpha.1`). Pull Requests for most new features and significant changes should target `alpha`.
+-   **`beta` branch:** Used for more stable pre-releases after features have been tested in `alpha`. `semantic-release` creates beta pre-releases from this branch (e.g., `v1.2.0-beta.1`).
+-   **Versioned maintenance branches (e.g., `1.x.x`, `2.x.x`, matching `([0-9])?(.{+([0-9]),x}).x`):** These branches are used for providing bug fixes and patches to older, specific versions of the software (Long-Term Support or LTS). `semantic-release` will publish patch releases for that specific version line from these branches (e.g., `v1.1.1` from branch `1.x.x`).
+
+-   **Feature branches:** For any new feature or bug fix, create a descriptive branch off the most appropriate development branch (usually `alpha`, but sometimes `next`, `beta`, or a maintenance branch for hotfixes).
+    -   **Naming Convention:**
+        -   For new features: `feat/your-feature-name` (e.g., `feat/user-profile-page`)
+        -   For bug fixes: `fix/issue-number-or-bug-description` (e.g., `fix/login-button-bug` or `fix/123-fix-login-button`)
+        -   For documentation: `docs/area-of-docs` (e.g., `docs/contributing-guide-updates`)
+        -   For chores/refactors: `chore/brief-description` or `refactor/area-being-refactored`
+
+**Pull Request Targeting:**
+-   Most new features and general improvements should target the `alpha` branch.
+-   Changes intended for the immediate next release (that are not breaking) might target `next`.
+-   Changes for an upcoming major version might target `next-major`.
+-   Stabilization changes might be promoted from `alpha` to `beta` or directly target `beta`.
+-   Hotfixes for specific released versions should target the corresponding maintenance branch (e.g., `1.x.x`).
+
+Always confirm the correct target branch if unsure, especially for larger contributions or fixes to older versions.
+
 ## Contribute Documentation
 
 Documentation is a super important, critical part of this project. Docs are how we keep track of what we're doing, how, and why. It's how we stay on the same page about our policies. And it's how we tell others everything they need in order to be able to use this project -- or contribute to it. So thank you in advance.
@@ -146,7 +173,7 @@ To contribute documentation:
 -   Make sure your changes are formatted correctly and consistently with the rest of the documentation.
 -   Re-read what you wrote, and run a spellchecker on it to make sure you didn't miss anything.
 -   Write clear, concise commit message(s) using [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/). Documentation commits should use `docs(<component>): <message>`, visit the [Committing](#committing) section for more information.
--   Go to https://github.com/<**ORGANIZATIONS**>/<**REPOSITORY_NAME**>/pulls and open a new pull request with your changes.
+-   Go to https://github.com/visulima/visulima/pulls and open a new pull request with your changes.
 -   If your PR is connected to an open issue, add a line in your PR's description that says `Fixes: #123`, where `#123` is the number of the issue you're fixing.
 
 Once you've filed the PR:
@@ -184,7 +211,7 @@ To contribute code:
 -   Write clear, concise commit message(s) using [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/).
 -   Dependency updates, additions, or removals must be in individual commits, and the message must use the format: `<prefix>(deps): PKG@VERSION`, where `<prefix>` is any of the usual `conventional-changelog` prefixes, at your discretion.
 -
--   Go to https://github.com/<**ORGANIZATIONS**>/<**REPOSITORY_NAME**>/pulls and open a new pull request with your changes.
+-   Go to https://github.com/visulima/visulima/pulls and open a new pull request with your changes.
 -   If your PR is connected to an open issue, add a line in your PR's description that says `Fixes: #123`, where `#123` is the number of the issue you're fixing.
 
 Once you've filed the PR:
@@ -207,231 +234,129 @@ Faker - Copyright (c) 2022-2024
 
 If you ever find yourself deprecating something in the source code, you can follow these steps to save yourself (and the reviewers) some trouble.
 
-Add a `@deprecated` parameter to the end of the JSDoc with a human-readable description message with a suitable replacement for the deprecated function.
-Lastly, add a `@see` parameter to the JSDoc with a link to the replacement (if it exists).
+1.  **Use JSDoc `@deprecated` tag:** Add a `@deprecated` tag to the JSDoc block of the code being deprecated. Include a message explaining why it's deprecated and what should be used as a replacement.
+2.  **Reference Replacement (if any):** If there's a direct replacement, use the `@see` tag or mention it in the deprecation message to guide developers to the new code.
+3.  **Communicate the Change:** Ensure the deprecation and its replacement are clearly communicated in Pull Request descriptions and relevant team discussions to facilitate a smooth transition.
 
 Example:
-
 ```ts
 /**
- * @deprecated Use `new function/class` instead.
+ * Old utility function for formatting dates.
+ * @deprecated As of [Date or Version], this function is deprecated. Please use `newDateFormatter()` from `utils/date-helpers.ts` instead.
+ * @see newDateFormatter
  */
+function oldDateUtility() {
+  // ...
+}
 ```
 
 ### <a name="major-version-docs"></a> Documenting changes for new major versions
 
-<!--
-Modified copy of https://github.com/faker-js/faker/blob/next/CONTRIBUTING.md#documenting-changes-for-new-major-versions
+Since `semantic-release` automatically generates changelogs (e.g., on GitHub Releases) from [Conventional Commits](#committing), a separate `UPGRADE.MD` file for major versions is generally not maintained for this application.
 
-MIT License
-Faker - Copyright (c) 2022-2024
--->
+The key to documenting significant changes, especially breaking changes that affect other developers on the team, lies in the commit messages themselves:
 
-Each major version has an upgrading guide `UPGRADE.md`.
+-   **Breaking Changes:** If your contribution introduces a breaking change (a change that would require other developers working on the application to modify their existing code or approach), you MUST clearly indicate this in your commit message. This is typically done by:
+    -   Appending an `!` after the type/scope (e.g., `feat(auth)!: overhaul user session management`).
+    -   Including a footer in the commit message starting with `BREAKING CHANGE:`, followed by a detailed explanation of the change and any necessary migration guidance for other developers.
+-   **Deprecations:** For features or components being deprecated, follow the [Deprecation Workflow](#deprecation-workflow) and ensure your commit messages (e.g., using `refactor` or `feat` with a clear description) reflect these changes.
 
-While developing new features and fixing bugs for a new release, changes are added to the migration guide to aid developers when the version is released.
-
-The general principle is to document anything which requires a normal user of the package to change their code, when upgrading to the new major version.
-
-There are two sections:
-
--   Breaking changes (user MUST change their code)
--   Deprecations and other changes (user SHOULD change their code, but it will still work for this major version even if they don't)
-
-Not every change needs to be in the migration guide. If it is too long, it becomes hard for users to spot the important changes.
+`semantic-release` will use this information to correctly version the application and include details of breaking changes and significant features in the automatically generated release notes. This serves as the primary record of changes between versions for the development team.
 
 ### <a name="js-docs"></a> JSDocs
 
-<!--
-Modified copy of https://github.com/faker-js/faker/blob/next/CONTRIBUTING.md#jsdocs
+Comprehensive JSDoc comments are crucial for packages and libraries to ensure they are understandable, maintainable, and easy for consumers to use. All code intended for export and public consumption MUST be accompanied by clear JSDoc.
 
-MIT License
-Faker - Copyright (c) 2022-2024
--->
+**General Principles:**
 
-JSDoc are comments above any code structure (variable, function, class, etc.) that begin with `/**` and end with `*/`. Multiline comments start (if not being the start or end line) with a `*`.
-For more info checkout [jsdoc.app](https://jsdoc.app/about-getting-started.html).
+*   **Clarity and Purpose:** The primary goal is to make the code's API and behavior transparent to other developers and consumers. Prefer clear, well-named variables and functions, which can reduce the need for overly verbose comments. Use comments to explain *why* something is done (especially for complex decisions) and to clarify *how* for non-obvious implementations.
+*   **Audience:** Write JSDoc with the consumer of the package/library in mind.
+*   **Keep Up-to-Date:** JSDoc MUST be kept synchronized with any code changes. Outdated documentation is often worse than no documentation.
 
-JSDoc will be read and automatically processed by `generate:api-docs` and therefore need to follow some project conventions. Other standards are in place because we think they increase the code quality.
+**What MUST be Documented:**
 
-> We have a small set of JSDoc tags that all methods should have.
+*   All exported functions, classes, methods, constants, types, and interfaces.
+*   Complex or non-obvious internal logic within functions or components should also be clarified with comments (either JSDoc or standard block/line comments).
 
--   Description
--   `@param` - If the method has parameters
--   `@see` - If there are other important methods
--   `@example` - Example calls without and with parameters, including a sample result of each call
--   `@since` - The version this method was added (or is likely to be added)
--   `@deprecated` - If the method is deprecated, with additional information about replacements
+**Required JSDoc Tags and Content for Exported Members:**
 
-<table>
-<tr>
-<th>Do</th>
-<th>Dont</th>
-</tr>
-<tr>
-<td>
+For anything exported from a package, JSDoc should generally include the following:
+
+1.  **Description:** A clear, concise summary of what the code does. Start with a strong verb.
+2.  **`@param {type} name - Description`**: For functions or methods, document each parameter:
+    *   Its type (e.g., `{string}`, `{number[]}`, `{MyInterface}`).
+    *   Its name.
+    *   A clear description of its purpose.
+    *   If the parameter is optional, indicate this (e.g., `options?` or in the description).
+    *   If it has a default value, mention it: `Defaults to \`defaultValue\`.`
+3.  **`@returns {type} - Description`**: For functions or methods that return a value:
+    *   The type of the returned value.
+    *   A clear description of what the returned value represents.
+4.  **`@throws {ErrorType} - Condition when thrown`**: If a function is designed to throw specific, documented errors under certain conditions.
+5.  **`@example`**: Provide one or more usage examples, especially for functions and classes. Examples should be simple, illustrative, and runnable if possible.
+    ```ts
+    /**
+     * ...
+     * @example
+     * ```ts
+     * const result = myFunction('test');
+     * console.log(result); // Expected output
+     * ```
+     */
+    ```
+6.  **`@deprecated`**: If the API is being deprecated.
+    *   Include the version or timeframe of deprecation.
+    *   State the reason for deprecation.
+    *   Provide a clear pointer to the recommended replacement API using `@see` or in the description.
+    ```ts
+    /**
+     * @deprecated Since v2.0.0. Use `newShinyFunction()` instead.
+     * @see newShinyFunction
+     */
+    ```
+7.  **`@see`**: To reference related parts of the API, external documentation, or the replacement for a deprecated feature.
+8.  **`@since {version}`**: The version of the package when this API member was introduced. This is very helpful for users tracking changes across versions.
+
+**Formatting and Style Conventions:**
+
+*   **Multiline JSDocs:** Always use multiline JSDoc comments (`/** ... */`) for exported members.
+    ```ts
+    /**
+     * This is a good JSDoc description.
+     */
+    function anExportedFunction() {
+        // implementation
+    }
+    ```
+*   **Start with Description:** The JSDoc block should begin with a concise description of the element.
+*   **Tag Order:** While `eslint-plugin-jsdoc` (if used in the project) might enforce a specific order, a common logical order is: description, `@since`, `@deprecated`, `@param`, `@returns`, `@throws`, `@example`, `@see`. Consistency is key.
+*   **Blank Lines:** Use blank lines to separate the main description from the block of tags, and consider separating logical groups of tags (e.g., all `@param` tags together, then `@returns`, then `@example`).
+*   **Grammar and Punctuation:** Sentences should end with a period. Strive for clear and grammatically correct English.
+
+**Example of a Well-Documented Function:**
 
 ```ts
 /**
- * This is a good JSDoc description for a method that generates foos.
+ * Calculates the sum of two numbers and returns the result.
  *
- * @param options The optional options to use.
- * @param options.test The parameter to configure test. Defaults to `'bar'`.
+ * @since 1.0.0
+ * @param {number} a - The first number.
+ * @param {number} b - The second number.
  *
- * @see helper.fake
+ * @returns {number} - The sum of `a` and `b`.
  *
  * @example
- * foo() // 'foo'
- * foo({ test: 'oof' }) // 'of'
- *
- * @since 7.5.0
- *
- * @deprecated Use `random()` instead.
+ * ```ts
+ * const total = add(5, 3);
+ * console.log(total); // Output: 8
+ * ```
  */
-function foo(options: { test: string } = {}): string {
-    // implementation
+export function add(a: number, b: number): number {
+  return a + b;
 }
 ```
 
-</td>
-<td>
-
-```ts
-/**
- * This is a bad JSDoc description.
- *
- * @return foo
- */
-function foo(options: { test: string }) {
-    // implementation
-}
-```
-
-</td>
-</tr>
-</table>
-
-> We use eslint-plugin-jsdoc to test for basic styling and sorting of doc-tags.
-
-This is in place so all JSDoc tags will get sorted automatically, so you don't have to bother with it. This also means that most rules in this section can get auto fixed by the eslint formatter.
-
-> JSDocs should always be multiline
-
-While single line JSDoc are technically valid, we decided to follow this rule since it makes changes in the git diff much more clear and easier to understand.
-
-<table>
-<tr>
-<th>Do</th>
-<th>Dont</th>
-</tr>
-<tr>
-<td>
-
-```ts
-/**
- * This is a good JSDoc description.
- */
-function foo() {
-    // implementation
-}
-```
-
-</td>
-<td>
-
-```ts
-/** This is a bad JSDoc description. */
-function foo() {
-    // implementation
-}
-```
-
-</td>
-</tr>
-</table>
-
-> Everything that can be accessed directly by a user should have JSDoc.
-
-This rule is aimed to target anything that is exported from a package. This includes types, interfaces, functions, classes and variables. So if you introduce anything new that is not internal, write JSDoc for it.
-
-> If a `@param` has a default value, it needs to be mentioned at the end of the sentence.
-
-```ts
-/**
- * This is a good JSDoc description.
- *
- * @param bar this is a parameter description. Defaults to `0`.
- */
-function foo(bar: number = 0) {
-    // implementation
-}
-```
-
-> If a function can throw an error (Error) you have to include the `@throws` tag with an explanation when an error could be thrown
-
-```ts
-/**
- * This is a good JSDoc description.
- *
- * @param bar this is a parameter description. Defaults to `0`.
- *
- * @throws If bar is negative.
- */
-function foo(bar: number = 0) {
-    // implementation
-}
-```
-
-> Sentences should always end with a period.
-
-This rule ensures minimal grammatical correctness in the comments and ensures that all comments look the same.
-
-> Different tags have to be separated by an empty line.
-
-This rule improves the comments readability by grouping equivalent tags and making them more distinguishable from others.
-
-<table>
-<tr>
-<th>Do</th>
-<th>Dont</th>
-</tr>
-<tr>
-<td>
-
-```ts
-/**
- * This is a good JSDoc block, because it follows the our preferences.
- *
- * @param bar The first argument.
- * @param baz The second argument.
- *
- * @example foo(1, 1) // [1, 1]
- * @example foo(13, 56) // [13, 56]
- */
-function foo(bar: number, baz: number): [number, number] {
-    // implementation
-}
-```
-
-</td>
-<td>
-
-```ts
-/**
- * This is a bad JSDoc block, because it has no linebreaks between sections.
- * @param bar The first argument.
- * @param baz The second argument.
- * @example foo(1, 1) // [1, 1]
- * @example foo(13, 56) // [13, 56]
- */
-function foo(bar: number, baz: number): [number, number] {
-    // implementation
-}
-```
-
-</td>
-</tr>
-</table>
+Adhering to these JSDoc guidelines will significantly improve the quality and usability of your packages and libraries.
 
 ## Committing
 
@@ -464,7 +389,7 @@ When the body is present it must be at least 20 characters long and must conform
 
 The `footer` is optional. The [Commit Message Footer](#commit-footer) format describes what the footer is used for and the structure it must have.
 
-### <a name="commit-header"></a> `PR titles` or `Commit Message Header` are written in following convention:
+### <a name="commit-header"></a> `PR titles` and `Commit Message Headers` are written using the following convention:
 
 > Titles following the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/).
 
@@ -693,7 +618,7 @@ To clean up issues and PRs:
     -   not marked as `good first issue` or `help wanted` (these might stick around for a while, in general, as they're intended to be available)
     -   no explicit messages in the comments asking for it to be left open
     -   does not belong to a milestone
--   Leave a message when closing saying "Cleaning up stale issue. Please reopen or ping us if and when you're ready to resume this. See https://github.com/<**ORGANIZATIONS**>/<**REPOSITORY_NAME**>/blob/latest/CONTRIBUTING.md#clean-up-issues-and-prs for more details."
+-   Leave a message when closing saying "Cleaning up stale issue. Please reopen or ping us if and when you're ready to resume this. See https://github.com/visulima/visulima/blob/latest/CONTRIBUTING.md#clean-up-issues-and-prs for more details."
 
 ## Review Pull Requests
 
@@ -729,7 +654,25 @@ Some notes:
 
 [Needs Collaborator](#join-the-project-team): Committer
 
-TBD - need to hash out a bit more of this process. The most important bit here is probably that all tests must pass, and tags must use [semver](https://semver.org).
+This project uses [semantic-release](https://github.com/semantic-release/semantic-release) to automate the entire package release workflow including: determining the next version number, generating the release notes, and publishing the package.
+
+Because of this automation, it is crucial that all contributions merged into the main branch adhere to the [Conventional Commits specification](https://www.conventionalcommits.org/) (as detailed in the [Committing](#committing) section). The commit messages dictate how `semantic-release` versions the software and generates changelogs.
+
+Prerequisites for a commit to be included in a release (typically enforced before merging a Pull Request):
+
+-   **Adherence to Conventional Commits:** Commit messages on the main branch *must* follow the Conventional Commits format.
+-   **All Automated Workflows Must Pass:** All CI checks (linting, building, automated tests, etc.) configured for the project must pass.
+-   **Successful Code Review:** Contributions must undergo and pass a code review by at least one maintainer or designated reviewer.
+-   **Comprehensive Tests:** All existing tests must pass. New functionality should be accompanied by new tests, and bug fixes should include tests that demonstrate the fix.
+
+When commits are merged to the main branch (e.g., `main`, `alpha`), `semantic-release` will automatically run (usually in a CI environment), analyze the commits since the last release, and if new releasable changes are found, it will:
+
+1.  Determine the new semantic version (e.g., `v1.2.3`).
+2.  Create a Git tag for the new version.
+3.  Generate release notes based on the commit messages.
+4.  Publish the release (e.g., to GitHub Releases, npm registry if applicable).
+
+There is typically no manual intervention needed for the release process itself once `semantic-release` is configured and running, provided all pre-merge requirements are met.
 
 ## Join the Project Team
 
