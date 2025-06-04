@@ -1,3 +1,9 @@
+## @visulima/path [1.4.0](https://github.com/visulima/visulima/compare/@visulima/path@1.3.6...@visulima/path@1.4.0) (2025-06-04)
+
+### Features
+
+* **path:** added isWindows helper function ([ba7ab7d](https://github.com/visulima/visulima/commit/ba7ab7dec78aec7ca08c221eba5b04e82a07bee5))
+
 ## @visulima/path [1.3.6](https://github.com/visulima/visulima/compare/@visulima/path@1.3.5...@visulima/path@1.3.6) (2025-05-30)
 
 ### Bug Fixes
