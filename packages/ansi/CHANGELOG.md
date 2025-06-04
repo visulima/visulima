@@ -1,3 +1,17 @@
+## @visulima/ansi [2.0.1](https://github.com/visulima/visulima/compare/@visulima/ansi@2.0.0...@visulima/ansi@2.0.1) (2025-06-04)
+
+### Miscellaneous Chores
+
+* **ansi:** remove unused prettier linting scripts from package.json ([a4a9e27](https://github.com/visulima/visulima/commit/a4a9e2722888375bd2e77f493ec3316bfef7575a))
+* update ESLint configuration and dependencies ([1cf0391](https://github.com/visulima/visulima/commit/1cf0391cf67757844387b4d98b1f28d458e7f233))
+* update package dependencies and remove unused ESLint config ([0cd4c8f](https://github.com/visulima/visulima/commit/0cd4c8fe582cc5f7b20614245100137b41a5d842))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.23
+* **@visulima/path:** upgraded to 1.4.0
+
 ## @visulima/ansi [2.0.0](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.18...@visulima/ansi@2.0.0) (2025-05-31)
 
 ### ⚠ BREAKING CHANGES
