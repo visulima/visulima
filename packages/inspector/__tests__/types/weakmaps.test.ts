@@ -9,13 +9,13 @@ describe("weakmaps", () => {
         expect(inspect(new WeakMap())).toBe("WeakMap{…}");
     });
 
-    describe("truncate", () => {
-        it("returns the full representation when truncate is over string length", () => {
+    describe("maxStringLength", () => {
+        it("returns the full representation when maxStringLength is over string length", () => {
             expect.assertions(3);
 
-            expect(inspect(new WeakMap(), { truncate: 20 })).toBe("WeakMap{…}");
-            expect(inspect(new WeakMap(), { truncate: 10 })).toBe("WeakMap{…}");
-            expect(inspect(new WeakMap(), { truncate: 1 })).toBe("WeakMap{…}");
+            expect(inspect(new WeakMap(), { maxStringLength: 20 })).toBe("WeakMap{…}");
+            expect(inspect(new WeakMap(), { maxStringLength: 10 })).toBe("WeakMap{…}");
+            expect(inspect(new WeakMap(), { maxStringLength: 1 })).toBe("WeakMap{…}");
         });
     });
 });

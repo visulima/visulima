@@ -89,83 +89,83 @@ describe.skipIf(globalThis.window === undefined)("hTMLElement", () => {
         );
     });
 
-    describe("truncate", () => {
+    describe("maxStringLength", () => {
         let template: object | null = null;
 
         beforeEach(() => {
             template = h("div", { hidden: "", id: "foo" }, h("pre", {}, h("code", {}, h("span", { style: "color:red" }))));
         });
 
-        it("returns the full representation when truncate is over string length", () => {
+        it("returns the full representation when maxStringLength is over string length", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 100 })).toBe("<div hidden id=\"foo\"><pre><code><span style=\"color:red\"></span></code></pre></div>");
+            expect(inspect(template, { maxStringLength: 100 })).toBe("<div hidden id=\"foo\"><pre><code><span style=\"color:red\"></span></code></pre></div>");
         });
 
-        it("truncates arguments values longer than truncate (81)", () => {
+        it("maxStringLengths arguments values longer than maxStringLength (81)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 81 })).toBe("<div hidden id=\"foo\"><pre><code><span …(1)></span></code></pre></div>");
+            expect(inspect(template, { maxStringLength: 81 })).toBe("<div hidden id=\"foo\"><pre><code><span …(1)></span></code></pre></div>");
         });
 
-        it("truncates arguments values longer than truncate (78)", () => {
+        it("maxStringLengths arguments values longer than maxStringLength (78)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 78 })).toBe("<div hidden id=\"foo\"><pre><code><span …(1)></span></code></pre></div>");
+            expect(inspect(template, { maxStringLength: 78 })).toBe("<div hidden id=\"foo\"><pre><code><span …(1)></span></code></pre></div>");
         });
 
-        it("truncates arguments values longer than truncate (64)", () => {
+        it("maxStringLengths arguments values longer than maxStringLength (64)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 64 })).toBe("<div hidden id=\"foo\"><pre><code>…(1)</code></pre></div>");
+            expect(inspect(template, { maxStringLength: 64 })).toBe("<div hidden id=\"foo\"><pre><code>…(1)</code></pre></div>");
         });
 
-        it("truncates arguments values longer than truncate (63)", () => {
+        it("maxStringLengths arguments values longer than maxStringLength (63)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 63 })).toBe("<div hidden id=\"foo\"><pre><code>…(1)</code></pre></div>");
+            expect(inspect(template, { maxStringLength: 63 })).toBe("<div hidden id=\"foo\"><pre><code>…(1)</code></pre></div>");
         });
 
-        it("truncates arguments values longer than truncate (51)", () => {
+        it("maxStringLengths arguments values longer than maxStringLength (51)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 51 })).toBe("<div hidden id=\"foo\"><pre>…(1)</pre></div>");
+            expect(inspect(template, { maxStringLength: 51 })).toBe("<div hidden id=\"foo\"><pre>…(1)</pre></div>");
         });
 
-        it("truncates arguments values longer than truncate (49)", () => {
+        it("maxStringLengths arguments values longer than maxStringLength (49)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 49 })).toBe("<div hidden id=\"foo\"><pre>…(1)</pre></div>");
+            expect(inspect(template, { maxStringLength: 49 })).toBe("<div hidden id=\"foo\"><pre>…(1)</pre></div>");
         });
 
-        it("truncates arguments values longer than truncate (26)", () => {
+        it("maxStringLengths arguments values longer than maxStringLength (26)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 26 })).toBe("<div hidden id=\"foo\">…(1)</div>");
+            expect(inspect(template, { maxStringLength: 26 })).toBe("<div hidden id=\"foo\">…(1)</div>");
         });
 
-        it("truncates arguments values longer than truncate (25)", () => {
+        it("maxStringLengths arguments values longer than maxStringLength (25)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 25 })).toBe("<div hidden …(1)>…(1)</div>");
+            expect(inspect(template, { maxStringLength: 25 })).toBe("<div hidden …(1)>…(1)</div>");
         });
 
-        it("truncates arguments values longer than truncate (24)", () => {
+        it("maxStringLengths arguments values longer than maxStringLength (24)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 24 })).toBe("<div hidden …(1)>…(1)</div>");
+            expect(inspect(template, { maxStringLength: 24 })).toBe("<div hidden …(1)>…(1)</div>");
         });
 
-        it("disregards truncate when it cannot truncate further (18)", () => {
+        it("disregards maxStringLength when it cannot maxStringLength further (18)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 18 })).toBe("<div …(2)>…(1)</div>");
+            expect(inspect(template, { maxStringLength: 18 })).toBe("<div …(2)>…(1)</div>");
         });
 
-        it("disregards truncate when it cannot truncate further (1)", () => {
+        it("disregards maxStringLength when it cannot maxStringLength further (1)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 1 })).toBe("<div …(2)>…(1)</div>");
+            expect(inspect(template, { maxStringLength: 1 })).toBe("<div …(2)>…(1)</div>");
         });
     });
 

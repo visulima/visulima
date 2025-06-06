@@ -4,13 +4,13 @@ import inspectList from "../utils/inspect-list";
 
 const inspectMapEntry = ([key, value]: [unknown, unknown], object: unknown, options: Options, inspect: InternalInspect): string => {
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= 4;
+    options.maxStringLength -= 4;
 
     // eslint-disable-next-line no-param-reassign
     key = inspect(key, object, options);
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= (key as string).length;
+    options.maxStringLength -= (key as string).length;
 
     return `${key as string} => ${inspect(value, object, options)}`;
 };
@@ -26,7 +26,7 @@ const inspectMap: InspectType<Map<unknown, unknown>> = (
     }
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= 7;
+    options.maxStringLength -= 7;
 
     let returnValue = inspectList([...map.entries()], map, options, inspect, inspectMapEntry);
 

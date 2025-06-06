@@ -3,6 +3,7 @@ const addNumericSeparator = (number_: bigint | number, string_: string): string 
         return string_;
     }
 
+    // eslint-disable-next-line sonarjs/slow-regex
     const separatorRegex = /\d(?=(?:\d{3})+(?!\d))/g;
 
     if (typeof number_ === "number") {

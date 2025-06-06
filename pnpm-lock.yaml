@@ -400,7 +400,11 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: 16.2.10
+<<<<<<< HEAD
         version: 16.2.10(@babel/core@7.28.4)(@types/node@22.15.29)(@typescript-eslint/utils@8.44.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)(yaml@2.8.1)
+=======
+        version: 16.2.10(@babel/core@7.27.4)(@types/node@22.15.29)(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-storybook@0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.1)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@anolilab/semantic-release-pnpm':
         specifier: 1.1.11
         version: 1.1.11(@types/node@22.15.29)(yaml@2.8.1)
@@ -430,7 +434,11 @@ importers:
         version: 1.4.0
       '@vitest/coverage-v8':
         specifier: ^3.2.0
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.2.0
         version: 3.2.4(vitest@3.2.4)
@@ -472,7 +480,11 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.0
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/ansi/__fixtures__/package/cjs:
     dependencies:
@@ -617,7 +629,11 @@ importers:
         version: 3.1.8(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -764,7 +780,11 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.2.10
+<<<<<<< HEAD
         version: 16.3.0(a37cccaf799767aead82aed04b7d4417)
+=======
+        version: 16.2.10(@babel/core@7.27.4)(@types/node@22.15.29)(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-storybook@0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.1)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@anolilab/semantic-release-pnpm':
         specifier: ^1.1.11
         version: 1.1.11(@types/node@22.15.29)(yaml@2.8.1)
@@ -791,7 +811,11 @@ importers:
         version: 1.5.2
       '@vitest/coverage-v8':
         specifier: ^3.2.0
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.2.0
         version: 3.2.4(vitest@3.2.4)
@@ -821,7 +845,11 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.0
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/browser@3.2.0)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/boxen/__bench__:
     devDependencies:
@@ -833,7 +861,11 @@ importers:
         version: 8.0.1
       vitest:
         specifier: ^1.3.1
+<<<<<<< HEAD
         version: 1.6.1(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 1.6.1(@types/node@22.15.30)(@vitest/ui@3.2.1)(jsdom@26.1.0)(lightningcss@1.25.1)(terser@5.31.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/boxen/__fixtures__/package/cjs:
     dependencies:
@@ -851,7 +883,11 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.2.10
+<<<<<<< HEAD
         version: 16.3.0(cbcfed313e9889fdae42ad0c290ad169)
+=======
+        version: 16.2.10(@babel/core@7.27.4)(@types/node@22.15.29)(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-storybook@0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.1)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@anolilab/semantic-release-pnpm':
         specifier: 1.1.11
         version: 1.1.11(@types/node@22.15.29)(yaml@2.8.1)
@@ -881,7 +917,11 @@ importers:
         version: 1.28.3(@swc/core@1.13.5)(@types/node@22.15.29)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.2.0
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.2.0
         version: 3.2.4(vitest@3.2.4)
@@ -914,7 +954,11 @@ importers:
         version: 5.9.2
       vitest:
         specifier: ^3.2.0
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.9.2))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/cerebro:
     dependencies:
@@ -999,7 +1043,11 @@ importers:
         version: 1.4.0
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       camelcase:
         specifier: 8.0.0
         version: 8.0.0
@@ -1095,8 +1143,13 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       '@vitest/coverage-v8':
+<<<<<<< HEAD
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
+=======
+        specifier: ^3.1.4
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
@@ -1244,7 +1297,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -1365,7 +1422,11 @@ importers:
         version: 18.19.71
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -1497,7 +1558,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -1616,8 +1681,13 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       '@vitest/coverage-v8':
+<<<<<<< HEAD
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
+=======
+        specifier: ^3.1.4
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
@@ -1820,7 +1890,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -1907,7 +1981,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -1998,7 +2076,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.4(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.4(typescript@5.8.3)))(typedoc@0.28.4(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -2107,7 +2189,11 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.5.2)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/fs/__bench__/fixtures/a/b: {}
 
@@ -2172,7 +2258,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -2299,7 +2389,11 @@ importers:
         version: 1.4.0
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -2373,6 +2467,7 @@ importers:
   packages/inspector:
     devDependencies:
       '@anolilab/eslint-config':
+<<<<<<< HEAD
         specifier: ^16.2.10
         version: 16.3.0(a37cccaf799767aead82aed04b7d4417)
       '@anolilab/semantic-release-pnpm':
@@ -2381,6 +2476,16 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^10.0.5
         version: 10.0.5(@anolilab/semantic-release-pnpm@1.1.11(@types/node@22.15.29)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@24.2.8(typescript@5.8.3)))(semantic-release@24.2.8(typescript@5.8.3))(yaml@2.8.1)
+=======
+        specifier: ^16.2.13
+        version: 16.2.13(@babel/core@7.27.4)(@types/node@22.15.30)(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-playwright@2.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-storybook@0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.2)(yaml@2.8.0)
+      '@anolilab/semantic-release-pnpm':
+        specifier: 1.1.12
+        version: 1.1.12(@types/node@22.15.30)(yaml@2.8.0)
+      '@anolilab/semantic-release-preset':
+        specifier: ^10.0.6
+        version: 10.0.6(@anolilab/semantic-release-pnpm@1.1.12(@types/node@22.15.30)(yaml@2.8.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.5(typescript@5.8.3)))(semantic-release@24.2.5(typescript@5.8.3))(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@arethetypeswrong/cli':
         specifier: ^0.18.1
         version: 0.18.2
@@ -2388,19 +2493,20 @@ importers:
         specifier: ^7.27.4
         version: 7.28.4
       '@secretlint/secretlint-rule-preset-recommend':
-        specifier: ^9.3.3
-        version: 9.3.3
+        specifier: ^9.3.4
+        version: 9.3.4
       '@total-typescript/ts-reset':
         specifier: ^0.6.1
         version: 0.6.1
       '@types/node':
-        specifier: 22.15.29
-        version: 22.15.29
+        specifier: 22.15.30
+        version: 22.15.30
       '@visulima/colorize':
         specifier: 1.4.23
         version: 1.4.23
       '@visulima/packem':
         specifier: 1.19.4
+<<<<<<< HEAD
         version: 1.19.4(@swc/core@1.13.5)(@types/node@22.15.29)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/browser':
         specifier: ^3.2.0
@@ -2411,6 +2517,21 @@ importers:
       '@vitest/ui':
         specifier: ^3.2.0
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.30)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.2.0(postcss@8.5.3))(postcss-modules-scope@3.2.1(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
+      '@vitest/browser':
+        specifier: ^3.2.2
+        version: 3.2.2(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(playwright@1.52.0)(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))(vitest@3.2.2)(webdriverio@9.15.0)
+      '@vitest/coverage-v8':
+        specifier: ^3.2.2
+        version: 3.2.2(@vitest/browser@3.2.2)(vitest@3.2.2)
+      '@vitest/ui':
+        specifier: ^3.2.2
+        version: 3.2.2(vitest@3.2.2)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       esbuild:
         specifier: 0.25.5
         version: 0.25.5
@@ -2430,8 +2551,8 @@ importers:
         specifier: 6.0.1
         version: 6.0.1
       secretlint:
-        specifier: 9.3.3
-        version: 9.3.3
+        specifier: 9.3.4
+        version: 9.3.4
       semantic-release:
         specifier: ^24.2.5
         version: 24.2.8(typescript@5.8.3)
@@ -2445,8 +2566,13 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1(typescript@5.8.3)
       vitest:
+<<<<<<< HEAD
         specifier: ^3.2.0
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/browser@3.2.0)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        specifier: ^3.2.2
+        version: 3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/browser@3.2.2)(@vitest/ui@3.2.2)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       webdriverio:
         specifier: ^9.15.0
         version: 9.15.0
@@ -2471,7 +2597,11 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.5.2)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/is-ansi-color-supported:
     devDependencies:
@@ -2507,7 +2637,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -2619,7 +2753,11 @@ importers:
         version: 5.28.5(@swc/core@1.13.5)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -2719,7 +2857,11 @@ importers:
         version: 1.28.3(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -3010,7 +3152,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -3124,7 +3270,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -3236,7 +3386,11 @@ importers:
         version: 1.0.15
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -3333,7 +3487,11 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.5.2)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/pail/__fixtures__/package/cjs:
     dependencies:
@@ -3381,7 +3539,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@22.15.29)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -3435,7 +3597,11 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/browser@3.2.0)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       zeptomatch:
         specifier: ^2.0.1
         version: 2.0.1
@@ -3578,7 +3744,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -3657,7 +3827,11 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.5.2)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/redact/__fixtures__/package/cjs:
     dependencies:
@@ -3715,7 +3889,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -3772,7 +3950,11 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: 16.2.10
+<<<<<<< HEAD
         version: 16.2.10(@babel/core@7.27.4)(@types/node@22.15.29)(@typescript-eslint/utils@8.44.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-react-refresh@0.4.20(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.5.1)))(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)(vitest@3.2.1)(yaml@2.8.1)
+=======
+        version: 16.2.10(@babel/core@7.27.4)(@types/node@22.15.29)(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-storybook@0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.1)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@anolilab/semantic-release-pnpm':
         specifier: 1.1.11
         version: 1.1.11(@types/node@22.15.29)(yaml@2.8.1)
@@ -3847,7 +4029,11 @@ importers:
         version: 5.8.3
       vitest:
         specifier: 3.2.1
+<<<<<<< HEAD
         version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/string/__bench__:
     dependencies:
@@ -3910,7 +4096,11 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.1
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.5.2)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       wrap-ansi:
         specifier: 9.0.0
         version: 9.0.0
@@ -3919,7 +4109,11 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.2.10
+<<<<<<< HEAD
         version: 16.3.0(14782941a8a74a1dcb6c27a9775bb5a8)
+=======
+        version: 16.2.10(@babel/core@7.27.4)(@types/node@22.15.29)(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-storybook@0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.1)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@anolilab/semantic-release-pnpm':
         specifier: 1.1.11
         version: 1.1.11(@types/node@22.15.29)(yaml@2.8.1)
@@ -3949,7 +4143,11 @@ importers:
         version: 1.5.2
       '@vitest/coverage-v8':
         specifier: ^3.2.0
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.2.0
         version: 3.2.4(vitest@3.2.4)
@@ -4000,7 +4198,11 @@ importers:
         version: 5.9.2
       vitest:
         specifier: ^3.2.0
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.9.2))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/tabular/__bench__:
     devDependencies:
@@ -4021,7 +4223,11 @@ importers:
         version: 6.9.0
       vitest:
         specifier: ^3.2.0
+<<<<<<< HEAD
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.9.2))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   packages/tsconfig:
     dependencies:
@@ -4073,7 +4279,11 @@ importers:
         version: 1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.4(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.4(typescript@5.8.3)))(typedoc@0.28.4(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
+<<<<<<< HEAD
         version: 3.2.4(vitest@3.2.4)
+=======
+        version: 3.2.1(vitest@3.2.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@vitest/ui':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -4888,6 +5098,7 @@ packages:
       typescript:
         optional: true
 
+<<<<<<< HEAD
   '@anolilab/eslint-config@16.3.0':
     resolution: {integrity: sha512-TuOldLYQfnyg+Jb3kDSLPvAdxlScOnMz2Q/dwlIqfoeeTsee2wUg/Wp1LCIBD5mdJ1ADOAb3rLFGTp60TtAsNQ==}
     engines: {node: '>=20.18.* <=24.*'}
@@ -4897,6 +5108,18 @@ packages:
       '@tanstack/eslint-plugin-query': ^5.81.2
       '@tanstack/eslint-plugin-router': ^1.125.0
       '@unocss/eslint-plugin': ^66.3.3
+=======
+  '@anolilab/eslint-config@16.2.13':
+    resolution: {integrity: sha512-L8NgIXRgCvCFjJ67bMV+IzIeTvEmhuF/yaTseVmICKlnaGAKG36RMUpMrX77Z+I+EZUWBwsz033QUkkDMQtakg==}
+    engines: {node: '>=20.18.* <=24.*'}
+    peerDependencies:
+      '@babel/core': ^7.22.20
+      '@eslint-react/eslint-plugin': ^1.50.0
+      '@eslint/css': ^0.8.1
+      '@tanstack/eslint-plugin-query': ^5.0.5
+      '@tanstack/eslint-plugin-router': ^1.92.7
+      '@unocss/eslint-plugin': ^66.1.2
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       astro-eslint-parser: ^1.2.2
       eslint: '>=9.5.0'
       eslint-plugin-astro: ^1.3.1
@@ -4916,7 +5139,10 @@ packages:
       eslint-plugin-validate-jsx-nesting: ^0.1.1
       eslint-plugin-you-dont-need-lodash-underscore: ^6.14.0
       eslint-plugin-zod: ^1.4.0
+<<<<<<< HEAD
       tailwind-csstree: 0.1.4
+=======
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       typescript: '*'
     peerDependenciesMeta:
       '@eslint-react/eslint-plugin':
@@ -4965,6 +5191,7 @@ packages:
         optional: true
       eslint-plugin-zod:
         optional: true
+<<<<<<< HEAD
       tailwind-csstree:
         optional: true
       typescript:
@@ -4972,6 +5199,13 @@ packages:
 
   '@anolilab/lint-staged-config@3.0.31':
     resolution: {integrity: sha512-sN7cotgNxqX1+YXByP0RVrnlO0RaVqjx0OobVVGl/TpIEezyRUj+ZwT4lbwGsO5ROggHRn8DQnRbcpTNyZGLug==}
+=======
+      typescript:
+        optional: true
+
+  '@anolilab/lint-staged-config@3.0.8':
+    resolution: {integrity: sha512-p07KH/dsE0G2he+Ra4/PBzR7h5dDuDiNzer1XnUzFJgedgHxr+/FTYsBMcDHsnXem3gvNbFsn8diiBBVCwUz3w==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     engines: {node: '>=20.18.* <=24.*'}
     hasBin: true
     peerDependencies:
@@ -5032,25 +5266,43 @@ packages:
     resolution: {integrity: sha512-+yfKiVsBByHr/t4003Wx2wQG8SWxrDk9HvIvu5OfWWHTNAhzTBc1+CKY+0/jrXaKfbYqrMXda79MgKXx2gNxRA==}
     engines: {node: '>=18.* <=23.*'}
 
+<<<<<<< HEAD
   '@anolilab/rc@2.0.3':
     resolution: {integrity: sha512-yCuItvLNbGyp/uyVtd6oGHDIpohsT/Nlyqh1uccWK1HZdzkERoDaacb9NMpdrdCqrbw02IT40xqMYZIzaVZRFg==}
     engines: {node: '>=20.8.1'}
+=======
+  '@anolilab/rc@1.1.8':
+    resolution: {integrity: sha512-bcjlqjI0As2oRQ4p+qB8mJ1aXDDKuWW+t37h98M4lpNSRWro5R7Ioxfiedax3AUuKuhwmJlOm9+aIS3JiqIxeQ==}
+    engines: {node: '>=18.17 <=24.*'}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@anolilab/semantic-release-clean-package-json@2.0.2':
     resolution: {integrity: sha512-O5RjQqSC9vwi7LnrjfdwCJ1fdrfryYnsSqMh7+6yK1H5hEgHSg2iFXaM1oAwXp4OFaBonVgQcRnpauW+jx5PfQ==}
     engines: {node: '>=18.0.0 <=23.x'}
 
+<<<<<<< HEAD
   '@anolilab/semantic-release-clean-package-json@3.0.3':
     resolution: {integrity: sha512-4Yzf1YK6/ATebTv99Hwzzle9pxGD/hkJGyM1FlhBpsBSnawR8757ZG3YEp/YmayVcP2S6wPn8fi7hQX2c1KT9A==}
     engines: {node: '>=20.8.1'}
+=======
+  '@anolilab/semantic-release-clean-package-json@2.0.3':
+    resolution: {integrity: sha512-OYFne2ZyQ4q6k7az/yG0XLDgA3wePbROgj1qoEpIm0/F09ZG7pFLb6ITxBx58i+o1XToKsP8KFd7ARNx+8DScQ==}
+    engines: {node: '>=18.17 <=24.*'}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@anolilab/semantic-release-pnpm@1.1.11':
     resolution: {integrity: sha512-OsMr/noX0izjxE4uO2OVorgBR46ZN5iLFSxeXT+MV3lWRtft+UmO6bxxLYyWhWa7Kv4crR/irnNDTQQoIdwP2g==}
     engines: {node: '>=18.* <=23.*'}
 
+<<<<<<< HEAD
   '@anolilab/semantic-release-pnpm@2.0.3':
     resolution: {integrity: sha512-7uaR6YSnHx62oBCxBsL5secRRE5/lEMYiRbVZWfapIlScVhYY7h12epV82YAYEwMDQvRGRhOLVyTwrb0juiLOA==}
     engines: {node: '>=20.8.1'}
+=======
+  '@anolilab/semantic-release-pnpm@1.1.12':
+    resolution: {integrity: sha512-4nJBWs52tJhNZobP4T586upXEYplwBeTJ9xT/oo6IGWHGuiYYgR/yj3XiByEzRTxYnaD464tOkFrlPxfO5P0LQ==}
+    engines: {node: '>=18.17 <=24.*'}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@anolilab/semantic-release-preset@10.0.5':
     resolution: {integrity: sha512-rILesrOQsvK7GWpo43+ickVsOBw2HfLn1LQdeZe9N9ZSKUaGMv63K3/fU+DAlH+KyKD7ndcB7eEU6loXO22WQg==}
@@ -5069,12 +5321,21 @@ packages:
       semantic-release-yarn:
         optional: true
 
+<<<<<<< HEAD
   '@anolilab/semantic-release-preset@11.0.3':
     resolution: {integrity: sha512-Y0gRPo68klIMwjtDeUJuDE5t+IDrIf52n1+JiAn5r2xzhZrAUzbThXj/Ilsn33LOfKWRlq8Lyg5jkrBoSUyzUg==}
     engines: {node: '>=20.8.1'}
     os: [darwin, linux, win32]
     peerDependencies:
       '@anolilab/semantic-release-pnpm': 2.0.3
+=======
+  '@anolilab/semantic-release-preset@10.0.6':
+    resolution: {integrity: sha512-TxGgLizsgV7UcPLmN/9GhJHnFNXunJjQE75E69Jgf3oS2XGreMM72VBR7AQ9AElUEHBheEyCcGgv+zYS3MQCqg==}
+    engines: {node: '>=18.17 <=24.*'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      '@anolilab/semantic-release-pnpm': 1.1.12
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@semantic-release/npm': ^12.0.1
       semantic-release: ^24.2.3
       semantic-release-yarn: ^3.0.2
@@ -5086,8 +5347,13 @@ packages:
       semantic-release-yarn:
         optional: true
 
+<<<<<<< HEAD
   '@anolilab/textlint-config@9.0.5':
     resolution: {integrity: sha512-rbgrHzzLtpZmSRgTKR+ZZyROn1xPy5NYyrHwUYDDwP89XA1PAXKQ1qaSHkwubdgx0r01EU7wYs3VMP80/U7SDg==}
+=======
+  '@anolilab/textlint-config@9.0.0':
+    resolution: {integrity: sha512-ND6dTfT79yRGT0CoL6sj9foaxBMEkmsIOmA2dOjvb47OyJ3iP0mE3PGuzvWwSZTANBTYe/aR4e9blYzF3IsgAw==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     engines: {node: '>=20.18.* <=24.*'}
     hasBin: true
     peerDependencies:
@@ -9665,6 +9931,7 @@ packages:
     resolution: {integrity: sha512-USIKXtBIDPBt+uxssxFVqYBzSommdwXNDGwRZPGErnKWeIH58XuyqIjRTi99fYB0yAQZZ+Cv4sD2JVXCxevEew==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
+<<<<<<< HEAD
   '@secretlint/config-loader@11.2.3':
     resolution: {integrity: sha512-kTkNZGOEOvhONeUIHu3FFKfiIyFOaapvL6JEC60ZOZ77CDH2y0HespcgJa8MT9NsAwth9Y7j+EwWpFOb4ynotQ==}
     engines: {node: '>=20.0.0'}
@@ -9672,11 +9939,17 @@ packages:
   '@secretlint/config-loader@11.2.4':
     resolution: {integrity: sha512-3TWVL7aK1/AUr/sphRJV8zeVoLWp7pch3Mi8V8kThBxhI29cDUtM+MNX12ZMf3SLZ0BvXRh2m80Hf5HYNiibQw==}
     engines: {node: '>=20.0.0'}
+=======
+  '@secretlint/config-creator@9.3.4':
+    resolution: {integrity: sha512-GRMYfHJ+rewwB26CC3USVObqSQ/mDLXzXcUMJw/wJisPr3HDZmdsYlcsNnaAcGN+EZmvqSDkgSibQm1hyZpzbg==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/config-loader@9.3.3':
     resolution: {integrity: sha512-t0NGpVq7fFROr/UqfxSI09UI30U7rKSGXjfKNwR0O6fMlwx2AV9RWOvLS4hDLwxxKs+ywss6DZx/wcTdtBEWxA==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
+<<<<<<< HEAD
   '@secretlint/core@11.2.3':
     resolution: {integrity: sha512-pfPFy2nKGCRwEQFsWUQz/apcEE43PqAoCPPNNnj2xYYSCs2VRd/yUrFzdibIiY3Ww9SK2a6fHC8luliLGkZ2Ew==}
     engines: {node: '>=20.0.0'}
@@ -9684,11 +9957,17 @@ packages:
   '@secretlint/core@11.2.4':
     resolution: {integrity: sha512-uPsTtaJwN2jx09wtBFJP2UliGmnAysWKp+fCx4DAwxN26N3cnJt54xXJnMMQwfGmlCmfA5eeir+lkUuQNFtlyQ==}
     engines: {node: '>=20.0.0'}
+=======
+  '@secretlint/config-loader@9.3.4':
+    resolution: {integrity: sha512-sy+yWDWh4cbAbpQYLiO39DjwNGEK1EUhTqNamLLBo163BdJP10FIWhqpe8mtGQBSBXRtxr8Hg/gc3Xe4meIoww==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/core@9.3.3':
     resolution: {integrity: sha512-XPpchOJz591E6bqMWkY6VxtaIbSI0gY0bUeVz1gkfT6FUI0fOfJrAMWe9RhxXWraMuxokTQA8R/LFJefiK+bXg==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
+<<<<<<< HEAD
   '@secretlint/formatter@11.2.3':
     resolution: {integrity: sha512-6R+kwSDL9rnuy4TixNM+f1bbRkl1yOzTkpEVkchR9bZWXANdPXMQyLubCgohPYUSD4eib9ObvcndvS81p8jZPQ==}
     engines: {node: '>=20.0.0'}
@@ -9696,11 +9975,17 @@ packages:
   '@secretlint/formatter@11.2.4':
     resolution: {integrity: sha512-4B0guLmi5McWiH6Kic0w4aGtnfFbtmHY1GpzKwVvNMslkALDHN+d1EWGbPKy59jKq1dJSQIkvmyGadtrduGm6Q==}
     engines: {node: '>=20.0.0'}
+=======
+  '@secretlint/core@9.3.4':
+    resolution: {integrity: sha512-ErIVHI6CJd191qdNKuMkH3bZQo9mWJsrSg++bQx64o0WFuG5nPvkYrDK0p/lebf+iQuOnzvl5HrZU6GU9a6o+Q==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/formatter@9.3.3':
     resolution: {integrity: sha512-kqfnbhtxcH1Ew7pboM+jCZl8CuBzVuEKuHHSkT92iasxaaq1NK37h5IIfUDbFdXizmNFe3MwAnnVU8lqK2Dvyg==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
+<<<<<<< HEAD
   '@secretlint/node@11.2.3':
     resolution: {integrity: sha512-8mYOdHVwuMNXq0bwwC309xUmmgisMjIypJl5z0U1TQqWZoqRK+N1OQ7vHKZfzA/lnEIm4MAqKclr2rLDNaapfQ==}
     engines: {node: '>=20.0.0'}
@@ -9708,37 +9993,59 @@ packages:
   '@secretlint/node@11.2.4':
     resolution: {integrity: sha512-GI6MZ8ZIXc/p2NLHyf+kqTeMe0EsYD2ErT3/bu9A1uHQoAPCl+gkyiQhKIo0jqDhHRCJGK4ipyoEwdiGuUmtVw==}
     engines: {node: '>=20.0.0'}
+=======
+  '@secretlint/formatter@9.3.4':
+    resolution: {integrity: sha512-ARpoBOKz6WP3ocLITCFkR1/Lj636ugpBknylhlpc45r5aLdvmyvWAJqodlw5zmUCfgD6JXeAMf3Hi60aAiuqWQ==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/node@9.3.3':
     resolution: {integrity: sha512-ZD1yXlzEJmFS/lq+BmgzUBB+2mQgj6kK6A//IhBop5xqAp+lXoq1vNgu7VSJ3DR+XrKrIK7YHFZXRh9aJvIjmA==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
+<<<<<<< HEAD
   '@secretlint/profiler@11.2.3':
     resolution: {integrity: sha512-CpXYj8LhwsRhZ7HYIapIVROoJ0wJVnmKPX/HnpyJzyGSKZoqbsW+VsAF4npspfZBjP6uLBZKfQHvOitQFOqOPg==}
 
   '@secretlint/profiler@11.2.4':
     resolution: {integrity: sha512-ASa+q3tU8vP5DUOsDMkmoROsO2VSJq6NWzFy5DqWyGLA54035Ndnnl9h9Ey3dzgiZb2aTsRb1Kgs7DEqHAYyIQ==}
+=======
+  '@secretlint/node@9.3.4':
+    resolution: {integrity: sha512-S0u8i+CnPmyAKtuccgot9L5cmw6DqJc0F+b3hhVIALd8kkeLt3RIXOOej15tU7N0V1ISph90Gz92V72ovsprgQ==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/profiler@9.3.3':
     resolution: {integrity: sha512-wcVTByh+m9O1w2WAV08Po6trGsVjhRTV1UWuzVcQTTap9EjeKQLja6Xof/SIDGORD0KWooUIMAe7VPLQFPi1cQ==}
 
+<<<<<<< HEAD
   '@secretlint/resolver@11.2.3':
     resolution: {integrity: sha512-f2b9wgLS1GwyRo4E459Q3n534KC0azYmMFRSwnRT65HDtZCci0BGv/m2AUCvor8+q2oSePrCC6NZnLwJDzm6Kg==}
 
   '@secretlint/resolver@11.2.4':
     resolution: {integrity: sha512-R9JWA+S8c6/RmkWbyZ8BeRtD7p4/Z/UZevGUSWvYFF3apSI3tzUK4BUBMR9yS4uNnnwU9BFyIXRRY5X1KWGL9g==}
+=======
+  '@secretlint/profiler@9.3.4':
+    resolution: {integrity: sha512-99WmaHd4dClNIm5BFsG++E6frNIZ3qVwg6s804Ql/M19pDmtZOoVCl4/UuzWpwNniBqLIgn9rHQZ/iGlIW3wyw==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/resolver@9.3.3':
     resolution: {integrity: sha512-8N0lqD7OiI/aLK/PhKyiGh5xTlO/6TjHiOt72jnrvB9BK2QF45Mp5fivCARTKBypDiTZrOrS7blvqZ7qTnOTrA==}
 
+<<<<<<< HEAD
   '@secretlint/secretlint-rule-preset-recommend@11.2.4':
     resolution: {integrity: sha512-JoSFV46ckP9aZoY+AdyDR7n5kSan/r9cUlVtHItspEIaDElSOyHJDw614AGVL3DNpckSe4f+fIqPKSHTtUYsVw==}
     engines: {node: '>=20.0.0'}
+=======
+  '@secretlint/resolver@9.3.4':
+    resolution: {integrity: sha512-L1lIrcjzqcspPzZttmOvMmOFDpJTYFyRBONg94TZBWrpv4x0w5G2SYR+K7EE1SbYQAiPxw1amoXT1YRP8cZF2A==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/secretlint-rule-preset-recommend@9.3.3':
     resolution: {integrity: sha512-zT8zxh1z28Vzc9S5FVMbfWOITNikTYmajLTuX4D8lhGM3bx7xDopUJnsEtj1lAGc5WcCZ3baMJ3xCFZeDv/SAg==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
+<<<<<<< HEAD
   '@secretlint/source-creator@11.2.3':
     resolution: {integrity: sha512-x555rAk0BuVKbYVidoxWMV/YksGtLCfHDn0lSQPNUlD1SXTyP4kmscSfBMgp3g5HC1TK8fwT3oN1WRnivY92Fg==}
     engines: {node: '>=20.0.0'}
@@ -9746,11 +10053,17 @@ packages:
   '@secretlint/source-creator@11.2.4':
     resolution: {integrity: sha512-ClyfIo7qtyr5+jvnVzhPVS99Fs8mH7KR82Au3SbjdsJApIvqsgjDEnwEnYEWAl9VSQvOtA5JUpqY1lkSB27F3w==}
     engines: {node: '>=20.0.0'}
+=======
+  '@secretlint/secretlint-rule-preset-recommend@9.3.4':
+    resolution: {integrity: sha512-RvzrLNN2A0B2bYQgRSRjh2dkdaIDuhXjj4SO5bElK1iBtJNiD6VBTxSSY1P3hXYaBeva7MEF+q1PZ3cCL8XYOA==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/source-creator@9.3.3':
     resolution: {integrity: sha512-2h6t9UfWQn7Sp6PUO+hvWK3i55tqE4H4YlmUBlL5VOjubADcO21OAtp7S05LgXE+VJfLDgUcb1hflkw0cPE1rw==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
+<<<<<<< HEAD
   '@secretlint/types@11.2.3':
     resolution: {integrity: sha512-zD7+FP700caEOErMp5ecds9twTs/YfmjwEQGJ44k0TnGmeZOovB/EoxAcYIeBXk46mia1MJh9dY+oc/Pu3EFrA==}
     engines: {node: '>=20.0.0'}
@@ -9758,9 +10071,18 @@ packages:
   '@secretlint/types@11.2.4':
     resolution: {integrity: sha512-H2zBOoh/HPcQz7pPjTZ0QsuZTe5EqvfDA2+QcVTSaTAWI6k+nlmC1MVb1h4t0AP3otceGukDrTJ06HY5fMziUQ==}
     engines: {node: '>=20.0.0'}
+=======
+  '@secretlint/source-creator@9.3.4':
+    resolution: {integrity: sha512-I9ZA1gm9HJNaAhZiQdInY9VM04VTAGDV4bappVbEJzMUDnK/LTbYqfQ88RPqgCGCqa6ee8c0/j5Bn7ypweouIw==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/types@9.3.3':
     resolution: {integrity: sha512-ehVGggPM23sHEkqQP/5HlGDK+8Xx2oRX8vF9C/fKh+TcTRWOfjCeC7QeoPxcEMXNDXfUsHK5P8DKqQEcpbiUZQ==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+
+  '@secretlint/types@9.3.4':
+    resolution: {integrity: sha512-z9rdKHNeL4xa48+367RQJVw1d7/Js9HIQ+gTs/angzteM9osfgs59ad3iwVRhCGYbeUoUUDe2yxJG2ylYLaH3Q==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
   '@semantic-release/changelog@6.0.3':
@@ -9782,6 +10104,12 @@ packages:
   '@semantic-release/error@4.0.0':
     resolution: {integrity: sha512-mgdxrHTLOjOddRVYIYDo0fR3/v61GNN1YGkfbrjuIKg/uMgCd+Qzo3UAXJ+woLQQpos4pl5Esuw5A7AoNlzjUQ==}
     engines: {node: '>=18'}
+
+  '@semantic-release/exec@7.1.0':
+    resolution: {integrity: sha512-4ycZ2atgEUutspPZ2hxO6z8JoQt4+y/kkHvfZ1cZxgl9WKJId1xPj+UadwInj+gMn2Gsv+fLnbrZ4s+6tK2TFQ==}
+    engines: {node: '>=20.8.1'}
+    peerDependencies:
+      semantic-release: '>=24.1.0'
 
   '@semantic-release/exec@7.1.0':
     resolution: {integrity: sha512-4ycZ2atgEUutspPZ2hxO6z8JoQt4+y/kkHvfZ1cZxgl9WKJId1xPj+UadwInj+gMn2Gsv+fLnbrZ4s+6tK2TFQ==}
@@ -11053,6 +11381,7 @@ packages:
   '@types/node@22.15.29':
     resolution: {integrity: sha512-LNdjOkUDlU1RZb8e1kOIUpN1qQUlzGkEtbVNo53vbrwDg5om6oduhm4SiUaPW5ASTXhAiP0jInWG8Qx9fVlOeQ==}
 
+<<<<<<< HEAD
   '@types/node@24.3.1':
     resolution: {integrity: sha512-3vXmQDXy+woz+gnrTvuvNrPzekOi+Ds0ReMxw0LzBiK3a+1k0kQn9f2NWk+lgD4rJehFUmYy2gMhJ2ZI+7YP9g==}
 
@@ -11061,6 +11390,10 @@ packages:
 
   '@types/node@24.5.2':
     resolution: {integrity: sha512-FYxk1I7wPv3K2XBaoyH2cTnocQEu8AOZ60hPbsyukMPLv5/5qr7V1i8PLHdl6Zf87I+xZXFvPCXYjiTFq+YSDQ==}
+=======
+  '@types/node@22.15.30':
+    resolution: {integrity: sha512-6Q7lr06bEHdlfplU6YRbgG1SFBdlsfNC4/lX+SkhiTs0cpJkOElmWls8PxDFv4yY/xKb8Y6SO0OmSX4wgqTZbA==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -11774,6 +12107,7 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
+<<<<<<< HEAD
   '@visulima/packem-rollup@1.0.0-alpha.13':
     resolution: {integrity: sha512-ffpdRS3UEA3lRVPlYRBTVtNr+5nzwtEBxkedU2LBnsnVOLxr6TT146CGZs131pwrX9+qlk4E5DVTgR/FsJBwEw==}
     engines: {node: '>=18.* <=24.*'}
@@ -11866,6 +12200,12 @@ packages:
     engines: {node: '>=20.* <=24.*'}
     peerDependencies:
       rollup: ^4
+=======
+  '@visulima/package@3.5.8':
+    resolution: {integrity: sha512-QFSyx8CmoWXfCDeaGSgvskmpZ7cS61+yGhXF8g1v1UdOv6DFNY2dtbb6Q4xSYqZjqJ7P8ANNHkZMxTn4Pg6aDg==}
+    engines: {node: '>=18.0.0 <=23.x'}
+    os: [darwin, linux, win32]
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@visulima/packem@1.19.1':
     resolution: {integrity: sha512-4TCUIf5coUo5z59kxByBpgIoAboDIF4gpKjX+oBBUtuNNedVx5+mrmcoFhwiW/F/Igc+0gDFa/2kpQSI40OZBw==}
@@ -12699,12 +13039,12 @@ packages:
       vite: '>=5.4.20'
       vue: ^3.2.25
 
-  '@vitest/browser@3.2.0':
-    resolution: {integrity: sha512-sVpX5m53lX9/0ehAqkcTSQeJK1SVlTlvBrwE8rPQ2KJQgb/Iiorx+3y+VQdzIJ+CDqfG89bQEA5l1Z02VogDsA==}
+  '@vitest/browser@3.2.2':
+    resolution: {integrity: sha512-LJk8ZhCGhgG6G6jFFJ9LX83ibRY8FszLuu9zPaYFDrcHbBwNXwt1v06HRs/vHVYxwjw3/BGzSIgn9Et2P6rCiA==}
     peerDependencies:
       playwright: '*'
       safaridriver: '*'
-      vitest: 3.2.0
+      vitest: 3.2.2
       webdriverio: ^7.0.0 || ^8.0.0 || ^9.0.0
     peerDependenciesMeta:
       playwright:
@@ -12723,17 +13063,30 @@ packages:
       '@vitest/browser':
         optional: true
 
+<<<<<<< HEAD
   '@vitest/coverage-v8@3.2.4':
     resolution: {integrity: sha512-EyF9SXU6kS5Ku/U82E259WSnvg6c8KTjppUncuNdm5QHpe17mwREHnjDzozC8x9MZ0xfBUFSaLkRv4TMA75ALQ==}
     peerDependencies:
       '@vitest/browser': 3.2.4
       vitest: 3.2.4
+=======
+  '@vitest/coverage-v8@3.2.2':
+    resolution: {integrity: sha512-RVAi5xnqedSKvaoQyCTWvncMk8eYZcTTOsLK7XmnfOEvdGP/O/upA0/MA8Ss+Qs++mj0GcSRi/whR0S5iBPpTQ==}
+    peerDependencies:
+      '@vitest/browser': 3.2.2
+      vitest: 3.2.2
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     peerDependenciesMeta:
       '@vitest/browser':
         optional: true
 
+<<<<<<< HEAD
   '@vitest/eslint-plugin@1.3.9':
     resolution: {integrity: sha512-wsNe7xy44ovm/h9ISDkDNcv0aOnUsaOYDqan2y6qCFAUQ0odFr6df/+FdGKHZN+mCM+SvIDWoXuvm5T5V3Kh6w==}
+=======
+  '@vitest/eslint-plugin@1.2.1':
+    resolution: {integrity: sha512-JQr1jdVcrsoS7Sdzn83h9sq4DvREf9Q/onTZbJCqTVlv/76qb+TZrLv/9VhjnjSMHweQH5FdpMDeCR6aDe2fgw==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     peerDependencies:
       eslint: '>= 8.57.0'
       typescript: '>= 5.0.0'
@@ -12753,6 +13106,7 @@ packages:
   '@vitest/expect@3.2.1':
     resolution: {integrity: sha512-FqS/BnDOzV6+IpxrTg5GQRyLOCtcJqkwMwcS8qGCI2IyRVDwPAtutztaf1CjtPHlZlWtl1yUPCd7HM0cNiDOYw==}
 
+<<<<<<< HEAD
   '@vitest/expect@3.2.4':
     resolution: {integrity: sha512-Io0yyORnB6sikFlt8QW5K7slY4OjqNX9jmJQ02QDda8lyM6B5oNgVWoSoKPac8/kgnCUzuHQKrSLtu/uOqqrig==}
 
@@ -12767,6 +13121,22 @@ packages:
       vite:
         optional: true
 
+=======
+  '@vitest/expect@3.2.2':
+    resolution: {integrity: sha512-ipHw0z669vEMjzz3xQE8nJX1s0rQIb7oEl4jjl35qWTwm/KIHERIg/p/zORrjAaZKXfsv7IybcNGHwhOOAPMwQ==}
+
+  '@vitest/mocker@3.1.4':
+    resolution: {integrity: sha512-8IJ3CvwtSw/EFXqWFL8aCMu+YyYXG2WUSrQbViOZkWTKTVicVwZ/YiEZDSqD00kX+v/+W+OnxhNWoeVKorHygA==}
+    peerDependencies:
+      msw: ^2.4.9
+      vite: '>=6.3.4'
+    peerDependenciesMeta:
+      msw:
+        optional: true
+      vite:
+        optional: true
+
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
   '@vitest/mocker@3.2.1':
     resolution: {integrity: sha512-OXxMJnx1lkB+Vl65Re5BrsZEHc90s5NMjD23ZQ9NlU7f7nZiETGoX4NeKZSmsKjseuMq2uOYXdLOeoM0pJU+qw==}
     peerDependencies:
@@ -12789,20 +13159,41 @@ packages:
       vite:
         optional: true
 
+  '@vitest/mocker@3.2.2':
+    resolution: {integrity: sha512-jKojcaRyIYpDEf+s7/dD3LJt53c0dPfp5zCPXz9H/kcGrSlovU/t1yEaNzM9oFME3dcd4ULwRI/x0Po1Zf+LTw==}
+    peerDependencies:
+      msw: ^2.4.9
+      vite: '>=6.3.4'
+    peerDependenciesMeta:
+      msw:
+        optional: true
+      vite:
+        optional: true
+
   '@vitest/pretty-format@2.0.5':
     resolution: {integrity: sha512-h8k+1oWHfwTkyTkb9egzwNMfJAEx4veaPSnMeKbVSjp4euqGSbQlm5+6VHwTr7u4FJslVVsUG5nopCaAYdOmSQ==}
 
   '@vitest/pretty-format@2.1.8':
     resolution: {integrity: sha512-9HiSZ9zpqNLKlbIDRWOnAWqgcA7xu+8YxXSekhr0Ykab7PAYFkhkwoqVArPOtJhPmYeE2YHgKZlj3CP36z2AJQ==}
 
+<<<<<<< HEAD
   '@vitest/pretty-format@3.2.0':
     resolution: {integrity: sha512-gUUhaUmPBHFkrqnOokmfMGRBMHhgpICud9nrz/xpNV3/4OXCn35oG+Pl8rYYsKaTNd/FAIrqRHnwpDpmYxCYZw==}
+=======
+  '@vitest/pretty-format@3.1.4':
+    resolution: {integrity: sha512-cqv9H9GvAEoTaoq+cYqUTCGscUjKqlJZC7PRwY5FMySVj5J+xOm1KQcCiYHJOEzOKRUhLH4R2pTwvFlWCEScsg==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@vitest/pretty-format@3.2.1':
     resolution: {integrity: sha512-xBh1X2GPlOGBupp6E1RcUQWIxw0w/hRLd3XyBS6H+dMdKTAqHDNsIR2AnJwPA3yYe9DFy3VUKTe3VRTrAiQ01g==}
 
+<<<<<<< HEAD
   '@vitest/pretty-format@3.2.4':
     resolution: {integrity: sha512-IVNZik8IVRJRTr9fxlitMKeJeXFFFN0JaB9PHPGQ8NKQbGpfjlTx9zO4RefN8gp7eqjNy8nyK3NZmBzOPeIxtA==}
+=======
+  '@vitest/pretty-format@3.2.2':
+    resolution: {integrity: sha512-FY4o4U1UDhO9KMd2Wee5vumwcaHw7Vg4V7yR4Oq6uK34nhEJOmdRYrk3ClburPRUA09lXD/oXWZ8y/Sdma0aUQ==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@vitest/runner@1.6.1':
     resolution: {integrity: sha512-3nSnYXkVkf3mXFfE7vVyPmi3Sazhb/2cfZGGs0JRzFsPFvAMBEcrweV1V1GsrstdXeKCTXlJbvnQwGWgEIHmOA==}
@@ -12810,8 +13201,13 @@ packages:
   '@vitest/runner@3.2.1':
     resolution: {integrity: sha512-kygXhNTu/wkMYbwYpS3z/9tBe0O8qpdBuC3dD/AW9sWa0LE/DAZEjnHtWA9sIad7lpD4nFW1yQ+zN7mEKNH3yA==}
 
+<<<<<<< HEAD
   '@vitest/runner@3.2.4':
     resolution: {integrity: sha512-oukfKT9Mk41LreEW09vt45f8wx7DordoWUZMYdY/cyAk7w5TWkTRCNZYF7sX7n2wB7jyGAl74OxgwhPgKaqDMQ==}
+=======
+  '@vitest/runner@3.2.2':
+    resolution: {integrity: sha512-GYcHcaS3ejGRZYed2GAkvsjBeXIEerDKdX3orQrBJqLRiea4NSS9qvn9Nxmuy1IwIB+EjFOaxXnX79l8HFaBwg==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@vitest/snapshot@1.6.1':
     resolution: {integrity: sha512-WvidQuWAzU2p95u8GAKlRMqMyN1yOJkGHnx3M1PL9Raf7AQ1kwLKg04ADlCa3+OXUZE7BceOhVZiuWAbzCKcUQ==}
@@ -12819,8 +13215,13 @@ packages:
   '@vitest/snapshot@3.2.1':
     resolution: {integrity: sha512-5xko/ZpW2Yc65NVK9Gpfg2y4BFvcF+At7yRT5AHUpTg9JvZ4xZoyuRY4ASlmNcBZjMslV08VRLDrBOmUe2YX3g==}
 
+<<<<<<< HEAD
   '@vitest/snapshot@3.2.4':
     resolution: {integrity: sha512-dEYtS7qQP2CjU27QBC5oUOxLE/v5eLkGqPE0ZKEIDGMs4vKWe7IjgLOeauHsR0D5YuuycGRO5oSRXnwnmA78fQ==}
+=======
+  '@vitest/snapshot@3.2.2':
+    resolution: {integrity: sha512-aMEI2XFlR1aNECbBs5C5IZopfi5Lb8QJZGGpzS8ZUHML5La5wCbrbhLOVSME68qwpT05ROEEOAZPRXFpxZV2wA==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@vitest/spy@1.6.1':
     resolution: {integrity: sha512-MGcMmpGkZebsMZhbQKkAf9CX5zGvjkBTqf8Zx3ApYWXr3wG+QvEu2eXWfnIIWYSJExIp4V9FCKDEeygzkYrXMw==}
@@ -12828,24 +13229,41 @@ packages:
   '@vitest/spy@2.0.5':
     resolution: {integrity: sha512-c/jdthAhvJdpfVuaexSrnawxZz6pywlTPe84LUB2m/4t3rl2fTo9NFGBG4oWgaD+FTgDDV8hJ/nibT7IfH3JfA==}
 
+<<<<<<< HEAD
   '@vitest/spy@3.2.0':
     resolution: {integrity: sha512-s3+TkCNUIEOX99S0JwNDfsHRaZDDZZR/n8F0mop0PmsEbQGKZikCGpTGZ6JRiHuONKew3Fb5//EPwCP+pUX9cw==}
+=======
+  '@vitest/spy@3.1.4':
+    resolution: {integrity: sha512-Xg1bXhu+vtPXIodYN369M86K8shGLouNjoVI78g8iAq2rFoHFdajNvJJ5A/9bPMFcfQqdaCpOgWKEoMQg/s0Yg==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@vitest/spy@3.2.1':
     resolution: {integrity: sha512-Nbfib34Z2rfcJGSetMxjDCznn4pCYPZOtQYox2kzebIJcgH75yheIKd5QYSFmR8DIZf2M8fwOm66qSDIfRFFfQ==}
 
+<<<<<<< HEAD
   '@vitest/spy@3.2.4':
     resolution: {integrity: sha512-vAfasCOe6AIK70iP5UD11Ac4siNUNJ9i/9PZ3NKx07sG6sUxeag1LWdNrMWeKKYBLlzuK+Gn65Yd5nyL6ds+nw==}
+=======
+  '@vitest/spy@3.2.2':
+    resolution: {integrity: sha512-6Utxlx3o7pcTxvp0u8kUiXtRFScMrUg28KjB3R2hon7w4YqOFAEA9QwzPVVS1QNL3smo4xRNOpNZClRVfpMcYg==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@vitest/ui@3.2.1':
     resolution: {integrity: sha512-xT93aOcPn2wn8vvw4T6rZAK9WjGEHdYrEjN3OJ1zcDpl2UInxvcD9fYI10nmPAERNEK6jUVcSCIPAIfNuaRX6Q==}
     peerDependencies:
       vitest: 3.2.1
 
+<<<<<<< HEAD
   '@vitest/ui@3.2.4':
     resolution: {integrity: sha512-hGISOaP18plkzbWEcP/QvtRW1xDXF2+96HbEX6byqQhAUbiS5oH6/9JwW+QsQCIYON2bI6QZBF+2PvOmrRZ9wA==}
     peerDependencies:
       vitest: 3.2.4
+=======
+  '@vitest/ui@3.2.2':
+    resolution: {integrity: sha512-xHif5tkQOZK4YjA44rrzmvXMI1cb1Qato3P+NL/gwyoK5LdZx0f5Q59Il25JtuhN/htBvrT+Copt3Q4Ma4gJbg==}
+    peerDependencies:
+      vitest: 3.2.2
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@vitest/utils@1.6.1':
     resolution: {integrity: sha512-jOrrUvXM4Av9ZWiG1EajNto0u96kWAhJ1LmPmJhXXQx/32MecEKd10pOLYgS2BQx1TgkGhloPU1ArDW2vvaY6g==}
@@ -12856,12 +13274,18 @@ packages:
   '@vitest/utils@2.1.8':
     resolution: {integrity: sha512-dwSoui6djdwbfFmIgbIjX2ZhIoG7Ex/+xpxyiEgIGzjliY8xGkcpITKTlp6B4MgtGkF2ilvm97cPM96XZaAgcA==}
 
+<<<<<<< HEAD
   '@vitest/utils@3.2.0':
     resolution: {integrity: sha512-gXXOe7Fj6toCsZKVQouTRLJftJwmvbhH5lKOBR6rlP950zUq9AitTUjnFoXS/CqjBC2aoejAztLPzzuva++XBw==}
+=======
+  '@vitest/utils@3.1.4':
+    resolution: {integrity: sha512-yriMuO1cfFhmiGc8ataN51+9ooHRuURdfAZfwFd3usWynjzpLslZdYnRegTv32qdgtJTsj15FoeZe2g15fY1gg==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@vitest/utils@3.2.1':
     resolution: {integrity: sha512-KkHlGhePEKZSub5ViknBcN5KEF+u7dSUr9NW8QsVICusUojrgrOnnY3DEWWO877ax2Pyopuk2qHmt+gkNKnBVw==}
 
+<<<<<<< HEAD
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
 
@@ -12951,6 +13375,10 @@ packages:
         optional: true
       vue:
         optional: true
+=======
+  '@vitest/utils@3.2.2':
+    resolution: {integrity: sha512-qJYMllrWpF/OYfWHP32T31QCaLa3BAzT/n/8mNGhPdVcjY+JYazQFO1nsJvXU12Kp1xMpNY4AGuljPTNjQve6A==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@wdio/config@9.15.0':
     resolution: {integrity: sha512-IQzSZx2Y0KdAVWHSdcBLkuUjCmYtOnc1oDY7Psi814wDR7dEPVOuKgMo8ZZ0P1yhioMzqvy5tBemYSzj7CrFTA==}
@@ -13630,9 +14058,12 @@ packages:
     resolution: {integrity: sha512-sXnYK/Ij80TO3lcqZVV2YgfKN5QjUWIRk/XSm2J/4bd/lPko3lvk0O4ZppH6m+6hB2/GTu+ptNwVFe1xh+QLQw==}
     engines: {node: '>=4'}
 
+<<<<<<< HEAD
   birpc@2.5.0:
     resolution: {integrity: sha512-VSWO/W6nNQdyP520F1mhf+Lc2f8pjGQOtoHHm7Ze8Go1kX7akpVIrtTa0fn+HB0QJEDVacl6aO08YE0PgXfdnQ==}
 
+=======
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
   bl@4.1.0:
     resolution: {integrity: sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==}
 
@@ -14966,9 +15397,15 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
+<<<<<<< HEAD
   editions@6.22.0:
     resolution: {integrity: sha512-UgGlf8IW75je7HZjNDpJdCv4cGJWIi6yumFdZ0R7A8/CIhQiWUjyGLCxdHpd8bmyD1gnkfUNK0oeOXqUS2cpfQ==}
     engines: {ecmascript: '>= es5', node: '>=4'}
+=======
+  editions@6.21.0:
+    resolution: {integrity: sha512-ofkXJtn7z0urokN62DI3SBo/5xAtF0rR7tn+S/bSYV79Ka8pTajIIl+fFQ1q88DQEImymmo97M4azY3WX/nUdg==}
+    engines: {node: '>=4'}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   editorconfig@1.0.4:
     resolution: {integrity: sha512-L9Qe08KWTlqYMVvMcTIvMAdl1cDUubzRNYL+WfA4bLDMHe4nemKkpmYzkznE1FwLKu0EEmy6obgQKzMJrg4x9Q==}
@@ -21560,6 +21997,11 @@ packages:
     engines: {node: ^14.13.1 || >=16.0.0}
     hasBin: true
 
+  secretlint@9.3.4:
+    resolution: {integrity: sha512-iNOzgMX/+W1SQNW/TW6eikGChyaPiazr2AEXjzjpoB0R6QJEulvlwhn0KLT1/xjPfdYrk3yiXZM40csUqET8uQ==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+    hasBin: true
+
   secure-json-parse@4.0.0:
     resolution: {integrity: sha512-dxtLJO6sc35jWidmLxo7ij+Eg48PM/kleBsxpC8QJE0qJICe+KawkDQmvCMZUr9u7WKVHgMW6vy3fQ7zMiFZMA==}
 
@@ -23353,8 +23795,13 @@ packages:
     resolution: {integrity: sha512-D8d+YxCUpoqtCnQzDxm6SF7DLU3gr2535T4khAtMq4osBahsQnmSxuwXFdrbAdDGG8Uokzfis/jvyeFPdmlc7w==}
     engines: {node: '>=0.10.48'}
 
+<<<<<<< HEAD
   version-range@4.15.0:
     resolution: {integrity: sha512-Ck0EJbAGxHwprkzFO966t4/5QkRuzh+/I1RxhLgUKKwEn+Cd8NwM60mE3AqBZg5gYODoXW0EFsQvbZjRlvdqbg==}
+=======
+  version-range@4.14.0:
+    resolution: {integrity: sha512-gjb0ARm9qlcBAonU4zPwkl9ecKkas+tC2CGwFfptTCWWIVTWY1YUbT2zZKsOAF1jR/tNxxyLwwG0cb42XlYcTg==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     engines: {node: '>=4'}
 
   vfile-find-up@6.1.0:
@@ -23419,6 +23866,7 @@ packages:
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
+<<<<<<< HEAD
   vite-node@3.2.4:
     resolution: {integrity: sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
@@ -23460,6 +23908,13 @@ packages:
     peerDependencies:
       vite: '>=5.4.20'
 
+=======
+  vite-node@3.2.2:
+    resolution: {integrity: sha512-Xj/jovjZvDXOq2FgLXu8NsY4uHUMWtzVmMC2LkCu9HWdr9Qu1Is5sanX3Z4jOFKdohfaWDnEJWp9pRP0vVpAcA==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+    hasBin: true
+
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
   vite-tsconfig-paths@5.1.4:
     resolution: {integrity: sha512-cYj0LRuLV2c2sMqhqhGpaO3LretdtMn/BVX4cPLanIZuwwrkVl+lK84E/miEXkCHWXuq65rhNN4rXsBcOB3S4w==}
     peerDependencies:
@@ -23569,9 +24024,55 @@ packages:
       jsdom:
         optional: true
 
+<<<<<<< HEAD
   vitest@3.2.4:
     resolution: {integrity: sha512-LUCP5ev3GURDysTWiP47wRRUpLKMOfPh+yKTx3kVIEiu5KOMeqzpnYNsKyOoVrULivR8tLcks4+lga33Whn90A==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+=======
+  vitest@3.2.2:
+    resolution: {integrity: sha512-fyNn/Rp016Bt5qvY0OQvIUCwW2vnaEBLxP42PmKbNIoasSYjML+8xyeADOPvBe+Xfl/ubIw4og7Lt9jflRsCNw==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@types/debug': ^4.1.12
+      '@types/node': ^18.0.0 || ^20.0.0 || >=22.0.0
+      '@vitest/browser': 3.2.2
+      '@vitest/ui': 3.2.2
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@types/debug':
+        optional: true
+      '@types/node':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+
+  vscode-jsonrpc@8.2.0:
+    resolution: {integrity: sha512-C+r0eKJUIfiDIfwJhria30+TYWPtuHJXHtI7J0YlOmKAo7ogxP20T0zxB7HZQIFhIyvoBPwWskjxrvAtfjyZfA==}
+    engines: {node: '>=14.0.0'}
+
+  vscode-languageserver-protocol@3.17.5:
+    resolution: {integrity: sha512-mb1bvRJN8SVznADSGWM9u/b07H7Ecg0I3OgXDuLdn307rl/J3A9YD6/eYOssqhecL27hK1IPZAsaqh00i/Jljg==}
+
+  vscode-languageserver-textdocument@1.0.12:
+    resolution: {integrity: sha512-cxWNPesCnQCcMPeenjKKsOCKQZ/L6Tv19DTRIGuLWe32lyzWhihGVJ/rcckZXJxfdKCFvRLS3fpBIsV/ZGX4zA==}
+
+  vscode-languageserver-types@3.17.5:
+    resolution: {integrity: sha512-Ld1VelNuX9pdF39h2Hgaeb5hEZM2Z3jUrrMgWQAu82jMtZp7p3vJT3BzToKtZI7NgQssZje5o0zryOrhQvzQAg==}
+
+  vscode-languageserver@9.0.1:
+    resolution: {integrity: sha512-woByF3PDpkHFUreUa7Hos7+pUWdeWMXRd26+ZX2A8cFx6v/JPTtd4/uN0/jB6XQHYaOlHbio03NTHCqrgG5n7g==}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     hasBin: true
     peerDependencies:
       '@edge-runtime/vm': '*'
@@ -24199,7 +24700,11 @@ snapshots:
       - svelte-eslint-parser
       - vue-eslint-parser
 
+<<<<<<< HEAD
   '@anolilab/eslint-config@16.2.10(@babel/core@7.27.4)(@types/node@22.15.29)(@typescript-eslint/utils@8.44.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-react-refresh@0.4.20(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.5.1)))(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)(vitest@3.2.1)(yaml@2.8.1)':
+=======
+  '@anolilab/eslint-config@16.2.10(@babel/core@7.27.4)(@types/node@22.15.29)(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-storybook@0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.1)(yaml@2.8.0)':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@babel/core': 7.27.4
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.28.0(jiti@2.5.1))
@@ -24326,6 +24831,83 @@ snapshots:
       yaml-eslint-parser: 1.3.0
     optionalDependencies:
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.28.0(jiti@2.4.2))
+<<<<<<< HEAD
+=======
+      eslint-plugin-react: 7.37.5(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-react-hooks: 5.2.0(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-storybook: 0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+      eslint-plugin-tailwindcss: 3.18.0(tailwindcss@4.1.7)
+      eslint-plugin-testing-library: 7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+      eslint-plugin-tsdoc: 0.4.0
+      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
+      eslint-plugin-zod: 1.4.0(eslint@9.28.0(jiti@2.4.2))
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@eslint/json'
+      - '@types/node'
+      - '@typescript-eslint/utils'
+      - eslint-plugin-import
+      - supports-color
+      - vitest
+      - yaml
+
+  '@anolilab/eslint-config@16.2.13(@babel/core@7.27.4)(@types/node@22.15.30)(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-playwright@2.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-storybook@0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.2)(yaml@2.8.0)':
+    dependencies:
+      '@babel/core': 7.27.4
+      '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.28.0(jiti@2.4.2))
+      '@eslint/compat': 1.2.9(eslint@9.28.0(jiti@2.4.2))
+      '@eslint/js': 9.28.0
+      '@eslint/markdown': 6.4.0
+      '@html-eslint/eslint-plugin': 0.41.0(eslint@9.28.0(jiti@2.4.2))
+      '@html-eslint/parser': 0.41.0
+      '@stylistic/eslint-plugin': 4.4.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+      '@stylistic/eslint-plugin-ts': 4.4.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+      '@typescript-eslint/eslint-plugin': 8.33.1(@typescript-eslint/parser@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+      '@typescript-eslint/parser': 8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+      '@visulima/package': 3.5.8(@types/node@22.15.30)(yaml@2.8.0)
+      '@visulima/tsconfig': 1.1.17(yaml@2.8.0)
+      '@vitest/eslint-plugin': 1.2.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.2)
+      confusing-browser-globals: 1.0.11
+      eslint: 9.28.0(jiti@2.4.2)
+      eslint-config-flat-gitignore: 2.1.0(eslint@9.28.0(jiti@2.4.2))
+      eslint-flat-config-utils: 2.1.0
+      eslint-import-resolver-node: 0.3.9
+      eslint-import-resolver-typescript: 4.4.2(eslint-plugin-import-x@4.15.0(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))
+      eslint-merge-processors: 2.0.0(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-antfu: 3.1.1(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-compat: 6.0.2(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-es-x: 8.6.2(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-html: 8.1.3
+      eslint-plugin-import-x: 4.15.0(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-jsdoc: 50.7.1(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-jsonc: 2.20.1(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-n: 17.19.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+      eslint-plugin-no-for-of-array: 0.1.0(eslint@9.28.0(jiti@2.4.2))(typescript-eslint@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(typescript@5.8.3)
+      eslint-plugin-no-only-tests: 3.3.0
+      eslint-plugin-no-secrets: 2.2.1(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-no-unsanitized: 4.1.2(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-perfectionist: 4.13.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+      eslint-plugin-promise: 7.2.1(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-regexp: 2.7.0(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-security: 3.0.1
+      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-sonarjs: 3.0.2(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-toml: 0.12.0(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-unicorn: 59.0.1(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-unused-imports: 4.1.4(@typescript-eslint/eslint-plugin@8.33.1(@typescript-eslint/parser@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-yml: 1.18.0(eslint@9.28.0(jiti@2.4.2))
+      globals: 16.2.0
+      jsonc-eslint-parser: 2.4.0
+      parse-gitignore: 2.0.0
+      semver: 7.7.2
+      toml-eslint-parser: 0.10.0
+      typescript-eslint: 8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+      yaml-eslint-parser: 1.3.0
+    optionalDependencies:
+      eslint-plugin-jsx-a11y: 6.10.2(eslint@9.28.0(jiti@2.4.2))
+      eslint-plugin-playwright: 2.2.0(eslint@9.28.0(jiti@2.4.2))
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       eslint-plugin-react: 7.37.5(eslint@9.28.0(jiti@2.4.2))
       eslint-plugin-react-hooks: 5.2.0(eslint@9.28.0(jiti@2.4.2))
       eslint-plugin-react-refresh: 0.4.20(eslint@9.28.0(jiti@2.4.2))
@@ -24942,16 +25524,26 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/rc@2.0.3(yaml@2.8.1)':
     dependencies:
       '@visulima/fs': 3.1.8(yaml@2.8.1)
+=======
+  '@anolilab/rc@1.1.8(yaml@2.8.0)':
+    dependencies:
+      '@visulima/fs': 3.1.5(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@visulima/path': 1.4.0
       ini: 5.0.0
       ts-deepmerge: 7.0.3
     transitivePeerDependencies:
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/semantic-release-clean-package-json@2.0.2(yaml@2.8.1)':
+=======
+  '@anolilab/semantic-release-clean-package-json@2.0.2(yaml@2.8.0)':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.8(yaml@2.8.1)
@@ -24959,7 +25551,19 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/semantic-release-clean-package-json@3.0.3(yaml@2.8.1)':
+=======
+  '@anolilab/semantic-release-clean-package-json@2.0.3(yaml@2.8.0)':
+    dependencies:
+      '@semantic-release/error': 4.0.0
+      '@visulima/fs': 3.1.5(yaml@2.8.0)
+      '@visulima/path': 1.4.0
+    transitivePeerDependencies:
+      - yaml
+
+  '@anolilab/semantic-release-pnpm@1.1.11(@types/node@18.19.71)(yaml@2.8.0)':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.8(yaml@2.8.1)
@@ -24999,7 +25603,27 @@ snapshots:
       - '@types/node'
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/semantic-release-pnpm@2.0.3(@types/node@24.3.1)(yaml@2.8.1)':
+=======
+  '@anolilab/semantic-release-pnpm@1.1.12(@types/node@22.15.30)(yaml@2.8.0)':
+    dependencies:
+      '@anolilab/rc': 1.1.8(yaml@2.8.0)
+      '@semantic-release/error': 4.0.0
+      '@visulima/fs': 3.1.5(yaml@2.8.0)
+      '@visulima/package': 3.5.8(@types/node@22.15.30)(yaml@2.8.0)
+      '@visulima/path': 1.4.0
+      execa: 9.6.0
+      ini: 5.0.0
+      normalize-url: 8.0.1
+      registry-auth-token: 5.1.0
+      semver: 7.7.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - yaml
+
+  '@anolilab/semantic-release-preset@10.0.5(@anolilab/semantic-release-pnpm@1.1.11(@types/node@18.19.71)(yaml@2.8.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.4(typescript@5.8.3)))(semantic-release@24.2.4(typescript@5.8.3))(yaml@2.8.0)':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@anolilab/rc': 2.0.3(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
@@ -25119,6 +25743,7 @@ snapshots:
       - supports-color
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/semantic-release-preset@10.0.5(@anolilab/semantic-release-pnpm@1.1.11(@types/node@22.15.29)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@24.2.8(typescript@5.8.3)))(semantic-release@24.2.8(typescript@5.8.3))(yaml@2.8.1)':
     dependencies:
       '@anolilab/semantic-release-clean-package-json': 2.0.2(yaml@2.8.1)
@@ -25133,10 +25758,27 @@ snapshots:
     optionalDependencies:
       '@anolilab/semantic-release-pnpm': 1.1.11(@types/node@22.15.29)(yaml@2.8.1)
       '@semantic-release/npm': 12.0.2(semantic-release@24.2.8(typescript@5.8.3))
+=======
+  '@anolilab/semantic-release-preset@10.0.6(@anolilab/semantic-release-pnpm@1.1.12(@types/node@22.15.30)(yaml@2.8.0))(@semantic-release/npm@12.0.1(semantic-release@24.2.5(typescript@5.8.3)))(semantic-release@24.2.5(typescript@5.8.3))(yaml@2.8.0)':
+    dependencies:
+      '@anolilab/semantic-release-clean-package-json': 2.0.3(yaml@2.8.0)
+      '@semantic-release/changelog': 6.0.3(semantic-release@24.2.5(typescript@5.8.3))
+      '@semantic-release/commit-analyzer': 13.0.1(semantic-release@24.2.5(typescript@5.8.3))
+      '@semantic-release/exec': 7.1.0(semantic-release@24.2.5(typescript@5.8.3))
+      '@semantic-release/git': 10.0.1(semantic-release@24.2.5(typescript@5.8.3))
+      '@semantic-release/github': 11.0.3(semantic-release@24.2.5(typescript@5.8.3))
+      '@semantic-release/release-notes-generator': 14.0.3(semantic-release@24.2.5(typescript@5.8.3))
+      conventional-changelog-conventionalcommits: 9.0.0
+      semantic-release: 24.2.5(typescript@5.8.3)
+    optionalDependencies:
+      '@anolilab/semantic-release-pnpm': 1.1.12(@types/node@22.15.30)(yaml@2.8.0)
+      '@semantic-release/npm': 12.0.1(semantic-release@24.2.5(typescript@5.8.3))
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - supports-color
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/semantic-release-preset@10.0.5(@anolilab/semantic-release-pnpm@1.1.11(@types/node@22.15.29)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@24.2.8(typescript@5.9.2)))(semantic-release@24.2.8(typescript@5.9.2))(yaml@2.8.1)':
     dependencies:
       '@anolilab/semantic-release-clean-package-json': 2.0.2(yaml@2.8.1)
@@ -25210,6 +25852,9 @@ snapshots:
       - yaml
 
   '@anolilab/textlint-config@9.0.5(textlint@15.2.2)':
+=======
+  '@anolilab/textlint-config@9.0.0(textlint@14.7.2)':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@textlint-rule/textlint-rule-no-invalid-control-character': 3.0.0
       '@textlint-rule/textlint-rule-no-unmatched-pair': 2.0.4
@@ -26995,6 +27640,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.15.29
 
+<<<<<<< HEAD
   '@inquirer/confirm@5.1.12(@types/node@24.3.1)':
     dependencies:
       '@inquirer/core': 10.1.13(@types/node@24.3.1)
@@ -27015,6 +27661,14 @@ snapshots:
       '@inquirer/type': 3.0.7(@types/node@24.5.2)
     optionalDependencies:
       '@types/node': 24.5.2
+=======
+  '@inquirer/confirm@5.1.12(@types/node@22.15.30)':
+    dependencies:
+      '@inquirer/core': 10.1.13(@types/node@22.15.30)
+      '@inquirer/type': 3.0.7(@types/node@22.15.30)
+    optionalDependencies:
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@inquirer/core@10.1.13(@types/node@18.19.71)':
     dependencies:
@@ -27042,10 +27696,17 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.15.29
 
+<<<<<<< HEAD
   '@inquirer/core@10.1.13(@types/node@24.3.1)':
     dependencies:
       '@inquirer/figures': 1.0.12
       '@inquirer/type': 3.0.7(@types/node@24.3.1)
+=======
+  '@inquirer/core@10.1.13(@types/node@22.15.30)':
+    dependencies:
+      '@inquirer/figures': 1.0.12
+      '@inquirer/type': 3.0.7(@types/node@22.15.30)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       ansi-escapes: 4.3.2
       cli-width: 4.1.0
       mute-stream: 2.0.0
@@ -27053,6 +27714,7 @@ snapshots:
       wrap-ansi: 6.2.0
       yoctocolors-cjs: 2.1.2
     optionalDependencies:
+<<<<<<< HEAD
       '@types/node': 24.3.1
 
   '@inquirer/core@10.1.13(@types/node@24.5.1)':
@@ -27080,6 +27742,9 @@ snapshots:
       yoctocolors-cjs: 2.1.2
     optionalDependencies:
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@inquirer/figures@1.0.12': {}
 
@@ -27091,6 +27756,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.15.29
 
+<<<<<<< HEAD
   '@inquirer/type@3.0.7(@types/node@24.3.1)':
     optionalDependencies:
       '@types/node': 24.3.1
@@ -27108,6 +27774,11 @@ snapshots:
   '@isaacs/brace-expansion@5.0.0':
     dependencies:
       '@isaacs/balanced-match': 4.0.1
+=======
+  '@inquirer/type@3.0.7(@types/node@22.15.30)':
+    optionalDependencies:
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -27135,7 +27806,11 @@ snapshots:
   '@jest/console@29.7.0':
     dependencies:
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       chalk: 4.1.2
       jest-message-util: 29.7.0
       jest-util: 29.7.0
@@ -27148,14 +27823,22 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       ci-info: 3.9.0
       exit: 0.1.2
       graceful-fs: 4.2.11
       jest-changed-files: 29.7.0
+<<<<<<< HEAD
       jest-config: 29.7.0(@types/node@24.5.2)
+=======
+      jest-config: 29.7.0(@types/node@22.15.30)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       jest-haste-map: 29.7.0
       jest-message-util: 29.7.0
       jest-regex-util: 29.6.3
@@ -27186,7 +27869,11 @@ snapshots:
     dependencies:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       jest-mock: 29.7.0
 
   '@jest/expect-utils@29.7.0':
@@ -27204,7 +27891,11 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@sinonjs/fake-timers': 10.3.0
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       jest-message-util: 29.7.0
       jest-mock: 29.7.0
       jest-util: 29.7.0
@@ -27227,8 +27918,13 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@jridgewell/trace-mapping': 0.3.31
       '@types/node': 24.5.2
+=======
+      '@jridgewell/trace-mapping': 0.3.25
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       chalk: 4.1.2
       collect-v8-coverage: 1.0.2
       exit: 0.1.2
@@ -27302,7 +27998,11 @@ snapshots:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@types/yargs': 17.0.32
       chalk: 4.1.2
 
@@ -29863,6 +30563,7 @@ snapshots:
     dependencies:
       '@secretlint/types': 9.3.3
 
+<<<<<<< HEAD
   '@secretlint/config-loader@11.2.3':
     dependencies:
       '@secretlint/profiler': 11.2.3
@@ -29884,6 +30585,11 @@ snapshots:
       rc-config-loader: 4.1.3
     transitivePeerDependencies:
       - supports-color
+=======
+  '@secretlint/config-creator@9.3.4':
+    dependencies:
+      '@secretlint/types': 9.3.4
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/config-loader@9.3.3':
     dependencies:
@@ -29896,6 +30602,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@secretlint/core@11.2.3':
     dependencies:
       '@secretlint/profiler': 11.2.3
@@ -29911,6 +30618,16 @@ snapshots:
       '@secretlint/types': 11.2.4
       debug: 4.4.1
       structured-source: 4.0.0
+=======
+  '@secretlint/config-loader@9.3.4':
+    dependencies:
+      '@secretlint/profiler': 9.3.4
+      '@secretlint/resolver': 9.3.4
+      '@secretlint/types': 9.3.4
+      ajv: 8.17.1
+      debug: 4.4.1
+      rc-config-loader: 4.1.3
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - supports-color
 
@@ -29923,6 +30640,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@secretlint/formatter@11.2.3':
     dependencies:
       '@secretlint/resolver': 11.2.3
@@ -29952,6 +30670,14 @@ snapshots:
       strip-ansi: 7.1.0
       table: 6.9.0
       terminal-link: 4.0.0
+=======
+  '@secretlint/core@9.3.4':
+    dependencies:
+      '@secretlint/profiler': 9.3.4
+      '@secretlint/types': 9.3.4
+      debug: 4.4.1
+      structured-source: 4.0.0
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - supports-color
 
@@ -29971,6 +30697,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@secretlint/node@11.2.3':
     dependencies:
       '@secretlint/config-loader': 11.2.3
@@ -29994,6 +30721,21 @@ snapshots:
       '@secretlint/types': 11.2.4
       debug: 4.4.1
       p-map: 7.0.3
+=======
+  '@secretlint/formatter@9.3.4':
+    dependencies:
+      '@secretlint/resolver': 9.3.4
+      '@secretlint/types': 9.3.4
+      '@textlint/linter-formatter': 14.7.2
+      '@textlint/module-interop': 14.7.2
+      '@textlint/types': 14.7.2
+      chalk: 4.1.2
+      debug: 4.4.1
+      pluralize: 8.0.0
+      strip-ansi: 6.0.1
+      table: 6.9.0
+      terminal-link: 2.1.1
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - supports-color
 
@@ -30010,6 +30752,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@secretlint/profiler@11.2.3': {}
 
   '@secretlint/profiler@11.2.4': {}
@@ -30035,17 +30778,52 @@ snapshots:
     dependencies:
       '@secretlint/types': 11.2.4
       istextorbinary: 9.5.0
+=======
+  '@secretlint/node@9.3.4':
+    dependencies:
+      '@secretlint/config-loader': 9.3.4
+      '@secretlint/core': 9.3.4
+      '@secretlint/formatter': 9.3.4
+      '@secretlint/profiler': 9.3.4
+      '@secretlint/source-creator': 9.3.4
+      '@secretlint/types': 9.3.4
+      debug: 4.4.1
+      p-map: 4.0.0
+    transitivePeerDependencies:
+      - supports-color
+
+  '@secretlint/profiler@9.3.3': {}
+
+  '@secretlint/profiler@9.3.4': {}
+
+  '@secretlint/resolver@9.3.3': {}
+
+  '@secretlint/resolver@9.3.4': {}
+
+  '@secretlint/secretlint-rule-preset-recommend@9.3.3': {}
+
+  '@secretlint/secretlint-rule-preset-recommend@9.3.4': {}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/source-creator@9.3.3':
     dependencies:
       '@secretlint/types': 9.3.3
       istextorbinary: 6.0.0
 
+<<<<<<< HEAD
   '@secretlint/types@11.2.3': {}
 
   '@secretlint/types@11.2.4': {}
+=======
+  '@secretlint/source-creator@9.3.4':
+    dependencies:
+      '@secretlint/types': 9.3.4
+      istextorbinary: 9.5.0
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@secretlint/types@9.3.3': {}
+
+  '@secretlint/types@9.3.4': {}
 
   '@semantic-release/changelog@6.0.3(semantic-release@24.2.4(typescript@5.8.3))':
     dependencies:
@@ -30185,7 +30963,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@semantic-release/exec@7.1.0(semantic-release@24.2.7(typescript@5.9.2))':
+=======
+  '@semantic-release/exec@7.1.0(semantic-release@24.2.5(typescript@5.8.3))':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@semantic-release/error': 4.0.0
       aggregate-error: 3.1.0
@@ -30193,6 +30975,7 @@ snapshots:
       execa: 9.6.0
       lodash-es: 4.17.21
       parse-json: 8.1.0
+<<<<<<< HEAD
       semantic-release: 24.2.7(typescript@5.9.2)
     transitivePeerDependencies:
       - supports-color
@@ -30218,6 +31001,9 @@ snapshots:
       lodash-es: 4.17.21
       parse-json: 8.1.0
       semantic-release: 24.2.8(typescript@5.9.2)
+=======
+      semantic-release: 24.2.5(typescript@5.8.3)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - supports-color
 
@@ -32401,7 +33187,11 @@ snapshots:
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/braces@3.0.4': {}
 
@@ -32411,7 +33201,11 @@ snapshots:
 
   '@types/cli-progress@3.11.6':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/cli-table@0.3.4': {}
 
@@ -32419,17 +33213,29 @@ snapshots:
 
   '@types/concat-stream@2.0.3':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
 
   '@types/connect@3.4.38':
     dependencies:
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+
+  '@types/connect@3.4.38':
+    dependencies:
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/content-disposition@0.5.8': {}
 
   '@types/conventional-commits-parser@5.0.0':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/cookie@0.6.0': {}
 
@@ -32438,7 +33244,11 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/express': 5.0.3
       '@types/keygrip': 1.0.6
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/cors@2.8.19':
     dependencies:
@@ -32481,7 +33291,11 @@ snapshots:
 
   '@types/express-serve-static-core@5.0.6':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
@@ -32510,7 +33324,11 @@ snapshots:
 
   '@types/graceful-fs@4.1.9':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/hast@2.3.10':
     dependencies:
@@ -32554,7 +33372,11 @@ snapshots:
 
   '@types/jsonfile@6.1.4':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/jstoxml@5.0.0': {}
 
@@ -32582,7 +33404,11 @@ snapshots:
   '@types/liftoff@4.0.3':
     dependencies:
       '@types/fined': 1.1.5
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/lodash.clonedeep@4.5.9':
     dependencies:
@@ -32640,8 +33466,13 @@ snapshots:
 
   '@types/node-fetch@2.6.11':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
       form-data: 4.0.4
+=======
+      '@types/node': 22.15.30
+      form-data: 4.0.1
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/node@18.19.71':
     dependencies:
@@ -32655,6 +33486,7 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+<<<<<<< HEAD
   '@types/node@24.3.1':
     dependencies:
       undici-types: 7.10.0
@@ -32666,6 +33498,11 @@ snapshots:
   '@types/node@24.5.2':
     dependencies:
       undici-types: 7.12.0
+=======
+  '@types/node@22.15.30':
+    dependencies:
+      undici-types: 6.21.0
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -32708,12 +33545,21 @@ snapshots:
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
+<<<<<<< HEAD
       '@types/node': 24.5.2
 
   '@types/serve-static@1.15.7':
     dependencies:
       '@types/http-errors': 2.0.5
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+
+  '@types/serve-static@1.15.7':
+    dependencies:
+      '@types/http-errors': 2.0.4
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@types/send': 0.17.4
 
   '@types/sinonjs__fake-timers@8.1.5': {}
@@ -32732,7 +33578,11 @@ snapshots:
 
   '@types/through@0.0.33':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/tough-cookie@4.0.5': {}
 
@@ -32750,7 +33600,11 @@ snapshots:
 
   '@types/wait-on@5.3.4':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/webpack@5.28.5(@swc/core@1.13.5)':
     dependencies:
@@ -32767,7 +33621,11 @@ snapshots:
 
   '@types/ws@8.5.10':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@types/xregexp@4.4.0':
     dependencies:
@@ -32781,7 +33639,11 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.44.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.8.3))(eslint@8.57.0)(typescript@5.8.3)':
@@ -33937,7 +34799,44 @@ snapshots:
       - '@types/node'
       - yaml
 
+<<<<<<< HEAD
   '@visulima/package@3.5.8(@types/node@22.15.29)(yaml@2.8.1)':
+=======
+  '@visulima/package@3.5.4(@types/node@22.15.24)(yaml@2.8.0)':
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@inquirer/confirm': 5.1.12(@types/node@22.15.24)
+      '@visulima/fs': 3.1.2(yaml@2.8.0)
+      '@visulima/path': 1.3.5
+      normalize-package-data: 7.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - yaml
+
+  '@visulima/package@3.5.4(@types/node@22.15.29)(yaml@2.8.0)':
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@inquirer/confirm': 5.1.12(@types/node@22.15.29)
+      '@visulima/fs': 3.1.2(yaml@2.8.0)
+      '@visulima/path': 1.3.5
+      normalize-package-data: 7.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - yaml
+
+  '@visulima/package@3.5.4(@types/node@22.15.30)(yaml@2.8.0)':
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@inquirer/confirm': 5.1.12(@types/node@22.15.30)
+      '@visulima/fs': 3.1.2(yaml@2.8.0)
+      '@visulima/path': 1.3.5
+      normalize-package-data: 7.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - yaml
+
+  '@visulima/package@3.5.6(@types/node@22.15.29)(yaml@2.8.0)':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@inquirer/confirm': 5.1.12(@types/node@22.15.29)
       '@visulima/fs': 3.1.5(yaml@2.8.1)
@@ -33947,16 +34846,24 @@ snapshots:
       - '@types/node'
       - yaml
 
+<<<<<<< HEAD
   '@visulima/package@3.5.8(@types/node@24.3.1)(yaml@2.8.1)':
     dependencies:
       '@inquirer/confirm': 5.1.12(@types/node@24.3.1)
       '@visulima/fs': 3.1.5(yaml@2.8.1)
+=======
+  '@visulima/package@3.5.8(@types/node@22.15.30)(yaml@2.8.0)':
+    dependencies:
+      '@inquirer/confirm': 5.1.12(@types/node@22.15.30)
+      '@visulima/fs': 3.1.5(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@visulima/path': 1.4.0
       normalize-package-data: 7.0.0
     transitivePeerDependencies:
       - '@types/node'
       - yaml
 
+<<<<<<< HEAD
   '@visulima/package@3.5.8(@types/node@24.5.2)(yaml@2.8.1)':
     dependencies:
       '@inquirer/confirm': 5.1.12(@types/node@24.5.2)
@@ -34184,6 +35091,9 @@ snapshots:
       - yaml
 
   '@visulima/packem@1.19.1(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)':
+=======
+  '@visulima/packem@1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.2.0(postcss@8.5.3))(postcss-modules-scope@3.2.1(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@antfu/install-pkg': 1.0.0
       '@babel/parser': 7.26.9
@@ -34553,14 +35463,22 @@ snapshots:
       - rotating-file-stream
       - yaml
 
+<<<<<<< HEAD
   '@visulima/packem@1.19.4(@swc/core@1.13.5)(@types/node@22.15.29)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)':
+=======
+  '@visulima/packem@1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.30)(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.3))(lightningcss@1.25.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.3))(postcss-modules-local-by-default@4.2.0(postcss@8.5.3))(postcss-modules-scope@3.2.1(postcss@8.5.3))(postcss-modules-values@4.0.0(postcss@8.5.3))(postcss-value-parser@4.2.0)(postcss@8.5.3)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@babel/parser': 7.27.3
       '@clack/prompts': 0.11.0
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-tokenizer': 3.0.4
+<<<<<<< HEAD
       '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.5.6)
+=======
+      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.5.3)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@rollup/plugin-alias': 5.1.1(rollup@4.41.1)
       '@rollup/plugin-commonjs': 28.0.3(rollup@4.41.1)
       '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.41.1)
@@ -34570,6 +35488,7 @@ snapshots:
       '@rollup/plugin-replace': 6.0.2(rollup@4.41.1)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.41.1)
       '@rollup/pluginutils': 5.1.4(rollup@4.41.1)
+<<<<<<< HEAD
       '@visulima/cerebro': 1.1.40(rotating-file-stream@3.2.6)(yaml@2.8.1)
       '@visulima/colorize': 1.4.21
       '@visulima/find-cache-dir': 1.0.28(yaml@2.8.1)
@@ -34580,6 +35499,18 @@ snapshots:
       '@visulima/path': 1.3.5
       '@visulima/source-map': 1.0.18
       '@visulima/tsconfig': 1.1.16(yaml@2.8.1)
+=======
+      '@visulima/cerebro': 1.1.40(rotating-file-stream@3.2.6)(yaml@2.8.0)
+      '@visulima/colorize': 1.4.21
+      '@visulima/find-cache-dir': 1.0.28(yaml@2.8.0)
+      '@visulima/fs': 3.1.2(yaml@2.8.0)
+      '@visulima/humanizer': 1.2.0
+      '@visulima/package': 3.5.4(@types/node@22.15.30)(yaml@2.8.0)
+      '@visulima/pail': 2.1.22(rotating-file-stream@3.2.6)
+      '@visulima/path': 1.3.5
+      '@visulima/source-map': 1.0.18
+      '@visulima/tsconfig': 1.1.16(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       browserslist: 4.24.5
       defu: 6.1.4
       es-module-lexer: 1.7.0
@@ -34591,10 +35522,17 @@ snapshots:
       mlly: 1.7.4
       oxc-parser: 0.72.1
       oxc-resolver: 11.0.0
+<<<<<<< HEAD
       picomatch: 4.0.3
       rollup: 4.41.1
       rollup-plugin-dts: 6.2.1(rollup@4.41.1)(typescript@5.8.3)
       rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.41.1)
+=======
+      picomatch: 4.0.2
+      rollup: 4.41.1
+      rollup-plugin-dts: 6.2.1(rollup@4.41.1)(typescript@5.8.3)
+      rollup-plugin-license: 3.6.0(picomatch@4.0.2)(rollup@4.41.1)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       rollup-plugin-polyfill-node: 0.13.0(rollup@4.41.1)
       rollup-plugin-visualizer: 5.14.0(rollup@4.41.1)
       semver: 7.7.2
@@ -34602,6 +35540,7 @@ snapshots:
       tinyexec: 1.0.1
       tinyglobby: 0.2.14
     optionalDependencies:
+<<<<<<< HEAD
       '@swc/core': 1.13.5
       cssnano: 7.1.1(postcss@8.5.6)
       esbuild: 0.25.5
@@ -34613,6 +35552,18 @@ snapshots:
       postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
       postcss-modules-scope: 3.2.1(postcss@8.5.6)
       postcss-modules-values: 4.0.0(postcss@8.5.6)
+=======
+      '@swc/core': 1.6.7(@swc/helpers@0.5.15)
+      esbuild: 0.25.5
+      icss-utils: 5.1.0(postcss@8.5.3)
+      lightningcss: 1.25.1
+      postcss: 8.5.3
+      postcss-load-config: 6.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(yaml@2.8.0)
+      postcss-modules-extract-imports: 3.1.0(postcss@8.5.3)
+      postcss-modules-local-by-default: 4.2.0(postcss@8.5.3)
+      postcss-modules-scope: 3.2.1(postcss@8.5.3)
+      postcss-modules-values: 4.0.0(postcss@8.5.3)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       postcss-value-parser: 4.2.0
       sucrase: 3.35.0
       typedoc: 0.28.5(typescript@5.8.3)
@@ -34627,6 +35578,7 @@ snapshots:
       - rotating-file-stream
       - yaml
 
+<<<<<<< HEAD
   '@visulima/packem@1.28.3(@swc/core@1.13.5)(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
@@ -35181,6 +36133,8 @@ snapshots:
       - rotating-file-stream
       - yaml
 
+=======
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
   '@visulima/pagination@3.0.27': {}
 
   '@visulima/pail@2.1.21(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)':
@@ -35463,6 +36417,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@vitejs/plugin-react@5.0.2(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
     dependencies:
       '@babel/core': 7.28.4
@@ -35503,6 +36458,18 @@ snapshots:
       sirv: 3.0.2
       tinyrainbow: 2.0.0
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/browser@3.2.0)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+  '@vitest/browser@3.2.2(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(playwright@1.52.0)(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))(vitest@3.2.2)(webdriverio@9.15.0)':
+    dependencies:
+      '@testing-library/dom': 10.4.0
+      '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.0)
+      '@vitest/mocker': 3.2.2(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
+      '@vitest/utils': 3.2.2
+      magic-string: 0.30.17
+      sirv: 3.0.1
+      tinyrainbow: 2.0.0
+      vitest: 3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/browser@3.2.2)(@vitest/ui@3.2.2)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       ws: 8.18.2
     optionalDependencies:
       playwright: 1.55.0
@@ -35513,6 +36480,27 @@ snapshots:
       - utf-8-validate
       - vite
 
+<<<<<<< HEAD
+=======
+  '@vitest/coverage-v8@3.1.4(vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
+    dependencies:
+      '@ampproject/remapping': 2.3.0
+      '@bcoe/v8-coverage': 1.0.2
+      debug: 4.4.1
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.6
+      istanbul-reports: 3.1.7
+      magic-string: 0.30.17
+      magicast: 0.3.5
+      std-env: 3.9.0
+      test-exclude: 7.0.1
+      tinyrainbow: 2.0.0
+      vitest: 3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+    transitivePeerDependencies:
+      - supports-color
+
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
   '@vitest/coverage-v8@3.2.1(vitest@3.2.1)':
     dependencies:
       '@ampproject/remapping': 2.3.0
@@ -35528,7 +36516,32 @@ snapshots:
       std-env: 3.9.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
+<<<<<<< HEAD
       vitest: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+      vitest: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@vitest/coverage-v8@3.2.2(@vitest/browser@3.2.2)(vitest@3.2.2)':
+    dependencies:
+      '@ampproject/remapping': 2.3.0
+      '@bcoe/v8-coverage': 1.0.2
+      ast-v8-to-istanbul: 0.3.3
+      debug: 4.4.1
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.6
+      istanbul-reports: 3.1.7
+      magic-string: 0.30.17
+      magicast: 0.3.5
+      std-env: 3.9.0
+      test-exclude: 7.0.1
+      tinyrainbow: 2.0.0
+      vitest: 3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/browser@3.2.2)(@vitest/ui@3.2.2)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+    optionalDependencies:
+      '@vitest/browser': 3.2.2(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(playwright@1.52.0)(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))(vitest@3.2.2)(webdriverio@9.15.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - supports-color
 
@@ -35579,6 +36592,7 @@ snapshots:
       eslint: 9.28.0(jiti@2.4.2)
     optionalDependencies:
       typescript: 5.8.3
+<<<<<<< HEAD
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
@@ -35646,6 +36660,19 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.2
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.5.2)(typescript@5.9.2))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+      vitest: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@vitest/eslint-plugin@1.2.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.2)':
+    dependencies:
+      '@typescript-eslint/utils': 8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+      eslint: 9.28.0(jiti@2.4.2)
+    optionalDependencies:
+      typescript: 5.8.3
+      vitest: 3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/browser@3.2.2)(@vitest/ui@3.2.2)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - supports-color
 
@@ -35670,7 +36697,19 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 2.0.0
 
+<<<<<<< HEAD
   '@vitest/expect@3.2.4':
+=======
+  '@vitest/expect@3.2.2':
+    dependencies:
+      '@types/chai': 5.2.2
+      '@vitest/spy': 3.2.2
+      '@vitest/utils': 3.2.2
+      chai: 5.2.0
+      tinyrainbow: 2.0.0
+
+  '@vitest/mocker@3.1.4(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/spy': 3.2.4
@@ -35678,6 +36717,7 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 2.0.0
 
+<<<<<<< HEAD
   '@vitest/mocker@3.2.0(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(vite@7.1.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 3.2.0
@@ -35688,6 +36728,9 @@ snapshots:
       vite: 7.1.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
   '@vitest/mocker@3.2.1(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(vite@7.1.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
+=======
+  '@vitest/mocker@3.2.1(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@vitest/spy': 3.2.1
       estree-walker: 3.0.3
@@ -35777,6 +36820,24 @@ snapshots:
       msw: 2.8.4(@types/node@24.5.2)(typescript@5.9.2)
       vite: 7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
+  '@vitest/mocker@3.2.1(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
+    dependencies:
+      '@vitest/spy': 3.2.1
+      estree-walker: 3.0.3
+      magic-string: 0.30.17
+    optionalDependencies:
+      msw: 2.8.4(@types/node@22.15.30)(typescript@5.8.3)
+      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+
+  '@vitest/mocker@3.2.2(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
+    dependencies:
+      '@vitest/spy': 3.2.2
+      estree-walker: 3.0.3
+      magic-string: 0.30.17
+    optionalDependencies:
+      msw: 2.8.4(@types/node@22.15.30)(typescript@5.8.3)
+      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+
   '@vitest/pretty-format@2.0.5':
     dependencies:
       tinyrainbow: 1.2.0
@@ -35785,11 +36846,19 @@ snapshots:
     dependencies:
       tinyrainbow: 1.2.0
 
+<<<<<<< HEAD
   '@vitest/pretty-format@3.2.0':
+=======
+  '@vitest/pretty-format@3.1.4':
     dependencies:
       tinyrainbow: 2.0.0
 
   '@vitest/pretty-format@3.2.1':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
+    dependencies:
+      tinyrainbow: 2.0.0
+
+  '@vitest/pretty-format@3.2.2':
     dependencies:
       tinyrainbow: 2.0.0
 
@@ -35808,11 +36877,18 @@ snapshots:
       '@vitest/utils': 3.2.1
       pathe: 2.0.3
 
+<<<<<<< HEAD
   '@vitest/runner@3.2.4':
     dependencies:
       '@vitest/utils': 3.2.4
       pathe: 2.0.3
       strip-literal: 3.0.0
+=======
+  '@vitest/runner@3.2.2':
+    dependencies:
+      '@vitest/utils': 3.2.2
+      pathe: 2.0.3
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   '@vitest/snapshot@1.6.1':
     dependencies:
@@ -35832,6 +36908,12 @@ snapshots:
       magic-string: 0.30.19
       pathe: 2.0.3
 
+  '@vitest/snapshot@3.2.2':
+    dependencies:
+      '@vitest/pretty-format': 3.2.2
+      magic-string: 0.30.17
+      pathe: 2.0.3
+
   '@vitest/spy@1.6.1':
     dependencies:
       tinyspy: 2.2.1
@@ -35840,11 +36922,19 @@ snapshots:
     dependencies:
       tinyspy: 3.0.2
 
+<<<<<<< HEAD
   '@vitest/spy@3.2.0':
+=======
+  '@vitest/spy@3.1.4':
+    dependencies:
+      tinyspy: 3.0.2
+
+  '@vitest/spy@3.2.1':
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       tinyspy: 4.0.3
 
-  '@vitest/spy@3.2.1':
+  '@vitest/spy@3.2.2':
     dependencies:
       tinyspy: 4.0.3
 
@@ -35874,6 +36964,17 @@ snapshots:
       tinyrainbow: 2.0.0
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.3.1)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
+  '@vitest/ui@3.2.2(vitest@3.2.2)':
+    dependencies:
+      '@vitest/utils': 3.2.2
+      fflate: 0.8.2
+      flatted: 3.3.3
+      pathe: 2.0.3
+      sirv: 3.0.1
+      tinyglobby: 0.2.14
+      tinyrainbow: 2.0.0
+      vitest: 3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/browser@3.2.2)(@vitest/ui@3.2.2)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+
   '@vitest/utils@1.6.1':
     dependencies:
       diff-sequences: 29.6.3
@@ -35894,10 +36995,17 @@ snapshots:
       loupe: 3.2.1
       tinyrainbow: 1.2.0
 
+<<<<<<< HEAD
   '@vitest/utils@3.2.0':
     dependencies:
       '@vitest/pretty-format': 3.2.0
       loupe: 3.2.1
+=======
+  '@vitest/utils@3.1.4':
+    dependencies:
+      '@vitest/pretty-format': 3.1.4
+      loupe: 3.1.3
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       tinyrainbow: 2.0.0
 
   '@vitest/utils@3.2.1':
@@ -35906,6 +37014,7 @@ snapshots:
       loupe: 3.2.1
       tinyrainbow: 2.0.0
 
+<<<<<<< HEAD
   '@vitest/utils@3.2.4':
     dependencies:
       '@vitest/pretty-format': 3.2.4
@@ -36056,6 +37165,14 @@ snapshots:
       typescript: 5.9.2
       vue: 3.5.21(typescript@5.9.2)
 
+=======
+  '@vitest/utils@3.2.2':
+    dependencies:
+      '@vitest/pretty-format': 3.2.2
+      loupe: 3.1.3
+      tinyrainbow: 2.0.0
+
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
   '@wdio/config@9.15.0':
     dependencies:
       '@wdio/logger': 9.15.0
@@ -36815,9 +37932,13 @@ snapshots:
 
   binaryextensions@6.11.0:
     dependencies:
+<<<<<<< HEAD
       editions: 6.22.0
 
   birpc@2.5.0: {}
+=======
+      editions: 6.21.0
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   bl@4.1.0:
     dependencies:
@@ -38238,9 +39359,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   editions@6.22.0:
     dependencies:
       version-range: 4.15.0
+=======
+  editions@6.21.0:
+    dependencies:
+      version-range: 4.14.0
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   editorconfig@1.0.4:
     dependencies:
@@ -43289,7 +44416,11 @@ snapshots:
   istextorbinary@9.5.0:
     dependencies:
       binaryextensions: 6.11.0
+<<<<<<< HEAD
       editions: 6.22.0
+=======
+      editions: 6.21.0
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       textextensions: 6.11.0
 
   iterator.prototype@1.1.4:
@@ -43334,7 +44465,11 @@ snapshots:
       '@jest/expect': 29.7.0
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       chalk: 4.1.2
       co: 4.6.0
       dedent: 1.5.3
@@ -43403,7 +44538,11 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
+<<<<<<< HEAD
   jest-config@29.7.0(@types/node@24.5.2):
+=======
+  jest-config@29.7.0(@types/node@22.15.30):
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@babel/core': 7.28.4
       '@jest/test-sequencer': 29.7.0
@@ -43428,7 +44567,11 @@ snapshots:
       slash: 3.0.0
       strip-json-comments: 3.1.1
     optionalDependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
@@ -43464,7 +44607,11 @@ snapshots:
       '@jest/environment': 29.7.0
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       jest-mock: 29.7.0
       jest-util: 29.7.0
 
@@ -43474,7 +44621,11 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@types/graceful-fs': 4.1.9
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -43520,7 +44671,11 @@ snapshots:
   jest-mock@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       jest-util: 29.7.0
 
   jest-playwright-preset@4.0.0(jest-circus@29.7.0)(jest-environment-node@29.7.0)(jest-runner@29.7.0)(jest@29.7.0(@types/node@24.3.1)):
@@ -43587,7 +44742,11 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       chalk: 4.1.2
       emittery: 0.13.1
       graceful-fs: 4.2.11
@@ -43615,7 +44774,11 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       chalk: 4.1.2
       cjs-module-lexer: 1.3.1
       collect-v8-coverage: 1.0.2
@@ -43665,7 +44828,11 @@ snapshots:
   jest-util@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
@@ -43695,7 +44862,11 @@ snapshots:
     dependencies:
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       emittery: 0.13.1
@@ -43704,13 +44875,21 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
   jest-worker@29.7.0:
     dependencies:
+<<<<<<< HEAD
       '@types/node': 24.5.2
+=======
+      '@types/node': 22.15.30
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       jest-util: 29.7.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
@@ -45697,11 +46876,16 @@ snapshots:
       - '@types/node'
     optional: true
 
+<<<<<<< HEAD
   msw@2.8.4(@types/node@22.15.29)(typescript@5.9.2):
+=======
+  msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3):
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
       '@bundled-es-modules/statuses': 1.0.1
       '@bundled-es-modules/tough-cookie': 0.1.6
+<<<<<<< HEAD
       '@inquirer/confirm': 5.1.12(@types/node@22.15.29)
       '@mswjs/interceptors': 0.37.1
       '@open-draft/deferred-promise': 2.2.0
@@ -45781,6 +46965,9 @@ snapshots:
       '@bundled-es-modules/statuses': 1.0.1
       '@bundled-es-modules/tough-cookie': 0.1.6
       '@inquirer/confirm': 5.1.12(@types/node@24.5.2)
+=======
+      '@inquirer/confirm': 5.1.12(@types/node@22.15.30)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       '@mswjs/interceptors': 0.37.1
       '@open-draft/deferred-promise': 2.2.0
       '@open-draft/until': 2.1.0
@@ -45801,6 +46988,7 @@ snapshots:
       - '@types/node'
     optional: true
 
+<<<<<<< HEAD
   msw@2.8.4(@types/node@24.5.2)(typescript@5.9.2):
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
@@ -45829,6 +47017,8 @@ snapshots:
 
   muggle-string@0.4.1: {}
 
+=======
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
   mute-stream@0.0.8: {}
 
   mute-stream@1.0.0: {}
@@ -48957,6 +50147,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  secretlint@9.3.4:
+    dependencies:
+      '@secretlint/config-creator': 9.3.4
+      '@secretlint/formatter': 9.3.4
+      '@secretlint/node': 9.3.4
+      '@secretlint/profiler': 9.3.4
+      debug: 4.4.1
+      globby: 14.1.0
+      read-pkg: 8.1.0
+    transitivePeerDependencies:
+      - supports-color
+
   secure-json-parse@4.0.0: {}
 
   select-section@0.4.6:
@@ -50256,6 +51458,13 @@ snapshots:
   textextensions@5.16.0: {}
 
   textextensions@6.11.0:
+<<<<<<< HEAD
+=======
+    dependencies:
+      editions: 6.21.0
+
+  textlint-filter-rule-comments@1.2.2(textlint@14.7.2):
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       editions: 6.22.0
 
@@ -51094,7 +52303,7 @@ snapshots:
       '@types/concat-stream': 2.0.3
       '@types/debug': 4.1.12
       '@types/is-empty': 1.2.3
-      '@types/node': 22.15.29
+      '@types/node': 22.15.30
       '@types/unist': 3.0.2
       concat-stream: 2.0.0
       debug: 4.4.1
@@ -51489,7 +52698,11 @@ snapshots:
 
   version-guard@1.1.2: {}
 
+<<<<<<< HEAD
   version-range@4.15.0: {}
+=======
+  version-range@4.14.0: {}
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
 
   vfile-find-up@6.1.0:
     dependencies:
@@ -51577,6 +52790,7 @@ snapshots:
       '@types/unist': 3.0.2
       vfile-message: 4.0.2
 
+<<<<<<< HEAD
   vite-dev-rpc@1.1.0(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
     dependencies:
       birpc: 2.5.0
@@ -51588,12 +52802,37 @@ snapshots:
       vite: 7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
   vite-node@1.6.1(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
+=======
+  vite-node@1.6.1(@types/node@22.15.30)(lightningcss@1.25.1)(terser@5.31.1):
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       pathe: 1.1.2
       picocolors: 1.1.1
+<<<<<<< HEAD
       vite: 7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+      vite: 5.4.19(@types/node@22.15.30)(lightningcss@1.25.1)(terser@5.31.1)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vite-node@3.1.4(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.1
+      es-module-lexer: 1.7.0
+      pathe: 2.0.3
+      vite: 6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -51671,13 +52910,21 @@ snapshots:
       - tsx
       - yaml
 
+<<<<<<< HEAD
   vite-node@3.2.4(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
+=======
+  vite-node@3.2.1(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
+<<<<<<< HEAD
       vite: 7.1.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -51692,13 +52939,21 @@ snapshots:
       - tsx
       - yaml
 
+<<<<<<< HEAD
   vite-node@3.2.4(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
+=======
+  vite-node@3.2.2(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
+<<<<<<< HEAD
       vite: 7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -51713,6 +52968,7 @@ snapshots:
       - tsx
       - yaml
 
+<<<<<<< HEAD
   vite-node@3.2.4(@types/node@24.5.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
     dependencies:
       cac: 6.7.14
@@ -51826,6 +53082,9 @@ snapshots:
       vite: 7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
   vite-tsconfig-paths@5.1.4(typescript@5.9.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
+=======
+  vite-tsconfig-paths@5.1.4(typescript@5.8.3)(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)):
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       debug: 4.4.1
       globrex: 0.1.2
@@ -51836,6 +53095,7 @@ snapshots:
       - supports-color
       - typescript
 
+<<<<<<< HEAD
   vite@7.1.5(@types/node@18.19.71)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
     dependencies:
       esbuild: 0.25.10
@@ -51844,6 +53104,27 @@ snapshots:
       postcss: 8.5.6
       rollup: 4.50.0
       tinyglobby: 0.2.15
+=======
+  vite@5.4.19(@types/node@22.15.30)(lightningcss@1.25.1)(terser@5.31.1):
+    dependencies:
+      esbuild: 0.25.5
+      postcss: 8.5.3
+      rollup: 4.41.0
+    optionalDependencies:
+      '@types/node': 22.15.30
+      fsevents: 2.3.3
+      lightningcss: 1.25.1
+      terser: 5.31.1
+
+  vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+    dependencies:
+      esbuild: 0.25.5
+      fdir: 6.4.4(picomatch@4.0.2)
+      picomatch: 4.0.2
+      postcss: 8.5.3
+      rollup: 4.41.0
+      tinyglobby: 0.2.14
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     optionalDependencies:
       '@types/node': 18.19.71
       fsevents: 2.3.3
@@ -51870,6 +53151,7 @@ snapshots:
       tsx: 4.20.5
       yaml: 2.8.1
 
+<<<<<<< HEAD
   vite@7.1.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
     dependencies:
       esbuild: 0.25.10
@@ -51943,6 +53225,26 @@ snapshots:
       vite: 7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
   vitest@1.6.1(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
+=======
+  vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+    dependencies:
+      esbuild: 0.25.5
+      fdir: 6.4.4(picomatch@4.0.2)
+      picomatch: 4.0.2
+      postcss: 8.5.3
+      rollup: 4.41.0
+      tinyglobby: 0.2.14
+    optionalDependencies:
+      '@types/node': 22.15.30
+      fsevents: 2.3.3
+      jiti: 2.4.2
+      lightningcss: 1.25.1
+      terser: 5.31.1
+      tsx: 4.19.4
+      yaml: 2.8.0
+
+  vitest@1.6.1(@types/node@22.15.30)(@vitest/ui@3.2.1)(jsdom@26.1.0)(lightningcss@1.25.1)(terser@5.31.1):
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
@@ -51961,6 +53263,7 @@ snapshots:
       strip-literal: 2.1.1
       tinybench: 2.9.0
       tinypool: 0.8.4
+<<<<<<< HEAD
       vite: 7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-node: 1.6.1(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       why-is-node-running: 2.3.0
@@ -51968,6 +53271,53 @@ snapshots:
       '@types/node': 24.5.2
       '@vitest/ui': 3.2.4(vitest@3.2.4)
       jsdom: 27.0.0(postcss@8.5.6)
+=======
+      vite: 5.4.19(@types/node@22.15.30)(lightningcss@1.25.1)(terser@5.31.1)
+      vite-node: 1.6.1(@types/node@22.15.30)(lightningcss@1.25.1)(terser@5.31.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 22.15.30
+      '@vitest/ui': 3.2.1(vitest@3.2.1)
+      jsdom: 26.1.0
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+    dependencies:
+      '@vitest/expect': 3.1.4
+      '@vitest/mocker': 3.1.4(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
+      '@vitest/pretty-format': 3.1.4
+      '@vitest/runner': 3.1.4
+      '@vitest/snapshot': 3.1.4
+      '@vitest/spy': 3.1.4
+      '@vitest/utils': 3.1.4
+      chai: 5.2.0
+      debug: 4.4.1
+      expect-type: 1.2.1
+      magic-string: 0.30.17
+      pathe: 2.0.3
+      std-env: 3.9.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.14
+      tinypool: 1.0.2
+      tinyrainbow: 2.0.0
+      vite: 6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      vite-node: 3.1.4(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/debug': 4.1.12
+      '@types/node': 18.19.71
+      '@vitest/ui': 3.2.1(vitest@3.2.1)
+      jsdom: 26.1.0
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     transitivePeerDependencies:
       - jiti
       - less
@@ -52003,8 +53353,101 @@ snapshots:
       tinyglobby: 0.2.15
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
+<<<<<<< HEAD
       vite: 7.1.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-node: 3.2.1(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+=======
+      vite: 6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      vite-node: 3.2.1(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/debug': 4.1.12
+      '@types/node': 18.19.71
+      '@vitest/ui': 3.2.1(vitest@3.2.1)
+      jsdom: 26.1.0
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
+  vitest@3.2.1(@types/debug@4.1.12)(@types/node@22.15.24)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.24)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+    dependencies:
+      '@types/chai': 5.2.2
+      '@vitest/expect': 3.2.1
+      '@vitest/mocker': 3.2.1(msw@2.8.4(@types/node@22.15.24)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.24)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
+      '@vitest/pretty-format': 3.2.1
+      '@vitest/runner': 3.2.1
+      '@vitest/snapshot': 3.2.1
+      '@vitest/spy': 3.2.1
+      '@vitest/utils': 3.2.1
+      chai: 5.2.0
+      debug: 4.4.1
+      expect-type: 1.2.1
+      magic-string: 0.30.17
+      pathe: 2.0.3
+      picomatch: 4.0.2
+      std-env: 3.9.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.14
+      tinypool: 1.1.0
+      tinyrainbow: 2.0.0
+      vite: 6.3.5(@types/node@22.15.24)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      vite-node: 3.2.1(@types/node@22.15.24)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/debug': 4.1.12
+      '@types/node': 22.15.24
+      '@vitest/ui': 3.2.1(vitest@3.2.1)
+      jsdom: 26.1.0
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
+  vitest@3.2.1(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+    dependencies:
+      '@types/chai': 5.2.2
+      '@vitest/expect': 3.2.1
+      '@vitest/mocker': 3.2.1(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
+      '@vitest/pretty-format': 3.2.1
+      '@vitest/runner': 3.2.1
+      '@vitest/snapshot': 3.2.1
+      '@vitest/spy': 3.2.1
+      '@vitest/utils': 3.2.1
+      chai: 5.2.0
+      debug: 4.4.1
+      expect-type: 1.2.1
+      magic-string: 0.30.17
+      pathe: 2.0.3
+      picomatch: 4.0.2
+      std-env: 3.9.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.14
+      tinypool: 1.1.0
+      tinyrainbow: 2.0.0
+      vite: 6.3.5(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      vite-node: 3.2.1(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/debug': 4.1.12
@@ -52069,7 +53512,102 @@ snapshots:
       - tsx
       - yaml
 
+<<<<<<< HEAD
   vitest@3.2.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
+=======
+  vitest@3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+    dependencies:
+      '@types/chai': 5.2.2
+      '@vitest/expect': 3.2.1
+      '@vitest/mocker': 3.2.1(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
+      '@vitest/pretty-format': 3.2.1
+      '@vitest/runner': 3.2.1
+      '@vitest/snapshot': 3.2.1
+      '@vitest/spy': 3.2.1
+      '@vitest/utils': 3.2.1
+      chai: 5.2.0
+      debug: 4.4.1
+      expect-type: 1.2.1
+      magic-string: 0.30.17
+      pathe: 2.0.3
+      picomatch: 4.0.2
+      std-env: 3.9.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.14
+      tinypool: 1.1.0
+      tinyrainbow: 2.0.0
+      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      vite-node: 3.2.1(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/debug': 4.1.12
+      '@types/node': 22.15.30
+      '@vitest/ui': 3.2.1(vitest@3.2.1)
+      jsdom: 26.1.0
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
+  vitest@3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/browser@3.2.2)(@vitest/ui@3.2.2)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.25.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+    dependencies:
+      '@types/chai': 5.2.2
+      '@vitest/expect': 3.2.2
+      '@vitest/mocker': 3.2.2(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
+      '@vitest/pretty-format': 3.2.2
+      '@vitest/runner': 3.2.2
+      '@vitest/snapshot': 3.2.2
+      '@vitest/spy': 3.2.2
+      '@vitest/utils': 3.2.2
+      chai: 5.2.0
+      debug: 4.4.1
+      expect-type: 1.2.1
+      magic-string: 0.30.17
+      pathe: 2.0.3
+      picomatch: 4.0.2
+      std-env: 3.9.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.14
+      tinypool: 1.1.0
+      tinyrainbow: 2.0.0
+      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      vite-node: 3.2.2(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/debug': 4.1.12
+      '@types/node': 22.15.30
+      '@vitest/browser': 3.2.2(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(playwright@1.52.0)(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))(vitest@3.2.2)(webdriverio@9.15.0)
+      '@vitest/ui': 3.2.2(vitest@3.2.2)
+      jsdom: 26.1.0
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
+  vscode-jsonrpc@8.2.0: {}
+
+  vscode-languageserver-protocol@3.17.5:
+>>>>>>> ac11e0d5 (feat: update inspector package dependencies and refactor truncate to maxStringLength)
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4

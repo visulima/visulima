@@ -22,13 +22,31 @@ const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options
         return "[]";
     }
 
-    // eslint-disable-next-line no-param-reassign
-    options.truncate -= 4;
+    const temporaryOptions = { ...options, maxStringLength: Number.POSITIVE_INFINITY };
+    const listContentsForCheck = inspectList(array, array, temporaryOptions, inspect);
+    let propertyContentsForCheck = "";
 
-    let listContents = inspectList(array, array, options, inspect);
+    if (nonIndexProperties.length > 0) {
+        propertyContentsForCheck = inspectList(
+            nonIndexProperties.map((key) => [key, array[key as keyof typeof array]]),
+            array,
+            temporaryOptions,
+            inspect,
+            inspectProperty,
+        );
+    }
+
+    const separatorForCheck = listContentsForCheck && propertyContentsForCheck ? ", " : "";
+    const singleLineOutput = `[ ${listContentsForCheck}${separatorForCheck}${propertyContentsForCheck} ]`;
+    const multiline = (singleLineOutput.length > options.breakLength && indent !== undefined) || (indent !== undefined && multiLineValues(array));
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= listContents.length;
+    options.maxStringLength -= 4;
+
+    const listContents = inspectList(array, array, options, inspect);
+
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= listContents.length;
 
     let propertyContents = "";
 
@@ -42,13 +60,15 @@ const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options
         );
     }
 
-    const hasIndent = indent && multiLineValues(array);
+    const separator = listContents && propertyContents ? ", " : "";
 
-    if (hasIndent) {
-        listContents = indentedJoin(listContents, indent);
+    if (multiline) {
+        const joined = indentedJoin(listContents + separator + propertyContents, indent as Indent);
+
+        return `[${joined}]`;
     }
 
-    return `[${hasIndent ? "" : " "}${listContents}${propertyContents ? `, ${propertyContents}` : ""}${hasIndent ? "" : " "}]`;
+    return `[ ${listContents}${separator}${propertyContents} ]`;
 };
 
 export default inspectArray;

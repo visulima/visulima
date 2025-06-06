@@ -23,7 +23,7 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
     const name = getArrayName(array);
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= name.length + 4;
+    options.maxStringLength -= name.length + 4;
 
     // Object.keys will always output the Array indices first, so we can slice by
     // `array.length` to get non-index properties
@@ -39,12 +39,12 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
 
     // eslint-disable-next-line no-plusplus
     for (let index = 0; index < array.length; index++) {
-        const string = `${options.stylize(truncate(array[index] as number, options.truncate), "number")}${index === array.length - 1 ? "" : ", "}`;
+        const string = `${options.stylize(truncate(array[index] as number, options.maxStringLength), "number")}${index === array.length - 1 ? "" : ", "}`;
 
         // eslint-disable-next-line no-param-reassign
-        options.truncate -= string.length;
+        options.maxStringLength -= string.length;
 
-        if (array[index] !== array.length && options.truncate <= 3) {
+        if (array[index] !== array.length && options.maxStringLength <= 3) {
             output += `${TRUNCATOR}(${array.length - (array[index] as number) + 1})`;
             break;
         }

@@ -108,7 +108,9 @@ const internalInspect = (value: unknown, options: Options, depth: number, seen: 
         return "[Circular]";
     }
 
-    if (depth >= options.depth && options.depth > 0 && typeof value === "object") {
+    const multiline = value && (typeof value === "object" || Array.isArray(value));
+
+    if (options.depth !== null && depth >= options.depth && options.depth > 0 && multiline) {
         return Array.isArray(value) ? "[Array]" : "[Object]";
     }
 
@@ -139,7 +141,7 @@ const internalInspect = (value: unknown, options: Options, depth: number, seen: 
 
     // If `options.customInspect` is set to true then try to use the custom inspector
     if (options.customInspect && value) {
-        const output = inspectCustom(value, options, type, options.depth - depth);
+        const output = inspectCustom(value, options, type, options.depth === null ? Number.POSITIVE_INFINITY : options.depth - depth);
 
         if (output) {
             if (typeof output === "string") {
@@ -187,21 +189,23 @@ export type { Options } from "./types";
 export const inspect = (value: unknown, options_: Partial<Options> = {}): string => {
     const options = {
         breakLength: Number.POSITIVE_INFINITY,
+        compact: 3,
         customInspect: true,
         depth: 5,
+        getters: false,
         indent: undefined,
         maxArrayLength: Number.POSITIVE_INFINITY,
+        maxStringLength: Number.POSITIVE_INFINITY,
         numericSeparator: true,
         quoteStyle: "single",
         showHidden: false,
         showProxy: false,
+        sorted: false,
         stylize: <S extends string>(s: S) => s.toString(),
-        truncate: Number.POSITIVE_INFINITY,
         ...options_,
     } satisfies Options;
 
-    // @ts-expect-error - use can put a string in the indent option
-    if (options.indent !== undefined && options.indent !== "\t" && !(Number.parseInt(options.indent, 10) === options.indent && options.indent > 0)) {
+    if (options.indent !== undefined && options.indent !== "\t" && !(Number.parseInt(options.indent as unknown as string, 10) === options.indent && options.indent > 0)) {
         throw new TypeError("option \"indent\" must be \"\\t\", an integer > 0, or `undefined`");
     }
 

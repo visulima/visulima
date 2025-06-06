@@ -21,20 +21,20 @@ describe("booleans", () => {
         expect(inspect(true)).toBe("true");
     });
 
-    describe("truncated", () => {
-        it("returns the full string representation regardless of truncate", () => {
+    describe("maxStringLengthd", () => {
+        it("returns the full string representation regardless of maxStringLength", () => {
             expect.assertions(10);
 
-            expect(inspect(true, { truncate: 5 })).toBe("true");
-            expect(inspect(true, { truncate: 4 })).toBe("true");
-            expect(inspect(true, { truncate: 3 })).toBe("true");
-            expect(inspect(true, { truncate: 2 })).toBe("true");
-            expect(inspect(true, { truncate: 1 })).toBe("true");
-            expect(inspect(false, { truncate: 5 })).toBe("false");
-            expect(inspect(false, { truncate: 4 })).toBe("false");
-            expect(inspect(false, { truncate: 3 })).toBe("false");
-            expect(inspect(false, { truncate: 2 })).toBe("false");
-            expect(inspect(false, { truncate: 1 })).toBe("false");
+            expect(inspect(true, { maxStringLength: 5 })).toBe("true");
+            expect(inspect(true, { maxStringLength: 4 })).toBe("true");
+            expect(inspect(true, { maxStringLength: 3 })).toBe("true");
+            expect(inspect(true, { maxStringLength: 2 })).toBe("true");
+            expect(inspect(true, { maxStringLength: 1 })).toBe("true");
+            expect(inspect(false, { maxStringLength: 5 })).toBe("false");
+            expect(inspect(false, { maxStringLength: 4 })).toBe("false");
+            expect(inspect(false, { maxStringLength: 3 })).toBe("false");
+            expect(inspect(false, { maxStringLength: 2 })).toBe("false");
+            expect(inspect(false, { maxStringLength: 1 })).toBe("false");
         });
     });
 });

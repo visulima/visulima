@@ -12,7 +12,7 @@ const inspectDate: InspectType<Date> = (dateObject: Date, options: Options): str
     const date = split[0];
 
     // If we need to - truncate the time portion, but never the date
-    return options.stylize(`${date}T${truncate(split[1] as string, options.truncate - (date as string).length - 1)}`, "date");
+    return options.stylize(`${date}T${truncate(split[1] as string, options.maxStringLength - (date as string).length - 1)}`, "date");
 };
 
 export default inspectDate;

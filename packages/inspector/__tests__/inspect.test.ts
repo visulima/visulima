@@ -4,16 +4,16 @@ import { inspect } from "../src";
 import type { Options } from "../src/types";
 
 describe("arrays", () => {
-    it("truncates an array of strings rather than just the strings", () => {
+    it("maxStringLengths an array of strings rather than just the strings", () => {
         expect.assertions(1);
 
-        expect(inspect(["foo", "bar", "baz", "bing"], { truncate: 22 })).toBe("[ 'foo', 'bar', …(2) ]");
+        expect(inspect(["foo", "bar", "baz", "bing"], { maxStringLength: 22 })).toBe("[ 'foo', 'bar', …(2) ]");
     });
 
-    it("truncates the string in certain cases, to keep under the truncate threshold", () => {
+    it("maxStringLengths the string in certain cases, to keep under the maxStringLength threshold", () => {
         expect.assertions(1);
 
-        expect(inspect(["foobarbazbing"], { truncate: 15 })).toBe("[ 'foobarba…' ]");
+        expect(inspect(["foobarbazbing"], { maxStringLength: 15 })).toBe("[ 'foobarba…' ]");
     });
 
     it("can contain anonymous functions", () => {
@@ -73,7 +73,7 @@ describe("objects", () => {
             inspect: () => ["foobarbazbing"],
         };
 
-        expect(inspect(object, { customInspect: true, truncate: 15 })).toBe("[ 'foobarba…' ]");
+        expect(inspect(object, { customInspect: true, maxStringLength: 15 })).toBe("[ 'foobarba…' ]");
     });
 
     it("uses a custom deeply nested inspect function if `customInspect` is turned on", () => {

@@ -25,10 +25,22 @@ describe("arrays", () => {
 
         const value = [1, { a: 1, b: { c: 1 } }, "asdf\nsdf"];
 
-        expect(inspect(value, { indent: 2 })).toBe(
-            ["[", "  1,", "  {", "    a: 1,", "    b: {", "      c: 1", "    }", "  },", String.raw`  'asdf\nsdf'`, "]"].join("\n"),
-        );
-        expect(inspect(value, { indent: "\t" })).toBe(["[", "	1,", "	{", "		a: 1,", "		b: {", "			c: 1", "		}", "	},", String.raw`	'asdf\nsdf'`, "]"].join("\n"));
+        expect(inspect(value, { indent: 2 })).toMatchInlineSnapshot(`
+          "[
+            1,
+            { a: 1,
+            b: { c: 1 } },
+            'asdf\\nsdf'
+          ]"
+        `);
+        expect(inspect(value, { indent: "\t" })).toMatchInlineSnapshot(`
+          "[
+          	1,
+          	{ a: 1,
+          	b: { c: 1 } },
+          	'asdf\\nsdf'
+          ]"
+        `);
     });
 
     it("should return a values array with indent", () => {
@@ -36,99 +48,111 @@ describe("arrays", () => {
 
         const object = [{}, [], { "a-b": 5 }];
 
-        expect(inspect(object, { indent: 2 })).toBe(["[", "  {},", "  [],", "  {", "    'a-b': 5", "  }", "]"].join("\n"));
-        expect(inspect(object, { indent: "\t" })).toBe(["[", "	{},", "	[],", "	{", "		'a-b': 5", "	}", "]"].join("\n"));
+        expect(inspect(object, { indent: 2 })).toMatchInlineSnapshot(`
+          "[
+            {},
+            [],
+            { 'a-b': 5 }
+          ]"
+        `);
+        expect(inspect(object, { indent: "\t" })).toMatchInlineSnapshot(`
+          "[
+          	{},
+          	[],
+          	{ 'a-b': 5 }
+          ]"
+        `);
     });
 
-    describe("truncate", () => {
-        it("returns the full representation when truncate is over string length", () => {
+    describe("maxStringLength", () => {
+        it("returns the full representation when maxStringLength is over string length", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 17 })).toBe("[ 'a', 'b', 'c' ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 17 })).toBe("[ 'a', 'b', 'c' ]");
         });
 
-        it("truncates array values longer than truncate (14)", () => {
+        it("maxStringLengths array values longer than maxStringLength (14)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 14 })).toBe("[ 'a', …(2) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 14 })).toBe("[ 'a', …(2) ]");
         });
 
-        it("truncates array values longer than truncate (13)", () => {
+        it("maxStringLengths array values longer than maxStringLength (13)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 13 })).toBe("[ 'a', …(2) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 13 })).toBe("[ 'a', …(2) ]");
         });
 
-        it("truncates array values longer than truncate (12)", () => {
+        it("maxStringLengths array values longer than maxStringLength (12)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 12 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 12 })).toBe("[ …(3) ]");
         });
 
-        it("truncates array values longer than truncate (11)", () => {
+        it("maxStringLengths array values longer than maxStringLength (11)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 11 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 11 })).toBe("[ …(3) ]");
         });
 
-        it("truncates array values longer than truncate (10)", () => {
+        it("maxStringLengths array values longer than maxStringLength (10)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 10 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 10 })).toBe("[ …(3) ]");
         });
 
-        it("truncates array values longer than truncate (9)", () => {
+        it("maxStringLengths array values longer than maxStringLength (9)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 9 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 9 })).toBe("[ …(3) ]");
         });
 
-        it("truncates array values longer than truncate (8)", () => {
+        it("maxStringLengths array values longer than maxStringLength (8)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 8 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 8 })).toBe("[ …(3) ]");
         });
 
-        it("truncates array values longer than truncate (7)", () => {
+        it("maxStringLengths array values longer than maxStringLength (7)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 7 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 7 })).toBe("[ …(3) ]");
         });
 
-        it("truncates array values longer than truncate (6)", () => {
+        it("maxStringLengths array values longer than maxStringLength (6)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 6 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 6 })).toBe("[ …(3) ]");
         });
 
-        it("truncates array values longer than truncate (5)", () => {
+        it("maxStringLengths array values longer than maxStringLength (5)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 5 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 5 })).toBe("[ …(3) ]");
         });
 
-        it("truncates array values longer than truncate (4)", () => {
+        it("maxStringLengths array values longer than maxStringLength (4)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 4 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 4 })).toBe("[ …(3) ]");
         });
 
-        it("truncates whole array if truncate 3 or less (3)", () => {
+        it("maxStringLengths whole array if maxStringLength 3 or less (3)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 3 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 3 })).toBe("[ …(3) ]");
         });
 
-        it("truncates whole array if truncate 3 or less (2)", () => {
+        it("maxStringLengths whole array if maxStringLength 3 or less (2)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 2 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 2 })).toBe("[ …(3) ]");
         });
 
-        it("truncates whole array if truncate 3 or less (1)", () => {
+        it("maxStringLengths whole array if maxStringLength 3 or less (1)", () => {
             expect.assertions(1);
 
-            expect(inspect(["a", "b", "c"], { truncate: 1 })).toBe("[ …(3) ]");
+            expect(inspect(["a", "b", "c"], { maxStringLength: 1 })).toBe("[ …(3) ]");
         });
     });
 

@@ -10,12 +10,12 @@ const inspectObject: InspectType<Error> = (error: Error, options: Options, inspe
     const { name } = error;
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= name.length;
+    options.maxStringLength -= name.length;
 
     let message = "";
 
     if (typeof error.message === "string") {
-        message = truncate(error.message, options.truncate);
+        message = truncate(error.message, options.maxStringLength);
     } else {
         properties.unshift("message");
     }
@@ -23,7 +23,7 @@ const inspectObject: InspectType<Error> = (error: Error, options: Options, inspe
     message = message ? `: ${message}` : "";
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= message.length + 5;
+    options.maxStringLength -= message.length + 5;
 
     const propertyContents = inspectList(
         properties.map((key) => [key, error[key as keyof typeof error]]),
