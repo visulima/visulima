@@ -80,7 +80,7 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     WeakSet: (_value: WeakSet<any>, options: InternalOptions) => options.stylize("WeakSet{…}", "special"),
 } as const;
 
-const inspectCustom = (value: object, options: InternalOptions, type: string, depth: number): string => {
+const inspectCustom = (value: object, options: InternalOptions, type: string, depth: number): string | undefined => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (globalThis.window === undefined && typeof (value as any)[Symbol.for("nodejs.util.inspect.custom")] === "function") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type
@@ -121,10 +121,6 @@ export const internalInspect = (value: unknown, options: InternalOptions, depth:
 
     const indent = options.indent ? getIndent(options.indent, depth) : undefined;
 
-    if (options.showProxy && options.proxyHandler) {
-        return options.proxyHandler(value as typeof Proxy, options, inspect, indent, depth);
-    }
-
     const multiline = value && (typeof value === "object" || Array.isArray(value));
 
     if (options.depth !== undefined && depth >= options.depth && options.depth > 0 && multiline) {
@@ -135,6 +131,10 @@ export const internalInspect = (value: unknown, options: InternalOptions, depth:
 
     if (type === "object") {
         type = Object.prototype.toString.call(value).slice(8, -1);
+    }
+
+    if (options.showProxy && options.proxyHandler) {
+        return options.proxyHandler(value as typeof Proxy, options, inspect, indent, depth);
     }
 
     // If it is a base value that we already support, then use inspector

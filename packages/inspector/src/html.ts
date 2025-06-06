@@ -1,12 +1,10 @@
 import { TRUNCATOR } from "./constants";
-import type { Indent, InspectType, InternalInspect, Options } from "./types";
+import type { Indent, InternalInspect, Options } from "./types";
 import inspectList from "./utils/inspect-list";
 
 const inspectAttribute = ([key, value]: [unknown, unknown], _: unknown, options: Options): string => {
-    if (options.maxStringLength !== null) {
-        // eslint-disable-next-line no-param-reassign
-        options.maxStringLength -= 3;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= 3;
 
     if (!value) {
         return options.stylize(String(key), "yellow");
@@ -30,7 +28,7 @@ export const inspectNode = (node: Node, inspect: InternalInspect, options: Optio
     }
 };
 
-export const inspectNodeCollection: InspectType<HTMLCollection | NodeList> = (
+export const inspectNodeCollection = (
     collection: HTMLCollection | NodeList,
     options: Options,
     // @ts-expect-error - `inspectNode` has a different signature
@@ -55,10 +53,8 @@ export const inspectHTMLElement = (element: Element, object: unknown, options: O
     const headClose = options.stylize(`>`, "special");
     const tail = options.stylize(`</${name}>`, "special");
 
-    if (options.maxStringLength !== null) {
-        // eslint-disable-next-line no-param-reassign
-        options.maxStringLength -= name.length * 2 + 5;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= name.length * 2 + 5;
 
     let propertyContents = "";
 
@@ -74,16 +70,12 @@ export const inspectHTMLElement = (element: Element, object: unknown, options: O
         );
     }
 
-    if (options.maxStringLength !== null) {
-        // eslint-disable-next-line no-param-reassign
-        options.maxStringLength -= propertyContents.length;
-    }
-
-    const { maxStringLength: truncate } = options;
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= propertyContents.length;
 
     let children = inspectNodeCollection(element.children, options, inspect, undefined, depth);
 
-    if (children && truncate !== null && children.length > truncate) {
+    if (children && children.length > options.maxStringLength) {
         children = `${TRUNCATOR}(${element.children.length})`;
     }
 

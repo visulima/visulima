@@ -1,4 +1,4 @@
-import type { InspectType, Options } from "../types";
+import type { Options } from "../types";
 import truncate from "../utils/truncate";
 import wrapQuotes from "../utils/wrap-quotes";
 
@@ -22,7 +22,7 @@ const escape = (char: string): string =>
 
     escapeCharacters[char as keyof typeof escapeCharacters] || `\\u${`0000${(char.codePointAt(0) as number).toString(hex)}`.slice(-unicodeLength)}`;
 
-const inspectString: InspectType<string> = (string_: string, options: Options): string => {
+const inspectString = (string_: string, options: Options): string => {
     if (stringEscapeChars.test(string_)) {
         // eslint-disable-next-line no-param-reassign
         string_ = string_.replaceAll(stringEscapeChars, escape);
