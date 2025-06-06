@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("booleans", () => {
-    it("returns `false` for false", () => {
+describe("inspect with Booleans", () => {
+    it("should correctly inspect primitive and object-wrapped booleans", () => {
         expect.assertions(4);
 
         expect(inspect(false)).toBe("false");
@@ -14,15 +14,8 @@ describe("booleans", () => {
         expect(inspect(new Boolean(false))).toBe("false");
     });
 
-    it("returns `true` for true", () => {
-        expect.assertions(2);
-
-        expect(inspect(false)).toBe("false");
-        expect(inspect(true)).toBe("true");
-    });
-
-    describe("maxStringLengthd", () => {
-        it("returns the full string representation regardless of maxStringLength", () => {
+    describe("with maxStringLength option", () => {
+        it("should not truncate boolean values regardless of maxStringLength", () => {
             expect.assertions(10);
 
             expect(inspect(true, { maxStringLength: 5 })).toBe("true");

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { inspect } from "../src";
 import h from "./utils/h";
 
-describe.skipIf(globalThis.window === undefined)("hTMLElement", () => {
+describe.skipIf(globalThis.window === undefined)("inspect with HTMLElements", () => {
     beforeEach(() => {
         if (typeof HTMLElement !== "function") {
             class Text {
@@ -63,114 +63,114 @@ describe.skipIf(globalThis.window === undefined)("hTMLElement", () => {
         }
     });
 
-    it("returns `<div></div>` for an empty div", () => {
+    it("should correctly inspect an empty div element", () => {
         expect.assertions(1);
 
         expect(inspect(h("div"))).toBe("<div></div>");
     });
 
-    it("returns `<div id=\"foo\"></div>` for a div with an id", () => {
+    it("should correctly inspect a div element with an id attribute", () => {
         expect.assertions(1);
 
-        expect(inspect(h("div", { id: "foo" }))).toBe("<div id=\"foo\"></div>");
+        expect(inspect(h("div", { id: "foo" }))).toBe('<div id="foo"></div>');
     });
 
-    it("returns `<div id=\"foo\" aria-live=\"foo\" hidden></div>` for a div with an id", () => {
+    it("should correctly inspect a div with multiple attributes, including a boolean attribute", () => {
         expect.assertions(1);
 
-        expect(inspect(h("div", { "aria-live": "bar", hidden: "", id: "foo" }))).toBe("<div aria-live=\"bar\" hidden id=\"foo\"></div>");
+        expect(inspect(h("div", { "aria-live": "bar", hidden: "", id: "foo" }))).toBe('<div aria-live="bar" hidden id="foo"></div>');
     });
 
-    it("returns output including children", () => {
+    it("should correctly inspect an element with nested children", () => {
         expect.assertions(1);
 
         expect(inspect(h("div", { hidden: "", id: "foo" }, h("pre", {}, h("code", {}, h("span", { style: "color:red" })))))).toBe(
-            "<div hidden id=\"foo\"><pre><code><span style=\"color:red\"></span></code></pre></div>",
+            '<div hidden id="foo"><pre><code><span style="color:red"></span></code></pre></div>',
         );
     });
 
-    describe("maxStringLength", () => {
+    describe("with maxStringLength option", () => {
         let template: object | null = null;
 
         beforeEach(() => {
             template = h("div", { hidden: "", id: "foo" }, h("pre", {}, h("code", {}, h("span", { style: "color:red" }))));
         });
 
-        it("returns the full representation when maxStringLength is over string length", () => {
+        it("should return the full string representation when maxStringLength is greater than the actual length", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { maxStringLength: 100 })).toBe("<div hidden id=\"foo\"><pre><code><span style=\"color:red\"></span></code></pre></div>");
+            expect(inspect(template, { maxStringLength: 100 })).toBe('<div hidden id="foo"><pre><code><span style="color:red"></span></code></pre></div>');
         });
 
-        it("maxStringLengths arguments values longer than maxStringLength (81)", () => {
+        it("should truncate the string representation when maxStringLength is 81", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { maxStringLength: 81 })).toBe("<div hidden id=\"foo\"><pre><code><span …(1)></span></code></pre></div>");
+            expect(inspect(template, { maxStringLength: 81 })).toBe('<div hidden id="foo"><pre><code><span …(1)></span></code></pre></div>');
         });
 
-        it("maxStringLengths arguments values longer than maxStringLength (78)", () => {
+        it("should truncate the string representation when maxStringLength is 78", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { maxStringLength: 78 })).toBe("<div hidden id=\"foo\"><pre><code><span …(1)></span></code></pre></div>");
+            expect(inspect(template, { maxStringLength: 78 })).toBe('<div hidden id="foo"><pre><code><span …(1)></span></code></pre></div>');
         });
 
-        it("maxStringLengths arguments values longer than maxStringLength (64)", () => {
+        it("should truncate the string representation when maxStringLength is 64", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { maxStringLength: 64 })).toBe("<div hidden id=\"foo\"><pre><code>…(1)</code></pre></div>");
+            expect(inspect(template, { maxStringLength: 64 })).toBe('<div hidden id="foo"><pre><code>…(1)</code></pre></div>');
         });
 
-        it("maxStringLengths arguments values longer than maxStringLength (63)", () => {
+        it("should truncate the string representation when maxStringLength is 63", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { maxStringLength: 63 })).toBe("<div hidden id=\"foo\"><pre><code>…(1)</code></pre></div>");
+            expect(inspect(template, { maxStringLength: 63 })).toBe('<div hidden id="foo"><pre><code>…(1)</code></pre></div>');
         });
 
-        it("maxStringLengths arguments values longer than maxStringLength (51)", () => {
+        it("should truncate the string representation when maxStringLength is 51", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { maxStringLength: 51 })).toBe("<div hidden id=\"foo\"><pre>…(1)</pre></div>");
+            expect(inspect(template, { maxStringLength: 51 })).toBe('<div hidden id="foo"><pre>…(1)</pre></div>');
         });
 
-        it("maxStringLengths arguments values longer than maxStringLength (49)", () => {
+        it("should truncate the string representation when maxStringLength is 49", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { maxStringLength: 49 })).toBe("<div hidden id=\"foo\"><pre>…(1)</pre></div>");
+            expect(inspect(template, { maxStringLength: 49 })).toBe('<div hidden id="foo"><pre>…(1)</pre></div>');
         });
 
-        it("maxStringLengths arguments values longer than maxStringLength (26)", () => {
+        it("should truncate the string representation when maxStringLength is 26", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { maxStringLength: 26 })).toBe("<div hidden id=\"foo\">…(1)</div>");
+            expect(inspect(template, { maxStringLength: 26 })).toBe('<div hidden id="foo">…(1)</div>');
         });
 
-        it("maxStringLengths arguments values longer than maxStringLength (25)", () => {
+        it("should truncate the string representation when maxStringLength is 25", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { maxStringLength: 25 })).toBe("<div hidden …(1)>…(1)</div>");
+            expect(inspect(template, { maxStringLength: 25 })).toBe('<div hidden …(1)>…(1)</div>');
         });
 
-        it("maxStringLengths arguments values longer than maxStringLength (24)", () => {
+        it("should truncate the string representation when maxStringLength is 24", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { maxStringLength: 24 })).toBe("<div hidden …(1)>…(1)</div>");
+            expect(inspect(template, { maxStringLength: 24 })).toBe('<div hidden …(1)>…(1)</div>');
         });
 
-        it("disregards maxStringLength when it cannot maxStringLength further (18)", () => {
+        it("should not truncate further when maxStringLength is 18, as it has reached the minimum length", () => {
             expect.assertions(1);
 
             expect(inspect(template, { maxStringLength: 18 })).toBe("<div …(2)>…(1)</div>");
         });
 
-        it("disregards maxStringLength when it cannot maxStringLength further (1)", () => {
+        it("should not truncate further when maxStringLength is 1, as it has reached the minimum length", () => {
             expect.assertions(1);
 
             expect(inspect(template, { maxStringLength: 1 })).toBe("<div …(2)>…(1)</div>");
         });
     });
 
-    describe("hTMLCollection", () => {
-        it("returns html representation of items", () => {
+    describe("inspect with HTMLCollection", () => {
+        it("should correctly inspect an HTMLCollection, showing each element on a new line", () => {
             expect.assertions(1);
 
             const nodes = [h("span"), h("h1")];
@@ -181,8 +181,8 @@ describe.skipIf(globalThis.window === undefined)("hTMLElement", () => {
         });
     });
 
-    describe("nodeList", () => {
-        it("returns html representation of items", () => {
+    describe("inspect with NodeList", () => {
+        it("should correctly inspect a NodeList, showing each node on a new line", () => {
             expect.assertions(1);
 
             const nodes = [h("h1"), document.createTextNode("bar")];

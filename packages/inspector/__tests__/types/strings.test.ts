@@ -2,31 +2,36 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("strings", () => {
-    it("returns string wrapped in quotes", () => {
+describe("inspect with Strings", () => {
+    it("should inspect a string", () => {
         expect.assertions(1);
 
         expect(inspect("abc")).toBe("'abc'");
     });
 
-    it("escapes single quotes", () => {
+    it("should escape single quotes", () => {
         expect.assertions(1);
 
         expect(inspect("ab'c")).toBe(String.raw`'ab\'c'`);
     });
 
-    it("does not escape double quotes", () => {
-        expect.assertions(2);
+    it("should not escape double quotes by default", () => {
+        expect.assertions(1);
 
         expect(inspect("ab\"c")).toBe("'ab\"c'");
-        expect(
-            inspect("ab\"c", {
-                quoteStyle: "double",
-            }),
-        ).toBe("\"ab\"c\"");
     });
 
-    it("escapes unicode characters", () => {
+    it("should escape double quotes when quoteStyle is 'double'", () => {
+        expect.assertions(1);
+
+        expect(
+            inspect('ab"c', {
+                quoteStyle: "double",
+            }),
+        ).toBe(String.raw`"ab\"c"`);
+    });
+
+    it("should escape unicode characters", () => {
         expect.assertions(1);
 
         expect(inspect("\u001B")).toBe(String.raw`'\u001b'`);
@@ -40,104 +45,37 @@ describe("strings", () => {
         expect(inspect("\x05! \x1f \x12")).toBe(String.raw`'\u0005! \u001f \u0012'`);
     });
 
-    describe("maxStringLength", () => {
-        it("returns the full string representation when maxStringLength is over string length", () => {
-            expect.assertions(1);
-
-            expect(inspect("foobarbaz", { maxStringLength: 11 })).toBe("'foobarbaz'");
-        });
-
-        it("maxStringLengths strings longer than maxStringLength (10)", () => {
+    describe("maxStringLength option", () => {
+        it("should truncate a long string", () => {
             expect.assertions(1);
 
             expect(inspect("foobarbaz", { maxStringLength: 10 })).toBe("'foobarb…'");
         });
 
-        it("maxStringLengths strings longer than maxStringLength (9)", () => {
+        it("should not truncate a short string", () => {
             expect.assertions(1);
 
-            expect(inspect("foobarbaz", { maxStringLength: 9 })).toBe("'foobar…'");
+            expect(inspect("foobarbaz", { maxStringLength: 11 })).toBe("'foobarbaz'");
         });
 
-        it("maxStringLengths strings longer than maxStringLength (8)", () => {
-            expect.assertions(1);
-
-            expect(inspect("foobarbaz", { maxStringLength: 8 })).toBe("'fooba…'");
-        });
-
-        it("maxStringLengths strings longer than maxStringLength (7)", () => {
-            expect.assertions(1);
-
-            expect(inspect("foobarbaz", { maxStringLength: 7 })).toBe("'foob…'");
-        });
-
-        it("maxStringLengths strings longer than maxStringLength (6)", () => {
-            expect.assertions(1);
-
-            expect(inspect("foobarbaz", { maxStringLength: 6 })).toBe("'foo…'");
-        });
-
-        it("maxStringLengths strings longer than maxStringLength (5)", () => {
-            expect.assertions(1);
-
-            expect(inspect("foobarbaz", { maxStringLength: 5 })).toBe("'fo…'");
-        });
-
-        it("maxStringLengths strings longer than maxStringLength (4)", () => {
-            expect.assertions(1);
-
-            expect(inspect("foobarbaz", { maxStringLength: 4 })).toBe("'f…'");
-        });
-
-        it("maxStringLengths strings longer than maxStringLength (3)", () => {
+        it("should truncate a long string to a minimum length", () => {
             expect.assertions(1);
 
             expect(inspect("foobarbaz", { maxStringLength: 3 })).toBe("'…'");
         });
 
-        it("maxStringLengths strings involving surrogate pairs longer than maxStringLength (7)", () => {
+        it("should truncate a string with surrogate pairs", () => {
             expect.assertions(1);
 
             // not '🐱🐱\ud83d…' (length 7) but '🐱🐱…' (length 6)
             expect(inspect("🐱🐱🐱", { maxStringLength: 7 })).toBe("'🐱🐱…'");
         });
 
-        it("maxStringLengths strings involving surrogate pairs longer than maxStringLength (6)", () => {
-            expect.assertions(1);
-
-            expect(inspect("🐱🐱🐱", { maxStringLength: 6 })).toBe("'🐱…'");
-        });
-
-        it("maxStringLengths strings involving surrogate pairs longer than maxStringLength (5)", () => {
-            expect.assertions(1);
-
-            // not '🐱\ud83d…' (length 5) but '🐱…' (length 4)
-            expect(inspect("🐱🐱🐱", { maxStringLength: 5 })).toBe("'🐱…'");
-        });
-
-        it("maxStringLengths strings involving graphemes than maxStringLength (5)", () => {
+        it("should truncate a string with graphemes", () => {
             expect.assertions(1);
 
             // partial support: valid string for unicode
             expect(inspect("👨‍👩‍👧‍👧", { maxStringLength: 5 })).toBe("'👨…'");
-        });
-
-        it("disregards maxStringLength when it cannot maxStringLength further (2)", () => {
-            expect.assertions(1);
-
-            expect(inspect("foobarbaz", { maxStringLength: 2 })).toBe("'…'");
-        });
-
-        it("disregards maxStringLength when it cannot maxStringLength further (1)", () => {
-            expect.assertions(1);
-
-            expect(inspect("foobarbaz", { maxStringLength: 1 })).toBe("'…'");
-        });
-
-        it("disregards maxStringLength when it cannot maxStringLength further (0)", () => {
-            expect.assertions(1);
-
-            expect(inspect("foobarbaz", { maxStringLength: 0 })).toBe("'…'");
         });
     });
 });

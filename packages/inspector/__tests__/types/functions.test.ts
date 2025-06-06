@@ -2,21 +2,21 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("functions", () => {
-    it("returns the functions name wrapped in `[Function ]`", () => {
+describe("inspect with Functions", () => {
+    it("should include the function's name in the output", () => {
         expect.assertions(1);
         /* eslint-disable-next-line prefer-arrow-callback */
         expect(inspect(function foo() {})).toBe("[Function: function foo() {\n    }]");
     });
 
-    it("returns the `[Function]` if given anonymous function", () => {
+    it("should identify an anonymous function", () => {
         expect.assertions(1);
 
         /* eslint-disable-next-line prefer-arrow-callback,func-names */
         expect(inspect(function () {})).toBe("[Function: function() {\n    }]");
     });
 
-    it("returns the `[Function]` with the given body", () => {
+    it("should correctly format arrow functions, including their body", () => {
         expect.assertions(2);
 
         expect(inspect(() => 3)).toBe("[Function: () => 3]");
@@ -24,102 +24,82 @@ describe("functions", () => {
         expect(inspect((a: string, b: string, c: string) => a + b + c)).toBe("[Function: (a, b, c) => a + b + c]");
     });
 
-    describe("maxStringLength", () => {
-        it("returns the full representation when maxStringLength is over string length", () => {
+    describe("with maxStringLength option", () => {
+        it("should return the full function name when maxStringLength is sufficient", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 17 })).toBe("[Function foobar]");
         });
 
-        it("maxStringLengths function names longer than maxStringLength (16)", () => {
+        it("should truncate the function name when maxStringLength is 16", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 16 })).toBe("[Function foob…]");
         });
 
-        it("maxStringLengths function names longer than maxStringLength (15)", () => {
+        it("should truncate the function name when maxStringLength is 15", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 15 })).toBe("[Function foo…]");
         });
 
-        it("maxStringLengths function names longer than maxStringLength (14)", () => {
+        it("should truncate the function name when maxStringLength is 14", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 14 })).toBe("[Function fo…]");
         });
 
-        it("maxStringLengths function names longer than maxStringLength (13)", () => {
+        it("should truncate the function name when maxStringLength is 13", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 13 })).toBe("[Function f…]");
         });
 
-        it("maxStringLengths function names longer than maxStringLength (12)", () => {
+        it("should show only a truncation symbol for the name when maxStringLength is 12", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 12 })).toBe("[Function …]");
         });
 
-        it("maxStringLengths function names longer than maxStringLength (11)", () => {
+        it("should show only a truncation symbol for the name when maxStringLength is 11", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 11 })).toBe("[Function …]");
         });
 
-        it("does not maxStringLength decoration even when maxStringLength is short (4)", () => {
-            expect.assertions(1);
+        it("should not truncate the '[Function …]' decoration, even with a small maxStringLength", () => {
+            expect.assertions(5);
 
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 4 })).toBe("[Function …]");
-        });
-
-        it("does not maxStringLength decoration even when maxStringLength is short (3)", () => {
-            expect.assertions(1);
-
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 3 })).toBe("[Function …]");
-        });
-
-        it("does not maxStringLength decoration even when maxStringLength is short (2)", () => {
-            expect.assertions(1);
-
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 2 })).toBe("[Function …]");
-        });
-
-        it("does not maxStringLength decoration even when maxStringLength is short (1)", () => {
-            expect.assertions(1);
-
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 1 })).toBe("[Function …]");
-        });
-
-        it("does not maxStringLength decoration even when maxStringLength is short (0)", () => {
-            expect.assertions(1);
-
             /* eslint-disable-next-line prefer-arrow-callback */
             expect(inspect(function foobar() {}, { maxStringLength: 0 })).toBe("[Function …]");
         });
     });
 });
 
-describe("async functions", () => {
-    it("returns the functions name wrapped in `[AsyncFunction ]`", () => {
+describe("inspect with Async functions", () => {
+    it("should include 'AsyncFunction' in the output for a named async function", () => {
         expect.assertions(1);
 
         /* eslint-disable-next-line prefer-arrow-callback */
         expect(inspect(async function foo() {})).toBe("[AsyncFunction: async function foo() {\n    }]");
     });
 
-    it("returns the `[AsyncFunction]` if given anonymous function", () => {
+    it("should identify an anonymous async function", () => {
         expect.assertions(1);
 
         /* eslint-disable-next-line prefer-arrow-callback,func-names */
@@ -127,14 +107,14 @@ describe("async functions", () => {
     });
 });
 
-describe("generator functions", () => {
-    it("returns the functions name wrapped in `[GeneratorFunction ]`", () => {
+describe("inspect with Generator functions", () => {
+    it("should include 'GeneratorFunction' in the output for a named generator function", () => {
         expect.assertions(1);
 
         expect(inspect(function* foo() {})).toBe("[GeneratorFunction: function* foo() {\n    }]");
     });
 
-    it("returns the `[GeneratorFunction]` if given a generator function", () => {
+    it("should identify an anonymous generator function", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line func-names
@@ -142,14 +122,14 @@ describe("generator functions", () => {
     });
 });
 
-describe("async generator functions", () => {
-    it("returns the functions name wrapped in `[AsyncGeneratorFunction ]`", () => {
+describe("inspect with AsyncGenerator functions", () => {
+    it("should include 'AsyncGeneratorFunction' in the output for a named async generator function", () => {
         expect.assertions(1);
 
         expect(inspect(async function* foo() {})).toBe("[AsyncGeneratorFunction: async function* foo() {\n    }]");
     });
 
-    it("returns the `[AsyncGeneratorFunction]` if given a async generator function", () => {
+    it("should identify an anonymous async generator function", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line func-names

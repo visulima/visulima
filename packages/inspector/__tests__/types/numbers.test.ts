@@ -2,125 +2,125 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("numbers", () => {
-    it("returns number as passed in", () => {
+describe("inspect with Numbers", () => {
+    it("should return a standard number as a string", () => {
         expect.assertions(1);
 
         expect(inspect(3.141)).toBe("3.141");
     });
 
-    it("returns 0 as +0", () => {
+    it("should represent 0 as '+0'", () => {
         expect.assertions(1);
 
         expect(inspect(0)).toBe("+0");
     });
 
-    it("returns -0 as -0", () => {
+    it("should represent -0 as '-0'", () => {
         expect.assertions(1);
 
         expect(inspect(-0)).toBe("-0");
     });
 
-    it("uses scientific notation where possible", () => {
+    it("should use scientific notation for very large numbers", () => {
         expect.assertions(1);
 
         expect(inspect(1e300)).toBe("1e+300");
     });
 
-    describe("maxStringLength", () => {
-        it("returns the full representation when maxStringLength is over string length", () => {
+    describe("with maxStringLength option", () => {
+        it("should return the full representation when maxStringLength is greater than the actual length", () => {
             expect.assertions(2);
 
             expect(inspect(3.141_592_654, { maxStringLength: 11, numericSeparator: false })).toBe("3.141592654");
             expect(inspect(3.141_592_654, { maxStringLength: 11 })).toBe("3.141_592_…");
         });
 
-        it("maxStringLengths numbers longer than maxStringLength (10)", () => {
+        it("should truncate the number string when maxStringLength is 10", () => {
             expect.assertions(2);
 
             expect(inspect(3.141_592_654, { maxStringLength: 10, numericSeparator: false })).toBe("3.1415926…");
             expect(inspect(3.141_592_654, { maxStringLength: 10 })).toBe("3.141_592…");
         });
 
-        it("maxStringLengths numbers longer than maxStringLength (9)", () => {
+        it("should truncate the number string when maxStringLength is 9", () => {
             expect.assertions(2);
 
             expect(inspect(3.141_592_654, { maxStringLength: 9, numericSeparator: false })).toBe("3.141592…");
             expect(inspect(3.141_592_654, { maxStringLength: 9 })).toBe("3.141_59…");
         });
 
-        it("maxStringLengths numbers longer than maxStringLength (8)", () => {
+        it("should truncate the number string when maxStringLength is 8", () => {
             expect.assertions(2);
 
             expect(inspect(3.141_592_654, { maxStringLength: 8, numericSeparator: false })).toBe("3.14159…");
             expect(inspect(3.141_592_654, { maxStringLength: 8 })).toBe("3.141_5…");
         });
 
-        it("maxStringLengths numbers longer than maxStringLength (7)", () => {
+        it("should truncate the number string when maxStringLength is 7", () => {
             expect.assertions(2);
 
             expect(inspect(3.141_592_654, { maxStringLength: 7, numericSeparator: false })).toBe("3.1415…");
             expect(inspect(3.141_592_654, { maxStringLength: 7 })).toBe("3.141_…");
         });
 
-        it("maxStringLengths numbers longer than maxStringLength (6)", () => {
+        it("should truncate the number string when maxStringLength is 6", () => {
             expect.assertions(1);
 
             expect(inspect(3.141_592_654, { maxStringLength: 6 })).toBe("3.141…");
         });
 
-        it("maxStringLengths numbers longer than maxStringLength (5)", () => {
+        it("should truncate the number string when maxStringLength is 5", () => {
             expect.assertions(1);
 
             expect(inspect(3.141_592_654, { maxStringLength: 5 })).toBe("3.14…");
         });
 
-        it("maxStringLengths numbers longer than maxStringLength (4)", () => {
+        it("should truncate the number string when maxStringLength is 4", () => {
             expect.assertions(1);
 
             expect(inspect(3.141_592_654, { maxStringLength: 4 })).toBe("3.1…");
         });
 
-        it("maxStringLengths numbers longer than maxStringLength (3)", () => {
+        it("should truncate the number string when maxStringLength is 3", () => {
             expect.assertions(1);
 
             expect(inspect(3.141_592_654, { maxStringLength: 3 })).toBe("3.…");
         });
 
-        it("maxStringLengths numbers longer than maxStringLength (2)", () => {
+        it("should truncate the number string when maxStringLength is 2", () => {
             expect.assertions(1);
 
             expect(inspect(3.141_592_654, { maxStringLength: 2 })).toBe("3…");
         });
 
-        it("maxStringLengths numbers longer than maxStringLength (1)", () => {
+        it("should show only '…' when maxStringLength is 1", () => {
             expect.assertions(1);
 
             expect(inspect(3.141_592_654, { maxStringLength: 1 })).toBe("…");
         });
 
-        it("disregards maxStringLength when it cannot maxStringLength further (0)", () => {
+        it("should show only '…' when maxStringLength is 0 for a long number", () => {
             expect.assertions(1);
 
             expect(inspect(3.141_592_654, { maxStringLength: 0 })).toBe("…");
         });
 
-        it("does not maxStringLength if tail is same length as value", () => {
+        it("should not truncate if the truncation tail is the same length as the value", () => {
             expect.assertions(1);
 
             expect(inspect(3, { maxStringLength: 0 })).toBe("3");
         });
     });
 
-    describe("naN", () => {
-        it("returns `NaN`", () => {
+    describe("inspect with NaN", () => {
+        it("should return the string 'NaN'", () => {
             expect.assertions(1);
 
             expect(inspect(Number.NaN)).toBe("NaN");
         });
 
-        describe("maxStringLength", () => {
-            it("returns the full string representation regardless of maxStringLength", () => {
+        describe("with maxStringLength option", () => {
+            it("should not truncate 'NaN' regardless of maxStringLength", () => {
                 expect.assertions(9);
 
                 expect(inspect(Number.NaN, { maxStringLength: 9 })).toBe("NaN");
@@ -136,15 +136,15 @@ describe("numbers", () => {
         });
     });
 
-    describe("infinity", () => {
-        it("returns `Infinity`", () => {
+    describe("inspect with Infinity", () => {
+        it("should return the string 'Infinity'", () => {
             expect.assertions(1);
 
             expect(inspect(Number.POSITIVE_INFINITY)).toBe("Infinity");
         });
 
-        describe("maxStringLength", () => {
-            it("returns the full string representation regardless of maxStringLength", () => {
+        describe("with maxStringLength option", () => {
+            it("should not truncate 'Infinity' regardless of maxStringLength", () => {
                 expect.assertions(9);
 
                 expect(inspect(Number.POSITIVE_INFINITY, { maxStringLength: 9 })).toBe("Infinity");
@@ -160,15 +160,15 @@ describe("numbers", () => {
         });
     });
 
-    describe("-Infinity", () => {
-        it("returns `-Infinity`", () => {
+    describe("inspect with -Infinity", () => {
+        it("should return the string '-Infinity'", () => {
             expect.assertions(1);
 
             expect(inspect(Number.NEGATIVE_INFINITY)).toBe("-Infinity");
         });
 
-        describe("maxStringLength", () => {
-            it("returns the full string representation regardless of maxStringLength", () => {
+        describe("with maxStringLength option", () => {
+            it("should not truncate '-Infinity' regardless of maxStringLength", () => {
                 expect.assertions(9);
 
                 expect(inspect(Number.NEGATIVE_INFINITY, { maxStringLength: 9 })).toBe("-Infinity");

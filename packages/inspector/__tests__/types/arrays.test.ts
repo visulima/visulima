@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("arrays", () => {
-    it("returns `[]` for empty arrays", () => {
+describe("inspect with Arrays", () => {
+    it("should return '[]' for an empty array", () => {
         expect.assertions(1);
 
         expect(inspect([])).toBe("[]");
     });
 
-    it("simple array with all single line elements", () => {
+    it("should inspect a simple array with single-line elements", () => {
         expect.assertions(2);
 
         const object = [1, 2, 3, "asdf\nsdf"];
@@ -20,7 +20,7 @@ describe("arrays", () => {
         expect(inspect(object, { indent: "\t" })).toBe(expected);
     });
 
-    it("should return a indent array with complex elements", () => {
+    it("should correctly indent an array with complex, multi-line elements", () => {
         expect.assertions(2);
 
         const value = [1, { a: 1, b: { c: 1 } }, "asdf\nsdf"];
@@ -43,7 +43,7 @@ describe("arrays", () => {
         `);
     });
 
-    it("should return a values array with indent", () => {
+    it("should correctly indent an array of objects and arrays", () => {
         expect.assertions(2);
 
         const object = [{}, [], { "a-b": 5 }];
@@ -64,92 +64,92 @@ describe("arrays", () => {
         `);
     });
 
-    describe("maxStringLength", () => {
-        it("returns the full representation when maxStringLength is over string length", () => {
+    describe("with maxStringLength option", () => {
+        it("should return the full representation when maxStringLength is greater than the actual length", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 17 })).toBe("[ 'a', 'b', 'c' ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (14)", () => {
+        it("should truncate the array representation when maxStringLength is 14", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 14 })).toBe("[ 'a', …(2) ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (13)", () => {
+        it("should truncate the array representation when maxStringLength is 13", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 13 })).toBe("[ 'a', …(2) ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (12)", () => {
+        it("should truncate the array representation when maxStringLength is 12", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 12 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (11)", () => {
+        it("should truncate the array representation when maxStringLength is 11", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 11 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (10)", () => {
+        it("should truncate the array representation when maxStringLength is 10", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 10 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (9)", () => {
+        it("should truncate the array representation when maxStringLength is 9", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 9 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (8)", () => {
+        it("should truncate the array representation when maxStringLength is 8", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 8 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (7)", () => {
+        it("should truncate the array representation when maxStringLength is 7", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 7 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (6)", () => {
+        it("should truncate the array representation when maxStringLength is 6", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 6 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (5)", () => {
+        it("should truncate the array representation when maxStringLength is 5", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 5 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths array values longer than maxStringLength (4)", () => {
+        it("should truncate the array representation when maxStringLength is 4", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 4 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths whole array if maxStringLength 3 or less (3)", () => {
+        it("should truncate the whole array when maxStringLength is 3", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 3 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths whole array if maxStringLength 3 or less (2)", () => {
+        it("should truncate the whole array when maxStringLength is 2", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 2 })).toBe("[ …(3) ]");
         });
 
-        it("maxStringLengths whole array if maxStringLength 3 or less (1)", () => {
+        it("should truncate the whole array when maxStringLength is 1", () => {
             expect.assertions(1);
 
             expect(inspect(["a", "b", "c"], { maxStringLength: 1 })).toBe("[ …(3) ]");
@@ -157,7 +157,7 @@ describe("arrays", () => {
     });
 
     describe("non-integer properties", () => {
-        it("outputs non-integer properties right after standard list items", () => {
+        it("should display non-integer properties after the array elements", () => {
             expect.assertions(1);
 
             const array = ["a", "b", "c"];
@@ -169,8 +169,8 @@ describe("arrays", () => {
         });
     });
 
-    describe("sorted", () => {
-        it("outputs sorted non-integer properties", () => {
+    describe("with sorted option", () => {
+        it("should sort and display non-integer properties when 'sorted' is true", () => {
             expect.assertions(1);
 
             const array = ["a", "b", "c"];
@@ -184,7 +184,7 @@ describe("arrays", () => {
         });
     });
 
-    it("should return hole in array in the correct order", () => {
+    it("should correctly represent holes in a sparse array as 'undefined'", () => {
         expect.assertions(1);
 
         const xs = ["a", "b"];
