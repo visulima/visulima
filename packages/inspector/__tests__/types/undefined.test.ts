@@ -2,15 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("undefined", () => {
-    it("returns `undefined`", () => {
+describe("inspect with undefined", () => {
+    it("should inspect undefined", () => {
         expect.assertions(1);
 
         expect(inspect(undefined)).toBe("undefined");
     });
 
-    describe("maxStringLength", () => {
-        it("returns the full string representation regardless of maxStringLength", () => {
+    describe("maxStringLength option", () => {
+        it("should return the full string representation regardless of maxStringLength", () => {
             expect.assertions(9);
 
             expect(inspect(undefined, { maxStringLength: 9 })).toBe("undefined");

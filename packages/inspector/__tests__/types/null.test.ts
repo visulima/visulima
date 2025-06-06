@@ -2,15 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("null", () => {
-    it("returns `null`", () => {
+describe("inspect with null", () => {
+    it("should return the string 'null' for a null value", () => {
         expect.assertions(1);
 
         expect(inspect(null)).toBe("null");
     });
 
-    describe("maxStringLength", () => {
-        it("returns the full string representation regardless of maxStringLength", () => {
+    describe("with maxStringLength option", () => {
+        it("should not truncate the 'null' representation, regardless of maxStringLength", () => {
             expect.assertions(9);
 
             expect(inspect(null, { maxStringLength: 9 })).toBe("null");

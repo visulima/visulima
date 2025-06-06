@@ -2531,6 +2531,9 @@ importers:
       eslint-plugin-playwright:
         specifier: 2.2.0
         version: 2.2.0(eslint@9.28.0(jiti@2.4.2))
+      jiti:
+        specifier: 2.4.2
+        version: 2.4.2
       playwright:
         specifier: ^1.52.0
         version: 1.52.0

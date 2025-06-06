@@ -91,6 +91,7 @@
         "ts:coverage": "typescript-coverage-report"
     },
     "devDependencies": {
+        "jiti": "2.4.2",
         "@anolilab/eslint-config": "^16.2.13",
         "@anolilab/semantic-release-pnpm": "1.1.12",
         "@anolilab/semantic-release-preset": "^10.0.6",
