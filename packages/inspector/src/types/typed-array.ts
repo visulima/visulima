@@ -38,7 +38,7 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
     const nonIndexProperties = Object.keys(array).slice(array.length);
 
     if (array.length === 0 && nonIndexProperties.length === 0) {
-        return `${name}[]`;
+        return `${name}${name === "Buffer" ? "" : " (0) "}[]`;
     }
 
     const allItems = [...array, ...nonIndexProperties.map((key) => [key, array[key as keyof typeof array]])];
@@ -64,7 +64,7 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
         returnValue = indentedJoin(returnValue, indent as Indent);
     }
 
-    return `${name}[ ${returnValue} ]`;
+    return `${name}${name === "Buffer" ? "" : ` (${array.length}) `}[ ${returnValue} ]`;
 };
 
 export default inspectTypedArray;
