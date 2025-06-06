@@ -209,7 +209,7 @@
         "conventional-changelog-conventionalcommits": "9.0.0",
         "cross-env": "^7.0.3",
         "detect-indent": "^7.0.1",
-        "esbuild": "0.25.4",
+        "esbuild": "0.25.5",
         "eslint": "8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -226,14 +226,14 @@
         "tempy": "^3.1.0",
         "type-fest": "^4.41.0",
         "typedoc": "0.28.4",
-        "typedoc-plugin-markdown": "4.6.3",
+        "typedoc-plugin-markdown": "4.6.4",
         "typedoc-plugin-rename-defaults": "0.7.3",
         "typescript": "5.8.3",
         "vitest": "^3.1.4",
         "yaml": "^2.8.0"
     },
     "peerDependencies": {
-        "yaml": "^2.7.0"
+        "yaml": "^2.7.1"
     },
     "peerDependenciesMeta": {
         "yaml": {
