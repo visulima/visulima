@@ -1,4 +1,5 @@
 import type { VisulimaError } from "@visulima/error/error";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import externalLinkIcon from "lucide-static/icons/external-link.svg";
 
 import type { SolutionError, SolutionFinder } from "../../../types";

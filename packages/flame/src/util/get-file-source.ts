@@ -1,27 +1,29 @@
+import { readFile } from "node:fs/promises";
 import type { Readable } from "node:stream";
+import { fileURLToPath } from "node:url";
 
 import { getUri } from "get-uri";
 
 const cache = new Map<string, string>();
 
-const streamToString = async (stream: Readable) => {
-    const chunks = [];
+const streamToString = (stream: Readable): Promise<string> => {
+    const chunks: Buffer[] = [];
 
-    try {
-        for await (const chunk of stream) {
+    return new Promise((resolve, reject) => {
+        stream.on("data", (chunk) => {
             chunks.push(Buffer.from(chunk));
-        }
-
-        return Buffer.concat(chunks).toString("utf-8");
-    } finally {
-        if (stream.destroy) {
-            stream.destroy();
-        }
-    }
+        });
+        stream.on("error", (error) => {
+            reject(error);
+        });
+        stream.on("end", () => {
+            resolve(Buffer.concat(chunks).toString("utf8"));
+        });
+    });
 };
 
 const getFileSource = async (file: string): Promise<string | undefined> => {
-    if (!/^(http|https|file):\/\/|data:/.test(file)) {
+    if (!/^(?:http|https|file|data):/.test(file)) {
         return undefined;
     }
 
@@ -29,11 +31,24 @@ const getFileSource = async (file: string): Promise<string | undefined> => {
         return cache.get(file);
     }
 
+    if (file.startsWith("file:")) {
+        try {
+            const path = fileURLToPath(file);
+            const source = await readFile(path, "utf8");
+
+            cache.set(file, source);
+
+            return source;
+        } catch (error) {
+            console.log(error);
+
+            return undefined;
+        }
+    }
+
     try {
         const fileContent = await getUri(file);
-console.log(fileContent)
-        // TODO: fix this
-        const source = ""; // await streamToString(fileContent);
+        const source = await streamToString(fileContent);
 
         cache.set(file, source);
 
