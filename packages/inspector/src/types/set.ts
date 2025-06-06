@@ -10,7 +10,19 @@ const inspectSet: InspectType<Set<unknown>> = (set: Set<unknown>, options: Optio
     // eslint-disable-next-line no-param-reassign
     options.maxStringLength -= 7;
 
-    let returnValue = inspectList([...set], set, options, inspect);
+    const entries = [...set];
+
+    if (options.sorted) {
+        entries.sort((a, b) => {
+            if (typeof options.sorted === "function") {
+                return options.sorted(String(a), String(b));
+            }
+
+            return String(a).localeCompare(String(b));
+        });
+    }
+
+    let returnValue = inspectList(entries, set, options, inspect);
 
     if (indent) {
         returnValue = indentedJoin(returnValue, indent);

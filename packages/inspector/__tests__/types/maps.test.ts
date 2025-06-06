@@ -635,4 +635,46 @@ describe("maps", () => {
             ).toBe("Map (3) { …(3) }");
         });
     });
+
+    describe("sorted", () => {
+        it("returns the map with sorted keys", () => {
+            expect.assertions(1);
+
+            expect(
+                inspect(
+                    new Map([
+                        ["a", 2],
+                        ["b", 1],
+                    ]),
+                    { sorted: true },
+                ),
+            ).toBe("Map (2) { 'a' => 2, 'b' => 1 }");
+        });
+
+        it("returns the map with sorted keys using a custom sort function", () => {
+            expect.assertions(1);
+
+            expect(
+                inspect(
+                    new Map([
+                        ["a", 2],
+                        ["b", 1],
+                    ]),
+                    {
+                        sorted: (a, b) => {
+                            if (a > b) {
+                                return -1;
+                            }
+
+                            if (a < b) {
+                                return 1;
+                            }
+
+                            return 0;
+                        },
+                    },
+                ),
+            ).toBe("Map (2) { 'b' => 1, 'a' => 2 }");
+        });
+    });
 });

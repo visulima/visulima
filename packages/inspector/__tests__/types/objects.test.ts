@@ -244,6 +244,81 @@ describe.each([
             expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 1 })).toBe(`${tag}{ …(3) }`);
         });
     });
+
+    describe("sorted", () => {
+        it("returns the object with sorted keys", () => {
+            expect.assertions(1);
+
+            expect(function_({ a: 2, b: 1 }, { sorted: true })).toBe(`${tag}{ a: 2, b: 1 }`);
+        });
+
+        it("returns the object with sorted keys using a custom sort function", () => {
+            expect.assertions(1);
+
+            expect(
+                function_({ a: 2, b: 1 }, {
+                    sorted: (a, b) => {
+                        if (a > b) {
+                            return -1;
+                        }
+
+                        if (a < b) {
+                            return 1;
+                        }
+
+                        return 0;
+                    },
+                }),
+            ).toBe(`${tag}{ b: 1, a: 2 }`);
+        });
+    });
+
+    describe("getters", () => {
+        it("returns the object with getters invoked", () => {
+            expect.assertions(1);
+
+            expect(function_({ get a() { return 1; } }, { getters: true })).toBe(`${tag}{ a: 1 }`);
+        });
+
+        it("returns the object with getters invoked (get)", () => {
+            expect.assertions(1);
+
+            expect(function_({ get a() { return 1; } }, { getters: "get" })).toBe(`${tag}{ a: 1 }`);
+        });
+
+        it("returns the object with getters invoked (set)", () => {
+            expect.assertions(1);
+
+            expect(function_({ get a() { return 1; }, set a(v) {} }, { getters: "set" })).toBe(`${tag}{ a: 1 }`);
+        });
+
+        it("returns the object with getters not invoked if they have a setter", () => {
+            expect.assertions(1);
+
+            expect(function_({ get a() { return 1; }, set a(v) {} }, { getters: "get" })).toBe(`${tag}${name === "objects" ? `{ a: [Function: get a() {\n        return 1;\n      }] }` : "{ a: 1 }"}`);
+        });
+
+        it("returns the object with getters not invoked if they don't have a setter", () => {
+            expect.assertions(1);
+
+            expect(function_({ get a() { return 1; } }, { getters: "set" })).toBe(`${tag}${name === "objects" ? `{ a: [Function: get a() {\n        return 1;\n      }] }` : "{ a: 1 }"}`);
+        });
+
+        it("catches errors thrown by getters", () => {
+            expect.assertions(1);
+
+            expect(
+               function_(
+                    {
+                        get a() {
+                            throw new Error("test");
+                        },
+                    },
+                    { getters: true },
+                ),
+            ).toBe(`${tag}{ a: [Function: get a] }`);
+        });
+    });
 });
 
 describe("object prototype", () => {

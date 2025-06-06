@@ -28,7 +28,19 @@ const inspectMap: InspectType<Map<unknown, unknown>> = (
     // eslint-disable-next-line no-param-reassign
     options.maxStringLength -= 7;
 
-    let returnValue = inspectList([...map.entries()], map, options, inspect, inspectMapEntry);
+    const entries = [...map.entries()];
+
+    if (options.sorted) {
+        entries.sort((a, b) => {
+            if (typeof options.sorted === "function") {
+                return options.sorted(String(a[0]), String(b[0]));
+            }
+
+            return String(a[0]).localeCompare(String(b[0]));
+        });
+    }
+
+    let returnValue = inspectList(entries, map, options, inspect, inspectMapEntry);
 
     if (indent) {
         returnValue = indentedJoin(returnValue, indent);
