@@ -1,0 +1,194 @@
+{
+    "name": "@visulima/flame",
+    "version": "0.0.0",
+    "description": "A Powerful Error Response System For Both Development And Production.",
+    "keywords": [
+        "visulima",
+        "anolilab",
+        "error",
+        "exception",
+        "exceptions",
+        "whoops",
+        "youch",
+        "error-handler",
+        "error-handler-middleware",
+        "error-overlay",
+        "vite",
+        "webpack",
+        "error-reporting",
+        "code-frame",
+        "codeframe",
+        "bug",
+        "reporting",
+        "stacktrace",
+        "diagnostic",
+        "source-code-preview",
+        "cli",
+        "console"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/flame",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/flame"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": true,
+    "type": "module",
+    "exports": {
+        ".": {
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            }
+        },
+        "./displayer/cli": {
+            "require": {
+                "types": "./dist/displayer/cli-displayer.d.cts",
+                "default": "./dist/displayer/cli-displayer.cjs"
+            },
+            "import": {
+                "types": "./dist/displayer/cli-displayer.d.mts",
+                "default": "./dist/displayer/cli-displayer.mjs"
+            }
+        },
+        "./displayer/http": {
+            "require": {
+                "types": "./dist/displayer/http-displayer.d.cts",
+                "default": "./dist/displayer/http-displayer.cjs"
+            },
+            "import": {
+                "types": "./dist/displayer/http-displayer.d.mts",
+                "default": "./dist/displayer/http-displayer.mjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "types": "dist/index.d.ts",
+    "main": "dist/index.cjs",
+    "module": "dist/index.mjs",
+    "typesVersions": {
+        "*": [
+            "dist/index.d.ts"
+        ]
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "packem build --development --watch --onSuccess 'node ./examples/index.js'",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint .",
+        "lint:eslint:fix": "eslint . --fix",
+        "lint:package-json": "publint --strict",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@visulima/error": "workspace:*",
+        "@visulima/find-cache-dir": "workspace:*",
+        "get-uri": "^6.0.4"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.2.10",
+        "@anolilab/semantic-release-preset": "^10.0.5",
+        "@babel/core": "^7.27.4",
+        "@eslint/css": "0.8.1",
+        "@tailwindcss/forms": "^0.5.10",
+        "@tailwindcss/postcss": "4.1.8",
+        "@tailwindcss/typography": "^0.5.16",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/node": "22.15.29",
+        "@types/sanitize-html": "^2.16.0",
+        "@visulima/packem": "1.19.4",
+        "@vitest/coverage-v8": "^3.2.1",
+        "cross-env": "^7.0.3",
+        "cssnano": "7.0.7",
+        "esbuild": "0.25.5",
+        "eslint": "^9.28.0",
+        "icss-utils": "5.1.0",
+        "lucide-static": "^0.511.0",
+        "marked": "^15.0.12",
+        "open-editor": "^5.1.0",
+        "openai": "5.1.0",
+        "postcss": "^8.5.4",
+        "postcss-focus-visible": "^10.0.1",
+        "postcss-load-config": "6.0.1",
+        "postcss-modules-extract-imports": "3.1.0",
+        "postcss-modules-local-by-default": "4.2.0",
+        "postcss-modules-scope": "3.2.1",
+        "postcss-modules-values": "4.0.0",
+        "postcss-value-parser": "4.2.0",
+        "rimraf": "^6.0.1",
+        "sanitize-html": "^2.17.0",
+        "semantic-release": "^24.2.5",
+        "shiki": "^3.4.2",
+        "sort-package-json": "^3.2.1",
+        "tailwindcss": "^4.1.8",
+        "typescript": "^5.8.3",
+        "vite": "^6.3.5",
+        "vitest": "^3.2.1"
+    },
+    "peerDependencies": {
+        "clipboard": "^2.0.11",
+        "marked": "^11.0.0",
+        "open-editor": "^4.1.1",
+        "openai": "4.20.1",
+        "sanitize-html": "^2.11.0",
+        "shiki": "^3.4.0"
+    },
+    "peerDependenciesMeta": {
+        "openai": {
+            "optional": true
+        },
+        "marked": {
+            "optional": true
+        },
+        "clipboard": {
+            "optional": true
+        },
+        "open-editor": {
+            "optional": true
+        },
+        "sanitize-html": {
+            "optional": true
+        },
+        "shiki": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

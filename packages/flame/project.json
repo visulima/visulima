@@ -1,0 +1,10 @@
+{
+    "name": "flame",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/flame/src",
+    "projectType": "library",
+    "tags": ["flame", "type:package"],
+    "implicitDependencies": [
+        "error"
+    ]
+}
