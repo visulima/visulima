@@ -20,8 +20,7 @@ const getArrayName = (array: TypedArray): string => {
 };
 
 // This custom inspector can handle both numbers and property pairs
-const inspectTypedArrayItem = (item: unknown, object: unknown, options: Options, inspect: InternalInspect): string => {
-    console.log(typeof item, item)
+const inspectTypedArrayItem = (item: [unknown, unknown], object: unknown, options: Options, inspect: InternalInspect): string => {
     if (Array.isArray(item)) {
         // It's a property `[key, value]`
         return inspectProperty(item, object, options, inspect);

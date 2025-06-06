@@ -54,7 +54,7 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
 
     let stringTag = "";
 
-    if (!isPlainObject && typeof Symbol !== "undefined" && Symbol.toStringTag in object) {
+    if (!isPlainObject && typeof object === "object" && typeof Symbol !== "undefined" && Symbol.toStringTag in object) {
         stringTag = object[Symbol.toStringTag] as string;
     } else if (protoTag) {
         stringTag = "Object";

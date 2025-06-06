@@ -7,7 +7,7 @@ export type Indent = {
 
 export type InternalInspect = (input: unknown, from: unknown, options: Options) => string;
 
-export type InspectType<V> = (input: V, options: Options, inspect: InternalInspect, indent: Indent | undefined, depth: number) => string;
+export type InspectType<V> = (input: V, options: Options, inspect?: InternalInspect, indent?: Indent, depth?: number) => string;
 
 export type Inspect = (input: unknown, options: Options) => string;
 
@@ -37,10 +37,10 @@ export interface Options {
     /**
      * Specifies the number of times to recurse while formatting object.
      * This is useful for inspecting large objects.
-     * To recurse up to the maximum call stack size pass `Infinity` or `null`.
+     * To recurse up to the maximum call stack size pass `Infinity` or `undefined`.
      * @default 5
      */
-    depth: number | null;
+    depth: number | undefined;
 
     /**
      * If set to `true`, getters are inspected.
@@ -63,14 +63,14 @@ export interface Options {
      * Set to `null` or `Infinity` to show all elements. Set to `0` or negative to show no elements.
      * @default Number.POSITIVE_INFINITY
      */
-    maxArrayLength: number | null;
+    maxArrayLength: number;
 
     /**
      * Specifies the maximum number of characters to include when formatting.
      * Set to `null` or `Infinity` to show all elements. Set to `0` or negative to show no characters.
      * @default Number.POSITIVE_INFINITY
      */
-    maxStringLength: number | null;
+    maxStringLength: number;
 
     /**
      * If set to `true`, an underscore is used to separate every three digits in all bigints and numbers.
@@ -113,3 +113,7 @@ export interface Options {
         styleType: LiteralUnion<"bigint" | "boolean" | "date" | "null" | "number" | "regexp" | "special" | "string" | "symbol" | "undefined", string>,
     ) => string;
 }
+
+export type InternalOptions = Options & {
+    proxyHandler?: InspectType<typeof Proxy>;
+};
