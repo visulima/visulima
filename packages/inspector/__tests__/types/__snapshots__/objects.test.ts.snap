@@ -15,19 +15,3 @@ exports[`inspect with Objects with null prototype > should correctly indent a si
 exports[`inspect with Objects with null prototype > should correctly indent a two-level nested object > two deep object with indent 1`] = `"{ a: 1, b: { c: 3, d: 4 } }"`;
 
 exports[`inspect with Objects with null prototype > should correctly indent a two-level nested object > two deep object with indent 2`] = `"{ a: 1, b: { c: 3, d: 4 } }"`;
-
-exports[`objects (Object.create(null)) > should show a simple object with indent > simple object with indent 1`] = `"{ a: 1, b: 2 }"`;
-
-exports[`objects (Object.create(null)) > should show a simple object with indent > simple object with indent 2`] = `"{ a: 1, b: 2 }"`;
-
-exports[`objects (Object.create(null)) > should show two deep object with indent > two deep object with indent 1`] = `"{ a: 1, b: { c: 3, d: 4 } }"`;
-
-exports[`objects (Object.create(null)) > should show two deep object with indent > two deep object with indent 2`] = `"{ a: 1, b: { c: 3, d: 4 } }"`;
-
-exports[`objects > should show a simple object with indent > simple object with indent 1`] = `"{ a: 1, b: 2 }"`;
-
-exports[`objects > should show a simple object with indent > simple object with indent 2`] = `"{ a: 1, b: 2 }"`;
-
-exports[`objects > should show two deep object with indent > two deep object with indent 1`] = `"{ a: 1, b: { c: 3, d: 4 } }"`;
-
-exports[`objects > should show two deep object with indent > two deep object with indent 2`] = `"{ a: 1, b: { c: 3, d: 4 } }"`;
