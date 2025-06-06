@@ -26,13 +26,13 @@
     "dependencies": {
         "@code-hike/mdx": "^0.9.0",
         "@next/env": "^15.3.2",
-        "@t3-oss/env-nextjs": "^0.13.4",
+        "@t3-oss/env-nextjs": "^0.13.6",
         "@vercel/og": "^0.6.8",
         "@visulima/fs": "workspace:*",
         "@visulima/nextra-theme-docs": "4.0.26",
         "clsx": "^2.1.1",
         "fathom-client": "^3.7.2",
-        "framer-motion": "^12.12.1",
+        "framer-motion": "^12.12.2",
         "fs-extra": "^11.3.0",
         "lucide-react": "^0.511.0",
         "next": "^15.3.2",
@@ -41,7 +41,7 @@
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "yargs": "^17.7.2",
-        "zod": "^3.25.13"
+        "zod": "^3.25.49"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
