@@ -14,6 +14,18 @@ const gPO = (typeof Reflect === "function" ? Reflect.getPrototypeOf : Object.get
         }
         : undefined);
 
+const getKeys = (object: object, options: Options): (string | symbol)[] => {
+    const keys: (string | symbol)[] = Object.getOwnPropertyNames(object);
+
+    if (options.showHidden) {
+        const symbols = Object.getOwnPropertySymbols(object);
+
+        return [...keys, ...symbols];
+    }
+
+    return keys;
+};
+
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const inspectObject: InspectType<object> = (object: object, options: Options, inspect: InternalInspect, indent: Indent | undefined): string => {
     if (globalThis.window !== undefined && object === globalThis) {
@@ -24,7 +36,18 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
         return "{ [object globalThis] }";
     }
 
-    const properties = Object.getOwnPropertyNames(object);
+    const properties = getKeys(object, options);
+
+    if (options.sorted) {
+        properties.sort((a, b) => {
+            if (typeof options.sorted === "function") {
+                return options.sorted(String(a), String(b));
+            }
+
+            return String(a).localeCompare(String(b));
+        });
+    }
+
     const symbols = Object.getOwnPropertySymbols ? Object.getOwnPropertySymbols(object) : [];
     const isPlainObject = gPO(object) === Object.prototype || object.constructor === Object;
     const protoTag = object instanceof Object ? "" : "null prototype";
@@ -71,7 +94,27 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
     options.maxStringLength -= 4;
 
     const propertyContents = inspectList(
-        properties.map((key) => [key, object[key as keyof typeof object]]),
+        properties.map((key) => {
+            const descriptor = Object.getOwnPropertyDescriptor(object, key);
+
+            if (descriptor?.get) {
+                if (options.getters) {
+                    const invoke = options.getters === true || (options.getters === "get" && !descriptor.set) || (options.getters === "set" && !!descriptor.set);
+
+                    if (invoke) {
+                        try {
+                            return [key, descriptor.get.call(object)];
+                        } catch {
+                            // ignore
+                        }
+                    }
+                }
+
+                return [key, descriptor.get];
+            }
+
+            return [key, object[key as keyof typeof object]];
+        }),
         object,
         options,
         inspect,

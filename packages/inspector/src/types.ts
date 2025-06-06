@@ -15,7 +15,7 @@ export interface Options {
     /**
      * The length at which input values are split across multiple lines.
      * Set to `Infinity` to format the input as a single line (in combination with compact set to true or any number >= 1).
-     * @default 80
+     * @default Number.POSITIVE_INFINITY
      */
     breakLength: number;
 
@@ -61,14 +61,14 @@ export interface Options {
     /**
      * Specifies the maximum number of `Array`, `&lt;TypedArray>`, `&lt;Map>`, `&lt;WeakMap>`, and `&lt;WeakSet>` elements to include when formatting.
      * Set to `null` or `Infinity` to show all elements. Set to `0` or negative to show no elements.
-     * @default 100
+     * @default Number.POSITIVE_INFINITY
      */
     maxArrayLength: number | null;
 
     /**
      * Specifies the maximum number of characters to include when formatting.
      * Set to `null` or `Infinity` to show all elements. Set to `0` or negative to show no characters.
-     * @default 10000
+     * @default Number.POSITIVE_INFINITY
      */
     maxStringLength: number | null;
 

@@ -18,6 +18,10 @@ const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options
     // `array.length` to get non-index properties
     const nonIndexProperties = Object.keys(array).slice(array.length);
 
+    if (options.sorted) {
+        nonIndexProperties.sort(typeof options.sorted === "function" ? options.sorted : undefined);
+    }
+
     if (array.length === 0 && nonIndexProperties.length === 0) {
         return "[]";
     }

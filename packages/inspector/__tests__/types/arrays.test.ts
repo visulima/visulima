@@ -26,20 +26,20 @@ describe("arrays", () => {
         const value = [1, { a: 1, b: { c: 1 } }, "asdf\nsdf"];
 
         expect(inspect(value, { indent: 2 })).toMatchInlineSnapshot(`
-          "[
-            1,
-            { a: 1,
-            b: { c: 1 } },
-            'asdf\\nsdf'
-          ]"
+            "[
+              1,
+              { a: 1,
+              b: { c: 1 } },
+              'asdf\\nsdf'
+            ]"
         `);
         expect(inspect(value, { indent: "\t" })).toMatchInlineSnapshot(`
-          "[
-          	1,
-          	{ a: 1,
-          	b: { c: 1 } },
-          	'asdf\\nsdf'
-          ]"
+            "[
+            	1,
+            	{ a: 1,
+            	b: { c: 1 } },
+            	'asdf\\nsdf'
+            ]"
         `);
     });
 
@@ -49,18 +49,18 @@ describe("arrays", () => {
         const object = [{}, [], { "a-b": 5 }];
 
         expect(inspect(object, { indent: 2 })).toMatchInlineSnapshot(`
-          "[
-            {},
-            [],
-            { 'a-b': 5 }
-          ]"
+            "[
+              {},
+              [],
+              { 'a-b': 5 }
+            ]"
         `);
         expect(inspect(object, { indent: "\t" })).toMatchInlineSnapshot(`
-          "[
-          	{},
-          	[],
-          	{ 'a-b': 5 }
-          ]"
+            "[
+            	{},
+            	[],
+            	{ 'a-b': 5 }
+            ]"
         `);
     });
 
@@ -166,6 +166,21 @@ describe("arrays", () => {
             array.foo = "bar";
 
             expect(inspect(array)).toBe("[ 'a', 'b', 'c', foo: 'bar' ]");
+        });
+    });
+
+    describe("sorted", () => {
+        it("outputs sorted non-integer properties", () => {
+            expect.assertions(1);
+
+            const array = ["a", "b", "c"];
+
+            // @ts-expect-error - TS doesn't allow this
+            array.foo = "bar";
+            // @ts-expect-error - TS doesn't allow this
+            array.baz = "qux";
+
+            expect(inspect(array, { sorted: true })).toBe("[ 'a', 'b', 'c', baz: 'qux', foo: 'bar' ]");
         });
     });
 

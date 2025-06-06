@@ -179,4 +179,32 @@ describe("sets", () => {
             expect(inspect(new Set(["a", "b", "c"]), { maxStringLength: 1 })).toBe("Set (3) { …(3) }");
         });
     });
+
+    describe("sorted", () => {
+        it("returns the set with sorted values", () => {
+            expect.assertions(1);
+
+            expect(inspect(new Set(["a", "b"]), { sorted: true })).toBe("Set (2) { 'a', 'b' }");
+        });
+
+        it("returns the set with sorted values using a custom sort function", () => {
+            expect.assertions(1);
+
+            expect(
+                inspect(new Set(["a", "b"]), {
+                    sorted: (a, b) => {
+                        if (a > b) {
+                            return -1;
+                        }
+
+                        if (a < b) {
+                            return 1;
+                        }
+
+                        return 0;
+                    },
+                }),
+            ).toBe("Set (2) { 'b', 'a' }");
+        });
+    });
 });
