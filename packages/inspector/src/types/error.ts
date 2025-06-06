@@ -5,25 +5,29 @@ import truncate from "../utils/truncate";
 
 const errorKeys = new Set(["column", "columnNumber", "description", "fileName", "line", "lineNumber", "message", "name", "number", "stack"]);
 
-const inspectObject: InspectType<Error> = (error: Error, options: Options, inspect: InternalInspect): string => {
+const inspectError: InspectType<Error> = (error: Error, options: Options, inspect: InternalInspect): string => {
     const properties = Object.getOwnPropertyNames(error).filter((key) => !errorKeys.has(key));
     const { name } = error;
 
-    // eslint-disable-next-line no-param-reassign
-    options.maxStringLength -= name.length;
+    if (options.maxStringLength !== null) {
+        // eslint-disable-next-line no-param-reassign
+        options.maxStringLength -= name.length;
+    }
 
     let message = "";
 
     if (typeof error.message === "string") {
-        message = truncate(error.message, options.maxStringLength);
+        message = truncate(error.message, options.maxStringLength ?? Number.POSITIVE_INFINITY);
     } else {
         properties.unshift("message");
     }
 
     message = message ? `: ${message}` : "";
 
-    // eslint-disable-next-line no-param-reassign
-    options.maxStringLength -= message.length + 5;
+    if (options.maxStringLength !== null) {
+        // eslint-disable-next-line no-param-reassign
+        options.maxStringLength -= message.length + 5;
+    }
 
     const propertyContents = inspectList(
         properties.map((key) => [key, error[key as keyof typeof error]]),
@@ -36,4 +40,4 @@ const inspectObject: InspectType<Error> = (error: Error, options: Options, inspe
     return `${name}${message}${propertyContents ? ` { ${propertyContents} }` : ""}`;
 };
 
-export default inspectObject;
+export default inspectError;

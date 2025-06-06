@@ -65,24 +65,9 @@ describe("maps", () => {
         map.set({ a: 1 }, ["b"]);
         map.set(3, Number.NaN);
 
-        expect(inspect(map, { indent: 2 }), "Map keys are not indented (two)").toMatchInlineSnapshot(`
-          "Map (2) {
-            { a: 1 } => [ 'b' ],
-            3 => NaN
-          }"
-        `);
-        expect(inspect(map, { indent: "\t" }), "Map keys are not indented (tabs)").toMatchInlineSnapshot(`
-          "Map (2) {
-          	{ a: 1 } => [ 'b' ],
-          	3 => NaN
-          }"
-        `);
-        expect(inspect(map, { indent: "\t", quoteStyle: "double" }), "Map keys are not indented (tabs + double quotes)").toMatchInlineSnapshot(`
-          "Map (2) {
-          	{ a: 1 } => [ "b" ],
-          	3 => NaN
-          }"
-        `);
+        expect(inspect(map, { indent: 2 }), "Map keys are not indented (two)").toMatchInlineSnapshot(`"Map (2) { { a: 1 } => [ 'b' ], 3 => NaN }"`);
+        expect(inspect(map, { indent: "\t" }), "Map keys are not indented (tabs)").toMatchInlineSnapshot(`"Map (2) { { a: 1 } => [ 'b' ], 3 => NaN }"`);
+        expect(inspect(map, { indent: "\t", quoteStyle: "double" }), "Map keys are not indented (tabs + double quotes)").toMatchInlineSnapshot(`"Map (2) { { a: 1 } => [ "b" ], 3 => NaN }"`);
 
         expect(inspect(new Map(), { indent: 2 }), "empty Map should show as empty (two)").toBe("Map (0) {}");
         expect(inspect(new Map(), { indent: "\t" }), "empty Map should show as empty (tabs)").toBe("Map (0) {}");
@@ -91,22 +76,8 @@ describe("maps", () => {
 
         nestedMap.set(nestedMap, map);
 
-        expect(inspect(nestedMap, { indent: 2 }), "Map containing a Map should work (two)").toMatchInlineSnapshot(`
-          "Map (1) {
-            [Circular] => Map (2) {
-              { a: 1 } => [ 'b' ],
-              3 => NaN
-            }
-          }"
-        `);
-        expect(inspect(nestedMap, { indent: "\t" }), "Map containing a Map should work (tabs)").toMatchInlineSnapshot(`
-          "Map (1) {
-          	[Circular] => Map (2) {
-          		{ a: 1 } => [ 'b' ],
-          		3 => NaN
-          	}
-          }"
-        `);
+        expect(inspect(nestedMap, { indent: 2 }), "Map containing a Map should work (two)").toMatchInlineSnapshot(`"Map (1) { [Circular] => Map (2) { { a: 1 } => [ 'b' ], 3 => NaN } }"`);
+        expect(inspect(nestedMap, { indent: "\t" }), "Map containing a Map should work (tabs)").toMatchInlineSnapshot(`"Map (1) { [Circular] => Map (2) { { a: 1 } => [ 'b' ], 3 => NaN } }"`);
     });
 
     describe("maxStringLength", () => {
@@ -675,6 +646,62 @@ describe("maps", () => {
                     },
                 ),
             ).toBe("Map (2) { 'b' => 1, 'a' => 2 }");
+        });
+    });
+
+    describe("compact", () => {
+        it("should format a map on a single line if compact is true", () => {
+            expect.assertions(1);
+
+            const map = new Map([
+                ["a", 1],
+                ["b", 2],
+            ]);
+
+            expect(inspect(map, { compact: true })).toMatchInlineSnapshot(`"Map (2) { 'a' => 1, 'b' => 2 }"`);
+        });
+
+        it("should format a map on multiple lines if compact is false", () => {
+            expect.assertions(1);
+
+            const map = new Map([
+                ["a", 1],
+                ["b", 2],
+            ]);
+
+            expect(inspect(map, { breakLength: 0, compact: false })).toMatchInlineSnapshot(`
+                "Map (2) {
+                  'a' => 1,
+                  'b' => 2
+                }"
+            `);
+        });
+
+        it("should format a map on a single line if it fits within breakLength", () => {
+            expect.assertions(1);
+
+            const map = new Map([
+                ["a", 1],
+                ["b", 2],
+            ]);
+
+            expect(inspect(map, { breakLength: 80 })).toMatchInlineSnapshot(`"Map (2) { 'a' => 1, 'b' => 2 }"`);
+        });
+
+        it("should format a map on multiple lines if it exceeds breakLength", () => {
+            expect.assertions(1);
+
+            const map = new Map([
+                ["a", 1],
+                ["b", 2],
+            ]);
+
+            expect(inspect(map, { breakLength: 20 })).toMatchInlineSnapshot(`
+                "Map (2) {
+                  'a' => 1,
+                  'b' => 2
+                }"
+            `);
         });
     });
 });

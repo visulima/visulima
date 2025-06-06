@@ -3,8 +3,10 @@ import type { Indent, InspectType, InternalInspect, Options } from "./types";
 import inspectList from "./utils/inspect-list";
 
 const inspectAttribute = ([key, value]: [unknown, unknown], _: unknown, options: Options): string => {
-    // eslint-disable-next-line no-param-reassign
-    options.maxStringLength -= 3;
+    if (options.maxStringLength !== null) {
+        // eslint-disable-next-line no-param-reassign
+        options.maxStringLength -= 3;
+    }
 
     if (!value) {
         return options.stylize(String(key), "yellow");
@@ -13,11 +15,11 @@ const inspectAttribute = ([key, value]: [unknown, unknown], _: unknown, options:
     return `${options.stylize(String(key), "yellow")}=${options.stylize(`"${value as string}"`, "string")}`;
 };
 
-export const inspectNode = (node: Node, inspect: InternalInspect, options: Options): string => {
+export const inspectNode = (node: Node, inspect: InternalInspect, options: Options, depth: number): string => {
     switch (node.nodeType) {
         case 1: {
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            return inspectHTMLElement(node as Element, node, options, inspect);
+            return inspectHTMLElement(node as Element, node, options, inspect, depth);
         }
         case 3: {
             return inspect((node as Text).data, inspect, options);
@@ -28,18 +30,33 @@ export const inspectNode = (node: Node, inspect: InternalInspect, options: Optio
     }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const inspectNodeCollection: InspectType<ArrayLike<Node>> = (collection: ArrayLike<Node>, options: Options, inspect: InternalInspect, _: Indent | undefined): string => inspectList(collection, collection, options, inspect, inspectNode, "\n");
+export const inspectNodeCollection: InspectType<HTMLCollection | NodeList> = (
+    collection: HTMLCollection | NodeList,
+    options: Options,
+    inspect: InternalInspect,
+    indent: Indent | undefined,
+    depth: number,
+): string =>
+    inspectList(
+        [...collection],
+        collection,
+        options,
+        // @ts-expect-error - `inspectNode` has a different signature
+        (value, object, options_, inspect_) => inspectNode(value, inspect_, options_, depth),
+        "",
+    );
 
-export const inspectHTMLElement = (element: Element, object: unknown, options: Options, inspect: InternalInspect): string => {
+export const inspectHTMLElement = (element: Element, object: unknown, options: Options, inspect: InternalInspect, depth: number): string => {
     const properties = element.getAttributeNames();
     const name = element.tagName.toLowerCase();
     const head = options.stylize(`<${name}`, "special");
     const headClose = options.stylize(`>`, "special");
     const tail = options.stylize(`</${name}>`, "special");
 
-    // eslint-disable-next-line no-param-reassign
-    options.maxStringLength -= name.length * 2 + 5;
+    if (options.maxStringLength !== null) {
+        // eslint-disable-next-line no-param-reassign
+        options.maxStringLength -= name.length * 2 + 5;
+    }
 
     let propertyContents = "";
 
@@ -55,14 +72,16 @@ export const inspectHTMLElement = (element: Element, object: unknown, options: O
         );
     }
 
-    // eslint-disable-next-line no-param-reassign
-    options.maxStringLength -= propertyContents.length;
+    if (options.maxStringLength !== null) {
+        // eslint-disable-next-line no-param-reassign
+        options.maxStringLength -= propertyContents.length;
+    }
 
-    const { maxStringLength } = options;
+    const { maxStringLength: truncate } = options;
 
-    let children = inspectNodeCollection(element.children, options, inspect, undefined);
+    let children = inspectNodeCollection(element.children, options, inspect, undefined, depth);
 
-    if (children && children.length > maxStringLength) {
+    if (children && truncate !== null && children.length > truncate) {
         children = `${TRUNCATOR}(${element.children.length})`;
     }
 
