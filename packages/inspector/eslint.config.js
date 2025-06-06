@@ -17,4 +17,9 @@ export default createConfig({
     rules: {
         "sonarjs/file-name-differ-from-class": "off",
     },
+}, {
+    files: ["./__tests__/types/buffers.test.ts"],
+    rules: {
+        "sonarjs/no-empty-test-file": "off",
+    },
 });

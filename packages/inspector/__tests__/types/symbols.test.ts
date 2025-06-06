@@ -2,39 +2,39 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("symbols", () => {
-    it("returns Symbol() for empty Symbol", () => {
+describe("inspect with Symbols", () => {
+    it("should inspect an empty Symbol", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line symbol-description
         expect(inspect(Symbol())).toBe("Symbol()");
     });
 
-    it("returns string wrapped in quotes", () => {
+    it("should inspect a Symbol with a description", () => {
         expect.assertions(1);
 
-        expect(inspect("abc")).toBe("'abc'");
+        expect(inspect(Symbol("foo"))).toBe("Symbol(foo)");
     });
 
-    it("escapes single quotes", () => {
+    it("should inspect a Symbol with a description and single quotes", () => {
         expect.assertions(1);
 
-        expect(inspect("ab'c")).toBe(String.raw`'ab\'c'`);
+        expect(inspect(Symbol("ab'c"))).toBe("Symbol(ab'c)");
     });
 
-    it("does not escape double quotes", () => {
+    it("should inspect a Symbol with a description and double quotes", () => {
         expect.assertions(1);
 
-        expect(inspect("ab\"c")).toBe("'ab\"c'");
+        expect(inspect(Symbol('ab"c'))).toBe('Symbol(ab"c)');
     });
 
-    it("escapes unicode characters", () => {
+    it("should inspect a Symbol with a description and unicode characters", () => {
         expect.assertions(1);
 
-        expect(inspect("\u001B")).toBe(String.raw`'\u001b'`);
+        expect(inspect(Symbol("\u001B"))).toBe("Symbol(\\u001b)");
     });
 
-    it("should return the correct Symbol.toStringTag", () => {
+    it("should inspect an object with Symbol.toStringTag", () => {
         expect.assertions(4);
 
         const object = { a: 1 };
@@ -43,7 +43,7 @@ describe("symbols", () => {
 
         object[Symbol.toStringTag] = "foo";
 
-        expect(inspect(object), "object with Symbol.toStringTag").toBe("{ a: 1, [Symbol(Symbol.toStringTag)]: 'foo' }");
+        expect(inspect(object), "object with Symbol.toStringTag").toBe("foo { a: 1 }");
 
         const dict = { __proto__: null, a: 1 };
 
@@ -51,6 +51,6 @@ describe("symbols", () => {
 
         dict[Symbol.toStringTag] = "Dict";
 
-        expect(inspect(dict), "null object with Symbol.toStringTag").toBe("[Dict: null prototype] { a: 1, [Symbol(Symbol.toStringTag)]: 'Dict' }");
+        expect(inspect(dict), "null object with Symbol.toStringTag").toBe("[Dict: null prototype] { a: 1 }");
     });
 });

@@ -7,7 +7,7 @@ const inspectArguments: InspectType<IArguments> = (arguments_: IArguments, optio
     }
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= 13;
+    options.maxStringLength -= 13;
 
     return `Arguments [ ${inspectList(arguments_, arguments_, options, inspect)} ]`;
 };

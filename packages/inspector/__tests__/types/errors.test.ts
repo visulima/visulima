@@ -2,43 +2,33 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("errors", () => {
-    it("returns `Error` for an empty Error", () => {
+describe("inspect with Errors", () => {
+    it("should return just the error name for an empty Error object", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line unicorn/error-message
         expect(inspect(new Error())).toBe("Error");
     });
 
-    it("also works with Error subclasses (TypeError)", () => {
-        expect.assertions(1);
+    it("should correctly inspect various Error subclasses", () => {
+        expect.assertions(3);
 
         // eslint-disable-next-line unicorn/error-message
         expect(inspect(new TypeError())).toBe("TypeError");
-    });
-
-    it("also works with Error subclasses (SyntaxError)", () => {
-        expect.assertions(1);
-
         // eslint-disable-next-line unicorn/error-message
         expect(inspect(new SyntaxError())).toBe("SyntaxError");
-    });
-
-    it("also works with Error subclasses (ReferenceError)", () => {
-        expect.assertions(1);
-
         // eslint-disable-next-line unicorn/error-message
         expect(inspect(new ReferenceError())).toBe("ReferenceError");
     });
 
-    it("returns `Error{\"message\"}` for an Error(\"message\")", () => {
+    it("should include the message for an Error with a message", () => {
         expect.assertions(1);
 
         expect(inspect(new Error("message"))).toBe("Error: message");
     });
 
-    describe("non-standard properties", () => {
-        it("adds non standard properties to end of output", () => {
+    describe("with non-standard properties", () => {
+        it("should append non-standard properties to the output", () => {
             expect.assertions(1);
 
             const error = new Error("message") as Error & { code: number };
@@ -48,7 +38,7 @@ describe("errors", () => {
             expect(inspect(error)).toBe("Error: message { code: 404 }");
         });
 
-        it("will properly inspect a non-string message property", () => {
+        it("should correctly inspect a non-string message property", () => {
             expect.assertions(1);
 
             const error = new Error("message") as Error & { message: { code: number } };
@@ -59,7 +49,7 @@ describe("errors", () => {
             expect(inspect(error)).toBe("Error { message: { code: 404 } }");
         });
 
-        it("detects circular references", () => {
+        it("should detect and handle circular references", () => {
             expect.assertions(1);
 
             const error = new Error("message") as Error & { fluff: Error };
@@ -70,8 +60,8 @@ describe("errors", () => {
         });
     });
 
-    describe("ignores built in properties", () => {
-        it("does not add property to output", () => {
+    describe("with built-in properties", () => {
+        it("should correctly inspect the 'cause' property", () => {
             expect.assertions(1);
 
             const error = new Error("message");
