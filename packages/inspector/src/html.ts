@@ -33,7 +33,9 @@ export const inspectNode = (node: Node, inspect: InternalInspect, options: Optio
 export const inspectNodeCollection: InspectType<HTMLCollection | NodeList> = (
     collection: HTMLCollection | NodeList,
     options: Options,
+    // @ts-expect-error - `inspectNode` has a different signature
     inspect: InternalInspect,
+    // @ts-expect-error - `inspectNode` has a different signature
     indent: Indent | undefined,
     depth: number,
 ): string =>

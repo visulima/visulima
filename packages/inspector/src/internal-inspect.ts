@@ -1,5 +1,5 @@
 import { inspectHTMLElement, inspectNodeCollection } from "./html";
-import type { Inspect, InspectType, InternalInspect, Options } from "./types";
+import type { Inspect, InspectType, InternalInspect, InternalOptions } from "./types";
 import inspectArguments from "./types/arguments";
 import inspectArray from "./types/array";
 import inspectBigInt from "./types/bigint";
@@ -31,9 +31,9 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     BigInt: inspectBigInt,
 
     bigint: inspectBigInt,
-    Boolean: (value: boolean, options: Options) => options.stylize(String(value), "boolean"),
+    Boolean: (value: boolean, options: InternalOptions) => options.stylize(String(value), "boolean"),
+    boolean: (value: boolean, options: InternalOptions) => options.stylize(String(value), "boolean"),
 
-    boolean: (value: boolean, options: Options) => options.stylize(String(value), "boolean"),
     DataView: () => "",
 
     Date: inspectDate,
@@ -53,7 +53,7 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     Map: inspectMap,
 
     NodeList: inspectNodeCollection,
-    null: (_value: null, options: Options) => options.stylize("null", "null"),
+    null: (_value: null, options: InternalOptions) => options.stylize("null", "null"),
 
     Number: inspectNumber,
     number: inspectNumber,
@@ -71,16 +71,16 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     Uint16Array: inspectTypedArray,
     Uint32Array: inspectTypedArray,
 
-    undefined: (_value: undefined, options: Options) => options.stylize("undefined", "undefined"),
+    undefined: (_value: undefined, options: InternalOptions) => options.stylize("undefined", "undefined"),
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    WeakMap: (_value: WeakMap<any, unknown>, options: Options) => options.stylize("WeakMap{…}", "special"),
+    WeakMap: (_value: WeakMap<any, unknown>, options: InternalOptions) => options.stylize("WeakMap{…}", "special"),
     // WeakSet, WeakMap are totally opaque to us
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    WeakSet: (_value: WeakSet<any>, options: Options) => options.stylize("WeakSet{…}", "special"),
+    WeakSet: (_value: WeakSet<any>, options: InternalOptions) => options.stylize("WeakSet{…}", "special"),
 } as const;
 
-const inspectCustom = (value: object, options: Options, type: string, depth: number): string => {
+const inspectCustom = (value: object, options: InternalOptions, type: string, depth: number): string => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (globalThis.window === undefined && typeof (value as any)[Symbol.for("nodejs.util.inspect.custom")] === "function") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type
@@ -103,19 +103,13 @@ const inspectCustom = (value: object, options: Options, type: string, depth: num
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const internalInspect = (value: unknown, options: Options, depth: number, seen: unknown[]): string => {
+export const internalInspect = (value: unknown, options: InternalOptions, depth: number, seen: unknown[]): string => {
     if (seen.includes(value)) {
         return "[Circular]";
     }
 
-    const multiline = value && (typeof value === "object" || Array.isArray(value));
-
-    if (options.depth !== null && depth >= options.depth && options.depth > 0 && multiline) {
-        return Array.isArray(value) ? "[Array]" : "[Object]";
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    const inspect: InternalInspect = (object: unknown, from: unknown, options: Options): string => {
+    const inspect: InternalInspect = (object: unknown, from: unknown, options: InternalOptions): string => {
         if (from) {
             // eslint-disable-next-line no-param-reassign
             seen = [...seen];
@@ -126,6 +120,16 @@ export const internalInspect = (value: unknown, options: Options, depth: number,
     };
 
     const indent = options.indent ? getIndent(options.indent, depth) : undefined;
+
+    if (options.showProxy && options.proxyHandler) {
+        return options.proxyHandler(value as typeof Proxy, options, inspect, indent, depth);
+    }
+
+    const multiline = value && (typeof value === "object" || Array.isArray(value));
+
+    if (options.depth !== undefined && depth >= options.depth && options.depth > 0 && multiline) {
+        return Array.isArray(value) ? "[Array]" : "[Object]";
+    }
 
     let type = value === null ? "null" : typeof value;
 
@@ -141,7 +145,7 @@ export const internalInspect = (value: unknown, options: Options, depth: number,
 
     // If `options.customInspect` is set to true then try to use the custom inspector
     if (options.customInspect && value) {
-        const output = inspectCustom(value, options, type, options.depth === null ? Number.POSITIVE_INFINITY : options.depth - depth);
+        const output = inspectCustom(value, options, type, options.depth === undefined ? Number.POSITIVE_INFINITY : options.depth - depth);
 
         if (output) {
             if (typeof output === "string") {
@@ -181,7 +185,7 @@ export const internalInspect = (value: unknown, options: Options, depth: number,
     }
 
     // We have run out of options! Just stringify the value
-    return (options as Options).stylize(String(value), type);
+    return (options as InternalOptions).stylize(String(value), type);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

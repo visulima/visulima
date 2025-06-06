@@ -24,8 +24,8 @@ describe.each([
 
         const object = { a: 1, b: 2 };
 
-        await expect(inspect(object, { indent: 2 })).toMatchFileSnapshot(`simple object with indent ${name}`);
-        await expect(inspect(object, { indent: "\t" })).toMatchFileSnapshot(`simple object with indent ${name}`);
+        await expect(inspect(object, { indent: 2 })).toMatchSnapshot(`simple object with indent`);
+        await expect(inspect(object, { indent: "\t" })).toMatchSnapshot(`simple object with indent`);
     });
 
     it("should show two deep object with indent", async () => {
@@ -33,8 +33,8 @@ describe.each([
 
         const object = { a: 1, b: { c: 3, d: 4 } };
 
-        await expect(inspect(object, { indent: 2 })).toMatchFileSnapshot(`two deep object with indent ${name}`);
-        await expect(inspect(object, { indent: "\t" })).toMatchFileSnapshot(`two deep object with indent ${name}`);
+        await expect(inspect(object, { indent: 2 })).toMatchSnapshot(`two deep object with indent`);
+        await expect(inspect(object, { indent: "\t" })).toMatchSnapshot(`two deep object with indent`);
     });
 
     it("quotes a key if it contains special chars", () => {
