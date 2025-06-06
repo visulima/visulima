@@ -13,7 +13,6 @@ const multiLineValues = (values: unknown[]): boolean => {
     return false;
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options, inspect: InternalInspect, indent: Indent | undefined, depth: number): string => {
     // Object.keys will always output the Array indices first, so we can slice by
     // `array.length` to get non-index properties
@@ -51,17 +50,13 @@ const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options
             || multiLineValues(array))
         && indent !== undefined;
 
-    if (options.maxStringLength !== null) {
-        // eslint-disable-next-line no-param-reassign
-        options.maxStringLength -= 4;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= 4;
 
     const listContents = inspectList(array, array, options, inspect);
 
-    if (options.maxStringLength !== null) {
-        // eslint-disable-next-line no-param-reassign
-        options.maxStringLength -= listContents.length;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= listContents.length;
 
     let propertyContents = "";
 

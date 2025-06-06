@@ -9,10 +9,8 @@ const inspectError: InspectType<Error> = (error: Error, options: Options, inspec
     const properties = Object.getOwnPropertyNames(error).filter((key) => !errorKeys.has(key));
     const { name } = error;
 
-    if (options.maxStringLength !== null) {
-        // eslint-disable-next-line no-param-reassign
-        options.maxStringLength -= name.length;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= name.length;
 
     let message = "";
 
@@ -24,10 +22,8 @@ const inspectError: InspectType<Error> = (error: Error, options: Options, inspec
 
     message = message ? `: ${message}` : "";
 
-    if (options.maxStringLength !== null) {
-        // eslint-disable-next-line no-param-reassign
-        options.maxStringLength -= message.length + 5;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= message.length + 5;
 
     const propertyContents = inspectList(
         properties.map((key) => [key, error[key as keyof typeof error]]),

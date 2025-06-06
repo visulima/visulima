@@ -7,7 +7,7 @@ export type Indent = {
 
 export type InternalInspect = (input: unknown, from: unknown, options: Options) => string;
 
-export type InspectType<V> = (input: V, options: Options, inspect?: InternalInspect, indent?: Indent, depth?: number) => string;
+export type InspectType<V> = (input: V, options: Options, inspect: InternalInspect, indent: Indent | undefined, depth: number) => string;
 
 export type Inspect = (input: unknown, options: Options) => string;
 
@@ -40,7 +40,7 @@ export interface Options {
      * To recurse up to the maximum call stack size pass `Infinity` or `undefined`.
      * @default 5
      */
-    depth: number | undefined;
+    depth: number;
 
     /**
      * If set to `true`, getters are inspected.
@@ -67,7 +67,7 @@ export interface Options {
 
     /**
      * Specifies the maximum number of characters to include when formatting.
-     * Set to `null` or `Infinity` to show all elements. Set to `0` or negative to show no characters.
+     * Set to `undefined` or `Infinity` to show all elements. Set to `0` or negative to show no characters.
      * @default Number.POSITIVE_INFINITY
      */
     maxStringLength: number;

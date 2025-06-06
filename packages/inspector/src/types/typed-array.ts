@@ -55,16 +55,10 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
 
     const multiline = (options.compact === false || (typeof options.compact === "number" && depth >= options.compact) || breakLines) && indent !== undefined;
 
-    let newOptions = options;
-
-    if (options.maxStringLength !== null) {
-        newOptions = {
-            ...options,
-            maxStringLength: options.maxStringLength - name.length - 4, // account for "[]" and spaces
-        };
-    }
-
-    let returnValue = inspectList(allItems, array, newOptions, inspect, inspectTypedArrayItem);
+    let returnValue = inspectList(allItems, array, {
+        ...options,
+        maxStringLength: options.maxStringLength - name.length - 4, // account for "[]" and spaces
+    }, inspect, inspectTypedArrayItem);
 
     if (multiline) {
         returnValue = indentedJoin(returnValue, indent as Indent);

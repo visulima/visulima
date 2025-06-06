@@ -42,7 +42,7 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.mjs",
+            "browser": "./dist/index.browser.mjs",
             "require": {
                 "types": "./dist/index.d.cts",
                 "default": "./dist/index.cjs"
@@ -56,11 +56,12 @@
     },
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
-    "browser": "./dist/index.mjs",
+    "browser": "./dist/index.browser.mjs",
     "types": "dist/index.d.ts",
     "typesVersions": {
         ">=5.0": {
             ".": [
+                "./dist/index.browser.d.ts",
                 "./dist/index.d.ts"
             ]
         }
@@ -118,7 +119,7 @@
         "webdriverio": "^9.15.0"
     },
     "engines": {
-        "node": ">=18.0.0 <=23.x"
+        "node": ">=20.18.0 <=24.x"
     },
     "publishConfig": {
         "access": "public",

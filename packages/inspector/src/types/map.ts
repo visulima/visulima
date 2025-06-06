@@ -4,18 +4,14 @@ import { indentedJoin } from "../utils/indent";
 import inspectList from "../utils/inspect-list";
 
 const inspectMapEntry = ([key, value]: [unknown, unknown], object: unknown, options: Options, inspect: InternalInspect): string => {
-    if (options.maxStringLength !== null) {
-        // eslint-disable-next-line no-param-reassign
-        options.maxStringLength -= 4;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= 4;
 
     // eslint-disable-next-line no-param-reassign
     key = inspect(key, object, options);
 
-    if (options.maxStringLength !== null) {
-        // eslint-disable-next-line no-param-reassign
-        options.maxStringLength -= (key as string).length;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= (key as string).length;
 
     return `${key as string} => ${inspect(value, object, options)}`;
 };
@@ -55,10 +51,8 @@ const inspectMap: InspectType<Map<unknown, unknown>> = (
 
     const multiline = (options.compact === false || (typeof options.compact === "number" && depth >= options.compact) || breakLines) && indent !== undefined;
 
-    if (options.maxStringLength !== null) {
-        // eslint-disable-next-line no-param-reassign
-        options.maxStringLength -= 7;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.maxStringLength -= 7;
 
     const inspectWithIndent = (value: unknown, from: unknown, indexOptions: Options) => internalInspect(value, indexOptions, depth + 1, [from]);
 
