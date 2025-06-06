@@ -16,6 +16,14 @@ describe("date", () => {
         expect(inspect(new Date("not a date"))).toBe("Invalid Date");
     });
 
+    it("should inspect a date object with a toJSON method that returns null", () => {
+        expect.assertions(1);
+
+        const date = new Date("invalid");
+
+        expect(inspect(date)).toBe("Invalid Date");
+    });
+
     describe("maxStringLength", () => {
         it("returns the full representation when maxStringLength is over string length", () => {
             expect.assertions(1);
@@ -165,6 +173,30 @@ describe("date", () => {
             expect.assertions(1);
 
             expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 0 })).toBe("2016-10-01T…");
+        });
+
+        it("should truncate the time portion of the date string", () => {
+            expect.assertions(1);
+
+            const date = new Date("2024-01-01T12:34:56.789Z");
+
+            expect(inspect(date, { maxStringLength: 20 })).toBe("2024-01-01T12:34:56…");
+        });
+
+        it("should not truncate the time portion if it fits within maxStringLength", () => {
+            expect.assertions(1);
+
+            const date = new Date("2024-01-01T12:34:56.789Z");
+
+            expect(inspect(date, { maxStringLength: 80 })).toBe("2024-01-01T12:34:56.789Z");
+        });
+
+        it("should return just the date part if maxStringLength is too small for time", () => {
+            expect.assertions(1);
+
+            const date = new Date("2024-01-01T12:34:56.789Z");
+
+            expect(inspect(date, { maxStringLength: 12 })).toBe("2024-01-01T…");
         });
     });
 });

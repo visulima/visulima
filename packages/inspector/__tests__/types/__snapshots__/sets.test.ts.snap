@@ -1,0 +1,51 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`sets > should return \`Set\` with indent > nested set indent 2 1`] = `
+"Set (2) {
+  Set (2) {
+    {
+      a: 1
+    },
+    [
+      'b'
+    ]
+  },
+  [Circular]
+}"
+`;
+
+exports[`sets > should return \`Set\` with indent > nested set indent tabs 1`] = `
+"Set (2) {
+	Set (2) {
+		{
+			a: 1
+		},
+		[
+			'b'
+		]
+	},
+	[Circular]
+}"
+`;
+
+exports[`sets > should return \`Set\` with indent > set indent 2 1`] = `
+"Set (2) {
+  {
+    a: 1
+  },
+  [
+    'b'
+  ]
+}"
+`;
+
+exports[`sets > should return \`Set\` with indent > set indent tabs 1`] = `
+"Set (2) {
+	{
+		a: 1
+	},
+	[
+		'b'
+	]
+}"
+`;

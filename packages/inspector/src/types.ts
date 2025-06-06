@@ -7,7 +7,7 @@ export type Indent = {
 
 export type InternalInspect = (input: unknown, from: unknown, options: Options) => string;
 
-export type InspectType<V> = (input: V, options: Options, inspect: InternalInspect, indent: Indent | undefined) => string;
+export type InspectType<V> = (input: V, options: Options, inspect: InternalInspect, indent: Indent | undefined, depth: number) => string;
 
 export type Inspect = (input: unknown, options: Options) => string;
 

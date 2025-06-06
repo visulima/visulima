@@ -27,7 +27,7 @@ const getKeys = (object: object, options: Options): (string | symbol)[] => {
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const inspectObject: InspectType<object> = (object: object, options: Options, inspect: InternalInspect, indent: Indent | undefined): string => {
+const inspectObject: InspectType<object> = (object: object, options: Options, inspect: InternalInspect, indent: Indent | undefined, depth: number): string => {
     if (globalThis.window !== undefined && object === globalThis) {
         return "{ [object Window] }";
     }
@@ -88,7 +88,12 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
     }
 
     const singleLineOutput = `${tag}{ ${propertyContentsForCheck}${separatorForCheck}${symbolContentsForCheck} }`;
-    const multiline = singleLineOutput.length > options.breakLength && indent !== undefined;
+
+    const multiline
+        = (options.compact === false
+            || (typeof options.compact === "number" && depth >= options.compact)
+            || singleLineOutput.length > options.breakLength)
+        && indent !== undefined;
 
     // eslint-disable-next-line no-param-reassign
     options.maxStringLength -= 4;

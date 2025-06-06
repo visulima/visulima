@@ -17,18 +17,8 @@ describe("sets", () => {
         set.add({ a: 1 });
         set.add(["b"]);
 
-        expect(inspect(set, { indent: 2 }), "new Set([{ a: 1 }, [\"b\"]]) should show size and contents (two)").toMatchInlineSnapshot(`
-          "Set (2) {
-            { a: 1 },
-            [ 'b' ]
-          }"
-        `);
-        expect(inspect(set, { indent: "\t" }), "new Set([{ a: 1 }, [\"b\"]]) should show size and contents (tabs)").toMatchInlineSnapshot(`
-          "Set (2) {
-          	{ a: 1 },
-          	[ 'b' ]
-          }"
-        `);
+        expect(inspect(set, { breakLength: 2, indent: 2 }), "new Set([{ a: 1 }, [\"b\"]]) should show indentation").toMatchSnapshot("set indent 2");
+        expect(inspect(set, { breakLength: 2, indent: "\t" }), "new Set([{ a: 1 }, [\"b\"]]) should show size and contents (tabs)").toMatchSnapshot("set indent tabs");
 
         expect(inspect(new Set(), { indent: 2 }), "empty Set should show as empty (two)").toBe("Set (0) {}");
         expect(inspect(new Set(), { indent: "\t" }), "empty Set should show as empty (tabs)").toBe("Set (0) {}");
@@ -38,24 +28,8 @@ describe("sets", () => {
         nestedSet.add(set);
         nestedSet.add(nestedSet);
 
-        expect(inspect(nestedSet, { indent: 2 }), "Set containing a Set should work (two)").toMatchInlineSnapshot(`
-          "Set (2) {
-            Set (2) {
-              { a: 1 },
-              [ 'b' ]
-            },
-            [Circular]
-          }"
-        `);
-        expect(inspect(nestedSet, { indent: "\t" }), "Set containing a Set should work (tabs)").toMatchInlineSnapshot(`
-          "Set (2) {
-          	Set (2) {
-          		{ a: 1 },
-          		[ 'b' ]
-          	},
-          	[Circular]
-          }"
-        `);
+        expect(inspect(nestedSet, { breakLength: 2, indent: 2 }), "Set containing a Set should work (two)").toMatchSnapshot("nested set indent 2");
+        expect(inspect(nestedSet, { breakLength: 2, indent: "\t" }), "Set containing a Set should work (tabs)").toMatchSnapshot("nested set indent tabs");
     });
 
     describe("maxStringLength", () => {
@@ -205,6 +179,40 @@ describe("sets", () => {
                     },
                 }),
             ).toBe("Set (2) { 'b', 'a' }");
+        });
+    });
+
+    describe("compact", () => {
+        it("should format a set on a single line if compact is true", () => {
+            expect.assertions(1);
+
+            const set = new Set([1, 2]);
+
+            expect(inspect(set, { compact: true })).toBe("Set (2) { 1, 2 }");
+        });
+
+        it("should format a set on multiple lines if compact is false", () => {
+            expect.assertions(1);
+
+            const set = new Set([1, 2]);
+
+            expect(inspect(set, { breakLength: 0, compact: false })).toBe("Set (2) {\n  1,\n  2\n}");
+        });
+
+        it("should format a set on a single line if it fits within breakLength", () => {
+            expect.assertions(1);
+
+            const set = new Set([1, 2]);
+
+            expect(inspect(set, { breakLength: 80 })).toBe("Set (2) { 1, 2 }");
+        });
+
+        it("should format a set on multiple lines if it exceeds breakLength", () => {
+            expect.assertions(1);
+
+            const set = new Set([1, 2]);
+
+            expect(inspect(set, { breakLength: 10 })).toBe("Set (2) {\n  1,\n  2\n}");
         });
     });
 });

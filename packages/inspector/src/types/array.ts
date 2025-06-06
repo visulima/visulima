@@ -13,7 +13,8 @@ const multiLineValues = (values: unknown[]): boolean => {
     return false;
 };
 
-const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options, inspect: InternalInspect, indent: Indent | undefined): string => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options, inspect: InternalInspect, indent: Indent | undefined, depth: number): string => {
     // Object.keys will always output the Array indices first, so we can slice by
     // `array.length` to get non-index properties
     const nonIndexProperties = Object.keys(array).slice(array.length);
@@ -42,15 +43,25 @@ const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options
 
     const separatorForCheck = listContentsForCheck && propertyContentsForCheck ? ", " : "";
     const singleLineOutput = `[ ${listContentsForCheck}${separatorForCheck}${propertyContentsForCheck} ]`;
-    const multiline = (singleLineOutput.length > options.breakLength && indent !== undefined) || (indent !== undefined && multiLineValues(array));
 
-    // eslint-disable-next-line no-param-reassign
-    options.maxStringLength -= 4;
+    const multiline
+        = (options.compact === false
+            || (typeof options.compact === "number" && depth >= options.compact)
+            || singleLineOutput.length > options.breakLength
+            || multiLineValues(array))
+        && indent !== undefined;
+
+    if (options.maxStringLength !== null) {
+        // eslint-disable-next-line no-param-reassign
+        options.maxStringLength -= 4;
+    }
 
     const listContents = inspectList(array, array, options, inspect);
 
-    // eslint-disable-next-line no-param-reassign
-    options.maxStringLength -= listContents.length;
+    if (options.maxStringLength !== null) {
+        // eslint-disable-next-line no-param-reassign
+        options.maxStringLength -= listContents.length;
+    }
 
     let propertyContents = "";
 
