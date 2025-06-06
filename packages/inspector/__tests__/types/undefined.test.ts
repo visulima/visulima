@@ -9,19 +9,19 @@ describe("undefined", () => {
         expect(inspect(undefined)).toBe("undefined");
     });
 
-    describe("truncate", () => {
-        it("returns the full string representation regardless of truncate", () => {
+    describe("maxStringLength", () => {
+        it("returns the full string representation regardless of maxStringLength", () => {
             expect.assertions(9);
 
-            expect(inspect(undefined, { truncate: 9 })).toBe("undefined");
-            expect(inspect(undefined, { truncate: 8 })).toBe("undefined");
-            expect(inspect(undefined, { truncate: 7 })).toBe("undefined");
-            expect(inspect(undefined, { truncate: 6 })).toBe("undefined");
-            expect(inspect(undefined, { truncate: 5 })).toBe("undefined");
-            expect(inspect(undefined, { truncate: 4 })).toBe("undefined");
-            expect(inspect(undefined, { truncate: 3 })).toBe("undefined");
-            expect(inspect(undefined, { truncate: 2 })).toBe("undefined");
-            expect(inspect(undefined, { truncate: 1 })).toBe("undefined");
+            expect(inspect(undefined, { maxStringLength: 9 })).toBe("undefined");
+            expect(inspect(undefined, { maxStringLength: 8 })).toBe("undefined");
+            expect(inspect(undefined, { maxStringLength: 7 })).toBe("undefined");
+            expect(inspect(undefined, { maxStringLength: 6 })).toBe("undefined");
+            expect(inspect(undefined, { maxStringLength: 5 })).toBe("undefined");
+            expect(inspect(undefined, { maxStringLength: 4 })).toBe("undefined");
+            expect(inspect(undefined, { maxStringLength: 3 })).toBe("undefined");
+            expect(inspect(undefined, { maxStringLength: 2 })).toBe("undefined");
+            expect(inspect(undefined, { maxStringLength: 1 })).toBe("undefined");
         });
     });
 });

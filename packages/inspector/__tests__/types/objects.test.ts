@@ -24,8 +24,8 @@ describe.each([
 
         const object = { a: 1, b: 2 };
 
-        expect(inspect(object, { indent: 2 })).toBe(["{", "  a: 1,", "  b: 2", "}"].join("\n"));
-        expect(inspect(object, { indent: "\t" })).toBe(["{", "	a: 1,", "	b: 2", "}"].join("\n"));
+        expect(inspect(object, { indent: 2 })).toMatchFileSnapshot(`simple object with indent ${name}`);
+        expect(inspect(object, { indent: "\t" })).toMatchFileSnapshot(`simple object with indent ${name}`);
     });
 
     it("should show two deep object with indent", () => {
@@ -33,8 +33,8 @@ describe.each([
 
         const object = { a: 1, b: { c: 3, d: 4 } };
 
-        expect(inspect(object, { indent: 2 })).toBe(["{", "  a: 1,", "  b: {", "    c: 3,", "    d: 4", "  }", "}"].join("\n"));
-        expect(inspect(object, { indent: "\t" })).toBe(["{", "	a: 1,", "	b: {", "		c: 3,", "		d: 4", "	}", "}"].join("\n"));
+        expect(inspect(object, { indent: 2 })).toMatchFileSnapshot(`two deep object with indent ${name}`);
+        expect(inspect(object, { indent: "\t" })).toMatchFileSnapshot(`two deep object with indent ${name}`);
     });
 
     it("quotes a key if it contains special chars", () => {
@@ -123,125 +123,125 @@ describe.each([
         expect(function_(object)).toBe(`${tag}{ b: 2 }`);
     });
 
-    describe("truncate", () => {
-        it("returns the full representation when truncate is over string length", () => {
+    describe("maxStringLength", () => {
+        it("returns the full representation when maxStringLength is over string length", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 20 })).toBe(`${tag}{ a: 1, b: 2, c: 3 }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 20 })).toBe(`${tag}{ a: 1, b: 2, c: 3 }`);
         });
 
-        it("truncates object values longer than truncate (19)", () => {
+        it("maxStringLengths object values longer than maxStringLength (19)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 19 })).toBe(`${tag}{ a: 1, …(2) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 19 })).toBe(`${tag}{ a: 1, …(2) }`);
         });
 
-        it("truncates object values longer than truncate (18)", () => {
+        it("maxStringLengths object values longer than maxStringLength (18)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 18 })).toBe(`${tag}{ a: 1, …(2) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 18 })).toBe(`${tag}{ a: 1, …(2) }`);
         });
 
-        it("truncates object values longer than truncate (17)", () => {
+        it("maxStringLengths object values longer than maxStringLength (17)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 17 })).toBe(`${tag}{ a: 1, …(2) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 17 })).toBe(`${tag}{ a: 1, …(2) }`);
         });
 
-        it("truncates object values longer than truncate (16)", () => {
+        it("maxStringLengths object values longer than maxStringLength (16)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 16 })).toBe(`${tag}{ a: 1, …(2) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 16 })).toBe(`${tag}{ a: 1, …(2) }`);
         });
 
-        it("truncates object values longer than truncate (15)", () => {
+        it("maxStringLengths object values longer than maxStringLength (15)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 15 })).toBe(`${tag}{ a: 1, …(2) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 15 })).toBe(`${tag}{ a: 1, …(2) }`);
         });
 
-        it("truncates object values longer than truncate (14)", () => {
+        it("maxStringLengths object values longer than maxStringLength (14)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 14 })).toBe(`${tag}{ a: 1, …(2) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 14 })).toBe(`${tag}{ a: 1, …(2) }`);
         });
 
-        it("truncates object values longer than truncate (13)", () => {
+        it("maxStringLengths object values longer than maxStringLength (13)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 13 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 13 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (12)", () => {
+        it("maxStringLengths object values longer than maxStringLength (12)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 12 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 12 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (11)", () => {
+        it("maxStringLengths object values longer than maxStringLength (11)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 11 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 11 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (10)", () => {
+        it("maxStringLengths object values longer than maxStringLength (10)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 10 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 10 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (9)", () => {
+        it("maxStringLengths object values longer than maxStringLength (9)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 9 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 9 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (8)", () => {
+        it("maxStringLengths object values longer than maxStringLength (8)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 8 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 8 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (7)", () => {
+        it("maxStringLengths object values longer than maxStringLength (7)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 7 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 7 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (6)", () => {
+        it("maxStringLengths object values longer than maxStringLength (6)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 6 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 6 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (5)", () => {
+        it("maxStringLengths object values longer than maxStringLength (5)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 5 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 5 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (4)", () => {
+        it("maxStringLengths object values longer than maxStringLength (4)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 4 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 4 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (3)", () => {
+        it("maxStringLengths object values longer than maxStringLength (3)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 3 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 3 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (2)", () => {
+        it("maxStringLengths object values longer than maxStringLength (2)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 2 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 2 })).toBe(`${tag}{ …(3) }`);
         });
 
-        it("truncates object values longer than truncate (1)", () => {
+        it("maxStringLengths object values longer than maxStringLength (1)", () => {
             expect.assertions(1);
 
-            expect(function_({ a: 1, b: 2, c: 3 }, { truncate: 1 })).toBe(`${tag}{ …(3) }`);
+            expect(function_({ a: 1, b: 2, c: 3 }, { maxStringLength: 1 })).toBe(`${tag}{ …(3) }`);
         });
     });
 });

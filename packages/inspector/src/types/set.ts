@@ -8,7 +8,7 @@ const inspectSet: InspectType<Set<unknown>> = (set: Set<unknown>, options: Optio
     }
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= 7;
+    options.maxStringLength -= 7;
 
     let returnValue = inspectList([...set], set, options, inspect);
 

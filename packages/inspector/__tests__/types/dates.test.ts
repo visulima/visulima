@@ -16,155 +16,155 @@ describe("date", () => {
         expect(inspect(new Date("not a date"))).toBe("Invalid Date");
     });
 
-    describe("truncate", () => {
-        it("returns the full representation when truncate is over string length", () => {
+    describe("maxStringLength", () => {
+        it("returns the full representation when maxStringLength is over string length", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 24 })).toBe("2016-10-01T10:43:57.123Z");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 24 })).toBe("2016-10-01T10:43:57.123Z");
         });
 
-        it("truncates strings longer than truncate (23)", () => {
+        it("maxStringLengths strings longer than maxStringLength (23)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 23 })).toBe("2016-10-01T10:43:57.12…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 23 })).toBe("2016-10-01T10:43:57.12…");
         });
 
-        it("truncates strings longer than truncate (22)", () => {
+        it("maxStringLengths strings longer than maxStringLength (22)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 22 })).toBe("2016-10-01T10:43:57.1…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 22 })).toBe("2016-10-01T10:43:57.1…");
         });
 
-        it("truncates strings longer than truncate (21)", () => {
+        it("maxStringLengths strings longer than maxStringLength (21)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 21 })).toBe("2016-10-01T10:43:57.…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 21 })).toBe("2016-10-01T10:43:57.…");
         });
 
-        it("truncates strings longer than truncate (20)", () => {
+        it("maxStringLengths strings longer than maxStringLength (20)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 20 })).toBe("2016-10-01T10:43:57…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 20 })).toBe("2016-10-01T10:43:57…");
         });
 
-        it("truncates strings longer than truncate (19)", () => {
+        it("maxStringLengths strings longer than maxStringLength (19)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 19 })).toBe("2016-10-01T10:43:5…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 19 })).toBe("2016-10-01T10:43:5…");
         });
 
-        it("truncates strings longer than truncate (18)", () => {
+        it("maxStringLengths strings longer than maxStringLength (18)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 18 })).toBe("2016-10-01T10:43:…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 18 })).toBe("2016-10-01T10:43:…");
         });
 
-        it("truncates strings longer than truncate (17)", () => {
+        it("maxStringLengths strings longer than maxStringLength (17)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 17 })).toBe("2016-10-01T10:43…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 17 })).toBe("2016-10-01T10:43…");
         });
 
-        it("truncates strings longer than truncate (16)", () => {
+        it("maxStringLengths strings longer than maxStringLength (16)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 16 })).toBe("2016-10-01T10:4…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 16 })).toBe("2016-10-01T10:4…");
         });
 
-        it("truncates strings longer than truncate (15)", () => {
+        it("maxStringLengths strings longer than maxStringLength (15)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 15 })).toBe("2016-10-01T10:…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 15 })).toBe("2016-10-01T10:…");
         });
 
-        it("truncates strings longer than truncate (14)", () => {
+        it("maxStringLengths strings longer than maxStringLength (14)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 14 })).toBe("2016-10-01T10…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 14 })).toBe("2016-10-01T10…");
         });
 
-        it("truncates strings longer than truncate (13)", () => {
+        it("maxStringLengths strings longer than maxStringLength (13)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 13 })).toBe("2016-10-01T1…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 13 })).toBe("2016-10-01T1…");
         });
 
-        it("truncates strings longer than truncate (12)", () => {
+        it("maxStringLengths strings longer than maxStringLength (12)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 12 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 12 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (11)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (11)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 11 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 11 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (10)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (10)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 10 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 10 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (9)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (9)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 9 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 9 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (8)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (8)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 8 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 8 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (7)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (7)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 7 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 7 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (6)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (6)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 6 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 6 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (5)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (5)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 5 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 5 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (4)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (4)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 4 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 4 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (3)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (3)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 3 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 3 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (2)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (2)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 2 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 2 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (1)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (1)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 1 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 1 })).toBe("2016-10-01T…");
         });
 
-        it("does not truncate past the date value with low truncate values (0)", () => {
+        it("does not maxStringLength past the date value with low maxStringLength values (0)", () => {
             expect.assertions(1);
 
-            expect(inspect(new Date(1_475_318_637_123), { truncate: 0 })).toBe("2016-10-01T…");
+            expect(inspect(new Date(1_475_318_637_123), { maxStringLength: 0 })).toBe("2016-10-01T…");
         });
     });
 });

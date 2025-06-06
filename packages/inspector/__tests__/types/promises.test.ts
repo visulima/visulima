@@ -26,19 +26,19 @@ describe.skipIf(isNode && canInspectPromises)("promises", () => {
             prom.catch(() => {});
         });
 
-        describe("truncate", () => {
-            it("returns the full string representation regardless of truncate", () => {
+        describe("maxStringLength", () => {
+            it("returns the full string representation regardless of maxStringLength", () => {
                 expect.assertions(9);
 
-                expect(inspect(Promise.resolve(), { truncate: 9 })).toBe("Promise{…}");
-                expect(inspect(Promise.resolve(), { truncate: 8 })).toBe("Promise{…}");
-                expect(inspect(Promise.resolve(), { truncate: 7 })).toBe("Promise{…}");
-                expect(inspect(Promise.resolve(), { truncate: 6 })).toBe("Promise{…}");
-                expect(inspect(Promise.resolve(), { truncate: 5 })).toBe("Promise{…}");
-                expect(inspect(Promise.resolve(), { truncate: 4 })).toBe("Promise{…}");
-                expect(inspect(Promise.resolve(), { truncate: 3 })).toBe("Promise{…}");
-                expect(inspect(Promise.resolve(), { truncate: 2 })).toBe("Promise{…}");
-                expect(inspect(Promise.resolve(), { truncate: 1 })).toBe("Promise{…}");
+                expect(inspect(Promise.resolve(), { maxStringLength: 9 })).toBe("Promise{…}");
+                expect(inspect(Promise.resolve(), { maxStringLength: 8 })).toBe("Promise{…}");
+                expect(inspect(Promise.resolve(), { maxStringLength: 7 })).toBe("Promise{…}");
+                expect(inspect(Promise.resolve(), { maxStringLength: 6 })).toBe("Promise{…}");
+                expect(inspect(Promise.resolve(), { maxStringLength: 5 })).toBe("Promise{…}");
+                expect(inspect(Promise.resolve(), { maxStringLength: 4 })).toBe("Promise{…}");
+                expect(inspect(Promise.resolve(), { maxStringLength: 3 })).toBe("Promise{…}");
+                expect(inspect(Promise.resolve(), { maxStringLength: 2 })).toBe("Promise{…}");
+                expect(inspect(Promise.resolve(), { maxStringLength: 1 })).toBe("Promise{…}");
             });
         });
     });

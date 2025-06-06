@@ -4,7 +4,7 @@ import inspectList from "./utils/inspect-list";
 
 const inspectAttribute = ([key, value]: [unknown, unknown], _: unknown, options: Options): string => {
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= 3;
+    options.maxStringLength -= 3;
 
     if (!value) {
         return options.stylize(String(key), "yellow");
@@ -28,6 +28,7 @@ export const inspectNode = (node: Node, inspect: InternalInspect, options: Optio
     }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const inspectNodeCollection: InspectType<ArrayLike<Node>> = (collection: ArrayLike<Node>, options: Options, inspect: InternalInspect, _: Indent | undefined): string => inspectList(collection, collection, options, inspect, inspectNode, "\n");
 
 export const inspectHTMLElement = (element: Element, object: unknown, options: Options, inspect: InternalInspect): string => {
@@ -38,7 +39,7 @@ export const inspectHTMLElement = (element: Element, object: unknown, options: O
     const tail = options.stylize(`</${name}>`, "special");
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= name.length * 2 + 5;
+    options.maxStringLength -= name.length * 2 + 5;
 
     let propertyContents = "";
 
@@ -55,13 +56,13 @@ export const inspectHTMLElement = (element: Element, object: unknown, options: O
     }
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= propertyContents.length;
+    options.maxStringLength -= propertyContents.length;
 
-    const { truncate } = options;
+    const { maxStringLength } = options;
 
     let children = inspectNodeCollection(element.children, options, inspect, undefined);
 
-    if (children && children.length > truncate) {
+    if (children && children.length > maxStringLength) {
         children = `${TRUNCATOR}(${element.children.length})`;
     }
 

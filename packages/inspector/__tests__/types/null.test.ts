@@ -9,19 +9,19 @@ describe("null", () => {
         expect(inspect(null)).toBe("null");
     });
 
-    describe("truncate", () => {
-        it("returns the full string representation regardless of truncate", () => {
+    describe("maxStringLength", () => {
+        it("returns the full string representation regardless of maxStringLength", () => {
             expect.assertions(9);
 
-            expect(inspect(null, { truncate: 9 })).toBe("null");
-            expect(inspect(null, { truncate: 8 })).toBe("null");
-            expect(inspect(null, { truncate: 7 })).toBe("null");
-            expect(inspect(null, { truncate: 6 })).toBe("null");
-            expect(inspect(null, { truncate: 5 })).toBe("null");
-            expect(inspect(null, { truncate: 4 })).toBe("null");
-            expect(inspect(null, { truncate: 3 })).toBe("null");
-            expect(inspect(null, { truncate: 2 })).toBe("null");
-            expect(inspect(null, { truncate: 1 })).toBe("null");
+            expect(inspect(null, { maxStringLength: 9 })).toBe("null");
+            expect(inspect(null, { maxStringLength: 8 })).toBe("null");
+            expect(inspect(null, { maxStringLength: 7 })).toBe("null");
+            expect(inspect(null, { maxStringLength: 6 })).toBe("null");
+            expect(inspect(null, { maxStringLength: 5 })).toBe("null");
+            expect(inspect(null, { maxStringLength: 4 })).toBe("null");
+            expect(inspect(null, { maxStringLength: 3 })).toBe("null");
+            expect(inspect(null, { maxStringLength: 2 })).toBe("null");
+            expect(inspect(null, { maxStringLength: 1 })).toBe("null");
         });
     });
 });

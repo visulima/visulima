@@ -24,89 +24,89 @@ describe("functions", () => {
         expect(inspect((a: string, b: string, c: string) => a + b + c)).toBe("[Function: (a, b, c) => a + b + c]");
     });
 
-    describe("truncate", () => {
-        it("returns the full representation when truncate is over string length", () => {
+    describe("maxStringLength", () => {
+        it("returns the full representation when maxStringLength is over string length", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 17 })).toBe("[Function foobar]");
+            expect(inspect(function foobar() {}, { maxStringLength: 17 })).toBe("[Function foobar]");
         });
 
-        it("truncates function names longer than truncate (16)", () => {
+        it("maxStringLengths function names longer than maxStringLength (16)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 16 })).toBe("[Function foob…]");
+            expect(inspect(function foobar() {}, { maxStringLength: 16 })).toBe("[Function foob…]");
         });
 
-        it("truncates function names longer than truncate (15)", () => {
+        it("maxStringLengths function names longer than maxStringLength (15)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 15 })).toBe("[Function foo…]");
+            expect(inspect(function foobar() {}, { maxStringLength: 15 })).toBe("[Function foo…]");
         });
 
-        it("truncates function names longer than truncate (14)", () => {
+        it("maxStringLengths function names longer than maxStringLength (14)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 14 })).toBe("[Function fo…]");
+            expect(inspect(function foobar() {}, { maxStringLength: 14 })).toBe("[Function fo…]");
         });
 
-        it("truncates function names longer than truncate (13)", () => {
+        it("maxStringLengths function names longer than maxStringLength (13)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 13 })).toBe("[Function f…]");
+            expect(inspect(function foobar() {}, { maxStringLength: 13 })).toBe("[Function f…]");
         });
 
-        it("truncates function names longer than truncate (12)", () => {
+        it("maxStringLengths function names longer than maxStringLength (12)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 12 })).toBe("[Function …]");
+            expect(inspect(function foobar() {}, { maxStringLength: 12 })).toBe("[Function …]");
         });
 
-        it("truncates function names longer than truncate (11)", () => {
+        it("maxStringLengths function names longer than maxStringLength (11)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 11 })).toBe("[Function …]");
+            expect(inspect(function foobar() {}, { maxStringLength: 11 })).toBe("[Function …]");
         });
 
-        it("does not truncate decoration even when truncate is short (4)", () => {
+        it("does not maxStringLength decoration even when maxStringLength is short (4)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 4 })).toBe("[Function …]");
+            expect(inspect(function foobar() {}, { maxStringLength: 4 })).toBe("[Function …]");
         });
 
-        it("does not truncate decoration even when truncate is short (3)", () => {
+        it("does not maxStringLength decoration even when maxStringLength is short (3)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 3 })).toBe("[Function …]");
+            expect(inspect(function foobar() {}, { maxStringLength: 3 })).toBe("[Function …]");
         });
 
-        it("does not truncate decoration even when truncate is short (2)", () => {
+        it("does not maxStringLength decoration even when maxStringLength is short (2)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 2 })).toBe("[Function …]");
+            expect(inspect(function foobar() {}, { maxStringLength: 2 })).toBe("[Function …]");
         });
 
-        it("does not truncate decoration even when truncate is short (1)", () => {
+        it("does not maxStringLength decoration even when maxStringLength is short (1)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 1 })).toBe("[Function …]");
+            expect(inspect(function foobar() {}, { maxStringLength: 1 })).toBe("[Function …]");
         });
 
-        it("does not truncate decoration even when truncate is short (0)", () => {
+        it("does not maxStringLength decoration even when maxStringLength is short (0)", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foobar() {}, { truncate: 0 })).toBe("[Function …]");
+            expect(inspect(function foobar() {}, { maxStringLength: 0 })).toBe("[Function …]");
         });
     });
 });
