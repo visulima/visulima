@@ -99,7 +99,7 @@
         "@babel/core": "^7.27.1",
         "@rushstack/eslint-plugin-security": "^0.10.0",
         "@testing-library/react": "^16.3.0",
-        "@types/node": "18.19.71",
+        "@types/node": "18.19.110",
         "@visulima/packem": "1.19.1",
         "@vitest/coverage-v8": "^3.1.4",
         "@vitest/ui": "^3.1.4",
