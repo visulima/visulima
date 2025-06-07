@@ -135,7 +135,7 @@
         "conventional-changelog-conventionalcommits": "9.0.0",
         "cross-env": "^7.0.3",
         "esbuild": "0.25.4",
-        "eslint": "8.57.0",
+        "eslint": "8.57.1",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
         "eslint-plugin-mdx": "^3.4.2",
