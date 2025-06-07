@@ -14,7 +14,7 @@ overrides:
   next@>=15.0.0 <15.2.3: '>=15.2.3'
   prismjs@<1.30.0: '>=1.30.0'
   tar-fs@>=3.0.0 <3.0.9: '>=3.0.9'
-  vite@>=6.3.0 <=6.3.3: '>=6.3.4'
+  vite@>=6.3.0 <=6.3.3: '>=6.3.5'
 
 importers:
 
@@ -398,8 +398,8 @@ importers:
         specifier: 19.1.5
         version: 19.1.5(@types/react@19.1.4)
       '@vitejs/plugin-react':
-        specifier: ^4.4.1
-        version: 4.5.0(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
+        specifier: ^4.5.1
+        version: 4.5.1(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
       autoprefixer:
         specifier: ^10.4.21
         version: 10.4.21(postcss@8.5.3)
@@ -6223,7 +6223,7 @@ packages:
     resolution: {integrity: sha512-qYDdL7fPwLRI+bJNurVcis+tNgJmvWjH4YTBGXTA8xMuxFrnAz6E5o35iyzyKbq5J5Lr8mJGfrR5GXl+WGwhgQ==}
     peerDependencies:
       typescript: '>= 4.3.x'
-      vite: '>=6.3.4'
+      vite: '>=6.3.5'
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -8358,7 +8358,7 @@ packages:
     resolution: {integrity: sha512-ajWYhy32ksBWxwWHrjwZzyC0Ii5ZTeu5lsqA95Q/EQBB0P5qWlHWGM3AVyv82Mz/ND03ebGy123uVwgf6olnYQ==}
     peerDependencies:
       storybook: ^8.6.14
-      vite: '>=6.3.4'
+      vite: '>=6.3.5'
 
   '@storybook/channels@7.6.17':
     resolution: {integrity: sha512-GFG40pzaSxk1hUr/J/TMqW5AFDDPUSu+HkeE/oqSWJbOodBOLJzHN6CReJS6y1DjYSZLNFt1jftPWZZInG/XUA==}
@@ -8465,7 +8465,7 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
       storybook: ^8.6.14
-      vite: '>=6.3.4'
+      vite: '>=6.3.5'
     peerDependenciesMeta:
       '@storybook/test':
         optional: true
@@ -10329,11 +10329,11 @@ packages:
     resolution: {integrity: sha512-ErHC0CHgxaZyC62MoCcW4KyuymaDM5poxFf3lQlX3HfQvcoGYor5JqX3VymR6oOYrBqMW4Rchh76pRlcaRz3rQ==}
     engines: {node: '>=18.0.0 <=23.x'}
 
-  '@vitejs/plugin-react@4.5.0':
-    resolution: {integrity: sha512-JuLWaEqypaJmOJPLWwO335Ig6jSgC1FTONCWAxnqcQthLTK/Yc9aH6hr9z/87xciejbQcnP3GnA1FWUSWeXaeg==}
+  '@vitejs/plugin-react@4.5.1':
+    resolution: {integrity: sha512-uPZBqSI0YD4lpkIru6M35sIfylLGTyhGHvDZbNLuMA73lMlwJKz5xweH7FajfcCAc2HnINciejA9qTz0dr0M7A==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
-      vite: '>=6.3.4'
+      vite: '>=6.3.5'
 
   '@vitest/browser@3.2.0':
     resolution: {integrity: sha512-sVpX5m53lX9/0ehAqkcTSQeJK1SVlTlvBrwE8rPQ2KJQgb/Iiorx+3y+VQdzIJ+CDqfG89bQEA5l1Z02VogDsA==}
@@ -10396,7 +10396,7 @@ packages:
     resolution: {integrity: sha512-8IJ3CvwtSw/EFXqWFL8aCMu+YyYXG2WUSrQbViOZkWTKTVicVwZ/YiEZDSqD00kX+v/+W+OnxhNWoeVKorHygA==}
     peerDependencies:
       msw: ^2.4.9
-      vite: '>=6.3.4'
+      vite: '>=6.3.5'
     peerDependenciesMeta:
       msw:
         optional: true
@@ -10407,7 +10407,7 @@ packages:
     resolution: {integrity: sha512-HFcW0lAMx3eN9vQqis63H0Pscv0QcVMo1Kv8BNysZbxcmHu3ZUYv59DS6BGYiGQ8F5lUkmsfMMlPm4DJFJdf/A==}
     peerDependencies:
       msw: ^2.4.9
-      vite: '>=6.3.4'
+      vite: '>=6.3.5'
     peerDependenciesMeta:
       msw:
         optional: true
@@ -10418,7 +10418,7 @@ packages:
     resolution: {integrity: sha512-OXxMJnx1lkB+Vl65Re5BrsZEHc90s5NMjD23ZQ9NlU7f7nZiETGoX4NeKZSmsKjseuMq2uOYXdLOeoM0pJU+qw==}
     peerDependencies:
       msw: ^2.4.9
-      vite: '>=6.3.4'
+      vite: '>=6.3.5'
     peerDependenciesMeta:
       msw:
         optional: true
@@ -20791,7 +20791,7 @@ packages:
   vite-tsconfig-paths@5.1.4:
     resolution: {integrity: sha512-cYj0LRuLV2c2sMqhqhGpaO3LretdtMn/BVX4cPLanIZuwwrkVl+lK84E/miEXkCHWXuq65rhNN4rXsBcOB3S4w==}
     peerDependencies:
-      vite: '>=6.3.4'
+      vite: '>=6.3.5'
     peerDependenciesMeta:
       vite:
         optional: true
@@ -29307,7 +29307,7 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@vitejs/plugin-react@4.5.0(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
+  '@vitejs/plugin-react@4.5.1(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.25.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
     dependencies:
       '@babel/core': 7.27.4
       '@babel/plugin-transform-react-jsx-self': 7.25.9(@babel/core@7.27.4)
