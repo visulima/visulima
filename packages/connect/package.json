@@ -116,7 +116,7 @@
         "eslint-plugin-vitest-globals": "^1.5.0",
         "eslint-plugin-zod": "^1.4.0",
         "express": "^5.1.0",
-        "fastify": "^5.3.3",
+        "fastify": "^5.4.0",
         "isomorphic-fetch": "^3.0.0",
         "prettier": "^3.5.3",
         "rimraf": "6.0.1",
@@ -126,7 +126,7 @@
         "zod": "^3.25.13"
     },
     "peerDependencies": {
-        "zod": "^3.22.4"
+        "zod": "^3.25.64"
     },
     "engines": {
         "node": ">=18.0.0 <=23.x"
