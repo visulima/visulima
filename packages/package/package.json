@@ -177,7 +177,7 @@
         "@babel/core": "^7.27.1",
         "@inquirer/core": "^10.1.11",
         "@inquirer/type": "^3.0.6",
-        "@pnpm/exe": "^10.11.0",
+        "@pnpm/exe": "^10.12.1",
         "@rushstack/eslint-plugin-security": "^0.10.0",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.71",
