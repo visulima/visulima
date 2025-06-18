@@ -102,10 +102,10 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.2.10",
-        "@anolilab/semantic-release-pnpm": "1.1.11",
-        "@anolilab/semantic-release-preset": "^10.0.5",
-        "@arethetypeswrong/cli": "^0.18.1",
+        "@anolilab/eslint-config": "^16.2.13",
+        "@anolilab/semantic-release-pnpm": "1.1.12",
+        "@anolilab/semantic-release-preset": "^10.0.6",
+        "@arethetypeswrong/cli": "^0.18.2",
         "@secretlint/secretlint-rule-preset-recommend": "^9.3.3",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "22.15.29",
