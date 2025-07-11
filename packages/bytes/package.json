@@ -77,10 +77,10 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.2.10",
-        "@anolilab/semantic-release-pnpm": "1.1.11",
-        "@anolilab/semantic-release-preset": "^10.0.5",
-        "@arethetypeswrong/cli": "^0.18.1",
+        "@anolilab/eslint-config": "^16.2.15",
+        "@anolilab/semantic-release-pnpm": "1.1.12",
+        "@anolilab/semantic-release-preset": "^10.0.6",
+        "@arethetypeswrong/cli": "^0.18.2",
         "@babel/core": "^7.27.4",
         "@secretlint/secretlint-rule-preset-recommend": "^9.3.3",
         "@std/bytes": "jsr:1.0.6",
@@ -91,7 +91,7 @@
         "@vitest/ui": "^3.2.0",
         "conventional-changelog-conventionalcommits": "9.0.0",
         "cross-env": "^7.0.3",
-        "esbuild": "^0.25.5",
+        "esbuild": "^0.25.6",
         "eslint": "9.28.0",
         "prettier": "^3.5.3",
         "rimraf": "^6.0.1",
