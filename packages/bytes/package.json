@@ -92,7 +92,7 @@
         "conventional-changelog-conventionalcommits": "9.0.0",
         "cross-env": "^7.0.3",
         "esbuild": "^0.25.5",
-        "eslint": "9.28.0",
+        "eslint": "9.31.0",
         "prettier": "^3.5.3",
         "rimraf": "^6.0.1",
         "secretlint": "9.3.3",
