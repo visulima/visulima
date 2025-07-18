@@ -126,7 +126,7 @@
         "@rushstack/eslint-plugin-security": "^0.10.0",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/command-line-args": "^5.2.3",
-        "@types/node": "18.19.71",
+        "@types/node": "18.19.119",
         "@visulima/nextra-theme-docs": "4.0.26",
         "@visulima/packem": "1.19.1",
         "@visulima/path": "1.4.0",
