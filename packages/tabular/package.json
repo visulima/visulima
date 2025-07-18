@@ -126,7 +126,7 @@
         "terminal-size": "4.0.0",
         "type-fest": "^4.41.0",
         "typedoc": "0.28.5",
-        "typedoc-plugin-markdown": "4.6.4",
+        "typedoc-plugin-markdown": "4.7.0",
         "typedoc-plugin-rename-defaults": "0.7.3",
         "typescript": "^5.8.3",
         "vitest": "^3.2.0"

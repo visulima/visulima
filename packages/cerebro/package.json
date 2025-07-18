@@ -123,7 +123,7 @@
         "@eslint-types/jsdoc": "^48.2.2",
         "@eslint-types/typescript-eslint": "^7.5.0",
         "@eslint-types/unicorn": "^52.0.0",
-        "@rushstack/eslint-plugin-security": "^0.10.0",
+        "@rushstack/eslint-plugin-security": "^0.11.0",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.19.71",
