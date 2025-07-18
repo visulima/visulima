@@ -95,7 +95,7 @@
         "@babel/core": "^7.27.1",
         "@prisma/client": "6.8.2",
         "@prisma/internals": "6.8.2",
-        "@rushstack/eslint-plugin-security": "^0.10.0",
+        "@rushstack/eslint-plugin-security": "^0.11.0",
         "@types/json-schema": "7.0.15",
         "@types/micromatch": "4.0.9",
         "@types/node": "18.19.71",
