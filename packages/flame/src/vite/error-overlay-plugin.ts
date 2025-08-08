@@ -28,6 +28,16 @@ export default function viteErrorOverlay(options: ViteOverlayOptions = {}): Plug
 
             const code = `
 const THEME = ${JSON.stringify(theme)};
+let __flame_overlay_silent__ = false;
+
+const HYDRATION_PATTERNS = [
+  /Hydration failed/i,
+  /hydrating this/i,
+  /Text content did not match/i,
+  /Expected server HTML/i,
+  /There was an error while hydrating/i,
+  /An error occurred during hydration/i
+];
 
 function timestamp() {
   try { return new Date().toLocaleTimeString(); } catch { return ''; }
@@ -46,8 +56,10 @@ function createStyles() {
   --fl-border: ${theme === "dark" ? "#333" : "#e5e5e5"};
   --fl-code-bg: ${theme === "dark" ? "#0f0f10" : "#fff"};
 }
-.fl-overlay__root { position: fixed; inset: 0; z-index: 2147483647; background: rgba(0,0,0,0.5); display: none; }
-.fl-overlay__panel { position: absolute; inset: 0; background: var(--fl-bg); color: var(--fl-fg); overflow: auto; }
+@keyframes fl-fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fl-slide-up { from { transform: translateY(8px); opacity: .9 } to { transform: translateY(0); opacity: 1 } }
+.fl-overlay__root { position: fixed; inset: 0; z-index: 2147483647; background: rgba(0,0,0,0.5); display: none; animation: fl-fade-in .15s ease-out; }
+.fl-overlay__panel { position: absolute; inset: 0; background: var(--fl-bg); color: var(--fl-fg); overflow: auto; animation: fl-slide-up .2s ease-out; }
 .fl-overlay__header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--fl-border); background: var(--fl-surface); }
 .fl-overlay__badge { padding: 3px 8px; border-radius: 6px; background: var(--fl-accent); color: white; font-weight: 600; font-size: 12px; letter-spacing: .02em; }
 .fl-overlay__title { font-size: 14px; font-weight: 600; }
@@ -155,7 +167,7 @@ function showOverlay(data) {
 
   const hint = document.createElement('div');
   hint.className = 'fl-overlay__hint';
-  hint.textContent = 'Press Esc to dismiss.';
+  hint.textContent = 'Press Esc to dismiss. Hydration issues will be surfaced here.';
   content.appendChild(hint);
 
   panel.appendChild(header);
@@ -185,8 +197,17 @@ function normalizeMessageTitle(data) {
 
 function normalizeMessageBody(data) {
   const m = (data.err && data.err.message) || data.message || '';
-  const s = (data.err and data.err.stack) || data.stack || '';
+  const s = filterStack(((data.err && data.err.stack) || data.stack || ''));
   return [m, s].filter(Boolean).join('\n\n');
+}
+
+function filterStack(stack) {
+  if (!stack) return '';
+  const lines = String(stack).split('\n');
+  const ignored = /node_modules|vite\/dist|react-dom\/|\(internal\)|__vite|next-dev-overlay/;
+  const kept = lines.filter(l => !ignored.test(l));
+  // keep first 12 lines max
+  return kept.slice(0, 12).join('\n');
 }
 
 function extractLoc(frame) {
@@ -205,11 +226,35 @@ function setup() {
     import.meta.hot.on('vite:beforeUpdate', hideOverlay);
     import.meta.hot.on('vite:error', (data) => { showOverlay(data); });
   }
-  window.addEventListener('error', (e) => { showOverlay({ message: e.message, stack: e.error && e.error.stack }); });
+  // runtime errors
+  window.addEventListener('error', (e) => { if (!__flame_overlay_silent__) showOverlay({ message: e.message, stack: e.error && e.error.stack }); });
   window.addEventListener('unhandledrejection', (e) => {
     const reason = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
-    showOverlay({ message: reason.message, stack: reason.stack });
+    if (!__flame_overlay_silent__) showOverlay({ message: reason.message, stack: reason.stack });
   });
+  // react hydration detection via console.error
+  const origConsoleError = console.error;
+  console.error = function(...args) {
+    try {
+      const joined = args.map(String).join(' ');
+      if (HYDRATION_PATTERNS.some((re) => re.test(joined))) {
+        const err = new Error(joined);
+        if (!__flame_overlay_silent__) showOverlay({ message: err.message, stack: err.stack });
+      }
+    } catch {}
+    return origConsoleError.apply(console, args);
+  }
+  // reportError integration (Next.js sends unhandled to reportError)
+  const origReportError = window.reportError;
+  try {
+    window.reportError = function(err) {
+      try {
+        const e = err instanceof Error ? err : new Error(String(err));
+        if (!__flame_overlay_silent__) showOverlay({ message: e.message, stack: e.stack });
+      } catch {}
+      if (typeof origReportError === 'function') return origReportError.apply(window, arguments);
+    }
+  } catch {}
 }
 
 export default function init() { setup(); }
