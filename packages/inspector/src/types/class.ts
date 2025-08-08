@@ -8,6 +8,7 @@ const inspectClass: InspectType<new (...arguments_: any[]) => unknown> = (
     options: Options,
     inspect: InternalInspect,
     indent: Indent | undefined,
+    depth: number,
 ): string => {
     let name = "";
 
@@ -19,9 +20,9 @@ const inspectClass: InspectType<new (...arguments_: any[]) => unknown> = (
     }
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= name.length;
+    options.maxStringLength -= name.length;
 
-    return `${name} ${inspectObject(value, options, inspect, indent)}`;
+    return `${name} ${inspectObject(value, options, inspect, indent, depth)}`;
 };
 
 export default inspectClass;

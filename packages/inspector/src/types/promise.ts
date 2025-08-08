@@ -1,5 +1,5 @@
-import type { InspectType } from "../types";
+import type { InspectType, Options } from "../types";
 
-const getPromiseValue: InspectType<Promise<unknown>> = () => "Promise{…}";
+const inspectPromise: InspectType<Promise<unknown>> = (_value: Promise<unknown>, options: Options): string => options.stylize("Promise {…}", "special");
 
-export default getPromiseValue;
+export default inspectPromise;

@@ -11,12 +11,13 @@ const quoteComplexKey = (key: string, options: Options): string => {
         return stringifiedKey.replaceAll("\"", String.raw`\"`);
     }
 
+    // eslint-disable-next-line sonarjs/anchor-precedence
     return stringifiedKey.replaceAll("'", String.raw`\'`).replaceAll(String.raw`\"`, "\"").replaceAll(/^"|"$/g, "'");
 };
 
 const inspectProperty = ([key, value]: [unknown, unknown], object: unknown, options: Options, inspect: InternalInspect): string => {
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= 2;
+    options.maxStringLength -= 2;
 
     if (typeof key === "string") {
         // eslint-disable-next-line no-param-reassign
@@ -27,7 +28,7 @@ const inspectProperty = ([key, value]: [unknown, unknown], object: unknown, opti
     }
 
     // eslint-disable-next-line no-param-reassign
-    options.truncate -= (key as string).length;
+    options.maxStringLength -= String(key).length;
 
     // eslint-disable-next-line no-param-reassign
     value = inspect(value, object, options);

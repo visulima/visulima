@@ -6,14 +6,14 @@ import { inspect } from "../../src";
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class Foo {}
 
-describe("classes", () => {
-    it("returns constructor name with object literal notation for an empty class", () => {
+describe("inspect with Classes", () => {
+    it("should inspect an empty class, showing its constructor name and '{}'", () => {
         expect.assertions(1);
 
         expect(inspect(new Foo())).toBe("Foo {}");
     });
 
-    it("returns `<Anonymous Class>{}` for anonymous classes", () => {
+    it("should return '<Anonymous Class> {}' for an anonymous class instance", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line @typescript-eslint/no-extraneous-class
@@ -22,7 +22,7 @@ describe("classes", () => {
         expect(inspect(new (anon())())).toBe("<Anonymous Class> {}");
     });
 
-    it("returns toStringTag value as name if present", () => {
+    it("should use the 'Symbol.toStringTag' value as the class name if it exists", () => {
         expect.assertions(1);
 
         class Bar {
@@ -36,8 +36,8 @@ describe("classes", () => {
         expect(inspect(bar)).toBe("Bar [Baz] {}");
     });
 
-    describe("properties", () => {
-        it("inspects and outputs properties", () => {
+    describe("with properties", () => {
+        it("should inspect and display the properties of a class instance", () => {
             expect.assertions(1);
 
             const foo = new Foo();
@@ -50,7 +50,7 @@ describe("classes", () => {
             expect(inspect(foo)).toBe("Foo { bar: 1, baz: 'hello' }");
         });
 
-        it("inspects and outputs Symbols", () => {
+        it("should inspect and display Symbol properties of a class instance", () => {
             expect.assertions(1);
 
             const foo = new Foo();
@@ -62,7 +62,7 @@ describe("classes", () => {
         });
     });
 
-    it("should print \"Symbol.toStringTag\" on a instances", () => {
+    it("should respect 'Symbol.toStringTag' on instances and prototypes", () => {
         expect.assertions(4);
 
         // eslint-disable-next-line func-style

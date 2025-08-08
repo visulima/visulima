@@ -8,7 +8,7 @@ const inspectFunction: InspectType<ToStringable> = (function_: ToStringable, opt
     const functionType = function_[Symbol.toStringTag] || "Function";
     const source = function_.toString();
 
-    if (source.length < options.truncate - 12) {
+    if (source.length < options.maxStringLength - 12) {
         return options.stylize(`[${functionType}: ${source}]`, "special");
     }
 
@@ -18,7 +18,7 @@ const inspectFunction: InspectType<ToStringable> = (function_: ToStringable, opt
         return options.stylize(`[${functionType}]`, "special");
     }
 
-    return options.stylize(`[${functionType} ${truncate(name, options.truncate - 11)}]`, "special");
+    return options.stylize(`[${functionType} ${truncate(name, options.maxStringLength - 11)}]`, "special");
 };
 
 export default inspectFunction;

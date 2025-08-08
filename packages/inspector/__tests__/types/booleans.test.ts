@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("booleans", () => {
-    it("returns `false` for false", () => {
+describe("inspect with Booleans", () => {
+    it("should correctly inspect primitive and object-wrapped booleans", () => {
         expect.assertions(4);
 
         expect(inspect(false)).toBe("false");
@@ -14,27 +14,20 @@ describe("booleans", () => {
         expect(inspect(new Boolean(false))).toBe("false");
     });
 
-    it("returns `true` for true", () => {
-        expect.assertions(2);
-
-        expect(inspect(false)).toBe("false");
-        expect(inspect(true)).toBe("true");
-    });
-
-    describe("truncated", () => {
-        it("returns the full string representation regardless of truncate", () => {
+    describe("with maxStringLength option", () => {
+        it("should not truncate boolean values regardless of maxStringLength", () => {
             expect.assertions(10);
 
-            expect(inspect(true, { truncate: 5 })).toBe("true");
-            expect(inspect(true, { truncate: 4 })).toBe("true");
-            expect(inspect(true, { truncate: 3 })).toBe("true");
-            expect(inspect(true, { truncate: 2 })).toBe("true");
-            expect(inspect(true, { truncate: 1 })).toBe("true");
-            expect(inspect(false, { truncate: 5 })).toBe("false");
-            expect(inspect(false, { truncate: 4 })).toBe("false");
-            expect(inspect(false, { truncate: 3 })).toBe("false");
-            expect(inspect(false, { truncate: 2 })).toBe("false");
-            expect(inspect(false, { truncate: 1 })).toBe("false");
+            expect(inspect(true, { maxStringLength: 5 })).toBe("true");
+            expect(inspect(true, { maxStringLength: 4 })).toBe("true");
+            expect(inspect(true, { maxStringLength: 3 })).toBe("true");
+            expect(inspect(true, { maxStringLength: 2 })).toBe("true");
+            expect(inspect(true, { maxStringLength: 1 })).toBe("true");
+            expect(inspect(false, { maxStringLength: 5 })).toBe("false");
+            expect(inspect(false, { maxStringLength: 4 })).toBe("false");
+            expect(inspect(false, { maxStringLength: 3 })).toBe("false");
+            expect(inspect(false, { maxStringLength: 2 })).toBe("false");
+            expect(inspect(false, { maxStringLength: 1 })).toBe("false");
         });
     });
 });
