@@ -1,6 +1,6 @@
 import type { SolutionFinderFile } from "../../types";
 
-const openAiPrompt = ({ applicationType, error, file }: { applicationType: string | undefined; error: Error; file: SolutionFinderFile }): string => `You are a very skilled ${file.language} programmer.
+const aiPrompt = ({ applicationType, error, file }: { applicationType: string | undefined; error: Error; file: SolutionFinderFile }): string => `You are a very skilled ${file.language} programmer.
 
 ${applicationType ? `You are working on a ${applicationType} application.` : ""}
 
@@ -33,4 +33,4 @@ ${error.name}
 Exception message:
 ${error.message}`;
 
-export default openAiPrompt;
+export default aiPrompt;

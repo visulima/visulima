@@ -137,7 +137,7 @@
         "lucide-static": "^0.511.0",
         "marked": "^15.0.12",
         "open-editor": "^5.1.0",
-        "openai": "5.1.0",
+        "ai": "^4.1.38",
         "postcss": "^8.5.4",
         "postcss-focus-visible": "^10.0.1",
         "postcss-load-config": "6.0.1",
@@ -160,14 +160,24 @@
         "clipboard": "^2.0.11",
         "marked": "^11.0.0",
         "open-editor": "^4.1.1",
-        "openai": "4.20.1",
+        "ai": "^4.0.0",
+        "@ai-sdk/openai": "^1.0.0",
+        "@ai-sdk/anthropic": "^1.0.0",
+        "@ai-sdk/google": "^1.0.0",
+        "@ai-sdk/mistral": "^1.0.0",
+        "@ai-sdk/ollama": "^1.0.0",
+        "@ai-sdk/azure": "^1.0.0",
         "sanitize-html": "^2.11.0",
         "shiki": "^3.4.0"
     },
     "peerDependenciesMeta": {
-        "openai": {
-            "optional": true
-        },
+        "ai": { "optional": true },
+        "@ai-sdk/openai": { "optional": true },
+        "@ai-sdk/anthropic": { "optional": true },
+        "@ai-sdk/google": { "optional": true },
+        "@ai-sdk/mistral": { "optional": true },
+        "@ai-sdk/ollama": { "optional": true },
+        "@ai-sdk/azure": { "optional": true },
         "marked": {
             "optional": true
         },
