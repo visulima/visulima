@@ -1,0 +1,229 @@
+import type { IndexHtmlTransformResult, Plugin } from "vite";
+
+export type NextOverlayOptions = {
+    theme?: "dark" | "light";
+};
+
+const VIRTUAL_ID = "virtual:nextjs-error-overlay";
+const RESOLVED_VIRTUAL_ID = "\0" + VIRTUAL_ID;
+
+export default function nextErrorOverlayPlugin(options: NextOverlayOptions = {}): Plugin {
+    return {
+        name: "nextjs-error-overlay",
+        apply: "serve",
+        enforce: "pre",
+        config(userConfig) {
+            return {
+                server: { hmr: { overlay: false } },
+                ...userConfig,
+            };
+        },
+        resolveId(id) {
+            if (id === VIRTUAL_ID) return RESOLVED_VIRTUAL_ID;
+        },
+        load(id) {
+            if (id !== RESOLVED_VIRTUAL_ID) return;
+
+            const theme = options.theme ?? "dark";
+
+            const code = `
+const THEME = ${JSON.stringify(theme)};
+
+function timestamp() {
+  try { return new Date().toLocaleTimeString(); } catch { return ''; }
+}
+
+function createStyles() {
+  const style = document.createElement('style');
+  style.setAttribute('data-next-overlay', '');
+  style.textContent = \`\`\`
+:root {
+  --nx-bg: ${theme === "dark" ? "#0b0b0c" : "#ffffff"};
+  --nx-fg: ${theme === "dark" ? "#eaeaea" : "#111111"};
+  --nx-muted: ${theme === "dark" ? "#9b9b9b" : "#666"};
+  --nx-accent: #e00;
+  --nx-surface: ${theme === "dark" ? "#151515" : "#f5f5f5"};
+  --nx-border: ${theme === "dark" ? "#333" : "#e5e5e5"};
+  --nx-code-bg: ${theme === "dark" ? "#0f0f10" : "#fff"};
+}
+.nextjs-overlay__root { position: fixed; inset: 0; z-index: 2147483647; background: rgba(0,0,0,0.5); display: none; }
+.nextjs-overlay__panel { position: absolute; inset: 0; background: var(--nx-bg); color: var(--nx-fg); overflow: auto; }
+.nextjs-overlay__header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--nx-border); background: var(--nx-surface); }
+.nextjs-overlay__badge { padding: 3px 8px; border-radius: 6px; background: var(--nx-accent); color: white; font-weight: 600; font-size: 12px; letter-spacing: .02em; }
+.nextjs-overlay__title { font-size: 14px; font-weight: 600; }
+.nextjs-overlay__subtitle { font-size: 12px; color: var(--nx-muted); }
+.nextjs-overlay__content { padding: 16px; display: grid; gap: 16px; }
+.nextjs-overlay__message { font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+.nextjs-overlay__frame { background: var(--nx-code-bg); border: 1px solid var(--nx-border); border-radius: 8px; overflow: hidden; }
+.nextjs-overlay__frame-header { padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--nx-border); }
+.nextjs-overlay__frame-path { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
+.nextjs-overlay__actions { display: flex; gap: 8px; }
+.nextjs-overlay__button { appearance: none; border: 1px solid var(--nx-border); background: transparent; color: var(--nx-fg); font-size: 12px; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.nextjs-overlay__code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; line-height: 1.4; overflow-x: auto; display: block; padding: 12px 14px; white-space: pre; }
+.nextjs-overlay__hint { color: var(--nx-muted); font-size: 12px; }
+\`\`\`;
+  return style;
+}
+
+function ensureRoot() {
+  let root = document.querySelector('.nextjs-overlay__root');
+  if (!root) {
+    root = document.createElement('div');
+    root.className = 'nextjs-overlay__root';
+    document.documentElement.appendChild(root);
+    document.head.appendChild(createStyles());
+  }
+  return root;
+}
+
+function showOverlay(data) {
+  const root = ensureRoot();
+  root.innerHTML = '';
+
+  const panel = document.createElement('div');
+  panel.className = 'nextjs-overlay__panel';
+
+  const header = document.createElement('div');
+  header.className = 'nextjs-overlay__header';
+
+  const badge = document.createElement('div');
+  badge.className = 'nextjs-overlay__badge';
+  badge.textContent = 'ERROR';
+
+  const title = document.createElement('div');
+  title.className = 'nextjs-overlay__title';
+  title.textContent = normalizeMessageTitle(data);
+
+  const subtitle = document.createElement('div');
+  subtitle.className = 'nextjs-overlay__subtitle';
+  subtitle.textContent = timestamp();
+
+  header.appendChild(badge);
+  header.appendChild(title);
+  header.appendChild(subtitle);
+
+  const content = document.createElement('div');
+  content.className = 'nextjs-overlay__content';
+
+  const message = document.createElement('div');
+  message.className = 'nextjs-overlay__message';
+  message.textContent = normalizeMessageBody(data);
+  content.appendChild(message);
+
+  const frameText = data.frame || (data.err && data.err.frame) || '';
+  const file = (data.id || (data.err && data.err.id) || '');
+  const loc = extractLoc(frameText);
+
+  if (frameText) {
+    const frame = document.createElement('div');
+    frame.className = 'nextjs-overlay__frame';
+
+    const frameHeader = document.createElement('div');
+    frameHeader.className = 'nextjs-overlay__frame-header';
+
+    const framePath = document.createElement('div');
+    framePath.className = 'nextjs-overlay__frame-path';
+    framePath.textContent = file || 'Code Frame';
+
+    const actions = document.createElement('div');
+    actions.className = 'nextjs-overlay__actions';
+
+    const openBtn = document.createElement('button');
+    openBtn.className = 'nextjs-overlay__button';
+    openBtn.textContent = 'Open in editor';
+    openBtn.onclick = () => openInEditor(file, loc);
+
+    const dismissBtn = document.createElement('button');
+    dismissBtn.className = 'nextjs-overlay__button';
+    dismissBtn.textContent = 'Dismiss (Esc)';
+    dismissBtn.onclick = () => hideOverlay();
+
+    actions.appendChild(openBtn);
+    actions.appendChild(dismissBtn);
+
+    frameHeader.appendChild(framePath);
+    frameHeader.appendChild(actions);
+
+    const code = document.createElement('pre');
+    code.className = 'nextjs-overlay__code';
+    code.textContent = frameText;
+
+    frame.appendChild(frameHeader);
+    frame.appendChild(code);
+    content.appendChild(frame);
+  }
+
+  const hint = document.createElement('div');
+  hint.className = 'nextjs-overlay__hint';
+  hint.textContent = 'This overlay is inspired by Next.js 15.2. Press Esc to dismiss.';
+  content.appendChild(hint);
+
+  panel.appendChild(header);
+  panel.appendChild(content);
+  root.appendChild(panel);
+  root.style.display = 'block';
+
+  window.addEventListener('keydown', escListener);
+}
+
+function hideOverlay() {
+  const root = document.querySelector('.nextjs-overlay__root');
+  if (root) {
+    root.style.display = 'none';
+    root.innerHTML = '';
+  }
+  window.removeEventListener('keydown', escListener);
+}
+
+function escListener(e) { if (e.key === 'Escape') hideOverlay(); }
+
+function normalizeMessageTitle(data) {
+  const plugin = data.plugin || (data.err && data.err.plugin);
+  const message = (data.err && data.err.message) || data.message || 'Unknown error';
+  return plugin ? (message.split('\n')[0] + ' · ' + plugin) : message.split('\n')[0];
+}
+
+function normalizeMessageBody(data) {
+  const m = (data.err && data.err.message) || data.message || '';
+  const s = (data.err && data.err.stack) || data.stack || '';
+  return [m, s].filter(Boolean).join('\n\n');
+}
+
+function extractLoc(frame) {
+  const m = /:(\\d+):(\\d+)/.exec(frame.split('\n')[0] || '');
+  return m ? { line: Number(m[1]), column: Number(m[2]) } : undefined;
+}
+
+function openInEditor(file, loc) {
+  if (!file) return;
+  const q = new URLSearchParams({ file: loc ? `${file}:${loc.line}:${loc.column || 1}` : file });
+  fetch('/__open-in-editor?' + q.toString());
+}
+
+function setup() {
+  if (import.meta.hot) {
+    import.meta.hot.on('vite:beforeUpdate', hideOverlay);
+    import.meta.hot.on('vite:error', (data) => { showOverlay(data); });
+  }
+  window.addEventListener('error', (e) => { showOverlay({ message: e.message, stack: e.error && e.error.stack }); });
+  window.addEventListener('unhandledrejection', (e) => {
+    const reason = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
+    showOverlay({ message: reason.message, stack: reason.stack });
+  });
+}
+
+export default function init() { setup(); }
+`;
+            return code;
+        },
+        transformIndexHtml(html): IndexHtmlTransformResult {
+            const scriptTag = {
+                tag: "script",
+                attrs: { type: "module" },
+                children: `import init from '${VIRTUAL_ID}'; init();`,
+                injectTo: "head",
+            } as const;
+            return { html, tags: [scriptTag] };
+        },
+    };
+}
