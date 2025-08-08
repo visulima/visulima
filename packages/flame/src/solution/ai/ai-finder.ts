@@ -4,8 +4,8 @@ import type { LanguageModelV1 } from "ai";
 import type { Solution, SolutionFinder, SolutionFinderFile } from "../../types";
 import cache from "../../util/cache";
 import debugLog from "../../util/debug-log";
-import openAiPrompt from "./open-ai-prompt";
-import openAiSolutionResponse from "./open-ai-solution-response";
+import aiPrompt from "./ai-prompt";
+import aiSolutionResponse from "./ai-solution-response";
 
 const findCache = findCacheDirSync("visulima-flame");
 
@@ -85,7 +85,7 @@ async function resolveModel(
     }
 }
 
-const OpenAiFinder: (
+const AiFinder: (
     options: Partial<{
         apikey: string;
         max_tokens: number;
@@ -96,11 +96,11 @@ const OpenAiFinder: (
 ) => SolutionFinder = (options = {}) => {
     return {
         handle: async (error: Error, file: SolutionFinderFile): Promise<Solution | undefined> => {
-            const content = openAiPrompt({ applicationType: undefined, error, file });
+            const content = aiPrompt({ applicationType: undefined, error, file });
 
             if (cacheHandler?.has(content)) {
                 return {
-                    body: openAiSolutionResponse(cacheHandler.get(content) ?? ""),
+                    body: aiSolutionResponse(cacheHandler.get(content) ?? ""),
                     header: DEFAULT_HEADER,
                 };
             }
@@ -119,7 +119,7 @@ const OpenAiFinder: (
 
                 if (!messageContent) {
                     return {
-                        body: openAiSolutionResponse(DEFAULT_ERROR_MESSAGE),
+                        body: aiSolutionResponse(DEFAULT_ERROR_MESSAGE),
                         header: DEFAULT_HEADER,
                     };
                 }
@@ -127,7 +127,7 @@ const OpenAiFinder: (
                 cacheHandler?.set(content, messageContent);
 
                 return {
-                    body: openAiSolutionResponse(messageContent),
+                    body: aiSolutionResponse(messageContent),
                     header: DEFAULT_HEADER,
                 };
             } catch (err) {
@@ -135,7 +135,7 @@ const OpenAiFinder: (
                 console.error(err);
 
                 return {
-                    body: openAiSolutionResponse(DEFAULT_ERROR_MESSAGE),
+                    body: aiSolutionResponse(DEFAULT_ERROR_MESSAGE),
                     header: DEFAULT_HEADER,
                 };
             }
@@ -145,4 +145,4 @@ const OpenAiFinder: (
     };
 };
 
-export default OpenAiFinder;
+export default AiFinder;
