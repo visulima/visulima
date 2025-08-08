@@ -188,7 +188,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -215,10 +215,10 @@ importers:
         version: 8.1.0(typescript@5.8.3)
       '@tailwindcss/nesting':
         specifier: ^0.0.0-insiders.565cd3e
-        version: 0.0.0-insiders.565cd3e(postcss@8.5.3)
+        version: 0.0.0-insiders.565cd3e(postcss@8.5.4)
       '@tailwindcss/typography':
         specifier: ^0.5.16
-        version: 0.5.16(tailwindcss@4.1.7)
+        version: 0.5.16(tailwindcss@4.1.8)
       '@testing-library/dom':
         specifier: ^10.4.0
         version: 10.4.0
@@ -284,16 +284,16 @@ importers:
         version: 1.4.0(eslint@8.57.0)
       postcss:
         specifier: ^8.5.3
-        version: 8.5.3
+        version: 8.5.4
       postcss-cli:
         specifier: ^11.0.1
-        version: 11.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)
+        version: 11.0.1(jiti@2.4.2)(postcss@8.5.4)(tsx@4.19.4)
       postcss-import:
         specifier: ^16.1.0
-        version: 16.1.0(postcss@8.5.3)
+        version: 16.1.0(postcss@8.5.4)
       postcss-lightningcss:
         specifier: 1.0.1
-        version: 1.0.1(postcss@8.5.3)
+        version: 1.0.1(postcss@8.5.4)
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
@@ -305,7 +305,7 @@ importers:
         version: 6.0.5
       tailwindcss:
         specifier: ^4.1.7
-        version: 4.1.7
+        version: 4.1.8
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -324,7 +324,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -363,7 +363,7 @@ importers:
         version: 8.6.14(react@19.1.0)(storybook@8.6.14(prettier@3.5.3))
       '@storybook/addon-styling':
         specifier: ^1.3.7
-        version: 1.3.7(@types/react-dom@19.1.5(@types/react@19.1.4))(@types/react@19.1.4)(postcss@8.5.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15)))
+        version: 1.3.7(@types/react-dom@19.1.5(@types/react@19.1.4))(@types/react@19.1.4)(postcss@8.5.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15)))
       '@storybook/addon-themes':
         specifier: ^8.6.14
         version: 8.6.14(storybook@8.6.14(prettier@3.5.3))
@@ -402,7 +402,7 @@ importers:
         version: 4.5.0(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
       autoprefixer:
         specifier: ^10.4.21
-        version: 10.4.21(postcss@8.5.3)
+        version: 10.4.21(postcss@8.5.4)
       eslint:
         specifier: 8.57.0
         version: 8.57.0
@@ -438,7 +438,7 @@ importers:
         version: 0.12.0(eslint@8.57.0)(typescript@5.8.3)
       eslint-plugin-tailwindcss:
         specifier: ^3.18.0
-        version: 3.18.0(tailwindcss@4.1.7)
+        version: 3.18.0(tailwindcss@4.1.8)
       eslint-plugin-testing-library:
         specifier: ^7.2.1
         version: 7.2.2(eslint@8.57.0)(typescript@5.8.3)
@@ -447,7 +447,7 @@ importers:
         version: 0.1.1(eslint@8.57.0)
       postcss:
         specifier: ^8.5.3
-        version: 8.5.3
+        version: 8.5.4
       publint:
         specifier: ^0.3.12
         version: 0.3.12
@@ -462,10 +462,10 @@ importers:
         version: 8.6.14(prettier@3.5.3)
       tailwindcss:
         specifier: ^4.1.7
-        version: 4.1.7
+        version: 4.1.8
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@4.1.7)
+        version: 1.0.7(tailwindcss@4.1.8)
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -548,7 +548,7 @@ importers:
         version: 15.3.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
       postcss:
         specifier: ^8.5.3
-        version: 8.5.3
+        version: 8.5.4
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -714,7 +714,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -1011,7 +1011,7 @@ importers:
         version: 8.0.1
       vitest:
         specifier: ^1.3.1
-        version: 1.6.1(@types/node@22.15.29)(@vitest/ui@3.2.1)(jsdom@26.1.0)(lightningcss@1.30.1)(terser@5.31.1)
+        version: 1.6.1(@types/node@22.15.29)(@vitest/ui@3.2.1(vitest@3.2.1))(jsdom@26.1.0)(lightningcss@1.30.1)(terser@5.31.1)
 
   packages/boxen/__fixtures__/package/cjs:
     dependencies:
@@ -1120,7 +1120,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -1241,7 +1241,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -1407,7 +1407,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -1522,7 +1522,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -1780,7 +1780,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -1895,7 +1895,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -2032,6 +2032,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^3.2.1
         version: 3.2.1(@vitest/browser@3.2.0)(vitest@3.2.1)
+      ai:
+        specifier: ^4.1.38
+        version: 4.3.19(react@19.1.0)(zod@3.25.29)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -2056,9 +2059,6 @@ importers:
       open-editor:
         specifier: ^5.1.0
         version: 5.1.0
-      openai:
-        specifier: 5.1.0
-        version: 5.1.0(ws@8.18.2)(zod@3.25.29)
       postcss:
         specifier: ^8.5.4
         version: 8.5.4
@@ -2115,7 +2115,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -2203,7 +2203,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -2372,7 +2372,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -2496,7 +2496,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -2710,7 +2710,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -2816,7 +2816,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -2916,7 +2916,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -3034,7 +3034,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -3166,7 +3166,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -3269,7 +3269,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -3420,7 +3420,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -3529,7 +3529,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -3568,7 +3568,7 @@ importers:
         version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.0.7(postcss@8.5.4))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.4))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.4)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.4))(postcss-modules-local-by-default@4.2.0(postcss@8.5.4))(postcss-modules-scope@3.2.1(postcss@8.5.4))(postcss-modules-values@4.0.0(postcss@8.5.4))(postcss-value-parser@4.2.0)(postcss@8.5.4)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: 3.1.4
-        version: 3.1.4(vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
+        version: 3.1.4(vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1(vitest@3.2.1))(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
       ajv:
         specifier: 8.17.1
         version: 8.17.1
@@ -3601,7 +3601,7 @@ importers:
         version: 3.4.2(eslint@8.57.0)
       eslint-plugin-vitest:
         specifier: 0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.8.3)(vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
+        version: 0.4.1(eslint@8.57.0)(typescript@5.8.3)(vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1(vitest@3.2.1))(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3625,7 +3625,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: 3.1.4
-        version: 3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+        version: 3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1(vitest@3.2.1))(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
 
   packages/redact:
     dependencies:
@@ -3635,7 +3635,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -3769,7 +3769,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -4124,7 +4124,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.5.3)
@@ -4260,6 +4260,32 @@ packages:
 
   '@adobe/css-tools@4.4.0':
     resolution: {integrity: sha512-Ff9+ksdQQB3rMncgqDK78uLznstjyfIf2Arnh22pW8kBpLs6rpKDwgnZT46hin5Hl1WzazzK64DOrhSwYpS7bQ==}
+
+  '@ai-sdk/provider-utils@2.2.8':
+    resolution: {integrity: sha512-fqhG+4sCVv8x7nFzYnFo19ryhAa3w096Kmc3hWxMQfW/TubPOmt3A6tYZhl4mUfQWWQMsuSkLrtjlWuXBVSGQA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.23.8
+
+  '@ai-sdk/provider@1.1.3':
+    resolution: {integrity: sha512-qZMxYJ0qqX/RfnuIaab+zp8UAeJn/ygXXAffR5I4N0n1IrvA6qBsjc8hXLmBiMV2zoXlifkacF7sEFnYnjBcqg==}
+    engines: {node: '>=18'}
+
+  '@ai-sdk/react@1.2.12':
+    resolution: {integrity: sha512-jK1IZZ22evPZoQW3vlkZ7wvjYGYF+tRBKXtrcolduIkQ/m/sOAVcVeVDUDvh1T91xCnWCdUGCPZg2avZ90mv3g==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: ^18 || ^19 || ^19.0.0-rc
+      zod: ^3.23.8
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
+  '@ai-sdk/ui-utils@1.2.11':
+    resolution: {integrity: sha512-3zcwCc8ezzFlwp3ZD15wAPjf2Au4s3vAbKsXQVyhxODHcmu0iyPO2Eua6D/vicq/AUm/BAo60r97O6HU+EI0+w==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.23.8
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -6414,6 +6440,7 @@ packages:
   '@koa/router@13.1.0':
     resolution: {integrity: sha512-mNVu1nvkpSd8Q8gMebGbCkDWJ51ODetrFvLKYusej+V0ByD4btqHYnPIzTBLXnQMVUlm/oxVwqmWBY3zQfZilw==}
     engines: {node: '>= 18'}
+    deprecated: Please upgrade to v13.1.1+ per <https://github.com/koajs/router/pull/181>
 
   '@lit-labs/ssr-dom-shim@1.2.0':
     resolution: {integrity: sha512-yWJKmpGE6lUURKAaIltoPIE/wrbY3TEkqQt+X0m+7fQNnAv0keydnYvbiJFP1PnMhizmIWRWOG5KLhYyc/xl+g==}
@@ -9481,6 +9508,9 @@ packages:
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
 
+  '@types/diff-match-patch@1.0.36':
+    resolution: {integrity: sha512-xFdR6tkm0MWvBfO8xXCSsinYxHcqkQUlcHeSpMC2ukzOb6lwQAfDmW+Qt0AvlGd8HpsS28qKsB+oPeJn9I39jg==}
+
   '@types/doctrine@0.0.9':
     resolution: {integrity: sha512-eOIHzCUSH7SMfonMG1LsC2f8vxBFtho6NGBznK41R84YzPuvSBzrhEps33IsQiOW9+VL6NQ9DbjQJznk/S4uRA==}
 
@@ -10929,6 +10959,16 @@ packages:
   aggregate-error@5.0.0:
     resolution: {integrity: sha512-gOsf2YwSlleG6IjRYG2A7k0HmBMEo6qVNk9Bp/EaLgAJT5ngH6PXbqa4ItvnEwCm/velL5jAnQgsHsWnjhGmvw==}
     engines: {node: '>=18'}
+
+  ai@4.3.19:
+    resolution: {integrity: sha512-dIE2bfNpqHN3r6IINp9znguYdhIOheKW2LDigAMrgt/upT3B8eBGPSCblENvaZGoq+hxaN9fSMzjWpbqloP+7Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: ^18 || ^19 || ^19.0.0-rc
+      zod: ^3.23.8
+    peerDependenciesMeta:
+      react:
+        optional: true
 
   ajv-draft-04@1.0.0:
     resolution: {integrity: sha512-mv00Te6nmYbRp5DCwclxtt7yV/joXJPGS7nM+97GdxvuttCOfgI3K4U25zboyeX0O+myI8ERluxQe5wljMmVIw==}
@@ -12731,6 +12771,9 @@ packages:
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
+
+  diff-match-patch@1.0.5:
+    resolution: {integrity: sha512-IayShXAgj/QMXgB0IWmKx+rOPuGMhqm5w6jvFxmVenXKIzRqTAAsbBPT3kWQeGANj3jGgvcvv4yK6SxqYmikgw==}
 
   diff-sequences@29.6.3:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
@@ -15680,6 +15723,9 @@ packages:
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
 
+  json-schema@0.4.0:
+    resolution: {integrity: sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA==}
+
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
@@ -15701,6 +15747,11 @@ packages:
 
   jsonc-parser@3.3.1:
     resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
+
+  jsondiffpatch@0.6.0:
+    resolution: {integrity: sha512-3QItJOXp2AP1uv7waBkao5nCvhEv+QmJAd38Ybq7wNI74Q+BBmnLn4EDKz6yI9xGAIQoUF87qHt+kc1IVxB4zQ==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
@@ -17055,11 +17106,6 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nanoid@3.3.8:
-    resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
   napi-postinstall@0.2.4:
     resolution: {integrity: sha512-ZEzHJwBhZ8qQSbknHqYcdtQVr8zUgGyM/q6h6qAyhtyVMNrSgDhrC4disf03dYW0e+czXyLnZINnCTEkWy0eJg==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
@@ -17630,18 +17676,6 @@ packages:
   open@8.4.2:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
-
-  openai@5.1.0:
-    resolution: {integrity: sha512-YQBgPJykHrDOlngB/8QpOsFNg36yofBatpeDWg1zejl9R59/ELuN7AMPSU95ZIdChbKc/o5vg1UnBJ1OEB0IJA==}
-    hasBin: true
-    peerDependencies:
-      ws: ^8.18.0
-      zod: ^3.23.8
-    peerDependenciesMeta:
-      ws:
-        optional: true
-      zod:
-        optional: true
 
   openapi-path-templating@2.1.0:
     resolution: {integrity: sha512-fLs5eJmLyU8wPRz+JSH5uLE7TE4Ohg6VHOtj0C0AlD3GTCCcw2LgKW6MSN1A8ZBKHEg2O4/d02knmVU1nvGAKQ==}
@@ -18485,10 +18519,6 @@ packages:
 
   postcss@8.4.49:
     resolution: {integrity: sha512-OCVPnIObs4N29kxTjzLfUryOkvZEq+pf8jTF0lg8E7uETuWHA+v7j3c/xJmiqpX450191LlmZfUKkXxkTry7nA==}
-    engines: {node: ^10 || ^12 || >=14}
-
-  postcss@8.5.3:
-    resolution: {integrity: sha512-dle9A3yYxlBSrt8Fu+IpjGT8SY8hN0mlaA6GY8t0P5PjIOZemULz/E2Bnm/2dcUOena75OTNkHI76uZBNUUq3A==}
     engines: {node: ^10 || ^12 || >=14}
 
   postcss@8.5.4:
@@ -19568,6 +19598,9 @@ packages:
     engines: {node: ^14.13.1 || >=16.0.0}
     hasBin: true
 
+  secure-json-parse@2.7.0:
+    resolution: {integrity: sha512-6aU+Rwsezw7VR8/nyvKTx8QpWH9FrcYiXXlqC4z5d5XQBDRqtbfsRjnwGyqbi3gddNtWHuEk9OANUotL26qKUw==}
+
   secure-json-parse@4.0.0:
     resolution: {integrity: sha512-dxtLJO6sc35jWidmLxo7ij+Eg48PM/kleBsxpC8QJE0qJICe+KawkDQmvCMZUr9u7WKVHgMW6vy3fQ7zMiFZMA==}
 
@@ -19875,6 +19908,7 @@ packages:
   source-map@0.8.0-beta.0:
     resolution: {integrity: sha512-2ymg6oRBpebeZi9UUNsgQ89bhx01TcTkmNTGnNO88imTmbSgy4nfujrgVEFKWpMTEGA11EDkTt7mqObTPdigIA==}
     engines: {node: '>= 8'}
+    deprecated: The work that was done in this beta branch won't be included in future versions
 
   space-separated-tokens@1.1.5:
     resolution: {integrity: sha512-q/JSVd1Lptzhf5bkYm4ob4iWPjx0KiRe3sRFBNrVqbJkFaBm5vbbowy1mymoPNLRa52+oadOhJ+K49wsSeSjTA==}
@@ -20279,6 +20313,11 @@ packages:
     resolution: {integrity: sha512-upi/0ZGkYgEcLeGieoz8gT74oWHA0E7JivX7aN9mAf+Tc7BQoRBvnIGHoPDw+f9TXTW4s6kGYCZJtauP6OYp7g==}
     hasBin: true
 
+  swr@2.3.4:
+    resolution: {integrity: sha512-bYd2lrhc+VarcpkgWclcUi92wYCpOgMws9Sd1hG1ntAu0NEy+14CbotuFjshBU2kt9rYj9TSmDcybpxpeTU1fg==}
+    peerDependencies:
+      react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
@@ -20320,9 +20359,6 @@ packages:
     resolution: {integrity: sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders'
-
-  tailwindcss@4.1.7:
-    resolution: {integrity: sha512-kr1o/ErIdNhTz8uzAYL7TpaUuzKIE6QPQ4qmSdxnoX/lo+5wmUHQA6h3L5yIqEImSRnAAURDirLu/BgiXGPAhg==}
 
   tailwindcss@4.1.8:
     resolution: {integrity: sha512-kjeW8gjdxasbmFKpVGrGd5T4i40mV5J2Rasw48QARfYeQ8YS9x02ON9SFWax3Qf616rt4Cp3nVNIj6Hd1mP3og==}
@@ -20502,6 +20538,10 @@ packages:
 
   thread-stream@3.1.0:
     resolution: {integrity: sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A==}
+
+  throttleit@2.1.0:
+    resolution: {integrity: sha512-nt6AMGKW1p/70DF/hGBdJB57B8Tspmbp5gfJ8ilhLnt7kkr2ye7hzD6NVG8GGErk2HWF34igrL2CXmNIkzKqKw==}
+    engines: {node: '>=18'}
 
   through2@0.4.2:
     resolution: {integrity: sha512-45Llu+EwHKtAZYTPPVn3XZHBgakWMN3rokhEv5hu596XP+cNgplMg+Gj+1nmAvj+L0K7+N49zBKx5rah5u0QIQ==}
@@ -21958,6 +21998,11 @@ packages:
     resolution: {integrity: sha512-Mb6GzuRyUEl8X+6V6xzHbd4XV0au/4gOYrYP+CAfHL32uPmGswES+v2YqonZiW1NZWVA3jkssCKSU2knonm/aQ==}
     engines: {node: '>=20'}
 
+  zod-to-json-schema@3.24.6:
+    resolution: {integrity: sha512-h/z3PKvcTcTetyjl1fkj79MHNEjm+HpD6NXheWjzOekY7kV+lwDYnHw+ivHkijnCSMz1yJaWBD9vu/Fcmk+vEg==}
+    peerDependencies:
+      zod: ^3.24.1
+
   zod-to-ts@1.2.0:
     resolution: {integrity: sha512-x30XE43V+InwGpvTySRNz9kB7qFU8DlyEy7BsSTCHPH1R0QasMmHWZDCzYm6bVXtj/9NNJAZF3jW8rzFvH5OFA==}
     peerDependencies:
@@ -21983,6 +22028,34 @@ snapshots:
 
   '@adobe/css-tools@4.4.0': {}
 
+  '@ai-sdk/provider-utils@2.2.8(zod@3.25.29)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      nanoid: 3.3.11
+      secure-json-parse: 2.7.0
+      zod: 3.25.29
+
+  '@ai-sdk/provider@1.1.3':
+    dependencies:
+      json-schema: 0.4.0
+
+  '@ai-sdk/react@1.2.12(react@19.1.0)(zod@3.25.29)':
+    dependencies:
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.29)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.29)
+      react: 19.1.0
+      swr: 2.3.4(react@19.1.0)
+      throttleit: 2.1.0
+    optionalDependencies:
+      zod: 3.25.29
+
+  '@ai-sdk/ui-utils@1.2.11(zod@3.25.29)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.29)
+      zod: 3.25.29
+      zod-to-json-schema: 3.24.6(zod@3.25.29)
+
   '@alloc/quick-lru@5.2.0': {}
 
   '@ampproject/remapping@2.3.0':
@@ -22004,7 +22077,7 @@ snapshots:
       - '@types/node'
       - typescript
 
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)':
+  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.12.0(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       '@babel/core': 7.27.4
@@ -22062,78 +22135,6 @@ snapshots:
       eslint-plugin-react-hooks: 5.2.0(eslint@8.57.0)
       eslint-plugin-ssr-friendly: 1.3.0(eslint@8.57.0)
       eslint-plugin-storybook: 0.12.0(eslint@8.57.0)(typescript@5.8.3)
-      eslint-plugin-tailwindcss: 3.18.0(tailwindcss@4.1.7)
-      eslint-plugin-testing-library: 7.2.2(eslint@8.57.0)(typescript@5.8.3)
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@8.57.0)
-      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - '@eslint/json'
-      - astro-eslint-parser
-      - eslint-import-resolver-webpack
-      - eslint-plugin-import
-      - supports-color
-      - svelte
-      - svelte-eslint-parser
-      - vue-eslint-parser
-
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.27.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.2(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8))(eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(typescript@5.8.3)':
-    dependencies:
-      '@anolilab/package-json-utils': 3.0.9
-      '@babel/core': 7.27.4
-      '@babel/eslint-parser': 7.27.1(@babel/core@7.27.4)(eslint@8.57.0)
-      '@babel/plugin-syntax-import-assertions': 7.27.1(@babel/core@7.27.4)
-      '@eslint/js': 8.57.1
-      '@html-eslint/eslint-plugin': 0.20.0
-      '@html-eslint/parser': 0.20.0
-      '@jsenv/eslint-import-resolver': 8.1.2
-      '@rushstack/eslint-patch': 1.10.3
-      '@rushstack/eslint-plugin-security': 0.7.1(eslint@8.57.0)(typescript@5.8.3)
-      '@typescript-eslint/eslint-plugin': 8.32.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.8.3))(eslint@8.57.0)(typescript@5.8.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.57.0)(typescript@5.8.3)
-      confusing-browser-globals: 1.0.11
-      eslint: 8.57.0
-      eslint-define-config: 1.24.1
-      eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-antfu: 1.0.13(eslint@8.57.0)
-      eslint-plugin-compat: 4.2.0(eslint@8.57.0)
-      eslint-plugin-es-x: 7.8.0(eslint@8.57.0)
-      eslint-plugin-eslint-comments: 3.2.0(eslint@8.57.0)
-      eslint-plugin-html: 7.1.0
-      eslint-plugin-i: 2.29.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-jsonc: 2.20.1(eslint@8.57.0)
-      eslint-plugin-markdown: 3.0.1(eslint@8.57.0)
-      eslint-plugin-mdx: 2.3.4(eslint@8.57.0)
-      eslint-plugin-n: 16.6.2(eslint@8.57.0)
-      eslint-plugin-no-loops: 0.3.0(eslint@8.57.0)
-      eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-no-secrets: 0.8.9(eslint@8.57.0)
-      eslint-plugin-no-use-extend-native: 0.5.0
-      eslint-plugin-perfectionist: 2.11.0(eslint@8.57.0)(typescript@5.8.3)
-      eslint-plugin-promise: 6.4.0(eslint@8.57.0)
-      eslint-plugin-regexp: 2.7.0(eslint@8.57.0)
-      eslint-plugin-security: 1.7.1
-      eslint-plugin-simple-import-sort: 10.0.0(eslint@8.57.0)
-      eslint-plugin-sonarjs: 0.22.0(eslint@8.57.0)
-      eslint-plugin-toml: 0.6.1(eslint@8.57.0)
-      eslint-plugin-unicorn: 49.0.0(eslint@8.57.0)
-      eslint-plugin-yml: 1.18.0(eslint@8.57.0)
-      find-up: 5.0.0
-      globals: 13.24.0
-      jsonc-eslint-parser: 2.4.0
-      read-pkg-up: 7.0.1
-      semver: 7.7.2
-      toml-eslint-parser: 0.6.1
-      yaml-eslint-parser: 1.3.0
-    optionalDependencies:
-      '@arthurgeron/eslint-plugin-react-usememo': 2.5.0(eslint@8.57.0)
-      eslint-plugin-editorconfig: 4.0.3
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@8.57.0)
-      eslint-plugin-no-unsanitized: 4.1.2(eslint@8.57.0)
-      eslint-plugin-react: 7.37.5(eslint@8.57.0)
-      eslint-plugin-react-hooks: 5.2.0(eslint@8.57.0)
-      eslint-plugin-ssr-friendly: 1.3.0(eslint@8.57.0)
       eslint-plugin-tailwindcss: 3.18.0(tailwindcss@4.1.8)
       eslint-plugin-testing-library: 7.2.2(eslint@8.57.0)(typescript@5.8.3)
       eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@8.57.0)
@@ -26925,7 +26926,7 @@ snapshots:
       storybook: 8.6.14(prettier@3.5.3)
       ts-dedent: 2.2.0
 
-  '@storybook/addon-styling@1.3.7(@types/react-dom@19.1.5(@types/react@19.1.4))(@types/react@19.1.4)(postcss@8.5.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15)))':
+  '@storybook/addon-styling@1.3.7(@types/react-dom@19.1.5(@types/react@19.1.4))(@types/react@19.1.4)(postcss@8.5.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15)))':
     dependencies:
       '@babel/template': 7.27.2
       '@babel/types': 7.27.3
@@ -26940,13 +26941,13 @@ snapshots:
       '@storybook/types': 7.6.20
       css-loader: 6.11.0(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15)))
       less-loader: 11.1.4(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15)))
-      postcss-loader: 7.3.4(postcss@8.5.3)(typescript@5.8.3)(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15)))
+      postcss-loader: 7.3.4(postcss@8.5.4)(typescript@5.8.3)(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15)))
       prettier: 2.8.8
       resolve-url-loader: 5.0.0
       sass-loader: 13.3.3(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15)))
       style-loader: 3.3.4(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15)))
     optionalDependencies:
-      postcss: 8.5.3
+      postcss: 8.5.4
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
       webpack: 5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15))
@@ -27898,10 +27899,10 @@ snapshots:
       mini-svg-data-uri: 1.4.4
       tailwindcss: 4.1.8
 
-  '@tailwindcss/nesting@0.0.0-insiders.565cd3e(postcss@8.5.3)':
+  '@tailwindcss/nesting@0.0.0-insiders.565cd3e(postcss@8.5.4)':
     dependencies:
-      postcss: 8.5.3
-      postcss-nested: 5.0.6(postcss@8.5.3)
+      postcss: 8.5.4
+      postcss-nested: 5.0.6(postcss@8.5.4)
 
   '@tailwindcss/node@4.1.8':
     dependencies:
@@ -27974,14 +27975,6 @@ snapshots:
       '@tailwindcss/oxide': 4.1.8
       postcss: 8.5.4
       tailwindcss: 4.1.8
-
-  '@tailwindcss/typography@0.5.16(tailwindcss@4.1.7)':
-    dependencies:
-      lodash.castarray: 4.4.0
-      lodash.isplainobject: 4.0.6
-      lodash.merge: 4.6.2
-      postcss-selector-parser: 6.0.10
-      tailwindcss: 4.1.7
 
   '@tailwindcss/typography@0.5.16(tailwindcss@4.1.8)':
     dependencies:
@@ -28604,6 +28597,8 @@ snapshots:
       '@types/ms': 2.1.0
 
   '@types/deep-eql@4.0.2': {}
+
+  '@types/diff-match-patch@1.0.36': {}
 
   '@types/doctrine@0.0.9': {}
 
@@ -30164,7 +30159,7 @@ snapshots:
       - utf-8-validate
       - vite
 
-  '@vitest/coverage-v8@3.1.4(vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
+  '@vitest/coverage-v8@3.1.4(vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1(vitest@3.2.1))(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
@@ -30178,7 +30173,7 @@ snapshots:
       std-env: 3.9.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1(vitest@3.2.1))(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -30369,7 +30364,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.1(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.24)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.24)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
 
   '@vitest/utils@1.6.1':
     dependencies:
@@ -30653,6 +30648,18 @@ snapshots:
     dependencies:
       clean-stack: 5.2.0
       indent-string: 5.0.0
+
+  ai@4.3.19(react@19.1.0)(zod@3.25.29):
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.29)
+      '@ai-sdk/react': 1.2.12(react@19.1.0)(zod@3.25.29)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.29)
+      '@opentelemetry/api': 1.9.0
+      jsondiffpatch: 0.6.0
+      zod: 3.25.29
+    optionalDependencies:
+      react: 19.1.0
 
   ajv-draft-04@1.0.0(ajv@8.17.1):
     optionalDependencies:
@@ -30959,14 +30966,14 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  autoprefixer@10.4.21(postcss@8.5.3):
+  autoprefixer@10.4.21(postcss@8.5.4):
     dependencies:
       browserslist: 4.24.5
       caniuse-lite: 1.0.30001718
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
-      postcss: 8.5.3
+      postcss: 8.5.4
       postcss-value-parser: 4.2.0
 
   available-typed-arrays@1.0.7:
@@ -32610,6 +32617,8 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
+  diff-match-patch@1.0.5: {}
+
   diff-sequences@29.6.3: {}
 
   diff@5.2.0: {}
@@ -33874,18 +33883,11 @@ snapshots:
       - typescript
     optional: true
 
-  eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.7):
-    dependencies:
-      fast-glob: 3.3.3
-      postcss: 8.5.3
-      tailwindcss: 4.1.7
-
   eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.8):
     dependencies:
       fast-glob: 3.3.3
-      postcss: 8.5.3
+      postcss: 8.5.4
       tailwindcss: 4.1.8
-    optional: true
 
   eslint-plugin-testing-library@7.2.2(eslint@8.57.0)(typescript@5.8.3):
     dependencies:
@@ -33989,12 +33991,12 @@ snapshots:
 
   eslint-plugin-vitest-globals@1.5.0: {}
 
-  eslint-plugin-vitest@0.4.1(eslint@8.57.0)(typescript@5.8.3)(vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)):
+  eslint-plugin-vitest@0.4.1(eslint@8.57.0)(typescript@5.8.3)(vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1(vitest@3.2.1))(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)):
     dependencies:
       '@typescript-eslint/utils': 7.15.0(eslint@8.57.0)(typescript@5.8.3)
       eslint: 8.57.0
     optionalDependencies:
-      vitest: 3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1(vitest@3.2.1))(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -36716,6 +36718,8 @@ snapshots:
 
   json-schema-traverse@1.0.0: {}
 
+  json-schema@0.4.0: {}
+
   json-stable-stringify-without-jsonify@1.0.1: {}
 
   json5@1.0.2:
@@ -36734,6 +36738,12 @@ snapshots:
   jsonc-parser@3.2.0: {}
 
   jsonc-parser@3.3.1: {}
+
+  jsondiffpatch@0.6.0:
+    dependencies:
+      '@types/diff-match-patch': 1.0.36
+      chalk: 5.4.1
+      diff-match-patch: 1.0.5
 
   jsonfile@4.0.0:
     optionalDependencies:
@@ -38748,8 +38758,6 @@ snapshots:
 
   nanoid@3.3.11: {}
 
-  nanoid@3.3.8: {}
-
   napi-postinstall@0.2.4: {}
 
   natural-compare-lite@1.4.0: {}
@@ -39394,11 +39402,6 @@ snapshots:
       define-lazy-prop: 2.0.0
       is-docker: 2.2.1
       is-wsl: 2.2.0
-
-  openai@5.1.0(ws@8.18.2)(zod@3.25.29):
-    optionalDependencies:
-      ws: 8.18.2
-      zod: 3.25.29
 
   openapi-path-templating@2.1.0:
     dependencies:
@@ -40059,15 +40062,15 @@ snapshots:
       postcss-selector-parser: 7.1.0
       postcss-value-parser: 4.2.0
 
-  postcss-cli@11.0.1(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4):
+  postcss-cli@11.0.1(jiti@2.4.2)(postcss@8.5.4)(tsx@4.19.4):
     dependencies:
       chokidar: 3.6.0
       dependency-graph: 1.0.0
       fs-extra: 11.3.0
       picocolors: 1.1.1
-      postcss: 8.5.3
-      postcss-load-config: 5.1.0(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)
-      postcss-reporter: 7.1.0(postcss@8.5.3)
+      postcss: 8.5.4
+      postcss-load-config: 5.1.0(jiti@2.4.2)(postcss@8.5.4)(tsx@4.19.4)
+      postcss-reporter: 7.1.0(postcss@8.5.4)
       pretty-hrtime: 1.0.3
       read-cache: 1.0.0
       slash: 5.1.0
@@ -40113,26 +40116,26 @@ snapshots:
       postcss: 8.5.4
       postcss-selector-parser: 7.1.0
 
-  postcss-import@16.1.0(postcss@8.5.3):
+  postcss-import@16.1.0(postcss@8.5.4):
     dependencies:
-      postcss: 8.5.3
+      postcss: 8.5.4
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.8
 
-  postcss-lightningcss@1.0.1(postcss@8.5.3):
+  postcss-lightningcss@1.0.1(postcss@8.5.4):
     dependencies:
       browserslist: 4.24.5
       lightningcss: 1.25.1
-      postcss: 8.5.3
+      postcss: 8.5.4
 
-  postcss-load-config@5.1.0(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4):
+  postcss-load-config@5.1.0(jiti@2.4.2)(postcss@8.5.4)(tsx@4.19.4):
     dependencies:
       lilconfig: 3.1.3
       yaml: 2.8.0
     optionalDependencies:
       jiti: 2.4.2
-      postcss: 8.5.3
+      postcss: 8.5.4
       tsx: 4.19.4
 
   postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.4)(tsx@4.19.4)(yaml@2.8.0):
@@ -40144,11 +40147,11 @@ snapshots:
       tsx: 4.19.4
       yaml: 2.8.0
 
-  postcss-loader@7.3.4(postcss@8.5.3)(typescript@5.8.3)(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15))):
+  postcss-loader@7.3.4(postcss@8.5.4)(typescript@5.8.3)(webpack@5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15))):
     dependencies:
       cosmiconfig: 8.3.6(typescript@5.8.3)
       jiti: 1.21.6
-      postcss: 8.5.3
+      postcss: 8.5.4
       semver: 7.7.2
       webpack: 5.99.9(@swc/core@1.6.7(@swc/helpers@0.5.15))
     transitivePeerDependencies:
@@ -40214,9 +40217,9 @@ snapshots:
       icss-utils: 5.1.0(postcss@8.5.4)
       postcss: 8.5.4
 
-  postcss-nested@5.0.6(postcss@8.5.3):
+  postcss-nested@5.0.6(postcss@8.5.4):
     dependencies:
-      postcss: 8.5.3
+      postcss: 8.5.4
       postcss-selector-parser: 6.1.2
 
   postcss-normalize-charset@7.0.1(postcss@8.5.4):
@@ -40281,10 +40284,10 @@ snapshots:
       postcss: 8.5.4
       postcss-value-parser: 4.2.0
 
-  postcss-reporter@7.1.0(postcss@8.5.3):
+  postcss-reporter@7.1.0(postcss@8.5.4):
     dependencies:
       picocolors: 1.1.1
-      postcss: 8.5.3
+      postcss: 8.5.4
       thenby: 1.3.4
 
   postcss-selector-parser@6.0.10:
@@ -40317,19 +40320,13 @@ snapshots:
 
   postcss@8.4.31:
     dependencies:
-      nanoid: 3.3.8
+      nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
   postcss@8.4.49:
     dependencies:
-      nanoid: 3.3.8
-      picocolors: 1.1.1
-      source-map-js: 1.2.1
-
-  postcss@8.5.3:
-    dependencies:
-      nanoid: 3.3.8
+      nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
@@ -41767,6 +41764,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  secure-json-parse@2.7.0: {}
+
   secure-json-parse@4.0.0: {}
 
   select-section@0.4.6:
@@ -42771,6 +42770,12 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
+  swr@2.3.4(react@19.1.0):
+    dependencies:
+      dequal: 2.0.3
+      react: 19.1.0
+      use-sync-external-store: 1.4.0(react@19.1.0)
+
   symbol-tree@3.2.4: {}
 
   symlink-dir@6.0.5:
@@ -42810,11 +42815,9 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.26.10
 
-  tailwindcss-animate@1.0.7(tailwindcss@4.1.7):
+  tailwindcss-animate@1.0.7(tailwindcss@4.1.8):
     dependencies:
-      tailwindcss: 4.1.7
-
-  tailwindcss@4.1.7: {}
+      tailwindcss: 4.1.8
 
   tailwindcss@4.1.8: {}
 
@@ -43080,6 +43083,8 @@ snapshots:
   thread-stream@3.1.0:
     dependencies:
       real-require: 0.2.0
+
+  throttleit@2.1.0: {}
 
   through2@0.4.2:
     dependencies:
@@ -44261,7 +44266,7 @@ snapshots:
       esbuild: 0.25.5
       fdir: 6.4.4(picomatch@4.0.2)
       picomatch: 4.0.2
-      postcss: 8.5.3
+      postcss: 8.5.4
       rollup: 4.41.0
       tinyglobby: 0.2.14
     optionalDependencies:
@@ -44278,7 +44283,7 @@ snapshots:
       esbuild: 0.25.5
       fdir: 6.4.4(picomatch@4.0.2)
       picomatch: 4.0.2
-      postcss: 8.5.3
+      postcss: 8.5.4
       rollup: 4.41.0
       tinyglobby: 0.2.14
     optionalDependencies:
@@ -44295,7 +44300,7 @@ snapshots:
       esbuild: 0.25.5
       fdir: 6.4.4(picomatch@4.0.2)
       picomatch: 4.0.2
-      postcss: 8.5.3
+      postcss: 8.5.4
       rollup: 4.41.0
       tinyglobby: 0.2.14
     optionalDependencies:
@@ -44307,7 +44312,7 @@ snapshots:
       tsx: 4.19.4
       yaml: 2.8.0
 
-  vitest@1.6.1(@types/node@22.15.29)(@vitest/ui@3.2.1)(jsdom@26.1.0)(lightningcss@1.30.1)(terser@5.31.1):
+  vitest@1.6.1(@types/node@22.15.29)(@vitest/ui@3.2.1(vitest@3.2.1))(jsdom@26.1.0)(lightningcss@1.30.1)(terser@5.31.1):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
@@ -44343,7 +44348,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
+  vitest@3.1.4(@types/debug@4.1.12)(@types/node@18.19.71)(@vitest/ui@3.2.1(vitest@3.2.1))(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
     dependencies:
       '@vitest/expect': 3.1.4
       '@vitest/mocker': 3.1.4(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
@@ -44976,6 +44981,10 @@ snapshots:
       readable-stream: 4.5.2
 
   zod-package-json@1.0.3:
+    dependencies:
+      zod: 3.25.29
+
+  zod-to-json-schema@3.24.6(zod@3.25.29):
     dependencies:
       zod: 3.25.29
 
