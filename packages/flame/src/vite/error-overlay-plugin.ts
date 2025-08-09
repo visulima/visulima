@@ -28,6 +28,7 @@ export default function viteErrorOverlay(options: ViteOverlayOptions = {}): Plug
 
             const code = `
 import { diffWords } from 'diff';
+import htmldiff from 'htmldiff-js';
 import { parseStacktrace } from '@visulima/error';
 const THEME_DEFAULT = ${JSON.stringify(theme)};
 let __flame_overlay_silent__ = false;
@@ -39,6 +40,8 @@ const PREF_KEY = 'flame:overlay:prefs';
 function getPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); } catch { return {}; } }
 function setPrefs(p) { try { localStorage.setItem(PREF_KEY, JSON.stringify(p)); } catch {} }
 let __fl_prefs__ = Object.assign({ theme: THEME_DEFAULT, showIgnored: false, showHydrationDiff: true, ownerGrouping: true }, getPrefs());
+const __queue__ = [];
+let __queue_index__ = -1;
 
 const HYDRATION_PATTERNS = [
   /Hydration failed/i,
@@ -142,11 +145,26 @@ function ensureRoot() {
 }
 
 function showOverlay(data) {
+  enqueueError(data);
+  renderCurrent();
+}
+
+function enqueueError(data) {
+  __queue__.push(data);
+  __queue_index__ = __queue__.length - 1;
+}
+
+function renderCurrent() {
+  const data = __queue__[__queue_index__];
+  if (!data) return;
   const root = ensureRoot();
   root.innerHTML = '';
 
   const panel = document.createElement('div');
   panel.className = 'fl-overlay__panel';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  panel.setAttribute('aria-label', 'Development error overlay');
 
   const header = document.createElement('div');
   header.className = 'fl-overlay__header';
@@ -182,6 +200,20 @@ function showOverlay(data) {
   message.className = 'fl-overlay__message';
   message.textContent = normalizeMessageBody(data);
   content.appendChild(message);
+
+  // Queue navigation controls
+  const nav = document.createElement('div');
+  nav.className = 'fl-overlay__actions';
+  const pos = document.createElement('span');
+  pos.className = 'fl-overlay__subtitle';
+  const updatePos = () => pos.textContent = String(__queue_index__ + 1) + ' / ' + String(__queue__.length);
+  const prevBtn = document.createElement('button'); prevBtn.className = 'fl-overlay__button'; prevBtn.textContent = 'Prev (p)';
+  const nextBtn = document.createElement('button'); nextBtn.className = 'fl-overlay__button'; nextBtn.textContent = 'Next (n)';
+  prevBtn.onclick = () => { if (__queue_index__ > 0) { __queue_index__--; renderCurrent(); } };
+  nextBtn.onclick = () => { if (__queue_index__ < __queue__.length - 1) { __queue_index__++; renderCurrent(); } };
+  updatePos();
+  nav.appendChild(prevBtn); nav.appendChild(nextBtn); nav.appendChild(pos);
+  content.appendChild(nav);
 
   const frameText = data.frame || (data.err && data.err.frame) || '';
   const file = (data.id || (data.err && data.err.id) || '');
@@ -326,16 +358,10 @@ function showOverlay(data) {
 
   if (isHydration) {
     const nowHTML = (() => { try { return document.body ? document.body.innerHTML : ''; } catch { return ''; } })();
-    const diff = diffWords(INITIAL_HTML, nowHTML);
+    const html = htmldiff(INITIAL_HTML, nowHTML);
     const diffEl = document.createElement('div');
     diffEl.className = 'fl-diff';
-    for (const part of diff) {
-      const span = document.createElement('span');
-      if (part.added) { span.className = 'fl-diff-add'; }
-      if (part.removed) { span.className = 'fl-diff-rem'; }
-      span.textContent = part.value;
-      diffEl.appendChild(span);
-    }
+    diffEl.innerHTML = html;
     var diffContainer = diffEl;
     diffContainer.style.display = __fl_prefs__.showHydrationDiff ? 'block' : 'none';
     content.appendChild(diffContainer);
@@ -352,7 +378,9 @@ function showOverlay(data) {
   root.style.display = 'block';
 
   window.addEventListener('keydown', escListener);
+  window.addEventListener('keydown', keyShortcuts);
   applyTheme(getTheme());
+  focusTrap(panel);
 }
 
 function hideOverlay() {
@@ -362,9 +390,35 @@ function hideOverlay() {
     root.innerHTML = '';
   }
   window.removeEventListener('keydown', escListener);
+  window.removeEventListener('keydown', keyShortcuts);
 }
 
 function escListener(e) { if (e.key === 'Escape') hideOverlay(); }
+
+function keyShortcuts(e) {
+  const k = e.key.toLowerCase();
+  if (k === 'p') { if (__queue_index__ > 0) { __queue_index__--; renderCurrent(); } }
+  if (k === 'n') { if (__queue_index__ < __queue__.length - 1) { __queue_index__++; renderCurrent(); } }
+  if (k === 't') { const current = getTheme(); setTheme(current === 'dark' ? 'light' : 'dark'); }
+  if (k === 'i') { const root = __flame_overlay_shadow__.querySelector('.fl-overlay__root'); const ignored = root && root.querySelectorAll('.fl-overlay__code')[2]; if (ignored) (ignored as HTMLElement).style.display = ((ignored as HTMLElement).style.display !== 'none') ? 'none' : 'block'; }
+}
+
+function focusTrap(container) {
+  try {
+    const focusables = container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (first) first.focus();
+    container.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last && last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first && first.focus(); }
+      }
+    });
+  } catch {}
+}
 
 function normalizeMessageTitle(data) {
   const plugin = data.plugin || (data.err && data.err.plugin);
