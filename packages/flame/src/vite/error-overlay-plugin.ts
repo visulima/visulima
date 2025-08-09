@@ -35,6 +35,10 @@ let __flame_last__ = null; // { message, stack, kept, ignored, isHydration }
 let __flame_overlay_host__ = null; // HTMLElement
 let __flame_overlay_shadow__ = null; // ShadowRoot
 const INITIAL_HTML = (() => { try { return document.body ? document.body.innerHTML : ''; } catch { return ''; } })();
+const PREF_KEY = 'flame:overlay:prefs';
+function getPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); } catch { return {}; } }
+function setPrefs(p) { try { localStorage.setItem(PREF_KEY, JSON.stringify(p)); } catch {} }
+let __fl_prefs__ = Object.assign({ theme: THEME_DEFAULT, showIgnored: false, showHydrationDiff: true, ownerGrouping: true }, getPrefs());
 
 const HYDRATION_PATTERNS = [
   /Hydration failed/i,
@@ -47,10 +51,11 @@ const HYDRATION_PATTERNS = [
 
 const THEME_KEY = 'flame:overlay:theme';
 function getTheme() {
-  try { return localStorage.getItem(THEME_KEY) || THEME_DEFAULT; } catch { return THEME_DEFAULT; }
+  try { return localStorage.getItem(THEME_KEY) || (__fl_prefs__.theme || THEME_DEFAULT); } catch { return THEME_DEFAULT; }
 }
 function setTheme(t) {
   try { localStorage.setItem(THEME_KEY, t); } catch {}
+  __fl_prefs__.theme = t; setPrefs(__fl_prefs__);
   applyTheme(t);
 }
 function applyTheme(t) {
@@ -103,6 +108,14 @@ function createStyles() {
 .fl-diff { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; line-height: 1.4; white-space: pre-wrap; background: var(--fl-code-bg); border: 1px solid var(--fl-border); border-radius: 8px; padding: 12px 14px; }
 .fl-diff-add { background: rgba(16,185,129,0.2); }
 .fl-diff-rem { background: rgba(239,68,68,0.25); text-decoration: line-through; }
+.fl-popover { position: absolute; top: 44px; right: 16px; background: var(--fl-surface); border: 1px solid var(--fl-border); border-radius: 8px; padding: 10px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 240px; }
+.fl-popover h4 { margin: 0 0 8px; font-size: 12px; color: var(--fl-muted); }
+.fl-popover .row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; gap: 12px; }
+.fl-popover label { font-size: 12px; color: var(--fl-fg); }
+.fl-popover input[type="checkbox"] { width: 14px; height: 14px; }
+.fl-stack { padding: 10px 12px; border-top: 1px solid var(--fl-border); background: var(--fl-code-bg); }
+.fl-stack-item { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; line-height: 1.4; color: var(--fl-fg); }
+.fl-stack-item--owner { font-weight: 700; color: var(--fl-accent); }
 \`\`\`;
   return style;
 }
@@ -208,7 +221,7 @@ function showOverlay(data) {
 
     const toggleIgnoredBtn = document.createElement('button');
     toggleIgnoredBtn.className = 'fl-overlay__button';
-    toggleIgnoredBtn.textContent = 'Show ignored frames';
+    toggleIgnoredBtn.textContent = __fl_prefs__.showIgnored ? 'Hide ignored frames' : 'Show ignored frames';
 
     const themeBtn = document.createElement('button');
     themeBtn.className = 'fl-overlay__button';
@@ -223,11 +236,16 @@ function showOverlay(data) {
     reloadBtn.textContent = 'Reload';
     reloadBtn.onclick = () => location.reload();
 
+    const prefsBtn = document.createElement('button');
+    prefsBtn.className = 'fl-overlay__button';
+    prefsBtn.textContent = 'Preferences';
+
     actions.appendChild(openBtn);
     actions.appendChild(copyBtn);
     actions.appendChild(toggleIgnoredBtn);
     actions.appendChild(themeBtn);
     actions.appendChild(reloadBtn);
+    actions.appendChild(prefsBtn);
 
     frameHeader.appendChild(framePath);
     frameHeader.appendChild(actions);
@@ -242,19 +260,67 @@ function showOverlay(data) {
 
     const ignoredPre = document.createElement('pre');
     ignoredPre.className = 'fl-overlay__code';
-    ignoredPre.style.display = 'none';
+    ignoredPre.style.display = __fl_prefs__.showIgnored ? 'block' : 'none';
     ignoredPre.textContent = ignored.join('\n');
 
     toggleIgnoredBtn.onclick = () => {
       const visible = ignoredPre.style.display !== 'none';
       ignoredPre.style.display = visible ? 'none' : 'block';
       toggleIgnoredBtn.textContent = visible ? 'Show ignored frames' : 'Hide ignored frames';
+      __fl_prefs__.showIgnored = !visible; setPrefs(__fl_prefs__);
+    };
+
+    // Preferences popover
+    let popover;
+    prefsBtn.onclick = () => {
+      if (popover && popover.isConnected) { popover.remove(); return; }
+      popover = document.createElement('div');
+      popover.className = 'fl-popover';
+      popover.innerHTML = '';
+      const title = document.createElement('h4'); title.textContent = 'Preferences'; popover.appendChild(title);
+      // showIgnored
+      const row1 = document.createElement('div'); row1.className = 'row';
+      const lbl1 = document.createElement('label'); lbl1.textContent = 'Show ignored frames by default';
+      const cb1 = document.createElement('input'); cb1.type = 'checkbox'; cb1.checked = !!__fl_prefs__.showIgnored;
+      cb1.onchange = () => { __fl_prefs__.showIgnored = cb1.checked; setPrefs(__fl_prefs__); ignoredPre.style.display = cb1.checked ? 'block' : 'none'; toggleIgnoredBtn.textContent = cb1.checked ? 'Hide ignored frames' : 'Show ignored frames'; };
+      row1.appendChild(lbl1); row1.appendChild(cb1); popover.appendChild(row1);
+      // ownerGrouping
+      const row2 = document.createElement('div'); row2.className = 'row';
+      const lbl2 = document.createElement('label'); lbl2.textContent = 'Owner stack grouping';
+      const cb2 = document.createElement('input'); cb2.type = 'checkbox'; cb2.checked = !!__fl_prefs__.ownerGrouping;
+      cb2.onchange = () => { __fl_prefs__.ownerGrouping = cb2.checked; setPrefs(__fl_prefs__); renderCallStack(); };
+      row2.appendChild(lbl2); row2.appendChild(cb2); popover.appendChild(row2);
+      // hydration diff
+      const row3 = document.createElement('div'); row3.className = 'row';
+      const lbl3 = document.createElement('label'); lbl3.textContent = 'Show hydration diff';
+      const cb3 = document.createElement('input'); cb3.type = 'checkbox'; cb3.checked = !!__fl_prefs__.showHydrationDiff;
+      cb3.onchange = () => { __fl_prefs__.showHydrationDiff = cb3.checked; setPrefs(__fl_prefs__); diffContainer && (diffContainer.style.display = (isHydration && cb3.checked) ? 'block' : 'none'); };
+      row3.appendChild(lbl3); row3.appendChild(cb3); popover.appendChild(row3);
+      frameHeader.appendChild(popover);
     };
 
     frame.appendChild(frameHeader);
     frame.appendChild(code);
     frame.appendChild(stackPre);
     frame.appendChild(ignoredPre);
+
+    // Call stack (owner grouping)
+    const stackContainer = document.createElement('div');
+    stackContainer.className = 'fl-stack';
+    function renderCallStack() {
+      stackContainer.innerHTML = '';
+      const detail = parseFramesDetailed(((data.err && data.err.message) || data.message || ''), ((data.err && data.err.stack) || data.stack || ''));
+      detail.traces.forEach((t, idx) => {
+        const line = document.createElement('div');
+        line.className = 'fl-stack-item' + (detail.ownerIndex === idx && __fl_prefs__.ownerGrouping ? ' fl-stack-item--owner' : '');
+        const method = t.methodName ? String(t.methodName) : '<anonymous>';
+        const locText = [t.file || '', t.line != null ? t.line : '', t.column != null ? t.column : ''].filter(Boolean).join(':');
+        line.textContent = method + ' — ' + locText;
+        stackContainer.appendChild(line);
+      });
+    }
+    renderCallStack();
+    frame.appendChild(stackContainer);
     content.appendChild(frame);
   }
 
@@ -270,7 +336,9 @@ function showOverlay(data) {
       span.textContent = part.value;
       diffEl.appendChild(span);
     }
-    content.appendChild(diffEl);
+    var diffContainer = diffEl;
+    diffContainer.style.display = __fl_prefs__.showHydrationDiff ? 'block' : 'none';
+    content.appendChild(diffContainer);
   }
 
   const hint = document.createElement('div');
@@ -347,6 +415,22 @@ function framesFrom(message, stack) {
     for (const l of lines) (re.test(l) ? ignored : kept).push(l);
     return { kept, ignored };
   }
+}
+
+function parseFramesDetailed(message, stack) {
+  try {
+    const err = new Error(message || '');
+    if (stack) { try { err.stack = stack; } catch {} }
+    const traces = parseStacktrace(err);
+    const reIgnore = /node_modules|vite\/dist|react(-dom)?\//;
+    let ownerIndex = -1;
+    traces.forEach((t, idx) => {
+      if (ownerIndex === -1 && t.methodName && /^[A-Z]/.test(String(t.methodName)) && !reIgnore.test(String(t.file || ''))) {
+        ownerIndex = idx;
+      }
+    });
+    return { traces, ownerIndex };
+  } catch { return { traces: [], ownerIndex: -1 }; }
 }
 
 function extractLoc(frame) {
