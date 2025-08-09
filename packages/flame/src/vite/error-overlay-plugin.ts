@@ -28,6 +28,7 @@ export default function viteErrorOverlay(options: ViteOverlayOptions = {}): Plug
 
             const code = `
 import { diffWords } from 'diff';
+import { parseStacktrace } from '@visulima/error';
 const THEME_DEFAULT = ${JSON.stringify(theme)};
 let __flame_overlay_silent__ = false;
 let __flame_last__ = null; // { message, stack, kept, ignored, isHydration }
@@ -174,10 +175,10 @@ function showOverlay(data) {
   const loc = extractLoc(frameText);
 
   // Stack section
-  const { kept, ignored } = splitStack(((data.err && data.err.stack) || data.stack || ''));
+  const { kept, ignored } = framesFrom(((data.err && data.err.message) || data.message || ''), ((data.err && data.err.stack) || data.stack || ''));
   __flame_last__ = {
     message: (data.err && data.err.message) || data.message || 'Unknown error',
-    stack: ((data.err && data.err.stack) || data.stack || ''),
+    stack: [((data.err && data.err.message) || data.message || ''), kept.join('\n'), ignored.join('\n')].filter(Boolean).join('\n'),
     kept, ignored, isHydration
   };
 
@@ -305,7 +306,8 @@ function normalizeMessageTitle(data) {
 
 function normalizeMessageBody(data) {
   const m = (data.err && data.err.message) || data.message || '';
-  const s = filterStack(((data.err && data.err.stack) || data.stack || ''));
+  const { kept } = framesFrom(m, ((data.err && data.err.stack) || data.stack || ''));
+  const s = kept.join('\n');
   return [m, s].filter(Boolean).join('\n\n');
 }
 
@@ -316,21 +318,35 @@ function isHydrationErrorPayload(data) {
   return HYDRATION_PATTERNS.some((re) => re.test(joined));
 }
 
-function filterStack(stack) {
-  if (!stack) return '';
-  const lines = String(stack).split('\n');
-  const ignored = /node_modules|vite\/dist|react-dom\/|\(internal\)|__vite|next-dev-overlay/;
-  const kept = lines.filter(l => !ignored.test(l));
-  return kept.slice(0, 12).join('\n');
-}
-
-function splitStack(stack) {
-  const lines = String(stack || '').split('\n');
-  const re = /node_modules|vite\/dist|react-dom\/|\(internal\)|__vite|next-dev-overlay/;
-  const kept = [];
-  const ignored = [];
-  for (const l of lines) (re.test(l) ? ignored : kept).push(l);
-  return { kept, ignored };
+function framesFrom(message, stack) {
+  try {
+    const err = new Error(message || '');
+    if (stack) { try { err.stack = stack; } catch {} }
+    const traces = parseStacktrace(err);
+    const reIgnore = /node_modules|vite\/dist|react(-dom)?\//;
+    const kept = [];
+    const ignored = [];
+    for (const t of traces) {
+      const parts = [];
+      if (t.methodName) {
+        const isComponent = /^[A-Z]/.test(String(t.methodName));
+        parts.push(isComponent ? String(t.methodName) + ' [component]' : String(t.methodName));
+      }
+      if (t.file) parts.push(String(t.file));
+      if (t.line != null) parts.push(String(t.line));
+      if (t.column != null) parts.push(String(t.column));
+      const line = parts.join(' : ');
+      (reIgnore.test(String(t.file || '')) ? ignored : kept).push(line);
+    }
+    return { kept, ignored };
+  } catch {
+    const lines = String(stack || '').split('\n');
+    const re = /node_modules|vite\/dist|react-dom\/|\(internal\)|__vite|next-dev-overlay/;
+    const kept = [];
+    const ignored = [];
+    for (const l of lines) (re.test(l) ? ignored : kept).push(l);
+    return { kept, ignored };
+  }
 }
 
 function extractLoc(frame) {
