@@ -27,9 +27,13 @@ export default function viteErrorOverlay(options: ViteOverlayOptions = {}): Plug
             const theme = options.theme ?? "dark";
 
             const code = `
+import { diffWords } from 'diff';
 const THEME_DEFAULT = ${JSON.stringify(theme)};
 let __flame_overlay_silent__ = false;
 let __flame_last__ = null; // { message, stack, kept, ignored, isHydration }
+let __flame_overlay_host__ = null; // HTMLElement
+let __flame_overlay_shadow__ = null; // ShadowRoot
+const INITIAL_HTML = (() => { try { return document.body ? document.body.innerHTML : ''; } catch { return ''; } })();
 
 const HYDRATION_PATTERNS = [
   /Hydration failed/i,
@@ -49,8 +53,7 @@ function setTheme(t) {
   applyTheme(t);
 }
 function applyTheme(t) {
-  const root = document.documentElement;
-  root.setAttribute('data-flame-theme', String(t));
+  if (__flame_overlay_host__) __flame_overlay_host__.setAttribute('data-flame-theme', String(t));
 }
 
 function timestamp() {
@@ -61,7 +64,7 @@ function createStyles() {
   const style = document.createElement('style');
   style.setAttribute('data-flame-overlay', '');
   style.textContent = \`\`\`
-:root {
+:host {
   --fl-bg: ${theme === "dark" ? "#0b0b0c" : "#ffffff"};
   --fl-fg: ${theme === "dark" ? "#eaeaea" : "#111111"};
   --fl-muted: ${theme === "dark" ? "#9b9b9b" : "#666"};
@@ -70,7 +73,7 @@ function createStyles() {
   --fl-border: ${theme === "dark" ? "#333" : "#e5e5e5"};
   --fl-code-bg: ${theme === "dark" ? "#0f0f10" : "#fff"};
 }
-[data-flame-theme="light"] {
+:host([data-flame-theme="light"]) {
   --fl-bg: #ffffff;
   --fl-fg: #111111;
   --fl-muted: #666666;
@@ -96,17 +99,30 @@ function createStyles() {
 .fl-overlay__button { appearance: none; border: 1px solid var(--fl-border); background: transparent; color: var(--fl-fg); font-size: 12px; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
 .fl-overlay__code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; line-height: 1.4; overflow-x: auto; display: block; padding: 12px 14px; white-space: pre; }
 .fl-overlay__hint { color: var(--fl-muted); font-size: 12px; }
+.fl-diff { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; line-height: 1.4; white-space: pre-wrap; background: var(--fl-code-bg); border: 1px solid var(--fl-border); border-radius: 8px; padding: 12px 14px; }
+.fl-diff-add { background: rgba(16,185,129,0.2); }
+.fl-diff-rem { background: rgba(239,68,68,0.25); text-decoration: line-through; }
 \`\`\`;
   return style;
 }
 
 function ensureRoot() {
-  let root = document.querySelector('.fl-overlay__root');
+  let root = null;
+  if (!__flame_overlay_host__) {
+    __flame_overlay_host__ = document.getElementById('fl-overlay-host');
+    if (!__flame_overlay_host__) {
+      __flame_overlay_host__ = document.createElement('div');
+      __flame_overlay_host__.id = 'fl-overlay-host';
+      document.documentElement.appendChild(__flame_overlay_host__);
+    }
+    __flame_overlay_shadow__ = __flame_overlay_host__.attachShadow({ mode: 'open' });
+    __flame_overlay_shadow__.appendChild(createStyles());
+  }
+  root = __flame_overlay_shadow__.querySelector('.fl-overlay__root');
   if (!root) {
     root = document.createElement('div');
     root.className = 'fl-overlay__root';
-    document.documentElement.appendChild(root);
-    document.head.appendChild(createStyles());
+    __flame_overlay_shadow__.appendChild(root);
   }
   return root;
 }
@@ -201,10 +217,16 @@ function showOverlay(data) {
       setTheme(current === 'dark' ? 'light' : 'dark');
     };
 
+    const reloadBtn = document.createElement('button');
+    reloadBtn.className = 'fl-overlay__button';
+    reloadBtn.textContent = 'Reload';
+    reloadBtn.onclick = () => location.reload();
+
     actions.appendChild(openBtn);
     actions.appendChild(copyBtn);
     actions.appendChild(toggleIgnoredBtn);
     actions.appendChild(themeBtn);
+    actions.appendChild(reloadBtn);
 
     frameHeader.appendChild(framePath);
     frameHeader.appendChild(actions);
@@ -233,6 +255,21 @@ function showOverlay(data) {
     frame.appendChild(stackPre);
     frame.appendChild(ignoredPre);
     content.appendChild(frame);
+  }
+
+  if (isHydration) {
+    const nowHTML = (() => { try { return document.body ? document.body.innerHTML : ''; } catch { return ''; } })();
+    const diff = diffWords(INITIAL_HTML, nowHTML);
+    const diffEl = document.createElement('div');
+    diffEl.className = 'fl-diff';
+    for (const part of diff) {
+      const span = document.createElement('span');
+      if (part.added) { span.className = 'fl-diff-add'; }
+      if (part.removed) { span.className = 'fl-diff-rem'; }
+      span.textContent = part.value;
+      diffEl.appendChild(span);
+    }
+    content.appendChild(diffEl);
   }
 
   const hint = document.createElement('div');

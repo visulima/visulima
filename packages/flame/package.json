@@ -114,7 +114,8 @@
     "dependencies": {
         "@visulima/error": "workspace:*",
         "@visulima/find-cache-dir": "workspace:*",
-        "get-uri": "^6.0.4"
+        "get-uri": "^6.0.4",
+        "diff": "^5.2.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.2.13",
