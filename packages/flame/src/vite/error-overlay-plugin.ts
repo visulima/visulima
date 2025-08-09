@@ -27,8 +27,9 @@ export default function viteErrorOverlay(options: ViteOverlayOptions = {}): Plug
             const theme = options.theme ?? "dark";
 
             const code = `
-const THEME = ${JSON.stringify(theme)};
+const THEME_DEFAULT = ${JSON.stringify(theme)};
 let __flame_overlay_silent__ = false;
+let __flame_last__ = null; // { message, stack, kept, ignored, isHydration }
 
 const HYDRATION_PATTERNS = [
   /Hydration failed/i,
@@ -38,6 +39,19 @@ const HYDRATION_PATTERNS = [
   /There was an error while hydrating/i,
   /An error occurred during hydration/i
 ];
+
+const THEME_KEY = 'flame:overlay:theme';
+function getTheme() {
+  try { return localStorage.getItem(THEME_KEY) || THEME_DEFAULT; } catch { return THEME_DEFAULT; }
+}
+function setTheme(t) {
+  try { localStorage.setItem(THEME_KEY, t); } catch {}
+  applyTheme(t);
+}
+function applyTheme(t) {
+  const root = document.documentElement;
+  root.setAttribute('data-flame-theme', String(t));
+}
 
 function timestamp() {
   try { return new Date().toLocaleTimeString(); } catch { return ''; }
@@ -56,12 +70,21 @@ function createStyles() {
   --fl-border: ${theme === "dark" ? "#333" : "#e5e5e5"};
   --fl-code-bg: ${theme === "dark" ? "#0f0f10" : "#fff"};
 }
+[data-flame-theme="light"] {
+  --fl-bg: #ffffff;
+  --fl-fg: #111111;
+  --fl-muted: #666666;
+  --fl-surface: #f5f5f5;
+  --fl-border: #e5e5e5;
+  --fl-code-bg: #ffffff;
+}
 @keyframes fl-fade-in { from { opacity: 0 } to { opacity: 1 } }
 @keyframes fl-slide-up { from { transform: translateY(8px); opacity: .9 } to { transform: translateY(0); opacity: 1 } }
 .fl-overlay__root { position: fixed; inset: 0; z-index: 2147483647; background: rgba(0,0,0,0.5); display: none; animation: fl-fade-in .15s ease-out; }
 .fl-overlay__panel { position: absolute; inset: 0; background: var(--fl-bg); color: var(--fl-fg); overflow: auto; animation: fl-slide-up .2s ease-out; }
 .fl-overlay__header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--fl-border); background: var(--fl-surface); }
 .fl-overlay__badge { padding: 3px 8px; border-radius: 6px; background: var(--fl-accent); color: white; font-weight: 600; font-size: 12px; letter-spacing: .02em; }
+.fl-overlay__badge--muted { background: #555; }
 .fl-overlay__title { font-size: 14px; font-weight: 600; }
 .fl-overlay__subtitle { font-size: 12px; color: var(--fl-muted); }
 .fl-overlay__content { padding: 16px; display: grid; gap: 16px; }
@@ -102,6 +125,13 @@ function showOverlay(data) {
   badge.className = 'fl-overlay__badge';
   badge.textContent = 'ERROR';
 
+  const isHydration = isHydrationErrorPayload(data);
+  const hydrationBadge = document.createElement('div');
+  if (isHydration) {
+    hydrationBadge.className = 'fl-overlay__badge fl-overlay__badge--muted';
+    hydrationBadge.textContent = 'HYDRATION';
+  }
+
   const title = document.createElement('div');
   title.className = 'fl-overlay__title';
   title.textContent = normalizeMessageTitle(data);
@@ -111,6 +141,7 @@ function showOverlay(data) {
   subtitle.textContent = timestamp();
 
   header.appendChild(badge);
+  if (isHydration) header.appendChild(hydrationBadge);
   header.appendChild(title);
   header.appendChild(subtitle);
 
@@ -125,6 +156,14 @@ function showOverlay(data) {
   const frameText = data.frame || (data.err && data.err.frame) || '';
   const file = (data.id || (data.err && data.err.id) || '');
   const loc = extractLoc(frameText);
+
+  // Stack section
+  const { kept, ignored } = splitStack(((data.err && data.err.stack) || data.stack || ''));
+  __flame_last__ = {
+    message: (data.err && data.err.message) || data.message || 'Unknown error',
+    stack: ((data.err && data.err.stack) || data.stack || ''),
+    kept, ignored, isHydration
+  };
 
   if (frameText) {
     const frame = document.createElement('div');
@@ -145,13 +184,27 @@ function showOverlay(data) {
     openBtn.textContent = 'Open in editor';
     openBtn.onclick = () => openInEditor(file, loc);
 
-    const dismissBtn = document.createElement('button');
-    dismissBtn.className = 'fl-overlay__button';
-    dismissBtn.textContent = 'Dismiss (Esc)';
-    dismissBtn.onclick = () => hideOverlay();
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'fl-overlay__button';
+    copyBtn.textContent = 'Copy stack';
+    copyBtn.onclick = () => copyStack();
+
+    const toggleIgnoredBtn = document.createElement('button');
+    toggleIgnoredBtn.className = 'fl-overlay__button';
+    toggleIgnoredBtn.textContent = 'Show ignored frames';
+
+    const themeBtn = document.createElement('button');
+    themeBtn.className = 'fl-overlay__button';
+    themeBtn.textContent = 'Toggle theme';
+    themeBtn.onclick = () => {
+      const current = getTheme();
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    };
 
     actions.appendChild(openBtn);
-    actions.appendChild(dismissBtn);
+    actions.appendChild(copyBtn);
+    actions.appendChild(toggleIgnoredBtn);
+    actions.appendChild(themeBtn);
 
     frameHeader.appendChild(framePath);
     frameHeader.appendChild(actions);
@@ -160,14 +213,31 @@ function showOverlay(data) {
     code.className = 'fl-overlay__code';
     code.textContent = frameText;
 
+    const stackPre = document.createElement('pre');
+    stackPre.className = 'fl-overlay__code';
+    stackPre.textContent = kept.join('\n');
+
+    const ignoredPre = document.createElement('pre');
+    ignoredPre.className = 'fl-overlay__code';
+    ignoredPre.style.display = 'none';
+    ignoredPre.textContent = ignored.join('\n');
+
+    toggleIgnoredBtn.onclick = () => {
+      const visible = ignoredPre.style.display !== 'none';
+      ignoredPre.style.display = visible ? 'none' : 'block';
+      toggleIgnoredBtn.textContent = visible ? 'Show ignored frames' : 'Hide ignored frames';
+    };
+
     frame.appendChild(frameHeader);
     frame.appendChild(code);
+    frame.appendChild(stackPre);
+    frame.appendChild(ignoredPre);
     content.appendChild(frame);
   }
 
   const hint = document.createElement('div');
   hint.className = 'fl-overlay__hint';
-  hint.textContent = 'Press Esc to dismiss. Hydration issues will be surfaced here.';
+  hint.textContent = 'Press Esc to dismiss. Hydration issues are detected. You can copy the stack and toggle ignored frames.';
   content.appendChild(hint);
 
   panel.appendChild(header);
@@ -176,6 +246,7 @@ function showOverlay(data) {
   root.style.display = 'block';
 
   window.addEventListener('keydown', escListener);
+  applyTheme(getTheme());
 }
 
 function hideOverlay() {
@@ -201,13 +272,28 @@ function normalizeMessageBody(data) {
   return [m, s].filter(Boolean).join('\n\n');
 }
 
+function isHydrationErrorPayload(data) {
+  const m = (data.err && data.err.message) || data.message || '';
+  const s = (data.err && data.err.stack) || data.stack || '';
+  const joined = [m, s].join('\n');
+  return HYDRATION_PATTERNS.some((re) => re.test(joined));
+}
+
 function filterStack(stack) {
   if (!stack) return '';
   const lines = String(stack).split('\n');
   const ignored = /node_modules|vite\/dist|react-dom\/|\(internal\)|__vite|next-dev-overlay/;
   const kept = lines.filter(l => !ignored.test(l));
-  // keep first 12 lines max
   return kept.slice(0, 12).join('\n');
+}
+
+function splitStack(stack) {
+  const lines = String(stack || '').split('\n');
+  const re = /node_modules|vite\/dist|react-dom\/|\(internal\)|__vite|next-dev-overlay/;
+  const kept = [];
+  const ignored = [];
+  for (const l of lines) (re.test(l) ? ignored : kept).push(l);
+  return { kept, ignored };
 }
 
 function extractLoc(frame) {
@@ -219,6 +305,13 @@ function openInEditor(file, loc) {
   if (!file) return;
   const q = new URLSearchParams({ file: loc ? `${file}:${loc.line}:${loc.column || 1}` : file });
   fetch('/__open-in-editor?' + q.toString());
+}
+
+async function copyStack() {
+  try {
+    const s = __flame_last__ ? `${__flame_last__.message}\n\n${__flame_last__.stack}` : '';
+    await navigator.clipboard.writeText(s);
+  } catch {}
 }
 
 function setup() {
@@ -244,7 +337,7 @@ function setup() {
     } catch {}
     return origConsoleError.apply(console, args);
   }
-  // reportError integration (Next.js sends unhandled to reportError)
+  // reportError integration
   const origReportError = window.reportError;
   try {
     window.reportError = function(err) {
