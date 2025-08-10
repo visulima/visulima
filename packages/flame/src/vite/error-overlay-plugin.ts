@@ -19,7 +19,11 @@ export default function viteErrorOverlay(options: ViteOverlayOptions = {}): Plug
             };
         },
         resolveId(id) {
-            if (id === VIRTUAL_ID) return RESOLVED_VIRTUAL_ID;
+            if (id === VIRTUAL_ID) {
+                return RESOLVED_VIRTUAL_ID;
+            }
+
+            return null;
         },
         load(id) {
             if (id !== RESOLVED_VIRTUAL_ID) return;
@@ -494,13 +498,13 @@ function extractLoc(frame) {
 
 function openInEditor(file, loc) {
   if (!file) return;
-  const q = new URLSearchParams({ file: loc ? `${file}:${loc.line}:${loc.column || 1}` : file });
+  const q = new URLSearchParams({ file: loc ? \`\${file}:\${loc.line}:\${loc.column || 1}\` : file });
   fetch('/__open-in-editor?' + q.toString());
 }
 
 async function copyStack() {
   try {
-    const s = __flame_last__ ? `${__flame_last__.message}\n\n${__flame_last__.stack}` : '';
+    const s = __flame_last__ ? \`\${__flame_last__.message}\n\n\${__flame_last__.stack}\` : '';
     await navigator.clipboard.writeText(s);
   } catch {}
 }

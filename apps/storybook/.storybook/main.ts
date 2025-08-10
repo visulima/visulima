@@ -3,7 +3,7 @@ import type { StorybookConfig } from "@storybook/react-vite";
 import { mergeConfig } from "vite";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import tsconfigPaths from "vite-tsconfig-paths";
-import { viteErrorOverlay } from "@visulima/flame";
+import viteErrorOverlay from "@visulima/flame/vite";
 
 const config: StorybookConfig = {
     addons: [
