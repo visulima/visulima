@@ -166,13 +166,15 @@ const errorOverlayPlugin = (): Plugin => {
         transformIndexHtml(): IndexHtmlTransformResult {
             const CLIENT = String.raw`
 import { createHotContext } from '/@vite/client';
-import * as React from 'react';
 const hot = createHotContext('/@visulima/flame');
-function send(error) {
+async function send(error) {
   try {
     if (!(error instanceof Error)) error = new Error(String(error ?? '(unknown runtime error)'));
     let ownerStack = null;
-    try { ownerStack = typeof React.captureOwnerStack === 'function' ? React.captureOwnerStack() : null; } catch {}
+    try {
+      const mod = await import('react');
+      if (mod && typeof mod.captureOwnerStack === 'function') ownerStack = mod.captureOwnerStack();
+    } catch {}
     const payload = { message: String(error.message || 'Runtime error'), stack: String(error.stack || ''), ownerStack };
     hot.send('visulima:flame:error', payload);
   } catch {}
