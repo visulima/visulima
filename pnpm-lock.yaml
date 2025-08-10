@@ -1011,15 +1011,7 @@ importers:
         version: 8.0.1
       vitest:
         specifier: ^1.3.1
-<<<<<<< HEAD
-<<<<<<< HEAD
-        version: 1.6.1(@types/node@22.15.30)(@vitest/ui@3.2.1)(jsdom@26.1.0)(lightningcss@1.30.1)(terser@5.31.1)
-=======
-        version: 1.6.1(@types/node@22.15.29)(@vitest/ui@3.2.1(vitest@3.2.1))(jsdom@26.1.0)(lightningcss@1.30.1)(terser@5.31.1)
->>>>>>> b58e81c8 (Improve error overlay with enhanced stacktrace parsing and diff import)
-=======
         version: 1.6.1(@types/node@24.2.1)(@vitest/ui@3.2.1)(jsdom@26.1.0)(lightningcss@1.30.1)(terser@5.31.1)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   packages/boxen/__fixtures__/package/cjs:
     dependencies:
@@ -1995,8 +1987,8 @@ importers:
   packages/flame:
     dependencies:
       '@visulima/css-style-inject':
-        specifier: 1.0.0-alpha.1
-        version: 1.0.0-alpha.1
+        specifier: 1.0.0-alpha.3
+        version: 1.0.0-alpha.3
       '@visulima/error':
         specifier: workspace:*
         version: link:../error
@@ -2014,19 +2006,11 @@ importers:
         version: 1.0.5
     devDependencies:
       '@anolilab/eslint-config':
-<<<<<<< HEAD
-        specifier: ^16.2.13
-        version: 16.2.13(39fab08371ff6deea952b1409773dd2c)
-      '@anolilab/semantic-release-preset':
-        specifier: ^10.0.6
-        version: 10.0.6(@semantic-release/npm@12.0.1(semantic-release@24.2.5(typescript@5.8.3)))(semantic-release@24.2.5(typescript@5.8.3))(yaml@2.8.0)
-=======
         specifier: ^16.2.23
         version: 16.2.23(266cd3df1f7ae228417ff50eab9d0a42)
       '@anolilab/semantic-release-preset':
         specifier: ^11.0.3
         version: 11.0.3(@semantic-release/npm@12.0.2(semantic-release@24.2.7(typescript@5.9.2)))(semantic-release@24.2.7(typescript@5.9.2))(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@babel/core':
         specifier: ^7.28.0
         version: 7.28.0
@@ -2046,33 +2030,17 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       '@types/node':
-<<<<<<< HEAD
-        specifier: 22.15.30
-        version: 22.15.30
-=======
         specifier: 24.2.1
         version: 24.2.1
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@types/sanitize-html':
         specifier: ^2.16.0
         version: 2.16.0
       '@visulima/packem':
-<<<<<<< HEAD
-        specifier: 1.19.4
-        version: 1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.30)(cssnano@7.0.7(postcss@8.5.4))(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.4))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.4)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.4))(postcss-modules-local-by-default@4.2.0(postcss@8.5.4))(postcss-modules-scope@3.2.1(postcss@8.5.4))(postcss-modules-values@4.0.0(postcss@8.5.4))(postcss-value-parser@4.2.0)(postcss@8.5.4)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)
-      '@vitest/coverage-v8':
-        specifier: ^3.2.2
-        version: 3.2.2(vitest@3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
-      ai:
-        specifier: ^4.1.38
-        version: 4.3.19(react@19.1.0)(zod@3.25.29)
-=======
         specifier: 2.0.0-alpha.5
         version: 2.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@24.2.1)(@visulima/redact@1.0.15)(cssnano@7.1.0(postcss@8.5.6))(esbuild@0.25.8)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.0)
       '@vitest/coverage-v8':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.1)(jiti@2.5.1)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.2.1)(typescript@5.9.2))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       cross-env:
         specifier: ^10.0.0
         version: 10.0.0
@@ -2089,25 +2057,17 @@ importers:
         specifier: 5.1.0
         version: 5.1.0(postcss@8.5.6)
       lucide-static:
-<<<<<<< HEAD
-        specifier: ^0.513.0
-        version: 0.513.0
-=======
         specifier: ^0.539.0
         version: 0.539.0
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       marked:
         specifier: ^16.1.2
         version: 16.1.2
       open-editor:
         specifier: ^5.1.0
         version: 5.1.0
-<<<<<<< HEAD
-=======
       openai:
         specifier: 5.12.2
         version: 5.12.2(ws@8.18.2)(zod@3.25.29)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
@@ -2142,13 +2102,8 @@ importers:
         specifier: ^24.2.7
         version: 24.2.7(typescript@5.9.2)
       shiki:
-<<<<<<< HEAD
-        specifier: ^3.6.0
-        version: 3.6.0
-=======
         specifier: ^3.9.2
         version: 3.9.2
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       sort-package-json:
         specifier: ^3.4.0
         version: 3.4.0
@@ -2159,19 +2114,11 @@ importers:
         specifier: ^5.9.2
         version: 5.9.2
       vite:
-<<<<<<< HEAD
-        specifier: ^6.3.5
-        version: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-      vitest:
-        specifier: ^3.2.2
-        version: 3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-=======
         specifier: ^7.1.1
         version: 7.1.1(@types/node@24.2.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.1)(jiti@2.5.1)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.2.1)(typescript@5.9.2))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   packages/fmt:
     devDependencies:
@@ -2404,11 +2351,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
-<<<<<<< HEAD
-        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-=======
         version: 3.2.1(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.1)(jiti@2.5.1)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.2.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   packages/fs/__bench__/fixtures/a/b: {}
 
@@ -2772,11 +2715,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
-<<<<<<< HEAD
-        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-=======
         version: 3.2.1(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.1)(jiti@2.5.1)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.2.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   packages/is-ansi-color-supported:
     devDependencies:
@@ -3474,11 +3413,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
-<<<<<<< HEAD
-        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-=======
         version: 3.2.1(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.1)(jiti@2.5.1)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.2.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   packages/pail/__fixtures__/package/cjs:
     dependencies:
@@ -3820,11 +3755,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
-<<<<<<< HEAD
-        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-=======
         version: 3.2.1(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.1)(jiti@2.5.1)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.2.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   packages/redact/__fixtures__/package/cjs:
     dependencies:
@@ -4074,11 +4005,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.1
-<<<<<<< HEAD
-        version: 3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-=======
         version: 3.2.1(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.1)(jiti@2.5.1)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.2.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       wrap-ansi:
         specifier: 9.0.0
         version: 9.0.0
@@ -4345,32 +4272,6 @@ packages:
   '@adobe/css-tools@4.4.0':
     resolution: {integrity: sha512-Ff9+ksdQQB3rMncgqDK78uLznstjyfIf2Arnh22pW8kBpLs6rpKDwgnZT46hin5Hl1WzazzK64DOrhSwYpS7bQ==}
 
-  '@ai-sdk/provider-utils@2.2.8':
-    resolution: {integrity: sha512-fqhG+4sCVv8x7nFzYnFo19ryhAa3w096Kmc3hWxMQfW/TubPOmt3A6tYZhl4mUfQWWQMsuSkLrtjlWuXBVSGQA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.23.8
-
-  '@ai-sdk/provider@1.1.3':
-    resolution: {integrity: sha512-qZMxYJ0qqX/RfnuIaab+zp8UAeJn/ygXXAffR5I4N0n1IrvA6qBsjc8hXLmBiMV2zoXlifkacF7sEFnYnjBcqg==}
-    engines: {node: '>=18'}
-
-  '@ai-sdk/react@1.2.12':
-    resolution: {integrity: sha512-jK1IZZ22evPZoQW3vlkZ7wvjYGYF+tRBKXtrcolduIkQ/m/sOAVcVeVDUDvh1T91xCnWCdUGCPZg2avZ90mv3g==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      react: ^18 || ^19 || ^19.0.0-rc
-      zod: ^3.23.8
-    peerDependenciesMeta:
-      zod:
-        optional: true
-
-  '@ai-sdk/ui-utils@1.2.11':
-    resolution: {integrity: sha512-3zcwCc8ezzFlwp3ZD15wAPjf2Au4s3vAbKsXQVyhxODHcmu0iyPO2Eua6D/vicq/AUm/BAo60r97O6HU+EI0+w==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.23.8
-
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
@@ -4562,18 +4463,6 @@ packages:
       typescript:
         optional: true
 
-<<<<<<< HEAD
-  '@anolilab/eslint-config@16.2.13':
-    resolution: {integrity: sha512-L8NgIXRgCvCFjJ67bMV+IzIeTvEmhuF/yaTseVmICKlnaGAKG36RMUpMrX77Z+I+EZUWBwsz033QUkkDMQtakg==}
-    engines: {node: '>=20.18.* <=24.*'}
-    peerDependencies:
-      '@babel/core': ^7.22.20
-      '@eslint-react/eslint-plugin': ^1.50.0
-      '@eslint/css': ^0.8.1
-      '@tanstack/eslint-plugin-query': ^5.0.5
-      '@tanstack/eslint-plugin-router': ^1.92.7
-      '@unocss/eslint-plugin': ^66.1.2
-=======
   '@anolilab/eslint-config@16.2.23':
     resolution: {integrity: sha512-5AkaHWzKwjpqfuAf/qMpkP7Sryd1duFkP7mqAUsX9yH5AX5Mo4r/+yjBTwTQL0bbmHX4HXg7NzUZyDjt8rUkmA==}
     engines: {node: '>=20.18.* <=24.*'}
@@ -4583,7 +4472,6 @@ packages:
       '@tanstack/eslint-plugin-query': ^5.81.2
       '@tanstack/eslint-plugin-router': ^1.125.0
       '@unocss/eslint-plugin': ^66.3.3
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       astro-eslint-parser: ^1.2.2
       eslint: '>=9.5.0'
       eslint-plugin-astro: ^1.3.1
@@ -4720,15 +4608,9 @@ packages:
     resolution: {integrity: sha512-O5RjQqSC9vwi7LnrjfdwCJ1fdrfryYnsSqMh7+6yK1H5hEgHSg2iFXaM1oAwXp4OFaBonVgQcRnpauW+jx5PfQ==}
     engines: {node: '>=18.0.0 <=23.x'}
 
-<<<<<<< HEAD
-  '@anolilab/semantic-release-clean-package-json@2.0.3':
-    resolution: {integrity: sha512-OYFne2ZyQ4q6k7az/yG0XLDgA3wePbROgj1qoEpIm0/F09ZG7pFLb6ITxBx58i+o1XToKsP8KFd7ARNx+8DScQ==}
-    engines: {node: '>=18.17 <=24.*'}
-=======
   '@anolilab/semantic-release-clean-package-json@3.0.3':
     resolution: {integrity: sha512-4Yzf1YK6/ATebTv99Hwzzle9pxGD/hkJGyM1FlhBpsBSnawR8757ZG3YEp/YmayVcP2S6wPn8fi7hQX2c1KT9A==}
     engines: {node: '>=20.8.1'}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@anolilab/semantic-release-pnpm@1.1.11':
     resolution: {integrity: sha512-OsMr/noX0izjxE4uO2OVorgBR46ZN5iLFSxeXT+MV3lWRtft+UmO6bxxLYyWhWa7Kv4crR/irnNDTQQoIdwP2g==}
@@ -4751,21 +4633,12 @@ packages:
       semantic-release-yarn:
         optional: true
 
-<<<<<<< HEAD
-  '@anolilab/semantic-release-preset@10.0.6':
-    resolution: {integrity: sha512-TxGgLizsgV7UcPLmN/9GhJHnFNXunJjQE75E69Jgf3oS2XGreMM72VBR7AQ9AElUEHBheEyCcGgv+zYS3MQCqg==}
-    engines: {node: '>=18.17 <=24.*'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      '@anolilab/semantic-release-pnpm': 1.1.12
-=======
   '@anolilab/semantic-release-preset@11.0.3':
     resolution: {integrity: sha512-Y0gRPo68klIMwjtDeUJuDE5t+IDrIf52n1+JiAn5r2xzhZrAUzbThXj/Ilsn33LOfKWRlq8Lyg5jkrBoSUyzUg==}
     engines: {node: '>=20.8.1'}
     os: [darwin, linux, win32]
     peerDependencies:
       '@anolilab/semantic-release-pnpm': 2.0.3
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@semantic-release/npm': ^12.0.1
       semantic-release: ^24.2.3
       semantic-release-yarn: ^3.0.2
@@ -9212,24 +9085,14 @@ packages:
   '@shikijs/core@2.5.0':
     resolution: {integrity: sha512-uu/8RExTKtavlpH7XqnVYBrfBkUc20ngXiX9NSrBhOVZYv/7XQRKUyhtkeflY5QsxC0GbJThCerruZfsUaSldg==}
 
-<<<<<<< HEAD
-  '@shikijs/core@3.6.0':
-    resolution: {integrity: sha512-9By7Xb3olEX0o6UeJyPLI1PE1scC4d3wcVepvtv2xbuN9/IThYN4Wcwh24rcFeASzPam11MCq8yQpwwzCgSBRw==}
-=======
   '@shikijs/core@3.9.2':
     resolution: {integrity: sha512-3q/mzmw09B2B6PgFNeiaN8pkNOixWS726IHmJEpjDAcneDPMQmUg2cweT9cWXY4XcyQS3i6mOOUgQz9RRUP6HA==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@shikijs/engine-javascript@2.5.0':
     resolution: {integrity: sha512-VjnOpnQf8WuCEZtNUdjjwGUbtAVKuZkVQ/5cHy/tojVVRIRtlWMYVjyWhxOmIq05AlSOv72z7hRNRGVBgQOl0w==}
 
-<<<<<<< HEAD
-  '@shikijs/engine-javascript@3.6.0':
-    resolution: {integrity: sha512-7YnLhZG/TU05IHMG14QaLvTW/9WiK8SEYafceccHUSXs2Qr5vJibUwsDfXDLmRi0zHdzsxrGKpSX6hnqe0k8nA==}
-=======
   '@shikijs/engine-javascript@3.9.2':
     resolution: {integrity: sha512-kUTRVKPsB/28H5Ko6qEsyudBiWEDLst+Sfi+hwr59E0GLHV0h8RfgbQU7fdN5Lt9A8R1ulRiZyTvAizkROjwDA==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@shikijs/engine-oniguruma@2.5.0':
     resolution: {integrity: sha512-pGd1wRATzbo/uatrCIILlAdFVKdxImWJGQ5rFiB5VZi2ve5xj3Ax9jny8QvkaV93btQEwR/rSz5ERFpC5mKNIw==}
@@ -9237,13 +9100,8 @@ packages:
   '@shikijs/engine-oniguruma@3.4.2':
     resolution: {integrity: sha512-zcZKMnNndgRa3ORja6Iemsr3DrLtkX3cAF7lTJkdMB6v9alhlBsX9uNiCpqofNrXOvpA3h6lHcLJxgCIhVOU5Q==}
 
-<<<<<<< HEAD
-  '@shikijs/engine-oniguruma@3.6.0':
-    resolution: {integrity: sha512-nmOhIZ9yT3Grd+2plmW/d8+vZ2pcQmo/UnVwXMUXAKTXdi+LK0S08Ancrz5tQQPkxvjBalpMW2aKvwXfelauvA==}
-=======
   '@shikijs/engine-oniguruma@3.9.2':
     resolution: {integrity: sha512-Vn/w5oyQ6TUgTVDIC/BrpXwIlfK6V6kGWDVVz2eRkF2v13YoENUvaNwxMsQU/t6oCuZKzqp9vqtEtEzKl9VegA==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@shikijs/langs@2.5.0':
     resolution: {integrity: sha512-Qfrrt5OsNH5R+5tJ/3uYBBZv3SuGmnRPejV9IlIbFH3HTGLDlkqgHymAlzklVmKBjAaVmkPkyikAV/sQ1wSL+w==}
@@ -9251,13 +9109,8 @@ packages:
   '@shikijs/langs@3.4.2':
     resolution: {integrity: sha512-H6azIAM+OXD98yztIfs/KH5H4PU39t+SREhmM8LaNXyUrqj2mx+zVkr8MWYqjceSjDw9I1jawm1WdFqU806rMA==}
 
-<<<<<<< HEAD
-  '@shikijs/langs@3.6.0':
-    resolution: {integrity: sha512-IdZkQJaLBu1LCYCwkr30hNuSDfllOT8RWYVZK1tD2J03DkiagYKRxj/pDSl8Didml3xxuyzUjgtioInwEQM/TA==}
-=======
   '@shikijs/langs@3.9.2':
     resolution: {integrity: sha512-X1Q6wRRQXY7HqAuX3I8WjMscjeGjqXCg/Sve7J2GWFORXkSrXud23UECqTBIdCSNKJioFtmUGJQNKtlMMZMn0w==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@shikijs/themes@2.5.0':
     resolution: {integrity: sha512-wGrk+R8tJnO0VMzmUExHR+QdSaPUl/NKs+a4cQQRWyoc3YFbUzuLEi/KWK1hj+8BfHRKm2jNhhJck1dfstJpiw==}
@@ -9265,13 +9118,8 @@ packages:
   '@shikijs/themes@3.4.2':
     resolution: {integrity: sha512-qAEuAQh+brd8Jyej2UDDf+b4V2g1Rm8aBIdvt32XhDPrHvDkEnpb7Kzc9hSuHUxz0Iuflmq7elaDuQAP9bHIhg==}
 
-<<<<<<< HEAD
-  '@shikijs/themes@3.6.0':
-    resolution: {integrity: sha512-Fq2j4nWr1DF4drvmhqKq8x5vVQ27VncF8XZMBuHuQMZvUSS3NBgpqfwz/FoGe36+W6PvniZ1yDlg2d4kmYDU6w==}
-=======
   '@shikijs/themes@3.9.2':
     resolution: {integrity: sha512-6z5lBPBMRfLyyEsgf6uJDHPa6NAGVzFJqH4EAZ+03+7sedYir2yJBRu2uPZOKmj43GyhVHWHvyduLDAwJQfDjA==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@shikijs/twoslash@2.5.0':
     resolution: {integrity: sha512-OdyoZRbzTB80qHFHdaXT070OG9hiljxbsJMZmrMAPWXG2e4FV8wbC63VBM5BJXa1DH645nw20VX1MzASkO5V9g==}
@@ -9282,13 +9130,8 @@ packages:
   '@shikijs/types@3.4.2':
     resolution: {integrity: sha512-zHC1l7L+eQlDXLnxvM9R91Efh2V4+rN3oMVS2swCBssbj2U/FBwybD1eeLaq8yl/iwT+zih8iUbTBCgGZOYlVg==}
 
-<<<<<<< HEAD
-  '@shikijs/types@3.6.0':
-    resolution: {integrity: sha512-cLWFiToxYu0aAzJqhXTQsFiJRTFDAGl93IrMSBNaGSzs7ixkLfdG6pH11HipuWFGW5vyx4X47W8HDQ7eSrmBUg==}
-=======
   '@shikijs/types@3.9.2':
     resolution: {integrity: sha512-/M5L0Uc2ljyn2jKvj4Yiah7ow/W+DJSglVafvWAJ/b8AZDeeRAdMu3c2riDzB7N42VD+jSnWxeP9AKtd4TfYVw==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
@@ -10450,9 +10293,6 @@ packages:
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
 
-  '@types/diff-match-patch@1.0.36':
-    resolution: {integrity: sha512-xFdR6tkm0MWvBfO8xXCSsinYxHcqkQUlcHeSpMC2ukzOb6lwQAfDmW+Qt0AvlGd8HpsS28qKsB+oPeJn9I39jg==}
-
   '@types/doctrine@0.0.9':
     resolution: {integrity: sha512-eOIHzCUSH7SMfonMG1LsC2f8vxBFtho6NGBznK41R84YzPuvSBzrhEps33IsQiOW9+VL6NQ9DbjQJznk/S4uRA==}
 
@@ -10630,13 +10470,8 @@ packages:
   '@types/node@22.15.29':
     resolution: {integrity: sha512-LNdjOkUDlU1RZb8e1kOIUpN1qQUlzGkEtbVNo53vbrwDg5om6oduhm4SiUaPW5ASTXhAiP0jInWG8Qx9fVlOeQ==}
 
-<<<<<<< HEAD
-  '@types/node@22.15.30':
-    resolution: {integrity: sha512-6Q7lr06bEHdlfplU6YRbgG1SFBdlsfNC4/lX+SkhiTs0cpJkOElmWls8PxDFv4yY/xKb8Y6SO0OmSX4wgqTZbA==}
-=======
   '@types/node@24.2.1':
     resolution: {integrity: sha512-DRh5K+ka5eJic8CjH7td8QpYEV6Zo10gfRkjHCO3weqZHWDtAaSTFtl4+VMqOJ4N5jcuhZ9/l+yy8rVgw7BQeQ==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -11315,8 +11150,8 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/css-style-inject@1.0.0-alpha.1':
-    resolution: {integrity: sha512-bM02lCCadgCfjQgsFIiOx0lyXf4BuQ533NbvMnei0yLJKl/gQ8LWEyR44E9Xg+W8GNpe8hANaiqH4Ynqd9SgUA==}
+  '@visulima/css-style-inject@1.0.0-alpha.3':
+    resolution: {integrity: sha512-S7s4OgVJaAccJKHZaQybM1PpAHihPTPcYDauXLnSGDCiRVvduYlWOAHk1ZM2idhp44tY7gLwGt3uzCmtRruVKQ==}
     engines: {node: '>=20.* <=24.*'}
 
   '@visulima/error@4.4.15':
@@ -11941,19 +11776,11 @@ packages:
       '@vitest/browser':
         optional: true
 
-<<<<<<< HEAD
-  '@vitest/coverage-v8@3.2.2':
-    resolution: {integrity: sha512-RVAi5xnqedSKvaoQyCTWvncMk8eYZcTTOsLK7XmnfOEvdGP/O/upA0/MA8Ss+Qs++mj0GcSRi/whR0S5iBPpTQ==}
-    peerDependencies:
-      '@vitest/browser': 3.2.2
-      vitest: 3.2.2
-=======
   '@vitest/coverage-v8@3.2.4':
     resolution: {integrity: sha512-EyF9SXU6kS5Ku/U82E259WSnvg6c8KTjppUncuNdm5QHpe17mwREHnjDzozC8x9MZ0xfBUFSaLkRv4TMA75ALQ==}
     peerDependencies:
       '@vitest/browser': 3.2.4
       vitest: 3.2.4
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     peerDependenciesMeta:
       '@vitest/browser':
         optional: true
@@ -11994,13 +11821,8 @@ packages:
   '@vitest/expect@3.2.1':
     resolution: {integrity: sha512-FqS/BnDOzV6+IpxrTg5GQRyLOCtcJqkwMwcS8qGCI2IyRVDwPAtutztaf1CjtPHlZlWtl1yUPCd7HM0cNiDOYw==}
 
-<<<<<<< HEAD
-  '@vitest/expect@3.2.2':
-    resolution: {integrity: sha512-ipHw0z669vEMjzz3xQE8nJX1s0rQIb7oEl4jjl35qWTwm/KIHERIg/p/zORrjAaZKXfsv7IybcNGHwhOOAPMwQ==}
-=======
   '@vitest/expect@3.2.4':
     resolution: {integrity: sha512-Io0yyORnB6sikFlt8QW5K7slY4OjqNX9jmJQ02QDda8lyM6B5oNgVWoSoKPac8/kgnCUzuHQKrSLtu/uOqqrig==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@vitest/mocker@3.1.4':
     resolution: {integrity: sha512-8IJ3CvwtSw/EFXqWFL8aCMu+YyYXG2WUSrQbViOZkWTKTVicVwZ/YiEZDSqD00kX+v/+W+OnxhNWoeVKorHygA==}
@@ -12035,13 +11857,8 @@ packages:
       vite:
         optional: true
 
-<<<<<<< HEAD
-  '@vitest/mocker@3.2.2':
-    resolution: {integrity: sha512-jKojcaRyIYpDEf+s7/dD3LJt53c0dPfp5zCPXz9H/kcGrSlovU/t1yEaNzM9oFME3dcd4ULwRI/x0Po1Zf+LTw==}
-=======
   '@vitest/mocker@3.2.4':
     resolution: {integrity: sha512-46ryTE9RZO/rfDd7pEqFl7etuyzekzEhUbTW3BvmeO/BcCMEgq59BKhek3dXDWgAj4oMK6OZi+vRr1wPW6qjEQ==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     peerDependencies:
       msw: ^2.4.9
       vite: '>=6.3.4'
@@ -12066,13 +11883,8 @@ packages:
   '@vitest/pretty-format@3.2.1':
     resolution: {integrity: sha512-xBh1X2GPlOGBupp6E1RcUQWIxw0w/hRLd3XyBS6H+dMdKTAqHDNsIR2AnJwPA3yYe9DFy3VUKTe3VRTrAiQ01g==}
 
-<<<<<<< HEAD
-  '@vitest/pretty-format@3.2.2':
-    resolution: {integrity: sha512-FY4o4U1UDhO9KMd2Wee5vumwcaHw7Vg4V7yR4Oq6uK34nhEJOmdRYrk3ClburPRUA09lXD/oXWZ8y/Sdma0aUQ==}
-=======
   '@vitest/pretty-format@3.2.4':
     resolution: {integrity: sha512-IVNZik8IVRJRTr9fxlitMKeJeXFFFN0JaB9PHPGQ8NKQbGpfjlTx9zO4RefN8gp7eqjNy8nyK3NZmBzOPeIxtA==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@vitest/runner@1.6.1':
     resolution: {integrity: sha512-3nSnYXkVkf3mXFfE7vVyPmi3Sazhb/2cfZGGs0JRzFsPFvAMBEcrweV1V1GsrstdXeKCTXlJbvnQwGWgEIHmOA==}
@@ -12083,13 +11895,8 @@ packages:
   '@vitest/runner@3.2.1':
     resolution: {integrity: sha512-kygXhNTu/wkMYbwYpS3z/9tBe0O8qpdBuC3dD/AW9sWa0LE/DAZEjnHtWA9sIad7lpD4nFW1yQ+zN7mEKNH3yA==}
 
-<<<<<<< HEAD
-  '@vitest/runner@3.2.2':
-    resolution: {integrity: sha512-GYcHcaS3ejGRZYed2GAkvsjBeXIEerDKdX3orQrBJqLRiea4NSS9qvn9Nxmuy1IwIB+EjFOaxXnX79l8HFaBwg==}
-=======
   '@vitest/runner@3.2.4':
     resolution: {integrity: sha512-oukfKT9Mk41LreEW09vt45f8wx7DordoWUZMYdY/cyAk7w5TWkTRCNZYF7sX7n2wB7jyGAl74OxgwhPgKaqDMQ==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@vitest/snapshot@1.6.1':
     resolution: {integrity: sha512-WvidQuWAzU2p95u8GAKlRMqMyN1yOJkGHnx3M1PL9Raf7AQ1kwLKg04ADlCa3+OXUZE7BceOhVZiuWAbzCKcUQ==}
@@ -12100,13 +11907,8 @@ packages:
   '@vitest/snapshot@3.2.1':
     resolution: {integrity: sha512-5xko/ZpW2Yc65NVK9Gpfg2y4BFvcF+At7yRT5AHUpTg9JvZ4xZoyuRY4ASlmNcBZjMslV08VRLDrBOmUe2YX3g==}
 
-<<<<<<< HEAD
-  '@vitest/snapshot@3.2.2':
-    resolution: {integrity: sha512-aMEI2XFlR1aNECbBs5C5IZopfi5Lb8QJZGGpzS8ZUHML5La5wCbrbhLOVSME68qwpT05ROEEOAZPRXFpxZV2wA==}
-=======
   '@vitest/snapshot@3.2.4':
     resolution: {integrity: sha512-dEYtS7qQP2CjU27QBC5oUOxLE/v5eLkGqPE0ZKEIDGMs4vKWe7IjgLOeauHsR0D5YuuycGRO5oSRXnwnmA78fQ==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@vitest/spy@1.6.1':
     resolution: {integrity: sha512-MGcMmpGkZebsMZhbQKkAf9CX5zGvjkBTqf8Zx3ApYWXr3wG+QvEu2eXWfnIIWYSJExIp4V9FCKDEeygzkYrXMw==}
@@ -12123,13 +11925,8 @@ packages:
   '@vitest/spy@3.2.1':
     resolution: {integrity: sha512-Nbfib34Z2rfcJGSetMxjDCznn4pCYPZOtQYox2kzebIJcgH75yheIKd5QYSFmR8DIZf2M8fwOm66qSDIfRFFfQ==}
 
-<<<<<<< HEAD
-  '@vitest/spy@3.2.2':
-    resolution: {integrity: sha512-6Utxlx3o7pcTxvp0u8kUiXtRFScMrUg28KjB3R2hon7w4YqOFAEA9QwzPVVS1QNL3smo4xRNOpNZClRVfpMcYg==}
-=======
   '@vitest/spy@3.2.4':
     resolution: {integrity: sha512-vAfasCOe6AIK70iP5UD11Ac4siNUNJ9i/9PZ3NKx07sG6sUxeag1LWdNrMWeKKYBLlzuK+Gn65Yd5nyL6ds+nw==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@vitest/ui@3.2.1':
     resolution: {integrity: sha512-xT93aOcPn2wn8vvw4T6rZAK9WjGEHdYrEjN3OJ1zcDpl2UInxvcD9fYI10nmPAERNEK6jUVcSCIPAIfNuaRX6Q==}
@@ -12154,13 +11951,8 @@ packages:
   '@vitest/utils@3.2.1':
     resolution: {integrity: sha512-KkHlGhePEKZSub5ViknBcN5KEF+u7dSUr9NW8QsVICusUojrgrOnnY3DEWWO877ax2Pyopuk2qHmt+gkNKnBVw==}
 
-<<<<<<< HEAD
-  '@vitest/utils@3.2.2':
-    resolution: {integrity: sha512-qJYMllrWpF/OYfWHP32T31QCaLa3BAzT/n/8mNGhPdVcjY+JYazQFO1nsJvXU12Kp1xMpNY4AGuljPTNjQve6A==}
-=======
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@wdio/config@9.15.0':
     resolution: {integrity: sha512-IQzSZx2Y0KdAVWHSdcBLkuUjCmYtOnc1oDY7Psi814wDR7dEPVOuKgMo8ZZ0P1yhioMzqvy5tBemYSzj7CrFTA==}
@@ -12355,16 +12147,6 @@ packages:
   aggregate-error@5.0.0:
     resolution: {integrity: sha512-gOsf2YwSlleG6IjRYG2A7k0HmBMEo6qVNk9Bp/EaLgAJT5ngH6PXbqa4ItvnEwCm/velL5jAnQgsHsWnjhGmvw==}
     engines: {node: '>=18'}
-
-  ai@4.3.19:
-    resolution: {integrity: sha512-dIE2bfNpqHN3r6IINp9znguYdhIOheKW2LDigAMrgt/upT3B8eBGPSCblENvaZGoq+hxaN9fSMzjWpbqloP+7Q==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      react: ^18 || ^19 || ^19.0.0-rc
-      zod: ^3.23.8
-    peerDependenciesMeta:
-      react:
-        optional: true
 
   ajv-draft-04@1.0.0:
     resolution: {integrity: sha512-mv00Te6nmYbRp5DCwclxtt7yV/joXJPGS7nM+97GdxvuttCOfgI3K4U25zboyeX0O+myI8ERluxQe5wljMmVIw==}
@@ -14204,9 +13986,6 @@ packages:
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
-
-  diff-match-patch@1.0.5:
-    resolution: {integrity: sha512-IayShXAgj/QMXgB0IWmKx+rOPuGMhqm5w6jvFxmVenXKIzRqTAAsbBPT3kWQeGANj3jGgvcvv4yK6SxqYmikgw==}
 
   diff-sequences@29.6.3:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
@@ -17297,9 +17076,6 @@ packages:
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
 
-  json-schema@0.4.0:
-    resolution: {integrity: sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA==}
-
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
@@ -17321,11 +17097,6 @@ packages:
 
   jsonc-parser@3.3.1:
     resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
-
-  jsondiffpatch@0.6.0:
-    resolution: {integrity: sha512-3QItJOXp2AP1uv7waBkao5nCvhEv+QmJAd38Ybq7wNI74Q+BBmnLn4EDKz6yI9xGAIQoUF87qHt+kc1IVxB4zQ==}
-    engines: {node: ^18.0.0 || >=20.0.0}
-    hasBin: true
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
@@ -17865,13 +17636,8 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-<<<<<<< HEAD
-  lucide-static@0.513.0:
-    resolution: {integrity: sha512-ooHRaGb50HQdsKqElHlFDdacU3pCWMHr39mUHwBcdPj4v9XH56S1rNEbNBQB2f1b1KcZsSCHQVywtF6e3fuOIA==}
-=======
   lucide-static@0.539.0:
     resolution: {integrity: sha512-ybhtBJOeIgY1d1WV3vxJkSOoWi1EaYOkA15WYtct9/kX3+HSTCdbkeM0fQ4i5JxsKmp874J8dsNI92r4t5qCzg==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   lunr@2.3.9:
     resolution: {integrity: sha512-zTU3DaZaF3Rt9rhN3uBMGQD3dD2/vFQqnvZCDv4dl5iOzq2IZQqTxu90r4E5J+nP70J3ilqVCrbho2eWaeW8Ow==}
@@ -19349,8 +19115,6 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
-<<<<<<< HEAD
-=======
   openai@5.12.2:
     resolution: {integrity: sha512-xqzHHQch5Tws5PcKR2xsZGX9xtch+JQFz5zb14dGqlshmmDAFBFEWmeIpf7wVqWV+w7Emj7jRgkNJakyKE0tYQ==}
     hasBin: true
@@ -19363,7 +19127,6 @@ packages:
       zod:
         optional: true
 
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
   openapi-path-templating@2.1.0:
     resolution: {integrity: sha512-fLs5eJmLyU8wPRz+JSH5uLE7TE4Ohg6VHOtj0C0AlD3GTCCcw2LgKW6MSN1A8ZBKHEg2O4/d02knmVU1nvGAKQ==}
     engines: {node: '>=12.20.0'}
@@ -21337,9 +21100,6 @@ packages:
     engines: {node: ^14.13.1 || >=16.0.0}
     hasBin: true
 
-  secure-json-parse@2.7.0:
-    resolution: {integrity: sha512-6aU+Rwsezw7VR8/nyvKTx8QpWH9FrcYiXXlqC4z5d5XQBDRqtbfsRjnwGyqbi3gddNtWHuEk9OANUotL26qKUw==}
-
   secure-json-parse@4.0.0:
     resolution: {integrity: sha512-dxtLJO6sc35jWidmLxo7ij+Eg48PM/kleBsxpC8QJE0qJICe+KawkDQmvCMZUr9u7WKVHgMW6vy3fQ7zMiFZMA==}
 
@@ -21494,13 +21254,8 @@ packages:
   shiki@2.5.0:
     resolution: {integrity: sha512-mI//trrsaiCIPsja5CNfsyNOqgAZUb6VpJA+340toL42UpzQlXpwRV9nch69X6gaUxrr9kaOOa6e3y3uAkGFxQ==}
 
-<<<<<<< HEAD
-  shiki@3.6.0:
-    resolution: {integrity: sha512-tKn/Y0MGBTffQoklaATXmTqDU02zx8NYBGQ+F6gy87/YjKbizcLd+Cybh/0ZtOBX9r1NEnAy/GTRDKtOsc1L9w==}
-=======
   shiki@3.9.2:
     resolution: {integrity: sha512-t6NKl5e/zGTvw/IyftLcumolgOczhuroqwXngDeMqJ3h3EQiTY/7wmfgPlsmloD8oYfqkEDqxiaH37Pjm1zUhQ==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   short-unique-id@5.2.0:
     resolution: {integrity: sha512-cMGfwNyfDZ/nzJ2k2M+ClthBIh//GlZl1JEf47Uoa9XR11bz8Pa2T2wQO4bVrRdH48LrIDWJahQziKo3MjhsWg==}
@@ -22079,11 +21834,6 @@ packages:
     resolution: {integrity: sha512-upi/0ZGkYgEcLeGieoz8gT74oWHA0E7JivX7aN9mAf+Tc7BQoRBvnIGHoPDw+f9TXTW4s6kGYCZJtauP6OYp7g==}
     hasBin: true
 
-  swr@2.3.4:
-    resolution: {integrity: sha512-bYd2lrhc+VarcpkgWclcUi92wYCpOgMws9Sd1hG1ntAu0NEy+14CbotuFjshBU2kt9rYj9TSmDcybpxpeTU1fg==}
-    peerDependencies:
-      react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
@@ -22307,10 +22057,6 @@ packages:
 
   thread-stream@3.1.0:
     resolution: {integrity: sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A==}
-
-  throttleit@2.1.0:
-    resolution: {integrity: sha512-nt6AMGKW1p/70DF/hGBdJB57B8Tspmbp5gfJ8ilhLnt7kkr2ye7hzD6NVG8GGErk2HWF34igrL2CXmNIkzKqKw==}
-    engines: {node: '>=18'}
 
   through2@0.4.2:
     resolution: {integrity: sha512-45Llu+EwHKtAZYTPPVn3XZHBgakWMN3rokhEv5hu596XP+cNgplMg+Gj+1nmAvj+L0K7+N49zBKx5rah5u0QIQ==}
@@ -23247,13 +22993,8 @@ packages:
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
-<<<<<<< HEAD
-  vite-node@3.2.2:
-    resolution: {integrity: sha512-Xj/jovjZvDXOq2FgLXu8NsY4uHUMWtzVmMC2LkCu9HWdr9Qu1Is5sanX3Z4jOFKdohfaWDnEJWp9pRP0vVpAcA==}
-=======
   vite-node@3.2.4:
     resolution: {integrity: sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
@@ -23457,26 +23198,16 @@ packages:
       jsdom:
         optional: true
 
-<<<<<<< HEAD
-  vitest@3.2.2:
-    resolution: {integrity: sha512-fyNn/Rp016Bt5qvY0OQvIUCwW2vnaEBLxP42PmKbNIoasSYjML+8xyeADOPvBe+Xfl/ubIw4og7Lt9jflRsCNw==}
-=======
   vitest@3.2.4:
     resolution: {integrity: sha512-LUCP5ev3GURDysTWiP47wRRUpLKMOfPh+yKTx3kVIEiu5KOMeqzpnYNsKyOoVrULivR8tLcks4+lga33Whn90A==}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
     peerDependencies:
       '@edge-runtime/vm': '*'
       '@types/debug': ^4.1.12
       '@types/node': ^18.0.0 || ^20.0.0 || >=22.0.0
-<<<<<<< HEAD
-      '@vitest/browser': 3.2.2
-      '@vitest/ui': 3.2.2
-=======
       '@vitest/browser': 3.2.4
       '@vitest/ui': 3.2.4
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       happy-dom: '*'
       jsdom: '*'
     peerDependenciesMeta:
@@ -23881,11 +23612,6 @@ packages:
     resolution: {integrity: sha512-Mb6GzuRyUEl8X+6V6xzHbd4XV0au/4gOYrYP+CAfHL32uPmGswES+v2YqonZiW1NZWVA3jkssCKSU2knonm/aQ==}
     engines: {node: '>=20'}
 
-  zod-to-json-schema@3.24.6:
-    resolution: {integrity: sha512-h/z3PKvcTcTetyjl1fkj79MHNEjm+HpD6NXheWjzOekY7kV+lwDYnHw+ivHkijnCSMz1yJaWBD9vu/Fcmk+vEg==}
-    peerDependencies:
-      zod: ^3.24.1
-
   zod-to-ts@1.2.0:
     resolution: {integrity: sha512-x30XE43V+InwGpvTySRNz9kB7qFU8DlyEy7BsSTCHPH1R0QasMmHWZDCzYm6bVXtj/9NNJAZF3jW8rzFvH5OFA==}
     peerDependencies:
@@ -23910,34 +23636,6 @@ packages:
 snapshots:
 
   '@adobe/css-tools@4.4.0': {}
-
-  '@ai-sdk/provider-utils@2.2.8(zod@3.25.29)':
-    dependencies:
-      '@ai-sdk/provider': 1.1.3
-      nanoid: 3.3.11
-      secure-json-parse: 2.7.0
-      zod: 3.25.29
-
-  '@ai-sdk/provider@1.1.3':
-    dependencies:
-      json-schema: 0.4.0
-
-  '@ai-sdk/react@1.2.12(react@19.1.0)(zod@3.25.29)':
-    dependencies:
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.29)
-      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.29)
-      react: 19.1.0
-      swr: 2.3.4(react@19.1.0)
-      throttleit: 2.1.0
-    optionalDependencies:
-      zod: 3.25.29
-
-  '@ai-sdk/ui-utils@1.2.11(zod@3.25.29)':
-    dependencies:
-      '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.29)
-      zod: 3.25.29
-      zod-to-json-schema: 3.24.6(zod@3.25.29)
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -24323,53 +24021,6 @@ snapshots:
       - vitest
       - yaml
 
-<<<<<<< HEAD
-  '@anolilab/eslint-config@16.2.13(39fab08371ff6deea952b1409773dd2c)':
-    dependencies:
-      '@babel/core': 7.27.4
-      '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.28.0(jiti@2.4.2))
-      '@eslint/compat': 1.2.9(eslint@9.28.0(jiti@2.4.2))
-      '@eslint/js': 9.28.0
-      '@eslint/markdown': 6.4.0
-      '@html-eslint/eslint-plugin': 0.41.0(eslint@9.28.0(jiti@2.4.2))
-      '@html-eslint/parser': 0.41.0
-      '@stylistic/eslint-plugin': 4.4.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      '@stylistic/eslint-plugin-ts': 4.4.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      '@typescript-eslint/eslint-plugin': 8.33.1(@typescript-eslint/parser@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      '@typescript-eslint/parser': 8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      '@visulima/package': 3.5.6(@types/node@22.15.30)(yaml@2.8.0)
-      '@visulima/tsconfig': 1.1.17(yaml@2.8.0)
-      '@vitest/eslint-plugin': 1.2.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
-      confusing-browser-globals: 1.0.11
-      eslint: 9.28.0(jiti@2.4.2)
-      eslint-config-flat-gitignore: 2.1.0(eslint@9.28.0(jiti@2.4.2))
-      eslint-flat-config-utils: 2.1.0
-      eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 4.4.2(eslint-plugin-import-x@4.15.0(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint@9.28.0(jiti@2.4.2)))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))
-      eslint-merge-processors: 2.0.0(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-antfu: 3.1.1(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-compat: 6.0.2(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-es-x: 8.6.2(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-html: 8.1.3
-      eslint-plugin-import-x: 4.15.0(@typescript-eslint/utils@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-jsdoc: 50.7.1(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-jsonc: 2.20.1(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-n: 17.19.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      eslint-plugin-no-for-of-array: 0.1.0(eslint@9.28.0(jiti@2.4.2))(typescript-eslint@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(typescript@5.8.3)
-      eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-no-secrets: 2.2.1(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-no-unsanitized: 4.1.2(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-perfectionist: 4.13.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      eslint-plugin-promise: 7.2.1(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-regexp: 2.7.0(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-security: 3.0.1
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-sonarjs: 3.0.2(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-toml: 0.12.0(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-unicorn: 59.0.1(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-unused-imports: 4.1.4(@typescript-eslint/eslint-plugin@8.33.1(@typescript-eslint/parser@8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-yml: 1.18.0(eslint@9.28.0(jiti@2.4.2))
-=======
   '@anolilab/eslint-config@16.2.10(@babel/core@7.28.0)(@types/node@22.15.29)(@typescript-eslint/utils@8.39.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-react-hooks@5.2.0(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-react@7.37.5(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-storybook@0.12.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint-plugin-tailwindcss@3.18.0(tailwindcss@4.1.11))(eslint-plugin-testing-library@7.2.2(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@9.28.0(jiti@2.5.1)))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint-plugin-zod@1.4.0(eslint@9.28.0(jiti@2.5.1)))(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)(vitest@3.2.1)(yaml@2.8.0)':
     dependencies:
       '@babel/core': 7.28.0
@@ -24415,28 +24066,11 @@ snapshots:
       eslint-plugin-unicorn: 59.0.1(eslint@9.28.0(jiti@2.5.1))
       eslint-plugin-unused-imports: 4.1.4(@typescript-eslint/eslint-plugin@8.33.1(@typescript-eslint/parser@8.33.1(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.28.0(jiti@2.5.1))
       eslint-plugin-yml: 1.18.0(eslint@9.28.0(jiti@2.5.1))
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       globals: 16.2.0
       jsonc-eslint-parser: 2.4.0
       parse-gitignore: 2.0.0
       semver: 7.7.2
       toml-eslint-parser: 0.10.0
-<<<<<<< HEAD
-      typescript-eslint: 8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      yaml-eslint-parser: 1.3.0
-    optionalDependencies:
-      '@eslint/css': 0.8.1
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-react: 7.37.5(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-react-hooks: 5.2.0(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-storybook: 0.12.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      eslint-plugin-tailwindcss: 3.18.0(tailwindcss@4.1.8)
-      eslint-plugin-testing-library: 7.2.2(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      eslint-plugin-tsdoc: 0.4.0
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@9.28.0(jiti@2.4.2))
-      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      eslint-plugin-zod: 1.4.0(eslint@9.28.0(jiti@2.4.2))
-=======
       typescript-eslint: 8.33.1(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)
       yaml-eslint-parser: 1.3.0
     optionalDependencies:
@@ -24450,7 +24084,6 @@ snapshots:
       eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@9.28.0(jiti@2.5.1))
       eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
       eslint-plugin-zod: 1.4.0(eslint@9.28.0(jiti@2.5.1))
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       typescript: 5.8.3
     transitivePeerDependencies:
       - '@eslint/json'
@@ -24461,9 +24094,6 @@ snapshots:
       - vitest
       - yaml
 
-<<<<<<< HEAD
-  '@anolilab/lint-staged-config@3.0.8(@types/node@22.15.24)(eslint@9.28.0(jiti@2.4.2))(husky@9.1.7)(lint-staged@16.1.0)(prettier@3.5.3)(secretlint@9.3.3)(vitest@3.2.1)(yaml@2.8.0)':
-=======
   '@anolilab/eslint-config@16.2.23(266cd3df1f7ae228417ff50eab9d0a42)':
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.33.0(jiti@2.5.1))
@@ -24539,7 +24169,6 @@ snapshots:
       - yaml
 
   '@anolilab/lint-staged-config@3.0.8(@types/node@22.15.24)(eslint@9.33.0(jiti@2.5.1))(husky@9.1.7)(lint-staged@16.1.0)(prettier@3.5.3)(secretlint@9.3.3)(vitest@3.2.1)(yaml@2.8.0)':
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       '@visulima/fs': 3.1.2(yaml@2.8.0)
       '@visulima/package': 3.5.4(@types/node@22.15.24)(yaml@2.8.0)
@@ -24607,11 +24236,7 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-<<<<<<< HEAD
-  '@anolilab/semantic-release-clean-package-json@2.0.3(yaml@2.8.0)':
-=======
   '@anolilab/semantic-release-clean-package-json@3.0.3(yaml@2.8.0)':
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.5(yaml@2.8.0)
@@ -24736,23 +24361,6 @@ snapshots:
       semantic-release: 24.2.7(typescript@5.9.2)
     optionalDependencies:
       '@semantic-release/npm': 12.0.2(semantic-release@24.2.7(typescript@5.9.2))
-    transitivePeerDependencies:
-      - supports-color
-      - yaml
-
-  '@anolilab/semantic-release-preset@10.0.6(@semantic-release/npm@12.0.1(semantic-release@24.2.5(typescript@5.8.3)))(semantic-release@24.2.5(typescript@5.8.3))(yaml@2.8.0)':
-    dependencies:
-      '@anolilab/semantic-release-clean-package-json': 2.0.3(yaml@2.8.0)
-      '@semantic-release/changelog': 6.0.3(semantic-release@24.2.5(typescript@5.8.3))
-      '@semantic-release/commit-analyzer': 13.0.1(semantic-release@24.2.5(typescript@5.8.3))
-      '@semantic-release/exec': 7.1.0(semantic-release@24.2.5(typescript@5.8.3))
-      '@semantic-release/git': 10.0.1(semantic-release@24.2.5(typescript@5.8.3))
-      '@semantic-release/github': 11.0.3(semantic-release@24.2.5(typescript@5.8.3))
-      '@semantic-release/release-notes-generator': 14.0.3(semantic-release@24.2.5(typescript@5.8.3))
-      conventional-changelog-conventionalcommits: 9.0.0
-      semantic-release: 24.2.5(typescript@5.8.3)
-    optionalDependencies:
-      '@semantic-release/npm': 12.0.1(semantic-release@24.2.5(typescript@5.8.3))
     transitivePeerDependencies:
       - supports-color
       - yaml
@@ -26480,13 +26088,9 @@ snapshots:
     optionalDependencies:
       eslint: 9.28.0(jiti@2.5.1)
 
-  '@eslint/compat@1.3.2(eslint@9.28.0(jiti@2.4.2))':
+  '@eslint/compat@1.2.9(eslint@9.33.0(jiti@2.5.1))':
     optionalDependencies:
-      eslint: 9.28.0(jiti@2.4.2)
-
-  '@eslint/compat@1.3.2(eslint@9.28.0(jiti@2.5.1))':
-    optionalDependencies:
-      eslint: 9.28.0(jiti@2.5.1)
+      eslint: 9.33.0(jiti@2.5.1)
 
   '@eslint/compat@1.3.2(eslint@9.33.0(jiti@2.5.1))':
     optionalDependencies:
@@ -27060,21 +26664,12 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.15.29
 
-<<<<<<< HEAD
-  '@inquirer/confirm@5.1.12(@types/node@22.15.30)':
-    dependencies:
-      '@inquirer/core': 10.1.13(@types/node@22.15.30)
-      '@inquirer/type': 3.0.7(@types/node@22.15.30)
-    optionalDependencies:
-      '@types/node': 22.15.30
-=======
   '@inquirer/confirm@5.1.12(@types/node@24.2.1)':
     dependencies:
       '@inquirer/core': 10.1.13(@types/node@24.2.1)
       '@inquirer/type': 3.0.7(@types/node@24.2.1)
     optionalDependencies:
       '@types/node': 24.2.1
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@inquirer/core@10.1.13(@types/node@18.19.71)':
     dependencies:
@@ -27115,17 +26710,10 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.15.29
 
-<<<<<<< HEAD
-  '@inquirer/core@10.1.13(@types/node@22.15.30)':
-    dependencies:
-      '@inquirer/figures': 1.0.12
-      '@inquirer/type': 3.0.7(@types/node@22.15.30)
-=======
   '@inquirer/core@10.1.13(@types/node@24.2.1)':
     dependencies:
       '@inquirer/figures': 1.0.12
       '@inquirer/type': 3.0.7(@types/node@24.2.1)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       ansi-escapes: 4.3.2
       cli-width: 4.1.0
       mute-stream: 2.0.0
@@ -27133,11 +26721,7 @@ snapshots:
       wrap-ansi: 6.2.0
       yoctocolors-cjs: 2.1.2
     optionalDependencies:
-<<<<<<< HEAD
-      '@types/node': 22.15.30
-=======
       '@types/node': 24.2.1
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@inquirer/figures@1.0.12': {}
 
@@ -27153,15 +26737,9 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.15.29
 
-<<<<<<< HEAD
-  '@inquirer/type@3.0.7(@types/node@22.15.30)':
-    optionalDependencies:
-      '@types/node': 22.15.30
-=======
   '@inquirer/type@3.0.7(@types/node@24.2.1)':
     optionalDependencies:
       '@types/node': 24.2.1
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -27189,7 +26767,7 @@ snapshots:
   '@jest/console@29.7.0':
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       chalk: 4.1.2
       jest-message-util: 29.7.0
       jest-util: 29.7.0
@@ -27202,14 +26780,14 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       ci-info: 3.9.0
       exit: 0.1.2
       graceful-fs: 4.2.11
       jest-changed-files: 29.7.0
-      jest-config: 29.7.0(@types/node@22.15.30)
+      jest-config: 29.7.0(@types/node@22.15.29)
       jest-haste-map: 29.7.0
       jest-message-util: 29.7.0
       jest-regex-util: 29.6.3
@@ -27238,7 +26816,7 @@ snapshots:
     dependencies:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       jest-mock: 29.7.0
 
   '@jest/expect-utils@29.7.0':
@@ -27256,7 +26834,7 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@sinonjs/fake-timers': 10.3.0
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       jest-message-util: 29.7.0
       jest-mock: 29.7.0
       jest-util: 29.7.0
@@ -27278,7 +26856,7 @@ snapshots:
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
       '@jridgewell/trace-mapping': 0.3.25
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       chalk: 4.1.2
       collect-v8-coverage: 1.0.2
       exit: 0.1.2
@@ -27348,7 +26926,7 @@ snapshots:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       '@types/yargs': 17.0.32
       chalk: 4.1.2
 
@@ -29604,11 +29182,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  '@semantic-release/exec@7.1.0(semantic-release@24.2.5(typescript@5.8.3))':
-=======
   '@semantic-release/exec@7.1.0(semantic-release@24.2.7(typescript@5.9.2))':
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       '@semantic-release/error': 4.0.0
       aggregate-error: 3.1.0
@@ -29616,11 +29190,7 @@ snapshots:
       execa: 9.6.0
       lodash-es: 4.17.21
       parse-json: 8.1.0
-<<<<<<< HEAD
-      semantic-release: 24.2.5(typescript@5.8.3)
-=======
       semantic-release: 24.2.7(typescript@5.9.2)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     transitivePeerDependencies:
       - supports-color
 
@@ -29882,15 +29452,9 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.4
 
-<<<<<<< HEAD
-  '@shikijs/core@3.6.0':
-    dependencies:
-      '@shikijs/types': 3.6.0
-=======
   '@shikijs/core@3.9.2':
     dependencies:
       '@shikijs/types': 3.9.2
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
@@ -29901,15 +29465,9 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       oniguruma-to-es: 3.1.1
 
-<<<<<<< HEAD
-  '@shikijs/engine-javascript@3.6.0':
-    dependencies:
-      '@shikijs/types': 3.6.0
-=======
   '@shikijs/engine-javascript@3.9.2':
     dependencies:
       '@shikijs/types': 3.9.2
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@shikijs/vscode-textmate': 10.0.2
       oniguruma-to-es: 4.3.3
 
@@ -29923,15 +29481,9 @@ snapshots:
       '@shikijs/types': 3.4.2
       '@shikijs/vscode-textmate': 10.0.2
 
-<<<<<<< HEAD
-  '@shikijs/engine-oniguruma@3.6.0':
-    dependencies:
-      '@shikijs/types': 3.6.0
-=======
   '@shikijs/engine-oniguruma@3.9.2':
     dependencies:
       '@shikijs/types': 3.9.2
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@shikijs/vscode-textmate': 10.0.2
 
   '@shikijs/langs@2.5.0':
@@ -29942,15 +29494,9 @@ snapshots:
     dependencies:
       '@shikijs/types': 3.4.2
 
-<<<<<<< HEAD
-  '@shikijs/langs@3.6.0':
-    dependencies:
-      '@shikijs/types': 3.6.0
-=======
   '@shikijs/langs@3.9.2':
     dependencies:
       '@shikijs/types': 3.9.2
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@shikijs/themes@2.5.0':
     dependencies:
@@ -29960,15 +29506,9 @@ snapshots:
     dependencies:
       '@shikijs/types': 3.4.2
 
-<<<<<<< HEAD
-  '@shikijs/themes@3.6.0':
-    dependencies:
-      '@shikijs/types': 3.6.0
-=======
   '@shikijs/themes@3.9.2':
     dependencies:
       '@shikijs/types': 3.9.2
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@shikijs/twoslash@2.5.0(typescript@5.8.3)':
     dependencies:
@@ -29989,11 +29529,7 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
-<<<<<<< HEAD
-  '@shikijs/types@3.6.0':
-=======
   '@shikijs/types@3.9.2':
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
@@ -31701,7 +31237,7 @@ snapshots:
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/braces@3.0.4': {}
 
@@ -31711,7 +31247,7 @@ snapshots:
 
   '@types/cli-progress@3.11.6':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/cli-table@0.3.4': {}
 
@@ -31719,17 +31255,17 @@ snapshots:
 
   '@types/concat-stream@2.0.3':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/content-disposition@0.5.8': {}
 
   '@types/conventional-commits-parser@5.0.0':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/cookie@0.6.0': {}
 
@@ -31738,7 +31274,7 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/express': 5.0.2
       '@types/keygrip': 1.0.6
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/cors@2.8.18':
     dependencies:
@@ -31867,8 +31403,6 @@ snapshots:
 
   '@types/deep-eql@4.0.2': {}
 
-  '@types/diff-match-patch@1.0.36': {}
-
   '@types/doctrine@0.0.9': {}
 
   '@types/eslint-scope@3.7.7':
@@ -31900,7 +31434,7 @@ snapshots:
 
   '@types/express-serve-static-core@5.0.6':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
@@ -31925,13 +31459,13 @@ snapshots:
   '@types/fs-extra@11.0.4':
     dependencies:
       '@types/jsonfile': 6.1.4
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/geojson@7946.0.14': {}
 
   '@types/graceful-fs@4.1.9':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/hast@2.3.10':
     dependencies:
@@ -31975,7 +31509,7 @@ snapshots:
 
   '@types/jsonfile@6.1.4':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/jstoxml@5.0.0': {}
 
@@ -32005,7 +31539,7 @@ snapshots:
   '@types/liftoff@4.0.3':
     dependencies:
       '@types/fined': 1.1.5
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/lodash.clonedeep@4.5.9':
     dependencies:
@@ -32067,7 +31601,7 @@ snapshots:
 
   '@types/node-fetch@2.6.11':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       form-data: 4.0.1
 
   '@types/node@18.19.71':
@@ -32086,15 +31620,9 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-<<<<<<< HEAD
-  '@types/node@22.15.30':
-    dependencies:
-      undici-types: 6.21.0
-=======
   '@types/node@24.2.1':
     dependencies:
       undici-types: 7.10.0
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -32133,12 +31661,12 @@ snapshots:
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/serve-static@1.15.7':
     dependencies:
       '@types/http-errors': 2.0.4
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       '@types/send': 0.17.4
 
   '@types/sinonjs__fake-timers@8.1.5': {}
@@ -32157,7 +31685,7 @@ snapshots:
 
   '@types/through@0.0.33':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/tough-cookie@4.0.5': {}
 
@@ -32175,7 +31703,7 @@ snapshots:
 
   '@types/wait-on@5.3.4':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/webpack@5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.15))':
     dependencies:
@@ -32192,7 +31720,7 @@ snapshots:
 
   '@types/ws@8.5.10':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
 
   '@types/xregexp@4.4.0':
     dependencies:
@@ -32206,7 +31734,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.32.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.8.3))(eslint@8.57.0)(typescript@5.8.3)':
@@ -33115,7 +32643,7 @@ snapshots:
       - '@prisma/client'
       - prisma
 
-  '@visulima/css-style-inject@1.0.0-alpha.1': {}
+  '@visulima/css-style-inject@1.0.0-alpha.3': {}
 
   '@visulima/error@4.4.15': {}
 
@@ -33295,17 +32823,6 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/package@3.5.4(@types/node@22.15.30)(yaml@2.8.0)':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@inquirer/confirm': 5.1.12(@types/node@22.15.30)
-      '@visulima/fs': 3.1.2(yaml@2.8.0)
-      '@visulima/path': 1.3.5
-      normalize-package-data: 7.0.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
   '@visulima/package@3.5.6(@types/node@22.15.29)(yaml@2.8.0)':
     dependencies:
       '@inquirer/confirm': 5.1.12(@types/node@22.15.29)
@@ -33316,27 +32833,16 @@ snapshots:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
-  '@visulima/package@3.5.6(@types/node@22.15.30)(yaml@2.8.0)':
-    dependencies:
-      '@inquirer/confirm': 5.1.12(@types/node@22.15.30)
-      '@visulima/fs': 3.1.3(yaml@2.8.0)
-      '@visulima/path': 1.3.6
-=======
   '@visulima/package@3.5.8(@types/node@24.2.1)(yaml@2.8.0)':
     dependencies:
       '@inquirer/confirm': 5.1.12(@types/node@24.2.1)
       '@visulima/fs': 3.1.5(yaml@2.8.0)
       '@visulima/path': 1.4.0
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       normalize-package-data: 7.0.0
     transitivePeerDependencies:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
-  '@visulima/packem@1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.0.7(postcss@8.5.4))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.4))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.4)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.4))(postcss-modules-local-by-default@4.2.0(postcss@8.5.4))(postcss-modules-scope@3.2.1(postcss@8.5.4))(postcss-modules-values@4.0.0(postcss@8.5.4))(postcss-value-parser@4.2.0)(postcss@8.5.4)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
-=======
   '@visulima/packem-rollup@1.0.0-alpha.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@24.2.1)(esbuild@0.25.8)(picomatch@4.0.3)(rollup@4.46.2)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.0)':
     dependencies:
       '@babel/parser': 7.28.0
@@ -33392,7 +32898,6 @@ snapshots:
       - yaml
 
   '@visulima/packem@1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(@visulima/redact@1.0.15)(cssnano@7.1.0(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       '@antfu/install-pkg': 1.0.0
       '@babel/parser': 7.26.9
@@ -33762,22 +33267,14 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-<<<<<<< HEAD
-  '@visulima/packem@1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.30)(cssnano@7.0.7(postcss@8.5.4))(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.4))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.4)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.4))(postcss-modules-local-by-default@4.2.0(postcss@8.5.4))(postcss-modules-scope@3.2.1(postcss@8.5.4))(postcss-modules-values@4.0.0(postcss@8.5.4))(postcss-value-parser@4.2.0)(postcss@8.5.4)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
-=======
   '@visulima/packem@1.19.4(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@22.15.29)(cssnano@7.1.0(postcss@8.5.6))(esbuild@0.25.5)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)))(typedoc@0.28.5(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.0)':
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@babel/parser': 7.27.3
       '@clack/prompts': 0.11.0
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-tokenizer': 3.0.4
-<<<<<<< HEAD
-      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.5.4)
-=======
       '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.5.6)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@rollup/plugin-alias': 5.1.1(rollup@4.41.1)
       '@rollup/plugin-commonjs': 28.0.3(rollup@4.41.1)
       '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.41.1)
@@ -33792,11 +33289,7 @@ snapshots:
       '@visulima/find-cache-dir': 1.0.28(yaml@2.8.0)
       '@visulima/fs': 3.1.2(yaml@2.8.0)
       '@visulima/humanizer': 1.2.0
-<<<<<<< HEAD
-      '@visulima/package': 3.5.4(@types/node@22.15.30)(yaml@2.8.0)
-=======
       '@visulima/package': 3.5.4(@types/node@22.15.29)(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@visulima/pail': 2.1.22(rotating-file-stream@3.2.6)
       '@visulima/path': 1.3.5
       '@visulima/source-map': 1.0.18
@@ -33824,18 +33317,6 @@ snapshots:
       tinyglobby: 0.2.14
     optionalDependencies:
       '@swc/core': 1.6.7(@swc/helpers@0.5.15)
-<<<<<<< HEAD
-      cssnano: 7.0.7(postcss@8.5.4)
-      esbuild: 0.25.5
-      icss-utils: 5.1.0(postcss@8.5.4)
-      lightningcss: 1.30.1
-      postcss: 8.5.4
-      postcss-load-config: 6.0.1(jiti@2.4.2)(postcss@8.5.4)(tsx@4.19.4)(yaml@2.8.0)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.4)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.4)
-      postcss-modules-scope: 3.2.1(postcss@8.5.4)
-      postcss-modules-values: 4.0.0(postcss@8.5.4)
-=======
       cssnano: 7.1.0(postcss@8.5.6)
       esbuild: 0.25.5
       icss-utils: 5.1.0(postcss@8.5.6)
@@ -33846,7 +33327,6 @@ snapshots:
       postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
       postcss-modules-scope: 3.2.1(postcss@8.5.6)
       postcss-modules-values: 4.0.0(postcss@8.5.6)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       postcss-value-parser: 4.2.0
       sucrase: 3.35.0
       typedoc: 0.28.5(typescript@5.8.3)
@@ -33861,8 +33341,6 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-<<<<<<< HEAD
-=======
   '@visulima/packem@2.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@24.2.1)(@visulima/redact@1.0.15)(cssnano@7.1.0(postcss@8.5.6))(esbuild@0.25.8)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.19.4)(yaml@2.8.0))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.0)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
@@ -33923,7 +33401,6 @@ snapshots:
       - rotating-file-stream
       - yaml
 
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
   '@visulima/pagination@3.0.27': {}
 
   '@visulima/pail@2.1.21(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)':
@@ -34168,25 +33645,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@3.2.2(vitest@3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
-    dependencies:
-      '@ampproject/remapping': 2.3.0
-      '@bcoe/v8-coverage': 1.0.2
-      ast-v8-to-istanbul: 0.3.3
-      debug: 4.4.1
-      istanbul-lib-coverage: 3.2.2
-      istanbul-lib-report: 3.0.1
-      istanbul-lib-source-maps: 5.0.6
-      istanbul-reports: 3.1.7
-      magic-string: 0.30.17
-      magicast: 0.3.5
-      std-env: 3.9.0
-      test-exclude: 7.0.1
-      tinyrainbow: 2.0.0
-      vitest: 3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-    transitivePeerDependencies:
-      - supports-color
-
   '@vitest/eslint-plugin@1.2.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.1)':
     dependencies:
       '@typescript-eslint/utils': 8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
@@ -34214,16 +33672,6 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.2
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.1)(jiti@2.5.1)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.2.1)(typescript@5.9.2))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@vitest/eslint-plugin@1.2.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
-    dependencies:
-      '@typescript-eslint/utils': 8.33.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      eslint: 9.28.0(jiti@2.4.2)
-    optionalDependencies:
-      typescript: 5.8.3
-      vitest: 3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -34255,17 +33703,6 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 2.0.0
 
-<<<<<<< HEAD
-  '@vitest/expect@3.2.2':
-    dependencies:
-      '@types/chai': 5.2.2
-      '@vitest/spy': 3.2.2
-      '@vitest/utils': 3.2.2
-      chai: 5.2.0
-      tinyrainbow: 2.0.0
-
-  '@vitest/mocker@3.1.4(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
-=======
   '@vitest/expect@3.2.4':
     dependencies:
       '@types/chai': 5.2.2
@@ -34275,7 +33712,6 @@ snapshots:
       tinyrainbow: 2.0.0
 
   '@vitest/mocker@3.1.4(msw@2.8.4(@types/node@18.19.71)(typescript@5.8.3))(vite@6.3.5(@types/node@18.19.71)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       '@vitest/spy': 3.1.4
       estree-walker: 3.0.3
@@ -34320,29 +33756,12 @@ snapshots:
       msw: 2.8.4(@types/node@22.15.29)(typescript@5.8.3)
       vite: 6.3.5(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
 
-<<<<<<< HEAD
-  '@vitest/mocker@3.2.1(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
-=======
   '@vitest/mocker@3.2.1(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       '@vitest/spy': 3.2.1
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-<<<<<<< HEAD
-      msw: 2.8.4(@types/node@22.15.30)(typescript@5.8.3)
-      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-
-  '@vitest/mocker@3.2.2(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))':
-    dependencies:
-      '@vitest/spy': 3.2.2
-      estree-walker: 3.0.3
-      magic-string: 0.30.17
-    optionalDependencies:
-      msw: 2.8.4(@types/node@22.15.30)(typescript@5.8.3)
-      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-=======
       msw: 2.8.4(@types/node@22.15.29)(typescript@5.8.3)
       vite: 6.3.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
 
@@ -34372,7 +33791,6 @@ snapshots:
     optionalDependencies:
       msw: 2.8.4(@types/node@24.2.1)(typescript@5.9.2)
       vite: 7.1.1(@types/node@24.2.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@vitest/pretty-format@2.0.5':
     dependencies:
@@ -34394,11 +33812,7 @@ snapshots:
     dependencies:
       tinyrainbow: 2.0.0
 
-<<<<<<< HEAD
-  '@vitest/pretty-format@3.2.2':
-=======
   '@vitest/pretty-format@3.2.4':
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       tinyrainbow: 2.0.0
 
@@ -34418,18 +33832,11 @@ snapshots:
       '@vitest/utils': 3.2.1
       pathe: 2.0.3
 
-<<<<<<< HEAD
-  '@vitest/runner@3.2.2':
-    dependencies:
-      '@vitest/utils': 3.2.2
-      pathe: 2.0.3
-=======
   '@vitest/runner@3.2.4':
     dependencies:
       '@vitest/utils': 3.2.4
       pathe: 2.0.3
       strip-literal: 3.0.0
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   '@vitest/snapshot@1.6.1':
     dependencies:
@@ -34449,15 +33856,9 @@ snapshots:
       magic-string: 0.30.17
       pathe: 2.0.3
 
-<<<<<<< HEAD
-  '@vitest/snapshot@3.2.2':
-    dependencies:
-      '@vitest/pretty-format': 3.2.2
-=======
   '@vitest/snapshot@3.2.4':
     dependencies:
       '@vitest/pretty-format': 3.2.4
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       magic-string: 0.30.17
       pathe: 2.0.3
 
@@ -34481,11 +33882,7 @@ snapshots:
     dependencies:
       tinyspy: 4.0.3
 
-<<<<<<< HEAD
-  '@vitest/spy@3.2.2':
-=======
   '@vitest/spy@3.2.4':
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       tinyspy: 4.0.3
 
@@ -34538,17 +33935,10 @@ snapshots:
       loupe: 3.1.3
       tinyrainbow: 2.0.0
 
-<<<<<<< HEAD
-  '@vitest/utils@3.2.2':
-    dependencies:
-      '@vitest/pretty-format': 3.2.2
-      loupe: 3.1.3
-=======
   '@vitest/utils@3.2.4':
     dependencies:
       '@vitest/pretty-format': 3.2.4
       loupe: 3.2.0
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       tinyrainbow: 2.0.0
 
   '@wdio/config@9.15.0':
@@ -34801,18 +34191,6 @@ snapshots:
     dependencies:
       clean-stack: 5.2.0
       indent-string: 5.0.0
-
-  ai@4.3.19(react@19.1.0)(zod@3.25.29):
-    dependencies:
-      '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.29)
-      '@ai-sdk/react': 1.2.12(react@19.1.0)(zod@3.25.29)
-      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.29)
-      '@opentelemetry/api': 1.9.0
-      jsondiffpatch: 0.6.0
-      zod: 3.25.29
-    optionalDependencies:
-      react: 19.1.0
 
   ajv-draft-04@1.0.0(ajv@8.17.1):
     optionalDependencies:
@@ -36818,8 +36196,6 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
-  diff-match-patch@1.0.5: {}
-
   diff-sequences@29.6.3: {}
 
   diff@5.2.0: {}
@@ -37381,17 +36757,17 @@ snapshots:
 
   eslint-config-flat-gitignore@2.1.0(eslint@9.28.0(jiti@2.4.2)):
     dependencies:
-      '@eslint/compat': 1.3.2(eslint@9.28.0(jiti@2.4.2))
+      '@eslint/compat': 1.2.9(eslint@9.28.0(jiti@2.4.2))
       eslint: 9.28.0(jiti@2.4.2)
 
   eslint-config-flat-gitignore@2.1.0(eslint@9.28.0(jiti@2.5.1)):
     dependencies:
-      '@eslint/compat': 1.3.2(eslint@9.28.0(jiti@2.5.1))
+      '@eslint/compat': 1.2.9(eslint@9.28.0(jiti@2.5.1))
       eslint: 9.28.0(jiti@2.5.1)
 
   eslint-config-flat-gitignore@2.1.0(eslint@9.33.0(jiti@2.5.1)):
     dependencies:
-      '@eslint/compat': 1.3.2(eslint@9.33.0(jiti@2.5.1))
+      '@eslint/compat': 1.2.9(eslint@9.33.0(jiti@2.5.1))
       eslint: 9.33.0(jiti@2.5.1)
 
   eslint-config-next@15.3.2(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3):
@@ -41335,7 +40711,7 @@ snapshots:
       '@jest/expect': 29.7.0
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       chalk: 4.1.2
       co: 4.6.0
       dedent: 1.5.3
@@ -41404,7 +40780,7 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
-  jest-config@29.7.0(@types/node@22.15.30):
+  jest-config@29.7.0(@types/node@22.15.29):
     dependencies:
       '@babel/core': 7.28.0
       '@jest/test-sequencer': 29.7.0
@@ -41429,7 +40805,7 @@ snapshots:
       slash: 3.0.0
       strip-json-comments: 3.1.1
     optionalDependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
@@ -41458,7 +40834,7 @@ snapshots:
       '@jest/environment': 29.7.0
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       jest-mock: 29.7.0
       jest-util: 29.7.0
 
@@ -41468,7 +40844,7 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@types/graceful-fs': 4.1.9
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -41514,7 +40890,7 @@ snapshots:
   jest-mock@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       jest-util: 29.7.0
 
   jest-playwright-preset@4.0.0(jest-circus@29.7.0)(jest-environment-node@29.7.0)(jest-runner@29.7.0)(jest@29.7.0(@types/node@18.19.71)):
@@ -41581,7 +40957,7 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       chalk: 4.1.2
       emittery: 0.13.1
       graceful-fs: 4.2.11
@@ -41609,7 +40985,7 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       chalk: 4.1.2
       cjs-module-lexer: 1.3.1
       collect-v8-coverage: 1.0.2
@@ -41659,7 +41035,7 @@ snapshots:
   jest-util@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
@@ -41689,7 +41065,7 @@ snapshots:
     dependencies:
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       emittery: 0.13.1
@@ -41698,13 +41074,13 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
   jest-worker@29.7.0:
     dependencies:
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       jest-util: 29.7.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
@@ -41815,8 +41191,6 @@ snapshots:
 
   json-schema-traverse@1.0.0: {}
 
-  json-schema@0.4.0: {}
-
   json-stable-stringify-without-jsonify@1.0.1: {}
 
   json5@1.0.2:
@@ -41835,12 +41209,6 @@ snapshots:
   jsonc-parser@3.2.0: {}
 
   jsonc-parser@3.3.1: {}
-
-  jsondiffpatch@0.6.0:
-    dependencies:
-      '@types/diff-match-patch': 1.0.36
-      chalk: 5.4.1
-      diff-match-patch: 1.0.5
 
   jsonfile@4.0.0:
     optionalDependencies:
@@ -42372,11 +41740,7 @@ snapshots:
     dependencies:
       react: 19.1.0
 
-<<<<<<< HEAD
-  lucide-static@0.513.0: {}
-=======
   lucide-static@0.539.0: {}
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
 
   lunr@2.3.9: {}
 
@@ -43847,18 +43211,11 @@ snapshots:
       - '@types/node'
     optional: true
 
-<<<<<<< HEAD
-  msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3):
-=======
   msw@2.8.4(@types/node@22.15.29)(typescript@5.9.2):
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
       '@bundled-es-modules/statuses': 1.0.1
       '@bundled-es-modules/tough-cookie': 0.1.6
-<<<<<<< HEAD
-      '@inquirer/confirm': 5.1.12(@types/node@22.15.30)
-=======
       '@inquirer/confirm': 5.1.12(@types/node@22.15.29)
       '@mswjs/interceptors': 0.37.1
       '@open-draft/deferred-promise': 2.2.0
@@ -43886,7 +43243,6 @@ snapshots:
       '@bundled-es-modules/statuses': 1.0.1
       '@bundled-es-modules/tough-cookie': 0.1.6
       '@inquirer/confirm': 5.1.12(@types/node@24.2.1)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@mswjs/interceptors': 0.37.1
       '@open-draft/deferred-promise': 2.2.0
       '@open-draft/until': 2.1.0
@@ -43907,8 +43263,6 @@ snapshots:
       - '@types/node'
     optional: true
 
-<<<<<<< HEAD
-=======
   msw@2.8.4(@types/node@24.2.1)(typescript@5.9.2):
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
@@ -43935,7 +43289,6 @@ snapshots:
       - '@types/node'
     optional: true
 
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
   mute-stream@0.0.8: {}
 
   mute-stream@1.0.0: {}
@@ -44615,14 +43968,11 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-<<<<<<< HEAD
-=======
   openai@5.12.2(ws@8.18.2)(zod@3.25.29):
     optionalDependencies:
       ws: 8.18.2
       zod: 3.25.29
 
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
   openapi-path-templating@2.1.0:
     dependencies:
       apg-lite: 1.0.4
@@ -47148,8 +46498,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  secure-json-parse@2.7.0: {}
-
   secure-json-parse@4.0.0: {}
 
   select-section@0.4.6:
@@ -47477,16 +46825,6 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
-<<<<<<< HEAD
-  shiki@3.6.0:
-    dependencies:
-      '@shikijs/core': 3.6.0
-      '@shikijs/engine-javascript': 3.6.0
-      '@shikijs/engine-oniguruma': 3.6.0
-      '@shikijs/langs': 3.6.0
-      '@shikijs/themes': 3.6.0
-      '@shikijs/types': 3.6.0
-=======
   shiki@3.9.2:
     dependencies:
       '@shikijs/core': 3.9.2
@@ -47495,7 +46833,6 @@ snapshots:
       '@shikijs/langs': 3.9.2
       '@shikijs/themes': 3.9.2
       '@shikijs/types': 3.9.2
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
@@ -48226,12 +47563,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  swr@2.3.4(react@19.1.0):
-    dependencies:
-      dequal: 2.0.3
-      react: 19.1.0
-      use-sync-external-store: 1.4.0(react@19.1.0)
-
   symbol-tree@3.2.4: {}
 
   symlink-dir@6.0.5:
@@ -48541,8 +47872,6 @@ snapshots:
   thread-stream@3.1.0:
     dependencies:
       real-require: 0.2.0
-
-  throttleit@2.1.0: {}
 
   through2@0.4.2:
     dependencies:
@@ -49163,7 +48492,7 @@ snapshots:
       '@types/concat-stream': 2.0.3
       '@types/debug': 4.1.12
       '@types/is-empty': 1.2.3
-      '@types/node': 22.15.30
+      '@types/node': 22.15.29
       '@types/unist': 3.0.2
       concat-stream: 2.0.0
       debug: 4.4.1
@@ -49693,21 +49022,13 @@ snapshots:
       '@types/unist': 3.0.2
       vfile-message: 4.0.2
 
-<<<<<<< HEAD
-  vite-node@1.6.1(@types/node@22.15.30)(lightningcss@1.30.1)(terser@5.31.1):
-=======
   vite-node@1.6.1(@types/node@24.2.1)(lightningcss@1.30.1)(terser@5.31.1):
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       pathe: 1.1.2
       picocolors: 1.1.1
-<<<<<<< HEAD
-      vite: 5.4.19(@types/node@22.15.30)(lightningcss@1.30.1)(terser@5.31.1)
-=======
       vite: 5.4.19(@types/node@24.2.1)(lightningcss@1.30.1)(terser@5.31.1)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -49803,21 +49124,13 @@ snapshots:
       - tsx
       - yaml
 
-<<<<<<< HEAD
-  vite-node@3.2.1(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
-=======
   vite-node@3.2.1(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-<<<<<<< HEAD
-      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-=======
       vite: 6.3.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -49832,21 +49145,13 @@ snapshots:
       - tsx
       - yaml
 
-<<<<<<< HEAD
-  vite-node@3.2.2(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
-=======
   vite-node@3.2.1(@types/node@24.2.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-<<<<<<< HEAD
-      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-=======
       vite: 6.3.5(@types/node@24.2.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -49861,9 +49166,6 @@ snapshots:
       - tsx
       - yaml
 
-<<<<<<< HEAD
-  vite-tsconfig-paths@5.1.4(typescript@5.8.3)(vite@6.3.5(@types/node@18.19.71)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)):
-=======
   vite-node@3.2.4(@types/node@24.2.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
     dependencies:
       cac: 6.7.14
@@ -49886,7 +49188,6 @@ snapshots:
       - yaml
 
   vite-tsconfig-paths@5.1.4(typescript@5.8.3)(vite@6.3.5(@types/node@18.19.71)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)):
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       debug: 4.4.1
       globrex: 0.1.2
@@ -49897,21 +49198,13 @@ snapshots:
       - supports-color
       - typescript
 
-<<<<<<< HEAD
-  vite@5.4.19(@types/node@22.15.30)(lightningcss@1.30.1)(terser@5.31.1):
-=======
   vite@5.4.19(@types/node@24.2.1)(lightningcss@1.30.1)(terser@5.31.1):
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       esbuild: 0.25.8
       postcss: 8.5.6
       rollup: 4.41.0
     optionalDependencies:
-<<<<<<< HEAD
-      '@types/node': 22.15.30
-=======
       '@types/node': 24.2.1
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       fsevents: 2.3.3
       lightningcss: 1.30.1
       terser: 5.31.1
@@ -49967,12 +49260,7 @@ snapshots:
       tsx: 4.19.4
       yaml: 2.8.0
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
-=======
   vite@6.3.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       esbuild: 0.25.5
       fdir: 6.4.4(picomatch@4.0.2)
@@ -49981,26 +49269,14 @@ snapshots:
       rollup: 4.41.0
       tinyglobby: 0.2.14
     optionalDependencies:
-<<<<<<< HEAD
-      '@types/node': 22.15.30
-      fsevents: 2.3.3
-      jiti: 2.4.2
-=======
       '@types/node': 22.15.29
       fsevents: 2.3.3
       jiti: 2.5.1
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       lightningcss: 1.30.1
       terser: 5.31.1
       tsx: 4.19.4
       yaml: 2.8.0
 
-<<<<<<< HEAD
-  vitest@1.6.1(@types/node@22.15.30)(@vitest/ui@3.2.1)(jsdom@26.1.0)(lightningcss@1.30.1)(terser@5.31.1):
-=======
-  vitest@1.6.1(@types/node@22.15.29)(@vitest/ui@3.2.1(vitest@3.2.1))(jsdom@26.1.0)(lightningcss@1.30.1)(terser@5.31.1):
->>>>>>> b58e81c8 (Improve error overlay with enhanced stacktrace parsing and diff import)
-=======
   vite@6.3.5(@types/node@24.2.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
     dependencies:
       esbuild: 0.25.5
@@ -50054,7 +49330,6 @@ snapshots:
       yaml: 2.8.0
 
   vitest@1.6.1(@types/node@24.2.1)(@vitest/ui@3.2.1)(jsdom@26.1.0)(lightningcss@1.30.1)(terser@5.31.1):
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
@@ -50073,19 +49348,11 @@ snapshots:
       strip-literal: 2.1.1
       tinybench: 2.9.0
       tinypool: 0.8.4
-<<<<<<< HEAD
-      vite: 5.4.19(@types/node@22.15.30)(lightningcss@1.30.1)(terser@5.31.1)
-      vite-node: 1.6.1(@types/node@22.15.30)(lightningcss@1.30.1)(terser@5.31.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 22.15.30
-=======
       vite: 5.4.19(@types/node@24.2.1)(lightningcss@1.30.1)(terser@5.31.1)
       vite-node: 1.6.1(@types/node@24.2.1)(lightningcss@1.30.1)(terser@5.31.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.2.1
->>>>>>> 095440b7 (Update dependencies and enhance error overlay plugin with new features)
       '@vitest/ui': 3.2.1(vitest@3.2.1)
       jsdom: 26.1.0
     transitivePeerDependencies:
@@ -50433,94 +49700,6 @@ snapshots:
     optionalDependencies:
       '@types/debug': 4.1.12
       '@types/node': 24.2.1
-      '@vitest/ui': 3.2.1(vitest@3.2.1)
-      jsdom: 26.1.0
-    transitivePeerDependencies:
-      - jiti
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-      - tsx
-      - yaml
-
-  vitest@3.2.1(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
-    dependencies:
-      '@types/chai': 5.2.2
-      '@vitest/expect': 3.2.1
-      '@vitest/mocker': 3.2.1(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
-      '@vitest/pretty-format': 3.2.1
-      '@vitest/runner': 3.2.1
-      '@vitest/snapshot': 3.2.1
-      '@vitest/spy': 3.2.1
-      '@vitest/utils': 3.2.1
-      chai: 5.2.0
-      debug: 4.4.1
-      expect-type: 1.2.1
-      magic-string: 0.30.17
-      pathe: 2.0.3
-      picomatch: 4.0.2
-      std-env: 3.9.0
-      tinybench: 2.9.0
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.14
-      tinypool: 1.1.0
-      tinyrainbow: 2.0.0
-      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-      vite-node: 3.2.1(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/debug': 4.1.12
-      '@types/node': 22.15.30
-      '@vitest/ui': 3.2.1(vitest@3.2.1)
-      jsdom: 26.1.0
-    transitivePeerDependencies:
-      - jiti
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-      - tsx
-      - yaml
-
-  vitest@3.2.2(@types/debug@4.1.12)(@types/node@22.15.30)(@vitest/ui@3.2.1)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0):
-    dependencies:
-      '@types/chai': 5.2.2
-      '@vitest/expect': 3.2.2
-      '@vitest/mocker': 3.2.2(msw@2.8.4(@types/node@22.15.30)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0))
-      '@vitest/pretty-format': 3.2.2
-      '@vitest/runner': 3.2.2
-      '@vitest/snapshot': 3.2.2
-      '@vitest/spy': 3.2.2
-      '@vitest/utils': 3.2.2
-      chai: 5.2.0
-      debug: 4.4.1
-      expect-type: 1.2.1
-      magic-string: 0.30.17
-      pathe: 2.0.3
-      picomatch: 4.0.2
-      std-env: 3.9.0
-      tinybench: 2.9.0
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.14
-      tinypool: 1.1.0
-      tinyrainbow: 2.0.0
-      vite: 6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-      vite-node: 3.2.2(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.19.4)(yaml@2.8.0)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/debug': 4.1.12
-      '@types/node': 22.15.30
       '@vitest/ui': 3.2.1(vitest@3.2.1)
       jsdom: 26.1.0
     transitivePeerDependencies:
@@ -50995,10 +50174,6 @@ snapshots:
       readable-stream: 4.5.2
 
   zod-package-json@1.0.3:
-    dependencies:
-      zod: 3.25.29
-
-  zod-to-json-schema@3.24.6(zod@3.25.29):
     dependencies:
       zod: 3.25.29
 
