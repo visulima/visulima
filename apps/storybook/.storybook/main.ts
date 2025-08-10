@@ -3,7 +3,6 @@ import type { StorybookConfig } from "@storybook/react-vite";
 import { mergeConfig } from "vite";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import tsconfigPaths from "vite-tsconfig-paths";
-import viteErrorOverlay from "@visulima/flame/vite";
 
 const config: StorybookConfig = {
     addons: [
@@ -25,7 +24,7 @@ const config: StorybookConfig = {
     staticDirs: ["../public"],
     stories: ["../packages/**/__stories__/**/*.stories.@(js|jsx|ts|tsx|mdx)"],
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
-    viteFinal: async (vConfig) => mergeConfig(vConfig, { plugins: [tsconfigPaths(), viteErrorOverlay()] }),
+    viteFinal: async (vConfig) => mergeConfig(vConfig, { plugins: [tsconfigPaths()] }),
 };
 
 // eslint-disable-next-line import/no-unused-modules

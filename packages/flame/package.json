@@ -51,43 +51,43 @@
     "type": "module",
     "exports": {
         ".": {
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            },
             "import": {
                 "types": "./dist/index.d.mts",
                 "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
             }
         },
         "./displayer/cli": {
-            "require": {
-                "types": "./dist/displayer/cli-displayer.d.cts",
-                "default": "./dist/displayer/cli-displayer.cjs"
-            },
             "import": {
                 "types": "./dist/displayer/cli-displayer.d.mts",
                 "default": "./dist/displayer/cli-displayer.mjs"
+            },
+            "require": {
+                "types": "./dist/displayer/cli-displayer.d.cts",
+                "default": "./dist/displayer/cli-displayer.cjs"
             }
         },
         "./displayer/http": {
-            "require": {
-                "types": "./dist/displayer/http-displayer.d.cts",
-                "default": "./dist/displayer/http-displayer.cjs"
-            },
             "import": {
                 "types": "./dist/displayer/http-displayer.d.mts",
                 "default": "./dist/displayer/http-displayer.mjs"
+            },
+            "require": {
+                "types": "./dist/displayer/http-displayer.d.cts",
+                "default": "./dist/displayer/http-displayer.cjs"
             }
         },
         "./vite": {
-            "require": {
-                "types": "./dist/vite/error-overlay-plugin.d.cts",
-                "default": "./dist/vite/error-overlay-plugin.cjs"
-            },
             "import": {
                 "types": "./dist/vite/error-overlay-plugin.d.mts",
                 "default": "./dist/vite/error-overlay-plugin.mjs"
+            },
+            "require": {
+                "types": "./dist/vite/error-overlay-plugin.d.cts",
+                "default": "./dist/vite/error-overlay-plugin.cjs"
             }
         },
         "./package.json": "./package.json"
@@ -126,6 +126,7 @@
         "@visulima/find-cache-dir": "workspace:*",
         "@visulima/css-style-inject": "1.0.0-alpha.3",
         "get-uri": "^6.0.5",
+        "@jridgewell/trace-mapping": "^0.3.25",
         "diff": "^8.0.2",
         "htmldiff-js": "^1.0.5"
     },

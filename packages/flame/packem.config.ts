@@ -5,6 +5,7 @@ import sourceMapLoader from "@visulima/packem/css/loader/sourcemap";
 import cssnanoMinifier from "@visulima/packem/css/minifier/cssnano";
 
 export default defineConfig({
+    failOnWarn: false,
     transformer,
     rollup: {
         css: {
