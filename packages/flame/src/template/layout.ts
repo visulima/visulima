@@ -1,3 +1,5 @@
+import { getTooltipScript } from "./components/tooltip";
+
 const layout = ({
     content,
     css,
@@ -37,71 +39,75 @@ ${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
                 callback();
             }
         }
+
+        // Ensures listeners run as soon as the DOM is interactive
+        function subscribeToDOMContentLoaded(listener) {
+            if (document.readyState !== 'loading') {
+                try { listener(); } catch (_) {}
+                return;
+            }
+            try { document.addEventListener('DOMContentLoaded', listener); } catch (_) {}
+        }
     </script>
+    <script>${getTooltipScript()}</script>
     ${scripts.map((script) => `<script>${script}</script>`).join("\n")}
     <script>
       (function() {
-        window.addEventListener('load', () => {
+        subscribeToDOMContentLoaded(() => {
+          // Tooltip script provided by components/tooltip.ts; included via scripts pipeline
           const $clipboards = document.querySelectorAll('.js-clipboard');
 
           $clipboards.forEach((el) => {
-            const isToggleTooltip = HSStaticMethods.getClassProperty(el, '--is-toggle-tooltip') === 'false' ? false : true;
-            const clipboard = new ClipboardJS(el, {
-              text: (trigger) => {
-                const clipboardText = trigger.dataset.clipboardText;
+            function getClipboardText(trigger) {
+              var clipboardText = trigger && trigger.dataset ? trigger.dataset.clipboardText : null;
+              if (clipboardText) return clipboardText;
+              var target = trigger && trigger.dataset ? trigger.dataset.clipboardTarget : null;
+              var $element = target ? document.querySelector(target) : null;
+              if (!$element) return '';
+              var tag = $element.tagName;
+              if (tag === 'SELECT' || tag === 'INPUT' || tag === 'TEXTAREA') return $element.value;
+              return $element.textContent;
+            }
 
-                if (clipboardText) return clipboardText;
-
-                const clipboardTarget = trigger.dataset.clipboardTarget;
-                const $element = document.querySelector(clipboardTarget);
-
-                if (
-                  $element.tagName === 'SELECT'
-                  || $element.tagName === 'INPUT'
-                  || $element.tagName === 'TEXTAREA'
-                ) return $element.value
-                else return $element.textContent;
-              }
-            });
-            clipboard.on('success', () => {
-              const $default = el.querySelector('.js-clipboard-default');
-              const $success = el.querySelector('.js-clipboard-success');
-              const $successText = el.querySelector('.js-clipboard-success-text');
-              const successText = el.dataset.clipboardSuccessText || '';
-              const tooltip = el.closest('.hs-tooltip');
-              const $tooltip = HSTooltip.getInstance(tooltip, true);
-              let oldSuccessText;
-
+            function showCopySuccess() {
+              var $default = el.querySelector('.js-clipboard-default');
+              var $success = el.querySelector('.js-clipboard-success');
+              var $successText = el.querySelector('.js-clipboard-success-text');
+              var successText = el.dataset.clipboardSuccessText || '';
+              var oldSuccessText;
               if ($successText) {
-                oldSuccessText = $successText.textContent
-                $successText.textContent = successText
+                oldSuccessText = $successText.textContent;
+                $successText.textContent = successText;
               }
-              if ($default && $success) {
-                $default.style.display = 'none'
-                $success.style.display = 'block'
-              }
-              if (tooltip && isToggleTooltip) HSTooltip.show(tooltip);
-              if (tooltip && !isToggleTooltip) $tooltip.element.popperInstance.update();
-
+              if ($default) { try { $default.classList.add('hidden'); } catch (_) {} }
+              if ($success) { try { $success.classList.remove('hidden'); } catch (_) {} }
               setTimeout(function () {
                 if ($successText && oldSuccessText) $successText.textContent = oldSuccessText;
-                if (tooltip && isToggleTooltip) HSTooltip.hide(tooltip);
-                if (tooltip && !isToggleTooltip) $tooltip.element.popperInstance.update();
-                if ($default && $success) {
-                  $success.style.display = '';
-                  $default.style.display = '';
-                }
+                if ($success) { try { $success.classList.add('hidden'); } catch (_) {} }
+                if ($default) { try { $default.classList.remove('hidden'); } catch (_) {} }
               }, 800);
-            });
+            }
+
+          // Use the modern Clipboard API
+          el.addEventListener('click', function (e) {
+            e.preventDefault();
+            try {
+              var text = getClipboardText(el);
+              if (!text || !navigator || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') return;
+              navigator.clipboard.writeText(text).then(function(){ showCopySuccess(); }).catch(function(){});
+            } catch (_) {}
+          });
           });
         })
       })()
     </script>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto">
-        <div class="flex flex-wrap">
-            ${content}
+<body>
+    <div id="visulima-flame-container" class="w-full h-full overflow-auto bg-gray-100 dark:bg-slate-900 dark:text-gray-200">
+        <div class="container mx-auto">
+            <div class="flex flex-wrap gap-6">
+                ${content}
+            </div>
         </div>
     </div>
 </body>

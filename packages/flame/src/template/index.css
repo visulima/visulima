@@ -17,3 +17,35 @@
 .dark [type="radio"]:checked {
     background-color: currentColor;
 }
+
+.dui {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    background-color: currentColor;
+    /* Explicit mask properties for broader browser support */
+    -webkit-mask-image: var(--icon);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-image: var(--icon);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+}
+
+/* Ensure hidden overrides .dui display */
+.dui.hidden { display: none !important; }
+
+/* Inline raw SVG icon utility */
+.svg-icon {
+    display: inline-block;
+    line-height: 0;
+}
+
+.svg-icon svg {
+    width: 1rem;
+    height: 1rem;
+    display: block;
+    color: currentColor;
+}

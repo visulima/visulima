@@ -4,6 +4,7 @@ import type { SourceMap } from "@jridgewell/trace-mapping";
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import { codeFrame } from "@visulima/error";
 import type { ErrorPayload, IndexHtmlTransformResult, Plugin, WebSocketClient } from "vite";
+import renderTemplate from "../template";
 
 import { patchOverlay } from "./overlay/patch-overlay";
 
@@ -100,7 +101,7 @@ const errorOverlayPlugin = (): Plugin => {
         configureServer(server) {
             const MESSAGE_TYPE = "visulima:flame:error";
 
-            server.ws.on(MESSAGE_TYPE, (data: unknown, client: WebSocketClient) => {
+            server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
                 const raw = (data && typeof data === "object" ? (data as Record<string, unknown>) : {}) as {
                     message?: string;
                     name?: string;
@@ -114,6 +115,22 @@ const errorOverlayPlugin = (): Plugin => {
                 const { loc, stack } = rewriteStacktrace(cleaned, server.moduleGraph);
                 const combinedStack = raw.ownerStack ? `Owner Stack:\n${String(raw.ownerStack)}\n\n${stack}` : stack;
                 const source = loc?.file ? readFileSync(loc.file, { encoding: "utf8", flag: "r" }) : undefined;
+
+                // Build a synthetic Error instance for template rendering with sourcemapped stack
+                const errorForTemplate = new Error(String(runtimeError.message || "Runtime error"));
+                try { (errorForTemplate as any).name = String(runtimeError.name || "Error"); } catch {}
+                try { (errorForTemplate as any).stack = combinedStack; } catch {}
+
+                // Render template (full HTML), then extract inline CSS and body content for embedding into overlay
+                let flameHtml: string | undefined;
+                let flameCss: string | undefined;
+                try {
+                    const fullHtml = await renderTemplate(errorForTemplate as any, []);
+                    const cssMatch = /<style>([\s\S]*?)<\/style>/i.exec(fullHtml);
+                    const bodyMatch = /<body[^>]*>([\s\S]*?)<\/body>/i.exec(fullHtml);
+                    flameCss = cssMatch ? cssMatch[1] : undefined;
+                    flameHtml = bodyMatch ? bodyMatch[1] : undefined;
+                } catch {}
 
                 const error: ErrorPayload["err"] = {
                     frame:
@@ -129,6 +146,13 @@ const errorOverlayPlugin = (): Plugin => {
                     message: String(runtimeError.message || "Runtime error"),
                     name: String(runtimeError.name || "Error"),
                     plugin: "@visulima/flame",
+                    /* custom extension for our overlay */
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    flameHtml,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    flameCss,
                     stack: combinedStack,
                 };
 

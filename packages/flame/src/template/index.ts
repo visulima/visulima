@@ -41,7 +41,10 @@ const template = async (
     });
 
     html += errorCardHtml;
-    html += await stackTraceViewer(mainCause as ErrorType);
+
+    const { html: stackTraceHtml, script: stackTraceScript } = await stackTraceViewer(mainCause as ErrorType);
+
+    html += stackTraceHtml;
 
     const { html: causesViewerHtml, script: causesViewerScript } = await causesViewer(causes);
 
@@ -53,7 +56,7 @@ const template = async (
         css: inlineCss.trim(),
         description: "Error",
         error: mainCause as ErrorType,
-        scripts: [headerBarScript, ...errorCardScripts, causesViewerScript],
+        scripts: [headerBarScript, ...errorCardScripts, stackTraceScript, causesViewerScript],
         title: "Error",
     });
 };

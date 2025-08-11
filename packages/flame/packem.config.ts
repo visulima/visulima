@@ -7,6 +7,7 @@ import cssnanoMinifier from "@visulima/packem/css/minifier/cssnano";
 export default defineConfig({
     failOnWarn: false,
     transformer,
+    runtime: "node",
     rollup: {
         css: {
             loaders: [postcssLoader, sourceMapLoader],
