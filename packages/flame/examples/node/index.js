@@ -61,6 +61,72 @@ async function renderController() {
 
 const port = 3000;
 const server = createServer(async (request, response) => {
+    const url = new URL(request.url || "/", `http://localhost:${port}`);
+
+    // Showcase routes for each hint
+    if (url.pathname === "/esm-cjs") {
+        try {
+            throw new Error("Error [ERR_REQUIRE_ESM]: Must use import to load ES Module");
+        } catch (err) {
+            const displayer = await httpDisplayer(/** @type {Error} */ (err), []);
+            return displayer(request, response);
+        }
+    }
+
+    if (url.pathname === "/export-mismatch") {
+        try {
+            throw new Error("Attempted import error: default export not found");
+        } catch (err) {
+            const displayer = await httpDisplayer(/** @type {Error} */ (err), []);
+            return displayer(request, response);
+        }
+    }
+
+    if (url.pathname === "/enoent") {
+        try {
+            throw new Error("Cannot find module './Foo' imported from ./bar");
+        } catch (err) {
+            const displayer = await httpDisplayer(/** @type {Error} */ (err), []);
+            return displayer(request, response);
+        }
+    }
+
+    if (url.pathname === "/ts-paths") {
+        try {
+            throw new Error("TS2307: Cannot find module '@app/utils'");
+        } catch (err) {
+            const displayer = await httpDisplayer(/** @type {Error} */ (err), []);
+            return displayer(request, response);
+        }
+    }
+
+    if (url.pathname === "/dns") {
+        try {
+            throw new Error("getaddrinfo ENOTFOUND api.example.com");
+        } catch (err) {
+            const displayer = await httpDisplayer(/** @type {Error} */ (err), []);
+            return displayer(request, response);
+        }
+    }
+
+    if (url.pathname === "/hydration") {
+        try {
+            throw new Error("Hydration failed because the initial UI does not match what was rendered on the server");
+        } catch (err) {
+            const displayer = await httpDisplayer(/** @type {Error} */ (err), []);
+            return displayer(request, response);
+        }
+    }
+
+    if (url.pathname === "/undefined-prop") {
+        try {
+            throw new Error("TypeError: Cannot read properties of undefined (reading 'foo')");
+        } catch (err) {
+            const displayer = await httpDisplayer(/** @type {Error} */ (err), []);
+            return displayer(request, response);
+        }
+    }
+
     try {
         await renderController();
     } catch (controllerError) {
@@ -71,9 +137,7 @@ const server = createServer(async (request, response) => {
         error.hint = "This is a hint message";
 
         try {
-            const displayerHandler = await httpDisplayer(error, [
-                // openAiFinder()
-            ]);
+            const displayerHandler = await httpDisplayer(error, []);
 
             await displayerHandler(request, response);
             return;

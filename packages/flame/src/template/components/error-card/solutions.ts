@@ -9,6 +9,7 @@ import { parse } from "marked";
 import sanitizeHtml from "sanitize-html";
 
 import errorHintFinder from "../../../solution/error-hint-finder";
+import ruleBasedFinder from "../../../solution/rule-based-finder";
 import type { Solution, SolutionError, SolutionFinder } from "../../../types";
 import debugLog from "../../../util/debug-log";
 import findLanguageBasedOnExtension from "../../../util/find-language-based-on-extension";
@@ -23,7 +24,7 @@ const solutions = async (
 }> => {
     let hint: Solution | undefined;
 
-    solutionFinders.push(errorHintFinder);
+    solutionFinders.push(ruleBasedFinder, errorHintFinder);
 
     const firstTrace = parseStacktrace(error, { frameLimit: 1 })[0] as Trace | undefined;
 
