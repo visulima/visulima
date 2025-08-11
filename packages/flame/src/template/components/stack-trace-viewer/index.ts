@@ -198,8 +198,20 @@ const stackTraceViewer = async (
             var file = btn.getAttribute('data-path');
             var line = parseInt(btn.getAttribute('data-line') || '1', 10) || 1;
             var column = parseInt(btn.getAttribute('data-column') || '1', 10) || 1;
+            var selectedEditor = null;
+            try {
+              var saved = localStorage.getItem('flame:editor');
+              if (saved) selectedEditor = saved;
+              var sel = document.getElementById('editor-selector') as HTMLSelectElement | null;
+              if (sel && sel.value) {
+                selectedEditor = sel.value;
+                try { localStorage.setItem('flame:editor', sel.value); } catch (_) {}
+              }
+            } catch (_) {}
             if (!url || !file) return;
-            try { fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ file: file, line: line, column: column }) }); } catch (_) {}
+            var body: any = { file: file, line: line, column: column };
+            if (selectedEditor) body.editor = selectedEditor;
+            try { fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); } catch (_) {}
           });
 
           function activate(button){

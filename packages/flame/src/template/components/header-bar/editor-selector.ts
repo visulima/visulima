@@ -3,8 +3,9 @@ import { Editor } from "../../../types";
 const editorSelector = (editor?: Editor): string => {
     let options = `<option value="">Auto-detected Editor</option>`;
 
-    (Object.keys(Editor) as Array<keyof typeof Editor>).forEach((editorName) => {
-        options += `<option value="${String(editorName)}" ${editor === editorName ? "selected" : ""}>${Editor[editorName]}</option>`;
+    (Object.keys(Editor) as (keyof typeof Editor)[]).forEach((editorName) => {
+        const isSelected = editor && String(editor) === String(editorName);
+        options += `<option value="${String(editorName)}" ${isSelected ? "selected" : ""}>${Editor[editorName]}</option>`;
     });
 
     const selectOptions = `{
@@ -16,7 +17,7 @@ const editorSelector = (editor?: Editor): string => {
     "optionTemplate": "<div class=\\"flex justify-between items-center w-full\\"><span data-title></span><span class=\\"hidden selected:block\\"><svg class=\\"shrink-0 w-3.5 h-3.5 text-blue-600 dark:text-blue-500\\" xmlns=\\"http:.w3.org/2000/svg\\" width=\\"24\\" height=\\"24\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><polyline points=\\"20 6 9 17 4 12\\"/></svg></span></div>"
 }`;
 
-    return `<div class="relative">
+    return `<div class="relative" ${!editor ? 'hidden' : ''}>
     <select id="editor-selector" data-select='${selectOptions.trim()}'  class="relative py-3 px-4 flex appearance-none overflow-t text-nowrap w-56 bg-white border border-gray-200 rounded-lg text-start text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-gray-600">
         ${options}
     </select>
