@@ -2,7 +2,9 @@ import type { Editor, Theme } from "../../../types";
 import editorSelector from "./editor-selector";
 import themeToggle from "./theme-toggle";
 
-const headerBar = (options: Partial<{ editor: Editor; theme: Theme }>): {
+const headerBar = (
+    options: Partial<{ editor: Editor; theme: Theme }>,
+): {
     html: string;
     script: string;
 } => {

@@ -55,7 +55,9 @@ export const getTooltipScript = (): string => `
 
 export const tooltip = ({ message }: { message?: string } = {}): string => {
     // Use a simple counter on globalThis to avoid randomness and external deps
-    interface GlobalWithCounter { flameTooltipCounter?: number }
+    interface GlobalWithCounter {
+        flameTooltipCounter?: number;
+    }
 
     const g = globalThis as unknown as GlobalWithCounter;
 

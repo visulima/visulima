@@ -1,4 +1,4 @@
-import {tooltip} from "./tooltip";
+import { tooltip } from "./tooltip";
 
 const rawStackTrace = (stack?: string): string => {
     const tooltipHtml = tooltip({ message: `The orginal stack trace from the main error.` });

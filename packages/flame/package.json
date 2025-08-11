@@ -114,6 +114,8 @@
         "lint:attw": "attw --pack",
         "lint:eslint": "eslint .",
         "lint:eslint:fix": "eslint . --fix",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:package-json": "publint --strict",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
@@ -131,7 +133,10 @@
         "htmldiff-js": "^1.0.5"
     },
     "devDependencies": {
+        "prettier-plugin-tailwindcss": "0.6.14",
         "lucide-static": "^0.539.0",
+        "@anolilab/prettier-config": "^5.0.14",
+        "prettier": "^3.5.3",
         "@anolilab/eslint-config": "^16.2.23",
         "@anolilab/semantic-release-preset": "^11.0.3",
         "@babel/core": "^7.28.0",
@@ -186,13 +191,27 @@
         "vite": "^7.1.1"
     },
     "peerDependenciesMeta": {
-        "ai": { "optional": true },
-        "@ai-sdk/openai": { "optional": true },
-        "@ai-sdk/anthropic": { "optional": true },
-        "@ai-sdk/google": { "optional": true },
-        "@ai-sdk/mistral": { "optional": true },
-        "@ai-sdk/ollama": { "optional": true },
-        "@ai-sdk/azure": { "optional": true },
+        "ai": {
+            "optional": true
+        },
+        "@ai-sdk/openai": {
+            "optional": true
+        },
+        "@ai-sdk/anthropic": {
+            "optional": true
+        },
+        "@ai-sdk/google": {
+            "optional": true
+        },
+        "@ai-sdk/mistral": {
+            "optional": true
+        },
+        "@ai-sdk/ollama": {
+            "optional": true
+        },
+        "@ai-sdk/azure": {
+            "optional": true
+        },
         "marked": {
             "optional": true
         },

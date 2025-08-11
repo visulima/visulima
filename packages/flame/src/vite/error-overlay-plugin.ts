@@ -26,10 +26,7 @@ const cleanStack = (stack: string) =>
         .filter((l) => /^\s*at/.test(l))
         .join("\n");
 
-const rewriteStacktrace = (
-    stack: string,
-    moduleGraph: import("vite").ModuleGraph,
-): { loc?: { column: number; file: string; line: number }; stack: string } => {
+const rewriteStacktrace = (stack: string, moduleGraph: import("vite").ModuleGraph): { loc?: { column: number; file: string; line: number }; stack: string } => {
     let loc: { column: number; file: string; line: number } | undefined;
 
     const rewrittenStack = stack
@@ -73,7 +70,9 @@ const rewriteStacktrace = (
                     const sourceFile = module_.file || url;
                     const source = `${sourceFile}:${lineNumber}:${colNumber}`;
 
-                    if (!loc) { loc = { column: Number(colNumber), file: sourceFile, line: Number(lineNumber) }; }
+                    if (!loc) {
+                        loc = { column: Number(colNumber), file: sourceFile, line: Number(lineNumber) };
+                    }
 
                     return !trimmedVariable || trimmedVariable === "eval" ? `    at ${source}` : `    at ${trimmedVariable} (${source})`;
                 },
@@ -85,12 +84,7 @@ const rewriteStacktrace = (
 };
 
 const buildErrorMessage = (error: ErrorPayload["err"], lines: string[]): string =>
-    [
-        ...lines,
-        error.id ? `at ${error.id}${error.loc ? `:${error.loc.line}:${error.loc.column}` : ""}` : undefined,
-        error.frame,
-        error.stack,
-    ]
+    [...lines, error.id ? `at ${error.id}${error.loc ? `:${error.loc.line}:${error.loc.column}` : ""}` : undefined, error.frame, error.stack]
         .filter(Boolean)
         .join("\n");
 
@@ -118,8 +112,12 @@ const errorOverlayPlugin = (): Plugin => {
 
                 // Build a synthetic Error instance for template rendering with sourcemapped stack
                 const errorForTemplate = new Error(String(runtimeError.message || "Runtime error"));
-                try { (errorForTemplate as any).name = String(runtimeError.name || "Error"); } catch {}
-                try { (errorForTemplate as any).stack = combinedStack; } catch {}
+                try {
+                    (errorForTemplate as any).name = String(runtimeError.name || "Error");
+                } catch {}
+                try {
+                    (errorForTemplate as any).stack = combinedStack;
+                } catch {}
 
                 // Render template (full HTML), then extract inline CSS and body content for embedding into overlay
                 let flameHtml: string | undefined;
@@ -135,11 +133,7 @@ const errorOverlayPlugin = (): Plugin => {
                 const error: ErrorPayload["err"] = {
                     frame:
                         loc && source
-                            ? codeFrame(
-                                source,
-                                { start: { column: loc.column - 1, line: loc.line } },
-                                { linesAbove: 2, linesBelow: 2, showGutter: false },
-                            )
+                            ? codeFrame(source, { start: { column: loc.column - 1, line: loc.line } }, { linesAbove: 2, linesBelow: 2, showGutter: false })
                             : undefined,
                     id: loc?.file,
                     loc,
@@ -156,9 +150,7 @@ const errorOverlayPlugin = (): Plugin => {
                     stack: combinedStack,
                 };
 
-                const message = buildErrorMessage(error, [
-                    `Client error: ${error.message}`,
-                ]);
+                const message = buildErrorMessage(error, [`Client error: ${error.message}`]);
 
                 server.config.logger.error(message, {
                     clear: true,
@@ -175,7 +167,7 @@ const errorOverlayPlugin = (): Plugin => {
 
         // Replace Vite's overlay class with our custom overlay (Astro-style patch)
         transform(code, id, options) {
-            if (options?.ssr) { 
+            if (options?.ssr) {
                 return;
             }
 
@@ -224,9 +216,7 @@ window.addEventListener('unhandledrejection', (e) => { try { send(e.reason); } c
 
             return {
                 html: "",
-                tags: [
-                    { attrs: { type: "module" }, children: CLIENT, injectTo: "head" as const, tag: "script" },
-                ],
+                tags: [{ attrs: { type: "module" }, children: CLIENT, injectTo: "head" as const, tag: "script" }],
             };
         },
     };

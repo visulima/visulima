@@ -4,7 +4,5 @@
     "sourceRoot": "packages/flame/src",
     "projectType": "library",
     "tags": ["flame", "type:package"],
-    "implicitDependencies": [
-        "error"
-    ]
+    "implicitDependencies": ["error"]
 }

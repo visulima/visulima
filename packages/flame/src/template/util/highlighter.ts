@@ -6,21 +6,8 @@ let highlighterPromise: Promise<Highlighter> | undefined;
 const getHighlighter = async (): Promise<Highlighter> => {
     if (!highlighterPromise) {
         highlighterPromise = createHighlighter({
-            langs: [
-                "javascript",
-                "typescript",
-                "jsx",
-                "tsx",
-                "json",
-                "jsonc",
-                "json5",
-                "xml",
-                "sql",
-            ],
-            themes: [
-                "nord",
-                "github-light",
-            ],
+            langs: ["javascript", "typescript", "jsx", "tsx", "json", "jsonc", "json5", "xml", "sql"],
+            themes: ["nord", "github-light"],
         });
     }
 
@@ -28,5 +15,3 @@ const getHighlighter = async (): Promise<Highlighter> => {
 };
 
 export default getHighlighter;
-
-

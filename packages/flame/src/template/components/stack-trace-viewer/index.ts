@@ -1,4 +1,6 @@
 import { codeFrame, parseStacktrace } from "@visulima/error";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import chevronDownIcon from "lucide-static/icons/chevron-down.svg?raw";
 
 import findLanguageBasedOnExtension from "../../../util/find-language-based-on-extension";
 import getFileSource from "../../../util/get-file-source";
@@ -11,10 +13,11 @@ import groupSimilarTypes from "./util/group-similar-types";
 
 const stackTraceViewer = async (
     error: Error,
+    options: { openInEditorUrl?: string } = {},
 ): Promise<{
     html: string;
     script: string;
-// eslint-disable-next-line sonarjs/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 }> => {
     const uniqueKey = revisionHash(error.name + error.message + error.stack);
 
@@ -32,19 +35,19 @@ const stackTraceViewer = async (
         const isClickable = Boolean(source);
         const sourceCodeFrame = source
             ? codeFrame(
-                source,
-                {
-                    start: {
-                        column: trace.column,
-                        line: trace.line as number,
-                    },
-                },
-                {
-                    linesAbove: 9,
-                    linesBelow: 10,
-                    showGutter: false,
-                },
-            )
+                  source,
+                  {
+                      start: {
+                          column: trace.column,
+                          line: trace.line as number,
+                      },
+                  },
+                  {
+                      linesAbove: 9,
+                      linesBelow: 10,
+                      showGutter: false,
+                  },
+              )
             : defaultSource;
 
         const code = highlighter.codeToHtml(sourceCodeFrame, {
@@ -53,11 +56,12 @@ const stackTraceViewer = async (
         });
 
         const filePath = `${trace.file}:${trace.line}:${trace.column}`;
+        const absPathForEditor = (trace.file || "").replace(/^file:\/\//, "");
         const relativeFilePath = filePath.replace(process.cwd?.() || "", "").replace("file:///", "");
 
         tabs.push({
             html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" ${
-                isClickable ? "" : "disabled aria-disabled=\"true\""
+                isClickable ? "" : 'disabled aria-disabled="true"'
             } class="tab-active:font-semibold tab-active:border-blue-600 tab-active:text-blue-600 inline-flex items-center gap-x-2 border-b border-gray-100 last:border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:text-blue-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-gray-600 p-6 ${
                 isClickable ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" : "cursor-not-allowed"
             }" role="tab">
@@ -74,7 +78,7 @@ const stackTraceViewer = async (
         }" role="tabpanel" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}">
 <div class="pt-10 pb-8 mb-6 text-sm text-right text-[#D8DEE9] dark:text-gray-400 border-b border-gray-600">
     <div class="px-6">
-        <button id="source-code-open-in-editor" type="button">${relativeFilePath}</button>
+        ${options.openInEditorUrl ? `<button type="button" class="underline hover:text-blue-400" data-open-in-editor data-url="${options.openInEditorUrl}" data-path="${absPathForEditor}" data-line="${trace.line || 1}" data-column="${trace.column || 1}">${relativeFilePath} — Open in editor</button>` : relativeFilePath}
     </div>
 </div>
 <div class="p-6">${code}</div>
@@ -123,9 +127,7 @@ const stackTraceViewer = async (
 
     const hasToggles = togglesHtml.trim().length > 0;
     const paddingClass = hasToggles ? "p-6" : "p-0";
-    const headerLabel = hasToggles
-        ? "<span class=\"block text-xs mb-2 text-gray-500 dark:text-gray-400\">Show or Hide collapsed frames</span>"
-        : "";
+    const headerLabel = hasToggles ? '<span class="block text-xs mb-2 text-gray-500 dark:text-gray-400">Show or Hide collapsed frames</span>' : "";
 
     const html = `<section class="container bg-white dark:shadow-none dark:bg-gray-800/50 dark:bg-linear-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20">
     <main id="stack-trace-viewer" class="flex flex-row">
@@ -164,7 +166,7 @@ const stackTraceViewer = async (
                             return `<details id="stack-trace-group-${uniqueKey}-${groupIndex}" class="border-b border-gray-100 dark:border-gray-700">
 <summary class="py-3 px-6 cursor-pointer flex items-center justify-between text-sm dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 focus:outline-hidden focus:ring-1 focus:ring-gray-600">
     <span>${tab.length} ${groupLabel} frames</span>
-    <span class="inline-block w-4 text-center transition-transform duration-300 details-open:rotate-180">▾</span>
+    <span data-chevron class="dui w-4 h-4 transition-transform duration-300" style="-webkit-mask-image:url('${chevronDownIcon}'); mask-image:url('${chevronDownIcon}')"></span>
 </summary>
 <div class="flex flex-col">${tab.map((item) => item.html).join("")}</div>
 </details>`;
@@ -189,6 +191,16 @@ const stackTraceViewer = async (
           var buttons = Array.prototype.slice.call(document.querySelectorAll(buttonSelector));
           var panels = Array.prototype.slice.call(document.querySelectorAll(panelSelector));
           var groupToggles = Array.prototype.slice.call(document.querySelectorAll('input[data-group-toggle="${uniqueKey}"]'));
+          document.addEventListener('click', function(e){
+            var btn = (e.target && (e.target as HTMLElement).closest) ? (e.target as HTMLElement).closest('[data-open-in-editor]') as HTMLElement : null;
+            if (!btn) return;
+            var url = btn.getAttribute('data-url');
+            var file = btn.getAttribute('data-path');
+            var line = parseInt(btn.getAttribute('data-line') || '1', 10) || 1;
+            var column = parseInt(btn.getAttribute('data-column') || '1', 10) || 1;
+            if (!url || !file) return;
+            try { fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ file: file, line: line, column: column }) }); } catch (_) {}
+          });
 
           function activate(button){
             buttons.forEach(function(b){ 

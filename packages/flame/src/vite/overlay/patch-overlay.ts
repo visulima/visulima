@@ -55,5 +55,3 @@ export const patchOverlay = (code: string): string => {
 };
 
 export default patchOverlay;
-
-

@@ -3,8 +3,8 @@ import { Editor } from "../../../types";
 const editorSelector = (editor?: Editor): string => {
     let options = `<option value="">Auto-detected Editor</option>`;
 
-    Object.keys(Editor).forEach((editorName) => {
-        options += `<option value="${editorName}" ${editor === editorName ? "selected" : ""}>${Editor[editorName]}</option>`;
+    (Object.keys(Editor) as Array<keyof typeof Editor>).forEach((editorName) => {
+        options += `<option value="${String(editorName)}" ${editor === editorName ? "selected" : ""}>${Editor[editorName]}</option>`;
     });
 
     const selectOptions = `{
@@ -21,7 +21,7 @@ const editorSelector = (editor?: Editor): string => {
         ${options}
     </select>
     <div class="absolute top-1/2 end-3 -translate-y-1/2 bg-white">
-        <svg class="shrink-0 w-3.5 h-3.5 text-gray-500 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+        <span class="dui w-3.5 h-3.5" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M7 15l5 5 5-5%22/><path d=%22M7 9l5-5 5 5%22/></svg>'); mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M7 15l5 5 5-5%22/><path d=%22M7 9l5-5 5 5%22/></svg>')"></span>
     </div>
 </div>`;
 };

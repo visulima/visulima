@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -10,7 +10,7 @@
 }
 
 .shiki {
-    @apply overflow-y-auto pb-6 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-track]:bg-slate-700 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500;
+    @apply overflow-y-auto pb-6 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700;
 }
 
 .dark [type="checkbox"]:checked,
@@ -35,7 +35,9 @@
 }
 
 /* Ensure hidden overrides .dui display */
-.dui.hidden { display: none !important; }
+.dui.hidden {
+    display: none !important;
+}
 
 /* Inline raw SVG icon utility */
 .svg-icon {
@@ -48,4 +50,12 @@
     height: 1rem;
     display: block;
     color: currentColor;
+}
+
+/* Rotate chevron icon inside summary when details is open */
+details[open] > summary [data-chevron] {
+    transform: rotate(180deg);
+}
+details > summary [data-chevron] {
+    transition: transform 0.2s ease-in-out;
 }

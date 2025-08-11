@@ -28,9 +28,9 @@ const errorCard = async ({
     let runtime = `${runtimeName?.toUpperCase()} ${version ?? ""}`;
 
     if (runtime.includes("NODE")) {
-        runtime = `<a href="https://nodejs.org/dist/latest-${version?.split(
-            ".",
-        )[0]}.x/docs/api/" class="text-blue-500 hover:underline inline-flex items-center text-sm" target="_blank" rel="noopener noreferrer">${runtime.replace(
+        runtime = `<a href="https://nodejs.org/dist/latest-${
+            version?.split(".")[0]
+        }.x/docs/api/" class="text-blue-500 hover:underline inline-flex items-center text-sm" target="_blank" rel="noopener noreferrer">${runtime.replace(
             "NODE",
             "Node.js",
         )}<span class="dui ml-1" style="-webkit-mask-image: url('${externalLinkIcon}'); mask-image: url('${externalLinkIcon}')"></span></a>`;
@@ -42,7 +42,7 @@ const errorCard = async ({
     return {
         html: `<section id="error-card" class="container bg-white dark:shadow-none dark:bg-gray-800/50 dark:bg-linear-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20">
     <div id="error-card" class="flex flex-row">
-        <div class="flex flex-col gap-3 grow min-w-6/12 w-full px-4 py-2">
+        <div class="flex flex-col gap-3 grow min-w-6/12 w-full p-6">
             <div class="flex flex-row items-center gap-2">
                 <h1 class="text-lg font-semibold text-gray-500 dark:text-white bg-gray-100 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 py-1 px-2">
                 ${error.name}
@@ -63,7 +63,7 @@ const errorCard = async ({
                 ${runtime}
                 </div>
             </div>
-            <div class="text-lg font-semibold text-gray-600 dark:text-gray-400">
+            <div class="text-md font-semibold text-gray-600 dark:text-gray-400">
                 ${error.message}
             </div>
         </div>

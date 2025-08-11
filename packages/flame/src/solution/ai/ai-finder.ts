@@ -21,19 +21,9 @@ const DEFAULT_HEADER = "## Ai Generated Solution";
 const DEFAULT_ERROR_MESSAGE = "Creation of a AI solution failed.";
 
 // Provider names supported via optional peer deps
-type SupportedProvider =
-    | "openai"
-    | "anthropic"
-    | "google"
-    | "mistral"
-    | "ollama"
-    | "azure-openai";
+type SupportedProvider = "openai" | "anthropic" | "google" | "mistral" | "ollama" | "azure-openai";
 
-async function resolveModel(
-    provider: SupportedProvider | undefined,
-    modelId: string,
-    apiKey?: string,
-): Promise<LanguageModelV1> {
+async function resolveModel(provider: SupportedProvider | undefined, modelId: string, apiKey?: string): Promise<LanguageModelV1> {
     const selected = provider ?? "openai";
 
     try {

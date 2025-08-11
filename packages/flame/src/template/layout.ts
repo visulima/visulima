@@ -54,7 +54,6 @@ ${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
     <script>
       (function() {
         subscribeToDOMContentLoaded(() => {
-          // Tooltip script provided by components/tooltip.ts; included via scripts pipeline
           const $clipboards = document.querySelectorAll('.js-clipboard');
 
           $clipboards.forEach((el) => {

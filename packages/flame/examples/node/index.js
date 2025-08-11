@@ -65,7 +65,9 @@ const server = createServer(async (request, response) => {
         await renderController();
     } catch (controllerError) {
         /** @type {Error & { hint?: string }} */
-        const error = new Error("This is a error message, that is really long error message, This is a error message, that is really long error message", { cause: controllerError });
+        const error = new Error("This is a error message, that is really long error message, This is a error message, that is really long error message", {
+            cause: controllerError,
+        });
         error.hint = "This is a hint message";
 
         try {

@@ -14,7 +14,10 @@ import debugLog from "../../../util/debug-log";
 import findLanguageBasedOnExtension from "../../../util/find-language-based-on-extension";
 import getFileSource from "../../../util/get-file-source";
 
-const solutions = async (error: Error | SolutionError | VisulimaError, solutionFinders: SolutionFinder[]): Promise<{
+const solutions = async (
+    error: Error | SolutionError | VisulimaError,
+    solutionFinders: SolutionFinder[],
+): Promise<{
     html: string;
     script: string;
 }> => {
@@ -57,8 +60,8 @@ const solutions = async (error: Error | SolutionError | VisulimaError, solutionF
     <button id="flame-solution-button" type="button" class="bg-green-300 dark:bg-green-900/40 rounded-lg p-2 absolute top-2 right-2 z-10 h-9 w-8 cursor-pointer">
         <span id="flame-solution-icon" class="dui" style="-webkit-mask-image: url('${closeIcon}'); mask-image: url('${closeIcon}')"></span>
     </button>
-    <div id="flame-solution-content" class="bg-green-300 dark:bg-green-900/40 rounded-lg shadow-2xl shadow-gray-500/20 w-full h-full overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out opacity-100">
-        <div class="px-4 py-3 prose prose-sm prose-ul:list-none prose-hr:my-6 prose-hr:border-green-400 max-w-full relative">
+    <div id="flame-solution-content" class="bg-green-300 dark:bg-green-900/40 rounded-r-lg shadow-2xl shadow-gray-500/20 w-full h-full overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out opacity-100">
+        <div class="p-6 prose prose-sm prose-ul:list-none prose-hr:my-6 prose-hr:border-green-400 max-w-full relative">
             ${await (async () => {
                 if (!hint.header) {
                     return "<h2>A possible solution to this error</h2>";

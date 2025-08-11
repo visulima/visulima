@@ -1,6 +1,6 @@
 /* eslint-disable no-secrets/no-secrets */
 import stackTraceViewer from "../stack-trace-viewer";
-import {tooltip} from "../tooltip";
+import { tooltip } from "../tooltip";
 
 const causes = async (causeList: unknown[]): Promise<{ html: string; script: string }> => {
     if (causeList.length === 0) {
@@ -39,8 +39,10 @@ const causes = async (causeList: unknown[]): Promise<{ html: string; script: str
         }
     }
 
-    const tooltipHtml = tooltip({ message: `The cause data property of an Error instance indicates the specific original cause of the error.<br><br>
-            All causes in the error are order in the way they occurred.` });
+    const tooltipHtml = tooltip({
+        message: `The cause data property of an Error instance indicates the specific original cause of the error.<br><br>
+            All causes in the error are order in the way they occurred.`,
+    });
 
     return {
         html: `<section class="w-full">
