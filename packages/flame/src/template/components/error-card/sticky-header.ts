@@ -12,9 +12,10 @@ const stickyHeader = (
     return {
         html: `<div id="error-card-sticky-header" class="fixed invisible bg-white dark:bg-gray-800/50 dark:bg-linear-to-bl dark:ring-1 dark:ring-inset dark:ring-white/5 container px-6 py-4 -top-40 z-10 rounded-b-lg transition-all duration-300 dark:shadow-none from-gray-700/50 via-transparent shadow-2xl shadow-gray-500/20">
   <div class="flex items-center gap-2">
-    <h1 class="text-sm font-semibold text-gray-700 dark:text-white bg-gray-100 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 py-1 px-2">${error.name}</h1>
-    <span class="text-md font-semibold text-gray-600 dark:text-gray-400 line-clamp-1">${error.message}</span>
+    <h1 class="text-sm font-semibold text-gray-700 dark:text-white bg-gray-100 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 py-1 px-2" aria-label="Error name">${error.name}</h1>
+    <span class="text-md font-semibold text-gray-600 dark:text-gray-400 line-clamp-1" aria-label="Error message">${error.message}</span>
     <div class="grow"></div>
+    <button type="button" data-shortcuts-open aria-label="Open keyboard shortcuts" title="Keyboard shortcuts" class="px-2 py-1 cursor-pointer rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs">?</button>
     <button
       type="button"
       aria-label="Copy error title"

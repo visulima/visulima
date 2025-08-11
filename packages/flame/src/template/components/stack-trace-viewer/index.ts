@@ -62,7 +62,7 @@ const stackTraceViewer = async (
         tabs.push({
             html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" ${
                 isClickable ? "" : 'disabled aria-disabled="true"'
-            } class="tab-active:font-semibold tab-active:border-blue-600 tab-active:text-blue-600 inline-flex items-center gap-x-2 border-b border-gray-100 last:border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:text-blue-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-gray-600 p-6 ${
+            } role="tab" aria-selected="false" class="tab-active:font-semibold tab-active:border-blue-600 tab-active:text-blue-600 inline-flex items-center gap-x-2 border-b border-gray-100 last:border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:text-blue-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-gray-600 p-6 ${
                 isClickable ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" : "cursor-not-allowed"
             }" role="tab">
     <div class="flex flex-col w-full text-left">
@@ -75,7 +75,7 @@ const stackTraceViewer = async (
 
         sourceCode.push(`<div id="source-code-tabs-${uniqueKey}-${index}" class="${
             index === 0 && isClickable ? "block" : "hidden"
-        }" role="tabpanel" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}">
+        }" role="tabpanel" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}" tabindex="0">
 <div class="pt-10 pb-8 mb-6 text-sm text-right text-[#D8DEE9] dark:text-gray-400 border-b border-gray-600">
     <div class="px-6">
         ${options.openInEditorUrl ? `<button type="button" class="underline hover:text-blue-400" data-open-in-editor data-url="${options.openInEditorUrl}" data-path="${absPathForEditor}" data-line="${trace.line || 1}" data-column="${trace.column || 1}">${relativeFilePath} — Open in editor</button>` : relativeFilePath}
@@ -129,14 +129,14 @@ const stackTraceViewer = async (
     const paddingClass = hasToggles ? "p-6" : "p-0";
     const headerLabel = hasToggles ? '<span class="block text-xs mb-2 text-gray-500 dark:text-gray-400">Show or Hide collapsed frames</span>' : "";
 
-    const html = `<section class="container bg-white dark:shadow-none dark:bg-gray-800/50 dark:bg-linear-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20">
+    const html = `<section class="container bg-white dark:shadow-none dark:bg-gray-800/50 dark:bg-linear-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20" aria-label="Stack trace viewer">
     <main id="stack-trace-viewer" class="flex flex-row">
         <div class="w-4/12 rounded-tl-lg rounded-bl-lg overflow-hidden">
             <div class="border-b border-gray-100 ${paddingClass}">
                 ${headerLabel}
                 <div class="flex flex-row items-center">${togglesHtml}</div>
             </div>
-            <nav class="flex flex-col" aria-label="Tabs" role="tablist">
+            <nav class="flex flex-col" aria-label="Frames" role="tablist">
                 ${grouped
                     .map((tab, groupIndex: number) => {
                         if (Array.isArray(tab)) {
@@ -192,7 +192,7 @@ const stackTraceViewer = async (
           var panels = Array.prototype.slice.call(document.querySelectorAll(panelSelector));
           var groupToggles = Array.prototype.slice.call(document.querySelectorAll('input[data-group-toggle="${uniqueKey}"]'));
           document.addEventListener('click', function(e){
-            var btn = (e.target && (e.target as HTMLElement).closest) ? (e.target as HTMLElement).closest('[data-open-in-editor]') as HTMLElement : null;
+            var btn = (e.target && e.target.closest) ? e.target.closest('[data-open-in-editor]') : null;
             if (!btn) return;
             var url = btn.getAttribute('data-url');
             var file = btn.getAttribute('data-path');
@@ -202,14 +202,14 @@ const stackTraceViewer = async (
             try {
               var saved = localStorage.getItem('flame:editor');
               if (saved) selectedEditor = saved;
-              var sel = document.getElementById('editor-selector') as HTMLSelectElement | null;
+              var sel = document.getElementById('editor-selector');
               if (sel && sel.value) {
                 selectedEditor = sel.value;
                 try { localStorage.setItem('flame:editor', sel.value); } catch (_) {}
               }
             } catch (_) {}
             if (!url || !file) return;
-            var body: any = { file: file, line: line, column: column };
+            var body = { file: file, line: line, column: column };
             if (selectedEditor) body.editor = selectedEditor;
             try { fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); } catch (_) {}
           });

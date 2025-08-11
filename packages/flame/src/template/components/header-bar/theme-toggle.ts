@@ -13,11 +13,9 @@ const themeToggle = (
 } => {
     return {
         html: `
-<div class="flex ml-6 gap-2">
-    <button id="theme-toggle-button" type="button" class="cursor-pointer group flex items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-300 dark:hover:text-gray-200" aria-label="Toggle theme">
-        <span id="theme-toggle-icon" class="dui"></span>
-    </button>
-</div>
+<button id="theme-toggle-button" type="button" class="cursor-pointer group flex items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-300 dark:hover:text-gray-200" aria-label="Toggle theme">
+    <span id="theme-toggle-icon" class="dui"></span>
+</button>
 `,
         script: `
 // initial theme provided by server/template (can be undefined)

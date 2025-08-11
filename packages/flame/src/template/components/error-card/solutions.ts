@@ -1,5 +1,4 @@
 import type { VisulimaError } from "@visulima/error/error";
-import type { Trace } from "@visulima/error/stacktrace";
 import { parseStacktrace } from "@visulima/error/stacktrace";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import infoIcon from "lucide-static/icons/info.svg?raw";
@@ -26,7 +25,7 @@ const solutions = async (
 
     solutionFinders.push(ruleBasedFinder, errorHintFinder);
 
-    const firstTrace = parseStacktrace(error, { frameLimit: 1 })[0] as Trace | undefined;
+    const firstTrace = parseStacktrace(error, { frameLimit: 1 })[0] as any;
 
     for await (const handler of solutionFinders.sort((a, b) => a.priority - b.priority)) {
         if (hint) {
@@ -58,11 +57,11 @@ const solutions = async (
 
     return {
         html: `<div id="flame-solution-wrapper" class="relative w-full transition-all duration-300 ease-in-out overflow-visible">
-    <button id="flame-solution-button" type="button" class="bg-green-300 dark:bg-green-900/40 rounded-lg p-2 absolute top-2 right-2 z-10 h-9 w-8 cursor-pointer">
+    <button id="flame-solution-button" type="button" aria-label="Toggle solutions" aria-controls="flame-solution-content" aria-expanded="true" class="bg-green-300 dark:bg-green-900/40 rounded-lg p-2 absolute top-2 right-2 z-10 h-9 w-8 cursor-pointer">
         <span id="flame-solution-icon" class="dui" style="-webkit-mask-image: url('${closeIcon}'); mask-image: url('${closeIcon}')"></span>
     </button>
-    <div id="flame-solution-content" class="bg-green-300 dark:bg-green-900/40 rounded-r-lg shadow-2xl shadow-gray-500/20 w-full h-full overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out opacity-100">
-        <div class="p-6 prose prose-sm prose-ul:list-none prose-hr:my-6 prose-hr:border-green-400 max-w-full relative">
+    <div id="flame-solution-content" role="region" aria-label="Suggested solutions" tabindex="-1" class="bg-green-300 dark:bg-green-900/40 rounded-r-lg shadow-2xl shadow-gray-500/20 w-full h-full overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out opacity-100">
+        <div class="p-6 prose prose-sm prose-ul:list-none prose-hr:my-6 prose-hr:border-green-400 max-w-full relative" aria-live="polite">
             ${await (async () => {
                 if (!hint.header) {
                     return "<h2>A possible solution to this error</h2>";
@@ -113,8 +112,11 @@ const solutions = async (
             content.classList.remove('opacity-0');
             content.classList.add('opacity-100');
 
+            try { button.setAttribute('aria-expanded', 'true'); } catch (_) {}
+
             afterTransition(content, function(){
                 content.style.maxHeight = 'none';
+                try { content.focus(); } catch (_) {}
             });
           } else {
             wrapper.classList.remove('w-full');
@@ -127,6 +129,7 @@ const solutions = async (
             content.classList.remove('opacity-100');
             content.classList.add('opacity-0');
             content.style.maxHeight = '0px';
+            try { button.setAttribute('aria-expanded', 'false'); } catch (_) {}
           }
         }
 
@@ -145,6 +148,12 @@ const solutions = async (
         if (button) {
           button.addEventListener('click', function () {
             setOpenState(!isOpen);
+          });
+          button.addEventListener('keydown', function (e) {
+            if (e && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault();
+              setOpenState(!isOpen);
+            }
           });
         }
         });`,

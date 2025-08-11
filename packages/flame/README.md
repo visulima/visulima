@@ -42,49 +42,61 @@ yarn add @visulima/flame
 ## Features
 
 - Pretty, theme‑aware error page
-  - Sticky header (shows error name/message while scrolling)
-  - One‑click copy for error title (icon feedback)
+    - Sticky header (shows error name/message while scrolling)
+    - One‑click copy for error title (icon feedback)
 - Stack trace viewer
-  - Shiki‑powered syntax highlighting (singleton highlighter)
-  - Tabs for frames; grouping for internal/node_modules/application frames
-  - Tooltips and labels to guide usage
-  - Optional “Open in editor” button per frame
+    - Shiki‑powered syntax highlighting (singleton highlighter)
+    - Tabs for frames; grouping for internal/node_modules/application frames
+    - Tooltips and labels to guide usage
+    - Optional “Open in editor” button per frame
 - Error causes viewer (nested causes, each with its own viewer)
 - Solutions panel
-  - Default open; smooth expand/collapse without layout jump
-  - Animated height/opacity; icon toggles open/close
-  - Built-in rule-based Markdown hints for common issues (ESM/CJS interop, export mismatch, port in use, missing files/case, TS path mapping)
+    - Default open; smooth expand/collapse without layout jump
+    - Animated height/opacity; icon toggles open/close
+    - Built-in rule-based Markdown hints for common issues (ESM/CJS interop, export mismatch, port in use, missing files/case, TS path mapping, DNS/connection, React hydration mismatch, undefined property access)
 - Raw stack trace panel
 - Theme toggle (auto/dark/light) with persistence
 - Consistent tooltips (one global script; components only output HTML)
+
+Accessibility and keyboard UX
+
+- ARIA-correct tabs and panels for stack frames; improved labeling
+- Focus trap within the overlay; restores focus on close
+- Keyboard shortcuts help dialog (press Shift+/ or “?” button)
+- Buttons/controls are keyboard-activatable (Enter/Space)
+
+Editor integration
+
+- Editor selector is only rendered when `openInEditorUrl` is provided
+- Selected editor persists and is sent to the server opener
 
 ## Quick start (HTTP server)
 
 Use the built-in displayer to render the error page and respond to the request. Optionally add an endpoint to open files in your editor.
 
 ```ts
-import { createServer } from 'node:http';
-import httpDisplayer from '@visulima/flame/displayer/http';
-import { createNodeHttpHandler } from '@visulima/flame/server/open-in-editor';
+import { createServer } from "node:http";
+import httpDisplayer from "@visulima/flame/displayer/http";
+import { createNodeHttpHandler } from "@visulima/flame/server/open-in-editor";
 
 const openInEditor = createNodeHttpHandler({ projectRoot: process.cwd() });
 
 const server = createServer(async (req, res) => {
-  if (req.url?.startsWith('/__open-in-editor')) return openInEditor(req, res);
+    if (req.url?.startsWith("/__open-in-editor")) return openInEditor(req, res);
 
-  try {
-    // your app logic …
-    throw new Error('Boom');
-  } catch (err) {
-    const handler = await httpDisplayer(err as Error, [], {
-      // show editor selector and enable "Open in editor" buttons
-      openInEditorUrl: '/__open-in-editor',
-      // optional: set initial theme or editor preference
-      // theme: 'dark',
-      // editor: 'vscode',
-    });
-    return handler(req, res);
-  }
+    try {
+        // your app logic …
+        throw new Error("Boom");
+    } catch (err) {
+        const handler = await httpDisplayer(err as Error, [], {
+            // show editor selector and enable "Open in editor" buttons
+            openInEditorUrl: "/__open-in-editor",
+            // optional: set initial theme or editor preference
+            // theme: 'dark',
+            // editor: 'vscode',
+        });
+        return handler(req, res);
+    }
 });
 
 server.listen(3000);
@@ -93,21 +105,21 @@ server.listen(3000);
 ### Express setup
 
 ```ts
-import express from 'express';
-import httpDisplayer from '@visulima/flame/displayer/http';
-import { createExpressHandler } from '@visulima/flame/server/open-in-editor';
+import express from "express";
+import httpDisplayer from "@visulima/flame/displayer/http";
+import { createExpressHandler } from "@visulima/flame/server/open-in-editor";
 
 const app = express();
 app.use(express.json());
-app.post('/__open-in-editor', createExpressHandler({ projectRoot: process.cwd() }));
+app.post("/__open-in-editor", createExpressHandler({ projectRoot: process.cwd() }));
 
-app.get('/', async (req, res) => {
-  try {
-    throw new Error('Example');
-  } catch (err) {
-    const handler = await httpDisplayer(err as Error, [], { openInEditorUrl: '/__open-in-editor' });
-    return handler(req, res);
-  }
+app.get("/", async (req, res) => {
+    try {
+        throw new Error("Example");
+    } catch (err) {
+        const handler = await httpDisplayer(err as Error, [], { openInEditorUrl: "/__open-in-editor" });
+        return handler(req, res);
+    }
 });
 
 app.listen(3000);
@@ -120,9 +132,9 @@ app.listen(3000);
 - **error**: Error
 - **solutionFinders**: SolutionFinder[] (optional)
 - **options**:
-  - `openInEditorUrl?: string` — when provided, the UI shows “Open in editor” and calls this endpoint (POST JSON: `{ file, line, column, editor? }`).
-  - `editor?: Editor` — initial editor to show as selected in the header selector (saved to `localStorage` and sent in requests).
-  - `theme?: 'dark' | 'light'` — initial theme; users can toggle.
+    - `openInEditorUrl?: string` — when provided, the UI shows “Open in editor” and the editor selector in the header; calls this endpoint (POST JSON: `{ file, line, column, editor? }`).
+    - `editor?: Editor` — initial editor to show as selected in the header selector (saved and sent in requests). Only visible if `openInEditorUrl` is set.
+        - `theme?: 'dark' | 'light'` — initial theme; users can toggle.
 
 Returns an async request handler compatible with Node http (and usable inside Express routes).
 
@@ -139,6 +151,7 @@ From `@visulima/flame/server/open-in-editor`:
 - `createExpressHandler(options)` — returns `(req, res) => void` for Express/Connect
 
 Options:
+
 - `projectRoot?: string` — defaults to `process.cwd()`
 - `allowOutsideProject?: boolean` — defaults to `false`
 
@@ -147,6 +160,24 @@ Options:
 - Visible only when `openInEditorUrl` is provided
 - Persists user choice in `localStorage` (`flame:editor`)
 - Selected editor is sent in the POST body as `editor`
+
+### Keyboard shortcuts
+
+- Shift+/ (or ?) — Open shortcuts help dialog
+- Esc — Close dialogs
+- Enter/Space — Activate focused control (e.g., toggles, tabs)
+
+### Examples
+
+The Node example includes routes illustrating common hints:
+
+- `/esm-cjs` — ESM/CJS interop
+- `/export-mismatch` — default vs named export
+- `/enoent` — missing file or case issue
+- `/ts-paths` — TypeScript path mapping
+- `/dns` — DNS/connection issue
+- `/hydration` — React hydration mismatch
+- `/undefined-prop` — accessing property of undefined
 
 ### Tooltips
 

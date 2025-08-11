@@ -67,15 +67,7 @@ const rules: Rule[] = [
         test: (error): RuleMatch | undefined => {
             const message = (error?.message || String(error || "")).toString();
 
-            if (
-                has(
-                    message,
-                    "default export not found",
-                    "has no default export",
-                    "does not provide an export named 'default'",
-                    "is not exported from",
-                )
-            ) {
+            if (has(message, "default export not found", "has no default export", "does not provide an export named 'default'", "is not exported from")) {
                 return {
                     md: [
                         "Verify your import/export shapes.",

@@ -65,5 +65,3 @@ describe("rule-based-finder", () => {
         expect(res?.body).toContain("nullish");
     });
 });
-
-

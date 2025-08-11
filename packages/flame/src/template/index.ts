@@ -17,7 +17,7 @@ type ErrorType = Error | SolutionError | VisulimaError;
 const template = async (
     error: ErrorType,
     solutionFinders: SolutionFinder[] = [],
-    options: Partial<{ editor: Editor; openInBrowserUrl?: string; theme: Theme }> = {},
+    options: Partial<{ editor: Editor; openInEditorUrl?: string; theme: Theme }> = {},
 ): Promise<string> => {
     const allCauses = getErrorCauses(error);
 
