@@ -137,11 +137,13 @@ class ErrorOverlay extends __BaseHTMLElement {
       title.appendChild(name); title.appendChild(msg); title.appendChild(meta);
 
       var actions = document.createElement('div'); actions.className='vf-actions';
+      var btnOpen = document.createElement('button'); btnOpen.className='vf-btn'; btnOpen.textContent='Open in editor'; btnOpen.onclick = function(){ try { if (payload && payload.id) fetch('/__open-in-editor?file='+encodeURIComponent(payload.id)+ (payload.loc?':'+payload.loc.line+':'+payload.loc.column:'')); } catch {} };
       var btnCopy = document.createElement('button'); btnCopy.className='vf-btn'; btnCopy.textContent='Copy stack'; btnCopy.onclick = function(){ try { navigator.clipboard.writeText(String(payload && payload.stack || '')); } catch {} };
+
       var btnCopyFrame = document.createElement('button'); btnCopyFrame.className='vf-btn'; btnCopyFrame.textContent='Copy codeframe'; btnCopyFrame.onclick = function(){ try { navigator.clipboard.writeText(String(payload && payload.frame || '')); } catch {} };
       var btnTheme = document.createElement('button'); btnTheme.className='vf-btn'; btnTheme.textContent='Theme'; btnTheme.onclick = function(){ try { var next = (root.getAttribute('data-theme')==='dark'?'light':'dark'); root.setAttribute('data-theme', next); localStorage.setItem('visulima:flame:theme', next); } catch {} };
       var btnDismiss = document.createElement('button'); btnDismiss.className='vf-btn'; btnDismiss.textContent='Dismiss'; btnDismiss.onclick = () => this.close();
-      actions.appendChild(btnCopy); actions.appendChild(btnCopyFrame); actions.appendChild(btnTheme); actions.appendChild(btnDismiss);
+      actions.appendChild(btnOpen); actions.appendChild(btnCopy); actions.appendChild(btnCopyFrame); actions.appendChild(btnTheme); actions.appendChild(btnDismiss);
 
       header.appendChild(title); header.appendChild(actions);
 
