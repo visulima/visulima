@@ -1,6 +1,14 @@
 import type { SolutionFinderFile } from "../../types";
 
-const aiPrompt = ({ applicationType, error, file }: { applicationType: string | undefined; error: Error; file: SolutionFinderFile }): string => `You are a very skilled ${file.language} programmer.
+const aiPrompt = ({
+    applicationType,
+    error,
+    file,
+}: {
+    applicationType: string | undefined;
+    error: Error;
+    file: SolutionFinderFile;
+}): string => `You are a very skilled ${file.language} programmer.
 
 ${applicationType ? `You are working on a ${applicationType} application.` : ""}
 

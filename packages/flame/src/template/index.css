@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -10,10 +10,92 @@
 }
 
 .shiki {
-    @apply overflow-y-auto pb-6 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-track]:bg-slate-700 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500;
+    @apply max-w-full overflow-auto pb-6 break-words [&_pre]:max-w-full [&_pre]:overflow-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700;
 }
 
 .dark [type="checkbox"]:checked,
 .dark [type="radio"]:checked {
     background-color: currentColor;
+}
+
+.dui {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    background-color: currentColor;
+    /* Explicit mask properties for broader browser support */
+    -webkit-mask-image: var(--icon);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-image: var(--icon);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+}
+
+/* Ensure hidden overrides .dui display */
+.dui.hidden {
+    display: none !important;
+}
+
+/* Inline raw SVG icon utility */
+.svg-icon {
+    display: inline-block;
+    line-height: 0;
+}
+
+.svg-icon svg {
+    width: 1rem;
+    height: 1rem;
+    display: block;
+    color: currentColor;
+}
+
+/* Rotate chevron icon inside summary when details is open */
+details[open] > summary [data-chevron] {
+    transform: rotate(180deg);
+}
+details > summary [data-chevron] {
+    transition: transform 0.2s ease-in-out;
+}
+
+/*
+  Accessibility: high-visibility focus outlines and contrast-friendly defaults
+*/
+
+/* Use a consistent focus outline across interactive elements */
+button:focus-visible,
+[role="tab"]:focus-visible,
+summary:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[data-open-in-editor]:focus-visible,
+.js-clipboard:focus-visible {
+    outline: 2px solid #2563eb; /* blue-600 */
+    outline-offset: 2px;
+}
+
+/* High-contrast tweaks for dark mode */
+.dark .text-gray-400 {
+    color: #94a3b8;
+}
+.dark .text-gray-500 {
+    color: #9ca3af;
+}
+.dark .bg-gray-700\/50 {
+    background-color: rgba(55, 65, 81, 0.6);
+}
+
+/* Selected tab state should be clearly visible */
+[role="tab"].active {
+    border-left: 3px solid #2563eb; /* blue-600 */
+    background-color: rgba(37, 99, 235, 0.08);
+}
+
+/* Ensure disabled tabs are distinguishable but still readable */
+[role="tab"][aria-disabled="true"],
+button[disabled] {
+    opacity: 0.55;
 }

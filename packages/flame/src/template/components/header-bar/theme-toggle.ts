@@ -1,5 +1,7 @@
-import moonStarIcon from "lucide-static/icons/moon-star.svg";
-import sunIcon from "lucide-static/icons/sun.svg";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import moonStarIcon from "lucide-static/icons/moon-star.svg?raw";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import sunIcon from "lucide-static/icons/sun.svg?raw";
 
 import type { Theme } from "../../../types";
 
@@ -11,103 +13,133 @@ const themeToggle = (
 } => {
     return {
         html: `
-<div class="flex ml-6">
-    <button type="button" class="hs-dark-mode-active:hidden hs-dark-mode group flex items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-400 dark:hover:text-gray-500" data-hs-theme-click-value="dark">
-        <img src="${moonStarIcon}" alt="Moon Star" class="w-4 h-4" />
-    </button>
-    <button type="button" class="hs-dark-mode-active:flex hidden hs-dark-mode group items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-400 dark:hover:text-gray-500" data-hs-theme-click-value="light">
-        <img src="${sunIcon}" alt="Sun" class="w-4 h-4" />
-    </button>
-</div>
+<button id="theme-toggle-button" type="button" class="cursor-pointer group flex items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-300 dark:hover:text-gray-200" aria-label="Toggle theme">
+    <span id="theme-toggle-icon" class="dui"></span>
+</button>
 `,
         script: `
-const HSThemeAppearance = {
-    init() {
-        const defaultTheme = 'default';
-        let theme = ${theme} || localStorage.getItem('hs_theme') || defaultTheme;
+// initial theme provided by server/template (can be undefined)
+const initialTheme = ${JSON.stringify(theme ?? undefined)};
 
-        if (document.querySelector('html').classList.contains('dark')) {
-            return;
-        }
-        this.setAppearance(theme);
-    },
-    _resetStylesOnLoad() {
-        const $resetStyles = document.createElement('style');
+(function () {
+  // Prevent transition flashes when toggling theme
+  var resetEl = document.createElement('style');
+  resetEl.setAttribute('data-appearance-onload-styles', '');
+  resetEl.textContent = '*{transition:unset!important}';
+  try { document.head.appendChild(resetEl); } catch (_) {}
 
-        $resetStyles.innerText = \`*{transition: unset !important;}\`;
-        $resetStyles.setAttribute('data-hs-appearance-onload-styles', '');
+  var docEl = document.documentElement;
+  var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
-        document.head.appendChild($resetStyles);
+  function hasLocalStorage() {
+    try {
+      var k = '__theme_test__';
+      window.localStorage.setItem(k, '1');
+      window.localStorage.removeItem(k);
+      return true;
+    } catch (_) { return false; }
+  }
 
-        return $resetStyles;
-    },
-    setAppearance(theme, saveInStore = true, dispatchEvent = true) {
-        const $resetStylesEl = this._resetStylesOnLoad()
+  function readStoredTheme() {
+    if (!hasLocalStorage()) return null;
+    try { return window.localStorage.getItem('theme'); } catch (_) { return null; }
+  }
 
-        if (saveInStore) {
-            localStorage.setItem('hs_theme', theme)
-        }
+  function writeStoredTheme(v) {
+    if (!hasLocalStorage()) return;
+    try { window.localStorage.setItem('theme', v); } catch (_) {}
+  }
 
-        if (theme === 'auto') {
-            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default'
-        }
+  function normalize(mode) {
+    if (mode === 'light') return 'default';
+    if (mode === 'dark' || mode === 'default' || mode === 'auto') return mode;
+    return 'auto';
+  }
 
-        document.querySelector('html').classList.remove('dark')
-        document.querySelector('html').classList.remove('default')
-        document.querySelector('html').classList.remove('auto')
-
-        document.querySelector('html').classList.add(this.getOriginalAppearance())
-
-        setTimeout(() => {
-            $resetStylesEl.remove()
-        })
-
-        if (dispatchEvent) {
-            window.dispatchEvent(new CustomEvent('on-hs-appearance-change', {detail: theme}))
-        }
-    },
-    getAppearance() {
-        let theme = this.getOriginalAppearance()
-        if (theme === 'auto') {
-            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default'
-        }
-        return theme
-    },
-    getOriginalAppearance() {
-        const defaultTheme = 'default'
-        return localStorage.getItem('hs_theme') || defaultTheme
+  function resolve(mode) {
+    var m = normalize(mode);
+    if (m === 'auto') {
+      var prefersDark = media && typeof media.matches === 'boolean' ? media.matches : false;
+      return prefersDark ? 'dark' : 'default';
     }
-}
-HSThemeAppearance.init()
+    return m;
+  }
 
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-    if (HSThemeAppearance.getOriginalAppearance() === 'auto') {
-        HSThemeAppearance.setAppearance('auto', false)
+  function apply(mode, dispatch) {
+    var resolved = resolve(mode);
+    // Toggle classes
+    if (resolved === 'dark') {
+      docEl.classList.add('dark');
+      docEl.classList.remove('default');
+    } else {
+      docEl.classList.remove('dark');
+      docEl.classList.add('default');
     }
-})
+    if (dispatch !== false) {
+      try { window.dispatchEvent(new CustomEvent('on-appearance-change', { detail: resolved })); } catch (_) {}
+    }
+    return resolved;
+  }
 
-window.addEventListener('load', () => {
-    const $clickableThemes = document.querySelectorAll('[data-hs-theme-click-value]')
-    const $switchableThemes = document.querySelectorAll('[data-hs-theme-switch]')
+  // Public API
+  window.ThemeAppearance = {
+    get: function () { return readStoredTheme() || 'auto'; },
+    set: function (mode) { var m = normalize(mode); writeStoredTheme(m); apply(m, true); }
+  };
 
-    $clickableThemes.forEach($item => {
-        $item.addEventListener('click', () => HSThemeAppearance.setAppearance($item.getAttribute('data-hs-theme-click-value'), true, $item))
-    })
+  // Initialize
+  var start = normalize(initialTheme || readStoredTheme());
+  apply(start, false);
+  try { resetEl.parentNode && resetEl.parentNode.removeChild(resetEl); } catch (_) {}
 
-    $switchableThemes.forEach($item => {
-        $item.addEventListener('change', (e) => {
-            HSThemeAppearance.setAppearance(e.target.checked ? 'dark' : 'default')
-        })
+  // React to OS changes when in auto
+  if (media && typeof media.addEventListener === 'function') {
+    media.addEventListener('change', function () {
+      if ((readStoredTheme() || 'auto') === 'auto') apply('auto', true);
+    });
+  }
 
-        $item.checked = HSThemeAppearance.getAppearance() === 'dark'
-    })
+  // Wire UI controls
+  (window.subscribeToDOMContentLoaded || function (fn) {
+    if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn);
+  })(function () {
+    var toggleBtn = document.getElementById('theme-toggle-button');
+    var toggleIcon = document.getElementById('theme-toggle-icon');
 
-    window.addEventListener('on-hs-appearance-change', e => {
-        $switchableThemes.forEach($item => {
-            $item.checked = e.detail === 'dark'
-        })
-    })
-});
+    function setToggleIcon() {
+      var current = resolve(window.ThemeAppearance.get());
+      // show icon for the action you'll take on click
+      var iconUrl = current === 'dark' ? '${sunIcon}' : '${moonStarIcon}';
+      toggleIcon.style.webkitMaskImage = 'url(' + iconUrl + ')';
+      toggleIcon.style.maskImage = 'url(' + iconUrl + ')';
+    }
+
+    setToggleIcon();
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function () {
+        var current = resolve(window.ThemeAppearance.get());
+        var next = current === 'dark' ? 'default' : 'dark';
+        window.ThemeAppearance.set(next);
+        setToggleIcon();
+      });
+    }
+    var switches = document.querySelectorAll('[data-theme-switch]');
+    for (var j = 0; j < switches.length; j++) {
+      (function (el) {
+        el.addEventListener('change', function (e) {
+          window.ThemeAppearance.set(e.target.checked ? 'dark' : 'default');
+          setToggleIcon();
+        });
+        el.checked = resolve(window.ThemeAppearance.get()) === 'dark';
+      })(switches[j]);
+    }
+
+    window.addEventListener('on-appearance-change', function () {
+      setToggleIcon();
+    });
+  });
+})();
 `,
     };
 };
