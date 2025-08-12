@@ -1,24 +1,16 @@
 import type { VisulimaError } from "@visulima/error/error";
 import { getErrorCauses } from "@visulima/error/error";
 
-import type { Editor, SolutionError, SolutionFinder, Theme } from "../types";
-import process from "../util/process";
-import runtimeName from "../util/runtimes";
-import causesViewer from "./components/causes-viewer";
-import errorCard from "./components/error-card";
+import type { DisplayerOptions, SolutionError, SolutionFinder } from "../types";
 import headerBar from "./components/header-bar";
-import rawStackTrace from "./components/raw-stack-trace";
-import stackTraceViewer from "./components/stack-trace-viewer";
+import tabsHeader, { type Tab } from "./components/tabs";
+import buildStackContent from "./content/stack";
 import inlineCss from "./index.css";
 import layout from "./layout";
 
 type ErrorType = Error | SolutionError | VisulimaError;
 
-const template = async (
-    error: ErrorType,
-    solutionFinders: SolutionFinder[] = [],
-    options: Partial<{ editor: Editor; openInEditorUrl?: string; theme: Theme }> = {},
-): Promise<string> => {
+const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], options: DisplayerOptions = {}): Promise<string> => {
     const allCauses = getErrorCauses(error);
 
     if (allCauses.length === 0) {
@@ -29,36 +21,50 @@ const template = async (
 
     let html = "";
 
+    const { html: stackHtml, scripts: stackScripts } = await buildStackContent(mainCause as ErrorType, causes as Error[], solutionFinders);
+
+    const customPages = Array.isArray(options.content) ? options.content : [];
+    const anyCustomSelected = customPages.some((p) => p.defaultSelected);
+    const tabs: Tab[] = [];
+
+    tabs.push({ id: "stack", name: "Stack", selected: !anyCustomSelected });
+
+    for (const page of customPages) {
+        tabs.push({ id: page.id, name: page.name, selected: Boolean(page.defaultSelected) });
+    }
+
+    html += `<div class="flex flex-row gap-6 w-full mb-6">`;
+
+    const tabsUi = tabsHeader(tabs);
+
+    html += tabsUi.html;
+
     const { html: headerBarHtml, script: headerBarScript } = headerBar(options);
 
     html += headerBarHtml;
 
-    const { html: errorCardHtml, scripts: errorCardScripts } = await errorCard({
-        error: mainCause as ErrorType,
-        runtimeName,
-        solutionFinders,
-        version: process.version,
-    });
+    html += `</div>`;
 
-    html += errorCardHtml;
+    // Render sections
+    html += `<div id=\"flame-section-stack\">${stackHtml}</div>`;
 
-    const { html: stackTraceHtml, script: stackTraceScript } = await stackTraceViewer(mainCause as ErrorType);
+    for (const page of customPages) {
+        const hidden = page.defaultSelected ? "" : " hidden";
 
-    html += stackTraceHtml;
-
-    const { html: causesViewerHtml, script: causesViewerScript } = await causesViewer(causes);
-
-    html += causesViewerHtml;
-    html += rawStackTrace((mainCause as ErrorType).stack);
+        html += `<div id=\"flame-section-${page.id}\" class=\"${hidden}\">${page.code.html}</div>`;
+    }
 
     return layout({
         content: html.trim(),
         css: inlineCss.trim(),
         description: "Error",
         error: mainCause as ErrorType,
-        scripts: [headerBarScript, ...errorCardScripts, stackTraceScript, causesViewerScript],
+        scripts: [headerBarScript, tabsUi.script, ...stackScripts, ...customPages.map((p) => p.code.script || "")],
         title: "Error",
     });
 };
 
 export default template;
+
+// Helpers for building content pages (public API via '@visulima/flame/template')
+export { default as buildContextPage } from "./content/context";

@@ -6,7 +6,7 @@ import findLanguageBasedOnExtension from "../../../util/find-language-based-on-e
 import getFileSource from "../../../util/get-file-source";
 import process from "../../../util/process";
 import revisionHash from "../../../util/revision-hash";
-import getHighlighter from "../../util/highlighter";
+import getHighlighter from "../../util/getHighlighter";
 import type { GroupType, Item } from "./types";
 import getType from "./util/get-type";
 import groupSimilarTypes from "./util/group-similar-types";
@@ -215,7 +215,7 @@ const stackTraceViewer = async (
           });
 
           function activate(button){
-            buttons.forEach(function(b){ 
+            buttons.forEach(function(b){
                 b.classList.remove('active');
                 b.classList.remove('bg-gray-100');
                 b.classList.remove('dark:bg-gray-700/50');
@@ -226,7 +226,7 @@ const stackTraceViewer = async (
                 p.classList.add('hidden');
                 p.classList.remove('block');
             });
-            
+
             if (!button) {
               return;
             }
@@ -250,6 +250,10 @@ const stackTraceViewer = async (
             b.addEventListener('click', function(e){
               if (b.hasAttribute('disabled')) { return; }
               e.preventDefault(); activate(b);
+            });
+            b.addEventListener('keydown', function(e){
+              if (b.hasAttribute('disabled')) { return; }
+              if (e && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); activate(b); }
             });
           });
 

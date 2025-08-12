@@ -56,7 +56,19 @@ yarn add @visulima/flame
     - Built-in rule-based Markdown hints for common issues (ESM/CJS interop, export mismatch, port in use, missing files/case, TS path mapping, DNS/connection, React hydration mismatch, undefined property access)
 - Raw stack trace panel
 - Theme toggle (auto/dark/light) with persistence
+- **Copy to Clipboard** - One-click copying for all data sections
+- **Responsive Design** - Sticky sidebar navigation with smooth scrolling
 - Consistent tooltips (one global script; components only output HTML)
+
+**New in latest version:**
+
+- **Tabbed Interface** - Switch between Stack and Context views
+- **Request Context Panel** - Detailed HTTP request debugging information
+    - cURL command with proper formatting and copy functionality
+    - Headers, cookies, body, and session data
+    - App routing, client info, Git status, and version details
+    - Smart data sanitization and masking for sensitive information
+    - **Flexible Context API** - Add any custom context data via `buildContextPage()`
 
 Accessibility and keyboard UX
 
@@ -133,10 +145,173 @@ app.listen(3000);
 - **solutionFinders**: SolutionFinder[] (optional)
 - **options**:
     - `openInEditorUrl?: string` — when provided, the UI shows “Open in editor” and the editor selector in the header; calls this endpoint (POST JSON: `{ file, line, column, editor? }`).
+    - `context?: Record<string, unknown> & { request?: RequestContext }` — optional context information for the Request panel and debugging. You can add any custom context data as key-value pairs.
+        - `request?: { method, url, status?, route?, timings?, headers?, body?, cookies?, session? }` — HTTP request information (special key)
+        - Any other keys will be automatically rendered as sections in the Context tab (e.g., `app`, `user`, `git`, `versions`, `database`, `cache`, etc.)
+    - `requestPanel?: { headerAllowlist?: string[]; headerDenylist?: string[]; totalCapBytes?: number; previewBytes?: number; maskValue?: string; }` — control masking/truncation for the Request panel.
+    - `content?: Array<{ id: string; name: string; defaultSelected?: boolean; code: { html: string; script?: string } }>` — supply extra pages as tabs. Flame always renders the "Stack" page; additional pages render after it. **Note:** Use `buildContextPage()` to create a Context tab with your context data.
+
+Example (Node http) with enhanced Context:
+
+```ts
+const ctx = {
+    method: req.method,
+    url: req.url,
+    status: res.statusCode,
+    headers: Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, Array.isArray(v) ? v : (v ?? "")])),
+    timings: { start: startTime, end: Date.now(), elapsedMs: Date.now() - startTime },
+    body: safeBodyPreview,
+    cookies: parseCookies(req.headers.cookie),
+    session: { demo: true },
+};
+
+const handler = await httpDisplayer(err, [], {
+    openInEditorUrl: "/__open-in-editor",
+    context: {
+        request: ctx,
+        app: { routing: { route: req.url, params: {}, query: {} } },
+        user: { client: { ip: req.socket.remoteAddress, userAgent: req.headers["user-agent"] } },
+        git: { branch: "main", commit: "abc123", dirty: false },
+        versions: { node: process.version, flame: "1.0.0" },
+        // Add any custom context you want
+        database: {
+            connection: "active",
+            queries: ["SELECT * FROM users", "INSERT INTO logs"],
+            pools: {
+                read: { active: 5, idle: 3, max: 10 },
+                write: { active: 2, idle: 1, max: 5 },
+            },
+            metrics: {
+                queries: { total: 1250, slow: 23, errors: 2 },
+                connections: { current: 8, peak: 12 },
+            },
+        },
+        cache: {
+            status: "healthy",
+            keys: 1250,
+            memory: "45MB",
+            layers: {
+                l1: { type: "memory", hitRate: 0.95, size: "10MB" },
+                l2: { type: "redis", hitRate: 0.87, size: "100MB" },
+            },
+            patterns: ["user:*", "session:*", "api:*"],
+        },
+        environment: {
+            NODE_ENV: process.env.NODE_ENV,
+            PORT: process.env.PORT,
+            features: {
+                auth: true,
+                caching: true,
+                monitoring: false,
+            },
+        },
+    },
+    requestPanel: { headerAllowlist: ["content-type", "accept", "user-agent"] },
+});
+```
+
     - `editor?: Editor` — initial editor to show as selected in the header selector (saved and sent in requests). Only visible if `openInEditorUrl` is set.
         - `theme?: 'dark' | 'light'` — initial theme; users can toggle.
 
 Returns an async request handler compatible with Node http (and usable inside Express routes).
+
+### Request Context Panel
+
+Use `buildContextPage()` to create a "Context" tab with comprehensive debugging information:
+
+- **Request Overview** - cURL command with proper formatting and copy functionality
+- **Headers** - HTTP headers with smart masking for sensitive data
+- **Body** - Request body content with proper formatting
+- **Session** - Session data in organized key-value tables
+- **Cookies** - Cookie information in readable format
+- **Dynamic Context Sections** - Any additional context keys you provide are automatically rendered as sections with:
+    - Proper titles (capitalized)
+    - Copy buttons for JSON data
+    - Organized key-value tables
+    - Sticky sidebar navigation
+
+**Built-in sections** (when data is provided):
+
+- `app` - Application routing details (route, params, query)
+- `user` - Client information (IP, User-Agent, geo)
+- `git` - Repository status (branch, commit, tag, dirty state)
+- `versions` - Package versions and dependencies
+
+**Custom sections** - Add any context data you want:
+
+- `database` - Database connection info, queries, etc.
+- `cache` - Cache status and keys
+- `environment` - Environment variables
+- `performance` - Performance metrics
+- And more!
+
+**Deep Object & Array Support** - The context panel intelligently renders:
+
+- Nested objects with proper indentation and visual hierarchy
+- Arrays with indexed items and collapsible structure
+- Complex data types (strings, numbers, booleans, null, undefined)
+- Performance-optimized rendering with depth limits (max 3 levels)
+- Smart truncation for large datasets (shows first 10 items/keys)
+
+All sections include copy buttons for easy data extraction and debugging.
+
+### Copy to Clipboard
+
+All data sections in the Request Context Panel include copy buttons that:
+
+- Copy data in JSON format for easy debugging
+- Provide visual feedback (button changes to "Copied!" with green styling)
+- Support both modern `navigator.clipboard` API and fallback methods
+- Work across all browsers and environments
+
+### buildContextPage(request, options) => Promise<ContentPage | undefined>
+
+Creates a Context tab with comprehensive debugging information. Pass any context data you want to display:
+
+```ts
+import { buildContextPage } from "@visulima/flame/template";
+
+const contextPage = await buildContextPage(requestData, {
+    context: {
+        request: requestData,
+        app: { routing: { route: "/api/users", params: {}, query: {} } },
+        user: { client: { ip: "127.0.0.1", userAgent: "Mozilla/5.0..." } },
+        database: { connection: "active", queries: ["SELECT * FROM users"] },
+        cache: { status: "healthy", keys: 1250 },
+        environment: { NODE_ENV: "production" },
+        // Add any custom context you want
+    },
+    requestPanel: { headerAllowlist: ["content-type", "accept"] },
+});
+```
+
+### Adding custom pages/tabs via `options.content`
+
+You can add any number of custom pages, including the built-in Context page:
+
+```ts
+import { buildContextPage } from "@visulima/flame/template";
+
+// Create a context page with your data
+const contextPage = await buildContextPage(requestData, {
+    context: {
+        request: requestData,
+        app: { routing: { route: "/api/users", params: {}, query: {} } },
+        user: { client: { ip: "127.0.0.1", userAgent: "Mozilla/5.0..." } },
+        database: { connection: "active", queries: ["SELECT * FROM users"] },
+        // Add any custom context you want
+    },
+    requestPanel: { headerAllowlist: ["content-type", "accept"] },
+});
+
+await httpDisplayer(err, finders, {
+    content: [
+        contextPage, // Add the context page
+        { id: "perf", name: "Performance", code: { html: "<div>...</div>" } },
+        { id: "custom", name: "Custom", code: { html: "<div>Custom content</div>" } },
+    ],
+});
+```
 
 ### template(error, solutionFinders?, options?) => Promise<string>
 

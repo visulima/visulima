@@ -210,10 +210,8 @@ ${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
 </head>
 <body>
     <div id="visulima-flame-container" class="w-full h-full overflow-auto bg-gray-100 dark:bg-slate-900 dark:text-gray-200">
-        <div class="container mx-auto">
-            <div class="flex flex-wrap gap-6 mt-6">
-                ${content}
-            </div>
+        <div class="container mx-auto mt-6">
+            ${content}
         </div>
     </div>
 </body>
