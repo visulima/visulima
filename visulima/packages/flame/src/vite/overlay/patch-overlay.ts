@@ -96,6 +96,73 @@ class ErrorOverlay extends __BaseHTMLElement {
         var container = wrapper.querySelector('#visulima-flame-container') || wrapper.firstElementChild || wrapper;
         contentEl.appendChild(container);
       }
+    } else if (contentEl) {
+      // Fallback UI when template HTML/CSS is not provided
+      var theme = 'dark';
+      try { theme = localStorage.getItem('visulima:flame:theme') || 'dark'; } catch {}
+
+      var styleEl2 = document.createElement('style');
+      styleEl2.textContent = '
+        :host{font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial}
+        #vf-root{position:fixed; inset:0; display:flex; flex-direction:column;}
+        [data-theme="dark"]{--bg:#0b0b0d;--muted:#a1a1aa;--text:#e5e7eb;--danger:#ef4444;--panel:#111114;--border:#27272a}
+        [data-theme="light"]{--bg:#ffffff;--muted:#52525b;--text:#0b0b0d;--danger:#b91c1c;--panel:#fafafa;--border:#e4e4e7}
+        #vf-root{background:var(--bg); color:var(--text)}
+        .vf-header{ position:sticky; top:0; z-index:1; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--panel)}
+        .vf-title{ display:flex; flex-direction:column; gap:2px }
+        .vf-name{ font-weight:600; font-size:14px }
+        .vf-msg{ color:var(--muted); font-size:12px }
+        .vf-meta{ color:var(--muted); font-size:11px }
+        .vf-actions{ display:flex; align-items:center; gap:8px }
+        .vf-btn{ font-size:12px; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer }
+        .vf-btn:hover{ border-color:var(--text) }
+        .vf-content{ padding:12px 16px; display:grid; grid-template-columns: 1fr; gap:12px }
+        .vf-card{ border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--panel) }
+        .vf-card h3{ margin:0; padding:8px 12px; font-size:12px; border-bottom:1px solid var(--border); color:var(--muted) }
+        pre{ margin:0; padding:12px; font-size:12px; line-height:1.5; overflow:auto }
+      ';
+      contentEl.appendChild(styleEl2);
+
+      var root = document.createElement('div');
+      root.id = 'vf-root';
+      root.setAttribute('data-theme', theme);
+
+      var header = document.createElement('div');
+      header.className = 'vf-header';
+      var title = document.createElement('div');
+      title.className = 'vf-title';
+      var name = document.createElement('div'); name.className='vf-name'; name.textContent = String((payload && payload.name) || 'Error');
+      var msg = document.createElement('div'); msg.className='vf-msg'; msg.textContent = String((payload && payload.message) || 'Runtime error');
+      var meta = document.createElement('div'); meta.className='vf-meta'; meta.textContent = (payload && payload.id ? String(payload.id) : '') + (payload && payload.loc ? ':'+payload.loc.line+':'+payload.loc.column : '');
+      title.appendChild(name); title.appendChild(msg); title.appendChild(meta);
+
+      var actions = document.createElement('div'); actions.className='vf-actions';
+      var btnCopy = document.createElement('button'); btnCopy.className='vf-btn'; btnCopy.textContent='Copy stack'; btnCopy.onclick = function(){ try { navigator.clipboard.writeText(String(payload && payload.stack || '')); } catch {} };
+      var btnCopyFrame = document.createElement('button'); btnCopyFrame.className='vf-btn'; btnCopyFrame.textContent='Copy codeframe'; btnCopyFrame.onclick = function(){ try { navigator.clipboard.writeText(String(payload && payload.frame || '')); } catch {} };
+      var btnTheme = document.createElement('button'); btnTheme.className='vf-btn'; btnTheme.textContent='Theme'; btnTheme.onclick = function(){ try { var next = (root.getAttribute('data-theme')==='dark'?'light':'dark'); root.setAttribute('data-theme', next); localStorage.setItem('visulima:flame:theme', next); } catch {} };
+      var btnDismiss = document.createElement('button'); btnDismiss.className='vf-btn'; btnDismiss.textContent='Dismiss'; btnDismiss.onclick = () => this.close();
+      actions.appendChild(btnCopy); actions.appendChild(btnCopyFrame); actions.appendChild(btnTheme); actions.appendChild(btnDismiss);
+
+      header.appendChild(title); header.appendChild(actions);
+
+      var content = document.createElement('div'); content.className='vf-content';
+
+      if (payload && payload.frame){
+        var card1 = document.createElement('div'); card1.className='vf-card';
+        var h31 = document.createElement('h3'); h31.textContent='Codeframe'; card1.appendChild(h31);
+        var pre1 = document.createElement('pre'); pre1.textContent = String(payload.frame||''); card1.appendChild(pre1);
+        content.appendChild(card1);
+      }
+      if (payload && payload.stack){
+        var card2 = document.createElement('div'); card2.className='vf-card';
+        var h32 = document.createElement('h3'); h32.textContent='Stack trace'; card2.appendChild(h32);
+        var pre2 = document.createElement('pre'); pre2.textContent = String(payload.stack||''); card2.appendChild(pre2);
+        content.appendChild(card2);
+      }
+
+      root.appendChild(header);
+      root.appendChild(content);
+      contentEl.appendChild(root);
     }
 
     // Focus trap within dialog
