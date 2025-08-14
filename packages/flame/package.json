@@ -166,7 +166,6 @@
         "@tailwindcss/typography": "^0.5.16",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.2.1",
-        "@types/sanitize-html": "^2.16.0",
         "@visulima/packem": "2.0.0-alpha.8",
         "@vitest/coverage-v8": "^3.2.4",
         "cross-env": "^10.0.0",
@@ -186,7 +185,7 @@
         "postcss-modules-values": "4.0.0",
         "postcss-value-parser": "4.2.0",
         "rimraf": "^6.0.1",
-        "sanitize-html": "^2.17.0",
+        "isomorphic-dompurify": "^2.26.0",
         "semantic-release": "^24.2.7",
         "shiki": "^3.9.2",
         "sort-package-json": "^3.4.0",
@@ -206,7 +205,6 @@
         "@ai-sdk/mistral": "^1.0.0",
         "@ai-sdk/ollama": "^1.0.0",
         "@ai-sdk/azure": "^1.0.0",
-        "sanitize-html": "^2.11.0",
         "shiki": "^3.4.0",
         "vite": "^7.1.1"
     },
@@ -239,9 +237,6 @@
             "optional": true
         },
         "open-editor": {
-            "optional": true
-        },
-        "sanitize-html": {
             "optional": true
         },
         "shiki": {

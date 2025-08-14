@@ -5,7 +5,7 @@ import infoIcon from "lucide-static/icons/info.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import closeIcon from "lucide-static/icons/x.svg?raw";
 import { parse } from "marked";
-import sanitizeHtml from "sanitize-html";
+import DOMPurify from "isomorphic-dompurify";
 
 import errorHintFinder from "../../../solution/error-hint-finder";
 import ruleBasedFinder from "../../../solution/rule-based-finder";
@@ -69,12 +69,12 @@ const solutions = async (
 
                 const parsedHeader = await parse(hint.header);
 
-                return sanitizeHtml(String(parsedHeader));
+                return DOMPurify.sanitize(String(parsedHeader));
             })()}
             ${await (async () => {
                 const parsedBody = await parse(hint.body);
 
-                return sanitizeHtml(String(parsedBody));
+                return DOMPurify.sanitize(String(parsedBody));
             })()}
         </div>
     </div>

@@ -14,15 +14,28 @@ const filterHeaders = (
     denylist?: string[],
     maskValue = "[masked]",
 ): Record<string, string | string[]> | undefined => {
-    if (!headers) return undefined;
+    if (!headers) {
+        return undefined;
+    }
+    
     const out: Record<string, string | string[]> = {};
+    
     for (const [key, value] of Object.entries(headers)) {
         const lower = key.toLowerCase();
-        if (allowlist && allowlist.length > 0 && !allowlist.some((a) => a.toLowerCase() === lower)) continue;
+        
+        if (allowlist && allowlist.length > 0 && !allowlist.some((a) => a.toLowerCase() === lower)) {
+            continue;
+        }
+
         const masked = isSensitiveHeader(lower, denylist) ? maskValue : undefined;
-        if (Array.isArray(value)) out[key] = masked ? value.map(() => masked) : value;
-        else out[key] = masked ? masked : value;
+        
+        if (Array.isArray(value)) {
+            out[key] = masked ? value.map(() => masked) : value;
+        } else {
+            out[key] = masked ? masked : value;
+        }
     }
+
     return out;
 };
 
