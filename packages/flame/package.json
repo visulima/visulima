@@ -51,14 +51,8 @@
     "type": "module",
     "exports": {
         ".": {
-            "import": {
-                "types": "./dist/index.d.mts",
-                "default": "./dist/index.mjs"
-            },
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            }
+            "types": "./dist/index.d.mts",
+            "default": "./dist/index.mjs"
         },
         "./displayer/cli": {
             "import": {
@@ -98,6 +92,16 @@
             "require": {
                 "types": "./dist/template/index.d.cts",
                 "default": "./dist/template/index.cjs"
+            }
+        },
+        "./template/content/context": {
+            "import": {
+                "types": "./dist/template/content/context.d.mts",
+                "default": "./dist/template/content/context.mjs"
+            },
+            "require": {
+                "types": "./dist/template/content/context.d.cts",
+                "default": "./dist/template/content/context.cjs"
             }
         },
         "./server/open-in-editor": {
@@ -148,50 +152,45 @@
         "@visulima/find-cache-dir": "workspace:*",
         "@visulima/css-style-inject": "1.0.0-alpha.4",
         "get-uri": "^6.0.5",
-        "@jridgewell/trace-mapping": "^0.3.25",
+        "@jridgewell/trace-mapping": "^0.3.30",
+        "isomorphic-dompurify": "^2.26.0",
         "diff": "^8.0.2",
         "htmldiff-js": "^1.0.5"
     },
     "devDependencies": {
+        "clipboard": "^2.0.11",
         "prettier-plugin-tailwindcss": "0.6.14",
-        "lucide-static": "^0.539.0",
-        "@anolilab/prettier-config": "^5.0.14",
-        "prettier": "^3.5.3",
+        "preline": "^3.2.3",
+        "lucide-static": "^0.540.0",
+        "@anolilab/prettier-config": "^6.0.3",
+        "prettier": "^3.6.2",
         "@anolilab/eslint-config": "^16.2.23",
         "@anolilab/semantic-release-preset": "^11.0.3",
-        "@babel/core": "^7.28.0",
+        "@babel/core": "^7.28.3",
         "@eslint/css": "0.10.0",
         "@tailwindcss/forms": "^0.5.10",
-        "@tailwindcss/postcss": "4.1.11",
         "@tailwindcss/typography": "^0.5.16",
+        "@tailwindcss/node": "^4.1.12",
+        "@tailwindcss/oxide": "^4.1.12",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "24.2.1",
-        "@visulima/packem": "2.0.0-alpha.8",
+        "@types/node": "24.3.0",
+        "@visulima/packem": "2.0.0-alpha.13",
         "@vitest/coverage-v8": "^3.2.4",
         "cross-env": "^10.0.0",
         "cssnano": "7.1.0",
-        "esbuild": "0.25.8",
+        "esbuild": "0.25.9",
         "eslint": "^9.33.0",
         "icss-utils": "5.1.0",
-        "marked": "^16.1.2",
+        "marked": "^16.2.0",
         "open-editor": "^5.1.0",
-        "openai": "5.12.2",
-        "postcss": "^8.5.6",
-        "postcss-focus-visible": "^10.0.1",
-        "postcss-load-config": "6.0.1",
-        "postcss-modules-extract-imports": "3.1.0",
-        "postcss-modules-local-by-default": "4.2.0",
-        "postcss-modules-scope": "3.2.1",
-        "postcss-modules-values": "4.0.0",
-        "postcss-value-parser": "4.2.0",
+        "openai": "5.13.1",
         "rimraf": "^6.0.1",
-        "isomorphic-dompurify": "^2.26.0",
         "semantic-release": "^24.2.7",
-        "shiki": "^3.9.2",
+        "shiki": "^3.11.0",
         "sort-package-json": "^3.4.0",
-        "tailwindcss": "^4.1.11",
+        "tailwindcss": "^4.1.12",
         "typescript": "^5.9.2",
-        "vite": "^7.1.1",
+        "vite": "^7.1.3",
         "vitest": "^3.2.4"
     },
     "peerDependencies": {

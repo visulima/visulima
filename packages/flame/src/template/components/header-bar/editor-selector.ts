@@ -8,6 +8,10 @@ const editorSelector = (editor?: Editor): string => {
         options += `<option value="${String(editorName)}" ${isSelected ? "selected" : ""}>${Editor[editorName]}</option>`;
     });
 
+    // Properly encoded chevron icon SVG
+    const chevronIcon =
+        "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTcgMTVsNSA1IDUtNSIvPjxwYXRoIGQ9Ik03IDlsNS01IDUgNSIvPjwvc3ZnPg==";
+
     const selectOptions = `{
     "placeholder": "Auto-detected Editor",
     "toggleClasses": "select-disabled:pointer-events-none select-disabled:opacity-50 relative py-3 px-4 pe-9 flex text-nowrap w-56 cursor-pointer bg-white border border-gray-200 rounded-lg text-start text-sm focus:border-blue-500 focus:ring-blue-500 before:absolute before:inset-0 before:z-1 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-gray-600",
@@ -22,7 +26,7 @@ const editorSelector = (editor?: Editor): string => {
         ${options}
     </select>
     <div class="absolute top-1/2 end-3 -translate-y-1/2 bg-white">
-        <span class="dui w-3.5 h-3.5" style="-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M7 15l5 5 5-5%22/><path d=%22M7 9l5-5 5 5%22/></svg>'); mask-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M7 15l5 5 5-5%22/><path d=%22M7 9l5-5 5 5%22/></svg>')"></span>
+        <span class="dui w-3.5 h-3.5" style="-webkit-mask-image:url('${chevronIcon}'); mask-image:url('${chevronIcon}')"></span>
     </div>
 </div>`;
 };

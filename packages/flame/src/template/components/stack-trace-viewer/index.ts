@@ -6,10 +6,22 @@ import findLanguageBasedOnExtension from "../../../util/find-language-based-on-e
 import getFileSource from "../../../util/get-file-source";
 import process from "../../../util/process";
 import revisionHash from "../../../util/revision-hash";
-import getHighlighter from "../../util/getHighlighter";
+import getHighlighter from "../../util/get-highlighter";
 import type { GroupType, Item } from "./types";
 import getType from "./util/get-type";
 import groupSimilarTypes from "./util/group-similar-types";
+
+// Utility function to properly encode SVG content for CSS mask-image
+const svgToDataUrl = (svgContent: string): string => {
+    // Remove HTML comments and clean up the SVG content
+    const cleanSvg = svgContent
+        .replace(/<!--[\s\S]*?-->/g, "") // Remove HTML comments
+        .replace(/\s+/g, " ") // Normalize whitespace
+        .trim();
+
+    // Encode for use in CSS url()
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
+};
 
 const stackTraceViewer = async (
     error: Error,
@@ -60,11 +72,11 @@ const stackTraceViewer = async (
         const relativeFilePath = filePath.replace(process.cwd?.() || "", "").replace("file:///", "");
 
         tabs.push({
-            html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" ${
+            html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-stack-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" ${
                 isClickable ? "" : 'disabled aria-disabled="true"'
-            } role="tab" aria-selected="false" class="tab-active:font-semibold tab-active:border-blue-600 tab-active:text-blue-600 inline-flex items-center gap-x-2 border-b border-gray-100 last:border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:text-blue-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-gray-600 p-6 ${
+            } class="inline-flex items-center gap-x-2 border-b border-gray-100 last:border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:text-blue-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-gray-600 p-6 ${
                 isClickable ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" : "cursor-not-allowed"
-            }" role="tab">
+            }">
     <div class="flex flex-col w-full text-left">
         <span class="text-gray-900 dark:text-gray-100 font-medium">${trace.methodName}</span>
         <span class="text-gray-500 dark:text-gray-400 text-sm break-words">${relativeFilePath}</span>
@@ -75,7 +87,7 @@ const stackTraceViewer = async (
 
         sourceCode.push(`<div id="source-code-tabs-${uniqueKey}-${index}" class="${
             index === 0 && isClickable ? "block" : "hidden"
-        }" role="tabpanel" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}" tabindex="0">
+        }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}" tabindex="0">
 <div class="pt-10 pb-8 mb-6 text-sm text-right text-[#D8DEE9] dark:text-gray-400 border-b border-gray-600">
     <div class="px-6">
         ${options.openInEditorUrl ? `<button type="button" class="underline hover:text-blue-400" data-open-in-editor data-url="${options.openInEditorUrl}" data-path="${absPathForEditor}" data-line="${trace.line || 1}" data-column="${trace.column || 1}">${relativeFilePath} — Open in editor</button>` : relativeFilePath}
@@ -136,7 +148,7 @@ const stackTraceViewer = async (
                 ${headerLabel}
                 <div class="flex flex-row items-center">${togglesHtml}</div>
             </div>
-            <nav class="flex flex-col" aria-label="Frames" role="tablist">
+            <nav class="flex flex-col" aria-label="Frames">
                 ${grouped
                     .map((tab, groupIndex: number) => {
                         if (Array.isArray(tab)) {
@@ -166,7 +178,7 @@ const stackTraceViewer = async (
                             return `<details id="stack-trace-group-${uniqueKey}-${groupIndex}" class="border-b border-gray-100 dark:border-gray-700">
 <summary class="py-3 px-6 cursor-pointer flex items-center justify-between text-sm dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 focus:outline-hidden focus:ring-1 focus:ring-gray-600">
     <span>${tab.length} ${groupLabel} frames</span>
-    <span data-chevron class="dui w-4 h-4 transition-transform duration-300" style="-webkit-mask-image:url('${chevronDownIcon}'); mask-image:url('${chevronDownIcon}')"></span>
+    <span data-chevron class="dui w-4 h-4 transition-transform duration-300" style="-webkit-mask-image:url('${svgToDataUrl(chevronDownIcon)}'); mask-image:url('${svgToDataUrl(chevronDownIcon)}')"></span>
 </summary>
 <div class="flex flex-col">${tab.map((item) => item.html).join("")}</div>
 </details>`;
@@ -191,6 +203,7 @@ const stackTraceViewer = async (
           var buttons = Array.prototype.slice.call(document.querySelectorAll(buttonSelector));
           var panels = Array.prototype.slice.call(document.querySelectorAll(panelSelector));
           var groupToggles = Array.prototype.slice.call(document.querySelectorAll('input[data-group-toggle="${uniqueKey}"]'));
+          
           document.addEventListener('click', function(e){
             var btn = (e.target && e.target.closest) ? e.target.closest('[data-open-in-editor]') : null;
             if (!btn) return;
@@ -219,7 +232,10 @@ const stackTraceViewer = async (
                 b.classList.remove('active');
                 b.classList.remove('bg-gray-100');
                 b.classList.remove('dark:bg-gray-700/50');
-                b.setAttribute('aria-selected','false');
+                b.classList.remove('font-semibold');
+                b.classList.remove('border-blue-600');
+                b.classList.remove('text-blue-600');
+                b.classList.remove('stack-tab-active');
             });
 
             panels.forEach(function(p){
@@ -234,8 +250,11 @@ const stackTraceViewer = async (
             button.classList.add('active');
             button.classList.add('bg-gray-100');
             button.classList.add('dark:bg-gray-700/50');
-            button.setAttribute('aria-selected','true');
-            var sel = button.getAttribute('data-tab');
+            button.classList.add('font-semibold');
+            button.classList.add('border-blue-600');
+            button.classList.add('text-blue-600');
+            button.classList.add('stack-tab-active');
+            var sel = button.getAttribute('data-stack-tab');
 
             try {
               var panel = sel ? document.querySelector(sel) : null;
@@ -258,8 +277,10 @@ const stackTraceViewer = async (
           });
 
           // Ensure initial state consistent
-          var initiallyActive = buttons.find(function(b){ return b.classList.contains('active') && !b.hasAttribute('disabled'); }) || buttons.find(function(b){ return !b.hasAttribute('disabled'); });
-          activate(initiallyActive);
+          var initiallyActive = buttons.find(function(b){ return !b.hasAttribute('disabled'); });
+          if (initiallyActive) {
+            activate(initiallyActive);
+          }
 
           // Wire group open/close toggles
           function syncCheckboxWithDetails(checkbox, details){

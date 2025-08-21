@@ -7,6 +7,33 @@ import tabsHeader, { type Tab } from "./components/tabs";
 import buildStackContent from "./content/stack";
 import inlineCss from "./index.css";
 import layout from "./layout";
+import preline from "../../node_modules/preline/dist/preline.js?raw";
+import clipboard from "../../node_modules/clipboard/dist/clipboard.min.js?raw";
+import prelineClipboard from "../../node_modules/preline/dist/helper-clipboard.js?raw";
+
+// Preline initialization script - only initialize components we actually use
+const prelineInit = `
+(function() {
+  // Initialize only specific Preline UI components
+  (window.subscribeToDOMContentLoaded || function (fn) {
+    if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn);
+  })(function () {
+    if (typeof HSStaticMethods !== 'undefined' && HSStaticMethods.autoInit) {
+      // Only initialize components we actually use:
+      // - tooltip: for copy buttons and shortcuts popover
+      // - clipboard: for copy functionality  
+      // - theme-appearance: for dark/light mode switching
+      // - tabs: for header navigation tabs
+      HSStaticMethods.autoInit(['tooltip', 'clipboard', 'theme-appearance', 'tabs']);
+    }
+    
+    // Explicitly initialize clipboard if available
+    if (typeof HSClipboard !== 'undefined' && HSClipboard.init) {
+      HSClipboard.init();
+    }
+  });
+})();
+`;
 
 type ErrorType = Error | SolutionError | VisulimaError;
 
@@ -45,13 +72,12 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
 
     html += `</div>`;
 
-    // Render sections
-    html += `<div id=\"flame-section-stack\">${stackHtml}</div>`;
+    html += `<div id="flame-section-stack" class="${anyCustomSelected ? "hidden" : ""}" role="tabpanel" aria-labelledby="flame-tab-stack">${stackHtml}</div>`;
 
     for (const page of customPages) {
         const hidden = page.defaultSelected ? "" : " hidden";
 
-        html += `<div id=\"flame-section-${page.id}\" class=\"${hidden}\">${page.code.html}</div>`;
+        html += `<div id="flame-section-${page.id}" class="${hidden}" role="tabpanel" aria-labelledby="flame-tab-${page.id}">${page.code.html}</div>`;
     }
 
     return layout({
@@ -59,12 +85,18 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
         css: inlineCss.trim(),
         description: "Error",
         error: mainCause as ErrorType,
-        scripts: [headerBarScript, tabsUi.script, ...stackScripts, ...customPages.map((p) => p.code.script || "")],
+        scripts: [
+            clipboard,
+            preline,
+            prelineClipboard,
+            prelineInit,
+            headerBarScript,
+            tabsUi.script,
+            ...stackScripts,
+            ...customPages.map((p) => p.code.script || ""),
+        ],
         title: "Error",
     });
 };
 
 export default template;
-
-// Helpers for building content pages (public API via '@visulima/flame/template')
-export { default as buildContextPage } from "./content/context";

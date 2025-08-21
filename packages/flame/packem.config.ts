@@ -1,16 +1,16 @@
 import { defineConfig } from "@visulima/packem/config";
 import transformer from "@visulima/packem/transformer/esbuild";
-import postcssLoader from "@visulima/packem/css/loader/postcss";
-import sourceMapLoader from "@visulima/packem/css/loader/sourcemap";
+import tailwindcssLoader from "@visulima/packem/css/loader/tailwindcss";
 import cssnanoMinifier from "@visulima/packem/css/minifier/cssnano";
 
 export default defineConfig({
     failOnWarn: false,
     transformer,
     runtime: "node",
+    declaration: false,
     rollup: {
         css: {
-            loaders: [postcssLoader, sourceMapLoader],
+            loaders: [tailwindcssLoader],
             minifier: cssnanoMinifier,
         },
     },

@@ -14,8 +14,3 @@ export default async function buildContextContent(request: RequestContext | unde
         code: { html, script },
     };
 }
-
-// Legacy function for backward compatibility
-export async function buildContextPage(request: RequestContext | undefined, options: DisplayerOptions): Promise<ContentPage | undefined> {
-    return buildContextContent(request, options);
-}

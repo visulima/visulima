@@ -1,5 +1,6 @@
 import type { DisplayerOptions, RequestContext } from "../../types";
-import getHighlighter from "../util/getHighlighter";
+import getHighlighter from "../util/get-highlighter";
+import copyButton from "./copy-button";
 
 const SENSITIVE_HEADER_PATTERNS = [/authorization/i, /cookie/i, /set-cookie/i, /x-api-key/i, /api-key/i, /x-auth/i, /token/i, /secret/i];
 
@@ -17,18 +18,18 @@ const filterHeaders = (
     if (!headers) {
         return undefined;
     }
-    
+
     const out: Record<string, string | string[]> = {};
-    
+
     for (const [key, value] of Object.entries(headers)) {
         const lower = key.toLowerCase();
-        
+
         if (allowlist && allowlist.length > 0 && !allowlist.some((a) => a.toLowerCase() === lower)) {
             continue;
         }
 
         const masked = isSensitiveHeader(lower, denylist) ? maskValue : undefined;
-        
+
         if (Array.isArray(value)) {
             out[key] = masked ? value.map(() => masked) : value;
         } else {
@@ -51,6 +52,9 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
     if (!request) {
         return { html: "", script: "" };
     }
+
+    // Generate unique ID for clipboard targets
+    const uniqueId = `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}`;
 
     const { headerAllowlist, headerDenylist, maskValue = "[masked]" } = options.requestPanel || {};
 
@@ -312,14 +316,13 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
     </div>`;
 
                 contentSections += `
+  <input type="hidden" id="clipboard-${sectionId}-${uniqueId}" value="${attrEscape(JSON.stringify(value))}">
   <section id="${sectionId}" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
     <div class="px-4 py-3 flex items-center gap-2">
       <h3 class="text-sm font-semibold">${title}</h3>
       <div class="grow"></div>
       <a href="#${sectionId}" class="text-gray-400 hover:text-gray-600 text-xs" aria-label="Anchor">#</a>
-      <button type="button" class="copy-btn cursor-pointer px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-xs" data-clipboard-text="${attrEscape(
-          JSON.stringify(value),
-      )}" aria-label="Copy JSON">Copy</button>
+      ${copyButton({ targetId: `clipboard-${sectionId}-${uniqueId}`, label: "Copy JSON" })}
     </div>
     <div class="max-w-full overflow-auto">${renderObjectTable(value as Record<string, unknown>)}</div>
   </section>`;
@@ -350,6 +353,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
 
     const content = `
 <div class="grow min-w-0">
+  <input type="hidden" id="clipboard-curl-${uniqueId}" value="${attrEscape(curl)}">
   <section id="context-request" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
     <div class="px-4 py-4 flex items-center gap-3 min-w-0">
       <h2 class="text-sm font-semibold">Request</h2>
@@ -358,55 +362,51 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
           String(request.method || "GET"),
       )}</span>
       <div class="grow"></div>
-      <button type="button" class="copy-btn cursor-pointer px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-xs" data-clipboard-text="${attrEscape(curl)}" aria-label="Copy cURL">Copy cURL</button>
+      ${copyButton({ targetId: `clipboard-curl-${uniqueId}`, label: "Copy cURL" })}
     </div>
     <div class="px-4 pb-4 overflow-auto">${curlHtml}</div>
   </section>
 
+  <input type="hidden" id="clipboard-headers-${uniqueId}" value="${attrEscape(JSON.stringify(filteredHeaders || {}))}">
   <section id="context-headers" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
     <div class="px-4 py-3 flex items-center gap-2">
       <h3 class="text-sm font-semibold">Headers</h3>
       <div class="grow"></div>
       <a href="#context-headers" class="text-gray-400 hover:text-gray-600 text-xs" aria-label="Anchor">#</a>
-      <button type="button" class="copy-btn cursor-pointer px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-xs" data-clipboard-text="${attrEscape(
-          JSON.stringify(filteredHeaders || {}),
-      )}" aria-label="Copy JSON">Copy</button>
+      ${copyButton({ targetId: `clipboard-headers-${uniqueId}`, label: "Copy JSON" })}
     </div>
     <div class="max-w-full overflow-auto">${renderKeyValueTable(filteredHeaders)}</div>
   </section>
 
+  <input type="hidden" id="clipboard-body-${uniqueId}" value="${attrEscape(JSON.stringify(request?.body || {}))}">
   <section id="context-body" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
     <div class="px-4 py-3 flex items-center gap-2">
       <h3 class="text-sm font-semibold">Body</h3>
       <div class="grow"></div>
       <a href="#context-body" class="text-gray-400 hover:text-gray-600 text-xs" aria-label="Anchor">#</a>
-      <button type="button" class="copy-btn cursor-pointer px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-xs" data-clipboard-text="${attrEscape(
-          JSON.stringify(request?.body || {}),
-      )}" aria-label="Copy JSON">Copy</button>
+      ${copyButton({ targetId: `clipboard-body-${uniqueId}`, label: "Copy JSON" })}
     </div>
     <div class="max-w-full overflow-auto">${renderBodyContent(request?.body)}</div>
   </section>
 
+  <input type="hidden" id="clipboard-session-${uniqueId}" value="${attrEscape(JSON.stringify(request?.session ?? {}))}">
   <section id="context-session" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
     <div class="px-4 py-3 flex items-center gap-2">
       <h3 class="text-sm font-semibold">Session</h3>
       <div class="grow"></div>
       <a href="#context-session" class="text-gray-400 hover:text-gray-600 text-xs" aria-label="Anchor">#</a>
-      <button type="button" class="copy-btn cursor-pointer px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-xs" data-clipboard-text="${attrEscape(
-          JSON.stringify(request?.session ?? {}),
-      )}" aria-label="Copy JSON">Copy</button>
+      ${copyButton({ targetId: `clipboard-session-${uniqueId}`, label: "Copy JSON" })}
     </div>
             <div class="max-w-full overflow-auto">${renderObjectTable(request?.session as Record<string, unknown>)}</div>
   </section>
 
+  <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attrEscape(JSON.stringify(request?.cookies || {}))}">
   <section id="context-cookies" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
     <div class="px-4 py-3 flex items-center gap-2">
       <h3 class="text-sm font-semibold">Cookies</h3>
       <div class="grow"></div>
       <a href="#context-cookies" class="text-gray-400 hover:text-gray-600 text-xs" aria-label="Anchor">#</a>
-      <button type="button" class="copy-btn cursor-pointer px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-xs" data-clipboard-text="${attrEscape(
-          JSON.stringify(request?.cookies || {}),
-      )}" aria-label="Copy JSON">Copy</button>
+      ${copyButton({ targetId: `clipboard-cookies-${uniqueId}`, label: "Copy JSON" })}
     </div>
     <div class="max-w-full overflow-auto">${renderKeyValueTable((request?.cookies || {}) as Record<string, string | string[]>)}
     </div>
@@ -419,62 +419,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
   ${content}
 </div>`;
 
-    const script = `
-(function(){
-  function copyToClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text).then(function() {
-        showCopySuccess();
-      }).catch(function() {
-        fallbackCopyTextToClipboard(text);
-      });
-    } else {
-      fallbackCopyTextToClipboard(text);
-    }
-  }
-
-  function fallbackCopyTextToClipboard(text) {
-    var textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try {
-      var successful = document.execCommand('copy');
-      if (successful) showCopySuccess();
-    } catch (err) {
-      console.error('Fallback: Oops, unable to copy', err);
-    }
-    document.body.removeChild(textArea);
-  }
-
-  function showCopySuccess() {
-    var btn = document.activeElement;
-    if (btn && btn.classList.contains('copy-btn')) {
-      var originalText = btn.textContent;
-      btn.textContent = 'Copied!';
-      btn.classList.add('bg-green-100', 'dark:bg-green-800', 'text-green-700', 'dark:text-green-200');
-      btn.classList.remove('bg-gray-100', 'dark:bg-gray-800');
-      setTimeout(function() {
-        btn.textContent = originalText;
-        btn.classList.remove('bg-green-100', 'dark:bg-green-800', 'text-green-700', 'dark:text-green-200');
-        btn.classList.add('bg-gray-100', 'dark:bg-gray-800');
-      }, 1500);
-    }
-  }
-
-  document.addEventListener('click', function(e) {
-    if (e.target && e.target.classList.contains('copy-btn')) {
-      var text = e.target.getAttribute('data-clipboard-text');
-      if (text) {
-        copyToClipboard(text);
-      }
-    }
-  });
-})();`;
+    const script = ``;
 
     return { html, script };
 };
