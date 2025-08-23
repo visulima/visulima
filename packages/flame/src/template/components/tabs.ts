@@ -1,7 +1,7 @@
 type Tab = { id: string; name: string; selected?: boolean };
 
 const tabsHeader = (tabs: Tab[]): { html: string; script: string } => {
-    const html = `<nav class="flex gap-2 p-1 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700" role="tablist">
+    const html = `<nav class="flex gap-2 p-1 rounded-xl bg-[var(--flame-white-smoke)]" role="tablist">
     ${tabs
         .map((t) => {
             const cls = t.selected

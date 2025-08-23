@@ -152,14 +152,14 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
 
     const renderKeyValueTable = (records: Record<string, string | string[]> | undefined): string => {
         if (!records || Object.keys(records).length === 0) {
-            return `<div class="px-4 pb-4 text-xs text-gray-500">(empty)</div>`;
+            return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(empty)</div>`;
         }
         const rows = Object.entries(records)
             .map(([k, v]) => {
                 const value = Array.isArray(v) ? v.join(", ") : v;
-                return `<div class="grid grid-cols-[200px_1fr] gap-3 items-start py-2 border-b border-gray-100 dark:border-gray-800">
-  <div class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">${escapeHtml(k)}</div>
-  <div class="text-sm break-words whitespace-pre-wrap">${escapeHtml(String(value))}</div>
+                return `<div class="grid grid-cols-[200px_1fr] gap-3 items-start py-2 border-b border-[var(--flame-metallic-silver)]">
+  <div class="text-[11px] uppercase tracking-wide text-[var(--flame-metallic-silver)]">${escapeHtml(k)}</div>
+  <div class="text-sm break-words whitespace-pre-wrap text-[var(--flame-charcoal-black)]">${escapeHtml(String(value))}</div>
 </div>`;
             })
             .join("");
@@ -167,27 +167,27 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
     };
 
     const renderValue = (value: unknown, depth: number = 0): string => {
-        if (value === null) return '<span class="text-gray-500 italic">null</span>';
-        if (value === undefined) return '<span class="text-gray-500 italic">undefined</span>';
+        if (value === null) return '<span class="italic text-[var(--flame-metallic-silver)]">null</span>';
+        if (value === undefined) return '<span class="italic text-[var(--flame-metallic-silver)]">undefined</span>';
 
         if (typeof value === "string") {
-            return `<span class="text-green-600 dark:text-green-400">"${escapeHtml(value)}"</span>`;
+            return `<span class="text-[var(--flame-red-orange)]">"${escapeHtml(value)}"</span>`;
         }
 
         if (typeof value === "number") {
-            return `<span class="text-blue-600 dark:text-blue-400">${value}</span>`;
+            return `<span class="text-[var(--flame-red-orange)]">${value}</span>`;
         }
 
         if (typeof value === "boolean") {
-            return `<span class="text-purple-600 dark:text-purple-400">${value}</span>`;
+            return `<span class="text-[var(--flame-red-orange)]">${value}</span>`;
         }
 
         if (Array.isArray(value)) {
-            if (value.length === 0) return '<span class="text-gray-500 italic">(empty array)</span>';
+            if (value.length === 0) return '<span class="italic text-[var(--flame-metallic-silver)]">(empty array)</span>';
 
             const maxDepth = 3; // Limit nesting depth for performance
             if (depth >= maxDepth) {
-                return `<span class="text-gray-500 italic">[Array with ${value.length} items]</span>`;
+                return `<span class="italic text-[var(--flame-metallic-silver)]">[Array with ${value.length} items]</span>`;
             }
 
             const items = value
@@ -195,23 +195,23 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
                 .map((item, index) => {
                     const itemHtml = renderValue(item, depth + 1);
                     return `
-            <div class="ml-4 border-l-2 border-gray-200 dark:border-gray-700 pl-3 py-1">
-              <span class="text-gray-500 text-xs">[${index}]:</span> ${itemHtml}
+            <div class="ml-4 pl-3 py-1 border-l-2 border-[var(--flame-metallic-silver)]">
+              <span class="text-xs text-[var(--flame-metallic-silver)]">[${index}]:</span> ${itemHtml}
             </div>`;
                 })
                 .join("");
 
-            const remaining = value.length > 10 ? `<div class="ml-4 text-gray-500 text-sm italic">... and ${value.length - 10} more items</div>` : "";
+            const remaining = value.length > 10 ? `<div class="ml-4 text-sm italic text-[var(--flame-metallic-silver)]">... and ${value.length - 10} more items</div>` : "";
 
             return `<div class="space-y-1">${items}${remaining}</div>`;
         }
 
         if (typeof value === "object" && value !== null) {
-            if (Object.keys(value as object).length === 0) return '<span class="text-gray-500 italic">(empty object)</span>';
+            if (Object.keys(value as object).length === 0) return '<span class="italic text-[var(--flame-metallic-silver)]">(empty object)</span>';
 
             const maxDepth = 3; // Limit nesting depth for performance
             if (depth >= maxDepth) {
-                return `<span class="text-gray-500 italic">{Object with ${Object.keys(value as object).length} keys}</span>`;
+                return `<span class="italic text-[var(--flame-metallic-silver)]">{Object with ${Object.keys(value as object).length} keys}</span>`;
             }
 
             const entries = Object.entries(value as object)
@@ -219,32 +219,32 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
                 .map(([key, val]) => {
                     const valHtml = renderValue(val, depth + 1);
                     return `
-            <div class="ml-4 border-l-2 border-gray-200 dark:border-gray-700 pl-3 py-1">
-              <span class="text-gray-600 dark:text-gray-400 font-medium">${escapeHtml(key)}:</span> ${valHtml}
+            <div class="ml-4 pl-3 py-1 border-l-2 border-[var(--flame-metallic-silver)]">
+              <span class="font-medium text-[var(--flame-charcoal-black)]">${escapeHtml(key)}:</span> ${valHtml}
             </div>`;
                 })
                 .join("");
 
             const remaining =
                 Object.keys(value as object).length > 10
-                    ? `<div class="ml-4 text-gray-500 text-sm italic">... and ${Object.keys(value as object).length - 10} more keys</div>`
+                    ? `<div class="ml-4 italic text-[var(--flame-metallic-silver)]">... and ${Object.keys(value as object).length - 10} more keys</div>`
                     : "";
 
             return `<div class="space-y-1">${entries}${remaining}</div>`;
         }
 
-        return `<span class="text-gray-600 dark:text-gray-400">${escapeHtml(String(value))}</span>`;
+        return `<span class="text-[var(--flame-charcoal-black)]">${escapeHtml(String(value))}</span>`;
     };
 
     const renderObjectTable = (obj: Record<string, unknown> | undefined): string => {
         if (!obj || Object.keys(obj).length === 0) {
-            return `<div class="px-4 pb-4 text-xs text-gray-500">(empty)</div>`;
+            return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(empty)</div>`;
         }
         const rows = Object.entries(obj)
             .map(([k, v]) => {
                 const displayValue = renderValue(v);
-                return `<div class="grid grid-cols-[200px_1fr] gap-3 items-start py-2 border-b border-gray-100 dark:border-gray-800">
-  <div class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">${escapeHtml(k)}</div>
+                return `<div class="grid grid-cols-[200px_1fr] gap-3 items-start py-2 border-b border-[var(--flame-metallic-silver)]">
+  <div class="text-[11px] uppercase tracking-wide text-[var(--flame-metallic-silver)]">${escapeHtml(k)}</div>
   <div class="text-sm break-words">${displayValue}</div>
 </div>`;
             })
@@ -254,39 +254,39 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
 
     const renderBodyContent = (body: unknown): string => {
         if (body === undefined || body === null) {
-            return `<div class="px-4 pb-4 text-xs text-gray-500">(no body)</div>`;
+            return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(no body)</div>`;
         }
 
         if (typeof body === "string") {
             if (body.trim() === "") {
-                return `<div class="px-4 pb-4 text-xs text-gray-500">(empty string)</div>`;
+                return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(empty string)</div>`;
             }
             return `<div class="px-4 pb-4">
-  <div class="text-sm break-words whitespace-pre-wrap font-mono bg-gray-50 dark:bg-gray-900 p-3 rounded border">${escapeHtml(body)}</div>
+  <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${escapeHtml(body)}</div>
 </div>`;
         }
 
         if (typeof body === "object") {
             if (Array.isArray(body)) {
                 if (body.length === 0) {
-                    return `<div class="px-4 pb-4 text-xs text-gray-500">(empty array)</div>`;
+                    return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(empty array)</div>`;
                 }
                 return `<div class="px-4 pb-4">
-  <div class="text-sm break-words bg-gray-50 dark:bg-gray-900 p-3 rounded border">${renderValue(body)}</div>
+  <div class="text-sm break-words p-3 rounded bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${renderValue(body)}</div>
 </div>`;
             }
 
             if (Object.keys(body as object).length === 0) {
-                return `<div class="px-4 pb-4 text-xs text-gray-500">(empty object)</div>`;
+                return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(empty object)</div>`;
             }
 
             return `<div class="px-4 pb-4">
-  <div class="text-sm break-words bg-gray-50 dark:bg-gray-900 p-3 rounded border">${renderValue(body)}</div>
+  <div class="text-sm break-words p-3 rounded bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${renderValue(body)}</div>
 </div>`;
         }
 
         return `<div class="px-4 pb-4">
-  <div class="text-sm break-words whitespace-pre-wrap font-mono bg-gray-50 dark:bg-gray-900 p-3 rounded border">${escapeHtml(String(body))}</div>
+  <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${escapeHtml(String(body))}</div>
 </div>`;
     };
 
@@ -309,19 +309,19 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
 
                 sidebarSections += `
     <div>
-      <div class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">${title}</div>
+      <div class="text-[11px] uppercase tracking-wide mb-2 text-[var(--flame-metallic-silver)]">${title}</div>
       <ul class="space-y-1 text-sm">
-        <li><a href="#${sectionId}" class="text-blue-600 hover:underline">${title}</a></li>
+        <li><a href="#${sectionId}" class="text-[var(--flame-red-orange)]">${title}</a></li>
       </ul>
     </div>`;
 
                 contentSections += `
   <input type="hidden" id="clipboard-${sectionId}-${uniqueId}" value="${attrEscape(JSON.stringify(value))}">
-  <section id="${sectionId}" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
+  <section id="${sectionId}" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
     <div class="px-4 py-3 flex items-center gap-2">
-      <h3 class="text-sm font-semibold">${title}</h3>
+      <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">${title}</h3>
       <div class="grow"></div>
-      <a href="#${sectionId}" class="text-gray-400 hover:text-gray-600 text-xs" aria-label="Anchor">#</a>
+      <a href="#${sectionId}" class="text-xs text-[var(--flame-metallic-silver)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-${sectionId}-${uniqueId}`, label: "Copy JSON" })}
     </div>
     <div class="max-w-full overflow-auto">${renderObjectTable(value as Record<string, unknown>)}</div>
@@ -336,15 +336,15 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
 
     const sidebar = `
 <aside class="shrink-0 w-64 relative">
-  <nav class="sticky top-4 p-3 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md space-y-4 overflow-auto">
+  <nav class="sticky top-4 p-3 rounded-lg shadow-md space-y-4 overflow-auto bg-[var(--flame-white-smoke)]">
     <div>
-      <div class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Request</div>
+      <div class="text-[11px] uppercase tracking-wide mb-2 text-[var(--flame-metallic-silver)]">Request</div>
       <ul class="space-y-1 text-sm">
-        <li><a href="#context-request" class="text-blue-600 hover:underline">Overview</a></li>
-        <li><a href="#context-headers" class="text-blue-600 hover:underline">Headers</a></li>
-        <li><a href="#context-body" class="text-blue-600 hover:underline">Body</a></li>
-        <li><a href="#context-session" class="text-blue-600 hover:underline">Session</a></li>
-        <li><a href="#context-cookies" class="text-blue-600 hover:underline">Cookies</a></li>
+        <li><a href="#context-request" class="text-[var(--flame-red-orange)]">Overview</a></li>
+        <li><a href="#context-headers" class="text-[var(--flame-red-orange)]">Headers</a></li>
+        <li><a href="#context-body" class="text-[var(--flame-red-orange)]">Body</a></li>
+        <li><a href="#context-session" class="text-[var(--flame-red-orange)]">Session</a></li>
+        <li><a href="#context-cookies" class="text-[var(--flame-red-orange)]">Cookies</a></li>
       </ul>
     </div>${contextSections.sidebar}
   </nav>
@@ -354,11 +354,11 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
     const content = `
 <div class="grow min-w-0">
   <input type="hidden" id="clipboard-curl-${uniqueId}" value="${attrEscape(curl)}">
-  <section id="context-request" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
+  <section id="context-request" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
     <div class="px-4 py-4 flex items-center gap-3 min-w-0">
-      <h2 class="text-sm font-semibold">Request</h2>
-      <a class="text-blue-600 hover:underline text-sm truncate" href="${escapeHtml(request.url || "#")}">${escapeHtml(request.url || "")}</a>
-      <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">${escapeHtml(
+      <h2 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Request</h2>
+      <a class="text-sm truncate text-[var(--flame-red-orange)]" href="${escapeHtml(request.url || "#")}">${escapeHtml(request.url || "")}</a>
+      <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${escapeHtml(
           String(request.method || "GET"),
       )}</span>
       <div class="grow"></div>
@@ -368,44 +368,44 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
   </section>
 
   <input type="hidden" id="clipboard-headers-${uniqueId}" value="${attrEscape(JSON.stringify(filteredHeaders || {}))}">
-  <section id="context-headers" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
+  <section id="context-headers" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
     <div class="px-4 py-3 flex items-center gap-2">
-      <h3 class="text-sm font-semibold">Headers</h3>
+      <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Headers</h3>
       <div class="grow"></div>
-      <a href="#context-headers" class="text-gray-400 hover:text-gray-600 text-xs" aria-label="Anchor">#</a>
+      <a href="#context-headers" class="text-xs text-[var(--flame-metallic-silver)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-headers-${uniqueId}`, label: "Copy JSON" })}
     </div>
     <div class="max-w-full overflow-auto">${renderKeyValueTable(filteredHeaders)}</div>
   </section>
 
   <input type="hidden" id="clipboard-body-${uniqueId}" value="${attrEscape(JSON.stringify(request?.body || {}))}">
-  <section id="context-body" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
+  <section id="context-body" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
     <div class="px-4 py-3 flex items-center gap-2">
-      <h3 class="text-sm font-semibold">Body</h3>
+      <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Body</h3>
       <div class="grow"></div>
-      <a href="#context-body" class="text-gray-400 hover:text-gray-600 text-xs" aria-label="Anchor">#</a>
+      <a href="#context-body" class="text-xs text-[var(--flame-metallic-silver)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-body-${uniqueId}`, label: "Copy JSON" })}
     </div>
     <div class="max-w-full overflow-auto">${renderBodyContent(request?.body)}</div>
   </section>
 
   <input type="hidden" id="clipboard-session-${uniqueId}" value="${attrEscape(JSON.stringify(request?.session ?? {}))}">
-  <section id="context-session" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
+  <section id="context-session" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
     <div class="px-4 py-3 flex items-center gap-2">
-      <h3 class="text-sm font-semibold">Session</h3>
+      <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Session</h3>
       <div class="grow"></div>
-      <a href="#context-session" class="text-gray-400 hover:text-gray-600 text-xs" aria-label="Anchor">#</a>
+      <a href="#context-session" class="text-xs text-[var(--flame-metallic-silver)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-session-${uniqueId}`, label: "Copy JSON" })}
     </div>
             <div class="max-w-full overflow-auto">${renderObjectTable(request?.session as Record<string, unknown>)}</div>
   </section>
 
   <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attrEscape(JSON.stringify(request?.cookies || {}))}">
-  <section id="context-cookies" class="mb-4 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 bg-white rounded-lg shadow-md overflow-hidden">
+  <section id="context-cookies" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
     <div class="px-4 py-3 flex items-center gap-2">
-      <h3 class="text-sm font-semibold">Cookies</h3>
+      <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Cookies</h3>
       <div class="grow"></div>
-      <a href="#context-cookies" class="text-gray-400 hover:text-gray-600 text-xs" aria-label="Anchor">#</a>
+      <a href="#context-cookies" class="text-xs text-[var(--flame-metallic-silver)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-cookies-${uniqueId}`, label: "Copy JSON" })}
     </div>
     <div class="max-w-full overflow-auto">${renderKeyValueTable((request?.cookies || {}) as Record<string, string | string[]>)}

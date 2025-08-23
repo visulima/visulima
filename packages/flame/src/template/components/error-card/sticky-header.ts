@@ -8,23 +8,23 @@ const stickyHeader = (
     script: string;
 } => {
     return {
-        html: `<div id="error-card-sticky-header" class="fixed invisible bg-white dark:bg-gray-800/50 dark:bg-linear-to-bl dark:ring-1 dark:ring-inset dark:ring-white/5 container px-6 py-4 -top-40 z-10 rounded-b-lg transition-all duration-300 dark:shadow-none from-gray-700/50 via-transparent shadow-2xl shadow-gray-500/20">
+        html: `<div id="error-card-sticky-header" class="fixed invisible container px-6 py-4 -top-40 z-10 rounded-lg transition-all duration-300 shadow-2xl bg-[var(--flame-white-smoke)]">
   <input type="hidden" id="clipboard-sticky-error-title" value="${error.name}: ${error.message}">
   <div class="flex items-center gap-2">
-    <h1 class="text-sm font-semibold text-gray-700 dark:text-white bg-gray-100 dark:bg-gray-800/50 dark:ring-1 dark:ring-inset dark:ring-white/5 py-1 px-2" aria-label="Error name">${error.name}</h1>
-    <span class="text-md font-semibold text-gray-600 dark:text-gray-400 line-clamp-1" aria-label="Error message">${error.message}</span>
+    <h1 class="text-sm font-semibold py-1 px-2 text-[var(--flame-charcoal-black)] bg-[var(--flame-metallic-silver)]" aria-label="Error name">${error.name}</h1>
+    <span class="text-md font-semibold line-clamp-1 text-[var(--flame-charcoal-black)]" aria-label="Error message">${error.message}</span>
     <div class="grow"></div>
     ${shortcutsButton()}
     ${copyButton({ targetId: "clipboard-sticky-error-title", label: "Copy error title" })}
   </div>
 </div>`,
-        script: `(window.subscribeToDOMContentLoaded || function (fn) { 
-          if (document.readyState !== 'loading') fn(); 
-          else document.addEventListener('DOMContentLoaded', fn); 
+        script: `(window.subscribeToDOMContentLoaded || function (fn) {
+          if (document.readyState !== 'loading') fn();
+          else document.addEventListener('DOMContentLoaded', fn);
         })(function () {
           const errorCard = document.getElementById("error-card");
           const header = document.getElementById("error-card-sticky-header");
-          
+
           if (!errorCard || !header) {
             console.warn('Sticky header elements not found');
             return;

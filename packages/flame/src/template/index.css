@@ -13,6 +13,14 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Flame Theme Color Variables - Available for use in Tailwind classes */
+:root {
+    --flame-white-smoke: #F5F5F5;
+    --flame-metallic-silver: #B9C8D7;
+    --flame-red-orange: #FF4628;
+    --flame-charcoal-black: #202020;
+}
+
 .flame {
     @apply bg-red-500;
 }
@@ -72,7 +80,7 @@ details > summary [data-chevron] {
   Accessibility: high-visibility focus outlines and contrast-friendly defaults
 */
 
-/* Use a consistent focus outline across interactive elements */
+/* Use a consistent focus outline across interactive elements with flame theme */
 button:focus-visible,
 [role="tab"]:focus-visible,
 summary:focus-visible,
@@ -81,33 +89,33 @@ input:focus-visible,
 textarea:focus-visible,
 [data-open-in-editor]:focus-visible,
 .js-clipboard:focus-visible {
-    outline: 2px solid #2563eb; /* blue-600 */
+    outline: 2px solid var(--flame-red-orange);
     outline-offset: 2px;
 }
 
-/* High-contrast tweaks for dark mode */
+/* High-contrast tweaks for dark mode using flame colors */
 .dark .text-gray-400 {
-    color: #94a3b8;
+    color: var(--flame-metallic-silver);
 }
 .dark .text-gray-500 {
-    color: #9ca3af;
+    color: var(--flame-metallic-silver);
 }
 .dark .bg-gray-700\/50 {
-    background-color: rgba(55, 65, 81, 0.6);
+    background-color: rgba(32, 32, 32, 0.6);
 }
 
-/* Selected tab state should be clearly visible */
+/* Selected tab state should be clearly visible with flame theme */
 [role="tab"].active {
-    border-left: 3px solid #2563eb; /* blue-600 */
-    background-color: rgba(37, 99, 235, 0.08);
+    border-left: 3px solid var(--flame-red-orange);
+    background-color: rgba(255, 70, 40, 0.08);
 }
 
 /* Stack trace viewer specific tab styles - completely independent from Preline */
 .stack-tab-active {
-    border-left: 3px solid #2563eb !important; /* blue-600 */
-    background-color: rgba(37, 99, 235, 0.08) !important;
+    border-left: 3px solid var(--flame-red-orange) !important;
+    background-color: rgba(255, 70, 40, 0.08) !important;
     font-weight: 600 !important;
-    color: #2563eb !important; /* blue-600 */
+    color: var(--flame-red-orange) !important;
 }
 
 /* Ensure disabled tabs are distinguishable but still readable */

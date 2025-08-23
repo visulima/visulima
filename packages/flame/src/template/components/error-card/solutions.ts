@@ -91,9 +91,9 @@ const solutions = async (
         </div>
     </div>
 </div>`,
-        script: `(window.subscribeToDOMContentLoaded || function (fn) { 
-          if (document.readyState !== 'loading') fn(); 
-          else document.addEventListener('DOMContentLoaded', fn); 
+        script: `(window.subscribeToDOMContentLoaded || function (fn) {
+          if (document.readyState !== 'loading') fn();
+          else document.addEventListener('DOMContentLoaded', fn);
         })(function () {
           // Get DOM elements
           const wrapper = document.querySelector('#flame-solution-wrapper');
@@ -129,20 +129,20 @@ const solutions = async (
           // State management
           const setOpenState = (nextOpen) => {
             isOpen = Boolean(nextOpen);
-            
+
             // Update icon
             setIcon(isOpen);
-            
+
             if (isOpen) {
               // Expand: show full content
               wrapper.classList.add('w-full');
               wrapper.classList.remove('w-12');
-              
+
               content.classList.remove('opacity-0');
               content.classList.add('opacity-100');
-              
+
               button.setAttribute('aria-expanded', 'true');
-              
+
               // Clear height constraint after transition
               afterTransition(content, () => {
                 content.style.maxHeight = 'none';
@@ -152,19 +152,19 @@ const solutions = async (
               // Collapse: hide content with smooth animation
               wrapper.classList.remove('w-full');
               wrapper.classList.add('w-12');
-              
+
               // Animate height from current to 0
               const currentHeight = content.scrollHeight;
               content.style.maxHeight = \`\${currentHeight}px\`;
-              
+
               // Force reflow for smooth animation
               content.offsetHeight;
-              
+
               // Fade out and collapse
               content.classList.remove('opacity-100');
               content.classList.add('opacity-0');
               content.style.maxHeight = '0px';
-              
+
               button.setAttribute('aria-expanded', 'false');
             }
           };
@@ -180,7 +180,7 @@ const solutions = async (
 
           // Event handlers
           const handleClick = () => setOpenState(!isOpen);
-          
+
           const handleKeydown = (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
