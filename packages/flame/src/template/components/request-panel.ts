@@ -140,7 +140,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
     };
 
     const curl = buildCurl();
-    const curlHtml = await (await getHighlighter()).codeToHtml(curl, { lang: "bash", theme: "nord" });
+    const curlHtml = await (await getHighlighter()).codeToHtml(curl, { lang: "bash", theme: "vesper" });
 
     const attrEscape = (value: unknown): string => {
         return String(value ?? "").replaceAll("'", "&apos;");
@@ -157,7 +157,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
         const rows = Object.entries(records)
             .map(([k, v]) => {
                 const value = Array.isArray(v) ? v.join(", ") : v;
-                return `<div class="grid grid-cols-[200px_1fr] gap-3 items-start py-2 border-b border-[var(--flame-metallic-silver)]">
+                return `<div class="grid grid-cols-[200px_1fr] gap-3 items-start py-2 border-b border-[var(--flame-border)]">
   <div class="text-[11px] uppercase tracking-wide text-[var(--flame-metallic-silver)]">${escapeHtml(k)}</div>
   <div class="text-sm break-words whitespace-pre-wrap text-[var(--flame-charcoal-black)]">${escapeHtml(String(value))}</div>
 </div>`;
@@ -317,7 +317,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
 
                 contentSections += `
   <input type="hidden" id="clipboard-${sectionId}-${uniqueId}" value="${attrEscape(JSON.stringify(value))}">
-  <section id="${sectionId}" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
+  <section id="${sectionId}" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
     <div class="px-4 py-3 flex items-center gap-2">
       <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">${title}</h3>
       <div class="grow"></div>
@@ -336,7 +336,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
 
     const sidebar = `
 <aside class="shrink-0 w-64 relative">
-  <nav class="sticky top-4 p-3 rounded-lg shadow-md space-y-4 overflow-auto bg-[var(--flame-white-smoke)]">
+  <nav class="sticky top-4 p-3 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] space-y-4 overflow-auto bg-[var(--flame-surface)]">
     <div>
       <div class="text-[11px] uppercase tracking-wide mb-2 text-[var(--flame-metallic-silver)]">Request</div>
       <ul class="space-y-1 text-sm">
@@ -354,7 +354,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
     const content = `
 <div class="grow min-w-0">
   <input type="hidden" id="clipboard-curl-${uniqueId}" value="${attrEscape(curl)}">
-  <section id="context-request" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
+  <section id="context-request" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
     <div class="px-4 py-4 flex items-center gap-3 min-w-0">
       <h2 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Request</h2>
       <a class="text-sm truncate text-[var(--flame-red-orange)]" href="${escapeHtml(request.url || "#")}">${escapeHtml(request.url || "")}</a>
@@ -368,7 +368,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
   </section>
 
   <input type="hidden" id="clipboard-headers-${uniqueId}" value="${attrEscape(JSON.stringify(filteredHeaders || {}))}">
-  <section id="context-headers" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
+  <section id="context-headers" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
     <div class="px-4 py-3 flex items-center gap-2">
       <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Headers</h3>
       <div class="grow"></div>
@@ -379,7 +379,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
   </section>
 
   <input type="hidden" id="clipboard-body-${uniqueId}" value="${attrEscape(JSON.stringify(request?.body || {}))}">
-  <section id="context-body" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
+  <section id="context-body" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
     <div class="px-4 py-3 flex items-center gap-2">
       <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Body</h3>
       <div class="grow"></div>
@@ -390,7 +390,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
   </section>
 
   <input type="hidden" id="clipboard-session-${uniqueId}" value="${attrEscape(JSON.stringify(request?.session ?? {}))}">
-  <section id="context-session" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
+  <section id="context-session" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
     <div class="px-4 py-3 flex items-center gap-2">
       <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Session</h3>
       <div class="grow"></div>
@@ -401,7 +401,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
   </section>
 
   <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attrEscape(JSON.stringify(request?.cookies || {}))}">
-  <section id="context-cookies" class="mb-4 rounded-lg shadow-md overflow-hidden bg-[var(--flame-white-smoke)]">
+  <section id="context-cookies" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
     <div class="px-4 py-3 flex items-center gap-2">
       <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Cookies</h3>
       <div class="grow"></div>

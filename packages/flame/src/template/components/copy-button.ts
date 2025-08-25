@@ -1,18 +1,36 @@
+import cn from "../util/tw";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import clipboardIcon from "lucide-static/icons/clipboard.svg?raw";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import checkIcon from "lucide-static/icons/check.svg?raw";
+
+// Utility function to properly encode SVG content for CSS mask-image
+const svgToDataUrl = (svgContent: string): string => {
+    const cleanSvg = svgContent
+        .replace(/<!--[\s\S]*?-->/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
+};
+
 const copyButton = ({
     targetId,
     label = "Copy",
     successText = "Copied!",
-    className = "js-clipboard-example [--is-toggle-tooltip:false] hs-tooltip relative py-1 px-2 inline-flex justify-center items-center gap-x-2 text-xs font-medium rounded shadow-2xs disabled:opacity-50 disabled:pointer-events-none",
 }: {
     targetId: string;
     label?: string;
     successText?: string;
-    className?: string;
 }): string => {
     return `
     <button
       type="button"
-      class="${className} bg-[var(--flame-white-smoke)] text-[var(--flame-charcoal-black)]"
+      aria-label="${label}"
+      title="${label}"
+      class="${cn(
+          '[--is-toggle-tooltip:false] hs-tooltip relative inline-flex justify-center items-center size-8 rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800'
+      )}"
       data-clipboard-target="#${targetId}"
       data-clipboard-action="copy"
       data-clipboard-success-text="${successText}"
@@ -38,16 +56,13 @@ const copyButton = ({
         }
       "
     >
-      <svg class="js-clipboard-default size-4 transition" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
-        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-      </svg>
+      <span class="js-clipboard-default dui size-4 transition" style="-webkit-mask-image: url('${svgToDataUrl(clipboardIcon)}'); mask-image: url('${svgToDataUrl(clipboardIcon)}')"></span>
 
-      <svg class="js-clipboard-success hidden size-4 text-[var(--flame-red-orange)]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12"></polyline>
-      </svg>
+      <span class="js-clipboard-success dui hidden size-4 text-[var(--flame-red-orange)]" style="-webkit-mask-image: url('${svgToDataUrl(checkIcon)}'); mask-image: url('${svgToDataUrl(checkIcon)}')"></span>
 
-      <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-lg shadow-md bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">
+      <span class="sr-only">${label}</span>
+
+      <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">
         <span class="js-clipboard-success-text">${label}</span>
       </span>
     </button>

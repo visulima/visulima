@@ -16,7 +16,7 @@ const layout = ({
 ${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
 -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <title>${title}</title>
@@ -40,22 +40,6 @@ ${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
     <script>
       (function() {
         subscribeToDOMContentLoaded(() => {
-          // Focus trap around main container
-          var container = document.getElementById('visulima-flame-container');
-          var cleanupTrap = null;
-          if (container) {
-            try {
-              cleanupTrap = trapFocusWithin(container);
-              // Ensure something focusable inside receives focus
-              var first = getFocusableElements(container)[0];
-              if (first && typeof first.focus === 'function') first.focus();
-              else container.setAttribute('tabindex','-1'), container.focus();
-              container.setAttribute('role','dialog');
-              container.setAttribute('aria-modal','true');
-              container.setAttribute('aria-label','Error inspector');
-            } catch (_) {}
-          }
-
           // Global keyboard shortcut for ? and Shift+/ to open shortcuts
           document.addEventListener('keydown', function(e) {
             if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
@@ -97,11 +81,10 @@ ${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
     </script>
 </head>
 <body>
-
-    <div id="visulima-flame-container" class="w-full h-full overflow-auto bg-[var(--flame-white-smoke)] text-[var(--flame-charcoal-black)]">
-        <div class="container mx-auto mt-6">
+    <div id="visulima-flame-container" class="min-h-screen w-full overflow-auto bg-[var(--flame-bg)] text-[var(--flame-charcoal-black)]">
+        <main class="container mx-auto mt-6 px-4">
             ${content}
-        </div>
+        </main>
     </div>
 </body>
 </html>

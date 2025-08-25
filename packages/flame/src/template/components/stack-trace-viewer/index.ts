@@ -10,6 +10,7 @@ import getHighlighter from "../../util/get-highlighter";
 import type { GroupType, Item } from "./types";
 import getType from "./util/get-type";
 import groupSimilarTypes from "./util/group-similar-types";
+import cn from "../../util/tw";
 
 // Utility function to properly encode SVG content for CSS mask-image
 const svgToDataUrl = (svgContent: string): string => {
@@ -64,7 +65,10 @@ const stackTraceViewer = async (
 
         const code = highlighter.codeToHtml(sourceCodeFrame, {
             lang: findLanguageBasedOnExtension(trace.file || ""),
-            theme: "nord",
+            themes: {
+                light: "github-light",
+                dark: "vesper"
+            },
         });
 
         const filePath = `${trace.file}:${trace.line}:${trace.column}`;
@@ -74,12 +78,13 @@ const stackTraceViewer = async (
         tabs.push({
             html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-stack-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" ${
                 isClickable ? "" : 'disabled aria-disabled="true"'
-            } class="inline-flex items-center gap-x-2 text-sm whitespace-nowrap p-6 ${
-                isClickable ? "cursor-pointer" : "cursor-not-allowed"
-            } text-[var(--flame-metallic-silver)]">
+            } class="${cn(
+                'inline-flex items-center gap-x-2 text-sm whitespace-nowrap p-6 w-full text-left border-l-2 border-transparent hover:bg-black/5 text-[var(--flame-text-muted)]',
+                isClickable ? 'cursor-pointer' : 'cursor-not-allowed',
+            )}">
     <div class="flex flex-col w-full text-left">
         <span class="font-medium text-[var(--flame-charcoal-black)]">${trace.methodName}</span>
-        <span class="text-sm break-words text-[var(--flame-metallic-silver)]">${relativeFilePath}</span>
+        <span class="text-sm break-words text-[var(--flame-text-muted)]">${relativeFilePath}</span>
     </div>
 </button>`,
             type: trace.file ? getType(trace.file) : undefined,
@@ -88,10 +93,8 @@ const stackTraceViewer = async (
         sourceCode.push(`<div id="source-code-tabs-${uniqueKey}-${index}" class="${
             index === 0 && isClickable ? "block" : "hidden"
         }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}" tabindex="0">
-<div class="pt-10 pb-8 mb-6 text-sm text-right text-[var(--flame-metallic-silver)]">
-    <div class="px-6">
-        ${options.openInEditorUrl ? `<button type="button" class="underline hover:text-blue-400" data-open-in-editor data-url="${options.openInEditorUrl}" data-path="${absPathForEditor}" data-line="${trace.line || 1}" data-column="${trace.column || 1}">${relativeFilePath} — Open in editor</button>` : relativeFilePath}
-    </div>
+<div class="pt-6 px-6 text-sm text-right dark:text-white">
+    ${options.openInEditorUrl ? `<button type="button" class="underline hover:text-blue-400" data-open-in-editor data-url="${options.openInEditorUrl}" data-path="${absPathForEditor}" data-line="${trace.line || 1}" data-column="${trace.column || 1}">${relativeFilePath} — Open in editor</button>` : relativeFilePath}
 </div>
 <div class="p-6">${code}</div>
 </div>`);
@@ -139,9 +142,9 @@ const stackTraceViewer = async (
 
     const hasToggles = togglesHtml.trim().length > 0;
     const paddingClass = hasToggles ? "p-6" : "p-0";
-    const headerLabel = hasToggles ? '<span class="block text-xs mb-2 text-[var(--flame-metallic-silver)]">Show or Hide collapsed frames</span>' : "";
+    const headerLabel = hasToggles ? '<span class="block text-xs mb-2 text-[var(--flame-text-muted)]">Show or Hide collapsed frames</span>' : "";
 
-    const html = `<section class="container rounded-lg shadow-xl bg-[var(--flame-white-smoke)]" aria-label="Stack trace viewer">
+    const html = `<section class="container rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] bg-[var(--flame-surface)]" aria-label="Stack trace viewer">
     <main id="stack-trace-viewer" class="flex flex-row">
         <div class="w-4/12 rounded-tl-lg rounded-bl-lg overflow-hidden">
             <div class="${paddingClass}">
@@ -176,8 +179,11 @@ const stackTraceViewer = async (
                             }
 
                             return `<details id="stack-trace-group-${uniqueKey}-${groupIndex}">
-<summary class="py-3 px-6 cursor-pointer flex items-center justify-between text-sm hover:bg-gray-50 focus:outline-hidden focus:ring-1 focus:ring-gray-600 text-[var(--flame-charcoal-black)]">
-    <span>${tab.length} ${groupLabel} frames</span>
+<summary class="py-3 px-6 cursor-pointer flex items-center justify-between text-sm hover:bg-black/5 focus:outline-hidden focus:ring-1 focus:ring-gray-600 text-[var(--flame-charcoal-black)]">
+    <span class="flex items-center gap-2">
+      <span class="uppercase tracking-wide text-[10px] text-[var(--flame-text-muted)]">${groupLabel}</span>
+      <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${tab.length}</span>
+    </span>
     <span data-chevron class="dui w-4 h-4 transition-transform duration-300" style="-webkit-mask-image:url('${svgToDataUrl(chevronDownIcon)}'); mask-image:url('${svgToDataUrl(chevronDownIcon)}')"></span>
 </summary>
 <div class="flex flex-col">${tab.map((item) => item.html).join("")}</div>
@@ -189,7 +195,7 @@ const stackTraceViewer = async (
                     .join("")}
             </nav>
         </div>
-        <div class="w-8/12 rounded-tr-lg rounded-br-lg overflow-hidden bg-[var(--flame-charcoal-black)]">${sourceCode.join("")}</div>
+        <div class="w-8/12 rounded-tr-lg rounded-br-lg overflow-hidden dark:bg-[var(--flame-charcoal-black)]">${sourceCode.join("")}</div>
     </main>
 </section>`;
 
@@ -236,6 +242,7 @@ const stackTraceViewer = async (
                 b.classList.remove('border-blue-600');
                 b.classList.remove('text-blue-600');
                 b.classList.remove('text-[var(--flame-red-orange)]');
+                b.classList.remove('border-[var(--flame-red-orange)]');
                 b.classList.remove('stack-tab-active');
             });
 
@@ -253,6 +260,7 @@ const stackTraceViewer = async (
             button.classList.add('dark:bg-gray-700/50');
             button.classList.add('font-semibold');
             button.classList.add('text-[var(--flame-red-orange)]');
+            button.classList.add('border-[var(--flame-red-orange)]');
             button.classList.add('stack-tab-active');
             var sel = button.getAttribute('data-stack-tab');
 

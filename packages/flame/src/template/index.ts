@@ -3,7 +3,8 @@ import { getErrorCauses } from "@visulima/error/error";
 
 import type { DisplayerOptions, SolutionError, SolutionFinder } from "../types";
 import headerBar from "./components/header-bar";
-import tabsHeader, { type Tab } from "./components/tabs";
+import type { HeaderTab } from "./components/header-tabs";
+import { headerTabs } from "./components/header-tabs";
 import buildStackContent from "./content/stack";
 import inlineCss from "./index.css";
 import layout from "./layout";
@@ -52,19 +53,17 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
 
     const customPages = Array.isArray(options.content) ? options.content : [];
     const anyCustomSelected = customPages.some((p) => p.defaultSelected);
-    const tabs: Tab[] = [];
+    const tabsList: HeaderTab[] = [];
 
-    tabs.push({ id: "stack", name: "Stack", selected: !anyCustomSelected });
+    tabsList.push({ id: "stack", name: "Stack", selected: !anyCustomSelected });
 
     for (const page of customPages) {
-        tabs.push({ id: page.id, name: page.name, selected: Boolean(page.defaultSelected) });
+        tabsList.push({ id: page.id, name: page.name, selected: Boolean(page.defaultSelected) });
     }
 
     html += `<div class="flex flex-row gap-6 w-full mb-6">`;
 
-    const tabsUi = tabsHeader(tabs);
-
-    html += tabsUi.html;
+    html += headerTabs(tabsList);
 
     const { html: headerBarHtml, script: headerBarScript } = headerBar(options);
 
@@ -91,7 +90,6 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
             prelineClipboard,
             prelineInit,
             headerBarScript,
-            tabsUi.script,
             ...stackScripts,
             ...customPages.map((p) => p.code.script || ""),
         ],

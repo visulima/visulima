@@ -7,7 +7,7 @@ const getHighlighter = async (): Promise<Highlighter> => {
     if (!highlighterPromise) {
         highlighterPromise = createHighlighter({
             langs: ["javascript", "typescript", "jsx", "tsx", "json", "jsonc", "json5", "xml", "sql", "bash", "shell"],
-            themes: ["nord", "github-light"],
+            themes: ["vesper", "github-light"],
         });
     }
 

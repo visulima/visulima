@@ -1,4 +1,18 @@
 import { Editor } from "../../../types";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import checkIcon from "lucide-static/icons/check.svg?raw";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import chevronDownIcon from "lucide-static/icons/chevron-down.svg?raw";
+
+// Utility function to properly encode SVG content for CSS mask-image
+const svgToDataUrl = (svgContent: string): string => {
+    const cleanSvg = svgContent
+        .replace(/<!--[\s\S]*?-->/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
+};
 
 const editorSelector = (editor?: Editor): string => {
     let options = `<option value="">Auto-detected Editor</option>`;
@@ -8,9 +22,8 @@ const editorSelector = (editor?: Editor): string => {
         options += `<option value="${String(editorName)}" ${isSelected ? "selected" : ""}>${Editor[editorName]}</option>`;
     });
 
-    // Properly encoded chevron icon SVG
-    const chevronIcon =
-        "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTcgMTVsNSA1IDUtNSIvPjxwYXRoIGQ9Ik03IDlsNS01IDUgNSIvPjwvc3ZnPg==";
+    // Properly encoded chevron icon SVG from lucide-static
+    const chevronIcon = svgToDataUrl(chevronDownIcon);
 
     const selectOptions = `{
     "placeholder": "Auto-detected Editor",
@@ -18,7 +31,7 @@ const editorSelector = (editor?: Editor): string => {
     "dropdownClasses": "mt-2 z-50 w-full max-h-[300px] p-1 space-y-0.5 bg-white border border-gray-200 rounded-lg overflow-hidden overflow-y-auto dark:bg-slate-900 dark:border-gray-700 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-lg [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-lg [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-slate-700 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500",
     "optionClasses": "py-2 px-4 w-full text-sm text-gray-800 cursor-pointer hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-gray-200 dark:focus:bg-slate-800",
     "toggleTag": "<button type=\\"button\\"></button>",
-    "optionTemplate": "<div class=\\"flex justify-between items-center w-full\\"><span data-title></span><span class=\\"hidden selected:block\\"><svg class=\\"shrink-0 w-3.5 h-3.5 text-blue-600 dark:text-blue-500\\" xmlns=\\"http:.w3.org/2000/svg\\" width=\\"24\\" height=\\"24\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><polyline points=\\"20 6 9 17 4 12\\"/></svg></span></div>"
+    "optionTemplate": "<div class=\\"flex justify-between items-center w-full\\"><span data-title></span><span class=\\"hidden selected:block\\"><span class=\\"dui shrink-0 w-3.5 h-3.5 text-blue-600 dark:text-blue-500\\" style=\\"-webkit-mask-image:url('${svgToDataUrl(checkIcon)}'); mask-image:url('${svgToDataUrl(checkIcon)}')\\"></span></span></div>"
 }`;
 
     return `<div class="relative" ${!editor ? "hidden" : ""}>

@@ -17,8 +17,8 @@ const headerBar = (
     ${
         hasContextTab
             ? `<nav class="flex gap-1">
-      <button type="button" class="px-2 py-1 rounded text-xs bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">Stack</button>
-      <button type="button" class="px-2 py-1 rounded text-xs bg-[var(--flame-white-smoke)] text-[var(--flame-charcoal-black)]">Context</button>
+      <button type="button" class="px-2 py-1 rounded-[var(--flame-radius-md)] text-xs bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)] shadow-[var(--flame-elevation-1)]">Stack</button>
+      <button type="button" class="px-2 py-1 rounded-[var(--flame-radius-md)] text-xs bg-[var(--flame-white-smoke)] text-[var(--flame-charcoal-black)] shadow-[var(--flame-elevation-1)]">Context</button>
     </nav>`
             : ""
     }

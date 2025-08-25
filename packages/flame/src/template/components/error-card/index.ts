@@ -49,17 +49,17 @@ const errorCard = async ({
     const { html: stickyHeaderHtml, script: stickyHeaderScript } = stickyHeader(error);
 
     return {
-        html: `<section id="error-card" class="container rounded-lg shadow-xl bg-[var(--flame-white-smoke)]">
+        html: `<section id="error-card" class="container rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] bg-[var(--flame-surface)]">
     <input type="hidden" id="clipboard-error-title" value="${error.name}: ${(error as Error).message}">
     <div class="flex flex-row">
         <div class="flex flex-col gap-3 grow min-w-6/12 w-full p-6 pt-5">
             <div class="flex flex-row items-center gap-2">
-                <h1 class="text-lg font-semibold py-1 px-2 text-[var(--flame-charcoal-black)] bg-[var(--flame-metallic-silver)]">
+                <h1 class="text-lg font-semibold py-1 px-2 text-[var(--flame-charcoal-black)] bg-[var(--flame-metallic-silver)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)]">
                 ${error.name}
                 </h1>
                 ${copyButton({ targetId: "clipboard-error-title", label: "Copy error title" })}
                 <div class="grow"></div>
-                <div class="text-sm font-semibold py-1 px-2 text-[var(--flame-metallic-silver)]">
+                <div class="text-sm font-semibold py-1 px-2 text-[var(--flame-text-muted)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)]">
                 ${runtime}
                 </div>
             </div>

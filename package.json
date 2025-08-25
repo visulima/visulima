@@ -266,6 +266,7 @@
         "secretlint": "9.3.3",
         "semantic-release": "^24.2.5",
         "sort-package-json": "^3.2.1",
+        "tailwind-merge": "3.3.1",
         "taze": "^19.1.0",
         "textlint": "^14.7.2",
         "tsup": "^8.5.0",

@@ -8,10 +8,10 @@ const stickyHeader = (
     script: string;
 } => {
     return {
-        html: `<div id="error-card-sticky-header" class="fixed invisible container px-6 py-4 -top-40 z-10 rounded-lg transition-all duration-300 shadow-2xl bg-[var(--flame-white-smoke)]">
+        html: `<div id="error-card-sticky-header" class="fixed invisible container px-6 py-4 -top-40 z-10 rounded-[var(--flame-radius-lg)] transition-all duration-300 shadow-[var(--flame-elevation-2)] bg-[var(--flame-surface)]">
   <input type="hidden" id="clipboard-sticky-error-title" value="${error.name}: ${error.message}">
   <div class="flex items-center gap-2">
-    <h1 class="text-sm font-semibold py-1 px-2 text-[var(--flame-charcoal-black)] bg-[var(--flame-metallic-silver)]" aria-label="Error name">${error.name}</h1>
+    <h1 class="text-sm font-semibold py-1 px-2 text-[var(--flame-charcoal-black)] bg-[var(--flame-metallic-silver)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)]" aria-label="Error name">${error.name}</h1>
     <span class="text-md font-semibold line-clamp-1 text-[var(--flame-charcoal-black)]" aria-label="Error message">${error.message}</span>
     <div class="grow"></div>
     ${shortcutsButton()}

@@ -1,6 +1,20 @@
 /* eslint-disable no-secrets/no-secrets */
 import stackTraceViewer from "../stack-trace-viewer";
 import { tooltip } from "../tooltip";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import plusIcon from "lucide-static/icons/plus.svg?raw";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import minusIcon from "lucide-static/icons/minus.svg?raw";
+
+// Utility function to properly encode SVG content for CSS mask-image
+const svgToDataUrl = (svgContent: string): string => {
+    const cleanSvg = svgContent
+        .replace(/<!--[\s\S]*?-->/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
+};
 
 const causes = async (causeList: unknown[]): Promise<{ html: string; script: string }> => {
     if (causeList.length === 0) {
@@ -17,13 +31,13 @@ const causes = async (causeList: unknown[]): Promise<{ html: string; script: str
         if (cause instanceof Error) {
             const { html: stackTraceHtml, script: stackTraceScript } = await stackTraceViewer(cause);
 
-            content.push(`<details aria-label="Cause ${index + 1}" class="rounded-xl mb-2 last:mb-0 group shadow-xl bg-[var(--flame-white-smoke)]">
-    <summary class="focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-all inline-flex justify-between items-center gap-x-3 w-full font-semibold text-start py-4 px-5 disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-[var(--flame-charcoal-black)]">
+            content.push(`<details aria-label="Cause ${index + 1}" class="relative rounded-[var(--flame-radius-lg)] mb-2 last:mb-0 group shadow-[var(--flame-elevation-2)] bg-[var(--flame-surface)]">
+    <summary class="pl-5 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-all inline-flex justify-between items-center gap-x-3 w-full font-semibold text-start py-4 px-5 disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-[var(--flame-charcoal-black)]">
       ${cause.name}: ${cause.message}
-      <svg class="block group-open:hidden w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-      <svg class="hidden group-open:block! w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
+      <span class="dui flame-expand-icon-closed size-4" style="-webkit-mask-image:url('${svgToDataUrl(plusIcon)}'); mask-image:url('${svgToDataUrl(plusIcon)}')"></span>
+      <span class="dui flame-expand-icon-open size-4" style="-webkit-mask-image:url('${svgToDataUrl(minusIcon)}'); mask-image:url('${svgToDataUrl(minusIcon)}')"></span>
     </summary>
-    <section class="w-full overflow-hidden transition-[height] duration-300 p-5">
+    <section class="w-full overflow-hidden transition-[height] duration-300 p-5 pt-0">
       ${stackTraceHtml}
     </section>
 </details>`);
