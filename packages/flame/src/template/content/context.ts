@@ -70,7 +70,7 @@ const safeJsonStringify = (value: unknown): string => {
     }
 };
 
-const requestPanel = async (request: RequestContext | undefined, options: DisplayerOptions): Promise<{ html: string; script: string }> => {
+export default async function buildContextContent(request: RequestContext | undefined, options: DisplayerOptions): Promise<ContentPage | undefined> {
     if (!request) {
         return { html: "", script: "" };
     }
@@ -326,57 +326,47 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
 
     const sidebar = `
 <aside class="shrink-0 w-64 sticky top-4 self-start">
-  <nav aria-label="Context sections" data-hs-scrollspy="#flame-context-sections" data-hs-scrollspy-scrollable-parent="#visulima-flame-container" class="p-3 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-surface)] border border-[var(--flame-border)] max-h-[calc(100dvh-2rem)]">
-    <div class="flex items-center justify-between sm:hidden">
-      <div class="text-[11px] uppercase tracking-wide text-[var(--flame-text-muted)]">Sections</div>
-      <button type="button" class="hs-collapse-toggle p-2 inline-flex justify-center items-center gap-2 rounded-lg border border-[var(--flame-border)] bg-[var(--flame-surface)] text-[var(--flame-text)] shadow-[var(--flame-elevation-1)]" aria-controls="flame-scrollspy-collapse" aria-label="Toggle sections" data-hs-collapse="#flame-scrollspy-collapse">
-        <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(globeIcon)}'); mask-image:url('${svgToDataUrl(globeIcon)}')"></span>
-      </button>
-    </div>
-    <div id="flame-scrollspy-collapse" class="hidden overflow-hidden transition-all duration-300 sm:block mt-2">
-      <div class="space-y-4 [--scrollspy-offset:90]">
-        <div>
-          <div class="text-[11px] uppercase tracking-wide mb-2 text-[var(--flame-text-muted)]">Request</div>
-          <ul class="space-y-1 text-sm">
-            <li>
-              <a href="#context-request" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold active">
-                <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(globeIcon)}'); mask-image:url('${svgToDataUrl(globeIcon)}')"></span>
-                <span>Overview</span>
-              </a>
-            </li>
-            <li>
-              <a href="#context-headers" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold">
-                <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(fileTextIcon)}'); mask-image:url('${svgToDataUrl(fileTextIcon)}')"></span>
-                <span>Headers</span>
-              </a>
-            </li>
-            <li>
-              <a href="#context-body" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold">
-                <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(bracesIcon)}'); mask-image:url('${svgToDataUrl(bracesIcon)}')"></span>
-                <span>Body</span>
-              </a>
-            </li>
-            <li>
-              <a href="#context-session" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold">
-                <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(userIcon)}'); mask-image:url('${svgToDataUrl(userIcon)}')"></span>
-                <span>Session</span>
-              </a>
-            </li>
-            <li>
-              <a href="#context-cookies" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold">
-                <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(cookieIcon)}'); mask-image:url('${svgToDataUrl(cookieIcon)}')"></span>
-                <span>Cookies</span>
-              </a>
-            </li>
-          </ul>
-        </div>${contextSections.sidebar}
-      </div>
-    </div>
+  <nav aria-label="Context sections" class="p-3 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] space-y-4 overflow-auto bg-[var(--flame-surface)] border border-[var(--flame-border)] max-h-[calc(100dvh-2rem)]">
+    <div>
+      <div class="text-[11px] uppercase tracking-wide mb-2 text-[var(--flame-text-muted)]">Request</div>
+      <ul class="space-y-1 text-sm">
+        <li>
+          <a href="#context-request" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)]">
+            <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(globeIcon)}'); mask-image:url('${svgToDataUrl(globeIcon)}')"></span>
+            <span>Overview</span>
+          </a>
+        </li>
+        <li>
+          <a href="#context-headers" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)]">
+            <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(fileTextIcon)}'); mask-image:url('${svgToDataUrl(fileTextIcon)}')"></span>
+            <span>Headers</span>
+          </a>
+        </li>
+        <li>
+          <a href="#context-body" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)]">
+            <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(bracesIcon)}'); mask-image:url('${svgToDataUrl(bracesIcon)}')"></span>
+            <span>Body</span>
+          </a>
+        </li>
+        <li>
+          <a href="#context-session" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)]">
+            <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(userIcon)}'); mask-image:url('${svgToDataUrl(userIcon)}')"></span>
+            <span>Session</span>
+          </a>
+        </li>
+        <li>
+          <a href="#context-cookies" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)]">
+            <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(cookieIcon)}'); mask-image:url('${svgToDataUrl(cookieIcon)}')"></span>
+            <span>Cookies</span>
+          </a>
+        </li>
+      </ul>
+    </div>${contextSections.sidebar}
   </nav>
 </aside>`;
 
     const content = `
-<div id="flame-context-sections" class="grow min-w-0">
+<div class="grow min-w-0">
   <input type="hidden" id="clipboard-curl-${uniqueId}" value="${attrEscape(curl)}">
   <section id="context-request" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
     <div class="px-4 py-4 flex items-center gap-3 min-w-0 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
@@ -445,53 +435,6 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
   ${sidebar}
   ${content}
 </div>`;
-    const script = `(function(){ try {
-  (window.subscribeToDOMContentLoaded || function (fn) {
-    if (document.readyState !== 'loading') {
-      try { fn(); } catch (_) {}
-    } else {
-      try { document.addEventListener('DOMContentLoaded', fn); } catch (_) {}
-    }
-  })(function () {
-    try {
-      if (typeof HSScrollspy !== 'undefined' && HSScrollspy.getInstance) {
-        var instance = HSScrollspy.getInstance('[data-hs-scrollspy="#flame-context-sections"]', true);
 
-        if (instance && instance.element && instance.element.el && instance.element.el.on) {
-          if (typeof HSCollapse !== 'undefined' && HSCollapse.getInstance) {
-            var collapse = HSCollapse.getInstance('[data-hs-collapse="#flame-scrollspy-collapse"]', true);
-            console.log(collapse)
-            if (collapse && collapse.element && collapse.element.el && collapse.element.content) {
-              instance.element.on('beforeScroll', function () {
-                return new Promise(function (res) {
-                  var isOpen = collapse.element.el.classList.contains('open');
-                  if (isOpen) {
-                    collapse.element.hide();
-                    if (typeof HSStaticMethods !== 'undefined' && HSStaticMethods.afterTransition) {
-                      HSStaticMethods.afterTransition(collapse.element.content, function () { res(true); });
-                    } else {
-                      res(true);
-                    }
-                  } else {
-                    res(true);
-                  }
-                });
-              });
-            }
-          }
-        }
-      }
-    } catch (_) {}
-  });
-} catch (_) {} })();`;
-    
-    return { html, script };
-};
-
-export default async function buildContextContent(request: RequestContext | undefined, options: DisplayerOptions): Promise<ContentPage | undefined> {
-    const { html, script } = await requestPanel(request, options);
-    if (!html) {
-        return undefined;
-    }
-    return { id: "context", name: "Context", code: { html, script } };
+    return { id: "context", name: "Context", code: { html, script: '' } };
 }

@@ -25,8 +25,7 @@ const prelineInit = `
       // - clipboard: for copy functionality  
       // - theme-appearance: for dark/light mode switching
       // - tabs: for header navigation tabs
-      // - scrollspy: for context sidebar highlighting
-      HSStaticMethods.autoInit(['tooltip', 'clipboard', 'theme-appearance', 'tabs', 'scrollspy', 'collapse']);
+      HSStaticMethods.autoInit(['tooltip', 'clipboard', 'theme-appearance', 'tabs']);
     }
     
     // Explicitly initialize clipboard if available
