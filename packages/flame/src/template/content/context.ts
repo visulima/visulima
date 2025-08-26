@@ -70,11 +70,7 @@ const safeJsonStringify = (value: unknown): string => {
     }
 };
 
-export default async function buildContextContent(request: RequestContext | undefined, options: DisplayerOptions): Promise<ContentPage | undefined> {
-    if (!request) {
-        return { html: "", script: "" };
-    }
-
+export default async function buildContextContent(request: RequestContext, options: DisplayerOptions): Promise<ContentPage | undefined> {
     const uniqueId = `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}`;
     const { headerAllowlist, headerDenylist, maskValue = "[masked]" } = options.requestPanel || {};
     const filteredHeaders = filterHeaders(request.headers, headerAllowlist, headerDenylist, maskValue);
@@ -143,14 +139,15 @@ export default async function buildContextContent(request: RequestContext | unde
     };
 
     const curl = buildCurl();
-    const curlHtml = await (await getHighlighter()).codeToHtml(curl, { lang: "bash", theme: "vesper" });
+    const curlHtml = await (await getHighlighter()).codeToHtml(curl, { lang: "bash", theme: "github-dark-default" });
 
     const attrEscape = (value: unknown): string => String(value ?? "").replaceAll("'", "&apos;");
-    const escapeHtml = (str: string): string => String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+    const escapeHtml = (str: string): string =>
+        String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 
     const renderKeyValueTable = (records: Record<string, string | string[]> | undefined): string => {
         if (!records || Object.keys(records).length === 0) {
-            return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(empty)</div>`;
+            return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-text-muted)]">(empty)</div>`;
         }
         const rows = Object.entries(records)
             .map(([k, v]) => {
@@ -166,10 +163,10 @@ export default async function buildContextContent(request: RequestContext | unde
 
     const renderValue = (value: unknown, depth: number = 0): string => {
         if (value === null) {
-            return '<span class="italic text-[var(--flame-metallic-silver)]">null</span>';
+            return '<span class="italic text-[var(--flame-text-muted)]">null</span>';
         }
         if (value === undefined) {
-            return '<span class="italic text-[var(--flame-metallic-silver)]">undefined</span>';
+            return '<span class="italic text-[var(--flame-text-muted)]">undefined</span>';
         }
         if (typeof value === "string") {
             return `<span class="text-[var(--flame-red-orange)]">"${escapeHtml(value)}"</span>`;
@@ -183,45 +180,49 @@ export default async function buildContextContent(request: RequestContext | unde
 
         if (Array.isArray(value)) {
             if (value.length === 0) {
-                return '<span class="italic text-[var(--flame-metallic-silver)]">(empty array)</span>';
+                return '<span class="italic text-[var(--flame-text-muted)]">(empty array)</span>';
             }
             const maxDepth = 3;
             if (depth >= maxDepth) {
-                return `<span class="italic text-[var(--flame-metallic-silver)]">[Array with ${value.length} items]</span>`;
+                return `<span class="italic text-[var(--flame-text-muted)]">[Array with ${value.length} items]</span>`;
             }
             const items = value
                 .slice(0, 10)
                 .map((item, index) => {
                     const itemHtml = renderValue(item, depth + 1);
                     return `
-            <div class="ml-4 pl-3 py-1 border-l-2 border-[var(--flame-metallic-silver)]">
-              <span class="text-xs text-[var(--flame-metallic-silver)]">[${index}]:</span> ${itemHtml}
+            <div class="ml-4 pl-3 py-1 border-l-2 border-[var(--flame-border)]">
+              <span class="text-xs text-[var(--flame-text-muted)]">[${index}]:</span> ${itemHtml}
             </div>`;
                 })
                 .join("");
-            const remaining = value.length > 10 ? `<div class="ml-4 text-sm italic text-[var(--flame-metallic-silver)]">... and ${value.length - 10} more items</div>` : "";
+            const remaining =
+                value.length > 10 ? `<div class="ml-4 text-sm italic text-[var(--flame-text-muted)]">... and ${value.length - 10} more items</div>` : "";
             return `<div class="space-y-1">${items}${remaining}</div>`;
         }
 
         if (typeof value === "object" && value !== null) {
             if (Object.keys(value as object).length === 0) {
-                return '<span class="italic text-[var(--flame-metallic-silver)]">(empty object)</span>';
+                return '<span class="italic text-[var(--flame-text-muted)]">(empty object)</span>';
             }
             const maxDepth = 3;
             if (depth >= maxDepth) {
-                return `<span class="italic text-[var(--flame-metallic-silver)]">{Object with ${Object.keys(value as object).length} keys}</span>`;
+                return `<span class="italic text-[var(--flame-text-muted)]">{Object with ${Object.keys(value as object).length} keys}</span>`;
             }
             const entries = Object.entries(value as object)
                 .slice(0, 10)
                 .map(([key, val]) => {
                     const valHtml = renderValue(val, depth + 1);
                     return `
-            <div class="ml-4 pl-3 py-1 border-l-2 border-[var(--flame-metallic-silver)]">
+            <div class="ml-4 pl-3 py-1 border-l-2 border-[var(--flame-border)]">
               <span class="font-medium text-[var(--flame-text)]">${escapeHtml(key)}:</span> ${valHtml}
             </div>`;
                 })
                 .join("");
-            const remaining = Object.keys(value as object).length > 10 ? `<div class="ml-4 italic text-[var(--flame-metallic-silver)]">... and ${Object.keys(value as object).length - 10} more keys</div>` : "";
+            const remaining =
+                Object.keys(value as object).length > 10
+                    ? `<div class="ml-4 italic text-[var(--flame-text-muted)]">... and ${Object.keys(value as object).length - 10} more keys</div>`
+                    : "";
             return `<div class="space-y-1">${entries}${remaining}</div>`;
         }
 
@@ -230,7 +231,7 @@ export default async function buildContextContent(request: RequestContext | unde
 
     const renderObjectTable = (obj: Record<string, unknown> | undefined): string => {
         if (!obj || Object.keys(obj).length === 0) {
-            return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(empty)</div>`;
+            return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-text-muted)]">(empty)</div>`;
         }
         const rows = Object.entries(obj)
             .map(([k, v]) => {
@@ -246,11 +247,11 @@ export default async function buildContextContent(request: RequestContext | unde
 
     const renderBodyContent = (body: unknown): string => {
         if (body === undefined || body === null) {
-            return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(no body)</div>`;
+            return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-text-muted)]">(no body)</div>`;
         }
         if (typeof body === "string") {
             if (body.trim() === "") {
-                return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(empty string)</div>`;
+                return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-text-muted)]">(empty string)</div>`;
             }
             return `<div class="px-4 pb-4">
   <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded border border-[var(--flame-border)] bg-[var(--flame-surface-muted)] text-[var(--flame-text)]">${escapeHtml(body)}</div>
@@ -259,14 +260,14 @@ export default async function buildContextContent(request: RequestContext | unde
         if (typeof body === "object") {
             if (Array.isArray(body)) {
                 if (body.length === 0) {
-                    return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(empty array)</div>`;
+                    return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-text-muted)]">(empty array)</div>`;
                 }
                 return `<div class="px-4 pb-4">
   <div class="text-sm break-words p-3 rounded border border-[var(--flame-border)] bg-[var(--flame-surface-muted)] text-[var(--flame-text)]">${renderValue(body)}</div>
 </div>`;
             }
             if (Object.keys(body as object).length === 0) {
-                return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(empty object)</div>`;
+                return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-text-muted)]">(empty object)</div>`;
             }
             return `<div class="px-4 pb-4">
   <div class="text-sm break-words p-3 rounded border border-[var(--flame-border)] bg-[var(--flame-surface-muted)] text-[var(--flame-text)]">${renderValue(body)}</div>
@@ -373,7 +374,7 @@ export default async function buildContextContent(request: RequestContext | unde
       <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(globeIcon)}'); mask-image:url('${svgToDataUrl(globeIcon)}')"></span>
       <h2 class="text-sm font-semibold text-[var(--flame-text)]">Request</h2>
       <a class="text-sm truncate text-[var(--flame-red-orange)]" href="${escapeHtml(request.url || "#")}">${escapeHtml(request.url || "")}</a>
-      <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${escapeHtml(String(request.method || "GET"))}</span>
+      <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-[var(--flame-chip-bg)] text-[var(--flame-chip-text)]">${escapeHtml(String(request.method || "GET"))}</span>
       <div class="grow"></div>
       ${copyButton({ targetId: `clipboard-curl-${uniqueId}`, label: "Copy cURL" })}
     </div>
@@ -436,5 +437,5 @@ export default async function buildContextContent(request: RequestContext | unde
   ${content}
 </div>`;
 
-    return { id: "context", name: "Context", code: { html, script: '' } };
+    return { id: "context", name: "Context", code: { html, script: "" } };
 }

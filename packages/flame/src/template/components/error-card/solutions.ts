@@ -69,14 +69,14 @@ const solutions = async (
 
     return {
         html: `<div id="flame-solution-wrapper" class="relative w-full transition-all duration-300 ease-in-out overflow-visible">
-    <button id="flame-solution-button" type="button" aria-label="Toggle solutions" aria-controls="flame-solution-content" aria-expanded="true" class="bg-green-300 dark:bg-green-900/40 rounded-lg p-2 absolute top-2 right-2 z-10 h-9 w-8 cursor-pointer">
+    <button id="flame-solution-button" type="button" aria-label="Toggle solutions" aria-controls="flame-solution-content" aria-expanded="true" class="bg-[var(--flame-success-bg)] text-[var(--flame-text)] rounded-[var(--flame-radius-md)] p-2 absolute top-2 right-2 z-10 h-9 w-8 cursor-pointer shadow-[var(--flame-elevation-1)]">
         <span id="flame-solution-icon" class="dui" style="-webkit-mask-image: url('${svgToDataUrl(closeIcon)}'); mask-image: url('${svgToDataUrl(closeIcon)}')"></span>
     </button>
-    <div id="flame-solution-content" role="region" aria-label="Suggested solutions" tabindex="-1" class="bg-green-300 dark:bg-green-900/40 rounded-r-lg shadow-2xl shadow-gray-500/20 w-full h-full overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out opacity-100">
-        <div class="p-6 prose prose-sm prose-ul:list-none prose-hr:my-6 prose-hr:border-green-400 max-w-full relative" aria-live="polite">
+    <div id="flame-solution-content" role="region" aria-label="Suggested solutions" tabindex="-1" class="bg-[var(--flame-success-bg)] rounded-r-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] w-full h-full overflow-hidden transition-[max-height,opacity] duration-150 ease-in-out opacity-100">
+        <div class="p-6 prose prose-sm prose-ul:list-none prose-hr:my-6 prose-hr:border-[var(--flame-success-border)] max-w-full relative text-[var(--flame-on-accent)]" aria-live="polite">
             ${await (async () => {
                 if (!hint.header) {
-                    return "<h2>A possible solution to this error</h2>";
+                    return "<h2 class='text-[var(--flame-on-accent)]'>A possible solution to this error</h2>";
                 }
 
                 const parsedHeader = await parse(hint.header);

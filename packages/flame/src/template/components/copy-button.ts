@@ -14,22 +14,14 @@ const svgToDataUrl = (svgContent: string): string => {
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
 };
 
-const copyButton = ({
-    targetId,
-    label = "Copy",
-    successText = "Copied!",
-}: {
-    targetId: string;
-    label?: string;
-    successText?: string;
-}): string => {
+const copyButton = ({ targetId, label = "Copy", successText = "Copied!" }: { targetId: string; label?: string; successText?: string }): string => {
     return `
     <button
       type="button"
       aria-label="${label}"
       title="${label}"
       class="${cn(
-          '[--is-toggle-tooltip:false] hs-tooltip relative inline-flex justify-center items-center size-8 rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800'
+          "[--is-toggle-tooltip:false] hs-tooltip relative inline-flex justify-center items-center size-8 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-surface)] text-[var(--flame-text)] hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] disabled:opacity-50 disabled:pointer-events-none",
       )}"
       data-clipboard-target="#${targetId}"
       data-clipboard-action="copy"

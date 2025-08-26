@@ -26,7 +26,7 @@ export const tooltip = ({ message }: { message?: string } = {}): string => {
     const uid = `${Date.now().toString(36)}-${g.flameTooltipCounter}`;
 
     return `<div class="hs-tooltip inline-block">
-  <button type="button" class="hs-tooltip-toggle [--placement:*] inline-flex justify-center items-center gap-2 text-[var(--flame-charcoal-black)]" aria-describedby="tooltip-${uid}">
+  <button type="button" class="hs-tooltip-toggle [--placement:*] inline-flex justify-center items-center gap-2 text-[var(--flame-text)]" aria-describedby="tooltip-${uid}">
     <span class="dui" style="-webkit-mask-image: url('${svgToDataUrl(infoIcon)}'); mask-image: url('${svgToDataUrl(infoIcon)}')"></span>
   </button>
   <div id="tooltip-${uid}" role="tooltip" class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]">

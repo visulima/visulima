@@ -67,7 +67,7 @@ const stackTraceViewer = async (
             lang: findLanguageBasedOnExtension(trace.file || ""),
             themes: {
                 light: "github-light",
-                dark: "vesper"
+                dark: "github-dark-default",
             },
         });
 
@@ -79,11 +79,11 @@ const stackTraceViewer = async (
             html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-stack-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" ${
                 isClickable ? "" : 'disabled aria-disabled="true"'
             } class="${cn(
-                'inline-flex items-center gap-x-2 text-sm whitespace-nowrap p-6 w-full text-left border-l-2 border-transparent hover:bg-black/5 text-[var(--flame-text-muted)]',
-                isClickable ? 'cursor-pointer' : 'cursor-not-allowed',
+                "inline-flex items-center gap-x-2 text-sm whitespace-nowrap p-6 w-full text-left border-l-2 border-transparent hover:bg-[var(--flame-hover-overlay)] text-[var(--flame-text-muted)]",
+                isClickable ? "cursor-pointer" : "cursor-not-allowed",
             )}">
     <div class="flex flex-col w-full text-left">
-        <span class="font-medium text-[var(--flame-charcoal-black)]">${trace.methodName}</span>
+        <span class="font-medium text-[var(--flame-text)]">${trace.methodName}</span>
         <span class="text-sm break-words text-[var(--flame-text-muted)]">${relativeFilePath}</span>
     </div>
 </button>`,
@@ -93,8 +93,8 @@ const stackTraceViewer = async (
         sourceCode.push(`<div id="source-code-tabs-${uniqueKey}-${index}" class="${
             index === 0 && isClickable ? "block" : "hidden"
         }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}" tabindex="0">
-<div class="pt-6 px-6 text-sm text-right dark:text-white">
-    ${options.openInEditorUrl ? `<button type="button" class="underline hover:text-blue-400" data-open-in-editor data-url="${options.openInEditorUrl}" data-path="${absPathForEditor}" data-line="${trace.line || 1}" data-column="${trace.column || 1}">${relativeFilePath} — Open in editor</button>` : relativeFilePath}
+<div class="pt-6 px-6 text-sm text-right text-[var(--flame-text)]">
+    ${options.openInEditorUrl ? `<button type=\"button\" class=\"underline hover:text-[var(--flame-link)]\" data-open-in-editor data-url=\"${options.openInEditorUrl}\" data-path=\"${absPathForEditor}\" data-line=\"${trace.line || 1}\" data-column=\"${trace.column || 1}\">${relativeFilePath} — Open in editor</button>` : relativeFilePath}
 </div>
 <div class="p-6">${code}</div>
 </div>`);
@@ -131,8 +131,8 @@ const stackTraceViewer = async (
                 const detailsId = `stack-trace-group-${uniqueKey}-${groupIndex}`;
 
                 return `<div class="flex items-center">
-                            <input type="checkbox" id="${checkboxId}" data-group-toggle="${uniqueKey}" data-target-id="${detailsId}" class="relative w-[35px] h-[21px] border text-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:ring-blue-600 disabled:opacity-50 disabled:pointer-events-none checked:bg-none checked:text-blue-600 checked:border-blue-600 focus:checked:border-blue-600 before:inline-block before:w-4 before:h-4 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:rounded-full before:shadow-sm before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 bg-[var(--flame-metallic-silver)] border-[var(--flame-metallic-silver)]">
-                            <label for="${checkboxId}" class="text-sm ms-3 text-[var(--flame-charcoal-black)]">${label}</label>
+                            <input type="checkbox" id="${checkboxId}" data-group-toggle="${uniqueKey}" data-target-id="${detailsId}" class="relative w-[35px] h-[21px] border text-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:ring-blue-600 disabled:opacity-50 disabled:pointer-events-none checked:bg-none checked:text-blue-600 checked:border-blue-600 focus:checked:border-blue-600 before:inline-block before:w-4 before:h-4 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:rounded-full before:shadow-sm before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 bg-[var(--flame-chip-bg)] border-[var(--flame-neutral-bg)]">
+                            <label for="${checkboxId}" class="text-sm ms-3 text-[var(--flame-text)]">${label}</label>
                         </div>`;
             }
 
@@ -179,10 +179,10 @@ const stackTraceViewer = async (
                             }
 
                             return `<details id="stack-trace-group-${uniqueKey}-${groupIndex}">
-<summary class="py-3 px-6 cursor-pointer flex items-center justify-between text-sm hover:bg-black/5 focus:outline-hidden focus:ring-1 focus:ring-gray-600 text-[var(--flame-charcoal-black)]">
+<summary class="py-3 px-6 cursor-pointer flex items-center justify-between text-sm hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:ring-1 focus:ring-gray-600 text-[var(--flame-text)]">
     <span class="flex items-center gap-2">
       <span class="uppercase tracking-wide text-[10px] text-[var(--flame-text-muted)]">${groupLabel}</span>
-      <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${tab.length}</span>
+      <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] bg-[var(--flame-chip-bg)] text-[var(--flame-chip-text)]">${tab.length}</span>
     </span>
     <span data-chevron class="dui w-4 h-4 transition-transform duration-300" style="-webkit-mask-image:url('${svgToDataUrl(chevronDownIcon)}'); mask-image:url('${svgToDataUrl(chevronDownIcon)}')"></span>
 </summary>
@@ -195,7 +195,7 @@ const stackTraceViewer = async (
                     .join("")}
             </nav>
         </div>
-        <div class="w-8/12 rounded-tr-lg rounded-br-lg overflow-hidden dark:bg-[var(--flame-charcoal-black)]">${sourceCode.join("")}</div>
+        <div class="w-8/12 rounded-tr-lg rounded-br-lg overflow-hidden bg-[var(--flame-surface)]">${sourceCode.join("")}</div>
     </main>
 </section>`;
 

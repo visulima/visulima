@@ -3,5 +3,3 @@ declare module "*.js?raw" {
 
     export default content;
 }
-
-

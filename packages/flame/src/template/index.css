@@ -15,10 +15,8 @@
 
 /* Flame Theme Color Variables - Available for use in Tailwind classes */
 :root {
-    --flame-white-smoke: #F5F5F5;
-    /* Metallic Silver tuned darker for readability on white */
-    --flame-metallic-silver: #8FA3B7;
-    --flame-red-orange: #FF4628;
+    --flame-white-smoke: #f5f5f5;
+    --flame-red-orange: #ff4628;
     --flame-charcoal-black: #202020;
 
     /* Semantic tokens for a cleaner, modern UI */
@@ -26,53 +24,63 @@
     --flame-surface: #ffffff;
     --flame-surface-muted: #fafafa;
     --flame-border: rgba(185, 200, 215, 0.5);
+    --flame-hover-overlay: rgba(32, 32, 32, 0.05);
+
+    --flame-success: #2ea043;
+    --flame-success-bg: rgb(46, 160, 67, 0.6);
+    /* Neutral/chip tokens */
+    --flame-neutral: #6e7681;
+    --flame-neutral-bg: rgba(110, 118, 129, 0.18);
+    --flame-chip-bg: rgba(110, 118, 129, 0.14);
+    --flame-chip-text: var(--flame-text);
 
     --flame-radius-md: 0.5rem;
     --flame-radius-lg: 0.75rem;
-    --flame-elevation-1: 0 1px 2px rgba(0,0,0,0.04), 0 1px 1px rgba(0,0,0,0.02);
+    --flame-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02);
     --flame-elevation-2: 0 10px 25px -5px rgba(32, 32, 32, 0.1), 0 8px 10px -6px rgba(32, 32, 32, 0.1);
 
     /* Accessible text/link tokens */
     --flame-text: #111827; /* gray-900 */
     --flame-text-muted: #374151; /* gray-700 */
-    --flame-link: #C4311D; /* slightly darker red-orange for contrast */
+    --flame-link: #c4311d; /* slightly darker red-orange for contrast */
     --flame-muted-on-surface: #374151; /* alias for convenience */
-    --flame-on-accent: #FFFFFF; /* text on red-orange */
+    --flame-on-accent: #ffffff; /* text on red-orange */
 }
 
 /* Dark mode semantic mapping */
 .dark {
-    --flame-bg: #0d0f13;
-    --flame-surface: #141820;
-    --flame-surface-muted: #10141b;
-    --flame-border: rgba(185, 200, 215, 0.15);
-    --flame-text: #E5E7EB; /* gray-200 */
-    --flame-text-muted: #9CA3AF; /* gray-400 */
-    --flame-link: #FF6A52; /* brighter red-orange for dark bg contrast */
-    --flame-muted-on-surface: #9CA3AF;
-    --flame-on-accent: #FFFFFF;
-}
+    --flame-bg: #161b22;
+    --flame-surface: #0d1117;
+    --flame-surface-muted: #0f141b;
+    --flame-border: rgba(48, 54, 61, 0.6);
+    --flame-text: #c9d1d9; /* github dark fg */
+    --flame-text-muted: #8b949e; /* github dark muted fg */
+    --flame-link: #ff6a52; /* keep flame accent */
+    --flame-muted-on-surface: #8b949e;
+    --flame-hover-overlay: rgba(240, 246, 252, 0.06);
+    --flame-on-accent: #ffffff;
 
-.flame {
-    @apply bg-red-500;
+    --flame-success: #2ea043;
+    --flame-success-bg: rgba(46, 160, 67, 0.2);
+    /* Neutral/chip tokens for dark */
+    --flame-neutral: #6e7681;
+    --flame-neutral-bg: rgba(110, 118, 129, 0.25);
+    --flame-chip-bg: rgba(110, 118, 129, 0.2);
+    --flame-chip-text: var(--flame-text);
 }
 
 .shiki {
     @apply max-w-full overflow-auto pb-6 break-words [&_pre]:max-w-full [&_pre]:overflow-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700;
 }
 
-html.dark .shiki.vesper {
-    @apply bg-[var(--flame-charcoal-black)]!;
-}
-
 html.dark .shiki,
 html.dark .shiki span {
-  color: var(--shiki-dark) !important;
-  background-color: var(--shiki-dark-bg) !important;
-  /* Optional, if you also want font styles */
-  font-style: var(--shiki-dark-font-style) !important;
-  font-weight: var(--shiki-dark-font-weight) !important;
-  text-decoration: var(--shiki-dark-text-decoration) !important;
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    /* Optional, if you also want font styles */
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
 }
 
 .dark [type="checkbox"]:checked,
@@ -127,9 +135,15 @@ details > summary [data-chevron] {
 }
 
 /* Toggle plus/minus icons inside <details> via utility classes */
-details summary .flame-expand-icon-open { display: none !important; }
-details[open] summary .flame-expand-icon-open { display: inline-block !important; }
-details[open] summary .flame-expand-icon-closed { display: none !important; }
+details summary .flame-expand-icon-open {
+    display: none !important;
+}
+details[open] summary .flame-expand-icon-open {
+    display: inline-block !important;
+}
+details[open] summary .flame-expand-icon-closed {
+    display: none !important;
+}
 
 /* Use a consistent focus outline across interactive elements with flame theme */
 button:focus-visible,
@@ -146,10 +160,10 @@ textarea:focus-visible,
 
 /* High-contrast tweaks for dark mode using flame colors */
 .dark .text-gray-400 {
-    color: var(--flame-metallic-silver);
+    color: var(--flame-neutral);
 }
 .dark .text-gray-500 {
-    color: var(--flame-metallic-silver);
+    color: var(--flame-neutral);
 }
 .dark .bg-gray-700\/50 {
     background-color: rgba(32, 32, 32, 0.6);
@@ -182,38 +196,67 @@ button[disabled] {
         cursor: pointer;
     }
 
-    body { background-color: var(--flame-bg); color: var(--flame-text); }
-    .text-muted { color: var(--flame-text-muted); }
+    body {
+        background-color: var(--flame-bg);
+        color: var(--flame-text);
+    }
+    pre,
+    code {
+        color: var(--flame-text);
+    }
+    .text-muted {
+        color: var(--flame-text-muted);
+    }
 
-    a { color: var(--flame-link); }
-    a:hover { text-decoration: underline; }
+    a {
+        color: var(--flame-link);
+    }
+    a:hover {
+        text-decoration: underline;
+    }
 
     ::selection {
         background: color-mix(in srgb, var(--flame-red-orange) 20%, transparent);
     }
 
     kbd {
-        background-color: var(--flame-metallic-silver);
-        color: var(--flame-charcoal-black);
+        background-color: var(--flame-chip-bg);
+        color: var(--flame-chip-text);
         border-radius: 0.375rem;
         padding: 0.125rem 0.375rem;
         font-size: 0.75rem;
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
 
-    hr { border-color: var(--flame-border); }
+    hr {
+        border-color: var(--flame-border);
+    }
 
     /* Density utility (compact spacing) */
-    .density-compact .p-6 { padding: 1rem; }
-    .density-compact .px-6 { padding-left: 1rem; padding-right: 1rem; }
-    .density-compact .py-4 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-    .density-compact .gap-3 { gap: 0.5rem; }
-    .density-compact .mt-6 { margin-top: 1rem; }
+    .density-compact .p-6 {
+        padding: 1rem;
+    }
+    .density-compact .px-6 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    .density-compact .py-4 {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    .density-compact .gap-3 {
+        gap: 0.5rem;
+    }
+    .density-compact .mt-6 {
+        margin-top: 1rem;
+    }
 }
 
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;

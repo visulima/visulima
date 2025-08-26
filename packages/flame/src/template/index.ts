@@ -84,15 +84,7 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
         css: inlineCss.trim(),
         description: "Error",
         error: mainCause as ErrorType,
-        scripts: [
-            clipboard,
-            preline,
-            prelineClipboard,
-            prelineInit,
-            headerBarScript,
-            ...stackScripts,
-            ...customPages.map((p) => p.code.script || ""),
-        ],
+        scripts: [clipboard, preline, prelineClipboard, prelineInit, headerBarScript, ...stackScripts, ...customPages.map((p) => p.code.script || "")],
         title: "Error",
     });
 };

@@ -81,7 +81,7 @@ ${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
     </script>
 </head>
 <body>
-    <div id="visulima-flame-container" class="bg-[var(--flame-bg)] text-[var(--flame-charcoal-black)]">
+    <div id="visulima-flame-container" class="bg-[var(--flame-bg)] text-[var(--flame-text)]">
         <main class="container mx-auto mt-6">
             ${content}
         </main>

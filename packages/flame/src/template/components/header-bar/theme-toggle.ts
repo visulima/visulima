@@ -24,12 +24,12 @@ const themeToggle = (
     return {
         html: `
 <div id="hs-theme-switch">
-  <button type="button" class="hs-dark-mode-active:hidden block hs-dark-mode font-medium rounded-full hover:bg-gray-200 focus:outline-hidden focus:bg-gray-200 text-[var(--flame-charcoal-black)]" data-hs-theme-click-value="dark">
+  <button type="button" class="hs-dark-mode-active:hidden block hs-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-hs-theme-click-value="dark">
     <span class="group inline-flex shrink-0 justify-center items-center size-8">
       <span class="dui w-5 h-5" style="-webkit-mask-image: url('${svgToDataUrl(moonStarIcon)}'); mask-image: url('${svgToDataUrl(moonStarIcon)}')"></span>
     </span>
   </button>
-  <button type="button" class="hs-dark-mode-active:block hidden hs-dark-mode font-medium rounded-full hover:bg-gray-200 focus:outline-hidden focus:bg-gray-200 text-[var(--flame-charcoal-black)]" data-hs-theme-click-value="light">
+  <button type="button" class="hs-dark-mode-active:block hidden hs-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-hs-theme-click-value="light">
     <span class="group inline-flex shrink-0 justify-center items-center size-8">
       <span class="dui w-5 h-5" style="-webkit-mask-image: url('${svgToDataUrl(sunIcon)}'); mask-image: url('${svgToDataUrl(sunIcon)}')"></span>
     </span>

@@ -54,7 +54,7 @@ const errorCard = async ({
     <div class="flex flex-row">
         <div class="flex flex-col gap-3 grow min-w-6/12 w-full p-6 pt-5">
             <div class="flex flex-row items-center gap-2">
-                <h1 class="text-lg font-semibold py-1 px-2 text-[var(--flame-charcoal-black)] bg-[var(--flame-metallic-silver)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)]">
+                <h1 class="text-lg font-semibold py-1 px-2 text-[var(--flame-chip-text)] bg-[var(--flame-chip-bg)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)]">
                 ${error.name}
                 </h1>
                 ${copyButton({ targetId: "clipboard-error-title", label: "Copy error title" })}
@@ -63,7 +63,7 @@ const errorCard = async ({
                 ${runtime}
                 </div>
             </div>
-            <div class="text-md font-semibold text-[var(--flame-charcoal-black)]">
+            <div class="text-md font-semibold text-[var(--flame-text)]">
                 ${error.message}
             </div>
         </div>
