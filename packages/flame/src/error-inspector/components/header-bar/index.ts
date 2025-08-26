@@ -1,10 +1,10 @@
-import type { DisplayerOptions, Editor, Theme } from "../../../types";
+import type { Editor, Theme } from "../../../types";
 import editorSelector from "./editor-selector";
 import themeToggle from "./theme-toggle";
 import shortcutsButton from "../shortcuts-button";
 
 const headerBar = (
-    options: Partial<{ editor: Editor; openInEditorUrl?: string; theme: Theme }> | DisplayerOptions,
+    options: Partial<{ editor: Editor; openInEditorUrl?: string; theme: Theme }>,
     hasContextTab = false,
 ): {
     html: string;

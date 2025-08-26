@@ -1,7 +1,7 @@
 import type { VisulimaError } from "@visulima/error/error";
 import { getErrorCauses } from "@visulima/error/error";
 
-import type { DisplayerOptions, SolutionError, SolutionFinder } from "../types";
+import type { SolutionError, SolutionFinder } from "../types";
 import headerBar from "./components/header-bar";
 import type { HeaderTab } from "./components/header-tabs";
 import { headerTabs } from "./components/header-tabs";
@@ -11,6 +11,7 @@ import layout from "./layout";
 import preline from "../../node_modules/preline/dist/preline.js?raw";
 import clipboard from "../../node_modules/clipboard/dist/clipboard.min.js?raw";
 import prelineClipboard from "../../node_modules/preline/dist/helper-clipboard.js?raw";
+import type { TemplateOptions } from "./types";
 
 // Preline initialization script - only initialize components we actually use
 const prelineInit = `
@@ -38,7 +39,7 @@ const prelineInit = `
 
 type ErrorType = Error | SolutionError | VisulimaError;
 
-const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], options: DisplayerOptions = {}): Promise<string> => {
+const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], options: TemplateOptions = {}): Promise<string> => {
     const allCauses = getErrorCauses(error);
 
     if (allCauses.length === 0) {
@@ -62,15 +63,12 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
     }
 
     html += `<div class="flex flex-row gap-6 w-full mb-6">`;
-
     html += headerTabs(tabsList);
 
     const { html: headerBarHtml, script: headerBarScript } = headerBar(options);
 
     html += headerBarHtml;
-
     html += `</div>`;
-
     html += `<div id="flame-section-stack" class="${anyCustomSelected ? "hidden relative" : "relative"}" role="tabpanel" aria-labelledby="flame-tab-stack">${stackHtml}</div>`;
 
     for (const page of customPages) {

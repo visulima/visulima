@@ -4,7 +4,7 @@ import type { SourceMap } from "@jridgewell/trace-mapping";
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import { codeFrame } from "@visulima/error";
 import type { ErrorPayload, IndexHtmlTransformResult, Plugin, WebSocketClient } from "vite";
-import renderTemplate from "../template";
+import renderTemplate from "../error-inspector";
 
 import { patchOverlay } from "./overlay/patch-overlay";
 

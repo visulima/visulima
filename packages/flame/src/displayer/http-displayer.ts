@@ -1,43 +1,25 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import template from "../template";
-import type { DisplayerOptions, SolutionFinder } from "../types";
+import type { SolutionFinder } from "../types";
+import { htmlErrorHandler, type HtmlErrorHandlerOptions } from "../error-handler/html-error-handler";
+import createNegotiatedErrorHandler from "../error-handler/create-negotiated-error-handler";
+import type { ErrorHandlers } from "../error-handler/types";
 
 const httpDisplayer = async (
     error: Error,
     solutionFinders: SolutionFinder[],
-    options: DisplayerOptions = {},
+    options: HtmlErrorHandlerOptions & { showTrace?: boolean; extraHandlers?: ErrorHandlers } = {},
 ): Promise<(request: IncomingMessage, response: ServerResponse) => Promise<void>> => {
+    const defaultHtml = htmlErrorHandler(solutionFinders, options);
+
+    const negotiated = createNegotiatedErrorHandler(
+        options.extraHandlers ?? [],
+        options.showTrace ?? true,
+        defaultHtml,
+    );
+
     return async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
-        const autoRequestContext = options.context?.request
-            ? undefined
-            : {
-                  method: request.method,
-                  url: request.url,
-                  status: response.statusCode,
-                  headers: Object.fromEntries(
-                      Object.entries(request.headers)
-                          .filter((entry): entry is [string, string | string[]] => entry[1] !== undefined)
-                          .map(([k, v]) => [k, v as string | string[]]),
-                  ),
-              };
-
-        const mergedOptions: DisplayerOptions = {
-            ...options,
-            context: {
-                ...(options.context || {}),
-                request: options.context?.request ?? autoRequestContext,
-            },
-        };
-
-        const html = await template(error, solutionFinders, mergedOptions);
-
-        response.writeHead(500, {
-            "Content-Type": "text/html",
-        });
-
-        response.write(html);
-        response.end();
+        await negotiated(error, request, response);
     };
 };
 

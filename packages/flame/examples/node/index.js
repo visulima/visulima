@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 
 import httpDisplayer from "../../dist/displayer/http-displayer.mjs";
-import buildContextPage from "../../dist/template/content/context.mjs";
+import buildContextPage from "../../dist/error-inspector/content/context.mjs";
 
 // Deeper stack builders (sync + async levels)
 function parseEnvironmentConfig() {

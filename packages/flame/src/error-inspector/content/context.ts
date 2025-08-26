@@ -1,4 +1,4 @@
-import type { ContentPage, DisplayerOptions, RequestContext } from "../../types";
+import type { ContentPage, TemplateOptions, RequestContext } from "../types";
 import getHighlighter from "../util/get-highlighter";
 import copyButton from "../components/copy-button";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -70,7 +70,7 @@ const safeJsonStringify = (value: unknown): string => {
     }
 };
 
-export default async function buildContextContent(request: RequestContext, options: DisplayerOptions): Promise<ContentPage | undefined> {
+export default async function buildContextContent(request: RequestContext, options: TemplateOptions): Promise<ContentPage | undefined> {
     const uniqueId = `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}`;
     const { headerAllowlist, headerDenylist, maskValue = "[masked]" } = options.requestPanel || {};
     const filteredHeaders = filterHeaders(request.headers, headerAllowlist, headerDenylist, maskValue);
@@ -79,6 +79,7 @@ export default async function buildContextContent(request: RequestContext, optio
         if (value === undefined) {
             return undefined;
         }
+
         return Array.isArray(value) ? value.join(", ") : value;
     };
 
@@ -88,11 +89,14 @@ export default async function buildContextContent(request: RequestContext, optio
         if (!cookies) {
             return undefined;
         }
+
         const parts: string[] = [];
+        
         for (const [name, v] of Object.entries(cookies)) {
             const val = toSingle(v) ?? "";
             parts.push(`${name}=${val}`);
         }
+        
         return parts.length ? parts.join("; ") : undefined;
     };
 
@@ -139,7 +143,10 @@ export default async function buildContextContent(request: RequestContext, optio
     };
 
     const curl = buildCurl();
-    const curlHtml = await (await getHighlighter()).codeToHtml(curl, { lang: "bash", theme: "github-dark-default" });
+    const curlHtml = await (await getHighlighter()).codeToHtml(curl, { lang: "bash", themes: {
+        light: "github-light",
+        dark: "github-dark-default",
+    }, });
 
     const attrEscape = (value: unknown): string => String(value ?? "").replaceAll("'", "&apos;");
     const escapeHtml = (str: string): string =>
