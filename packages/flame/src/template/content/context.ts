@@ -1,11 +1,33 @@
 import type { ContentPage, DisplayerOptions, RequestContext } from "../../types";
 import getHighlighter from "../util/get-highlighter";
 import copyButton from "../components/copy-button";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import globeIcon from "lucide-static/icons/globe.svg?raw";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import bracesIcon from "lucide-static/icons/braces.svg?raw";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import fileTextIcon from "lucide-static/icons/file-text.svg?raw";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import cookieIcon from "lucide-static/icons/cookie.svg?raw";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import userIcon from "lucide-static/icons/user.svg?raw";
+
+// Utility function to properly encode SVG content for CSS mask-image
+const svgToDataUrl = (svgContent: string): string => {
+    const cleanSvg = svgContent
+        .replace(/<!--[\s\S]*?-->/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
+};
 
 const SENSITIVE_HEADER_PATTERNS = [/authorization/i, /cookie/i, /set-cookie/i, /x-api-key/i, /api-key/i, /x-auth/i, /token/i, /secret/i];
 
 const isSensitiveHeader = (name: string, denylist: string[] | undefined): boolean => {
-    if (denylist && denylist.some((d) => d.toLowerCase() === name.toLowerCase())) return true;
+    if (denylist && denylist.some((d) => d.toLowerCase() === name.toLowerCase())) {
+        return true;
+    }
     return SENSITIVE_HEADER_PATTERNS.some((re) => re.test(name));
 };
 
@@ -58,14 +80,18 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
     const filteredHeaders = filterHeaders(request.headers, headerAllowlist, headerDenylist, maskValue);
 
     const toSingle = (value: string | string[] | undefined): string | undefined => {
-        if (value === undefined) return undefined;
+        if (value === undefined) {
+            return undefined;
+        }
         return Array.isArray(value) ? value.join(", ") : value;
     };
 
     const shellQuote = (input: string): string => `'${String(input).replace(/'/g, "'\\''")}'`;
 
     const buildCookieHeader = (cookies: Record<string, string | string[]> | undefined): string | undefined => {
-        if (!cookies) return undefined;
+        if (!cookies) {
+            return undefined;
+        }
         const parts: string[] = [];
         for (const [name, v] of Object.entries(cookies)) {
             const val = toSingle(v) ?? "";
@@ -105,7 +131,7 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
         const parts = ["curl", "-X", method];
         if (headerLines.length > 0) {
             parts.push("\\");
-            parts.push("  " + headerLines.join(" \\\n  "));
+            parts.push("  " + headerLines.join(" \\\n"));
         }
         if (dataFlag) {
             parts.push("\\");
@@ -124,14 +150,14 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
 
     const renderKeyValueTable = (records: Record<string, string | string[]> | undefined): string => {
         if (!records || Object.keys(records).length === 0) {
-            return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(empty)</div>`;
+            return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(empty)</div>`;
         }
         const rows = Object.entries(records)
             .map(([k, v]) => {
                 const value = Array.isArray(v) ? v.join(", ") : v;
                 return `<div class="grid grid-cols-[200px_1fr] gap-3 items-start py-2 border-b border-[var(--flame-border)]">
-  <div class="text-[11px] uppercase tracking-wide text-[var(--flame-metallic-silver)]">${escapeHtml(k)}</div>
-  <div class="text-sm break-words whitespace-pre-wrap text-[var(--flame-charcoal-black)]">${escapeHtml(String(value))}</div>
+  <div class="text-[11px] uppercase tracking-wide text-[var(--flame-text-muted)]">${escapeHtml(k)}</div>
+  <div class="text-sm break-words whitespace-pre-wrap text-[var(--flame-text)]">${escapeHtml(String(value))}</div>
 </div>`;
             })
             .join("");
@@ -139,16 +165,30 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
     };
 
     const renderValue = (value: unknown, depth: number = 0): string => {
-        if (value === null) return '<span class="italic text-[var(--flame-metallic-silver)]">null</span>';
-        if (value === undefined) return '<span class="italic text-[var(--flame-metallic-silver)]">undefined</span>';
-        if (typeof value === "string") return `<span class="text-[var(--flame-red-orange)]">"${escapeHtml(value)}"</span>`;
-        if (typeof value === "number") return `<span class="text-[var(--flame-red-orange)]">${value}</span>`;
-        if (typeof value === "boolean") return `<span class="text-[var(--flame-red-orange)]">${value}</span>`;
+        if (value === null) {
+            return '<span class="italic text-[var(--flame-metallic-silver)]">null</span>';
+        }
+        if (value === undefined) {
+            return '<span class="italic text-[var(--flame-metallic-silver)]">undefined</span>';
+        }
+        if (typeof value === "string") {
+            return `<span class="text-[var(--flame-red-orange)]">"${escapeHtml(value)}"</span>`;
+        }
+        if (typeof value === "number") {
+            return `<span class="text-[var(--flame-red-orange)]">${value}</span>`;
+        }
+        if (typeof value === "boolean") {
+            return `<span class="text-[var(--flame-red-orange)]">${value}</span>`;
+        }
 
         if (Array.isArray(value)) {
-            if (value.length === 0) return '<span class="italic text-[var(--flame-metallic-silver)]">(empty array)</span>';
+            if (value.length === 0) {
+                return '<span class="italic text-[var(--flame-metallic-silver)]">(empty array)</span>';
+            }
             const maxDepth = 3;
-            if (depth >= maxDepth) return `<span class="italic text-[var(--flame-metallic-silver)]">[Array with ${value.length} items]</span>`;
+            if (depth >= maxDepth) {
+                return `<span class="italic text-[var(--flame-metallic-silver)]">[Array with ${value.length} items]</span>`;
+            }
             const items = value
                 .slice(0, 10)
                 .map((item, index) => {
@@ -164,16 +204,20 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
         }
 
         if (typeof value === "object" && value !== null) {
-            if (Object.keys(value as object).length === 0) return '<span class="italic text-[var(--flame-metallic-silver)]">(empty object)</span>';
+            if (Object.keys(value as object).length === 0) {
+                return '<span class="italic text-[var(--flame-metallic-silver)]">(empty object)</span>';
+            }
             const maxDepth = 3;
-            if (depth >= maxDepth) return `<span class="italic text-[var(--flame-metallic-silver)]">{Object with ${Object.keys(value as object).length} keys}</span>`;
+            if (depth >= maxDepth) {
+                return `<span class="italic text-[var(--flame-metallic-silver)]">{Object with ${Object.keys(value as object).length} keys}</span>`;
+            }
             const entries = Object.entries(value as object)
                 .slice(0, 10)
                 .map(([key, val]) => {
                     const valHtml = renderValue(val, depth + 1);
                     return `
             <div class="ml-4 pl-3 py-1 border-l-2 border-[var(--flame-metallic-silver)]">
-              <span class="font-medium text-[var(--flame-charcoal-black)]">${escapeHtml(key)}:</span> ${valHtml}
+              <span class="font-medium text-[var(--flame-text)]">${escapeHtml(key)}:</span> ${valHtml}
             </div>`;
                 })
                 .join("");
@@ -181,19 +225,19 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
             return `<div class="space-y-1">${entries}${remaining}</div>`;
         }
 
-        return `<span class="text-[var(--flame-charcoal-black)]">${escapeHtml(String(value))}</span>`;
+        return `<span class="text-[var(--flame-text)]">${escapeHtml(String(value))}</span>`;
     };
 
     const renderObjectTable = (obj: Record<string, unknown> | undefined): string => {
         if (!obj || Object.keys(obj).length === 0) {
-            return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(empty)</div>`;
+            return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(empty)</div>`;
         }
         const rows = Object.entries(obj)
             .map(([k, v]) => {
                 const displayValue = renderValue(v);
-                return `<div class="grid grid-cols-[200px_1fr] gap-3 items-start py-2 border-b border-[var(--flame-metallic-silver)]">
-  <div class="text-[11px] uppercase tracking-wide text-[var(--flame-metallic-silver)]">${escapeHtml(k)}</div>
-  <div class="text-sm break-words">${displayValue}</div>
+                return `<div class="grid grid-cols-[200px_1fr] gap-3 items-start py-2 border-b border-[var(--flame-border)]">
+  <div class="text-[11px] uppercase tracking-wide text-[var(--flame-text-muted)]">${escapeHtml(k)}</div>
+  <div class="text-sm break-words text-[var(--flame-text)]">${displayValue}</div>
 </div>`;
             })
             .join("");
@@ -202,36 +246,46 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
 
     const renderBodyContent = (body: unknown): string => {
         if (body === undefined || body === null) {
-            return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(no body)</div>`;
+            return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(no body)</div>`;
         }
         if (typeof body === "string") {
-            if (body.trim() === "") return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(empty string)</div>`;
+            if (body.trim() === "") {
+                return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(empty string)</div>`;
+            }
             return `<div class="px-4 pb-4">
-  <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${escapeHtml(body)}</div>
+  <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded border border-[var(--flame-border)] bg-[var(--flame-surface-muted)] text-[var(--flame-text)]">${escapeHtml(body)}</div>
 </div>`;
         }
         if (typeof body === "object") {
             if (Array.isArray(body)) {
-                if (body.length === 0) return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(empty array)</div>`;
+                if (body.length === 0) {
+                    return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(empty array)</div>`;
+                }
                 return `<div class="px-4 pb-4">
-  <div class="text-sm break-words p-3 rounded bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${renderValue(body)}</div>
+  <div class="text-sm break-words p-3 rounded border border-[var(--flame-border)] bg-[var(--flame-surface-muted)] text-[var(--flame-text)]">${renderValue(body)}</div>
 </div>`;
             }
-            if (Object.keys(body as object).length === 0) return `<div class="px-4 pb-4 text-xs text-[var(--flame-metallic-silver)]">(empty object)</div>`;
+            if (Object.keys(body as object).length === 0) {
+                return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--flame-metallic-silver)]">(empty object)</div>`;
+            }
             return `<div class="px-4 pb-4">
-  <div class="text-sm break-words p-3 rounded bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${renderValue(body)}</div>
+  <div class="text-sm break-words p-3 rounded border border-[var(--flame-border)] bg-[var(--flame-surface-muted)] text-[var(--flame-text)]">${renderValue(body)}</div>
 </div>`;
         }
         return `<div class="px-4 pb-4">
-  <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${escapeHtml(String(body))}</div>
+  <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded border border-[var(--flame-border)] bg-[var(--flame-surface-muted)] text-[var(--flame-text)]">${escapeHtml(String(body))}</div>
 </div>`;
     };
 
     const generateContextSections = (context: Record<string, unknown> | undefined): { sidebar: string; content: string } => {
-        if (!context) return { sidebar: "", content: "" };
+        if (!context) {
+            return { sidebar: "", content: "" };
+        }
         const excludeKeys = ["request"];
         const contextKeys = Object.keys(context).filter((key) => !excludeKeys.includes(key));
-        if (contextKeys.length === 0) return { sidebar: "", content: "" };
+        if (contextKeys.length === 0) {
+            return { sidebar: "", content: "" };
+        }
 
         let sidebarSections = "";
         let contentSections = "";
@@ -242,21 +296,26 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
                 const sectionId = `context-${key}`;
                 sidebarSections += `
     <div>
-      <div class="text-[11px] uppercase tracking-wide mb-2 text-[var(--flame-metallic-silver)]">${title}</div>
+      <div class="text-[11px] uppercase tracking-wide mb-2 text-[var(--flame-text-muted)]">${title}</div>
       <ul class="space-y-1 text-sm">
-        <li><a href="#${sectionId}" class="text-[var(--flame-red-orange)]">${title}</a></li>
+        <li>
+          <a href="#${sectionId}" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold">
+            <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(fileTextIcon)}'); mask-image:url('${svgToDataUrl(fileTextIcon)}')"></span>
+            <span>${title}</span>
+          </a>
+        </li>
       </ul>
     </div>`;
                 contentSections += `
   <input type="hidden" id="clipboard-${sectionId}-${uniqueId}" value="${attrEscape(JSON.stringify(value))}">
-  <section id="${sectionId}" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
-    <div class="px-4 py-3 flex items-center gap-2">
-      <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">${title}</h3>
+  <section id="${sectionId}" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
+    <div class="px-4 py-3 flex items-center gap-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
+      <h3 class="text-sm font-semibold text-[var(--flame-text)]">${title}</h3>
       <div class="grow"></div>
-      <a href="#${sectionId}" class="text-xs text-[var(--flame-metallic-silver)]" aria-label="Anchor">#</a>
+      <a href="#${sectionId}" class="text-xs text-[var(--flame-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-${sectionId}-${uniqueId}`, label: "Copy JSON" })}
     </div>
-    <div class="max-w-full overflow-auto">${renderObjectTable(value as Record<string, unknown>)}</div>
+    <div class="max-w-full overflow-auto mt-2">${renderObjectTable(value as Record<string, unknown>)}</div>
   </section>`;
             }
         });
@@ -266,94 +325,173 @@ const requestPanel = async (request: RequestContext | undefined, options: Displa
     const contextSections = generateContextSections(options.context);
 
     const sidebar = `
-<aside class="shrink-0 w-64 relative">
-  <nav class="sticky top-4 p-3 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] space-y-4 overflow-auto bg-[var(--flame-surface)]">
-    <div>
-      <div class="text-[11px] uppercase tracking-wide mb-2 text-[var(--flame-metallic-silver)]">Request</div>
-      <ul class="space-y-1 text-sm">
-        <li><a href="#context-request" class="text-[var(--flame-red-orange)]">Overview</a></li>
-        <li><a href="#context-headers" class="text-[var(--flame-red-orange)]">Headers</a></li>
-        <li><a href="#context-body" class="text-[var(--flame-red-orange)]">Body</a></li>
-        <li><a href="#context-session" class="text-[var(--flame-red-orange)]">Session</a></li>
-        <li><a href="#context-cookies" class="text-[var(--flame-red-orange)]">Cookies</a></li>
-      </ul>
-    </div>${contextSections.sidebar}
+<aside class="shrink-0 w-64 sticky top-4 self-start">
+  <nav aria-label="Context sections" data-hs-scrollspy="#flame-context-sections" data-hs-scrollspy-scrollable-parent="#visulima-flame-container" class="p-3 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-surface)] border border-[var(--flame-border)] max-h-[calc(100dvh-2rem)]">
+    <div class="flex items-center justify-between sm:hidden">
+      <div class="text-[11px] uppercase tracking-wide text-[var(--flame-text-muted)]">Sections</div>
+      <button type="button" class="hs-collapse-toggle p-2 inline-flex justify-center items-center gap-2 rounded-lg border border-[var(--flame-border)] bg-[var(--flame-surface)] text-[var(--flame-text)] shadow-[var(--flame-elevation-1)]" aria-controls="flame-scrollspy-collapse" aria-label="Toggle sections" data-hs-collapse="#flame-scrollspy-collapse">
+        <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(globeIcon)}'); mask-image:url('${svgToDataUrl(globeIcon)}')"></span>
+      </button>
+    </div>
+    <div id="flame-scrollspy-collapse" class="hidden overflow-hidden transition-all duration-300 sm:block mt-2">
+      <div class="space-y-4 [--scrollspy-offset:90]">
+        <div>
+          <div class="text-[11px] uppercase tracking-wide mb-2 text-[var(--flame-text-muted)]">Request</div>
+          <ul class="space-y-1 text-sm">
+            <li>
+              <a href="#context-request" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold active">
+                <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(globeIcon)}'); mask-image:url('${svgToDataUrl(globeIcon)}')"></span>
+                <span>Overview</span>
+              </a>
+            </li>
+            <li>
+              <a href="#context-headers" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold">
+                <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(fileTextIcon)}'); mask-image:url('${svgToDataUrl(fileTextIcon)}')"></span>
+                <span>Headers</span>
+              </a>
+            </li>
+            <li>
+              <a href="#context-body" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold">
+                <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(bracesIcon)}'); mask-image:url('${svgToDataUrl(bracesIcon)}')"></span>
+                <span>Body</span>
+              </a>
+            </li>
+            <li>
+              <a href="#context-session" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold">
+                <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(userIcon)}'); mask-image:url('${svgToDataUrl(userIcon)}')"></span>
+                <span>Session</span>
+              </a>
+            </li>
+            <li>
+              <a href="#context-cookies" class="flex items-center gap-2 px-2 py-1 rounded text-[var(--flame-text)] hover:bg-[var(--flame-surface-muted)] hs-scrollspy-active:bg-[var(--flame-surface-muted)] hs-scrollspy-active:font-semibold">
+                <span class="dui size-3" style="-webkit-mask-image:url('${svgToDataUrl(cookieIcon)}'); mask-image:url('${svgToDataUrl(cookieIcon)}')"></span>
+                <span>Cookies</span>
+              </a>
+            </li>
+          </ul>
+        </div>${contextSections.sidebar}
+      </div>
+    </div>
   </nav>
-  <div class="mt-3"></div>
 </aside>`;
 
     const content = `
-<div class="grow min-w-0">
+<div id="flame-context-sections" class="grow min-w-0">
   <input type="hidden" id="clipboard-curl-${uniqueId}" value="${attrEscape(curl)}">
-  <section id="context-request" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
-    <div class="px-4 py-4 flex items-center gap-3 min-w-0">
-      <h2 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Request</h2>
+  <section id="context-request" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
+    <div class="px-4 py-4 flex items-center gap-3 min-w-0 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
+      <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(globeIcon)}'); mask-image:url('${svgToDataUrl(globeIcon)}')"></span>
+      <h2 class="text-sm font-semibold text-[var(--flame-text)]">Request</h2>
       <a class="text-sm truncate text-[var(--flame-red-orange)]" href="${escapeHtml(request.url || "#")}">${escapeHtml(request.url || "")}</a>
       <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-[var(--flame-metallic-silver)] text-[var(--flame-charcoal-black)]">${escapeHtml(String(request.method || "GET"))}</span>
       <div class="grow"></div>
       ${copyButton({ targetId: `clipboard-curl-${uniqueId}`, label: "Copy cURL" })}
     </div>
-    <div class="px-4 pb-4 overflow-auto">${curlHtml}</div>
+    <div class="px-4 pb-4 overflow-auto mt-2">${curlHtml}</div>
   </section>
 
   <input type="hidden" id="clipboard-headers-${uniqueId}" value="${attrEscape(JSON.stringify(filteredHeaders || {}))}">
-  <section id="context-headers" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
-    <div class="px-4 py-3 flex items-center gap-2">
-      <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Headers</h3>
+  <section id="context-headers" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
+    <div class="px-4 py-3 flex items-center gap-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
+      <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(fileTextIcon)}'); mask-image:url('${svgToDataUrl(fileTextIcon)}')"></span>
+      <h3 class="text-sm font-semibold text-[var(--flame-text)]">Headers</h3>
       <div class="grow"></div>
-      <a href="#context-headers" class="text-xs text-[var(--flame-metallic-silver)]" aria-label="Anchor">#</a>
+      <a href="#context-headers" class="text-xs text-[var(--flame-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-headers-${uniqueId}`, label: "Copy JSON" })}
     </div>
-    <div class="max-w-full overflow-auto">${renderKeyValueTable(filteredHeaders)}</div>
+    <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable(filteredHeaders)}</div>
   </section>
 
   <input type="hidden" id="clipboard-body-${uniqueId}" value="${attrEscape(JSON.stringify(request?.body || {}))}">
-  <section id="context-body" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
-    <div class="px-4 py-3 flex items-center gap-2">
-      <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Body</h3>
+  <section id="context-body" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
+    <div class="px-4 py-3 flex items-center gap-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
+      <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(bracesIcon)}'); mask-image:url('${svgToDataUrl(bracesIcon)}')"></span>
+      <h3 class="text-sm font-semibold text-[var(--flame-text)]">Body</h3>
       <div class="grow"></div>
-      <a href="#context-body" class="text-xs text-[var(--flame-metallic-silver)]" aria-label="Anchor">#</a>
+      <a href="#context-body" class="text-xs text-[var(--flame-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-body-${uniqueId}`, label: "Copy JSON" })}
     </div>
-    <div class="max-w-full overflow-auto">${renderBodyContent(request?.body)}</div>
+    <div class="max-w-full overflow-auto mt-2">${renderBodyContent(request?.body)}</div>
   </section>
 
   <input type="hidden" id="clipboard-session-${uniqueId}" value="${attrEscape(JSON.stringify(request?.session ?? {}))}">
-  <section id="context-session" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
-    <div class="px-4 py-3 flex items-center gap-2">
-      <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Session</h3>
+  <section id="context-session" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
+    <div class="px-4 py-3 flex items-center gap-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
+      <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(userIcon)}'); mask-image:url('${svgToDataUrl(userIcon)}')"></span>
+      <h3 class="text-sm font-semibold text-[var(--flame-text)]">Session</h3>
       <div class="grow"></div>
-      <a href="#context-session" class="text-xs text-[var(--flame-metallic-silver)]" aria-label="Anchor">#</a>
+      <a href="#context-session" class="text-xs text-[var(--flame-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-session-${uniqueId}`, label: "Copy JSON" })}
     </div>
-            <div class="max-w-full overflow-auto">${renderObjectTable(request?.session as Record<string, unknown>)}</div>
+            <div class="max-w-full overflow-auto mt-2">${renderObjectTable(request?.session as Record<string, unknown>)}</div>
   </section>
 
   <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attrEscape(JSON.stringify(request?.cookies || {}))}">
-  <section id="context-cookies" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)]">
-    <div class="px-4 py-3 flex items-center gap-2">
-      <h3 class="text-sm font-semibold text-[var(--flame-charcoal-black)]">Cookies</h3>
+  <section id="context-cookies" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
+    <div class="px-4 py-3 flex items-center gap-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
+      <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(cookieIcon)}'); mask-image:url('${svgToDataUrl(cookieIcon)}')"></span>
+      <h3 class="text-sm font-semibold text-[var(--flame-text)]">Cookies</h3>
       <div class="grow"></div>
-      <a href="#context-cookies" class="text-xs text-[var(--flame-metallic-silver)]" aria-label="Anchor">#</a>
+      <a href="#context-cookies" class="text-xs text-[var(--flame-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-cookies-${uniqueId}`, label: "Copy JSON" })}
     </div>
-    <div class="max-w-full overflow-auto">${renderKeyValueTable((request?.cookies || {}) as Record<string, string | string[]>)}
+    <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable((request?.cookies || {}) as Record<string, string | string[]>)}
     </div>
   </section>${contextSections.content}
 </div>`;
 
     const html = `
-<div class="w-full flex gap-4">
+<div class="w-full flex gap-4 relative">
   ${sidebar}
   ${content}
 </div>`;
+    const script = `(function(){ try {
+  (window.subscribeToDOMContentLoaded || function (fn) {
+    if (document.readyState !== 'loading') {
+      try { fn(); } catch (_) {}
+    } else {
+      try { document.addEventListener('DOMContentLoaded', fn); } catch (_) {}
+    }
+  })(function () {
+    try {
+      if (typeof HSScrollspy !== 'undefined' && HSScrollspy.getInstance) {
+        var instance = HSScrollspy.getInstance('[data-hs-scrollspy="#flame-context-sections"]', true);
 
-    const script = ``;
+        if (instance && instance.element && instance.element.el && instance.element.el.on) {
+          if (typeof HSCollapse !== 'undefined' && HSCollapse.getInstance) {
+            var collapse = HSCollapse.getInstance('[data-hs-collapse="#flame-scrollspy-collapse"]', true);
+            console.log(collapse)
+            if (collapse && collapse.element && collapse.element.el && collapse.element.content) {
+              instance.element.on('beforeScroll', function () {
+                return new Promise(function (res) {
+                  var isOpen = collapse.element.el.classList.contains('open');
+                  if (isOpen) {
+                    collapse.element.hide();
+                    if (typeof HSStaticMethods !== 'undefined' && HSStaticMethods.afterTransition) {
+                      HSStaticMethods.afterTransition(collapse.element.content, function () { res(true); });
+                    } else {
+                      res(true);
+                    }
+                  } else {
+                    res(true);
+                  }
+                });
+              });
+            }
+          }
+        }
+      }
+    } catch (_) {}
+  });
+} catch (_) {} })();`;
+    
     return { html, script };
 };
 
 export default async function buildContextContent(request: RequestContext | undefined, options: DisplayerOptions): Promise<ContentPage | undefined> {
     const { html, script } = await requestPanel(request, options);
-    if (!html) return undefined;
+    if (!html) {
+        return undefined;
+    }
     return { id: "context", name: "Context", code: { html, script } };
 }

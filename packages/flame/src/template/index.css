@@ -16,8 +16,8 @@
 /* Flame Theme Color Variables - Available for use in Tailwind classes */
 :root {
     --flame-white-smoke: #F5F5F5;
-    /* Metallic Silver tuned for the design */
-    --flame-metallic-silver: #B9C8D7;
+    /* Metallic Silver tuned darker for readability on white */
+    --flame-metallic-silver: #8FA3B7;
     --flame-red-orange: #FF4628;
     --flame-charcoal-black: #202020;
 

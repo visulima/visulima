@@ -25,7 +25,8 @@ const prelineInit = `
       // - clipboard: for copy functionality  
       // - theme-appearance: for dark/light mode switching
       // - tabs: for header navigation tabs
-      HSStaticMethods.autoInit(['tooltip', 'clipboard', 'theme-appearance', 'tabs']);
+      // - scrollspy: for context sidebar highlighting
+      HSStaticMethods.autoInit(['tooltip', 'clipboard', 'theme-appearance', 'tabs', 'scrollspy', 'collapse']);
     }
     
     // Explicitly initialize clipboard if available
@@ -71,12 +72,12 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
 
     html += `</div>`;
 
-    html += `<div id="flame-section-stack" class="${anyCustomSelected ? "hidden" : ""}" role="tabpanel" aria-labelledby="flame-tab-stack">${stackHtml}</div>`;
+    html += `<div id="flame-section-stack" class="${anyCustomSelected ? "hidden relative" : "relative"}" role="tabpanel" aria-labelledby="flame-tab-stack">${stackHtml}</div>`;
 
     for (const page of customPages) {
         const hidden = page.defaultSelected ? "" : " hidden";
 
-        html += `<div id="flame-section-${page.id}" class="${hidden}" role="tabpanel" aria-labelledby="flame-tab-${page.id}">${page.code.html}</div>`;
+        html += `<div id="flame-section-${page.id}" class="${hidden} relative" role="tabpanel" aria-labelledby="flame-tab-${page.id}">${page.code.html}</div>`;
     }
 
     return layout({
