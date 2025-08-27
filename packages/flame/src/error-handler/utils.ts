@@ -24,19 +24,14 @@ export const sendJson = (response: ServerResponse, jsonBody: unknown): void => {
 };
 
 export const addStatusCodeToResponse = (response: ServerResponse, error: unknown): void => {
-    // respect err.statusCode
-
-    if ((error as HttpError).statusCode !== undefined) {
-        response.statusCode = (error as HttpError).statusCode;
+    const err = error as Partial<HttpError>;
+    const candidate = Number(
+        err.statusCode ?? err.status,
+    );
+    if (Number.isInteger(candidate) && candidate >= 400 && candidate <= 599) {
+        response.statusCode = candidate;
+        return;
     }
-
-    // respect err.status
-
-    if ((error as HttpError).status !== undefined) {
-        response.statusCode = (error as HttpError).status;
-    }
-
-    // default status code to 500
     if (response.statusCode < 400) {
         response.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
     }
