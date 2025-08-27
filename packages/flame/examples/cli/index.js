@@ -1,4 +1,4 @@
-import cliDisplayer from "../../dist/handler/cli-handler.mjs";
+import { cliHandler } from "../../dist/handler/cli-handler.mjs";
 
 async function demoHint() {
     try {
@@ -20,7 +20,7 @@ async function demoHint() {
         const error = new Error("CLI demo: rendered error with hint", { cause: innerError });
         error.hint = "Ensure the config file exists and is readable. Check permissions and path.";
 
-        await cliDisplayer(error, [], console);
+        await cliHandler(error, [], console);
     }
 }
 
@@ -31,7 +31,7 @@ async function demoRule() {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         console.log(obj.foo);
     } catch (error) {
-        await cliDisplayer(/** @type {Error} */ (error), [], console);
+        await cliHandler(/** @type {Error} */ (error), [], console);
     }
 }
 

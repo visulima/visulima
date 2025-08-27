@@ -48,52 +48,70 @@ const runSolutionFinders = async (error: Error, solutionFinders: SolutionFinder[
 
 type ColorizeMethod = (value: string) => string;
 
-const cliDisplayer = async (
-    error: Error,
-    options: {
-        solutionTitle?: string;
-        solutionFinders?: SolutionFinder[];
-        logger?: CliLogger;
-    } & Partial<Omit<RenderErrorOptions, "color">> & {
-            color?: {
-                codeFrame?: RenderErrorOptions["color"];
-                boxen?: {
-                    headerTextColor?: ColorizeMethod;
-                    textColor?: ColorizeMethod;
-                    borderColor?: ColorizeMethod;
-                };
+type BaseCliOptions = {
+    solutionTitle?: string;
+    solutionFinders?: SolutionFinder[];
+} & Partial<Omit<RenderErrorOptions, "color">> & {
+        color?: {
+            codeFrame?: RenderErrorOptions["color"];
+            boxen?: {
+                headerTextColor?: ColorizeMethod;
+                textColor?: ColorizeMethod;
+                borderColor?: ColorizeMethod;
             };
-        } = {},
-): Promise<void> => {
-    const { solutionFinders = [], logger = console, solutionTitle, color, ...renderOptions } = options;
+        };
+    };
 
-    logger.error(
-        renderError(error, {
-            ...renderOptions,
-            ...color?.codeFrame,
-        } as RenderErrorOptions),
-    );
+type CliHandlerOptions = BaseCliOptions & { logger?: CliLogger };
+
+const buildOutput = async (error: Error, options: BaseCliOptions): Promise<{ errorAnsi: string; solutionBox: undefined | string }> => {
+    const { solutionFinders = [], solutionTitle, color, ...renderOptions } = options;
+
+    const errorAnsi = renderError(error, {
+        ...renderOptions,
+        ...color?.codeFrame,
+    } as RenderErrorOptions);
 
     const hint = await runSolutionFinders(error, solutionFinders);
-    if (!hint) {
-        return;
-    }
 
-    logger.log("");
+    if (!hint) {
+        return { errorAnsi, solutionBox: undefined };
+    }
 
     const header = sanitizeTitle(hint.header ?? solutionTitle ?? "A possible solution to this error");
 
-    logger.log(
-        boxen(hint.body, {
-            borderStyle: "round",
-            padding: { top: 1, right: 2, bottom: 1, left: 2 },
-            margin: { top: 0, right: 0, bottom: 0, left: 0 },
-            headerText: `💡 ${header}`,
-            headerAlignment: "left",
-            textAlignment: "left",
-            ...color?.boxen,
-        }),
-    );
+    const solutionBox = boxen(hint.body, {
+        borderStyle: "round",
+        padding: { top: 1, right: 2, bottom: 1, left: 2 },
+        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        headerText: `💡 ${header}`,
+        headerAlignment: "left",
+        textAlignment: "left",
+        ...color?.boxen,
+    });
+
+    return {
+        errorAnsi,
+        solutionBox,
+    };
 };
 
-export default cliDisplayer;
+export const ansiHandler = async (error: Error, options: BaseCliOptions = {}): Promise<string> => {
+    const { errorAnsi, solutionBox } = await buildOutput(error, options);
+
+    if (solutionBox === undefined) {
+        return errorAnsi;
+    }
+
+    return `${errorAnsi}\n\n${solutionBox}`;
+};
+
+export const cliHandler = async (error: Error, options: CliHandlerOptions = {}): Promise<void> => {
+    const { logger = console, ...rest } = options;
+
+    const { errorAnsi, solutionBox } = await buildOutput(error, options);
+
+    logger.error(errorAnsi);
+    logger.log("");
+    logger.log(solutionBox);
+};
