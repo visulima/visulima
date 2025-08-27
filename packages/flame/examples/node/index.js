@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 
 import httpDisplayer from "../../dist/displayer/http-displayer.mjs";
 import buildContextPage from "../../dist/error-inspector/content/context.mjs";
+import { createNodeHttpHandler } from "../../dist/server/open-in-editor.mjs";
 
 // Deeper stack builders (sync + async levels)
 function parseEnvironmentConfig() {
@@ -61,6 +62,8 @@ async function renderController() {
 }
 
 const port = 3000;
+const openInEditorHandler = createNodeHttpHandler();
+
 const server = createServer(async (request, response) => {
     const startTime = Date.now();
 
@@ -158,7 +161,7 @@ const server = createServer(async (request, response) => {
                         l1: { type: "memory", hitRate: 0.95, size: "10MB" },
                         l2: { type: "redis", hitRate: 0.87, size: "100MB" },
                     },
-                    patterns: ["user:*", "session:*", "api:*"],
+                    patterns: ["user:*", "session:*", "api:*"]
                 },
                 environment: {
                     NODE_ENV: process.env.NODE_ENV || "development",
@@ -185,10 +188,17 @@ const server = createServer(async (request, response) => {
 
         const displayer = await httpDisplayer(/** @type {Error} */ (error), [], {
             content: contextPage ? [contextPage] : [],
+            openInEditorUrl: `__open-in-editor`,
         });
         return displayer(request, response);
     }
+
     const url = new URL(request.url || "/", `http://localhost:${port}`);
+
+    // Open-in-editor endpoint
+    if (url.pathname === "/__open-in-editor") {
+        return openInEditorHandler(request, response);
+    }
 
     // Showcase routes for each hint
     if (url.pathname === "/esm-cjs") {

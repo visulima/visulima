@@ -49,8 +49,13 @@ const stickyHeader = (
           // Initialize sticky header
           stickyHeader();
 
-          // Add scroll listener
-          window.addEventListener('scroll', stickyHeader, { passive: true });
+          // Add scroll listener once
+          try {
+            if (!window.__flameStickyHeaderBound) {
+              window.__flameStickyHeaderBound = true;
+              window.addEventListener('scroll', stickyHeader, { passive: true });
+            }
+          } catch (_) {}
         });`,
     };
 };

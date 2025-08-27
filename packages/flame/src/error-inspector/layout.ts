@@ -41,9 +41,12 @@ ${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
       (function() {
         subscribeToDOMContentLoaded(() => {
           // Global keyboard shortcut for ? and Shift+/ to open shortcuts
-          document.addEventListener('keydown', function(e) {
-            if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
-              e.preventDefault();
+          try {
+            if (!window.__flameShortcutKeyBound) {
+              window.__flameShortcutKeyBound = true;
+              document.addEventListener('keydown', function(e) {
+                if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+                  e.preventDefault();
 
               // Find all shortcuts buttons
               const shortcutsButtons = document.querySelectorAll('.hs-tooltip-toggle');
@@ -73,9 +76,10 @@ ${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
                 if (visibleButton) {
                   visibleButton.click();
                 }
-              }
+                }
+              });
             }
-          });
+          } catch (_) {}
         })
       })()
     </script>

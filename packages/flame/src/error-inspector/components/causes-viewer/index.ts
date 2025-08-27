@@ -16,7 +16,7 @@ const svgToDataUrl = (svgContent: string): string => {
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
 };
 
-const causes = async (causeList: unknown[]): Promise<{ html: string; script: string }> => {
+const causes = async (causeList: unknown[], options: { openInEditorUrl?: string } = {}): Promise<{ html: string; script: string }> => {
     if (causeList.length === 0) {
         return {
             html: "",
@@ -29,7 +29,9 @@ const causes = async (causeList: unknown[]): Promise<{ html: string; script: str
 
     for await (const [index, cause] of causeList.entries()) {
         if (cause instanceof Error) {
-            const { html: stackTraceHtml, script: stackTraceScript } = await stackTraceViewer(cause);
+            const { html: stackTraceHtml, script: stackTraceScript } = await stackTraceViewer(cause, {
+                openInEditorUrl: options.openInEditorUrl,
+            });
 
             content.push(`<details aria-label="Cause ${index + 1}" class="relative rounded-[var(--flame-radius-lg)] mb-2 last:mb-0 group shadow-[var(--flame-elevation-2)] bg-[var(--flame-surface)]">
     <summary class="pl-5 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-all inline-flex justify-between items-center gap-x-3 w-full font-semibold text-start py-4 px-5 disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-[var(--flame-text)]">

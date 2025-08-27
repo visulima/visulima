@@ -137,6 +137,60 @@ app.get("/", async (req, res) => {
 app.listen(3000);
 ```
 
+### Using the HTML displayer directly (advanced)
+
+If you don’t need the full displayer and want to mount just the HTML error handler, use `htmlErrorHandler`.
+
+```ts
+import { createServer } from "node:http";
+import { htmlErrorHandler } from "@visulima/flame";
+
+const server = createServer(async (req, res) => {
+    try {
+        throw new Error("Boom");
+    } catch (error) {
+        const html = htmlErrorHandler([], {
+            // Enable "Open in editor" buttons
+            openInEditorUrl: "/__open-in-editor",
+            // Attach request context (improves the Context tab)
+            context: {
+                request: {
+                    method: req.method,
+                    url: req.url,
+                    status: 500,
+                    headers: Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, Array.isArray(v) ? v : (v ?? "")])),
+                },
+            },
+            // Control when to render the rich inspector (true | false | "auto")
+            // auto => show when NODE_ENV !== 'production' or DEBUG is set
+            debug: "auto",
+            // Optional production fallback page (string or async function)
+            // errorPage: ({ error, statusCode }) => `<h1>${statusCode}</h1><p>${error.message}</p>`,
+        });
+
+        await html(error as Error, req, res);
+    }
+});
+```
+
+Optional: content negotiation (serve Problem JSON, JSON:API, or HTML based on `Accept` header):
+
+```ts
+import { createServer } from "node:http";
+import { htmlErrorHandler, problemErrorHandler, createNegotiatedErrorHandler } from "@visulima/flame";
+
+const html = htmlErrorHandler([], { openInEditorUrl: "/__open-in-editor" });
+const negotiated = createNegotiatedErrorHandler([], process.env.NODE_ENV !== "production", html);
+
+createServer(async (req, res) => {
+  try {
+    throw new Error("Boom");
+  } catch (error) {
+    await negotiated(error, req, res);
+  }
+}).listen(3000);
+```
+
 ## API
 
 ### httpDisplayer(error, solutionFinders?, options?) => Promise<(req, res) => Promise<void>>

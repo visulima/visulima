@@ -50,7 +50,12 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
 
     let html = "";
 
-    const { html: stackHtml, scripts: stackScripts } = await buildStackContent(mainCause as ErrorType, causes as Error[], solutionFinders);
+    const { html: stackHtml, scripts: stackScripts } = await buildStackContent(
+        mainCause as ErrorType,
+        causes as Error[],
+        solutionFinders,
+        options,
+    );
 
     const customPages = Array.isArray(options.content) ? options.content : [];
     const anyCustomSelected = customPages.some((p) => p.defaultSelected);

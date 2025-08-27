@@ -1,6 +1,7 @@
 import type { VisulimaError } from "@visulima/error/error";
 
 import type { SolutionError, SolutionFinder } from "../../types";
+import type { TemplateOptions } from "../types";
 import process from "../../util/process";
 import runtimeName from "../../util/runtimes";
 import causesViewer from "../components/causes-viewer";
@@ -14,6 +15,7 @@ export default async function buildStackContent(
     error: ErrorType,
     causes: Error[],
     solutionFinders: SolutionFinder[],
+    options: TemplateOptions = {},
 ): Promise<{ html: string; scripts: string[] }> {
     const { html: errorCardHtml, scripts: errorCardScripts } = await errorCard({
         error,
@@ -22,8 +24,10 @@ export default async function buildStackContent(
         version: process.version,
     });
 
-    const { html: stackTraceHtml, script: stackTraceScript } = await stackTraceViewer(error as Error);
-    const { html: causesViewerHtml, script: causesViewerScript } = await causesViewer(causes);
+    const { html: stackTraceHtml, script: stackTraceScript } = await stackTraceViewer(error as Error, {
+        openInEditorUrl: options.openInEditorUrl,
+    });
+    const { html: causesViewerHtml, script: causesViewerScript } = await causesViewer(causes, options);
 
     let html = `<div class="flex flex-col gap-6">`;
     html += errorCardHtml;

@@ -210,28 +210,34 @@ const stackTraceViewer = async (
           var panels = Array.prototype.slice.call(document.querySelectorAll(panelSelector));
           var groupToggles = Array.prototype.slice.call(document.querySelectorAll('input[data-group-toggle="${uniqueKey}"]'));
 
-          document.addEventListener('click', function(e){
-            var btn = (e.target && e.target.closest) ? e.target.closest('[data-open-in-editor]') : null;
-            if (!btn) return;
-            var url = btn.getAttribute('data-url');
-            var file = btn.getAttribute('data-path');
-            var line = parseInt(btn.getAttribute('data-line') || '1', 10) || 1;
-            var column = parseInt(btn.getAttribute('data-column') || '1', 10) || 1;
-            var selectedEditor = null;
-            try {
-              var saved = localStorage.getItem('flame:editor');
-              if (saved) selectedEditor = saved;
-              var sel = document.getElementById('editor-selector');
-              if (sel && sel.value) {
-                selectedEditor = sel.value;
-                try { localStorage.setItem('flame:editor', sel.value); } catch (_) {}
-              }
-            } catch (_) {}
-            if (!url || !file) return;
-            var body = { file: file, line: line, column: column };
-            if (selectedEditor) body.editor = selectedEditor;
-            try { fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); } catch (_) {}
-          });
+          try {
+            if (!window.__flameOpenInEditorBound) {
+              window.__flameOpenInEditorBound = true;
+
+              document.addEventListener('click', function(e){
+                var btn = (e.target && e.target.closest) ? e.target.closest('[data-open-in-editor]') : null;
+                if (!btn) return;
+                var url = btn.getAttribute('data-url');
+                var file = btn.getAttribute('data-path');
+                var line = parseInt(btn.getAttribute('data-line') || '1', 10) || 1;
+                var column = parseInt(btn.getAttribute('data-column') || '1', 10) || 1;
+                var selectedEditor = null;
+                try {
+                  var saved = localStorage.getItem('flame:editor');
+                  if (saved) selectedEditor = saved;
+                  var sel = document.getElementById('editor-selector');
+                  if (sel && sel.value) {
+                    selectedEditor = sel.value;
+                    try { localStorage.setItem('flame:editor', sel.value); } catch (_) {}
+                  }
+                } catch (_) {}
+                if (!url || !file) return;
+                var body = { file: file, line: line, column: column };
+                if (selectedEditor) body.editor = selectedEditor;
+                try { fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); } catch (_) {}
+              });
+            }
+          } catch (_) {}
 
           function activate(button){
             buttons.forEach(function(b){
