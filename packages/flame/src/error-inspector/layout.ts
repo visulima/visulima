@@ -48,41 +48,43 @@ const layout = ({
             // Global keyboard shortcut for ? and Shift+/ to open shortcuts
             try {
                 if (!window.__flameShortcutKeyBound) {
-                window.__flameShortcutKeyBound = true;
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
-                    e.preventDefault();
+                    window.__flameShortcutKeyBound = true;
+                    
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+                            e.preventDefault();
 
-                // Find all shortcuts buttons
-                const shortcutsButtons = document.querySelectorAll('.hs-tooltip-toggle');
+                            // Find all shortcuts buttons
+                            const shortcutsButtons = document.querySelectorAll('.hs-tooltip-toggle');
 
-                if (shortcutsButtons.length > 0) {
-                    // Find the first visible button in the viewport
-                    let visibleButton = null;
+                            if (shortcutsButtons.length > 0) {
+                                // Find the first visible button in the viewport
+                                let visibleButton = null;
 
-                    for (const button of shortcutsButtons) {
-                    const rect = button.getBoundingClientRect();
-                    const isVisible = rect.top >= 0 && rect.left >= 0 &&
-                                    rect.bottom <= window.innerHeight &&
-                                    rect.right <= window.innerWidth;
+                                for (const button of shortcutsButtons) {
+                                    const rect = button.getBoundingClientRect();
+                                    const isVisible = rect.top >= 0 && rect.left >= 0 &&
+                                                    rect.bottom <= window.innerHeight &&
+                                                    rect.right <= window.innerWidth;
 
-                    if (isVisible) {
-                        visibleButton = button;
-                        break;
-                    }
-                    }
+                                    if (isVisible) {
+                                        visibleButton = button;
+                                        break;
+                                    }
+                                }
 
-                    // If no visible button found, use the first one
-                    if (!visibleButton) {
-                    visibleButton = shortcutsButtons[0];
-                    }
+                                // If no visible button found, use the first one
+                                if (!visibleButton) {
+                                    visibleButton = shortcutsButtons[0];
+                                }
 
-                    // Trigger the button
-                    if (visibleButton) {
-                    visibleButton.click();
-                    }
-                    }
-                });
+                                // Trigger the button
+                                if (visibleButton) {
+                                    visibleButton.click();
+                                }
+                            }
+                        }
+                    });
                 }
             } catch (_) {}
             })

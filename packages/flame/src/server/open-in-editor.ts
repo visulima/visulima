@@ -2,13 +2,24 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import process from "node:process";
 
-import openEditor from "open-editor";
+import launchEditorMiddleware from 'launch-editor-middleware'
 
-export type OpenInEditorRequest = {
-    column?: number;
-    editor?: string;
-    file: string;
-    line?: number;
+const respond400 = (response: ServerResponse<IncomingMessage> & { status?: (code: number) => ServerResponse<IncomingMessage> & { send: (body: string) => void } }, next?: (err?: any) => void) => {
+    try {
+        if (typeof response.status === "function") {
+            response.status(400).send("Failed to open editor");
+            return;
+        }
+    } catch {}
+    
+    try {
+        response.statusCode = 400;
+        response.end("Failed to open editor");
+    } catch {}
+    
+    if (typeof next === "function") {
+        next();
+    }
 };
 
 export type OpenInEditorOptions = {
@@ -17,51 +28,46 @@ export type OpenInEditorOptions = {
 };
 
 /**
- * Core utility to open the user's editor safely.
+ * Single universal handler factory for Node HTTP and Connect/Express.
+ * - Accepts POST JSON or GET query (?file&line&column&editor)
+ * - Enforces projectRoot unless allowOutsideProject is true
+ * Usage:
+ *   const openInEditor = createOpenInEditorMiddleware({ projectRoot: process.cwd() })
+ *   // Node http
+ *   if (url.pathname === '/__open-in-editor') return openInEditor(req, res)
+ *   // Express/Connect
+ *   app.post('/__open-in-editor', openInEditor)
  */
-export const openInEditor = async (request: OpenInEditorRequest, options: OpenInEditorOptions = {}): Promise<void> => {
-    const { column = 1, editor, file, line = 1 } = request;
-
-    if (!file || typeof file !== "string") {
-        throw new Error("'file' is required");
-    }
-
-    const projectRoot = options.projectRoot ?? process.cwd();
-    const absPath = path.resolve(projectRoot, file);
-
-    if (!options.allowOutsideProject && !absPath.startsWith(projectRoot + path.sep)) {
-        throw new Error("Forbidden path");
-    }
-
-    await openEditor([{ column, file: absPath, line }], editor ? { editor } : undefined);
-};
-
-/**
- * Minimal Node http handler factory (works with any Node HTTP-based server).
- * Accepts POST JSON or GET query params.
- */
-export const createNodeHttpHandler = (options: OpenInEditorOptions = {}) =>
-    async function handler(request: IncomingMessage, response: ServerResponse) {
+export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}) => {
+    return async function universalHandler(request: IncomingMessage & { body?: any }, response: ServerResponse, next?: (err?: any) => void) {
         try {
-            const method = (request.method || "GET").toUpperCase();
+            const method = String(request.method || "GET").toUpperCase();
+
             let payload: any = {};
 
             if (method === "POST") {
-                const body = await new Promise<string>((resolve) => {
-                    let data = "";
-
-                    request.on("data", (chunk) => (data += chunk));
-                    request.on("end", () => resolve(data));
-                });
-
-                try {
-                    payload = body ? JSON.parse(body) : {};
-                } catch {
-                    payload = {};
+                // Prefer existing parsed body (Express), otherwise parse
+                if (request.body && typeof request.body === "object") {
+                    payload = request.body;
+                } else {
+                    payload = await new Promise((resolve) => {
+                        try {
+                            let data = "";
+                            request.on("data", (chunk: string) => (data += chunk));
+                            request.on("end", () => {
+                                try {
+                                    resolve(data ? JSON.parse(data) : {});
+                                } catch {
+                                    resolve({});
+                                }
+                            });
+                        } catch {
+                            resolve({});
+                        }
+                    });
                 }
             } else {
                 const url = new URL(request.url || "", "http://localhost");
-
                 payload = {
                     column: Number(url.searchParams.get("column") || 1),
                     editor: url.searchParams.get("editor") || undefined,
@@ -70,37 +76,55 @@ export const createNodeHttpHandler = (options: OpenInEditorOptions = {}) =>
                 };
             }
 
-            await openInEditor(payload, options);
-
-            response.statusCode = 204;
-            response.end();
-        } catch {
-            response.statusCode = 400;
-            response.end("Failed to open editor");
-        }
-    };
-
-/**
- * Express/Connect-style handler factory.
- */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const createExpressHandler = (options: OpenInEditorOptions = {}) =>
-    async function handler(request: any, response: any) {
-        try {
-            const payload = { ...request.query, ...request.body } as OpenInEditorRequest;
-
-            if (typeof payload.line === "string") {
-                payload.line = Number(payload.line);
+            const projectRoot = options.projectRoot ?? process.cwd();
+            const absPath = path.isAbsolute(payload.file || "") ? String(payload.file || "") : path.resolve(projectRoot, String(payload.file || ""));
+            
+            if (!payload.file) {
+                respond400(response, next);
+                return;
             }
 
-            if (typeof payload.column === "string") {
-                payload.column = Number(payload.column);
+            if (!options.allowOutsideProject) {
+                const rootWithSep = projectRoot.endsWith(path.sep) ? projectRoot : projectRoot + path.sep;
+            
+                if (!absPath.startsWith(rootWithSep)) {
+                    respond400(response, next);
+            
+                    return;
+                }
             }
 
-            await openInEditor(payload, options);
+            const mw = launchEditorMiddleware();
+            const q = new URLSearchParams({ file: absPath, line: String(payload.line ?? 1), column: String(payload.column ?? 1) });
+            
+            if (payload.editor) {
+                q.set("editor", String(payload.editor));
+            }
 
-            response.status(204).end();
+            request.url = `/?${q.toString()}`;
+
+            // If next provided, assume Connect/Express
+            if (typeof next === "function") {
+                mw(request, response, next);
+
+                return;
+            }
+
+            // Node http usage: call and end
+            await new Promise<void>((resolve) => mw(request, response, () => resolve()));
         } catch {
-            response.status(400).send("Failed to open editor");
+            respond400(response, next);
         }
     };
+};
+
+// Backwards-compat named factories (breaking changes allowed, but keep minimal aliases)
+export const createNodeHttpHandler = (options: OpenInEditorOptions = {}) => {
+    const handler = createOpenInEditorMiddleware(options);
+
+    return async (req: IncomingMessage & { body?: any }, res: ServerResponse) => handler(req, res);
+};
+
+export const createExpressHandler = (options: OpenInEditorOptions = {}) => {
+    return createOpenInEditorMiddleware(options);
+};

@@ -2007,9 +2007,12 @@ importers:
       isomorphic-dompurify:
         specifier: ^2.26.0
         version: 2.26.0
-      ts-japi:
-        specifier: ^1.11.5
-        version: 1.11.5
+      launch-editor-middleware:
+        specifier: 2.11.1
+        version: 2.11.1
+      tailwind-merge:
+        specifier: 3.3.1
+        version: 3.3.1
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.2.23
@@ -2122,12 +2125,12 @@ importers:
       sort-package-json:
         specifier: ^3.4.0
         version: 3.4.0
-      tailwind-merge:
-        specifier: 3.3.1
-        version: 3.3.1
       tailwindcss:
         specifier: ^4.1.12
         version: 4.1.12
+      ts-japi:
+        specifier: ^1.11.5
+        version: 1.11.5
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
@@ -17623,6 +17626,12 @@ packages:
     resolution: {integrity: sha512-KvNT4XqAMzdcL6ka6Tl3i2lYeFDgXNCuIX+xNx6ZMVR1dFq+idXd9FLKNMOIx0t9mJ9/HudyX4oZWXZQ0UJHeg==}
     engines: {node: '>=14.16'}
 
+  launch-editor-middleware@2.11.1:
+    resolution: {integrity: sha512-6xpn4pJz5mDg2kUH7L6gK5BuZcZPdVwoSs/DhfebefwLyszNXqFFjksGup/w4CTRzzrr8FSEufDzb/gKFLle6w==}
+
+  launch-editor@2.11.1:
+    resolution: {integrity: sha512-SEET7oNfgSaB6Ym0jufAdCeo3meJVeCaaDyzRygy0xsp2BFKCprcfHljTq4QkzTLUxEKkFK6OK4811YM2oSrRg==}
+
   layout-base@1.0.2:
     resolution: {integrity: sha512-8h2oVEZNktL4BH2JCOI90iD1yXwL6iNW7KcCKT2QZgQJR2vbqDsldCTPRU9NifTCqHZci57XvQQ15YTu+sTYPg==}
 
@@ -21766,6 +21775,10 @@ packages:
 
   shell-quote@1.8.2:
     resolution: {integrity: sha512-AzqKpGKjrj7EM6rKVQEPpB288oCfnrEIuyoT9cyF4nmGa7V8Zk6f7RRqYisX8X9m+Q7bd632aZW4ky7EhbQztA==}
+    engines: {node: '>= 0.4'}
+
+  shell-quote@1.8.3:
+    resolution: {integrity: sha512-ObmnIF4hXNg1BqhnHmgbDETF8dLPCggZWBjkQfhZpbszZnYur5DUljTcCHii5LC3J5E0yeO/1LIMyH+UvHQgyw==}
     engines: {node: '>= 0.4'}
 
   shiki@2.5.0:
@@ -43459,6 +43472,15 @@ snapshots:
     dependencies:
       package-json: 8.1.1
 
+  launch-editor-middleware@2.11.1:
+    dependencies:
+      launch-editor: 2.11.1
+
+  launch-editor@2.11.1:
+    dependencies:
+      picocolors: 1.1.1
+      shell-quote: 1.8.3
+
   layout-base@1.0.2: {}
 
   layout-base@2.0.1: {}
@@ -49021,6 +49043,8 @@ snapshots:
   shebang-regex@3.0.0: {}
 
   shell-quote@1.8.2: {}
+
+  shell-quote@1.8.3: {}
 
   shiki@2.5.0:
     dependencies:
