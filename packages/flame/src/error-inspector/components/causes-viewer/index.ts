@@ -1,20 +1,11 @@
 /* eslint-disable no-secrets/no-secrets */
 import stackTraceViewer from "../stack-trace-viewer";
 import { tooltip } from "../tooltip";
+import svgToDataUrl from "../../util/svg-to-data-url";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import plusIcon from "lucide-static/icons/plus.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import minusIcon from "lucide-static/icons/minus.svg?raw";
-
-// Utility function to properly encode SVG content for CSS mask-image
-const svgToDataUrl = (svgContent: string): string => {
-    const cleanSvg = svgContent
-        .replace(/<!--[\s\S]*?-->/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
-};
 
 const causes = async (causeList: unknown[], options: { openInEditorUrl?: string } = {}): Promise<{ html: string; script: string }> => {
     if (causeList.length === 0) {

@@ -2,16 +2,7 @@
 import helpCircleIcon from "lucide-static/icons/help-circle.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import keyboardIcon from "lucide-static/icons/keyboard.svg?raw";
-
-// Utility function to properly encode SVG content for CSS mask-image
-const svgToDataUrl = (svgContent: string): string => {
-    const cleanSvg = svgContent
-        .replace(/<!--[\s\S]*?-->/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
-};
+import svgToDataUrl from "../util/svg-to-data-url";
 
 const shortcutsButton = (): string => {
     return `<div class="hs-tooltip [--trigger:click] [--placement:bottom-end] inline-block">

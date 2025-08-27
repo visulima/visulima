@@ -36,5 +36,3 @@ export const addStatusCodeToResponse = (response: ServerResponse, error: unknown
         response.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
     }
 };
-
-

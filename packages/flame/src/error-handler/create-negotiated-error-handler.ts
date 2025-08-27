@@ -6,21 +6,12 @@ import ProblemErrorHandler from "./problem-error-handler";
 import { Accepts } from "@tinyhttp/accepts";
 
 const createNegotiatedErrorHandler =
-    <Request extends IncomingMessage, Response extends ServerResponse>(
-        errorHandlers: ErrorHandlers,
-        showTrace: boolean,
-        defaultHtmlHandler?: ErrorHandler,
-    ) =>
+    <Request extends IncomingMessage, Response extends ServerResponse>(errorHandlers: ErrorHandlers, showTrace: boolean, defaultHtmlHandler?: ErrorHandler) =>
     async (error: unknown, request: Request, response: Response): Promise<void> => {
         const accept = new Accepts(request);
 
         // Server preference order
-        const chosenType = accept.type([
-            "text/html",
-            "application/vnd.api+json",
-            "application/problem+json",
-            "application/json",
-        ]) as string | false;
+        const chosenType = accept.type(["text/html", "application/vnd.api+json", "application/problem+json", "application/json"]) as string | false;
 
         let errorHandler: ErrorHandler = defaultHtmlHandler || ProblemErrorHandler;
 
@@ -50,5 +41,3 @@ const createNegotiatedErrorHandler =
     };
 
 export default createNegotiatedErrorHandler;
-
-

@@ -12,5 +12,3 @@ export type ErrorHandlers = {
 }[];
 
 export type ApiFormat = "jsonapi" | "problem" | "html";
-
-

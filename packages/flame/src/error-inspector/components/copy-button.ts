@@ -1,18 +1,9 @@
 import cn from "../util/tw";
+import svgToDataUrl from "../util/svg-to-data-url";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import clipboardIcon from "lucide-static/icons/clipboard.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import checkIcon from "lucide-static/icons/check.svg?raw";
-
-// Utility function to properly encode SVG content for CSS mask-image
-const svgToDataUrl = (svgContent: string): string => {
-    const cleanSvg = svgContent
-        .replace(/<!--[\s\S]*?-->/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
-};
 
 const copyButton = ({ targetId, label = "Copy", successText = "Copied!" }: { targetId: string; label?: string; successText?: string }): string => {
     return `

@@ -183,11 +183,11 @@ const html = htmlErrorHandler([], { openInEditorUrl: "/__open-in-editor" });
 const negotiated = createNegotiatedErrorHandler([], process.env.NODE_ENV !== "production", html);
 
 createServer(async (req, res) => {
-  try {
-    throw new Error("Boom");
-  } catch (error) {
-    await negotiated(error, req, res);
-  }
+    try {
+        throw new Error("Boom");
+    } catch (error) {
+        await negotiated(error, req, res);
+    }
 }).listen(3000);
 ```
 

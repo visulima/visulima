@@ -7,18 +7,7 @@ import type { RuntimeName } from "../../../util/runtimes";
 import solutions from "./solutions";
 import stickyHeader from "./sticky-header";
 import copyButton from "../copy-button";
-
-// Utility function to properly encode SVG content for CSS mask-image
-const svgToDataUrl = (svgContent: string): string => {
-    // Remove HTML comments and clean up the SVG content
-    const cleanSvg = svgContent
-        .replace(/<!--[\s\S]*?-->/g, "") // Remove HTML comments
-        .replace(/\s+/g, " ") // Normalize whitespace
-        .trim();
-
-    // Encode for use in CSS url()
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
-};
+import svgToDataUrl from "../../util/svg-to-data-url";
 
 const errorCard = async ({
     error,

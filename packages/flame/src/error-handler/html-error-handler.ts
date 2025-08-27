@@ -26,10 +26,7 @@ export type HtmlErrorHandlerOptions = TemplateOptions & {
           }) => string | Promise<string>);
 };
 
-export const htmlErrorHandler = (
-    solutionFinders: SolutionFinder[] = [],
-    options: HtmlErrorHandlerOptions = {},
-): ErrorHandler => {
+export const htmlErrorHandler = (solutionFinders: SolutionFinder[] = [], options: HtmlErrorHandlerOptions = {}): ErrorHandler => {
     return async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
         addStatusCodeToResponse(response, error);
 

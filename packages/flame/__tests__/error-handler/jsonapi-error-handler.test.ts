@@ -57,5 +57,3 @@ describe("jsonapi-error-handler", () => {
         expect(res._getData()).toBe('{"errors":[{"code":"500","title":"Internal Server Error"}]}');
     });
 });
-
-

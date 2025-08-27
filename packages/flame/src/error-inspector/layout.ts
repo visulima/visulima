@@ -16,7 +16,7 @@ const layout = ({
     title: string;
 }): string => {
     const errorStack = DOMPurify.sanitize(error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString());
-    
+
     return `<!--
     ${errorStack}
     -->
@@ -100,7 +100,7 @@ const layout = ({
     <!--
     ${errorStack}
     -->
-    `
+    `;
 };
 
 export default layout;

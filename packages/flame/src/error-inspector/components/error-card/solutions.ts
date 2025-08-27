@@ -6,6 +6,7 @@ import infoIcon from "lucide-static/icons/info.svg?raw";
 import closeIcon from "lucide-static/icons/x.svg?raw";
 import { parse } from "marked";
 import DOMPurify from "isomorphic-dompurify";
+import svgToDataUrl from "../../util/svg-to-data-url";
 
 import errorHintFinder from "../../../solution/error-hint-finder";
 import ruleBasedFinder from "../../../solution/rule-based-finder";
@@ -13,18 +14,6 @@ import type { Solution, SolutionError, SolutionFinder } from "../../../types";
 import debugLog from "../../../util/debug-log";
 import findLanguageBasedOnExtension from "../../../util/find-language-based-on-extension";
 import getFileSource from "../../../util/get-file-source";
-
-// Utility function to properly encode SVG content for CSS mask-image
-const svgToDataUrl = (svgContent: string): string => {
-    // Remove HTML comments and clean up the SVG content
-    const cleanSvg = svgContent
-        .replace(/<!--[\s\S]*?-->/g, "") // Remove HTML comments
-        .replace(/\s+/g, " ") // Normalize whitespace
-        .trim();
-
-    // Encode for use in CSS url()
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
-};
 
 const solutions = async (
     error: Error | SolutionError | VisulimaError,

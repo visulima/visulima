@@ -11,18 +11,7 @@ import type { GroupType, Item } from "./types";
 import getType from "./util/get-type";
 import groupSimilarTypes from "./util/group-similar-types";
 import cn from "../../util/tw";
-
-// Utility function to properly encode SVG content for CSS mask-image
-const svgToDataUrl = (svgContent: string): string => {
-    // Remove HTML comments and clean up the SVG content
-    const cleanSvg = svgContent
-        .replace(/<!--[\s\S]*?-->/g, "") // Remove HTML comments
-        .replace(/\s+/g, " ") // Normalize whitespace
-        .trim();
-
-    // Encode for use in CSS url()
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
-};
+import svgToDataUrl from "../../util/svg-to-data-url";
 
 const stackTraceViewer = async (
     error: Error,

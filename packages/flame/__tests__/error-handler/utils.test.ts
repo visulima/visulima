@@ -52,5 +52,3 @@ describe("error-handler/utils", () => {
         expect(res._getStatusCode()).toBe(500);
     });
 });
-
-

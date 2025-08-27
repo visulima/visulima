@@ -44,5 +44,3 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
 };
 
 export default problemErrorHandler;
-
-

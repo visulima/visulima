@@ -46,5 +46,3 @@ const jsonapiErrorHandler: ErrorHandler = (error: Error | HttpError | tsJapi.Jap
 };
 
 export default jsonapiErrorHandler;
-
-

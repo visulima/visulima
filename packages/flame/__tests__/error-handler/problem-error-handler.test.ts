@@ -41,5 +41,3 @@ describe("problem-error-handler", () => {
         expect(res._getData()).toBe('{"type":"https://tools.ietf.org/html/rfc2616#section-10","title":"Forbidden","details":"Forbidden"}');
     });
 });
-
-

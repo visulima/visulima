@@ -2,18 +2,7 @@
 import moonStarIcon from "lucide-static/icons/moon-star.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import sunIcon from "lucide-static/icons/sun.svg?raw";
-
-// Utility function to properly encode SVG content for CSS mask-image
-const svgToDataUrl = (svgContent: string): string => {
-    // Remove HTML comments and clean up the SVG content
-    const cleanSvg = svgContent
-        .replace(/<!--[\s\S]*?-->/g, "") // Remove HTML comments
-        .replace(/\s+/g, " ") // Normalize whitespace
-        .trim();
-
-    // Encode for use in CSS url()
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
-};
+import svgToDataUrl from "../../util/svg-to-data-url";
 
 const themeToggle = (
     _theme?: unknown, // Not used since Preline handles theme initialization

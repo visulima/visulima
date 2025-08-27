@@ -1,6 +1,7 @@
-import type { ContentPage, TemplateOptions } from "../types";
+import type { ContentPage } from "../types";
 import getHighlighter from "../util/get-highlighter";
 import copyButton from "../components/copy-button";
+import svgToDataUrl from "../util/svg-to-data-url";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import globeIcon from "lucide-static/icons/globe.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -11,16 +12,6 @@ import fileTextIcon from "lucide-static/icons/file-text.svg?raw";
 import cookieIcon from "lucide-static/icons/cookie.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import userIcon from "lucide-static/icons/user.svg?raw";
-
-// Utility function to properly encode SVG content for CSS mask-image
-const svgToDataUrl = (svgContent: string): string => {
-    const cleanSvg = svgContent
-        .replace(/<!--[\s\S]*?-->/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
-};
 
 const SENSITIVE_HEADER_PATTERNS = [/authorization/i, /cookie/i, /set-cookie/i, /x-api-key/i, /api-key/i, /x-auth/i, /token/i, /secret/i];
 
@@ -103,14 +94,14 @@ const parseCookieString = (cookieHeader?: string | null): Record<string, string>
 const readRequestBody = async (request: Request, capBytes: number): Promise<unknown> => {
     try {
         const method = String(request?.method || "GET").toUpperCase();
-        
+
         if (method === "GET" || method === "HEAD") {
             return undefined;
         }
-        
+
         const contentType = (request as any)?.headers?.get?.("content-type") || (request as any)?.headers?.["content-type"] || "";
         const cloned = (request as any).clone ? (request as any).clone() : request;
-        
+
         if (typeof (cloned as any).json === "function" && String(contentType).includes("application/json")) {
             try {
                 return await (cloned as any).json();
@@ -122,7 +113,7 @@ const readRequestBody = async (request: Request, capBytes: number): Promise<unkn
                 }
             }
         }
-        
+
         if (typeof (cloned as any).text === "function") {
             try {
                 return await (cloned as any).text();
@@ -139,7 +130,7 @@ const readRequestBody = async (request: Request, capBytes: number): Promise<unkn
 
                     let data = "";
                     let truncated = false;
-                    
+
                     if (typeof req.setEncoding === "function") {
                         req.setEncoding("utf8");
                     }
@@ -159,7 +150,7 @@ const readRequestBody = async (request: Request, capBytes: number): Promise<unkn
                                 resolve(data + "\n… [truncated]");
                                 return;
                             }
-                            
+
                             data += chunkStr;
                         } catch {}
                     };
@@ -168,12 +159,12 @@ const readRequestBody = async (request: Request, capBytes: number): Promise<unkn
                         cleanup();
                         resolve(data || undefined);
                     };
-                    
+
                     const onError = () => {
                         cleanup();
                         resolve(undefined);
                     };
-                    
+
                     const cleanup = () => {
                         try {
                             req.off?.("data", onData);
@@ -181,7 +172,7 @@ const readRequestBody = async (request: Request, capBytes: number): Promise<unkn
                             req.off?.("error", onError);
                         } catch {}
                     };
-                    
+
                     req.on("data", onData);
                     req.on("end", onEnd);
                     req.on("error", onError);
@@ -204,7 +195,7 @@ export type ContextContentOptions = {
     totalCapBytes?: number; // hard cap for showing a full copy button
     previewBytes?: number; // size of the pretty preview
     maskValue?: string; // replacement for sensitive values
-}
+};
 
 export const createRequestContextPage = async (request: Request, options: ContextContentOptions): Promise<ContentPage | undefined> => {
     const uniqueId = `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}`;
@@ -221,26 +212,24 @@ export const createRequestContextPage = async (request: Request, options: Contex
 
     const shellQuote = (input: string): string => `'${String(input).replace(/'/g, "'\\''")}'`;
 
-    const buildCookieHeader = (cookies: Record<string, string | string[]>  | undefined): string | undefined => {
+    const buildCookieHeader = (cookies: Record<string, string | string[]> | undefined): string | undefined => {
         if (!cookies) {
             return undefined;
         }
 
         const parts: string[] = [];
-        
+
         for (const [name, v] of Object.entries(cookies)) {
             const val = toSingle(v) ?? "";
             parts.push(`${name}=${val}`);
         }
-        
+
         return parts.length ? parts.join("; ") : undefined;
     };
 
     const cookiesRecord: Record<string, string | string[]> | undefined = parseCookieString(
         ((request.headers as any)?.get && (request.headers as any).get("cookie")) ||
-            (Array.isArray((request as any)?.headers?.cookie)
-                ? (request as any).headers.cookie[0]
-                : (request as any)?.headers?.cookie),
+            (Array.isArray((request as any)?.headers?.cookie) ? (request as any).headers.cookie[0] : (request as any)?.headers?.cookie),
     );
 
     const previewBytes = Math.max(0, Number(options?.previewBytes ?? 64000));
@@ -260,7 +249,7 @@ export const createRequestContextPage = async (request: Request, options: Contex
         }
 
         const cookieHeader = buildCookieHeader(cookiesRecord);
-        
+
         if (cookieHeader && !headersForCurl["cookie"]) {
             headersForCurl["Cookie"] = cookieHeader;
         }
@@ -290,10 +279,15 @@ export const createRequestContextPage = async (request: Request, options: Contex
     };
 
     const curl = buildCurl();
-    const curlHtml = await (await getHighlighter()).codeToHtml(curl, { lang: "bash", themes: {
-        light: "github-light",
-        dark: "github-dark-default",
-    }, });
+    const curlHtml = await (
+        await getHighlighter()
+    ).codeToHtml(curl, {
+        lang: "bash",
+        themes: {
+            light: "github-light",
+            dark: "github-dark-default",
+        },
+    });
 
     const attrEscape = (value: unknown): string => String(value ?? "").replaceAll("'", "&apos;");
     const escapeHtml = (str: string): string =>
@@ -559,7 +553,7 @@ export const createRequestContextPage = async (request: Request, options: Contex
     <div class="max-w-full overflow-auto mt-2">${renderBodyContent(requestBody)}</div>
   </section>
 
-  <input type="hidden" id="clipboard-session-${uniqueId}" value="${attrEscape(JSON.stringify(((request as any)?.session) ?? {}))}">
+  <input type="hidden" id="clipboard-session-${uniqueId}" value="${attrEscape(JSON.stringify((request as any)?.session ?? {}))}">
   <section id="context-session" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
     <div class="px-4 py-3 flex items-center gap-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(userIcon)}'); mask-image:url('${svgToDataUrl(userIcon)}')"></span>
@@ -568,7 +562,7 @@ export const createRequestContextPage = async (request: Request, options: Contex
       <a href="#context-session" class="text-xs text-[var(--flame-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-session-${uniqueId}`, label: "Copy JSON" })}
     </div>
-            <div class="max-w-full overflow-auto mt-2">${renderObjectTable(((request as any)?.session) as Record<string, unknown>)}</div>
+            <div class="max-w-full overflow-auto mt-2">${renderObjectTable((request as any)?.session as Record<string, unknown>)}</div>
   </section>
 
   <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attrEscape(JSON.stringify(cookiesRecord || {}))}">
@@ -592,4 +586,4 @@ export const createRequestContextPage = async (request: Request, options: Contex
 </div>`;
 
     return { id: "context", name: "Context", code: { html, script: "" } };
-}
+};

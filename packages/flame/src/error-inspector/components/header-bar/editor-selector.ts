@@ -3,16 +3,7 @@ import { Editor } from "../../../types";
 import checkIcon from "lucide-static/icons/check.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import chevronDownIcon from "lucide-static/icons/chevron-down.svg?raw";
-
-// Utility function to properly encode SVG content for CSS mask-image
-const svgToDataUrl = (svgContent: string): string => {
-    const cleanSvg = svgContent
-        .replace(/<!--[\s\S]*?-->/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanSvg)}`;
-};
+import svgToDataUrl from "../../util/svg-to-data-url";
 
 const editorSelector = (editor?: Editor): string => {
     let options = `<option value="">Auto-detected Editor</option>`;

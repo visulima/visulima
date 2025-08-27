@@ -100,5 +100,3 @@ describe("flame createNegotiatedErrorHandler negotiator", () => {
         expect(res._getData()).toBe("Bad Request");
     });
 });
-
-

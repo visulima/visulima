@@ -99,7 +99,7 @@ const server = createServer(async (request, response) => {
                         l1: { type: "memory", hitRate: 0.95, size: "10MB" },
                         l2: { type: "redis", hitRate: 0.87, size: "100MB" },
                     },
-                    patterns: ["user:*", "session:*", "api:*"]
+                    patterns: ["user:*", "session:*", "api:*"],
                 },
                 environment: {
                     NODE_ENV: process.env.NODE_ENV || "development",
@@ -121,7 +121,7 @@ const server = createServer(async (request, response) => {
                     },
                 },
             },
-            headerAllowlist: ["content-type", "accept", "user-agent"]
+            headerAllowlist: ["content-type", "accept", "user-agent"],
         });
 
         const displayer = await httpDisplayer(/** @type {Error} */ (error), [], {

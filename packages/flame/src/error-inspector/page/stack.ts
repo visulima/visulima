@@ -11,11 +11,7 @@ import stackTraceViewer from "../components/stack-trace-viewer";
 
 type ErrorType = Error | SolutionError | VisulimaError;
 
-export const createStackPage = async (
-    error: ErrorType,
-    solutionFinders: SolutionFinder[],
-    options: TemplateOptions = {},
-): Promise<ContentPage> => {
+export const createStackPage = async (error: ErrorType, solutionFinders: SolutionFinder[], options: TemplateOptions = {}): Promise<ContentPage> => {
     const allCauses = getErrorCauses(error);
 
     if (allCauses.length === 0) {
@@ -43,5 +39,10 @@ export const createStackPage = async (
     html += rawStackTrace((mainCause as Error).stack);
     html += `</div>`;
 
-    return { code: { html, script: [stackTraceScript, causesViewerScript, ...errorCardScripts].join("\n") }, id: "stack", name: "Stack", defaultSelected: true };
-}
+    return {
+        code: { html, script: [stackTraceScript, causesViewerScript, ...errorCardScripts].join("\n") },
+        id: "stack",
+        name: "Stack",
+        defaultSelected: true,
+    };
+};

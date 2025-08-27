@@ -42,11 +42,11 @@ type ErrorType = Error | SolutionError | VisulimaError;
 const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], options: TemplateOptions = {}): Promise<string> => {
     let html = "";
 
-    const { code: { html: stackHtml, script: stackScript }, id: stackId, name: stackName } = await createStackPage(
-        error,
-        solutionFinders,
-        options,
-    );
+    const {
+        code: { html: stackHtml, script: stackScript },
+        id: stackId,
+        name: stackName,
+    } = await createStackPage(error, solutionFinders, options);
 
     const customPages = Array.isArray(options.content) ? options.content : [];
     const anyCustomSelected = customPages.some((p) => p.defaultSelected);
