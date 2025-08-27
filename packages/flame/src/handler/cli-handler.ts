@@ -12,7 +12,6 @@ import ruleBasedFinder from "../solution/rule-based-finder";
 type CliLogger = {
     error: (...arguments_: unknown[]) => void;
     log: (...arguments_: unknown[]) => void;
-    warn: (...arguments_: unknown[]) => void;
 };
 
 const sanitizeTitle = (title: string): string => title.replace(/^\s*#+\s*/, "").trim();
@@ -109,7 +108,7 @@ export const ansiHandler = async (error: Error, options: BaseCliOptions = {}): P
 export const cliHandler = async (error: Error, options: CliHandlerOptions = {}): Promise<void> => {
     const { logger = console, ...rest } = options;
 
-    const { errorAnsi, solutionBox } = await buildOutput(error, options);
+    const { errorAnsi, solutionBox } = await buildOutput(error, rest);
 
     logger.error(errorAnsi);
     logger.log("");
