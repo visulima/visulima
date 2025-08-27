@@ -1,5 +1,5 @@
 const findLanguageBasedOnExtension = (file: string): string => {
-    const extension = file.split(".").pop();
+    const extension = file.split(".").pop()?.toLowerCase();
 
     switch (extension) {
         case "js": {

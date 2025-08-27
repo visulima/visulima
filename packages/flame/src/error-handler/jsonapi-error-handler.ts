@@ -1,4 +1,5 @@
-import { HttpError } from "http-errors";
+import type { HttpError } from "http-errors";
+import { isHttpError } from "http-errors";
 import { getReasonPhrase } from "http-status-codes";
 import tsJapi from "ts-japi";
 
@@ -16,13 +17,26 @@ const jsonapiErrorHandler: ErrorHandler = (error: Error | HttpError | tsJapi.Jap
         const serializer = new tsJapi.ErrorSerializer();
 
         sendJson(response, serializer.serialize(error));
-    } else if (error instanceof HttpError) {
-        const { message, statusCode, title } = error;
+    } else if (isHttpError(error)) {
+        const statusCode =
+            ("statusCode" in error && typeof (error as { statusCode?: unknown }).statusCode === "number")
+                ? (error as { statusCode: number }).statusCode
+                : ("status" in error && typeof (error as { status?: unknown }).status === "number")
+                    ? (error as { status: number }).status
+                    : response.statusCode;
+        const title =
+            ("title" in error && typeof (error as { title?: unknown }).title === "string")
+                ? (error as { title?: string }).title
+                : undefined;
+        const message =
+            ("message" in error && typeof (error as { message?: unknown }).message === "string")
+                ? (error as { message?: string }).message
+                : "";
 
         sendJson(response, {
             errors: [
                 {
-                    code: statusCode,
+                    code: statusCode ?? response.statusCode,
                     title: title || getReasonPhrase(statusCode) || defaultTitle,
                     // eslint-disable-next-line perfectionist/sort-objects
                     detail: message,

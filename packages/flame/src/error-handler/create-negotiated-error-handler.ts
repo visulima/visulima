@@ -3,6 +3,10 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { ErrorHandler, ErrorHandlers } from "./types";
 import JsonapiErrorHandler from "./jsonapi-error-handler";
 import ProblemErrorHandler from "./problem-error-handler";
+import TextErrorHandler from "./text-error-handler";
+import JsonErrorHandler from "./json-error-handler";
+import JsonpErrorHandler from "./jsonp-error-handler";
+import XmlErrorHandler from "./xml-error-handler";
 import { Accepts } from "@tinyhttp/accepts";
 
 const createNegotiatedErrorHandler =
@@ -11,7 +15,17 @@ const createNegotiatedErrorHandler =
         const accept = new Accepts(request);
 
         // Server preference order
-        const chosenType = accept.type(["text/html", "application/vnd.api+json", "application/problem+json", "application/json"]) as string | false;
+        const chosenType = accept.type([
+            "text/html",
+            "application/vnd.api+json",
+            "application/problem+json",
+            "application/json",
+            "text/plain",
+            "application/javascript",
+            "text/javascript",
+            "application/xml",
+            "text/xml",
+        ]) as string | false;
 
         let errorHandler: ErrorHandler = defaultHtmlHandler || ProblemErrorHandler;
 
@@ -19,8 +33,16 @@ const createNegotiatedErrorHandler =
             errorHandler = defaultHtmlHandler;
         } else if (chosenType === "application/vnd.api+json") {
             errorHandler = JsonapiErrorHandler;
-        } else if (chosenType === "application/problem+json" || chosenType === "application/json") {
+        } else if (chosenType === "application/problem+json") {
             errorHandler = ProblemErrorHandler;
+        } else if (chosenType === "application/json") {
+            errorHandler = JsonErrorHandler();
+        } else if (chosenType === "text/plain") {
+            errorHandler = TextErrorHandler();
+        } else if (chosenType === "application/javascript" || chosenType === "text/javascript") {
+            errorHandler = JsonpErrorHandler();
+        } else if (chosenType === "application/xml" || chosenType === "text/xml") {
+            errorHandler = XmlErrorHandler();
         }
 
         // Allow consumer overrides via regex

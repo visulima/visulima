@@ -43,7 +43,7 @@ describe("flame httpHandler handler", () => {
     });
 
     it("returns Problem JSON when Accept is application/problem+json (showTrace default true)", async () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const error = new Error("Exploded");
         const handler = await httpHandler(error, []);
@@ -55,17 +55,18 @@ describe("flame httpHandler handler", () => {
 
         await handler(req, res);
 
-        expect(String(res.getHeader("content-type"))).toBe("application/json; charset=utf-8");
+        expect(String(res.getHeader("content-type"))).toBe("application/problem+json");
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
         // eslint-disable-next-line no-underscore-dangle
         const data = JSON.parse(res._getData());
-        expect(data.details).toBe("Exploded");
+        expect(data.detail).toBe("Exploded");
+        expect(data.status).toBe(500);
         expect(typeof data.trace).toBe("string");
     });
 
     it("omits trace when showTrace is false", async () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const error = new Error("No Trace Please");
         const handler = await httpHandler(error, [], { showTrace: false });
@@ -77,12 +78,13 @@ describe("flame httpHandler handler", () => {
 
         await handler(req, res);
 
-        expect(String(res.getHeader("content-type"))).toBe("application/json; charset=utf-8");
+        expect(String(res.getHeader("content-type"))).toBe("application/problem+json");
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
         // eslint-disable-next-line no-underscore-dangle
         const data = JSON.parse(res._getData());
-        expect(data.details).toBe("No Trace Please");
+        expect(data.detail).toBe("No Trace Please");
+        expect(data.status).toBe(500);
         expect(Object.prototype.hasOwnProperty.call(data, "trace")).toBe(false);
     });
 

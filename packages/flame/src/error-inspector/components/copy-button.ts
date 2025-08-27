@@ -46,7 +46,7 @@ const copyButton = ({ targetId, label = "Copy", successText = "Copied!" }: { tar
       <span class="sr-only">${label}</span>
 
       <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">
-        <span class="js-clipboard-success-text">${label}</span>
+        <span class="js-clipboard-success-text">${successText}</span>
       </span>
     </button>
   `;
