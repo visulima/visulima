@@ -100,28 +100,7 @@ export const htmlErrorHandler = (
             return;
         }
 
-        const autoRequestContext = options.context?.request
-            ? undefined
-            : {
-                  method: request.method,
-                  url: request.url,
-                  status: response.statusCode,
-                  headers: Object.fromEntries(
-                      Object.entries(request.headers)
-                          .filter((entry): entry is [string, string | string[]] => entry[1] !== undefined)
-                          .map(([k, v]) => [k, v as string | string[]]),
-                  ),
-              };
-
-        const mergedOptions: TemplateOptions = {
-            ...options,
-            context: {
-                ...(options.context || {}),
-                request: options.context?.request ?? autoRequestContext,
-            },
-        };
-
-        const html = await template(error, solutionFinders, mergedOptions);
+        const html = await template(error, solutionFinders, options);
 
         response.end(html.replace("<title>Error</title>", `<title>${title}</title>`));
     };

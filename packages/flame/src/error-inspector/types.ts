@@ -7,18 +7,6 @@ export type RequestTimings = {
     elapsedMs?: number;
 };
 
-export type RequestContext = {
-    method?: string;
-    url?: string;
-    status?: number;
-    route?: string;
-    timings?: RequestTimings;
-    headers?: Record<string, string | string[]>;
-    body?: unknown;
-    cookies?: Record<string, string | string[]>;
-    session?: unknown;
-};
-
 export type AppContext = {
     routing?: {
         route?: string;
@@ -42,14 +30,6 @@ export type GitContext = {
     dirty?: boolean;
 };
 
-export type RequestPanelOptions = {
-    headerAllowlist?: string[];
-    headerDenylist?: string[];
-    totalCapBytes?: number; // hard cap for showing a full copy button
-    previewBytes?: number; // size of the pretty preview
-    maskValue?: string; // replacement for sensitive values
-};
-
 export type ContentPage = {
     id: string;
     name: string;
@@ -64,9 +44,5 @@ export type TemplateOptions = {
     editor?: Editor;
     openInEditorUrl?: string;
     theme?: Theme;
-    context?: Record<string, unknown> & {
-        request?: RequestContext;
-    };
-    requestPanel?: RequestPanelOptions;
     content?: ContentPage[];
 };

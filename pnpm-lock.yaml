@@ -1992,9 +1992,6 @@ importers:
       '@jridgewell/trace-mapping':
         specifier: ^0.3.30
         version: 0.3.30
-      '@tinyhttp/accepts':
-        specifier: ^2.2.3
-        version: 2.2.3
       '@visulima/css-style-inject':
         specifier: 1.0.0-alpha.4
         version: 1.0.0-alpha.4
@@ -2004,24 +2001,12 @@ importers:
       diff:
         specifier: ^8.0.2
         version: 8.0.2
-      get-uri:
-        specifier: ^6.0.5
-        version: 6.0.5
       htmldiff-js:
         specifier: ^1.0.5
         version: 1.0.5
-      http-errors:
-        specifier: ^2.0.0
-        version: 2.0.0
-      http-status-codes:
-        specifier: ^2.3.0
-        version: 2.3.0
       isomorphic-dompurify:
         specifier: ^2.26.0
         version: 2.26.0
-      tailwind-merge:
-        specifier: 3.3.1
-        version: 3.3.1
       ts-japi:
         specifier: ^1.11.5
         version: 1.11.5
@@ -2053,6 +2038,9 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@4.1.12)
+      '@tinyhttp/accepts':
+        specifier: ^2.2.3
+        version: 2.2.3
       '@total-typescript/ts-reset':
         specifier: ^0.6.1
         version: 0.6.1
@@ -2086,6 +2074,15 @@ importers:
       eslint:
         specifier: ^9.33.0
         version: 9.33.0(jiti@2.5.1)
+      get-uri:
+        specifier: ^6.0.5
+        version: 6.0.5
+      http-errors:
+        specifier: ^2.0.0
+        version: 2.0.0
+      http-status-codes:
+        specifier: ^2.3.0
+        version: 2.3.0
       icss-utils:
         specifier: 5.1.0
         version: 5.1.0(postcss@8.5.6)
@@ -2125,6 +2122,9 @@ importers:
       sort-package-json:
         specifier: ^3.4.0
         version: 3.4.0
+      tailwind-merge:
+        specifier: 3.3.1
+        version: 3.3.1
       tailwindcss:
         specifier: ^4.1.12
         version: 4.1.12

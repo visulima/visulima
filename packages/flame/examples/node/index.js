@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 
-import httpDisplayer from "../../dist/displayer/http-displayer.mjs";
-import buildContextPage from "../../dist/error-inspector/content/context.mjs";
+import httpDisplayer from "../../dist/handler/http-handler.mjs";
+import { createRequestContextPage } from "../../dist/error-inspector/page/context.mjs";
 import { createNodeHttpHandler } from "../../dist/server/open-in-editor.mjs";
 
 // Deeper stack builders (sync + async levels)
@@ -65,77 +65,15 @@ const port = 3000;
 const openInEditorHandler = createNodeHttpHandler();
 
 const server = createServer(async (request, response) => {
-    const startTime = Date.now();
-
-    /**
-     * @param {string | undefined} cookieHeader
-     */
-    function parseCookies(cookieHeader) {
-        if (!cookieHeader || typeof cookieHeader !== "string") return {};
-        /** @type {Record<string, string>} */
-        const out = {};
-        try {
-            cookieHeader.split(";").forEach((pair) => {
-                const idx = pair.indexOf("=");
-                if (idx === -1) return;
-                const name = pair.slice(0, idx).trim();
-                const value = pair.slice(idx + 1).trim();
-                if (name) out[name] = value;
-            });
-        } catch {}
-        return out;
-    }
-
-    /**
-     * @param {import('http').IncomingMessage} req
-     */
-    async function readBody(req) {
-        return await new Promise((resolve) => {
-            try {
-                let data = "";
-                req.on("data", (chunk) => {
-                    try {
-                        data += chunk;
-                    } catch (_) {}
-                });
-                req.on("end", () => resolve(data || undefined));
-                req.on("error", () => resolve(undefined));
-            } catch {
-                resolve(undefined);
-            }
-        });
-    }
-
-    const rawBody = await readBody(request);
-
-    function buildRequestContext() {
-        const headers = Object.fromEntries(Object.entries(request.headers).map(([k, v]) => [k, Array.isArray(v) ? v : (v ?? "")]));
-        const cookieHeader = Array.isArray(headers["cookie"]) ? headers["cookie"][0] : headers["cookie"];
-        const cookies = parseCookies(cookieHeader);
-        return {
-            method: request.method,
-            url: request.url,
-            status: 500,
-            timings: { start: startTime, end: Date.now(), elapsedMs: Date.now() - startTime },
-            headers,
-            cookies,
-            body: rawBody,
-            // session/body are example-only; wire your framework's values if available
-            session: { demo: true },
-        };
-    }
-
     /** @param {unknown} error */
     async function show(error) {
-        const ctx = buildRequestContext();
         const routing = { route: url.pathname, params: {}, query: Object.fromEntries(url.searchParams.entries()) };
         const user = { client: { ip: request.socket?.remoteAddress, userAgent: request.headers["user-agent"] } };
         const git = { branch: process.env.GIT_BRANCH, commit: process.env.GIT_COMMIT, tag: process.env.GIT_TAG, dirty: process.env.GIT_DIRTY === "true" };
         const versions = { node: process.version };
 
-        const contextPage = await buildContextPage(ctx, {
+        const contextPage = await createRequestContextPage(request, {
             context: {
-                request: ctx,
                 app: { routing },
                 user,
                 git,
@@ -183,7 +121,7 @@ const server = createServer(async (request, response) => {
                     },
                 },
             },
-            requestPanel: { headerAllowlist: ["content-type", "accept", "user-agent"] },
+            headerAllowlist: ["content-type", "accept", "user-agent"]
         });
 
         const displayer = await httpDisplayer(/** @type {Error} */ (error), [], {

@@ -51,27 +51,33 @@
     "type": "module",
     "exports": {
         ".": {
-            "types": "./dist/index.d.mts",
-            "default": "./dist/index.mjs"
-        },
-        "./displayer/cli": {
             "import": {
-                "types": "./dist/displayer/cli-displayer.d.mts",
-                "default": "./dist/displayer/cli-displayer.mjs"
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
             },
             "require": {
-                "types": "./dist/displayer/cli-displayer.d.cts",
-                "default": "./dist/displayer/cli-displayer.cjs"
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
             }
         },
-        "./displayer/http": {
+        "./handler/cli": {
             "import": {
-                "types": "./dist/displayer/http-displayer.d.mts",
-                "default": "./dist/displayer/http-displayer.mjs"
+                "types": "./dist/handler/cli-handler.d.mts",
+                "default": "./dist/handler/cli-handler.mjs"
             },
             "require": {
-                "types": "./dist/displayer/http-displayer.d.cts",
-                "default": "./dist/displayer/http-displayer.cjs"
+                "types": "./dist/handler/cli-handler.d.cts",
+                "default": "./dist/handler/cli-handler.cjs"
+            }
+        },
+        "./handler/http": {
+            "import": {
+                "types": "./dist/handler/http-handler.d.mts",
+                "default": "./dist/handler/http-handler.mjs"
+            },
+            "require": {
+                "types": "./dist/handler/http-handler.d.cts",
+                "default": "./dist/handler/http-handler.cjs"
             }
         },
         "./vite": {
@@ -94,14 +100,14 @@
                 "default": "./dist/error-inspector/index.cjs"
             }
         },
-        "./error-inspector/content/context": {
+        "./error-inspector/page/context": {
             "import": {
-                "types": "./dist/error-inspector/content/context.d.mts",
-                "default": "./dist/error-inspector/content/context.mjs"
+                "types": "./dist/error-inspector/page/context.d.mts",
+                "default": "./dist/error-inspector/page/context.mjs"
             },
             "require": {
-                "types": "./dist/error-inspector/content/context.d.cts",
-                "default": "./dist/error-inspector/content/context.cjs"
+                "types": "./dist/error-inspector/page/context.d.cts",
+                "default": "./dist/error-inspector/page/context.cjs"
             }
         },
         "./server/open-in-editor": {
@@ -153,11 +159,11 @@
         "@visulima/error": "workspace:*",
         "diff": "^8.0.2",
         "htmldiff-js": "^1.0.5",
-        "isomorphic-dompurify": "^2.26.0",
-        "ts-japi": "^1.11.5"
+        "isomorphic-dompurify": "^2.26.0"
     },
     "devDependencies": {
         "get-uri": "^6.0.5",
+        "ts-japi": "^1.11.5",
         "@tinyhttp/accepts": "^2.2.3",
         "http-errors": "^2.0.0",
         "http-status-codes": "^2.3.0",

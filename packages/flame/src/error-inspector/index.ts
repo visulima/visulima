@@ -1,11 +1,11 @@
 import type { VisulimaError } from "@visulima/error/error";
-import { getErrorCauses } from "@visulima/error/error";
+import DOMPurify from "isomorphic-dompurify";
 
 import type { SolutionError, SolutionFinder } from "../types";
 import headerBar from "./components/header-bar";
 import type { HeaderTab } from "./components/header-tabs";
 import { headerTabs } from "./components/header-tabs";
-import buildStackContent from "./content/stack";
+import { createStackPage } from "./page/stack";
 import inlineCss from "./index.css";
 import layout from "./layout";
 import preline from "../../node_modules/preline/dist/preline.js?raw";
@@ -40,19 +40,10 @@ const prelineInit = `
 type ErrorType = Error | SolutionError | VisulimaError;
 
 const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], options: TemplateOptions = {}): Promise<string> => {
-    const allCauses = getErrorCauses(error);
-
-    if (allCauses.length === 0) {
-        throw new Error("No error causes found");
-    }
-
-    const [mainCause, ...causes] = allCauses;
-
     let html = "";
 
-    const { html: stackHtml, scripts: stackScripts } = await buildStackContent(
-        mainCause as ErrorType,
-        causes as Error[],
+    const { code: { html: stackHtml, script: stackScript }, id: stackId, name: stackName } = await createStackPage(
+        error,
         solutionFinders,
         options,
     );
@@ -61,10 +52,13 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
     const anyCustomSelected = customPages.some((p) => p.defaultSelected);
     const tabsList: HeaderTab[] = [];
 
-    tabsList.push({ id: "stack", name: "Stack", selected: !anyCustomSelected });
+    tabsList.push({ id: stackId, name: stackName, selected: !anyCustomSelected });
 
     for (const page of customPages) {
-        tabsList.push({ id: page.id, name: page.name, selected: Boolean(page.defaultSelected) });
+        const safeId = DOMPurify.sanitize(page.id);
+        const safeName = DOMPurify.sanitize(String(page.name));
+
+        tabsList.push({ id: safeId, name: safeName, selected: Boolean(page.defaultSelected) });
     }
 
     html += `<div class="flex flex-row gap-6 w-full mb-6">`;
@@ -86,8 +80,8 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
         content: html.trim(),
         css: inlineCss.trim(),
         description: "Error",
-        error: mainCause as ErrorType,
-        scripts: [clipboard, preline, prelineClipboard, prelineInit, headerBarScript, ...stackScripts, ...customPages.map((p) => p.code.script || "")],
+        error,
+        scripts: [clipboard, preline, prelineClipboard, prelineInit, headerBarScript, stackScript as string, ...customPages.map((p) => p.code.script || "")],
         title: "Error",
     });
 };

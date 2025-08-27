@@ -1,4 +1,4 @@
-import type { ContentPage, TemplateOptions, RequestContext } from "../types";
+import type { ContentPage, TemplateOptions } from "../types";
 import getHighlighter from "../util/get-highlighter";
 import copyButton from "../components/copy-button";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -32,7 +32,7 @@ const isSensitiveHeader = (name: string, denylist: string[] | undefined): boolea
 };
 
 const filterHeaders = (
-    headers: Record<string, string | string[]> | undefined,
+    headers: Record<string, string | string[] | undefined> | Headers | undefined,
     allowlist?: string[],
     denylist?: string[],
     maskValue = "[masked]",
@@ -43,7 +43,12 @@ const filterHeaders = (
 
     const out: Record<string, string | string[]> = {};
 
-    for (const [key, value] of Object.entries(headers)) {
+    const entries: Array<[string, string | string[] | undefined]> =
+        typeof (headers as any)?.forEach === "function" && typeof (headers as any)?.get === "function"
+            ? Array.from((headers as Headers).entries()).map(([k, v]) => [k, v])
+            : Object.entries(headers as Record<string, string | string[] | undefined>);
+
+    for (const [key, value] of entries) {
         const lower = key.toLowerCase();
 
         if (allowlist && allowlist.length > 0 && !allowlist.some((a) => a.toLowerCase() === lower)) {
@@ -51,6 +56,10 @@ const filterHeaders = (
         }
 
         const masked = isSensitiveHeader(lower, denylist) ? maskValue : undefined;
+
+        if (value === undefined) {
+            continue;
+        }
 
         if (Array.isArray(value)) {
             out[key] = masked ? value.map(() => masked) : value;
@@ -70,9 +79,136 @@ const safeJsonStringify = (value: unknown): string => {
     }
 };
 
-export default async function buildContextContent(request: RequestContext, options: TemplateOptions): Promise<ContentPage | undefined> {
+const parseCookieString = (cookieHeader?: string | null): Record<string, string> => {
+    if (!cookieHeader) {
+        return {};
+    }
+    const result: Record<string, string> = {};
+    cookieHeader
+        .split(";")
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .forEach((pair) => {
+            const eqIndex = pair.indexOf("=");
+            if (eqIndex === -1) {
+                return;
+            }
+            const name = pair.slice(0, eqIndex).trim();
+            const val = pair.slice(eqIndex + 1).trim();
+            result[name] = val;
+        });
+    return result;
+};
+
+const readRequestBody = async (request: Request, capBytes: number): Promise<unknown> => {
+    try {
+        const method = String(request?.method || "GET").toUpperCase();
+        
+        if (method === "GET" || method === "HEAD") {
+            return undefined;
+        }
+        
+        const contentType = (request as any)?.headers?.get?.("content-type") || (request as any)?.headers?.["content-type"] || "";
+        const cloned = (request as any).clone ? (request as any).clone() : request;
+        
+        if (typeof (cloned as any).json === "function" && String(contentType).includes("application/json")) {
+            try {
+                return await (cloned as any).json();
+            } catch {
+                try {
+                    return await (cloned as any).text();
+                } catch {
+                    return undefined;
+                }
+            }
+        }
+        
+        if (typeof (cloned as any).text === "function") {
+            try {
+                return await (cloned as any).text();
+            } catch {
+                return undefined;
+            }
+        }
+
+        // Node.js IncomingMessage fallback with size cap
+        if (typeof (request as any)?.on === "function") {
+            return await new Promise<string | undefined>((resolve) => {
+                try {
+                    const req: any = request as any;
+
+                    let data = "";
+                    let truncated = false;
+                    
+                    if (typeof req.setEncoding === "function") {
+                        req.setEncoding("utf8");
+                    }
+
+                    const onData = (chunk: any) => {
+                        try {
+                            if (truncated) {
+                                return;
+                            }
+                            const chunkStr = typeof chunk === "string" ? chunk : String(chunk);
+
+                            if (data.length + chunkStr.length > capBytes) {
+                                const remaining = Math.max(0, capBytes - data.length);
+                                data += chunkStr.slice(0, remaining);
+                                truncated = true;
+                                cleanup();
+                                resolve(data + "\n… [truncated]");
+                                return;
+                            }
+                            
+                            data += chunkStr;
+                        } catch {}
+                    };
+
+                    const onEnd = () => {
+                        cleanup();
+                        resolve(data || undefined);
+                    };
+                    
+                    const onError = () => {
+                        cleanup();
+                        resolve(undefined);
+                    };
+                    
+                    const cleanup = () => {
+                        try {
+                            req.off?.("data", onData);
+                            req.off?.("end", onEnd);
+                            req.off?.("error", onError);
+                        } catch {}
+                    };
+                    
+                    req.on("data", onData);
+                    req.on("end", onEnd);
+                    req.on("error", onError);
+                } catch {
+                    resolve(undefined);
+                }
+            });
+        }
+
+        return undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+export type ContextContentOptions = {
+    context?: Record<string, unknown>;
+    headerAllowlist?: string[];
+    headerDenylist?: string[];
+    totalCapBytes?: number; // hard cap for showing a full copy button
+    previewBytes?: number; // size of the pretty preview
+    maskValue?: string; // replacement for sensitive values
+}
+
+export const createRequestContextPage = async (request: Request, options: ContextContentOptions): Promise<ContentPage | undefined> => {
     const uniqueId = `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}`;
-    const { headerAllowlist, headerDenylist, maskValue = "[masked]" } = options.requestPanel || {};
+    const { headerAllowlist, headerDenylist, maskValue = "[masked]" } = options || {};
     const filteredHeaders = filterHeaders(request.headers, headerAllowlist, headerDenylist, maskValue);
 
     const toSingle = (value: string | string[] | undefined): string | undefined => {
@@ -85,7 +221,7 @@ export default async function buildContextContent(request: RequestContext, optio
 
     const shellQuote = (input: string): string => `'${String(input).replace(/'/g, "'\\''")}'`;
 
-    const buildCookieHeader = (cookies: Record<string, string | string[]> | undefined): string | undefined => {
+    const buildCookieHeader = (cookies: Record<string, string | string[]>  | undefined): string | undefined => {
         if (!cookies) {
             return undefined;
         }
@@ -100,6 +236,16 @@ export default async function buildContextContent(request: RequestContext, optio
         return parts.length ? parts.join("; ") : undefined;
     };
 
+    const cookiesRecord: Record<string, string | string[]> | undefined = parseCookieString(
+        ((request.headers as any)?.get && (request.headers as any).get("cookie")) ||
+            (Array.isArray((request as any)?.headers?.cookie)
+                ? (request as any).headers.cookie[0]
+                : (request as any)?.headers?.cookie),
+    );
+
+    const previewBytes = Math.max(0, Number(options?.previewBytes ?? 64000));
+    const requestBody: unknown = await readRequestBody(request, previewBytes);
+
     const buildCurl = (): string => {
         const method = String(request?.method || "GET").toUpperCase();
         const url = String(request?.url || "");
@@ -113,7 +259,8 @@ export default async function buildContextContent(request: RequestContext, optio
             }
         }
 
-        const cookieHeader = buildCookieHeader(request?.cookies);
+        const cookieHeader = buildCookieHeader(cookiesRecord);
+        
         if (cookieHeader && !headersForCurl["cookie"]) {
             headersForCurl["Cookie"] = cookieHeader;
         }
@@ -123,8 +270,8 @@ export default async function buildContextContent(request: RequestContext, optio
         }
 
         let dataFlag = "";
-        if (request && request.body !== undefined && request.body !== null && method !== "GET") {
-            const bodyString = typeof request.body === "string" ? request.body : safeJsonStringify(request.body);
+        if (request && requestBody !== undefined && requestBody !== null && method !== "GET") {
+            const bodyString = typeof requestBody === "string" ? requestBody : safeJsonStringify(requestBody);
             dataFlag = `--data ${shellQuote(bodyString)}`;
         }
 
@@ -400,7 +547,7 @@ export default async function buildContextContent(request: RequestContext, optio
     <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable(filteredHeaders)}</div>
   </section>
 
-  <input type="hidden" id="clipboard-body-${uniqueId}" value="${attrEscape(JSON.stringify(request?.body || {}))}">
+  <input type="hidden" id="clipboard-body-${uniqueId}" value="${attrEscape(safeJsonStringify(requestBody ?? {}))}">
   <section id="context-body" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
     <div class="px-4 py-3 flex items-center gap-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(bracesIcon)}'); mask-image:url('${svgToDataUrl(bracesIcon)}')"></span>
@@ -409,10 +556,10 @@ export default async function buildContextContent(request: RequestContext, optio
       <a href="#context-body" class="text-xs text-[var(--flame-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-body-${uniqueId}`, label: "Copy JSON" })}
     </div>
-    <div class="max-w-full overflow-auto mt-2">${renderBodyContent(request?.body)}</div>
+    <div class="max-w-full overflow-auto mt-2">${renderBodyContent(requestBody)}</div>
   </section>
 
-  <input type="hidden" id="clipboard-session-${uniqueId}" value="${attrEscape(JSON.stringify(request?.session ?? {}))}">
+  <input type="hidden" id="clipboard-session-${uniqueId}" value="${attrEscape(JSON.stringify(((request as any)?.session) ?? {}))}">
   <section id="context-session" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
     <div class="px-4 py-3 flex items-center gap-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(userIcon)}'); mask-image:url('${svgToDataUrl(userIcon)}')"></span>
@@ -421,10 +568,10 @@ export default async function buildContextContent(request: RequestContext, optio
       <a href="#context-session" class="text-xs text-[var(--flame-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-session-${uniqueId}`, label: "Copy JSON" })}
     </div>
-            <div class="max-w-full overflow-auto mt-2">${renderObjectTable(request?.session as Record<string, unknown>)}</div>
+            <div class="max-w-full overflow-auto mt-2">${renderObjectTable(((request as any)?.session) as Record<string, unknown>)}</div>
   </section>
 
-  <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attrEscape(JSON.stringify(request?.cookies || {}))}">
+  <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attrEscape(JSON.stringify(cookiesRecord || {}))}">
   <section id="context-cookies" class="mb-4 rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] overflow-hidden bg-[var(--flame-surface)] border border-[var(--flame-border)]">
     <div class="px-4 py-3 flex items-center gap-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(cookieIcon)}'); mask-image:url('${svgToDataUrl(cookieIcon)}')"></span>
@@ -433,7 +580,7 @@ export default async function buildContextContent(request: RequestContext, optio
       <a href="#context-cookies" class="text-xs text-[var(--flame-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ targetId: `clipboard-cookies-${uniqueId}`, label: "Copy JSON" })}
     </div>
-    <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable((request?.cookies || {}) as Record<string, string | string[]>)}
+    <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable(cookiesRecord as Record<string, string | string[]>)}
     </div>
   </section>${contextSections.content}
 </div>`;
