@@ -1,7 +1,7 @@
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import textErrorHandler from "../../src/error-handler/text-error-handler";
+import { textErrorHandler } from "../../src/error-handler/text-error-handler";
 
 describe("text-error-handler with normal Error", () => {
     it("renders default 500 plain text response for normal Error", async () => {
@@ -18,5 +18,3 @@ describe("text-error-handler with normal Error", () => {
         expect(res._getData()).toBe("boom");
     });
 });
-
-

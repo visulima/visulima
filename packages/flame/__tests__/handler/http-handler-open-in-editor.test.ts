@@ -17,7 +17,7 @@ describe("httpHandler open-in-editor integration", () => {
         // eslint-disable-next-line no-underscore-dangle
         const html = String(res._getData());
         expect(String(res.getHeader("content-type"))).toBe("text/html; charset=utf-8");
-        expect(html).toContain("id=\"editor-selector\"");
+        expect(html).toContain('id="editor-selector"');
         expect(html).toContain("/__open-in-editor");
     });
 
@@ -34,8 +34,6 @@ describe("httpHandler open-in-editor integration", () => {
         // eslint-disable-next-line no-underscore-dangle
         const html = String(res._getData());
         expect(String(res.getHeader("content-type"))).toBe("text/html; charset=utf-8");
-        expect(html).not.toContain("id=\"editor-selector\"");
+        expect(html).not.toContain('id="editor-selector"');
     });
 });
-
-

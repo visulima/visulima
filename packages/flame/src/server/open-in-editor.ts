@@ -2,21 +2,24 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import process from "node:process";
 
-import launchEditorMiddleware from 'launch-editor-middleware'
+import launchEditorMiddleware from "launch-editor-middleware";
 
-const respond400 = (response: ServerResponse<IncomingMessage> & { status?: (code: number) => ServerResponse<IncomingMessage> & { send: (body: string) => void } }, next?: (err?: any) => void) => {
+const respond400 = (
+    response: ServerResponse<IncomingMessage> & { status?: (code: number) => ServerResponse<IncomingMessage> & { send: (body: string) => void } },
+    next?: (err?: any) => void,
+) => {
     try {
         if (typeof response.status === "function") {
             response.status(400).send("Failed to open editor");
             return;
         }
     } catch {}
-    
+
     try {
         response.statusCode = 400;
         response.end("Failed to open editor");
     } catch {}
-    
+
     if (typeof next === "function") {
         next();
     }
@@ -78,7 +81,7 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}) 
 
             const projectRoot = options.projectRoot ?? process.cwd();
             const absPath = path.isAbsolute(payload.file || "") ? String(payload.file || "") : path.resolve(projectRoot, String(payload.file || ""));
-            
+
             if (!payload.file) {
                 respond400(response, next);
                 return;
@@ -86,17 +89,17 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}) 
 
             if (!options.allowOutsideProject) {
                 const rootWithSep = projectRoot.endsWith(path.sep) ? projectRoot : projectRoot + path.sep;
-            
+
                 if (!absPath.startsWith(rootWithSep)) {
                     respond400(response, next);
-            
+
                     return;
                 }
             }
 
             const mw = launchEditorMiddleware();
             const q = new URLSearchParams({ file: absPath, line: String(payload.line ?? 1), column: String(payload.column ?? 1) });
-            
+
             if (payload.editor) {
                 q.set("editor", String(payload.editor));
             }

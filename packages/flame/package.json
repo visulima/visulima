@@ -225,15 +225,16 @@
     },
     "dependencies": {
         "@jridgewell/trace-mapping": "^0.3.30",
-        "@visulima/css-style-inject": "1.0.0-alpha.4",
+        "@visulima/css-style-inject": "^1.0.0-alpha.4",
+        "@visulima/boxen": "workspace:*",
         "@visulima/error": "workspace:*",
         "diff": "^8.0.2",
         "htmldiff-js": "^1.0.5",
         "isomorphic-dompurify": "^2.26.0",
-        "tailwind-merge": "3.3.1",
+        "tailwind-merge": "^3.3.1",
         "shiki": "^3.11.0",
-        "@shikijs/themes": "3.12.0",
-        "@shikijs/langs": "3.12.0"
+        "@shikijs/themes": "^3.12.0",
+        "@shikijs/langs": "^3.12.0"
     },
     "devDependencies": {
         "jstoxml": "^7.0.1",

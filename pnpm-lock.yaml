@@ -1993,13 +1993,16 @@ importers:
         specifier: ^0.3.30
         version: 0.3.30
       '@shikijs/langs':
-        specifier: 3.12.0
+        specifier: ^3.12.0
         version: 3.12.0
       '@shikijs/themes':
-        specifier: 3.12.0
+        specifier: ^3.12.0
         version: 3.12.0
+      '@visulima/boxen':
+        specifier: workspace:*
+        version: link:../boxen
       '@visulima/css-style-inject':
-        specifier: 1.0.0-alpha.4
+        specifier: ^1.0.0-alpha.4
         version: 1.0.0-alpha.4
       '@visulima/error':
         specifier: workspace:*
@@ -2017,7 +2020,7 @@ importers:
         specifier: ^3.11.0
         version: 3.11.0
       tailwind-merge:
-        specifier: 3.3.1
+        specifier: ^3.3.1
         version: 3.3.1
     devDependencies:
       '@anolilab/eslint-config':
@@ -26982,7 +26985,7 @@ snapshots:
       '@shikijs/engine-oniguruma': 3.4.2
       '@shikijs/langs': 3.12.0
       '@shikijs/themes': 3.12.0
-      '@shikijs/types': 3.11.0
+      '@shikijs/types': 3.12.0
       '@shikijs/vscode-textmate': 10.0.2
 
   '@giscus/react@3.0.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':

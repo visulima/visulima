@@ -43,7 +43,3 @@ export const textErrorHandler = (options: TextErrorHandlerOptions = {}): ErrorHa
         response.end(stack ? `${message}\n\n${stack}` : message);
     };
 };
-
-export default textErrorHandler;
-
-

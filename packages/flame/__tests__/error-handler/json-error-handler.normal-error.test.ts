@@ -1,7 +1,7 @@
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import jsonErrorHandler from "../../src/error-handler/json-error-handler";
+import { jsonErrorHandler } from "../../src/error-handler/json-error-handler";
 
 describe("json-error-handler with normal Error", () => {
     it("renders default 500 response for normal Error", async () => {
@@ -20,5 +20,3 @@ describe("json-error-handler with normal Error", () => {
         expect(data.error).toBe("Internal Server Error");
     });
 });
-
-

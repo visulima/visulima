@@ -7,5 +7,3 @@ declare module "launch-editor-middleware" {
 
     export default create;
 }
-
-

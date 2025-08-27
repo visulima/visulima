@@ -47,7 +47,3 @@ export const jsonErrorHandler = (options: JsonErrorHandlerOptions = {}): ErrorHa
         });
     };
 };
-
-export default jsonErrorHandler;
-
-

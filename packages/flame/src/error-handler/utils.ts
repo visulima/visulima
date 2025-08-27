@@ -26,9 +26,7 @@ export const sendJson = (response: ServerResponse, jsonBody: unknown, contentTyp
 
 export const addStatusCodeToResponse = (response: ServerResponse, error: unknown): void => {
     const err = error as Partial<HttpError>;
-    const candidate = Number(
-        err.statusCode ?? err.status,
-    );
+    const candidate = Number(err.statusCode ?? err.status);
     if (Number.isInteger(candidate) && candidate >= 400 && candidate <= 599) {
         response.statusCode = candidate;
         return;

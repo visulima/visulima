@@ -12,5 +12,3 @@ declare module "jstoxml" {
 
     export function toXML(input: unknown, options?: JsToXmlOptions): string;
 }
-
-

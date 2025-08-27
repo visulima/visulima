@@ -3,10 +3,10 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { ErrorHandler, ErrorHandlers } from "./types";
 import JsonapiErrorHandler from "./jsonapi-error-handler";
 import ProblemErrorHandler from "./problem-error-handler";
-import TextErrorHandler from "./text-error-handler";
-import JsonErrorHandler from "./json-error-handler";
-import JsonpErrorHandler from "./jsonp-error-handler";
-import XmlErrorHandler from "./xml-error-handler";
+import { textErrorHandler as TextErrorHandler } from "./text-error-handler";
+import { jsonErrorHandler as JsonErrorHandler } from "./json-error-handler";
+import { jsonpErrorHandler as JsonpErrorHandler } from "./jsonp-error-handler";
+import { xmlErrorHandler as XmlErrorHandler } from "./xml-error-handler";
 import { Accepts } from "@tinyhttp/accepts";
 
 const createNegotiatedErrorHandler =

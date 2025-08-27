@@ -2,7 +2,7 @@ import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import jsonpErrorHandler from "../../src/error-handler/jsonp-error-handler";
+import { jsonpErrorHandler } from "../../src/error-handler/jsonp-error-handler";
 
 describe("jsonp-error-handler with http-errors", () => {
     it("renders status, content-type, and JSONP body for http-error", async () => {
@@ -10,7 +10,7 @@ describe("jsonp-error-handler with http-errors", () => {
 
         const { req, res } = createMocks({ method: "GET", url: "/?callback=myCb" });
 
-        await jsonpErrorHandler()((new httpErrors.BadRequest()) as unknown as Error, req, res);
+        await jsonpErrorHandler()(new httpErrors.BadRequest() as unknown as Error, req, res);
 
         expect(String(res.getHeader("content-type"))).toBe("application/javascript; charset=utf-8");
         // eslint-disable-next-line no-underscore-dangle
@@ -23,5 +23,3 @@ describe("jsonp-error-handler with http-errors", () => {
         expect(parsed.statusCode).toBe(400);
     });
 });
-
-

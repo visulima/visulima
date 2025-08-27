@@ -1,7 +1,7 @@
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import jsonpErrorHandler from "../../src/error-handler/jsonp-error-handler";
+import { jsonpErrorHandler } from "../../src/error-handler/jsonp-error-handler";
 
 describe("jsonp-error-handler with normal Error", () => {
     it("renders default 500 JSONP response for normal Error", async () => {
@@ -22,5 +22,3 @@ describe("jsonp-error-handler with normal Error", () => {
         expect(parsed.statusCode).toBe(500);
     });
 });
-
-

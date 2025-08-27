@@ -1,7 +1,7 @@
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import xmlErrorHandler from "../../src/error-handler/xml-error-handler";
+import { xmlErrorHandler } from "../../src/error-handler/xml-error-handler";
 
 describe("xml-error-handler with normal Error", () => {
     it("renders default 500 XML response for normal Error", async () => {
@@ -18,5 +18,3 @@ describe("xml-error-handler with normal Error", () => {
         expect(res._getData()).toContain("<error>");
     });
 });
-
-

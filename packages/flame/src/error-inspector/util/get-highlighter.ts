@@ -6,19 +6,13 @@ let disposeFn: (() => void) | undefined;
 const createSingletonHighlighter = async (): Promise<Highlighter> => {
     // Try fine-grained modules first for better perf and bundle size
     try {
-        const [coreMod, engineMod] = await Promise.all([
-            import("shiki/core"),
-            import("shiki/engine/javascript"),
-        ]);
+        const [coreMod, engineMod] = await Promise.all([import("shiki/core"), import("shiki/engine/javascript")]);
         const { createHighlighterCore } = coreMod as any;
         const { createJavaScriptRegexEngine } = engineMod as any;
 
         const highlighterCore: unknown = await createHighlighterCore({
             // Defer loading of themes/langs to the core loader
-            themes: [
-                import("@shikijs/themes/github-dark-default"),
-                import("@shikijs/themes/github-light"),
-            ],
+            themes: [import("@shikijs/themes/github-dark-default"), import("@shikijs/themes/github-light")],
             langs: [
                 import("@shikijs/langs/javascript"),
                 import("@shikijs/langs/typescript"),

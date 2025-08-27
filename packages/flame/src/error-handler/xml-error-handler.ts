@@ -65,9 +65,7 @@ export const xmlErrorHandler = (options: XmlErrorHandlerOptions = {}): ErrorHand
             indent: options.toXml?.indent ?? "  ",
             ...(options.toXml?.attributeReplacements ? { attributeReplacements: options.toXml.attributeReplacements } : {}),
             ...(options.toXml?.attributeFilter ? { attributeFilter: options.toXml.attributeFilter } : {}),
-            ...(options.toXml?.attributeExplicitTrue !== undefined
-                ? { attributeExplicitTrue: options.toXml.attributeExplicitTrue }
-                : {}),
+            ...(options.toXml?.attributeExplicitTrue !== undefined ? { attributeExplicitTrue: options.toXml.attributeExplicitTrue } : {}),
             ...(options.toXml?.contentMap ? { contentMap: options.toXml.contentMap } : {}),
             ...(options.toXml?.contentReplacements ? { contentReplacements: options.toXml.contentReplacements } : {}),
             ...(options.toXml?.selfCloseTags !== undefined ? { selfCloseTags: options.toXml.selfCloseTags } : {}),
@@ -77,7 +75,3 @@ export const xmlErrorHandler = (options: XmlErrorHandlerOptions = {}): ErrorHand
         response.end(xml);
     };
 };
-
-export default xmlErrorHandler;
-
-

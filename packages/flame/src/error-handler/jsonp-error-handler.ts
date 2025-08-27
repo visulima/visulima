@@ -54,7 +54,3 @@ export const jsonpErrorHandler = (options: JsonpErrorHandlerOptions = {}): Error
         response.end(`${callbackName}(${JSON.stringify(payload)});`);
     };
 };
-
-export default jsonpErrorHandler;
-
-
