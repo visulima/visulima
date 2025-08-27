@@ -22,7 +22,7 @@ const runtimeChecks: [boolean, RuntimeName][] = [
     [!!g.Deno, "deno"],
     // https://nodejs.org/api/process.html#processrelease
     [!!g.__lagon__, "lagon"],
-    [g.process?.release?.name === "node", "node"],
+    [g.process?.release?.name === "node", "node"],  
     [!!g.Bun || !!g.process?.versions?.bun, "bun"],
     [!!g.fastly, "fastly"],
 ];
