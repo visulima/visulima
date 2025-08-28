@@ -137,6 +137,116 @@ app.get("/", async (req, res) => {
 app.listen(3000);
 ```
 
+### Runtime handlers (direct)
+
+Use dedicated handlers when you want to plug flame into your framework's native error hooks.
+
+#### Node/Express-like (Express, Connect, Fastify, Koa)
+
+```ts
+// Express / Connect
+import httpHandler from "@visulima/flame/handler/http/node";
+
+app.use(async (err, req, res, _next) => {
+    const handler = await httpHandler(err, [], { showTrace: process.env.NODE_ENV !== "production" });
+    await handler(req, res);
+});
+```
+
+```ts
+// Fastify
+import httpHandler from "@visulima/flame/handler/http/node";
+
+fastify.setErrorHandler(async (err, request, reply) => {
+    const handler = await httpHandler(err, [], { showTrace: true });
+    await handler(request.raw, reply.raw);
+});
+```
+
+```ts
+// Koa
+import httpHandler from "@visulima/flame/handler/http/node";
+
+app.use(async (ctx, next) => {
+    try {
+        await next();
+    } catch (err) {
+        const handler = await httpHandler(err as Error, [], { showTrace: true });
+        await handler(ctx.req, ctx.res);
+        ctx.respond = false;
+    }
+});
+```
+
+#### Hono (Fetch runtime)
+
+```ts
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import fetchHandler from "@visulima/flame/handler/http/hono";
+
+const app = new Hono();
+
+app.get("/", (c) => c.text("OK"));
+app.get("/error", () => { throw new Error("Boom from Hono"); });
+
+app.onError(async (err, c) => {
+    const handler = await fetchHandler(err as Error, [], { showTrace: true });
+    return handler(c.req.raw);
+});
+
+serve({ fetch: app.fetch, port: 3000 });
+```
+
+#### Fetch-based runtimes (Cloudflare/Deno/Bun/Edge)
+
+```ts
+// Cloudflare Workers
+import fetchHandler from "@visulima/flame/handler/http/cloudflare";
+
+export default {
+    async fetch(request: Request, _env: unknown, _ctx: ExecutionContext): Promise<Response> {
+        try {
+            throw new Error("Boom");
+        } catch (err) {
+            const handler = await fetchHandler(err as Error, [], { showTrace: true });
+            return handler(request);
+        }
+    },
+};
+```
+
+```ts
+// Deno (std/serve)
+import fetchHandler from "@visulima/flame/handler/http/deno";
+
+Deno.serve(async (request: Request) => {
+    try {
+        throw new Error("Boom");
+    } catch (err) {
+        const handler = await fetchHandler(err as Error, [], { showTrace: true });
+        return handler(request);
+    }
+});
+```
+
+```ts
+// Bun
+import fetchHandler from "@visulima/flame/handler/http/bun";
+
+Bun.serve({
+    async fetch(request) {
+        try {
+            throw new Error("Boom");
+        } catch (err) {
+            const handler = await fetchHandler(err as Error, [], { showTrace: true });
+            return handler(request);
+        }
+    },
+    port: 3000,
+});
+```
+
 ### Using the HTML displayer directly (advanced)
 
 If you don’t need the full displayer and want to mount just the HTML error handler, use `htmlErrorHandler`.

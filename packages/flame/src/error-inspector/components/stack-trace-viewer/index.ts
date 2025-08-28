@@ -12,6 +12,7 @@ import getType from "./util/get-type";
 import groupSimilarTypes from "./util/group-similar-types";
 import cn from "../../util/tw";
 import svgToDataUrl from "../../util/svg-to-data-url";
+import { sanitizeHtml, sanitizeAttr, sanitizeUrlAttr } from "../../util/sanitize";
 
 const stackTraceViewer = async (
     error: Error,
@@ -59,10 +60,13 @@ const stackTraceViewer = async (
                 dark: "github-dark-default",
             },
         });
+        const safeCode = sanitizeHtml(code);
 
         const filePath = `${trace.file}:${trace.line}:${trace.column}`;
         const absPathForEditor = (trace.file || "").replace(/^file:\/\//, "");
         const relativeFilePath = filePath.replace(process.cwd?.() || "", "").replace("file:///", "");
+        const safeMethod = sanitizeHtml(trace.methodName || "");
+        const safeRelativePath = sanitizeHtml(relativeFilePath);
 
         tabs.push({
             html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-stack-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" ${
@@ -72,8 +76,8 @@ const stackTraceViewer = async (
                 isClickable ? "cursor-pointer" : "cursor-not-allowed",
             )}">
     <div class="flex flex-col w-full text-left">
-        <span class="font-medium text-[var(--flame-text)]">${trace.methodName}</span>
-        <span class="text-sm break-words text-[var(--flame-text-muted)]">${relativeFilePath}</span>
+        <span class="font-medium text-[var(--flame-text)]">${safeMethod}</span>
+        <span class="text-sm break-words text-[var(--flame-text-muted)]">${safeRelativePath}</span>
     </div>
 </button>`,
             type: trace.file ? getType(trace.file) : undefined,
@@ -83,9 +87,13 @@ const stackTraceViewer = async (
             index === 0 && isClickable ? "block" : "hidden"
         }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}" tabindex="0">
 <div class="pt-6 px-6 text-sm text-right text-[var(--flame-text)]">
-    ${options.openInEditorUrl ? `<button type=\"button\" class=\"underline hover:text-[var(--flame-link)]\" data-open-in-editor data-url=\"${options.openInEditorUrl}\" data-path=\"${absPathForEditor}\" data-line=\"${trace.line || 1}\" data-column=\"${trace.column || 1}\">${relativeFilePath} — Open in editor</button>` : relativeFilePath}
+    ${options.openInEditorUrl ? `<button type=\"button\" class=\"underline hover:text-[var(--flame-link)]\" data-open-in-editor data-url=\"${sanitizeUrlAttr(
+                options.openInEditorUrl,
+            )}\" data-path=\"${sanitizeAttr(absPathForEditor)}\" data-line=\"${sanitizeAttr(trace.line || 1)}\" data-column=\"${sanitizeAttr(
+                trace.column || 1,
+            )}\">${safeRelativePath} — Open in editor</button>` : safeRelativePath}
 </div>
-<div class="p-6">${code}</div>
+<div class="p-6">${safeCode}</div>
 </div>`);
     }
 
@@ -138,7 +146,7 @@ const stackTraceViewer = async (
         <div class="w-4/12 rounded-tl-lg rounded-bl-lg overflow-hidden">
             <div class="${paddingClass}">
                 ${headerLabel}
-                <div class="flex flex-row items-center">${togglesHtml}</div>
+                <div class="flex flex-row items-center gap-2">${togglesHtml}</div>
             </div>
             <nav class="flex flex-col" aria-label="Frames">
                 ${grouped

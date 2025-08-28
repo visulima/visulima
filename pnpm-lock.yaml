@@ -2038,6 +2038,9 @@ importers:
       '@eslint/css':
         specifier: 0.10.0
         version: 0.10.0
+      '@hono/node-server':
+        specifier: 1.19.0
+        version: 1.19.0(hono@4.9.4)
       '@tailwindcss/forms':
         specifier: ^0.5.10
         version: 0.5.10(tailwindcss@4.1.12)
@@ -2062,6 +2065,9 @@ importers:
       '@types/node':
         specifier: 24.3.0
         version: 24.3.0
+      '@visulima/colorize':
+        specifier: workspace:*
+        version: link:../colorize
       '@visulima/find-cache-dir':
         specifier: workspace:*
         version: link:../find-cache-dir
@@ -2089,6 +2095,9 @@ importers:
       get-uri:
         specifier: ^6.0.5
         version: 6.0.5
+      hono:
+        specifier: 4.9.4
+        version: 4.9.4
       http-errors:
         specifier: ^2.0.0
         version: 2.0.0
@@ -6591,6 +6600,12 @@ packages:
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
       react-dom: ^18 || ^19 || ^19.0.0-rc
+
+  '@hono/node-server@1.19.0':
+    resolution: {integrity: sha512-1k8/8OHf5VIymJEcJyVksFpT+AQ5euY0VA5hUkCnlKpD4mr8FSbvXaHblxeTTEr90OaqWzAkQaqD80qHZQKxBA==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@html-eslint/eslint-plugin@0.20.0':
     resolution: {integrity: sha512-P5DeuqL5TmIGIiWjeezGDZPM3rXzL715MEU0QR9xOOmqNTshG3yLsk7fkfLsLiDjm0x6r4e13/5mUCbEQTek7Q==}
@@ -16494,6 +16509,10 @@ packages:
   homedir-polyfill@1.0.3:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
     engines: {node: '>=0.10.0'}
+
+  hono@4.9.4:
+    resolution: {integrity: sha512-61hl6MF6ojTl/8QSRu5ran6GXt+6zsngIUN95KzF5v5UjiX/xnrLR358BNRawwIRO49JwUqJqQe3Rb2v559R8Q==}
+    engines: {node: '>=16.9.0'}
 
   hook-std@3.0.0:
     resolution: {integrity: sha512-jHRQzjSDzMtFy34AGj1DN+vq54WVuhSvKgrHf0OMiFQTwDD4L/qqofVEWjLOBMTn5+lCD3fPg32W9yOfnEJTTw==}
@@ -27178,6 +27197,10 @@ snapshots:
       '@tanstack/react-virtual': 3.8.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
+
+  '@hono/node-server@1.19.0(hono@4.9.4)':
+    dependencies:
+      hono: 4.9.4
 
   '@html-eslint/eslint-plugin@0.20.0': {}
 
@@ -42078,6 +42101,8 @@ snapshots:
   homedir-polyfill@1.0.3:
     dependencies:
       parse-passwd: 1.0.0
+
+  hono@4.9.4: {}
 
   hook-std@3.0.0: {}
 

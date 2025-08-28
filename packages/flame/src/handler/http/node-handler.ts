@@ -1,9 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import type { SolutionFinder } from "../types";
-import { htmlErrorHandler, type HtmlErrorHandlerOptions } from "../error-handler/html-error-handler";
-import createNegotiatedErrorHandler from "../error-handler/create-negotiated-error-handler";
-import type { ErrorHandlers } from "../error-handler/types";
+import type { SolutionFinder } from "../../types";
+import { htmlErrorHandler, type HtmlErrorHandlerOptions } from "../../error-handler/html-error-handler";
+import createNegotiatedErrorHandler from "../../error-handler/create-negotiated-error-handler";
+import type { ErrorHandlers } from "../../error-handler/types";
 
 const httpHandler = async (
     error: Error,

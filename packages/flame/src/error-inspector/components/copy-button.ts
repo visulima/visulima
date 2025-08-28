@@ -4,22 +4,28 @@ import svgToDataUrl from "../util/svg-to-data-url";
 import clipboardIcon from "lucide-static/icons/clipboard.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import checkIcon from "lucide-static/icons/check.svg?raw";
+import { sanitizeAttr, sanitizeHtml } from "../util/sanitize";
 
 const copyButton = ({ targetId, label = "Copy", successText = "Copied!" }: { targetId: string; label?: string; successText?: string }): string => {
+    const safeTarget = sanitizeAttr(targetId);
+    const safeLabelAttr = sanitizeAttr(label);
+    const safeLabelHtml = sanitizeHtml(label);
+    const safeSuccessTextAttr = sanitizeAttr(successText);
+    const safeSuccessTextHtml = sanitizeHtml(successText);
     return `
     <button
       type="button"
-      aria-label="${label}"
-      title="${label}"
+      aria-label="${safeLabelAttr}"
+      title="${safeLabelAttr}"
       class="${cn(
           "[--is-toggle-tooltip:false] hs-tooltip relative inline-flex justify-center items-center size-8 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-surface)] text-[var(--flame-text)] hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] disabled:opacity-50 disabled:pointer-events-none",
       )}"
-      data-clipboard-target="#${targetId}"
+      data-clipboard-target="#${safeTarget}"
       data-clipboard-action="copy"
-      data-clipboard-success-text="${successText}"
+      data-clipboard-success-text="${safeSuccessTextAttr}"
       onclick="
         // Fallback if Preline clipboard isn't working
-        const target = document.querySelector('#${targetId}');
+        const target = document.querySelector('#${safeTarget}');
         if (target && target.value) {
           navigator.clipboard.writeText(target.value).then(() => {
             // Show success feedback
@@ -43,10 +49,10 @@ const copyButton = ({ targetId, label = "Copy", successText = "Copied!" }: { tar
 
       <span class="js-clipboard-success dui hidden size-4 text-[var(--flame-red-orange)]" style="-webkit-mask-image: url('${svgToDataUrl(checkIcon)}'); mask-image: url('${svgToDataUrl(checkIcon)}')"></span>
 
-      <span class="sr-only">${label}</span>
+      <span class="sr-only">${safeLabelHtml}</span>
 
       <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">
-        <span class="js-clipboard-success-text">${successText}</span>
+        <span class="js-clipboard-success-text">${safeSuccessTextHtml}</span>
       </span>
     </button>
   `;

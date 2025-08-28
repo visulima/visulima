@@ -2,7 +2,7 @@ import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import httpHandler from "../../src/handler/http-handler";
+import httpHandler from "../../src/handler/http/node-handler";
 
 describe("flame httpHandler handler", () => {
     it("returns HTML by default when no Accept header is provided", async () => {

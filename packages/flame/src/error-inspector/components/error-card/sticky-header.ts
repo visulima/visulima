@@ -1,5 +1,6 @@
 import copyButton from "../copy-button";
 import shortcutsButton from "../shortcuts-button";
+import { sanitizeHtml, sanitizeAttr } from "../../util/sanitize";
 
 const stickyHeader = (
     error: Error,
@@ -7,12 +8,16 @@ const stickyHeader = (
     html: string;
     script: string;
 } => {
+    const safeName = sanitizeHtml(error.name);
+    const safeMessage = sanitizeHtml(error.message);
+    const safeTitleValue = sanitizeAttr(`${error.name}: ${error.message}`);
+
     return {
         html: `<div id="error-card-sticky-header" class="fixed invisible container px-6 py-4 -top-40 z-10 rounded-[var(--flame-radius-lg)] transition-all duration-300 shadow-[var(--flame-elevation-2)] bg-[var(--flame-surface)]">
-  <input type="hidden" id="clipboard-sticky-error-title" value="${error.name}: ${error.message}">
+  <input type="hidden" id="clipboard-sticky-error-title" value="${safeTitleValue}">
   <div class="flex items-center gap-2">
-    <h1 class="text-sm font-semibold py-1 px-2 text-[var(--flame-chip-text)] bg-[var(--flame-chip-bg)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)]" aria-label="Error name">${error.name}</h1>
-    <span class="text-md font-semibold line-clamp-1 text-[var(--flame-text)]" aria-label="Error message">${error.message}</span>
+    <h1 class="text-sm font-semibold py-1 px-2 text-[var(--flame-chip-text)] bg-[var(--flame-chip-bg)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)]" aria-label="Error name">${safeName}</h1>
+    <span class="text-md font-semibold line-clamp-1 text-[var(--flame-text)]" aria-label="Error message">${safeMessage}</span>
     <div class="grow"></div>
     ${shortcutsButton()}
     ${copyButton({ targetId: "clipboard-sticky-error-title", label: "Copy error title" })}

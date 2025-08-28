@@ -8,6 +8,7 @@ import solutions from "./solutions";
 import stickyHeader from "./sticky-header";
 import copyButton from "../copy-button";
 import svgToDataUrl from "../../util/svg-to-data-url";
+import { sanitizeHtml, sanitizeAttr } from "../../util/sanitize";
 
 const errorCard = async ({
     error,
@@ -37,14 +38,18 @@ const errorCard = async ({
     const { html: solutionsHtml, script: solutionsScript } = await solutions(error, solutionFinders);
     const { html: stickyHeaderHtml, script: stickyHeaderScript } = stickyHeader(error);
 
+    const safeName = sanitizeHtml(error.name);
+    const safeMessage = sanitizeHtml((error as Error).message);
+    const safeTitleValue = sanitizeAttr(`${error.name}: ${(error as Error).message}`);
+
     return {
         html: `<section id="error-card" class="container rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] bg-[var(--flame-surface)]">
-    <input type="hidden" id="clipboard-error-title" value="${error.name}: ${(error as Error).message}">
+    <input type="hidden" id="clipboard-error-title" value="${safeTitleValue}">
     <div class="flex flex-row">
         <div class="flex flex-col gap-3 grow min-w-6/12 w-full p-6 pt-5">
             <div class="flex flex-row items-center gap-2">
                 <h1 class="text-lg font-semibold py-1 px-2 text-[var(--flame-chip-text)] bg-[var(--flame-chip-bg)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)]">
-                ${error.name}
+                ${safeName}
                 </h1>
                 ${copyButton({ targetId: "clipboard-error-title", label: "Copy error title" })}
                 <div class="grow"></div>
@@ -53,7 +58,7 @@ const errorCard = async ({
                 </div>
             </div>
             <div class="text-md font-semibold text-[var(--flame-text)]">
-                ${error.message}
+                ${safeMessage}
             </div>
         </div>
         ${solutionsHtml}

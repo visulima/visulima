@@ -3,13 +3,14 @@ import blocksIcon from "lucide-static/icons/blocks.svg?raw";
 import layersIcon from "lucide-static/icons/layers.svg?raw";
 import isquareDashedIcon from "lucide-static/icons/square-dashed.svg?raw";
 import cn from "../util/tw";
+import { sanitizeAttr, sanitizeHtml } from "../util/sanitize";
 
 export type HeaderTab = { id: string; name: string; selected?: boolean; icon?: string };
 
 export const headerTabs = (tabs: HeaderTab[]): string => {
     const getIcon = (tab: HeaderTab): string => {
         if (tab.icon) {
-            return tab.icon;
+            return sanitizeHtml(tab.icon);
         }
 
         switch (tab.id) {
@@ -32,7 +33,10 @@ export const headerTabs = (tabs: HeaderTab[]): string => {
 
             const classes = cn(base, active, t.selected ? "active" : "", "[:>svg]:size-4");
 
-            return `<button type="button" class="${classes}" id="flame-tab-${t.id}" aria-selected="${t.selected ? "true" : "false"}" data-hs-tab="#flame-section-${t.id}" aria-controls="flame-section-${t.id}" role="tab">${getIcon(t)}<span>${t.name}</span></button>`;
+            const safeId = sanitizeAttr(t.id);
+            const safeName = sanitizeHtml(t.name);
+
+            return `<button type="button" class="${classes}" id="flame-tab-${safeId}" aria-selected="${t.selected ? "true" : "false"}" data-hs-tab="#flame-section-${safeId}" aria-controls="flame-section-${safeId}" role="tab">${getIcon(t)}<span>${safeName}</span></button>`;
         })
         .join("")}
   </nav>

@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 
-import httpDisplayer from "../../dist/handler/http-handler.mjs";
+import httpDisplayer from "../../dist/handler/http/node-handler.mjs";
 import { createRequestContextPage } from "../../dist/error-inspector/page/context.mjs";
 import { createNodeHttpHandler } from "../../dist/server/open-in-editor.mjs";
 

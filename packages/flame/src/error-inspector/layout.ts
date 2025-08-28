@@ -7,6 +7,7 @@ const layout = ({
     error,
     scripts,
     title,
+    cspNonce,
 }: {
     content: string;
     css: string;
@@ -14,6 +15,7 @@ const layout = ({
     error: Error;
     scripts: string[];
     title: string;
+    cspNonce?: string;
 }): string => {
     const errorStack = DOMPurify.sanitize(error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString());
 
@@ -27,8 +29,8 @@ const layout = ({
         <title>${title}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="${description}">
-        <style>${css}</style>
-        <script>
+        <style${cspNonce ? ` nonce="${cspNonce}"` : ""}>${css}</style>
+        <script${cspNonce ? ` nonce="${cspNonce}"` : ""}>
             // Ensures listeners run as soon as the DOM is interactive
             function subscribeToDOMContentLoaded(listener) {
                 if (document.readyState !== 'loading') {
@@ -40,9 +42,9 @@ const layout = ({
         </script>
         ${scripts
             .filter(Boolean)
-            .map((script) => `<script>${script}</script>`)
+            .map((script) => `<script${cspNonce ? ` nonce=\"${cspNonce}\"` : ""}>${script}</script>`)
             .join("\n")}
-        <script>
+        <script${cspNonce ? ` nonce="${cspNonce}"` : ""}>
         (function() {
             subscribeToDOMContentLoaded(() => {
             // Global keyboard shortcut for ? and Shift+/ to open shortcuts

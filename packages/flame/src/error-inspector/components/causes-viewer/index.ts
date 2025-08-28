@@ -2,6 +2,7 @@
 import stackTraceViewer from "../stack-trace-viewer";
 import { tooltip } from "../tooltip";
 import svgToDataUrl from "../../util/svg-to-data-url";
+import { sanitizeHtml } from "../../util/sanitize";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import plusIcon from "lucide-static/icons/plus.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -26,7 +27,7 @@ const causes = async (causeList: unknown[], options: { openInEditorUrl?: string 
 
             content.push(`<details aria-label="Cause ${index + 1}" class="relative rounded-[var(--flame-radius-lg)] mb-2 last:mb-0 group shadow-[var(--flame-elevation-2)] bg-[var(--flame-surface)]">
     <summary class="pl-5 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-all inline-flex justify-between items-center gap-x-3 w-full font-semibold text-start py-4 px-5 disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-[var(--flame-text)]">
-      ${cause.name}: ${cause.message}
+      ${sanitizeHtml(cause.name)}: ${sanitizeHtml(cause.message)}
       <span class="dui flame-expand-icon-closed size-4" style="-webkit-mask-image:url('${svgToDataUrl(plusIcon)}'); mask-image:url('${svgToDataUrl(plusIcon)}')"></span>
       <span class="dui flame-expand-icon-open size-4" style="-webkit-mask-image:url('${svgToDataUrl(minusIcon)}'); mask-image:url('${svgToDataUrl(minusIcon)}')"></span>
     </summary>
@@ -36,11 +37,9 @@ const causes = async (causeList: unknown[], options: { openInEditorUrl?: string 
 </details>`);
             scripts.push(stackTraceScript);
         } else if (typeof cause === "string") {
-            content.push(`<div class="container rounded-lg mt-2 py-4 px-5 shadow-xl bg-[var(--flame-white-smoke)] text-[var(--flame-text)]">${cause}</div>`);
+            content.push(`<div class="container rounded-lg mt-2 py-4 px-5 shadow-xl bg-[var(--flame-white-smoke)] text-[var(--flame-text)]">${sanitizeHtml(cause)}</div>`);
         } else {
-            content.push(
-                `<div class="container rounded-lg mt-2 py-4 px-5 shadow-xl bg-[var(--flame-white-smoke)] text-[var(--flame-text)]">${JSON.stringify(cause)}</div>`,
-            );
+            content.push(`<div class="container rounded-lg mt-2 py-4 px-5 shadow-xl bg-[var(--flame-white-smoke)] text-[var(--flame-text)]">${sanitizeHtml(JSON.stringify(cause))}</div>`);
         }
     }
 

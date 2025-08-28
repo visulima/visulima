@@ -44,5 +44,6 @@ export type TemplateOptions = {
     editor?: Editor;
     openInEditorUrl?: string;
     theme?: Theme;
+    cspNonce?: string;
     content?: ContentPage[];
 };

@@ -83,6 +83,7 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
         error,
         scripts: [clipboard, preline, prelineClipboard, prelineInit, headerBarScript, stackScript as string, ...customPages.map((p) => p.code.script || "")],
         title: "Error",
+        cspNonce: options.cspNonce,
     });
 };
 

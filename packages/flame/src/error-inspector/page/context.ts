@@ -2,6 +2,7 @@ import type { ContentPage } from "../types";
 import getHighlighter from "../util/get-highlighter";
 import copyButton from "../components/copy-button";
 import svgToDataUrl from "../util/svg-to-data-url";
+import { sanitizeAttr, sanitizeHtml, sanitizeUrlAttr, sanitizeCodeHtml } from "../util/sanitize";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import globeIcon from "lucide-static/icons/globe.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -279,7 +280,7 @@ export const createRequestContextPage = async (request: Request, options: Contex
     };
 
     const curl = buildCurl();
-    const curlHtml = await (
+    const curlHtmlRaw = await (
         await getHighlighter()
     ).codeToHtml(curl, {
         lang: "bash",
@@ -288,10 +289,10 @@ export const createRequestContextPage = async (request: Request, options: Contex
             dark: "github-dark-default",
         },
     });
+    const curlHtml = sanitizeCodeHtml(curlHtmlRaw);
 
-    const attrEscape = (value: unknown): string => String(value ?? "").replaceAll("'", "&apos;");
-    const escapeHtml = (str: string): string =>
-        String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+    const attrEscape = (value: unknown): string => sanitizeAttr(value);
+    const escapeHtml = (str: string): string => sanitizeHtml(str);
 
     const renderKeyValueTable = (records: Record<string, string | string[]> | undefined): string => {
         if (!records || Object.keys(records).length === 0) {
@@ -521,7 +522,7 @@ export const createRequestContextPage = async (request: Request, options: Contex
     <div class="px-4 py-4 flex items-center gap-3 min-w-0 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${svgToDataUrl(globeIcon)}'); mask-image:url('${svgToDataUrl(globeIcon)}')"></span>
       <h2 class="text-sm font-semibold text-[var(--flame-text)]">Request</h2>
-      <a class="text-sm truncate text-[var(--flame-red-orange)]" href="${escapeHtml(request.url || "#")}">${escapeHtml(request.url || "")}</a>
+      <a class="text-sm truncate text-[var(--flame-red-orange)]" href="${sanitizeUrlAttr(request.url || "#")}">${escapeHtml(request.url || "")}</a>
       <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-[var(--flame-chip-bg)] text-[var(--flame-chip-text)]">${escapeHtml(String(request.method || "GET"))}</span>
       <div class="grow"></div>
       ${copyButton({ targetId: `clipboard-curl-${uniqueId}`, label: "Copy cURL" })}

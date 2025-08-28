@@ -1,7 +1,7 @@
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import httpHandler from "../../src/handler/http-handler";
+import httpHandler from "../../src/handler/http/node-handler";
 
 describe("httpHandler open-in-editor integration", () => {
     it("renders editor selector and posts to provided openInEditorUrl when option is set", async () => {

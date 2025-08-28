@@ -12,7 +12,7 @@ const errorHintFinder: SolutionFinder = {
             return { body: error.hint };
         }
 
-        if (typeof error.hint === "object") {
+        if (typeof error.hint === "object" && typeof (error.hint as Solution).body === "string") {
             return error.hint as Solution;
         }
 

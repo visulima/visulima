@@ -1,4 +1,7 @@
 import { cliHandler } from "../../dist/handler/cli-handler.mjs";
+// eslint-disable-next-line import/no-extraneous-dependencies
+// @ts-ignore - local workspace package is available at runtime
+import colorize from "@visulima/colorize";
 
 async function demoHint() {
     try {
@@ -20,7 +23,18 @@ async function demoHint() {
         const error = new Error("CLI demo: rendered error with hint", { cause: innerError });
         error.hint = "Ensure the config file exists and is readable. Check permissions and path.";
 
-        await cliHandler(error, [], console);
+        await cliHandler(error, {
+            color: {
+                // Optional: tweak codeframe colors (example overrides title only)
+                // codeFrame coloring can be provided if desired
+                // Boxen coloring using visulima/colorize
+                boxen: {
+                    borderColor: (/** @type {string} */ s) => colorize.green(s),
+                    headerTextColor: (/** @type {string} */ s) => colorize.bold(colorize.green(s)),
+                    textColor: (/** @type {string} */ s) => s,
+                },
+            },
+        });
     }
 }
 
@@ -31,7 +45,15 @@ async function demoRule() {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         console.log(obj.foo);
     } catch (error) {
-        await cliHandler(/** @type {Error} */ (error), [], console);
+        await cliHandler(/** @type {Error} */ (error), {
+            color: {
+                boxen: {
+                    borderColor: (/** @type {string} */ s) => colorize.cyan(s),
+                    headerTextColor: (/** @type {string} */ s) => colorize.bold(colorize.cyan(s)),
+                    textColor: (/** @type {string} */ s) => s,
+                },
+            },
+        });
     }
 }
 
