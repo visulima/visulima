@@ -12,6 +12,7 @@ const copyButton = ({ targetId, label = "Copy", successText = "Copied!" }: { tar
     const safeLabelHtml = sanitizeHtml(label);
     const safeSuccessTextAttr = sanitizeAttr(successText);
     const safeSuccessTextHtml = sanitizeHtml(successText);
+
     return `
     <button
       type="button"

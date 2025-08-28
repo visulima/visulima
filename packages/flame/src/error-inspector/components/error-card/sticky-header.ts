@@ -1,16 +1,43 @@
-import copyButton from "../copy-button";
+import copyDropdown from "../copy-dropdown";
 import shortcutsButton from "../shortcuts-button";
 import { sanitizeHtml, sanitizeAttr } from "../../util/sanitize";
+import aiPrompt from "../../../solution/ai/ai-prompt";
+import { codeFrame, parseStacktrace } from "@visulima/error";
+import findLanguageBasedOnExtension from "../../../util/find-language-based-on-extension";
+import getFileSource from "../../../util/get-file-source";
 
-const stickyHeader = (
+const stickyHeader = async (
     error: Error,
-): {
+): Promise<{
     html: string;
     script: string;
-} => {
+}> => {
     const safeName = sanitizeHtml(error.name);
     const safeMessage = sanitizeHtml(error.message);
     const safeTitleValue = sanitizeAttr(`${error.name}: ${error.message}`);
+
+    // Build AI prompt using first stack frame and code frame when available
+    const trace = parseStacktrace(error as Error, { frameLimit: 1 })?.[0] as any;
+    const filePath = trace?.file ?? "";
+    const fileLine = trace?.line ?? 0;
+    const fileSource = filePath ? await getFileSource(filePath) : "";
+    const snippet = fileSource
+        ? codeFrame(
+              fileSource,
+              { start: { line: fileLine, column: trace?.column } },
+              { linesAbove: 9, linesBelow: 10, showGutter: true },
+          )
+        : "";
+    const fixPrompt = aiPrompt({
+        applicationType: undefined,
+        error: error as Error,
+        file: {
+            file: filePath,
+            line: fileLine,
+            language: findLanguageBasedOnExtension(filePath),
+            snippet,
+        },
+    });
 
     return {
         html: `<div id="error-card-sticky-header" class="fixed invisible container px-6 py-4 -top-40 z-10 rounded-[var(--flame-radius-lg)] transition-all duration-300 shadow-[var(--flame-elevation-2)] bg-[var(--flame-surface)]">
@@ -20,7 +47,7 @@ const stickyHeader = (
     <span class="text-md font-semibold line-clamp-1 text-[var(--flame-text)]" aria-label="Error message">${safeMessage}</span>
     <div class="grow"></div>
     ${shortcutsButton()}
-    ${copyButton({ targetId: "clipboard-sticky-error-title", label: "Copy error title" })}
+    ${copyDropdown({ targetId: "clipboard-sticky-error-title", label: "Copy error title", secondaryLabel: "Copy fix prompt", secondaryText: fixPrompt })}
   </div>
 </div>`,
         script: `(window.subscribeToDOMContentLoaded || function (fn) {

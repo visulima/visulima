@@ -3,10 +3,14 @@ import type { VisulimaError } from "@visulima/error/error";
 import externalLinkIcon from "lucide-static/icons/external-link.svg?raw";
 
 import type { SolutionError, SolutionFinder } from "../../../types";
+import aiPrompt from "../../../solution/ai/ai-prompt";
+import { codeFrame, parseStacktrace } from "@visulima/error";
+import findLanguageBasedOnExtension from "../../../util/find-language-based-on-extension";
+import getFileSource from "../../../util/get-file-source";
 import type { RuntimeName } from "../../../util/runtimes";
 import solutions from "./solutions";
 import stickyHeader from "./sticky-header";
-import copyButton from "../copy-button";
+import copyDropdown from "../copy-dropdown";
 import svgToDataUrl from "../../util/svg-to-data-url";
 import { sanitizeHtml, sanitizeAttr } from "../../util/sanitize";
 
@@ -36,11 +40,34 @@ const errorCard = async ({
     }
 
     const { html: solutionsHtml, script: solutionsScript } = await solutions(error, solutionFinders);
-    const { html: stickyHeaderHtml, script: stickyHeaderScript } = stickyHeader(error);
+    const { html: stickyHeaderHtml, script: stickyHeaderScript } = await stickyHeader(error);
 
     const safeName = sanitizeHtml(error.name);
     const safeMessage = sanitizeHtml((error as Error).message);
     const safeTitleValue = sanitizeAttr(`${error.name}: ${(error as Error).message}`);
+
+    // Build AI prompt using first stack frame and code frame when available
+    const trace = parseStacktrace(error as Error, { frameLimit: 1 })?.[0] as any;
+    const filePath = trace?.file ?? "";
+    const fileLine = trace?.line ?? 0;
+    const fileSource = filePath ? await getFileSource(filePath) : "";
+    const snippet = fileSource
+        ? codeFrame(
+              fileSource,
+              { start: { line: fileLine, column: trace?.column } },
+              { linesAbove: 9, linesBelow: 10, showGutter: true },
+          )
+        : "";
+    const fixPrompt = aiPrompt({
+        applicationType: undefined,
+        error: error as Error,
+        file: {
+            file: filePath,
+            line: fileLine,
+            language: findLanguageBasedOnExtension(filePath),
+            snippet,
+        },
+    });
 
     return {
         html: `<section id="error-card" class="container rounded-[var(--flame-radius-lg)] shadow-[var(--flame-elevation-2)] bg-[var(--flame-surface)]">
@@ -51,7 +78,7 @@ const errorCard = async ({
                 <h1 class="text-lg font-semibold py-1 px-2 text-[var(--flame-chip-text)] bg-[var(--flame-chip-bg)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)]">
                 ${safeName}
                 </h1>
-                ${copyButton({ targetId: "clipboard-error-title", label: "Copy error title" })}
+                ${copyDropdown({ targetId: "clipboard-error-title", label: "Copy error title", secondaryLabel: "Copy fix prompt", secondaryText: fixPrompt })}
                 <div class="grow"></div>
                 <div class="text-sm font-semibold py-1 px-2 text-[var(--flame-text-muted)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)]">
                 ${runtime}
