@@ -6,7 +6,7 @@ import svgToDataUrl from "../util/svg-to-data-url";
 
 const shortcutsButton = (): string => {
     return `<div class="hs-tooltip [--trigger:click] [--placement:bottom-end] inline-block">
-  <button type="button" aria-label="Open keyboard shortcuts" title="Keyboard shortcuts" class="hs-tooltip-toggle flex justify-center items-center size-8 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-surface)] text-[var(--flame-text)] hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] disabled:opacity-50 disabled:pointer-events-none" data-shortcuts-open>
+  <button type="button" aria-label="Open keyboard shortcuts" title="Keyboard shortcuts" class="hs-tooltip-toggle flex justify-center items-center size-9 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-surface)] text-[var(--flame-text)] hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] disabled:opacity-50 disabled:pointer-events-none" data-shortcuts-open>
     <span class="dui shrink-0 size-4" style="-webkit-mask-image:url('${svgToDataUrl(helpCircleIcon)}'); mask-image:url('${svgToDataUrl(helpCircleIcon)}')"></span>
     <span class="sr-only">Keyboard shortcuts</span>
   </button>

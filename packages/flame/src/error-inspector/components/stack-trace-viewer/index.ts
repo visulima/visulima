@@ -67,18 +67,21 @@ const stackTraceViewer = async (
         const relativeFilePath = filePath.replace(process.cwd?.() || "", "").replace("file:///", "");
         const safeMethod = sanitizeHtml(trace.methodName || "");
         const safeRelativePath = sanitizeHtml(relativeFilePath);
+        const safeTooltipHtml = sanitizeHtml([trace.methodName || "", relativeFilePath].filter(Boolean).join(" — "));
+        const tooltipId = sanitizeAttr(`tooltip-${uniqueKey}-${index}`);
 
         tabs.push({
-            html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-stack-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" ${
+            html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-stack-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" aria-describedby="${tooltipId}" ${
                 isClickable ? "" : 'disabled aria-disabled="true"'
             } class="${cn(
-                "inline-flex items-center gap-x-2 text-sm whitespace-nowrap p-6 w-full text-left border-l-2 border-transparent hover:bg-[var(--flame-hover-overlay)] text-[var(--flame-text-muted)]",
+                "[--is-toggle-tooltip:false] hs-tooltip relative inline-flex items-center gap-x-2 text-sm whitespace-nowrap p-6 w-full text-left border-l-2 border-transparent hover:bg-[var(--flame-hover-overlay)] text-[var(--flame-text-muted)]",
                 isClickable ? "cursor-pointer" : "cursor-not-allowed",
             )}">
-    <div class="flex flex-col w-full text-left">
-        <span class="font-medium text-[var(--flame-text)]">${safeMethod}</span>
-        <span class="text-sm break-words text-[var(--flame-text-muted)]">${safeRelativePath}</span>
+    <div class="flex flex-col w-full text-left overflow-hidden min-w-0">
+        <span class="font-medium text-[var(--flame-text)] truncate">${safeMethod}</span>
+        <span class="text-sm text-[var(--flame-text-muted)] truncate">${safeRelativePath}</span>
     </div>
+    <span id="${tooltipId}" class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">${safeTooltipHtml}</span>
 </button>`,
             type: trace.file ? getType(trace.file) : undefined,
         });
@@ -87,11 +90,15 @@ const stackTraceViewer = async (
             index === 0 && isClickable ? "block" : "hidden"
         }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}" tabindex="0">
 <div class="pt-6 px-6 text-sm text-right text-[var(--flame-text)]">
-    ${options.openInEditorUrl ? `<button type=\"button\" class=\"underline hover:text-[var(--flame-link)]\" data-open-in-editor data-url=\"${sanitizeUrlAttr(
-                options.openInEditorUrl,
-            )}\" data-path=\"${sanitizeAttr(absPathForEditor)}\" data-line=\"${sanitizeAttr(trace.line || 1)}\" data-column=\"${sanitizeAttr(
-                trace.column || 1,
-            )}\">${safeRelativePath} — Open in editor</button>` : safeRelativePath}
+    ${options.openInEditorUrl
+                ? `<button type=\"button\" class=\"underline hover:text-[var(--flame-link)]\" data-open-in-editor data-url=\"${sanitizeUrlAttr(options.openInEditorUrl)}\" data-path=\"${sanitizeAttr(
+                      absPathForEditor,
+                  )}\" data-line=\"${sanitizeAttr(trace.line || 1)}\" data-column=\"${sanitizeAttr(trace.column || 1)}\">${safeRelativePath} — Open in editor</button>`
+                : isClickable
+                  ? `<button type=\"button\" class=\"underline hover:text-[var(--flame-link)]\" data-editor-link data-path=\"${sanitizeAttr(absPathForEditor)}\" data-line=\"${sanitizeAttr(
+                        trace.line || 1,
+                    )}\" data-column=\"${sanitizeAttr(trace.column || 1)}\">${safeRelativePath} — Open in editor</button>`
+                  : safeRelativePath}
 </div>
 <div class="p-6">${safeCode}</div>
 </div>`);
@@ -211,6 +218,85 @@ const stackTraceViewer = async (
             if (!window.__flameOpenInEditorBound) {
               window.__flameOpenInEditorBound = true;
 
+              // Known editor URL scheme templates (%f=file, %l=line, %c=column if supported)
+              var __EDITOR_SCHEMES__ = {
+                // Common
+                'code': 'vscode://file/%f:%l:%c',
+                'code-insiders': 'vscode-insiders://file/%f:%l:%c',
+                'vscode': 'vscode://file/%f:%l:%c',
+                'vscodium': 'vscodium://file/%f:%l:%c',
+                'codium': 'vscodium://file/%f:%l:%c',
+                'cursor': 'cursor://file/%f:%l:%c',
+                'sublime': 'subl://open?url=file://%f&line=%l&column=%c',
+                'atom': 'atom://core/open/file?filename=%f&line=%l&column=%c',
+                'atom-beta': 'atom-beta://core/open/file?filename=%f&line=%l&column=%c',
+                'brackets': 'brackets://open?url=file://%f&line=%l',
+
+                // JetBrains family
+                'webstorm': 'webstorm://open?file=%f&line=%l',
+                'intellij': 'idea://open?file=%f&line=%l',
+                'idea': 'idea://open?file=%f&line=%l',
+                'phpstorm': 'phpstorm://open?file=%f&line=%l',
+                'pycharm': 'pycharm://open?file=%f&line=%l',
+                'rubymine': 'rubymine://open?file=%f&line=%l',
+                'clion': 'clion://open?file=%f&line=%l',
+                'rider': 'rider://open?file=%f&line=%l',
+                'appcode': 'appcode://open?file=%f&line=%l',
+                'android-studio': 'idea://open?file=%f&line=%l',
+
+                // Others
+                'visualstudio': 'visualstudio://open?file=%f&line=%l',
+                'notepad++': 'notepad-plus-plus://open?file=%f&line=%l',
+                'textmate': 'txmt://open?url=file://%f&line=%l',
+                'macvim': 'mvim://open?url=file://%f&line=%l',
+                'emacs': 'emacs://open?url=file://%f&line=%l',
+                'emacsforosx': 'emacs://open?url=file://%f&line=%l',
+                'vim': 'vim://open?url=file://%f&line=%l',
+                'neovim': 'nvim://open?url=file://%f&line=%l',
+                'xcode': 'xcode://open?file=%f&line=%l',
+                'zed': 'zed://open?file=%f&line=%l&column=%c'
+              };
+
+              function __getSelectedEditor__() {
+                var selectedEditor = null;
+                try {
+                  var saved = localStorage.getItem('flame:editor');
+                  if (saved) selectedEditor = saved;
+                  var sel = document.getElementById('editor-selector');
+                  if (sel && sel.value) {
+                    selectedEditor = sel.value;
+                  }
+                } catch (_) {}
+                return (selectedEditor || 'vscode').toLowerCase();
+              }
+
+              function __buildEditorUrl__(tpl, file, line, column) {
+                var url = String(tpl).replace('%f', String(file)).replace('%l', String(line || 1));
+                if (url.indexOf('%c') !== -1) {
+                  url = url.replace('%c', String(column || 1));
+                }
+                return url;
+              }
+
+              function __openEditorScheme__(file, line, column) {
+                if (!file) return;
+                var editor = __getSelectedEditor__();
+                var tpl = __EDITOR_SCHEMES__[editor] || __EDITOR_SCHEMES__['vscode'];
+                var url = __buildEditorUrl__(tpl, file, line, column);
+                try { window.location.href = url; } catch(_) {}
+              }
+
+              // Persist editor choice when user changes selector
+              document.addEventListener('change', function(e){
+                try {
+                  var target = e.target;
+                  if (target && target.id === 'editor-selector' && target.value) {
+                    localStorage.setItem('flame:editor', target.value);
+                  }
+                } catch(_) {}
+              });
+
+              // Server-side open-in-editor
               document.addEventListener('click', function(e){
                 var btn = (e.target && e.target.closest) ? e.target.closest('[data-open-in-editor]') : null;
                 if (!btn) return;
@@ -232,6 +318,17 @@ const stackTraceViewer = async (
                 var body = { file: file, line: line, column: column };
                 if (selectedEditor) body.editor = selectedEditor;
                 try { fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); } catch (_) {}
+              });
+
+              // Client-side fallback: open via editor URL scheme
+              document.addEventListener('click', function(e){
+                var btn = (e.target && e.target.closest) ? e.target.closest('[data-editor-link]') : null;
+                if (!btn) return;
+                e.preventDefault();
+                var file = btn.getAttribute('data-path');
+                var line = parseInt(btn.getAttribute('data-line') || '1', 10) || 1;
+                var column = parseInt(btn.getAttribute('data-column') || '1', 10) || 1;
+                __openEditorScheme__(file, line, column);
               });
             }
           } catch (_) {}

@@ -97,7 +97,7 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}) 
                 }
             }
 
-            const mw = launchEditorMiddleware();
+            const mw = launchEditorMiddleware(payload.editor, projectRoot);
             const q = new URLSearchParams({ file: absPath, line: String(payload.line ?? 1), column: String(payload.column ?? 1) });
 
             if (payload.editor) {

@@ -23,12 +23,12 @@ const prelineInit = `
     if (typeof HSStaticMethods !== 'undefined' && HSStaticMethods.autoInit) {
       // Only initialize components we actually use:
       // - tooltip: for copy buttons and shortcuts popover
-      // - clipboard: for copy functionality  
+      // - clipboard: for copy functionality
       // - theme-appearance: for dark/light mode switching
       // - tabs: for header navigation tabs
-      HSStaticMethods.autoInit(['tooltip', 'clipboard', 'theme-appearance', 'tabs', 'dropdown']);
+      HSStaticMethods.autoInit(['tooltip', 'clipboard', 'theme-appearance', 'tabs', 'dropdown', 'select']);
     }
-    
+
     // Explicitly initialize clipboard if available
     if (typeof HSClipboard !== 'undefined' && HSClipboard.init) {
       HSClipboard.init();

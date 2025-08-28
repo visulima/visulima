@@ -13,11 +13,13 @@ const copyButton = ({ targetId, label = "Copy", successText = "Copied!" }: { tar
     const safeSuccessTextAttr = sanitizeAttr(successText);
     const safeSuccessTextHtml = sanitizeHtml(successText);
 
+    const tooltipId = sanitizeAttr(`tooltip-copy-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`);
+
     return `
     <button
       type="button"
       aria-label="${safeLabelAttr}"
-      title="${safeLabelAttr}"
+      aria-describedby="${tooltipId}"
       class="${cn(
           "[--is-toggle-tooltip:false] hs-tooltip relative inline-flex justify-center items-center size-8 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-surface)] text-[var(--flame-text)] hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] disabled:opacity-50 disabled:pointer-events-none",
       )}"
@@ -52,7 +54,7 @@ const copyButton = ({ targetId, label = "Copy", successText = "Copied!" }: { tar
 
       <span class="sr-only">${safeLabelHtml}</span>
 
-      <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">
+      <span id="${tooltipId}" class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">
         <span class="js-clipboard-success-text">${safeSuccessTextHtml}</span>
       </span>
     </button>

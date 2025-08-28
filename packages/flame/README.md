@@ -79,8 +79,8 @@ Accessibility and keyboard UX
 
 Editor integration
 
-- Editor selector is only rendered when `openInEditorUrl` is provided
-- Selected editor persists and is sent to the server opener
+- Editor selector is always visible; selection persists (localStorage)
+- Uses server endpoint when configured; otherwise opens via editor URL scheme (defaults to VS Code)
 
 ## Quick start (HTTP server)
 
@@ -308,7 +308,7 @@ createServer(async (req, res) => {
 - **error**: Error
 - **solutionFinders**: SolutionFinder[] (optional)
 - **options**:
-    - `openInEditorUrl?: string` — when provided, the UI shows “Open in editor” and the editor selector in the header; calls this endpoint (POST JSON: `{ file, line, column, editor? }`).
+    - `openInEditorUrl?: string` — when provided, “Open in editor” posts to this endpoint (JSON: `{ file, line, column, editor? }`). When omitted, flame uses a client-side editor URL scheme fallback to open files (defaults to VS Code).
     - `context?: Record<string, unknown> & { request?: RequestContext }` — optional context information for the Request panel and debugging. You can add any custom context data as key-value pairs.
         - `request?: { method, url, status?, route?, timings?, headers?, body?, cookies?, session? }` — HTTP request information (special key)
         - Any other keys will be automatically rendered as sections in the Context tab (e.g., `app`, `user`, `git`, `versions`, `database`, `cache`, etc.)
@@ -374,7 +374,7 @@ const handler = await httpDisplayer(err, [], {
 });
 ```
 
-    - `editor?: Editor` — initial editor to show as selected in the header selector (saved and sent in requests). Only visible if `openInEditorUrl` is set.
+    - `editor?: Editor` — initial editor selection (persisted). Affects both server opener and client-side fallback.
         - `theme?: 'dark' | 'light'` — initial theme; users can toggle.
 
 Returns an async request handler compatible with Node http (and usable inside Express routes).
@@ -496,9 +496,27 @@ Options:
 
 ### Editor selector
 
-- Visible only when `openInEditorUrl` is provided
+- Always visible
 - Persists user choice in `localStorage` (`flame:editor`)
-- Selected editor is sent in the POST body as `editor`
+- Used for both the server opener (sent as `editor` in the POST body) and the client-side fallback
+
+### Client-side fallback editor links
+
+- If `openInEditorUrl` is not set, clicking “Open in editor” uses editor URL schemes on the client. The default editor is VS Code. The selected editor in the header is respected.
+- Supported templates (placeholders: `%f` = absolute file path, `%l` = line):
+  - textmate: `txmt://open?url=file://%f&line=%l`
+  - macvim: `mvim://open?url=file://%f&line=%l`
+  - emacs: `emacs://open?url=file://%f&line=%l`
+  - sublime: `subl://open?url=file://%f&line=%l`
+  - phpstorm: `phpstorm://open?file=%f&line=%l`
+  - atom: `atom://core/open/file?filename=%f&line=%l`
+  - vscode: `vscode://file/%f:%l`
+  - vscodium: `vscodium://file/%f:%l`
+  - webstorm: `webstorm://open?file=%f&line=%l`
+  - intellij: `idea://open?file=%f&line=%l`
+  - xcode: `xcode://open?file=%f&line=%l`
+  - vim: `vim://open?url=file://%f&line=%l`
+  - neovim: `nvim://open?url=file://%f&line=%l`
 
 ### Keyboard shortcuts
 

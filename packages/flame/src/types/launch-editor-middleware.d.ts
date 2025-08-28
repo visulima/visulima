@@ -3,7 +3,11 @@ declare module "launch-editor-middleware" {
 
     type NextFunction = (err?: any) => void;
 
-    const create: () => (req: IncomingMessage, res: ServerResponse, next: NextFunction) => void;
+    const create: (
+        specifiedEditor?: string,
+        srcRoot?: string,
+        onErrorCallback?: (err: Error) => void,
+    ) => (req: IncomingMessage, res: ServerResponse, next: NextFunction) => void;
 
     export default create;
 }

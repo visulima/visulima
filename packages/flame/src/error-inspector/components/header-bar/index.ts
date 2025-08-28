@@ -4,7 +4,7 @@ import themeToggle from "./theme-toggle";
 import shortcutsButton from "../shortcuts-button";
 
 const headerBar = (
-    options: Partial<{ editor: Editor; openInEditorUrl?: string; theme: Theme }>,
+    options: Partial<{ editor: Editor; theme: Theme }>,
     hasContextTab = false,
 ): {
     html: string;
@@ -23,11 +23,28 @@ const headerBar = (
             : ""
     }
     <div class="grow"></div>
-    ${options.openInEditorUrl ? editorSelector(options.editor) : ""}
+    ${editorSelector(options.editor)}
     ${shortcutsButton()}
     ${toggle.html}
 </div>`,
-        script: `${toggle.script}`,
+        script: `${toggle.script}
+// Initialize editor selector from localStorage if available
+(function(){
+  (window.subscribeToDOMContentLoaded || function (fn) {
+    if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn);
+  })(function(){
+    try {
+      var saved = null;
+      try { saved = localStorage.getItem('flame:editor'); } catch(_) {}
+      var sel = document.getElementById('editor-selector');
+      if (sel && saved && sel.value !== saved) {
+        try { sel.value = saved; } catch(_) {}
+        try { sel.dispatchEvent(new Event('change', { bubbles: true })); } catch(_) {}
+      }
+    } catch(_) {}
+  });
+})();
+`,
     };
 };
 

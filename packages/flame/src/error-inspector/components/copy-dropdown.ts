@@ -27,11 +27,10 @@ const copyDropdown = ({
     const safeLabelHtml = sanitizeHtml(label);
 
     return `
-<div class="hs-dropdown relative inline-block">
+<div class="hs-dropdown relative inline-block hs-tooltip [--is-toggle-tooltip:false]">
   <button
     type="button"
     aria-label="${safeLabelAttr}"
-    title="${safeLabelAttr}"
     class="inline-flex justify-center items-center gap-2 px-1 h-8 rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-surface)] text-[var(--flame-text)] hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] disabled:opacity-50 disabled:pointer-events-none hs-dropdown-toggle"
     data-copy-toggle
   >
@@ -43,8 +42,9 @@ const copyDropdown = ({
         chevronDownIcon,
     )}')"></span>
   </button>
+  <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip" aria-hidden="true">${safeLabelHtml}</span>
 
-  <div class="hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 hs-dropdown-open:visible opacity-0 hidden z-20 mt-1 min-w-52 p-1 bg-[var(--flame-surface)] border border-[var(--flame-border)] text-sm text-[var(--flame-text)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-2)]" role="menu">
+  <div class="hs-dropdown-menu [--auto-close:inside] transition-[opacity,margin] duration hs-dropdown-open:opacity-100 hs-dropdown-open:visible opacity-0 hidden z-20 mt-1 min-w-52 p-1 bg-[var(--flame-surface)] border border-[var(--flame-border)] text-sm text-[var(--flame-text)] rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-2)]" role="menu">
     <button
       type="button"
       role="menuitem"

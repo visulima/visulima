@@ -12,17 +12,24 @@ const themeToggle = (
 } => {
     return {
         html: `
-<div id="hs-theme-switch">
-  <button type="button" class="hs-dark-mode-active:hidden block hs-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-hs-theme-click-value="dark">
-    <span class="group inline-flex shrink-0 justify-center items-center size-8">
-      <span class="dui w-5 h-5" style="-webkit-mask-image: url('${svgToDataUrl(moonStarIcon)}'); mask-image: url('${svgToDataUrl(moonStarIcon)}')"></span>
-    </span>
-  </button>
-  <button type="button" class="hs-dark-mode-active:block hidden hs-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-hs-theme-click-value="light">
-    <span class="group inline-flex shrink-0 justify-center items-center size-8">
-      <span class="dui w-5 h-5" style="-webkit-mask-image: url('${svgToDataUrl(sunIcon)}'); mask-image: url('${svgToDataUrl(sunIcon)}')"></span>
-    </span>
-  </button>
+<div id="hs-theme-switch" class="flex items-center gap-1">
+  <div class="hs-tooltip inline-block">
+    <button type="button" aria-label="Switch to dark mode" aria-describedby="theme-tooltip-dark" class="hs-tooltip-toggle hs-dark-mode-active:hidden block hs-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-hs-theme-click-value="dark">
+      <span class="group inline-flex shrink-0 justify-center items-center size-8">
+        <span class="dui w-5 h-5" style="-webkit-mask-image: url('${svgToDataUrl(moonStarIcon)}'); mask-image: url('${svgToDataUrl(moonStarIcon)}')"></span>
+      </span>
+    </button>
+    <span id="theme-tooltip-dark" class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">Dark</span>
+  </div>
+
+  <div class="hs-tooltip inline-block">
+    <button type="button" aria-label="Switch to light mode" aria-describedby="theme-tooltip-light" class="hs-tooltip-toggle hs-dark-mode-active:block hidden hs-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-hs-theme-click-value="light">
+      <span class="group inline-flex shrink-0 justify-center items-center size-8">
+        <span class="dui w-5 h-5" style="-webkit-mask-image: url('${svgToDataUrl(sunIcon)}'); mask-image: url('${svgToDataUrl(sunIcon)}')"></span>
+      </span>
+    </button>
+    <span id="theme-tooltip-light" class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">Light</span>
+  </div>
 </div>`,
         script: `
 // Minimal theme initialization for Preline compatibility
