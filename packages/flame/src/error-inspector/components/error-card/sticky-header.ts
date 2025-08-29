@@ -22,11 +22,7 @@ const stickyHeader = async (
     const fileLine = trace?.line ?? 0;
     const fileSource = filePath ? await getFileSource(filePath) : "";
     const snippet = fileSource
-        ? codeFrame(
-              fileSource,
-              { start: { line: fileLine, column: trace?.column } },
-              { linesAbove: 9, linesBelow: 10, showGutter: true },
-          )
+        ? codeFrame(fileSource, { start: { line: fileLine, column: trace?.column } }, { linesAbove: 9, linesBelow: 10, showGutter: true })
         : "";
     const fixPrompt = aiPrompt({
         applicationType: undefined,

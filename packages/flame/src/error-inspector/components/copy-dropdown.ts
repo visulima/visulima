@@ -72,5 +72,3 @@ const copyDropdown = ({
 };
 
 export default copyDropdown;
-
-

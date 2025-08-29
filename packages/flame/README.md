@@ -188,7 +188,9 @@ import fetchHandler from "@visulima/flame/handler/http/hono";
 const app = new Hono();
 
 app.get("/", (c) => c.text("OK"));
-app.get("/error", () => { throw new Error("Boom from Hono"); });
+app.get("/error", () => {
+    throw new Error("Boom from Hono");
+});
 
 app.onError(async (err, c) => {
     const handler = await fetchHandler(err as Error, [], { showTrace: true });
@@ -503,20 +505,39 @@ Options:
 ### Client-side fallback editor links
 
 - If `openInEditorUrl` is not set, clicking “Open in editor” uses editor URL schemes on the client. The default editor is VS Code. The selected editor in the header is respected.
-- Supported templates (placeholders: `%f` = absolute file path, `%l` = line):
-  - textmate: `txmt://open?url=file://%f&line=%l`
-  - macvim: `mvim://open?url=file://%f&line=%l`
-  - emacs: `emacs://open?url=file://%f&line=%l`
-  - sublime: `subl://open?url=file://%f&line=%l`
-  - phpstorm: `phpstorm://open?file=%f&line=%l`
-  - atom: `atom://core/open/file?filename=%f&line=%l`
-  - vscode: `vscode://file/%f:%l`
-  - vscodium: `vscodium://file/%f:%l`
-  - webstorm: `webstorm://open?file=%f&line=%l`
-  - intellij: `idea://open?file=%f&line=%l`
-  - xcode: `xcode://open?file=%f&line=%l`
-  - vim: `vim://open?url=file://%f&line=%l`
-  - neovim: `nvim://open?url=file://%f&line=%l`
+- Supported editors and templates (placeholders: `%f` = file, `%l` = line, `%c` = column when supported):
+    - textmate: `txmt://open?url=file://%f&line=%l`
+    - macvim: `mvim://open?url=file://%f&line=%l`
+    - emacs: `emacs://open?url=file://%f&line=%l`
+    - sublime: `subl://open?url=file://%f&line=%l`
+    - phpstorm: `phpstorm://open?file=%f&line=%l`
+    - atom: `atom://core/open/file?filename=%f&line=%l`
+    - atom-beta: `atom-beta://core/open/file?filename=%f&line=%l`
+    - brackets: `brackets://open?url=file://%f&line=%l`
+    - clion: `clion://open?file=%f&line=%l`
+    - code (VS Code): `vscode://file/%f:%l:%c`
+    - code-insiders: `vscode-insiders://file/%f:%l:%c`
+    - codium (VSCodium): `vscodium://file/%f:%l:%c`
+    - cursor: `cursor://file/%f:%l:%c`
+    - emacs: `emacs://open?url=file://%f&line=%l`
+    - idea: `idea://open?file=%f&line=%l`
+    - intellij: `idea://open?file=%f&line=%l`
+    - macvim: `mvim://open?url=file://%f&line=%l`
+    - notepad++: `notepad-plus-plus://open?file=%f&line=%l`
+    - phpstorm: `phpstorm://open?file=%f&line=%l`
+    - pycharm: `pycharm://open?file=%f&line=%l`
+    - rider: `rider://open?file=%f&line=%l`
+    - rubymine: `rubymine://open?file=%f&line=%l`
+    - sublime: `subl://open?url=file://%f&line=%l`
+    - textmate: `txmt://open?url=file://%f&line=%l`
+    - vim: `vim://open?url=file://%f&line=%l`
+    - visualstudio: `visualstudio://open?file=%f&line=%l`
+    - vscode: `vscode://file/%f:%l:%c`
+    - vscodium: `vscodium://file/%f:%l:%c`
+    - webstorm: `webstorm://open?file=%f&line=%l`
+    - xcode: `xcode://open?file=%f&line=%l`
+    - zed: `zed://open?file=%f&line=%l&column=%c`
+    - android-studio: `idea://open?file=%f&line=%l`
 
 ### Keyboard shortcuts
 

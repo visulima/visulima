@@ -29,5 +29,3 @@ describe("flame httpHandler CSP nonce option", () => {
         expect(html).toContain(`<script nonce="${nonce}">`);
     });
 });
-
-

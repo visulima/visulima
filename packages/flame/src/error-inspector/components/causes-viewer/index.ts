@@ -37,9 +37,13 @@ const causes = async (causeList: unknown[], options: { openInEditorUrl?: string 
 </details>`);
             scripts.push(stackTraceScript);
         } else if (typeof cause === "string") {
-            content.push(`<div class="container rounded-lg mt-2 py-4 px-5 shadow-xl bg-[var(--flame-white-smoke)] text-[var(--flame-text)]">${sanitizeHtml(cause)}</div>`);
+            content.push(
+                `<div class="container rounded-lg mt-2 py-4 px-5 shadow-xl bg-[var(--flame-white-smoke)] text-[var(--flame-text)]">${sanitizeHtml(cause)}</div>`,
+            );
         } else {
-            content.push(`<div class="container rounded-lg mt-2 py-4 px-5 shadow-xl bg-[var(--flame-white-smoke)] text-[var(--flame-text)]">${sanitizeHtml(JSON.stringify(cause))}</div>`);
+            content.push(
+                `<div class="container rounded-lg mt-2 py-4 px-5 shadow-xl bg-[var(--flame-white-smoke)] text-[var(--flame-text)]">${sanitizeHtml(JSON.stringify(cause))}</div>`,
+            );
         }
     }
 

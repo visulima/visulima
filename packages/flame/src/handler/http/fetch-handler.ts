@@ -53,7 +53,7 @@ const fetchHandler = async (
     error: Error,
     solutionFinders: SolutionFinder[] = [],
     options: FetchHandlerOptions = {},
-): Promise<((request: Request) => Promise<Response>)> => {
+): Promise<(request: Request) => Promise<Response>> => {
     // eslint-disable-next-line no-param-reassign
     (error as Error & { expose: boolean }).expose = options.showTrace ?? true;
 
@@ -81,7 +81,10 @@ const fetchHandler = async (
 
             let html: string;
             if (shouldRenderTemplate) {
-                html = (await template(error, solutionFinders, options)).replace("<title>Error</title>", `<title>${getReasonPhrase(statusCode) || "Error"}</title>`);
+                html = (await template(error, solutionFinders, options)).replace(
+                    "<title>Error</title>",
+                    `<title>${getReasonPhrase(statusCode) || "Error"}</title>`,
+                );
             } else {
                 html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>${getReasonPhrase(statusCode) || "Error"}</title></head><body><h1>${statusCode}</h1><pre>${message}</pre></body></html>`;
             }
@@ -132,5 +135,3 @@ const fetchHandler = async (
 };
 
 export default fetchHandler;
-
-

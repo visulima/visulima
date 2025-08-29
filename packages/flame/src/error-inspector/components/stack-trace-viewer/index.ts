@@ -90,15 +90,17 @@ const stackTraceViewer = async (
             index === 0 && isClickable ? "block" : "hidden"
         }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}" tabindex="0">
 <div class="pt-6 px-6 text-sm text-right text-[var(--flame-text)]">
-    ${options.openInEditorUrl
-                ? `<button type=\"button\" class=\"underline hover:text-[var(--flame-link)]\" data-open-in-editor data-url=\"${sanitizeUrlAttr(options.openInEditorUrl)}\" data-path=\"${sanitizeAttr(
-                      absPathForEditor,
-                  )}\" data-line=\"${sanitizeAttr(trace.line || 1)}\" data-column=\"${sanitizeAttr(trace.column || 1)}\">${safeRelativePath} — Open in editor</button>`
-                : isClickable
-                  ? `<button type=\"button\" class=\"underline hover:text-[var(--flame-link)]\" data-editor-link data-path=\"${sanitizeAttr(absPathForEditor)}\" data-line=\"${sanitizeAttr(
-                        trace.line || 1,
-                    )}\" data-column=\"${sanitizeAttr(trace.column || 1)}\">${safeRelativePath} — Open in editor</button>`
-                  : safeRelativePath}
+    ${
+        options.openInEditorUrl
+            ? `<button type=\"button\" class=\"underline hover:text-[var(--flame-link)]\" data-open-in-editor data-url=\"${sanitizeUrlAttr(options.openInEditorUrl)}\" data-path=\"${sanitizeAttr(
+                  absPathForEditor,
+              )}\" data-line=\"${sanitizeAttr(trace.line || 1)}\" data-column=\"${sanitizeAttr(trace.column || 1)}\">${safeRelativePath} — Open in editor</button>`
+            : isClickable
+              ? `<button type=\"button\" class=\"underline hover:text-[var(--flame-link)]\" data-editor-link data-path=\"${sanitizeAttr(absPathForEditor)}\" data-line=\"${sanitizeAttr(
+                    trace.line || 1,
+                )}\" data-column=\"${sanitizeAttr(trace.column || 1)}\">${safeRelativePath} — Open in editor</button>`
+              : safeRelativePath
+    }
 </div>
 <div class="p-6">${safeCode}</div>
 </div>`);
@@ -134,10 +136,14 @@ const stackTraceViewer = async (
                 const checkboxId = `small-switch-${uniqueKey}-${groupIndex}`;
                 const detailsId = `stack-trace-group-${uniqueKey}-${groupIndex}`;
 
-                return `<div class="flex items-center">
-                            <input type="checkbox" id="${checkboxId}" data-group-toggle="${uniqueKey}" data-target-id="${detailsId}" class="relative w-[35px] h-[21px] border text-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:ring-blue-600 disabled:opacity-50 disabled:pointer-events-none checked:bg-none checked:text-blue-600 checked:border-blue-600 focus:checked:border-blue-600 before:inline-block before:w-4 before:h-4 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:rounded-full before:shadow-sm before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 bg-[var(--flame-chip-bg)] border-[var(--flame-neutral-bg)]">
-                            <label for="${checkboxId}" class="text-sm ms-3 text-[var(--flame-text)]">${label}</label>
-                        </div>`;
+                return `<div class="flex items-center gap-2">
+  <label for="${checkboxId}" class="relative inline-flex h-5 w-9 cursor-pointer items-center">
+    <input type="checkbox" id="${checkboxId}" data-group-toggle="${uniqueKey}" data-target-id="${detailsId}" class="peer sr-only">
+    <span class="absolute inset-0 rounded-full bg-[var(--flame-chip-bg)] transition-colors peer-checked:bg-[var(--flame-red-orange)]"></span>
+    <span class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></span>
+  </label>
+  <span class="text-sm text-[var(--flame-text)]">${label}</span>
+</div>`;
             }
 
             return "";

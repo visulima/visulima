@@ -8,12 +8,7 @@ export const sanitizeAttr = (value: unknown): string => {
     const sanitized = DOMPurify.sanitize(String(value ?? ""));
 
     // Escape for attribute context
-    return sanitized
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
+    return sanitized.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 };
 
 export const sanitizeUrlAttr = (value: unknown): string => {
@@ -21,15 +16,10 @@ export const sanitizeUrlAttr = (value: unknown): string => {
     const sanitized = DOMPurify.sanitize(raw);
     const lower = sanitized.toLowerCase();
 
-    const isAllowed =
-        lower.startsWith("http://") ||
-        lower.startsWith("https://") ||
-        lower.startsWith("/") ||
-        lower.startsWith("./") ||
-        lower.startsWith("../");
+    const isAllowed = lower.startsWith("http://") || lower.startsWith("https://") || lower.startsWith("/") || lower.startsWith("./") || lower.startsWith("../");
 
     const safe = isAllowed ? sanitized : "#";
-    
+
     return sanitizeAttr(safe);
 };
 
@@ -44,5 +34,3 @@ export default {
     sanitizeUrlAttr,
     sanitizeCodeHtml,
 };
-
-
