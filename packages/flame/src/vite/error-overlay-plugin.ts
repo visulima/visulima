@@ -4,7 +4,7 @@ import type { SourceMap } from "@jridgewell/trace-mapping";
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import { codeFrame } from "@visulima/error";
 import type { ErrorPayload, IndexHtmlTransformResult, Plugin, WebSocketClient } from "vite";
-import renderTemplate from "../error-inspector";
+// Removed: renderTemplate import – server no longer renders full inspector HTML/CSS
 
 import { patchOverlay } from "./overlay/patch-overlay";
 
@@ -33,7 +33,7 @@ const rewriteStacktrace = (stack: string, moduleGraph: import("vite").ModuleGrap
         .split("\n")
         .map((line) =>
             line.replace(
-                /^ {4}at (?:(\S+) )?\(?(?:https|http):\/\/[^/]+(\/[^^\s?]+).*:(\d+):(\d+)\)?$/,
+                /^ {4}at (?:(\S+) )?\(?(?:https|http):\/\/[^/]+(\/[^ ^\s?]+).*:(\d+):(\d+)\)?$/,
                 (input, variableName: string, url: string, lineString: string, columnString: string) => {
                     if (!url) {
                         return input;
@@ -110,27 +110,8 @@ const errorOverlayPlugin = (): Plugin => {
                 const combinedStack = raw.ownerStack ? `Owner Stack:\n${String(raw.ownerStack)}\n\n${stack}` : stack;
                 const source = loc?.file ? readFileSync(loc.file, { encoding: "utf8", flag: "r" }) : undefined;
 
-                // Build a synthetic Error instance for template rendering with sourcemapped stack
-                const errorForTemplate = new Error(String(runtimeError.message || "Runtime error"));
-                try {
-                    (errorForTemplate as any).name = String(runtimeError.name || "Error");
-                } catch {}
-                try {
-                    (errorForTemplate as any).stack = combinedStack;
-                } catch {}
-
-                // Render template (full HTML), then extract inline CSS and body content for embedding into overlay
-                let flameHtml: string | undefined;
-                let flameCss: string | undefined;
-                try {
-                    const fullHtml = await renderTemplate(errorForTemplate as any, []);
-                    const cssMatch = /<style>([\s\S]*?)<\/style>/i.exec(fullHtml);
-                    const bodyMatch = /<body[^>]*>([\s\S]*?)<\/body>/i.exec(fullHtml);
-                    flameCss = cssMatch ? cssMatch[1] : undefined;
-                    flameHtml = bodyMatch ? bodyMatch[1] : undefined;
-                } catch {}
-
-                const error: ErrorPayload["err"] = {
+                // Build a synthetic Error instance (no template rendering on the server)
+                const errorForOverlay: ErrorPayload["err"] = {
                     frame:
                         loc && source
                             ? codeFrame(source, { start: { column: loc.column - 1, line: loc.line } }, { linesAbove: 2, linesBelow: 2, showGutter: false })
@@ -140,25 +121,19 @@ const errorOverlayPlugin = (): Plugin => {
                     message: String(runtimeError.message || "Runtime error"),
                     name: String(runtimeError.name || "Error"),
                     plugin: "@visulima/flame",
-                    /* custom extension for our overlay */
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    flameHtml,
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    flameCss,
+                    // No flameHtml/flameCss here; client overlay will render a fallback view
                     stack: combinedStack,
-                };
+                } as any;
 
-                const message = buildErrorMessage(error, [`Client error: ${error.message}`]);
+                const message = buildErrorMessage(errorForOverlay, [`Client error: ${errorForOverlay.message}`]);
 
                 server.config.logger.error(message, {
                     clear: true,
-                    error: error as any,
+                    error: errorForOverlay as any,
                     timestamp: true,
                 });
 
-                client.send({ err: error, type: "error" });
+                client.send({ err: errorForOverlay, type: "error" });
             });
         },
         enforce: "pre",

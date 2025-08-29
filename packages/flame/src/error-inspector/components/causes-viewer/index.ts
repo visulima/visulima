@@ -53,7 +53,13 @@ const causes = async (causeList: unknown[], options: { openInEditorUrl?: string 
     });
 
     return {
-        html: `<section class="w-full">
+        html: `<style>
+  /* Toggle plus/minus icons inside <details> */
+  details summary .flame-expand-icon-open { display: none !important; }
+  details[open] summary .flame-expand-icon-open { display: inline-block !important; }
+  details[open] summary .flame-expand-icon-closed { display: none !important; }
+</style>
+<section class="w-full">
     <div>
         <h3 class="text-xl font-bold inline-flex justify-center items-center text-[var(--flame-text)]">Error causes</h3>
         ${tooltipHtml}

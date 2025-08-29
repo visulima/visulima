@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import viteErrorOverlay from "@visulima/flame/vite";
+import viteErrorOverlay from "../../dist/vite/error-overlay-plugin.mjs";
 
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { resolve } from "node:path";
