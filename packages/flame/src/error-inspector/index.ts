@@ -1,5 +1,4 @@
 import type { VisulimaError } from "@visulima/error/error";
-import DOMPurify from "isomorphic-dompurify";
 
 import type { SolutionError, SolutionFinder } from "../types";
 import headerBar from "./components/header-bar";
@@ -12,6 +11,7 @@ import preline from "../../node_modules/preline/dist/preline.js?raw";
 import clipboard from "../../node_modules/clipboard/dist/clipboard.min.js?raw";
 import prelineClipboard from "../../node_modules/preline/dist/helper-clipboard.js?raw";
 import type { TemplateOptions } from "./types";
+import { sanitizeHtml } from "./util/sanitize";
 
 // Preline initialization script - only initialize components we actually use
 const prelineInit = `
@@ -55,8 +55,8 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
     tabsList.push({ id: stackId, name: stackName, selected: !anyCustomSelected });
 
     for (const page of customPages) {
-        const safeId = DOMPurify.sanitize(page.id);
-        const safeName = DOMPurify.sanitize(String(page.name));
+        const safeId = sanitizeHtml(page.id);
+        const safeName = sanitizeHtml(String(page.name));
 
         tabsList.push({ id: safeId, name: safeName, selected: Boolean(page.defaultSelected) });
     }
@@ -71,9 +71,10 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
     html += `<div id="flame-section-stack" class="${anyCustomSelected ? "hidden relative" : "relative"}" role="tabpanel" aria-labelledby="flame-tab-stack">${stackHtml}</div>`;
 
     for (const page of customPages) {
+        const safeId = sanitizeHtml(page.id);
         const hidden = page.defaultSelected ? "" : " hidden";
 
-        html += `<div id="flame-section-${page.id}" class="${hidden} relative" role="tabpanel" aria-labelledby="flame-tab-${page.id}">${page.code.html}</div>`;
+        html += `<div id="flame-section-${safeId}" class="${hidden} relative" role="tabpanel" aria-labelledby="flame-tab-${safeId}">${page.code.html}</div>`;
     }
 
     return layout({
