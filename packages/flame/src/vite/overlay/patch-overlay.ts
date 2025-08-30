@@ -27,7 +27,7 @@ export const patchOverlay = (code: string): string => {
         patched = patched.replace(/export\s*\{([^}]*)\}/g, (match, inner) => {
             if (!/\bErrorOverlay\b/.test(inner)) return match;
             
-            const replaced = inner.replace(/\bErrorOverlay,/g, '');
+            const replaced = inner.replace(/\bErrorOverlay,?/g, '').replace(/,,/g, ',').replace(/^\s*,\s*|\s*,\s*$/g, '');
             
             return `export { ${replaced} }`;
         });

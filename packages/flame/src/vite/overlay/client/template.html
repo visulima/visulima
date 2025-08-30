@@ -1,23 +1,25 @@
-<div id="__flame__backdrop"></div>
-<div id="__flame__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay">
-  <div id="__flame__header">
-    <div id="__flame__title">
-      <span id="__flame__badge">Flame</span>
-      <span id="__flame__heading">Runtime Error</span>
-      <span id="__flame__count" class="count"></span>
+<div id="__flame__root" class="dark">
+  <div id="__flame__backdrop" class="fixed inset-0 bg-black/60"></div>
+  <div id="__flame__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="fixed inset-5 flex flex-col rounded-xl overflow-hidden bg-[var(--flame-surface)] text-[var(--flame-text)] shadow-[var(--flame-elevation-2)] border border-[var(--flame-border)]">
+    <div id="__flame__header" class="flex items-center justify-between px-4 py-3 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
+      <div id="__flame__title" class="flex items-center gap-2 font-bold text-[var(--flame-text)]">
+        <span id="__flame__badge" class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-[color-mix(in_srgb,var(--flame-red-orange)_16%,transparent)] text-[var(--flame-red-orange)] text-xs font-bold"><span class="w-1.5 h-1.5 rounded-full bg-[var(--flame-red-orange)]"></span> Flame</span>
+        <span id="__flame__heading" class="leading-none">Runtime Error</span>
+        <span id="__flame__count" class="count inline-flex items-center justify-center min-w-6 h-5 px-1.5 rounded-full bg-[var(--flame-chip-bg)] text-[var(--flame-chip-text)] text-xs"></span>
+      </div>
+      <div class="space-x-1">
+        <button id="__flame__minimize" title="Minimize" class="__flame__btn rounded-md px-2 py-1 hover:bg-[var(--flame-hover-overlay)]">_</button>
+        <button id="__flame__close" title="Close" class="__flame__btn rounded-md px-2 py-1 hover:bg-[var(--flame-hover-overlay)]">✕</button>
+      </div>
     </div>
-    <div>
-      <button id="__flame__minimize" title="Minimize" class="__flame__btn">_</button>
-      <button id="__flame__close" title="Close" class="__flame__btn">✕</button>
+    <div id="__flame__body" class="flex min-h-0">
+      <aside id="__flame__list" aria-label="Errors" class="w-80 max-w-[42vw] overflow-auto border-r border-[var(--flame-border)] bg-[var(--flame-surface)]">
+        <div class="section px-4 py-2 uppercase tracking-wide text-xs text-[var(--flame-text-muted)]">Recent</div>
+      </aside>
+      <main id="__flame__content" class="flex-1 overflow-auto bg-[var(--flame-surface)]">
+        <div id="visulima-flame-overlay"></div>
+      </main>
     </div>
-  </div>
-  <div id="__flame__body">
-    <aside id="__flame__list" aria-label="Errors">
-      <div class="section">Recent</div>
-    </aside>
-    <main id="__flame__content">
-      <div id="visulima-flame-overlay"></div>
-    </main>
   </div>
 </div>
 
