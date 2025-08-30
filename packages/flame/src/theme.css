@@ -1,0 +1,67 @@
+/* Flame Theme Color Variables - Available for use in Tailwind classes */
+:root {
+    --flame-white-smoke: #f5f5f5;
+    --flame-red-orange: #ff4628;
+    --flame-charcoal-black: #202020;
+
+    /* Semantic tokens for a cleaner, modern UI */
+    --flame-bg: var(--flame-white-smoke);
+    --flame-surface: #ffffff;
+    --flame-surface-muted: #fafafa;
+    --flame-border: rgba(185, 200, 215, 0.5);
+    --flame-hover-overlay: rgba(32, 32, 32, 0.05);
+
+    --flame-success: #2ea043;
+    --flame-success-bg: rgba(46, 160, 67, 0.6);
+    /* Neutral/chip tokens */
+    --flame-neutral: #6e7681;
+    --flame-neutral-bg: rgba(110, 118, 129, 0.18);
+    --flame-chip-bg: rgba(110, 118, 129, 0.14);
+    --flame-chip-text: var(--flame-text);
+
+    --flame-radius-md: 0.5rem;
+    --flame-radius-lg: 0.75rem;
+    --flame-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02);
+    --flame-elevation-2: 0 10px 25px -5px rgba(32, 32, 32, 0.1), 0 8px 10px -6px rgba(32, 32, 32, 0.1);
+
+    /* Accessible text/link tokens */
+    --flame-text: #111827; /* gray-900 */
+    --flame-text-muted: #374151; /* gray-700 */
+    --flame-link: #c4311d; /* slightly darker red-orange for contrast */
+    --flame-muted-on-surface: #374151; /* alias for convenience */
+    --flame-on-accent: #ffffff; /* text on red-orange */
+}
+
+/* Dark mode semantic mapping */
+.dark {
+    --flame-bg: #161b22;
+    --flame-surface: #0d1117;
+    --flame-surface-muted: #0f141b;
+    --flame-border: rgba(48, 54, 61, 0.6);
+    --flame-text: #c9d1d9; /* github dark fg */
+    --flame-text-muted: #8b949e; /* github dark muted fg */
+    --flame-link: #ff6a52; /* keep flame accent */
+    --flame-muted-on-surface: #8b949e;
+    --flame-hover-overlay: rgba(240, 246, 252, 0.06);
+    --flame-on-accent: #ffffff;
+
+    --flame-success: #2ea043;
+    --flame-success-bg: rgba(46, 160, 67, 0.2);
+    /* Neutral/chip tokens for dark */
+    --flame-neutral: #6e7681;
+    --flame-neutral-bg: rgba(110, 118, 129, 0.25);
+    --flame-chip-bg: rgba(110, 118, 129, 0.2);
+    --flame-chip-text: var(--flame-text);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

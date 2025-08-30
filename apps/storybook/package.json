@@ -70,7 +70,8 @@
         "tailwindcss-animate": "^1.0.7",
         "typescript": "5.8.3",
         "vite": "^6.3.5",
-        "vite-tsconfig-paths": "^5.1.4"
+        "vite-tsconfig-paths": "^5.1.4",
+        "@visulima/flame": "workspace:*"
     },
     "anolilab": {
         "eslint-config": {

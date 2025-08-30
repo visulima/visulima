@@ -1,0 +1,7 @@
+@import "tailwindcss" source("../../../");
+@import "preline/variants.css";
+@source "../../../src/vite/overlay/client/**/*";
+/* Plugins */
+@plugin '@tailwindcss/typography';
+@plugin '@tailwindcss/forms';
+@import "../../../theme.css"
