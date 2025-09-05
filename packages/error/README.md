@@ -39,6 +39,21 @@ yarn add @visulima/error
 pnpm add @visulima/error
 ```
 
+### Optional: AI integration
+
+If you want to generate AI-powered solution hints, install these optional peer dependencies in your app:
+
+```sh
+# pnpm
+pnpm add ai @visulima/find-cache-dir
+
+# npm
+npm i ai @visulima/find-cache-dir
+
+# yarn
+yarn add ai @visulima/find-cache-dir
+```
+
 ## Usage
 
 ### Extend the VisulimaError
@@ -226,6 +241,109 @@ console.log(stack);
 //     },
 //     ...and so on
 // ];
+```
+
+### Format stacktrace to a string
+
+Turn parsed frames into a printable stack string (Node-style), optionally with a header line.
+
+```ts
+import { parseStacktrace, stringifyStackFrames, formatStackFrameLine } from "@visulima/error";
+
+const error = new Error("Boom");
+
+const frames = parseStacktrace(error);
+
+// Full stack as a single string with a header ("Error: Boom")
+const stackText = stringifyStackFrames(frames, {
+    header: { name: error.name, message: error.message },
+});
+console.log(stackText);
+
+// Format a single frame line (e.g., for custom rendering)
+const firstLine = formatStackFrameLine(frames[0]);
+```
+
+#### API
+
+- `stringifyStackFrames(frames, options?)`
+  - `frames`: `Trace[]` — parsed frames from `parseStacktrace`
+  - `options.header`: `{ name?: string; message?: string }` — optional first-line header
+- `formatStackFrameLine(frame)`
+  - `frame`: `Trace`
+  - returns a single formatted line like `"    at myMethod (/path/file.ts:10:5)"`
+
+## Solutions (finders)
+
+Generate helpful hints to fix an error. Two finders ship out of the box:
+
+- Rule-based finder: provides best-effort fixes for common errors (ESM/CJS mix, missing default export, DNS issues, hydration mismatch, etc.)
+- Error-hint finder: reads `error.hint` you attach to an `Error` or `VisulimaError`
+
+Both return a `Solution` (`{ header?: string; body: string }`) or `undefined`.
+
+```ts
+import { codeFrame } from "@visulima/error";
+import { ruleBasedFinder, errorHintFinder } from "@visulima/error";
+
+const error = new Error("Cannot read properties of undefined (reading 'x')");
+
+const source = "const o = undefined\nconsole.log(o.x)\n";
+const snippet = codeFrame(source, { start: { line: 2, column: 13 } });
+
+const fileCtx = {
+    file: "/path/to/file.ts",
+    line: 2,
+    language: "ts",
+    snippet,
+};
+
+// 1) Rule-based finder
+const ruleHint = await ruleBasedFinder.handle(error, fileCtx);
+if (ruleHint) {
+    console.log(ruleHint.header);
+    console.log(ruleHint.body);
+}
+
+// 2) Error-hint finder (reads error.hint)
+const custom = new Error("failed") as Error & { hint?: unknown };
+custom.hint = ["Check the environment variables.", "Ensure the service is reachable."];
+const hintHint = await errorHintFinder.handle(custom, { file: "", line: 0 });
+```
+
+### AI solution helper (optional)
+
+You can build an AI prompt with rich context and render the LLM result into a nice HTML snippet.
+
+```ts
+import { aiPrompt, aiSolutionResponse } from "@visulima/error/solution/ai";
+// or
+// import aiPrompt from "@visulima/error/solution/ai/prompt";
+
+const prompt = aiPrompt({
+    applicationType: undefined,
+    error,
+    file: fileCtx,
+});
+
+// Send `prompt` to your LLM of choice.
+// When you receive the model's text output, format it for display:
+const html = aiSolutionResponse(modelText);
+```
+
+You may also use a convenience finder that calls an AI provider for you (requires optional peer deps `ai` and `@visulima/find-cache-dir`):
+
+```ts
+import { aiFinder } from "@visulima/error/solution/ai";
+import { createOpenAI } from "@ai-sdk/openai";
+
+const client = createOpenAI(apiKey ? { apiKey } : undefined);
+
+const findAI = aiFinder(client(modelId), {
+    temperature: 0,
+});
+
+const aiHint = await findAI.handle(error, fileCtx);
 ```
 
 ### API
