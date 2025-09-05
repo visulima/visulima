@@ -58,7 +58,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
-                  node-version: "18.x"
+                  node-version: "20.x"
                   cache-prefix: "semantic-release"
 
             - name: "Build Production"

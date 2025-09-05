@@ -83,6 +83,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
+                  node-version: "20.x"
                   cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
@@ -134,6 +135,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
+                  node-version: "20.x"
                   cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
@@ -185,6 +187,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
+                  node-version: "20.x"
                   cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
@@ -236,6 +239,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
+                  node-version: "20.x"
                   cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
@@ -328,10 +332,10 @@ jobs:
               with:
                   run_install: false
 
-            - name: "Use Node.js 18.x"
+            - name: "Use Node.js 20.x"
               uses: "actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b" # v4.0.3
               with:
-                  node-version: "18.x"
+                  node-version: "20.x"
                   cache: "pnpm"
 
             - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
