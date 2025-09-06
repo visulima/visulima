@@ -322,7 +322,7 @@
             "sha.js@<=2.4.11": ">=2.4.12",
             "tar-fs@>=3.0.0 <3.0.9": ">=3.0.9",
             "tmp@<=0.2.3": ">=0.2.4",
-            "vite@>=6.3.0 <=6.3.3": ">=6.3.4"
+            "vite@>=6.3.0 <=6.3.3": ">=6.3.5"
         },
         "ignoredBuiltDependencies": [
             "@anolilab/commitlint-config",
