@@ -88,7 +88,7 @@
         "@babel/core": "^7.27.1",
         "@rushstack/eslint-plugin-security": "^0.10.0",
         "@types/node": "18.19.71",
-        "@visulima/packem": "1.19.1",
+        "@visulima/packem": "1.19.5",
         "@vitest/coverage-v8": "^3.1.4",
         "@vitest/ui": "^3.1.4",
         "conventional-changelog-conventionalcommits": "9.0.0",
