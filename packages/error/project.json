@@ -4,5 +4,5 @@
     "sourceRoot": "packages/error/src",
     "projectType": "library",
     "tags": ["error", "type:package", "flame"],
-    "implicitDependencies": ["path"]
+    "implicitDependencies": ["path", "!find-cache-dir"]
 }
