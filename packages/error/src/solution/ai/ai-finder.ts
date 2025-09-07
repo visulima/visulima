@@ -1,4 +1,3 @@
-import { findCacheDirSync } from "@visulima/find-cache-dir";
 import type { LanguageModel } from "ai";
 import { generateText } from "ai";
 
@@ -6,19 +5,20 @@ import type { Solution, SolutionFinder, SolutionFinderFile } from "../types";
 import aiPrompt from "./ai-prompt";
 import aiSolutionResponse from "./ai-solution-response";
 
-const findCache = findCacheDirSync("visulima-error");
-
-if (findCache === undefined) {
-    console.warn("Caching is disabled, please check if you node_modules is writable.");
-}
-
 const DEFAULT_HEADER = "## Ai Generated Solution";
 const DEFAULT_ERROR_MESSAGE = "Creation of a AI solution failed.";
+
+interface CacheOptions {
+    enabled?: boolean;
+    directory?: string;
+    ttl?: number; // Time to live in milliseconds
+}
 
 const aiFinder = (
     model: LanguageModel,
     options?: {
         temperature?: number;
+        cache?: CacheOptions;
     },
 ): SolutionFinder => {
     return {

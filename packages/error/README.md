@@ -45,13 +45,13 @@ If you want to generate AI-powered solution hints, install these optional peer d
 
 ```sh
 # pnpm
-pnpm add ai @visulima/find-cache-dir
+pnpm add ai
 
 # npm
-npm i ai @visulima/find-cache-dir
+npm i ai
 
 # yarn
-yarn add ai @visulima/find-cache-dir
+yarn add ai
 ```
 
 ## Usage
@@ -331,7 +331,7 @@ const prompt = aiPrompt({
 const html = aiSolutionResponse(modelText);
 ```
 
-You may also use a convenience finder that calls an AI provider for you (requires optional peer deps `ai` and `@visulima/find-cache-dir`):
+You may also use a convenience finder that calls an AI provider for you (requires optional peer dep `ai`):
 
 ```ts
 import { aiFinder } from "@visulima/error/solution/ai";
