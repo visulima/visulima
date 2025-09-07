@@ -1,3 +1,18 @@
+## @visulima/error [4.5.0](https://github.com/visulima/visulima/compare/@visulima/error@4.4.18...@visulima/error@4.5.0) (2025-09-07)
+
+### Features
+
+* add error solution finder, added new format helper for trace ([82508bc](https://github.com/visulima/visulima/commit/82508bc42476da034b10c4023c823755a3c6b120))
+
+### Bug Fixes
+
+* **error:** remove find cache dir dependency and add caching interface ([#514](https://github.com/visulima/visulima/issues/514)) ([caa1bfa](https://github.com/visulima/visulima/commit/caa1bfaf656009d76bcc2991e4a7ff706451670d))
+
+### Miscellaneous Chores
+
+* update dependencies and remove obsolete documentation ([9e5e3c2](https://github.com/visulima/visulima/commit/9e5e3c2a68acf50d4b7abf8545d0edb85bb89078))
+* update LICENSE.md with bundled dependencies and their licenses; add new fixture in pnpm-lock.yaml ([49d02a7](https://github.com/visulima/visulima/commit/49d02a7307168d9d2400e846d6f822a631d536e7))
+
 ## @visulima/error [4.4.18](https://github.com/visulima/visulima/compare/@visulima/error@4.4.17...@visulima/error@4.4.18) (2025-06-04)
 
 
