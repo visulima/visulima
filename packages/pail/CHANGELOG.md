@@ -1,3 +1,10 @@
+## @visulima/pail [2.1.26](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.25...@visulima/pail@2.1.26) (2025-09-07)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.5.0
+
 ## @visulima/pail [2.1.25](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.24...@visulima/pail@2.1.25) (2025-06-04)
 
 
