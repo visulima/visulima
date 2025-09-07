@@ -114,13 +114,13 @@ const aiFinder = (
         handle: async (error: Error, file: SolutionFinderFile): Promise<Solution | undefined> => {
             const cacheOptions = options?.cache;
             const temperature = options?.temperature ?? 0;
+            const ttl = cacheOptions?.ttl ?? 24 * 60 * 60 * 1000; // Default 24 hours
             
             // Check cache if enabled
             if (cacheOptions?.enabled !== false) {
                 const cacheKey = generateCacheKey(error, file, temperature);
                 const cacheDir = getCacheDirectory(cacheOptions?.directory);
                 const cacheFilePath = getCacheFilePath(cacheDir, cacheKey);
-                const ttl = cacheOptions?.ttl ?? 24 * 60 * 60 * 1000; // Default 24 hours
                 
                 // Try to read from cache
                 const cachedSolution = readFromCache(cacheFilePath, ttl);
@@ -160,9 +160,8 @@ const aiFinder = (
                 // Cache the solution if caching is enabled
                 if (cacheOptions?.enabled !== false) {
                     const cacheKey = generateCacheKey(error, file, temperature);
-                    const cacheDir = getCacheDirectory(cacheOptions);
+                    const cacheDir = getCacheDirectory(cacheOptions?.directory);
                     const cacheFilePath = getCacheFilePath(cacheDir, cacheKey);
-                    const ttl = cacheOptions?.ttl ?? 24 * 60 * 60 * 1000; // Default 24 hours
                     
                     writeToCache(cacheFilePath, solution, ttl);
                 }
@@ -180,9 +179,8 @@ const aiFinder = (
                 // Cache the error solution as well to avoid retrying failed requests
                 if (cacheOptions?.enabled !== false) {
                     const cacheKey = generateCacheKey(error, file, temperature);
-                    const cacheDir = getCacheDirectory(cacheOptions);
+                    const cacheDir = getCacheDirectory(cacheOptions?.directory);
                     const cacheFilePath = getCacheFilePath(cacheDir, cacheKey);
-                    const ttl = cacheOptions?.ttl ?? 24 * 60 * 60 * 1000; // Default 24 hours
                     
                     writeToCache(cacheFilePath, solution, ttl);
                 }
