@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join } from "@visulima/path";
 import type { LanguageModel } from "ai";
 import { generateText } from "ai";
 
@@ -45,9 +45,9 @@ const generateCacheKey = (error: Error, file: SolutionFinderFile, temperature?: 
 };
 
 // Get cache directory path
-const getCacheDirectory = (cacheOptions?: CacheOptions): string => {
-    if (cacheOptions?.directory) {
-        return cacheOptions.directory;
+const getCacheDirectory = (directory?: string): string => {
+    if (directory) {
+        return directory;
     }
     
     // Default to a cache directory in the system temp folder
@@ -118,12 +118,13 @@ const aiFinder = (
             // Check cache if enabled
             if (cacheOptions?.enabled !== false) {
                 const cacheKey = generateCacheKey(error, file, temperature);
-                const cacheDir = getCacheDirectory(cacheOptions);
+                const cacheDir = getCacheDirectory(cacheOptions?.directory);
                 const cacheFilePath = getCacheFilePath(cacheDir, cacheKey);
                 const ttl = cacheOptions?.ttl ?? 24 * 60 * 60 * 1000; // Default 24 hours
                 
                 // Try to read from cache
                 const cachedSolution = readFromCache(cacheFilePath, ttl);
+                
                 if (cachedSolution) {
                     return cachedSolution;
                 }
