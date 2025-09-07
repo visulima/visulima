@@ -1,3 +1,10 @@
+## @visulima/fs [3.1.6](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.5...@visulima/fs@3.1.6) (2025-09-07)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.5.0
+
 ## @visulima/fs [3.1.5](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.4...@visulima/fs@3.1.5) (2025-06-04)
 
 ### Miscellaneous Chores
