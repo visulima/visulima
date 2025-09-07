@@ -1,3 +1,11 @@
+## @visulima/cerebro [1.1.47](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.46...@visulima/cerebro@1.1.47) (2025-09-07)
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 1.0.32
+* **@visulima/pail:** upgraded to 2.1.26
+
 ## @visulima/cerebro [1.1.46](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.45...@visulima/cerebro@1.1.46) (2025-06-04)
 
 
