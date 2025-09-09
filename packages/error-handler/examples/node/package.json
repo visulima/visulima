@@ -1,0 +1,12 @@
+{
+    "name": "node_example_error-handler",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node index.js"
+    },
+    "dependencies": {
+        "@visulima/error-handler": "workspace:*"
+    }
+}

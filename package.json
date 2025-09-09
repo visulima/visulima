@@ -10,6 +10,13 @@
         "apps/*"
     ],
     "scripts": {
+        "lint:eslint:error-handler": "pnpm --filter \"error-handler\" run lint:eslint",
+        "lint:eslint:fix:error-handler": "pnpm --filter \"error-handler\" run lint:eslint:fix",
+        "lint:types:error-handler": "pnpm --filter \"error-handler\" run lint:types",
+        "test:error-handler": "pnpm --filter \"error-handler\" run test",
+        "test:coverage:error-handler": "pnpm --filter \"error-handler\" run test:coverage",
+        "test:ui:error-handler": "pnpm --filter \"error-handler\" run test:ui",
+
         "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
@@ -77,6 +84,7 @@
         "lint:eslint:fix:deep-clone": "pnpm --filter \"deep-clone\" run lint:eslint:fix",
         "lint:eslint:fix:docs": "pnpm --filter \"docs\" run lint:eslint:fix",
         "lint:eslint:fix:error": "pnpm --filter \"error\" run lint:eslint:fix",
+        "lint:eslint:fix:flare": "pnpm --filter \"flare\" run lint:eslint:fix",
         "lint:eslint:fix:fmt": "pnpm --filter \"fmt\" run lint:eslint:fix",
         "lint:eslint:fix:fs": "pnpm --filter \"fs\" run lint:eslint:fix",
         "lint:eslint:fix:health-check": "pnpm --filter \"health-check\" run lint:eslint:fix",
@@ -92,6 +100,7 @@
         "lint:eslint:fix:storybook": "pnpm --filter \"storybook\" run lint:eslint:fix",
         "lint:eslint:fix:string": "pnpm --filter \"string\" run lint:eslint:fix",
         "lint:eslint:fix:tabular": "pnpm --filter \"tabular\" run lint:eslint:fix",
+        "lint:eslint:flare": "pnpm --filter \"flare\" run lint:eslint",
         "lint:eslint:fmt": "pnpm --filter \"fmt\" run lint:eslint",
         "lint:eslint:fs": "pnpm --filter \"fs\" run lint:eslint",
         "lint:eslint:health-check": "pnpm --filter \"health-check\" run lint:eslint",
@@ -129,6 +138,7 @@
         "lint:types:deep-clone": "pnpm --filter \"deep-clone\" run lint:types",
         "lint:types:docs": "pnpm --filter \"docs\" run lint:types",
         "lint:types:error": "pnpm --filter \"error\" run lint:types",
+        "lint:types:flare": "pnpm --filter \"flare\" run lint:types",
         "lint:types:fmt": "pnpm --filter \"fmt\" run lint:types",
         "lint:types:fs": "pnpm --filter \"fs\" run lint:types",
         "lint:types:health-check": "pnpm --filter \"health-check\" run lint:types",
@@ -174,6 +184,7 @@
         "test:coverage:crud": "pnpm --filter \"crud\" run test:coverage",
         "test:coverage:deep-clone": "pnpm --filter \"deep-clone\" run test:coverage",
         "test:coverage:error": "pnpm --filter \"error\" run test:coverage",
+        "test:coverage:flare": "pnpm --filter \"flare\" run test:coverage",
         "test:coverage:fmt": "pnpm --filter \"fmt\" run test:coverage",
         "test:coverage:fs": "pnpm --filter \"fs\" run test:coverage",
         "test:coverage:health-check": "pnpm --filter \"health-check\" run test:coverage",
@@ -191,6 +202,7 @@
         "test:crud": "pnpm --filter \"crud\" run test",
         "test:deep-clone": "pnpm --filter \"deep-clone\" run test",
         "test:error": "pnpm --filter \"error\" run test",
+        "test:flare": "pnpm --filter \"flare\" run test",
         "test:fmt": "pnpm --filter \"fmt\" run test",
         "test:fs": "pnpm --filter \"fs\" run test",
         "test:health-check": "pnpm --filter \"health-check\" run test",
@@ -215,6 +227,7 @@
         "test:ui:crud": "pnpm --filter \"crud\" run test:ui",
         "test:ui:deep-clone": "pnpm --filter \"deep-clone\" run test:ui",
         "test:ui:error": "pnpm --filter \"error\" run test:ui",
+        "test:ui:flare": "pnpm --filter \"flare\" run test:ui",
         "test:ui:fmt": "pnpm --filter \"fmt\" run test:ui",
         "test:ui:fs": "pnpm --filter \"fs\" run test:coverage",
         "test:ui:health-check": "pnpm --filter \"health-check\" run test:ui",
@@ -229,6 +242,7 @@
         "test:ui:redact": "pnpm --filter \"redact\" run test:ui",
         "test:ui:string": "pnpm --filter \"string\" run test:ui",
         "test:ui:tabular": "pnpm --filter \"tabular\" run test:ui",
+        "test:vite-overlay": "pnpm --filter \"vite-overlay\" run test",
         "update:deps": "taze"
     },
     "browserslist": [
@@ -260,7 +274,6 @@
         "pkg-pr-new": "^0.0.51",
         "plop": "^4.0.1",
         "prettier": "^3.5.3",
-        "publint": "^0.3.12",
         "read-pkg": "^9.0.1",
         "rimraf": "6.0.1",
         "secretlint": "9.3.3",
@@ -272,8 +285,8 @@
         "typescript": "5.8.3",
         "vitest": "^3.1.4"
     },
-    "packageManager": "pnpm@10.15.0",
+    "packageManager": "pnpm@10.15.1",
     "engines": {
-        "node": ">=18.* <=24.*"
+        "node": ">=20.19 <=24.*"
     }
 }
