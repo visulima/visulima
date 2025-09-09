@@ -12,6 +12,7 @@ packages:
   - apps/**
   - examples/**
   - packages/**
+  - shared/**
   - packages/boxen/__bench__
   - packages/colorize/__bench__
   - packages/deep-clone/__bench__
@@ -49,6 +50,7 @@ onlyBuiltDependencies:
   - '@prisma/engines'
   - '@scarf/scarf'
   - '@swc/core'
+  - '@tailwindcss/oxide'
   - '@tree-sitter-grammars/tree-sitter-yaml'
   - '@visulima/string'
   - core-js
