@@ -25,6 +25,10 @@
 
 ---
 
+| Light Mode     | Dark Mode     |
+|--------------|--------------|
+|![light](./__assets__/light.jpg)|![dark](./__assets__/dark.jpg)|
+
 ## Install
 
 ```sh
@@ -42,18 +46,19 @@ yarn add @visulima/ono
 ## Features
 
 - Pretty, theme‑aware error page
-    - Sticky header (shows error name/message while scrolling)
-    - One‑click copy for error title (icon feedback)
+  - Sticky header (shows error name/message while scrolling)
+  - One‑click copy for error title (icon feedback)
 - Stack trace viewer
-    - Shiki‑powered syntax highlighting (singleton highlighter)
-    - Tabs for frames; grouping for internal/node_modules/application frames
-    - Tooltips and labels to guide usage
-    - Optional “Open in editor” button per frame
+  - Shiki‑powered syntax highlighting (singleton highlighter)
+  - Tabs for frames; grouping for internal/node_modules/application frames
+  - Tooltips and labels to guide usage
+  - Optional "Open in editor" button per frame
 - Error causes viewer (nested causes, each with its own viewer)
 - Solutions panel
-    - Default open; smooth expand/collapse without layout jump
-    - Animated height/opacity; icon toggles open/close
-    - Built-in rule-based Markdown hints for common issues (ESM/CJS interop, export mismatch, port in use, missing files/case, TS path mapping, DNS/connection, React hydration mismatch, undefined property access)
+  - Default open; smooth expand/collapse without layout jump
+  - Animated height/opacity; icon toggles open/close
+  - Built-in rule-based Markdown hints for common issues (ESM/CJS interop, export mismatch, port in use, missing files/case, TS path mapping, DNS/connection, React hydration mismatch, undefined property access)
+  - Custom solution finders support
 - Raw stack trace panel
 - Theme toggle (auto/dark/light) with persistence
 - **Copy to Clipboard** - One-click copying for all data sections
@@ -64,11 +69,13 @@ yarn add @visulima/ono
 
 - **Tabbed Interface** - Switch between Stack and Context views
 - **Request Context Panel** - Detailed HTTP request debugging information
-    - cURL command with proper formatting and copy functionality
-    - Headers, cookies, body, and session data
-    - App routing, client info, Git status, and version details
-    - Smart data sanitization and masking for sensitive information
-    - **Flexible Context API** - Add any custom context data via `buildContextPage()`
+  - cURL command with proper formatting and copy functionality
+  - Headers, cookies, body, and session data
+  - App routing, client info, Git status, and version details
+  - Smart data sanitization and masking for sensitive information
+  - **Flexible Context API** - Add any custom context data via `createRequestContextPage()`
+- **Modern Ono Class API** - Simple, consistent interface for both HTML and ANSI rendering
+- **Solution Finders** - Extensible system for custom error solutions
 
 Accessibility and keyboard UX
 
@@ -82,142 +89,223 @@ Editor integration
 - Editor selector is always visible; selection persists (localStorage)
 - Uses server endpoint when configured; otherwise opens via editor URL scheme (defaults to VS Code)
 
+### Using the Ono class (recommended)
 
-### Using the HTML displayer directly (advanced)
-
-If you don’t need the full displayer and want to mount just the HTML error handler, use `htmlErrorHandler`.
+The new Ono class provides a simple, consistent API for both HTML and ANSI error rendering:
 
 ```ts
-import { createServer } from "node:http";
-import { htmlErrorHandler } from "@visulima/ono";
+import { Ono } from "@visulima/ono";
 
-const server = createServer(async (req, res) => {
-    try {
-        throw new Error("Boom");
-    } catch (error) {
-        const html = htmlErrorHandler([], {
-            // Enable "Open in editor" buttons
-            openInEditorUrl: "/__open-in-editor",
-            // Attach request context (improves the Context tab)
-            context: {
-                request: {
-                    method: req.method,
-                    url: req.url,
-                    status: 500,
-                    headers: Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, Array.isArray(v) ? v : (v ?? "")])),
-                },
-            },
-            // Control when to render the rich inspector (true | false | "auto")
-            // auto => show when NODE_ENV !== 'production' or DEBUG is set
-            debug: "auto",
-            // Optional production fallback page (string or async function)
-            // errorPage: ({ error, statusCode }) => `<h1>${statusCode}</h1><p>${error.message}</p>`,
-        });
+const ono = new Ono();
 
-        await html(error as Error, req, res);
-    }
+// HTML error page
+const html = await ono.toHTML(error, {
+    cspNonce: "your-nonce",
+    theme: "dark",
+    solutionFinders: [/* custom finders */]
+});
+
+// ANSI terminal output
+const { errorAnsi, solutionBox } = await ono.toANSI(error, {
+    solutionFinders: [/* custom finders */]
 });
 ```
 
-Optional: content negotiation (serve Problem JSON, JSON:API, or HTML based on `Accept` header):
+### Node.js HTTP Server Example
 
 ```ts
 import { createServer } from "node:http";
-import { htmlErrorHandler, problemErrorHandler, createNegotiatedErrorHandler } from "@visulima/ono";
+import { Ono } from "@visulima/ono";
+import { createRequestContextPage } from "@visulima/ono/page/context";
+import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
 
-const html = htmlErrorHandler([], { openInEditorUrl: "/__open-in-editor" });
-const negotiated = createNegotiatedErrorHandler([], process.env.NODE_ENV !== "production", html);
+const ono = new Ono();
+const openInEditorHandler = createNodeHttpHandler();
 
-createServer(async (req, res) => {
-    try {
-        throw new Error("Boom");
-    } catch (error) {
-        await negotiated(error, req, res);
+const server = createServer(async (request, response) => {
+    const url = new URL(request.url || "/", `http://localhost:3000`);
+
+    // Open-in-editor endpoint
+    if (url.pathname === "/__open-in-editor") {
+        return openInEditorHandler(request, response);
     }
-}).listen(3000);
+
+    try {
+        // Your app logic here
+        throw new Error("Something went wrong!");
+    } catch (error) {
+        // Create context page with request information
+        const contextPage = await createRequestContextPage(request, {
+            context: {
+                request: {
+                    method: request.method,
+                    url: request.url,
+                    headers: request.headers,
+                },
+                user: {
+                    client: {
+                        ip: request.socket?.remoteAddress,
+                        userAgent: request.headers["user-agent"],
+                    }
+                }
+            }
+        });
+
+        // Generate HTML error page
+        const html = await ono.toHTML(error, {
+            content: [contextPage],
+            openInEditorUrl: "__open-in-editor",
+            cspNonce: "nonce-" + Date.now(),
+            theme: "auto"
+        });
+
+        response.writeHead(500, {
+            "Content-Type": "text/html",
+            "Content-Length": Buffer.byteLength(html, "utf8")
+        });
+        response.end(html);
+    }
+});
+
+server.listen(3000);
+```
+
+### Hono Framework Example
+
+```ts
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import { Ono } from "@visulima/ono";
+import { createRequestContextPage } from "@visulima/ono/page/context";
+
+const app = new Hono();
+const ono = new Ono();
+
+app.get("/", (c) => c.text("OK"));
+
+app.get("/error", () => {
+    throw new Error("Boom from Hono");
+});
+
+app.onError(async (err, c) => {
+    const contextPage = await createRequestContextPage(c.req.raw, {
+        context: {
+            request: {
+                method: c.req.method,
+                url: c.req.url,
+                headers: Object.fromEntries(c.req.raw.headers.entries()),
+            }
+        }
+    });
+
+    const html = await ono.toHTML(err, {
+        content: [contextPage],
+        cspNonce: "hono-nonce-" + Date.now(),
+        theme: "dark"
+    });
+
+    return c.html(html, 500);
+});
+
+serve({ fetch: app.fetch, port: 3000 });
 ```
 
 ## API
 
-### httpDisplayer(error, solutionFinders?, options?) => Promise<(req, res) => Promise<void>>
+### Ono Class
 
-- **error**: Error
-- **solutionFinders**: SolutionFinder[] (optional)
-- **options**:
-    - `openInEditorUrl?: string` — when provided, “Open in editor” posts to this endpoint (JSON: `{ file, line, column, editor? }`). When omitted, ono uses a client-side editor URL scheme fallback to open files (defaults to VS Code).
-    - `context?: Record<string, unknown> & { request?: RequestContext }` — optional context information for the Request panel and debugging. You can add any custom context data as key-value pairs.
-        - `request?: { method, url, status?, route?, timings?, headers?, body?, cookies?, session? }` — HTTP request information (special key)
-        - Any other keys will be automatically rendered as sections in the Context tab (e.g., `app`, `user`, `git`, `versions`, `database`, `cache`, etc.)
-    - `requestPanel?: { headerAllowlist?: string[]; headerDenylist?: string[]; totalCapBytes?: number; previewBytes?: number; maskValue?: string; }` — control masking/truncation for the Request panel.
-    - `content?: Array<{ id: string; name: string; defaultSelected?: boolean; code: { html: string; script?: string } }>` — supply extra pages as tabs. ono always renders the "Stack" page; additional pages render after it. **Note:** Use `buildContextPage()` to create a Context tab with your context data.
+The main API for rendering errors in both HTML and ANSI formats.
 
-Example (Node http) with enhanced Context:
+#### Constructor
 
 ```ts
-const ctx = {
-    method: req.method,
-    url: req.url,
-    status: res.statusCode,
-    headers: Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, Array.isArray(v) ? v : (v ?? "")])),
-    timings: { start: startTime, end: Date.now(), elapsedMs: Date.now() - startTime },
-    body: safeBodyPreview,
-    cookies: parseCookies(req.headers.cookie),
-    session: { demo: true },
-};
-
-const handler = await httpDisplayer(err, [], {
-    openInEditorUrl: "/__open-in-editor",
-    context: {
-        request: ctx,
-        app: { routing: { route: req.url, params: {}, query: {} } },
-        user: { client: { ip: req.socket.remoteAddress, userAgent: req.headers["user-agent"] } },
-        git: { branch: "main", commit: "abc123", dirty: false },
-        versions: { node: process.version, ono: "1.0.0" },
-        // Add any custom context you want
-        database: {
-            connection: "active",
-            queries: ["SELECT * FROM users", "INSERT INTO logs"],
-            pools: {
-                read: { active: 5, idle: 3, max: 10 },
-                write: { active: 2, idle: 1, max: 5 },
-            },
-            metrics: {
-                queries: { total: 1250, slow: 23, errors: 2 },
-                connections: { current: 8, peak: 12 },
-            },
-        },
-        cache: {
-            status: "healthy",
-            keys: 1250,
-            memory: "45MB",
-            layers: {
-                l1: { type: "memory", hitRate: 0.95, size: "10MB" },
-                l2: { type: "redis", hitRate: 0.87, size: "100MB" },
-            },
-            patterns: ["user:*", "session:*", "api:*"],
-        },
-        environment: {
-            NODE_ENV: process.env.NODE_ENV,
-            PORT: process.env.PORT,
-            features: {
-                auth: true,
-                caching: true,
-                monitoring: false,
-            },
-        },
-    },
-    requestPanel: { headerAllowlist: ["content-type", "accept", "user-agent"] },
-});
+const ono = new Ono();
 ```
 
-    - `editor?: Editor` — initial editor selection (persisted). Affects both server opener and client-side fallback.
-        - `theme?: 'dark' | 'light'` — initial theme; users can toggle.
+#### Methods
 
-Returns an async request handler compatible with Node http (and usable inside Express routes).
+##### `toHTML(error, options?)` => `Promise<string>`
+
+Renders an error as an HTML page.
+
+- **error**: `unknown` - The error to render
+- **options**: `TemplateOptions` (optional)
+  - `content?: ContentPage[]` - Additional pages to display as tabs
+  - `cspNonce?: string` - CSP nonce for inline scripts/styles
+  - `editor?: Editors` - Default editor for "Open in editor" functionality
+  - `openInEditorUrl?: string` - Server endpoint for opening files in editor
+  - `solutionFinders?: SolutionFinder[]` - Custom solution finders
+  - `theme?: 'dark' | 'light' | 'auto'` - Theme preference
+
+Returns the complete HTML string for the error page.
+
+##### `toANSI(error, options?)` => `Promise<{ errorAnsi: string; solutionBox?: string }>`
+
+Renders an error as ANSI terminal output.
+
+- **error**: `unknown` - The error to render
+- **options**: `CliOptions` (optional)
+  - `solutionFinders?: SolutionFinder[]` - Custom solution finders
+  - All other options from `@visulima/error` renderError options
+
+Returns an object with `errorAnsi` (the formatted error) and optional `solutionBox` (suggested solutions).
+
+### createRequestContextPage(request, options) => `Promise<ContentPage | undefined>`
+
+Creates a context page with detailed request debugging information.
+
+- **request**: `Request` - The HTTP request object
+- **options**: `ContextContentOptions`
+  - `context?: Record<string, unknown>` - Additional context data
+  - `headerAllowlist?: string[]` - Headers to include (default: all)
+  - `headerDenylist?: string[]` - Headers to exclude
+  - `maskValue?: string` - Mask for sensitive values (default: "[masked]")
+
+### createNodeHttpHandler(options) => `(req, res) => void`
+
+Creates an HTTP handler for opening files in editors.
+
+- **options**: `OpenInEditorOptions` (optional)
+  - `projectRoot?: string` - Project root directory
+  - `allowOutsideProject?: boolean` - Allow opening files outside project
+
+Returns an Express/Node.js compatible request handler.
+
+### CLI Example
+
+```ts
+import { Ono } from "@visulima/ono";
+
+const ono = new Ono();
+
+try {
+    throw new Error("Something went wrong!");
+} catch (error) {
+    // Basic ANSI output
+    const result = await ono.toANSI(error);
+    console.log(result.errorAnsi);
+
+    if (result.solutionBox) {
+        console.log("\n" + result.solutionBox);
+    }
+
+    // With custom solution finder
+    const resultWithCustom = await ono.toANSI(error, {
+        solutionFinders: [{
+            name: "custom-finder",
+            priority: 100,
+            handle: async (err, context) => ({
+                header: "Custom Solution",
+                body: "Try checking your configuration."
+            })
+        }]
+    });
+}
+```
 
 ### Request Context Panel
 
-Use `buildContextPage()` to create a "Context" tab with comprehensive debugging information:
+Use `createRequestContextPage()` to create a "Context" tab with comprehensive debugging information:
 
 - **Request Overview** - cURL command with proper formatting and copy functionality
 - **Headers** - HTTP headers with smart masking for sensitive data
@@ -225,10 +313,10 @@ Use `buildContextPage()` to create a "Context" tab with comprehensive debugging 
 - **Session** - Session data in organized key-value tables
 - **Cookies** - Cookie information in readable format
 - **Dynamic Context Sections** - Any additional context keys you provide are automatically rendered as sections with:
-    - Proper titles (capitalized)
-    - Copy buttons for JSON data
-    - Organized key-value tables
-    - Sticky sidebar navigation
+  - Proper titles (capitalized)
+  - Copy buttons for JSON data
+  - Organized key-value tables
+  - Sticky sidebar navigation
 
 **Built-in sections** (when data is provided):
 
@@ -255,6 +343,41 @@ Use `buildContextPage()` to create a "Context" tab with comprehensive debugging 
 
 All sections include copy buttons for easy data extraction and debugging.
 
+### Custom Solution Finders
+
+Create custom solution finders to provide specific guidance for your application's errors:
+
+```ts
+import { Ono } from "@visulima/ono";
+
+const customFinder = {
+    name: "my-app-finder",
+    priority: 100, // Higher priority = checked first
+    handle: async (error, context) => {
+        if (error.message.includes("database connection")) {
+            return {
+                header: "Database Connection Issue",
+                body: "Check your database configuration and ensure the server is running."
+            };
+        }
+
+        if (error.message.includes("authentication")) {
+            return {
+                header: "Authentication Error",
+                body: "Verify your API keys and authentication tokens are valid."
+            };
+        }
+
+        return undefined; // No solution found
+    }
+};
+
+const ono = new Ono();
+const html = await ono.toHTML(error, {
+    solutionFinders: [customFinder]
+});
+```
+
 ### Copy to Clipboard
 
 All data sections in the Request Context Panel include copy buttons that:
@@ -264,58 +387,94 @@ All data sections in the Request Context Panel include copy buttons that:
 - Support both modern `navigator.clipboard` API and fallback methods
 - Work across all browsers and environments
 
-### buildContextPage(request, options) => Promise<ContentPage | undefined>
-
-Creates a Context tab with comprehensive debugging information. Pass any context data you want to display:
-
-```ts
-import { buildContextPage } from "@visulima/ono/template";
-
-const contextPage = await buildContextPage(requestData, {
-    context: {
-        request: requestData,
-        app: { routing: { route: "/api/users", params: {}, query: {} } },
-        user: { client: { ip: "127.0.0.1", userAgent: "Mozilla/5.0..." } },
-        database: { connection: "active", queries: ["SELECT * FROM users"] },
-        cache: { status: "healthy", keys: 1250 },
-        environment: { NODE_ENV: "production" },
-        // Add any custom context you want
-    },
-    requestPanel: { headerAllowlist: ["content-type", "accept"] },
-});
-```
-
 ### Adding custom pages/tabs via `options.content`
 
-You can add any number of custom pages, including the built-in Context page:
+You can add any number of custom pages using the `content` option:
 
 ```ts
-import { buildContextPage } from "@visulima/ono/template";
+import { Ono } from "@visulima/ono";
+import { createRequestContextPage } from "@visulima/ono/page/context";
 
-// Create a context page with your data
-const contextPage = await buildContextPage(requestData, {
+const ono = new Ono();
+
+// Create a context page with request information
+const contextPage = await createRequestContextPage(request, {
     context: {
-        request: requestData,
+        request: request,
         app: { routing: { route: "/api/users", params: {}, query: {} } },
         user: { client: { ip: "127.0.0.1", userAgent: "Mozilla/5.0..." } },
         database: { connection: "active", queries: ["SELECT * FROM users"] },
-        // Add any custom context you want
-    },
-    requestPanel: { headerAllowlist: ["content-type", "accept"] },
+    }
 });
 
-await httpDisplayer(err, finders, {
-    content: [
-        contextPage, // Add the context page
-        { id: "perf", name: "Performance", code: { html: "<div>...</div>" } },
-        { id: "custom", name: "Custom", code: { html: "<div>Custom content</div>" } },
-    ],
+// Add custom pages
+const customPages = [
+    contextPage, // Context page with request info
+    {
+        id: "performance",
+        name: "Performance",
+        code: {
+            html: "<div><h3>Performance Metrics</h3><p>Custom performance data here...</p></div>"
+        }
+    },
+    {
+        id: "debug",
+        name: "Debug Info",
+        code: {
+            html: "<div><h3>Debug Information</h3><pre>" + JSON.stringify(debugData, null, 2) + "</pre></div>"
+        }
+    }
+];
+
+const html = await ono.toHTML(error, {
+    content: customPages,
+    cspNonce: "your-nonce"
 });
 ```
 
-### template(error, solutionFinders?, options?) => Promise<string>
+## Examples
 
-Low-level HTML rendering API if you want full control of the response.
+The `examples/` directory contains working examples for different use cases:
+
+### CLI Example (`examples/cli/`)
+
+Demonstrates basic ANSI output and custom solution finders:
+
+```bash
+cd examples/cli
+node index.js
+```
+
+### Node.js HTTP Server (`examples/node/`)
+
+Complete HTTP server example with rich context pages:
+
+```bash
+cd examples/node
+node index.js
+```
+
+Try these routes:
+
+- `/error` - Basic error with context
+- `/esm-cjs` - ESM/CJS interop error
+- `/export-mismatch` - Export mismatch error
+- `/custom-solution` - Custom solution finder demo
+
+### Hono Framework (`examples/hono/`)
+
+Hono framework integration example:
+
+```bash
+cd examples/hono
+node index.js
+```
+
+Try these routes:
+
+- `/error` - Basic error handling
+- `/error-html` - HTML error page
+- `/api/error-json` - JSON error response
 
 ### Server helpers
 
@@ -340,60 +499,48 @@ Options:
 
 - If `openInEditorUrl` is not set, clicking “Open in editor” uses editor URL schemes on the client. The default editor is VS Code. The selected editor in the header is respected.
 - Supported editors and templates (placeholders: `%f` = file, `%l` = line, `%c` = column when supported):
-    - textmate: `txmt://open?url=file://%f&line=%l`
-    - macvim: `mvim://open?url=file://%f&line=%l`
-    - emacs: `emacs://open?url=file://%f&line=%l`
-    - sublime: `subl://open?url=file://%f&line=%l`
-    - phpstorm: `phpstorm://open?file=%f&line=%l`
-    - atom: `atom://core/open/file?filename=%f&line=%l`
-    - atom-beta: `atom-beta://core/open/file?filename=%f&line=%l`
-    - brackets: `brackets://open?url=file://%f&line=%l`
-    - clion: `clion://open?file=%f&line=%l`
-    - code (VS Code): `vscode://file/%f:%l:%c`
-    - code-insiders: `vscode-insiders://file/%f:%l:%c`
-    - codium (VSCodium): `vscodium://file/%f:%l:%c`
-    - cursor: `cursor://file/%f:%l:%c`
-    - emacs: `emacs://open?url=file://%f&line=%l`
-    - idea: `idea://open?file=%f&line=%l`
-    - intellij: `idea://open?file=%f&line=%l`
-    - macvim: `mvim://open?url=file://%f&line=%l`
-    - notepad++: `notepad-plus-plus://open?file=%f&line=%l`
-    - phpstorm: `phpstorm://open?file=%f&line=%l`
-    - pycharm: `pycharm://open?file=%f&line=%l`
-    - rider: `rider://open?file=%f&line=%l`
-    - rubymine: `rubymine://open?file=%f&line=%l`
-    - sublime: `subl://open?url=file://%f&line=%l`
-    - textmate: `txmt://open?url=file://%f&line=%l`
-    - vim: `vim://open?url=file://%f&line=%l`
-    - visualstudio: `visualstudio://open?file=%f&line=%l`
-    - vscode: `vscode://file/%f:%l:%c`
-    - vscodium: `vscodium://file/%f:%l:%c`
-    - webstorm: `webstorm://open?file=%f&line=%l`
-    - xcode: `xcode://open?file=%f&line=%l`
-    - zed: `zed://open?file=%f&line=%l&column=%c`
-    - android-studio: `idea://open?file=%f&line=%l`
+  - textmate: `txmt://open?url=file://%f&line=%l`
+  - macvim: `mvim://open?url=file://%f&line=%l`
+  - emacs: `emacs://open?url=file://%f&line=%l`
+  - sublime: `subl://open?url=file://%f&line=%l`
+  - phpstorm: `phpstorm://open?file=%f&line=%l`
+  - atom: `atom://core/open/file?filename=%f&line=%l`
+  - atom-beta: `atom-beta://core/open/file?filename=%f&line=%l`
+  - brackets: `brackets://open?url=file://%f&line=%l`
+  - clion: `clion://open?file=%f&line=%l`
+  - code (VS Code): `vscode://file/%f:%l:%c`
+  - code-insiders: `vscode-insiders://file/%f:%l:%c`
+  - codium (VSCodium): `vscodium://file/%f:%l:%c`
+  - cursor: `cursor://file/%f:%l:%c`
+  - emacs: `emacs://open?url=file://%f&line=%l`
+  - idea: `idea://open?file=%f&line=%l`
+  - intellij: `idea://open?file=%f&line=%l`
+  - macvim: `mvim://open?url=file://%f&line=%l`
+  - notepad++: `notepad-plus-plus://open?file=%f&line=%l`
+  - phpstorm: `phpstorm://open?file=%f&line=%l`
+  - pycharm: `pycharm://open?file=%f&line=%l`
+  - rider: `rider://open?file=%f&line=%l`
+  - rubymine: `rubymine://open?file=%f&line=%l`
+  - sublime: `subl://open?url=file://%f&line=%l`
+  - textmate: `txmt://open?url=file://%f&line=%l`
+  - vim: `vim://open?url=file://%f&line=%l`
+  - visualstudio: `visualstudio://open?file=%f&line=%l`
+  - vscode: `vscode://file/%f:%l:%c`
+  - vscodium: `vscodium://file/%f:%l:%c`
+  - webstorm: `webstorm://open?file=%f&line=%l`
+  - xcode: `xcode://open?file=%f&line=%l`
+  - zed: `zed://open?file=%f&line=%l&column=%c`
+  - android-studio: `idea://open?file=%f&line=%l`
 
-### Keyboard shortcuts
+### Keyboard Shortcuts
 
-- Shift+/ (or ?) — Open shortcuts help dialog
-- Esc — Close dialogs
-- Enter/Space — Activate focused control (e.g., toggles, tabs)
-
-### Examples
-
-The Node example includes routes illustrating common hints:
-
-- `/esm-cjs` — ESM/CJS interop
-- `/export-mismatch` — default vs named export
-- `/enoent` — missing file or case issue
-- `/ts-paths` — TypeScript path mapping
-- `/dns` — DNS/connection issue
-- `/hydration` — React hydration mismatch
-- `/undefined-prop` — accessing property of undefined
+- **Shift+/ (or ?)** — Open shortcuts help dialog
+- **Esc** — Close dialogs
+- **Enter/Space** — Activate focused control (e.g., toggles, tabs)
 
 ### Tooltips
 
-- Components emit HTML with `data-tooltip-trigger`; a single script exported by the tooltip module is imported once by the layout (so there’s no duplication).
+Components emit HTML with `data-tooltip-trigger`; a single script exported by the tooltip module is imported once by the layout (so there's no duplication).
 
 ### Extend the VisulimaError
 
@@ -458,7 +605,7 @@ The visulima error is open-sourced software licensed under the [MIT][license-url
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/error?color=blueviolet&style=for-the-badge
+[license-image]: https://img.shields.io/npm/l/@visulima/ono?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/error/latest.svg?style=for-the-badge&logo=npm
+[npm-image]: https://img.shields.io/npm/v/@visulima/ono/latest.svg?style=for-the-badge&logo=npm
 [npm-url]: https://www.npmjs.com/package/@visulima/ono/v/latest "npm"
