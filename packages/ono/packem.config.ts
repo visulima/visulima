@@ -4,10 +4,8 @@ import tailwindcssLoader from "@visulima/packem/css/loader/tailwindcss";
 import cssnanoMinifier from "@visulima/packem/css/minifier/cssnano";
 
 export default defineConfig({
-    failOnWarn: false,
     transformer,
     runtime: "node",
-    declaration: false,
     rollup: {
         css: {
             mode: "inline",
@@ -15,4 +13,15 @@ export default defineConfig({
             minifier: cssnanoMinifier,
         },
     },
+    // TODO: remove this after packem bug fix
+    validation: {
+        dependencies: {
+            unused: {
+                exclude: ["@shikijs/langs", "@shikijs/themes", "isomorphic-dompurify", "shiki"]
+            },
+            hoisted: {
+                exclude: ["@visulima/boxen"]
+            }
+        }
+    }
 });

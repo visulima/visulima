@@ -1,10 +1,11 @@
-import copyDropdown from "../copy-dropdown";
-import shortcutsButton from "../shortcuts-button";
-import { sanitizeHtml, sanitizeAttr } from "../../util/sanitize";
-import aiPrompt from "@visulima/error/solution/ai/prompt";
 import { codeFrame, parseStacktrace } from "@visulima/error";
+import aiPrompt from "@visulima/error/solution/ai/prompt";
+
 import findLanguageBasedOnExtension from "../../../../../../shared/utils/find-language-based-on-extension";
 import getFileSource from "../../../../../../shared/utils/get-file-source";
+import { sanitizeAttr as sanitizeAttribute, sanitizeHtml } from "../../util/sanitize";
+import copyDropdown from "../copy-dropdown";
+import shortcutsButton from "../shortcuts-button";
 
 const stickyHeader = async (
     error: Error,
@@ -14,7 +15,7 @@ const stickyHeader = async (
 }> => {
     const safeName = sanitizeHtml(error.name);
     const safeMessage = sanitizeHtml(error.message);
-    const safeTitleValue = sanitizeAttr(`${error.name}: ${error.message}`);
+    const safeTitleValue = sanitizeAttribute(`${error.name}: ${error.message}`);
 
     // Build AI prompt using first stack frame and code frame when available
     const trace = parseStacktrace(error as Error, { frameLimit: 1 })?.[0] as any;
@@ -22,15 +23,15 @@ const stickyHeader = async (
     const fileLine = trace?.line ?? 0;
     const fileSource = filePath ? await getFileSource(filePath) : "";
     const snippet = fileSource
-        ? codeFrame(fileSource, { start: { line: fileLine, column: trace?.column } }, { linesAbove: 9, linesBelow: 10, showGutter: true })
+        ? codeFrame(fileSource, { start: { column: trace?.column, line: fileLine } }, { linesAbove: 9, linesBelow: 10, showGutter: true })
         : "";
     const fixPrompt = aiPrompt({
         applicationType: undefined,
         error: error as Error,
         file: {
             file: filePath,
-            line: fileLine,
             language: findLanguageBasedOnExtension(filePath),
+            line: fileLine,
             snippet,
         },
     });
@@ -43,7 +44,7 @@ const stickyHeader = async (
     <span class="text-md font-semibold line-clamp-1 text-[var(--ono-text)]" aria-label="Error message">${safeMessage}</span>
     <div class="grow"></div>
     ${shortcutsButton()}
-    ${copyDropdown({ targetId: "clipboard-sticky-error-title", label: "Copy error title", secondaryLabel: "Copy fix prompt", secondaryText: fixPrompt })}
+    ${copyDropdown({ label: "Copy error title", secondaryLabel: "Copy fix prompt", secondaryText: fixPrompt, targetId: "clipboard-sticky-error-title" })}
   </div>
 </div>`,
         script: `(window.subscribeToDOMContentLoaded || function (fn) {

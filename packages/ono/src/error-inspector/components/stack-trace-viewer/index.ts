@@ -66,6 +66,7 @@ const stackTraceViewer = async (
         const relativeFilePath = filePath.replace(process.cwd?.() || "", "").replace("file:///", "");
         const safeMethod = sanitizeHtml(trace.methodName || "");
         const safeRelativePath = sanitizeHtml(relativeFilePath);
+
         tabs.push({
             html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-stack-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" ${
                 isClickable ? "" : "disabled aria-disabled=\"true\""

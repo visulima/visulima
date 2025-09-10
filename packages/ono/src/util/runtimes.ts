@@ -19,7 +19,7 @@ const runtimeChecks: [boolean, RuntimeName][] = [
     [g.navigator?.userAgent === "Cloudono-Workers", "workerd"],
     [!!g.Deno, "deno"],
     // https://nodejs.org/api/process.html#processrelease
-    // eslint-disable-next-line n/no-unsupported-features/node-builtins, no-underscore-dangle
+    // eslint-disable-next-line no-underscore-dangle
     [!!g.__lagon__, "lagon"],
     [g.process?.release?.name === "node", "node"],
     [!!g.Bun || !!g.process?.versions?.bun, "bun"],

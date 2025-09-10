@@ -1,8 +1,8 @@
+import type Editors from "../../../../../../shared/utils/editors";
 import type { Theme } from "../../../types";
+import shortcutsButton from "../shortcuts-button";
 import editorSelector from "./editor-selector";
 import themeToggle from "./theme-toggle";
-import shortcutsButton from "../shortcuts-button";
-import type Editors from "../../../../../../shared/utils/editors";
 
 const headerBar = (
     options: Partial<{ editor: Editor; theme: Theme }>,

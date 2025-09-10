@@ -1,13 +1,13 @@
 declare module "launch-editor-middleware" {
-    import type { IncomingMessage, ServerResponse } from "http";
+    import type { IncomingMessage, ServerResponse } from "node:http";
 
-    type NextFunction = (err?: any) => void;
+    type NextFunction = (error?: any) => void;
 
     const create: (
         specifiedEditor?: string,
-        srcRoot?: string,
-        onErrorCallback?: (err: Error) => void,
-    ) => (req: IncomingMessage, res: ServerResponse, next: NextFunction) => void;
+        sourceRoot?: string,
+        onErrorCallback?: (error: Error) => void,
+    ) => (request: IncomingMessage, res: ServerResponse, next: NextFunction) => void;
 
     export default create;
 }
