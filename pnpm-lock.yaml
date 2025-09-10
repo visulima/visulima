@@ -2098,8 +2098,6 @@ importers:
         specifier: ^3.1.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.3.1)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@26.1.0)(msw@2.8.4(@types/node@24.3.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.0)
 
-  packages/fs/__bench__/fixtures/a/b: {}
-
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
