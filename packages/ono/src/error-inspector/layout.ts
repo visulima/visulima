@@ -47,8 +47,8 @@ const layout = ({
         <script${cspNonce ? ` nonce="${cspNonce}"` : ""}>
             subscribeToDOMContentLoaded(() => {
             // Global keyboard shortcut for ? and Shift+/ to open shortcuts
-                if (!window.__flareShortcutKeyBound) {
-                    window.__flareShortcutKeyBound = true;
+                if (!window.__onoShortcutKeyBound) {
+                    window.__onoShortcutKeyBound = true;
                     
                     document.addEventListener('keydown', function(e) {
                         if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
@@ -90,7 +90,7 @@ const layout = ({
         </script>
     </head>
     <body>
-        <div id="visulima-flare-container" class="bg-[var(--flare-bg)] text-[var(--flare-text)]">
+        <div id="visulima-ono-container" class="bg-[var(--ono-bg)] text-[var(--ono-text)]">
             <main class="container mx-auto mt-6">
                 ${content}
             </main>
