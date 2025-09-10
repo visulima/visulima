@@ -9,24 +9,24 @@ const isDefined = <T>(value: T | null | undefined): value is T => value !== unde
 
 const getJSONSchemaScalar = (fieldType: PrismaPrimitive): JSONSchema7TypeName | JSONSchema7TypeName[] => {
     switch (fieldType) {
-        case "Int":
-        case "BigInt": {
+        case "BigInt":
+        case "Int": {
             return "integer";
         }
-        case "DateTime":
+        case "Boolean": {
+            return "boolean";
+        }
         case "Bytes":
+        case "DateTime":
         case "String": {
             return "string";
         }
-        case "Float":
-        case "Decimal": {
+        case "Decimal":
+        case "Float": {
             return "number";
         }
         case "Json": {
             return ["number", "string", "boolean", "object", "array", "null"];
-        }
-        case "Boolean": {
-            return "boolean";
         }
         default: {
             throw new Error(`Unhandled discriminated union member: ${JSON.stringify(fieldType)}`);
@@ -54,7 +54,7 @@ const getJSONSchemaType = (field: DMMF.Field): JSONSchema7["type"] => {
     const isFieldUnion = Array.isArray(scalarFieldType);
 
     if (isFieldUnion) {
-        return [...new Set([...scalarFieldType, "null"])] as JSONSchema7["type"];
+        return [...new Set(["null", ...scalarFieldType])] as JSONSchema7["type"];
     }
 
     return [scalarFieldType as JSONSchema7TypeName, "null"];
@@ -76,22 +76,22 @@ const getDefaultValue = (field: DMMF.Field): JSONSchema7["default"] => {
     }
 
     switch (field.type) {
-        case "String":
         case "BigInt":
-        case "DateTime": {
+        case "DateTime":
+        case "String": {
             return typeof fieldDefault === "string" ? fieldDefault : null;
-        }
-        case "Int":
-        case "Float":
-        case "Decimal": {
-            return typeof fieldDefault === "number" ? fieldDefault : null;
         }
         case "Boolean": {
             return typeof fieldDefault === "boolean" ? fieldDefault : null;
         }
-        case "Json":
-        case "Bytes": {
+        case "Bytes":
+        case "Json": {
             return null;
+        }
+        case "Decimal":
+        case "Float":
+        case "Int": {
+            return typeof fieldDefault === "number" ? fieldDefault : null;
         }
         default: {
             throw new Error(`Unhandled discriminated union member: ${JSON.stringify(field.type)}`);
@@ -118,11 +118,11 @@ const getJSONSchemaForPropertyReference = (field: DMMF.Field, { persistOriginalT
     return notNullable
         ? reference
         : {
-              anyOf: [reference, { type: "null" }],
-              ...(persistOriginalType && {
-                  originalType: field.type,
-              }),
-          };
+            anyOf: [reference, { type: "null" }],
+            ...persistOriginalType && {
+                originalType: field.type,
+            },
+        };
 };
 
 const getItemsByDMMFType = (field: DMMF.Field, transformOptions: TransformOptions): JSONSchema7["items"] => {
@@ -139,17 +139,17 @@ const getItemsByDMMFType = (field: DMMF.Field, transformOptions: TransformOption
 
 const isSingleReference = (field: DMMF.Field) => field.kind !== "scalar" && !field.isList && field.kind !== "enum";
 
-const getEnumListByDMMFType =
-    (modelMetaData: ModelMetaData) =>
-    (field: DMMF.Field): string[] | undefined => {
-        const enumItem = modelMetaData.enums.find(({ name }: { name: string }) => name === field.type);
+const getEnumListByDMMFType
+    = (modelMetaData: ModelMetaData) =>
+        (field: DMMF.Field): string[] | undefined => {
+            const enumItem = modelMetaData.enums.find(({ name }: { name: string }) => name === field.type);
 
-        if (!enumItem) {
-            return undefined;
-        }
+            if (!enumItem) {
+                return undefined;
+            }
 
-        return enumItem.values.map((item: { name: string }) => item.name);
-    };
+            return enumItem.values.map((item: { name: string }) => item.name);
+        };
 
 const getDescription = (field: DMMF.Field) => field.documentation;
 
@@ -163,31 +163,31 @@ const getPropertyDefinition = (modelMetaData: ModelMetaData, transformOptions: T
 
     return {
         type,
-        ...(transformOptions.persistOriginalType && {
+        ...transformOptions.persistOriginalType && {
             originalType: field.type,
-        }),
-        ...(isDefined(defaultValue) && { default: defaultValue }),
-        ...(isDefined(format) && { format }),
-        ...(isDefined(items) && { items }),
-        ...(isDefined(enumList) && { enum: enumList }),
-        ...(isDefined(description) && { description }),
+        },
+        ...isDefined(defaultValue) && { default: defaultValue },
+        ...isDefined(format) && { format },
+        ...isDefined(items) && { items },
+        ...isDefined(enumList) && { enum: enumList },
+        ...isDefined(description) && { description },
     };
 };
 
-const getJSONSchemaProperty =
-    (modelMetaData: ModelMetaData, transformOptions: TransformOptions) =>
-    (field: DMMF.Field): PropertyMap => {
-        const propertyMetaData: PropertyMetaData = {
-            hasDefaultValue: field.hasDefaultValue,
-            isScalar: field.kind === "scalar" || field.kind === "enum",
-            required: field.isRequired,
+const getJSONSchemaProperty
+    = (modelMetaData: ModelMetaData, transformOptions: TransformOptions) =>
+        (field: DMMF.Field): PropertyMap => {
+            const propertyMetaData: PropertyMetaData = {
+                hasDefaultValue: field.hasDefaultValue,
+                isScalar: field.kind === "scalar" || field.kind === "enum",
+                required: field.isRequired,
+            };
+
+            const property = isSingleReference(field)
+                ? getJSONSchemaForPropertyReference(field, transformOptions)
+                : getPropertyDefinition(modelMetaData, transformOptions, field);
+
+            return [field.name, property, propertyMetaData];
         };
-
-        const property = isSingleReference(field)
-            ? getJSONSchemaForPropertyReference(field, transformOptions)
-            : getPropertyDefinition(modelMetaData, transformOptions, field);
-
-        return [field.name, property, propertyMetaData];
-    };
 
 export default getJSONSchemaProperty;
