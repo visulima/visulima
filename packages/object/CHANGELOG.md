@@ -1,3 +1,9 @@
+## @visulima/object [1.0.12](https://github.com/visulima/visulima/compare/@visulima/object@1.0.11...@visulima/object@1.0.12) (2025-09-10)
+
+### Bug Fixes
+
+* **object:** restore require exports in package.json for CommonJS compatibility ([beb9c7d](https://github.com/visulima/visulima/commit/beb9c7d4c7046ab536de948ff9157a2bc7f9c916))
+
 ## @visulima/object [1.0.11](https://github.com/visulima/visulima/compare/@visulima/object@1.0.10...@visulima/object@1.0.11) (2025-05-31)
 
 ### Bug Fixes
