@@ -1,0 +1,8 @@
+{
+    "name": "flare",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/flare/src",
+    "projectType": "library",
+    "tags": ["flare", "type:package"],
+    "implicitDependencies": ["error"]
+}
