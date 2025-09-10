@@ -608,8 +608,8 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.15))
       '@visulima/crud':
-        specifier: 2.0.38
-        version: 2.0.38(@prisma/client@6.15.0(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))
+        specifier: 2.0.39
+        version: 2.0.39(@prisma/client@6.15.0(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))
       '@visulima/fs':
         specifier: 3.1.6
         version: 3.1.6(yaml@2.8.0)
@@ -1307,8 +1307,8 @@ importers:
         specifier: 3.0.27
         version: 3.0.27
       '@visulima/prisma-dmmf-transformer':
-        specifier: 2.0.29
-        version: 2.0.29(@prisma/client@6.8.2(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))
+        specifier: 2.0.30
+        version: 2.0.30(@prisma/client@6.8.2(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))
       http-errors:
         specifier: ^2.0.0
         version: 2.0.0
@@ -1650,11 +1650,11 @@ importers:
         specifier: ^2.2.3
         version: 2.2.3
       '@visulima/boxen':
-        specifier: workspace:*
-        version: link:../boxen
+        specifier: 2.0.2
+        version: 2.0.2
       '@visulima/error':
-        specifier: workspace:*
-        version: link:../error
+        specifier: 4.5.0
+        version: 4.5.0(ai@5.0.34(zod@3.25.29))
       http-errors:
         specifier: ^2.0.0
         version: 2.0.0
@@ -2097,8 +2097,6 @@ importers:
       vitest:
         specifier: ^3.1.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.3.1)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@26.1.0)(msw@2.8.4(@types/node@24.3.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.0)
-
-  packages/fs/__bench__/fixtures/a/b: {}
 
   packages/fs/__fixtures__/find-up: {}
 
@@ -7095,14 +7093,8 @@ packages:
   '@prisma/debug@6.15.0':
     resolution: {integrity: sha512-y7cSeLuQmyt+A3hstAs6tsuAiVXSnw9T55ra77z0nbNkA8Lcq9rNcQg6PI00by/+WnE/aMRJ/W7sZWn2cgIy1g==}
 
-  '@prisma/debug@6.8.2':
-    resolution: {integrity: sha512-4muBSSUwJJ9BYth5N8tqts8JtiLT8QI/RSAzEogwEfpbYGFo9mYsInsVo8dqXdPO2+Rm5OG5q0qWDDE3nyUbVg==}
-
   '@prisma/dmmf@6.15.0':
     resolution: {integrity: sha512-HAUnWmxjtx8sJevhNhimSfAgho5JR6+H51DpQMZd1C5m1m4jOYkNIZ6oAdujls+Yo9iObfix4sUcvHmQY2HFQQ==}
-
-  '@prisma/dmmf@6.8.2':
-    resolution: {integrity: sha512-okGJF/7hQZam/2wt+Y0hPyNxyY5S+L0FzAgtL932Q3YxUWHusRllrN39bCV45oF3QWY992g7rTWYdL2Rynt1qg==}
 
   '@prisma/driver-adapter-utils@6.15.0':
     resolution: {integrity: sha512-tzcMG1eEBM3IJ8TBHo4jGeoUaalctqGXbrvxIoZb8jSEtgR82IUhdVyHHLVTlT8MdrHovcQJJ3jfcQfJARRnaQ==}
@@ -7119,14 +7111,8 @@ packages:
   '@prisma/generator-helper@6.15.0':
     resolution: {integrity: sha512-QHwXmVo52tcbbqT72He+3iEjNFQmf26Pxt/FrA9rvM/AmpTeSVdwFWf7tJVk1p0CH/mL8hmgHMzzt6wjy3Aa3A==}
 
-  '@prisma/generator-helper@6.8.2':
-    resolution: {integrity: sha512-KBLW47sbwFBKKYMiICIAEWsG6TdpPapPT7e7hpmpF3xMgYAm6YIXu4JGwfQVDY9Vbcb+0vPdPdSEQtInYOOe5g==}
-
   '@prisma/generator@6.15.0':
     resolution: {integrity: sha512-STY+e1wHAwl6rvnsmGG6/6ckVG9oRsYVP7W80N9dHSRxx2Wq1A9TxQBWRE8pep2Rq9hSoXNxJV0xcYwzC9K7Vg==}
-
-  '@prisma/generator@6.8.2':
-    resolution: {integrity: sha512-yExkvgqiKg1WHzjYttz40g5DsOtud8RhapM0Mum6pw+wrDoQyhSAxs5NHyFCV+9VPvRd2v+jAP2CTT07bsibjw==}
 
   '@prisma/get-platform@6.15.0':
     resolution: {integrity: sha512-Jbb+Xbxyp05NSR1x2epabetHiXvpO8tdN2YNoWoA/ZsbYyxxu/CO/ROBauIFuMXs3Ti+W7N7SJtWsHGaWte9Rg==}
@@ -9856,8 +9842,8 @@ packages:
     peerDependencies:
       zod: ^3.22.4
 
-  '@visulima/crud@2.0.38':
-    resolution: {integrity: sha512-XqmibfpsFXdsn9V1etMPh+QXa05uNACDwgUwE9PyGL7glnUJr1PrysSCdC5AYBw4n6/FcusRc46BbuvBUQrGrg==}
+  '@visulima/crud@2.0.39':
+    resolution: {integrity: sha512-00pzE5EtWQDCY+MRGZAEKpK3iZtdw1CRNcL00bTqNVNIeMvA3zZlDDDvSu/ppkRV7Jdtj0pSKDoEYYjg/L4fcg==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
@@ -10000,6 +9986,7 @@ packages:
   '@visulima/nextra-theme-docs@4.0.26':
     resolution: {integrity: sha512-eGQn1GmpnoQJwBWYIOgwGTuCu1o7jnTko68Sb9Z5eBszY0XfMcsU1sm9pYQ6y+EMyj2g2O/Hs8uZ1n8P9CULEg==}
     engines: {node: '>=18.* <=22.*'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       next: '>=13.1.6'
       nextra: '>=2.2.13'
@@ -10557,13 +10544,13 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/prisma-dmmf-transformer@2.0.29':
-    resolution: {integrity: sha512-4Io8IPyf7H/KpryvGjZWY5HRoGDB1UEku9VJy+O4AlP/tAB2bjwxd5MwYw5CU9N7vuKCrohRdvhAQvRhkv44kg==}
-    engines: {node: '>=18.0.0 <=23.x'}
+  '@visulima/prisma-dmmf-transformer@2.0.30':
+    resolution: {integrity: sha512-6mWMXPlNN/I2X144vZ9pDd1xRCi28Be/NcjD4jhtixHU2YJf6XExU5AMVzwknVASUt2/WF3Y00mqe/6B7DbAEw==}
+    engines: {node: '>=18.0.0 <=24.x'}
     os: [darwin, linux, win32]
     peerDependencies:
-      '@prisma/client': 3.* || 4.*
-      prisma: 3.* || 4.*
+      '@prisma/client': 3.* || 4.* || 5.* || 6.*
+      prisma: 3.* || 4.* || 5.* || 6.*
 
   '@visulima/redact@1.0.15':
     resolution: {integrity: sha512-G8YfLcgzFbw6vgdI/O4K0RnIq6cT7aB3DIhrn7UuuxwgeknRRO1Tba9kklyyY+K4xtXr3hfLsJg78jDbd6Zp8g==}
@@ -10820,7 +10807,7 @@ packages:
     resolution: {integrity: sha512-46ryTE9RZO/rfDd7pEqFl7etuyzekzEhUbTW3BvmeO/BcCMEgq59BKhek3dXDWgAj4oMK6OZi+vRr1wPW6qjEQ==}
     peerDependencies:
       msw: ^2.4.9
-      vite: '>=7.1.5'
+      vite: '>=5.4.20'
     peerDependenciesMeta:
       msw:
         optional: true
@@ -25022,11 +25009,7 @@ snapshots:
 
   '@prisma/debug@6.15.0': {}
 
-  '@prisma/debug@6.8.2': {}
-
   '@prisma/dmmf@6.15.0': {}
-
-  '@prisma/dmmf@6.8.2': {}
 
   '@prisma/driver-adapter-utils@6.15.0':
     dependencies:
@@ -25053,15 +25036,7 @@ snapshots:
       '@prisma/dmmf': 6.15.0
       '@prisma/generator': 6.15.0
 
-  '@prisma/generator-helper@6.8.2':
-    dependencies:
-      '@prisma/debug': 6.8.2
-      '@prisma/dmmf': 6.8.2
-      '@prisma/generator': 6.8.2
-
   '@prisma/generator@6.15.0': {}
-
-  '@prisma/generator@6.8.2': {}
 
   '@prisma/get-platform@6.15.0':
     dependencies:
@@ -29638,10 +29613,10 @@ snapshots:
       regexparam: 3.0.0
       zod: 3.25.29
 
-  '@visulima/crud@2.0.38(@prisma/client@6.15.0(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))':
+  '@visulima/crud@2.0.39(@prisma/client@6.15.0(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))':
     dependencies:
       '@visulima/pagination': 3.0.27
-      '@visulima/prisma-dmmf-transformer': 2.0.29(@prisma/client@6.15.0(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))
+      '@visulima/prisma-dmmf-transformer': 2.0.30(@prisma/client@6.15.0(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))
       http-errors: 2.0.0
       path-to-regexp: 8.2.0
     transitivePeerDependencies:
@@ -30877,16 +30852,16 @@ snapshots:
 
   '@visulima/path@1.4.0': {}
 
-  '@visulima/prisma-dmmf-transformer@2.0.29(@prisma/client@6.15.0(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))':
+  '@visulima/prisma-dmmf-transformer@2.0.30(@prisma/client@6.15.0(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))':
     dependencies:
       '@prisma/client': 6.15.0(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3)
-      '@prisma/generator-helper': 6.8.2
+      '@prisma/generator-helper': 6.15.0
       prisma: 6.15.0(magicast@0.3.5)(typescript@5.8.3)
 
-  '@visulima/prisma-dmmf-transformer@2.0.29(@prisma/client@6.8.2(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))':
+  '@visulima/prisma-dmmf-transformer@2.0.30(@prisma/client@6.8.2(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))':
     dependencies:
       '@prisma/client': 6.8.2(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3)
-      '@prisma/generator-helper': 6.8.2
+      '@prisma/generator-helper': 6.15.0
       prisma: 6.15.0(magicast@0.3.5)(typescript@5.8.3)
 
   '@visulima/redact@1.0.15':
