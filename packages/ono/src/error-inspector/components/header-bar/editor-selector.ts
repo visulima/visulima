@@ -5,6 +5,7 @@ const editorSelector = (editor?: Editors): string => {
 
     (Object.keys(Editors) as (keyof typeof Editors)[]).forEach((editorName) => {
         const isSelected = editor && String(editor) === String(editorName);
+
         options += `<option value=\"${String(editorName)}\" ${isSelected ? "selected" : ""}>${Editors[editorName]}</option>`;
     });
 
