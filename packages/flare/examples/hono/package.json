@@ -1,0 +1,14 @@
+{
+    "name": "hono_example_flare",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node index.js"
+    },
+    "dependencies": {
+        "@hono/node-server": "^1.0.0",
+        "@visulima/flare": "workspace:*",
+        "hono": "^4.0.0"
+    }
+}
