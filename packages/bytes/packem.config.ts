@@ -13,6 +13,13 @@ export default defineConfig({
             typeScriptVersion: ">=5.0",
         },
     },
+    validation: {
+        dependencies: {
+            hoisted: {
+                exclude: ["@jsr/std__bytes"]
+            }
+        }
+    },
     transformer,
     cjsInterop: true,
 }) as BuildConfig;
