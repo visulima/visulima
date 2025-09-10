@@ -1,5 +1,4 @@
 import prismaInternal from "@prisma/internals";
-// eslint-disable-next-line import/no-named-as-default
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
@@ -571,7 +570,7 @@ describe("jSON Schema Generator", () => {
                 },
             });
 
-            expect(valid, ajv.errorsText(validate.errors)).toBeTruthy();
+            expect(valid, ajv.errorsText(validate.errors)).toBe(true);
         });
     });
 
