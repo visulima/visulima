@@ -38,13 +38,13 @@
     "sideEffects": false,
     "exports": {
         ".": {
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            },
             "import": {
                 "types": "./dist/index.d.mts",
                 "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
             }
         },
         "./package.json": "./package.json"
@@ -95,6 +95,7 @@
         "@babel/core": "^7.28.4",
         "@prisma/client": "6.15.0",
         "@prisma/internals": "6.15.0",
+        "json-schema": "0.4.0",
         "@types/json-schema": "7.0.15",
         "@types/micromatch": "4.0.9",
         "@types/node": "24.3.1",
