@@ -1,3 +1,10 @@
+## @visulima/prisma-dmmf-transformer [2.0.30](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.29...@visulima/prisma-dmmf-transformer@2.0.30) (2025-09-10)
+
+### Bug Fixes
+
+* **prisma-dmmf-transformer:** update dependencies and ESLint configuration ([73aa16c](https://github.com/visulima/visulima/commit/73aa16c2d856a390ff72bf1f2159dffb6c8eb424))
+* **prisma-dmmf-transformer:** update package.json and pnpm-lock.yaml for compatibility ([c12a482](https://github.com/visulima/visulima/commit/c12a4828f7b934a2faa532c380210addefc13428))
+
 ## @visulima/prisma-dmmf-transformer [2.0.29](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.28...@visulima/prisma-dmmf-transformer@2.0.29) (2025-05-30)
 
 ### Bug Fixes
