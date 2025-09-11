@@ -7,7 +7,6 @@ import launchEditorMiddleware from "launch-editor-middleware";
 
 const respond400 = (
     response: ServerResponse<IncomingMessage> & { status?: (code: number) => ServerResponse<IncomingMessage> & { send: (body: string) => void } },
-    next?: (error?: any) => void,
 ) => {
     if (typeof response.status === "function") {
         response.status(400).send("Failed to open editor");
@@ -17,10 +16,6 @@ const respond400 = (
 
     response.statusCode = 400;
     response.end("Failed to open editor");
-
-    if (typeof next === "function") {
-        next();
-    }
 };
 
 export type OpenInEditorOptions = {
@@ -82,7 +77,7 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}) 
         const absPath = path.isAbsolute(payload.file || "") ? String(payload.file || "") : path.resolve(projectRoot, String(payload.file || ""));
 
         if (!payload.file) {
-            respond400(response, next);
+            respond400(response);
 
             return;
         }
@@ -91,7 +86,7 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}) 
             const rootWithSeparator = projectRoot.endsWith(path.sep) ? projectRoot : projectRoot + path.sep;
 
             if (!absPath.startsWith(rootWithSeparator)) {
-                respond400(response, next);
+                respond400(response);
 
                 return;
             }

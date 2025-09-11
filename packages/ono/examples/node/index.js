@@ -133,7 +133,7 @@ const server = createServer(async (request, response) => {
         // Generate HTML with new Ono class
         const html = await ono.toHTML(error, {
             content: [contextPage],
-            openInEditorUrl: "__open-in-editor",
+            openInEditorUrl: "/__open-in-editor",
             solutionFinders,
             cspNonce: "node-nonce-" + Date.now(),
             theme: "auto"

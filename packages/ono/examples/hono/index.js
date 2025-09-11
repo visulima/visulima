@@ -1,6 +1,6 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import Ono from "@visulima/ono";
+import { Ono } from "@visulima/ono";
 
 const app = new Hono();
 const ono = new Ono();

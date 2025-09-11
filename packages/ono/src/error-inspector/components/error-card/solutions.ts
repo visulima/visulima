@@ -15,7 +15,7 @@ import getFileSource from "../../../../../../shared/utils/get-file-source";
 
 const solutions = async (
     error: Error | SolutionError | VisulimaError,
-    solutionFinders: SolutionFinder[],
+    solutionFinders: SolutionFinder[] = [],
 ): Promise<{
     html: string;
     script: string;
@@ -27,7 +27,7 @@ const solutions = async (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const firstTrace = parseStacktrace(error, { frameLimit: 1 })[0] as any;
 
-    for await (const handler of solutionFinders.sort((a, b) => a.priority - b.priority)) {
+    for await (const handler of solutionFinders.sort((a, b) => b.priority - a.priority)) {
         if (hint) {
             break;
         }
@@ -43,12 +43,17 @@ const solutions = async (
             continue;
         }
 
-        hint = await solutionHandler(error, {
-            file: firstTrace?.file ?? "",
-            language: findLanguageBasedOnExtension(firstTrace?.file ?? ""),
-            line: firstTrace?.line ?? 0,
-            snippet: firstTrace?.file ? await getFileSource(firstTrace.file) : "",
-        });
+        try {
+            hint = await solutionHandler(error, {
+                file: firstTrace?.file ?? "",
+                language: findLanguageBasedOnExtension(firstTrace?.file ?? ""),
+                line: firstTrace?.line ?? 0,
+                snippet: firstTrace?.file ? await getFileSource(firstTrace.file) : "",
+            });
+        } catch {
+            // Ignore solution finder errors and continue with other finders
+            continue;
+        }
     }
 
     if (!hint) {
