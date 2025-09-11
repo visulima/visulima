@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read --allow-env
 
 import { Ono } from "@visulima/ono";
-import { createRequestContextPage } from "@visulima/ono/page/context";
+import createRequestContextPage from "@visulima/ono/page/context";
 
 const ono = new Ono();
 
