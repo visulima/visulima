@@ -112,7 +112,7 @@ const server = Bun.serve({
                             "X-Bun-Version": Bun.version,
                             "X-Server": "Bun",
                         },
-                    },
+                    }
                 );
             } catch (renderError) {
                 console.error("Failed to render error page:", renderError);
@@ -126,8 +126,7 @@ const server = Bun.serve({
         // Route handlers
         if (url.pathname === "/") {
             const startupTime = performance.now();
-            return new Response(
-                `
+            return new Response(`
                 <!DOCTYPE html>
                 <html>
                     <head>
@@ -140,14 +139,14 @@ const server = Bun.serve({
                         </style>
                     </head>
                     <body>
-                        <h1>🚀 Bun + Ono Example Server</h1>
+                        <h1>Bun + Ono Example Server</h1>
                         <div class="bun-info">
-                            <h3>⚡ Bun Runtime Information</h3>
+                            <h3>Bun Runtime Information</h3>
                             <p><strong>Version:</strong> ${Bun.version}</p>
                             <p><strong>Platform:</strong> ${process.platform}</p>
                             <p><strong>Architecture:</strong> ${process.arch}</p>
                             <p><strong>Startup Time:</strong> ${startupTime.toFixed(2)}ms</p>
-                            <p><strong>Hot Reload:</strong> ✅ Enabled</p>
+                            <p><strong>Hot Reload:</strong> Enabled</p>
                         </div>
                         <p>Click on these routes to see different error scenarios:</p>
                         <div class="route">
@@ -164,11 +163,9 @@ const server = Bun.serve({
                         </div>
                     </body>
                 </html>
-            `,
-                {
-                    headers: { "Content-Type": "text/html" },
-                },
-            );
+            `, {
+                headers: { "Content-Type": "text/html" },
+            });
         }
 
         if (url.pathname === "/error") {
