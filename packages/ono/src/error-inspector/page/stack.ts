@@ -2,8 +2,8 @@ import type { VisulimaError } from "@visulima/error/error";
 import { getErrorCauses } from "@visulima/error/error";
 import type { SolutionError, SolutionFinder } from "@visulima/error/solution";
 
-import process from "../../util/process";
-import runtimeName from "../../util/runtimes";
+import process from "../../utils/process";
+import runtimeName from "../../utils/runtimes";
 import causesViewer from "../components/causes-viewer";
 import errorCard from "../components/error-card";
 import rawStackTrace from "../components/raw-stack-trace";

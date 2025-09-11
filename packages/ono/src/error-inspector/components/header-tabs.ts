@@ -5,8 +5,8 @@ import layersIcon from "lucide-static/icons/layers.svg?raw";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import isquareDashedIcon from "lucide-static/icons/square-dashed.svg?raw";
 
-import { sanitizeAttribute, sanitizeHtml } from "../util/sanitize";
-import cn from "../util/tw";
+import cn from "../utils/cn";
+import { sanitizeAttribute, sanitizeHtml } from "../utils/sanitize";
 
 export type HeaderTab = { icon?: string; id: string; name: string; selected?: boolean };
 

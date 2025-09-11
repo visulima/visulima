@@ -4,7 +4,7 @@ import aiPrompt from "@visulima/error/solution/ai/prompt";
 
 import findLanguageBasedOnExtension from "../../../../../../shared/utils/find-language-based-on-extension";
 import getFileSource from "../../../../../../shared/utils/get-file-source";
-import { sanitizeAttribute, sanitizeHtml } from "../../util/sanitize";
+import { sanitizeAttribute, sanitizeHtml } from "../../utils/sanitize";
 import copyDropdown from "../copy-dropdown";
 import shortcutsButton from "../shortcuts-button";
 

@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
 
-import { sanitizeHtml } from "../util/sanitize";
+import { sanitizeHtml } from "../utils/sanitize";
 
 const tooltip = ({ message }: { message?: string } = {}): string => {
     if (!message)

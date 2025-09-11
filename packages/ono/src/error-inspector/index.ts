@@ -8,7 +8,7 @@ import inlineCss from "./index.css";
 import layout from "./layout";
 import createStackPage from "./page/stack";
 import type { TemplateOptions } from "./types";
-import { sanitizeHtml } from "./util/sanitize";
+import { sanitizeHtml } from "./utils/sanitize";
 
 const domUtilitiesScript = `
 // DOM utility functions

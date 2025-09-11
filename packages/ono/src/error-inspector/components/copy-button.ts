@@ -3,7 +3,7 @@ import checkIcon from "lucide-static/icons/check.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import clipboardIcon from "lucide-static/icons/clipboard.svg?data-uri&encoding=css";
 
-import { sanitizeAttribute, sanitizeHtml } from "../util/sanitize";
+import { sanitizeAttribute, sanitizeHtml } from "../util/sanitize";../utils/sanitize
 
 const copyButton = ({ label = "Copy", successText = "Copied!", targetId }: { label?: string; successText?: string; targetId: string }): { html: string } => {
     const safeTarget = sanitizeAttribute(targetId);
