@@ -3187,6 +3187,9 @@ importers:
       '@visulima/error':
         specifier: workspace:*
         version: link:../error
+      '@visulima/path':
+        specifier: workspace:*
+        version: link:../path
       isomorphic-dompurify:
         specifier: ^2.26.0
         version: 2.26.0

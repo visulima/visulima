@@ -126,7 +126,7 @@ describe("error inspector template", () => {
         const lightHtml = await template(error, [], { theme: "light" });
         const darkHtml = await template(error, [], { theme: "dark" });
 
-        expect(lightHtml).toContain("<html lang=\"en\" class=\"dark\">");
+        expect(lightHtml).toContain("<html lang=\"en\" class=\"\">");
         expect(darkHtml).toContain("<html lang=\"en\" class=\"dark\">");
     });
 

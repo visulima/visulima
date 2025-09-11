@@ -351,6 +351,7 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
             stackScript as string,
             ...customPages.map((p) => p.code.script || ""),
         ].filter(Boolean),
+        theme: options?.theme,
         title: "Error",
     });
 };

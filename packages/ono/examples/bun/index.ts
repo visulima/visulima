@@ -112,7 +112,7 @@ const server = Bun.serve({
                             "X-Bun-Version": Bun.version,
                             "X-Server": "Bun",
                         },
-                    }
+                    },
                 );
             } catch (renderError) {
                 console.error("Failed to render error page:", renderError);
@@ -126,7 +126,8 @@ const server = Bun.serve({
         // Route handlers
         if (url.pathname === "/") {
             const startupTime = performance.now();
-            return new Response(`
+            return new Response(
+                `
                 <!DOCTYPE html>
                 <html>
                     <head>
@@ -163,9 +164,11 @@ const server = Bun.serve({
                         </div>
                     </body>
                 </html>
-            `, {
-                headers: { "Content-Type": "text/html" },
-            });
+            `,
+                {
+                    headers: { "Content-Type": "text/html" },
+                },
+            );
         }
 
         if (url.pathname === "/error") {

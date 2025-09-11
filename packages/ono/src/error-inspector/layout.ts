@@ -1,4 +1,5 @@
 import DOMPurify from "isomorphic-dompurify";
+import type { Theme } from "src/types";
 
 const layout = ({
     content,
@@ -7,6 +8,7 @@ const layout = ({
     description,
     error,
     scripts,
+    theme,
     title,
 }: {
     content: string;
@@ -15,6 +17,7 @@ const layout = ({
     description: string;
     error: Error;
     scripts: string[];
+    theme?: Theme;
     title: string;
 }): string => {
     const errorStack = DOMPurify.sanitize(error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString());
@@ -23,7 +26,7 @@ const layout = ({
     ${errorStack}
     -->
     <!DOCTYPE html>
-    <html lang="en" class="dark">
+    <html lang="en" class="${theme === "dark" ? "dark" : ""}">
     <head>
         <meta charset="UTF-8">
         <title>${title}</title>
