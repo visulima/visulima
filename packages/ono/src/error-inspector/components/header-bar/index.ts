@@ -5,7 +5,7 @@ import editorSelector from "./editor-selector";
 import themeToggle from "./theme-toggle";
 
 const headerBar = (
-    options: Partial<{ editor: Editor; theme: Theme }>,
+    options: Partial<{ editor: Editor; theme: Theme; openInEditorUrl?: string }>,
     hasContextTab = false,
 ): {
     html: string;
@@ -24,11 +24,11 @@ const headerBar = (
             : ""
     }
     <div class="grow"></div>
-    ${editorSelector(options.editor)}
+    ${options.openInEditorUrl ? editorSelector(options.editor) : ""}
     ${shortcutsButton()}
     ${toggle.html}
 </div>`,
-        script: `${toggle.script}
+        script: `${toggle.script}${options.openInEditorUrl ? `
 // Initialize editor selector from localStorage if available
 (function(){
   'use strict';
@@ -49,6 +49,7 @@ const headerBar = (
     } catch(_) {}
   });
 })();
+` : ""}
 `,
     };
 };
