@@ -8,7 +8,7 @@ import externalLinkIcon from "lucide-static/icons/external-link.svg?data-uri&enc
 import findLanguageBasedOnExtension from "../../../../../../shared/utils/find-language-based-on-extension";
 import getFileSource from "../../../../../../shared/utils/get-file-source";
 import type { RuntimeName } from "../../../utils/runtimes";
-import { sanitizeAttribute, sanitizeHtml } from "../../util/sanitize";../../utils/sanitize
+import { sanitizeAttribute, sanitizeHtml } from "../../utils/sanitize";
 import copyDropdown from "../copy-dropdown";
 import solutions from "./solutions";
 import stickyHeader from "./sticky-header";
