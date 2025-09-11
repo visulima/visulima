@@ -10,8 +10,8 @@ import revisionHash from "../../../utils/revision-hash";
 import cn from "../../utils/cn";
 import { sanitizeAttribute, sanitizeHtml, sanitizeUrlAttribute } from "../../utils/sanitize";
 import type { GroupType, Item } from "./types";
-import getType from "./util/get-type";
-import groupSimilarTypes from "./util/group-similar-types";
+import getType from "./utils/get-type";
+import groupSimilarTypes from "./utils/group-similar-types";
 
 const stackTraceViewer = async (
     error: Error,

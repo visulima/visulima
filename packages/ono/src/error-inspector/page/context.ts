@@ -281,10 +281,10 @@ export const createRequestContextPage = async (request: RequestLike, options: Co
         cookieHeader = request.headers.get("cookie");
     } else if (Array.isArray((request.headers as Record<string, string | string[]>)?.cookie)) {
         // eslint-disable-next-line unicorn/no-null
-        cookieHeader = ((request.headers as Record<string, string | string[]>)?.cookie?.[0]) as string ?? null;
+        cookieHeader = ((request.headers as Record<string, string | string[]>)?.cookie?.[0] as string) ?? null;
     } else {
         // eslint-disable-next-line unicorn/no-null
-        cookieHeader = (request.headers as Record<string, string | string[]>)?.cookie as string ?? null;
+        cookieHeader = ((request.headers as Record<string, string | string[]>)?.cookie as string) ?? null;
     }
 
     const cookiesRecord: Record<string, string | string[]> | undefined = parseCookieString(cookieHeader);
