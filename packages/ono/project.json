@@ -4,5 +4,5 @@
     "sourceRoot": "packages/ono/src",
     "projectType": "library",
     "tags": ["ono", "type:package"],
-    "implicitDependencies": ["error"]
+    "implicitDependencies": ["error", "boxen"]
 }

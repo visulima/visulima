@@ -4,5 +4,5 @@
     "sourceRoot": "shared/utils/src",
     "projectType": "library",
     "tags": ["shared", "type:shared"],
-    "implicitDependencies": []
+    "implicitDependencies": ["boxen", "error"]
 }
