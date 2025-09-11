@@ -1,4 +1,4 @@
-export type GroupType = "internal" | "node_modules" | "webpack" | undefined;
+export type GroupType = "internal" | "node_modules" | "webpack" | "native" | "bun" | undefined;
 
 export type Item = {
     html: string;

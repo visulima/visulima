@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 
 import { Ono } from "@visulima/ono";
-import { createRequestContextPage } from "@visulima/ono/page/context";
+import createRequestContext from "@visulima/ono/page/context";
 import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
 
 // Deeper stack builders (sync + async levels)
@@ -78,7 +78,7 @@ const server = createServer(async (request, response) => {
         const git = { branch: process.env.GIT_BRANCH, commit: process.env.GIT_COMMIT, tag: process.env.GIT_TAG, dirty: process.env.GIT_DIRTY === "true" };
         const versions = { node: process.version };
 
-        const contextPage = await createRequestContextPage(request, {
+        const contextPage = await createRequestContext(request, {
             context: {
                 app: { routing },
                 user,

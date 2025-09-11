@@ -114,8 +114,16 @@ const stackTraceViewer = async (
                 let label: string;
 
                 switch (first.type) {
+                    case "bun": {
+                        label = "bun";
+                        break;
+                    }
                     case "internal": {
                         label = "internal";
+                        break;
+                    }
+                    case "native": {
+                        label = "native";
                         break;
                     }
                     case "node_modules": {
@@ -171,8 +179,16 @@ const stackTraceViewer = async (
                             let groupLabel: string;
 
                             switch (firstItem.type) {
+                                case "bun": {
+                                    groupLabel = "bun";
+                                    break;
+                                }
                                 case "internal": {
                                     groupLabel = "internal";
+                                    break;
+                                }
+                                case "native": {
+                                    groupLabel = "native";
                                     break;
                                 }
                                 case "node_modules": {
