@@ -1,3 +1,4 @@
+import type { IncomingMessage, RequestListener, ServerResponse } from "node:http";
 import { createServer, get as httpGet } from "node:http";
 
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
@@ -333,7 +334,7 @@ describe("server middleware", () => {
                 middleware(request, response, next);
             };
 
-            const server = createServer(testMiddleware);
+            const server = createServer(testMiddleware as RequestListener<typeof IncomingMessage, typeof ServerResponse>);
 
             // eslint-disable-next-line vitest/no-test-return-statement
             return new Promise<void>((resolve) => {

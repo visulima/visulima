@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createRequestContextPage } from "../src/error-inspector/page/context";
+import createRequestContextPage from "../src/error-inspector/page/create-request-context";
 
 describe("context page", () => {
     describe(createRequestContextPage, () => {

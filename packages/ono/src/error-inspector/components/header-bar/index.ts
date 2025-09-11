@@ -29,7 +29,7 @@ const headerBar = (
     ${shortcuts.html}
     ${toggle.html}
 </div>`,
-        script: `${toggle.script}${shortcuts.script}${
+        script: `${toggle.script}${
             options.openInEditorUrl
                 ? `
 // Initialize editor selector from localStorage if available

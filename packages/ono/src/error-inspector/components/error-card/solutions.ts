@@ -27,7 +27,7 @@ const solutions = async (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const firstTrace = parseStacktrace(error, { frameLimit: 1 })[0] as any;
 
-    for await (const handler of solutionFinders.sort((a, b) => b.priority - a.priority)) {
+    for await (const handler of solutionFinders.toSorted((a, b) => b.priority - a.priority)) {
         if (hint) {
             break;
         }

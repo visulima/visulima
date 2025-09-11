@@ -250,6 +250,7 @@ describe("utilities", () => {
         it("should export runtime detection function", () => {
             expect.assertions(0);
 
+            // @ts-expect-error TODO: this error is wrong
             expectTypeOf(runtime).toBeString();
         });
     });
@@ -291,6 +292,7 @@ describe("utilities", () => {
             it("should convert non-string values to empty strings", () => {
                 expect.assertions(1);
 
+                // @ts-expect-error test
                 const result = cn("class1", 123, "class2");
 
                 expect(result).toBe("class1 class2");

@@ -9,6 +9,10 @@ const getType = (filePath: string): GroupType => {
         return "node_modules";
     }
 
+    if (filePath.includes("native")) {
+        return "native";
+    }
+
     if (filePath.includes("webpack")) {
         return "webpack";
     }

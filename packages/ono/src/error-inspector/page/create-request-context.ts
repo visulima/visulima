@@ -13,13 +13,31 @@ import getHighlighter from "../../../../../shared/utils/get-highlighter";
 import copyButton from "../components/copy-button";
 import type { ContentPage } from "../types";
 import { sanitizeAttribute, sanitizeCodeHtml, sanitizeHtml, sanitizeUrlAttribute } from "../utils/sanitize";
+import type { ContextContentOptions, HeadersInput, HeadersOutput, HeadersRecord, HeaderValue, RequestLike } from "./types";
+import { isHeadersObject } from "./types";
 
 const SENSITIVE_HEADER_PATTERNS = [/authorization/i, /cookie/i, /set-cookie/i, /x-api-key/i, /api-key/i, /x-auth/i, /token/i, /secret/i];
 
-type HeaderValue = string | string[] | undefined;
-type HeadersRecord = Record<string, HeaderValue>;
-type HeadersInput = HeadersRecord | Headers | undefined;
-type HeadersOutput = Record<string, string | string[]> | undefined;
+// Helper functions for safe property access on RequestLike union type
+const safeGetProperty = <T>(object: unknown, property: string): T | undefined => {
+    if (typeof object === "object" && object !== null && property in object) {
+        return (object as Record<string, T>)[property];
+    }
+
+    return undefined;
+};
+
+const safeGetMethod = (object: unknown, property: string): ((...arguments_: unknown[]) => unknown) | undefined => {
+    const method = safeGetProperty<(...arguments_: unknown[]) => unknown>(object, property);
+
+    return typeof method === "function" ? method : undefined;
+};
+
+const safeGetString = (object: unknown, property: string): string | undefined => {
+    const value = safeGetProperty(object, property);
+
+    return typeof value === "string" ? value : undefined;
+};
 
 const isSensitiveHeader = (name: string, denylist: string[] | undefined): boolean => {
     if (denylist && denylist.some((d) => d.toLowerCase() === name.toLowerCase())) {
@@ -29,16 +47,19 @@ const isSensitiveHeader = (name: string, denylist: string[] | undefined): boolea
     return SENSITIVE_HEADER_PATTERNS.some((re) => re.test(name));
 };
 
-const isHeadersObject = (object: unknown): object is Headers =>
-    typeof object === "object" && object !== null && typeof (object as Headers).forEach === "function" && typeof (object as Headers).get === "function";
-
 const normalizeHeadersToEntries = (headers: HeadersInput): [string, HeaderValue][] => {
     if (!headers) {
         return [];
     }
 
     if (isHeadersObject(headers)) {
-        return [...headers.entries()].map(([k, v]) => [k, v]);
+        const entries = safeGetMethod(headers, "entries");
+
+        if (entries) {
+            const entriesResult = entries() as IterableIterator<[string, string]>;
+
+            return [...entriesResult].map(([k, v]: [string, string]) => [k, v as HeaderValue]);
+        }
     }
 
     return Object.entries(headers as HeadersRecord);
@@ -122,49 +143,60 @@ const parseCookieString = (cookieHeader?: string | null): Record<string, string>
     return result;
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const readRequestBody = async (request: RequestLike, capBytes: number): Promise<unknown> => {
     try {
-        const method = String(request?.method || "GET").toUpperCase();
+        const method = String(safeGetString(request, "method") || "GET").toUpperCase();
 
         if (method === "GET" || method === "HEAD") {
             return undefined;
         }
 
-        const contentType = isHeadersObject(request.headers)
-            ? request.headers.get("content-type") || ""
-            : String((request.headers as Record<string, string | string[]>)?.["content-type"] || "");
+        const requestHeaders = safeGetProperty(request, "headers");
+        const contentType = isHeadersObject(requestHeaders)
+            ? safeGetMethod(requestHeaders, "get")?.("content-type") || ""
+            : String((requestHeaders as Record<string, string | string[]>)?.["content-type"] || "");
 
-        const cloned = request.clone ? request.clone() : request;
+        const cloneMethod = safeGetMethod(request, "clone");
+        const cloned = (cloneMethod ? cloneMethod() : request) as RequestLike;
 
-        if (typeof cloned.json === "function" && String(contentType).includes("application/json")) {
+        if (safeGetMethod(cloned, "json") && String(contentType).includes("application/json")) {
             try {
-                return await cloned.json();
+                const jsonMethod = safeGetMethod(cloned, "json");
+
+                return jsonMethod ? await jsonMethod() : undefined;
             } catch {
                 try {
-                    return await cloned.text?.() || "";
+                    const textMethod = safeGetMethod(cloned, "text");
+
+                    return textMethod ? await textMethod() || "" : undefined;
                 } catch {
                     return undefined;
                 }
             }
         }
 
-        if (typeof cloned.text === "function") {
+        if (safeGetMethod(cloned, "text")) {
             try {
-                return await cloned.text();
+                const textMethod = safeGetMethod(cloned, "text");
+
+                return textMethod ? await textMethod() : undefined;
             } catch {
                 return undefined;
             }
         }
 
         // Node.js IncomingMessage fallback with size cap
-        if (typeof request?.on === "function") {
+        if (safeGetMethod(request, "on")) {
             return await new Promise<string | undefined>((resolve) => {
                 try {
                     let data = "";
                     let truncated = false;
 
-                    if (typeof request.setEncoding === "function") {
-                        request.setEncoding("utf8");
+                    const setEncodingMethod = safeGetMethod(request, "setEncoding");
+
+                    if (setEncodingMethod) {
+                        setEncodingMethod("utf8");
                     }
 
                     const onData = (chunk: unknown) => {
@@ -202,14 +234,18 @@ const readRequestBody = async (request: RequestLike, capBytes: number): Promise<
                     };
 
                     const cleanup = () => {
-                        request.off?.("data", onData);
-                        request.off?.("end", onEnd);
-                        request.off?.("error", onError);
+                        const offMethod = safeGetMethod(request, "off");
+
+                        offMethod?.("data", onData);
+                        offMethod?.("end", onEnd);
+                        offMethod?.("error", onError);
                     };
 
-                    request.on?.("data", onData);
-                    request.on?.("end", onEnd);
-                    request.on?.("error", onError);
+                    const onMethod = safeGetMethod(request, "on");
+
+                    onMethod?.("data", onData);
+                    onMethod?.("end", onEnd);
+                    onMethod?.("error", onError);
                 } catch {
                     resolve(undefined);
                 }
@@ -222,32 +258,11 @@ const readRequestBody = async (request: RequestLike, capBytes: number): Promise<
     }
 };
 
-export interface RequestLike {
-    clone?: () => RequestLike;
-    headers?: Record<string, string | string[]> | Headers;
-    json?: () => Promise<unknown>;
-    method?: string;
-    off?: (event: string, handler: (chunk: unknown) => void) => void;
-    on?: (event: string, handler: (chunk: unknown) => void) => void;
-    setEncoding?: (encoding: string) => void;
-    text?: () => Promise<string>;
-    url?: string;
-}
-
-export type ContextContentOptions = {
-    context?: Record<string, unknown>;
-    headerAllowlist?: string[];
-    headerDenylist?: string[];
-    maskValue?: string; // replacement for sensitive values
-    previewBytes?: number; // size of the pretty preview
-    totalCapBytes?: number; // hard cap for showing a full copy button
-};
-
-export const createRequestContextPage = async (request: RequestLike, options: ContextContentOptions): Promise<ContentPage | undefined> => {
+const createRequestContext = async (request: RequestLike, options: ContextContentOptions): Promise<ContentPage | undefined> => {
     // eslint-disable-next-line sonarjs/pseudo-random
     const uniqueId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 11)}`;
     const { headerAllowlist, headerDenylist, maskValue = "[masked]" } = options || {};
-    const filteredHeaders = filterHeaders(request.headers, headerAllowlist, headerDenylist, maskValue);
+    const filteredHeaders = filterHeaders(safeGetProperty(request, "headers"), headerAllowlist, headerDenylist, maskValue);
 
     const toSingle = (value: string | string[] | undefined): string | undefined => {
         if (value === undefined) {
@@ -275,16 +290,21 @@ export const createRequestContextPage = async (request: RequestLike, options: Co
         return parts.length > 0 ? parts.join("; ") : undefined;
     };
 
-    let cookieHeader: string | null;
+    let cookieHeader: string | undefined;
 
-    if (isHeadersObject(request.headers)) {
-        cookieHeader = request.headers.get("cookie");
-    } else if (Array.isArray((request.headers as Record<string, string | string[]>)?.cookie)) {
-        // eslint-disable-next-line unicorn/no-null
-        cookieHeader = ((request.headers as Record<string, string | string[]>)?.cookie?.[0] as string) ?? null;
+    const requestHeaders = safeGetProperty(request, "headers");
+
+    if (isHeadersObject(requestHeaders)) {
+        const getMethod = safeGetMethod(requestHeaders, "get");
+        const cookieValue = getMethod?.("cookie");
+
+        cookieHeader = typeof cookieValue === "string" ? cookieValue : undefined;
+    } else if (Array.isArray((requestHeaders as Record<string, string | string[]>)?.cookie)) {
+        cookieHeader = (requestHeaders as Record<string, string | string[]>)?.cookie?.[0] as string;
     } else {
-        // eslint-disable-next-line unicorn/no-null
-        cookieHeader = ((request.headers as Record<string, string | string[]>)?.cookie as string) ?? null;
+        const cookieValue = (requestHeaders as Record<string, string | string[]>)?.cookie;
+
+        cookieHeader = typeof cookieValue === "string" ? cookieValue : undefined;
     }
 
     const cookiesRecord: Record<string, string | string[]> | undefined = parseCookieString(cookieHeader);
@@ -293,8 +313,8 @@ export const createRequestContextPage = async (request: RequestLike, options: Co
     const requestBody: unknown = await readRequestBody(request, previewBytes);
 
     const buildCurl = (): string => {
-        const method = String(request?.method || "GET").toUpperCase();
-        const url = String(request?.url || "");
+        const method = String(safeGetString(request, "method") || "GET").toUpperCase();
+        const url = String(safeGetString(request, "url") || "");
         const headerLines: string[] = [];
         const headersForCurl: Record<string, string> = {};
 
@@ -618,8 +638,8 @@ export const createRequestContextPage = async (request: RequestLike, options: Co
     <div class="px-4 py-2 flex items-center gap-3 min-w-0 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${globeIcon}'); mask-image:url('${globeIcon}')"></span>
       <h2 class="text-sm font-semibold text-[var(--ono-text)]">Request</h2>
-      <a class="text-sm truncate text-[var(--ono-red-orange)]" href="${sanitizeUrlAttribute(request.url || "#")}">${escapeHtml(request.url || "")}</a>
-      <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-[var(--ono-chip-bg)] text-[var(--ono-chip-text)]">${escapeHtml(String(request.method || "GET"))}</span>
+      <a class="text-sm truncate text-[var(--ono-red-orange)]" href="${sanitizeUrlAttribute(safeGetString(request, "url") || "#")}">${escapeHtml(safeGetString(request, "url") || "")}</a>
+      <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-[var(--ono-chip-bg)] text-[var(--ono-chip-text)]">${escapeHtml(String(safeGetString(request, "method") || "GET"))}</span>
       <div class="grow"></div>
       ${copyButton({ label: "Copy cURL", targetId: `clipboard-curl-${uniqueId}` }).html}
     </div>
@@ -684,3 +704,5 @@ export const createRequestContextPage = async (request: RequestLike, options: Co
 
     return { code: { html, script: "" }, id: "context", name: "Context" };
 };
+
+export default createRequestContext;

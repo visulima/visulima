@@ -18,6 +18,8 @@ export default createConfig(
             "README.md",
             ".prettierrc.cjs",
             "src/types/launch-editor-middleware.d.ts",
+            // Till the eslint is fixed
+            "src/error-inspector/index.css",
         ],
     },
     {
