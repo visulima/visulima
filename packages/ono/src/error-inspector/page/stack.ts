@@ -12,7 +12,7 @@ import type { ContentPage, TemplateOptions } from "../types";
 
 type ErrorType = Error | SolutionError | VisulimaError;
 
-const createStackPage = async (error: ErrorType, solutionFinders: SolutionFinder[], options: TemplateOptions = {}): Promise<ContentPage> => {
+const stack = async (error: ErrorType, solutionFinders: SolutionFinder[], options: TemplateOptions = {}): Promise<ContentPage> => {
     const allCauses = getErrorCauses(error);
 
     if (allCauses.length === 0) {
@@ -49,4 +49,4 @@ const createStackPage = async (error: ErrorType, solutionFinders: SolutionFinder
     };
 };
 
-export default createStackPage;
+export default stack;

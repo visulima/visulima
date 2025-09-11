@@ -5,7 +5,7 @@ import chevronDownIcon from "lucide-static/icons/chevron-down.svg?data-uri&encod
 // eslint-disable-next-line import/no-extraneous-dependencies
 import clipboardIcon from "lucide-static/icons/clipboard.svg?data-uri&encoding=css";
 
-import { sanitizeAttr as sanitizeAttribute, sanitizeHtml } from "../util/sanitize";
+import { sanitizeAttribute, sanitizeHtml } from "../util/sanitize";
 
 const copyDropdown = ({
     label = "Copy",
@@ -19,29 +19,28 @@ const copyDropdown = ({
     secondaryText: string;
     successText?: string;
     targetId: string;
-}): string => {
+}): { html: string } => {
     const safeSecondaryLabelHtml = sanitizeHtml(secondaryLabel);
     const safeSecondaryTextAttribute = sanitizeAttribute(secondaryText);
     const safeTarget = sanitizeAttribute(targetId);
     const safeLabelAttribute = sanitizeAttribute(label);
     const safeLabelHtml = sanitizeHtml(label);
 
-    return `
+    const html = `
 <div class="ono-dropdown relative inline-block">
   <button
     type="button"
     aria-label="${safeLabelAttribute}"
     title="${safeLabelHtml}"
     class="ono-dropdown-toggle inline-flex justify-center items-center gap-2 px-1 h-8 rounded-[var(--ono-radius-md)] shadow-[var(--ono-elevation-1)] bg-[var(--ono-surface)] text-[var(--ono-text)] hover:bg-[var(--ono-hover-overlay)] focus:outline-hidden focus:bg-[var(--ono-hover-overlay)] disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
-    data-copy-toggle
   >
     <span class="ono-copy-default dui size-4 transition" style="-webkit-mask-image: url('${clipboardIcon}'); mask-image: url('${clipboardIcon}')"></span>
     <span class="ono-copy-success dui hidden size-4 text-[var(--ono-red-orange)]" style="-webkit-mask-image: url('${checkIcon}'); mask-image: url('${checkIcon}')"></span>
     <span class="sr-only">${safeLabelHtml}</span>
-    <span class="dui size-4 transition-transform duration-200" style="-webkit-mask-image:url('${chevronDownIcon}'); mask-image:url('${chevronDownIcon}')"></span>
+    <span class="dui size-4 transition-transform duration-200 [&.ono-dropdown-open]:rotate-180" style="-webkit-mask-image:url('${chevronDownIcon}'); mask-image:url('${chevronDownIcon}')"></span>
   </button>
 
-  <div class="ono-dropdown-menu fixed z-20 mt-1 min-w-52 p-1 bg-[var(--ono-surface)] border border-[var(--ono-border)] text-sm text-[var(--ono-text)] rounded-[var(--ono-radius-md)] shadow-[var(--ono-elevation-2)]" role="menu">
+  <div class="ono-dropdown-menu absolute z-20 top-full left-0 mt-1 min-w-52 p-1 bg-[var(--ono-surface)] border border-[var(--ono-border)] text-sm text-[var(--ono-text)] rounded-[var(--ono-radius-md)] shadow-[var(--ono-elevation-2)] [&.ono-dropdown-open]:block" role="menu">
     <button
       type="button"
       role="menuitem"
@@ -61,7 +60,12 @@ const copyDropdown = ({
       ${safeSecondaryLabelHtml}
     </button>
   </div>
-</div>`;
+</div>
+`;
+
+    return {
+        html,
+    };
 };
 
 export default copyDropdown;

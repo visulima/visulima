@@ -30,16 +30,16 @@ const customSolutionFinder = {
         if (err.message.includes("wrong")) {
             return {
                 header: "Custom Solution",
-                body: "Try checking your configuration file for typos."
+                body: "Try checking your configuration file for typos.",
             };
         }
         return undefined;
-    }
+    },
 };
 
 /** @type {{ errorAnsi: string; solutionBox: string | undefined }} */
 const resultWithCustom = await ono.toANSI(error, {
-    solutionFinders: [customSolutionFinder]
+    solutionFinders: [customSolutionFinder],
 });
 
 console.log("Error with custom solution:");
@@ -54,7 +54,7 @@ if (resultWithCustom.solutionBox) {
 console.log("\n=== HTML Output (would be rendered in browser) ===");
 const html = await ono.toHTML(error, {
     cspNonce: "random-nonce",
-    theme: "dark"
+    theme: "dark",
 });
 
 console.log("HTML length:", html.length, "characters");

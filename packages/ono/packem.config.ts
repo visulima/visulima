@@ -17,11 +17,11 @@ export default defineConfig({
     validation: {
         dependencies: {
             unused: {
-                exclude: ["@shikijs/langs", "@shikijs/themes", "isomorphic-dompurify", "shiki"]
+                exclude: ["@shikijs/langs", "@shikijs/themes", "isomorphic-dompurify", "shiki", "@visulima/error"],
             },
             hoisted: {
-                exclude: ["@visulima/boxen"]
-            }
-        }
-    }
+                exclude: ["@visulima/boxen"],
+            },
+        },
+    },
 });

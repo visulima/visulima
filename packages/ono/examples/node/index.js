@@ -84,7 +84,7 @@ const server = createServer(async (request, response) => {
                 user,
                 git,
                 versions,
-        //         // Add some custom context to demonstrate the new API
+                //         // Add some custom context to demonstrate the new API
                 database: {
                     connection: "active",
                     queries: ["SELECT * FROM users", "INSERT INTO logs"],
@@ -136,12 +136,12 @@ const server = createServer(async (request, response) => {
             openInEditorUrl: "/__open-in-editor",
             solutionFinders,
             cspNonce: "node-nonce-" + Date.now(),
-            theme: "auto"
+            theme: "auto",
         });
 
         response.writeHead(500, {
             "Content-Type": "text/html",
-            "Content-Length": Buffer.byteLength(html, "utf8")
+            "Content-Length": Buffer.byteLength(html, "utf8"),
         });
         response.end(html);
     }
@@ -225,11 +225,11 @@ const server = createServer(async (request, response) => {
                     if (error.message.includes("Custom application error")) {
                         return {
                             header: "Custom Solution for App Error",
-                            body: "This is a custom solution finder that provides specific guidance for your application's errors. Check the business logic in your service layer."
+                            body: "This is a custom solution finder that provides specific guidance for your application's errors. Check the business logic in your service layer.",
                         };
                     }
                     return undefined;
-                }
+                },
             };
             return show(err, [customFinder]);
         }

@@ -1,301 +1,365 @@
-import { createServer } from "node:http";
-import { describe, expect, it, vi } from "vitest";
+import { createServer, get as httpGet } from "node:http";
+
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { createNodeHttpHandler, createOpenInEditorMiddleware } from "../src/server/open-in-editor";
 
 describe("server middleware", () => {
-    describe("createOpenInEditorMiddleware", () => {
+    describe(createOpenInEditorMiddleware, () => {
         it("should create middleware function", () => {
+            expect.assertions(0);
+
             const middleware = createOpenInEditorMiddleware();
-            expect(typeof middleware).toBe("function");
+
+            expectTypeOf(middleware).toBeFunction();
         });
 
         it("should handle POST requests with JSON body", async () => {
+            expect.assertions(1);
+
             const middleware = createOpenInEditorMiddleware();
 
-            const mockReq = {
+            const mockRequest = {
                 method: "POST",
-                url: "/",
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 on: vi.fn(),
+                url: "/",
             } as any;
 
             // Mock the event listeners synchronously
-            mockReq.on.mockImplementation((event: string, callback: Function) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+            mockRequest.on.mockImplementation((event: string, callback: Function) => {
                 if (event === "data") {
-                    callback('{"file": "src/index.ts", "line": 10, "column": 5}');
+                    callback("{\"file\": \"src/index.ts\", \"line\": 10, \"column\": 5}");
                 } else if (event === "end") {
                     callback();
                 }
             });
 
-            const mockRes = {
-                statusCode: 200,
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 end: vi.fn(),
+                statusCode: 200,
             } as any;
 
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             const next = vi.fn();
 
-            await middleware(mockReq, mockRes, next);
+            await middleware(mockRequest, mockResponse, next);
 
-            expect(mockReq.url).toMatch(/\/\?column=\d+&file=.+&line=\d+/);
+            expect(mockRequest.url).toMatch(/\/\?column=\d+&file=.+&line=\d+/);
         });
 
         it("should handle GET requests with query parameters", async () => {
+            expect.assertions(1);
+
             const middleware = createOpenInEditorMiddleware();
 
-            const mockReq = {
+            const mockRequest = {
                 method: "GET",
                 url: "/?file=/test.js&line=10&column=5&editor=vscode",
             } as any;
 
-            const mockRes = {
-                statusCode: 200,
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 end: vi.fn(),
+                statusCode: 200,
             } as any;
 
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             const next = vi.fn();
 
-            await middleware(mockReq, mockRes, next);
+            await middleware(mockRequest, mockResponse, next);
 
-            expect(mockReq.url).toMatch(/\/\?file=.+&line=.+&column=.+&editor=.+/);
+            expect(mockRequest.url).toMatch(/\/\?file=.+&line=.+&column=.+&editor=.+/);
         });
 
         it("should handle missing file parameter", async () => {
+            expect.assertions(2);
+
             const middleware = createOpenInEditorMiddleware();
 
-            const mockReq = {
+            const mockRequest = {
                 method: "GET",
                 url: "/?line=10&column=5",
             } as any;
 
-            const mockRes = {
-                statusCode: 200,
-                writeHead: vi.fn(),
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 end: vi.fn(),
+                statusCode: 200,
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                writeHead: vi.fn(),
             } as any;
 
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             const next = vi.fn();
 
-            await middleware(mockReq, mockRes, next);
+            await middleware(mockRequest, mockResponse, next);
 
-            expect(mockRes.statusCode).toBe(400);
-            expect(mockRes.end).toHaveBeenCalledWith("Failed to open editor");
+            expect(mockResponse.statusCode).toBe(400);
+            expect(mockResponse.end).toHaveBeenCalledWith("Failed to open editor");
         });
 
         it("should respect project root configuration", async () => {
+            expect.assertions(1);
+
             const middleware = createOpenInEditorMiddleware({
-                projectRoot: "/project",
                 allowOutsideProject: false,
+                projectRoot: "/project",
             });
 
-            const mockReq = {
+            const mockRequest = {
                 method: "GET",
                 url: "/?file=/project/src/test.js&line=10",
             } as any;
 
-            const mockRes = {
-                statusCode: 200,
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 end: vi.fn(),
+                statusCode: 200,
             } as any;
 
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             const next = vi.fn();
 
-            await middleware(mockReq, mockRes, next);
+            await middleware(mockRequest, mockResponse, next);
 
-            expect(mockReq.url).toContain("file=");
+            expect(mockRequest.url).toContain("file=");
         });
 
         it("should reject files outside project root when not allowed", async () => {
+            expect.assertions(1);
+
             const middleware = createOpenInEditorMiddleware({
-                projectRoot: "/project",
                 allowOutsideProject: false,
+                projectRoot: "/project",
             });
 
-            const mockReq = {
+            const mockRequest = {
                 method: "GET",
                 url: "/?file=/outside/test.js&line=10",
             } as any;
 
-            const mockRes = {
-                statusCode: 200,
-                writeHead: vi.fn(),
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 end: vi.fn(),
+                statusCode: 200,
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                writeHead: vi.fn(),
             } as any;
 
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             const next = vi.fn();
 
-            await middleware(mockReq, mockRes, next);
+            await middleware(mockRequest, mockResponse, next);
 
-            expect(mockRes.statusCode).toBe(400);
+            expect(mockResponse.statusCode).toBe(400);
         });
 
         it("should allow files outside project root when explicitly allowed", async () => {
+            expect.assertions(1);
+
             const middleware = createOpenInEditorMiddleware({
-                projectRoot: "/project",
                 allowOutsideProject: true,
+                projectRoot: "/project",
             });
 
-            const mockReq = {
+            const mockRequest = {
                 method: "GET",
                 url: "/?file=/outside/test.js&line=10",
             } as any;
 
-            const mockRes = {
-                statusCode: 200,
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 end: vi.fn(),
+                statusCode: 200,
             } as any;
 
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             const next = vi.fn();
 
-            await middleware(mockReq, mockRes, next);
+            await middleware(mockRequest, mockResponse, next);
 
-            expect(mockReq.url).toContain("file=");
+            expect(mockRequest.url).toContain("file=");
         });
 
         it("should handle Express-style requests with parsed body", async () => {
+            expect.assertions(1);
+
             const middleware = createOpenInEditorMiddleware();
 
-            const mockReq = {
-                method: "POST",
-                url: "/",
+            const mockRequest = {
                 body: {
-                    file: "src/index.ts",
-                    line: 10,
                     column: 5,
                     editor: "vscode",
+                    file: "src/index.ts",
+                    line: 10,
                 },
+                method: "POST",
+                url: "/",
             } as any;
 
-            const mockRes = {
-                statusCode: 200,
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 end: vi.fn(),
+                statusCode: 200,
             } as any;
 
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             const next = vi.fn();
 
-            await middleware(mockReq, mockRes, next);
+            await middleware(mockRequest, mockResponse, next);
 
-            expect(mockReq.url).toMatch(/\/\?column=\d+&file=.+&line=\d+&editor=.+/);
+            expect(mockRequest.url).toMatch(/\/\?column=\d+&file=.+&line=\d+&editor=.+/);
         });
 
         it("should handle malformed JSON gracefully", async () => {
+            expect.assertions(1);
+
             const middleware = createOpenInEditorMiddleware();
 
-            const mockReq = {
+            const mockRequest = {
                 method: "POST",
-                url: "/",
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 on: vi.fn((event, callback) => {
-                    if (event === "data") callback('{invalid json');
-                    if (event === "end") callback();
+                    if (event === "data")
+                        callback("{invalid json");
+
+                    if (event === "end")
+                        callback();
                 }),
+                url: "/",
             } as any;
 
-            const mockRes = {
-                statusCode: 200,
-                writeHead: vi.fn(),
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 end: vi.fn(),
+                statusCode: 200,
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                writeHead: vi.fn(),
             } as any;
 
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             const next = vi.fn();
 
-            await middleware(mockReq, mockRes, next);
+            await middleware(mockRequest, mockResponse, next);
 
-            expect(mockRes.statusCode).toBe(400);
+            expect(mockResponse.statusCode).toBe(400);
         });
 
         it("should handle request errors gracefully", async () => {
+            expect.assertions(1);
+
             const middleware = createOpenInEditorMiddleware();
 
-            const mockReq = {
+            const mockRequest = {
                 method: "POST",
-                url: "/",
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 on: vi.fn(() => {
                     throw new Error("Request error");
                 }),
+                url: "/",
             } as any;
 
-            const mockRes = {
-                statusCode: 200,
-                writeHead: vi.fn(),
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 end: vi.fn(),
+                statusCode: 200,
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                writeHead: vi.fn(),
             } as any;
 
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             const next = vi.fn();
 
-            await middleware(mockReq, mockRes, next);
+            await middleware(mockRequest, mockResponse, next);
 
-            expect(mockRes.statusCode).toBe(400);
+            expect(mockResponse.statusCode).toBe(400);
         });
     });
 
-    describe("createNodeHttpHandler", () => {
+    describe(createNodeHttpHandler, () => {
         it("should create Node.js HTTP handler", () => {
+            expect.assertions(0);
+
             const handler = createNodeHttpHandler();
-            expect(typeof handler).toBe("function");
+
+            expectTypeOf(handler).toBeFunction();
         });
 
         it("should handle Node.js HTTP requests", async () => {
+            expect.assertions(1);
+
             const handler = createNodeHttpHandler();
 
-            const mockReq = {
+            const mockRequest = {
                 method: "GET",
-                url: "/?file=/test.js&line=10",
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 on: vi.fn((event, callback) => {
-                    if (event === "data") callback("");
-                    if (event === "end") callback();
+                    if (event === "data")
+                        callback("");
+
+                    if (event === "end")
+                        callback();
                 }),
+                url: "/?file=/test.js&line=10",
             } as any;
 
-            const mockRes = {
-                statusCode: 200,
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 end: vi.fn(),
+                statusCode: 200,
             } as any;
 
-            await handler(mockReq, mockRes);
+            await handler(mockRequest, mockResponse);
 
-            expect(mockReq.url).toContain("file=");
+            expect(mockRequest.url).toContain("file=");
         });
     });
 
     describe("integration with HTTP server", () => {
         it("should work as middleware in HTTP server", async () => {
+            expect.assertions(1);
+
             const middleware = createOpenInEditorMiddleware();
 
-            let capturedReq: any;
-            let capturedRes: any;
-
-            const mockMiddleware = vi.fn((req, res, next) => {
-                capturedReq = req;
-                capturedRes = res;
-                // Simulate calling next without actual middleware
-                next();
-            });
+            let capturedRequest: any;
 
             // Override the middleware to capture calls
-            const testMiddleware = (req: any, res: any, next: any) => {
-                capturedReq = req;
-                capturedRes = res;
-                middleware(req, res, next);
+            const testMiddleware = (request: any, response: any, next: any) => {
+                capturedRequest = request;
+
+                middleware(request, response, next);
             };
 
             const server = createServer(testMiddleware);
 
+            // eslint-disable-next-line vitest/no-test-return-statement
             return new Promise<void>((resolve) => {
                 server.listen(0, () => {
-                    const port = (server.address() as any).port;
+                    const { port } = server.address() as any;
 
                     // Make a request
-                    const req = require("node:http").get(`http://localhost:${port}/?file=/test.js&line=10`, (res: any) => {
+
+                    const request = httpGet(`http://localhost:${port}/?file=/test.js&line=10`, (response: any) => {
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         let data = "";
-                        res.on("data", (chunk: any) => data += chunk);
-                        res.on("end", () => {
+
+                        response.on("data", (chunk: any) => {
+                            data += chunk;
+                        });
+
+                        response.on("end", () => {
                             server.close();
-                            expect(capturedReq.url).toContain("file=");
+
+                            expect(capturedRequest.url).toContain("file=");
+
                             resolve();
                         });
                     });
 
-                    req.on("error", () => {
+                    request.on("error", () => {
                         server.close();
                         resolve();
                     });

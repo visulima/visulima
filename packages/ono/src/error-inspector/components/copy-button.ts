@@ -3,16 +3,15 @@ import checkIcon from "lucide-static/icons/check.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import clipboardIcon from "lucide-static/icons/clipboard.svg?data-uri&encoding=css";
 
-import { sanitizeAttr as sanitizeAttribute, sanitizeHtml } from "../util/sanitize";
-import cn from "../util/tw";
+import { sanitizeAttribute, sanitizeHtml } from "../util/sanitize";
 
-const copyButton = ({ label = "Copy", successText = "Copied!", targetId }: { label?: string; successText?: string; targetId: string }): string => {
+const copyButton = ({ label = "Copy", successText = "Copied!", targetId }: { label?: string; successText?: string; targetId: string }): { html: string } => {
     const safeTarget = sanitizeAttribute(targetId);
     const safeLabelAttribute = sanitizeAttribute(label);
     const safeLabelHtml = sanitizeHtml(label);
     const safeSuccessTextHtml = sanitizeHtml(successText);
 
-    return `
+    const html = `
     <button
       type="button"
       aria-label="${safeLabelAttribute}"
@@ -26,6 +25,10 @@ const copyButton = ({ label = "Copy", successText = "Copied!", targetId }: { lab
       <span class="sr-only">${safeLabelHtml}</span>
     </button>
   `;
+
+    return {
+        html,
+    };
 };
 
 export default copyButton;

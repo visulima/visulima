@@ -4,6 +4,6 @@
     "compilerOptions": {
         "baseUrl": ".",
         "moduleResolution": "bundler",
-        "types": ["@visulima/packem/files"]
+        "types": ["@types/node", "@visulima/packem/files"]
     }
 }

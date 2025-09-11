@@ -25,9 +25,9 @@
 
 ---
 
-| Light Mode     | Dark Mode     |
-|--------------|--------------|
-|![light](./__assets__/light.jpg)|![dark](./__assets__/dark.jpg)|
+| Light Mode                       | Dark Mode                      |
+| -------------------------------- | ------------------------------ |
+| ![light](./__assets__/light.jpg) | ![dark](./__assets__/dark.jpg) |
 
 ## Install
 
@@ -46,19 +46,19 @@ yarn add @visulima/ono
 ## Features
 
 - Pretty, theme‑aware error page
-  - Sticky header (shows error name/message while scrolling)
-  - One‑click copy for error title (icon feedback)
+    - Sticky header (shows error name/message while scrolling)
+    - One‑click copy for error title (icon feedback)
 - Stack trace viewer
-  - Shiki‑powered syntax highlighting (singleton highlighter)
-  - Tabs for frames; grouping for internal/node_modules/application frames
-  - Tooltips and labels to guide usage
-  - Optional "Open in editor" button per frame
+    - Shiki‑powered syntax highlighting (singleton highlighter)
+    - Tabs for frames; grouping for internal/node_modules/application frames
+    - Tooltips and labels to guide usage
+    - Optional "Open in editor" button per frame
 - Error causes viewer (nested causes, each with its own viewer)
 - Solutions panel
-  - Default open; smooth expand/collapse without layout jump
-  - Animated height/opacity; icon toggles open/close
-  - Built-in rule-based Markdown hints for common issues (ESM/CJS interop, export mismatch, port in use, missing files/case, TS path mapping, DNS/connection, React hydration mismatch, undefined property access)
-  - Custom solution finders support
+    - Default open; smooth expand/collapse without layout jump
+    - Animated height/opacity; icon toggles open/close
+    - Built-in rule-based Markdown hints for common issues (ESM/CJS interop, export mismatch, port in use, missing files/case, TS path mapping, DNS/connection, React hydration mismatch, undefined property access)
+    - Custom solution finders support
 - Raw stack trace panel
 - Theme toggle (auto/dark/light) with persistence
 - **Copy to Clipboard** - One-click copying for all data sections
@@ -69,11 +69,11 @@ yarn add @visulima/ono
 
 - **Tabbed Interface** - Switch between Stack and Context views
 - **Request Context Panel** - Detailed HTTP request debugging information
-  - cURL command with proper formatting and copy functionality
-  - Headers, cookies, body, and session data
-  - App routing, client info, Git status, and version details
-  - Smart data sanitization and masking for sensitive information
-  - **Flexible Context API** - Add any custom context data via `createRequestContextPage()`
+    - cURL command with proper formatting and copy functionality
+    - Headers, cookies, body, and session data
+    - App routing, client info, Git status, and version details
+    - Smart data sanitization and masking for sensitive information
+    - **Flexible Context API** - Add any custom context data via `createRequestContextPage()`
 - **Modern Ono Class API** - Simple, consistent interface for both HTML and ANSI rendering
 - **Solution Finders** - Extensible system for custom error solutions
 
@@ -102,12 +102,16 @@ const ono = new Ono();
 const html = await ono.toHTML(error, {
     cspNonce: "your-nonce",
     theme: "dark",
-    solutionFinders: [/* custom finders */]
+    solutionFinders: [
+        /* custom finders */
+    ],
 });
 
 // ANSI terminal output
 const { errorAnsi, solutionBox } = await ono.toANSI(error, {
-    solutionFinders: [/* custom finders */]
+    solutionFinders: [
+        /* custom finders */
+    ],
 });
 ```
 
@@ -146,9 +150,9 @@ const server = createServer(async (request, response) => {
                     client: {
                         ip: request.socket?.remoteAddress,
                         userAgent: request.headers["user-agent"],
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
 
         // Generate HTML error page
@@ -156,12 +160,12 @@ const server = createServer(async (request, response) => {
             content: [contextPage],
             openInEditorUrl: "__open-in-editor",
             cspNonce: "nonce-" + Date.now(),
-            theme: "auto"
+            theme: "auto",
         });
 
         response.writeHead(500, {
             "Content-Type": "text/html",
-            "Content-Length": Buffer.byteLength(html, "utf8")
+            "Content-Length": Buffer.byteLength(html, "utf8"),
         });
         response.end(html);
     }
@@ -194,14 +198,14 @@ app.onError(async (err, c) => {
                 method: c.req.method,
                 url: c.req.url,
                 headers: Object.fromEntries(c.req.raw.headers.entries()),
-            }
-        }
+            },
+        },
     });
 
     const html = await ono.toHTML(err, {
         content: [contextPage],
         cspNonce: "hono-nonce-" + Date.now(),
-        theme: "dark"
+        theme: "dark",
     });
 
     return c.html(html, 500);
@@ -230,12 +234,12 @@ Renders an error as an HTML page.
 
 - **error**: `unknown` - The error to render
 - **options**: `TemplateOptions` (optional)
-  - `content?: ContentPage[]` - Additional pages to display as tabs
-  - `cspNonce?: string` - CSP nonce for inline scripts/styles
-  - `editor?: Editors` - Default editor for "Open in editor" functionality
-  - `openInEditorUrl?: string` - Server endpoint for opening files in editor
-  - `solutionFinders?: SolutionFinder[]` - Custom solution finders
-  - `theme?: 'dark' | 'light' | 'auto'` - Theme preference
+    - `content?: ContentPage[]` - Additional pages to display as tabs
+    - `cspNonce?: string` - CSP nonce for inline scripts/styles
+    - `editor?: Editors` - Default editor for "Open in editor" functionality
+    - `openInEditorUrl?: string` - Server endpoint for opening files in editor
+    - `solutionFinders?: SolutionFinder[]` - Custom solution finders
+    - `theme?: 'dark' | 'light' | 'auto'` - Theme preference
 
 Returns the complete HTML string for the error page.
 
@@ -245,8 +249,8 @@ Renders an error as ANSI terminal output.
 
 - **error**: `unknown` - The error to render
 - **options**: `CliOptions` (optional)
-  - `solutionFinders?: SolutionFinder[]` - Custom solution finders
-  - All other options from `@visulima/error` renderError options
+    - `solutionFinders?: SolutionFinder[]` - Custom solution finders
+    - All other options from `@visulima/error` renderError options
 
 Returns an object with `errorAnsi` (the formatted error) and optional `solutionBox` (suggested solutions).
 
@@ -256,18 +260,18 @@ Creates a context page with detailed request debugging information.
 
 - **request**: `Request` - The HTTP request object
 - **options**: `ContextContentOptions`
-  - `context?: Record<string, unknown>` - Additional context data
-  - `headerAllowlist?: string[]` - Headers to include (default: all)
-  - `headerDenylist?: string[]` - Headers to exclude
-  - `maskValue?: string` - Mask for sensitive values (default: "[masked]")
+    - `context?: Record<string, unknown>` - Additional context data
+    - `headerAllowlist?: string[]` - Headers to include (default: all)
+    - `headerDenylist?: string[]` - Headers to exclude
+    - `maskValue?: string` - Mask for sensitive values (default: "[masked]")
 
 ### createNodeHttpHandler(options) => `(req, res) => void`
 
 Creates an HTTP handler for opening files in editors.
 
 - **options**: `OpenInEditorOptions` (optional)
-  - `projectRoot?: string` - Project root directory
-  - `allowOutsideProject?: boolean` - Allow opening files outside project
+    - `projectRoot?: string` - Project root directory
+    - `allowOutsideProject?: boolean` - Allow opening files outside project
 
 Returns an Express/Node.js compatible request handler.
 
@@ -291,14 +295,16 @@ try {
 
     // With custom solution finder
     const resultWithCustom = await ono.toANSI(error, {
-        solutionFinders: [{
-            name: "custom-finder",
-            priority: 100,
-            handle: async (err, context) => ({
-                header: "Custom Solution",
-                body: "Try checking your configuration."
-            })
-        }]
+        solutionFinders: [
+            {
+                name: "custom-finder",
+                priority: 100,
+                handle: async (err, context) => ({
+                    header: "Custom Solution",
+                    body: "Try checking your configuration.",
+                }),
+            },
+        ],
     });
 }
 ```
@@ -313,10 +319,10 @@ Use `createRequestContextPage()` to create a "Context" tab with comprehensive de
 - **Session** - Session data in organized key-value tables
 - **Cookies** - Cookie information in readable format
 - **Dynamic Context Sections** - Any additional context keys you provide are automatically rendered as sections with:
-  - Proper titles (capitalized)
-  - Copy buttons for JSON data
-  - Organized key-value tables
-  - Sticky sidebar navigation
+    - Proper titles (capitalized)
+    - Copy buttons for JSON data
+    - Organized key-value tables
+    - Sticky sidebar navigation
 
 **Built-in sections** (when data is provided):
 
@@ -357,24 +363,24 @@ const customFinder = {
         if (error.message.includes("database connection")) {
             return {
                 header: "Database Connection Issue",
-                body: "Check your database configuration and ensure the server is running."
+                body: "Check your database configuration and ensure the server is running.",
             };
         }
 
         if (error.message.includes("authentication")) {
             return {
                 header: "Authentication Error",
-                body: "Verify your API keys and authentication tokens are valid."
+                body: "Verify your API keys and authentication tokens are valid.",
             };
         }
 
         return undefined; // No solution found
-    }
+    },
 };
 
 const ono = new Ono();
 const html = await ono.toHTML(error, {
-    solutionFinders: [customFinder]
+    solutionFinders: [customFinder],
 });
 ```
 
@@ -404,7 +410,7 @@ const contextPage = await createRequestContextPage(request, {
         app: { routing: { route: "/api/users", params: {}, query: {} } },
         user: { client: { ip: "127.0.0.1", userAgent: "Mozilla/5.0..." } },
         database: { connection: "active", queries: ["SELECT * FROM users"] },
-    }
+    },
 });
 
 // Add custom pages
@@ -414,21 +420,21 @@ const customPages = [
         id: "performance",
         name: "Performance",
         code: {
-            html: "<div><h3>Performance Metrics</h3><p>Custom performance data here...</p></div>"
-        }
+            html: "<div><h3>Performance Metrics</h3><p>Custom performance data here...</p></div>",
+        },
     },
     {
         id: "debug",
         name: "Debug Info",
         code: {
-            html: "<div><h3>Debug Information</h3><pre>" + JSON.stringify(debugData, null, 2) + "</pre></div>"
-        }
-    }
+            html: "<div><h3>Debug Information</h3><pre>" + JSON.stringify(debugData, null, 2) + "</pre></div>",
+        },
+    },
 ];
 
 const html = await ono.toHTML(error, {
     content: customPages,
-    cspNonce: "your-nonce"
+    cspNonce: "your-nonce",
 });
 ```
 
@@ -499,38 +505,38 @@ Options:
 
 - If `openInEditorUrl` is not set, clicking “Open in editor” uses editor URL schemes on the client. The default editor is VS Code. The selected editor in the header is respected.
 - Supported editors and templates (placeholders: `%f` = file, `%l` = line, `%c` = column when supported):
-  - textmate: `txmt://open?url=file://%f&line=%l`
-  - macvim: `mvim://open?url=file://%f&line=%l`
-  - emacs: `emacs://open?url=file://%f&line=%l`
-  - sublime: `subl://open?url=file://%f&line=%l`
-  - phpstorm: `phpstorm://open?file=%f&line=%l`
-  - atom: `atom://core/open/file?filename=%f&line=%l`
-  - atom-beta: `atom-beta://core/open/file?filename=%f&line=%l`
-  - brackets: `brackets://open?url=file://%f&line=%l`
-  - clion: `clion://open?file=%f&line=%l`
-  - code (VS Code): `vscode://file/%f:%l:%c`
-  - code-insiders: `vscode-insiders://file/%f:%l:%c`
-  - codium (VSCodium): `vscodium://file/%f:%l:%c`
-  - cursor: `cursor://file/%f:%l:%c`
-  - emacs: `emacs://open?url=file://%f&line=%l`
-  - idea: `idea://open?file=%f&line=%l`
-  - intellij: `idea://open?file=%f&line=%l`
-  - macvim: `mvim://open?url=file://%f&line=%l`
-  - notepad++: `notepad-plus-plus://open?file=%f&line=%l`
-  - phpstorm: `phpstorm://open?file=%f&line=%l`
-  - pycharm: `pycharm://open?file=%f&line=%l`
-  - rider: `rider://open?file=%f&line=%l`
-  - rubymine: `rubymine://open?file=%f&line=%l`
-  - sublime: `subl://open?url=file://%f&line=%l`
-  - textmate: `txmt://open?url=file://%f&line=%l`
-  - vim: `vim://open?url=file://%f&line=%l`
-  - visualstudio: `visualstudio://open?file=%f&line=%l`
-  - vscode: `vscode://file/%f:%l:%c`
-  - vscodium: `vscodium://file/%f:%l:%c`
-  - webstorm: `webstorm://open?file=%f&line=%l`
-  - xcode: `xcode://open?file=%f&line=%l`
-  - zed: `zed://open?file=%f&line=%l&column=%c`
-  - android-studio: `idea://open?file=%f&line=%l`
+    - textmate: `txmt://open?url=file://%f&line=%l`
+    - macvim: `mvim://open?url=file://%f&line=%l`
+    - emacs: `emacs://open?url=file://%f&line=%l`
+    - sublime: `subl://open?url=file://%f&line=%l`
+    - phpstorm: `phpstorm://open?file=%f&line=%l`
+    - atom: `atom://core/open/file?filename=%f&line=%l`
+    - atom-beta: `atom-beta://core/open/file?filename=%f&line=%l`
+    - brackets: `brackets://open?url=file://%f&line=%l`
+    - clion: `clion://open?file=%f&line=%l`
+    - code (VS Code): `vscode://file/%f:%l:%c`
+    - code-insiders: `vscode-insiders://file/%f:%l:%c`
+    - codium (VSCodium): `vscodium://file/%f:%l:%c`
+    - cursor: `cursor://file/%f:%l:%c`
+    - emacs: `emacs://open?url=file://%f&line=%l`
+    - idea: `idea://open?file=%f&line=%l`
+    - intellij: `idea://open?file=%f&line=%l`
+    - macvim: `mvim://open?url=file://%f&line=%l`
+    - notepad++: `notepad-plus-plus://open?file=%f&line=%l`
+    - phpstorm: `phpstorm://open?file=%f&line=%l`
+    - pycharm: `pycharm://open?file=%f&line=%l`
+    - rider: `rider://open?file=%f&line=%l`
+    - rubymine: `rubymine://open?file=%f&line=%l`
+    - sublime: `subl://open?url=file://%f&line=%l`
+    - textmate: `txmt://open?url=file://%f&line=%l`
+    - vim: `vim://open?url=file://%f&line=%l`
+    - visualstudio: `visualstudio://open?file=%f&line=%l`
+    - vscode: `vscode://file/%f:%l:%c`
+    - vscodium: `vscodium://file/%f:%l:%c`
+    - webstorm: `webstorm://open?file=%f&line=%l`
+    - xcode: `xcode://open?file=%f&line=%l`
+    - zed: `zed://open?file=%f&line=%l&column=%c`
+    - android-studio: `idea://open?file=%f&line=%l`
 
 ### Keyboard Shortcuts
 

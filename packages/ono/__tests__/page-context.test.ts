@@ -268,6 +268,7 @@ describe("context page", () => {
                     "content-type": "text/plain",
                 },
                 method: "POST",
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 on: vi.fn((event, callback) => {
                     if (event === "data") {
                         // Send the large body in chunks

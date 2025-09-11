@@ -65,6 +65,7 @@ describe("ono class", () => {
             const error = new Error("Custom error");
 
             const customFinder = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 handle: vi.fn().mockResolvedValue({
                     body: "This is a test solution",
                     header: "Custom Solution",
@@ -157,6 +158,7 @@ describe("ono class", () => {
             const error = new Error("Custom error");
 
             const customFinder = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 handle: vi.fn().mockResolvedValue({
                     body: "This is a test solution",
                     header: "Custom Solution",
