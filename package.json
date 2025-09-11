@@ -41,7 +41,7 @@
         "example:crud:next:12:dev": "nx run-many --target=dev --parallel --projects=crud,api-platform,nextjs_12_example_crud",
         "example:crud:next:13:dev": "nx run-many --target=dev --parallel --projects=crud,api-platform,nextjs_13_example_crud",
         "example:health-check:dev": "pnpm --filter \"nextjs_example_health_check\" run dev",
-        "generate:labeler": "node scripts/generateLabelerConfig.js",
+        "generate:labeler": "node scripts/generate-labeler-config.js",
         "graph": "nx dep-graph",
         "preinstall": "node -e \"if(process.env.CI == 'true') {console.info('Skipping preinstall...')} else {process.exit(1)}\" || (node verify-node-version.js && npm -y exec only-allow pnpm)",
         "postinstall": "is-ci || husky || exit 0",

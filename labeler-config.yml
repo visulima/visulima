@@ -1,0 +1,93 @@
+"package: ansi":
+    - changed-files:
+          - any-glob-to-any-file: "packages/ansi/**/*"
+"package: api-platform":
+    - changed-files:
+          - any-glob-to-any-file: "packages/api-platform/**/*"
+"package: boxen":
+    - changed-files:
+          - any-glob-to-any-file: "packages/boxen/**/*"
+"package: bytes":
+    - changed-files:
+          - any-glob-to-any-file: "packages/bytes/**/*"
+"package: cerebro":
+    - changed-files:
+          - any-glob-to-any-file: "packages/cerebro/**/*"
+"package: colorize":
+    - changed-files:
+          - any-glob-to-any-file: "packages/colorize/**/*"
+"package: connect":
+    - changed-files:
+          - any-glob-to-any-file: "packages/connect/**/*"
+"package: crud":
+    - changed-files:
+          - any-glob-to-any-file: "packages/crud/**/*"
+"package: deep-clone":
+    - changed-files:
+          - any-glob-to-any-file: "packages/deep-clone/**/*"
+"package: error":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error/**/*"
+"package: error-handler":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error-handler/**/*"
+"package: find-cache-dir":
+    - changed-files:
+          - any-glob-to-any-file: "packages/find-cache-dir/**/*"
+"package: fmt":
+    - changed-files:
+          - any-glob-to-any-file: "packages/fmt/**/*"
+"package: fs":
+    - changed-files:
+          - any-glob-to-any-file: "packages/fs/**/*"
+"package: health-check":
+    - changed-files:
+          - any-glob-to-any-file: "packages/health-check/**/*"
+"package: humanizer":
+    - changed-files:
+          - any-glob-to-any-file: "packages/humanizer/**/*"
+"package: inspector":
+    - changed-files:
+          - any-glob-to-any-file: "packages/inspector/**/*"
+"package: is-ansi-color-supported":
+    - changed-files:
+          - any-glob-to-any-file: "packages/is-ansi-color-supported/**/*"
+"package: jsdoc-open-api":
+    - changed-files:
+          - any-glob-to-any-file: "packages/jsdoc-open-api/**/*"
+"package: object":
+    - changed-files:
+          - any-glob-to-any-file: "packages/object/**/*"
+"package: package":
+    - changed-files:
+          - any-glob-to-any-file: "packages/package/**/*"
+"package: pagination":
+    - changed-files:
+          - any-glob-to-any-file: "packages/pagination/**/*"
+"package: pail":
+    - changed-files:
+          - any-glob-to-any-file: "packages/pail/**/*"
+"package: path":
+    - changed-files:
+          - any-glob-to-any-file: "packages/path/**/*"
+"package: prisma-dmmf-transformer":
+    - changed-files:
+          - any-glob-to-any-file: "packages/prisma-dmmf-transformer/**/*"
+"package: redact":
+    - changed-files:
+          - any-glob-to-any-file: "packages/redact/**/*"
+"package: source-map":
+    - changed-files:
+          - any-glob-to-any-file: "packages/source-map/**/*"
+"package: string":
+    - changed-files:
+          - any-glob-to-any-file: "packages/string/**/*"
+"package: tabular":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tabular/**/*"
+"package: tsconfig":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tsconfig/**/*"
+"documentation":
+    - changed-files:
+          - any-glob-to-any-file: "docs/**/*"
