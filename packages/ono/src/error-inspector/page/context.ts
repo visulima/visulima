@@ -12,7 +12,7 @@ import userIcon from "lucide-static/icons/user.svg?data-uri&encoding=css";
 import getHighlighter from "../../../../../shared/utils/get-highlighter";
 import copyButton from "../components/copy-button";
 import type { ContentPage } from "../types";
-import { sanitizeAttr as sanitizeAttribute, sanitizeCodeHtml, sanitizeHtml, sanitizeUrlAttr as sanitizeUrlAttribute } from "../util/sanitize";
+import { sanitizeAttribute, sanitizeCodeHtml, sanitizeHtml, sanitizeUrlAttribute } from "../util/sanitize";
 
 const SENSITIVE_HEADER_PATTERNS = [/authorization/i, /cookie/i, /set-cookie/i, /x-api-key/i, /api-key/i, /x-auth/i, /token/i, /secret/i];
 
@@ -135,59 +135,57 @@ const readRequestBody = async (request: Request, capBytes: number): Promise<unkn
         if (typeof (request as any)?.on === "function") {
             return await new Promise<string | undefined>((resolve) => {
                 try {
-                    const request_: any = request as any;
-
                     let data = "";
                     let truncated = false;
 
-                    if (typeof request_.setEncoding === "function") {
-                        request_.setEncoding("utf8");
+                    if (typeof request.setEncoding === "function") {
+                        request.setEncoding("utf8");
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const onData = (chunk: any) => {
-                        try {
-                            if (truncated) {
-                                return;
-                            }
+                        if (truncated) {
+                            return;
+                        }
 
-                            const chunkString = typeof chunk === "string" ? chunk : String(chunk);
+                        const chunkString = typeof chunk === "string" ? chunk : String(chunk);
 
-                            if (data.length + chunkString.length > capBytes) {
-                                const remaining = Math.max(0, capBytes - data.length);
+                        if (data.length + chunkString.length > capBytes) {
+                            const remaining = Math.max(0, capBytes - data.length);
 
-                                data += chunkString.slice(0, remaining);
-                                truncated = true;
-                                cleanup();
-                                resolve(`${data}\n… [truncated]`);
+                            data += chunkString.slice(0, remaining);
+                            truncated = true;
+                            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                            cleanup();
+                            resolve(`${data}\n… [truncated]`);
 
-                                return;
-                            }
+                            return;
+                        }
 
-                            data += chunkString;
-                        } catch {}
+                        data += chunkString;
                     };
 
                     const onEnd = () => {
+                        // eslint-disable-next-line @typescript-eslint/no-use-before-define
                         cleanup();
                         resolve(data || undefined);
                     };
 
                     const onError = () => {
+                        // eslint-disable-next-line @typescript-eslint/no-use-before-define
                         cleanup();
                         resolve(undefined);
                     };
 
                     const cleanup = () => {
-                        try {
-                            request_.off?.("data", onData);
-                            request_.off?.("end", onEnd);
-                            request_.off?.("error", onError);
-                        } catch {}
+                        request.off?.("data", onData);
+                        request.off?.("end", onEnd);
+                        request.off?.("error", onError);
                     };
 
-                    request_.on("data", onData);
-                    request_.on("end", onEnd);
-                    request_.on("error", onError);
+                    request.on("data", onData);
+                    request.on("end", onEnd);
+                    request.on("error", onError);
                 } catch {
                     resolve(undefined);
                 }
@@ -510,11 +508,11 @@ export const createRequestContextPage = async (request: Request, options: Contex
                 contentSections += `
   <input type="hidden" id="clipboard-${sectionId}-${uniqueId}" value="${attributeEscape(JSON.stringify(value))}">
   <section id="${sectionId}" class="mb-4 rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-1)] overflow-hidden bg-[var(--ono-surface)] border border-[var(--ono-border)]">
-    <div class="px-4 py-3 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
+    <div class="px-4 py-2 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <h3 class="text-sm font-semibold text-[var(--ono-text)]">${title}</h3>
       <div class="grow"></div>
       <a href="#${sectionId}" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
-      ${copyButton({ label: "Copy JSON", targetId: `clipboard-${sectionId}-${uniqueId}` })}
+      ${copyButton({ label: "Copy JSON", targetId: `clipboard-${sectionId}-${uniqueId}` }).html}
     </div>
     <div class="max-w-full overflow-auto mt-2">${renderObjectTable(value as Record<string, unknown>)}</div>
   </section>`;
@@ -571,61 +569,61 @@ export const createRequestContextPage = async (request: Request, options: Contex
 <div class="grow min-w-0">
   <input type="hidden" id="clipboard-curl-${uniqueId}" value="${attributeEscape(curl)}">
   <section id="context-request" class="mb-4 rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-1)] overflow-hidden bg-[var(--ono-surface)] border border-[var(--ono-border)]">
-    <div class="px-4 py-4 flex items-center gap-3 min-w-0 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
+    <div class="px-4 py-2 flex items-center gap-3 min-w-0 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${globeIcon}'); mask-image:url('${globeIcon}')"></span>
       <h2 class="text-sm font-semibold text-[var(--ono-text)]">Request</h2>
       <a class="text-sm truncate text-[var(--ono-red-orange)]" href="${sanitizeUrlAttribute(request.url || "#")}">${escapeHtml(request.url || "")}</a>
       <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-[var(--ono-chip-bg)] text-[var(--ono-chip-text)]">${escapeHtml(String(request.method || "GET"))}</span>
       <div class="grow"></div>
-      ${copyButton({ label: "Copy cURL", targetId: `clipboard-curl-${uniqueId}` })}
+      ${copyButton({ label: "Copy cURL", targetId: `clipboard-curl-${uniqueId}` }).html}
     </div>
     <div class="px-4 pb-4 overflow-auto mt-2">${curlHtml}</div>
   </section>
 
   <input type="hidden" id="clipboard-headers-${uniqueId}" value="${attributeEscape(JSON.stringify(filteredHeaders || {}))}">
   <section id="context-headers" class="mb-4 rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-1)] overflow-hidden bg-[var(--ono-surface)] border border-[var(--ono-border)]">
-    <div class="px-4 py-3 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
+    <div class="px-4 py-2 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${fileTextIcon}'); mask-image:url('${fileTextIcon}')"></span>
       <h3 class="text-sm font-semibold text-[var(--ono-text)]">Headers</h3>
       <div class="grow"></div>
       <a href="#context-headers" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
-      ${copyButton({ label: "Copy JSON", targetId: `clipboard-headers-${uniqueId}` })}
+      ${copyButton({ label: "Copy JSON", targetId: `clipboard-headers-${uniqueId}` }).html}
     </div>
     <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable(filteredHeaders)}</div>
   </section>
 
   <input type="hidden" id="clipboard-body-${uniqueId}" value="${attributeEscape(safeJsonStringify(requestBody ?? {}))}">
   <section id="context-body" class="mb-4 rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-1)] overflow-hidden bg-[var(--ono-surface)] border border-[var(--ono-border)]">
-    <div class="px-4 py-3 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
+    <div class="px-4 py-2 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${bracesIcon}'); mask-image:url('${bracesIcon}')"></span>
       <h3 class="text-sm font-semibold text-[var(--ono-text)]">Body</h3>
       <div class="grow"></div>
       <a href="#context-body" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
-      ${copyButton({ label: "Copy JSON", targetId: `clipboard-body-${uniqueId}` })}
+      ${copyButton({ label: "Copy JSON", targetId: `clipboard-body-${uniqueId}` }).html}
     </div>
     <div class="max-w-full overflow-auto mt-2">${renderBodyContent(requestBody)}</div>
   </section>
 
   <input type="hidden" id="clipboard-session-${uniqueId}" value="${attributeEscape(JSON.stringify((request as any)?.session ?? {}))}">
   <section id="context-session" class="mb-4 rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-1)] overflow-hidden bg-[var(--ono-surface)] border border-[var(--ono-border)]">
-    <div class="px-4 py-3 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
+    <div class="px-4 py-2 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${userIcon}'); mask-image:url('${userIcon}')"></span>
       <h3 class="text-sm font-semibold text-[var(--ono-text)]">Session</h3>
       <div class="grow"></div>
       <a href="#context-session" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
-      ${copyButton({ label: "Copy JSON", targetId: `clipboard-session-${uniqueId}` })}
+      ${copyButton({ label: "Copy JSON", targetId: `clipboard-session-${uniqueId}` }).html}
     </div>
             <div class="max-w-full overflow-auto mt-2">${renderObjectTable((request as any)?.session as Record<string, unknown>)}</div>
   </section>
 
   <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attributeEscape(JSON.stringify(cookiesRecord || {}))}">
   <section id="context-cookies" class="mb-4 rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-1)] overflow-hidden bg-[var(--ono-surface)] border border-[var(--ono-border)]">
-    <div class="px-4 py-3 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
+    <div class="px-4 py-2 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${cookieIcon}'); mask-image:url('${cookieIcon}')"></span>
       <h3 class="text-sm font-semibold text-[var(--ono-text)]">Cookies</h3>
       <div class="grow"></div>
       <a href="#context-cookies" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
-      ${copyButton({ label: "Copy JSON", targetId: `clipboard-cookies-${uniqueId}` })}
+      ${copyButton({ label: "Copy JSON", targetId: `clipboard-cookies-${uniqueId}` }).html}
     </div>
     <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable(cookiesRecord as Record<string, string | string[]>)}
     </div>

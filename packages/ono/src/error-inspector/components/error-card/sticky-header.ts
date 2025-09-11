@@ -1,9 +1,10 @@
+import type { Trace } from "@visulima/error";
 import { codeFrame, parseStacktrace } from "@visulima/error";
 import aiPrompt from "@visulima/error/solution/ai/prompt";
 
 import findLanguageBasedOnExtension from "../../../../../../shared/utils/find-language-based-on-extension";
 import getFileSource from "../../../../../../shared/utils/get-file-source";
-import { sanitizeAttr as sanitizeAttribute, sanitizeHtml } from "../../util/sanitize";
+import { sanitizeAttribute, sanitizeHtml } from "../../util/sanitize";
 import copyDropdown from "../copy-dropdown";
 import shortcutsButton from "../shortcuts-button";
 
@@ -18,7 +19,7 @@ const stickyHeader = async (
     const safeTitleValue = sanitizeAttribute(`${error.name}: ${error.message}`);
 
     // Build AI prompt using first stack frame and code frame when available
-    const trace = parseStacktrace(error as Error, { frameLimit: 1 })?.[0] as any;
+    const trace = parseStacktrace(error as Error, { frameLimit: 1 })?.[0] as Trace;
     const filePath = trace?.file ?? "";
     const fileLine = trace?.line ?? 0;
     const fileSource = filePath ? await getFileSource(filePath) : "";
@@ -36,6 +37,14 @@ const stickyHeader = async (
         },
     });
 
+    const shortcuts = shortcutsButton();
+    const copyDropdownResult = copyDropdown({
+        label: "Copy error title",
+        secondaryLabel: "Copy fix prompt",
+        secondaryText: fixPrompt,
+        targetId: "clipboard-sticky-error-title",
+    });
+
     return {
         html: `<div id="error-card-sticky-header" class="fixed invisible container px-6 py-4 -top-40 z-10 rounded-[var(--ono-radius-lg)] transition-all duration-300 shadow-[var(--ono-elevation-1)] bg-[var(--ono-surface)]">
   <input type="hidden" id="clipboard-sticky-error-title" value="${safeTitleValue}">
@@ -43,49 +52,48 @@ const stickyHeader = async (
     <h1 class="text-sm font-semibold py-1 px-2 text-[var(--ono-chip-text)] bg-[var(--ono-chip-bg)] rounded-[var(--ono-radius-md)] shadow-[var(--ono-elevation-1)]" aria-label="Error name">${safeName}</h1>
     <span class="text-md font-semibold line-clamp-1 text-[var(--ono-text)]" aria-label="Error message">${safeMessage}</span>
     <div class="grow"></div>
-    ${shortcutsButton()}
-    ${copyDropdown({ label: "Copy error title", secondaryLabel: "Copy fix prompt", secondaryText: fixPrompt, targetId: "clipboard-sticky-error-title" })}
+    ${shortcuts.html}
+    ${copyDropdownResult.html}
   </div>
 </div>`,
-        script: `(window.subscribeToDOMContentLoaded || function (fn) {
-          if (document.readyState !== 'loading') fn();
-          else document.addEventListener('DOMContentLoaded', fn);
-        })(function () {
-          const errorCard = document.getElementById("error-card");
-          const header = document.getElementById("error-card-sticky-header");
+        script: `(function() {
+  ready(function () {
+    const errorCard = document.getElementById("error-card");
+    const header = document.getElementById("error-card-sticky-header");
 
-          if (!errorCard || !header) {
-            console.warn('Sticky header elements not found');
-            return;
-          }
+    if (!errorCard || !header) {
+      console.warn('Sticky header elements not found');
+      return;
+    }
 
-          const stickyHeader = () => {
-            const bounding = errorCard.getBoundingClientRect();
+    const stickyHeader = () => {
+      const bounding = errorCard.getBoundingClientRect();
 
-            if (bounding.bottom <= -15) {
-              header.classList.remove("invisible");
-              header.classList.remove("-top-40");
-              header.classList.add("top-0");
-              header.classList.add("visible");
-            } else {
-              header.classList.remove("top-0");
-              header.classList.remove("visible");
-              header.classList.add("invisible");
-              header.classList.add("-top-40");
-            }
-          };
+      if (bounding.bottom <= -15) {
+        header.classList.remove("invisible");
+        header.classList.remove("-top-40");
+        header.classList.add("top-0");
+        header.classList.add("visible");
+      } else {
+        header.classList.remove("top-0");
+        header.classList.remove("visible");
+        header.classList.add("invisible");
+        header.classList.add("-top-40");
+      }
+    };
 
-          // Initialize sticky header
-          stickyHeader();
+    // Initialize sticky header
+    stickyHeader();
 
-          // Add scroll listener once
-          try {
-            if (!window.__onoStickyHeaderBound) {
-              window.__onoStickyHeaderBound = true;
-              window.addEventListener('scroll', stickyHeader, { passive: true });
-            }
-          } catch (_) {}
-        });`,
+    // Add scroll listener once
+    try {
+      if (!window.__onoStickyHeaderBound) {
+        window.__onoStickyHeaderBound = true;
+        window.addEventListener('scroll', stickyHeader, { passive: true });
+      }
+    } catch (_) {}
+  });
+})();`,
     };
 };
 

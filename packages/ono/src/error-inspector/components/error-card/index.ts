@@ -8,7 +8,7 @@ import externalLinkIcon from "lucide-static/icons/external-link.svg?data-uri&enc
 import findLanguageBasedOnExtension from "../../../../../../shared/utils/find-language-based-on-extension";
 import getFileSource from "../../../../../../shared/utils/get-file-source";
 import type { RuntimeName } from "../../../util/runtimes";
-import { sanitizeAttr as sanitizeAttribute, sanitizeHtml } from "../../util/sanitize";
+import { sanitizeAttribute, sanitizeHtml } from "../../util/sanitize";
 import copyDropdown from "../copy-dropdown";
 import solutions from "./solutions";
 import stickyHeader from "./sticky-header";
@@ -65,6 +65,13 @@ const errorCard = async ({
         },
     });
 
+    const copyDropdownResult = copyDropdown({
+        label: "Copy error title",
+        secondaryLabel: "Copy fix prompt",
+        secondaryText: fixPrompt,
+        targetId: "clipboard-error-title",
+    });
+
     return {
         html: `<section id="error-card" class="container rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-2)] bg-[var(--ono-surface)]">
     <input type="hidden" id="clipboard-error-title" value="${safeTitleValue}">
@@ -74,7 +81,7 @@ const errorCard = async ({
                 <h1 class="text-lg font-semibold py-1 px-2 text-[var(--ono-chip-text)] bg-[var(--ono-chip-bg)] rounded-[var(--ono-radius-md)] shadow-[var(--ono-elevation-1)]">
                 ${safeName}
                 </h1>
-                ${copyDropdown({ label: "Copy error title", secondaryLabel: "Copy fix prompt", secondaryText: fixPrompt, targetId: "clipboard-error-title" })}
+                ${copyDropdownResult.html}
                 <div class="grow"></div>
                 <div class="text-sm font-semibold py-1 px-2 text-[var(--ono-text-muted)] rounded-[var(--ono-radius-md)] shadow-[var(--ono-elevation-1)]">
                 ${runtime}

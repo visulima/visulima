@@ -5,13 +5,14 @@ import editorSelector from "./editor-selector";
 import themeToggle from "./theme-toggle";
 
 const headerBar = (
-    options: Partial<{ editor: Editor; theme: Theme; openInEditorUrl?: string }>,
+    options: Partial<{ editor: Editors; openInEditorUrl?: string; theme: Theme }>,
     hasContextTab = false,
 ): {
     html: string;
     script: string;
 } => {
     const toggle = themeToggle(options.theme);
+    const shortcuts = shortcutsButton();
 
     return {
         html: `<div class="w-full flex gap-3 items-center">
@@ -25,10 +26,12 @@ const headerBar = (
     }
     <div class="grow"></div>
     ${options.openInEditorUrl ? editorSelector(options.editor) : ""}
-    ${shortcutsButton()}
+    ${shortcuts.html}
     ${toggle.html}
 </div>`,
-        script: `${toggle.script}${options.openInEditorUrl ? `
+        script: `${toggle.script}${shortcuts.script}${
+            options.openInEditorUrl
+                ? `
 // Initialize editor selector from localStorage if available
 (function(){
   'use strict';
@@ -49,7 +52,9 @@ const headerBar = (
     } catch(_) {}
   });
 })();
-` : ""}
+`
+                : ""
+        }
 `,
     };
 };

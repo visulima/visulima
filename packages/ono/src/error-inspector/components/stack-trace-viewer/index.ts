@@ -7,7 +7,7 @@ import getFileSource from "../../../../../../shared/utils/get-file-source";
 import getHighlighter from "../../../../../../shared/utils/get-highlighter";
 import process from "../../../util/process";
 import revisionHash from "../../../util/revision-hash";
-import { sanitizeAttr as sanitizeAttribute, sanitizeHtml, sanitizeUrlAttr as sanitizeUrlAttribute } from "../../util/sanitize";
+import { sanitizeAttribute, sanitizeHtml, sanitizeUrlAttribute } from "../../util/sanitize";
 import cn from "../../util/tw";
 import type { GroupType, Item } from "./types";
 import getType from "./util/get-type";
@@ -82,21 +82,23 @@ const stackTraceViewer = async (
             type: trace.file ? getType(trace.file) : undefined,
         });
 
+        let openInEditorButton = safeRelativePath;
+
+        if (options.openInEditorUrl) {
+            openInEditorButton = `<button type="button" class="underline hover:text-[var(--ono-link)]" data-open-in-editor data-url="${sanitizeUrlAttribute(options.openInEditorUrl)}" data-path="${sanitizeAttribute(
+                absPathForEditor,
+            )}" data-line="${sanitizeAttribute(trace.line || 1)}" data-column="${sanitizeAttribute(trace.column || 1)}" title="Open ${safeRelativePath} in external editor">${safeRelativePath} — Open in editor</button>`;
+        } else if (isClickable) {
+            openInEditorButton = `<button type="button" class="underline hover:text-[var(--ono-link)]" data-editor-link data-path="${sanitizeAttribute(absPathForEditor)}" data-line="${sanitizeAttribute(
+                trace.line || 1,
+            )}" data-column="${sanitizeAttribute(trace.column || 1)}" title="Open ${safeRelativePath} in editor">${safeRelativePath} — Open in editor</button>`;
+        }
+
         sourceCode.push(`<div id="source-code-tabs-${uniqueKey}-${index}" class="${
             index === 0 && isClickable ? "block" : "hidden"
         }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}" tabindex="0">
 <div class="pt-6 px-6 text-sm text-right text-[var(--ono-text)]">
-    ${
-        options.openInEditorUrl
-            ? `<button type=\"button\" class=\"underline hover:text-[var(--ono-link)]\" data-open-in-editor data-url=\"${sanitizeUrlAttribute(options.openInEditorUrl)}\" data-path=\"${sanitizeAttribute(
-                absPathForEditor,
-            )}\" data-line=\"${sanitizeAttribute(trace.line || 1)}\" data-column=\"${sanitizeAttribute(trace.column || 1)}\" title=\"Open ${safeRelativePath} in external editor\">${safeRelativePath} — Open in editor</button>`
-            : isClickable
-                ? `<button type=\"button\" class=\"underline hover:text-[var(--ono-link)]\" data-editor-link data-path=\"${sanitizeAttribute(absPathForEditor)}\" data-line=\"${sanitizeAttribute(
-                    trace.line || 1,
-                )}\" data-column=\"${sanitizeAttribute(trace.column || 1)}\" title=\"Open ${safeRelativePath} in editor\">${safeRelativePath} — Open in editor</button>`
-                : safeRelativePath
-    }
+    ${openInEditorButton}
 </div>
 <div class="p-6">${safeCode}</div>
 </div>`);

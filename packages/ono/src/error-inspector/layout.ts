@@ -42,7 +42,7 @@ const layout = ({
         </script>
         ${scripts
             .filter(Boolean)
-            .map((script) => `<script${cspNonce ? ` nonce=\"${cspNonce}\"` : ""}>${script}</script>`)
+            .map((script) => `<script${cspNonce ? ` nonce="${cspNonce}"` : ""}>${script}</script>`)
             .join("\n")}
         <script${cspNonce ? ` nonce="${cspNonce}"` : ""}>
             subscribeToDOMContentLoaded(() => {

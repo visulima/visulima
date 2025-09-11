@@ -16,6 +16,8 @@ export default createConfig(
             "tsconfig.eslint.json",
             "package.json",
             "README.md",
+            ".prettierrc.cjs",
+            "src/types/launch-editor-middleware.d.ts",
         ],
     },
     {

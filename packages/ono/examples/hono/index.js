@@ -18,7 +18,7 @@ app.get("/error-html", async (c) => {
     // Generate HTML error page
     const html = await ono.toHTML(error, {
         cspNonce: "hono-nonce-123",
-        theme: "light"
+        theme: "light",
     });
 
     return c.html(html);
@@ -28,27 +28,29 @@ app.get("/api/error-json", async (c) => {
     const error = new Error("API Error");
     /** @type {{ errorAnsi: string; solutionBox: string | undefined }} */
     const ansiResult = await ono.toANSI(error, {
-        solutionFinders: [{
-            name: "api-finder",
-            priority: 100,
-            /** @param {Error} err */
-            /** @param {any} context */
-            handle: async (err, context) => {
-                if (err.message.includes("API")) {
-                    return {
-                        header: "API Error Solution",
-                        body: "Check your API endpoint and authentication."
-                    };
-                }
-                return undefined;
-            }
-        }]
+        solutionFinders: [
+            {
+                name: "api-finder",
+                priority: 100,
+                /** @param {Error} err */
+                /** @param {any} context */
+                handle: async (err, context) => {
+                    if (err.message.includes("API")) {
+                        return {
+                            header: "API Error Solution",
+                            body: "Check your API endpoint and authentication.",
+                        };
+                    }
+                    return undefined;
+                },
+            },
+        ],
     });
 
     return c.json({
         error: ansiResult.errorAnsi,
         solution: ansiResult.solutionBox,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
     });
 });
 
@@ -58,7 +60,7 @@ app.onError(async (err, c) => {
         // Generate HTML error page
         const html = await ono.toHTML(err, {
             cspNonce: "error-nonce-" + Date.now(),
-            theme: "dark"
+            theme: "dark",
         });
 
         return c.html(html, 500);
