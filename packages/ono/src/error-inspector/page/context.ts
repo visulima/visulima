@@ -12,9 +12,14 @@ import userIcon from "lucide-static/icons/user.svg?data-uri&encoding=css";
 import getHighlighter from "../../../../../shared/utils/get-highlighter";
 import copyButton from "../components/copy-button";
 import type { ContentPage } from "../types";
-import { sanitizeAttribute, sanitizeCodeHtml, sanitizeHtml, sanitizeUrlAttribute } from "../util/sanitize";
+import { sanitizeAttribute, sanitizeCodeHtml, sanitizeHtml, sanitizeUrlAttribute } from "../utils/sanitize";
 
 const SENSITIVE_HEADER_PATTERNS = [/authorization/i, /cookie/i, /set-cookie/i, /x-api-key/i, /api-key/i, /x-auth/i, /token/i, /secret/i];
+
+type HeaderValue = string | string[] | undefined;
+type HeadersRecord = Record<string, HeaderValue>;
+type HeadersInput = HeadersRecord | Headers | undefined;
+type HeadersOutput = Record<string, string | string[]> | undefined;
 
 const isSensitiveHeader = (name: string, denylist: string[] | undefined): boolean => {
     if (denylist && denylist.some((d) => d.toLowerCase() === name.toLowerCase())) {
@@ -24,41 +29,58 @@ const isSensitiveHeader = (name: string, denylist: string[] | undefined): boolea
     return SENSITIVE_HEADER_PATTERNS.some((re) => re.test(name));
 };
 
-const filterHeaders = (
-    headers: Record<string, string | string[] | undefined> | Headers | undefined,
-    allowlist?: string[],
-    denylist?: string[],
-    maskValue = "[masked]",
-): Record<string, string | string[]> | undefined => {
+const isHeadersObject = (object: unknown): object is Headers =>
+    typeof object === "object" && object !== null && typeof (object as Headers).forEach === "function" && typeof (object as Headers).get === "function";
+
+const normalizeHeadersToEntries = (headers: HeadersInput): [string, HeaderValue][] => {
     if (!headers) {
+        return [];
+    }
+
+    if (isHeadersObject(headers)) {
+        return [...headers.entries()].map(([k, v]) => [k, v]);
+    }
+
+    return Object.entries(headers as HeadersRecord);
+};
+
+const shouldIncludeHeader = (key: string, allowlist?: string[]): boolean => {
+    if (!allowlist || allowlist.length === 0) {
+        return true;
+    }
+
+    return allowlist.some((a) => a.toLowerCase() === key.toLowerCase());
+};
+
+const maskHeaderValue = (value: HeaderValue, masked: string | undefined): string | string[] => {
+    if (!value || !masked) {
+        return value as string | string[];
+    }
+
+    return Array.isArray(value) ? value.map(() => masked) : masked;
+};
+
+const filterHeaders = (headers: HeadersInput, allowlist?: string[], denylist?: string[], maskValue = "[masked]"): HeadersOutput => {
+    const entries = normalizeHeadersToEntries(headers);
+
+    if (entries.length === 0) {
         return undefined;
     }
 
     const out: Record<string, string | string[]> = {};
 
-    const entries: [string, string | string[] | undefined][]
-        = typeof (headers as any)?.forEach === "function" && typeof (headers as any)?.get === "function"
-            ? [...(headers as Headers).entries()].map(([k, v]) => [k, v])
-            : Object.entries(headers as Record<string, string | string[] | undefined>);
-
     for (const [key, value] of entries) {
-        const lower = key.toLowerCase();
-
-        if (allowlist && allowlist.length > 0 && !allowlist.some((a) => a.toLowerCase() === lower)) {
+        if (!shouldIncludeHeader(key, allowlist)) {
             continue;
         }
-
-        const masked = isSensitiveHeader(lower, denylist) ? maskValue : undefined;
 
         if (value === undefined) {
             continue;
         }
 
-        if (Array.isArray(value)) {
-            out[key] = masked ? value.map(() => masked) : value;
-        } else {
-            out[key] = masked || value;
-        }
+        const masked = isSensitiveHeader(key.toLowerCase(), denylist) ? maskValue : undefined;
+
+        out[key] = maskHeaderValue(value, masked);
     }
 
     return out;
@@ -100,7 +122,7 @@ const parseCookieString = (cookieHeader?: string | null): Record<string, string>
     return result;
 };
 
-const readRequestBody = async (request: Request, capBytes: number): Promise<unknown> => {
+const readRequestBody = async (request: RequestLike, capBytes: number): Promise<unknown> => {
     try {
         const method = String(request?.method || "GET").toUpperCase();
 
@@ -108,31 +130,34 @@ const readRequestBody = async (request: Request, capBytes: number): Promise<unkn
             return undefined;
         }
 
-        const contentType = (request as any)?.headers?.get?.("content-type") || (request as any)?.headers?.["content-type"] || "";
-        const cloned = (request as any).clone ? (request as any).clone() : request;
+        const contentType = isHeadersObject(request.headers)
+            ? request.headers.get("content-type") || ""
+            : String((request.headers as Record<string, string | string[]>)?.["content-type"] || "");
 
-        if (typeof (cloned as any).json === "function" && String(contentType).includes("application/json")) {
+        const cloned = request.clone ? request.clone() : request;
+
+        if (typeof cloned.json === "function" && String(contentType).includes("application/json")) {
             try {
-                return await (cloned as any).json();
+                return await cloned.json();
             } catch {
                 try {
-                    return await (cloned as any).text();
+                    return await cloned.text?.() || "";
                 } catch {
                     return undefined;
                 }
             }
         }
 
-        if (typeof (cloned as any).text === "function") {
+        if (typeof cloned.text === "function") {
             try {
-                return await (cloned as any).text();
+                return await cloned.text();
             } catch {
                 return undefined;
             }
         }
 
         // Node.js IncomingMessage fallback with size cap
-        if (typeof (request as any)?.on === "function") {
+        if (typeof request?.on === "function") {
             return await new Promise<string | undefined>((resolve) => {
                 try {
                     let data = "";
@@ -142,8 +167,7 @@ const readRequestBody = async (request: Request, capBytes: number): Promise<unkn
                         request.setEncoding("utf8");
                     }
 
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const onData = (chunk: any) => {
+                    const onData = (chunk: unknown) => {
                         if (truncated) {
                             return;
                         }
@@ -183,9 +207,9 @@ const readRequestBody = async (request: Request, capBytes: number): Promise<unkn
                         request.off?.("error", onError);
                     };
 
-                    request.on("data", onData);
-                    request.on("end", onEnd);
-                    request.on("error", onError);
+                    request.on?.("data", onData);
+                    request.on?.("end", onEnd);
+                    request.on?.("error", onError);
                 } catch {
                     resolve(undefined);
                 }
@@ -198,6 +222,18 @@ const readRequestBody = async (request: Request, capBytes: number): Promise<unkn
     }
 };
 
+export interface RequestLike {
+    clone?: () => RequestLike;
+    headers?: Record<string, string | string[]> | Headers;
+    json?: () => Promise<unknown>;
+    method?: string;
+    off?: (event: string, handler: (chunk: unknown) => void) => void;
+    on?: (event: string, handler: (chunk: unknown) => void) => void;
+    setEncoding?: (encoding: string) => void;
+    text?: () => Promise<string>;
+    url?: string;
+}
+
 export type ContextContentOptions = {
     context?: Record<string, unknown>;
     headerAllowlist?: string[];
@@ -207,7 +243,8 @@ export type ContextContentOptions = {
     totalCapBytes?: number; // hard cap for showing a full copy button
 };
 
-export const createRequestContextPage = async (request: Request, options: ContextContentOptions): Promise<ContentPage | undefined> => {
+export const createRequestContextPage = async (request: RequestLike, options: ContextContentOptions): Promise<ContentPage | undefined> => {
+    // eslint-disable-next-line sonarjs/pseudo-random
     const uniqueId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 11)}`;
     const { headerAllowlist, headerDenylist, maskValue = "[masked]" } = options || {};
     const filteredHeaders = filterHeaders(request.headers, headerAllowlist, headerDenylist, maskValue);
@@ -238,10 +275,19 @@ export const createRequestContextPage = async (request: Request, options: Contex
         return parts.length > 0 ? parts.join("; ") : undefined;
     };
 
-    const cookiesRecord: Record<string, string | string[]> | undefined = parseCookieString(
-        ((request.headers as any)?.get && (request.headers as any).get("cookie"))
-        || (Array.isArray((request as any)?.headers?.cookie) ? (request as any).headers.cookie[0] : (request as any)?.headers?.cookie),
-    );
+    let cookieHeader: string | null;
+
+    if (isHeadersObject(request.headers)) {
+        cookieHeader = request.headers.get("cookie");
+    } else if (Array.isArray((request.headers as Record<string, string | string[]>)?.cookie)) {
+        // eslint-disable-next-line unicorn/no-null
+        cookieHeader = ((request.headers as Record<string, string | string[]>)?.cookie?.[0]) as string ?? null;
+    } else {
+        // eslint-disable-next-line unicorn/no-null
+        cookieHeader = (request.headers as Record<string, string | string[]>)?.cookie as string ?? null;
+    }
+
+    const cookiesRecord: Record<string, string | string[]> | undefined = parseCookieString(cookieHeader);
 
     const previewBytes = Math.max(0, Number(options?.previewBytes ?? 64_000));
     const requestBody: unknown = await readRequestBody(request, previewBytes);
@@ -261,10 +307,10 @@ export const createRequestContextPage = async (request: Request, options: Contex
             }
         }
 
-        const cookieHeader = buildCookieHeader(cookiesRecord);
+        const cookieHeaderForCurl = buildCookieHeader(cookiesRecord);
 
-        if (cookieHeader && !headersForCurl["cookie"]) {
-            headersForCurl["Cookie"] = cookieHeader;
+        if (cookieHeaderForCurl && !headersForCurl["cookie"]) {
+            headersForCurl["Cookie"] = cookieHeaderForCurl;
         }
 
         for (const [k, v] of Object.entries(headersForCurl)) {
@@ -282,24 +328,21 @@ export const createRequestContextPage = async (request: Request, options: Contex
         const parts = ["curl", "-X", method];
 
         if (headerLines.length > 0) {
-            parts.push("\\");
-            parts.push(`  ${headerLines.join(" \\\n")}`);
+            parts.push("\\", `  ${headerLines.join(" \\\n")}`);
         }
 
         if (dataFlag) {
             parts.push("\\", `  ${dataFlag}`);
         }
 
-        parts.push("\\");
-        parts.push(`  ${shellQuote(url)}`);
+        parts.push("\\", `  ${shellQuote(url)}`);
 
         return parts.join(" ");
     };
 
     const curl = buildCurl();
-    const curlHtmlRaw = await (
-        await getHighlighter()
-    ).codeToHtml(curl, {
+    const highlighter = await getHighlighter();
+    const curlHtmlRaw = await highlighter.codeToHtml(curl, {
         lang: "bash",
         themes: {
             dark: "github-dark-default",
@@ -330,25 +373,55 @@ export const createRequestContextPage = async (request: Request, options: Contex
         return `<div class="px-4 pb-4">${rows}</div>`;
     };
 
+    const renderPrimitiveValue = (value: string | number | boolean): string => {
+        const className = "text-[var(--ono-red-orange)]";
+
+        return `<span class="${className}">${typeof value === "string" ? `"${escapeHtml(value)}"` : String(value)}</span>`;
+    };
+
+    const renderNullishValue = (value: null | undefined): string => {
+        const text = value === null ? "null" : "undefined";
+
+        return `<span class="italic text-[var(--ono-text-muted)]">${text}</span>`;
+    };
+
+    const renderObjectValue = (object: Record<string, unknown>, depth: number): string => {
+        if (Object.keys(object).length === 0) {
+            return "<span class=\"italic text-[var(--ono-text-muted)]\">(empty object)</span>";
+        }
+
+        if (depth >= 3) {
+            return `<span class="italic text-[var(--ono-text-muted)]">{Object with ${Object.keys(object).length} keys}</span>`;
+        }
+
+        const entries = Object.entries(object)
+            .slice(0, 10)
+            .map(([key, value]) => {
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                const valueHtml = renderValue(value, depth + 1);
+
+                return `
+            <div class="ml-4 pl-3 py-1 border-l-2 border-[var(--ono-border)]">
+              <span class="font-medium text-[var(--ono-text)]">${escapeHtml(key)}:</span> ${valueHtml}
+            </div>`;
+            })
+            .join("");
+
+        const remaining
+            = Object.keys(object).length > 10
+                ? `<div class="ml-4 italic text-[var(--ono-text-muted)]">... and ${Object.keys(object).length - 10} more keys</div>`
+                : "";
+
+        return `<div class="space-y-1">${entries}${remaining}</div>`;
+    };
+
     const renderValue = (value: unknown, depth: number = 0): string => {
-        if (value === null) {
-            return "<span class=\"italic text-[var(--ono-text-muted)]\">null</span>";
+        if (value === null || value === undefined) {
+            return renderNullishValue(value);
         }
 
-        if (value === undefined) {
-            return "<span class=\"italic text-[var(--ono-text-muted)]\">undefined</span>";
-        }
-
-        if (typeof value === "string") {
-            return `<span class="text-[var(--ono-red-orange)]">"${escapeHtml(value)}"</span>`;
-        }
-
-        if (typeof value === "number") {
-            return `<span class="text-[var(--ono-red-orange)]">${value}</span>`;
-        }
-
-        if (typeof value === "boolean") {
-            return `<span class="text-[var(--ono-red-orange)]">${value}</span>`;
+        if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+            return renderPrimitiveValue(value as string | number | boolean);
         }
 
         if (Array.isArray(value)) {
@@ -356,9 +429,7 @@ export const createRequestContextPage = async (request: Request, options: Contex
                 return "<span class=\"italic text-[var(--ono-text-muted)]\">(empty array)</span>";
             }
 
-            const maxDepth = 3;
-
-            if (depth >= maxDepth) {
+            if (depth >= 3) {
                 return `<span class="italic text-[var(--ono-text-muted)]">[Array with ${value.length} items]</span>`;
             }
 
@@ -373,40 +444,15 @@ export const createRequestContextPage = async (request: Request, options: Contex
             </div>`;
                 })
                 .join("");
+
             const remaining
                 = value.length > 10 ? `<div class="ml-4 text-sm italic text-[var(--ono-text-muted)]">... and ${value.length - 10} more items</div>` : "";
 
             return `<div class="space-y-1">${items}${remaining}</div>`;
         }
 
-        if (typeof value === "object" && value !== null) {
-            if (Object.keys(value as object).length === 0) {
-                return "<span class=\"italic text-[var(--ono-text-muted)]\">(empty object)</span>";
-            }
-
-            const maxDepth = 3;
-
-            if (depth >= maxDepth) {
-                return `<span class="italic text-[var(--ono-text-muted)]">{Object with ${Object.keys(value as object).length} keys}</span>`;
-            }
-
-            const entries = Object.entries(value as object)
-                .slice(0, 10)
-                .map(([key, value_]) => {
-                    const valueHtml = renderValue(value_, depth + 1);
-
-                    return `
-            <div class="ml-4 pl-3 py-1 border-l-2 border-[var(--ono-border)]">
-              <span class="font-medium text-[var(--ono-text)]">${escapeHtml(key)}:</span> ${valueHtml}
-            </div>`;
-                })
-                .join("");
-            const remaining
-                = Object.keys(value as object).length > 10
-                    ? `<div class="ml-4 italic text-[var(--ono-text-muted)]">... and ${Object.keys(value as object).length - 10} more keys</div>`
-                    : "";
-
-            return `<div class="space-y-1">${entries}${remaining}</div>`;
+        if (typeof value === "object") {
+            return renderObjectValue(value as Record<string, unknown>, depth);
         }
 
         return `<span class="text-[var(--ono-text)]">${escapeHtml(String(value))}</span>`;
@@ -604,7 +650,7 @@ export const createRequestContextPage = async (request: Request, options: Contex
     <div class="max-w-full overflow-auto mt-2">${renderBodyContent(requestBody)}</div>
   </section>
 
-  <input type="hidden" id="clipboard-session-${uniqueId}" value="${attributeEscape(JSON.stringify((request as any)?.session ?? {}))}">
+  <input type="hidden" id="clipboard-session-${uniqueId}" value="${attributeEscape(JSON.stringify((request as RequestLike & { session?: Record<string, unknown> })?.session ?? {}))}">
   <section id="context-session" class="mb-4 rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-1)] overflow-hidden bg-[var(--ono-surface)] border border-[var(--ono-border)]">
     <div class="px-4 py-2 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${userIcon}'); mask-image:url('${userIcon}')"></span>
@@ -613,7 +659,7 @@ export const createRequestContextPage = async (request: Request, options: Contex
       <a href="#context-session" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ label: "Copy JSON", targetId: `clipboard-session-${uniqueId}` }).html}
     </div>
-            <div class="max-w-full overflow-auto mt-2">${renderObjectTable((request as any)?.session as Record<string, unknown>)}</div>
+            <div class="max-w-full overflow-auto mt-2">${renderObjectTable((request as RequestLike & { session?: Record<string, unknown> })?.session as Record<string, unknown>)}</div>
   </section>
 
   <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attributeEscape(JSON.stringify(cookiesRecord || {}))}">

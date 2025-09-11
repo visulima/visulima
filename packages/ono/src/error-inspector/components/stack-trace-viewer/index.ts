@@ -5,10 +5,10 @@ import chevronDownIcon from "lucide-static/icons/chevron-down.svg?data-uri&encod
 import findLanguageBasedOnExtension from "../../../../../../shared/utils/find-language-based-on-extension";
 import getFileSource from "../../../../../../shared/utils/get-file-source";
 import getHighlighter from "../../../../../../shared/utils/get-highlighter";
-import process from "../../../util/process";
-import revisionHash from "../../../util/revision-hash";
-import { sanitizeAttribute, sanitizeHtml, sanitizeUrlAttribute } from "../../util/sanitize";
-import cn from "../../util/tw";
+import process from "../../../utils/process";
+import revisionHash from "../../../utils/revision-hash";
+import cn from "../../utils/cn";
+import { sanitizeAttribute, sanitizeHtml, sanitizeUrlAttribute } from "../../utils/sanitize";
 import type { GroupType, Item } from "./types";
 import getType from "./util/get-type";
 import groupSimilarTypes from "./util/group-similar-types";

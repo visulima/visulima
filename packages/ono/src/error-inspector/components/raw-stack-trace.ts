@@ -1,4 +1,4 @@
-import { sanitizeHtml } from "../util/sanitize";
+import { sanitizeHtml } from "../utils/sanitize";
 import tooltip from "./tooltip";
 
 const rawStackTrace = (stack?: string): string => {

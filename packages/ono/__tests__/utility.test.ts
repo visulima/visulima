@@ -1,11 +1,11 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import { sanitizeAttribute, sanitizeHtml, sanitizeUrlAttribute } from "../src/error-inspector/util/sanitize";
-import { cn } from "../src/error-inspector/util/tw";
-import process from "../src/util/process";
-import revisionHash from "../src/util/revision-hash";
-import type { RuntimeName } from "../src/util/runtimes";
-import runtime from "../src/util/runtimes";
+import { cn } from "../src/error-inspector/utils/cn";
+import { sanitizeAttribute, sanitizeHtml, sanitizeUrlAttribute } from "../src/error-inspector/utils/sanitize";
+import process from "../src/utils/process";
+import revisionHash from "../src/utils/revision-hash";
+import type { RuntimeName } from "../src/utils/runtimes";
+import runtime from "../src/utils/runtimes";
 
 describe("utilities", () => {
     describe("sanitize functions", () => {

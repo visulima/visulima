@@ -5,7 +5,7 @@ import chevronDownIcon from "lucide-static/icons/chevron-down.svg?data-uri&encod
 // eslint-disable-next-line import/no-extraneous-dependencies
 import clipboardIcon from "lucide-static/icons/clipboard.svg?data-uri&encoding=css";
 
-import { sanitizeAttribute, sanitizeHtml } from "../util/sanitize";
+import { sanitizeAttribute, sanitizeHtml } from "../util/sanitize";../utils/sanitize
 
 const copyDropdown = ({
     label = "Copy",

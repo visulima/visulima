@@ -3,7 +3,7 @@ import minusIcon from "lucide-static/icons/minus.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import plusIcon from "lucide-static/icons/plus.svg?data-uri&encoding=css";
 
-import { sanitizeHtml } from "../../util/sanitize";
+import { sanitizeHtml } from "../../utils/sanitize";
 import stackTraceViewer from "../stack-trace-viewer";
 import tooltip from "../tooltip";
 
