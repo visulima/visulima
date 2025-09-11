@@ -6,5 +6,5 @@
         "moduleResolution": "bundler",
         "types": ["@types/node", "@visulima/packem/files"]
     },
-    "exclude": ["vitest.config.ts", "examples/**"]
+    "exclude": ["vitest.config.ts", "examples/**", "dist/**"]
 }

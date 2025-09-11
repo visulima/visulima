@@ -1,7 +1,9 @@
+import { realpathSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import path from "node:path";
 import process from "node:process";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { isAbsolute, normalize, relative, resolve as resolvePath, sep } from "@visulima/path";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import launchEditorMiddleware from "launch-editor-middleware";
 
@@ -94,18 +96,45 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
         };
     };
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     const validateFilePath = (filePath: string | undefined, projectRoot: string, allowOutsideProject: boolean): string | undefined => {
         if (!filePath) {
             return undefined;
         }
 
-        const absPath = path.isAbsolute(filePath) ? filePath : path.resolve(projectRoot, filePath);
+        const absPath = isAbsolute(filePath) ? filePath : resolvePath(projectRoot, filePath);
 
         if (!allowOutsideProject) {
-            const rootWithSeparator = projectRoot.endsWith(path.sep) ? projectRoot : projectRoot + path.sep;
+            try {
+                // Resolve symlinks for both project root and target path
+                const projectRootResolved = realpathSync(projectRoot);
+                const targetResolved = realpathSync(absPath);
 
-            if (!absPath.startsWith(rootWithSeparator)) {
-                return undefined;
+                // Normalize both paths
+                const normalizedProjectRoot = normalize(projectRootResolved);
+                const normalizedTarget = normalize(targetResolved);
+
+                // On case-insensitive platforms, compare lowercased versions
+                const isCaseInsensitive = process.platform === "win32" || process.platform === "darwin";
+                const projectRootCompare = isCaseInsensitive ? normalizedProjectRoot.toLowerCase() : normalizedProjectRoot;
+                const targetCompare = isCaseInsensitive ? normalizedTarget.toLowerCase() : normalizedTarget;
+
+                const relativePath = relative(normalizedProjectRoot, normalizedTarget);
+
+                // Check if target is outside project root:
+                // - If relative path starts with '..' it's outside
+                // - If relative path is absolute, it's outside
+                // - If paths don't match on case-insensitive platforms, it's outside
+                if (relativePath.startsWith("..") || isAbsolute(relativePath) || (isCaseInsensitive && !targetCompare.startsWith(projectRootCompare))) {
+                    return undefined;
+                }
+            } catch {
+                // If realpathSync fails (e.g., file doesn't exist), fall back to basic check
+                const rootWithSeparator = projectRoot.endsWith(sep) ? projectRoot : projectRoot + sep;
+
+                if (!absPath.startsWith(rootWithSeparator)) {
+                    return undefined;
+                }
             }
         }
 
