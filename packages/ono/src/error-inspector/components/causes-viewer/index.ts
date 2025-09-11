@@ -47,8 +47,8 @@ const causes = async (causeList: unknown[], options: { openInEditorUrl?: string 
     }
 
     const tooltipHtml = tooltip({
-        message: `The cause data property of an Error instance indicates the specific original cause of the error.
-            All causes in the error are order in the way they occurred.`,
+        message: `The "cause" property of an Error indicates the original reason the error occurred.
+            Causes are ordered in the sequence they occurred.`,
     });
 
     return {
