@@ -1,11 +1,12 @@
 import { realpathSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import process from "node:process";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isAbsolute, normalize, relative, resolve as resolvePath, sep } from "@visulima/path";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import launchEditorMiddleware from "launch-editor-middleware";
+
+import { getProcessPlatform } from "../utils/process";
 
 type EditorPayload = {
     column?: number;
@@ -115,7 +116,7 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                 const normalizedTarget = normalize(targetResolved);
 
                 // On case-insensitive platforms, compare lowercased versions
-                const isCaseInsensitive = process.platform === "win32" || process.platform === "darwin";
+                const isCaseInsensitive = getProcessPlatform() === "win32" || getProcessPlatform() === "darwin";
                 const projectRootCompare = isCaseInsensitive ? normalizedProjectRoot.toLowerCase() : normalizedProjectRoot;
                 const targetCompare = isCaseInsensitive ? normalizedTarget.toLowerCase() : normalizedTarget;
 

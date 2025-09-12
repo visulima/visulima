@@ -115,7 +115,9 @@ const layout = ({
     const safeTitle = escapeHtml(title || "Error");
     const safeDescription = escapeHtml(description || "");
 
-    const errorStack = DOMPurify.sanitize(error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString());
+    // Optimize stack processing - only indent if stack exists and contains newlines
+    const rawStack = error.stack || error.toString();
+    const errorStack = DOMPurify.sanitize(rawStack.includes("\n") ? rawStack.replaceAll("\n", "\n\t") : rawStack);
 
     return `<!--
     ${errorStack}

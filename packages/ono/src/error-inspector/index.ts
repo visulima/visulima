@@ -309,8 +309,6 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
     // Sanitize user-controlled options to prevent XSS
     const sanitizedOptions = sanitizeOptions(options);
 
-    let html = "";
-
     const {
         code: { html: stackHtml, script: stackScript },
         id: stackId,
@@ -328,28 +326,30 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
     }
 
     const headerTabsResult = headerTabs(tabsList);
-
-    html += `<div class="flex flex-row gap-6 w-full mb-6">`;
-    html += headerTabsResult.html;
-
     const headerBarResult = headerBar(sanitizedOptions);
 
-    html += headerBarResult.html;
-    html += `</div>`;
+    // Build HTML efficiently using array to avoid string concatenation overhead
+    const htmlParts: string[] = [`<div class="flex flex-row gap-6 w-full mb-6">`, headerTabsResult.html, headerBarResult.html, `</div>`];
 
+    // Add stack panel
     const safeStackId = sanitizeAttribute(stackId);
 
-    html += `<div id="ono-section-${safeStackId}" class="${anyCustomSelected ? "hidden relative" : "relative"}" role="tabpanel" aria-labelledby="ono-tab-${safeStackId}">${stackHtml}</div>`;
+    htmlParts.push(
+        `<div id="ono-section-${safeStackId}" class="${anyCustomSelected ? "hidden relative" : "relative"}" role="tabpanel" aria-labelledby="ono-tab-${safeStackId}">${stackHtml}</div>`,
+    );
 
+    // Add custom pages efficiently
     for (const page of customPages) {
         const safeId = sanitizeAttribute(String(page.id));
         const hidden = page.defaultSelected ? "" : " hidden";
 
-        html += `<div id="ono-section-${safeId}" class="${hidden} relative" role="tabpanel" aria-labelledby="ono-tab-${safeId}">${page.code.html}</div>`;
+        htmlParts.push(
+            `<div id="ono-section-${safeId}" class="${hidden} relative" role="tabpanel" aria-labelledby="ono-tab-${safeId}">${page.code.html}</div>`,
+        );
     }
 
     return layout({
-        content: html.trim(),
+        content: htmlParts.join("").trim(),
         cspNonce: options?.cspNonce,
         css: inlineCss as string,
         description: "Error",
