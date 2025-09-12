@@ -1,3 +1,14 @@
+## @visulima/cerebro [1.1.48](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.47...@visulima/cerebro@1.1.48) (2025-09-12)
+
+### Miscellaneous Chores
+
+* update dependencies and fix linting issues ([0e802fe](https://github.com/visulima/visulima/commit/0e802fe02bb9ed791659cb5f3c77605ae5b42ec8))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 2.0.3
+
 ## @visulima/cerebro [1.1.47](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.46...@visulima/cerebro@1.1.47) (2025-09-07)
 
 
