@@ -2,7 +2,7 @@ interface Process extends Partial<Omit<typeof globalThis.process, "versions">> {
     versions: Record<string, string>;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention,@typescript-eslint/no-unnecessary-condition,no-underscore-dangle
+// eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const _process = (globalThis.process || Object.create(null)) as unknown as Process;
 
 const processShims: Partial<Process> = {

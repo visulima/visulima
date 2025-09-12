@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+
 import { join } from "@visulima/path";
 import type { LanguageModel } from "ai";
 import { generateText } from "ai";
@@ -13,8 +14,8 @@ const DEFAULT_HEADER = "## Ai Generated Solution";
 const DEFAULT_ERROR_MESSAGE = "Creation of a AI solution failed.";
 
 interface CacheOptions {
-    enabled?: boolean;
     directory?: string;
+    enabled?: boolean;
     ttl?: number; // Time to live in milliseconds
 }
 
@@ -28,8 +29,8 @@ interface CacheEntry {
 const generateCacheKey = (error: Error, file: SolutionFinderFile, temperature?: number): string => {
     const keyData = {
         error: {
-            name: error.name,
             message: error.message,
+            name: error.name,
             stack: error.stack,
         },
         file: {
@@ -40,7 +41,7 @@ const generateCacheKey = (error: Error, file: SolutionFinderFile, temperature?: 
         },
         temperature,
     };
-    
+
     return createHash("sha256").update(JSON.stringify(keyData)).digest("hex");
 };
 
@@ -49,7 +50,7 @@ const getCacheDirectory = (directory?: string): string => {
     if (directory) {
         return directory;
     }
-    
+
     // Default to a cache directory in the system temp folder
     return join(tmpdir(), "visulima-error-cache");
 };
@@ -62,9 +63,7 @@ const ensureCacheDirectory = (cacheDir: string): void => {
 };
 
 // Get cache file path
-const getCacheFilePath = (cacheDir: string, key: string): string => {
-    return join(cacheDir, `${key}.json`);
-};
+const getCacheFilePath = (cacheDir: string, key: string): string => join(cacheDir, `${key}.json`);
 
 // Read from cache
 const readFromCache = (cacheFilePath: string, ttl: number): Solution | null => {
@@ -72,16 +71,17 @@ const readFromCache = (cacheFilePath: string, ttl: number): Solution | null => {
         if (!existsSync(cacheFilePath)) {
             return null;
         }
-        
+
         const cacheContent = readFileSync(cacheFilePath, "utf-8");
         const cacheEntry: CacheEntry = JSON.parse(cacheContent);
-        
+
         // Check if cache entry is still valid
         const now = Date.now();
+
         if (now - cacheEntry.timestamp > ttl) {
             return null; // Cache expired
         }
-        
+
         return cacheEntry.solution;
     } catch {
         return null; // Cache file corrupted or unreadable
@@ -96,7 +96,7 @@ const writeToCache = (cacheFilePath: string, solution: Solution, ttl: number): v
             timestamp: Date.now(),
             ttl,
         };
-        
+
         writeFileSync(cacheFilePath, JSON.stringify(cacheEntry, null, 2), "utf-8");
     } catch {
         // Silently fail if cache write fails
@@ -106,8 +106,8 @@ const writeToCache = (cacheFilePath: string, solution: Solution, ttl: number): v
 const aiFinder = (
     model: LanguageModel,
     options?: {
-        temperature?: number;
         cache?: CacheOptions;
+        temperature?: number;
     },
 ): SolutionFinder => {
     return {
@@ -115,20 +115,20 @@ const aiFinder = (
             const cacheOptions = options?.cache;
             const temperature = options?.temperature ?? 0;
             const ttl = cacheOptions?.ttl ?? 24 * 60 * 60 * 1000; // Default 24 hours
-            
+
             // Check cache if enabled
             if (cacheOptions?.enabled !== false) {
                 const cacheKey = generateCacheKey(error, file, temperature);
                 const cacheDir = getCacheDirectory(cacheOptions?.directory);
                 const cacheFilePath = getCacheFilePath(cacheDir, cacheKey);
-                
+
                 // Try to read from cache
                 const cachedSolution = readFromCache(cacheFilePath, ttl);
-                
+
                 if (cachedSolution) {
                     return cachedSolution;
                 }
-                
+
                 // Ensure cache directory exists for writing
                 ensureCacheDirectory(cacheDir);
             }
@@ -145,14 +145,15 @@ const aiFinder = (
                 const messageContent = result.text;
 
                 let solution: Solution;
-                if (!messageContent) {
+
+                if (messageContent) {
                     solution = {
-                        body: aiSolutionResponse(DEFAULT_ERROR_MESSAGE),
+                        body: aiSolutionResponse(messageContent),
                         header: DEFAULT_HEADER,
                     };
                 } else {
                     solution = {
-                        body: aiSolutionResponse(messageContent),
+                        body: aiSolutionResponse(DEFAULT_ERROR_MESSAGE),
                         header: DEFAULT_HEADER,
                     };
                 }
@@ -162,7 +163,7 @@ const aiFinder = (
                     const cacheKey = generateCacheKey(error, file, temperature);
                     const cacheDir = getCacheDirectory(cacheOptions?.directory);
                     const cacheFilePath = getCacheFilePath(cacheDir, cacheKey);
-                    
+
                     writeToCache(cacheFilePath, solution, ttl);
                 }
 
@@ -181,7 +182,7 @@ const aiFinder = (
                     const cacheKey = generateCacheKey(error, file, temperature);
                     const cacheDir = getCacheDirectory(cacheOptions?.directory);
                     const cacheFilePath = getCacheFilePath(cacheDir, cacheKey);
-                    
+
                     writeToCache(cacheFilePath, solution, ttl);
                 }
 

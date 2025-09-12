@@ -1,5 +1,5 @@
 import { blue, bold, green, inverse, italic, red, underline, yellow } from "@visulima/colorize";
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type { CustomMatchers } from "../../../src/test/vitest";
 import { toEqualAnsi } from "../../../src/test/vitest";
@@ -39,7 +39,7 @@ describe("aNSI string test utilities", () => {
             },
         };
 
-        expect(typeof matcher.toEqualAnsi).toBe("function");
+        expectTypeOf(matcher.toEqualAnsi).toBeFunction();
     });
 
     describe("toEqualAnsi custom matcher", () => {

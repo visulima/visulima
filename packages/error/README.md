@@ -267,11 +267,11 @@ const firstLine = formatStackFrameLine(frames[0]);
 #### API
 
 - `stringifyStackFrames(frames, options?)`
-  - `frames`: `Trace[]` — parsed frames from `parseStacktrace`
-  - `options.header`: `{ name?: string; message?: string }` — optional first-line header
+    - `frames`: `Trace[]` — parsed frames from `parseStacktrace`
+    - `options.header`: `{ name?: string; message?: string }` — optional first-line header
 - `formatStackFrameLine(frame)`
-  - `frame`: `Trace`
-  - returns a single formatted line like `"    at myMethod (/path/file.ts:10:5)"`
+    - `frame`: `Trace`
+    - returns a single formatted line like `"    at myMethod (/path/file.ts:10:5)"`
 
 ## Solutions (finders)
 

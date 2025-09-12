@@ -7,7 +7,7 @@ class RedactProcessor<L extends string = string> implements Processor<L> {
 
     public constructor(rules?: Rules, options?: RedactOptions) {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module,@typescript-eslint/no-var-requires
+            // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module
             const { redact, standardRules } = require("@visulima/redact");
 
             this.#redact = <T>(input: T) => redact(input, rules || standardRules, options);

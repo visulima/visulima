@@ -101,7 +101,7 @@ const tsconfig = await readTsConfig("/Users/../Projects/visulima/packages/tsconf
 type TsConfigJson = object;
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1
+Defined in: node_modules/.pnpm/type-fest@4.41.0/node_modules/type-fest/source/tsconfig-json.d.ts:1
 
 Type for [TypeScript's `tsconfig.json` file](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html) (TypeScript 3.7).
 
@@ -113,7 +113,7 @@ Type for [TypeScript's `tsconfig.json` file](https://www.typescriptlang.org/docs
 optional compileOnSave: boolean;
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1264
+Defined in: node_modules/.pnpm/type-fest@4.41.0/node_modules/type-fest/source/tsconfig-json.d.ts:1264
 
 Enable Compile-on-Save for this project.
 
@@ -123,7 +123,7 @@ Enable Compile-on-Save for this project.
 optional compilerOptions: CompilerOptions;
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1249
+Defined in: node_modules/.pnpm/type-fest@4.41.0/node_modules/type-fest/source/tsconfig-json.d.ts:1249
 
 Instructs the TypeScript compiler how to compile `.ts` files.
 
@@ -133,7 +133,7 @@ Instructs the TypeScript compiler how to compile `.ts` files.
 optional exclude: string[];
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1281
+Defined in: node_modules/.pnpm/type-fest@4.41.0/node_modules/type-fest/source/tsconfig-json.d.ts:1281
 
 Specifies a list of files to be excluded from compilation. The `exclude` property only affects the files included via the `include` property and not the `files` property.
 
@@ -145,7 +145,7 @@ Glob patterns require TypeScript version 2.0 or later.
 optional extends: string | string[];
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1269
+Defined in: node_modules/.pnpm/type-fest@4.41.0/node_modules/type-fest/source/tsconfig-json.d.ts:1269
 
 Path to base configuration file to inherit from.
 
@@ -155,7 +155,7 @@ Path to base configuration file to inherit from.
 optional files: string[];
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1274
+Defined in: node_modules/.pnpm/type-fest@4.41.0/node_modules/type-fest/source/tsconfig-json.d.ts:1274
 
 If no `files` or `include` property is present in a `tsconfig.json`, the compiler defaults to including all files in the containing directory and subdirectories except those specified by `exclude`. When a `files` property is specified, only those files and those specified by `include` are included.
 
@@ -165,7 +165,7 @@ If no `files` or `include` property is present in a `tsconfig.json`, the compile
 optional include: string[];
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1288
+Defined in: node_modules/.pnpm/type-fest@4.41.0/node_modules/type-fest/source/tsconfig-json.d.ts:1288
 
 Specifies a list of glob patterns that match files to be included in compilation.
 
@@ -177,7 +177,7 @@ If no `files` or `include` property is present in a `tsconfig.json`, the compile
 optional references: References[];
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1293
+Defined in: node_modules/.pnpm/type-fest@4.41.0/node_modules/type-fest/source/tsconfig-json.d.ts:1293
 
 Referenced projects.
 
@@ -187,7 +187,7 @@ Referenced projects.
 optional typeAcquisition: TypeAcquisition;
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1259
+Defined in: node_modules/.pnpm/type-fest@4.41.0/node_modules/type-fest/source/tsconfig-json.d.ts:1259
 
 Auto type (.d.ts) acquisition options for this project.
 
@@ -197,7 +197,7 @@ Auto type (.d.ts) acquisition options for this project.
 optional watchOptions: WatchOptions;
 ```
 
-Defined in: node\_modules/.pnpm/type-fest@4.41.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1254
+Defined in: node_modules/.pnpm/type-fest@4.41.0/node_modules/type-fest/source/tsconfig-json.d.ts:1254
 
 Instructs the TypeScript compiler how to watch files.
 
@@ -219,7 +219,7 @@ second attempt is to look for the "jsconfig.json" file from a given current work
 ##### cwd?
 
 Optional. The current working directory from which to search for the "tsconfig.json" file.
-             The type of `cwd` is `string`.
+The type of `cwd` is `string`.
 
 `string` | `URL`
 
@@ -232,13 +232,13 @@ Optional. The current working directory from which to search for the "tsconfig.j
 `Promise`\<[`TsConfigResult`](#tsconfigresult)\>
 
 A `Promise` that resolves to the TSConfig result object.
-         The return type of the function is `Promise<TsConfigResult>`.
+The return type of the function is `Promise<TsConfigResult>`.
 
 #### Throws
 
 An `Error` when the "tsconfig.json" file is not found.
 
-***
+---
 
 ### findTsConfigSync()
 
@@ -262,7 +262,7 @@ Defined in: [packages/tsconfig/src/find-tsconfig.ts:69](https://github.com/visul
 
 [`TsConfigResult`](#tsconfigresult)
 
-***
+---
 
 ### readTsConfig()
 
@@ -352,7 +352,7 @@ optional watchOptions: WatchOptions;
 
 Instructs the TypeScript compiler how to watch files.
 
-***
+---
 
 ### writeTsConfig()
 
@@ -386,7 +386,7 @@ intersection type of `WriteOptions` and a Record type with an optional `cwd` key
 A `Promise` that resolves when the tsconfig.json file has been written.
 The return type of function is `Promise<void>`.
 
-***
+---
 
 ### writeTsConfigSync()
 
@@ -420,7 +420,7 @@ intersection type of `WriteOptions` and a Record type with an optional `cwd` key
 A `Promise` that resolves when the tsconfig.json file has been written.
 The return type of function is `Promise<void>`.
 
-***
+---
 
 ### implicitBaseUrlSymbol
 
@@ -430,7 +430,7 @@ const implicitBaseUrlSymbol: typeof implicitBaseUrlSymbol;
 
 Defined in: [packages/tsconfig/src/read-tsconfig.ts:457](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/read-tsconfig.ts#L457)
 
-***
+---
 
 ### FindTsConfigOptions
 
@@ -445,7 +445,7 @@ Defined in: [packages/tsconfig/src/find-tsconfig.ts:10](https://github.com/visul
 ##### cache?
 
 ```ts
-optional cache: 
+optional cache:
   | Map<string, TsConfigJsonResolved>
   | boolean;
 ```
@@ -456,7 +456,7 @@ optional cache:
 optional configFileName: string;
 ```
 
-***
+---
 
 ### ReadTsConfigOptions
 
@@ -483,10 +483,10 @@ When `true`, it will make the configuration compatible with the latest TypeScrip
 ###### Default
 
 ```ts
-undefined
+undefined;
 ```
 
-***
+---
 
 ### TsConfigJsonResolved
 
@@ -496,7 +496,7 @@ type TsConfigJsonResolved = Except<TsConfigJson, "extends">;
 
 Defined in: [packages/tsconfig/src/types.ts:3](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/types.ts#L3)
 
-***
+---
 
 ### TsConfigResult
 

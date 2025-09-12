@@ -1,5 +1,5 @@
 export interface ErrorProperties {
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     cause?: Error | unknown;
     hint?: ErrorHint;
     location?: ErrorLocation;
@@ -17,7 +17,6 @@ export interface ErrorLocation {
 
 /**
  * A message that explains to the user how they can fix the error.
- *
  * @example
  * ```ts
  * const error = new VisulimaError({

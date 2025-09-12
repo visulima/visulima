@@ -63,14 +63,14 @@ async function writeYaml(
     let effectiveReplacer: YamlReplacer | undefined;
     let space: number | string | undefined;
 
-    if (typeof replacer === 'object' && replacer !== null && !Array.isArray(replacer) && typeof replacer !== 'function') {
+    if (typeof replacer === "object" && replacer !== null && !Array.isArray(replacer) && typeof replacer !== "function") {
         stringifyOptions = replacer as WriteYamlOptions;
         effectiveReplacer = stringifyOptions.replacer;
         space = stringifyOptions.space;
-    } else if (typeof options === 'object' && options !== null) {
+    } else if (typeof options === "object" && options !== null) {
         stringifyOptions = options as WriteYamlOptions;
         effectiveReplacer = replacer as YamlReplacer;
-        space = stringifyOptions.space ?? (typeof options === 'number' || typeof options === 'string' ? options : undefined);
+        space = stringifyOptions.space ?? (typeof options === "number" || typeof options === "string" ? options : undefined);
     } else {
         effectiveReplacer = replacer as YamlReplacer;
         space = options as number | string | undefined;

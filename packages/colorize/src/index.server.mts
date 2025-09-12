@@ -3,10 +3,8 @@ import type { ColorizeType } from "./types";
 
 const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
 
-// eslint-disable-next-line import/no-default-export
 export default colorize as ColorizeType;
 
-// eslint-disable-next-line import/no-unused-modules
 export const {
     ansi256,
     bg,
@@ -67,6 +65,4 @@ export const {
 } = colorize;
 
 export { default as Colorize } from "./colorize.server";
-
-// eslint-disable-next-line import/no-unused-modules
 export type { AnsiColors, AnsiStyles, ColorizeType } from "./types";

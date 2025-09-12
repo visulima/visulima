@@ -26,13 +26,13 @@ const wrapText = (
         return "";
     }
 
-    let string =
-        (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw == null
-            ? (((strings as number | string) + "") as string)
+    let string
+        = (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw == undefined
+            ? ((`${strings as number | string}`) as string)
             : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
 
     if (string.includes("\u001B")) {
-        // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/no-unnecessary-condition
+        // eslint-disable-next-line no-loops/no-loops
         for (let currentProperties = properties; currentProperties; currentProperties = currentProperties.props) {
             string = stringReplaceAll(string, currentProperties.close, currentProperties.open);
         }
@@ -40,7 +40,7 @@ const wrapText = (
 
     if (string.includes("\n")) {
         // eslint-disable-next-line unicorn/prefer-string-replace-all
-        string = string.replace(/(\r*\n)/g, properties.closeStack + "$1" + properties.openStack);
+        string = string.replace(/(\r*\n)/g, `${properties.closeStack}$1${properties.openStack}`);
     }
 
     return properties.openStack + string + properties.closeStack;
@@ -73,7 +73,7 @@ const createStyle = (
 
 // eslint-disable-next-line func-names
 const Colorize = function () {
-    const self = (string_: number | string) => string_ + "";
+    const self = (string_: number | string) => `${string_}`;
 
     self.strip = (value: string): string => value.replaceAll(ansiRegex(), "");
 
@@ -128,5 +128,4 @@ for (const name in styleMethods) {
 styles.ansi256 = styles.fg as object;
 styles.bgAnsi256 = styles.bg as object;
 
-// eslint-disable-next-line import/no-default-export
 export default Colorize;

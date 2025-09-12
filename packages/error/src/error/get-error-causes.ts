@@ -5,12 +5,12 @@ import type { VisulimaError } from "./visulima-error";
 /**
  * Will return an array of all causes in the error in the order they occurred.
  */
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
 const getErrorCauses = <E = Error | VisulimaError | unknown>(error: E): E[] => {
     const seen = new Set();
     const causes = [];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-redundant-type-constituents
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let currentError: E | any = error;
 
     // eslint-disable-next-line no-loops/no-loops

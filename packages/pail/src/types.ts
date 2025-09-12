@@ -9,7 +9,7 @@ import type InteractiveManager from "./interactive/interactive-manager";
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace VisulimaPail {
-        // eslint-disable-next-line @typescript-eslint/no-empty-interface,@typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         interface CustomMeta<L> {}
     }
 }

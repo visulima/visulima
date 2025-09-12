@@ -21,7 +21,7 @@ const aiSolutionResponse = (rawText: string): string => {
     if (!description) {
         return [
             "No solution found.",
-            'Provide this response to the Maintainer of <a href="https://github.com/visulima/visulima/issues/new?assignees=&labels=s%3A+pending+triage%2Cc%3A+bug&projects=&template=bug_report.yml" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline inline-flex items-center text-sm">@visulima/error</a>.',
+            "Provide this response to the Maintainer of <a href=\"https://github.com/visulima/visulima/issues/new?assignees=&labels=s%3A+pending+triage%2Cc%3A+bug&projects=&template=bug_report.yml\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-blue-500 hover:underline inline-flex items-center text-sm\">@visulima/error</a>.",
             `"${rawText}"`,
         ].join("</br></br>");
     }

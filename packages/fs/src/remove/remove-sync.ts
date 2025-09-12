@@ -29,10 +29,7 @@ import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-direct
  * }
  * ```
  */
-const removeSync = (
-    path: URL | string,
-    options: RetryOptions = {},
-): void => {
+const removeSync = (path: URL | string, options: RetryOptions = {}): void => {
     assertValidFileOrDirectoryPath(path);
 
     try {

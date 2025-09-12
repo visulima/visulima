@@ -28,6 +28,7 @@ export const formatStacktrace = (frames: Trace[], options?: { header?: { message
     if (options?.header && (options.header.name || options.header.message)) {
         const headerName = String(options.header.name || "Error");
         const headerMessage = String(options.header.message || "");
+
         lines.push(`${headerName}${headerMessage ? ": " : ""}${headerMessage}`);
     }
 

@@ -35,9 +35,9 @@ const UNKNOWN_FUNCTION = "<unknown>";
 // at Module.load (internal/modules/cjs/loader.js:641:32)
 // -----------------
 // Chromium based browsers: Chrome, Brave, new Opera, new Edge
-const CHROMIUM_REGEX =
+const CHROMIUM_REGEX
     // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking
-    /^.*?\s*at\s(?:(.+?\)(?:\s\[.+\])?|\(?.*?)\s?\((?:address\sat\s)?)?(?:async\s)?((?:<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+    = /^.*?\s*at\s(?:(.+?\)(?:\s\[.+\])?|\(?.*?)\s?\((?:address\sat\s)?)?(?:async\s)?((?:<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 // eslint-disable-next-line security/detect-unsafe-regex
 const CHROMIUM_EVAL_REGEX = /\((\S+)\),\s(<[^>]+>)?:(\d+)?:(\d+)?\)?/;
 // foo.bar.js:123:39
@@ -100,9 +100,9 @@ const extractSafariExtensionDetails = (methodName: string, url: string): [string
 
     return isSafariExtension || isSafariWebExtension
         ? [
-              methodName.includes("@") ? (methodName.split("@")[0] as string) : UNKNOWN_FUNCTION,
-              isSafariExtension ? `safari-extension:${url}` : `safari-web-extension:${url}`,
-          ]
+            methodName.includes("@") ? (methodName.split("@")[0] as string) : UNKNOWN_FUNCTION,
+            isSafariExtension ? `safari-extension:${url}` : `safari-web-extension:${url}`,
+        ]
         : [methodName, url];
 };
 
@@ -119,7 +119,6 @@ const parseMapped = (trace: Trace, maybeMapped: string) => {
     }
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const parseNode = (line: string): Trace | undefined => {
     const nestedNode = NODE_NESTED_REGEX.exec(line);
 
@@ -132,7 +131,7 @@ const parseNode = (line: string): Trace | undefined => {
             column: split[2] ? +split[2] : undefined,
             file: split[0],
             line: split[1] ? +split[1] : undefined,
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+
             methodName: nestedNode[1] || UNKNOWN_FUNCTION,
             raw: line,
             type: undefined,
@@ -148,13 +147,13 @@ const parseNode = (line: string): Trace | undefined => {
             column: node[4] ? +node[4] : undefined,
             file: node[2] ? node[2].replace(/at\s/, "") : undefined,
             line: node[3] ? +node[3] : undefined,
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+
             methodName: node[1] || UNKNOWN_FUNCTION,
             raw: line,
             type: line.startsWith("internal") ? ("internal" as TraceType) : undefined,
         };
 
-        parseMapped(trace, (node[2] as string) + ":" + (node[3] as string) + ":" + (node[4] as string));
+        parseMapped(trace, `${node[2] as string}:${node[3] as string}:${node[4] as string}`);
 
         return trace;
     }
@@ -170,16 +169,16 @@ const parseChromium = (line: string): Trace | undefined => {
         debugLog(`parse chrome error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
 
         const isNative = parts[2]?.startsWith("native"); // start of line
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+
         const isEval = parts[2]?.startsWith("eval") || parts[1]?.startsWith("eval"); // start of line
 
         let evalOrigin: Trace | undefined;
         let windowsParts:
             | {
-                  column: number | undefined;
-                  file: string | undefined;
-                  line: number | undefined;
-              }
+                column: number | undefined;
+                file: string | undefined;
+                line: number | undefined;
+            }
             | undefined;
 
         if (isEval) {
@@ -253,7 +252,7 @@ const parseChromium = (line: string): Trace | undefined => {
             trace.file = windowsParts.file as string;
             trace.line = windowsParts.line;
         } else {
-            parseMapped(trace, file + ":" + (parts[3] as string) + ":" + (parts[4] as string));
+            parseMapped(trace, `${file}:${parts[3] as string}:${parts[4] as string}`);
         }
 
         return trace;
@@ -336,10 +335,10 @@ const parseFirefox = (line: string, topFrameMeta?: TopFrameMeta): Trace | undefi
         debugLog(`parse firefox error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
 
         return {
-            column: parts[4] ? +parts[4] : (topFrameMeta?.column ?? undefined),
+            column: parts[4] ? +parts[4] : topFrameMeta?.column ?? undefined,
             file: parts[2],
-            line: parts[3] ? +parts[3] : (topFrameMeta?.line ?? undefined),
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            line: parts[3] ? +parts[3] : topFrameMeta?.line ?? undefined,
+
             methodName: parts[1] || UNKNOWN_FUNCTION,
             raw: line,
             type: undefined,
@@ -368,7 +367,6 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
     return undefined;
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const parse = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (line: string) => boolean; frameLimit: number }> = {}): Trace[] => {
     // @ts-expect-error missing stacktrace property
     let lines = (error.stacktrace ?? error.stack ?? "")
@@ -393,7 +391,7 @@ const parse = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (li
 
     lines = lines.slice(0, frameLimit);
 
-    // eslint-disable-next-line unicorn/no-array-reduce,@typescript-eslint/no-unsafe-return
+    // eslint-disable-next-line unicorn/no-array-reduce
     return lines.reduce((stack: Trace[], line: string, currentIndex: number): Trace[] => {
         if (!line) {
             return stack;
@@ -440,9 +438,9 @@ const parse = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (li
                 }
             }
 
-            parseResult =
-                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                parseFirefox(line, topFrameMeta) || parseGecko(line, topFrameMeta);
+            parseResult
+
+                = parseFirefox(line, topFrameMeta) || parseGecko(line, topFrameMeta);
         } else {
             parseResult = parseReactAndroidNative(line);
         }

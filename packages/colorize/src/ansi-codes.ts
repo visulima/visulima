@@ -22,11 +22,11 @@ const supportedColor: ColorSupportLevel = isStdoutColorSupported();
 
 const mono = { close: "", open: "" };
 
-const esc: (open: number | string, close: number | string) => ColorData =
-    supportedColor > 0
+const esc: (open: number | string, close: number | string) => ColorData
+    = supportedColor > 0
         ? (open: number | string, close: number | string): ColorData => {
-              return { close: "\u001B[" + close + "m", open: "\u001B[" + open + "m" };
-          }
+            return { close: `\u001B[${close}m`, open: `\u001B[${open}m` };
+        }
         : (): ColorData => mono;
 
 const createRgbFunction = (function_: (code: number | string) => ColorData) => (r: number | string, g: number | string, b: number | string) =>
@@ -38,13 +38,13 @@ const createHexFunction = (function_: (r: number | string, g: number | string, b
     return function_(r, g, b);
 };
 
-let createAnsi256 = (code: number | string): ColorData => esc("38;5;" + code, closeCode);
+let createAnsi256 = (code: number | string): ColorData => esc(`38;5;${code}`, closeCode);
 
-let createBgAnsi256 = (code: number | string): ColorData => esc("48;5;" + code, bgCloseCode);
+let createBgAnsi256 = (code: number | string): ColorData => esc(`48;5;${code}`, bgCloseCode);
 
-let createRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc("38;2;" + r + ";" + g + ";" + b, closeCode);
+let createRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc(`38;2;${r};${g};${b}`, closeCode);
 
-let createBgRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc("48;2;" + r + ";" + g + ";" + b, bgCloseCode);
+let createBgRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc(`48;2;${r};${g};${b}`, bgCloseCode);
 
 if (supportedColor === 1) {
     // ANSI 16 colors

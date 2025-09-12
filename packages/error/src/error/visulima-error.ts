@@ -26,8 +26,6 @@ export class VisulimaError extends Error {
         this.stack = stack ?? (this.stack as string);
         this.loc = location;
         this.hint = hint;
-
-        Error.captureStackTrace(this, this.constructor);
     }
 
     public setLocation(location: ErrorLocation): void {

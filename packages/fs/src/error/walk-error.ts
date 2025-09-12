@@ -39,7 +39,7 @@
  *
  * processDirectory();
  * ```
-*/
+ */
 class WalkError extends Error {
     /** File path of the root that's being walked. */
     public root: string;

@@ -11,4 +11,4 @@
  * @note: The ternary operator is a tick quicker than Math.min(Math.max(num, min), max).
  */
 
-export const clamp = (number_: number, min: number, max: number): number => (min > number_ ? min : number_ > max ? max : number_);
+export const clamp = (number_: number, min: number, max: number): number => (min > number_ ? min : Math.min(number_, max));

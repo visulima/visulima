@@ -131,7 +131,6 @@ console.log(clean); // => {}
 ## Notes
 
 - List of **supported** values/types:
-
     - `undefined` (original value is returned)
     - `null` (original value is returned)
     - `boolean`/`Boolean` (original value is returned)
@@ -166,7 +165,6 @@ console.log(clean); // => {}
     - `Blob`
 
 - List of **unsupported** values/types:
-
     - `DOMElement`: to copy DOM elements, use `element.cloneNode()`.
     - `Symbol`
     - `WeakMap`

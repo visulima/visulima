@@ -561,8 +561,8 @@ describe("package-json", () => {
 
             const packageJson = {
                 dependencies: {
-                    "package1": "^1.0.0",
-                    "package2": "^2.0.0",
+                    package1: "^1.0.0",
+                    package2: "^2.0.0",
                 },
                 devDependencies: {},
             } as unknown as NormalizedPackageJson;

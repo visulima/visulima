@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-secrets/no-secrets
 /**
  * This is a copy of the codeFrame function from Babel
  * @see https://github.com/babel/babel/blob/85e649203b61b7c908eb04c05511a0d35f893e8e/packages/babel-code-frame/src/index.ts#L68-L143
@@ -24,7 +23,7 @@ const getMarkerLines = (
     end: number;
     markerLines: MarkerLines;
     start: number;
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
 } => {
     const startLoc: CodeFrameLocation = {
         column: 0,
