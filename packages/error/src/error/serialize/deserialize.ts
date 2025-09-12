@@ -74,9 +74,15 @@ const reconstructError = (serialized: Record<string, unknown>, options: Deserial
             ? reconstructAggregateError(Constructor as new (...arguments_: unknown[]) => Error, errors, message, options, depth)
             : new Constructor(message as string);
 
-    // Restore the name if it was different
-    if (name && error.name !== name) {
+    // Only restore the name if it's not already set by the constructor
+    // The constructor's name property takes precedence
+    if (!error.name && name) {
         error.name = name as string;
+    }
+
+    // Restore the message if provided in serialized data
+    if (message !== undefined) {
+        error.message = message as string;
     }
 
     // Restore the stack if provided

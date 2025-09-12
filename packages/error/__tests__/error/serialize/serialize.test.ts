@@ -988,6 +988,140 @@ describe("error serializer", () => {
                 addKnownErrorConstructor(Error);
             }).toThrow('The error constructor "Error" is already known.');
         });
+
+        it("should validate constructor works without arguments and use instance.name over constructor.name", () => {
+            expect.assertions(2);
+
+            // Test case: Normal constructor that works without arguments
+            class NormalError extends Error {
+                public constructor() {
+                    super("Default message");
+                    this.name = "NormalError";
+                }
+            }
+
+            // Simulate minified constructor name
+            const originalName = NormalError.name;
+            Object.defineProperty(NormalError, "name", { value: "a" }); // Minified name
+
+            addKnownErrorConstructor(NormalError);
+
+            // Verify it uses instance.name (NormalError) not constructor.name (a)
+            const deserialized = deserializeError({
+                name: "NormalError",
+                message: "test",
+            });
+
+            expect(deserialized).toBeInstanceOf(NormalError);
+            expect(deserialized.name).toBe("NormalError");
+
+            // Restore original name
+            Object.defineProperty(NormalError, "name", { value: originalName });
+        });
+
+        it("should throw error when constructor requires arguments", () => {
+            expect.assertions(1);
+
+            class RequiresArgsError extends Error {
+                public constructor(message?: string, code?: number) {
+                    super(message || "default");
+                    this.name = "RequiresArgsError";
+                    // This constructor will work without arguments, but let's make it fail
+                    if (code === undefined) {
+                        throw new Error("Code is required");
+                    }
+                }
+            }
+
+            expect(() => {
+                addKnownErrorConstructor(RequiresArgsError);
+            }).toThrow('The error constructor "RequiresArgsError" is not compatible');
+        });
+
+        it("should throw error when constructor throws in constructor", () => {
+            expect.assertions(1);
+
+            class ThrowsInConstructorError extends Error {
+                public constructor() {
+                    super("This will throw");
+                    this.name = "ThrowsInConstructorError";
+                    throw new Error("Constructor failed");
+                }
+            }
+
+            expect(() => {
+                addKnownErrorConstructor(ThrowsInConstructorError);
+            }).toThrow('The error constructor "ThrowsInConstructorError" is not compatible');
+        });
+
+        it("should handle minified constructor names correctly", () => {
+            expect.assertions(3);
+
+            class MinifiedError extends Error {
+                public constructor() {
+                    super("test");
+                    this.name = "MinifiedError";
+                }
+            }
+
+            // Simulate minification - constructor name becomes something like 't' or 'e'
+            const originalConstructorName = MinifiedError.name;
+            Object.defineProperty(MinifiedError, "name", { value: "x" }); // Minified to 'x'
+
+            // The function should still work because it uses instance.name
+            addKnownErrorConstructor(MinifiedError);
+
+            const deserialized = deserializeError({
+                name: "MinifiedError", // Uses instance.name, not constructor.name
+                message: "test",
+            });
+
+            expect(deserialized).toBeInstanceOf(MinifiedError);
+            expect(deserialized.name).toBe("MinifiedError");
+            expect(deserialized.message).toBe("test");
+
+            // Restore original name
+            Object.defineProperty(MinifiedError, "name", { value: originalConstructorName });
+        });
+
+        it("should throw error for incompatible constructor with detailed cause", () => {
+            expect.assertions(1);
+
+            class IncompatibleError extends Error {
+                public constructor() {
+                    super("This will fail");
+                    this.name = "IncompatibleError";
+                    throw new Error("Intentional constructor failure");
+                }
+            }
+
+            expect(() => {
+                addKnownErrorConstructor(IncompatibleError);
+            }).toThrow('The error constructor "IncompatibleError" is not compatible');
+        });
+
+        it("should allow specifying custom name to override instance.name", () => {
+            expect.assertions(3);
+
+            class CustomNamedError extends Error {
+                public constructor() {
+                    super("Custom named error");
+                    this.name = "InstanceName";
+                }
+            }
+
+            // Register with custom name that overrides instance.name for lookup
+            addKnownErrorConstructor(CustomNamedError, "CustomName");
+
+            const deserialized = deserializeError({
+                name: "CustomName", // Uses the custom registration name for lookup
+                message: "test",
+            });
+
+            expect(deserialized).toBeInstanceOf(CustomNamedError);
+            expect(deserialized.name).toBe("InstanceName"); // Instance name is preserved
+            expect(deserialized.message).toBe("test");
+        });
     });
 
     describe(isErrorLike, () => {

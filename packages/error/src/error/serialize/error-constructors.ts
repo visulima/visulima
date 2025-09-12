@@ -16,22 +16,6 @@ if (typeof AggregateError !== "undefined") {
     defaultErrorConstructors.set("AggregateError", AggregateError as new (...arguments_: any[]) => Error);
 }
 
-// Check if a constructor is compatible with Error
-const isErrorConstructor = (constructor: unknown): constructor is new (message?: string) => Error => {
-    if (typeof constructor !== "function") {
-        return false;
-    }
-
-    // Check if it has the Error prototype in its chain
-    try {
-        const instance = new (constructor as new (...arguments_: unknown[]) => Error)();
-
-        return instance instanceof Error;
-    } catch {
-        return false;
-    }
-};
-
 // Type for error constructors (flexible to handle different signatures)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ErrorConstructor = new (...arguments_: any[]) => Error;
@@ -39,20 +23,25 @@ type ErrorConstructor = new (...arguments_: any[]) => Error;
 /**
  * Add a known error constructor to the registry.
  * @param constructor The error constructor to add
+ * @param name Optional custom name to use instead of instance.name
  * @throws {Error} If the constructor is already known or incompatible
  */
-export const addKnownErrorConstructor = (constructor: ErrorConstructor): void => {
-    const { name } = constructor;
+export const addKnownErrorConstructor = (constructor: ErrorConstructor, name?: string): void => {
+    let instance: Error;
 
-    if (defaultErrorConstructors.has(name)) {
-        throw new Error(`The error constructor "${name}" is already known.`);
+    try {
+        instance = new constructor();
+    } catch (error) {
+        throw new Error(`The error constructor "${constructor.name}" is not compatible`, { cause: error });
     }
 
-    if (!isErrorConstructor(constructor)) {
-        throw new Error(`The error constructor "${name}" is not compatible`);
+    const resolvedName = name ?? instance.name;
+
+    if (defaultErrorConstructors.has(resolvedName)) {
+        throw new Error(`The error constructor "${resolvedName}" is already known.`);
     }
 
-    defaultErrorConstructors.set(name, constructor);
+    defaultErrorConstructors.set(resolvedName, constructor);
 };
 
 /**
