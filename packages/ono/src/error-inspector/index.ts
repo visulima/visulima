@@ -8,7 +8,7 @@ import inlineCss from "./index.css";
 import layout from "./layout";
 import createStackPage from "./page/stack";
 import type { TemplateOptions } from "./types";
-import { sanitizeHtml } from "./utils/sanitize";
+import { sanitizeHtml, sanitizeOptions } from "./utils/sanitize";
 
 const domUtilitiesScript = `
 // DOM utility functions
@@ -295,16 +295,29 @@ document.addEventListener('click', function(e) {
 
 type ErrorType = Error | SolutionError | VisulimaError;
 
+// Main template function that generates the complete error inspector HTML page
 const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], options: TemplateOptions = {}): Promise<string> => {
+    // Input validation
+    if (!error) {
+        throw new TypeError("Error parameter is required");
+    }
+
+    if (!Array.isArray(solutionFinders)) {
+        throw new TypeError("solutionFinders must be an array");
+    }
+
+    // Sanitize user-controlled options to prevent XSS
+    const sanitizedOptions = sanitizeOptions(options);
+
     let html = "";
 
     const {
         code: { html: stackHtml, script: stackScript },
         id: stackId,
         name: stackName,
-    } = await createStackPage(error, solutionFinders, options);
+    } = await createStackPage(error, solutionFinders, sanitizedOptions);
 
-    const customPages = Array.isArray(options.content) ? options.content : [];
+    const customPages = Array.isArray(sanitizedOptions.content) ? sanitizedOptions.content : [];
     const anyCustomSelected = customPages.some((p) => p.defaultSelected);
     const tabsList: HeaderTab[] = [];
 
@@ -322,7 +335,7 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
     html += `<div class="flex flex-row gap-6 w-full mb-6">`;
     html += headerTabsResult.html;
 
-    const headerBarResult = headerBar(options);
+    const headerBarResult = headerBar(sanitizedOptions);
 
     html += headerBarResult.html;
     html += `</div>`;
@@ -337,7 +350,7 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
 
     return layout({
         content: html.trim(),
-        cspNonce: options.cspNonce,
+        cspNonce: options?.cspNonce,
         css: inlineCss as string,
         description: "Error",
         error,
