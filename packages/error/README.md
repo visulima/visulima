@@ -396,6 +396,67 @@ const errorString = JSON.stringify(errorObject);
 const newErrorObject = JSON.parse(errorString);
 ```
 
+## `deserialize` an error object
+
+Deserialize a previously serialized error back to an Error instance.
+
+- Automatically detects error-like objects
+- Reconstructs proper Error instances with correct constructors
+- Handles custom error classes registered with `addKnownErrorConstructor`
+- Supports AggregateError deserialization
+- Preserves error properties and cause chains
+- Wraps non-error-like objects in NonError
+
+```ts
+import { serializeError, deserializeError } from "@visulima/error";
+
+const error = new TypeError("example");
+const serialized = serializeError(error);
+
+// Deserialize back to Error instance
+const deserialized = deserializeError(serialized);
+
+console.log(deserialized instanceof TypeError); // true
+console.log(deserialized.message); // "example"
+```
+
+### Registering Custom Error Constructors
+
+```ts
+import { addKnownErrorConstructor, deserializeError } from "@visulima/error";
+
+class CustomError extends Error {
+    constructor(message: string, code: number) {
+        super(message);
+        this.name = "CustomError";
+        this.code = code;
+    }
+}
+
+// Register the custom error constructor
+addKnownErrorConstructor(CustomError);
+
+// Now it can be deserialized properly
+const serialized = { name: "CustomError", message: "test", code: 42 };
+const deserialized = deserializeError(serialized);
+
+console.log(deserialized instanceof CustomError); // true
+console.log(deserialized.code); // 42
+```
+
+### NonError for Non-Error Objects
+
+When deserializing objects that don't look like errors, they're wrapped in a `NonError`:
+
+```ts
+import { deserializeError, NonError } from "@visulima/error";
+
+const deserialized = deserializeError({ foo: "bar" });
+
+console.log(deserialized instanceof NonError); // true
+console.log(deserialized.message); // '{"foo":"bar"}'
+```
+
 ## renderError - pretty print an error
 
 ```ts
@@ -491,6 +552,89 @@ Type: `boolean` \
 Default: `false`
 
 Hide the error message.
+
+### `deserializeError`
+
+Deserialize a value back to its original form. If the value looks like a serialized error, it will be reconstructed as an Error instance. Otherwise, it will be wrapped in a NonError.
+
+```ts
+import { deserializeError } from "@visulima/error";
+
+const deserialized = deserializeError({ name: "TypeError", message: "example" });
+
+console.log(deserialized instanceof TypeError); // true
+```
+
+#### value
+
+Type: `unknown`
+
+The value to deserialize.
+
+#### options
+
+Type: `object`
+
+##### options.maxDepth
+
+Type: `number` \
+Default: `Number.POSITIVE_INFINITY`
+
+The maximum depth to deserialize nested objects.
+
+### `NonError`
+
+A class for wrapping non-error-like objects during deserialization.
+
+```ts
+import { NonError } from "@visulima/error";
+
+const nonError = new NonError("some message");
+
+console.log(nonError instanceof Error); // true
+console.log(nonError.name); // "NonError"
+```
+
+### `addKnownErrorConstructor`
+
+Add a known error constructor to the registry for proper deserialization.
+
+```ts
+import { addKnownErrorConstructor } from "@visulima/error";
+
+class CustomError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "CustomError";
+    }
+}
+
+addKnownErrorConstructor(CustomError);
+```
+
+#### constructor
+
+Type: `new (...args: unknown[]) => Error`
+
+The error constructor to add to the registry.
+
+### `isErrorLike`
+
+Check if an object looks like a serialized error.
+
+```ts
+import { isErrorLike } from "@visulima/error";
+
+const obj = { name: "TypeError", message: "example" };
+
+console.log(isErrorLike(obj)); // true
+```
+
+#### value
+
+Type: `unknown`
+
+The value to check.
 
 ### captureRawStackTrace
 

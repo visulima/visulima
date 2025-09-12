@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/lines-before-block, no-secrets/no-secrets */
 /**
  * This is a modified copy of the codeFrameColumns function from Babel
  * @see https://github.com/babel/babel/blob/85e649203b61b7c908eb04c05511a0d35f893e8e/packages/babel-code-frame/src/index.ts#L145-L217
@@ -14,13 +15,10 @@ import type { CodeFrameNodeLocation, CodeFrameOptions } from "./types";
 
 export const CODE_FRAME_POINTER = process.platform === "win32" && !process.env?.WT_SESSION ? ">" : "❯";
 
-/** Generate a code frame from string and an error location */
-export const codeFrame = (
-    source: string,
-    loc: CodeFrameNodeLocation,
-    options?: CodeFrameOptions,
-
-): string => {
+/**
+ * Generate a code frame from string and an error location.
+ */
+export const codeFrame = (source: string, loc: CodeFrameNodeLocation, options?: CodeFrameOptions): string => {
     const config = {
         // grab 2 lines before, and 3 lines after focused line
         linesAbove: 2,
@@ -55,7 +53,6 @@ export const codeFrame = (
         .slice(start, end)
         .map((line, index) => {
             const number = start + 1 + index;
-            // eslint-disable-next-line security/detect-object-injection
             const hasMarker = markerLines[number];
 
             const paddedNumber = ` ${number}`.slice(-numberMaxWidth);

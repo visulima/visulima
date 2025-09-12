@@ -12,12 +12,10 @@ const processShims: Partial<Process> = {
 const process = new Proxy<Process>(_process, {
     get(target, property: keyof Process) {
         if (property in target) {
-            // eslint-disable-next-line security/detect-object-injection
             return target[property];
         }
 
         if (property in processShims) {
-            // eslint-disable-next-line security/detect-object-injection
             return processShims[property];
         }
 

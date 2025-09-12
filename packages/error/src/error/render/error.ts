@@ -9,9 +9,14 @@ import type { Trace } from "../../stacktrace";
 import { parseStacktrace } from "../../stacktrace";
 import type { VisulimaError } from "../visulima-error";
 
+/**
+ * Error types that can be rendered.
+ */
+type RenderableError = AggregateError | Error | VisulimaError;
+
 const getPrefix = (prefix: string, indentation: number | "\t", deep: number): string => {
     if (deep === 0) {
-        return `${prefix}`;
+        return prefix.toString();
     }
 
     if (indentation === "\t") {
@@ -32,14 +37,22 @@ const getRelativePath = (filePath: string, cwdPath: string) => {
 };
 
 /**
- * Returns the error message
+ * Returns the error message.
  */
-const getMessage = (error: AggregateError | Error | VisulimaError, { color, hideErrorTitle, indentation, prefix }: Options, deep: number): string =>
-    `${getPrefix(prefix, indentation, deep)
-    + (hideErrorTitle ? color.title(error.message) : color.title(error.name + (error.message ? `: ${error.message}` : "")))
-    }\n`;
+const getTitleText = (error: RenderableError, hideErrorTitle: boolean, color: Options["color"]): string => {
+    if (hideErrorTitle) {
+        return color.title(error.message);
+    }
 
-const getHint = (error: AggregateError | Error | VisulimaError, { color, indentation, prefix }: Options, deep: number): string | undefined => {
+    const messagePart = error.message ? `: ${error.message}` : "";
+
+    return color.title(error.name + messagePart);
+};
+
+const getMessage = (error: RenderableError, { color, hideErrorTitle, indentation, prefix }: Options, deep: number): string =>
+    `${getPrefix(prefix, indentation, deep)}${getTitleText(error, hideErrorTitle, color)}\n`;
+
+const getHint = (error: RenderableError, { color, indentation, prefix }: Options, deep: number): string | undefined => {
     if ((error as VisulimaError).hint === undefined) {
         return undefined;
     }
@@ -49,9 +62,8 @@ const getHint = (error: AggregateError | Error | VisulimaError, { color, indenta
     let message = "";
 
     if (Array.isArray((error as VisulimaError).hint)) {
-        // eslint-disable-next-line no-loops/no-loops
         for (const line of (error as VisulimaError).hint as string[]) {
-            message += `${spaces + line}\n`;
+            message += `${(spaces + line).toString()}\n`;
         }
     } else {
         message += spaces + ((error as VisulimaError).hint as string);
@@ -65,15 +77,9 @@ const getMainFrame = (trace: Trace, { color, cwd: cwdPath, displayShortPath, ind
 
     const { fileLine, method } = color;
 
-    return (
-        `${getPrefix(prefix, indentation, deep)
-        }at ${
-            trace.methodName ? `${method(trace.methodName)} ` : ""
-        }${fileLine(filePath as string)
-        }:${
-
-            fileLine(`${trace.line}`)}`
-    );
+    return `${getPrefix(prefix, indentation, deep)}at ${trace.methodName ? `${method(trace.methodName)} ` : ""}${fileLine(filePath as string)}:${fileLine(
+        trace.line?.toString() ?? "",
+    )}`.toString();
 };
 
 const getCode = (
@@ -87,12 +93,10 @@ const getCode = (
 
     const filePath = trace.file.replace("file://", "");
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (!existsSync(filePath)) {
         return undefined;
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const fileContent = readFileSync(filePath, "utf8");
 
     return codeFrame(
@@ -112,7 +116,7 @@ const getErrors = (error: AggregateError, options: Options, deep: number): strin
     let message = `${getPrefix(options.prefix, options.indentation, deep)}Errors:\n\n`;
     let first = true;
 
-    // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention,no-underscore-dangle
+    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
     for (const error_ of error.errors) {
         if (first) {
             first = false;
@@ -121,18 +125,13 @@ const getErrors = (error: AggregateError, options: Options, deep: number): strin
         }
 
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        message += internalRenderError(
-
-            error_,
-            { ...options, framesMaxLimit: 1, hideErrorCodeView: options.hideErrorErrorsCodeView },
-            deep + 1,
-        );
+        message += internalRenderError(error_, { ...options, framesMaxLimit: 1, hideErrorCodeView: options.hideErrorErrorsCodeView }, deep + 1);
     }
 
     return `\n${message}`;
 };
 
-const getCause = (error: AggregateError | Error | VisulimaError, options: Options, deep: number): string => {
+const getCause = (error: RenderableError, options: Options, deep: number): string => {
     let message = `${getPrefix(options.prefix, options.indentation, deep)}Caused by:\n\n`;
 
     const cause = error.cause as Error;

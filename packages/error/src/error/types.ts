@@ -1,5 +1,4 @@
 export interface ErrorProperties {
-
     cause?: Error | unknown;
     hint?: ErrorHint;
     location?: ErrorLocation;

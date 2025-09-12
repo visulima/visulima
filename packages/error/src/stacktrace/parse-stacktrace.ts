@@ -36,39 +36,42 @@ const UNKNOWN_FUNCTION = "<unknown>";
 // -----------------
 // Chromium based browsers: Chrome, Brave, new Opera, new Edge
 const CHROMIUM_REGEX
-    // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking
+    // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex, sonarjs/regex-complexity
     = /^.*?\s*at\s(?:(.+?\)(?:\s\[.+\])?|\(?.*?)\s?\((?:address\sat\s)?)?(?:async\s)?((?:<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
-// eslint-disable-next-line security/detect-unsafe-regex
+
+// eslint-disable-next-line sonarjs/slow-regex
 const CHROMIUM_EVAL_REGEX = /\((\S+)\),\s(<[^>]+>)?:(\d+)?:(\d+)?\)?/;
 // foo.bar.js:123:39
 // foo.bar.js:123:39 <- original.js:123:34
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
+// eslint-disable-next-line regexp/no-unused-capturing-group, sonarjs/slow-regex
 const CHROMIUM_MAPPED = /(.*?):(\d+):(\d+)(\s<-\s(.+):(\d+):(\d+))?/;
 
 // eval at <anonymous> (C:\\Users\\user\\project\\visulima\\packages\\error\\__tests__\\stacktrace\\parse-stacktrace.test.ts
-// eslint-disable-next-line regexp/optimal-quantifier-concatenation,regexp/no-unused-capturing-group,security/detect-unsafe-regex
+// eslint-disable-next-line regexp/optimal-quantifier-concatenation,regexp/no-unused-capturing-group
 const WINDOWS_EVAL_REGEX = /(eval)\sat\s(<anonymous>)\s\((.*)\)?:(\d+)?:(\d+)\),\s*(<anonymous>)?:(\d+)?:(\d+)/;
 
 // in AppProviders (at App.tsx:28)
-// eslint-disable-next-line security/detect-unsafe-regex
+
+// eslint-disable-next-line sonarjs/regex-complexity
 const NODE_REGEX = /^\s*in\s(?:([^\\/]+(?:\s\[as\s\S+\])?)\s\(?)?\(at?\s?(.*?):(\d+)(?::(\d+))?\)?\s*$/;
 const NODE_NESTED_REGEX = /in\s(.*)\s\(at\s(.+)\)\sat/;
 
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking
+// eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex
 const REACT_ANDROID_NATIVE_REGEX = /^(?:.*@)?(.*):(\d+):(\d+)$/;
 
 // gecko regex: `(?:bundle|\d+\.js)`: `bundle` is for react native, `\d+\.js` also but specifically for ram bundles because it
 // generates filenames without a prefix like `file://` the filenames in the stacktrace are just 42.js
 // We need this specific case for now because we want no other regex to match.
-// eslint-disable-next-line regexp/no-super-linear-backtracking,security/detect-unsafe-regex,regexp/no-optional-assertion,regexp/no-trivially-nested-quantifier,regexp/no-useless-escape,no-useless-escape,regexp/optimal-quantifier-concatenation
+// eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/no-optional-assertion,regexp/no-trivially-nested-quantifier,regexp/no-useless-escape,no-useless-escape,regexp/optimal-quantifier-concatenation, sonarjs/slow-regex, sonarjs/regex-complexity, sonarjs/empty-string-repetition
 const GECKO_REGEX = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)?((?:[-a-z]+)?:\/.*?|\[native code\]|[^@]*(?:bundle|\d+\.js)|\/[\w\-. \/=]+)(?::(\d+))?(?::(\d+))?\s*$/i;
-// eslint-disable-next-line security/detect-unsafe-regex
+
+// eslint-disable-next-line sonarjs/slow-regex
 const GECKO_EVAL_REGEX = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
 
 // @http://localhost:8080/file.js:33:9
 // foo@debugger eval code:1:27
 // obj["@fn"]@Scratchpad/1:10:29
-// eslint-disable-next-line regexp/no-super-linear-backtracking
+// eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex
 const FIREFOX_REGEX = /(\S[^\s[]*\[.*\]|.*?)@(.*):(\d+):(\d+)/;
 
 // Used to sanitize webpack (error: *) wrapped stack errors
@@ -79,15 +82,15 @@ const WEBPACK_ERROR_REGEXP = /\(error: (.*)\)/;
  * What it means, is that instead of format like:
  *
  * Error: wat
- *   at function@url:row:col
- *   at function@url:row:col
- *   at function@url:row:col
+ * at function@url:row:col
+ * at function@url:row:col
+ * at function@url:row:col
  *
  * it produces something like:
  *
- *   function@url:row:col
- *   function@url:row:col
- *   function@url:row:col
+ * function@url:row:col
+ * function@url:row:col
+ * function@url:row:col
  *
  * Because of that, it won't be captured by `chrome` RegExp and will fall into `Gecko` branch.
  * This function is extracted so that we can use it in both places without duplicating the logic.
@@ -186,7 +189,8 @@ const parseChromium = (line: string): Trace | undefined => {
 
             if (subMatch) {
                 // can be index.js:123:39 or index.js:123 or index.js
-                const split = /(\S+):(\d+):(\d+)|(\S+):(\d+)$/.exec(subMatch[1] as string);
+
+                const split = /^(\S+):(\d+):(\d+)$|^(\S+):(\d+)$/.exec(subMatch[1] as string);
 
                 if (split) {
                     // throw out eval line/column and use top-most line/column number
@@ -244,6 +248,7 @@ const parseChromium = (line: string): Trace | undefined => {
             line: parts[3] ? +parts[3] : undefined,
             methodName,
             raw: line,
+            // eslint-disable-next-line sonarjs/no-nested-conditional
             type: (isEval ? "eval" : isNative ? "native" : undefined) as TraceType,
         };
 
@@ -319,6 +324,7 @@ const parseGecko = (line: string, topFrameMeta?: TopFrameMeta): Trace | undefine
             line: lineNumber,
             methodName,
             raw: line,
+            // eslint-disable-next-line sonarjs/no-nested-conditional
             type: isEval ? "eval" : file.includes("[native code]") ? "native" : undefined,
         };
     }
@@ -367,7 +373,7 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
     return undefined;
 };
 
-const parse = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (line: string) => boolean; frameLimit: number }> = {}): Trace[] => {
+const parseStacktrace = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (line: string) => boolean; frameLimit: number }> = {}): Trace[] => {
     // @ts-expect-error missing stacktrace property
     let lines = (error.stacktrace ?? error.stack ?? "")
         .split("\n")
@@ -376,13 +382,14 @@ const parse = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (li
             // Remove webpack (error: *) wrappers
             const cleanedLine = WEBPACK_ERROR_REGEXP.test(line) ? line.replace(WEBPACK_ERROR_REGEXP, "$1") : line;
 
-            // eslint-disable-next-line unicorn/prefer-string-replace-all
+            // eslint-disable-next-line unicorn/prefer-string-replace-all, sonarjs/slow-regex, sonarjs/anchor-precedence
             return cleanedLine.replace(/^\s+|\s+$/g, "");
         })
         // https://github.com/getsentry/sentry-javascript/issues/7813
         // Skip Error: lines
         // Skip AggregateError: lines
         // Skip eval code without more context
+        // eslint-disable-next-line sonarjs/slow-regex
         .filter((line: string): boolean => !/\S*(?:Error: |AggregateError:)/.test(line) && line !== "eval code");
 
     if (filter) {
@@ -409,10 +416,10 @@ const parse = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (li
 
         if (/^\s*in\s.*/.test(line)) {
             parseResult = parseNode(line);
-            // eslint-disable-next-line regexp/no-super-linear-backtracking
+            // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex
         } else if (/^.*?\s*at\s.*/.test(line)) {
             parseResult = parseChromium(line);
-            // eslint-disable-next-line regexp/no-super-linear-backtracking
+            // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex, sonarjs/anchor-precedence
         } else if (/^.*?\s*@.*|\[native code\]/.test(line)) {
             let topFrameMeta: TopFrameMeta | undefined;
 
@@ -438,9 +445,7 @@ const parse = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (li
                 }
             }
 
-            parseResult
-
-                = parseFirefox(line, topFrameMeta) || parseGecko(line, topFrameMeta);
+            parseResult = parseFirefox(line, topFrameMeta) || parseGecko(line, topFrameMeta);
         } else {
             parseResult = parseReactAndroidNative(line);
         }
@@ -455,4 +460,4 @@ const parse = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (li
     }, []);
 };
 
-export default parse;
+export default parseStacktrace;
