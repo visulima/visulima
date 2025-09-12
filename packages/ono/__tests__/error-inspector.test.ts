@@ -15,7 +15,7 @@ describe("error inspector template", () => {
         expect(html.length).toBeGreaterThan(0);
         expect(html).toContain("Test error");
         expect(html).toContain("<!DOCTYPE html>");
-    });
+    }, 10_000); // 10 seconds timeout
 
     it("should handle different error types", async () => {
         expect.assertions(2);

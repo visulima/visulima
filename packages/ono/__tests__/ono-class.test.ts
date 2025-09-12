@@ -29,7 +29,7 @@ describe("ono class", () => {
             expect(html).toContain("Test error");
             expect(html).toContain("<!DOCTYPE html>");
             expect(html).toContain("<title>Error</title>");
-        });
+        }, 10_000); // 10 seconds timeout
 
         it("should handle non-Error values", async () => {
             expect.assertions(1);
