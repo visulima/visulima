@@ -1,26 +1,133 @@
 import DOMPurify from "isomorphic-dompurify";
 
-export const sanitizeHtml = (value: unknown): string => DOMPurify.sanitize(String(value ?? ""));
+import type { TemplateOptions } from "../types";
 
+/**
+ * Constants for URL validation and character escaping
+ */
+const ALLOWED_URL_PREFIXES = ["http://", "https://", "/", "./", "../"] as const;
+const FALLBACK_URL = "#";
+
+// HTML entity mappings for attribute escaping
+const HTML_ENTITIES = {
+    "\"": "&quot;",
+    "&": "&amp;",
+    "'": "&#39;",
+    "<": "&lt;",
+    ">": "&gt;",
+} as const;
+
+// Regular expression for validating CSP nonces
+// CSP nonces should only contain base64 characters and hyphens
+const CSP_NONCE_PATTERN = /^[a-z0-9+/=-]+$/i;
+
+// Converts a value to a string, handling null/undefined cases
+const toString = (value: unknown): string => String(value ?? "").trim();
+
+// Escapes HTML entities for safe use in HTML attributes
+const escapeHtml = (value: string): string => value.replaceAll(/[&<>"']/g, (char) => HTML_ENTITIES[char as keyof typeof HTML_ENTITIES]);
+
+// Sanitizes HTML content using DOMPurify to prevent XSS attacks
+export const sanitizeHtml = (value: unknown): string => {
+    try {
+        return DOMPurify.sanitize(toString(value));
+    } catch {
+        // Fallback to basic escaping if DOMPurify fails
+        return escapeHtml(toString(value));
+    }
+};
+
+// Sanitizes values for use in HTML attributes with additional HTML entity escaping
 export const sanitizeAttribute = (value: unknown): string => {
-    const sanitized = DOMPurify.sanitize(String(value ?? ""));
+    const stringValue = toString(value);
 
-    // Escape for attribute context
-    return sanitized.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
+    if (!stringValue) {
+        return "";
+    }
+
+    try {
+        // DOMPurify sanitizes but we need to ensure quotes are escaped for attribute safety
+        const sanitized = DOMPurify.sanitize(stringValue);
+
+        return sanitized.replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
+    } catch {
+        // Fallback to manual escaping if DOMPurify fails
+        return escapeHtml(stringValue);
+    }
 };
 
+// Validates and sanitizes URLs for safe use in HTML attributes
+// Only allows HTTP/HTTPS URLs or relative paths
 export const sanitizeUrlAttribute = (value: unknown): string => {
-    const raw = String(value ?? "").trim();
-    const sanitized = DOMPurify.sanitize(raw);
-    const lower = sanitized.toLowerCase();
+    const rawUrl = toString(value);
 
-    const isAllowed = lower.startsWith("http://") || lower.startsWith("https://") || lower.startsWith("/") || lower.startsWith("./") || lower.startsWith("../");
+    if (!rawUrl) {
+        return FALLBACK_URL;
+    }
 
-    const safe = isAllowed ? sanitized : "#";
+    try {
+        const sanitized = DOMPurify.sanitize(rawUrl);
+        const lowerUrl = sanitized.toLowerCase();
 
-    return sanitizeAttribute(safe);
+        // Check if URL starts with allowed prefixes
+        const isAllowed = ALLOWED_URL_PREFIXES.some((prefix) => lowerUrl.startsWith(prefix));
+
+        return isAllowed ? sanitized : FALLBACK_URL;
+    } catch {
+        // Return safe fallback if sanitization fails
+        return FALLBACK_URL;
+    }
 };
 
-export const sanitizeCodeHtml = (value: unknown): string =>
-    // Preserve styling/classes produced by Shiki while sanitizing content
-    DOMPurify.sanitize(String(value ?? ""), { ADD_ATTR: ["class", "style"] });
+// Sanitizes HTML content while preserving code syntax highlighting classes
+export const sanitizeCodeHtml = (value: unknown): string => {
+    const stringValue = toString(value);
+
+    if (!stringValue) {
+        return "";
+    }
+
+    try {
+        // Preserve styling/classes produced by syntax highlighters like Shiki
+        return DOMPurify.sanitize(stringValue, {
+            ADD_ATTR: ["class", "style"],
+        });
+    } catch {
+        // Fallback to basic HTML sanitization if advanced options fail
+        return sanitizeHtml(stringValue);
+    }
+};
+
+// Validates and sanitizes Content Security Policy nonces
+export const sanitizeCspNonce = (value: unknown): string | undefined => {
+    const nonceValue = toString(value);
+
+    if (!nonceValue) {
+        return undefined;
+    }
+
+    // CSP nonces should only contain base64 characters and hyphens
+    return CSP_NONCE_PATTERN.test(nonceValue) ? nonceValue : undefined;
+};
+
+// Sanitizes all user-controlled template options to prevent XSS attacks
+export const sanitizeOptions = (options: TemplateOptions = {}): TemplateOptions => {
+    if (!options || typeof options !== "object") {
+        return {};
+    }
+
+    try {
+        return {
+            ...options,
+            cspNonce: sanitizeCspNonce(options.cspNonce),
+            openInEditorUrl: options.openInEditorUrl ? sanitizeUrlAttribute(options.openInEditorUrl) : undefined,
+        };
+    } catch {
+        // Return safe defaults if sanitization fails
+        return {
+            ...options,
+            cspNonce: undefined,
+            openInEditorUrl: undefined,
+        };
+    }
+};
