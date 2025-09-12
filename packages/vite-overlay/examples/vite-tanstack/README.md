@@ -66,10 +66,8 @@ In the File Based Routing setup the layout is located in `src/routes/__root.tsx`
 Here is an example layout that includes a header:
 
 ```tsx
-import { Outlet, createRootRoute } from "@tanstack/react-router";
+import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-
-import { Link } from "@tanstack/react-router";
 
 export const Route = createRootRoute({
     component: () => (
@@ -99,18 +97,9 @@ For example:
 
 ```tsx
 const peopleRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: "/people",
-    loader: async () => {
-        const response = await fetch("https://swapi.dev/api/people");
-        return response.json() as Promise<{
-            results: {
-                name: string;
-            }[];
-        }>;
-    },
     component: () => {
         const data = peopleRoute.useLoaderData();
+
         return (
             <ul>
                 {data.results.map((person) => (
@@ -119,6 +108,17 @@ const peopleRoute = createRoute({
             </ul>
         );
     },
+    getParentRoute: () => rootRoute,
+    loader: async () => {
+        const response = await fetch("https://swapi.dev/api/people");
+
+        return response.json() as Promise<{
+            results: {
+                name: string;
+            }[];
+        }>;
+    },
+    path: "/people",
 });
 ```
 
@@ -175,18 +175,18 @@ const rootRoute = createRootRoute({
 Now you can use `useQuery` to fetch your data.
 
 ```tsx
-import { useQuery } from "@tanstack/react-query";
-
 import "./App.css";
+
+import { useQuery } from "@tanstack/react-query";
 
 function App() {
     const { data } = useQuery({
-        queryKey: ["people"],
+        initialData: [],
         queryFn: () =>
             fetch("https://swapi.dev/api/people")
                 .then((res) => res.json())
                 .then((data) => data.results as { name: string }[]),
-        initialData: [],
+        queryKey: ["people"],
     });
 
     return (
@@ -218,14 +218,16 @@ pnpm add @tanstack/store
 Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
 
 ```tsx
+import "./App.css";
+
 import { useStore } from "@tanstack/react-store";
 import { Store } from "@tanstack/store";
-import "./App.css";
 
 const countStore = new Store(0);
 
 function App() {
     const count = useStore(countStore);
+
     return (
         <div>
             <button onClick={() => countStore.setState((n) => n + 1)}>Increment - {count}</button>
@@ -241,16 +243,18 @@ One of the many nice features of TanStack Store is the ability to derive state f
 Let's check this out by doubling the count using derived state.
 
 ```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store, Derived } from "@tanstack/store";
 import "./App.css";
+
+import { useStore } from "@tanstack/react-store";
+import { Derived, Store } from "@tanstack/store";
 
 const countStore = new Store(0);
 
 const doubledStore = new Derived({
-    fn: () => countStore.state * 2,
     deps: [countStore],
+    fn: () => countStore.state * 2,
 });
+
 doubledStore.mount();
 
 function App() {

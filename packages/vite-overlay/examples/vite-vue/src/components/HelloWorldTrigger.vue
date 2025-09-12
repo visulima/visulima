@@ -1,13 +1,16 @@
 <script setup lang="ts">
 defineProps<{
-  msg: string
-  status: {
-    type: String,
-    validator(value) {
-        return ['success', 'warning', 'danger'].includes(value)
-    }
-  }
-}>()
+    msg: string;
+    status: string;
+}>();
+
+// This will cause a runtime error to test the overlay when button is clicked
+const triggerError = () => {
+    // Use setTimeout to ensure error happens outside Vue's error handling
+    setTimeout(() => {
+        throw new Error("Test error from Vue component");
+    }, 0);
+};
 </script>
 
 <template>
@@ -17,6 +20,12 @@ defineProps<{
             You’ve successfully created a project with
             <a href="https://vite.dev/" target="_blank" rel="noopener">Vite</a> + <a href="https://vuejs.org/" target="_blank" rel="noopener">Vue 3</a>.
         </h3>
+        <button
+            @click="triggerError"
+            style="margin-top: 20px; padding: 10px 20px; background: red; color: white; border: none; border-radius: 5px; cursor: pointer"
+        >
+            Trigger Error (Test Overlay)
+        </button>
     </div>
 </template>
 

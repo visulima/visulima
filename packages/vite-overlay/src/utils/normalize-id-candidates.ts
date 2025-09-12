@@ -15,7 +15,7 @@ export const normalizeIdCandidates = (filePath: string): string[] => {
             const u = new URL(filePath);
             const pathWithSearch = u.pathname + (u.search || "");
             const noLeading = pathWithSearch.startsWith("/") ? pathWithSearch.slice(1) : pathWithSearch;
-            
+
             candidates.push(decodeURIComponent(pathWithSearch));
             candidates.push(decodeURIComponent(noLeading));
             candidates.push(decodeURIComponent(u.pathname));

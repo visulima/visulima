@@ -1,6 +1,6 @@
 const reportWebVitals = (onPerfEntry?: () => void) => {
-    if (onPerfEntry && onPerfEntry instanceof Function) {
-        import("web-vitals").then(({ onCLS, onINP, onFCP, onLCP, onTTFB }) => {
+    if (onPerfEntry && typeof onPerfEntry === "function") {
+        import("web-vitals").then(({ onCLS, onFCP, onINP, onLCP, onTTFB }) => {
             onCLS(onPerfEntry);
             onINP(onPerfEntry);
             onFCP(onPerfEntry);

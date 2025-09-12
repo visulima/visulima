@@ -17,6 +17,7 @@ const bash = (s: string): string => `\`\`\`bash\n${s.trim()}\n\`\`\``;
 
 const has = (message: string, ...needles: string[]): boolean => {
     const lower = message.toLowerCase();
+
     return needles.some((n) => lower.includes(n.toLowerCase()));
 };
 
@@ -293,8 +294,7 @@ new URL('./', import.meta.url).pathname`),
         name: "vite-aggregate-error",
         test: (error): RuleMatch | undefined => {
             // Check if this is an AggregateError by looking for multiple errors
-            const hasMultipleErrors = error && typeof error === 'object' &&
-                ('errors' in error || 'length' in error || Array.isArray((error as any).errors));
+            const hasMultipleErrors = error && typeof error === "object" && ("errors" in error || "length" in error || Array.isArray((error as any).errors));
 
             const message = (error?.message || String(error || "")).toString();
 
@@ -487,10 +487,12 @@ export const viteRuleBasedFinder: SolutionFinder = {
     handle: async (error: Error, file: SolutionFinderFile): Promise<Solution | undefined> => {
         try {
             const matches = viteRules
-                .map((r) => ({
-                    match: r.test(error, file),
-                    rule: r
-                }))
+                .map((r) => {
+                    return {
+                        match: r.test(error, file),
+                        rule: r,
+                    };
+                })
                 .filter((x) => Boolean(x.match)) as { match: RuleMatch; rule: Rule }[];
 
             if (matches.length === 0) {
@@ -504,7 +506,7 @@ export const viteRuleBasedFinder: SolutionFinder = {
 
             return {
                 body: sections,
-                header: "### Vite-Specific Issues Detected"
+                header: "### Vite-Specific Issues Detected",
             };
         } catch {
             return undefined;

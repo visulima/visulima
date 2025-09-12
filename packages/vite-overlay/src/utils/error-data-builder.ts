@@ -1,74 +1,89 @@
 import { readFile } from "node:fs/promises";
-import { codeFrame, parseStacktrace, formatStacktrace } from "@visulima/error";
+
+import { codeFrame, formatStacktrace, parseStacktrace } from "@visulima/error";
 import aiPrompt from "@visulima/error/solution/ai/prompt";
-import getHighlighter, { transformerCompactLineOptions } from "../../../../shared/utils/get-highlighter";
-import findLanguageBasedOnExtension from "../../../../shared/utils/find-language-based-on-extension";
 import type { ViteDevServer } from "vite";
 
-import { normalizeIdCandidates } from "./normalize-id-candidates";
+import findLanguageBasedOnExtension from "../../../../shared/utils/find-language-based-on-extension";
+import getHighlighter, { transformerCompactLineOptions } from "../../../../shared/utils/get-highlighter";
 import { findModuleForPath } from "./module-finder";
-import { resolveOriginalLocation } from "./source-map-resolver";
+import { normalizeIdCandidates } from "./normalize-id-candidates";
 import { realignOriginalPosition } from "./position-aligner";
+import { resolveOriginalLocation } from "./source-map-resolver";
 import { getSourceFromMap } from "./source-map-utils";
-import { cleanErrorStack, detectPluginFromStack, normalizeLF, isAggregateError, extractErrors, cleanErrorMessage, isESBuildErrorArray, processESBuildErrors } from "./stack-trace-utils";
+import {
+    cleanErrorMessage,
+    cleanErrorStack,
+    detectPluginFromStack,
+    extractErrors,
+    isAggregateError,
+    isESBuildErrorArray,
+    normalizeLF,
+    processESBuildErrors,
+} from "./stack-trace-utils";
 
 /**
  * Builds comprehensive error data including source maps, code frames, and AI prompts.
  * This function processes runtime errors and extracts all information needed for
  * the error overlay UI, including original source locations and syntax-highlighted code.
  * Handles both single errors and AggregateError (multiple errors).
- * @param error - The error object to process (can be AggregateError with multiple errors)
- * @param server - The Vite dev server instance for module resolution
+ * @param error The error object to process (can be AggregateError with multiple errors)
+ * @param server The Vite dev server instance for module resolution
  * @returns Promise resolving to extended error data object
  */
 export const buildExtendedErrorData = async (
     error: Error,
-    server: ViteDevServer
+    server: ViteDevServer,
 ): Promise<{
-    snippet: string;
     codeFrameContent?: string;
-    originalSnippet: string;
-    compiledSnippet: string;
-    originalCodeFrameContent?: string;
     compiledCodeFrameContent?: string;
-    fixPrompt: string;
-    filePath: string;
-    fileLine: number;
-    fileColumn: number;
+    compiledColumn: number;
     compiledFilePath: string;
     compiledLine: number;
-    compiledColumn: number;
-    trace: any;
-    plugin?: string;
+    compiledSnippet: string;
+    compiledStack?: string;
+    errorCount?: number;
+    fileColumn: number;
+    fileLine: number;
+    filePath: string;
+    fixPrompt: string;
     isAggregateError?: boolean;
     isESBuildArray?: boolean;
-    errorCount?: number;
-    compiledStack?: string;
+    originalCodeFrameContent?: string;
+    originalSnippet: string;
     originalStack?: string;
+    plugin?: string;
+    snippet: string;
+    trace: any;
 }> => {
-    const remapStackToOriginal = async (stack: string, header?: { name?: string; message?: string }): Promise<string> => {
+    const remapStackToOriginal = async (stack: string, header?: { message?: string; name?: string }): Promise<string> => {
         const frames = parseStacktrace({ stack } as unknown as Error);
-        const mapped = await Promise.all(frames.map(async (frame) => {
-            const file = frame.file;
-            const line = frame.line ?? 0;
-            const column = frame.column ?? 0;
+        const mapped = await Promise.all(
+            frames.map(async (frame) => {
+                const { file } = frame;
+                const line = frame.line ?? 0;
+                const column = frame.column ?? 0;
 
-            if (!file || line <= 0 || column <= 0) {
-                return frame;
-            }
-
-            try {
-                const idCandidates = normalizeIdCandidates(file);
-                const mod = findModuleForPath(server, idCandidates);
-                if (!mod) {
+                if (!file || line <= 0 || column <= 0) {
                     return frame;
                 }
-                const resolved = resolveOriginalLocation(mod, file, line, column);
-                return { ...frame, file: resolved.filePath, line: resolved.fileLine, column: resolved.fileColumn };
-            } catch {
-                return frame;
-            }
-        }));
+
+                try {
+                    const idCandidates = normalizeIdCandidates(file);
+                    const module_ = findModuleForPath(server, idCandidates);
+
+                    if (!module_) {
+                        return frame;
+                    }
+
+                    const resolved = resolveOriginalLocation(module_, file, line, column);
+
+                    return { ...frame, column: resolved.fileColumn, file: resolved.filePath, line: resolved.fileLine };
+                } catch {
+                    return frame;
+                }
+            }),
+        );
 
         return formatStacktrace(mapped, { header });
     };
@@ -83,12 +98,15 @@ export const buildExtendedErrorData = async (
     if (isESBuildArray) {
         // Handle ESBuild error arrays
         processedESBuildErrors = processESBuildErrors(error as any[]);
-        individualErrors = processedESBuildErrors.map(err => ({
-            name: 'Error',
-            message: err.message,
-            stack: '',
-            ...err
-        } as Error));
+        individualErrors = processedESBuildErrors.map(
+            (error_) =>
+                ({
+                    message: error_.message,
+                    name: "Error",
+                    stack: "",
+                    ...error_,
+                }) as Error,
+        );
     } else {
         // Handle AggregateError or single error
         individualErrors = extractErrors(error);
@@ -99,13 +117,14 @@ export const buildExtendedErrorData = async (
 
     // Clean ANSI characters from error message and stack trace
     const cleanMessage = cleanErrorMessage(primaryError);
-    const rawStack = primaryError.stack || '';
+    const rawStack = primaryError.stack || "";
     const normalizedStack = normalizeLF(rawStack);
     const cleanedStack = cleanErrorStack(normalizedStack);
-    const originalStack = await remapStackToOriginal(cleanedStack, { name: primaryError.name, message: cleanMessage });
+    const originalStack = await remapStackToOriginal(cleanedStack, { message: cleanMessage, name: primaryError.name });
 
     // Create a synthetic error with cleaned data for parsing
     const syntheticError = new Error(cleanMessage);
+
     syntheticError.name = primaryError.name;
     syntheticError.stack = cleanedStack;
 
@@ -132,7 +151,7 @@ export const buildExtendedErrorData = async (
 
         if (module_) {
             const resolved = resolveOriginalLocation(module_, filePath, fileLine, fileColumn);
-            
+
             filePath = resolved.filePath;
             fileLine = resolved.fileLine;
             fileColumn = resolved.fileColumn;
@@ -152,34 +171,41 @@ export const buildExtendedErrorData = async (
         }
 
         // Retrieve source texts from various sources
-        const { originalSourceText, compiledSourceText } = await retrieveSourceTexts(
-            server, module_, filePath, idCandidates
-        );
+        const { compiledSourceText, originalSourceText } = await retrieveSourceTexts(server, module_, filePath, idCandidates);
 
         // Generate code frames if source texts are available
         if (originalSourceText) {
             // Apply heuristic realignment if position seems incorrect
             if (compiledSourceText && fileLine <= 0 && compiledLine > 0) {
                 const realigned = realignOriginalPosition(compiledSourceText, compiledLine, compiledColumn, originalSourceText);
+
                 if (realigned) {
                     fileLine = realigned.line;
                     fileColumn = realigned.column;
                 }
             }
 
-            originalSnippet = codeFrame(originalSourceText, {
-                start: { line: fileLine, column: fileColumn }
-            }, {
-                showGutter: false,
-            });
+            originalSnippet = codeFrame(
+                originalSourceText,
+                {
+                    start: { column: fileColumn, line: fileLine },
+                },
+                {
+                    showGutter: false,
+                },
+            );
         }
 
         if (compiledSourceText && compiledLine > 0 && compiledColumn > 0) {
-            compiledSnippet = codeFrame(compiledSourceText, {
-                start: { line: compiledLine, column: compiledColumn }
-            }, {
-                showGutter: false,
-            });
+            compiledSnippet = codeFrame(
+                compiledSourceText,
+                {
+                    start: { column: compiledColumn, line: compiledLine },
+                },
+                {
+                    showGutter: false,
+                },
+            );
         }
     } catch {
         // Ignore source retrieval errors, continue with available data
@@ -198,18 +224,14 @@ export const buildExtendedErrorData = async (
         const hlLangCompiled = findLanguageBasedOnExtension(compiledFilePath) || hlLangOriginal;
 
         const highlightOptions = {
-            themes: { light: "github-light", dark: "github-dark-default" }
+            themes: { dark: "github-dark-default", light: "github-light" },
         };
 
         if (originalSnippet) {
             originalCodeFrameContent = highlighter.codeToHtml(originalSnippet, {
                 ...highlightOptions,
                 lang: hlLangOriginal,
-                transformers: [
-                    transformerCompactLineOptions([
-                        { line: fileLine, classes: ["error-line"] },
-                    ]),
-                ],
+                transformers: [transformerCompactLineOptions([{ classes: ["error-line"], line: fileLine }])],
             });
         }
 
@@ -217,11 +239,7 @@ export const buildExtendedErrorData = async (
             compiledCodeFrameContent = highlighter.codeToHtml(compiledSnippet, {
                 ...highlightOptions,
                 lang: hlLangCompiled,
-                transformers: [
-                    transformerCompactLineOptions([
-                        { line: compiledLine, classes: ["error-line"] },
-                    ]),
-                ],
+                transformers: [transformerCompactLineOptions([{ classes: ["error-line"], line: compiledLine }])],
             });
         }
     }
@@ -234,33 +252,33 @@ export const buildExtendedErrorData = async (
         error,
         file: {
             file: filePath,
-            line: fileLine,
             language: findLanguageBasedOnExtension(filePath),
+            line: fileLine,
             snippet,
         },
     });
 
     return {
-        snippet,
         codeFrameContent,
-        originalSnippet,
-        compiledSnippet,
-        originalCodeFrameContent,
         compiledCodeFrameContent,
-        fixPrompt,
-        filePath,
-        fileLine,
-        fileColumn,
+        compiledColumn,
         compiledFilePath,
         compiledLine,
-        compiledColumn,
-        trace,
-        plugin,
+        compiledSnippet,
+        compiledStack: formatStacktrace(parseStacktrace(syntheticError), { header: { message: cleanMessage, name: primaryError.name } }),
+        errorCount: individualErrors.length,
+        fileColumn,
+        fileLine,
+        filePath,
+        fixPrompt,
         isAggregateError: isAggregate || isESBuildArray,
         isESBuildArray,
-        errorCount: individualErrors.length,
-        compiledStack: formatStacktrace(parseStacktrace(syntheticError), { header: { name: primaryError.name, message: cleanMessage } }),
-        originalStack
+        originalCodeFrameContent,
+        originalSnippet,
+        originalStack,
+        plugin,
+        snippet,
+        trace,
     };
 };
 
@@ -271,8 +289,8 @@ const retrieveSourceTexts = async (
     server: ViteDevServer,
     module_: any,
     filePath: string,
-    idCandidates: string[]
-): Promise<{ originalSourceText?: string; compiledSourceText?: string }> => {
+    idCandidates: string[],
+): Promise<{ compiledSourceText?: string; originalSourceText?: string }> => {
     let originalSourceText: string | undefined;
     let compiledSourceText: string | undefined;
 
@@ -318,32 +336,27 @@ const retrieveSourceTexts = async (
         }
     }
 
-    return { originalSourceText, compiledSourceText };
-}
+    return { compiledSourceText, originalSourceText };
+};
 
 /**
  * Creates fallback error data when module resolution fails.
  */
-const createFallbackErrorData = (
-    filePath: string,
-    line: number,
-    column: number,
-    trace: any
-) => {
+const createFallbackErrorData = (filePath: string, line: number, column: number, trace: any) => {
     return {
-        snippet: "",
         codeFrameContent: undefined,
-        originalSnippet: "",
-        compiledSnippet: "",
-        originalCodeFrameContent: undefined,
         compiledCodeFrameContent: undefined,
-        fixPrompt: "",
-        filePath,
-        fileLine: line,
-        fileColumn: column,
+        compiledColumn: column,
         compiledFilePath: filePath,
         compiledLine: line,
-        compiledColumn: column,
-        trace
+        compiledSnippet: "",
+        fileColumn: column,
+        fileLine: line,
+        filePath,
+        fixPrompt: "",
+        originalCodeFrameContent: undefined,
+        originalSnippet: "",
+        snippet: "",
+        trace,
     };
-}
+};

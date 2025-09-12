@@ -1,22 +1,22 @@
-import styleCss from "./client/index.css";
-import FlameErrorOverlay from "./client/runtime.js?raw";
-
+// eslint-disable-next-line import/no-extraneous-dependencies
+import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import moonStarIcon from "lucide-static/icons/moon-star.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import sunIcon from "lucide-static/icons/sun.svg?data-uri&encoding=css";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
+
 import Editors from "../../../../shared/utils/editors";
+import styleCss from "./client/index.css";
+import FlameErrorOverlay from "./client/runtime.js?raw";
 
 const editorOptions = (() => {
     try {
-        const keys = Object.keys(Editors) as Array<keyof typeof Editors>;
-        const opts = ['<option value="">Auto-detected Editor</option>']
-            .concat(keys.map((k) => `<option value="${String(k)}">${String(Editors[k])}</option>`));
-        return opts.join("");
+        const keys = Object.keys(Editors) as (keyof typeof Editors)[];
+        const options = ["<option value=\"\">Auto-detected Editor</option>"].concat(keys.map((k) => `<option value="${String(k)}">${String(Editors[k])}</option>`));
+
+        return options.join("");
     } catch {
-        return '<option value="">Auto-detected Editor</option>';
+        return "<option value=\"\">Auto-detected Editor</option>";
     }
 })();
 
@@ -138,6 +138,7 @@ export const patchOverlay = (code: string): string => {
     const templateString = `const overlayTemplate = ${JSON.stringify(overlayTemplate)};`;
 
     let patched = code.replace("class ErrorOverlay", `${templateString}\n${FlameErrorOverlay}\nclass ViteErrorOverlay`);
+
     patched = patched.replace("var ErrorOverlay = ", `${templateString}\n${FlameErrorOverlay}\nvar ViteErrorOverlay = `);
 
     // Make our ErrorOverlay available globally AFTER it's defined

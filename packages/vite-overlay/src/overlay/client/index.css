@@ -44,7 +44,8 @@
     --tw-ring-offset-shadow: 0 0 #0000;
     --tw-blur: initial;
     --tw-brightness: initial;
-    --tw-contrast:
+    --tw-contrast: 
+;
 }
 
 /* Flame Theme Color Variables - Available for use in Tailwind classes */
