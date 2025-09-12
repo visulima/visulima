@@ -44,7 +44,7 @@ jobs:
 
             - name: "Update lock file"
               if: "success()"
-              run: "pnpm install --lockfile-only"
+              run: "pnpm install --lockfile-only && pnpm dedupe"
 
             - name: "Commit lock file"
               if: "success()"
