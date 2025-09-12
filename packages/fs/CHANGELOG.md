@@ -1,3 +1,14 @@
+## @visulima/fs [3.1.7](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.6...@visulima/fs@3.1.7) (2025-09-12)
+
+### Miscellaneous Chores
+
+* update dependencies and fix linting issues ([0e802fe](https://github.com/visulima/visulima/commit/0e802fe02bb9ed791659cb5f3c77605ae5b42ec8))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.6.0
+
 ## @visulima/fs [3.1.6](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.5...@visulima/fs@3.1.6) (2025-09-07)
 
 
