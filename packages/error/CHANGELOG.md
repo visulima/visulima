@@ -1,3 +1,18 @@
+## @visulima/error [4.6.0](https://github.com/visulima/visulima/compare/@visulima/error@4.5.0...@visulima/error@4.6.0) (2025-09-12)
+
+### Features
+
+* **error:** enhance error constructor handling and serialization tests ([036ba31](https://github.com/visulima/visulima/commit/036ba31acb182e9fa8c6e0b78ea10cf9f57c75f3))
+* **error:** enhance error serialization and deserialization functionality ([3b07347](https://github.com/visulima/visulima/commit/3b073474807b40c65f692b037fccc6fe152cdc5b))
+
+### Bug Fixes
+
+* **error:** enhance error serialization tests to preserve serialized values ([5ab8db3](https://github.com/visulima/visulima/commit/5ab8db3968142313b2f5c48b13605b843a1f0a1e))
+
+### Miscellaneous Chores
+
+* update dependencies and fix linting issues ([0e802fe](https://github.com/visulima/visulima/commit/0e802fe02bb9ed791659cb5f3c77605ae5b42ec8))
+
 ## @visulima/error [4.5.0](https://github.com/visulima/visulima/compare/@visulima/error@4.4.18...@visulima/error@4.5.0) (2025-09-07)
 
 ### Features
