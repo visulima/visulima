@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-secrets/no-secrets
 /**
  * This is a modified copy of the codeFrameColumns function from Babel
  * @see https://github.com/babel/babel/blob/85e649203b61b7c908eb04c05511a0d35f893e8e/packages/babel-code-frame/src/index.ts#L145-L217
@@ -20,7 +19,7 @@ export const codeFrame = (
     source: string,
     loc: CodeFrameNodeLocation,
     options?: CodeFrameOptions,
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
 ): string => {
     const config = {
         // grab 2 lines before, and 3 lines after focused line
@@ -39,12 +38,10 @@ export const codeFrame = (
         },
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const hasColumns = loc.start && typeof loc.start.column === "number";
 
     let lines = normalizeLF(source).split("\n");
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (typeof config?.tabWidth === "number") {
         lines = lines.map((ln) => ln.replaceAll("\t", " ".repeat(config.tabWidth as number)));
     }
@@ -60,18 +57,18 @@ export const codeFrame = (
             const number = start + 1 + index;
             // eslint-disable-next-line security/detect-object-injection
             const hasMarker = markerLines[number];
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-            const paddedNumber = (" " + number).slice(-numberMaxWidth);
+
+            const paddedNumber = ` ${number}`.slice(-numberMaxWidth);
             const lastMarkerLine = !markerLines[number + 1];
 
-            const gutter = " " + paddedNumber + (config.showGutter ? " |" : "");
+            const gutter = ` ${paddedNumber}${config.showGutter ? " |" : ""}`;
 
             if (hasMarker) {
                 let markerLine = "";
 
                 if (Array.isArray(hasMarker)) {
                     const markerSpacing = line.replaceAll(/[^\t]/g, " ").slice(0, Math.max((hasMarker[0] as number) - 1, 0));
-                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+
                     const numberOfMarkers = hasMarker[1] || 1;
 
                     markerLine = [
@@ -87,15 +84,15 @@ export const codeFrame = (
                     }
                 }
 
-                return [config.prefix + colorizeMarker(CODE_FRAME_POINTER), colorizeGutter(gutter), line.length > 0 ? " " + line : "", markerLine].join("");
+                return [config.prefix + colorizeMarker(CODE_FRAME_POINTER), colorizeGutter(gutter), line.length > 0 ? ` ${line}` : "", markerLine].join("");
             }
 
-            return config.prefix + " " + colorizeGutter(gutter) + (line.length > 0 ? " " + line : "");
+            return `${config.prefix} ${colorizeGutter(gutter)}${line.length > 0 ? ` ${line}` : ""}`;
         })
         .join("\n");
 
     if (config.message && !hasColumns) {
-        frame = config.prefix + " ".repeat(numberMaxWidth + 1) + config.message + "\n" + frame;
+        frame = `${config.prefix + " ".repeat(numberMaxWidth + 1) + config.message}\n${frame}`;
     }
 
     return frame;

@@ -14,7 +14,7 @@ export const gradient = (
         loop?: boolean;
         reverse?: boolean;
     },
-): ((string_: string) => string) => {
+): (string_: string) => string => {
     const { hsvSpin = "short", interpolation = "rgb" } = options ?? {};
 
     let builder = new GradientBuilder(colorize, stops);
@@ -31,7 +31,7 @@ export const gradient = (
 
         let result = "";
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const s of string_) {
             if (forbiddenChars.test(s)) {
                 result += s;
@@ -46,7 +46,6 @@ export const gradient = (
     };
 };
 
-// eslint-disable-next-line import/no-unused-modules
 export const multilineGradient = (
     stops: (ColorValueHex | CssColorName | RGB | StopInput | [number, number, number])[],
     options?: {
@@ -55,7 +54,7 @@ export const multilineGradient = (
         loop?: boolean;
         reverse?: boolean;
     },
-): ((string_: string) => string) => {
+): (string_: string) => string => {
     const { hsvSpin = "short", interpolation = "rgb" } = options ?? {};
 
     let builder = new GradientBuilder(colorize, stops);
@@ -74,13 +73,13 @@ export const multilineGradient = (
 
         const results: string[] = [];
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const line of lines) {
             const lineColors = [...colors];
 
             let lineResult = "";
 
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+            // eslint-disable-next-line no-loops/no-loops
             for (const l of line) {
                 lineResult += forbiddenChars.test(l) ? l : (lineColors.shift() as ColorizeType)(l);
             }
@@ -92,5 +91,4 @@ export const multilineGradient = (
     };
 };
 
-// eslint-disable-next-line import/no-unused-modules
 export { GradientBuilder } from "./gradient/gradient-builder";

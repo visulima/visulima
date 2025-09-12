@@ -5,7 +5,6 @@ import { mkdir, readdir, rm } from "node:fs/promises";
 import { join } from "@visulima/path";
 import { toPath } from "@visulima/path/utils";
 
-// eslint-disable-next-line unicorn/prevent-abbreviations
 import type { RetryOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 

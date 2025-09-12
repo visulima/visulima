@@ -6,6 +6,7 @@ const binarySearch = (element: number, array: number[]): number => {
     while (m < n) {
         // eslint-disable-next-line no-bitwise
         const key = m + ((n - m) >> 1);
+
         // eslint-disable-next-line security/detect-object-injection
         if (element < (array[key] as number)) {
             n = key - 1;
@@ -50,8 +51,8 @@ const indexToLineColumn = (
     }
 
     if (
-        !skipChecks &&
-        (typeof index !== "number" || (typeof input === "string" && index >= input.length) || (Array.isArray(input) && index + 1 >= (input.at(-1) as number)))
+        !skipChecks
+        && (typeof index !== "number" || (typeof input === "string" && index >= input.length) || (Array.isArray(input) && index + 1 >= (input.at(-1) as number)))
     ) {
         return { column: 0, line: 0 };
     }

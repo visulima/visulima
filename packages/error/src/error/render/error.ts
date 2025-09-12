@@ -11,7 +11,7 @@ import type { VisulimaError } from "../visulima-error";
 
 const getPrefix = (prefix: string, indentation: number | "\t", deep: number): string => {
     if (deep === 0) {
-        return prefix + "";
+        return `${prefix}`;
     }
 
     if (indentation === "\t") {
@@ -35,9 +35,9 @@ const getRelativePath = (filePath: string, cwdPath: string) => {
  * Returns the error message
  */
 const getMessage = (error: AggregateError | Error | VisulimaError, { color, hideErrorTitle, indentation, prefix }: Options, deep: number): string =>
-    getPrefix(prefix, indentation, deep) +
-    (hideErrorTitle ? color.title(error.message) : color.title(error.name + (error.message ? ": " + error.message : ""))) +
-    "\n";
+    `${getPrefix(prefix, indentation, deep)
+    + (hideErrorTitle ? color.title(error.message) : color.title(error.name + (error.message ? `: ${error.message}` : "")))
+    }\n`;
 
 const getHint = (error: AggregateError | Error | VisulimaError, { color, indentation, prefix }: Options, deep: number): string | undefined => {
     if ((error as VisulimaError).hint === undefined) {
@@ -49,9 +49,9 @@ const getHint = (error: AggregateError | Error | VisulimaError, { color, indenta
     let message = "";
 
     if (Array.isArray((error as VisulimaError).hint)) {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const line of (error as VisulimaError).hint as string[]) {
-            message += spaces + line + "\n";
+            message += `${spaces + line}\n`;
         }
     } else {
         message += spaces + ((error as VisulimaError).hint as string);
@@ -66,13 +66,13 @@ const getMainFrame = (trace: Trace, { color, cwd: cwdPath, displayShortPath, ind
     const { fileLine, method } = color;
 
     return (
-        getPrefix(prefix, indentation, deep) +
-        "at " +
-        (trace.methodName ? method(trace.methodName) + " " : "") +
-        fileLine(filePath as string) +
-        ":" +
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        fileLine(trace.line + "")
+        `${getPrefix(prefix, indentation, deep)
+        }at ${
+            trace.methodName ? `${method(trace.methodName)} ` : ""
+        }${fileLine(filePath as string)
+        }:${
+
+            fileLine(`${trace.line}`)}`
     );
 };
 
@@ -109,10 +109,10 @@ const getErrors = (error: AggregateError, options: Options, deep: number): strin
         return undefined;
     }
 
-    let message = getPrefix(options.prefix, options.indentation, deep) + "Errors:\n\n";
+    let message = `${getPrefix(options.prefix, options.indentation, deep)}Errors:\n\n`;
     let first = true;
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,@typescript-eslint/naming-convention,no-underscore-dangle
+    // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention,no-underscore-dangle
     for (const error_ of error.errors) {
         if (first) {
             first = false;
@@ -122,18 +122,18 @@ const getErrors = (error: AggregateError, options: Options, deep: number): strin
 
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         message += internalRenderError(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             error_,
             { ...options, framesMaxLimit: 1, hideErrorCodeView: options.hideErrorErrorsCodeView },
             deep + 1,
         );
     }
 
-    return "\n" + message;
+    return `\n${message}`;
 };
 
 const getCause = (error: AggregateError | Error | VisulimaError, options: Options, deep: number): string => {
-    let message = getPrefix(options.prefix, options.indentation, deep) + "Caused by:\n\n";
+    let message = `${getPrefix(options.prefix, options.indentation, deep)}Caused by:\n\n`;
 
     const cause = error.cause as Error;
 
@@ -145,7 +145,7 @@ const getCause = (error: AggregateError | Error | VisulimaError, options: Option
     const hint = getHint(cause, options, deep);
 
     if (hint) {
-        message += hint + "\n";
+        message += `${hint}\n`;
     }
 
     if (mainFrame) {
@@ -155,22 +155,22 @@ const getCause = (error: AggregateError | Error | VisulimaError, options: Option
             const code = getCode(mainFrame, options, deep);
 
             if (code !== undefined) {
-                message += "\n" + code;
+                message += `\n${code}`;
             }
         }
     }
 
     if (cause.cause) {
-        message += "\n" + getCause(cause, options, deep + 1);
+        message += `\n${getCause(cause, options, deep + 1)}`;
     } else if (cause instanceof AggregateError) {
         const errors = getErrors(cause, options, deep);
 
         if (errors !== undefined) {
-            message += "\n" + errors;
+            message += `\n${errors}`;
         }
     }
 
-    return "\n" + message;
+    return `\n${message}`;
 };
 
 const getStacktrace = (stack: Trace[], options: Options): string =>

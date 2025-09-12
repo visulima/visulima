@@ -18,11 +18,10 @@ import type { ColorValueHex } from "../types";
  *
  * The 6 digits specifies a fully opaque color.
  * For example, "#112233".
- *
  * @param {string} hex A string that contains the hexadecimal RGB color representation.
- * @return {[number, number, number]} The red, green, blue values in range [0, 255] .
+ * @returns {[number, number, number]} The red, green, blue values in range [0, 255] .
  */
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
 export const convertHexToRgb = (hex: ColorValueHex | string): [number, number, number] => {
     let [, color] = /([a-f\d]{3,6})/i.exec(hex) ?? [];
 
@@ -30,13 +29,13 @@ export const convertHexToRgb = (hex: ColorValueHex | string): [number, number, n
     const length_ = color ? color.length : 0;
 
     if (length_ === 3) {
-        color =
-            ((color as string)[0] as string) +
-            ((color as string)[0] as string) +
-            ((color as string)[1] as string) +
-            ((color as string)[1] as string) +
-            ((color as string)[2] as string) +
-            ((color as string)[2] as string);
+        color
+            = ((color as string)[0] as string)
+                + ((color as string)[0] as string)
+                + ((color as string)[1] as string)
+                + ((color as string)[1] as string)
+                + ((color as string)[2] as string)
+                + ((color as string)[2] as string);
     } else if (length_ !== 6) {
         return [0, 0, 0];
     }

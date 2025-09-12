@@ -13,7 +13,6 @@ const cssStringToObject = (css: string): Record<string, string> => {
         // eslint-disable-next-line security/detect-object-injection
         cssObject[key] = value;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return value;
     });
 
@@ -25,7 +24,7 @@ type ColorizeProperties = { css: string; cssStack: string; props: ColorizeProper
 const createStyle = (
     { props }: { props?: ColorizeProperties },
     css: string,
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
 ): { (strings: ArrayLike<string> | ReadonlyArray<string> | string, ...values: string[]): string[] | ""; css: string; props: ColorizeProperties } => {
     let cssStack = css;
 
@@ -43,7 +42,7 @@ const createStyle = (
         }
 
         // eslint-disable-next-line unicorn/prefer-string-replace-all
-        cssStack = JSON.stringify(cssObject).replace(/["{}]/g, "").replace(/,/g, ";") + ";";
+        cssStack = `${JSON.stringify(cssObject).replace(/["{}]/g, "").replace(/,/g, ";")};`;
     }
 
     const style = (
@@ -60,11 +59,11 @@ const createStyle = (
             // eslint-disable-next-line unicorn/prefer-string-replace-all
             const inputWithoutStyles = input.replace(/,.*;/g, "");
 
-            return ["%c" + inputWithoutStyles, style.css, ...(collectedStyles ?? [])];
+            return [`%c${inputWithoutStyles}`, style.css, ...collectedStyles ?? []];
         }
 
         if (typeof input === "number" || typeof input === "string") {
-            return ["%c" + input, style.css];
+            return [`%c${input}`, style.css];
         }
 
         if ((input as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw !== null && Array.isArray(values) && values.length > 0) {
@@ -74,14 +73,14 @@ const createStyle = (
             // eslint-disable-next-line unicorn/prefer-string-replace-all
             const inputWithoutStyles = rawString.replace(/,.*;/g, "");
 
-            return ["%c" + inputWithoutStyles, style.css, ...(collectedStyles ?? []).join("").split(",").filter(Boolean)];
+            return [`%c${inputWithoutStyles}`, style.css, ...(collectedStyles ?? []).join("").split(",").filter(Boolean)];
         }
 
         const [first, ...rest] = input as string[];
 
         rest.unshift(style.css);
 
-        return [((first + "").includes("%c") ? "" : "%c") + (first + ""), rest.join("")];
+        return [`${`${first}`.includes("%c") ? "" : "%c"}${first}`, rest.join("")];
     };
 
     Object.setPrototypeOf(style, stylePrototype);
@@ -94,7 +93,7 @@ const createStyle = (
 
 // eslint-disable-next-line func-names
 const WebColorize = function () {
-    const self = (string_: number | string) => string_ + "";
+    const self = (string_: number | string) => `${string_}`;
 
     self.strip = (value: string): string => value;
 
@@ -140,7 +139,7 @@ for (const name in styleMethods) {
     styles[name as keyof typeof styleMethods] = {
         get() {
             return (...arguments_: (number | string)[]) =>
-                // @ts-expect-error: TODO: fix typing of `arguments_`
+            // @ts-expect-error: TODO: fix typing of `arguments_`
 
                 createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
         },
@@ -150,5 +149,4 @@ for (const name in styleMethods) {
 styles.ansi256 = styles.fg as object;
 styles.bgAnsi256 = styles.bg as object;
 
-// eslint-disable-next-line import/no-default-export
 export default WebColorize;

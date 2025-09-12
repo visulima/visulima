@@ -26,5 +26,5 @@ export default createConfig(
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
         },
-    }
+    },
 );

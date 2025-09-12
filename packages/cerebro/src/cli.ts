@@ -588,7 +588,7 @@ export class Cli implements ICli {
             });
 
             if (errors.length > 0) {
-                // eslint-disable-next-line unicorn/error-message
+                 
                 throw new Error(errors.join("\n"));
             }
         }

@@ -4,12 +4,12 @@
  * MIT License
  *
  * Copyright (c) Josh Junon
- * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
  */
 
 // prettier-ignore
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const makeColorizeTemplate = (template: (text: string) => string): ((firstString: TemplateStringsArray, ...arguments_: any[]) => string) =>
+export const makeColorizeTemplate = (template: (text: string) => string): (firstString: TemplateStringsArray, ...arguments_: any[]) => string =>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (firstString: TemplateStringsArray, ...arguments_: any[]): string => {
         if (!Array.isArray(firstString) || !Array.isArray(firstString.raw)) {
@@ -22,7 +22,7 @@ export const makeColorizeTemplate = (template: (text: string) => string): ((firs
         // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let index = 1; index < firstString.raw.length; index++) {
             // eslint-disable-next-line security/detect-object-injection
-            parts.push(String(arguments_[index - 1]).replaceAll(/[{}\\]/g, "\\$&"), String(firstString.raw[index]));
+            parts.push(String(arguments_[index - 1]).replaceAll(/[{}\\]/g, String.raw`\$&`), String(firstString.raw[index]));
         }
 
         return template(parts.join(""));

@@ -18,18 +18,16 @@ export class GradientBuilder {
             throw new Error("Invalid number of stops (< 2)");
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const havingPositions = (stops[0] as StopInput).position !== undefined;
 
         let l = stops.length;
         let p = -1;
         let lastColorLess = false;
 
-        // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention
         for (const [index, stop_] of stops.entries()) {
             let stop = {} as StopOutput;
 
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             const hasPosition = (stop_ as StopInput).position !== undefined;
 
             if (havingPositions !== hasPosition) {
@@ -54,7 +52,6 @@ export class GradientBuilder {
                         color = stopInput.color as [number, number, number];
                     } else if (typeof stopInput.color === "string") {
                         color = stopInput.color.includes("#") ? convertHexToRgb(stopInput.color as ColorValueHex) : colorNames[stopInput.color as CssColorName];
-                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     } else if ((stopInput.color as RGB).r !== undefined && (stopInput.color as RGB).g !== undefined && (stopInput.color as RGB).b) {
                         color = [(stopInput.color as RGB).r, (stopInput.color as RGB).g, (stopInput.color as RGB).b];
                     }
@@ -83,7 +80,6 @@ export class GradientBuilder {
                     color: stop_.includes("#") ? convertHexToRgb(stop_ as ColorValueHex) : colorNames[stop_ as CssColorName],
                     position: index / (l - 1),
                 };
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             } else if ((stop_ as RGB).r !== undefined && (stop_ as RGB).g !== undefined && (stop_ as RGB).b !== undefined) {
                 stop = {
                     color: [(stop_ as RGB).r, (stop_ as RGB).g, (stop_ as RGB).b],
@@ -117,7 +113,7 @@ export class GradientBuilder {
     public reverse(): GradientBuilder {
         const stops: StopInput[] = [];
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const stop of this.stops) {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const stop_ = { ...stop };
@@ -135,7 +131,7 @@ export class GradientBuilder {
         const stops1: StopInput[] = [];
         const stops2: StopInput[] = [];
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const stop of this.stops) {
             stops1.push({
                 color: stop.color,
@@ -143,7 +139,7 @@ export class GradientBuilder {
             } as StopInput);
         }
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const stop of this.stops.slice(0, -1)) {
             stops2.push({
                 color: stop.color,
@@ -162,6 +158,7 @@ export class GradientBuilder {
         this.stops.forEach((stop, index) => {
             if (stop.colorLess) {
                 const rgbs = interpolateRgb(this.stops[index - 1] as StopOutput, this.stops[index + 1] as StopOutput, 2);
+
                 // eslint-disable-next-line no-param-reassign
                 stop.color = [(rgbs[1] as RGB).r, (rgbs[1] as RGB).g, (rgbs[1] as RGB).b];
             }
@@ -187,6 +184,7 @@ export class GradientBuilder {
         this.stops.forEach((stop, index) => {
             if (stop.colorLess) {
                 const rgbs = interpolateHsv(this.stops[index - 1] as StopOutput, this.stops[index + 1] as StopOutput, 2, mode);
+
                 // eslint-disable-next-line no-param-reassign
                 stop.color = [(rgbs[1] as RGB).r, (rgbs[1] as RGB).g, (rgbs[1] as RGB).b];
             }

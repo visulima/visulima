@@ -63,11 +63,11 @@ export const styleMethods: {
     rgb: (r: number, g: number, b: number) => string;
 } = {
     // eslint-disable-next-line security/detect-object-injection
-    bg: (code: number) => "background-color: " + ansiCodeHexMap[code] + ";",
-    bgHex: (hex: string) => "background-color: " + hex + ";",
-    bgRgb: (r: number, g: number, b: number) => "background-color: rgb(" + r + "," + g + "," + b + ");",
+    bg: (code: number) => `background-color: ${ansiCodeHexMap[code]};`,
+    bgHex: (hex: string) => `background-color: ${hex};`,
+    bgRgb: (r: number, g: number, b: number) => `background-color: rgb(${r},${g},${b});`,
     // eslint-disable-next-line security/detect-object-injection
-    fg: (code: number) => "color: " + ansiCodeHexMap[code] + ";",
-    hex: (hex: string) => "color:" + hex + ";",
-    rgb: (r: number, g: number, b: number) => "color: rgb(" + r + "," + g + "," + b + ");",
+    fg: (code: number) => `color: ${ansiCodeHexMap[code]};`,
+    hex: (hex: string) => `color:${hex};`,
+    rgb: (r: number, g: number, b: number) => `color: rgb(${r},${g},${b});`,
 };

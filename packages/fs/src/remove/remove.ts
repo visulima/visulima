@@ -33,10 +33,7 @@ import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-direct
  * deleteFileOrDir();
  * ```
  */
-const remove = async (
-    path: URL | string,
-    options: RetryOptions = {},
-): Promise<void> => {
+const remove = async (path: URL | string, options: RetryOptions = {}): Promise<void> => {
     assertValidFileOrDirectoryPath(path);
 
     try {

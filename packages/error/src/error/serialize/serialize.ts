@@ -39,6 +39,7 @@ const serializeValue = (value: any, seen: Error[], depth: number, options: Optio
         if (seen.includes(value)) {
             return "[Circular]";
         }
+
         // eslint-disable-next-line no-param-reassign
         depth += 1;
 
@@ -55,8 +56,7 @@ const serializeValue = (value: any, seen: Error[], depth: number, options: Optio
     }
 
     if (typeof value === "function") {
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        return "[Function: " + (value.name || "anonymous") + "]";
+        return `[Function: ${value.name || "anonymous"}]`;
     }
 
     if (isPlainObject(value)) {
@@ -115,7 +115,7 @@ const _serialize = (
     if (Array.isArray((error as AggregateError).errors)) {
         const aggregateErrors: SerializedError[] = [];
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const aggregateError of (error as AggregateError).errors) {
             if (!(aggregateError instanceof Error)) {
                 throw new TypeError("All errors in the 'errors' property must be instances of Error");
@@ -123,6 +123,7 @@ const _serialize = (
 
             if (seen.includes(aggregateError)) {
                 protoError.errors = [];
+
                 return protoError;
             }
 
@@ -133,9 +134,8 @@ const _serialize = (
     }
 
     // Handle aggregate errors
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     if ((error as CauseError).cause instanceof Error && !seen.includes((error as CauseError).cause)) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         protoError.cause = _serialize((error as CauseError).cause, options, seen, depth);
     }
 
@@ -152,7 +152,7 @@ const _serialize = (
     }
 
     if (Array.isArray(options.exclude) && options.exclude.length > 0) {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const key of options.exclude) {
             try {
                 // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete

@@ -17,6 +17,7 @@ export const stringReplaceAll = (string_: string, searchValue: string, replaceVa
     }
 
     let pos = string_.indexOf(searchValue);
+
     if (pos < 0) {
         return string_;
     }

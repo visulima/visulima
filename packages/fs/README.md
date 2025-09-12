@@ -490,7 +490,7 @@ detect("Hello\nWorld"); // "\n"
 detect("HelloWorld"); // null
 ```
 
-***
+---
 
 ### format()
 
@@ -541,7 +541,7 @@ Defined in: [packages/fs/src/eol.ts:9](https://github.com/visulima/visulima/blob
 
 End-of-line character for Windows platforms.
 
-***
+---
 
 ### EOL
 
@@ -553,7 +553,7 @@ Defined in: [packages/fs/src/eol.ts:14](https://github.com/visulima/visulima/blo
 
 End-of-line character evaluated for the current platform.
 
-***
+---
 
 ### LF
 
@@ -564,6 +564,7 @@ const LF: "\n";
 Defined in: [packages/fs/src/eol.ts:6](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/eol.ts#L6)
 
 End-of-line character for POSIX platforms such as macOS and Linux.
+
 # error
 
 ## Classes
@@ -582,21 +583,22 @@ import { ensureSymlinkSync } from "@visulima/fs"; // Or any function that might 
 import { join } from "node:path";
 
 try {
-  // Example: ensureSymlinkSync might throw this if a file (not a symlink) already exists at linkName
-  // For demonstration, let's assume someFunction internally throws it:
-  const someFunctionThatMightThrow = (path) => {
-     if (path === "/tmp/existing-file.txt") { // Simulate a check
-         throw new AlreadyExistsError(`file already exists at '/tmp/existing-file.txt'`);
-     }
-  }
-  someFunctionThatMightThrow("/tmp/existing-file.txt");
+    // Example: ensureSymlinkSync might throw this if a file (not a symlink) already exists at linkName
+    // For demonstration, let's assume someFunction internally throws it:
+    const someFunctionThatMightThrow = (path) => {
+        if (path === "/tmp/existing-file.txt") {
+            // Simulate a check
+            throw new AlreadyExistsError(`file already exists at '/tmp/existing-file.txt'`);
+        }
+    };
+    someFunctionThatMightThrow("/tmp/existing-file.txt");
 } catch (error) {
-  if (error instanceof AlreadyExistsError) {
-    console.error(`Operation failed because path exists: ${error.message}`);
-    console.error(`Error code: ${error.code}`); // EEXIST
-  } else {
-    console.error("An unexpected error occurred:", error);
-  }
+    if (error instanceof AlreadyExistsError) {
+        console.error(`Operation failed because path exists: ${error.message}`);
+        console.error(`Error code: ${error.code}`); // EEXIST
+    } else {
+        console.error("An unexpected error occurred:", error);
+    }
 }
 ```
 
@@ -631,7 +633,7 @@ The error message.
 ###### Overrides
 
 ```ts
-Error.constructor
+Error.constructor;
 ```
 
 #### Accessors
@@ -703,7 +705,7 @@ Defined in: [packages/fs/src/error/already-exists-error.ts:53](https://github.co
 ###### Overrides
 
 ```ts
-Error.name
+Error.name;
 ```
 
 #### Methods
@@ -714,7 +716,7 @@ Error.name
 static captureStackTrace(targetObject, constructorOpt?): void;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:91
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:91
 
 Create .stack property on a target object
 
@@ -735,7 +737,7 @@ Create .stack property on a target object
 ###### Inherited from
 
 ```ts
-Error.captureStackTrace
+Error.captureStackTrace;
 ```
 
 #### Properties
@@ -746,12 +748,12 @@ Error.captureStackTrace
 optional cause: unknown;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:26
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 ###### Inherited from
 
 ```ts
-Error.cause
+Error.cause;
 ```
 
 ##### message
@@ -760,12 +762,12 @@ Error.cause
 message: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ###### Inherited from
 
 ```ts
-Error.message
+Error.message;
 ```
 
 ##### stack?
@@ -774,12 +776,12 @@ Error.message
 optional stack: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ###### Inherited from
 
 ```ts
-Error.stack
+Error.stack;
 ```
 
 ##### prepareStackTrace()?
@@ -788,7 +790,7 @@ Error.stack
 static optional prepareStackTrace: (err, stackTraces) => any;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:98
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:98
 
 Optional override for formatting stack traces
 
@@ -813,7 +815,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 ###### Inherited from
 
 ```ts
-Error.prepareStackTrace
+Error.prepareStackTrace;
 ```
 
 ##### stackTraceLimit
@@ -822,15 +824,15 @@ Error.prepareStackTrace
 static stackTraceLimit: number;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:100
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:100
 
 ###### Inherited from
 
 ```ts
-Error.stackTraceLimit
+Error.stackTraceLimit;
 ```
 
-***
+---
 
 ### DirectoryError
 
@@ -847,26 +849,27 @@ import { readFile } from "@visulima/fs"; // Or any function that might throw thi
 import { join } from "node:path";
 
 const attemptToReadFileFromDir = async () => {
-  try {
-    // Attempting to read a directory as if it were a file
-    // This is a conceptual example; readFile might throw a different error first
-    // depending on its internal checks, but EISDIR is the underlying system error.
-    // Forcing the scenario:
-    const pretendReadFileOnDir = (path) => {
-      if (path === "/tmp/my-directory") { // Simulate a directory path
-        throw new DirectoryError(`read '/tmp/my-directory'`);
-      }
+    try {
+        // Attempting to read a directory as if it were a file
+        // This is a conceptual example; readFile might throw a different error first
+        // depending on its internal checks, but EISDIR is the underlying system error.
+        // Forcing the scenario:
+        const pretendReadFileOnDir = (path) => {
+            if (path === "/tmp/my-directory") {
+                // Simulate a directory path
+                throw new DirectoryError(`read '/tmp/my-directory'`);
+            }
+        };
+        pretendReadFileOnDir("/tmp/my-directory");
+        // await readFile(join("/tmp", "my-directory"));
+    } catch (error) {
+        if (error instanceof DirectoryError) {
+            console.error(`Operation failed, path is a directory: ${error.message}`);
+            console.error(`Error code: ${error.code}`); // EISDIR
+        } else {
+            console.error("An unexpected error occurred:", error);
+        }
     }
-    pretendReadFileOnDir("/tmp/my-directory");
-    // await readFile(join("/tmp", "my-directory"));
-  } catch (error) {
-    if (error instanceof DirectoryError) {
-      console.error(`Operation failed, path is a directory: ${error.message}`);
-      console.error(`Error code: ${error.code}`); // EISDIR
-    } else {
-      console.error("An unexpected error occurred:", error);
-    }
-  }
 };
 
 attemptToReadFileFromDir();
@@ -903,7 +906,7 @@ The error message.
 ###### Overrides
 
 ```ts
-Error.constructor
+Error.constructor;
 ```
 
 #### Accessors
@@ -975,7 +978,7 @@ Defined in: [packages/fs/src/error/directory-error.ts:61](https://github.com/vis
 ###### Overrides
 
 ```ts
-Error.name
+Error.name;
 ```
 
 #### Methods
@@ -986,7 +989,7 @@ Error.name
 static captureStackTrace(targetObject, constructorOpt?): void;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:91
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:91
 
 Create .stack property on a target object
 
@@ -1007,7 +1010,7 @@ Create .stack property on a target object
 ###### Inherited from
 
 ```ts
-Error.captureStackTrace
+Error.captureStackTrace;
 ```
 
 #### Properties
@@ -1018,12 +1021,12 @@ Error.captureStackTrace
 optional cause: unknown;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:26
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 ###### Inherited from
 
 ```ts
-Error.cause
+Error.cause;
 ```
 
 ##### message
@@ -1032,12 +1035,12 @@ Error.cause
 message: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ###### Inherited from
 
 ```ts
-Error.message
+Error.message;
 ```
 
 ##### stack?
@@ -1046,12 +1049,12 @@ Error.message
 optional stack: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ###### Inherited from
 
 ```ts
-Error.stack
+Error.stack;
 ```
 
 ##### prepareStackTrace()?
@@ -1060,7 +1063,7 @@ Error.stack
 static optional prepareStackTrace: (err, stackTraces) => any;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:98
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:98
 
 Optional override for formatting stack traces
 
@@ -1085,7 +1088,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 ###### Inherited from
 
 ```ts
-Error.prepareStackTrace
+Error.prepareStackTrace;
 ```
 
 ##### stackTraceLimit
@@ -1094,15 +1097,15 @@ Error.prepareStackTrace
 static stackTraceLimit: number;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:100
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:100
 
 ###### Inherited from
 
 ```ts
-Error.stackTraceLimit
+Error.stackTraceLimit;
 ```
 
-***
+---
 
 ### NotEmptyError
 
@@ -1118,26 +1121,27 @@ import { rmdir } from "node:fs/promises"; // Or any fs function that might throw
 import { join } from "node:path";
 
 const attemptToRemoveNonEmptyDir = async () => {
-  const dirPath = join("/tmp", "my-non-empty-dir"); // Assume this directory exists and has files
-  try {
-    // Forcing the scenario for demonstration, as rmdir might throw its own specific error.
-    // Node.js fs operations that encounter a non-empty directory when expecting an empty one
-    // typically throw an error with code ENOTEMPTY.
-    const simulateNotEmpty = (path) => {
-      if (path === dirPath) { // Simulate check for non-empty
-         throw new NotEmptyError(`rmdir '${dirPath}'`);
-      }
+    const dirPath = join("/tmp", "my-non-empty-dir"); // Assume this directory exists and has files
+    try {
+        // Forcing the scenario for demonstration, as rmdir might throw its own specific error.
+        // Node.js fs operations that encounter a non-empty directory when expecting an empty one
+        // typically throw an error with code ENOTEMPTY.
+        const simulateNotEmpty = (path) => {
+            if (path === dirPath) {
+                // Simulate check for non-empty
+                throw new NotEmptyError(`rmdir '${dirPath}'`);
+            }
+        };
+        simulateNotEmpty(dirPath);
+        // await rmdir(dirPath); // This would likely throw an error with code ENOTEMPTY
+    } catch (error) {
+        if (error instanceof NotEmptyError) {
+            console.error(`Operation failed, directory is not empty: ${error.message}`);
+            console.error(`Error code: ${error.code}`); // ENOTEMPTY
+        } else {
+            console.error("An unexpected error occurred:", error);
+        }
     }
-    simulateNotEmpty(dirPath);
-    // await rmdir(dirPath); // This would likely throw an error with code ENOTEMPTY
-  } catch (error) {
-    if (error instanceof NotEmptyError) {
-      console.error(`Operation failed, directory is not empty: ${error.message}`);
-      console.error(`Error code: ${error.code}`); // ENOTEMPTY
-    } else {
-      console.error("An unexpected error occurred:", error);
-    }
-  }
 };
 
 // You would need to set up a non-empty directory at /tmp/my-non-empty-dir for a real test
@@ -1179,7 +1183,7 @@ The error message.
 ###### Overrides
 
 ```ts
-Error.constructor
+Error.constructor;
 ```
 
 #### Accessors
@@ -1251,7 +1255,7 @@ Defined in: [packages/fs/src/error/not-empty-error.ts:65](https://github.com/vis
 ###### Overrides
 
 ```ts
-Error.name
+Error.name;
 ```
 
 #### Methods
@@ -1262,7 +1266,7 @@ Error.name
 static captureStackTrace(targetObject, constructorOpt?): void;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:91
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:91
 
 Create .stack property on a target object
 
@@ -1283,7 +1287,7 @@ Create .stack property on a target object
 ###### Inherited from
 
 ```ts
-Error.captureStackTrace
+Error.captureStackTrace;
 ```
 
 #### Properties
@@ -1294,12 +1298,12 @@ Error.captureStackTrace
 optional cause: unknown;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:26
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 ###### Inherited from
 
 ```ts
-Error.cause
+Error.cause;
 ```
 
 ##### message
@@ -1308,12 +1312,12 @@ Error.cause
 message: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ###### Inherited from
 
 ```ts
-Error.message
+Error.message;
 ```
 
 ##### stack?
@@ -1322,12 +1326,12 @@ Error.message
 optional stack: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ###### Inherited from
 
 ```ts
-Error.stack
+Error.stack;
 ```
 
 ##### prepareStackTrace()?
@@ -1336,7 +1340,7 @@ Error.stack
 static optional prepareStackTrace: (err, stackTraces) => any;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:98
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:98
 
 Optional override for formatting stack traces
 
@@ -1361,7 +1365,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 ###### Inherited from
 
 ```ts
-Error.prepareStackTrace
+Error.prepareStackTrace;
 ```
 
 ##### stackTraceLimit
@@ -1370,15 +1374,15 @@ Error.prepareStackTrace
 static stackTraceLimit: number;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:100
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:100
 
 ###### Inherited from
 
 ```ts
-Error.stackTraceLimit
+Error.stackTraceLimit;
 ```
 
-***
+---
 
 ### NotFoundError
 
@@ -1394,24 +1398,24 @@ import { readFile } from "@visulima/fs"; // Or any function that might throw thi
 import { join } from "node:path";
 
 const tryReadingNonExistentFile = async () => {
-  const filePath = join("/tmp", "this-file-does-not-exist.txt");
-  try {
-    // Forcing the scenario for demonstration, as readFile itself would throw this.
-    const simulateNotFound = (path) => {
-       if (path === filePath) {
-          throw new NotFoundError(`no such file or directory, open '${filePath}'`);
-       }
+    const filePath = join("/tmp", "this-file-does-not-exist.txt");
+    try {
+        // Forcing the scenario for demonstration, as readFile itself would throw this.
+        const simulateNotFound = (path) => {
+            if (path === filePath) {
+                throw new NotFoundError(`no such file or directory, open '${filePath}'`);
+            }
+        };
+        simulateNotFound(filePath);
+        // await readFile(filePath);
+    } catch (error) {
+        if (error instanceof NotFoundError) {
+            console.error(`Operation failed, path not found: ${error.message}`);
+            console.error(`Error code: ${error.code}`); // ENOENT
+        } else {
+            console.error("An unexpected error occurred:", error);
+        }
     }
-    simulateNotFound(filePath);
-    // await readFile(filePath);
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      console.error(`Operation failed, path not found: ${error.message}`);
-      console.error(`Error code: ${error.code}`); // ENOENT
-    } else {
-      console.error("An unexpected error occurred:", error);
-    }
-  }
 };
 
 tryReadingNonExistentFile();
@@ -1448,7 +1452,7 @@ The error message.
 ###### Overrides
 
 ```ts
-Error.constructor
+Error.constructor;
 ```
 
 #### Accessors
@@ -1520,7 +1524,7 @@ Defined in: [packages/fs/src/error/not-found-error.ts:58](https://github.com/vis
 ###### Overrides
 
 ```ts
-Error.name
+Error.name;
 ```
 
 #### Methods
@@ -1531,7 +1535,7 @@ Error.name
 static captureStackTrace(targetObject, constructorOpt?): void;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:91
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:91
 
 Create .stack property on a target object
 
@@ -1552,7 +1556,7 @@ Create .stack property on a target object
 ###### Inherited from
 
 ```ts
-Error.captureStackTrace
+Error.captureStackTrace;
 ```
 
 #### Properties
@@ -1563,12 +1567,12 @@ Error.captureStackTrace
 optional cause: unknown;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:26
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 ###### Inherited from
 
 ```ts
-Error.cause
+Error.cause;
 ```
 
 ##### message
@@ -1577,12 +1581,12 @@ Error.cause
 message: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ###### Inherited from
 
 ```ts
-Error.message
+Error.message;
 ```
 
 ##### stack?
@@ -1591,12 +1595,12 @@ Error.message
 optional stack: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ###### Inherited from
 
 ```ts
-Error.stack
+Error.stack;
 ```
 
 ##### prepareStackTrace()?
@@ -1605,7 +1609,7 @@ Error.stack
 static optional prepareStackTrace: (err, stackTraces) => any;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:98
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:98
 
 Optional override for formatting stack traces
 
@@ -1630,7 +1634,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 ###### Inherited from
 
 ```ts
-Error.prepareStackTrace
+Error.prepareStackTrace;
 ```
 
 ##### stackTraceLimit
@@ -1639,15 +1643,15 @@ Error.prepareStackTrace
 static stackTraceLimit: number;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:100
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:100
 
 ###### Inherited from
 
 ```ts
-Error.stackTraceLimit
+Error.stackTraceLimit;
 ```
 
-***
+---
 
 ### PermissionError
 
@@ -1664,24 +1668,24 @@ import { writeFile } from "@visulima/fs"; // Or any function that might throw th
 import { join } from "node:path";
 
 const tryWritingToProtectedFile = async () => {
-  const filePath = join("/root", "protected-file.txt"); // A path that typically requires root privileges
-  try {
-    // Forcing the scenario for demonstration, as writeFile itself would throw this.
-    const simulatePermissionError = (path) => {
-       if (path === filePath) {
-          throw new PermissionError(`open '${filePath}'`);
-       }
+    const filePath = join("/root", "protected-file.txt"); // A path that typically requires root privileges
+    try {
+        // Forcing the scenario for demonstration, as writeFile itself would throw this.
+        const simulatePermissionError = (path) => {
+            if (path === filePath) {
+                throw new PermissionError(`open '${filePath}'`);
+            }
+        };
+        simulatePermissionError(filePath);
+        // await writeFile(filePath, "test content");
+    } catch (error) {
+        if (error instanceof PermissionError) {
+            console.error(`Operation not permitted: ${error.message}`);
+            console.error(`Error code: ${error.code}`); // EPERM
+        } else {
+            console.error("An unexpected error occurred:", error);
+        }
     }
-    simulatePermissionError(filePath);
-    // await writeFile(filePath, "test content");
-  } catch (error) {
-    if (error instanceof PermissionError) {
-      console.error(`Operation not permitted: ${error.message}`);
-      console.error(`Error code: ${error.code}`); // EPERM
-    } else {
-      console.error("An unexpected error occurred:", error);
-    }
-  }
 };
 
 tryWritingToProtectedFile();
@@ -1718,7 +1722,7 @@ The error message.
 ###### Overrides
 
 ```ts
-Error.constructor
+Error.constructor;
 ```
 
 #### Accessors
@@ -1790,7 +1794,7 @@ Defined in: [packages/fs/src/error/permission-error.ts:59](https://github.com/vi
 ###### Overrides
 
 ```ts
-Error.name
+Error.name;
 ```
 
 #### Methods
@@ -1801,7 +1805,7 @@ Error.name
 static captureStackTrace(targetObject, constructorOpt?): void;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:91
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:91
 
 Create .stack property on a target object
 
@@ -1822,7 +1826,7 @@ Create .stack property on a target object
 ###### Inherited from
 
 ```ts
-Error.captureStackTrace
+Error.captureStackTrace;
 ```
 
 #### Properties
@@ -1833,12 +1837,12 @@ Error.captureStackTrace
 optional cause: unknown;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:26
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 ###### Inherited from
 
 ```ts
-Error.cause
+Error.cause;
 ```
 
 ##### message
@@ -1847,12 +1851,12 @@ Error.cause
 message: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ###### Inherited from
 
 ```ts
-Error.message
+Error.message;
 ```
 
 ##### stack?
@@ -1861,12 +1865,12 @@ Error.message
 optional stack: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ###### Inherited from
 
 ```ts
-Error.stack
+Error.stack;
 ```
 
 ##### prepareStackTrace()?
@@ -1875,7 +1879,7 @@ Error.stack
 static optional prepareStackTrace: (err, stackTraces) => any;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:98
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:98
 
 Optional override for formatting stack traces
 
@@ -1900,7 +1904,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 ###### Inherited from
 
 ```ts
-Error.prepareStackTrace
+Error.prepareStackTrace;
 ```
 
 ##### stackTraceLimit
@@ -1909,15 +1913,15 @@ Error.prepareStackTrace
 static stackTraceLimit: number;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:100
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:100
 
 ###### Inherited from
 
 ```ts
-Error.stackTraceLimit
+Error.stackTraceLimit;
 ```
 
-***
+---
 
 ### WalkError
 
@@ -1933,30 +1937,30 @@ import { walk } from "@visulima/fs";
 import { join } from "node:path";
 
 const processDirectory = async () => {
-  const dirToWalk = join("/tmp", "non-existent-or-permission-denied-dir");
-  try {
-    // Forcing the scenario: walk might throw a WalkError if it encounters an issue
-    // like a directory it cannot read during the walk process.
-    const simulateWalkError = async (rootDir) => {
-      // Let's say readdir inside walk fails for a subdirectory.
-      const underlyingError = new Error("Permission denied reading subdirectory");
-      throw new WalkError(underlyingError, rootDir);
+    const dirToWalk = join("/tmp", "non-existent-or-permission-denied-dir");
+    try {
+        // Forcing the scenario: walk might throw a WalkError if it encounters an issue
+        // like a directory it cannot read during the walk process.
+        const simulateWalkError = async (rootDir) => {
+            // Let's say readdir inside walk fails for a subdirectory.
+            const underlyingError = new Error("Permission denied reading subdirectory");
+            throw new WalkError(underlyingError, rootDir);
+        };
+        // This is conceptual. In a real scenario, 'walk' itself would throw.
+        // for await (const entry of walk(dirToWalk)) {
+        //   console.log(entry.path);
+        // }
+        await simulateWalkError(dirToWalk);
+    } catch (error) {
+        if (error instanceof WalkError) {
+            console.error(`Error during directory walk of "${error.root}": ${error.message}`);
+            if (error.cause) {
+                console.error(`Underlying cause: ${error.cause}`);
+            }
+        } else {
+            console.error("An unexpected error occurred:", error);
+        }
     }
-    // This is conceptual. In a real scenario, 'walk' itself would throw.
-    // for await (const entry of walk(dirToWalk)) {
-    //   console.log(entry.path);
-    // }
-    await simulateWalkError(dirToWalk);
-  } catch (error) {
-    if (error instanceof WalkError) {
-      console.error(`Error during directory walk of "${error.root}": ${error.message}`);
-      if (error.cause) {
-        console.error(`Underlying cause: ${error.cause}`);
-      }
-    } else {
-      console.error("An unexpected error occurred:", error);
-    }
-  }
 };
 
 processDirectory();
@@ -1999,7 +2003,7 @@ The root directory path where the walk operation started or encountered the erro
 ###### Overrides
 
 ```ts
-Error.constructor
+Error.constructor;
 ```
 
 #### Accessors
@@ -2039,7 +2043,7 @@ Defined in: [packages/fs/src/error/walk-error.ts:66](https://github.com/visulima
 ###### Overrides
 
 ```ts
-Error.name
+Error.name;
 ```
 
 #### Methods
@@ -2050,7 +2054,7 @@ Error.name
 static captureStackTrace(targetObject, constructorOpt?): void;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:91
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:91
 
 Create .stack property on a target object
 
@@ -2071,7 +2075,7 @@ Create .stack property on a target object
 ###### Inherited from
 
 ```ts
-Error.captureStackTrace
+Error.captureStackTrace;
 ```
 
 #### Properties
@@ -2082,12 +2086,12 @@ Error.captureStackTrace
 optional cause: unknown;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:26
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 ###### Inherited from
 
 ```ts
-Error.cause
+Error.cause;
 ```
 
 ##### message
@@ -2096,12 +2100,12 @@ Error.cause
 message: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ###### Inherited from
 
 ```ts
-Error.message
+Error.message;
 ```
 
 ##### root
@@ -2120,12 +2124,12 @@ File path of the root that's being walked.
 optional stack: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ###### Inherited from
 
 ```ts
-Error.stack
+Error.stack;
 ```
 
 ##### prepareStackTrace()?
@@ -2134,7 +2138,7 @@ Error.stack
 static optional prepareStackTrace: (err, stackTraces) => any;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:98
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:98
 
 Optional override for formatting stack traces
 
@@ -2159,7 +2163,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 ###### Inherited from
 
 ```ts
-Error.prepareStackTrace
+Error.prepareStackTrace;
 ```
 
 ##### stackTraceLimit
@@ -2168,12 +2172,12 @@ Error.prepareStackTrace
 static stackTraceLimit: number;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:100
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:100
 
 ###### Inherited from
 
 ```ts
-Error.stackTraceLimit
+Error.stackTraceLimit;
 ```
 
 ## References
@@ -2181,6 +2185,7 @@ Error.stackTraceLimit
 ### JSONError
 
 Re-exports [JSONError](utils.md#jsonerror)
+
 # index
 
 ## Functions
@@ -2223,27 +2228,27 @@ import { collect } from "@visulima/fs";
 import { join } from "node:path";
 
 const collectFiles = async () => {
-  // Collect all .txt and .md files in /tmp/docs, up to 2 levels deep
-  const files = await collect(join("/tmp", "docs"), {
-    extensions: ["txt", "md"],
-    maxDepth: 2,
-    includeDirs: false, // Only collect files
-  });
-  console.log(files);
-  // Example output: ['/tmp/docs/file1.txt', '/tmp/docs/subdir/report.md']
+    // Collect all .txt and .md files in /tmp/docs, up to 2 levels deep
+    const files = await collect(join("/tmp", "docs"), {
+        extensions: ["txt", "md"],
+        maxDepth: 2,
+        includeDirs: false, // Only collect files
+    });
+    console.log(files);
+    // Example output: ['/tmp/docs/file1.txt', '/tmp/docs/subdir/report.md']
 
-  // Collect all .js files, excluding anything in node_modules
-  const jsFiles = await collect(join("/tmp", "project"), {
-    extensions: ["js"],
-    skip: [/node_modules/],
-  });
-  console.log(jsFiles);
+    // Collect all .js files, excluding anything in node_modules
+    const jsFiles = await collect(join("/tmp", "project"), {
+        extensions: ["js"],
+        skip: [/node_modules/],
+    });
+    console.log(jsFiles);
 };
 
 collectFiles();
 ```
 
-***
+---
 
 ### collectSync()
 
@@ -2284,22 +2289,22 @@ import { join } from "node:path";
 
 // Collect all .txt and .md files in /tmp/docs, up to 2 levels deep
 const files = collectSync(join("/tmp", "docs"), {
-  extensions: ["txt", "md"],
-  maxDepth: 2,
-  includeDirs: false, // Only collect files
+    extensions: ["txt", "md"],
+    maxDepth: 2,
+    includeDirs: false, // Only collect files
 });
 console.log(files);
 // Example output: ['/tmp/docs/file1.txt', '/tmp/docs/subdir/report.md']
 
 // Collect all .js files, excluding anything in node_modules
 const jsFiles = collectSync(join("/tmp", "project"), {
-  extensions: ["js"],
-  skip: [/node_modules/],
+    extensions: ["js"],
+    skip: [/node_modules/],
 });
 console.log(jsFiles);
 ```
 
-***
+---
 
 ### emptyDir()
 
@@ -2341,18 +2346,18 @@ import { emptyDir } from "@visulima/fs";
 import { join } from "node:path";
 
 const clearTempDir = async () => {
-  try {
-    await emptyDir(join("/tmp", "my-app-temp"));
-    console.log("Temporary directory emptied or created.");
-  } catch (error) {
-    console.error("Failed to empty directory:", error);
-  }
+    try {
+        await emptyDir(join("/tmp", "my-app-temp"));
+        console.log("Temporary directory emptied or created.");
+    } catch (error) {
+        console.error("Failed to empty directory:", error);
+    }
 };
 
 clearTempDir();
 ```
 
-***
+---
 
 ### emptyDirSync()
 
@@ -2394,14 +2399,14 @@ import { emptyDirSync } from "@visulima/fs";
 import { join } from "node:path";
 
 try {
-  emptyDirSync(join("/tmp", "my-app-temp"));
-  console.log("Temporary directory emptied or created.");
+    emptyDirSync(join("/tmp", "my-app-temp"));
+    console.log("Temporary directory emptied or created.");
 } catch (error) {
-  console.error("Failed to empty directory:", error);
+    console.error("Failed to empty directory:", error);
 }
 ```
 
-***
+---
 
 ### ensureDir()
 
@@ -2435,7 +2440,7 @@ await ensureDir("/tmp/foo/bar/baz");
 // Creates the directory structure /tmp/foo/bar/baz if it doesn't exist
 ```
 
-***
+---
 
 ### ensureDirSync()
 
@@ -2469,7 +2474,7 @@ ensureDirSync("/tmp/foo/bar/baz");
 // Creates the directory structure /tmp/foo/bar/baz if it doesn't exist
 ```
 
-***
+---
 
 ### ensureFile()
 
@@ -2511,19 +2516,19 @@ Will throw an error if directory or file creation fails for reasons other than t
 import { ensureFile } from "@visulima/fs";
 
 (async () => {
-  try {
-    await ensureFile("path/to/my/file.txt");
-    console.log("File ensured!");
+    try {
+        await ensureFile("path/to/my/file.txt");
+        console.log("File ensured!");
 
-    await ensureFile(new URL("file:///path/to/another/file.log"));
-    console.log("Another file ensured!");
-  } catch (error) {
-    console.error("Failed to ensure file:", error);
-  }
+        await ensureFile(new URL("file:///path/to/another/file.log"));
+        console.log("Another file ensured!");
+    } catch (error) {
+        console.error("Failed to ensure file:", error);
+    }
 })();
 ```
 
-***
+---
 
 ### ensureFileSync()
 
@@ -2558,7 +2563,7 @@ ensureFileSync("/tmp/foo/bar/baz.txt");
 // Creates the file /tmp/foo/bar/baz.txt and any missing parent directories if they don't exist
 ```
 
-***
+---
 
 ### ensureLink()
 
@@ -2599,7 +2604,7 @@ import { join } from "node:path";
 await ensureLink(join("/tmp", "foo", "bar.txt"), join("/tmp", "foo", "bar-link.txt"));
 ```
 
-***
+---
 
 ### ensureLinkSync()
 
@@ -2640,15 +2645,12 @@ import { join } from "node:path";
 ensureLinkSync(join("/tmp", "foo", "bar.txt"), join("/tmp", "foo", "bar-link.txt"));
 ```
 
-***
+---
 
 ### ensureSymlink()
 
 ```ts
-function ensureSymlink(
-   target, 
-   linkName, 
-type?): Promise<void>;
+function ensureSymlink(target, linkName, type?): Promise<void>;
 ```
 
 Defined in: [packages/fs/src/ensure/ensure-symlink.ts:39](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/ensure/ensure-symlink.ts#L39)
@@ -2696,15 +2698,12 @@ await ensureSymlink(join("/tmp", "foo", "bar.txt"), join("/tmp", "foo", "link-to
 await ensureSymlink(join("/tmp", "foo", "baz-dir"), join("/tmp", "foo", "link-to-baz-dir"), "dir");
 ```
 
-***
+---
 
 ### ensureSymlinkSync()
 
 ```ts
-function ensureSymlinkSync(
-   target, 
-   linkName, 
-   type?): void;
+function ensureSymlinkSync(target, linkName, type?): void;
 ```
 
 Defined in: [packages/fs/src/ensure/ensure-symlink-sync.ts:39](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/ensure/ensure-symlink-sync.ts#L39)
@@ -2752,7 +2751,7 @@ ensureSymlinkSync(join("/tmp", "foo", "bar.txt"), join("/tmp", "foo", "link-to-b
 ensureSymlinkSync(join("/tmp", "foo", "baz-dir"), join("/tmp", "foo", "link-to-baz-dir"), "dir");
 ```
 
-***
+---
 
 ### findUp()
 
@@ -2791,39 +2790,39 @@ import { findUp } from "@visulima/fs";
 import { join } from "node:path";
 
 const findProjectRoot = async () => {
-  // Find the closest package.json, starting from /tmp/foo/bar/baz
-  const projectRoot = await findUp("package.json", {
-    cwd: join("/tmp", "foo", "bar", "baz"),
-    type: "file",
-  });
-  console.log(projectRoot); // e.g., /tmp/foo/package.json or undefined
+    // Find the closest package.json, starting from /tmp/foo/bar/baz
+    const projectRoot = await findUp("package.json", {
+        cwd: join("/tmp", "foo", "bar", "baz"),
+        type: "file",
+    });
+    console.log(projectRoot); // e.g., /tmp/foo/package.json or undefined
 
-  // Find the closest .git directory or a README.md file
-  const gitDirOrReadme = await findUp([".git", "README.md"], {
-    cwd: join("/tmp", "foo", "bar"),
-  });
-  console.log(gitDirOrReadme);
+    // Find the closest .git directory or a README.md file
+    const gitDirOrReadme = await findUp([".git", "README.md"], {
+        cwd: join("/tmp", "foo", "bar"),
+    });
+    console.log(gitDirOrReadme);
 
-  // Find using a custom function, stopping at /tmp
-  const customFound = await findUp(
-    (directory) => {
-      if (directory === join("/tmp", "foo")) {
-        return "found-it-here.txt"; // Pretend this file exists in /tmp/foo
-      }
-      return undefined;
-    },
-    {
-      cwd: join("/tmp", "foo", "bar", "baz"),
-      stopAt: join("/tmp"),
-    }
-  );
-  console.log(customFound);
+    // Find using a custom function, stopping at /tmp
+    const customFound = await findUp(
+        (directory) => {
+            if (directory === join("/tmp", "foo")) {
+                return "found-it-here.txt"; // Pretend this file exists in /tmp/foo
+            }
+            return undefined;
+        },
+        {
+            cwd: join("/tmp", "foo", "bar", "baz"),
+            stopAt: join("/tmp"),
+        },
+    );
+    console.log(customFound);
 };
 
 findProjectRoot();
 ```
 
-***
+---
 
 ### findUpSync()
 
@@ -2863,34 +2862,34 @@ import { join } from "node:path";
 
 // Find the closest package.json, starting from /tmp/foo/bar/baz
 const projectRoot = findUpSync("package.json", {
-  cwd: join("/tmp", "foo", "bar", "baz"),
-  type: "file",
+    cwd: join("/tmp", "foo", "bar", "baz"),
+    type: "file",
 });
 console.log(projectRoot); // e.g., /tmp/foo/package.json or undefined
 
 // Find the closest .git directory or a README.md file
 const gitDirOrReadme = findUpSync([".git", "README.md"], {
-  cwd: join("/tmp", "foo", "bar"),
+    cwd: join("/tmp", "foo", "bar"),
 });
 console.log(gitDirOrReadme);
 
 // Find using a custom function, stopping at /tmp
 const customFound = findUpSync(
-  (directory) => {
-    if (directory === join("/tmp", "foo")) {
-      return "found-it-here.txt"; // Pretend this file exists in /tmp/foo
-    }
-    return undefined;
-  },
-  {
-    cwd: join("/tmp", "foo", "bar", "baz"),
-    stopAt: join("/tmp"),
-  }
+    (directory) => {
+        if (directory === join("/tmp", "foo")) {
+            return "found-it-here.txt"; // Pretend this file exists in /tmp/foo
+        }
+        return undefined;
+    },
+    {
+        cwd: join("/tmp", "foo", "bar", "baz"),
+        stopAt: join("/tmp"),
+    },
 );
 console.log(customFound);
 ```
 
-***
+---
 
 ### isAccessible()
 
@@ -2916,8 +2915,8 @@ The path to the file or directory. Can be a string or a URL object.
 `number`
 
 The accessibility checks to perform. Defaults to `F_OK` (check for existence).
-              Other possible values include `R_OK` (check for read access), `W_OK` (check for write access),
-              and `X_OK` (check for execute/search access). Multiple modes can be combined using bitwise OR.
+Other possible values include `R_OK` (check for read access), `W_OK` (check for write access),
+and `X_OK` (check for execute/search access). Multiple modes can be combined using bitwise OR.
 
 #### Returns
 
@@ -2931,21 +2930,21 @@ A Promise that resolves to a boolean indicating if the path is accessible with t
 import { isAccessible, F_OK, R_OK } from "@visulima/fs";
 
 (async () => {
-  if (await isAccessible("myFile.txt")) {
-    console.log("myFile.txt exists");
-  }
+    if (await isAccessible("myFile.txt")) {
+        console.log("myFile.txt exists");
+    }
 
-  if (await isAccessible("myFile.txt", R_OK)) {
-    console.log("myFile.txt is readable");
-  }
+    if (await isAccessible("myFile.txt", R_OK)) {
+        console.log("myFile.txt is readable");
+    }
 
-  if (await isAccessible("myDirectory", F_OK | R_OK | W_OK)) {
-    console.log("myDirectory exists, is readable and writable");
-  }
+    if (await isAccessible("myDirectory", F_OK | R_OK | W_OK)) {
+        console.log("myDirectory exists, is readable and writable");
+    }
 })();
 ```
 
-***
+---
 
 ### isAccessibleSync()
 
@@ -2981,8 +2980,8 @@ A path to a file or directory. If a URL is provided, it must use the `file:` pro
 #### Param
 
 The accessibility checks to perform. Default: `F_OK` (tests for existence of the file).
-                   Other possible values are `R_OK` (tests for read permission), `W_OK` (tests for write permission),
-                   and `X_OK` (tests for execute permissions). Multiple modes can be combined using bitwise OR.
+Other possible values are `R_OK` (tests for read permission), `W_OK` (tests for write permission),
+and `X_OK` (tests for execute permissions). Multiple modes can be combined using bitwise OR.
 
 #### Example
 
@@ -3019,15 +3018,12 @@ console.log(`URL exists: ${isAccessibleSync(fileUrl)}`); // true
 unlinkSync(filePath);
 ```
 
-***
+---
 
 ### move()
 
 ```ts
-function move(
-   sourcePath, 
-   destinationPath, 
-options): Promise<void>;
+function move(sourcePath, destinationPath, options): Promise<void>;
 ```
 
 Defined in: [packages/fs/src/move/index.ts:35](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/move/index.ts#L35)
@@ -3069,15 +3065,12 @@ await move('source/test.png', 'destination/test.png');
 console.log('The file has been moved');
 ```
 
-***
+---
 
 ### moveSync()
 
 ```ts
-function moveSync(
-   sourcePath, 
-   destinationPath, 
-   options?): void;
+function moveSync(sourcePath, destinationPath, options?): void;
 ```
 
 Defined in: [packages/fs/src/move/index.ts:61](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/move/index.ts#L61)
@@ -3119,7 +3112,7 @@ moveSync('source/test.png', 'destination/test.png');
 console.log('The file has been moved');
 ```
 
-***
+---
 
 ### readFile()
 
@@ -3136,7 +3129,7 @@ It can also decompress the file content if a `compression` option is provided.
 
 ##### O
 
-`O` *extends* [`ReadFileOptions`](#readfileoptions)\<`"brotli"` \| `"gzip"` \| `"none"`\> = `undefined`
+`O` _extends_ [`ReadFileOptions`](#readfileoptions)\<`"brotli"` \| `"gzip"` \| `"none"`\> = `undefined`
 
 The type of the options object, extending [ReadFileOptions](#readfileoptions).
 
@@ -3153,14 +3146,14 @@ The path to the file to read. Can be a file URL or a string path.
 `O`
 
 Optional configuration for reading the file. See [ReadFileOptions](#readfileoptions).
-               Available `compression` methods: "brotli", "gzip", "none" (default).
+Available `compression` methods: "brotli", "gzip", "none" (default).
 
 #### Returns
 
 `Promise`\<[`ContentType`](#contenttype)\<`O`\>\>
 
 A promise that resolves with the file content. The type of the content (string or Buffer)
-         depends on the `buffer` option (defaults to string if `buffer` is false or not set).
+depends on the `buffer` option (defaults to string if `buffer` is false or not set).
 
 #### Example
 
@@ -3169,28 +3162,28 @@ import { readFile } from "@visulima/fs";
 import { join } from "node:path";
 
 const readMyFile = async () => {
-  try {
-    // Read a regular text file
-    const content = await readFile(join("path", "to", "my-file.txt"));
-    console.log("File content:", content);
+    try {
+        // Read a regular text file
+        const content = await readFile(join("path", "to", "my-file.txt"));
+        console.log("File content:", content);
 
-    // Read a file as a Buffer
-    const bufferContent = await readFile(join("path", "to", "another-file.bin"), { buffer: true });
-    console.log("Buffer length:", bufferContent.length);
+        // Read a file as a Buffer
+        const bufferContent = await readFile(join("path", "to", "another-file.bin"), { buffer: true });
+        console.log("Buffer length:", bufferContent.length);
 
-    // Read and decompress a gzipped file
-    // Assume my-archive.txt.gz exists
-    // const decompressedContent = await readFile(join("path", "to", "my-archive.txt.gz"), { compression: "gzip", encoding: "utf8" });
-    // console.log("Decompressed content:", decompressedContent);
-  } catch (error) {
-    console.error("Failed to read file:", error);
-  }
+        // Read and decompress a gzipped file
+        // Assume my-archive.txt.gz exists
+        // const decompressedContent = await readFile(join("path", "to", "my-archive.txt.gz"), { compression: "gzip", encoding: "utf8" });
+        // console.log("Decompressed content:", decompressedContent);
+    } catch (error) {
+        console.error("Failed to read file:", error);
+    }
 };
 
 readMyFile();
 ```
 
-***
+---
 
 ### readFileSync()
 
@@ -3207,7 +3200,7 @@ It can also decompress the file content if a `compression` option is provided.
 
 ##### O
 
-`O` *extends* [`ReadFileOptions`](#readfileoptions)\<`"brotli"` \| `"gzip"` \| `"none"`\> = `undefined`
+`O` _extends_ [`ReadFileOptions`](#readfileoptions)\<`"brotli"` \| `"gzip"` \| `"none"`\> = `undefined`
 
 The type of the options object, extending [ReadFileOptions](#readfileoptions).
 
@@ -3224,14 +3217,14 @@ The path to the file to read. Can be a file URL or a string path.
 `O`
 
 Optional configuration for reading the file. See [ReadFileOptions](#readfileoptions).
-               Available `compression` methods: "brotli", "gzip", "none" (default).
+Available `compression` methods: "brotli", "gzip", "none" (default).
 
 #### Returns
 
 [`ContentType`](#contenttype)\<`O`\>
 
 The file content. The type of the content (string or Buffer)
-         depends on the `buffer` option (defaults to string if `buffer` is false or not set).
+depends on the `buffer` option (defaults to string if `buffer` is false or not set).
 
 #### Example
 
@@ -3240,24 +3233,24 @@ import { readFileSync } from "@visulima/fs";
 import { join } from "node:path";
 
 try {
-  // Read a regular text file
-  const content = readFileSync(join("path", "to", "my-file.txt"));
-  console.log("File content:", content);
+    // Read a regular text file
+    const content = readFileSync(join("path", "to", "my-file.txt"));
+    console.log("File content:", content);
 
-  // Read a file as a Buffer
-  const bufferContent = readFileSync(join("path", "to", "another-file.bin"), { buffer: true });
-  console.log("Buffer length:", bufferContent.length);
+    // Read a file as a Buffer
+    const bufferContent = readFileSync(join("path", "to", "another-file.bin"), { buffer: true });
+    console.log("Buffer length:", bufferContent.length);
 
-  // Read and decompress a gzipped file
-  // Assume my-archive.txt.gz exists
-  // const decompressedContent = readFileSync(join("path", "to", "my-archive.txt.gz"), { compression: "gzip", encoding: "utf8" });
-  // console.log("Decompressed content:", decompressedContent);
+    // Read and decompress a gzipped file
+    // Assume my-archive.txt.gz exists
+    // const decompressedContent = readFileSync(join("path", "to", "my-archive.txt.gz"), { compression: "gzip", encoding: "utf8" });
+    // console.log("Decompressed content:", decompressedContent);
 } catch (error) {
-  console.error("Failed to read file:", error);
+    console.error("Failed to read file:", error);
 }
 ```
 
-***
+---
 
 ### readJson()
 
@@ -3274,12 +3267,12 @@ The path to the JSON file to read. Can be a file URL or a string path.
 #### Param
 
 A function to transform the results. This function is called for each member of the object.
-               Alternatively, this can be the `options` object if no reviver function is provided.
+Alternatively, this can be the `options` object if no reviver function is provided.
 
 #### Param
 
 Optional configuration for reading and parsing the JSON file. See [ReadJsonOptions](#readjsonoptions).
-               If `reviver` is an object, this argument is ignored.
+If `reviver` is an object, this argument is ignored.
 
 #### Example
 
@@ -3288,24 +3281,23 @@ import { readJson } from "@visulima/fs";
 import { join } from "node:path";
 
 const readMyJson = async () => {
-  try {
-    const data = await readJson(join("path", "to", "my-config.json"));
-    console.log("Config data:", data);
+    try {
+        const data = await readJson(join("path", "to", "my-config.json"));
+        console.log("Config data:", data);
 
-    // With a reviver function
-    const dataWithReviver = await readJson(join("path", "to", "another.json"), (key, value) => {
-      if (key === "date") return new Date(value);
-      return value;
-    });
-    console.log("Date field is now a Date object:", dataWithReviver.date);
+        // With a reviver function
+        const dataWithReviver = await readJson(join("path", "to", "another.json"), (key, value) => {
+            if (key === "date") return new Date(value);
+            return value;
+        });
+        console.log("Date field is now a Date object:", dataWithReviver.date);
 
-    // With options (e.g., for custom error reporting)
-    const dataWithOptions = await readJson(join("path", "to", "options.json"), { color: { message: (str) => `\x1b[31m${str}\x1b[0m` } });
-    console.log(dataWithOptions);
-
-  } catch (error) {
-    console.error("Failed to read or parse JSON file:", error);
-  }
+        // With options (e.g., for custom error reporting)
+        const dataWithOptions = await readJson(join("path", "to", "options.json"), { color: { message: (str) => `\x1b[31m${str}\x1b[0m` } });
+        console.log(dataWithOptions);
+    } catch (error) {
+        console.error("Failed to read or parse JSON file:", error);
+    }
 };
 
 readMyJson();
@@ -3323,7 +3315,7 @@ Defined in: [packages/fs/src/read/read-json.ts:8](https://github.com/visulima/vi
 
 ###### T
 
-`T` *extends* `JsonValue`
+`T` _extends_ `JsonValue`
 
 ##### Parameters
 
@@ -3342,10 +3334,7 @@ Defined in: [packages/fs/src/read/read-json.ts:8](https://github.com/visulima/vi
 #### Call Signature
 
 ```ts
-function readJson<T>(
-   path, 
-   reviver, 
-options?): Promise<T>;
+function readJson<T>(path, reviver, options?): Promise<T>;
 ```
 
 Defined in: [packages/fs/src/read/read-json.ts:10](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/read/read-json.ts#L10)
@@ -3354,7 +3343,7 @@ Defined in: [packages/fs/src/read/read-json.ts:10](https://github.com/visulima/v
 
 ###### T
 
-`T` *extends* `JsonValue`
+`T` _extends_ `JsonValue`
 
 ##### Parameters
 
@@ -3374,7 +3363,7 @@ Defined in: [packages/fs/src/read/read-json.ts:10](https://github.com/visulima/v
 
 `Promise`\<`T`\>
 
-***
+---
 
 ### readJsonSync()
 
@@ -3391,12 +3380,12 @@ The path to the JSON file to read. Can be a file URL or a string path.
 #### Param
 
 A function to transform the results. This function is called for each member of the object.
-               Alternatively, this can be the `options` object if no reviver function is provided.
+Alternatively, this can be the `options` object if no reviver function is provided.
 
 #### Param
 
 Optional configuration for reading and parsing the JSON file. See [ReadJsonOptions](#readjsonoptions).
-               If `reviver` is an object, this argument is ignored.
+If `reviver` is an object, this argument is ignored.
 
 #### Example
 
@@ -3405,22 +3394,21 @@ import { readJsonSync } from "@visulima/fs";
 import { join } from "node:path";
 
 try {
-  const data = readJsonSync(join("path", "to", "my-config.json"));
-  console.log("Config data:", data);
+    const data = readJsonSync(join("path", "to", "my-config.json"));
+    console.log("Config data:", data);
 
-  // With a reviver function
-  const dataWithReviver = readJsonSync(join("path", "to", "another.json"), (key, value) => {
-    if (key === "date") return new Date(value);
-    return value;
-  });
-  console.log("Date field is now a Date object:", dataWithReviver.date);
+    // With a reviver function
+    const dataWithReviver = readJsonSync(join("path", "to", "another.json"), (key, value) => {
+        if (key === "date") return new Date(value);
+        return value;
+    });
+    console.log("Date field is now a Date object:", dataWithReviver.date);
 
-  // With options (e.g., for custom error reporting)
-  const dataWithOptions = readJsonSync(join("path", "to", "options.json"), { color: { message: (str) => `\x1b[31m${str}\x1b[0m` } });
-  console.log(dataWithOptions);
-
+    // With options (e.g., for custom error reporting)
+    const dataWithOptions = readJsonSync(join("path", "to", "options.json"), { color: { message: (str) => `\x1b[31m${str}\x1b[0m` } });
+    console.log(dataWithOptions);
 } catch (error) {
-  console.error("Failed to read or parse JSON file:", error);
+    console.error("Failed to read or parse JSON file:", error);
 }
 ```
 
@@ -3436,7 +3424,7 @@ Defined in: [packages/fs/src/read/read-json-sync.ts:8](https://github.com/visuli
 
 ###### T
 
-`T` *extends* `JsonValue`
+`T` _extends_ `JsonValue`
 
 ##### Parameters
 
@@ -3455,10 +3443,7 @@ Defined in: [packages/fs/src/read/read-json-sync.ts:8](https://github.com/visuli
 #### Call Signature
 
 ```ts
-function readJsonSync<T>(
-   path, 
-   reviver, 
-   options?): T;
+function readJsonSync<T>(path, reviver, options?): T;
 ```
 
 Defined in: [packages/fs/src/read/read-json-sync.ts:10](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/read/read-json-sync.ts#L10)
@@ -3467,7 +3452,7 @@ Defined in: [packages/fs/src/read/read-json-sync.ts:10](https://github.com/visul
 
 ###### T
 
-`T` *extends* `JsonValue`
+`T` _extends_ `JsonValue`
 
 ##### Parameters
 
@@ -3487,7 +3472,7 @@ Defined in: [packages/fs/src/read/read-json-sync.ts:10](https://github.com/visul
 
 `T`
 
-***
+---
 
 ### remove()
 
@@ -3527,24 +3512,24 @@ import { remove } from "@visulima/fs";
 import { join } from "node:path";
 
 const deleteFileOrDir = async () => {
-  try {
-    await remove(join("/tmp", "my-file.txt"));
-    console.log("File /tmp/my-file.txt removed.");
+    try {
+        await remove(join("/tmp", "my-file.txt"));
+        console.log("File /tmp/my-file.txt removed.");
 
-    await remove(join("/tmp", "my-empty-dir"));
-    console.log("Directory /tmp/my-empty-dir removed.");
+        await remove(join("/tmp", "my-empty-dir"));
+        console.log("Directory /tmp/my-empty-dir removed.");
 
-    await remove(join("/tmp", "my-dir-with-contents"));
-    console.log("Directory /tmp/my-dir-with-contents and its contents removed.");
-  } catch (error) {
-    console.error("Failed to remove path:", error);
-  }
+        await remove(join("/tmp", "my-dir-with-contents"));
+        console.log("Directory /tmp/my-dir-with-contents and its contents removed.");
+    } catch (error) {
+        console.error("Failed to remove path:", error);
+    }
 };
 
 deleteFileOrDir();
 ```
 
-***
+---
 
 ### removeSync()
 
@@ -3584,28 +3569,25 @@ import { removeSync } from "@visulima/fs";
 import { join } from "node:path";
 
 try {
-  removeSync(join("/tmp", "my-file.txt"));
-  console.log("File /tmp/my-file.txt removed.");
+    removeSync(join("/tmp", "my-file.txt"));
+    console.log("File /tmp/my-file.txt removed.");
 
-  removeSync(join("/tmp", "my-empty-dir"));
-  console.log("Directory /tmp/my-empty-dir removed.");
+    removeSync(join("/tmp", "my-empty-dir"));
+    console.log("Directory /tmp/my-empty-dir removed.");
 
-  removeSync(join("/tmp", "my-dir-with-contents"));
-  console.log("Directory /tmp/my-dir-with-contents and its contents removed.");
+    removeSync(join("/tmp", "my-dir-with-contents"));
+    console.log("Directory /tmp/my-dir-with-contents and its contents removed.");
 } catch (error) {
-  console.error("Failed to remove path:", error);
+    console.error("Failed to remove path:", error);
 }
 ```
 
-***
+---
 
 ### rename()
 
 ```ts
-function rename(
-   source, 
-   destination, 
-options?): Promise<void>;
+function rename(source, destination, options?): Promise<void>;
 ```
 
 Defined in: [packages/fs/src/move/index.ts:85](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/move/index.ts#L85)
@@ -3647,15 +3629,12 @@ await rename('test.png', 'tests.png', {cwd: 'source'});
 console.log('The file has been renamed');
 ```
 
-***
+---
 
 ### renameSync()
 
 ```ts
-function renameSync(
-   source, 
-   destination, 
-   options?): void;
+function renameSync(source, destination, options?): void;
 ```
 
 Defined in: [packages/fs/src/move/index.ts:109](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/move/index.ts#L109)
@@ -3697,7 +3676,7 @@ renameSync('test.png', 'tests.png', {cwd: 'source'});
 console.log('The file has been renamed');
 ```
 
-***
+---
 
 ### walk()
 
@@ -3736,23 +3715,23 @@ import { walk } from "@visulima/fs";
 import { join } from "node:path";
 
 const printEntries = async () => {
-  // Walk through /tmp/my-project, looking for .ts files, max depth 2
-  for await (const entry of walk(join("/tmp", "my-project"), { extensions: ["ts"], maxDepth: 2 })) {
-    console.log(`Found: ${entry.path} (Type: ${entry.isFile() ? 'file' : 'directory'})`);
-  }
-
-  // Walk, including only directories, and skip any node_modules folders
-  for await (const entry of walk(join("/tmp", "another-project"), { includeFiles: false, skip: [/node_modules/] })) {
-    if (entry.isDirectory()) {
-       console.log(`Directory: ${entry.path}`);
+    // Walk through /tmp/my-project, looking for .ts files, max depth 2
+    for await (const entry of walk(join("/tmp", "my-project"), { extensions: ["ts"], maxDepth: 2 })) {
+        console.log(`Found: ${entry.path} (Type: ${entry.isFile() ? "file" : "directory"})`);
     }
-  }
+
+    // Walk, including only directories, and skip any node_modules folders
+    for await (const entry of walk(join("/tmp", "another-project"), { includeFiles: false, skip: [/node_modules/] })) {
+        if (entry.isDirectory()) {
+            console.log(`Directory: ${entry.path}`);
+        }
+    }
 };
 
 printEntries();
 ```
 
-***
+---
 
 ### walkSync()
 
@@ -3793,26 +3772,23 @@ import { join } from "node:path";
 
 // Walk through /tmp/my-project, looking for .ts files, max depth 2
 for (const entry of walkSync(join("/tmp", "my-project"), { extensions: ["ts"], maxDepth: 2 })) {
-  console.log(`Found: ${entry.path} (Type: ${entry.isFile() ? 'file' : 'directory'})`);
+    console.log(`Found: ${entry.path} (Type: ${entry.isFile() ? "file" : "directory"})`);
 }
 
 // Walk, including only directories, and skip any node_modules folders
 for (const entry of walkSync(join("/tmp", "another-project"), { includeFiles: false, skip: [/node_modules/] })) {
-  if (entry.isDirectory()) {
-     console.log(`Directory: ${entry.path}`);
-  }
+    if (entry.isDirectory()) {
+        console.log(`Directory: ${entry.path}`);
+    }
 }
 ```
 
-***
+---
 
 ### writeFile()
 
 ```ts
-function writeFile(
-   path, 
-   content, 
-options?): Promise<void>;
+function writeFile(path, content, options?): Promise<void>;
 ```
 
 Defined in: [packages/fs/src/write/write-file.ts:43](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/write/write-file.ts#L43)
@@ -3853,29 +3829,26 @@ import { writeFile } from "@visulima/fs";
 import { join } from "node:path";
 
 const writeMyFile = async () => {
-  try {
-    await writeFile(join("/tmp", "my-new-file.txt"), "Hello World!");
-    console.log("File written successfully.");
+    try {
+        await writeFile(join("/tmp", "my-new-file.txt"), "Hello World!");
+        console.log("File written successfully.");
 
-    await writeFile(join("/tmp", "another-file.txt"), "Some other content", { encoding: 'utf16le', mode: 0o600 });
-    console.log("Another file written with specific options.");
-  } catch (error) {
-    console.error("Failed to write file:", error);
-  }
+        await writeFile(join("/tmp", "another-file.txt"), "Some other content", { encoding: "utf16le", mode: 0o600 });
+        console.log("Another file written with specific options.");
+    } catch (error) {
+        console.error("Failed to write file:", error);
+    }
 };
 
 writeMyFile();
 ```
 
-***
+---
 
 ### writeFileSync()
 
 ```ts
-function writeFileSync(
-   path, 
-   content, 
-   options?): void;
+function writeFileSync(path, content, options?): void;
 ```
 
 Defined in: [packages/fs/src/write/write-file-sync.ts:43](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/write/write-file-sync.ts#L43)
@@ -3916,29 +3889,26 @@ import { writeFileSync } from "@visulima/fs";
 import { join } from "node:path";
 
 const writeMyFileSync = () => {
-  try {
-    writeFileSync(join("/tmp", "my-new-file-sync.txt"), "Hello World Synchronously!");
-    console.log("File written successfully (sync).");
+    try {
+        writeFileSync(join("/tmp", "my-new-file-sync.txt"), "Hello World Synchronously!");
+        console.log("File written successfully (sync).");
 
-    writeFileSync(join("/tmp", "another-file-sync.txt"), "Some other sync content", { encoding: 'utf16le', mode: 0o600 });
-    console.log("Another file written with specific options (sync).");
-  } catch (error) {
-    console.error("Failed to write file (sync):", error);
-  }
+        writeFileSync(join("/tmp", "another-file-sync.txt"), "Some other sync content", { encoding: "utf16le", mode: 0o600 });
+        console.log("Another file written with specific options (sync).");
+    } catch (error) {
+        console.error("Failed to write file (sync):", error);
+    }
 };
 
 writeMyFileSync();
 ```
 
-***
+---
 
 ### writeJson()
 
 ```ts
-function writeJson(
-   path, 
-   data, 
-options): Promise<void>;
+function writeJson(path, data, options): Promise<void>;
 ```
 
 Defined in: [packages/fs/src/write/write-json.ts:39](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/write/write-json.ts#L39)
@@ -3979,29 +3949,26 @@ import { writeJson } from "@visulima/fs";
 import { join } from "node:path";
 
 const writeMyJson = async () => {
-  try {
-    await writeJson(join("/tmp", "my-config.json"), { setting: "enabled", value: 123 });
-    console.log("JSON file written successfully.");
+    try {
+        await writeJson(join("/tmp", "my-config.json"), { setting: "enabled", value: 123 });
+        console.log("JSON file written successfully.");
 
-    await writeJson(join("/tmp", "another-config.json"), { user: "test", id: "abc" }, { indent: 2, replacer: ["user"] });
-    console.log("Another JSON file written with specific options (indent 2, only 'user' key).");
-  } catch (error) {
-    console.error("Failed to write JSON file:", error);
-  }
+        await writeJson(join("/tmp", "another-config.json"), { user: "test", id: "abc" }, { indent: 2, replacer: ["user"] });
+        console.log("Another JSON file written with specific options (indent 2, only 'user' key).");
+    } catch (error) {
+        console.error("Failed to write JSON file:", error);
+    }
 };
 
 writeMyJson();
 ```
 
-***
+---
 
 ### writeJsonSync()
 
 ```ts
-function writeJsonSync(
-   path, 
-   data, 
-   options): void;
+function writeJsonSync(path, data, options): void;
 ```
 
 Defined in: [packages/fs/src/write/write-json-sync.ts:39](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/write/write-json-sync.ts#L39)
@@ -4042,15 +4009,15 @@ import { writeJsonSync } from "@visulima/fs";
 import { join } from "node:path";
 
 const writeMyJsonSync = () => {
-  try {
-    writeJsonSync(join("/tmp", "my-config-sync.json"), { setting: "enabled", value: 456 });
-    console.log("JSON file written successfully (sync).");
+    try {
+        writeJsonSync(join("/tmp", "my-config-sync.json"), { setting: "enabled", value: 456 });
+        console.log("JSON file written successfully (sync).");
 
-    writeJsonSync(join("/tmp", "another-config-sync.json"), { user: "testSync", id: "def" }, { indent: 4, replacer: ["id"] });
-    console.log("Another JSON file written with specific options (sync, indent 4, only 'id' key).");
-  } catch (error) {
-    console.error("Failed to write JSON file (sync):", error);
-  }
+        writeJsonSync(join("/tmp", "another-config-sync.json"), { user: "testSync", id: "def" }, { indent: 4, replacer: ["id"] });
+        console.log("Another JSON file written with specific options (sync, indent 4, only 'id' key).");
+    } catch (error) {
+        console.error("Failed to write JSON file (sync):", error);
+    }
 };
 
 writeMyJsonSync();
@@ -4058,7 +4025,7 @@ writeMyJsonSync();
 
 ## Variables
 
-### F\_OK
+### F_OK
 
 ```ts
 const F_OK: 0 = 0;
@@ -4069,9 +4036,9 @@ Defined in: [packages/fs/src/constants.ts:5](https://github.com/visulima/visulim
 Constant to check if the path is visible to the calling process.
 Corresponds to `node:fs.constants.F_OK`.
 
-***
+---
 
-### FIND\_UP\_STOP
+### FIND_UP_STOP
 
 ```ts
 const FIND_UP_STOP: typeof FIND_UP_STOP;
@@ -4082,9 +4049,9 @@ Defined in: [packages/fs/src/constants.ts:29](https://github.com/visulima/visuli
 A special symbol that can be returned by the matcher function in `findUp` or `findUpSync`
 to stop the search process prematurely.
 
-***
+---
 
-### R\_OK
+### R_OK
 
 ```ts
 const R_OK: 4 = 4;
@@ -4095,9 +4062,9 @@ Defined in: [packages/fs/src/constants.ts:11](https://github.com/visulima/visuli
 Constant to check if the path is readable to the calling process.
 Corresponds to `node:fs.constants.R_OK`.
 
-***
+---
 
-### W\_OK
+### W_OK
 
 ```ts
 const W_OK: 2 = 2;
@@ -4108,9 +4075,9 @@ Defined in: [packages/fs/src/constants.ts:17](https://github.com/visulima/visuli
 Constant to check if the path is writable to the calling process.
 Corresponds to `node:fs.constants.W_OK`.
 
-***
+---
 
-### X\_OK
+### X_OK
 
 ```ts
 const X_OK: 1 = 1;
@@ -4141,7 +4108,7 @@ Represents an entry found by `walk` or `walkSync`.
 isDirectory(): boolean;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/fs.d.ts:190
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/fs.d.ts:190
 
 Returns `true` if the `fs.Dirent` object describes a file system
 directory.
@@ -4157,7 +4124,7 @@ v10.10.0
 ###### Inherited from
 
 ```ts
-Pick.isDirectory
+Pick.isDirectory;
 ```
 
 ##### isFile()
@@ -4166,7 +4133,7 @@ Pick.isDirectory
 isFile(): boolean;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/fs.d.ts:184
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/fs.d.ts:184
 
 Returns `true` if the `fs.Dirent` object describes a regular file.
 
@@ -4181,7 +4148,7 @@ v10.10.0
 ###### Inherited from
 
 ```ts
-Pick.isFile
+Pick.isFile;
 ```
 
 ##### isSymbolicLink()
@@ -4190,7 +4157,7 @@ Pick.isFile
 isSymbolicLink(): boolean;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/fs.d.ts:205
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/fs.d.ts:205
 
 Returns `true` if the `fs.Dirent` object describes a symbolic link.
 
@@ -4205,7 +4172,7 @@ v10.10.0
 ###### Inherited from
 
 ```ts
-Pick.isSymbolicLink
+Pick.isSymbolicLink;
 ```
 
 #### Properties
@@ -4216,7 +4183,7 @@ Pick.isSymbolicLink
 name: string;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/fs.d.ts:222
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/fs.d.ts:222
 
 The file name that this `fs.Dirent` object refers to. The type of this
 value is determined by the `options.encoding` passed to readdir or readdirSync.
@@ -4228,7 +4195,7 @@ v10.10.0
 ###### Inherited from
 
 ```ts
-Pick.name
+Pick.name;
 ```
 
 ##### path
@@ -4241,7 +4208,7 @@ Defined in: [packages/fs/src/types.ts:64](https://github.com/visulima/visulima/b
 
 The full path to the entry.
 
-***
+---
 
 ### WalkOptions
 
@@ -4265,7 +4232,9 @@ If specified, entries without the file extension specified by this option are ex
 ###### Default
 
 ```ts
-{undefined}
+{
+    undefined;
+}
 ```
 
 ##### followSymlinks?
@@ -4281,7 +4250,9 @@ Indicates whether symlinks should be resolved or not.
 ###### Default
 
 ```ts
-{false}
+{
+    false;
+}
 ```
 
 ##### includeDirs?
@@ -4297,7 +4268,9 @@ Indicates whether directory entries should be included or not.
 ###### Default
 
 ```ts
-{true}
+{
+    true;
+}
 ```
 
 ##### includeFiles?
@@ -4313,7 +4286,9 @@ Indicates whether file entries should be included or not.
 ###### Default
 
 ```ts
-{true}
+{
+    true;
+}
 ```
 
 ##### includeSymlinks?
@@ -4330,7 +4305,9 @@ This option is meaningful only if `followSymlinks` is set to `false`.
 ###### Default
 
 ```ts
-{true}
+{
+    true;
+}
 ```
 
 ##### match?
@@ -4347,7 +4324,9 @@ If specified, entries that do not match the patterns specified by this option ar
 ###### Default
 
 ```ts
-{undefined}
+{
+    undefined;
+}
 ```
 
 ##### maxDepth?
@@ -4363,7 +4342,9 @@ The maximum depth of the file tree to be walked recursively.
 ###### Default
 
 ```ts
-{Infinity}
+{
+    Infinity;
+}
 ```
 
 ##### skip?
@@ -4380,7 +4361,9 @@ If specified, entries matching the patterns specified by this option are exclude
 ###### Default
 
 ```ts
-{undefined}
+{
+    undefined;
+}
 ```
 
 ## Type Aliases
@@ -4417,7 +4400,7 @@ Defined in: [packages/fs/src/types.ts:121](https://github.com/visulima/visulima/
 
 The line number.
 
-***
+---
 
 ### CodeFrameOptions
 
@@ -4465,7 +4448,7 @@ optional message: ColorizeMethod;
 
 Color for the message.
 
-***
+---
 
 ### ContentType\<O\>
 
@@ -4485,12 +4468,12 @@ Represents the content type of a read file, which can be a Buffer or a string ba
 
 The ReadFileOptions type.
 
-***
+---
 
 ### FindUpName
 
 ```ts
-type FindUpName = 
+type FindUpName =
   | string[]
   | string
   | (directory) => FindUpNameFnResult;
@@ -4501,16 +4484,12 @@ Defined in: [packages/fs/src/types.ts:270](https://github.com/visulima/visulima/
 Specifies the name(s) of the file or directory to search for in `findUp`.
 Can be a single name, an array of names, or a function that returns a name or `FIND_UP_STOP`.
 
-***
+---
 
 ### FindUpNameFnResult
 
 ```ts
-type FindUpNameFnResult = 
-  | PathLike
-  | Promise<PathLike | typeof FIND_UP_STOP>
-  | typeof FIND_UP_STOP
-  | undefined;
+type FindUpNameFnResult = PathLike | Promise<PathLike | typeof FIND_UP_STOP> | typeof FIND_UP_STOP | undefined;
 ```
 
 Defined in: [packages/fs/src/types.ts:264](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/types.ts#L264)
@@ -4519,12 +4498,12 @@ The result type for the name matcher function used in `findUp`.
 It can be a `PathLike` (string, Buffer, or URL), a Promise resolving to `PathLike` or `FIND_UP_STOP`,
 `FIND_UP_STOP` to stop the search, or `undefined` to continue.
 
-***
+---
 
 ### FindUpNameSync
 
 ```ts
-type FindUpNameSync = 
+type FindUpNameSync =
   | string[]
   | string
   | (directory) => FindUpNameSyncFnResult;
@@ -4535,7 +4514,7 @@ Defined in: [packages/fs/src/types.ts:284](https://github.com/visulima/visulima/
 Specifies the name(s) of the file or directory to search for in `findUpSync`.
 Can be a single name, an array of names, or a function that returns a name or `FIND_UP_STOP`.
 
-***
+---
 
 ### FindUpNameSyncFnResult
 
@@ -4549,7 +4528,7 @@ The result type for the name matcher function used in `findUpSync`.
 It can be a `PathLike` (string, Buffer, or URL), `FIND_UP_STOP` to stop the search,
 or `undefined` to continue.
 
-***
+---
 
 ### FindUpOptions
 
@@ -4590,7 +4569,7 @@ The current working directory.
 ###### Default
 
 ```ts
-process.cwd()
+process.cwd();
 ```
 
 ##### stopAt?
@@ -4606,7 +4585,7 @@ The directory to stop searching at.
 ###### Default
 
 ```ts
-path.parse(cwd).root
+path.parse(cwd).root;
 ```
 
 ##### type?
@@ -4622,10 +4601,10 @@ The type of path to find.
 ###### Default
 
 ```ts
-"file"
+"file";
 ```
 
-***
+---
 
 ### JsonReplacer
 
@@ -4641,12 +4620,12 @@ or an array of strings and numbers that acts as a whitelist for selecting
 the properties of the value object to be included in the JSON string.
 If this value is null or not provided, all properties of the object are included in the resulting JSON string.
 
-***
+---
 
 ### JsonReviver
 
 ```ts
-type JsonReviver = Parameters<typeof JSON["parse"]>["1"];
+type JsonReviver = Parameters<(typeof JSON)["parse"]>["1"];
 ```
 
 Defined in: [packages/fs/src/types.ts:112](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/types.ts#L112)
@@ -4655,7 +4634,7 @@ Type for the `reviver` parameter of `JSON.parse()`.
 A function that transforms the results. This function is called for each member of the object.
 If a member contains nested objects, the nested objects are transformed before the parent object is.
 
-***
+---
 
 ### MoveOptions
 
@@ -4681,7 +4660,7 @@ The source and destination path are relative to this.
 ###### Default
 
 ```ts
-process.cwd()
+process.cwd();
 ```
 
 ##### directoryMode?
@@ -4699,7 +4678,7 @@ It has no effect on Windows.
 ###### Default
 
 ```ts
-0o777
+0o777;
 ```
 
 ##### overwrite?
@@ -4715,33 +4694,22 @@ Overwrite existing destination file.
 ###### Default
 
 ```ts
-true
+true;
 ```
 
-***
+---
 
 ### ReadFileEncoding
 
 ```ts
-type ReadFileEncoding = 
-  | "ascii"
-  | "base64"
-  | "base64url"
-  | "hex"
-  | "latin1"
-  | "ucs-2"
-  | "ucs2"
-  | "utf-8"
-  | "utf-16le"
-  | "utf8"
-  | "utf16le";
+type ReadFileEncoding = "ascii" | "base64" | "base64url" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf-16le" | "utf8" | "utf16le";
 ```
 
 Defined in: [packages/fs/src/types.ts:71](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/types.ts#L71)
 
 Supported file encodings for reading files.
 
-***
+---
 
 ### ReadFileOptions\<C\>
 
@@ -4807,7 +4775,7 @@ Defined in: [packages/fs/src/types.ts:97](https://github.com/visulima/visulima/b
 
 The flag used to open the file. Default: `r`
 
-***
+---
 
 ### ReadJsonOptions
 
@@ -4844,7 +4812,7 @@ The raw string content of the file.
 
 The transformed string content.
 
-***
+---
 
 ### WriteFileOptions
 
@@ -4930,7 +4898,7 @@ Defined in: [packages/fs/src/types.ts:187](https://github.com/visulima/visulima/
 
 Recursively create parent directories if needed. Default: `true`
 
-***
+---
 
 ### WriteJsonOptions
 
@@ -5003,29 +4971,30 @@ Override the default `JSON.stringify` method.
 
 Re-exports [CRLF](eol.md#crlf)
 
-***
+---
 
 ### detect
 
 Re-exports [detect](eol.md#detect)
 
-***
+---
 
 ### EOL
 
 Re-exports [EOL](eol.md#eol)
 
-***
+---
 
 ### format
 
 Re-exports [format](eol.md#format)
 
-***
+---
 
 ### LF
 
 Re-exports [LF](eol.md#lf)
+
 # size
 
 ## Functions
@@ -5074,32 +5043,32 @@ const text = "This is a test string for Brotli compression efficiency.";
 const filePath = join("temp-brotli-file.txt");
 
 async function main() {
-  // From Buffer
-  const buffer = Buffer.from(text);
-  console.log(`Brotli size of buffer: ${await brotliSize(buffer)} bytes`);
+    // From Buffer
+    const buffer = Buffer.from(text);
+    console.log(`Brotli size of buffer: ${await brotliSize(buffer)} bytes`);
 
-  // From string (content)
-  console.log(`Brotli size of string content: ${await brotliSize(text)} bytes`);
+    // From string (content)
+    console.log(`Brotli size of string content: ${await brotliSize(text)} bytes`);
 
-  // From file path
-  await writeFile(filePath, text);
-  console.log(`Brotli size of file: ${await brotliSize(filePath)} bytes`);
+    // From file path
+    await writeFile(filePath, text);
+    console.log(`Brotli size of file: ${await brotliSize(filePath)} bytes`);
 
-  // From URL
-  const fileUrl = new URL(`file://${filePath}`);
-  console.log(`Brotli size of URL: ${await brotliSize(fileUrl)} bytes`);
+    // From URL
+    const fileUrl = new URL(`file://${filePath}`);
+    console.log(`Brotli size of URL: ${await brotliSize(fileUrl)} bytes`);
 
-  // From Readable stream
-  const stream = Readable.from(text);
-  console.log(`Brotli size of stream: ${await brotliSize(stream)} bytes`);
+    // From Readable stream
+    const stream = Readable.from(text);
+    console.log(`Brotli size of stream: ${await brotliSize(stream)} bytes`);
 
-  await unlink(filePath); // Clean up temp file
+    await unlink(filePath); // Clean up temp file
 }
 
 main().catch(console.error);
 ```
 
-***
+---
 
 ### brotliSizeSync()
 
@@ -5152,18 +5121,20 @@ console.log(`Sync Brotli size of string content: ${brotliSizeSync(text)} bytes`)
 
 // From file path
 try {
-  writeFileSync(filePath, text);
-  console.log(`Sync Brotli size of file: ${brotliSizeSync(filePath)} bytes`);
+    writeFileSync(filePath, text);
+    console.log(`Sync Brotli size of file: ${brotliSizeSync(filePath)} bytes`);
 
-  // From URL
-  const fileUrl = new URL(`file://${filePath}`);
-  console.log(`Sync Brotli size of URL: ${brotliSizeSync(fileUrl)} bytes`);
+    // From URL
+    const fileUrl = new URL(`file://${filePath}`);
+    console.log(`Sync Brotli size of URL: ${brotliSizeSync(fileUrl)} bytes`);
 } finally {
-  try { unlinkSync(filePath); } catch {} // Clean up temp file
+    try {
+        unlinkSync(filePath);
+    } catch {} // Clean up temp file
 }
 ```
 
-***
+---
 
 ### gzipSize()
 
@@ -5209,32 +5180,32 @@ const text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
 const filePath = join("temp-file.txt");
 
 async function main() {
-  // From Buffer
-  const buffer = Buffer.from(text);
-  console.log(`Gzip size of buffer: ${await gzipSize(buffer)} bytes`);
+    // From Buffer
+    const buffer = Buffer.from(text);
+    console.log(`Gzip size of buffer: ${await gzipSize(buffer)} bytes`);
 
-  // From string (content)
-  console.log(`Gzip size of string content: ${await gzipSize(text)} bytes`);
+    // From string (content)
+    console.log(`Gzip size of string content: ${await gzipSize(text)} bytes`);
 
-  // From file path
-  await writeFile(filePath, text);
-  console.log(`Gzip size of file: ${await gzipSize(filePath)} bytes`);
+    // From file path
+    await writeFile(filePath, text);
+    console.log(`Gzip size of file: ${await gzipSize(filePath)} bytes`);
 
-  // From URL
-  const fileUrl = new URL(`file://${filePath}`);
-  console.log(`Gzip size of URL: ${await gzipSize(fileUrl)} bytes`);
+    // From URL
+    const fileUrl = new URL(`file://${filePath}`);
+    console.log(`Gzip size of URL: ${await gzipSize(fileUrl)} bytes`);
 
-  // From Readable stream
-  const stream = Readable.from(text);
-  console.log(`Gzip size of stream: ${await gzipSize(stream)} bytes`);
+    // From Readable stream
+    const stream = Readable.from(text);
+    console.log(`Gzip size of stream: ${await gzipSize(stream)} bytes`);
 
-  await unlink(filePath); // Clean up temp file
+    await unlink(filePath); // Clean up temp file
 }
 
 main().catch(console.error);
 ```
 
-***
+---
 
 ### gzipSizeSync()
 
@@ -5287,18 +5258,20 @@ console.log(`Sync Gzip size of string content: ${gzipSizeSync(text)} bytes`);
 
 // From file path
 try {
-  writeFileSync(filePath, text);
-  console.log(`Sync Gzip size of file: ${gzipSizeSync(filePath)} bytes`);
+    writeFileSync(filePath, text);
+    console.log(`Sync Gzip size of file: ${gzipSizeSync(filePath)} bytes`);
 
-  // From URL
-  const fileUrl = new URL(`file://${filePath}`);
-  console.log(`Sync Gzip size of URL: ${gzipSizeSync(fileUrl)} bytes`);
+    // From URL
+    const fileUrl = new URL(`file://${filePath}`);
+    console.log(`Sync Gzip size of URL: ${gzipSizeSync(fileUrl)} bytes`);
 } finally {
-  try { unlinkSync(filePath); } catch {} // Clean up temp file
+    try {
+        unlinkSync(filePath);
+    } catch {} // Clean up temp file
 }
 ```
 
-***
+---
 
 ### rawSize()
 
@@ -5338,32 +5311,32 @@ const text = "Hello, World!";
 const filePath = join("temp-raw-file.txt");
 
 async function main() {
-  // From Buffer
-  const buffer = Buffer.from(text);
-  console.log(`Raw size of buffer: ${await rawSize(buffer)} bytes`);
+    // From Buffer
+    const buffer = Buffer.from(text);
+    console.log(`Raw size of buffer: ${await rawSize(buffer)} bytes`);
 
-  // From string (content)
-  console.log(`Raw size of string content: ${await rawSize(text)} bytes`);
+    // From string (content)
+    console.log(`Raw size of string content: ${await rawSize(text)} bytes`);
 
-  // From file path
-  await writeFile(filePath, text);
-  console.log(`Raw size of file: ${await rawSize(filePath)} bytes`);
+    // From file path
+    await writeFile(filePath, text);
+    console.log(`Raw size of file: ${await rawSize(filePath)} bytes`);
 
-  // From URL
-  const fileUrl = new URL(`file://${filePath}`);
-  console.log(`Raw size of URL: ${await rawSize(fileUrl)} bytes`);
+    // From URL
+    const fileUrl = new URL(`file://${filePath}`);
+    console.log(`Raw size of URL: ${await rawSize(fileUrl)} bytes`);
 
-  // From Readable stream
-  const stream = Readable.from(text);
-  console.log(`Raw size of stream: ${await rawSize(stream)} bytes`);
+    // From Readable stream
+    const stream = Readable.from(text);
+    console.log(`Raw size of stream: ${await rawSize(stream)} bytes`);
 
-  await unlink(filePath); // Clean up temp file
+    await unlink(filePath); // Clean up temp file
 }
 
 main().catch(console.error);
 ```
 
-***
+---
 
 ### rawSizeSync()
 
@@ -5411,16 +5384,19 @@ console.log(`Sync Raw size of string content: ${rawSizeSync(text)} bytes`);
 
 // From file path
 try {
-  writeFileSync(filePath, text);
-  console.log(`Sync Raw size of file: ${rawSizeSync(filePath)} bytes`);
+    writeFileSync(filePath, text);
+    console.log(`Sync Raw size of file: ${rawSizeSync(filePath)} bytes`);
 
-  // From URL
-  const fileUrl = new URL(`file://${filePath}`);
-  console.log(`Sync Raw size of URL: ${rawSizeSync(fileUrl)} bytes`);
+    // From URL
+    const fileUrl = new URL(`file://${filePath}`);
+    console.log(`Sync Raw size of URL: ${rawSizeSync(fileUrl)} bytes`);
 } finally {
-  try { unlinkSync(filePath); } catch {} // Clean up temp file
+    try {
+        unlinkSync(filePath);
+    } catch {} // Clean up temp file
 }
 ```
+
 # utils
 
 ## Classes
@@ -5440,31 +5416,31 @@ import { readJsonSync } from "@visulima/fs"; // Or any function that might throw
 import { join } from "node:path";
 
 try {
-  // Imagine readJsonSync encounters a malformed JSON file and throws JSONError
-  // Forcing the scenario for demonstration:
-  const simulateJsonError = (filePath, content) => {
-    const err = new JSONError(`Unexpected token '}' at position 15`);
-    err.fileName = filePath;
-    // A real implementation might generate a code frame using a library
-    err.codeFrame = `  13 |   "key": "value",
+    // Imagine readJsonSync encounters a malformed JSON file and throws JSONError
+    // Forcing the scenario for demonstration:
+    const simulateJsonError = (filePath, content) => {
+        const err = new JSONError(`Unexpected token '}' at position 15`);
+        err.fileName = filePath;
+        // A real implementation might generate a code frame using a library
+        err.codeFrame = `  13 |   "key": "value",
 > 14 |   "anotherKey": "anotherValue",}
     |                             ^
  15 |   "lastKey": "end"
 `;
-    throw err;
-  };
+        throw err;
+    };
 
-  simulateJsonError(join("path", "to", "corrupted.json"), '{ "key": "value", "anotherKey": "anotherValue",} ');
-  // const jsonData = readJsonSync(join("path", "to", "corrupted.json"));
+    simulateJsonError(join("path", "to", "corrupted.json"), '{ "key": "value", "anotherKey": "anotherValue",} ');
+    // const jsonData = readJsonSync(join("path", "to", "corrupted.json"));
 } catch (error) {
-  if (error instanceof JSONError) {
-    console.error(`JSON Error: ${error.message}`);
-    // message property will include fileName and codeFrame if they were set.
-    // console.error(`File: ${error.fileName}`);
-    // console.error(`Code Frame:\n${error.codeFrame}`);
-  } else {
-    console.error("An unexpected error occurred:", error);
-  }
+    if (error instanceof JSONError) {
+        console.error(`JSON Error: ${error.message}`);
+        // message property will include fileName and codeFrame if they were set.
+        // console.error(`File: ${error.fileName}`);
+        // console.error(`Code Frame:\n${error.codeFrame}`);
+    } else {
+        console.error("An unexpected error occurred:", error);
+    }
 }
 ```
 
@@ -5499,7 +5475,7 @@ The primary error message.
 ###### Overrides
 
 ```ts
-Error.constructor
+Error.constructor;
 ```
 
 #### Accessors
@@ -5539,7 +5515,7 @@ Defined in: [packages/fs/src/error/json-error.ts:67](https://github.com/visulima
 ###### Overrides
 
 ```ts
-Error.message
+Error.message;
 ```
 
 #### Methods
@@ -5550,7 +5526,7 @@ Error.message
 static captureStackTrace(targetObject, constructorOpt?): void;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:91
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:91
 
 Create .stack property on a target object
 
@@ -5571,7 +5547,7 @@ Create .stack property on a target object
 ###### Inherited from
 
 ```ts
-Error.captureStackTrace
+Error.captureStackTrace;
 ```
 
 #### Properties
@@ -5582,12 +5558,12 @@ Error.captureStackTrace
 optional cause: unknown;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:26
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 ###### Inherited from
 
 ```ts
-Error.cause
+Error.cause;
 ```
 
 ##### codeFrame
@@ -5617,7 +5593,7 @@ Defined in: [packages/fs/src/error/json-error.ts:45](https://github.com/visulima
 ###### Overrides
 
 ```ts
-Error.name
+Error.name;
 ```
 
 ##### stack?
@@ -5626,12 +5602,12 @@ Error.name
 optional stack: string;
 ```
 
-Defined in: node\_modules/.pnpm/typescript@5.8.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+Defined in: node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ###### Inherited from
 
 ```ts
-Error.stack
+Error.stack;
 ```
 
 ##### prepareStackTrace()?
@@ -5640,7 +5616,7 @@ Error.stack
 static optional prepareStackTrace: (err, stackTraces) => any;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:98
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:98
 
 Optional override for formatting stack traces
 
@@ -5665,7 +5641,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 ###### Inherited from
 
 ```ts
-Error.prepareStackTrace
+Error.prepareStackTrace;
 ```
 
 ##### stackTraceLimit
@@ -5674,12 +5650,12 @@ Error.prepareStackTrace
 static stackTraceLimit: number;
 ```
 
-Defined in: node\_modules/.pnpm/@types+node@18.19.71/node\_modules/@types/node/globals.d.ts:100
+Defined in: node_modules/.pnpm/@types+node@18.19.71/node_modules/@types/node/globals.d.ts:100
 
 ###### Inherited from
 
 ```ts
-Error.stackTraceLimit
+Error.stackTraceLimit;
 ```
 
 ## Functions
@@ -5717,22 +5693,22 @@ If the contents are not a string, ArrayBuffer, or ArrayBuffer view.
 import { assertValidFileContents } from "@visulima/fs"; // Assuming this util is exported
 
 try {
-  assertValidFileContents("Hello, world!");
-  assertValidFileContents(new Uint8Array([72, 101, 108, 108, 111])); // "Hello"
-  assertValidFileContents(new ArrayBuffer(8));
-  console.log("File contents are valid.");
+    assertValidFileContents("Hello, world!");
+    assertValidFileContents(new Uint8Array([72, 101, 108, 108, 111])); // "Hello"
+    assertValidFileContents(new ArrayBuffer(8));
+    console.log("File contents are valid.");
 } catch (error) {
-  console.error(error.message); // File contents must be a string, ArrayBuffer, or ArrayBuffer view.
+    console.error(error.message); // File contents must be a string, ArrayBuffer, or ArrayBuffer view.
 }
 
 try {
-  assertValidFileContents(123); // Invalid content type
+    assertValidFileContents(123); // Invalid content type
 } catch (error) {
-  console.error(error.message); // File contents must be a string, ArrayBuffer, or ArrayBuffer view.
+    console.error(error.message); // File contents must be a string, ArrayBuffer, or ArrayBuffer view.
 }
 ```
 
-***
+---
 
 ### assertValidFileOrDirectoryPath()
 
@@ -5767,21 +5743,21 @@ If the path is not a non-empty string or a URL.
 import { assertValidFileOrDirectoryPath } from "@visulima/fs"; // Assuming this util is exported
 
 try {
-  assertValidFileOrDirectoryPath("/path/to/file.txt");
-  assertValidFileOrDirectoryPath(new URL("file:///path/to/file.txt"));
-  console.log("Path is valid.");
+    assertValidFileOrDirectoryPath("/path/to/file.txt");
+    assertValidFileOrDirectoryPath(new URL("file:///path/to/file.txt"));
+    console.log("Path is valid.");
 } catch (error) {
-  console.error(error.message); // Path must be a non-empty string or URL.
+    console.error(error.message); // Path must be a non-empty string or URL.
 }
 
 try {
-  assertValidFileOrDirectoryPath(""); // Invalid path
+    assertValidFileOrDirectoryPath(""); // Invalid path
 } catch (error) {
-  console.error(error.message); // Path must be a non-empty string or URL.
+    console.error(error.message); // Path must be a non-empty string or URL.
 }
 ```
 
-***
+---
 
 ### parseJson()
 
@@ -5822,46 +5798,42 @@ const jsonString = '{"name": "John Doe", "age": 30, "city": "New York"}';
 const malformedJson = '{"name": "Jane Doe", "age": "thirty}'; // Missing quote
 
 try {
-  const data = parseJson(jsonString);
-  console.log(data.name); // Output: John Doe
+    const data = parseJson(jsonString);
+    console.log(data.name); // Output: John Doe
 
-  const dataWithReviver = parseJson(jsonString, (key, value) => {
-    if (key === "age") {
-      return value + 5;
-    }
-    return value;
-  });
-  console.log(dataWithReviver.age); // Output: 35
+    const dataWithReviver = parseJson(jsonString, (key, value) => {
+        if (key === "age") {
+            return value + 5;
+        }
+        return value;
+    });
+    console.log(dataWithReviver.age); // Output: 35
 
-  // With filename for better error reporting
-  const user = parseJson(malformedJson, "user-data.json");
-
+    // With filename for better error reporting
+    const user = parseJson(malformedJson, "user-data.json");
 } catch (error) {
-  // error will be an instance of JsonError
-  console.error(error.message);
-  // Example error message:
-  // Unexpected token } in JSON at position 37 in user-data.json
-  //
-  //   35 |   "name": "Jane Doe",
-  // > 36 |   "age": "thirty}
-  //      |                 ^
-  //   37 |
-  if (error.fileName) {
-    console.error(`Error in file: ${error.fileName}`);
-  }
-  if (error.codeFrame) {
-    console.error(error.codeFrame);
-  }
+    // error will be an instance of JsonError
+    console.error(error.message);
+    // Example error message:
+    // Unexpected token } in JSON at position 37 in user-data.json
+    //
+    //   35 |   "name": "Jane Doe",
+    // > 36 |   "age": "thirty}
+    //      |                 ^
+    //   37 |
+    if (error.fileName) {
+        console.error(`Error in file: ${error.fileName}`);
+    }
+    if (error.codeFrame) {
+        console.error(error.codeFrame);
+    }
 }
 ```
 
 #### Call Signature
 
 ```ts
-function parseJson<T>(
-   string, 
-   filename?, 
-   options?): T;
+function parseJson<T>(string, filename?, options?): T;
 ```
 
 Defined in: [packages/fs/src/utils/parse-json.ts:60](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/utils/parse-json.ts#L60)
@@ -5893,11 +5865,7 @@ Defined in: [packages/fs/src/utils/parse-json.ts:60](https://github.com/visulima
 #### Call Signature
 
 ```ts
-function parseJson<T>(
-   string, 
-   reviver, 
-   fileName?, 
-   options?): T;
+function parseJson<T>(string, reviver, fileName?, options?): T;
 ```
 
 Defined in: [packages/fs/src/utils/parse-json.ts:61](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/utils/parse-json.ts#L61)
@@ -5930,7 +5898,7 @@ Defined in: [packages/fs/src/utils/parse-json.ts:61](https://github.com/visulima
 
 `T`
 
-***
+---
 
 ### stripJsonComments()
 
@@ -5941,7 +5909,7 @@ function stripJsonComments(jsonString, options?): string;
 Defined in: [packages/fs/src/utils/strip-json-comments.ts:46](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/utils/strip-json-comments.ts#L46)
 
 Strips comments from a JSON string.
-Handles both single-line (//) and multi-line (/* ... *&#47;) comments.
+Handles both single-line (//) and multi-line (/_ ... _&#47;) comments.
 
 #### Parameters
 
@@ -6009,7 +5977,7 @@ console.log(strippedWithoutWhitespace);
 const toPath: (urlOrPath) => string;
 ```
 
-Defined in: node\_modules/.pnpm/@visulima+path@1.3.6/node\_modules/@visulima/path/dist/utils.d.mts:7
+Defined in: node_modules/.pnpm/@visulima+path@1.3.6/node_modules/@visulima/path/dist/utils.d.mts:7
 
 #### Parameters
 
@@ -6020,6 +5988,7 @@ Defined in: node\_modules/.pnpm/@visulima+path@1.3.6/node\_modules/@visulima/pat
 #### Returns
 
 `string`
+
 # yaml
 
 ## Functions
@@ -6043,7 +6012,7 @@ An optional reviver function (similar to `JSON.parse` reviver) or the options ob
 #### Param
 
 Optional configuration for reading and parsing the YAML file. See ReadYamlOptions.
-               If `reviver` is an object, this argument is ignored.
+If `reviver` is an object, this argument is ignored.
 
 #### Example
 
@@ -6052,24 +6021,23 @@ import { readYaml } from "@visulima/fs";
 import { join } from "node:path";
 
 const readMyYaml = async () => {
-  try {
-    const data = await readYaml(join("path", "to", "my-config.yaml"));
-    console.log("Config data:", data);
+    try {
+        const data = await readYaml(join("path", "to", "my-config.yaml"));
+        console.log("Config data:", data);
 
-    // With a reviver function
-    const dataWithReviver = await readYaml(join("path", "to", "another.yaml"), (key, value) => {
-      if (key === "date") return new Date(value);
-      return value;
-    });
-    console.log("Date field is now a Date object:", dataWithReviver.date);
+        // With a reviver function
+        const dataWithReviver = await readYaml(join("path", "to", "another.yaml"), (key, value) => {
+            if (key === "date") return new Date(value);
+            return value;
+        });
+        console.log("Date field is now a Date object:", dataWithReviver.date);
 
-    // With options (e.g., for schema validation - assuming yaml options are passed correctly)
-    // const dataWithOptions = await readYaml(join("path", "to", "options.yaml"), { schema: 'failsafe' });
-    // console.log(dataWithOptions);
-
-  } catch (error) {
-    console.error("Failed to read or parse YAML file:", error);
-  }
+        // With options (e.g., for schema validation - assuming yaml options are passed correctly)
+        // const dataWithOptions = await readYaml(join("path", "to", "options.yaml"), { schema: 'failsafe' });
+        // console.log(dataWithOptions);
+    } catch (error) {
+        console.error("Failed to read or parse YAML file:", error);
+    }
 };
 
 readMyYaml();
@@ -6106,10 +6074,7 @@ Defined in: [packages/fs/src/read/read-yaml.ts:6](https://github.com/visulima/vi
 #### Call Signature
 
 ```ts
-function readYaml<R>(
-   path, 
-   reviver?, 
-options?): Promise<R>;
+function readYaml<R>(path, reviver?, options?): Promise<R>;
 ```
 
 Defined in: [packages/fs/src/read/read-yaml.ts:7](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/read/read-yaml.ts#L7)
@@ -6138,7 +6103,7 @@ Defined in: [packages/fs/src/read/read-yaml.ts:7](https://github.com/visulima/vi
 
 `Promise`\<`R`\>
 
-***
+---
 
 ### readYamlSync()
 
@@ -6159,7 +6124,7 @@ An optional reviver function (similar to `JSON.parse` reviver) or the options ob
 #### Param
 
 Optional configuration for reading and parsing the YAML file. See ReadYamlOptions.
-               If `reviver` is an object, this argument is ignored.
+If `reviver` is an object, this argument is ignored.
 
 #### Example
 
@@ -6168,22 +6133,21 @@ import { readYamlSync } from "@visulima/fs";
 import { join } from "node:path";
 
 try {
-  const data = readYamlSync(join("path", "to", "my-config.yaml"));
-  console.log("Config data:", data);
+    const data = readYamlSync(join("path", "to", "my-config.yaml"));
+    console.log("Config data:", data);
 
-  // With a reviver function
-  const dataWithReviver = readYamlSync(join("path", "to", "another.yaml"), (key, value) => {
-    if (key === "date") return new Date(value);
-    return value;
-  });
-  console.log("Date field is now a Date object:", dataWithReviver.date);
+    // With a reviver function
+    const dataWithReviver = readYamlSync(join("path", "to", "another.yaml"), (key, value) => {
+        if (key === "date") return new Date(value);
+        return value;
+    });
+    console.log("Date field is now a Date object:", dataWithReviver.date);
 
-  // With options (e.g., for schema validation - assuming yaml options are passed correctly)
-  // const dataWithOptions = readYamlSync(join("path", "to", "options.yaml"), { schema: 'failsafe' });
-  // console.log(dataWithOptions);
-
+    // With options (e.g., for schema validation - assuming yaml options are passed correctly)
+    // const dataWithOptions = readYamlSync(join("path", "to", "options.yaml"), { schema: 'failsafe' });
+    // console.log(dataWithOptions);
 } catch (error) {
-  console.error("Failed to read or parse YAML file:", error);
+    console.error("Failed to read or parse YAML file:", error);
 }
 ```
 
@@ -6218,10 +6182,7 @@ Defined in: [packages/fs/src/read/read-yaml-sync.ts:6](https://github.com/visuli
 #### Call Signature
 
 ```ts
-function readYamlSync<R>(
-   path, 
-   reviver?, 
-   options?): R;
+function readYamlSync<R>(path, reviver?, options?): R;
 ```
 
 Defined in: [packages/fs/src/read/read-yaml-sync.ts:7](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/read/read-yaml-sync.ts#L7)
@@ -6250,7 +6211,7 @@ Defined in: [packages/fs/src/read/read-yaml-sync.ts:7](https://github.com/visuli
 
 `R`
 
-***
+---
 
 ### writeYaml()
 
@@ -6267,13 +6228,13 @@ The data to serialize and write. Can be any JavaScript value that can be stringi
 #### Param
 
 Optional. A replacer function or an array of keys to include, or the options object itself.
-                See `yaml.stringify` documentation for more details.
+See `yaml.stringify` documentation for more details.
 
 #### Param
 
 Optional. Configuration for writing and stringifying the YAML file. See WriteYamlOptions.
-               If `replacer` is an object and not a function/array, it's treated as `options`.
-               The `space` property within options can be a number for spaces or a string for tabs/etc.
+If `replacer` is an object and not a function/array, it's treated as `options`.
+The `space` property within options can be a number for spaces or a string for tabs/etc.
 
 #### Example
 
@@ -6282,19 +6243,19 @@ import { writeYaml } from "@visulima/fs";
 import { join } from "node:path";
 
 const writeMyYaml = async () => {
-  try {
-    await writeYaml(join("/tmp", "my-data.yaml"), { name: "John Doe", age: 30, city: "New York" });
-    console.log("YAML file written successfully.");
+    try {
+        await writeYaml(join("/tmp", "my-data.yaml"), { name: "John Doe", age: 30, city: "New York" });
+        console.log("YAML file written successfully.");
 
-    await writeYaml(join("/tmp", "another-data.yaml"), { user: "jane", details: { id: 1, status: "active" } }, null, 2);
-    console.log("Another YAML file written with 2 spaces indentation.");
+        await writeYaml(join("/tmp", "another-data.yaml"), { user: "jane", details: { id: 1, status: "active" } }, null, 2);
+        console.log("Another YAML file written with 2 spaces indentation.");
 
-    const customReplacer = (key, value) => (key === "age" ? undefined : value);
-    await writeYaml(join("/tmp", "filtered-data.yaml"), { name: "Smith", age: 45, occupation: "Engineer" }, customReplacer, { space: '\t' });
-    console.log("Filtered YAML file written with tab indentation.");
-  } catch (error) {
-    console.error("Failed to write YAML file:", error);
-  }
+        const customReplacer = (key, value) => (key === "age" ? undefined : value);
+        await writeYaml(join("/tmp", "filtered-data.yaml"), { name: "Smith", age: 45, occupation: "Engineer" }, customReplacer, { space: "\t" });
+        console.log("Filtered YAML file written with tab indentation.");
+    } catch (error) {
+        console.error("Failed to write YAML file:", error);
+    }
 };
 
 writeMyYaml();
@@ -6303,10 +6264,7 @@ writeMyYaml();
 #### Call Signature
 
 ```ts
-function writeYaml(
-   path, 
-   data, 
-options?): Promise<void>;
+function writeYaml(path, data, options?): Promise<void>;
 ```
 
 Defined in: [packages/fs/src/write/write-yaml.ts:6](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/write/write-yaml.ts#L6)
@@ -6332,11 +6290,7 @@ Defined in: [packages/fs/src/write/write-yaml.ts:6](https://github.com/visulima/
 #### Call Signature
 
 ```ts
-function writeYaml(
-   path, 
-   data, 
-   replacer?, 
-options?): Promise<void>;
+function writeYaml(path, data, replacer?, options?): Promise<void>;
 ```
 
 Defined in: [packages/fs/src/write/write-yaml.ts:12](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/write/write-yaml.ts#L12)
@@ -6363,7 +6317,7 @@ Defined in: [packages/fs/src/write/write-yaml.ts:12](https://github.com/visulima
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### writeYamlSync()
 
@@ -6380,13 +6334,13 @@ The data to serialize and write. Can be any JavaScript value that can be stringi
 #### Param
 
 Optional. A replacer function or an array of keys to include, or the options object itself.
-                See `yaml.stringify` documentation for more details.
+See `yaml.stringify` documentation for more details.
 
 #### Param
 
 Optional. Configuration for writing and stringifying the YAML file. See WriteYamlOptions.
-               If `replacer` is an object and not a function/array, it's treated as `options`.
-               The `space` property within options can be a number for spaces or a string for tabs/etc.
+If `replacer` is an object and not a function/array, it's treated as `options`.
+The `space` property within options can be a number for spaces or a string for tabs/etc.
 
 #### Example
 
@@ -6395,19 +6349,19 @@ import { writeYamlSync } from "@visulima/fs";
 import { join } from "node:path";
 
 const writeMyYamlSync = () => {
-  try {
-    writeYamlSync(join("/tmp", "my-data-sync.yaml"), { name: "Jane Doe", age: 28, city: "London" });
-    console.log("YAML file written successfully (sync).");
+    try {
+        writeYamlSync(join("/tmp", "my-data-sync.yaml"), { name: "Jane Doe", age: 28, city: "London" });
+        console.log("YAML file written successfully (sync).");
 
-    writeYamlSync(join("/tmp", "another-data-sync.yaml"), { user: "john_sync", details: { id: 2, status: "inactive" } }, null, 4);
-    console.log("Another YAML file written with 4 spaces indentation (sync).");
+        writeYamlSync(join("/tmp", "another-data-sync.yaml"), { user: "john_sync", details: { id: 2, status: "inactive" } }, null, 4);
+        console.log("Another YAML file written with 4 spaces indentation (sync).");
 
-    const customReplacer = (key, value) => (key === "city" ? "REDACTED" : value);
-    writeYamlSync(join("/tmp", "filtered-data-sync.yaml"), { name: "Peter", age: 50, city: "Paris" }, customReplacer, { space: 2 });
-    console.log("Filtered YAML file written with 2 spaces indentation (sync).");
-  } catch (error) {
-    console.error("Failed to write YAML file (sync):", error);
-  }
+        const customReplacer = (key, value) => (key === "city" ? "REDACTED" : value);
+        writeYamlSync(join("/tmp", "filtered-data-sync.yaml"), { name: "Peter", age: 50, city: "Paris" }, customReplacer, { space: 2 });
+        console.log("Filtered YAML file written with 2 spaces indentation (sync).");
+    } catch (error) {
+        console.error("Failed to write YAML file (sync):", error);
+    }
 };
 
 writeMyYamlSync();
@@ -6416,10 +6370,7 @@ writeMyYamlSync();
 #### Call Signature
 
 ```ts
-function writeYamlSync(
-   path, 
-   data, 
-   options?): void;
+function writeYamlSync(path, data, options?): void;
 ```
 
 Defined in: [packages/fs/src/write/write-yaml-sync.ts:6](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/write/write-yaml-sync.ts#L6)
@@ -6445,11 +6396,7 @@ Defined in: [packages/fs/src/write/write-yaml-sync.ts:6](https://github.com/visu
 #### Call Signature
 
 ```ts
-function writeYamlSync(
-   path, 
-   data, 
-   replacer?, 
-   options?): void;
+function writeYamlSync(path, data, replacer?, options?): void;
 ```
 
 Defined in: [packages/fs/src/write/write-yaml-sync.ts:12](https://github.com/visulima/visulima/blob/07f43a001a4f33a3ebcce9072d404a8975539608/packages/fs/src/write/write-yaml-sync.ts#L12)

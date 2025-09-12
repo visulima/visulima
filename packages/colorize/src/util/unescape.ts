@@ -4,12 +4,12 @@
  * MIT License
  *
  * Copyright (c) Josh Junon
- * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
  */
 
 const ESCAPES = new Map([
-    ["\\", "\\"],
     ["0", "\0"],
+    ["\\", "\\"],
     ["a", "\u0007"],
     ["b", "\b"],
     ["e", "\u001B"],

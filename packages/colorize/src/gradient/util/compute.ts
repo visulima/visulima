@@ -27,7 +27,7 @@ export const computeSubSteps = (stops: StopOutput[], steps: number): number[] =>
     let totalSubsteps = 1;
 
     // eslint-disable-next-line no-loops/no-loops,no-plusplus
-    for (let n = l - 1; n--; ) {
+    for (let n = l - 1; n--;) {
         // eslint-disable-next-line security/detect-object-injection
         totalSubsteps += substeps[n] as number;
     }

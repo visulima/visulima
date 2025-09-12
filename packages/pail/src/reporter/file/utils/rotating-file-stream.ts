@@ -27,7 +27,7 @@ class RotatingFileStream {
 
         if (!this.#immediate) {
             try {
-                // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module,@typescript-eslint/no-var-requires
+                // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module
                 this.#createRfsStream = require("rotating-file-stream").createStream;
             } catch {
                 throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");

@@ -3,7 +3,6 @@ export type ColorValueHex = `#${string}`;
 export interface ColorizeType {
     /**
      * Return styled string.
-     *
      * @param {string | TemplateStringsArray} string
      */
     (string: number | string): string;
@@ -14,19 +13,17 @@ export interface ColorizeType {
      *
      * Code ranges:
      * ```
-     *   0 -   7: standard colors
-     *   8 -  15: high intensity colors
-     *  16 - 231: 6 × 6 × 6 cube (216 colors)
+     * 0 -   7: standard colors
+     * 8 -  15: high intensity colors
+     * 16 - 231: 6 × 6 × 6 cube (216 colors)
      * 232 - 255: grayscale from black to white in 24 steps
      * ```
-     *
      * @param {number} code in range [0, 255].
      */
     ansi256: (code: number) => this;
 
     /**
      * Alias for bgAnsi256.
-     *
      * @param {number} code in range [0, 255].
      */
     bg: (code: number) => this;
@@ -36,12 +33,11 @@ export interface ColorizeType {
      *
      * Code ranges:
      * ```
-     *   0 -   7: standard colors
-     *   8 -  15: high intensity colors
-     *  16 - 231: 6 × 6 × 6 cube (216 colors)
+     * 0 -   7: standard colors
+     * 8 -  15: high intensity colors
+     * 16 - 231: 6 × 6 × 6 cube (216 colors)
      * 232 - 255: grayscale from black to white in 24 steps
      * ```
-     *
      * @param {number} code in range [0, 255].
      */
     bgAnsi256: (code: number) => this;
@@ -68,7 +64,6 @@ export interface ColorizeType {
 
     /**
      * Set HEX value for background color.
-     *
      * @param {string} hex
      */
     bgHex: (color: ColorValueHex) => this;
@@ -83,7 +78,6 @@ export interface ColorizeType {
 
     /**
      * Set RGB values for background color.
-     *
      * @param {number} red The red value, in range [0, 255].
      * @param {number} green The green value, in range [0, 255].
      * @param {number} blue The blue value, in range [0, 255].
@@ -106,7 +100,7 @@ export interface ColorizeType {
 
     readonly blueBright: this;
 
-    /** <b>Bold</b> style (high intensity). */
+    /** &lt;b>Bold&lt;/b> style (high intensity). */
     readonly bold: this;
 
     /** The ANSI escape sequences for ending the current style. */
@@ -119,7 +113,6 @@ export interface ColorizeType {
 
     /**
      * Alias for ansi256.
-     *
      * @param {number} code in range [0, 255].
      */
     fg: (code: number) => this;
@@ -131,7 +124,6 @@ export interface ColorizeType {
 
     /**
      * Set HEX value for foreground color.
-     *
      * @param {string} hex
      */
     hex: (color: ColorValueHex) => this;
@@ -142,7 +134,7 @@ export interface ColorizeType {
     /** Invert background and foreground colors. */
     readonly inverse: this;
 
-    /** <i>Italic</i> style. (Not widely supported) */
+    /** &lt;i>Italic&lt;/i> style. (Not widely supported) */
     readonly italic: this;
 
     readonly magenta: this;
@@ -162,7 +154,6 @@ export interface ColorizeType {
 
     /**
      * Set RGB values for foreground color.
-     *
      * @param {number} red The red value, in range [0, 255].
      * @param {number} green The green value, in range [0, 255].
      * @param {number} blue The blue value, in range [0, 255].
@@ -177,9 +168,8 @@ export interface ColorizeType {
 
     /**
      * Remove ANSI styling codes.
-     *
      * @param {string} str
-     * @return {string}
+     * @returns {string}
      */
     strip: (string: string) => string;
 
@@ -204,193 +194,193 @@ export type AnsiStyles = "bold" | "dim" | "hidden" | "inverse" | "italic" | "ove
 /**
  * Base ANSI Colors
  */
-export type AnsiColors =
-    | "bgBlack"
-    | "bgBlackBright"
-    | "bgBlue"
-    | "bgBlueBright"
-    | "bgCyan"
-    | "bgCyanBright"
-    | "bgGray"
-    | "bgGreen"
-    | "bgGreenBright"
-    | "bgGrey"
-    | "bgMagenta"
-    | "bgMagentaBright"
-    | "bgRed"
-    | "bgRedBright"
-    | "bgWhite"
-    | "bgWhiteBright"
-    | "bgYellow"
-    | "bgYellowBright"
-    | "black"
-    | "blackBright"
-    | "blue"
-    | "blueBright"
-    | "cyan"
-    | "cyanBright"
-    | "gray"
-    | "green"
-    | "greenBright"
-    | "grey"
-    | "magenta"
-    | "magentaBright"
-    | "red"
-    | "redBright"
-    | "white"
-    | "whiteBright"
-    | "yellow"
-    | "yellowBright";
+export type AnsiColors
+    = | "bgBlack"
+        | "bgBlackBright"
+        | "bgBlue"
+        | "bgBlueBright"
+        | "bgCyan"
+        | "bgCyanBright"
+        | "bgGray"
+        | "bgGreen"
+        | "bgGreenBright"
+        | "bgGrey"
+        | "bgMagenta"
+        | "bgMagentaBright"
+        | "bgRed"
+        | "bgRedBright"
+        | "bgWhite"
+        | "bgWhiteBright"
+        | "bgYellow"
+        | "bgYellowBright"
+        | "black"
+        | "blackBright"
+        | "blue"
+        | "blueBright"
+        | "cyan"
+        | "cyanBright"
+        | "gray"
+        | "green"
+        | "greenBright"
+        | "grey"
+        | "magenta"
+        | "magentaBright"
+        | "red"
+        | "redBright"
+        | "white"
+        | "whiteBright"
+        | "yellow"
+        | "yellowBright";
 
-export type CssColorName =
-    | "aliceblue"
-    | "antiquewhite"
-    | "aqua"
-    | "aquamarine"
-    | "azure"
-    | "beige"
-    | "bisque"
-    | "black"
-    | "blanchedalmond"
-    | "blue"
-    | "blueviolet"
-    | "brown"
-    | "burlywood"
-    | "cadetblue"
-    | "chartreuse"
-    | "chocolate"
-    | "coral"
-    | "cornflowerblue"
-    | "cornsilk"
-    | "crimson"
-    | "cyan"
-    | "darkblue"
-    | "darkcyan"
-    | "darkgoldenrod"
-    | "darkgray"
-    | "darkgreen"
-    | "darkgrey"
-    | "darkkhaki"
-    | "darkmagenta"
-    | "darkolivegreen"
-    | "darkorange"
-    | "darkorchid"
-    | "darkred"
-    | "darksalmon"
-    | "darkseagreen"
-    | "darkslateblue"
-    | "darkslategray"
-    | "darkslategrey"
-    | "darkturquoise"
-    | "darkviolet"
-    | "deeppink"
-    | "deepskyblue"
-    | "dimgray"
-    | "dimgrey"
-    | "dodgerblue"
-    | "firebrick"
-    | "floralwhite"
-    | "forestgreen"
-    | "fuchsia"
-    | "gainsboro"
-    | "ghostwhite"
-    | "gold"
-    | "goldenrod"
-    | "gray"
-    | "green"
-    | "greenyellow"
-    | "grey"
-    | "honeydew"
-    | "hotpink"
-    | "indianred"
-    | "indigo"
-    | "ivory"
-    | "khaki"
-    | "lavender"
-    | "lavenderblush"
-    | "lawngreen"
-    | "lemonchiffon"
-    | "lightblue"
-    | "lightcoral"
-    | "lightcyan"
-    | "lightgoldenrodyellow"
-    | "lightgray"
-    | "lightgreen"
-    | "lightgrey"
-    | "lightpink"
-    | "lightsalmon"
-    | "lightseagreen"
-    | "lightskyblue"
-    | "lightslategray"
-    | "lightslategrey"
-    | "lightsteelblue"
-    | "lightyellow"
-    | "lime"
-    | "limegreen"
-    | "linen"
-    | "magenta"
-    | "maroon"
-    | "mediumaquamarine"
-    | "mediumblue"
-    | "mediumorchid"
-    | "mediumpurple"
-    | "mediumseagreen"
-    | "mediumslateblue"
-    | "mediumspringgreen"
-    | "mediumturquoise"
-    | "mediumvioletred"
-    | "midnightblue"
-    | "mintcream"
-    | "mistyrose"
-    | "moccasin"
-    | "navajowhite"
-    | "navy"
-    | "oldlace"
-    | "olive"
-    | "olivedrab"
-    | "orange"
-    | "orangered"
-    | "orchid"
-    | "palegoldenrod"
-    | "palegreen"
-    | "paleturquoise"
-    | "palevioletred"
-    | "papayawhip"
-    | "peachpuff"
-    | "peru"
-    | "pink"
-    | "plum"
-    | "powderblue"
-    | "purple"
-    | "rebeccapurple"
-    | "red"
-    | "rosybrown"
-    | "royalblue"
-    | "saddlebrown"
-    | "salmon"
-    | "sandybrown"
-    | "seagreen"
-    | "seashell"
-    | "sienna"
-    | "silver"
-    | "skyblue"
-    | "slateblue"
-    | "slategray"
-    | "slategrey"
-    | "snow"
-    | "springgreen"
-    | "steelblue"
-    | "tan"
-    | "teal"
-    | "thistle"
-    | "tomato"
-    | "turquoise"
-    | "violet"
-    | "wheat"
-    | "white"
-    | "whitesmoke"
-    | "yellow"
-    | "yellowgreen";
+export type CssColorName
+    = | "aliceblue"
+        | "antiquewhite"
+        | "aqua"
+        | "aquamarine"
+        | "azure"
+        | "beige"
+        | "bisque"
+        | "black"
+        | "blanchedalmond"
+        | "blue"
+        | "blueviolet"
+        | "brown"
+        | "burlywood"
+        | "cadetblue"
+        | "chartreuse"
+        | "chocolate"
+        | "coral"
+        | "cornflowerblue"
+        | "cornsilk"
+        | "crimson"
+        | "cyan"
+        | "darkblue"
+        | "darkcyan"
+        | "darkgoldenrod"
+        | "darkgray"
+        | "darkgreen"
+        | "darkgrey"
+        | "darkkhaki"
+        | "darkmagenta"
+        | "darkolivegreen"
+        | "darkorange"
+        | "darkorchid"
+        | "darkred"
+        | "darksalmon"
+        | "darkseagreen"
+        | "darkslateblue"
+        | "darkslategray"
+        | "darkslategrey"
+        | "darkturquoise"
+        | "darkviolet"
+        | "deeppink"
+        | "deepskyblue"
+        | "dimgray"
+        | "dimgrey"
+        | "dodgerblue"
+        | "firebrick"
+        | "floralwhite"
+        | "forestgreen"
+        | "fuchsia"
+        | "gainsboro"
+        | "ghostwhite"
+        | "gold"
+        | "goldenrod"
+        | "gray"
+        | "green"
+        | "greenyellow"
+        | "grey"
+        | "honeydew"
+        | "hotpink"
+        | "indianred"
+        | "indigo"
+        | "ivory"
+        | "khaki"
+        | "lavender"
+        | "lavenderblush"
+        | "lawngreen"
+        | "lemonchiffon"
+        | "lightblue"
+        | "lightcoral"
+        | "lightcyan"
+        | "lightgoldenrodyellow"
+        | "lightgray"
+        | "lightgreen"
+        | "lightgrey"
+        | "lightpink"
+        | "lightsalmon"
+        | "lightseagreen"
+        | "lightskyblue"
+        | "lightslategray"
+        | "lightslategrey"
+        | "lightsteelblue"
+        | "lightyellow"
+        | "lime"
+        | "limegreen"
+        | "linen"
+        | "magenta"
+        | "maroon"
+        | "mediumaquamarine"
+        | "mediumblue"
+        | "mediumorchid"
+        | "mediumpurple"
+        | "mediumseagreen"
+        | "mediumslateblue"
+        | "mediumspringgreen"
+        | "mediumturquoise"
+        | "mediumvioletred"
+        | "midnightblue"
+        | "mintcream"
+        | "mistyrose"
+        | "moccasin"
+        | "navajowhite"
+        | "navy"
+        | "oldlace"
+        | "olive"
+        | "olivedrab"
+        | "orange"
+        | "orangered"
+        | "orchid"
+        | "palegoldenrod"
+        | "palegreen"
+        | "paleturquoise"
+        | "palevioletred"
+        | "papayawhip"
+        | "peachpuff"
+        | "peru"
+        | "pink"
+        | "plum"
+        | "powderblue"
+        | "purple"
+        | "rebeccapurple"
+        | "red"
+        | "rosybrown"
+        | "royalblue"
+        | "saddlebrown"
+        | "salmon"
+        | "sandybrown"
+        | "seagreen"
+        | "seashell"
+        | "sienna"
+        | "silver"
+        | "skyblue"
+        | "slateblue"
+        | "slategray"
+        | "slategrey"
+        | "snow"
+        | "springgreen"
+        | "steelblue"
+        | "tan"
+        | "teal"
+        | "thistle"
+        | "tomato"
+        | "turquoise"
+        | "violet"
+        | "wheat"
+        | "white"
+        | "whitesmoke"
+        | "yellow"
+        | "yellowgreen";
 
 export type CssColorCodes = {
     [key in CssColorName]: [number, number, number];
