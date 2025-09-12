@@ -1,9 +1,20 @@
+import { randomBytes } from "node:crypto";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { Ono } from "@visulima/ono";
 
 const app = new Hono();
 const ono = new Ono();
+
+/**
+ * Generate a cryptographically strong random CSP nonce
+ * @returns {string} Base64 URL-safe encoded nonce
+ */
+const generateCspNonce = () => {
+    // Generate 16 random bytes and encode as base64 URL-safe
+    const bytes = randomBytes(16);
+    return bytes.toString("base64url");
+};
 
 app.get("/", (c) => c.text("OK"));
 
@@ -12,12 +23,14 @@ app.get("/error", () => {
 });
 
 app.get("/error-html", async (c) => {
-    const error = new Error("Complex error with context");
-    error.cause = new Error("Database connection failed");
+    // Construct error using the Error constructor's cause option
+    const error = new Error("Complex error with context", {
+        cause: new Error("Database connection failed"),
+    });
 
-    // Generate HTML error page
+    // Generate HTML error page with cryptographically strong random nonce
     const html = await ono.toHTML(error, {
-        cspNonce: "hono-nonce-123",
+        cspNonce: generateCspNonce(),
         theme: "light",
     });
 
@@ -57,9 +70,9 @@ app.get("/api/error-json", async (c) => {
 // Handle errors via new Ono class
 app.onError(async (err, c) => {
     try {
-        // Generate HTML error page
+        // Generate HTML error page with cryptographically strong random nonce
         const html = await ono.toHTML(err, {
-            cspNonce: "error-nonce-" + Date.now(),
+            cspNonce: generateCspNonce(),
             theme: "dark",
         });
 
@@ -70,12 +83,15 @@ app.onError(async (err, c) => {
     }
 });
 
+// Make server port configurable with environment variable
+const PORT = parseInt(process.env.PORT, 10) || 3000;
+
 serve({
     fetch: app.fetch,
-    port: 3000,
+    port: PORT,
 });
-console.log("Hono + Ono (new API) running at http://localhost:3000");
+console.log(`Hono + Ono (new API) running at http://localhost:${PORT}`);
 console.log("Try:");
-console.log("  http://localhost:3000/error");
-console.log("  http://localhost:3000/error-html");
-console.log("  http://localhost:3000/api/error-json");
+console.log(`  http://localhost:${PORT}/error`);
+console.log(`  http://localhost:${PORT}/error-html`);
+console.log(`  http://localhost:${PORT}/api/error-json`);

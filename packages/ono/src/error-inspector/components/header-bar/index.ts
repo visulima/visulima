@@ -29,9 +29,11 @@ const headerBar = (
     ${shortcuts.html}
     ${toggle.html}
 </div>`,
-        script: `${toggle.script}${
+        script: `${toggle.script}${shortcuts.script}${
             options.openInEditorUrl
                 ? `
+bindShortcutsModal();
+
 // Initialize editor selector from localStorage if available
 (function(){
   'use strict';
@@ -53,7 +55,9 @@ const headerBar = (
   });
 })();
 `
-                : ""
+                : `
+bindShortcutsModal();
+`
         }
 `,
     };
