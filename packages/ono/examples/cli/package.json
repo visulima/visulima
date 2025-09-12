@@ -1,0 +1,13 @@
+{
+    "name": "cli_example_ono",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node index.js"
+    },
+    "dependencies": {
+        "@visulima/colorize": "workspace:*",
+        "@visulima/ono": "workspace:*"
+    }
+}
