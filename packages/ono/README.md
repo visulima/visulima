@@ -120,7 +120,7 @@ const { errorAnsi, solutionBox } = await ono.toANSI(error, {
 ```ts
 import { createServer } from "node:http";
 import { Ono } from "@visulima/ono";
-import { createRequestContextPage } from "@visulima/ono/page/context";
+import createRequestContextPage from "@visulima/ono/page/context";
 import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
 
 const ono = new Ono();
@@ -180,7 +180,7 @@ server.listen(3000);
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { Ono } from "@visulima/ono";
-import { createRequestContextPage } from "@visulima/ono/page/context";
+import createRequestContextPage from "@visulima/ono/page/context";
 
 const app = new Hono();
 const ono = new Ono();
@@ -399,7 +399,7 @@ You can add any number of custom pages using the `content` option:
 
 ```ts
 import { Ono } from "@visulima/ono";
-import { createRequestContextPage } from "@visulima/ono/page/context";
+import createRequestContextPage from "@visulima/ono/page/context";
 
 const ono = new Ono();
 
