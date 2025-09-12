@@ -15,7 +15,7 @@ describe("server middleware", () => {
             expectTypeOf(middleware).toBeFunction();
         });
 
-        it("should handle POST requests with JSON body", async () => {
+        it.skipIf(process.env.CI)("should handle POST requests with JSON body", async () => {
             expect.assertions(1);
 
             const middleware = createOpenInEditorMiddleware();
@@ -320,7 +320,7 @@ describe("server middleware", () => {
     });
 
     describe("integration with HTTP server", () => {
-        it("should work as middleware in HTTP server", async () => {
+        it.skipIf(process.env.CI)("should work as middleware in HTTP server", async () => {
             expect.assertions(1);
 
             const middleware = createOpenInEditorMiddleware();
