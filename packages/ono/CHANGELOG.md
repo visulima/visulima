@@ -1,3 +1,9 @@
+## @visulima/ono [1.0.1](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.0...@visulima/ono@1.0.1) (2025-09-12)
+
+### Bug Fixes
+
+* **ono:** update import statements for createRequestContextPage ([77770b0](https://github.com/visulima/visulima/commit/77770b05d5905856a4b63d688acae19f2de98145))
+
 ## @visulima/ono 1.0.0 (2025-09-12)
 
 ### Features
