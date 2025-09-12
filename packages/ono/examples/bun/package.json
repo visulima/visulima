@@ -1,0 +1,17 @@
+{
+    "name": "bun_example_ono",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "bun run index.ts",
+        "serve": "bun --hot run index.ts",
+        "build": "bun build index.ts --outdir dist",
+        "start": "bun run dist/index.js"
+    },
+    "dependencies": {
+        "@visulima/ono": "workspace:*"
+    },
+    "devDependencies": {
+        "bun-types": "latest"
+    }
+}

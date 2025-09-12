@@ -1,0 +1,8 @@
+{
+    "name": "ono",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/ono/src",
+    "projectType": "library",
+    "tags": ["ono", "type:package"],
+    "implicitDependencies": ["error", "boxen"]
+}
