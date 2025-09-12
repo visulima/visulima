@@ -1,3 +1,13 @@
+## @visulima/string [1.5.2](https://github.com/visulima/visulima/compare/@visulima/string@1.5.1...@visulima/string@1.5.2) (2025-09-12)
+
+### Bug Fixes
+
+* **tests:** update assertion count in TypeScript interface test to reflect expected behavior ([a45d095](https://github.com/visulima/visulima/commit/a45d095af4e4d4bcd84e56691315288ceb21896f))
+
+### Miscellaneous Chores
+
+* update dependencies and fix linting issues ([0e802fe](https://github.com/visulima/visulima/commit/0e802fe02bb9ed791659cb5f3c77605ae5b42ec8))
+
 ## @visulima/string [1.5.1](https://github.com/visulima/visulima/compare/@visulima/string@1.5.0...@visulima/string@1.5.1) (2025-06-04)
 
 
