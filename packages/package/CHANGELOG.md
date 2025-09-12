@@ -1,3 +1,14 @@
+## @visulima/package [3.5.10](https://github.com/visulima/visulima/compare/@visulima/package@3.5.9...@visulima/package@3.5.10) (2025-09-12)
+
+### Miscellaneous Chores
+
+* update dependencies and fix linting issues ([0e802fe](https://github.com/visulima/visulima/commit/0e802fe02bb9ed791659cb5f3c77605ae5b42ec8))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 3.1.7
+
 ## @visulima/package [3.5.9](https://github.com/visulima/visulima/compare/@visulima/package@3.5.8...@visulima/package@3.5.9) (2025-09-07)
 
 
