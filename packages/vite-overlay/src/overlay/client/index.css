@@ -1,0 +1,232 @@
+@import "tailwindcss" source("../../../");
+
+@source "../../../src/overlay/client/**/*";
+
+/* Plugins */
+@plugin '@tailwindcss/typography';
+@plugin '@tailwindcss/forms';
+
+/* workaround for tailwindcss shadowdom support @see https://github.com/tailwindlabs/tailwindcss/issues/15005 */
+:host {
+    --tw-divide-y-reverse: 0;
+    --tw-border-style: solid;
+    --tw-font-weight: initial;
+    --tw-tracking: initial;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    --tw-translate-z: 0;
+    --tw-rotate-x: rotateX(0);
+    --tw-rotate-y: rotateY(0);
+    --tw-rotate-z: rotateZ(0);
+    --tw-skew-x: skewX(0);
+    --tw-skew-y: skewY(0);
+    --tw-space-x-reverse: 0;
+    --tw-gradient-position: initial;
+    --tw-gradient-from: #0000;
+    --tw-gradient-via: #0000;
+    --tw-gradient-to: #0000;
+    --tw-gradient-stops: initial;
+    --tw-gradient-via-stops: initial;
+    --tw-gradient-from-position: 0%;
+    --tw-gradient-via-position: 50%;
+    --tw-gradient-to-position: 100%;
+    --tw-shadow: 0 0 #0000;
+    --tw-shadow-color: initial;
+    --tw-inset-shadow: 0 0 #0000;
+    --tw-inset-shadow-color: initial;
+    --tw-ring-color: initial;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-inset-ring-color: initial;
+    --tw-inset-ring-shadow: 0 0 #0000;
+    --tw-ring-inset: initial;
+    --tw-ring-offset-width: 0px;
+    --tw-ring-offset-color: #fff;
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-blur: initial;
+    --tw-brightness: initial;
+    --tw-contrast:
+}
+
+/* Flame Theme Color Variables - Available for use in Tailwind classes */
+:host {
+    --flame-white-smoke: #f5f5f5;
+    --flame-red-orange: #ff4628;
+    --flame-charcoal-black: #202020;
+
+    /* Semantic tokens for a cleaner, modern UI */
+    --flame-bg: var(--flame-white-smoke);
+    --flame-surface: #ffffff;
+    --flame-surface-muted: #fafafa;
+    --flame-border: rgba(185, 200, 215, 0.5);
+    --flame-hover-overlay: rgba(32, 32, 32, 0.05);
+
+    --flame-success: #2ea043;
+    --flame-success-bg: rgba(46, 160, 67, 0.6);
+    /* Neutral/chip tokens */
+    --flame-neutral: #6e7681;
+    --flame-neutral-bg: rgba(110, 118, 129, 0.18);
+    --flame-chip-bg: rgba(110, 118, 129, 0.14);
+    --flame-chip-text: var(--flame-text);
+
+    --flame-radius-md: 0.5rem;
+    --flame-radius-lg: 0.75rem;
+    --flame-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02);
+    --flame-elevation-2: 0 10px 25px -5px rgba(32, 32, 32, 0.1), 0 8px 10px -6px rgba(32, 32, 32, 0.1);
+
+    /* Accessible text/link tokens */
+    --flame-text: #111827; /* gray-900 */
+    --flame-text-muted: #374151; /* gray-700 */
+    --flame-link: #c4311d; /* slightly darker red-orange for contrast */
+    --flame-muted-on-surface: #374151; /* alias for convenience */
+    --flame-on-accent: #ffffff; /* text on red-orange */
+
+    --flame-dialog-border-width: 1px;
+    --flame-dialog-radius: 12px;
+    --flame-dialog-max-width: 960px;
+    --flame-dialog-row-padding: 16px;
+    --flame-dialog-padding: 12px;
+    --flame-dialog-notch-height: 42px;
+    --flame-dialog-border-width: 1px;
+}
+
+/* Dark mode semantic mapping */
+.dark {
+    --flame-bg: #161b22;
+    --flame-surface: #0d1117;
+    --flame-surface-muted: #0f141b;
+    --flame-border: rgba(48, 54, 61, 0.6);
+    --flame-text: #c9d1d9; /* github dark fg */
+    --flame-text-muted: #8b949e; /* github dark muted fg */
+    --flame-link: #ff6a52; /* keep flame accent */
+    --flame-muted-on-surface: #8b949e;
+    --flame-hover-overlay: rgba(240, 246, 252, 0.06);
+    --flame-on-accent: #ffffff;
+
+    --flame-success: #2ea043;
+    --flame-success-bg: rgba(46, 160, 67, 0.2);
+    /* Neutral/chip tokens for dark */
+    --flame-neutral: #6e7681;
+    --flame-neutral-bg: rgba(110, 118, 129, 0.25);
+    --flame-chip-bg: rgba(110, 118, 129, 0.2);
+    --flame-chip-text: var(--flame-text);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Preline UI base styles */
+@layer base {
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+
+    body {
+        background-color: var(--flame-bg);
+        color: var(--flame-text);
+    }
+    pre,
+    code {
+        color: var(--flame-text);
+    }
+    .text-muted {
+        color: var(--flame-text-muted);
+    }
+
+    a {
+        color: var(--flame-link);
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+
+    ::selection {
+        background: color-mix(in srgb, var(--flame-red-orange) 20%, transparent);
+    }
+
+    kbd {
+        background-color: var(--flame-chip-bg);
+        color: var(--flame-chip-text);
+        border-radius: 0.375rem;
+        padding: 0.125rem 0.375rem;
+        font-size: 0.75rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    hr {
+        border-color: var(--flame-border);
+    }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@media (min-width: 576px) {
+    :host {
+        --flame-dialog-max-width: 540px;
+    }
+}
+
+@media (min-width: 768px) {
+    :host {
+        --flame-dialog-max-width: 720px;
+    }
+}
+
+@media (min-width: 992px) {
+    :host {
+        --flame-dialog-max-width: 960px;
+    }
+}
+
+.lucide {
+    @apply size-4;
+}
+
+.dui {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    background-color: currentColor;
+    /* Explicit mask properties for broader browser support */
+    -webkit-mask-image: var(--icon);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-image: var(--icon);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+}
+
+/* Ensure hidden overrides .dui display */
+.dui.hidden {
+    display: none !important;
+}
+
+.shiki {
+    @apply max-w-full overflow-auto break-words [&_pre]:max-w-full [&_pre]:overflow-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700;
+}
+
+html.dark .shiki,
+html.dark .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    /* Optional, if you also want font styles */
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+.dark [type="checkbox"]:checked,
+.dark [type="radio"]:checked {
+    background-color: currentColor;
+}
