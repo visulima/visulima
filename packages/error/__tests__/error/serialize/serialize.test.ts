@@ -833,6 +833,115 @@ describe("error serializer", () => {
             // The deeply nested property should be wrapped in NonError
             // expect(((deserialized as any).nested as any).deeply).toBeInstanceOf(NonError);
         });
+
+        it("should preserve serialized string values like '[object Buffer]' without further processing", () => {
+            expect.assertions(5);
+
+            // Test deserializing an error with a property that was serialized as "[object Buffer]"
+            const deserialized = deserializeError({
+                name: "Error",
+                message: "Test error",
+                data: "[object Buffer]",
+                bufferInfo: "[object Buffer]",
+                streamData: "[object Stream]",
+            });
+
+            expect(deserialized).toBeInstanceOf(Error);
+            expect(deserialized.message).toBe("Test error");
+
+            // These should remain as strings, not be processed or dropped
+            expect((deserialized as any).data).toBe("[object Buffer]");
+            expect((deserialized as any).bufferInfo).toBe("[object Buffer]");
+            expect((deserialized as any).streamData).toBe("[object Stream]");
+        });
+
+        it("should preserve mixed serialized values including strings and objects", () => {
+            expect.assertions(9);
+
+            const deserialized = deserializeError({
+                name: "Error",
+                message: "Mixed data error",
+                serializedBuffer: "[object Buffer]",
+                serializedStream: "[object Stream]",
+                regularString: "normal string",
+                nestedObject: { key: "value" },
+                numberValue: 42,
+                booleanValue: true,
+            });
+
+            expect(deserialized).toBeInstanceOf(Error);
+            expect(deserialized.message).toBe("Mixed data error");
+
+            // Serialized values should remain as strings
+            expect((deserialized as any).serializedBuffer).toBe("[object Buffer]");
+            expect((deserialized as any).serializedStream).toBe("[object Stream]");
+
+            // Regular values should be preserved as-is
+            expect((deserialized as any).regularString).toBe("normal string");
+            expect((deserialized as any).numberValue).toBe(42);
+            expect((deserialized as any).booleanValue).toBe(true);
+
+            // Plain objects should be wrapped in NonError during deserialization (expected behavior)
+            expect((deserialized as any).nestedObject).toBeInstanceOf(NonError);
+            expect(((deserialized as any).nestedObject as NonError).message).toBe('{"key":"value"}');
+        });
+
+        it("should demonstrate round-trip serialization preserving serialized values", () => {
+            expect.assertions(5);
+
+            // Create an error with a Buffer property (this would normally be serialized)
+            const originalError = new Error("💩") as Error & { data: Buffer };
+            originalError.data = Buffer.from([1, 2, 3]);
+
+            // Serialize the error (Buffer becomes "[object Buffer]")
+            const serialized = serializeError(originalError);
+
+            // Verify the serialized form has the expected string representation
+            expect((serialized as any).data).toBe("[object Buffer]");
+
+            // Now deserialize it back
+            const deserialized = deserializeError(serialized);
+
+            // The deserialized error should preserve the "[object Buffer]" string
+            expect(deserialized).toBeInstanceOf(Error);
+            expect(deserialized.message).toBe("💩");
+            expect((deserialized as any).data).toBe("[object Buffer]");
+
+            // The string should remain exactly as it was during serialization
+            expect(typeof (deserialized as any).data).toBe("string");
+        });
+
+        it("should not process or drop serialized string representations during deserialization", () => {
+            expect.assertions(7);
+
+            // This simulates what happens when you deserialize an error that was serialized
+            // with various non-serializable types
+            const serializedData = {
+                name: "Error",
+                message: "Serialization test",
+                bufferData: "[object Buffer]",
+                streamData: "[object Stream]",
+                functionData: "[Function: anonymous]",
+                undefinedData: undefined,
+                nullData: null,
+                numberData: 42,
+                stringData: "plain string",
+            };
+
+            const deserialized = deserializeError(serializedData);
+
+            expect(deserialized).toBeInstanceOf(Error);
+            expect(deserialized.message).toBe("Serialization test");
+
+            // All serialized string representations should be preserved as strings
+            expect((deserialized as any).bufferData).toBe("[object Buffer]");
+            expect((deserialized as any).streamData).toBe("[object Stream]");
+            expect((deserialized as any).functionData).toBe("[Function: anonymous]");
+
+            // Primitive values should be preserved
+            expect((deserialized as any).numberData).toBe(42);
+            expect((deserialized as any).stringData).toBe("plain string");
+        });
     });
 
     describe(addKnownErrorConstructor, () => {
