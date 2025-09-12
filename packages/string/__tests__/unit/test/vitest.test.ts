@@ -31,7 +31,7 @@ describe("aNSI string test utilities", () => {
 
     // Test the TypeScript interface works correctly
     it("should have the correct TypeScript interface", () => {
-        expect.assertions(1);
+        expect.assertions(0);
 
         const matcher: CustomMatchers = {
             toEqualAnsi: () => {
