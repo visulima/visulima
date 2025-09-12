@@ -23,4 +23,24 @@ const process = new Proxy<Process>(_process, {
     },
 });
 
+// Cache expensive process properties for performance
+let cachedVersion: string | undefined;
+let cachedPlatform: string | undefined;
+
+export const getProcessVersion = (): string => {
+    if (cachedVersion === undefined) {
+        cachedVersion = process.version || "";
+    }
+
+    return cachedVersion;
+};
+
+export const getProcessPlatform = (): string => {
+    if (cachedPlatform === undefined) {
+        cachedPlatform = process.platform || "";
+    }
+
+    return cachedPlatform;
+};
+
 export default process;

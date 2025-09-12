@@ -3,7 +3,7 @@ import type { VisulimaError } from "@visulima/error/error";
 import { getErrorCauses } from "@visulima/error/error";
 import type { SolutionError, SolutionFinder } from "@visulima/error/solution";
 
-import process from "../../utils/process";
+import { getProcessVersion } from "../../utils/process";
 import runtimeName from "../../utils/runtimes";
 import causesViewer from "../components/causes-viewer";
 import errorCard from "../components/error-card";
@@ -19,12 +19,15 @@ type ErrorLike = { message: string; name: string; stack?: string };
  * @param value The value to check
  * @returns True if the value is an Error-like object with name and message properties
  */
-const isErrorLike = (value: unknown): value is ErrorLike =>
-    typeof value === "object"
-    && value !== null
-    && typeof (value as Record<string, unknown>).name === "string"
-    && typeof (value as Record<string, unknown>).message === "string"
-    && ((value as Record<string, unknown>).stack === undefined || typeof (value as Record<string, unknown>).stack === "string");
+const isErrorLike = (value: unknown): value is ErrorLike => {
+    if (typeof value !== "object" || value === null) {
+        return false;
+    }
+
+    const record = value as Record<string, unknown>;
+
+    return typeof record.name === "string" && typeof record.message === "string" && (record.stack === undefined || typeof record.stack === "string");
+};
 
 /**
  * Safely extract the main error from the causes array with validation
@@ -105,12 +108,14 @@ const stack = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], o
         throw new TypeError("solutionFinders must be an array");
     }
 
-    // Get all error causes
+    // Get all error causes - optimize by avoiding full array creation if no causes
     const allCauses = getErrorCauses(error);
 
     // Extract and validate the main error
     const mainError = extractMainError(allCauses);
-    const remainingCauses = allCauses.slice(1);
+
+    // Optimize: only slice remaining causes if we actually have more than one cause
+    const remainingCauses = allCauses.length > 1 ? allCauses.slice(1) : [];
 
     // Generate all HTML components concurrently for better performance
 
@@ -124,7 +129,7 @@ const stack = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], o
             error: mainError,
             runtimeName,
             solutionFinders,
-            version: process.version,
+            version: getProcessVersion(),
         }),
         stackTraceViewer(mainError, {
             openInEditorUrl: options.openInEditorUrl,
