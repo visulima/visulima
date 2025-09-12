@@ -174,14 +174,15 @@ describe("components", () => {
 
     describe(shortcutsButton, () => {
         it("should generate shortcuts button HTML", () => {
-            expect.assertions(4);
+            expect.assertions(5);
 
-            const { html } = shortcutsButton();
+            const { html, script } = shortcutsButton();
 
             expect(html).toContain("type=\"button\"");
             expect(html).toContain("aria-label=\"Open keyboard shortcuts\"");
-            expect(html).toContain("onclick=\"showShortcutsModal()\"");
-            expect(html).toContain("Keyboard shortcuts");
+            expect(html).toContain("data-ono-action=\"open-shortcuts-modal\"");
+            expect(html).toContain("role=\"dialog\"");
+            expect(script).toContain("bindShortcutsModal");
         });
     });
 

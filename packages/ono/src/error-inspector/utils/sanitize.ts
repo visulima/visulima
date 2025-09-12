@@ -18,8 +18,8 @@ const HTML_ENTITIES = {
 } as const;
 
 // Regular expression for validating CSP nonces
-// CSP nonces should only contain base64 characters and hyphens
-const CSP_NONCE_PATTERN = /^[a-z0-9+/=-]+$/i;
+// CSP nonces may be base64 or base64url; allow +, /, -, _ and up to two '=' padding chars
+const CSP_NONCE_PATTERN = /^[\w+/-]+={0,2}$/;
 
 // Converts a value to a string, handling null/undefined cases
 const toString = (value: unknown): string => String(value ?? "").trim();

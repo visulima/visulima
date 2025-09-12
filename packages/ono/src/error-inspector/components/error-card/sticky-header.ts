@@ -56,8 +56,10 @@ const stickyHeader = async (
     ${copyDropdownResult.html}
   </div>
 </div>`,
-        script: `(function() {
+        script: `${shortcuts.script}(function() {
   ready(function () {
+    bindShortcutsModal();
+
     const errorCard = document.getElementById("error-card");
     const header = document.getElementById("error-card-sticky-header");
 

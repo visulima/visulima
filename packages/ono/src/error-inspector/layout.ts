@@ -1,8 +1,21 @@
 import DOMPurify from "isomorphic-dompurify";
-
 import type { Theme } from "src/types";
 
 import { sanitizeCspNonce } from "./utils/sanitize";
+
+// HTML escape function for text content
+const escapeHtml = (value: string): string =>
+    value.replaceAll(/[&<>"']/g, (char) => {
+        const entities: Record<string, string> = {
+            "\"": "&quot;",
+            "&": "&amp;",
+            "'": "&#39;",
+            "<": "&lt;",
+            ">": "&gt;",
+        };
+
+        return entities[char] || char;
+    });
 
 // Client-side utility scripts
 const DOM_READY_SCRIPT = `
@@ -63,14 +76,14 @@ const KEYBOARD_SHORTCUTS_SCRIPT = `
 
 // Generate script tag with optional nonce
 const createScriptTag = (content: string, nonce?: string): string => {
-    const nonceAttribute = nonce ? ` nonce="${nonce}"` : "";
+    const nonceAttribute = nonce ? ` nonce="${escapeHtml(nonce)}"` : "";
 
     return `<script${nonceAttribute}>${content}</script>`;
 };
 
 // Generate style tag with optional nonce
 const createStyleTag = (content: string, nonce?: string): string => {
-    const nonceAttribute = nonce ? ` nonce="${nonce}"` : "";
+    const nonceAttribute = nonce ? ` nonce="${escapeHtml(nonce)}"` : "";
 
     return `<style${nonceAttribute}>${content}</style>`;
 };
@@ -98,6 +111,10 @@ const layout = ({
     // Sanitize CSP nonce to prevent XSS
     const safeCspNonce = sanitizeCspNonce(cspNonce);
 
+    // Escape title and description to prevent HTML injection
+    const safeTitle = escapeHtml(title || "Error");
+    const safeDescription = escapeHtml(description || "");
+
     const errorStack = DOMPurify.sanitize(error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString());
 
     return `<!--
@@ -107,9 +124,9 @@ const layout = ({
     <html lang="en" class="${theme === "dark" ? "dark" : ""}">
     <head>
         <meta charset="UTF-8">
-        <title>${title}</title>
+        <title>${safeTitle}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="${description}">
+        <meta name="description" content="${safeDescription}">
         ${createStyleTag(css, safeCspNonce)}
         ${createScriptTag(DOM_READY_SCRIPT.trim(), safeCspNonce)}
         ${scripts

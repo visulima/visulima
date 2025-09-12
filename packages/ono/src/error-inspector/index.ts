@@ -8,7 +8,7 @@ import inlineCss from "./index.css";
 import layout from "./layout";
 import createStackPage from "./page/stack";
 import type { TemplateOptions } from "./types";
-import { sanitizeHtml, sanitizeOptions } from "./utils/sanitize";
+import { sanitizeAttribute, sanitizeOptions } from "./utils/sanitize";
 
 const domUtilitiesScript = `
 // DOM utility functions
@@ -324,10 +324,7 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
     tabsList.push({ id: stackId, name: stackName, selected: !anyCustomSelected });
 
     for (const page of customPages) {
-        const safeId = sanitizeHtml(page.id);
-        const safeName = sanitizeHtml(String(page.name));
-
-        tabsList.push({ id: safeId, name: safeName, selected: Boolean(page.defaultSelected) });
+        tabsList.push({ id: String(page.id), name: String(page.name), selected: Boolean(page.defaultSelected) });
     }
 
     const headerTabsResult = headerTabs(tabsList);
@@ -339,10 +336,13 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
 
     html += headerBarResult.html;
     html += `</div>`;
-    html += `<div id="ono-section-stack" class="${anyCustomSelected ? "hidden relative" : "relative"}" role="tabpanel" aria-labelledby="ono-tab-stack">${stackHtml}</div>`;
+
+    const safeStackId = sanitizeAttribute(stackId);
+
+    html += `<div id="ono-section-${safeStackId}" class="${anyCustomSelected ? "hidden relative" : "relative"}" role="tabpanel" aria-labelledby="ono-tab-${safeStackId}">${stackHtml}</div>`;
 
     for (const page of customPages) {
-        const safeId = sanitizeHtml(page.id);
+        const safeId = sanitizeAttribute(String(page.id));
         const hidden = page.defaultSelected ? "" : " hidden";
 
         html += `<div id="ono-section-${safeId}" class="${hidden} relative" role="tabpanel" aria-labelledby="ono-tab-${safeId}">${page.code.html}</div>`;

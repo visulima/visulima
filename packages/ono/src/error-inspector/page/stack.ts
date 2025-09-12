@@ -12,14 +12,19 @@ import stackTraceViewer from "../components/stack-trace-viewer";
 import type { ContentPage, TemplateOptions } from "../types";
 
 type ErrorType = Error | SolutionError | VisulimaError;
+type ErrorLike = { message: string; name: string; stack?: string };
 
 /**
  * Type guard to ensure we have a valid Error-like object
  * @param value The value to check
- * @returns True if the value is an Error or Error-like object
+ * @returns True if the value is an Error-like object with name and message properties
  */
-const isErrorLike = (value: unknown): value is Error =>
-    value instanceof Error || (typeof value === "object" && value !== null && "stack" in value);
+const isErrorLike = (value: unknown): value is ErrorLike =>
+    typeof value === "object"
+    && value !== null
+    && typeof (value as Record<string, unknown>).name === "string"
+    && typeof (value as Record<string, unknown>).message === "string"
+    && ((value as Record<string, unknown>).stack === undefined || typeof (value as Record<string, unknown>).stack === "string");
 
 /**
  * Safely extract the main error from the causes array with validation
@@ -34,11 +39,24 @@ const extractMainError = (allCauses: unknown[]): Error => {
 
     const mainCause = allCauses[0];
 
-    if (!isErrorLike(mainCause)) {
-        throw new TypeError("Main cause is not a valid Error object");
+    if (mainCause instanceof Error) {
+        return mainCause;
     }
 
-    return mainCause;
+    if (isErrorLike(mainCause)) {
+        const error = new Error(mainCause.message);
+
+        error.name = mainCause.name;
+
+        if (typeof mainCause.stack === "string") {
+            // preserve provided stack
+            (error as Error & { stack: string }).stack = mainCause.stack;
+        }
+
+        return error;
+    }
+
+    throw new TypeError("Main cause is not a valid Error object");
 };
 
 /**
@@ -49,20 +67,8 @@ const extractMainError = (allCauses: unknown[]): Error => {
  * @param stackTraceContent Raw stack trace content
  * @returns Complete HTML content wrapped in a container div
  */
-const buildHtmlContent = (
-    errorCardHtml: string,
-    stackTraceHtml: string,
-    causesViewerHtml: string,
-    stackTraceContent: string,
-): string => {
-    const htmlParts = [
-        "<div class=\"flex flex-col gap-6\">",
-        errorCardHtml,
-        stackTraceHtml,
-        causesViewerHtml,
-        stackTraceContent,
-        "</div>",
-    ];
+const buildHtmlContent = (errorCardHtml: string, stackTraceHtml: string, causesViewerHtml: string, stackTraceContent: string): string => {
+    const htmlParts = ["<div class=\"flex flex-col gap-6\">", errorCardHtml, stackTraceHtml, causesViewerHtml, stackTraceContent, "</div>"];
 
     return htmlParts.join("");
 };
@@ -74,11 +80,7 @@ const buildHtmlContent = (
  * @param errorCardScripts Array of scripts from error card
  * @returns Combined script content
  */
-const buildScriptContent = (
-    stackTraceScript: string,
-    causesViewerScript: string,
-    errorCardScripts: string[],
-): string => {
+const buildScriptContent = (stackTraceScript: string, causesViewerScript: string, errorCardScripts: string[]): string => {
     const scripts = [stackTraceScript, causesViewerScript, ...errorCardScripts];
 
     return scripts.filter(Boolean).join("\n");
@@ -93,11 +95,7 @@ const buildScriptContent = (
  * @returns Promise resolving to content page data
  * @throws TypeError if input validation fails
  */
-const stack = async (
-    error: ErrorType,
-    solutionFinders: SolutionFinder[] = [],
-    options: TemplateOptions = {},
-): Promise<ContentPage> => {
+const stack = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], options: TemplateOptions = {}): Promise<ContentPage> => {
     // Input validation
     if (!error) {
         throw new TypeError("Error parameter is required");
@@ -120,7 +118,7 @@ const stack = async (
         errorCardResult,
         stackTraceResult,
         causesViewerResult,
-    // eslint-disable-next-line promise/no-promise-in-callback
+        // eslint-disable-next-line promise/no-promise-in-callback
     ] = await Promise.all([
         errorCard({
             error: mainError,
@@ -140,18 +138,9 @@ const stack = async (
     const { html: causesViewerHtml, script: causesViewerScript } = causesViewerResult;
 
     // Build final HTML and script content
-    const html = buildHtmlContent(
-        errorCardHtml,
-        stackTraceHtml,
-        causesViewerHtml,
-        rawStackTrace(mainError.stack),
-    );
+    const html = buildHtmlContent(errorCardHtml, stackTraceHtml, causesViewerHtml, rawStackTrace(mainError.stack));
 
-    const script = buildScriptContent(
-        stackTraceScript,
-        causesViewerScript,
-        errorCardScripts,
-    );
+    const script = buildScriptContent(stackTraceScript, causesViewerScript, errorCardScripts);
 
     return {
         code: { html, script },
