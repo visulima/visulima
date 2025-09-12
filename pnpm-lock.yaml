@@ -2801,6 +2801,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^11.0.3
         version: 11.0.3(@anolilab/semantic-release-pnpm@2.0.3(@types/node@24.3.1)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@24.2.8(typescript@5.9.2)))(semantic-release@24.2.8(typescript@5.9.2))(yaml@2.8.1)
+      '@arethetypeswrong/cli':
+        specifier: ^0.18.1
+        version: 0.18.2
       '@babel/core':
         specifier: ^7.28.4
         version: 7.28.4
@@ -11156,7 +11159,7 @@ packages:
     resolution: {integrity: sha512-46ryTE9RZO/rfDd7pEqFl7etuyzekzEhUbTW3BvmeO/BcCMEgq59BKhek3dXDWgAj4oMK6OZi+vRr1wPW6qjEQ==}
     peerDependencies:
       msw: ^2.4.9
-      vite: '>=5.4.20'
+      vite: '>=7.1.5'
     peerDependenciesMeta:
       msw:
         optional: true
