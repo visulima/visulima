@@ -5,12 +5,27 @@ import createRequestContextPage from "@visulima/ono/page/context";
 
 const ono = new Ono();
 
-// Deep stack trace example for Deno
+/**
+ * Simulates parsing a Deno configuration and throws an error indicating a missing deployment ID.
+ *
+ * This helper intentionally throws to exercise error-handling and rendering paths (e.g., to produce
+ * a rich Ono error page with Deno-specific context).
+ *
+ * @throws Error - Always throws an Error with message "Invalid Deno configuration: missing 'DENO_DEPLOYMENT_ID' environment variable".
+ */
 function parseDenoConfig() {
     // Simulate a configuration parsing error
     throw new Error("Invalid Deno configuration: missing 'DENO_DEPLOYMENT_ID' environment variable");
 }
 
+/**
+ * Initialize a Deno-specific service by parsing required configuration.
+ *
+ * Calls `parseDenoConfig()` and, if that call throws, rethrows a new `Error`
+ * with the original error attached as its `cause`.
+ *
+ * @throws Error - when configuration parsing fails; the original error is available as `error.cause`.
+ */
 function initializeDenoService() {
     try {
         parseDenoConfig();
@@ -19,12 +34,26 @@ function initializeDenoService() {
     }
 }
 
+/**
+ * Simulates an asynchronous Deno KV fetch and always fails.
+ *
+ * Awaits briefly to mimic async I/O and then throws an Error indicating a failure to fetch data from Deno KV.
+ *
+ * @throws Error Always throws with message "Failed to fetch data from Deno KV".
+ */
 async function fetchDenoData() {
     // Simulate async operation with Deno's fetch
     await new Promise((resolve) => setTimeout(resolve, 10));
     throw new Error("Failed to fetch data from Deno KV");
 }
 
+/**
+ * Executes the Deno request workflow and rethrows failures with a contextual error.
+ *
+ * Calls `fetchDenoData()` and, if that call rejects, throws a new Error with the original error set as the `cause`.
+ *
+ * @throws When underlying data fetching fails — an `Error` with message `"Deno request processing failed"` and the original error attached as `cause`.
+ */
 async function processDenoRequest() {
     try {
         await fetchDenoData();
@@ -46,7 +75,20 @@ console.log("  /deno-specific      - Deno-specific features");
 Deno.serve({ port }, async (request: Request) => {
     const url = new URL(request.url);
 
-    // Helper function to create error responses
+    /**
+     * Render an Ono-powered HTML error response enriched with Deno-specific context.
+     *
+     * Builds a Deno runtime/environment/permissions context and a request context page, then
+     * renders an HTML error page via `ono.toHTML`. Returns a 500 `Response` containing the
+     * rendered HTML and an `X-Deno-Version` header. If rendering fails, logs the render error
+     * to console and returns a plain-text 500 `Response`.
+     *
+     * @param error - The error (or throwable) to render into the error page.
+     * @param solutionFinders - Optional array of Ono solution-finder objects used to provide
+     *   targeted remediation blocks on the rendered page.
+     * @returns A Promise resolving to a `Response` with the rendered error page (or a fallback
+     *   plain-text 500 response if rendering fails).
+     */
     async function createErrorResponse(error: unknown, solutionFinders: any[] = []) {
         try {
             // Create Deno-specific context

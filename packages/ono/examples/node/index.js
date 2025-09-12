@@ -4,12 +4,29 @@ import { Ono } from "@visulima/ono";
 import createRequestContext from "@visulima/ono/page/context";
 import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
 
-// Deeper stack builders (sync + async levels)
+/**
+ * Validate environment configuration and throw if required secrets are missing.
+ *
+ * Synchronously checks runtime environment configuration and always throws an Error
+ * when a required secret is absent.
+ *
+ * @throws {Error} Always throws with message "Invalid environment configuration: missing 'APP_SECRET'".
+ */
 function parseEnvironmentConfig() {
     // Deepest sync failure
     throw new Error("Invalid environment configuration: missing 'APP_SECRET'");
 }
 
+/**
+ * Initialize the model layer by validating environment configuration.
+ *
+ * Calls parseEnvironmentConfig() and rethrows any failure as an Error with
+ * message "Model initialization failed" and the original error attached as
+ * the `cause` property.
+ *
+ * @throws {Error} If environment configuration validation fails — the thrown
+ *                  Error's `cause` will contain the original error.
+ */
 function initializeModelLayer() {
     try {
         parseEnvironmentConfig();
@@ -18,6 +35,14 @@ function initializeModelLayer() {
     }
 }
 
+/**
+ * Simulated asynchronous database query that always times out.
+ *
+ * Awaits a microtask boundary and then throws an Error with message
+ * "Database connection timeout".
+ *
+ * @throws {Error} Always throws a timeout error to simulate a failed DB call.
+ */
 async function queryDatabase() {
     // Simulate async boundary
     await Promise.resolve();
@@ -25,8 +50,15 @@ async function queryDatabase() {
 }
 
 /**
- * @param {string} userId
- * @returns {Promise<Record<string, unknown>>}
+ * Load a user's profile from the data layer.
+ *
+ * Attempts to query the database; if the query fails the function throws a new Error
+ * that includes the original error as its `cause`. On success, resolves to a simple
+ * profile object for the given userId.
+ *
+ * @param {string} userId - The ID of the user whose profile to load.
+ * @returns {Promise<Record<string, unknown>>} A promise resolving to the user's profile.
+ * @throws {Error} If the underlying database query fails (the original error is available on `error.cause`).
  */
 async function loadUserProfile(userId) {
     try {
@@ -39,7 +71,15 @@ async function loadUserProfile(userId) {
 }
 
 /**
- * @param {Record<string, unknown>} profile
+ * Generate recommendations for the given user profile.
+ *
+ * Attempts to initialize the recommendation model layer; if initialization fails
+ * this function throws an Error with message `"Recommendation engine startup failed"`
+ * and the underlying error attached as the `cause`.
+ *
+ * @param {Record<string, unknown>} profile - User profile provided to the recommendation engine.
+ * @returns {Array<Record<string, unknown>>} An array of recommendation objects. (Current implementation returns the provided `profile` as a placeholder recommendation.)
+ * @throws {Error} If model layer initialization fails; the thrown error's `cause` is the original error.
  */
 function computeRecommendations(profile) {
     try {
@@ -52,6 +92,16 @@ function computeRecommendations(profile) {
     return [profile];
 }
 
+/**
+ * Orchestrates loading a user profile and computing recommendations for it.
+ *
+ * Loads the profile for "user-123" and invokes the recommendation computation.
+ * If any step fails, rethrows a new Error with message "Controller render failed"
+ * and preserves the original error as the `cause`.
+ *
+ * @returns {Promise<void>} Resolves when the profile is loaded and recommendations are computed.
+ * @throws {Error} When profile loading or recommendation computation fails — the thrown error's `cause` contains the original error.
+ */
 async function renderController() {
     try {
         const profile = await loadUserProfile("user-123");
@@ -69,8 +119,16 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url || "/", `http://localhost:${port}`);
 
     /**
-     * @param {unknown} error
-     * @param {any[]} solutionFinders
+     * Render a rich HTML error page for the current HTTP request and send it with a 500 status.
+     *
+     * Builds a detailed request context (routing, user, git, versions, database, cache, environment,
+     * performance, etc.), passes that context and any custom solution finders to Ono to produce HTML,
+     * and sends the rendered page as the HTTP response with Content-Type "text/html".
+     *
+     * @param {unknown} error - The error (or value) to render.
+     * @param {any[]} solutionFinders - Array of custom solution finder objects passed to Ono; each finder
+     *   may inspect the error and return suggested fixes or hints for the rendered page.
+     * @returns {Promise<void>} Resolves after the response has been sent.
      */
     async function show(error, solutionFinders) {
         const routing = { route: url.pathname, params: {}, query: Object.fromEntries(url.searchParams.entries()) };
