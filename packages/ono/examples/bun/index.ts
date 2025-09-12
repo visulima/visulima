@@ -5,12 +5,25 @@ import createRequestContextPage from "../../dist/error-inspector/page/create-req
 
 const ono = new Ono();
 
-// Deep stack trace example for Bun
+/**
+ * Simulates parsing Bun configuration and always throws an error indicating a missing `BUN_ENV`.
+ *
+ * @throws Error Always throws to simulate a configuration parsing failure (missing `BUN_ENV`).
+ */
 function parseBunConfig() {
     // Simulate a configuration parsing error
     throw new Error("Invalid Bun configuration: missing 'BUN_ENV' environment variable");
 }
 
+/**
+ * Initialize Bun-related service configuration.
+ *
+ * Calls parseBunConfig() and, if that call throws, rethrows a new Error
+ * with a `cause` property pointing to the original error.
+ *
+ * @throws Error When configuration parsing fails; the thrown error's `cause`
+ * will be the original parsing error.
+ */
 function initializeBunService() {
     try {
         parseBunConfig();
@@ -19,12 +32,24 @@ function initializeBunService() {
     }
 }
 
+/**
+ * Simulates an asynchronous Bun data fetch and always throws an error.
+ *
+ * Awaits a short Bun.sleep delay to mimic async work, then throws an Error indicating a SQLite fetch failure.
+ */
 async function fetchBunData() {
     // Simulate async operation with Bun's fetch (which is faster than Node's)
     await Bun.sleep(10); // Bun has a built-in sleep function!
     throw new Error("Failed to fetch data from Bun SQLite");
 }
 
+/**
+ * Executes an asynchronous Bun data fetch and wraps any failure with a higher-level error.
+ *
+ * Calls fetchBunData() and, if it rejects, throws a new Error with the original error set as its `cause`.
+ *
+ * @throws Error when the underlying fetchBunData operation fails; the original error is available as `error.cause`.
+ */
 async function processBunRequest() {
     try {
         await fetchBunData();
@@ -50,7 +75,17 @@ const server = Bun.serve({
     async fetch(request: Request) {
         const url = new URL(request.url);
 
-        // Helper function to create error responses
+        /**
+         * Render an Ono HTML error page using Bun-specific context and return an HTTP 500 Response.
+         *
+         * Builds a Bun-aware context (runtime, environment, performance, features, and request data),
+         * embeds a request context page, and uses `ono.toHTML` to produce a detailed error document.
+         * If rendering fails, returns a plain-text 500 Response as a fallback.
+         *
+         * @param error - The error or value to render; typically an `Error` instance.
+         * @param solutionFinders - Optional array of Ono solution finder functions/objects to provide contextual suggestions.
+         * @returns A Promise that resolves to a `Response` containing the rendered HTML error page (status 500) or a plain-text fallback response.
+         */
         async function createErrorResponse(error: unknown, solutionFinders: any[] = []) {
             try {
                 // Create Bun-specific context
