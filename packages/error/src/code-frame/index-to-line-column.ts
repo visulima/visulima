@@ -2,12 +2,10 @@ const binarySearch = (element: number, array: number[]): number => {
     let m = 0;
     let n = array.length - 2;
 
-    // eslint-disable-next-line no-loops/no-loops
     while (m < n) {
         // eslint-disable-next-line no-bitwise
         const key = m + ((n - m) >> 1);
 
-        // eslint-disable-next-line security/detect-object-injection
         if (element < (array[key] as number)) {
             n = key - 1;
         } else if (element >= (array[key + 1] as number)) {
@@ -64,7 +62,6 @@ const indexToLineColumn = (
         const line = binarySearch(index, startIndexesOfEachLine);
 
         return {
-            // eslint-disable-next-line security/detect-object-injection
             column: index - (startIndexesOfEachLine[line] as number) + 1,
             line: line + 1,
         };
@@ -74,7 +71,6 @@ const indexToLineColumn = (
     const line = binarySearch(index, input);
 
     return {
-        // eslint-disable-next-line security/detect-object-injection
         column: index - (input[line] as number) + 1,
         line: line + 1,
     };

@@ -2,7 +2,18 @@ export type { CodeFrameLocation, CodeFrameNodeLocation, CodeFrameOptions, Colori
 export { CODE_FRAME_POINTER, codeFrame } from "./code-frame";
 export { default as indexToLineColumn } from "./code-frame/index-to-line-column";
 export type { ErrorHint, ErrorLocation, ErrorProperties, ErrorWithCauseSerializerOptions, RenderErrorOptions, SerializedError } from "./error";
-export { captureRawStackTrace, getErrorCauses, isVisulimaError, renderError, serializeError, VisulimaError } from "./error";
+export {
+    addKnownErrorConstructor,
+    captureRawStackTrace,
+    deserializeError,
+    getErrorCauses,
+    isErrorLike,
+    isVisulimaError,
+    NonError,
+    renderError,
+    serializeError,
+    VisulimaError,
+} from "./error";
 export { default as aiPrompt } from "./solution/ai/ai-prompt";
 export { default as aiSolutionResponse } from "./solution/ai/ai-solution-response";
 export { default as errorHintFinder } from "./solution/error-hint-finder";

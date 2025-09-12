@@ -243,7 +243,7 @@ const ruleBasedFinder: SolutionFinder = {
             }
 
             const sections = matches
-                .sort((a, b) => (a.match.priority || 0) - (b.match.priority || 0))
+                .toSorted((a, b) => (a.match.priority || 0) - (b.match.priority || 0))
                 .map((m) => `#### ${m.match.title}\n\n${m.match.md}`)
                 .join("\n\n---\n\n");
 

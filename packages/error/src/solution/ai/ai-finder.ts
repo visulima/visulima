@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { join } from "@visulima/path";
 import type { LanguageModel } from "ai";
 import { generateText } from "ai";
@@ -56,35 +57,35 @@ const getCacheDirectory = (directory?: string): string => {
 };
 
 // Ensure cache directory exists
-const ensureCacheDirectory = (cacheDir: string): void => {
-    if (!existsSync(cacheDir)) {
-        mkdirSync(cacheDir, { recursive: true });
+const ensureCacheDirectory = (cacheDirectory: string): void => {
+    if (!existsSync(cacheDirectory)) {
+        mkdirSync(cacheDirectory, { recursive: true });
     }
 };
 
 // Get cache file path
-const getCacheFilePath = (cacheDir: string, key: string): string => join(cacheDir, `${key}.json`);
+const getCacheFilePath = (cacheDirectory: string, key: string): string => join(cacheDirectory, `${key}.json`);
 
 // Read from cache
-const readFromCache = (cacheFilePath: string, ttl: number): Solution | null => {
+const readFromCache = (cacheFilePath: string, ttl: number): Solution | undefined => {
     try {
         if (!existsSync(cacheFilePath)) {
-            return null;
+            return undefined;
         }
 
-        const cacheContent = readFileSync(cacheFilePath, "utf-8");
+        const cacheContent = readFileSync(cacheFilePath, "utf8");
         const cacheEntry: CacheEntry = JSON.parse(cacheContent);
 
         // Check if cache entry is still valid
         const now = Date.now();
 
         if (now - cacheEntry.timestamp > ttl) {
-            return null; // Cache expired
+            return undefined; // Cache expired
         }
 
         return cacheEntry.solution;
     } catch {
-        return null; // Cache file corrupted or unreadable
+        return undefined; // Cache file corrupted or unreadable
     }
 };
 
@@ -97,7 +98,8 @@ const writeToCache = (cacheFilePath: string, solution: Solution, ttl: number): v
             ttl,
         };
 
-        writeFileSync(cacheFilePath, JSON.stringify(cacheEntry, null, 2), "utf-8");
+        // eslint-disable-next-line unicorn/no-null
+        writeFileSync(cacheFilePath, JSON.stringify(cacheEntry, null, 2), "utf8");
     } catch {
         // Silently fail if cache write fails
     }
@@ -116,11 +118,12 @@ const aiFinder = (
             const temperature = options?.temperature ?? 0;
             const ttl = cacheOptions?.ttl ?? 24 * 60 * 60 * 1000; // Default 24 hours
 
+            const cacheDirectory = getCacheDirectory(cacheOptions?.directory);
+
             // Check cache if enabled
             if (cacheOptions?.enabled !== false) {
                 const cacheKey = generateCacheKey(error, file, temperature);
-                const cacheDir = getCacheDirectory(cacheOptions?.directory);
-                const cacheFilePath = getCacheFilePath(cacheDir, cacheKey);
+                const cacheFilePath = getCacheFilePath(cacheDirectory, cacheKey);
 
                 // Try to read from cache
                 const cachedSolution = readFromCache(cacheFilePath, ttl);
@@ -130,7 +133,7 @@ const aiFinder = (
                 }
 
                 // Ensure cache directory exists for writing
-                ensureCacheDirectory(cacheDir);
+                ensureCacheDirectory(cacheDirectory);
             }
 
             const content = aiPrompt({ applicationType: undefined, error, file });
@@ -161,8 +164,7 @@ const aiFinder = (
                 // Cache the solution if caching is enabled
                 if (cacheOptions?.enabled !== false) {
                     const cacheKey = generateCacheKey(error, file, temperature);
-                    const cacheDir = getCacheDirectory(cacheOptions?.directory);
-                    const cacheFilePath = getCacheFilePath(cacheDir, cacheKey);
+                    const cacheFilePath = getCacheFilePath(cacheDirectory, cacheKey);
 
                     writeToCache(cacheFilePath, solution, ttl);
                 }
@@ -180,8 +182,7 @@ const aiFinder = (
                 // Cache the error solution as well to avoid retrying failed requests
                 if (cacheOptions?.enabled !== false) {
                     const cacheKey = generateCacheKey(error, file, temperature);
-                    const cacheDir = getCacheDirectory(cacheOptions?.directory);
-                    const cacheFilePath = getCacheFilePath(cacheDir, cacheKey);
+                    const cacheFilePath = getCacheFilePath(cacheDirectory, cacheKey);
 
                     writeToCache(cacheFilePath, solution, ttl);
                 }

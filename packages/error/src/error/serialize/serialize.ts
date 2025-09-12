@@ -70,9 +70,8 @@ const serializeValue = (value: any, seen: Error[], depth: number, options: Optio
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const plainObject: Record<any, any> = {};
 
-        // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line guard-for-in,no-restricted-syntax
         for (const key in value) {
-            // eslint-disable-next-line security/detect-object-injection
             plainObject[key] = serializeValue(value[key], seen, depth, options);
         }
 
@@ -115,7 +114,6 @@ const _serialize = (
     if (Array.isArray((error as AggregateError).errors)) {
         const aggregateErrors: SerializedError[] = [];
 
-        // eslint-disable-next-line no-loops/no-loops
         for (const aggregateError of (error as AggregateError).errors) {
             if (!(aggregateError instanceof Error)) {
                 throw new TypeError("All errors in the 'errors' property must be instances of Error");
@@ -139,23 +137,20 @@ const _serialize = (
         protoError.cause = _serialize((error as CauseError).cause, options, seen, depth);
     }
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     for (const key in error) {
-        // eslint-disable-next-line security/detect-object-injection
         if (protoError[key] === undefined) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const value = error[key as keyof Error] as any;
 
-            // eslint-disable-next-line security/detect-object-injection
             protoError[key] = serializeValue(value, seen, depth, options);
         }
     }
 
     if (Array.isArray(options.exclude) && options.exclude.length > 0) {
-        // eslint-disable-next-line no-loops/no-loops
         for (const key of options.exclude) {
             try {
-                // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete protoError[key];
             } catch {
                 /* empty */
