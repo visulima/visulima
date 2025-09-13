@@ -38,7 +38,7 @@ export function parseVueCompilationError(errorMessage: string): VueErrorInfo | n
     if (filePath && line > 0 && column > 0) {
         return {
             column,
-            filePath,
+            originalFilePath: filePath,
             line,
             message,
         };

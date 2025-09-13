@@ -9,9 +9,9 @@ const MIN_COLUMN_NUMBER = 0;
 
 // Types
 interface ResolvedLocation {
-    fileColumn: number;
-    fileLine: number;
-    filePath: string;
+    originalFileColumn: number;
+    originalFileLine: number;
+    originalFilePath: string;
 }
 
 interface ViteModule {
@@ -33,28 +33,28 @@ export const resolveOriginalLocation = (module_: ViteModule, filePath: string, f
     const rawMap = module_?.transformResult?.map;
 
     if (!rawMap) {
-        return { fileColumn, fileLine, filePath };
+        return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
     }
 
     try {
         const position = resolveSourceMapPosition(rawMap, fileLine, fileColumn);
 
         if (!position) {
-            return { fileColumn, fileLine, filePath };
+            return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
         }
 
         const resolvedPath = resolveSourcePath(filePath, position.source);
 
         return {
-            fileColumn: position.column,
-            fileLine: position.line,
-            filePath: resolvedPath,
+            originalFileColumn: position.column,
+            originalFileLine: position.line,
+            originalFilePath: resolvedPath,
         };
     } catch (error) {
         // Log the error for debugging but don't throw
         console.warn("Source map resolution failed:", error);
 
-        return { fileColumn, fileLine, filePath };
+        return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
     }
 };
 

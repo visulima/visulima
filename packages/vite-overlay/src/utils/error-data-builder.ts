@@ -88,9 +88,9 @@ const createFallbackErrorData = (filePath: string, line: number, column: number,
         compiledFilePath: filePath,
         compiledLine: line,
         compiledSnippet: "",
-        fileColumn: column,
-        fileLine: line,
-        filePath,
+        originalFileColumn: column,
+        originalFileLine: line,
+        originalFilePath: filePath,
         fixPrompt: "",
         originalCodeFrameContent: undefined,
         originalSnippet: "",
@@ -193,28 +193,29 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
     const compiledColumn = trace?.column ?? 0;
 
     // Initialize original location (will be resolved from source maps or Vue errors)
-    let filePath = compiledFilePath;
-    let fileLine = compiledLine;
-    let fileColumn = compiledColumn;
+    let originalFilePath = compiledFilePath;
+    let originalFileLine = compiledLine;
+    let originalFileColumn = compiledColumn;
 
     // Override with Vue error information if available
     if (vueErrorInfo) {
-        filePath = vueErrorInfo.filePath;
-        fileLine = vueErrorInfo.line;
-        fileColumn = vueErrorInfo.column;
+        originalFilePath = vueErrorInfo.originalFilePath;
+        originalFileLine = vueErrorInfo.line;
+        originalFileColumn = vueErrorInfo.column;
     }
 
     // Resolve original source location using source maps
-    if (filePath) {
-        const idCandidates = normalizeIdCandidates(filePath);
+    if (originalFilePath) {
+        const idCandidates = normalizeIdCandidates(originalFilePath);
+        // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/naming-convention
         const module_ = findModuleForPath(server, idCandidates);
 
         if (module_) {
-            const resolved = resolveOriginalLocation(module_, filePath, fileLine, fileColumn);
+            const resolved = resolveOriginalLocation(module_, originalFilePath, originalFileLine, originalFileColumn);
 
-            filePath = resolved.filePath;
-            fileLine = resolved.fileLine;
-            fileColumn = resolved.fileColumn;
+            originalFilePath = resolved.originalFilePath;
+            originalFileLine = resolved.originalFileLine;
+            originalFileColumn = resolved.originalFileColumn;
         }
     }
 
@@ -223,7 +224,8 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
     let compiledSnippet = "";
 
     try {
-        const idCandidates = normalizeIdCandidates(filePath);
+        const idCandidates = normalizeIdCandidates(originalFilePath);
+        // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/naming-convention
         const module_ = findModuleForPath(server, idCandidates);
 
         if (!module_) {
@@ -231,24 +233,24 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
         }
 
         // Retrieve source texts from various sources
-        const { compiledSourceText, originalSourceText } = await retrieveSourceTexts(server, module_, filePath, idCandidates);
+        const { compiledSourceText, originalSourceText } = await retrieveSourceTexts(server, module_, originalFilePath, idCandidates);
 
         // Generate code frames if source texts are available
         if (originalSourceText) {
             // Apply heuristic realignment if position seems incorrect
-            if (compiledSourceText && fileLine <= 0 && compiledLine > 0) {
+            if (compiledSourceText && originalFileLine <= 0 && compiledLine > 0) {
                 const realigned = realignOriginalPosition(compiledSourceText, compiledLine, compiledColumn, originalSourceText);
 
                 if (realigned) {
-                    fileLine = realigned.line;
-                    fileColumn = realigned.column;
+                    originalFileLine = realigned.line;
+                    originalFileColumn = realigned.column;
                 }
             }
 
             originalSnippet = codeFrame(
                 originalSourceText,
                 {
-                    start: { column: fileColumn, line: fileLine },
+                    start: { column: originalFileColumn, line: originalFileLine },
                 },
                 {
                     showGutter: false,
@@ -276,7 +278,7 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
     let compiledCodeFrameContent: string | undefined;
 
     if (originalSnippet || compiledSnippet) {
-        const hlLangOriginal = findLanguageBasedOnExtension(filePath) || "text";
+        const hlLangOriginal = findLanguageBasedOnExtension(originalFilePath) || "text";
         const hlLangCompiled = findLanguageBasedOnExtension(compiledFilePath) || hlLangOriginal;
 
         const langs: LanguageInput[] = [];
@@ -299,7 +301,7 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
             originalCodeFrameContent = highlighter.codeToHtml(originalSnippet, {
                 ...highlightOptions,
                 lang: hlLangOriginal,
-                transformers: [transformerCompactLineOptions([{ classes: ["error-line"], line: fileLine }])],
+                transformers: [transformerCompactLineOptions([{ classes: ["error-line"], line: originalFileLine }])],
             });
         }
 
@@ -312,15 +314,14 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
         }
     }
 
-
     const fixPrompt = aiPrompt({
         applicationType: undefined,
         error,
         file: {
-            file: filePath,
-            language: findLanguageBasedOnExtension(filePath),
-            line: fileLine,
-            snippet: originalSnippet || compiledSnippet || "",
+        file: originalFilePath,
+        language: findLanguageBasedOnExtension(originalFilePath),
+        line: originalFileLine,
+        snippet: originalSnippet || compiledSnippet || "",
         },
     });
 
@@ -334,15 +335,14 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
             header: { message: cleanMessage, name: primaryError.name },
         }),
         errorCount: individualErrors.length,
-        fileColumn,
-        fileLine,
-        filePath,
+        originalFileColumn,
+        originalFileLine,
+        originalFilePath,
         fixPrompt,
         originalCodeFrameContent,
         originalSnippet,
         originalStack,
         plugin,
-        trace,
     } as const;
 };
 

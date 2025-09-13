@@ -71,7 +71,7 @@ const createErrorSignature = (raw: Error | RawErrorData): string => `${String(ra
 const createExtendedErrorSignature = (extension: ExtendedErrorPayload): string => {
     const primaryCause = extension.causes?.[0];
 
-    return `${extension.name}|${extension.message}|${primaryCause?.filePath || ""}|${primaryCause?.fileLine || 0}`;
+    return `${extension.name}|${extension.message}|${primaryCause?.originalFilePath || ""}|${primaryCause?.originalFileLine || 0}`;
 };
 
 const createUnhandledRejectionHandler = (server: ViteServer, rootPath: string, developmentLogger: DevelopmentLogger) => async (reason: unknown) => {
@@ -260,7 +260,7 @@ const setupWebSocketInterception = (
                         compiledFilePath: firstCause.compiledFilePath,
                         compiledSnippetLength: firstCause.compiledSnippet?.length || 0,
                         errorName: firstCause.name,
-                        filePath: firstCause.filePath,
+                        originalFilePath: firstCause.originalFilePath,
                         hasCodeFrame: !!firstCause.originalCodeFrameContent || !!firstCause.compiledCodeFrameContent,
                         hasCompiledCodeFrame: !!firstCause.compiledCodeFrameContent,
                         hasCompiledSnippet: !!firstCause.compiledSnippet,

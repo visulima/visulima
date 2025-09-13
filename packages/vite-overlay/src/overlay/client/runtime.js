@@ -29,8 +29,8 @@ class ErrorOverlay extends HTMLElement {
             const fileElement = this.root.querySelector("#__flame__filelink");
 
             if (fileElement) {
-                const href = first?.filePath || "";
-                const line = first?.fileLine || 0;
+                const href = first?.originalFilePath || "";
+                const line = first?.originalFileLine || 0;
 
                 if (href) {
                     fileElement.textContent = `${href}${line ? `:${line}` : ""}`;
@@ -82,7 +82,7 @@ class ErrorOverlay extends HTMLElement {
     async generateCodeFrames(error) {
         try {
             // Try to fetch the original file
-            const response = await fetch(error.filePath);
+            const response = await fetch(error.originalFilePath);
 
             if (!response.ok) {
                 return;
@@ -92,7 +92,7 @@ class ErrorOverlay extends HTMLElement {
 
             // Generate a simple code frame around the error location
             const lines = fileContent.split("\n");
-            const errorLine = error.fileLine || 1;
+            const errorLine = error.originalFileLine || 1;
             const startLine = Math.max(1, errorLine - 2);
             const endLine = Math.min(lines.length, errorLine + 2);
 
@@ -207,7 +207,7 @@ class ErrorOverlay extends HTMLElement {
                             stack: payload.stack,
                         },
                     ];
-            const causeIds = causes.map((c, index) => String(c.__id || [c.filePath || "", c.fileLine || 0, c.name || "", c.message || ""].join("|")));
+            const causeIds = causes.map((c, index) => String(c.__id || [c.originalFilePath || "", c.originalFileLine || 0, c.name || "", c.message || ""].join("|")));
             const totalErrors = causes.length;
             let currentIndex = 0;
 
@@ -321,7 +321,7 @@ class ErrorOverlay extends HTMLElement {
                                         let resolved = filePath;
 
                                         try {
-                                            const abs = currentError.filePath || currentError.compiledFilePath || "";
+                                            const abs = currentError.originalFilePath || currentError.compiledFilePath || "";
 
                                             if (abs && abs.endsWith(filePath))
                                                 resolved = abs;
@@ -356,7 +356,7 @@ class ErrorOverlay extends HTMLElement {
                 // Debug: Log all error data received from server
                 console.log("[flame:client:debug] Processing error data:", {
                     originalCodeFrameLength: currentError.originalCodeFrameContent?.length || 0,
-                    column: currentError.fileColumn,
+                    originalFileColumn: currentError.originalFileColumn,
                     compiledCodeFrameLength: currentError.compiledCodeFrameContent?.length || 0,
                     compiledColumn: currentError.compiledColumn,
                     compiledFilePath: currentError.compiledFilePath,
@@ -364,13 +364,13 @@ class ErrorOverlay extends HTMLElement {
                     compiledSnippetLength: currentError.compiledSnippet?.length || 0,
                     errorMessage: `${currentError.message?.slice(0, 100)}...`,
                     errorName: currentError.name,
-                    filePath: currentError.filePath,
+                    originalFilePath: currentError.originalFilePath,
                     hasCodeFrame: !!currentError.originalCodeFrameContent || !!currentError.compiledCodeFrameContent,
                     hasCompiledCodeFrame: !!currentError.compiledCodeFrameContent,
                     hasCompiledSnippet: !!currentError.compiledSnippet,
                     hasOriginalCodeFrame: !!currentError.originalCodeFrameContent,
                     hasOriginalSnippet: !!currentError.originalSnippet,
-                    line: currentError.fileLine,
+                    originalFileLine: currentError.originalFileLine,
                     originalCodeFrameLength: currentError.originalCodeFrameContent?.length || 0,
                     originalSnippetLength: currentError.originalSnippet?.length || 0,
                 });
@@ -394,7 +394,7 @@ class ErrorOverlay extends HTMLElement {
                     modeSwitch.classList.remove("hidden");
 
                 // If we don't have code frames but have file information, try to generate them
-                if (!currentError.originalCodeFrameContent && !currentError.compiledCodeFrameContent && currentError.filePath) {
+                if (!currentError.originalCodeFrameContent && !currentError.compiledCodeFrameContent && currentError.originalFilePath) {
                     // Try to fetch the original file and generate code frames
                     this.generateCodeFrames(currentError);
                 }

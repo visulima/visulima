@@ -37,9 +37,9 @@ export interface ExtendedErrorCause {
     readonly compiledFilePath?: string;
     readonly compiledLine?: number;
     readonly compiledSnippet?: string;
-    readonly fileColumn?: number;
-    readonly fileLine?: number;
-    readonly filePath?: string;
+    readonly originalFileColumn?: number;
+    readonly originalFileLine?: number;
+    readonly originalFilePath?: string;
     readonly fixPrompt?: string;
     readonly message: string;
     readonly name: string;
@@ -82,16 +82,16 @@ export interface ProvidedCause {
 // Vue SFC compilation error information
 export interface VueErrorInfo {
     readonly column: number;
-    readonly filePath: string;
+    readonly originalFilePath: string;
     readonly line: number;
     readonly message?: string;
 }
 
 // Source map resolution results
 export interface ResolvedLocation {
-    readonly fileColumn: number;
-    readonly fileLine: number;
-    readonly filePath: string;
+    readonly originalFileColumn: number;
+    readonly originalFileLine: number;
+    readonly originalFilePath: string;
 }
 
 // Module matching and scoring
@@ -126,7 +126,6 @@ export interface ProcessedESBuildError {
     readonly plugin?: string;
 }
 
-// Error processing result
 export interface ErrorProcessingResult {
     readonly compiledCodeFrameContent?: string;
     readonly compiledColumn: number;
@@ -135,15 +134,14 @@ export interface ErrorProcessingResult {
     readonly compiledSnippet: string;
     readonly compiledStack?: string;
     readonly errorCount?: number;
-    readonly fileColumn: number;
-    readonly fileLine: number;
-    readonly filePath: string;
+    readonly originalFileColumn: number;
+    readonly originalFileLine: number;
+    readonly originalFilePath: string;
     readonly fixPrompt: string;
     readonly originalCodeFrameContent?: string;
     readonly originalSnippet: string;
     readonly originalStack?: string;
     readonly plugin?: string;
-    readonly trace: any;
 }
 
 // Type guards for better type safety
