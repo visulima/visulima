@@ -164,7 +164,7 @@ class ErrorOverlay extends HTMLElement {
             const flameOverlay = this.root.querySelector("#__flame__overlay");
 
             if (flameOverlay) {
-                const html = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || currentError.codeFrameContent || "";
+                const html = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || "";
 
                 flameOverlay.innerHTML = html;
             }
@@ -355,7 +355,7 @@ class ErrorOverlay extends HTMLElement {
 
                 // Debug: Log all error data received from server
                 console.log("[flame:client:debug] Processing error data:", {
-                    codeFrameLength: currentError.codeFrameContent?.length || 0,
+                    originalCodeFrameLength: currentError.originalCodeFrameContent?.length || 0,
                     column: currentError.fileColumn,
                     compiledCodeFrameLength: currentError.compiledCodeFrameContent?.length || 0,
                     compiledColumn: currentError.compiledColumn,
@@ -365,7 +365,7 @@ class ErrorOverlay extends HTMLElement {
                     errorMessage: `${currentError.message?.slice(0, 100)}...`,
                     errorName: currentError.name,
                     filePath: currentError.filePath,
-                    hasCodeFrame: !!currentError.codeFrameContent,
+                    hasCodeFrame: !!currentError.originalCodeFrameContent || !!currentError.compiledCodeFrameContent,
                     hasCompiledCodeFrame: !!currentError.compiledCodeFrameContent,
                     hasCompiledSnippet: !!currentError.compiledSnippet,
                     hasOriginalCodeFrame: !!currentError.originalCodeFrameContent,
@@ -430,8 +430,8 @@ class ErrorOverlay extends HTMLElement {
 
                     const html
                         = mode === "compiled"
-                            ? currentError.compiledCodeFrameContent || currentError.codeFrameContent
-                            : currentError.originalCodeFrameContent || currentError.codeFrameContent;
+                            ? currentError.compiledCodeFrameContent
+                            : currentError.originalCodeFrameContent;
 
                     console.log(`[flame:client:debug] Rendering code for mode '${mode}':`, {
                         flameOverlayExists: !!flameOverlay,
@@ -439,7 +439,6 @@ class ErrorOverlay extends HTMLElement {
                         htmlLength: html?.length || 0,
                         mode,
                         usingCompiledCodeFrame: mode === "compiled" && !!currentError.compiledCodeFrameContent,
-                        usingFallbackCodeFrame: !!currentError.codeFrameContent,
                         usingOriginalCodeFrame: mode !== "compiled" && !!currentError.originalCodeFrameContent,
                     });
 

@@ -256,18 +256,16 @@ const setupWebSocketInterception = (
                     const firstCause = extension.causes[0];
 
                     console.log("[vite-overlay:server:debug] Sending to client:", {
-                        codeFrameLength: firstCause.codeFrameContent?.length || 0,
-                        compiledCodeFrameLength: firstCause.compiledCodeFrameContent?.length || 0,
+                        originalCodeFrameLength: firstCause.originalCodeFrameContent?.length || 0,
                         compiledFilePath: firstCause.compiledFilePath,
                         compiledSnippetLength: firstCause.compiledSnippet?.length || 0,
                         errorName: firstCause.name,
                         filePath: firstCause.filePath,
-                        hasCodeFrame: !!firstCause.codeFrameContent,
+                        hasCodeFrame: !!firstCause.originalCodeFrameContent || !!firstCause.compiledCodeFrameContent,
                         hasCompiledCodeFrame: !!firstCause.compiledCodeFrameContent,
                         hasCompiledSnippet: !!firstCause.compiledSnippet,
                         hasOriginalCodeFrame: !!firstCause.originalCodeFrameContent,
                         hasOriginalSnippet: !!firstCause.originalSnippet,
-                        originalCodeFrameLength: firstCause.originalCodeFrameContent?.length || 0,
                         originalSnippetLength: firstCause.originalSnippet?.length || 0,
                     });
                 }

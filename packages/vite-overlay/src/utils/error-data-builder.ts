@@ -83,7 +83,6 @@ const retrieveSourceTexts = async (server: ViteDevServer, module_: unknown, file
  */
 const createFallbackErrorData = (filePath: string, line: number, column: number, trace: any) => {
     return {
-        codeFrameContent: undefined,
         compiledCodeFrameContent: undefined,
         compiledColumn: column,
         compiledFilePath: filePath,
@@ -313,8 +312,6 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
         }
     }
 
-    // Use original highlighting as primary, fallback to compiled
-    const codeFrameContent = originalCodeFrameContent || compiledCodeFrameContent;
 
     const fixPrompt = aiPrompt({
         applicationType: undefined,
@@ -328,7 +325,6 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
     });
 
     return {
-        codeFrameContent,
         compiledCodeFrameContent,
         compiledColumn,
         compiledFilePath,
@@ -342,8 +338,6 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
         fileLine,
         filePath,
         fixPrompt,
-        isAggregateError: isAggregate || isESBuildArray,
-        isESBuildArray,
         originalCodeFrameContent,
         originalSnippet,
         originalStack,

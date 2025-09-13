@@ -32,7 +32,6 @@ export interface ExtendedErrorPayload {
 
 // Individual error cause with detailed debugging information
 export interface ExtendedErrorCause {
-    readonly codeFrameContent?: string;
     readonly compiledCodeFrameContent?: string;
     readonly compiledColumn?: number;
     readonly compiledFilePath?: string;
@@ -129,7 +128,6 @@ export interface ProcessedESBuildError {
 
 // Error processing result
 export interface ErrorProcessingResult {
-    readonly codeFrameContent?: string;
     readonly compiledCodeFrameContent?: string;
     readonly compiledColumn: number;
     readonly compiledFilePath: string;
@@ -141,8 +139,6 @@ export interface ErrorProcessingResult {
     readonly fileLine: number;
     readonly filePath: string;
     readonly fixPrompt: string;
-    readonly isAggregateError?: boolean;
-    readonly isESBuildArray?: boolean;
     readonly originalCodeFrameContent?: string;
     readonly originalSnippet: string;
     readonly originalStack?: string;
