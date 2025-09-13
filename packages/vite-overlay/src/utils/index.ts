@@ -1,1 +1,1 @@
-export { absolutizeStackUrls } from "./absolutize-stack-urls";
+export { absolutizeStackUrls } from "./stack-trace-utils";

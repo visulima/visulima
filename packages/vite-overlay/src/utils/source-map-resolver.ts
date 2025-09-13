@@ -2,6 +2,24 @@ import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 
 import { isHttpUrl } from "./normalize-id-candidates";
 
+// Constants
+const COLUMN_OFFSET = 1;
+const MIN_LINE_NUMBER = 0;
+const MIN_COLUMN_NUMBER = 0;
+
+// Types
+interface ResolvedLocation {
+    fileColumn: number;
+    fileLine: number;
+    filePath: string;
+}
+
+interface ViteModule {
+    transformResult?: {
+        map?: any;
+    };
+}
+
 /**
  * Resolves the original source location from a compiled location using source maps.
  * Handles both HTTP URLs and local file paths.
@@ -11,45 +29,88 @@ import { isHttpUrl } from "./normalize-id-candidates";
  * @param fileColumn The column number in the compiled source
  * @returns Object with resolved filePath, fileLine, and fileColumn
  */
-export const resolveOriginalLocation = (
-    module_: any,
-    filePath: string,
-    fileLine: number,
-    fileColumn: number,
-): { fileColumn: number; fileLine: number; filePath: string } => {
-    let resolvedPath = filePath;
-    let resolvedLine = fileLine;
-    let resolvedColumn = fileColumn;
+export const resolveOriginalLocation = (module_: ViteModule, filePath: string, fileLine: number, fileColumn: number): ResolvedLocation => {
+    const rawMap = module_?.transformResult?.map;
 
-    try {
-        const rawMap = module_?.transformResult?.map;
-
-        if (rawMap) {
-            const traced = new TraceMap(rawMap as any);
-            const pos = originalPositionFor(traced, { column: Math.max(0, fileColumn - 1), line: fileLine });
-
-            if (pos.source && pos.line !== undefined && pos.column !== undefined && pos.line >= 0 && pos.column >= 0) {
-                resolvedLine = pos.line;
-                resolvedColumn = pos.column + 1;
-
-                if (isHttpUrl(filePath)) {
-                    try {
-                        const u = new URL(filePath);
-                        const modulePath = (u.pathname || "").replace(/^\//, "");
-                        const sourceDir = modulePath.includes("/") ? modulePath.slice(0, Math.max(0, modulePath.lastIndexOf("/"))) : "";
-
-                        resolvedPath = `${u.origin}/${sourceDir ? `${sourceDir}/` : ""}${pos.source}`;
-                    } catch {
-                        // Ignore URL parsing errors
-                    }
-                } else if (typeof pos.source === "string") {
-                    resolvedPath = pos.source;
-                }
-            }
-        }
-    } catch {
-        // Ignore source map resolution errors
+    if (!rawMap) {
+        return { fileColumn, fileLine, filePath };
     }
 
-    return { fileColumn: resolvedColumn, fileLine: resolvedLine, filePath: resolvedPath };
+    try {
+        const position = resolveSourceMapPosition(rawMap, fileLine, fileColumn);
+
+        if (!position) {
+            return { fileColumn, fileLine, filePath };
+        }
+
+        const resolvedPath = resolveSourcePath(filePath, position.source);
+
+        return {
+            fileColumn: position.column,
+            fileLine: position.line,
+            filePath: resolvedPath,
+        };
+    } catch (error) {
+        // Log the error for debugging but don't throw
+        console.warn("Source map resolution failed:", error);
+
+        return { fileColumn, fileLine, filePath };
+    }
+};
+
+/**
+ * Resolves the original position using source maps
+ */
+const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: number) => {
+    const traced = new TraceMap(rawMap);
+    const pos = originalPositionFor(traced, {
+        column: Math.max(0, fileColumn - COLUMN_OFFSET),
+        line: fileLine,
+    });
+
+    if (!pos.source || pos.line === undefined || pos.column === undefined) {
+        return null;
+    }
+
+    if (pos.line < MIN_LINE_NUMBER || pos.column < MIN_COLUMN_NUMBER) {
+        return null;
+    }
+
+    return {
+        column: pos.column + COLUMN_OFFSET,
+        line: pos.line,
+        source: pos.source,
+    };
+};
+
+/**
+ * Resolves the source file path based on the original URL and source name
+ */
+const resolveSourcePath = (originalPath: string, sourceName: string): string => {
+    if (!sourceName) {
+        return originalPath;
+    }
+
+    if (isHttpUrl(originalPath)) {
+        return resolveHttpSourcePath(originalPath, sourceName);
+    }
+
+    return sourceName;
+};
+
+/**
+ * Resolves source path for HTTP URLs
+ */
+const resolveHttpSourcePath = (urlString: string, sourceName: string): string => {
+    try {
+        const url = new URL(urlString);
+        const modulePath = (url.pathname || "").replace(/^\//, "");
+        const sourceDir = modulePath.includes("/") ? modulePath.slice(0, Math.max(0, modulePath.lastIndexOf("/"))) : "";
+
+        return `${url.origin}/${sourceDir ? `${sourceDir}/` : ""}${sourceName}`;
+    } catch (error) {
+        console.warn("URL parsing failed for source path resolution:", error);
+
+        return urlString;
+    }
 };

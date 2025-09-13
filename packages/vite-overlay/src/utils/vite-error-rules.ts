@@ -1,149 +1,112 @@
 import type { Solution, SolutionFinder, SolutionFinderFile } from "@visulima/error/solution";
 
-type RuleMatch = {
-    md: string;
-    priority?: number;
-    title: string;
-};
-
-type Rule = {
-    name: string;
-    test: (error: Error, file: SolutionFinderFile) => RuleMatch | undefined;
-};
-
+// Code block helpers
 const js = (s: string): string => `\`\`\`js\n${s.trim()}\n\`\`\``;
 const ts = (s: string): string => `\`\`\`ts\n${s.trim()}\n\`\`\``;
 const bash = (s: string): string => `\`\`\`bash\n${s.trim()}\n\`\`\``;
 
+// Types
+interface RuleMatch {
+    md: string;
+    priority?: number;
+    title: string;
+}
+
+interface Rule {
+    name: string;
+    test: (error: Error, file: SolutionFinderFile) => RuleMatch | undefined;
+}
+
+/**
+ * Checks if a message contains any of the given needles (case-insensitive)
+ */
 const has = (message: string, ...needles: string[]): boolean => {
+    if (!message) {
+        return false;
+    }
+
     const lower = message.toLowerCase();
 
-    return needles.some((n) => lower.includes(n.toLowerCase()));
+    return needles.some((needle) => lower.includes(needle.toLowerCase()));
+};
+
+// Helper functions for creating common rule patterns
+const createSimpleRule = (name: string, keywords: string[], title: string, description: string[], solutions: string[] = []): Rule => {
+    return {
+        name,
+        test: (error): RuleMatch | undefined => {
+            const message = error?.message || String(error || "");
+
+            if (has(message, ...keywords)) {
+                const md = [description.join(" "), "", ...solutions.map((s) => `• ${s}`)].join("\n");
+
+                return { md, title };
+            }
+
+            return undefined;
+        },
+    };
+};
+
+const createFileRule = (name: string, keywords: string[], title: string, description: string, codeExample: string, additionalNotes: string[] = []): Rule => {
+    return {
+        name,
+        test: (error, file): RuleMatch | undefined => {
+            const message = error?.message || String(error || "");
+
+            if (has(message, ...keywords)) {
+                const md = [description, "", codeExample, "", ...additionalNotes.map((note) => `• ${note}`), "", `Current file: ${file.file}`].join("\n");
+
+                return { md, title };
+            }
+
+            return undefined;
+        },
+    };
 };
 
 // Vite-specific error rules
 const viteRules: Rule[] = [
-    {
-        name: "vite-hmr-invalid-update",
-        test: (error): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
-
-            if (has(message, "hmr", "hot reload", "invalid update", "cannot accept update")) {
-                return {
-                    md: [
-                        "Hot Module Replacement (HMR) update failed.",
-                        "",
-                        "Common causes:",
-                        "• Syntax errors preventing module updates",
-                        "• Component state not preserved during HMR",
-                        "• CSS modules with conflicting class names",
-                        "• File watchers not picking up changes",
-                        "",
-                        "Try:",
-                        "• Check browser console for syntax errors",
-                        "• Save file again to trigger full reload",
-                        "• Restart dev server if HMR is stuck",
-                        "• Check for circular dependencies",
-                    ].join("\n"),
-                    title: "HMR Update Failed",
-                };
-            }
-
-            return undefined;
-        },
-    },
-    {
-        name: "vite-plugin-error",
-        test: (error): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
-
-            if (has(message, "vite plugin", "plugin error", "@vitejs/plugin")) {
-                return {
-                    md: [
-                        "A Vite plugin encountered an error.",
-                        "",
-                        "Common issues:",
-                        "• Plugin configuration errors",
-                        "• Plugin version conflicts",
-                        "• Missing plugin dependencies",
-                        "• Plugin not compatible with current Vite version",
-                        "",
-                        "Check:",
-                        "• Plugin documentation and configuration",
-                        "• Plugin GitHub issues for similar errors",
-                        "• Try disabling the plugin temporarily",
-                        "• Update plugin to latest version",
-                    ].join("\n"),
-                    title: "Vite Plugin Error",
-                };
-            }
-
-            return undefined;
-        },
-    },
-    {
-        name: "vite-css-module-error",
-        test: (error, file): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
-
-            if (has(message, "css module", "css-modules", ".module.css", ".module.scss")) {
-                return {
-                    md: [
-                        "CSS Module import or usage error.",
-                        "",
-                        "CSS Modules require specific import syntax:",
-                        "",
-                        ts("import styles from './Component.module.css';\n// Use: <div className={styles.myClass}>"),
-                        "",
-                        "Or with TypeScript:",
-                        ts("import styles from './Component.module.css';\n// styles.myClass has type-safe access"),
-                        "",
-                        "Common issues:",
-                        "• Wrong import syntax (missing .module.)",
-                        "• CSS file not found",
-                        "• PostCSS configuration issues",
-                        "• CSS class name conflicts",
-                        "",
-                        `Current file: ${file.file}`,
-                    ].join("\n"),
-                    title: "CSS Module Error",
-                };
-            }
-
-            return undefined;
-        },
-    },
-    {
-        name: "vite-asset-loading-error",
-        test: (error): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
-
-            if (has(message, "failed to load", "asset loading", "chunkloaderror", "loading chunk")) {
-                return {
-                    md: [
-                        "Asset or chunk loading failed.",
-                        "",
-                        "Common causes:",
-                        "• Network connectivity issues",
-                        "• Dev server not running",
-                        "• Incorrect asset paths",
-                        "• CORS policy blocking assets",
-                        "• Service worker caching stale assets",
-                        "",
-                        "Try:",
-                        "• Restart dev server",
-                        "• Clear browser cache",
-                        "• Check network tab for failed requests",
-                        "• Verify asset paths are correct",
-                        "• Disable service worker temporarily",
-                    ].join("\n"),
-                    title: "Asset Loading Failed",
-                };
-            }
-
-            return undefined;
-        },
-    },
+    createSimpleRule(
+        "vite-hmr-invalid-update",
+        ["hmr", "hot reload", "invalid update", "cannot accept update"],
+        "HMR Update Failed",
+        ["Hot Module Replacement (HMR) update failed."],
+        [
+            "Check browser console for syntax errors",
+            "Save file again to trigger full reload",
+            "Restart dev server if HMR is stuck",
+            "Check for circular dependencies",
+        ],
+    ),
+    createSimpleRule(
+        "vite-plugin-error",
+        ["vite plugin", "plugin error", "@vitejs/plugin"],
+        "Vite Plugin Error",
+        ["A Vite plugin encountered an error."],
+        ["Plugin configuration errors", "Plugin version conflicts", "Missing plugin dependencies", "Plugin not compatible with current Vite version"],
+    ),
+    createFileRule(
+        "vite-css-module-error",
+        ["css module", "css-modules", ".module.css", ".module.scss"],
+        "CSS Module Error",
+        "CSS Module import or usage error.\n\nCSS Modules require specific import syntax:",
+        `${ts("import styles from './Component.module.css';\n// Use: <div className={styles.myClass}>")}\n\nOr with TypeScript:\n${ts("import styles from './Component.module.css';\n// styles.myClass has type-safe access")}`,
+        ["Wrong import syntax (missing .module.)", "CSS file not found", "PostCSS configuration issues", "CSS class name conflicts"],
+    ),
+    createSimpleRule(
+        "vite-asset-loading-error",
+        ["failed to load", "asset loading", "chunkloaderror", "loading chunk"],
+        "Asset Loading Failed",
+        ["Asset or chunk loading failed."],
+        [
+            "Restart dev server",
+            "Clear browser cache",
+            "Check network tab for failed requests",
+            "Verify asset paths are correct",
+            "Disable service worker temporarily",
+        ],
+    ),
     {
         name: "vite-config-error",
         test: (error): RuleMatch | undefined => {

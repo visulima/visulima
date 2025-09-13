@@ -9,27 +9,6 @@ class ErrorOverlay extends HTMLElement {
 
         // Store reference to this instance for pagination component
         this.root.host._errorOverlay = this;
-        console.log("[flame:client] ErrorOverlay instance set on host:", {
-            hasInstance: !!this.root.host._errorOverlay,
-            host: this.root.host,
-            hostTag: this.root.host.tagName,
-            instance: this.root.host._errorOverlay,
-        });
-
-        try {
-            console.log("[flame:client] ErrorOverlay ctor start", {
-                err: error,
-                errMessage: error?.message,
-                errName: error?.name,
-                errStack: `${error?.stack?.slice(0, 200)}...`,
-                globalErrorOverlay: typeof globalThis.ErrorOverlay,
-                windowErrorOverlay: typeof globalThis.ErrorOverlay,
-            });
-        } catch {}
-
-        try {
-            console.log("[flame:client] ErrorOverlay is class:", typeof ErrorOverlay);
-        } catch {}
 
         const p = error && error.err ? error.err : error || {};
         const payload = {
@@ -45,11 +24,6 @@ class ErrorOverlay extends HTMLElement {
             this.__flamePayload = payload;
             this.__flameMode = "original";
             globalThis.__flameInspectPayload = () => payload;
-            console.log("[flame:client] payload", {
-                causes: payload.causes.length,
-                hasPrimary: !!(payload.causes && payload.causes[0]),
-                name: payload.name,
-            });
             // Update clickable file link if available
             const first = payload.causes && payload.causes[0];
             const fileElement = this.root.querySelector("#__flame__filelink");
@@ -74,7 +48,6 @@ class ErrorOverlay extends HTMLElement {
 
         // Content rendering is now handled by the pagination component
         // The pagination component will wait for the payload and then render the appropriate content
-        console.log("[flame:client] ErrorOverlay ready - pagination component will handle content rendering");
 
         // Initialize component functionality
         this.#initializeComponents();
@@ -103,6 +76,50 @@ class ErrorOverlay extends HTMLElement {
     close() {
         if (this.element && this.element.parentNode) {
             this.element.remove();
+        }
+    }
+
+    async generateCodeFrames(error) {
+        try {
+            // Try to fetch the original file
+            const response = await fetch(error.filePath);
+
+            if (!response.ok) {
+                return;
+            }
+
+            const fileContent = await response.text();
+
+            // Generate a simple code frame around the error location
+            const lines = fileContent.split("\n");
+            const errorLine = error.fileLine || 1;
+            const startLine = Math.max(1, errorLine - 2);
+            const endLine = Math.min(lines.length, errorLine + 2);
+
+            const codeFrame = [];
+
+            for (let index = startLine; index <= endLine; index++) {
+                const line = lines[index - 1] || "";
+                const marker = index === errorLine ? ">" : " ";
+
+                codeFrame.push(`${marker} ${index}: ${line}`);
+            }
+
+            const codeFrameText = codeFrame.join("\n");
+
+            // Create a simple HTML code frame
+            const htmlCodeFrame = `<pre><code>${codeFrameText.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</code></pre>`;
+
+            // Update the error object
+            if (!error.originalCodeFrameContent) {
+                error.originalCodeFrameContent = htmlCodeFrame;
+                error.originalSnippet = codeFrameText;
+            }
+
+            // Re-render the overlay with the new code frames
+            this.updateOverlay();
+        } catch {
+            // Code frame generation failed
         }
     }
 
@@ -138,17 +155,29 @@ class ErrorOverlay extends HTMLElement {
         }
     }
 
+    updateOverlay() {
+        // Force re-render of the current error
+        const currentIndex = 0; // Assuming we're showing the first error
+        const currentError = this.__flamePayload?.causes?.[currentIndex];
+
+        if (currentError) {
+            const flameOverlay = this.root.querySelector("#__flame__overlay");
+
+            if (flameOverlay) {
+                const html = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || currentError.codeFrameContent || "";
+
+                flameOverlay.innerHTML = html;
+            }
+        }
+    }
+
     // Private component initialization methods
     #initializeComponents() {
-        console.log("[flame:client] Initializing components...");
-
         // Initialize theme toggle
         this.#initializeThemeToggle();
     }
 
     #initializePagination() {
-        console.log("[flame:pagination] Initializing pagination in ErrorOverlay instance");
-
         // Wait for the overlay to be fully ready
         const initializeWhenReady = () => {
             // Check if we're attached to the DOM and have the shadow root
@@ -181,12 +210,6 @@ class ErrorOverlay extends HTMLElement {
             const causeIds = causes.map((c, index) => String(c.__id || [c.filePath || "", c.fileLine || 0, c.name || "", c.message || ""].join("|")));
             const totalErrors = causes.length;
             let currentIndex = 0;
-
-            console.log("[flame:pagination] Pagination ready with", totalErrors, "errors", {
-                causesCount: payload.causes ? payload.causes.length : 0,
-                hasPrimary: !!payload.error,
-                payload,
-            });
 
             // Update pagination display
             const updatePagination = () => {
@@ -221,8 +244,6 @@ class ErrorOverlay extends HTMLElement {
                 const mount = this.root.querySelector("#__flame__overlay");
 
                 if (!mount) {
-                    console.log("[flame:pagination] Mount element not found");
-
                     return;
                 }
 
@@ -231,7 +252,6 @@ class ErrorOverlay extends HTMLElement {
                     message: payload.message,
                     name: payload.name,
                     originalStack: payload.originalStack,
-                    stack: payload.stack,
                 };
 
                 // Update raw stacktrace pane if present (formatted, with clickable file links)
@@ -244,8 +264,8 @@ class ErrorOverlay extends HTMLElement {
                             const rootPayload = this.__flamePayload || {};
                             const stackText
                                 = mode === "compiled"
-                                    ? String(currentError.compiledStack || rootPayload.compiledStack || currentError.stack || rootPayload.stack || "")
-                                    : String(currentError.originalStack || rootPayload.originalStack || currentError.stack || rootPayload.stack || "");
+                                    ? String(currentError.compiledStack || rootPayload.compiledStack || "")
+                                    : String(currentError.originalStack || rootPayload.originalStack || "");
                             const escape = (s) =>
                                 String(s || "")
                                     .replaceAll("&", "&amp;")
@@ -307,11 +327,9 @@ class ErrorOverlay extends HTMLElement {
                                                 resolved = abs;
                                         } catch {}
 
-                                        const qs
-                                            = `/__open-in-editor?file=${
-                                                encodeURIComponent(resolved)
-                                            }${line ? `&line=${line}` : ""
-                                            }${column ? `&column=${column}` : ""}`;
+                                        const qs = `/__open-in-editor?file=${encodeURIComponent(resolved)}${
+                                            line ? `&line=${line}` : ""
+                                        }${column ? `&column=${column}` : ""}`;
 
                                         a.setAttribute("href", qs);
                                         fetch(qs);
@@ -335,13 +353,76 @@ class ErrorOverlay extends HTMLElement {
                     } catch {}
                 }
 
-                const hasDual = !!currentError.originalCodeFrameContent || !!currentError.compiledCodeFrameContent;
+                // Debug: Log all error data received from server
+                console.log("[flame:client:debug] Processing error data:", {
+                    codeFrameLength: currentError.codeFrameContent?.length || 0,
+                    column: currentError.fileColumn,
+                    compiledCodeFrameLength: currentError.compiledCodeFrameContent?.length || 0,
+                    compiledColumn: currentError.compiledColumn,
+                    compiledFilePath: currentError.compiledFilePath,
+                    compiledLine: currentError.compiledLine,
+                    compiledSnippetLength: currentError.compiledSnippet?.length || 0,
+                    errorMessage: `${currentError.message?.slice(0, 100)}...`,
+                    errorName: currentError.name,
+                    filePath: currentError.filePath,
+                    hasCodeFrame: !!currentError.codeFrameContent,
+                    hasCompiledCodeFrame: !!currentError.compiledCodeFrameContent,
+                    hasCompiledSnippet: !!currentError.compiledSnippet,
+                    hasOriginalCodeFrame: !!currentError.originalCodeFrameContent,
+                    hasOriginalSnippet: !!currentError.originalSnippet,
+                    line: currentError.fileLine,
+                    originalCodeFrameLength: currentError.originalCodeFrameContent?.length || 0,
+                    originalSnippetLength: currentError.originalSnippet?.length || 0,
+                });
 
-                if (hasDual && modeSwitch)
+                // Show tabs conditionally: only show original/compiled tabs if we have both
+                const hasOriginal = !!currentError.originalCodeFrameContent;
+                const hasCompiled = !!currentError.compiledCodeFrameContent;
+                const hasBoth = hasOriginal && hasCompiled;
+                const hasEither = hasOriginal || hasCompiled;
+
+                console.log("[flame:client:debug] Tab visibility calculation:", {
+                    hasBoth,
+                    hasCompiled,
+                    hasEither,
+                    hasOriginal,
+                    modeSwitchElement: !!modeSwitch,
+                    willShowModeSwitch: hasBoth,
+                });
+
+                if (hasBoth && modeSwitch)
                     modeSwitch.classList.remove("hidden");
+
+                // If we don't have code frames but have file information, try to generate them
+                if (!currentError.originalCodeFrameContent && !currentError.compiledCodeFrameContent && currentError.filePath) {
+                    // Try to fetch the original file and generate code frames
+                    this.generateCodeFrames(currentError);
+                }
 
                 const originalButton = this.root.querySelector("[data-flame-mode=\"original\"]");
                 const compiledButton = this.root.querySelector("[data-flame-mode=\"compiled\"]");
+
+                // Hide buttons for tabs that don't have content
+                console.log("[flame:client:debug] Button visibility setup:", {
+                    compiledButtonExists: !!compiledButton,
+                    hasCompiled,
+                    hasOriginal,
+                    originalButtonExists: !!originalButton,
+                });
+
+                if (originalButton) {
+                    originalButton.style.display = hasOriginal ? "" : "none";
+                    console.log(`[flame:client:debug] Original button display set to: ${hasOriginal ? "visible" : "none"}`);
+                } else {
+                    console.log("[flame:client:debug] Original button not found in DOM");
+                }
+
+                if (compiledButton) {
+                    compiledButton.style.display = hasCompiled ? "" : "none";
+                    console.log(`[flame:client:debug] Compiled button display set to: ${hasCompiled ? "visible" : "none"}`);
+                } else {
+                    console.log("[flame:client:debug] Compiled button not found in DOM");
+                }
 
                 const renderCode = (mode) => {
                     if (!flameOverlay)
@@ -351,6 +432,16 @@ class ErrorOverlay extends HTMLElement {
                         = mode === "compiled"
                             ? currentError.compiledCodeFrameContent || currentError.codeFrameContent
                             : currentError.originalCodeFrameContent || currentError.codeFrameContent;
+
+                    console.log(`[flame:client:debug] Rendering code for mode '${mode}':`, {
+                        flameOverlayExists: !!flameOverlay,
+                        hasHtml: !!html,
+                        htmlLength: html?.length || 0,
+                        mode,
+                        usingCompiledCodeFrame: mode === "compiled" && !!currentError.compiledCodeFrameContent,
+                        usingFallbackCodeFrame: !!currentError.codeFrameContent,
+                        usingOriginalCodeFrame: mode !== "compiled" && !!currentError.originalCodeFrameContent,
+                    });
 
                     flameOverlay.innerHTML = html || "";
                 };
@@ -384,7 +475,6 @@ class ErrorOverlay extends HTMLElement {
                     if (currentIndex > 0) {
                         currentIndex--;
                         updatePagination();
-                        console.log("[flame:pagination] Navigated to error", currentIndex + 1, "of", totalErrors);
                     }
                 });
             }
@@ -397,7 +487,6 @@ class ErrorOverlay extends HTMLElement {
                     if (currentIndex < totalErrors - 1) {
                         currentIndex++;
                         updatePagination();
-                        console.log("[flame:pagination] Navigated to error", currentIndex + 1, "of", totalErrors);
                     }
                 });
             }
@@ -428,7 +517,6 @@ class ErrorOverlay extends HTMLElement {
 
             // Initialize
             updatePagination();
-            console.log("[flame:pagination] Pagination component initialized successfully");
         };
 
         // Start the initialization process
@@ -436,8 +524,6 @@ class ErrorOverlay extends HTMLElement {
     }
 
     #initializeThemeToggle() {
-        console.log("[flame:client] Setting up theme toggle");
-
         // Initialize button visibility based on current theme
         const currentTheme
             = localStorage.getItem("hs_theme") || (globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
@@ -460,23 +546,14 @@ class ErrorOverlay extends HTMLElement {
             document.documentElement.classList.remove("dark");
         }
 
-        console.log("[flame:client] Theme buttons initialized. Current theme:", currentTheme, "Is dark:", isDark);
-
         // Setup event listeners
         const themeButtons = this.root.querySelectorAll("[data-hs-theme-click-value]");
 
-        console.log("[flame:client] Found theme buttons:", themeButtons.length);
-
-        themeButtons.forEach((button, index) => {
-            console.log("[flame:client] Attaching click listener to button", index);
-
+        themeButtons.forEach((button) => {
             button.addEventListener("click", function (e) {
-                console.log("[flame:client] 🎯 Theme button clicked!");
                 e.preventDefault();
 
                 const theme = this.dataset.hsThemeClickValue;
-
-                console.log("[flame:client] Theme value:", theme);
 
                 // Update theme on document element (affects whole page)
                 if (theme === "dark") {
@@ -504,8 +581,6 @@ class ErrorOverlay extends HTMLElement {
                     lightButton?.classList.add("hidden");
                     lightButton?.classList.remove("block");
                 }
-
-                console.log("[flame:client] Theme switched to:", theme, "Dark class on document:", document.documentElement.classList.contains("dark"));
             });
         });
 
@@ -527,8 +602,6 @@ class ErrorOverlay extends HTMLElement {
                 });
             }
         });
-
-        console.log("[flame:client] Theme toggle component initialized successfully");
     }
 }
 
@@ -537,22 +610,11 @@ try {
     const originalError = globalThis.onerror;
 
     globalThis.onerror = function (message, source, lineno, colno, error) {
-        console.log("[flame:client] Global error caught:", {
-            colno,
-            error,
-            hasErrorOverlay: typeof globalThis.ErrorOverlay,
-            hasFlameErrorOverlay: typeof globalThis.FlameErrorOverlay,
-            lineno,
-            message,
-            source,
-        });
-
         // Try to instantiate our overlay manually
         try {
             const OverlayClass = globalThis.ErrorOverlay || globalThis.FlameErrorOverlay;
 
             if (error && typeof OverlayClass === "function") {
-                console.log("[flame:client] Creating overlay manually with class:", OverlayClass.name);
                 const overlay = new OverlayClass({
                     colno,
                     lineno,
@@ -560,13 +622,6 @@ try {
                     name: error.name || "Error",
                     source,
                     stack: error.stack,
-                });
-
-                console.log("[flame:client] Overlay created manually:", !!overlay);
-            } else {
-                console.log("[flame:client] No overlay class available:", {
-                    ErrorOverlay: typeof globalThis.ErrorOverlay,
-                    FlameErrorOverlay: typeof globalThis.FlameErrorOverlay,
                 });
             }
         } catch (error_) {
@@ -581,12 +636,8 @@ try {
         return false;
     };
 
-    console.log("[flame:client] Global error handler installed");
-
     // Debug helper for manual testing
     globalThis.__flameTestOverlay = function (testError) {
-        console.log("[flame:client] Testing overlay manually...");
-
         try {
             const OverlayClass = globalThis.ErrorOverlay || globalThis.FlameErrorOverlay;
 
@@ -598,8 +649,6 @@ try {
                         stack: "Test stack trace",
                     },
                 );
-
-                console.log("[flame:client] Test overlay created successfully");
 
                 return overlay;
             }
@@ -613,8 +662,6 @@ try {
             return null;
         }
     };
-
-    console.log("[flame:client] Debug helper installed: window.__flameTestOverlay()");
 } catch (error) {
     console.error("[flame:client] Failed to install global error handler:", error);
 }

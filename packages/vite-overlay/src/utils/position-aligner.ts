@@ -1,3 +1,15 @@
+// Constants
+const CONTEXT_WINDOW_SIZE = 64;
+const BROADER_CONTEXT_SIZE = 16;
+const MIN_TOKEN_LENGTH = 3;
+const MIN_LINE_LENGTH = 4;
+
+// Types
+interface Position {
+    column: number;
+    line: number;
+}
+
 /**
  * Attempts to realign original source positions when source maps are incomplete or inaccurate.
  * Uses heuristic matching to find the corresponding location in the original source.
@@ -7,108 +19,165 @@
  * @param originalSource The original source code
  * @returns Realigned position or null if no match found
  */
-export const realignOriginalPosition = (
-    compiledSource: string,
-    compiledLine: number,
-    compiledColumn: number,
-    originalSource: string,
-): { column: number; line: number } | null => {
-    const getLine = (source: string, line: number) => source.split(/\n/g)[line - 1] ?? "";
-
-    const removeWhitespace = (s: string) => s.replaceAll(/\s+/g, "");
-
+export const realignOriginalPosition = (compiledSource: string, compiledLine: number, compiledColumn: number, originalSource: string): Position | null => {
     const compiledLineText = getLine(compiledSource, compiledLine);
-    const compiledLineTrimmed = compiledLineText.trim();
 
     if (!compiledLineText) {
         return null;
     }
 
     const originalLines = originalSource.split(/\n/g);
+    const candidateToken = extractCandidateToken(compiledLineText, compiledColumn);
 
-    // Extract candidate token around the compiled column
-    let candidateToken = "";
+    // Try different search strategies in order of precision
+    return (
+        tryTokenBasedSearch(candidateToken, originalLines)
+        || tryLineSubstringSearch(compiledLineText.trim(), originalLines)
+        || tryWhitespaceInsensitiveSearch(compiledLineText.trim(), originalLines)
+    );
+};
 
-    if (compiledColumn > 0 && compiledColumn <= compiledLineText.length) {
-        const start = Math.max(0, compiledColumn - 1);
-        const contextWindow = compiledLineText.slice(start, start + 64);
+/**
+ * Extracts a line from source code by line number (1-based)
+ */
+const getLine = (source: string, line: number): string => source.split(/\n/g)[line - 1] ?? "";
 
-        // Try to capture a meaningful identifier token first
-        const tokenMatch = /[A-Z_$][\w$]{2,}/i.exec(contextWindow);
+/**
+ * Removes all whitespace from a string for comparison
+ */
+const removeWhitespace = (s: string): string => s.replaceAll(/\s+/g, "");
 
-        if (tokenMatch?.[0]) {
-            candidateToken = tokenMatch[0];
-        } else {
-            // Fallback to trimmed context
-            candidateToken = contextWindow.trim();
+/**
+ * Extracts a candidate token around the given column position
+ */
+const extractCandidateToken = (lineText: string, column: number): string => {
+    if (column <= 0 || column > lineText.length) {
+        return "";
+    }
 
-            if (candidateToken.length < 4) {
-                // Try broader context if token is too short
-                const broaderContext = compiledLineText.slice(Math.max(0, start - 16), start + 16).trim();
+    const start = Math.max(0, column - 1);
+    const contextWindow = lineText.slice(start, start + CONTEXT_WINDOW_SIZE);
 
-                candidateToken = broaderContext;
-            }
+    // Try to capture a meaningful identifier token first
+    const tokenMatch = /[A-Z_$][\w$]{2,}/i.exec(contextWindow);
+
+    if (tokenMatch?.[0]) {
+        return tokenMatch[0];
+    }
+
+    // Fallback to trimmed context
+    let candidateToken = contextWindow.trim();
+
+    if (candidateToken.length < MIN_LINE_LENGTH) {
+        // Try broader context if token is too short
+        const broaderContext = lineText.slice(Math.max(0, start - BROADER_CONTEXT_SIZE), start + BROADER_CONTEXT_SIZE).trim();
+
+        candidateToken = broaderContext;
+    }
+
+    return candidateToken;
+};
+
+/**
+ * Strategy 1: Token-based search (most precise)
+ */
+const tryTokenBasedSearch = (candidateToken: string, originalLines: string[]): Position | null => {
+    if (!candidateToken || candidateToken.length < MIN_TOKEN_LENGTH) {
+        return null;
+    }
+
+    for (const [index, lineText] of originalLines.entries()) {
+        if (!lineText) {
+            continue;
+        }
+
+        const tokenIndex = lineText.indexOf(candidateToken);
+
+        if (tokenIndex !== -1) {
+            return { column: tokenIndex + 1, line: index + 1 };
         }
     }
 
-    // Strategy 1: Token-based search (most precise)
-    if (candidateToken && candidateToken.length >= 3) {
-        for (const [index, lineText] of originalLines.entries()) {
-            if (lineText) {
-                const tokenIndex = lineText.indexOf(candidateToken);
+    return null;
+};
 
-                if (tokenIndex !== -1) {
-                    return { column: tokenIndex + 1, line: index + 1 };
-                }
-            }
+/**
+ * Strategy 2: Full line substring match
+ */
+const tryLineSubstringSearch = (compiledLineTrimmed: string, originalLines: string[]): Position | null => {
+    if (!compiledLineTrimmed) {
+        return null;
+    }
+
+    for (const [index, lineText] of originalLines.entries()) {
+        if (!lineText) {
+            continue;
+        }
+
+        const lineIndex = lineText.indexOf(compiledLineTrimmed);
+
+        if (lineIndex !== -1) {
+            return { column: lineIndex + 1, line: index + 1 };
         }
     }
 
-    // Strategy 2: Full line substring match
-    if (compiledLineTrimmed) {
-        for (const [index, lineText] of originalLines.entries()) {
-            if (lineText) {
-                const lineIndex = lineText.indexOf(compiledLineTrimmed);
+    return null;
+};
 
-                if (lineIndex !== -1) {
-                    return { column: lineIndex + 1, line: index + 1 };
-                }
-            }
-        }
+/**
+ * Strategy 3: Whitespace-insensitive full line match
+ */
+const tryWhitespaceInsensitiveSearch = (compiledLineTrimmed: string, originalLines: string[]): Position | null => {
+    if (!compiledLineTrimmed) {
+        return null;
     }
 
-    // Strategy 3: Whitespace-insensitive full line match
-    if (compiledLineTrimmed) {
-        const normalizedCompiled = removeWhitespace(compiledLineTrimmed);
+    const normalizedCompiled = removeWhitespace(compiledLineTrimmed);
 
-        if (normalizedCompiled) {
-            for (const [index, lineText] of originalLines.entries()) {
-                if (lineText) {
-                    const normalizedOriginal = removeWhitespace(lineText);
-                    const matchIndex = normalizedOriginal.indexOf(normalizedCompiled);
+    if (!normalizedCompiled) {
+        return null;
+    }
 
-                    if (matchIndex !== -1) {
-                        // Map normalized position back to original position
-                        let nonWhitespaceCount = 0;
+    for (const [index, lineText] of originalLines.entries()) {
+        if (!lineText) {
+            continue;
+        }
 
-                        for (const [index_, char] of lineText.entries()) {
-                            if (typeof char !== "string") {
-                                continue;
-                            }
+        const normalizedOriginal = removeWhitespace(lineText);
+        const matchIndex = normalizedOriginal.indexOf(normalizedCompiled);
 
-                            if (nonWhitespaceCount === matchIndex) {
-                                return { column: index_ + 1, line: index + 1 };
-                            }
+        if (matchIndex !== -1) {
+            // Map normalized position back to original position
+            const originalColumn = mapNormalizedToOriginalPosition(lineText, matchIndex);
 
-                            if (!/\s/.test(char)) {
-                                nonWhitespaceCount++;
-                            }
-                        }
-                    }
-                }
+            if (originalColumn !== -1) {
+                return { column: originalColumn, line: index + 1 };
             }
         }
     }
 
     return null;
+};
+
+/**
+ * Maps a normalized position back to the original position in the text
+ */
+const mapNormalizedToOriginalPosition = (lineText: string, normalizedPosition: number): number => {
+    let nonWhitespaceCount = 0;
+
+    for (const [index, char] of lineText.entries()) {
+        if (typeof char !== "string") {
+            continue;
+        }
+
+        if (nonWhitespaceCount === normalizedPosition) {
+            return index + 1;
+        }
+
+        if (!/\s/.test(char)) {
+            nonWhitespaceCount++;
+        }
+    }
+
+    return -1;
 };

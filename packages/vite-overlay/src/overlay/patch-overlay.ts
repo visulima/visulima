@@ -1,6 +1,4 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import moonStarIcon from "lucide-static/icons/moon-star.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import sunIcon from "lucide-static/icons/sun.svg?data-uri&encoding=css";
@@ -9,18 +7,33 @@ import Editors from "../../../../shared/utils/editors";
 import styleCss from "./client/index.css";
 import FlameErrorOverlay from "./client/runtime.js?raw";
 
-const editorOptions = (() => {
+// Constants
+const AUTO_DETECT_EDITOR_OPTION = "<option value=\"\">Auto-detected Editor</option>";
+const VITE_CLIENT_CLASS = "class ErrorOverlay";
+const VITE_ERROR_OVERLAY_CLASS = "var ErrorOverlay = ";
+const WINDOW_ERROR_OVERLAY_GLOBAL = "window.ErrorOverlay = ErrorOverlay;";
+
+/**
+ * Generates editor selector options from available editors
+ */
+const generateEditorOptions = (): string => {
     try {
         const keys = Object.keys(Editors) as (keyof typeof Editors)[];
-        const options = ["<option value=\"\">Auto-detected Editor</option>"].concat(keys.map((k) => `<option value="${String(k)}">${String(Editors[k])}</option>`));
+        const options = [AUTO_DETECT_EDITOR_OPTION].concat(keys.map((k) => `<option value="${String(k)}">${String(Editors[k])}</option>`));
 
         return options.join("");
     } catch {
-        return "<option value=\"\">Auto-detected Editor</option>";
+        return AUTO_DETECT_EDITOR_OPTION;
     }
-})();
+};
 
-const overlayTemplate = `<style>${styleCss}</style>
+/**
+ * Generates the overlay template with dynamic editor options
+ */
+const generateOverlayTemplate = (): string => {
+    const editorOptions = generateEditorOptions();
+
+    return `<style>${styleCss}</style>
 <div id="__flame__root" class="fixed inset-0 z-0 flex flex-col items-center pt-[10vh] px-[15px]">
     <div id="__flame__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
     <div id="__flame__notch" class="relative z-[2] flex w-full max-w-[var(--flame-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--flame-dialog-border-width)] translate-y-[var(--flame-dialog-border-width)]" style="--stroke-color: var(--flame-border); --background-color: var(--flame-surface);">
@@ -132,17 +145,23 @@ const overlayTemplate = `<style>${styleCss}</style>
         <div class="px-4 py-2 text-[var(--flame-text)] text-xs font-mono leading-5 overflow-auto space-y-0.5 max-h-[140px]"></div>
     </div>
 </div>`;
+};
 
+/**
+ * Patches Vite's client code to replace the default error overlay with our custom overlay
+ */
 export const patchOverlay = (code: string): string => {
+    const overlayTemplate = generateOverlayTemplate();
+
     // Use JSON.stringify to properly escape the template string and avoid octal escape issues
     const templateString = `const overlayTemplate = ${JSON.stringify(overlayTemplate)};`;
 
-    let patched = code.replace("class ErrorOverlay", `${templateString}\n${FlameErrorOverlay}\nclass ViteErrorOverlay`);
+    let patched = code.replace(VITE_CLIENT_CLASS, `${templateString}\n${FlameErrorOverlay}\nclass ViteErrorOverlay`);
 
-    patched = patched.replace("var ErrorOverlay = ", `${templateString}\n${FlameErrorOverlay}\nvar ViteErrorOverlay = `);
+    patched = patched.replace(VITE_ERROR_OVERLAY_CLASS, `${templateString}\n${FlameErrorOverlay}\nvar ViteErrorOverlay = `);
 
     // Make our ErrorOverlay available globally AFTER it's defined
-    patched = `${patched}\n\nwindow.ErrorOverlay = ErrorOverlay;`;
+    patched = `${patched}\n\n${WINDOW_ERROR_OVERLAY_GLOBAL};`;
 
     return patched;
 };

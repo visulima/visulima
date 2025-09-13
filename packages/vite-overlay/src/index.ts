@@ -3,8 +3,11 @@ import { getErrorCauses } from "@visulima/error/error";
 import type { ErrorPayload, IndexHtmlTransformResult, Plugin, WebSocketClient } from "vite";
 
 import { terminalOutput } from "../../../shared/utils/cli-error-builder";
+import { CAUSE_CHAIN_DEPTH_LIMIT, DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
 import { patchOverlay } from "./overlay/patch-overlay";
-import { buildExtendedErrorData } from "./utils/error-data-builder";
+import type { DevelopmentLogger, ExtendedErrorPayload, ProvidedCause, RawErrorData, RecentErrorTracker, ViteServer } from "./types";
+import buildExtendedErrorData from "./utils/error-data-builder";
+import { extractErrorInfo, logError, safeAsync, safeSync } from "./utils/error-utils";
 import { enhanceViteSsrError } from "./utils/ssr-error-enhancer";
 import { absolutizeStackUrls } from "./utils/stack-trace-utils";
 
@@ -20,292 +23,142 @@ import { absolutizeStackUrls } from "./utils/stack-trace-utils";
 // https://github.com/vitejs/vite/blob/0a76652c335e7c0bd8d223186b5533c0e10cac90/packages/vite/src/node/server/middlewares/error.ts#L45
 // https://github.com/vitejs/vite/blob/29a260cb16025408defc2e8186d1fbf17ee099ac/packages/vite/src/node/utils.ts#L486
 
-type ExtendedErrorPayload = {
-    causes: {
-        codeFrameContent?: string;
-        compiledCodeFrameContent?: string;
-        compiledColumn?: number;
-        compiledFilePath?: string;
-        compiledLine?: number;
-        compiledSnippet?: string;
-        fileColumn?: number;
-        fileLine?: number;
-        filePath?: string;
-        fixPrompt?: string;
-        message: string;
-        name: string;
-        originalCodeFrameContent?: string;
-        originalSnippet?: string;
-        snippet?: string;
-        stack?: string;
-    }[];
-    isServerError?: boolean;
-    message: string;
-    name: string;
-    stack?: string;
-};
-
 const cleanStack = (stack: string) => formatStacktrace(parseStacktrace({ stack } as unknown as Error));
 
-const errorOverlayPlugin = (): Plugin => {
+// Utility functions for server configuration
+const createDevelopmentLogger = (server: ViteServer): DevelopmentLogger => {
     return {
-        apply: "serve",
-        // Receive client-reported runtime errors and forward as Vite error payloads
-        configureServer(server) {
-            const rootPath = server.config.root || process.cwd();
+        error: (message: unknown) => server.config.logger.error(String(message ?? ""), { clear: true, timestamp: true }),
+        log: (message: unknown) => server.config.logger.info(String(message ?? "")),
+    };
+};
 
-            // Pretty terminal output
-            const developmentLogger = {
-                error: (message: unknown) => server.config.logger.error(String(message ?? ""), { clear: true, timestamp: true }),
-                log: (message: unknown) => server.config.logger.info(String(message ?? "")),
-            };
+const createRecentErrorTracker = (): RecentErrorTracker => {
+    const recentErrors = new Map<string, number>();
 
-            const RECENT_ERROR_TTL_MS = 500;
-            const recentErrors = new Map<string, number>();
-            const shouldSkip = (sig: string): boolean => {
-                const now = Date.now();
-                const last = recentErrors.get(sig) || 0;
+    const shouldSkip = (sig: string): boolean => {
+        const now = Date.now();
+        const last = recentErrors.get(sig) || 0;
 
-                if (now - last < RECENT_ERROR_TTL_MS) {
-                    return true;
-                }
+        if (now - last < RECENT_ERROR_TTL_MS) {
+            return true;
+        }
 
-                recentErrors.set(sig, now);
+        recentErrors.set(sig, now);
 
-                return false;
-            };
+        return false;
+    };
 
-            const sigFromRaw = (raw: any): string => `${String(raw?.message || "")}\n${String(raw?.stack || "")}`;
+    return { recentErrors, shouldSkip };
+};
 
-            const sigFromExtension = (extension: ExtendedErrorPayload): string => {
-                const c0 = extension.causes?.[0];
+const createErrorSignature = (raw: Error | RawErrorData): string => `${String(raw?.message || "")}\n${String(raw?.stack || "")}`;
 
-                return `${extension.name}|${extension.message}|${c0?.filePath || ""}|${c0?.fileLine || 0}`;
-            };
+const createExtendedErrorSignature = (extension: ExtendedErrorPayload): string => {
+    const c0 = extension.causes?.[0];
 
-            const buildExtendedError = async (rawError: ErrorPayload["err"] | Error): Promise<ExtendedErrorPayload> => {
-                try {
-                    const name = String((rawError as any)?.name || "Error");
-                    const message = String((rawError as any)?.message || "Runtime error");
-                    const rawStack = String((rawError as any)?.stack || "");
-                    const cleanedRawStack = cleanStack(absolutizeStackUrls(rawStack, rootPath));
+    return `${extension.name}|${extension.message}|${c0?.filePath || ""}|${c0?.fileLine || 0}`;
+};
 
-                    // Build a synthetic error to feed the stack parser (fallback only)
-                    const synthetic = new Error(message);
+const createUnhandledRejectionHandler = (server: ViteServer, rootPath: string, developmentLogger: DevelopmentLogger) => async (reason: unknown) => {
+    const runtimeError = reason instanceof Error ? reason : new Error(String((reason as any)?.stack || reason));
 
-                    (synthetic as any).name = name;
-                    (synthetic as any).stack = `${name}: ${message}\n${cleanedRawStack}`;
+    safeSync(
+        () => server.ssrFixStacktrace(runtimeError as any),
+        undefined,
+        (error) => logError(server, "[visulima:vite-overlay:server] ssrFixStacktrace failed", error),
+    );
 
-                    // Prefer causes provided by the client (from Error.cause / AggregateError)
-                    const providedCauses = Array.isArray((rawError as any)?.causes)
-                        ? ((rawError as any).causes as { message?: string; name?: string; stack?: string }[])
-                        : undefined;
+    await safeAsync(
+        () =>
+            enhanceViteSsrError(runtimeError, server).then((enhanced) => {
+                Object.assign(runtimeError, enhanced);
+            }),
+        undefined,
+        (error) => logError(server, "[visulima:vite-overlay:server] enhanceViteSsrError failed", error),
+    );
 
-                    const allCauses: Error[]
-                        = providedCauses && providedCauses.length > 0
-                            ? providedCauses.map((c) => {
-                                const e = new Error(String(c?.message || ""));
+    // Ensure terminal logs show absolute filesystem paths
+    safeSync(() => {
+        runtimeError.stack = cleanStack(absolutizeStackUrls(String(runtimeError.stack || ""), rootPath));
+    }, undefined);
 
-                                (e as any).name = String(c?.name || "Error");
-                                const st = absolutizeStackUrls(String(c?.stack || ""), rootPath);
+    await terminalOutput(runtimeError, { logger: developmentLogger });
 
-                                (e as any).stack = st && /\S/.test(st) ? st : `${(e as any).name}: ${String(c?.message || "")}`;
+    // Let our ws interceptor normalize to extended payload
+    server.ws.send({ err: runtimeError, type: "error" } as any);
+};
 
-                                return e;
-                            })
-                            : getErrorCauses(rawError instanceof Error ? (rawError as Error) : synthetic);
+const buildExtendedError = async (rawError: ErrorPayload["err"] | Error, server: ViteServer, rootPath: string): Promise<ExtendedErrorPayload> => {
+    try {
+        const { message, name, stack: rawStack } = extractErrorInfo(rawError);
+        const cleanedRawStack = cleanStack(absolutizeStackUrls(rawStack, rootPath));
 
-                    if (allCauses.length === 0) {
-                        throw new Error("No errors found in the error stack");
-                    }
+        // Build a synthetic error to feed the stack parser (fallback only)
+        const synthetic = new Error(message);
 
-                    // Build extended data for all causes (main cause + all nested causes)
-                    const extendedCauses = await Promise.all(
-                        allCauses.map(async (cause) => {
-                            const extendedData = await buildExtendedErrorData(cause as Error, server);
+        (synthetic as any).name = name;
+        (synthetic as any).stack = `${name}: ${message}\n${cleanedRawStack}`;
 
-                            return {
-                                message: String((cause as any)?.message || ""),
-                                name: String((cause as any)?.name || "Error"),
-                                stack: cleanStack(absolutizeStackUrls(String((cause as any)?.stack || ""), rootPath)),
-                                ...extendedData,
-                            };
-                        }),
-                    );
+        // Prefer causes provided by the client (from Error.cause / AggregateError)
+        const providedCauses = Array.isArray((rawError as any)?.causes) ? ((rawError as any).causes as ProvidedCause[]) : undefined;
 
-                    const payload: ExtendedErrorPayload = {
-                        causes: extendedCauses,
-                        isServerError: false,
-                        message,
-                        name,
-                        stack: cleanedRawStack,
-                    };
+        const allCauses: Error[]
+            = providedCauses && providedCauses.length > 0
+                ? providedCauses.map((c) => {
+                    const e = new Error(String(c?.message || ""));
 
-                    return payload;
-                } catch (error) {
-                    try {
-                        server.config.logger.error(`[visulima:vite-overlay:server] buildExtendedError failure: ${String(error)}`);
-                    } catch {}
+                    (e as any).name = String(c?.name || DEFAULT_ERROR_NAME);
+                    const st = absolutizeStackUrls(String(c?.stack || ""), rootPath);
 
-                    return {
-                        causes: [],
-                        message: String((rawError as any)?.message || "Runtime error"),
-                        name: String((rawError as any)?.name || "Error"),
+                    (e as any).stack = st && /\S/.test(st) ? st : `${(e as any).name}: ${String(c?.message || "")}`;
 
-                        stack: cleanStack(absolutizeStackUrls(String((rawError as any)?.stack || ""), rootPath)),
-                    };
-                }
-            };
+                    return e;
+                })
+                : getErrorCauses(rawError instanceof Error ? (rawError as Error) : synthetic);
 
-            // Intercept any error payload Vite sends and replace with our extended payload
-            const origSend = server.ws.send.bind(server.ws);
+        if (allCauses.length === 0) {
+            throw new Error("No errors found in the error stack");
+        }
 
-            (server.ws as any).send = async (payload: any, client?: any) => {
-                try {
-                    if (payload && typeof payload === "object" && payload.type === "error" && payload.err) {
-                        const rawSig = sigFromRaw(payload.err);
+        // Build extended data for all causes (main cause + all nested causes)
+        const extendedCauses = await Promise.all(
+            allCauses.map(async (cause) => {
+                const extendedData = await buildExtendedErrorData(cause as Error, server);
 
-                        if (shouldSkip(rawSig)) {
-                            return; // drop duplicate
-                        }
-
-                        const extension = await buildExtendedError(payload.err as any);
-
-                        payload.err = extension as any;
-
-                        const extensionSig = sigFromExtension(extension);
-
-                        recentErrors.set(extensionSig, Date.now());
-                    }
-                } catch (error) {
-                    server.config.logger.warn(`[visulima:vite-overlay:server] ws.send intercept failed: ${String(error)}`);
-                }
-
-                return origSend(payload, client);
-            };
-
-            const MESSAGE_TYPE = "visulima:vite-overlay:error";
-
-            server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
-                const raw = (data && typeof data === "object" ? (data as Record<string, unknown>) : {}) as {
-                    column?: number | null;
-                    file?: string | null;
-                    line?: number | null;
-                    message?: string;
-                    name?: string;
-                    ownerStack?: string | null;
-                    stack?: string;
+                return {
+                    message: String((cause as any)?.message || ""),
+                    name: String((cause as any)?.name || DEFAULT_ERROR_NAME),
+                    stack: cleanStack(absolutizeStackUrls(String((cause as any)?.stack || ""), rootPath)),
+                    ...extendedData,
                 };
+            }),
+        );
 
-                // Create an Error instance so downstream parsers work consistently
-                const runtimeError = Object.assign(new Error(String(raw.message || "Runtime error")), raw);
+        const payload: ExtendedErrorPayload = {
+            causes: extendedCauses,
+            isServerError: false,
+            message,
+            name,
+            stack: cleanedRawStack,
+        };
 
-                try {
-                    try {
-                        await server.ssrFixStacktrace(runtimeError as any);
-                    } catch (error) {
-                        try {
-                            server.config.logger.info(`[visulima:vite-overlay:server] ssrFixStacktrace failed: ${String(error)}`);
-                        } catch {}
-                    }
+        return payload;
+    } catch (error) {
+        logError(server, "[visulima:vite-overlay:server] buildExtendedError failure", error);
 
-                    try {
-                        Object.assign(runtimeError, await enhanceViteSsrError(runtimeError, server));
-                    } catch (error) {
-                        try {
-                            server.config.logger.info(`[visulima:vite-overlay:server] enhanceViteSsrError failed: ${String(error)}`);
-                        } catch {}
-                    }
+        return {
+            causes: [],
+            ...extractErrorInfo(rawError),
+            stack: cleanStack(absolutizeStackUrls(extractErrorInfo(rawError).stack, rootPath)),
+        };
+    }
+};
 
-                    // Ensure terminal logs show absolute filesystem paths instead of dev URLs
-                    try {
-                        runtimeError.stack = cleanStack(absolutizeStackUrls(String(runtimeError.stack || ""), rootPath));
-                    } catch {}
-
-                    const rawSig = sigFromRaw(raw);
-
-                    if (shouldSkip(rawSig)) {
-                        return; // duplicate runtime error
-                    }
-
-                    const extensionPayload = await buildExtendedError(runtimeError);
-
-                    recentErrors.set(sigFromExtension(extensionPayload), Date.now());
-
-                    // Pretty dev-server logs using cli-handler (ANSI formatted + optional solutions)
-                    await terminalOutput(runtimeError, { logger: developmentLogger });
-
-                    client.send({ err: extensionPayload as any, type: "error" });
-                } catch (error) {
-                    server.config.logger.error(`[visulima:vite-overlay:server] failed to build extended client error: ${String(error)}`);
-
-                    client.send({
-                        err: {
-                            message: String(runtimeError.message || "Runtime error"),
-                            name: String(runtimeError.name || "Error"),
-                            stack: String(runtimeError.stack || ""),
-                        } as any,
-                        type: "error",
-                    });
-                }
-            });
-
-            // Capture unhandled rejections on the dev server process and surface them in the overlay
-            const handleUnhandledRejection = async (reason: unknown) => {
-                const runtimeError = reason instanceof Error ? reason : new Error(String((reason as any)?.stack || reason));
-
-                try {
-                    await server.ssrFixStacktrace(runtimeError as any);
-                } catch (error) {
-                    server.config.logger.info(`[visulima:vite-overlay:server] ssrFixStacktrace failed: ${String(error)}`);
-                }
-
-                try {
-                    Object.assign(runtimeError, await enhanceViteSsrError(runtimeError, server));
-                } catch (error) {
-                    server.config.logger.info(`[visulima:vite-overlay:server] enhanceViteSsrError failed: ${String(error)}`);
-                }
-
-                // Ensure terminal logs show absolute filesystem paths
-                try {
-                    runtimeError.stack = cleanStack(absolutizeStackUrls(String(runtimeError.stack || ""), rootPath));
-                } catch {}
-
-                await terminalOutput(runtimeError, { logger: developmentLogger });
-
-                // Let our ws interceptor normalize to extended payload
-                server.ws.send({ err: runtimeError, type: "error" } as any);
-            };
-
-            try {
-                process.on("unhandledRejection", handleUnhandledRejection);
-                server.httpServer?.on("close", () => {
-                    try {
-                        process.off("unhandledRejection", handleUnhandledRejection);
-                    } catch {}
-                });
-            } catch {}
-        },
-        enforce: "pre",
-
-        name: "visulima-vite-overlay",
-
-        // Replace Vite's overlay class with our custom overlay (Astro-style patch)
-        transform(code, id, options) {
-            if (options?.ssr) {
-                return;
-            }
-
-            if (!(id.includes("vite/dist/client/client.mjs") || id.includes("/@vite/client"))) {
-                return;
-            }
-
-            return patchOverlay(code);
-        },
-
-        // Inject a tiny bridge that forwards runtime errors to the dev server over HMR
-        transformIndexHtml(): IndexHtmlTransformResult {
-            const CLIENT = String.raw`
+/**
+ * Generates the client-side script that forwards runtime errors to the dev server
+ */
+const generateClientScript = (): string => String.raw`
 import { createHotContext } from '/@vite/client';
 const hot = createHotContext('/@visulima/vite-overlay');
 const send = async (error, loc) => {
@@ -320,12 +173,12 @@ const send = async (error, loc) => {
       const out = [];
       try {
         // Include the top-level error first
-        out.push({ name: String(err?.name || 'Error'), message: String(err?.message || ''), stack: String(err?.stack || '') });
+        out.push({ name: String(err?.name || '${DEFAULT_ERROR_NAME}'), message: String(err?.message || ''), stack: String(err?.stack || '') });
         // Traverse Error.cause chain (depth-limited)
         let cur = err?.cause;
         let guard = 0;
-        while (cur && guard < 8) {
-          out.push({ name: String(cur?.name || 'Error'), message: String(cur?.message || ''), stack: String(cur?.stack || '') });
+        while (cur && guard < ${CAUSE_CHAIN_DEPTH_LIMIT}) {
+          out.push({ name: String(cur?.name || '${DEFAULT_ERROR_NAME}'), message: String(cur?.message || ''), stack: String(cur?.stack || '') });
           cur = cur?.cause;
           guard++;
         }
@@ -333,14 +186,14 @@ const send = async (error, loc) => {
         if (Array.isArray(err?.errors)) {
           for (const sub of err.errors) {
             if (!sub) continue;
-            out.push({ name: String(sub?.name || 'Error'), message: String(sub?.message || ''), stack: String(sub?.stack || '') });
+            out.push({ name: String(sub?.name || '${DEFAULT_ERROR_NAME}'), message: String(sub?.message || ''), stack: String(sub?.stack || '') });
           }
         }
       } catch {}
       return out;
     };
-    const payload = { message: String(error.message || 'Runtime error'), stack: String(error.stack || ''), ownerStack, file: loc?.filename || null, line: loc?.lineno || null, column: loc?.colno || null, causes: collectCauses(error) };
-    hot.send('visulima:vite-overlay:error', payload);
+    const payload = { message: String(error.message || '${DEFAULT_ERROR_MESSAGE}'), stack: String(error.stack || ''), ownerStack, file: loc?.filename || null, line: loc?.lineno || null, column: loc?.colno || null, causes: collectCauses(error) };
+    hot.send('${MESSAGE_TYPE}', payload);
   } catch {}
 };
 window.addEventListener('error', (e) => { try { send(e.error, { filename: e.filename, lineno: e.lineno, colno: e.colno }); } catch {} });
@@ -362,12 +215,186 @@ window.addEventListener('unhandledrejection', (e) => { try { send(e.reason); } c
 })();
 `;
 
+/**
+ * Sets up WebSocket interception to enhance error payloads before sending
+ */
+const setupWebSocketInterception = (
+    server: ViteServer,
+    shouldSkip: (signature: string) => boolean,
+    recentErrors: Map<string, number>,
+    rootPath: string,
+): void => {
+    const origSend = server.ws.send.bind(server.ws);
+
+    (server.ws as any).send = async (payload: any, client?: any) => {
+        try {
+            if (payload && typeof payload === "object" && payload.type === "error" && payload.err) {
+                const rawSig = createErrorSignature(payload.err);
+
+                if (shouldSkip(rawSig)) {
+                    return; // drop duplicate
+                }
+
+                const extension = await buildExtendedError(payload.err as any, server, rootPath);
+
+                // Debug: Log what we're sending to the client
+                if (extension?.causes?.[0]) {
+                    const firstCause = extension.causes[0];
+
+                    console.log("[vite-overlay:server:debug] Sending to client:", {
+                        codeFrameLength: firstCause.codeFrameContent?.length || 0,
+                        compiledCodeFrameLength: firstCause.compiledCodeFrameContent?.length || 0,
+                        compiledFilePath: firstCause.compiledFilePath,
+                        compiledSnippetLength: firstCause.compiledSnippet?.length || 0,
+                        errorName: firstCause.name,
+                        filePath: firstCause.filePath,
+                        hasCodeFrame: !!firstCause.codeFrameContent,
+                        hasCompiledCodeFrame: !!firstCause.compiledCodeFrameContent,
+                        hasCompiledSnippet: !!firstCause.compiledSnippet,
+                        hasOriginalCodeFrame: !!firstCause.originalCodeFrameContent,
+                        hasOriginalSnippet: !!firstCause.originalSnippet,
+                        originalCodeFrameLength: firstCause.originalCodeFrameContent?.length || 0,
+                        originalSnippetLength: firstCause.originalSnippet?.length || 0,
+                    });
+                }
+
+                payload.err = extension as any;
+
+                const extensionSig = createExtendedErrorSignature(extension);
+
+                recentErrors.set(extensionSig, Date.now());
+            }
+        } catch (error) {
+            logError(server, "[visulima:vite-overlay:server] ws.send intercept failed", error);
+        }
+
+        return origSend(payload, client);
+    };
+};
+
+/**
+ * Sets up HMR handler for client-reported runtime errors
+ */
+const setupHMRHandler = (
+    server: ViteServer,
+    developmentLogger: DevelopmentLogger,
+    shouldSkip: (signature: string) => boolean,
+    recentErrors: Map<string, number>,
+    rootPath: string,
+): void => {
+    server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
+        const raw = (data && typeof data === "object" ? (data as Record<string, unknown>) : {}) as RawErrorData;
+
+        // Create an Error instance so downstream parsers work consistently
+        const runtimeError = Object.assign(new Error(String(raw.message || DEFAULT_ERROR_MESSAGE)), raw);
+
+        try {
+            safeSync(
+                () => server.ssrFixStacktrace(runtimeError as any),
+                undefined,
+                (error) => logError(server, "[visulima:vite-overlay:server] ssrFixStacktrace failed", error),
+            );
+
+            await safeAsync(
+                () =>
+                    enhanceViteSsrError(runtimeError, server).then((enhanced) => {
+                        Object.assign(runtimeError, enhanced);
+                    }),
+                undefined,
+                (error) => logError(server, "[visulima:vite-overlay:server] enhanceViteSsrError failed", error),
+            );
+
+            // Ensure terminal logs show absolute filesystem paths instead of dev URLs
+            safeSync(() => {
+                runtimeError.stack = cleanStack(absolutizeStackUrls(String(runtimeError.stack || ""), rootPath));
+            }, undefined);
+
+            const rawSig = createErrorSignature(raw);
+
+            if (shouldSkip(rawSig)) {
+                return; // duplicate runtime error
+            }
+
+            const extensionPayload = await buildExtendedError(runtimeError, server, rootPath);
+
+            recentErrors.set(createExtendedErrorSignature(extensionPayload), Date.now());
+
+            // Pretty dev-server logs using cli-handler (ANSI formatted + optional solutions)
+            await terminalOutput(runtimeError, { logger: developmentLogger });
+
+            client.send({ err: extensionPayload as any, type: "error" });
+        } catch (error) {
+            logError(server, "[visulima:vite-overlay:server] failed to build extended client error", error);
+
+            client.send({
+                err: {
+                    message: String(runtimeError.message || DEFAULT_ERROR_MESSAGE),
+                    name: String(runtimeError.name || DEFAULT_ERROR_NAME),
+                    stack: String(runtimeError.stack || ""),
+                } as any,
+                type: "error",
+            });
+        }
+    });
+};
+
+const errorOverlayPlugin = (): Plugin => {
+    return {
+        apply: "serve",
+        // Receive client-reported runtime errors and forward as Vite error payloads
+        configureServer(server) {
+            const rootPath = server.config.root || process.cwd();
+
+            // Initialize utilities
+            const developmentLogger = createDevelopmentLogger(server);
+            const { recentErrors, shouldSkip } = createRecentErrorTracker();
+
+            // Intercept any error payload Vite sends and replace with our extended payload
+            setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath);
+
+            // Handle client-reported errors via HMR
+            setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath);
+
+            // Capture unhandled rejections on the dev server process and surface them in the overlay
+            const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
+
+            try {
+                process.on("unhandledRejection", handleUnhandledRejection);
+                server.httpServer?.on("close", () => {
+                    try {
+                        process.off("unhandledRejection", handleUnhandledRejection);
+                    } catch {}
+                });
+            } catch {}
+        },
+        enforce: "pre",
+
+        name: PLUGIN_NAME,
+
+        // Replace Vite's overlay class with our custom overlay (Astro-style patch)
+        transform(code, id, options) {
+            if (options?.ssr) {
+                return;
+            }
+
+            if (!(id.includes("vite/dist/client/client.mjs") || id.includes("/@vite/client"))) {
+                return;
+            }
+
+            return patchOverlay(code);
+        },
+
+        // Inject a tiny bridge that forwards runtime errors to the dev server over HMR
+        transformIndexHtml(): IndexHtmlTransformResult {
             return {
                 html: "",
-                tags: [{ attrs: { type: "module" }, children: CLIENT, injectTo: "head" as const, tag: "script" }],
+                tags: [{ attrs: { type: "module" }, children: generateClientScript(), injectTo: "head" as const, tag: "script" }],
             };
         },
     };
 };
 
 export default errorOverlayPlugin;
+
+// Export Vue error adapter for testing
+export { parseVueCompilationError };
