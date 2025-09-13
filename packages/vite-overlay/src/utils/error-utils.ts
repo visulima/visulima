@@ -1,6 +1,4 @@
-// Error handling utilities for consistent patterns
-
-import type { ViteServer } from "../types";
+import type { ErrorHandler, ErrorLike, SafeAsyncOperation, SafeSyncOperation, ViteServer } from "../types";
 
 /**
  * Safely extract a string value with fallback
@@ -11,13 +9,13 @@ export const safeString = (value: unknown, fallback = ""): string => (typeof val
  * Safely extract error properties with fallbacks
  */
 export const extractErrorInfo = (error: unknown) => {
-    const error_ = error as any;
+    const errorLike = error as ErrorLike;
 
     return {
-        message: safeString(error_?.message, "Runtime error"),
-        name: safeString(error_?.name, "Error"),
-        stack: safeString(error_?.stack, ""),
-    };
+        message: safeString(errorLike?.message, "Runtime error"),
+        name: safeString(errorLike?.name, "Error"),
+        stack: safeString(errorLike?.stack, ""),
+    } as const;
 };
 
 /**
@@ -25,16 +23,18 @@ export const extractErrorInfo = (error: unknown) => {
  */
 export const logError = (server: ViteServer, prefix: string, error: unknown): void => {
     try {
-        server.config.logger.error(`${prefix}: ${String(error)}`);
+        const message = error instanceof Error ? error.message : String(error);
+
+        server.config.logger.error(`${prefix}: ${message}`, { clear: true, timestamp: true });
     } catch {
-        // Fallback if logging fails
+        // Silent fallback if logging fails
     }
 };
 
 /**
  * Execute an async operation with error handling and fallback
  */
-export const safeAsync = async <T>(operation: () => Promise<T>, fallback: T, onError?: (error: unknown) => void): Promise<T> => {
+export const safeAsync = async <T>(operation: SafeAsyncOperation<T>, fallback: T, onError?: ErrorHandler): Promise<T> => {
     try {
         return await operation();
     } catch (error) {
@@ -49,7 +49,7 @@ export const safeAsync = async <T>(operation: () => Promise<T>, fallback: T, onE
 /**
  * Execute a sync operation with error handling and fallback
  */
-export const safeSync = <T>(operation: () => T, fallback: T, onError?: (error: unknown) => void): T => {
+export const safeSync = <T>(operation: SafeSyncOperation<T>, fallback: T, onError?: ErrorHandler): T => {
     try {
         return operation();
     } catch (error) {
@@ -62,20 +62,56 @@ export const safeSync = <T>(operation: () => T, fallback: T, onError?: (error: u
 };
 
 /**
- * Create a standardized error response
+ * Create a standardized error response object
  */
-export const createErrorResponse = (
-    error: unknown,
-    overrides: Partial<{
-        message: string;
-        name: string;
-        stack: string;
-    }> = {},
-) => {
+export const createErrorResponse = (error: unknown, overrides: Partial<ErrorLike> = {}) => {
     const baseInfo = extractErrorInfo(error);
 
     return {
         ...baseInfo,
         ...overrides,
-    };
+    } as const;
+};
+
+/**
+ * Type guard to check if a value is an Error-like object
+ */
+export const isErrorLike = (value: unknown): value is ErrorLike =>
+    typeof value === "object" && value !== null && ("message" in value || "name" in value || "stack" in value);
+
+/**
+ * Safely get error message from any value
+ */
+export const getErrorMessage = (error: unknown): string => {
+    if (isErrorLike(error) && typeof error.message === "string") {
+        return error.message;
+    }
+
+    if (typeof error === "string") {
+        return error;
+    }
+
+    return "An unknown error occurred";
+};
+
+/**
+ * Safely get error name from any value
+ */
+export const getErrorName = (error: unknown): string => {
+    if (isErrorLike(error) && typeof error.name === "string") {
+        return error.name;
+    }
+
+    return "Error";
+};
+
+/**
+ * Safely get error stack from any value
+ */
+export const getErrorStack = (error: unknown): string => {
+    if (isErrorLike(error) && typeof error.stack === "string") {
+        return error.stack;
+    }
+
+    return "";
 };

@@ -1,4 +1,4 @@
-import viteErrorOverlay from "@visulima/vite-overlay/dist/index.js";
+import viteErrorOverlay from "@visulima/vite-overlay";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 

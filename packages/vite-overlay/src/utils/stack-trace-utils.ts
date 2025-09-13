@@ -2,18 +2,27 @@ import { stripVTControlCharacters } from "node:util";
 
 import { resolve } from "@visulima/path";
 
+import type { PluginPattern, StackFrameValidator, StackLineCleaner, StackLocation, SupportedExtension } from "../types";
+
 // Constants
-const PATH_SEPARATOR = "/";
-const COLON_SEPARATOR = ":";
+const PATH_SEPARATOR = "/" as const;
+const COLON_SEPARATOR = ":" as const;
+const AT_PREFIX = "at " as const;
 
-// Regex patterns
-const LOCATION_PATTERN = /at\s+(.+?):(\d+)(?::(\d+))?/;
-const HTTP_URL_PATTERN = /https?:\/\/[^\s)]+/g;
-const FILE_URL_PATTERN = /file:\/\//g;
-const FS_PATH_PATTERN = /\/@fs\//g;
+// Regex patterns (compiled once for performance)
+const LOCATION_PATTERN = /at\s+(.+?):(\d+)(?::(\d+))?/ as const;
+const HTTP_URL_PATTERN = /https?:\/\/[^\s)]+/g as const;
+const FILE_URL_PATTERN = /file:\/\//g as const;
+const FS_PATH_PATTERN = /\/@fs\//g as const;
 
-// Plugin detection patterns
-const PLUGIN_PATTERNS = [
+// File extensions that indicate valid stack frames
+const SUPPORTED_EXTENSIONS = new Set<SupportedExtension>([".cjs", ".js", ".jsx", ".mjs", ".svelte", ".ts", ".tsx", ".vue"]);
+
+// Keywords that indicate valid stack frames
+const VALID_STACK_KEYWORDS = new Set<string>(["<anonymous>", "native"]);
+
+// Plugin detection patterns - organized by category for maintainability
+const PLUGIN_PATTERNS: ReadonlyArray<PluginPattern> = [
     // Vite core plugins
     { name: "Vite React Plugin", pattern: /vite.*plugin.*react/i },
     { name: "Vite Vue Plugin", pattern: /vite.*plugin.*vue/i },
@@ -48,27 +57,23 @@ const PLUGIN_PATTERNS = [
     { name: "Nuxt.js", pattern: /nuxt/i },
     { name: "Astro", pattern: /astro/i },
     { name: "SvelteKit", pattern: /sveltekit/i },
-];
+] as const;
 
 /**
- * Checks if a line is a valid JavaScript stack frame
+ * Checks if a line is a valid JavaScript stack frame.
+ * Optimized for performance with early returns and Set lookups.
  */
-export const isValidStackFrame = (line: string): boolean => {
+export const isValidStackFrame: StackFrameValidator = (line: string): boolean => {
     // Must start with 'at' after trimming (allows for indentation)
     const trimmed = line.trim();
 
-    if (!trimmed.startsWith("at ")) {
+    if (!trimmed.startsWith(AT_PREFIX)) {
         return false;
     }
 
     // Must contain a file path with supported extension or be an anonymous/native function
     const hasFileReference
-        = trimmed.includes(".js")
-            || trimmed.includes(".ts")
-            || trimmed.includes(".mjs")
-            || trimmed.includes(".cjs")
-            || trimmed.includes("<anonymous>")
-            || trimmed.includes("native");
+        = [...SUPPORTED_EXTENSIONS].some((extension) => trimmed.includes(extension)) || [...VALID_STACK_KEYWORDS].some((keyword) => trimmed.includes(keyword));
 
     if (!hasFileReference) {
         return false;
@@ -85,7 +90,7 @@ export const isValidStackFrame = (line: string): boolean => {
     return hasLocationInfo;
 };
 
-const cleanStackLine = (line: string): string => {
+const cleanStackLine: StackLineCleaner = (line: string): string => {
     // Remove @fs/ paths that Vite adds
     line = line.replaceAll(FS_PATH_PATTERN, PATH_SEPARATOR);
     // Clean up file:// URLs that might appear
@@ -198,9 +203,9 @@ export const detectPluginFromStack = (stack: string): string | undefined => {
 /**
  * Extracts useful location information from a stack trace line.
  * @param line Single stack trace line
- * @returns Object with file, line, and column information
+ * @returns Object with file, line, and column information or null if parsing fails
  */
-export const parseStackLine = (line: string) => {
+export const parseStackLine = (line: string): StackLocation | null => {
     if (!line) {
         return null;
     }
@@ -219,7 +224,7 @@ export const parseStackLine = (line: string) => {
         column: columnNumber,
         file: file?.trim() || "",
         line: lineNumber,
-    };
+    } as const;
 };
 
 /**

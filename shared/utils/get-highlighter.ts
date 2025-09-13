@@ -1,9 +1,9 @@
-import type { Highlighter, ShikiTransformer } from "shiki";
+import type { Highlighter, LanguageInput, ShikiTransformer } from "shiki";
 
 let highlighterPromise: Promise<Highlighter> | undefined;
 let disposeFn: (() => void) | undefined;
 
-const createSingletonHighlighter = async (): Promise<Highlighter> => {
+const createSingletonHighlighter = async (langs: LanguageInput[] = []): Promise<Highlighter> => {
     // Try fine-grained modules first for better perf and bundle size
     try {
         const [coreMod, engineMod] = await Promise.all([import("shiki/core"), import("shiki/engine/javascript")]);
@@ -26,6 +26,14 @@ const createSingletonHighlighter = async (): Promise<Highlighter> => {
                 import("@shikijs/langs/shell"),
                 import("@shikijs/langs/markdown"),
                 import("@shikijs/langs/mdx"),
+                import("@shikijs/langs/html"),
+                import("@shikijs/langs/css"),
+                import("@shikijs/langs/scss"),
+                import("@shikijs/langs/less"),
+                import("@shikijs/langs/sass"),
+                import("@shikijs/langs/stylus"),
+                import("@shikijs/langs/styl"),
+                ...langs,
             ],
             engine: createJavaScriptRegexEngine(),
         });
@@ -72,9 +80,9 @@ const createSingletonHighlighter = async (): Promise<Highlighter> => {
     }
 };
 
-const getHighlighter = async (): Promise<Highlighter> => {
+const getHighlighter = async (langs: LanguageInput[] = []): Promise<Highlighter> => {
     if (!highlighterPromise) {
-        highlighterPromise = createSingletonHighlighter();
+        highlighterPromise = createSingletonHighlighter(langs);
     }
 
     return highlighterPromise;

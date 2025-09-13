@@ -1,14 +1,10 @@
 import type { ViteDevServer } from "vite";
 
-// Constants for module matching scoring
-const EXACT_MATCH_SCORE = 100;
-const CONTAINS_MATCH_SCORE = 50;
+import type { ModuleMatch } from "../types";
 
-// Types
-interface ModuleMatch {
-    module: any;
-    score: number;
-}
+// Constants for module matching scoring
+const EXACT_MATCH_SCORE = 100 as const;
+const CONTAINS_MATCH_SCORE = 50 as const;
 
 /**
  * Finds a module in the Vite module graph by trying various lookup strategies.
@@ -17,7 +13,7 @@ interface ModuleMatch {
  * @param candidates Array of candidate module IDs to search for
  * @returns The best matching module or null if none found
  */
-export const findModuleForPath = (server: ViteDevServer, candidates: string[]): any => {
+export const findModuleForPath = (server: ViteDevServer, candidates: ReadonlyArray<string>): any => {
     // Pre-normalize all candidates for performance
     const normalizedCandidates = candidates.map((c) => c.replaceAll("\\", "/"));
 
@@ -47,7 +43,7 @@ export const findModuleForPath = (server: ViteDevServer, candidates: string[]): 
 /**
  * Finds the best module match using scoring algorithm
  */
-const findBestModuleMatch = (server: ViteDevServer, normalizedCandidates: string[]): ModuleMatch | null => {
+const findBestModuleMatch = (server: ViteDevServer, normalizedCandidates: ReadonlyArray<string>): ModuleMatch | null => {
     let bestMatch: ModuleMatch | null = null;
 
     for (const [id, module] of server.moduleGraph.idToModuleMap) {
@@ -58,7 +54,7 @@ const findBestModuleMatch = (server: ViteDevServer, normalizedCandidates: string
         const score = calculateMatchScore(modulePaths, normalizedCandidates);
 
         if (score > 0 && (!bestMatch || score > bestMatch.score)) {
-            bestMatch = { module, score };
+            bestMatch = { module, score } as const;
         }
     }
 
@@ -68,18 +64,19 @@ const findBestModuleMatch = (server: ViteDevServer, normalizedCandidates: string
 /**
  * Extracts relevant paths from a module for matching
  */
-const getModulePaths = (module: any, id: string): string[] => {
-    const file = String(module.file || "").replaceAll("\\", "/");
+const getModulePaths = (module: unknown, id: string): ReadonlyArray<string> => {
+    const moduleObject = module as Record<string, unknown>;
+    const file = String(moduleObject.file || "").replaceAll("\\", "/");
     const idString = String(id || "").replaceAll("\\", "/");
-    const url = String((module as any).url || "").replaceAll("\\", "/");
+    const url = String(moduleObject.url || "").replaceAll("\\", "/");
 
-    return [file, idString, url];
+    return [file, idString, url] as const;
 };
 
 /**
  * Calculates the match score for module paths against candidates
  */
-const calculateMatchScore = (modulePaths: string[], candidates: string[]): number => {
+const calculateMatchScore = (modulePaths: ReadonlyArray<string>, candidates: ReadonlyArray<string>): number => {
     let maxScore = 0;
 
     for (const path of modulePaths) {

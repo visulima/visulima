@@ -1,5 +1,3 @@
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable @typescript-eslint/naming-convention */
 import { readFile } from "node:fs/promises";
 
 import { codeFrame, formatStacktrace, parseStacktrace } from "@visulima/error";
@@ -9,6 +7,7 @@ import type { ViteDevServer } from "vite";
 import findLanguageBasedOnExtension from "../../../../shared/utils/find-language-based-on-extension";
 import getHighlighter, { transformerCompactLineOptions } from "../../../../shared/utils/get-highlighter";
 import { parseVueCompilationError } from "../adapters/vue-error-adapter";
+import type { ErrorProcessingResult, SourceTexts } from "../types";
 import { findModuleForPath } from "./module-finder";
 import { normalizeIdCandidates } from "./normalize-id-candidates";
 import { realignOriginalPosition } from "./position-aligner";
@@ -21,23 +20,20 @@ import {
     extractErrors,
     isAggregateError,
     isESBuildErrorArray,
-    normalizeLF,
     processESBuildErrors,
 } from "./stack-trace-utils";
+import type { LanguageInput } from "shiki";
 
 /**
  * Retrieves original and compiled source texts from various sources.
+ * Attempts multiple strategies to find source code for error context.
  */
-const retrieveSourceTexts = async (
-    server: ViteDevServer,
-    module_: any,
-    filePath: string,
-    idCandidates: string[],
-): Promise<{ compiledSourceText?: string; originalSourceText?: string }> => {
+const retrieveSourceTexts = async (server: ViteDevServer, module_: unknown, filePath: string, idCandidates: ReadonlyArray<string>): Promise<SourceTexts> => {
     let originalSourceText: string | undefined;
     let compiledSourceText: string | undefined;
 
-    const currentMap = module_?.transformResult?.map;
+    const moduleObject = module_ as Record<string, unknown> | undefined;
+    const currentMap = moduleObject?.transformResult as Record<string, unknown> | undefined;
 
     // Try to get original source from current source map
     if (!originalSourceText && currentMap) {
@@ -79,7 +75,7 @@ const retrieveSourceTexts = async (
         }
     }
 
-    return { compiledSourceText, originalSourceText };
+    return { compiledSourceText, originalSourceText } as const;
 };
 
 /**
@@ -145,30 +141,7 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
  * @param server The Vite dev server instance for module resolution
  * @returns Promise resolving to extended error data object
  */
-const buildExtendedErrorData = async (
-    error: Error,
-    server: ViteDevServer,
-): Promise<{
-    codeFrameContent?: string;
-    compiledCodeFrameContent?: string;
-    compiledColumn: number;
-    compiledFilePath: string;
-    compiledLine: number;
-    compiledSnippet: string;
-    compiledStack?: string;
-    errorCount?: number;
-    fileColumn: number;
-    fileLine: number;
-    filePath: string;
-    fixPrompt: string;
-    isAggregateError?: boolean;
-    isESBuildArray?: boolean;
-    originalCodeFrameContent?: string;
-    originalSnippet: string;
-    originalStack?: string;
-    plugin?: string;
-    trace: any;
-}> => {
+const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Promise<ErrorProcessingResult> => {
     // Try to extract Vue compilation error information using the adapter
     const vueErrorInfo = error?.message ? parseVueCompilationError(error.message) : null;
 
@@ -304,9 +277,20 @@ const buildExtendedErrorData = async (
     let compiledCodeFrameContent: string | undefined;
 
     if (originalSnippet || compiledSnippet) {
-        const highlighter = await getHighlighter();
         const hlLangOriginal = findLanguageBasedOnExtension(filePath) || "text";
         const hlLangCompiled = findLanguageBasedOnExtension(compiledFilePath) || hlLangOriginal;
+
+        const langs: LanguageInput[] = [];
+
+        if (hlLangOriginal === "svelte" || hlLangCompiled === "svelte") {
+            langs.push(import("@shikijs/langs/svelte"));
+        }
+
+        if (hlLangOriginal === "vue" || hlLangCompiled === "vue") {
+            langs.push(import("@shikijs/langs/vue"));
+        }
+
+        const highlighter = await getHighlighter(langs);
 
         const highlightOptions = {
             themes: { dark: "github-dark-default", light: "github-light" },
@@ -350,7 +334,9 @@ const buildExtendedErrorData = async (
         compiledFilePath,
         compiledLine,
         compiledSnippet,
-        compiledStack: formatStacktrace(parseStacktrace(syntheticError), { header: { message: cleanMessage, name: primaryError.name } }),
+        compiledStack: formatStacktrace(parseStacktrace(syntheticError), {
+            header: { message: cleanMessage, name: primaryError.name },
+        }),
         errorCount: individualErrors.length,
         fileColumn,
         fileLine,
@@ -363,7 +349,7 @@ const buildExtendedErrorData = async (
         originalStack,
         plugin,
         trace,
-    };
+    } as const;
 };
 
 export default buildExtendedErrorData;

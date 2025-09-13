@@ -1,0 +1,21 @@
+{
+    "name": "vite_overlay_vite-svelte",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
+    },
+    "devDependencies": {
+        "@visulima/vite-overlay": "workspace:*",
+        "@sveltejs/vite-plugin-svelte": "^6.1.1",
+        "@tsconfig/svelte": "^5.0.4",
+        "svelte": "^5.38.1",
+        "svelte-check": "^4.3.1",
+        "typescript": "~5.8.3",
+        "vite": "^7.1.2"
+    }
+}

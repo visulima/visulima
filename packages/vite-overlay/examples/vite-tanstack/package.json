@@ -1,5 +1,5 @@
 {
-    "name": "examples-vite-tanstack-overlay",
+    "name": "vite_overlay_vite-tanstack",
     "private": true,
     "type": "module",
     "scripts": {

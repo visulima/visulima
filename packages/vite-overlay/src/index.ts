@@ -1,11 +1,17 @@
+// Core Vite and error handling imports
 import { formatStacktrace, parseStacktrace } from "@visulima/error";
 import { getErrorCauses } from "@visulima/error/error";
 import type { ErrorPayload, IndexHtmlTransformResult, Plugin, WebSocketClient } from "vite";
 
+// Internal imports - organized by category
 import { terminalOutput } from "../../../shared/utils/cli-error-builder";
+// Constants
 import { CAUSE_CHAIN_DEPTH_LIMIT, DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
+// Overlay components
 import { patchOverlay } from "./overlay/patch-overlay";
+// Types
 import type { DevelopmentLogger, ExtendedErrorPayload, ProvidedCause, RawErrorData, RecentErrorTracker, ViteServer } from "./types";
+// Utilities
 import buildExtendedErrorData from "./utils/error-data-builder";
 import { extractErrorInfo, logError, safeAsync, safeSync } from "./utils/error-utils";
 import { enhanceViteSsrError } from "./utils/ssr-error-enhancer";
@@ -23,41 +29,49 @@ import { absolutizeStackUrls } from "./utils/stack-trace-utils";
 // https://github.com/vitejs/vite/blob/0a76652c335e7c0bd8d223186b5533c0e10cac90/packages/vite/src/node/server/middlewares/error.ts#L45
 // https://github.com/vitejs/vite/blob/29a260cb16025408defc2e8186d1fbf17ee099ac/packages/vite/src/node/utils.ts#L486
 
-const cleanStack = (stack: string) => formatStacktrace(parseStacktrace({ stack } as unknown as Error));
+// Utility function to clean and format stack traces
+const cleanStack = (stack: string): string => formatStacktrace(parseStacktrace({ stack } as unknown as Error));
 
-// Utility functions for server configuration
+// Creates a development logger that integrates with Vite's logging system
 const createDevelopmentLogger = (server: ViteServer): DevelopmentLogger => {
     return {
-        error: (message: unknown) => server.config.logger.error(String(message ?? ""), { clear: true, timestamp: true }),
+        error: (message: unknown) =>
+            server.config.logger.error(String(message ?? ""), {
+                clear: true,
+                timestamp: true,
+            }),
         log: (message: unknown) => server.config.logger.info(String(message ?? "")),
     };
 };
 
+// Creates a tracker for recent errors to prevent spam
 const createRecentErrorTracker = (): RecentErrorTracker => {
     const recentErrors = new Map<string, number>();
 
-    const shouldSkip = (sig: string): boolean => {
+    const shouldSkip = (signature: string): boolean => {
         const now = Date.now();
-        const last = recentErrors.get(sig) || 0;
+        const lastOccurrence = recentErrors.get(signature) || 0;
 
-        if (now - last < RECENT_ERROR_TTL_MS) {
-            return true;
+        if (now - lastOccurrence < RECENT_ERROR_TTL_MS) {
+            return true; // Skip this duplicate error
         }
 
-        recentErrors.set(sig, now);
+        recentErrors.set(signature, now);
 
-        return false;
+        return false; // Process this new error
     };
 
     return { recentErrors, shouldSkip };
 };
 
+// Generates a unique signature for error deduplication
 const createErrorSignature = (raw: Error | RawErrorData): string => `${String(raw?.message || "")}\n${String(raw?.stack || "")}`;
 
+// Creates a detailed signature for processed errors
 const createExtendedErrorSignature = (extension: ExtendedErrorPayload): string => {
-    const c0 = extension.causes?.[0];
+    const primaryCause = extension.causes?.[0];
 
-    return `${extension.name}|${extension.message}|${c0?.filePath || ""}|${c0?.fileLine || 0}`;
+    return `${extension.name}|${extension.message}|${primaryCause?.filePath || ""}|${primaryCause?.fileLine || 0}`;
 };
 
 const createUnhandledRejectionHandler = (server: ViteServer, rootPath: string, developmentLogger: DevelopmentLogger) => async (reason: unknown) => {
