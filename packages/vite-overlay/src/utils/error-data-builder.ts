@@ -22,6 +22,7 @@ import {
     isESBuildErrorArray,
     processESBuildErrors,
 } from "./stack-trace-utils";
+import { extractLocationFromViteError, extractViteErrorLocation } from "./vite-error-adapter";
 import type { LanguageInput } from "shiki";
 
 /**
@@ -140,7 +141,7 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
  * @param server The Vite dev server instance for module resolution
  * @returns Promise resolving to extended error data object
  */
-const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Promise<ErrorProcessingResult> => {
+const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawError?: any): Promise<ErrorProcessingResult> => {
     // Try to extract Vue compilation error information using the adapter
     const vueErrorInfo = error?.message ? parseVueCompilationError(error.message) : null;
 
@@ -178,6 +179,7 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
     const originalStack = await remapStackToOriginal(server, cleanedStack, { message: cleanMessage, name: primaryError.name });
     const plugin = detectPluginFromStack(rawStack);
 
+
     // Create a synthetic error with cleaned data for parsing
     const syntheticError = new Error(cleanMessage);
 
@@ -192,10 +194,49 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer): Prom
     const compiledLine = trace?.line ?? 0;
     const compiledColumn = trace?.column ?? 0;
 
-    // Initialize original location (will be resolved from source maps or Vue errors)
-    let originalFilePath = compiledFilePath;
-    let originalFileLine = compiledLine;
-    let originalFileColumn = compiledColumn;
+    // Try to extract location from raw error object first (most reliable)
+    let viteLocation = null;
+
+    if (rawError) {
+        // Check if the raw error has a 'loc' property (Vite's location object)
+        if (rawError.loc) {
+            const loc = rawError.loc;
+            viteLocation = {
+                file: loc.file || loc.path || "",
+                line: loc.line || 1,
+                column: loc.column || 1,
+            };
+        }
+        // Check if the raw error has an 'id' property (often the source file path)
+        else if (rawError.id) {
+            const id = rawError.id;
+            // If it's a source file path, use it
+            if (typeof id === 'string' && (id.endsWith('.tsx') || id.endsWith('.ts') || id.endsWith('.jsx') || id.endsWith('.js') || id.endsWith('.vue'))) {
+                viteLocation = {
+                    file: id,
+                    line: 1, // Default to line 1 if no specific location
+                    column: 1,
+                };
+            }
+        }
+    }
+
+    // Fallback: Try to extract from error messages
+    if (!viteLocation) {
+        viteLocation = extractLocationFromViteError(cleanMessage, server) ||
+                       extractLocationFromViteError(primaryError.message, server);
+    }
+
+    // Another fallback: Try the full error string representation
+    if (!viteLocation && primaryError.stack) {
+        const fullErrorString = `${primaryError.message}\n${primaryError.stack}`;
+        viteLocation = extractLocationFromViteError(fullErrorString, server);
+    }
+
+    // Initialize original location - prefer Vite location data
+    let originalFilePath = viteLocation?.file || compiledFilePath;
+    let originalFileLine = viteLocation?.line || compiledLine;
+    let originalFileColumn = viteLocation?.column || compiledColumn;
 
     // Override with Vue error information if available
     if (vueErrorInfo) {

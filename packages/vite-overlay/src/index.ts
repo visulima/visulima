@@ -137,8 +137,10 @@ const buildExtendedError = async (rawError: ErrorPayload["err"] | Error, server:
 
         // Build extended data for all causes (main cause + all nested causes)
         const extendedCauses = await Promise.all(
-            allCauses.map(async (cause) => {
-                const extendedData = await buildExtendedErrorData(cause as Error, server);
+            allCauses.map(async (cause, index) => {
+                // Pass the raw error for the first cause (main error) to get rich location data
+                const rawErrorForCause = index === 0 ? rawError : undefined;
+                const extendedData = await buildExtendedErrorData(cause as Error, server, rawErrorForCause);
 
                 return {
                     message: String((cause as any)?.message || ""),
