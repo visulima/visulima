@@ -63,6 +63,7 @@ export interface RecentErrorTracker {
 
 // Raw error data from client-side error reporting
 export interface RawErrorData {
+    readonly causes?: readonly ProvidedCause[];
     readonly column?: number | null;
     readonly file?: string | null;
     readonly line?: number | null;

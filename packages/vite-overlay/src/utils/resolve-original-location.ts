@@ -21,44 +21,6 @@ interface ViteModule {
 }
 
 /**
- * Resolves the original source location from a compiled location using source maps.
- * Handles both HTTP URLs and local file paths.
- * @param module_ The Vite module containing transform result
- * @param filePath The original file path
- * @param fileLine The line number in the compiled source
- * @param fileColumn The column number in the compiled source
- * @returns Object with resolved filePath, fileLine, and fileColumn
- */
-export const resolveOriginalLocation = (module_: ViteModule, filePath: string, fileLine: number, fileColumn: number): ResolvedLocation => {
-    const rawMap = module_?.transformResult?.map;
-
-    if (!rawMap) {
-        return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
-    }
-
-    try {
-        const position = resolveSourceMapPosition(rawMap, fileLine, fileColumn);
-
-        if (!position) {
-            return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
-        }
-
-        const resolvedPath = resolveSourcePath(filePath, position.source);
-
-        return {
-            originalFileColumn: position.column,
-            originalFileLine: position.line,
-            originalFilePath: resolvedPath,
-        };
-    } catch (error) {
-        // Log the error for debugging but don't throw
-        console.warn("Source map resolution failed:", error);
-
-        return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
-    }
-};
-
-/**
  * Resolves the original position using source maps
  */
 const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: number) => {
@@ -115,3 +77,44 @@ const resolveHttpSourcePath = (urlString: string, sourceName: string): string =>
         return urlString;
     }
 };
+
+
+/**
+ * Resolves the original source location from a compiled location using source maps.
+ * Handles both HTTP URLs and local file paths.
+ * @param module_ The Vite module containing transform result
+ * @param filePath The original file path
+ * @param fileLine The line number in the compiled source
+ * @param fileColumn The column number in the compiled source
+ * @returns Object with resolved filePath, fileLine, and fileColumn
+ */
+const resolveOriginalLocation = (module_: ViteModule, filePath: string, fileLine: number, fileColumn: number): ResolvedLocation => {
+    const rawMap = module_?.transformResult?.map;
+
+    if (!rawMap) {
+        return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
+    }
+
+    try {
+        const position = resolveSourceMapPosition(rawMap, fileLine, fileColumn);
+
+        if (!position) {
+            return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
+        }
+
+        const resolvedPath = resolveSourcePath(filePath, position.source);
+
+        return {
+            originalFileColumn: position.column,
+            originalFileLine: position.line,
+            originalFilePath: resolvedPath,
+        };
+    } catch (error) {
+        // Log the error for debugging but don't throw
+        console.warn("Source map resolution failed:", error);
+
+        return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
+    }
+};
+
+export default resolveOriginalLocation;

@@ -7,8 +7,14 @@ class ErrorOverlay extends HTMLElement {
         this.root.innerHTML = overlayTemplate;
         this.dir = "ltr";
 
+        // Store reference to the element for external access
+        this.element = this;
+
         // Store reference to this instance for pagination component
         this.root.host._errorOverlay = this;
+
+        // Automatically add to DOM when created
+        document.body.appendChild(this);
 
         // Debug: Log the exact structure we received
         console.log("[flame:runtime:debug] Constructor received error object:", {
@@ -55,8 +61,31 @@ class ErrorOverlay extends HTMLElement {
             stackPreview: `${String(p.stack || "").slice(0, 200)}...`,
         });
 
+        // Handle ExtendedErrorPayload structure properly
+        const causes = Array.isArray(p.causes) ? p.causes : [];
+        const processedCauses = causes.length > 0 ? causes : [
+            // If no causes, create one from the main payload
+            {
+                compiledCodeFrameContent: p.compiledCodeFrameContent || "",
+                compiledColumn: p.compiledColumn || 0,
+                compiledFilePath: p.compiledFilePath || "",
+                compiledLine: p.compiledLine || 0,
+                compiledSnippet: p.compiledSnippet || "",
+                compiledStack: p.compiledStack || p.stack || "",
+                message: String(p.message || "Runtime error"),
+                name: String(p.name || "Error"),
+                originalCodeFrameContent: p.originalCodeFrameContent || "",
+                originalFileColumn: p.originalFileColumn || p.compiledColumn || 0,
+                originalFileLine: p.originalFileLine || p.compiledLine || 0,
+                originalFilePath: p.originalFilePath || p.compiledFilePath || "",
+                originalSnippet: p.originalSnippet || "",
+                originalStack: p.originalStack || p.stack || "",
+                stack: p.stack || "",
+            }
+        ];
+
         const payload = {
-            causes: Array.isArray(p.causes) ? p.causes : [],
+            causes: processedCauses,
             compiledStack: String(p.compiledStack || ""),
             message: String(p.message || "Runtime error"),
             name: String(p.name || "Error"),
@@ -79,6 +108,19 @@ class ErrorOverlay extends HTMLElement {
             this.__flamePayload = payload;
             this.__flameMode = "original";
             globalThis.__flameInspectPayload = () => payload;
+
+            // Debug helper to inspect current state
+            globalThis.__flameDebugState = () => ({
+                payload,
+                mode: this.__flameMode,
+                causesCount: payload.causes?.length || 0,
+                currentCause: payload.causes?.[0],
+                hasOriginalFrames: payload.causes?.some(c => c.originalCodeFrameContent),
+                hasCompiledFrames: payload.causes?.some(c => c.compiledCodeFrameContent),
+                hasOriginalStacks: payload.causes?.some(c => c.originalStack || c.stack),
+                hasCompiledStacks: payload.causes?.some(c => c.compiledStack),
+            });
+
             // Update clickable file link if available
             const first = payload.causes && payload.causes[0];
             const fileElement = this.root.querySelector("#__flame__filelink");
@@ -126,11 +168,27 @@ class ErrorOverlay extends HTMLElement {
                 localStorage.setItem("flare:editor", this.value || "");
             });
         }
+
+        // Initialize close button
+        const closeButton = this.root.querySelector("#__flame__close");
+
+        if (closeButton) {
+            closeButton.addEventListener("click", () => {
+                this.close();
+            });
+        }
+
+        // Add ESC key handler for closing
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && this.parentNode) {
+                this.close();
+            }
+        });
     }
 
     close() {
-        if (this.element && this.element.parentNode) {
-            this.element.remove();
+        if (this.parentNode) {
+            this.parentNode.removeChild(this);
         }
     }
 
@@ -250,18 +308,8 @@ class ErrorOverlay extends HTMLElement {
             }
 
             const payload = this.__flamePayload;
-            const causes
-                = Array.isArray(payload.causes) && payload.causes.length > 0
-                    ? payload.causes
-                    : [
-                        {
-                            compiledStack: payload.compiledStack,
-                            message: payload.message,
-                            name: payload.name,
-                            originalStack: payload.originalStack,
-                            stack: payload.stack,
-                        },
-                    ];
+            // Use the processed causes from the payload - they should already be in the correct format
+            const causes = Array.isArray(payload.causes) && payload.causes.length > 0 ? payload.causes : [];
             const causeIds = causes.map((c, index) =>
                 String(c.__id || [c.originalFilePath || "", c.originalFileLine || 0, c.name || "", c.message || ""].join("|")),
             );
@@ -270,6 +318,8 @@ class ErrorOverlay extends HTMLElement {
 
             // Update pagination display
             const updatePagination = () => {
+                console.log("[flame:client:debug] Updating pagination to cause", currentIndex, "of", totalErrors);
+
                 const indexElement = this.root.querySelector("[data-flame-dialog-error-index]");
                 const totalElement = this.root.querySelector("[data-flame-dialog-header-total-count]");
                 const previousButton = this.root.querySelector("[data-flame-dialog-error-previous]");
@@ -322,7 +372,7 @@ class ErrorOverlay extends HTMLElement {
                             const stackText
                                 = mode === "compiled"
                                     ? String(currentError.compiledStack || rootPayload.compiledStack || "")
-                                    : String(currentError.stack || rootPayload.originalStack || "");
+                                    : String(currentError.originalStack || currentError.stack || rootPayload.originalStack || rootPayload.stack || "");
                             const escape = (s) =>
                                 String(s || "")
                                     .replaceAll("&", "&amp;")
@@ -411,25 +461,28 @@ class ErrorOverlay extends HTMLElement {
                 }
 
                 // Debug: Log all error data received from server
-                console.log("[flame:client:debug] Processing error data:", {
+                console.log("[flame:client:debug] Processing error data for cause", currentIndex, ":", {
                     compiledCodeFrameLength: currentError.compiledCodeFrameContent?.length || 0,
                     compiledColumn: currentError.compiledColumn,
                     compiledFilePath: currentError.compiledFilePath,
                     compiledLine: currentError.compiledLine,
                     compiledSnippetLength: currentError.compiledSnippet?.length || 0,
+                    compiledStackLength: String(currentError.compiledStack || "").length,
                     errorMessage: `${currentError.message?.slice(0, 100)}...`,
                     errorName: currentError.name,
                     hasCodeFrame: !!currentError.originalCodeFrameContent || !!currentError.compiledCodeFrameContent,
                     hasCompiledCodeFrame: !!currentError.compiledCodeFrameContent,
                     hasCompiledSnippet: !!currentError.compiledSnippet,
+                    hasCompiledStack: !!currentError.compiledStack,
                     hasOriginalCodeFrame: !!currentError.originalCodeFrameContent,
                     hasOriginalSnippet: !!currentError.originalSnippet,
-                    originalCodeFrameLength: currentError.originalCodeFrameContent?.length || 0,
+                    hasOriginalStack: !!currentError.originalStack || !!currentError.stack,
                     originalCodeFrameLength: currentError.originalCodeFrameContent?.length || 0,
                     originalFileColumn: currentError.originalFileColumn,
                     originalFileLine: currentError.originalFileLine,
                     originalFilePath: currentError.originalFilePath,
                     originalSnippetLength: currentError.originalSnippet?.length || 0,
+                    originalStackLength: String(currentError.originalStack || currentError.stack || "").length,
                 });
 
                 // Show tabs conditionally: only show original/compiled tabs if we have both
@@ -438,7 +491,7 @@ class ErrorOverlay extends HTMLElement {
                 const hasBoth = hasOriginal && hasCompiled;
                 const hasEither = hasOriginal || hasCompiled;
 
-                console.log("[flame:client:debug] Tab visibility calculation:", {
+                console.log("[flame:client:debug] Tab visibility calculation for cause", currentIndex, ":", {
                     hasBoth,
                     hasCompiled,
                     hasEither,
@@ -449,6 +502,8 @@ class ErrorOverlay extends HTMLElement {
 
                 if (hasBoth && modeSwitch)
                     modeSwitch.classList.remove("hidden");
+                else if (modeSwitch)
+                    modeSwitch.classList.add("hidden");
 
                 // If we don't have code frames but have file information, try to generate them
                 if (!currentError.originalCodeFrameContent && !currentError.compiledCodeFrameContent && currentError.originalFilePath) {
@@ -485,7 +540,14 @@ class ErrorOverlay extends HTMLElement {
                     if (!flameOverlay)
                         return;
 
-                    const html = mode === "compiled" ? currentError.compiledCodeFrameContent : currentError.originalCodeFrameContent;
+                    // Choose the appropriate code frame based on mode
+                    let html = "";
+                    if (mode === "compiled") {
+                        html = currentError.compiledCodeFrameContent || "";
+                    } else {
+                        // Default to original mode
+                        html = currentError.originalCodeFrameContent || "";
+                    }
 
                     console.log(`[flame:client:debug] Rendering code for mode '${mode}':`, {
                         flameOverlayExists: !!flameOverlay,
@@ -494,6 +556,8 @@ class ErrorOverlay extends HTMLElement {
                         mode,
                         usingCompiledCodeFrame: mode === "compiled" && !!currentError.compiledCodeFrameContent,
                         usingOriginalCodeFrame: mode !== "compiled" && !!currentError.originalCodeFrameContent,
+                        compiledCodeFrameAvailable: !!currentError.compiledCodeFrameContent,
+                        originalCodeFrameAvailable: !!currentError.originalCodeFrameContent,
                     });
 
                     flameOverlay.innerHTML = html || "";
@@ -501,18 +565,43 @@ class ErrorOverlay extends HTMLElement {
 
                 const activeMode = this.__flameMode || "original";
 
+                console.log("[flame:client:debug] Initial render for cause", currentIndex, "in mode:", activeMode);
                 renderCode(activeMode);
                 updateRawStack(activeMode);
 
-                originalButton?.addEventListener("click", () => {
+                // Initialize button states
+                if (originalButton && compiledButton) {
+                    if (activeMode === "original") {
+                        originalButton.classList.add("active");
+                        compiledButton.classList.remove("active");
+                    } else {
+                        compiledButton.classList.add("active");
+                        originalButton.classList.remove("active");
+                    }
+                }
+
+                originalButton?.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    console.log("[flame:client:debug] Switching to original mode for cause", currentIndex);
                     this.__flameMode = "original";
                     renderCode("original");
                     updateRawStack("original");
+
+                    // Update button states
+                    originalButton?.classList.add("active");
+                    compiledButton?.classList.remove("active");
                 });
-                compiledButton?.addEventListener("click", () => {
+
+                compiledButton?.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    console.log("[flame:client:debug] Switching to compiled mode for cause", currentIndex);
                     this.__flameMode = "compiled";
                     renderCode("compiled");
                     updateRawStack("compiled");
+
+                    // Update button states
+                    compiledButton?.classList.add("active");
+                    originalButton?.classList.remove("active");
                 });
             };
 
@@ -676,6 +765,11 @@ try {
                     source,
                     stack: error.stack,
                 });
+
+                // Add the overlay to the DOM if it exists
+                if (overlay && overlay.element) {
+                    document.body.appendChild(overlay.element);
+                }
             }
         } catch (error_) {
             console.error("[flame:client] Failed to create overlay:", error_);
@@ -702,6 +796,11 @@ try {
                         stack: "Test stack trace",
                     },
                 );
+
+                // Add the overlay to the DOM if it exists
+                if (overlay && overlay.element) {
+                    document.body.appendChild(overlay.element);
+                }
 
                 return overlay;
             }

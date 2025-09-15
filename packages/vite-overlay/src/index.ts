@@ -1,20 +1,30 @@
 // Core Vite and error handling imports
 import { getErrorCauses } from "@visulima/error/error";
+import { parseStacktrace } from "@visulima/error/stacktrace";
 import type { ErrorPayload, IndexHtmlTransformResult, Plugin, WebSocketClient } from "vite";
 
 // Internal imports - organized by category
 import { terminalOutput } from "../../../shared/utils/cli-error-builder";
 // Constants
-import { CAUSE_CHAIN_DEPTH_LIMIT, DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
+import { DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
 // Overlay components
 import { patchOverlay } from "./overlay/patch-overlay";
 // Types
 import type { DevelopmentLogger, ExtendedErrorPayload, RawErrorData, RecentErrorTracker, ViteServer } from "./types";
 // Utilities
 import buildExtendedErrorData from "./utils/error-processing";
-import { extractErrorInfo, logError } from "./utils/error-utils";
 import enhanceViteSsrError from "./utils/ssr-error-enhancer";
 import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace-utils";
+
+const logError = (server: ViteServer, prefix: string, error: unknown): void => {
+    try {
+        const message = error instanceof Error ? error.message : String(error);
+
+        server.config.logger.error(`${prefix}: ${message}`, { clear: true, timestamp: true });
+    } catch {
+        // Silent fallback if logging fails
+    }
+};
 
 // Based on
 // https://github.com/hi-ogawa/unocss-preset-antd/tree/main/packages/vite-runtime-error-overlay
@@ -120,8 +130,7 @@ const createUnhandledRejectionHandler = (server: ViteServer, rootPath: string, d
 
 const buildExtendedError = async (rawError: ErrorPayload["err"] | Error, server: ViteServer, rootPath: string): Promise<ExtendedErrorPayload> => {
     try {
-        const { message, name, stack: rawStack } = extractErrorInfo(rawError);
-        const cleanedRawStack = absolutizeStackUrls(cleanErrorStack(rawStack), rootPath);
+        const cleanedRawStack = absolutizeStackUrls(cleanErrorStack(rawError?.stack ?? ""), rootPath);
 
         const allCauses = getErrorCauses(rawError);
 
@@ -149,8 +158,8 @@ const buildExtendedError = async (rawError: ErrorPayload["err"] | Error, server:
         const payload: ExtendedErrorPayload = {
             causes: extendedCauses,
             isServerError: false,
-            message,
-            name,
+            message: rawError?.message ?? "",
+            name: rawError?.name ?? "",
             stack: cleanedRawStack,
         };
 
@@ -160,8 +169,9 @@ const buildExtendedError = async (rawError: ErrorPayload["err"] | Error, server:
 
         return {
             causes: [],
-            ...extractErrorInfo(rawError),
-            stack: absolutizeStackUrls(cleanErrorStack(extractErrorInfo(rawError).stack), rootPath),
+            message: rawError?.message ?? "",
+            name: rawError?.name ?? "",
+            stack: absolutizeStackUrls(cleanErrorStack(rawError?.stack ?? ""), rootPath),
         };
     }
 };
@@ -169,105 +179,69 @@ const buildExtendedError = async (rawError: ErrorPayload["err"] | Error, server:
 /**
  * Generates the client-side script that forwards runtime errors to the dev server
  */
-const generateClientScript = (): string => String.raw`
-import { createHotContext } from '/@vite/client';
-const hot = createHotContext('/@visulima/vite-overlay');
+  const generateClientScript = (): string => String.raw`
+ import { createHotContext } from '/@vite/client';
 
-       const send = async (error, loc) => {
-         try {
-           if (!(error instanceof Error)) error = new Error(String(error ?? '(unknown runtime error)'));
+ const hot = createHotContext('/@visulima/vite-overlay');
 
-           let ownerStack = null;
-           try {
-             const mod = await import('react');
-             if (mod && typeof mod.captureOwnerStack === 'function') ownerStack = mod.captureOwnerStack();
-           } catch {}
+async function sendError(error, loc) {
+    if (!(error instanceof Error)) {
+        error = new Error("(unknown runtime error)");
+    }
 
-           const collectCauses = function(err) {
-             const out = [];
-             try {
-               // Include the top-level error first
-               out.push({ name: String((err && err.name) || '${DEFAULT_ERROR_NAME}'), message: String((err && err.message) || ''), stack: String((err && err.stack) || '') });
-               // Traverse Error.cause chain (depth-limited)
-               var cur = err && err.cause;
-               var guard = 0;
-               while (cur && guard < ${CAUSE_CHAIN_DEPTH_LIMIT}) {
-                 out.push({ name: String((cur && cur.name) || '${DEFAULT_ERROR_NAME}'), message: String((cur && cur.message) || ''), stack: String((cur && cur.stack) || '') });
-                 cur = cur && cur.cause;
-                 guard++;
-               }
-               // If AggregateError, append nested errors
-               if (Array.isArray(err && err.errors)) {
-                 for (var i = 0; i < err.errors.length; i++) {
-                   var sub = err.errors[i];
-                   if (!sub) continue;
-                   out.push({ name: String((sub && sub.name) || '${DEFAULT_ERROR_NAME}'), message: String((sub && sub.message) || ''), stack: String((sub && sub.stack) || '') });
-                 }
-               }
-             } catch (error) {}
-             return out;
-           };
-           const payload = { message: String(error.message || '${DEFAULT_ERROR_MESSAGE}'), stack: String(error.stack || ''), ownerStack, file: loc?.filename || null, line: loc?.lineno || null, column: loc?.colno || null, causes: collectCauses(error) };
+    var ownerStack = null;
 
-           // Debug: Log what we're sending to server
-           console.log('[flame:client:debug] Sending error payload to server:', {
-             message: payload.message,
-             hasStack: !!payload.stack,
-             stackLength: payload.stack.length,
-             stackPreview: payload.stack.slice(0, 200) + '...',
-             stackContainsUnknown: payload.stack.includes('<unknown>'),
-             stackContainsTsx: payload.stack.includes('.tsx:') || payload.stack.includes('.jsx:'),
-             file: payload.file,
-             line: payload.line,
-             column: payload.column,
-             causesCount: payload.causes.length,
-             firstCauseStack: payload.causes[0] ? payload.causes[0].stack.slice(0, 100) + '...' : 'no causes',
-           });
+    try {
+        var mod = await import('react');
 
-           hot.send('${MESSAGE_TYPE}', payload);
-         } catch {}
-       };
-       window.addEventListener('error', (e) => { try { send(e.error, { filename: e.filename, lineno: e.lineno, colno: e.colno }); } catch {} });
-       window.addEventListener('unhandledrejection', (e) => { try { send(e.reason); } catch {} });
+        if (mod && typeof mod.captureOwnerStack === 'function') {
+            ownerStack = mod.captureOwnerStack();
+        }
+    } catch {}
 
-       // Listen for React error boundary events
-       window.addEventListener('react-error-boundary', function(e) {
-         try {
-           var detail = e.detail;
-           if (detail && detail.error) {
-             send(detail.error);
-           }
-         } catch (error) {}
-       });
 
-       // Simple console.error override to catch React error boundary logs
-       (function(){
-         const orig = console.error;
-         console.error = function() {
-           try {
-             const args = Array.prototype.slice.call(arguments);
-             const err = args.find((a) => a instanceof Error);
+    hot.send('${MESSAGE_TYPE}', {
+        message: error.message,
+        stack: error.stack,
+        ownerStack,
+        file: loc?.filename || null,
+        line: loc?.lineno || null,
+        column: loc?.colno || null
+    });
+}
 
-             if (err) {
-               // Debug: Log what we're capturing from console.error
-               console.log('[flame:client:console:debug] Capturing error from console.error:', {
-                 message: err.message,
-                 hasStack: !!err.stack,
-                 stackLength: String(err.stack || '').length,
-                 stackPreview: String(err.stack || '').slice(0, 200) + '...',
-                 stackContainsUnknown: String(err.stack || '').includes('<unknown>'),
-                 stackContainsTsx: String(err.stack || '').includes('.tsx:') || String(err.stack || '').includes('.jsx:'),
-                 name: err.name,
-               });
+window.addEventListener("error", function (evt) {
+    sendError(evt.error, { filename: evt.filename, lineno: evt.lineno, colno: evt.colno });
+});
 
-               // Send React-enhanced errors from console.error (like from error boundaries)
-               send(err);
-             }
-           } catch {}
-           return orig.apply(console, arguments);
-         }
-       })();
-`;
+window.addEventListener("unhandledrejection", function (evt) {
+    sendError(evt.reason);
+});
+
+window.addEventListener('react-error-boundary', async function(e) {
+    var detail = e.detail;
+
+    if (detail && detail.error) {
+        sendError(detail.error);
+    }
+});
+
+// Simple console.error override to catch React error boundary logs
+var orig = console.error;
+
+console.error = function() {
+    try {
+        var args = Array.prototype.slice.call(arguments);
+        var err = args.find((a) => a instanceof Error);
+
+        if (err) {
+            // Send React-enhanced errors from console.error (like from error boundaries)
+            sendError(err);
+        }
+    } catch {}
+
+    return orig.apply(console, arguments);
+}`;
 
 /**
  * Sets up WebSocket interception to enhance error payloads before sending.
@@ -335,35 +309,21 @@ const setupHMRHandler = (
     server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
         const raw = (data && typeof data === "object" ? (data as Record<string, unknown>) : {}) as RawErrorData;
 
-        // Debug: Log what we received from client
-        console.log("[flame:server:debug] Received raw error from client:", {
-            causesCount: (raw as any).causes ? (raw as any).causes.length : 0,
-            column: raw.column,
-            file: raw.file,
-            hasCauses: !!(raw as any).causes && (raw as any).causes.length > 0,
-            hasStack: !!raw.stack,
-            line: raw.line,
-            message: raw.message,
-            stackContainsTsx: String(raw.stack || "").includes(".tsx:") || String(raw.stack || "").includes(".jsx:"),
-            stackContainsUnknown: String(raw.stack || "").includes("<unknown>"),
-            stackLength: String(raw.stack || "").length,
-            stackPreview: `${String(raw.stack || "").slice(0, 200)}...`,
-        });
-
         const rawSig = createErrorSignature(raw);
 
         if (shouldSkip(rawSig)) {
             return; // duplicate runtime error
         }
 
-        // Create an Error instance so downstream parsers work consistently
-        const runtimeError = Object.assign(new Error(String(raw.message || DEFAULT_ERROR_MESSAGE)), raw);
+        const syntaicError = new Error(String(raw.message || DEFAULT_ERROR_MESSAGE));
+
+        syntaicError.stack = String(raw.stack || "");
 
         try {
             // Process the runtime error using shared logic
-            await processRuntimeError(runtimeError, rootPath, developmentLogger);
+            await processRuntimeError(syntaicError, rootPath, developmentLogger);
 
-            const extensionPayload = await buildExtendedError(runtimeError, server, rootPath);
+            const extensionPayload = await buildExtendedError(syntaicError, server, rootPath);
 
             // Debug: Log what we're sending back to client via HMR
             console.log("[flame:server:hmr:debug] Sending extended error via HMR:", {

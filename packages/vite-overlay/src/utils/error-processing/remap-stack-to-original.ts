@@ -1,9 +1,9 @@
 import { formatStacktrace, parseStacktrace } from "@visulima/error";
 import type { ViteDevServer } from "vite";
 
-import { findModuleForPath } from "../module-finder";
+import findModuleForPath from "../find-module-for-path";
 import { normalizeIdCandidates } from "../normalize-id-candidates";
-import { resolveOriginalLocation } from "../source-map-resolver";
+import resolveOriginalLocation from "../resolve-original-location";
 
 export const remapStackToOriginal = async (server: ViteDevServer, stack: string, header?: { message?: string; name?: string }): Promise<string> => {
     const frames = parseStacktrace({ stack } as unknown as Error);

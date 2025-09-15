@@ -2,6 +2,17 @@
 const HTTP_URL_REGEX = /^https?:\/\//;
 
 /**
+ * Generates candidate paths for HTTP URLs
+ */
+const generateUrlCandidates = (urlString: string): string[] => {
+    const url = new URL(urlString);
+    const pathWithSearch = url.pathname + (url.search || "");
+    const noLeadingSlash = pathWithSearch.startsWith("/") ? pathWithSearch.slice(1) : pathWithSearch;
+
+    return [decodeURIComponent(pathWithSearch), decodeURIComponent(noLeadingSlash), decodeURIComponent(url.pathname)];
+};
+
+/**
  * Checks if a string is an HTTP/HTTPS URL.
  */
 export const isHttpUrl = (value: string): boolean => HTTP_URL_REGEX.test(value);
@@ -27,15 +38,4 @@ export const normalizeIdCandidates = (filePath: string): string[] => {
 
         return [];
     }
-};
-
-/**
- * Generates candidate paths for HTTP URLs
- */
-const generateUrlCandidates = (urlString: string): string[] => {
-    const url = new URL(urlString);
-    const pathWithSearch = url.pathname + (url.search || "");
-    const noLeadingSlash = pathWithSearch.startsWith("/") ? pathWithSearch.slice(1) : pathWithSearch;
-
-    return [decodeURIComponent(pathWithSearch), decodeURIComponent(noLeadingSlash), decodeURIComponent(url.pathname)];
 };

@@ -1,3 +1,4 @@
+/* eslint-disable no-secrets/no-secrets */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import moonStarIcon from "lucide-static/icons/moon-star.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -131,6 +132,11 @@ const generateOverlayTemplate = (): string => {
                     <button type="button" data-flame-mode="original" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]">Original</button>
                     <button type="button" data-flame-mode="compiled" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]">Compiled</button>
                 </div>
+                <button type="button" id="__flame__close" aria-label="Close error overlay" class="flex justify-center items-center w-6 h-6 bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" aria-hidden="true">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12.5303 3.53033C12.8232 3.23744 12.8232 2.76256 12.5303 2.46967C12.2374 2.17678 11.7626 2.17678 11.4697 2.46967L8 5.93934L4.53033 2.46967C4.23744 2.17678 3.76256 2.17678 3.46967 2.46967C3.17678 2.76256 3.17678 3.23744 3.46967 3.53033L6.93934 7L3.46967 10.4697C3.17678 10.7626 3.17678 11.2374 3.46967 11.5303C3.76256 11.8232 4.23744 11.8232 4.53033 11.5303L8 8.06066L11.4697 11.5303C11.7626 11.8232 12.2374 11.8232 12.5303 11.5303C12.8232 11.2374 12.8232 10.7626 12.5303 10.4697L9.06066 7L12.5303 3.53033Z" fill="currentColor"></path>
+                    </svg>
+                </button>
             </div>
         </div>
 
