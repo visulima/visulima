@@ -2,11 +2,10 @@ import { readFile } from "node:fs/promises";
 
 import { codeFrame, formatStacktrace, parseStacktrace } from "@visulima/error";
 import aiPrompt from "@visulima/error/solution/ai/prompt";
-import type { ViteDevServer } from "vite";
+import type { ErrorPayload, ViteDevServer } from "vite";
 
 import findLanguageBasedOnExtension from "../../../../shared/utils/find-language-based-on-extension";
 import getHighlighter, { transformerCompactLineOptions } from "../../../../shared/utils/get-highlighter";
-import { parseVueCompilationError } from "../adapters/vue-error-adapter";
 import type { ErrorProcessingResult, SourceTexts } from "../types";
 import { findModuleForPath } from "./module-finder";
 import { normalizeIdCandidates } from "./normalize-id-candidates";
@@ -16,14 +15,60 @@ import { getSourceFromMap } from "./source-map-utils";
 import {
     cleanErrorMessage,
     cleanErrorStack,
-    detectPluginFromStack,
-    extractErrors,
+        extractErrors,
     isAggregateError,
     isESBuildErrorArray,
     processESBuildErrors,
 } from "./stack-trace-utils";
 import { extractLocationFromViteError, extractViteErrorLocation } from "./vite-error-adapter";
 import type { LanguageInput } from "shiki";
+
+/**
+ * Parses Vue SFC compilation error messages to extract essential location information
+ */
+const parseVueCompilationError = (errorMessage: string) => {
+    // Check if this is a Vue compilation error
+    if (!errorMessage.includes("[vue/compiler-sfc]")) {
+        return null;
+    }
+
+    let filePath = "";
+    let line = 0;
+    let column = 0;
+
+    // Extract file path and position from the error message
+    // Try to extract position from the error message format: "(4:2)"
+    const positionPattern = /\((\d+):(\d+)\)/;
+    const positionMatch = errorMessage.match(positionPattern);
+
+    if (positionMatch) {
+        line = Number.parseInt(positionMatch[1], 10);
+        column = Number.parseInt(positionMatch[2], 10);
+    }
+
+    // Find the file path in the error message
+    const filePathPattern = /(\S+\.vue)/;
+    const fileMatch = errorMessage.match(filePathPattern);
+
+    if (fileMatch) {
+        filePath = fileMatch[1];
+    }
+
+    // Extract just the error message (first line)
+    const message = errorMessage.split("\n")[0] || errorMessage;
+
+    // Return only essential information
+    if (filePath && line > 0 && column > 0) {
+        return {
+            column,
+            originalFilePath: filePath,
+            line,
+            message,
+        };
+    }
+
+    return null;
+};
 
 /**
  * Retrieves original and compiled source texts from various sources.
@@ -141,7 +186,7 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
  * @param server The Vite dev server instance for module resolution
  * @returns Promise resolving to extended error data object
  */
-const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawError?: any): Promise<ErrorProcessingResult> => {
+const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawError?: ErrorPayload["err"]): Promise<ErrorProcessingResult> => {
     // Try to extract Vue compilation error information using the adapter
     const vueErrorInfo = error?.message ? parseVueCompilationError(error.message) : null;
 
@@ -177,7 +222,7 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawEr
     const rawStack = primaryError.stack || "";
     const cleanedStack = cleanErrorStack(rawStack);
     const originalStack = await remapStackToOriginal(server, cleanedStack, { message: cleanMessage, name: primaryError.name });
-    const plugin = detectPluginFromStack(rawStack);
+    const plugin = rawError?.plugin;
 
 
     // Create a synthetic error with cleaned data for parsing
@@ -359,10 +404,10 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawEr
         applicationType: undefined,
         error,
         file: {
-        file: originalFilePath,
-        language: findLanguageBasedOnExtension(originalFilePath),
-        line: originalFileLine,
-        snippet: originalSnippet || compiledSnippet || "",
+            file: originalFilePath,
+            language: findLanguageBasedOnExtension(originalFilePath),
+            line: originalFileLine,
+            snippet: originalSnippet || compiledSnippet || "",
         },
     });
 

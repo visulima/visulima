@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ViteDevServer } from "vite";
 
-import { extractLocationFromViteError, extractViteErrorLocation } from "./vite-error-adapter";
+import { extractLocationFromViteError, extractViteErrorLocation } from "../src/utils/vite-error-adapter";
 
 describe(extractLocationFromViteError, () => {
     const mockServer = {

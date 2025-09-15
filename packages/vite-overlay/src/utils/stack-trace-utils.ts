@@ -2,7 +2,7 @@ import { stripVTControlCharacters } from "node:util";
 
 import { resolve } from "@visulima/path";
 
-import type { PluginPattern, StackFrameValidator, StackLineCleaner, StackLocation, SupportedExtension } from "../types";
+import type { PluginPattern, StackFrameValidator, SupportedExtension } from "../types";
 
 // Constants
 const PATH_SEPARATOR = "/" as const;
@@ -10,7 +10,6 @@ const COLON_SEPARATOR = ":" as const;
 const AT_PREFIX = "at " as const;
 
 // Regex patterns (compiled once for performance)
-const LOCATION_PATTERN = /at\s+(.+?):(\d+)(?::(\d+))?/ as const;
 const HTTP_URL_PATTERN = /https?:\/\/[^\s)]+/g as const;
 const FILE_URL_PATTERN = /file:\/\//g as const;
 const FS_PATH_PATTERN = /\/@fs\//g as const;
@@ -20,44 +19,6 @@ const SUPPORTED_EXTENSIONS = new Set<SupportedExtension>([".cjs", ".js", ".jsx",
 
 // Keywords that indicate valid stack frames
 const VALID_STACK_KEYWORDS = new Set<string>(["<anonymous>", "native"]);
-
-// Plugin detection patterns - organized by category for maintainability
-const PLUGIN_PATTERNS: ReadonlyArray<PluginPattern> = [
-    // Vite core plugins
-    { name: "Vite React Plugin", pattern: /vite.*plugin.*react/i },
-    { name: "Vite Vue Plugin", pattern: /vite.*plugin.*vue/i },
-    { name: "Vite Vue Plugin", pattern: /vue\/compiler-sfc/i },
-    { name: "Vite Svelte Plugin", pattern: /vite.*plugin.*svelte/i },
-    { name: "Vite Plugin", pattern: /@vitejs\/plugin-/i },
-    { name: "Vite Plugin", pattern: /vite-plugin/i },
-
-    // Build tools
-    { name: "esbuild", pattern: /esbuild/i },
-    { name: "Rollup", pattern: /rollup/i },
-    { name: "Webpack", pattern: /webpack/i },
-    { name: "Parcel", pattern: /parcel/i },
-
-    // TypeScript
-    { name: "TypeScript", pattern: /typescript/i },
-    { name: "TypeScript Compiler", pattern: /tsc/i },
-
-    // CSS/Sass
-    { name: "PostCSS", pattern: /postcss/i },
-    { name: "Sass", pattern: /sass/i },
-    { name: "Less", pattern: /less/i },
-    { name: "Stylus", pattern: /stylus/i },
-
-    // Testing
-    { name: "Vitest", pattern: /vitest/i },
-    { name: "Jest", pattern: /jest/i },
-    { name: "Cypress", pattern: /cypress/i },
-
-    // Framework specific
-    { name: "Next.js", pattern: /next/i },
-    { name: "Nuxt.js", pattern: /nuxt/i },
-    { name: "Astro", pattern: /astro/i },
-    { name: "SvelteKit", pattern: /sveltekit/i },
-] as const;
 
 /**
  * Checks if a line is a valid JavaScript stack frame.
@@ -179,65 +140,6 @@ export const cleanErrorStack = (stack: string): string => {
         .join("\n");
 };
 
-/**
- * Attempts to detect the plugin that caused an error from the stack trace.
- * @param stack Stack trace string
- * @returns Plugin name if detected, undefined otherwise
- */
-export const detectPluginFromStack = (stack: string): string | undefined => {
-    if (!stack) {
-        return undefined;
-    }
-
-    const stackText = stack.toLowerCase();
-
-    for (const { name, pattern } of PLUGIN_PATTERNS) {
-        if (pattern.test(stackText)) {
-            return name;
-        }
-    }
-
-    return undefined;
-};
-
-/**
- * Extracts useful location information from a stack trace line.
- * @param line Single stack trace line
- * @returns Object with file, line, and column information or null if parsing fails
- */
-export const parseStackLine = (line: string): StackLocation | null => {
-    if (!line) {
-        return null;
-    }
-
-    const locationMatch = LOCATION_PATTERN.exec(line);
-
-    if (!locationMatch) {
-        return null;
-    }
-
-    const [, file, lineString, columnString] = locationMatch;
-    const lineNumber = lineString ? Number.parseInt(lineString, 10) : 0;
-    const columnNumber = columnString ? Number.parseInt(columnString, 10) : undefined;
-
-    return {
-        column: columnNumber,
-        file: file?.trim() || "",
-        line: lineNumber,
-    } as const;
-};
-
-/**
- * Normalizes line endings in a string to \n.
- * @param text Text with potentially mixed line endings
- * @returns Text with normalized line endings
- */
-export const normalizeLF = (text: string): string => {
-    if (!text)
-        return text;
-
-    return text.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
-};
 
 /**
  * Strips ANSI escape codes from error messages.

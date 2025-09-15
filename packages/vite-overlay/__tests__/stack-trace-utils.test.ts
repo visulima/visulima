@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cleanErrorStack, isValidStackFrame } from "./stack-trace-utils";
+import { cleanErrorStack, isValidStackFrame } from "../src/utils/stack-trace-utils";
 
 describe(cleanErrorStack, () => {
     it("should clean Vue compilation errors", () => {

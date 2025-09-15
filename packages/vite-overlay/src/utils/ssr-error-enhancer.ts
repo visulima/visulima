@@ -24,29 +24,6 @@ interface EnhancedError extends Error {
 }
 
 /**
- * Enhances SSR errors with better stack traces and contextual hints.
- * - Fixes stack traces via Vite's SSR helper
- * - Detects common SSR failure patterns and enriches message/loc
- */
-export const enhanceViteSsrError = async (rawError: unknown, server: ViteDevServer): Promise<Error> => {
-    const error = createEnhancedError(rawError);
-
-    // Let Vite improve stack traces (source maps etc.)
-    await safeSsrFixStacktrace(server, error);
-
-    // Extract top file from stack trace
-    const topFile = extractTopFileFromStack(error);
-
-    // Load file contents for location enhancement
-    const fileContents = topFile ? await safeReadFile(topFile) : undefined;
-
-    // Apply SSR-specific error enhancements
-    await applySsrErrorEnhancements(error, topFile, fileContents);
-
-    return error;
-};
-
-/**
  * Creates an enhanced error object with additional properties
  */
 const createEnhancedError = (rawError: unknown): EnhancedError => {
@@ -187,3 +164,28 @@ const findImportLocation = (fileContents: string, searchTerm: string) => {
         line: lineIndex + 1,
     };
 };
+
+/**
+ * Enhances SSR errors with better stack traces and contextual hints.
+ * - Fixes stack traces via Vite's SSR helper
+ * - Detects common SSR failure patterns and enriches message/loc
+ */
+const enhanceViteSsrError = async (rawError: unknown, server: ViteDevServer): Promise<Error> => {
+    const error = createEnhancedError(rawError);
+
+    // Let Vite improve stack traces (source maps etc.)
+    await safeSsrFixStacktrace(server, error);
+
+    // Extract top file from stack trace
+    const topFile = extractTopFileFromStack(error);
+
+    // Load file contents for location enhancement
+    const fileContents = topFile ? await safeReadFile(topFile) : undefined;
+
+    // Apply SSR-specific error enhancements
+    await applySsrErrorEnhancements(error, topFile, fileContents);
+
+    return error;
+};
+
+export default enhanceViteSsrError;

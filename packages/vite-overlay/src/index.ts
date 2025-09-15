@@ -13,8 +13,8 @@ import { patchOverlay } from "./overlay/patch-overlay";
 import type { DevelopmentLogger, ExtendedErrorPayload, ProvidedCause, RawErrorData, RecentErrorTracker, ViteServer } from "./types";
 // Utilities
 import buildExtendedErrorData from "./utils/error-data-builder";
-import { extractErrorInfo, logError, safeAsync, safeSync } from "./utils/error-utils";
-import { enhanceViteSsrError } from "./utils/ssr-error-enhancer";
+import { extractErrorInfo, logError } from "./utils/error-utils";
+import enhanceViteSsrError from "./utils/ssr-error-enhancer";
 import { absolutizeStackUrls } from "./utils/stack-trace-utils";
 
 // Based on
@@ -74,30 +74,46 @@ const createExtendedErrorSignature = (extension: ExtendedErrorPayload): string =
     return `${extension.name}|${extension.message}|${primaryCause?.originalFilePath || ""}|${primaryCause?.originalFileLine || 0}`;
 };
 
+/**
+ * Common error processing logic shared between HMR handler and unhandled rejection handler
+ */
+const processRuntimeError = async (
+    runtimeError: Error,
+    server: ViteServer,
+    rootPath: string,
+    developmentLogger: DevelopmentLogger,
+): Promise<void> => {
+    // Try to fix stack traces using Vite's SSR helper
+    try {
+        server.ssrFixStacktrace(runtimeError as any);
+    } catch (error) {
+        logError(server, "[visulima:vite-overlay:server] ssrFixStacktrace failed", error);
+    }
+
+    // Try to enhance the error with SSR-specific improvements
+    try {
+        const enhanced = await enhanceViteSsrError(runtimeError, server);
+        Object.assign(runtimeError, enhanced);
+    } catch (error) {
+        logError(server, "[visulima:vite-overlay:server] enhanceViteSsrError failed", error);
+    }
+
+    // Ensure terminal logs show absolute filesystem paths instead of dev URLs
+    try {
+        runtimeError.stack = cleanStack(absolutizeStackUrls(String(runtimeError.stack || ""), rootPath));
+    } catch {
+        // Ignore stack cleaning errors
+    }
+
+    // Pretty dev-server logs using cli-handler (ANSI formatted + optional solutions)
+    await terminalOutput(runtimeError, { logger: developmentLogger });
+};
+
 const createUnhandledRejectionHandler = (server: ViteServer, rootPath: string, developmentLogger: DevelopmentLogger) => async (reason: unknown) => {
     const runtimeError = reason instanceof Error ? reason : new Error(String((reason as any)?.stack || reason));
 
-    safeSync(
-        () => server.ssrFixStacktrace(runtimeError as any),
-        undefined,
-        (error) => logError(server, "[visulima:vite-overlay:server] ssrFixStacktrace failed", error),
-    );
-
-    await safeAsync(
-        () =>
-            enhanceViteSsrError(runtimeError, server).then((enhanced) => {
-                Object.assign(runtimeError, enhanced);
-            }),
-        undefined,
-        (error) => logError(server, "[visulima:vite-overlay:server] enhanceViteSsrError failed", error),
-    );
-
-    // Ensure terminal logs show absolute filesystem paths
-    safeSync(() => {
-        runtimeError.stack = cleanStack(absolutizeStackUrls(String(runtimeError.stack || ""), rootPath));
-    }, undefined);
-
-    await terminalOutput(runtimeError, { logger: developmentLogger });
+    // Process the runtime error using shared logic
+    await processRuntimeError(runtimeError, server, rootPath, developmentLogger);
 
     // Let our ws interceptor normalize to extended payload
     server.ws.send({ err: runtimeError, type: "error" } as any);
@@ -108,28 +124,7 @@ const buildExtendedError = async (rawError: ErrorPayload["err"] | Error, server:
         const { message, name, stack: rawStack } = extractErrorInfo(rawError);
         const cleanedRawStack = cleanStack(absolutizeStackUrls(rawStack, rootPath));
 
-        // Build a synthetic error to feed the stack parser (fallback only)
-        const synthetic = new Error(message);
-
-        (synthetic as any).name = name;
-        (synthetic as any).stack = `${name}: ${message}\n${cleanedRawStack}`;
-
-        // Prefer causes provided by the client (from Error.cause / AggregateError)
-        const providedCauses = Array.isArray((rawError as any)?.causes) ? ((rawError as any).causes as ProvidedCause[]) : undefined;
-
-        const allCauses: Error[]
-            = providedCauses && providedCauses.length > 0
-                ? providedCauses.map((c) => {
-                    const e = new Error(String(c?.message || ""));
-
-                    (e as any).name = String(c?.name || DEFAULT_ERROR_NAME);
-                    const st = absolutizeStackUrls(String(c?.stack || ""), rootPath);
-
-                    (e as any).stack = st && /\S/.test(st) ? st : `${(e as any).name}: ${String(c?.message || "")}`;
-
-                    return e;
-                })
-                : getErrorCauses(rawError instanceof Error ? (rawError as Error) : synthetic);
+        const allCauses: Error[] = getErrorCauses(rawError);
 
         if (allCauses.length === 0) {
             throw new Error("No errors found in the error stack");
@@ -232,7 +227,7 @@ window.addEventListener('unhandledrejection', (e) => { try { send(e.reason); } c
 `;
 
 /**
- * Sets up WebSocket interception to enhance error payloads before sending
+ * Sets up WebSocket interception to enhance error payloads before sending.
  */
 const setupWebSocketInterception = (
     server: ViteServer,
@@ -242,7 +237,8 @@ const setupWebSocketInterception = (
 ): void => {
     const origSend = server.ws.send.bind(server.ws);
 
-    (server.ws as any).send = async (payload: any, client?: any) => {
+    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+    server.ws.send = async (payload: any, client?: any): Promise<void> => {
         try {
             if (payload && typeof payload === "object" && payload.type === "error" && payload.err) {
                 const rawSig = createErrorSignature(payload.err);
@@ -251,28 +247,10 @@ const setupWebSocketInterception = (
                     return; // drop duplicate
                 }
 
-                const extension = await buildExtendedError(payload.err as any, server, rootPath);
+                const extension = await buildExtendedError(payload.err as ErrorPayload["err"], server, rootPath);
 
-                // Debug: Log what we're sending to the client
-                if (extension?.causes?.[0]) {
-                    const firstCause = extension.causes[0];
-
-                    console.log("[vite-overlay:server:debug] Sending to client:", {
-                        originalCodeFrameLength: firstCause.originalCodeFrameContent?.length || 0,
-                        compiledFilePath: firstCause.compiledFilePath,
-                        compiledSnippetLength: firstCause.compiledSnippet?.length || 0,
-                        errorName: firstCause.name,
-                        originalFilePath: firstCause.originalFilePath,
-                        hasCodeFrame: !!firstCause.originalCodeFrameContent || !!firstCause.compiledCodeFrameContent,
-                        hasCompiledCodeFrame: !!firstCause.compiledCodeFrameContent,
-                        hasCompiledSnippet: !!firstCause.compiledSnippet,
-                        hasOriginalCodeFrame: !!firstCause.originalCodeFrameContent,
-                        hasOriginalSnippet: !!firstCause.originalSnippet,
-                        originalSnippetLength: firstCause.originalSnippet?.length || 0,
-                    });
-                }
-
-                payload.err = extension as any;
+                // eslint-disable-next-line no-param-reassign
+                payload.err = extension as ErrorPayload["err"];
 
                 const extensionSig = createExtendedErrorSignature(extension);
 
@@ -282,7 +260,7 @@ const setupWebSocketInterception = (
             logError(server, "[visulima:vite-overlay:server] ws.send intercept failed", error);
         }
 
-        return origSend(payload, client);
+        origSend(payload, client);
     };
 };
 
@@ -299,42 +277,22 @@ const setupHMRHandler = (
     server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
         const raw = (data && typeof data === "object" ? (data as Record<string, unknown>) : {}) as RawErrorData;
 
+        const rawSig = createErrorSignature(raw);
+
+        if (shouldSkip(rawSig)) {
+            return; // duplicate runtime error
+        }
+
         // Create an Error instance so downstream parsers work consistently
         const runtimeError = Object.assign(new Error(String(raw.message || DEFAULT_ERROR_MESSAGE)), raw);
 
         try {
-            safeSync(
-                () => server.ssrFixStacktrace(runtimeError as any),
-                undefined,
-                (error) => logError(server, "[visulima:vite-overlay:server] ssrFixStacktrace failed", error),
-            );
-
-            await safeAsync(
-                () =>
-                    enhanceViteSsrError(runtimeError, server).then((enhanced) => {
-                        Object.assign(runtimeError, enhanced);
-                    }),
-                undefined,
-                (error) => logError(server, "[visulima:vite-overlay:server] enhanceViteSsrError failed", error),
-            );
-
-            // Ensure terminal logs show absolute filesystem paths instead of dev URLs
-            safeSync(() => {
-                runtimeError.stack = cleanStack(absolutizeStackUrls(String(runtimeError.stack || ""), rootPath));
-            }, undefined);
-
-            const rawSig = createErrorSignature(raw);
-
-            if (shouldSkip(rawSig)) {
-                return; // duplicate runtime error
-            }
+            // Process the runtime error using shared logic
+            await processRuntimeError(runtimeError, server, rootPath, developmentLogger);
 
             const extensionPayload = await buildExtendedError(runtimeError, server, rootPath);
 
             recentErrors.set(createExtendedErrorSignature(extensionPayload), Date.now());
-
-            // Pretty dev-server logs using cli-handler (ANSI formatted + optional solutions)
-            await terminalOutput(runtimeError, { logger: developmentLogger });
 
             client.send({ err: extensionPayload as any, type: "error" });
         } catch (error) {
@@ -359,7 +317,6 @@ const errorOverlayPlugin = (): Plugin => {
         configureServer(server) {
             const rootPath = server.config.root || process.cwd();
 
-            // Initialize utilities
             const developmentLogger = createDevelopmentLogger(server);
             const { recentErrors, shouldSkip } = createRecentErrorTracker();
 
@@ -372,27 +329,25 @@ const errorOverlayPlugin = (): Plugin => {
             // Capture unhandled rejections on the dev server process and surface them in the overlay
             const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
 
-            try {
-                process.on("unhandledRejection", handleUnhandledRejection);
-                server.httpServer?.on("close", () => {
-                    try {
-                        process.off("unhandledRejection", handleUnhandledRejection);
-                    } catch {}
-                });
-            } catch {}
+            process.on("unhandledRejection", handleUnhandledRejection);
+            server.httpServer?.on("close", () => {
+                process.off("unhandledRejection", handleUnhandledRejection);
+            });
         },
         enforce: "pre",
 
         name: PLUGIN_NAME,
 
         // Replace Vite's overlay class with our custom overlay (Astro-style patch)
-        transform(code, id, options) {
+        transform(code, id, options): string | null {
             if (options?.ssr) {
-                return;
+                // eslint-disable-next-line unicorn/no-null
+                return null;
             }
 
             if (!(id.includes("vite/dist/client/client.mjs") || id.includes("/@vite/client"))) {
-                return;
+                // eslint-disable-next-line unicorn/no-null
+                return null;
             }
 
             return patchOverlay(code);
@@ -409,6 +364,3 @@ const errorOverlayPlugin = (): Plugin => {
 };
 
 export default errorOverlayPlugin;
-
-// Export Vue error adapter for testing
-export { parseVueCompilationError };

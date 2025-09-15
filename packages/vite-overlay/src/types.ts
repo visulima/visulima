@@ -117,14 +117,6 @@ export interface ESBuildMessage {
     readonly text: string;
 }
 
-// Processed ESBuild error
-export interface ProcessedESBuildError {
-    readonly column?: number;
-    readonly file?: string;
-    readonly line?: number;
-    readonly message: string;
-    readonly plugin?: string;
-}
 
 export interface ErrorProcessingResult {
     readonly compiledCodeFrameContent?: string;
@@ -155,8 +147,4 @@ export const isVueErrorInfo = (value: unknown): value is VueErrorInfo =>
     typeof value === "object" && value !== null && "column" in value && "filePath" in value && "line" in value;
 
 // Utility types for function signatures
-export type SafeAsyncOperation<T> = () => Promise<T>;
-export type SafeSyncOperation<T> = () => T;
-export type ErrorHandler = (error: unknown) => void;
 export type StackFrameValidator = (line: string) => boolean;
-export type StackLineCleaner = (line: string) => string;
