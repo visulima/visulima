@@ -1,17 +1,10 @@
-// Core Vite and error handling imports
 import { getErrorCauses } from "@visulima/error/error";
-import { parseStacktrace } from "@visulima/error/stacktrace";
-import type { ErrorPayload, IndexHtmlTransformResult, Plugin, WebSocketClient } from "vite";
+import type { IndexHtmlTransformResult, Plugin, ViteServer, WebSocketClient } from "vite";
 
-// Internal imports - organized by category
 import { terminalOutput } from "../../../shared/utils/cli-error-builder";
-// Constants
 import { DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
-// Overlay components
 import { patchOverlay } from "./overlay/patch-overlay";
-// Types
-import type { DevelopmentLogger, ExtendedErrorPayload, RawErrorData, RecentErrorTracker, ViteServer } from "./types";
-// Utilities
+import type { DevelopmentLogger, RawErrorData, RecentErrorTracker, VisulimaViteOverlayErrorPayload, ViteErrorData } from "./types";
 import buildExtendedErrorData from "./utils/error-processing";
 import enhanceViteSsrError from "./utils/ssr-error-enhancer";
 import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace-utils";
@@ -73,13 +66,6 @@ const createRecentErrorTracker = (): RecentErrorTracker => {
 // Generates a unique signature for error deduplication
 const createErrorSignature = (raw: Error | RawErrorData): string => `${String(raw?.message || "")}\n${String(raw?.stack || "")}`;
 
-// Creates a detailed signature for processed errors
-const createExtendedErrorSignature = (extension: ExtendedErrorPayload): string => {
-    const primaryCause = extension.causes?.[0];
-
-    return `${extension.name}|${extension.message}|${primaryCause?.originalFilePath || ""}|${primaryCause?.originalFileLine || 0}`;
-};
-
 /**
  * Common error processing logic shared between HMR handler and unhandled rejection handler
  */
@@ -128,58 +114,68 @@ const createUnhandledRejectionHandler = (server: ViteServer, rootPath: string, d
     server.ws.send({ err: runtimeError, type: "error" } as any);
 };
 
-const buildExtendedError = async (rawError: ErrorPayload["err"] | Error, server: ViteServer, rootPath: string): Promise<ExtendedErrorPayload> => {
-    try {
-        const cleanedRawStack = absolutizeStackUrls(cleanErrorStack(rawError?.stack ?? ""), rootPath);
+const buildExtendedError = async (
+    rawError: Error,
+    server: ViteServer,
+    rootPath: string,
+    viteErrorData?: ViteErrorData,
+): Promise<VisulimaViteOverlayErrorPayload> => {
+    const allErrors = getErrorCauses(rawError);
 
-        const allCauses = getErrorCauses(rawError);
-
-        if (allCauses.length === 0) {
-            throw new Error("No errors found in the error stack");
-        }
-
-        // Build extended data for all causes (main cause + all nested causes)
-        const extendedCauses = await Promise.all(
-            allCauses.map(async (cause, index) => {
-                // Pass the raw error for the first cause (main error) to get rich location data
-                const rawErrorForCause = index === 0 && rawError && typeof rawError === "object" && "loc" in rawError ? rawError : undefined;
-                const errorCause = cause instanceof Error ? cause : new Error(String((cause as any)?.message || "Unknown error"));
-                const extendedData = await buildExtendedErrorData(errorCause, server, rawErrorForCause as any);
-
-                return {
-                    message: String((cause as any)?.message || ""),
-                    name: String((cause as any)?.name || DEFAULT_ERROR_NAME),
-                    stack: absolutizeStackUrls(cleanErrorStack(String((cause as any)?.stack || "")), rootPath),
-                    ...extendedData,
-                };
-            }),
-        );
-
-        const payload: ExtendedErrorPayload = {
-            causes: extendedCauses,
-            isServerError: false,
-            message: rawError?.message ?? "",
-            name: rawError?.name ?? "",
-            stack: cleanedRawStack,
-        };
-
-        return payload;
-    } catch (error) {
-        logError(server, "[visulima:vite-overlay:server] buildExtendedError failure", error);
-
-        return {
-            causes: [],
-            message: rawError?.message ?? "",
-            name: rawError?.name ?? "",
-            stack: absolutizeStackUrls(cleanErrorStack(rawError?.stack ?? ""), rootPath),
-        };
+    if (allErrors.length === 0) {
+        throw new Error("No errors found in the error stack");
     }
+
+    // Build extended data for all causes (main cause + all nested causes)
+    // Pass viteErrorData to all errors in the chain, not just the first one
+    const extendedErrors = await Promise.all(
+        allErrors.map(async (error, index) => {
+            // For cause errors, try to extract location info from their stack trace
+            let causeViteErrorData = viteErrorData;
+
+            if (index > 0) {
+                // For cause errors, try to extract location from their stack trace
+                const stackLines = error?.stack?.split("\n") || [];
+                const firstStackLine = stackLines.find((line) => line.includes("at ") && !line.includes("node_modules"));
+
+                if (firstStackLine) {
+                    // Try to extract file, line, column from stack trace
+                    const match = firstStackLine.match(/at\s+[^(\s]+\s*\(([^:)]+):(\d+):(\d+)\)/) || firstStackLine.match(/at\s+([^:)]+):(\d+):(\d+)/);
+
+                    if (match) {
+                        const [, file, line, col] = match;
+
+                        causeViteErrorData = {
+                            column: Number.parseInt(col),
+                            file,
+                            line: Number.parseInt(line),
+                            plugin: viteErrorData?.plugin,
+                        };
+                    }
+                }
+            }
+
+            const extendedData = await buildExtendedErrorData(error, server, causeViteErrorData);
+
+            return {
+                message: error?.message || "",
+                name: error?.name || DEFAULT_ERROR_NAME,
+                stack: absolutizeStackUrls(cleanErrorStack(error?.stack || ""), rootPath),
+                ...extendedData,
+            };
+        }),
+    );
+
+    return {
+        errors: extendedErrors,
+        isServerError: false,
+    } as VisulimaViteOverlayErrorPayload;
 };
 
 /**
  * Generates the client-side script that forwards runtime errors to the dev server
  */
-  const generateClientScript = (): string => String.raw`
+const generateClientScript = (): string => String.raw`
  import { createHotContext } from '/@vite/client';
 
  const hot = createHotContext('/@visulima/vite-overlay');
@@ -200,9 +196,45 @@ async function sendError(error, loc) {
     } catch {}
 
 
+    // Recursively extract full cause chain as nested structure
+    function extractCauseChain(err) {
+        if (!err || !err.cause) {
+            return null;
+        }
+
+        var current = err.cause;
+        var rootCause = {
+            name: current.name || null,
+            message: current.message || null,
+            stack: current.stack || null,
+            cause: null
+        };
+
+        // Build nested structure by traversing the chain
+        var currentNested = rootCause;
+        current = current.cause;
+
+        while (current) {
+            currentNested.cause = {
+                name: current.name || null,
+                message: current.message || null,
+                stack: current.stack || null,
+                cause: null
+            };
+            currentNested = currentNested.cause;
+            current = current.cause;
+        }
+
+        return rootCause;
+    }
+
+    var causeChain = extractCauseChain(error);
+
     hot.send('${MESSAGE_TYPE}', {
+        name: error?.name || null,
         message: error.message,
         stack: error.stack,
+        cause: causeChain,
         ownerStack,
         file: loc?.filename || null,
         line: loc?.lineno || null,
@@ -226,6 +258,9 @@ window.addEventListener('react-error-boundary', async function(e) {
     }
 });
 
+// Expose sendError globally for direct error reporting (used by tests)
+window.__flameSendError = sendError;
+
 // Simple console.error override to catch React error boundary logs
 var orig = console.error;
 
@@ -233,7 +268,8 @@ console.error = function() {
     try {
         var args = Array.prototype.slice.call(arguments);
         var err = args.find((a) => a instanceof Error);
-
+        
+        console.log(JSON.stringify(err.stack));
         if (err) {
             // Send React-enhanced errors from console.error (like from error boundaries)
             sendError(err);
@@ -258,35 +294,53 @@ const setupWebSocketInterception = (
     server.ws.send = async (payload: any, client?: any): Promise<void> => {
         try {
             if (payload && typeof payload === "object" && payload.type === "error" && payload.err) {
-                const rawSig = createErrorSignature(payload.err);
+                const raw = payload.err;
+
+                const rawSig = createErrorSignature(raw);
 
                 if (shouldSkip(rawSig)) {
                     return; // drop duplicate
                 }
 
-                const extension = await buildExtendedError(payload.err as ErrorPayload["err"], server, rootPath);
+                const name = String(raw?.name || "Error");
+                const message = String(raw.message);
+                const rawStack = String(raw.stack);
 
-                // Debug: Log what we're sending back to client via WebSocket interception
-                console.log("[flame:server:ws:debug] Sending extended error via WebSocket:", {
-                    causesCount: extension.causes.length,
-                    firstCauseHasOriginalPath: extension.causes[0] ? !!extension.causes[0].originalFilePath : false,
-                    firstCauseOriginalPath: extension.causes[0]?.originalFilePath,
-                    firstCauseStack: extension.causes[0] ? `${String(extension.causes[0].stack || "").slice(0, 100)}...` : "no causes",
-                    hasStack: !!extension.stack,
-                    message: extension.message,
-                    name: extension.name,
-                    stackContainsTsx: String(extension.stack || "").includes(".tsx:") || String(extension.stack || "").includes(".jsx:"),
-                    stackContainsUnknown: String(extension.stack || "").includes("<unknown>"),
-                    stackLength: String(extension.stack || "").length,
-                    stackPreview: `${String(extension.stack || "").slice(0, 200)}...`,
-                });
+                // Reconstruct the error with proper cause chain
+                const syntaicError = new Error(message);
+
+                syntaicError.name = name;
+                syntaicError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
+
+                // If there's a nested cause structure, reconstruct it recursively
+                if (raw.cause) {
+                    // Recursively reconstruct the cause chain
+                    function reconstructCauseChain(causeData: any): Error | null {
+                        if (!causeData)
+                            return null;
+
+                        const causeError = new Error(String(causeData.message || "Caused by error"));
+
+                        causeError.name = String(causeData.name || "Error");
+                        causeError.stack = String(causeData.stack || "");
+
+                        // Recursively handle nested causes
+                        if (causeData.cause) {
+                            causeError.cause = reconstructCauseChain(causeData.cause);
+                        }
+
+                        return causeError;
+                    }
+
+                    syntaicError.cause = reconstructCauseChain(raw.cause);
+                }
+
+                const extensionPayload = await buildExtendedError(syntaicError, server, rootPath);
 
                 // eslint-disable-next-line no-param-reassign
-                payload.err = extension as ErrorPayload["err"];
+                payload = extensionPayload;
 
-                const extensionSig = createExtendedErrorSignature(extension);
-
-                recentErrors.set(extensionSig, Date.now());
+                recentErrors.set(JSON.stringify(extensionPayload), Date.now());
             }
         } catch (error) {
             logError(server, "[visulima:vite-overlay:server] ws.send intercept failed", error);
@@ -307,7 +361,13 @@ const setupHMRHandler = (
     rootPath: string,
 ): void => {
     server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
-        const raw = (data && typeof data === "object" ? (data as Record<string, unknown>) : {}) as RawErrorData;
+        const raw
+            = data && typeof data === "object"
+                ? (data as RawErrorData)
+                : ({
+                    message: DEFAULT_ERROR_MESSAGE,
+                    stack: "",
+                } as RawErrorData);
 
         const rawSig = createErrorSignature(raw);
 
@@ -315,43 +375,62 @@ const setupHMRHandler = (
             return; // duplicate runtime error
         }
 
-        const syntaicError = new Error(String(raw.message || DEFAULT_ERROR_MESSAGE));
+        const name = String(raw?.name || "Error");
+        const message = String(raw.message);
+        const rawStack = String(raw.stack);
 
-        syntaicError.stack = String(raw.stack || "");
+        // Reconstruct the error with proper cause chain
+        const syntaicError = new Error(message);
+
+        syntaicError.name = name;
+        syntaicError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
+
+        // If there's a nested cause structure, reconstruct it recursively
+        if (raw.cause) {
+            // Recursively reconstruct the cause chain
+            function reconstructCauseChain(causeData: any): Error | null {
+                if (!causeData)
+                    return null;
+
+                const causeError = new Error(String(causeData.message || "Caused by error"));
+
+                causeError.name = String(causeData.name || "Error");
+                causeError.stack = String(causeData.stack || "");
+
+                // Recursively handle nested causes
+                if (causeData.cause) {
+                    causeError.cause = reconstructCauseChain(causeData.cause);
+                }
+
+                return causeError;
+            }
+
+            syntaicError.cause = reconstructCauseChain(raw.cause);
+        }
 
         try {
             // Process the runtime error using shared logic
             await processRuntimeError(syntaicError, rootPath, developmentLogger);
 
-            const extensionPayload = await buildExtendedError(syntaicError, server, rootPath);
+            const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, {
+                column: raw?.column,
+                file: raw?.file,
+                line: raw?.line,
+                plugin: raw?.plugin,
+            } as ViteErrorData);
 
-            // Debug: Log what we're sending back to client via HMR
-            console.log("[flame:server:hmr:debug] Sending extended error via HMR:", {
-                causesCount: extensionPayload.causes.length,
-                firstCauseHasOriginalPath: extensionPayload.causes[0] ? !!extensionPayload.causes[0].originalFilePath : false,
-                firstCauseOriginalPath: extensionPayload.causes[0]?.originalFilePath,
-                firstCauseStack: extensionPayload.causes[0] ? `${String(extensionPayload.causes[0].stack || "").slice(0, 100)}...` : "no causes",
-                hasStack: !!extensionPayload.stack,
-                message: extensionPayload.message,
-                name: extensionPayload.name,
-                stackContainsTsx: String(extensionPayload.stack || "").includes(".tsx:") || String(extensionPayload.stack || "").includes(".jsx:"),
-                stackContainsUnknown: String(extensionPayload.stack || "").includes("<unknown>"),
-                stackLength: String(extensionPayload.stack || "").length,
-                stackPreview: `${String(extensionPayload.stack || "").slice(0, 200)}...`,
-            });
-
-            recentErrors.set(createExtendedErrorSignature(extensionPayload), Date.now());
+            recentErrors.set(JSON.stringify(extensionPayload), Date.now());
 
             client.send({ err: extensionPayload as any, type: "error" });
-        } catch (error) {
+        } catch (error: any) {
             logError(server, "[visulima:vite-overlay:server] failed to build extended client error", error);
 
             client.send({
                 err: {
-                    message: String(runtimeError.message || DEFAULT_ERROR_MESSAGE),
-                    name: String(runtimeError.name || DEFAULT_ERROR_NAME),
-                    stack: String(runtimeError.stack || ""),
-                } as any,
+                    message: error.message,
+                    name: String(error.name || DEFAULT_ERROR_NAME),
+                    stack: error.stack,
+                },
                 type: "error",
             });
         }

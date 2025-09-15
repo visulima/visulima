@@ -41,6 +41,54 @@ pnpm add @visulima/vite-overlay
 
 ## Usage
 
+Add the plugin to your Vite config:
+
+```typescript
+import { defineConfig } from "vite";
+import { errorOverlay } from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [errorOverlay()],
+});
+```
+
+## Testing
+
+This package includes comprehensive e2e tests to ensure error overlay functionality works correctly:
+
+### Running Tests
+
+```bash
+# Install Playwright browsers (one-time setup)
+node playwright-setup.js
+
+# Run all e2e tests
+pnpm test:e2e
+
+# Run with interactive UI
+pnpm test:e2e:ui
+
+# Run in headed mode (visible browser)
+pnpm test:e2e:headed
+```
+
+### Test Coverage
+
+- ✅ **Basic Error Display** - Runtime errors trigger overlay with proper source mapping
+- ✅ **Cause Chain Navigation** - Multi-error chains are navigable with original source locations
+- ✅ **Source Map Resolution** - Original `.tsx`/`.ts` files shown instead of compiled paths
+- ✅ **Cross-browser Compatibility** - Works in Chromium, Firefox, and WebKit
+- ✅ **UI Interactions** - Close button, ESC key, and mode switching work correctly
+
+### Test Fixtures
+
+Visit `http://localhost:5173/error-test` during development to manually test different error scenarios:
+
+- **Simple Error** - Basic runtime error testing
+- **Cause Chain Error** - Multi-level error chains
+- **Async Error** - Async context error handling
+- **Complex Nested Error** - Deep error nesting
+
 ## Related
 
 ## Supported Node.js Versions

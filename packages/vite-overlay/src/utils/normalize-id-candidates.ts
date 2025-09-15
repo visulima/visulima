@@ -28,7 +28,9 @@ export const normalizeIdCandidates = (filePath: string): string[] => {
 
     try {
         if (isHttpUrl(filePath)) {
-            return generateUrlCandidates(filePath);
+            const candidates = generateUrlCandidates(filePath);
+
+            return candidates;
         }
 
         return [filePath];

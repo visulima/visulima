@@ -56,7 +56,7 @@ vi.mock("../stack-trace-utils", () => {
             }
 
             if (error && typeof error === "object" && "errors" in error) {
-            // Handle AggregateError-like objects
+                // Handle AggregateError-like objects
                 return error.errors || [error];
             }
 
@@ -131,6 +131,7 @@ describe(buildExtendedErrorData, () => {
             const result = await buildExtendedErrorData(error, mockServer);
 
             expectTypeOf(result).toBeObject();
+
             expect(result).not.toBeNull();
             // Just verify the function returns an object - detailed property checks are complex with mocks
             expect(Object.keys(result).length).toBeGreaterThan(0);
@@ -146,6 +147,7 @@ describe(buildExtendedErrorData, () => {
             const result = await buildExtendedErrorData(aggregateError, mockServer);
 
             expectTypeOf(result).toBeObject();
+
             expect(result).not.toBeNull();
         });
 
@@ -160,6 +162,7 @@ describe(buildExtendedErrorData, () => {
             const result = await buildExtendedErrorData(esbuildErrors as any, mockServer);
 
             expectTypeOf(result).toBeObject();
+
             expect(result).not.toBeNull();
         });
 
@@ -198,6 +201,7 @@ describe(buildExtendedErrorData, () => {
             const result = await buildExtendedErrorData(error, mockServer, rawError);
 
             expect(result).toHaveProperty("originalFilePath");
+
             expectTypeOf(result.originalFilePath).toBeString();
         });
 
@@ -266,6 +270,7 @@ src/components/Test.vue
             const result = await buildExtendedErrorData(error, mockServer);
 
             expect(result).toHaveProperty("fixPrompt");
+
             expectTypeOf(result.fixPrompt).toBeString();
         });
 
@@ -280,6 +285,7 @@ src/components/Test.vue
             const result = await buildExtendedErrorData(error, mockServer, rawError);
 
             expectTypeOf(result).toBeObject();
+
             expect(result).not.toBeNull();
         });
 
@@ -293,6 +299,7 @@ src/components/Test.vue
             const result = await buildExtendedErrorData(error, mockServer);
 
             expectTypeOf(result).toBeObject();
+
             expect(result).not.toBeNull();
         });
 
@@ -304,6 +311,7 @@ src/components/Test.vue
             const result = await buildExtendedErrorData(error as any, mockServer);
 
             expectTypeOf(result).toBeObject();
+
             expect(result).not.toBeNull();
         });
 
@@ -368,6 +376,7 @@ src/components/Test.vue
             const result = await buildExtendedErrorData(error, mockServer);
 
             expectTypeOf(result).toBeObject();
+
             expect(result).not.toBeNull();
             expect(Object.keys(result).length).toBeGreaterThan(0);
         });
@@ -375,7 +384,7 @@ src/components/Test.vue
         it("should handle errors with very long messages", async () => {
             expect.assertions(1);
 
-            const longMessage = "A".repeat(10000);
+            const longMessage = "A".repeat(10_000);
             const error = new Error(longMessage);
 
             const result = await buildExtendedErrorData(error, mockServer);
@@ -410,6 +419,7 @@ Final line`);
             expect.assertions(1);
 
             const error = new Error("Network error");
+
             (error as any).code = 500;
             (error as any).statusCode = 500;
 
@@ -422,6 +432,7 @@ Final line`);
             expect.assertions(1);
 
             const error = new Error("Custom error");
+
             (error as any).customProperty = "custom value";
             (error as any).metadata = { key: "value" };
 
@@ -434,6 +445,7 @@ Final line`);
             expect.assertions(1);
 
             const error = new Error("Frozen error");
+
             Object.freeze(error);
 
             const result = await buildExtendedErrorData(error, mockServer);
@@ -446,6 +458,7 @@ Final line`);
 
             const error = new Error("Circular reference error");
             const circular: any = { error };
+
             circular.self = circular;
             (error as any).circular = circular;
 
@@ -455,11 +468,12 @@ Final line`);
         });
     });
 
-    describe("Edge cases and special scenarios", () => {
+    describe("edge cases and special scenarios", () => {
         it("should handle null prototype errors", async () => {
             expect.assertions(1);
 
             const error = new Error("Null prototype");
+
             Object.setPrototypeOf(error, null);
 
             const result = await buildExtendedErrorData(error, mockServer);
@@ -471,9 +485,10 @@ Final line`);
             expect.assertions(1);
 
             const error = new Error("Getter error");
+
             Object.defineProperty(error, "dynamicProperty", {
-                get: () => "computed value",
                 enumerable: true,
+                get: () => "computed value",
             });
 
             const result = await buildExtendedErrorData(error, mockServer);
@@ -486,6 +501,7 @@ Final line`);
 
             const error = new Error("Symbol error");
             const symbolKey = Symbol("test");
+
             (error as any)[symbolKey] = "symbol value";
 
             const result = await buildExtendedErrorData(error, mockServer);
@@ -497,9 +513,10 @@ Final line`);
             expect.assertions(1);
 
             const error = new Error("Non-enumerable error");
+
             Object.defineProperty(error, "hiddenProperty", {
-                value: "hidden value",
                 enumerable: false,
+                value: "hidden value",
             });
 
             const result = await buildExtendedErrorData(error, mockServer);
@@ -511,6 +528,7 @@ Final line`);
             expect.assertions(1);
 
             const error = new Error("Prototype chain error");
+
             Error.prototype.customMethod = () => "custom";
 
             const result = await buildExtendedErrorData(error, mockServer);
@@ -525,6 +543,7 @@ Final line`);
             expect.assertions(1);
 
             const error = new Error("Complex stack");
+
             error.stack = `Error: Complex stack
     at method1 (/path/to/file1.js:10:5)
     at method2 (/path/to/file2.js:20:15)
@@ -542,6 +561,7 @@ Final line`);
             expect.assertions(1);
 
             const error = new Error("Eval error");
+
             error.stack = `Error: Eval error
     at eval (/src/components/Dynamic.tsx:15:10)
     at executeDynamicCode (/src/utils/dynamic.ts:8:5)
@@ -556,6 +576,7 @@ Final line`);
             expect.assertions(1);
 
             const error = new Error("Native code error");
+
             error.stack = `Error: Native code error
     at nativeMethod (native)
     at userMethod (/src/user/code.js:12:8)
@@ -571,9 +592,11 @@ Final line`);
 
             const error = new Error("Deep stack");
             let stack = "Error: Deep stack\n";
-            for (let i = 0; i < 100; i++) {
-                stack += `    at method${i} (/path/to/file${i}.js:${i * 10}:${i * 5})\n`;
+
+            for (let index = 0; index < 100; index++) {
+                stack += `    at method${index} (/path/to/file${index}.js:${index * 10}:${index * 5})\n`;
             }
+
             error.stack = stack;
 
             const result = await buildExtendedErrorData(error, mockServer);

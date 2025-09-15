@@ -1,11 +1,11 @@
 import { codeFrame, formatStacktrace, parseStacktrace } from "@visulima/error";
 import aiPrompt from "@visulima/error/solution/ai/prompt";
 import type { LanguageInput } from "shiki";
-import type { ErrorPayload, ViteDevServer } from "vite";
+import type { ViteDevServer } from "vite";
 
 import findLanguageBasedOnExtension from "../../../../../shared/utils/find-language-based-on-extension";
 import getHighlighter, { transformerCompactLineOptions } from "../../../../../shared/utils/get-highlighter";
-import type { ErrorProcessingResult } from "../../types";
+import type { ErrorProcessingResult, ViteErrorData } from "../../types";
 import findModuleForPath from "../find-module-for-path";
 import { normalizeIdCandidates } from "../normalize-id-candidates";
 import { realignOriginalPosition } from "../position-aligner";
@@ -24,7 +24,7 @@ import { retrieveSourceTexts } from "./retrieve-source-texts";
  * @param server The Vite dev server instance for module resolution
  * @returns Promise resolving to extended error data object
  */
-const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawError?: ErrorPayload["err"]): Promise<ErrorProcessingResult> => {
+const buildExtendedErrorData = async (error: Error, server: ViteDevServer, viteErrorData?: ViteErrorData): Promise<ErrorProcessingResult> => {
     // Try to extract Vue compilation error information using the adapter
     const vueErrorInfo = error?.message ? parseVueCompilationError(error.message) : null;
 
@@ -60,7 +60,8 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawEr
     const rawStack = primaryError.stack || "";
     const cleanedStack = cleanErrorStack(rawStack);
     const originalStack = await remapStackToOriginal(server, cleanedStack, { message: cleanMessage, name: primaryError.name });
-    const plugin = rawError?.plugin;
+
+    const plugin = viteErrorData?.plugin;
 
     // Create a synthetic error with cleaned data for parsing
     const syntheticError = new Error(cleanMessage);
@@ -76,39 +77,10 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawEr
     const compiledLine = trace?.line ?? 0;
     const compiledColumn = trace?.column ?? 0;
 
-    // Try to extract location from raw error object first (most reliable)
-    let viteLocation = null;
-
-    if (rawError) {
-        // Check if the raw error has a 'loc' property (Vite's location object)
-        if (rawError.loc) {
-            const { loc } = rawError;
-
-            viteLocation = {
-                column: loc.column || 1,
-                file: loc.file || loc.path || "",
-                line: loc.line || 1,
-            };
-        }
-        // Check if the raw error has an 'id' property (often the source file path)
-        else if (rawError.id) {
-            const { id } = rawError;
-
-            // If it's a source file path, use it
-            if (typeof id === "string" && (id.endsWith(".tsx") || id.endsWith(".ts") || id.endsWith(".jsx") || id.endsWith(".js") || id.endsWith(".vue"))) {
-                viteLocation = {
-                    column: 1,
-                    file: id,
-                    line: 1, // Default to line 1 if no specific location
-                };
-            }
-        }
-    }
-
     // Initialize original location - prefer Vite location data
-    let originalFilePath = viteLocation?.file || compiledFilePath;
-    let originalFileLine = viteLocation?.line || compiledLine;
-    let originalFileColumn = viteLocation?.column || compiledColumn;
+    let originalFilePath = compiledFilePath;
+    let originalFileLine = compiledLine;
+    let originalFileColumn = compiledColumn;
 
     // Override with Vue error information if available
     if (vueErrorInfo) {
@@ -266,7 +238,7 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawEr
         originalFileLine,
         originalFilePath,
         originalSnippet,
-        originalStack,
+        originalStack: originalStack || cleanedStack, // Use processed stack or fallback to cleaned stack
         plugin,
     } as const;
 };

@@ -1,5 +1,37 @@
 // @ts-nocheck
 class ErrorOverlay extends HTMLElement {
+    /**
+     * @typedef {import('../types').VisulimaViteOverlayErrorPayload} VisulimaViteOverlayErrorPayload
+     */
+
+    /**
+     * The current mode for displaying error information ('original' | 'compiled')
+     * @type {string}
+     */
+    __flameMode;
+
+    /**
+     * The error payload containing all error information
+     * @type {VisulimaViteOverlayErrorPayload}
+     */
+    __flamePayload;
+
+    /**
+     * Creates an error overlay component
+     * @param {object} error - The error object in one of three possible structures:
+     *
+     * Structure 1 - Direct Vite server error:
+     * @param {Array} error.errors - Array of processed error objects
+     * @param {boolean} error.isServerError - Whether this is a server error
+     *
+     * Structure 2 - Browser ErrorEvent:
+     * @param {string} error.message - The error message
+     * @param {string} error.name - The error name/type
+     * @param {string} error.stack - The error stack trace
+     * @param {number} [error.lineno] - Line number where error occurred
+     * @param {number} [error.colno] - Column number where error occurred
+     * @param {string} [error.source] - Source URL where error occurred
+     */
     constructor(error) {
         super();
 
@@ -12,134 +44,61 @@ class ErrorOverlay extends HTMLElement {
 
         // Store reference to this instance for pagination component
         this.root.host._errorOverlay = this;
-
         // Automatically add to DOM when created
-        document.body.appendChild(this);
+        document.body.append(this);
 
-        // Debug: Log the exact structure we received
-        console.log("[flame:runtime:debug] Constructor received error object:", {
-            errKeys: error && error.err ? Object.keys(error.err) : [],
-            errorKeys: error ? Object.keys(error) : [],
-            errorType: typeof error,
-            errType: error && error.err ? typeof error.err : "undefined",
-            fullError: error,
-            hasErr: error && !!error.err,
-            hasError: !!error,
-            // Check if this looks like our expected payload structure
-            looksLikeDirectPayload: error && typeof error === "object" && error.message && error.stack && !error.err,
-        });
+        // Handle multiple possible error structures:
+        // 1. Vite server error: { errors: [...], isServerError: boolean }
+        // 2. Browser ErrorEvent: { message, name, stack, lineno, colno, source }
 
-        // Try to handle both structures: { err: payload, type: "error" } and direct payload
-        let p;
+        let payloadErrors = [];
+        let isServerError = false;
 
-        if (error && error.err) {
-            // Standard Vite error structure: { err: payload, type: "error" }
-            p = error.err;
-        } else if (error && typeof error === "object" && error.message && error.stack) {
-            // Direct payload structure (what we're actually receiving)
-            p = error;
-        } else {
-            // Fallback
-            p = error || {};
+        // Case 1: Direct Vite server error structure
+        if (Array.isArray(error?.errors)) {
+            payloadErrors = error.errors;
+            isServerError = error.isServerError || false;
+        }
+        // Case 2: Browser ErrorEvent structure - create basic error
+        else {
+            const basicError = {
+                message: error?.message || "Runtime error",
+                name: error?.name || "Error",
+                originalFileColumn: error?.colno,
+                originalFileLine: error?.lineno,
+                originalFilePath: error?.source,
+                originalStack: error?.stack || "",
+            };
+            payloadErrors = [basicError];
+            isServerError = false;
         }
 
-        // Debug: Log what we received from server (raw)
-        console.log("[flame:runtime:debug] Raw error payload from server:", {
-            causesCount: p.causes ? p.causes.length : 0,
-            firstCauseStack: p.causes && p.causes[0] ? `${String(p.causes[0].stack || "").slice(0, 100)}...` : "no causes",
-            hasCauses: !!p.causes && p.causes.length > 0,
-            hasOriginalStack: !!p.originalStack,
-            hasStack: !!p.stack,
-            originalStackLength: String(p.originalStack || "").length,
-            originalStackPreview: `${String(p.originalStack || "").slice(0, 200)}...`,
-            pCauses: p.causes,
-            pMessage: p.message,
-            pName: p.name,
-            pOriginalStack: p.originalStack,
-            pStack: p.stack,
-            stackLength: String(p.stack || "").length,
-            stackPreview: `${String(p.stack || "").slice(0, 200)}...`,
-        });
-
-        // Handle ExtendedErrorPayload structure properly
-        const causes = Array.isArray(p.causes) ? p.causes : [];
-        const processedCauses = causes.length > 0 ? causes : [
-            // If no causes, create one from the main payload
-            {
-                compiledCodeFrameContent: p.compiledCodeFrameContent || "",
-                compiledColumn: p.compiledColumn || 0,
-                compiledFilePath: p.compiledFilePath || "",
-                compiledLine: p.compiledLine || 0,
-                compiledSnippet: p.compiledSnippet || "",
-                compiledStack: p.compiledStack || p.stack || "",
-                message: String(p.message || "Runtime error"),
-                name: String(p.name || "Error"),
-                originalCodeFrameContent: p.originalCodeFrameContent || "",
-                originalFileColumn: p.originalFileColumn || p.compiledColumn || 0,
-                originalFileLine: p.originalFileLine || p.compiledLine || 0,
-                originalFilePath: p.originalFilePath || p.compiledFilePath || "",
-                originalSnippet: p.originalSnippet || "",
-                originalStack: p.originalStack || p.stack || "",
-                stack: p.stack || "",
-            }
-        ];
-
         const payload = {
-            causes: processedCauses,
-            compiledStack: String(p.compiledStack || ""),
-            message: String(p.message || "Runtime error"),
-            name: String(p.name || "Error"),
-            originalStack: String(p.stack || p.originalStack || ""),
-            stack: String(p.stack || ""),
+            errors: payloadErrors,
+            isServerError,
         };
 
-        // Debug: Log what we mapped (final payload)
-        console.log("[flame:runtime:debug] Mapped error payload:", {
-            causesCount: payload.causes.length,
-            hasOriginalStack: !!payload.originalStack,
-            hasStack: !!payload.stack,
-            originalStackLength: payload.originalStack.length,
-            originalStackPreview: `${payload.originalStack.slice(0, 200)}...`,
-            stackLength: payload.stack.length,
-            stackPreview: `${payload.stack.slice(0, 200)}...`,
-        });
+        this.__flamePayload = payload;
+        this.__flameMode = "original";
 
-        try {
-            this.__flamePayload = payload;
-            this.__flameMode = "original";
-            globalThis.__flameInspectPayload = () => payload;
+        // Update clickable file link if available
+        const first = payload.errors && payload.errors[0];
+        const fileElement = this.root.querySelector("#__flame__filelink");
 
-            // Debug helper to inspect current state
-            globalThis.__flameDebugState = () => ({
-                payload,
-                mode: this.__flameMode,
-                causesCount: payload.causes?.length || 0,
-                currentCause: payload.causes?.[0],
-                hasOriginalFrames: payload.causes?.some(c => c.originalCodeFrameContent),
-                hasCompiledFrames: payload.causes?.some(c => c.compiledCodeFrameContent),
-                hasOriginalStacks: payload.causes?.some(c => c.originalStack || c.stack),
-                hasCompiledStacks: payload.causes?.some(c => c.compiledStack),
-            });
+        if (fileElement) {
+            const href = first?.originalFilePath || "";
+            const line = first?.originalFileLine || 0;
 
-            // Update clickable file link if available
-            const first = payload.causes && payload.causes[0];
-            const fileElement = this.root.querySelector("#__flame__filelink");
-
-            if (fileElement) {
-                const href = first?.originalFilePath || "";
-                const line = first?.originalFileLine || 0;
-
-                if (href) {
-                    fileElement.textContent = `${href}${line ? `:${line}` : ""}`;
-                    fileElement.setAttribute("href", href);
-                    fileElement.classList.remove("hidden");
-                } else {
-                    fileElement.textContent = "";
-                    fileElement.setAttribute("href", "#");
-                    fileElement.classList.add("hidden");
-                }
+            if (href) {
+                fileElement.textContent = `${href}${line ? `:${line}` : ""}`;
+                fileElement.setAttribute("href", href);
+                fileElement.classList.remove("hidden");
+            } else {
+                fileElement.textContent = "";
+                fileElement.setAttribute("href", "#");
+                fileElement.classList.add("hidden");
             }
-        } catch {}
+        }
 
         this.text("#__flame__heading", error.name || "Runtime Error");
 
@@ -158,6 +117,7 @@ class ErrorOverlay extends HTMLElement {
         if (editorSelect) {
             let saved = null;
 
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
             saved = localStorage.getItem("flare:editor");
 
             if (saved && editorSelect.value !== saved) {
@@ -165,6 +125,7 @@ class ErrorOverlay extends HTMLElement {
             }
 
             editorSelect.addEventListener("change", function () {
+                // eslint-disable-next-line n/no-unsupported-features/node-builtins
                 localStorage.setItem("flare:editor", this.value || "");
             });
         }
@@ -188,51 +149,7 @@ class ErrorOverlay extends HTMLElement {
 
     close() {
         if (this.parentNode) {
-            this.parentNode.removeChild(this);
-        }
-    }
-
-    async generateCodeFrames(error) {
-        try {
-            // Try to fetch the original file
-            const response = await fetch(error.originalFilePath);
-
-            if (!response.ok) {
-                return;
-            }
-
-            const fileContent = await response.text();
-
-            // Generate a simple code frame around the error location
-            const lines = fileContent.split("\n");
-            const errorLine = error.originalFileLine || 1;
-            const startLine = Math.max(1, errorLine - 2);
-            const endLine = Math.min(lines.length, errorLine + 2);
-
-            const codeFrame = [];
-
-            for (let index = startLine; index <= endLine; index++) {
-                const line = lines[index - 1] || "";
-                const marker = index === errorLine ? ">" : " ";
-
-                codeFrame.push(`${marker} ${index}: ${line}`);
-            }
-
-            const codeFrameText = codeFrame.join("\n");
-
-            // Create a simple HTML code frame
-            const htmlCodeFrame = `<pre><code>${codeFrameText.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</code></pre>`;
-
-            // Update the error object
-            if (!error.originalCodeFrameContent) {
-                error.originalCodeFrameContent = htmlCodeFrame;
-                error.originalSnippet = codeFrameText;
-            }
-
-            // Re-render the overlay with the new code frames
-            this.updateOverlay();
-        } catch {
-            // Code frame generation failed
+            this.remove();
         }
     }
 
@@ -271,7 +188,8 @@ class ErrorOverlay extends HTMLElement {
     updateOverlay() {
         // Force re-render of the current error
         const currentIndex = 0; // Assuming we're showing the first error
-        const currentError = this.__flamePayload?.causes?.[currentIndex];
+        // eslint-disable-next-line no-underscore-dangle
+        const currentError = this.__flamePayload?.errors?.[currentIndex];
 
         if (currentError) {
             const flameOverlay = this.root.querySelector("#__flame__overlay");
@@ -301,25 +219,26 @@ class ErrorOverlay extends HTMLElement {
             }
 
             // Check if payload is ready
+            // eslint-disable-next-line no-underscore-dangle
             if (!this.__flamePayload) {
                 setTimeout(initializeWhenReady, 100);
 
                 return;
             }
 
+            // eslint-disable-next-line no-underscore-dangle
             const payload = this.__flamePayload;
-            // Use the processed causes from the payload - they should already be in the correct format
-            const causes = Array.isArray(payload.causes) && payload.causes.length > 0 ? payload.causes : [];
-            const causeIds = causes.map((c, index) =>
-                String(c.__id || [c.originalFilePath || "", c.originalFileLine || 0, c.name || "", c.message || ""].join("|")),
+            // Use the processed errors from the payload - they should already be in the correct format
+            const errors = Array.isArray(payload.errors) && payload.errors.length > 0 ? payload.errors : [];
+            const errorIds = errors.map((e, index) =>
+                // eslint-disable-next-line no-underscore-dangle
+                String(e.__id || [e.originalFilePath || "", e.originalFileLine || 0, e.name || "", e.message || ""].join("|")),
             );
-            const totalErrors = causes.length;
+            const totalErrors = errors.length;
             let currentIndex = 0;
 
             // Update pagination display
             const updatePagination = () => {
-                console.log("[flame:client:debug] Updating pagination to cause", currentIndex, "of", totalErrors);
-
                 const indexElement = this.root.querySelector("[data-flame-dialog-error-index]");
                 const totalElement = this.root.querySelector("[data-flame-dialog-header-total-count]");
                 const previousButton = this.root.querySelector("[data-flame-dialog-error-previous]");
@@ -354,7 +273,7 @@ class ErrorOverlay extends HTMLElement {
                     return;
                 }
 
-                const currentError = causes[currentIndex] || {
+                const currentError = errors[currentIndex] || {
                     compiledStack: payload.compiledStack,
                     message: payload.message,
                     name: payload.name,
@@ -368,11 +287,14 @@ class ErrorOverlay extends HTMLElement {
                         const stackElement = stackHost?.querySelector("div:last-child");
 
                         if (stackHost && stackElement) {
+                            // eslint-disable-next-line no-underscore-dangle
                             const rootPayload = this.__flamePayload || {};
+
                             const stackText
                                 = mode === "compiled"
                                     ? String(currentError.compiledStack || rootPayload.compiledStack || "")
-                                    : String(currentError.originalStack || currentError.stack || rootPayload.originalStack || rootPayload.stack || "");
+                                    : String(currentError.originalStack || currentError.stack || rootPayload.originalStack || "");
+
                             const escape = (s) =>
                                 String(s || "")
                                     .replaceAll("&", "&amp;")
@@ -456,34 +378,9 @@ class ErrorOverlay extends HTMLElement {
                     headingElement.textContent = currentError.name || "Runtime Error";
 
                     try {
-                        headingElement.dataset.causeId = causeIds[currentIndex] || "";
+                        headingElement.dataset.errorId = errorIds[currentIndex] || "";
                     } catch {}
                 }
-
-                // Debug: Log all error data received from server
-                console.log("[flame:client:debug] Processing error data for cause", currentIndex, ":", {
-                    compiledCodeFrameLength: currentError.compiledCodeFrameContent?.length || 0,
-                    compiledColumn: currentError.compiledColumn,
-                    compiledFilePath: currentError.compiledFilePath,
-                    compiledLine: currentError.compiledLine,
-                    compiledSnippetLength: currentError.compiledSnippet?.length || 0,
-                    compiledStackLength: String(currentError.compiledStack || "").length,
-                    errorMessage: `${currentError.message?.slice(0, 100)}...`,
-                    errorName: currentError.name,
-                    hasCodeFrame: !!currentError.originalCodeFrameContent || !!currentError.compiledCodeFrameContent,
-                    hasCompiledCodeFrame: !!currentError.compiledCodeFrameContent,
-                    hasCompiledSnippet: !!currentError.compiledSnippet,
-                    hasCompiledStack: !!currentError.compiledStack,
-                    hasOriginalCodeFrame: !!currentError.originalCodeFrameContent,
-                    hasOriginalSnippet: !!currentError.originalSnippet,
-                    hasOriginalStack: !!currentError.originalStack || !!currentError.stack,
-                    originalCodeFrameLength: currentError.originalCodeFrameContent?.length || 0,
-                    originalFileColumn: currentError.originalFileColumn,
-                    originalFileLine: currentError.originalFileLine,
-                    originalFilePath: currentError.originalFilePath,
-                    originalSnippetLength: currentError.originalSnippet?.length || 0,
-                    originalStackLength: String(currentError.originalStack || currentError.stack || "").length,
-                });
 
                 // Show tabs conditionally: only show original/compiled tabs if we have both
                 const hasOriginal = !!currentError.originalCodeFrameContent;
@@ -491,49 +388,23 @@ class ErrorOverlay extends HTMLElement {
                 const hasBoth = hasOriginal && hasCompiled;
                 const hasEither = hasOriginal || hasCompiled;
 
-                console.log("[flame:client:debug] Tab visibility calculation for cause", currentIndex, ":", {
-                    hasBoth,
-                    hasCompiled,
-                    hasEither,
-                    hasOriginal,
-                    modeSwitchElement: !!modeSwitch,
-                    willShowModeSwitch: hasBoth,
-                });
-
                 if (hasBoth && modeSwitch)
                     modeSwitch.classList.remove("hidden");
                 else if (modeSwitch)
                     modeSwitch.classList.add("hidden");
 
-                // If we don't have code frames but have file information, try to generate them
-                if (!currentError.originalCodeFrameContent && !currentError.compiledCodeFrameContent && currentError.originalFilePath) {
-                    // Try to fetch the original file and generate code frames
-                    this.generateCodeFrames(currentError);
-                }
+                // Code frames should be provided by the server via VisulimaViteOverlayErrorPayload
 
                 const originalButton = this.root.querySelector("[data-flame-mode=\"original\"]");
                 const compiledButton = this.root.querySelector("[data-flame-mode=\"compiled\"]");
 
                 // Hide buttons for tabs that don't have content
-                console.log("[flame:client:debug] Button visibility setup:", {
-                    compiledButtonExists: !!compiledButton,
-                    hasCompiled,
-                    hasOriginal,
-                    originalButtonExists: !!originalButton,
-                });
-
                 if (originalButton) {
                     originalButton.style.display = hasOriginal ? "" : "none";
-                    console.log(`[flame:client:debug] Original button display set to: ${hasOriginal ? "visible" : "none"}`);
-                } else {
-                    console.log("[flame:client:debug] Original button not found in DOM");
                 }
 
                 if (compiledButton) {
                     compiledButton.style.display = hasCompiled ? "" : "none";
-                    console.log(`[flame:client:debug] Compiled button display set to: ${hasCompiled ? "visible" : "none"}`);
-                } else {
-                    console.log("[flame:client:debug] Compiled button not found in DOM");
                 }
 
                 const renderCode = (mode) => {
@@ -542,6 +413,7 @@ class ErrorOverlay extends HTMLElement {
 
                     // Choose the appropriate code frame based on mode
                     let html = "";
+
                     if (mode === "compiled") {
                         html = currentError.compiledCodeFrameContent || "";
                     } else {
@@ -549,23 +421,11 @@ class ErrorOverlay extends HTMLElement {
                         html = currentError.originalCodeFrameContent || "";
                     }
 
-                    console.log(`[flame:client:debug] Rendering code for mode '${mode}':`, {
-                        flameOverlayExists: !!flameOverlay,
-                        hasHtml: !!html,
-                        htmlLength: html?.length || 0,
-                        mode,
-                        usingCompiledCodeFrame: mode === "compiled" && !!currentError.compiledCodeFrameContent,
-                        usingOriginalCodeFrame: mode !== "compiled" && !!currentError.originalCodeFrameContent,
-                        compiledCodeFrameAvailable: !!currentError.compiledCodeFrameContent,
-                        originalCodeFrameAvailable: !!currentError.originalCodeFrameContent,
-                    });
-
                     flameOverlay.innerHTML = html || "";
                 };
 
                 const activeMode = this.__flameMode || "original";
 
-                console.log("[flame:client:debug] Initial render for cause", currentIndex, "in mode:", activeMode);
                 renderCode(activeMode);
                 updateRawStack(activeMode);
 
@@ -582,7 +442,6 @@ class ErrorOverlay extends HTMLElement {
 
                 originalButton?.addEventListener("click", (e) => {
                     e.preventDefault();
-                    console.log("[flame:client:debug] Switching to original mode for cause", currentIndex);
                     this.__flameMode = "original";
                     renderCode("original");
                     updateRawStack("original");
@@ -594,7 +453,6 @@ class ErrorOverlay extends HTMLElement {
 
                 compiledButton?.addEventListener("click", (e) => {
                     e.preventDefault();
-                    console.log("[flame:client:debug] Switching to compiled mode for cause", currentIndex);
                     this.__flameMode = "compiled";
                     renderCode("compiled");
                     updateRawStack("compiled");
@@ -633,10 +491,10 @@ class ErrorOverlay extends HTMLElement {
                 });
             }
 
-            // Selection by cause id (external)
+            // Selection by error id (external)
             const selectById = (id) => {
                 try {
-                    const index = causeIds.indexOf(String(id || ""));
+                    const index = errorIds.indexOf(String(id || ""));
 
                     if (index !== -1) {
                         currentIndex = index;
@@ -646,11 +504,11 @@ class ErrorOverlay extends HTMLElement {
             };
 
             try {
-                globalThis.__flameSelectCause = selectById;
+                globalThis.__flameSelectError = selectById;
             } catch {}
 
             try {
-                globalThis.addEventListener("flame:select-cause", (event_) => {
+                globalThis.addEventListener("flame:select-error", (event_) => {
                     try {
                         selectById(event_?.detail?.id);
                     } catch {}
@@ -768,7 +626,7 @@ try {
 
                 // Add the overlay to the DOM if it exists
                 if (overlay && overlay.element) {
-                    document.body.appendChild(overlay.element);
+                    document.body.append(overlay.element);
                 }
             }
         } catch (error_) {
@@ -781,38 +639,6 @@ try {
         }
 
         return false;
-    };
-
-    // Debug helper for manual testing
-    globalThis.__flameTestOverlay = function (testError) {
-        try {
-            const OverlayClass = globalThis.ErrorOverlay || globalThis.FlameErrorOverlay;
-
-            if (typeof OverlayClass === "function") {
-                const overlay = new OverlayClass(
-                    testError || {
-                        message: "This is a test error",
-                        name: "TestError",
-                        stack: "Test stack trace",
-                    },
-                );
-
-                // Add the overlay to the DOM if it exists
-                if (overlay && overlay.element) {
-                    document.body.appendChild(overlay.element);
-                }
-
-                return overlay;
-            }
-
-            console.error("[flame:client] No overlay class found for testing");
-
-            return null;
-        } catch (error) {
-            console.error("[flame:client] Test overlay creation failed:", error);
-
-            return null;
-        }
     };
 } catch (error) {
     console.error("[flame:client] Failed to install global error handler:", error);

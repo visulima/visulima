@@ -1,9 +1,6 @@
-import type { ErrorPayload, ViteDevServer } from "vite";
+import type { ErrorLocation } from "@visulima/error/error";
 
-// Core error types
 export type ErrorLike = Error | { message?: string; name?: string; stack?: string };
-export type ViteServer = ViteDevServer;
-export type ErrorOrPayload = ErrorPayload["err"] | Error;
 
 // Plugin and framework detection
 export interface PluginPattern {
@@ -21,32 +18,24 @@ export interface StackLocation {
     readonly line?: number;
 }
 
-// Enhanced error payload with comprehensive error information
-export interface ExtendedErrorPayload {
-    readonly causes: ReadonlyArray<ExtendedErrorCause>;
+export interface VisulimaViteOverlayErrorPayload {
+    readonly errors: ReadonlyArray<ExtendedError>;
     readonly isServerError?: boolean;
-    readonly message: string;
-    readonly name: string;
-    readonly stack?: string;
 }
 
 // Individual error cause with detailed debugging information
-export interface ExtendedErrorCause {
+export interface ExtendedError {
     readonly compiledCodeFrameContent?: string;
     readonly compiledColumn?: number;
     readonly compiledFilePath?: string;
     readonly compiledLine?: number;
     readonly compiledSnippet?: string;
     readonly fixPrompt?: string;
-    readonly message: string;
-    readonly name: string;
     readonly originalCodeFrameContent?: string;
     readonly originalFileColumn?: number;
     readonly originalFileLine?: number;
     readonly originalFilePath?: string;
     readonly originalSnippet?: string;
-    readonly snippet?: string;
-    readonly stack?: string;
 }
 
 // Development server logging interface
@@ -63,21 +52,25 @@ export interface RecentErrorTracker {
 
 // Raw error data from client-side error reporting
 export interface RawErrorData {
-    readonly causes?: readonly ProvidedCause[];
+    readonly cause?: {
+        readonly cause?: {
+            readonly cause?: any; // Recursive nested structure
+            readonly message?: string | null;
+            readonly name?: string | null;
+            readonly stack?: string | null;
+        } | null;
+        readonly message?: string | null;
+        readonly name?: string | null;
+        readonly stack?: string | null;
+    } | null;
     readonly column?: number | null;
     readonly file?: string | null;
     readonly line?: number | null;
-    readonly message?: string;
+    readonly message: string;
     readonly name?: string;
     readonly ownerStack?: string | null;
-    readonly stack?: string;
-}
-
-// Error cause provided by client (from Error.cause / AggregateError)
-export interface ProvidedCause {
-    readonly message?: string;
-    readonly name?: string;
-    readonly stack?: string;
+    readonly plugin?: string;
+    readonly stack: string;
 }
 
 // Vue SFC compilation error information
@@ -87,6 +80,10 @@ export interface VueErrorInfo {
     readonly message?: string;
     readonly originalFilePath: string;
 }
+
+export type ViteErrorData = ErrorLocation & {
+    plugin?: string;
+};
 
 // Source map resolution results
 export interface ResolvedLocation {
@@ -139,9 +136,6 @@ export interface ErrorProcessingResult {
 // Type guards for better type safety
 export const isErrorLike = (value: unknown): value is ErrorLike =>
     typeof value === "object" && value !== null && ("message" in value || "name" in value || "stack" in value);
-
-export const isExtendedErrorPayload = (value: unknown): value is ExtendedErrorPayload =>
-    typeof value === "object" && value !== null && "causes" in value && "message" in value && "name" in value;
 
 export const isVueErrorInfo = (value: unknown): value is VueErrorInfo =>
     typeof value === "object" && value !== null && "column" in value && "filePath" in value && "line" in value;

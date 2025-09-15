@@ -184,7 +184,7 @@ describe(buildExtendedErrorData, () => {
             const result = await buildExtendedErrorData(error, mockServer, rawError as ErrorPayload["err"]);
 
             expect(result).toHaveProperty("originalFilePath");
-            expect(result).toHaveProperty("originalFileLine");  
+            expect(result).toHaveProperty("originalFileLine");
             expect(result).toHaveProperty("originalFileColumn");
 
             // Allow any string/number values since location extraction is complex
@@ -3251,7 +3251,7 @@ Final line`);
                 const result = await remapStackToOriginal(mockServer, stack);
 
                 // The function processes and formats stack frames
-                expect(typeof result).toBe("string");
+                expectTypeOf(result).toBeString();
             });
 
             it("should skip frames with invalid line/column", async () => {

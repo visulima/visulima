@@ -59,7 +59,11 @@
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "test:e2e": "playwright test",
+        "test:e2e:ui": "playwright test --ui",
+        "test:e2e:headed": "playwright test --headed",
+        "test:e2e:debug": "playwright test --debug"
     },
     "dependencies": {
         "@jridgewell/trace-mapping": "^0.3.30",
@@ -83,6 +87,7 @@
         "@tailwindcss/oxide": "^4.1.12",
         "@tailwindcss/typography": "^0.5.16",
         "@total-typescript/ts-reset": "^0.6.1",
+        "@playwright/test": "^1.49.1",
         "@types/node": "24.3.0",
         "@visulima/packem": "2.0.0-alpha.18",
         "@visulima/path": "workspace:*",

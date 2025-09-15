@@ -80,7 +80,8 @@ const findBestModuleMatch = (server: ViteDevServer, normalizedCandidates: Readon
  * @param candidates Array of candidate module IDs to search for
  * @returns The best matching module or null if none found
  */
-const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleNode | null => {  
+const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleNode | null => {
+
     // Pre-normalize all candidates for performance
     const normalizedCandidates = candidates.map((c) => c.replaceAll("\\", "/"));
 
