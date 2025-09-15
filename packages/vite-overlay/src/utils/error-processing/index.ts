@@ -1,181 +1,19 @@
-import { readFile } from "node:fs/promises";
-
 import { codeFrame, formatStacktrace, parseStacktrace } from "@visulima/error";
 import aiPrompt from "@visulima/error/solution/ai/prompt";
+import type { LanguageInput } from "shiki";
 import type { ErrorPayload, ViteDevServer } from "vite";
 
-import findLanguageBasedOnExtension from "../../../../shared/utils/find-language-based-on-extension";
-import getHighlighter, { transformerCompactLineOptions } from "../../../../shared/utils/get-highlighter";
-import type { ErrorProcessingResult, SourceTexts } from "../types";
-import { findModuleForPath } from "./module-finder";
-import { normalizeIdCandidates } from "./normalize-id-candidates";
-import { realignOriginalPosition } from "./position-aligner";
-import { resolveOriginalLocation } from "./source-map-resolver";
-import { getSourceFromMap } from "./source-map-utils";
-import {
-    cleanErrorMessage,
-    cleanErrorStack,
-        extractErrors,
-    isAggregateError,
-    isESBuildErrorArray,
-    processESBuildErrors,
-} from "./stack-trace-utils";
-import { extractLocationFromViteError, extractViteErrorLocation } from "./vite-error-adapter";
-import type { LanguageInput } from "shiki";
-
-/**
- * Parses Vue SFC compilation error messages to extract essential location information
- */
-const parseVueCompilationError = (errorMessage: string) => {
-    // Check if this is a Vue compilation error
-    if (!errorMessage.includes("[vue/compiler-sfc]")) {
-        return null;
-    }
-
-    let filePath = "";
-    let line = 0;
-    let column = 0;
-
-    // Extract file path and position from the error message
-    // Try to extract position from the error message format: "(4:2)"
-    const positionPattern = /\((\d+):(\d+)\)/;
-    const positionMatch = errorMessage.match(positionPattern);
-
-    if (positionMatch) {
-        line = Number.parseInt(positionMatch[1], 10);
-        column = Number.parseInt(positionMatch[2], 10);
-    }
-
-    // Find the file path in the error message
-    const filePathPattern = /(\S+\.vue)/;
-    const fileMatch = errorMessage.match(filePathPattern);
-
-    if (fileMatch) {
-        filePath = fileMatch[1];
-    }
-
-    // Extract just the error message (first line)
-    const message = errorMessage.split("\n")[0] || errorMessage;
-
-    // Return only essential information
-    if (filePath && line > 0 && column > 0) {
-        return {
-            column,
-            originalFilePath: filePath,
-            line,
-            message,
-        };
-    }
-
-    return null;
-};
-
-/**
- * Retrieves original and compiled source texts from various sources.
- * Attempts multiple strategies to find source code for error context.
- */
-const retrieveSourceTexts = async (server: ViteDevServer, module_: unknown, filePath: string, idCandidates: ReadonlyArray<string>): Promise<SourceTexts> => {
-    let originalSourceText: string | undefined;
-    let compiledSourceText: string | undefined;
-
-    const moduleObject = module_ as Record<string, unknown> | undefined;
-    const currentMap = moduleObject?.transformResult as Record<string, unknown> | undefined;
-
-    // Try to get original source from current source map
-    if (!originalSourceText && currentMap) {
-        originalSourceText = getSourceFromMap(currentMap, filePath);
-    }
-
-    // Try to get sources via transform request
-    if (!originalSourceText || !compiledSourceText) {
-        const transformId = module_?.id || module_?.url || idCandidates[0];
-
-        if (transformId) {
-            try {
-                const transformed = await server.transformRequest(transformId);
-
-                if (transformed?.map && !originalSourceText) {
-                    originalSourceText = getSourceFromMap(transformed.map, filePath);
-                }
-
-                if (typeof transformed?.code === "string") {
-                    compiledSourceText = transformed.code;
-                }
-            } catch {
-                // Ignore transform errors
-            }
-        }
-    }
-
-    // Fallback to module's transform result
-    if (!compiledSourceText && typeof module_?.transformResult?.code === "string") {
-        compiledSourceText = module_.transformResult.code;
-    }
-
-    // Fallback to reading original file directly
-    if (!originalSourceText && module_?.file) {
-        try {
-            originalSourceText = await readFile(module_.file, "utf8");
-        } catch {
-            // Ignore file read errors
-        }
-    }
-
-    return { compiledSourceText, originalSourceText } as const;
-};
-
-/**
- * Creates fallback error data when module resolution fails.
- */
-const createFallbackErrorData = (filePath: string, line: number, column: number, trace: any) => {
-    return {
-        compiledCodeFrameContent: undefined,
-        compiledColumn: column,
-        compiledFilePath: filePath,
-        compiledLine: line,
-        compiledSnippet: "",
-        originalFileColumn: column,
-        originalFileLine: line,
-        originalFilePath: filePath,
-        fixPrompt: "",
-        originalCodeFrameContent: undefined,
-        originalSnippet: "",
-        snippet: "",
-        trace,
-    };
-};
-
-const remapStackToOriginal = async (server: ViteDevServer, stack: string, header?: { message?: string; name?: string }): Promise<string> => {
-    const frames = parseStacktrace({ stack } as unknown as Error);
-    const mapped = await Promise.all(
-        frames.map(async (frame) => {
-            const { file } = frame;
-            const line = frame.line ?? 0;
-            const column = frame.column ?? 0;
-
-            if (!file || line <= 0 || column <= 0) {
-                return frame;
-            }
-
-            try {
-                const idCandidates = normalizeIdCandidates(file);
-                const module_ = findModuleForPath(server, idCandidates);
-
-                if (!module_) {
-                    return frame;
-                }
-
-                const resolved = resolveOriginalLocation(module_, file, line, column);
-
-                return { ...frame, column: resolved.fileColumn, file: resolved.filePath, line: resolved.fileLine };
-            } catch {
-                return frame;
-            }
-        }),
-    );
-
-    return formatStacktrace(mapped, { header });
-};
+import findLanguageBasedOnExtension from "../../../../../shared/utils/find-language-based-on-extension";
+import getHighlighter, { transformerCompactLineOptions } from "../../../../../shared/utils/get-highlighter";
+import type { ErrorProcessingResult } from "../../types";
+import { findModuleForPath } from "../module-finder";
+import { normalizeIdCandidates } from "../normalize-id-candidates";
+import { realignOriginalPosition } from "../position-aligner";
+import { resolveOriginalLocation } from "../source-map-resolver";
+import { cleanErrorMessage, cleanErrorStack, extractErrors, isAggregateError, isESBuildErrorArray, processESBuildErrors } from "../stack-trace-utils";
+import { parseVueCompilationError } from "./parse-vue-compilation-error";
+import { remapStackToOriginal } from "./remap-stack-to-original";
+import { retrieveSourceTexts } from "./retrieve-source-texts";
 
 /**
  * Builds comprehensive error data including source maps, code frames, and AI prompts.
@@ -224,7 +62,6 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawEr
     const originalStack = await remapStackToOriginal(server, cleanedStack, { message: cleanMessage, name: primaryError.name });
     const plugin = rawError?.plugin;
 
-
     // Create a synthetic error with cleaned data for parsing
     const syntheticError = new Error(cleanMessage);
 
@@ -245,37 +82,27 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawEr
     if (rawError) {
         // Check if the raw error has a 'loc' property (Vite's location object)
         if (rawError.loc) {
-            const loc = rawError.loc;
+            const { loc } = rawError;
+
             viteLocation = {
+                column: loc.column || 1,
                 file: loc.file || loc.path || "",
                 line: loc.line || 1,
-                column: loc.column || 1,
             };
         }
         // Check if the raw error has an 'id' property (often the source file path)
         else if (rawError.id) {
-            const id = rawError.id;
+            const { id } = rawError;
+
             // If it's a source file path, use it
-            if (typeof id === 'string' && (id.endsWith('.tsx') || id.endsWith('.ts') || id.endsWith('.jsx') || id.endsWith('.js') || id.endsWith('.vue'))) {
+            if (typeof id === "string" && (id.endsWith(".tsx") || id.endsWith(".ts") || id.endsWith(".jsx") || id.endsWith(".js") || id.endsWith(".vue"))) {
                 viteLocation = {
+                    column: 1,
                     file: id,
                     line: 1, // Default to line 1 if no specific location
-                    column: 1,
                 };
             }
         }
-    }
-
-    // Fallback: Try to extract from error messages
-    if (!viteLocation) {
-        viteLocation = extractLocationFromViteError(cleanMessage, server) ||
-                       extractLocationFromViteError(primaryError.message, server);
-    }
-
-    // Another fallback: Try the full error string representation
-    if (!viteLocation && primaryError.stack) {
-        const fullErrorString = `${primaryError.message}\n${primaryError.stack}`;
-        viteLocation = extractLocationFromViteError(fullErrorString, server);
     }
 
     // Initialize original location - prefer Vite location data
@@ -315,7 +142,19 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawEr
         const module_ = findModuleForPath(server, idCandidates);
 
         if (!module_) {
-            return createFallbackErrorData(compiledFilePath, compiledLine, compiledColumn, trace);
+            return {
+                compiledCodeFrameContent: undefined,
+                compiledColumn,
+                compiledFilePath,
+                compiledLine,
+                compiledSnippet: "",
+                fixPrompt: "",
+                originalCodeFrameContent: undefined,
+                originalFileColumn: compiledColumn,
+                originalFileLine: compiledLine,
+                originalFilePath: compiledFilePath,
+                originalSnippet: "",
+            };
         }
 
         // Retrieve source texts from various sources
@@ -421,11 +260,11 @@ const buildExtendedErrorData = async (error: Error, server: ViteDevServer, rawEr
             header: { message: cleanMessage, name: primaryError.name },
         }),
         errorCount: individualErrors.length,
+        fixPrompt,
+        originalCodeFrameContent,
         originalFileColumn,
         originalFileLine,
         originalFilePath,
-        fixPrompt,
-        originalCodeFrameContent,
         originalSnippet,
         originalStack,
         plugin,

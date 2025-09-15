@@ -37,13 +37,13 @@ export interface ExtendedErrorCause {
     readonly compiledFilePath?: string;
     readonly compiledLine?: number;
     readonly compiledSnippet?: string;
-    readonly originalFileColumn?: number;
-    readonly originalFileLine?: number;
-    readonly originalFilePath?: string;
     readonly fixPrompt?: string;
     readonly message: string;
     readonly name: string;
     readonly originalCodeFrameContent?: string;
+    readonly originalFileColumn?: number;
+    readonly originalFileLine?: number;
+    readonly originalFilePath?: string;
     readonly originalSnippet?: string;
     readonly snippet?: string;
     readonly stack?: string;
@@ -82,9 +82,9 @@ export interface ProvidedCause {
 // Vue SFC compilation error information
 export interface VueErrorInfo {
     readonly column: number;
-    readonly originalFilePath: string;
     readonly line: number;
     readonly message?: string;
+    readonly originalFilePath: string;
 }
 
 // Source map resolution results
@@ -117,7 +117,6 @@ export interface ESBuildMessage {
     readonly text: string;
 }
 
-
 export interface ErrorProcessingResult {
     readonly compiledCodeFrameContent?: string;
     readonly compiledColumn: number;
@@ -126,11 +125,11 @@ export interface ErrorProcessingResult {
     readonly compiledSnippet: string;
     readonly compiledStack?: string;
     readonly errorCount?: number;
+    readonly fixPrompt: string;
+    readonly originalCodeFrameContent?: string;
     readonly originalFileColumn: number;
     readonly originalFileLine: number;
     readonly originalFilePath: string;
-    readonly fixPrompt: string;
-    readonly originalCodeFrameContent?: string;
     readonly originalSnippet: string;
     readonly originalStack?: string;
     readonly plugin?: string;

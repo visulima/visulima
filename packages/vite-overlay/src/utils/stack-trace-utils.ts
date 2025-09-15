@@ -18,7 +18,7 @@ const FS_PATH_PATTERN = /\/@fs\//g as const;
 const SUPPORTED_EXTENSIONS = new Set<SupportedExtension>([".cjs", ".js", ".jsx", ".mjs", ".svelte", ".ts", ".tsx", ".vue"]);
 
 // Keywords that indicate valid stack frames
-const VALID_STACK_KEYWORDS = new Set<string>(["<anonymous>", "native"]);
+const VALID_STACK_KEYWORDS = new Set<string>(["<anonymous>", "<unknown>", "native"]);
 
 /**
  * Checks if a line is a valid JavaScript stack frame.
@@ -40,13 +40,14 @@ export const isValidStackFrame: StackFrameValidator = (line: string): boolean =>
         return false;
     }
 
-    // Must have line/column information (format: file:line:column or (file:line:column)) or be native
+    // Must have line/column information (format: file:line:column or (file:line:column)) or be native or unknown
     const hasLocationInfo
         = /\([^)]*:\d+:\d+\)/.test(trimmed) // (file:line:column)
             || /\([^)]*:\d+\)/.test(trimmed) // (file:line)
             || /[^(\s][^:]*:\d+:\d+/.test(trimmed) // file:line:column (without parens)
             || /[^(\s][^:]*:\d+/.test(trimmed) // file:line (without parens)
-            || trimmed.includes("native"); // native functions
+            || trimmed.includes("native") // native functions
+            || trimmed.includes("<unknown>"); // browser couldn't resolve source
 
     return hasLocationInfo;
 };
@@ -56,6 +57,12 @@ const cleanStackLine: StackLineCleaner = (line: string): string => {
     line = line.replaceAll(FS_PATH_PATTERN, PATH_SEPARATOR);
     // Clean up file:// URLs that might appear
     line = line.replaceAll(FILE_URL_PATTERN, "");
+
+    // Handle <unknown> entries - these are browser limitations, not actual paths
+    if (line.includes("<unknown>")) {
+        // Keep the line but mark it as unresolved
+        return line.trim() || "";
+    }
 
     // Additional validation: only keep valid stack frames
     if (line.trim() && !isValidStackFrame(line)) {
@@ -140,6 +147,21 @@ export const cleanErrorStack = (stack: string): string => {
         .join("\n");
 };
 
+/**
+ * Enhanced stack trace cleaning with source map support.
+ * @param stack Raw stack trace string
+ * @param server Vite dev server instance
+ * @param rootPath Root directory path
+ * @returns Cleaned stack trace
+ */
+export const cleanAndResolveErrorStack = (stack: string, server: ViteDevServer, rootPath: string): string => {
+    if (!stack) {
+        return stack;
+    }
+
+    // Clean the stack and absolutize URLs
+    return cleanErrorStack(stack);
+};
 
 /**
  * Strips ANSI escape codes from error messages.

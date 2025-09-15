@@ -79,6 +79,23 @@ at anotherFunction (file:///home/user/project/src/other.js:20:15)`;
 at anotherFunction (/home/user/project/src/other.js:20:15)`);
     });
 
+    it("should preserve unknown locations from browser", () => {
+        const stack = `at App <unknown>:0:0
+at Object.react_stack_bottom_frame <unknown>:0:0
+at renderWithHooks <unknown>:0:0
+at updateFunctionComponent <unknown>:0:0`;
+
+        const result = cleanErrorStack(stack);
+
+        // cleanErrorStack should preserve <unknown> entries as valid stack frames
+        expect(result).toBe(`at App <unknown>:0:0
+at Object.react_stack_bottom_frame <unknown>:0:0
+at renderWithHooks <unknown>:0:0
+at updateFunctionComponent <unknown>:0:0`);
+    });
+});
+
+describe("mixed content handling", () => {
     it("should handle mixed valid and invalid content", () => {
         const stack = `Error: Something went wrong
 at validFunction (/path/to/file.js:10:5)
@@ -217,6 +234,12 @@ describe(isValidStackFrame, () => {
     it("should handle native functions without location", () => {
         expect(isValidStackFrame("at nativeFunction (native)")).toBe(true);
         expect(isValidStackFrame("at anotherNative (native)")).toBe(true);
+    });
+
+    it("should handle unknown locations from browser", () => {
+        expect(isValidStackFrame("at App <unknown>:0:0")).toBe(true);
+        expect(isValidStackFrame("at renderWithHooks <unknown>:0:0")).toBe(true);
+        expect(isValidStackFrame("at Component <unknown>:10:5")).toBe(true);
     });
 
     it("should handle anonymous functions", () => {
