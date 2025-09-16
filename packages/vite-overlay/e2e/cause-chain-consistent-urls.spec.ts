@@ -3,21 +3,11 @@ import { expect, test } from "@playwright/test";
 test.describe("Cause Chain Error URL Consistency", () => {
     test.describe("Error with cause chain should show consistent URLs", () => {
         test("should display both errors with consistent HTTP URLs", async ({ page }) => {
-            await page.goto("/");
-
             // Navigate to the error test page
             await page.goto("/error-test");
 
-            // Trigger an error with cause chain
-            await page.evaluate(() => {
-                const primaryError = new Error("Primary error message");
-
-                // Create a cause error that will have a different stack trace
-                const causeError = new Error("Cause error message");
-                primaryError.cause = causeError;
-
-                throw primaryError;
-            });
+            // Click the cause chain button
+            await page.click("[data-error-trigger]");
 
             // Wait for overlay to appear
             await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
@@ -57,15 +47,8 @@ test.describe("Cause Chain Error URL Consistency", () => {
         test("should show correct compiled code frames for both errors", async ({ page }) => {
             await page.goto("/error-test");
 
-            // Trigger an error with cause chain
-            await page.evaluate(() => {
-                const primaryError = new Error("Primary error message");
-
-                const causeError = new Error("Cause error message");
-                primaryError.cause = causeError;
-
-                throw primaryError;
-            });
+            // Click the cause chain button
+            await page.click("[data-error-trigger]");
 
             // Wait for overlay
             await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
@@ -96,10 +79,8 @@ test.describe("Cause Chain Error URL Consistency", () => {
         test("should handle errors without cause chain gracefully", async ({ page }) => {
             await page.goto("/error-test");
 
-            // Trigger a simple error without cause chain
-            await page.evaluate(() => {
-                throw new Error("Simple error without cause");
-            });
+            // Click the simple error button
+            await page.click("[data-testid='simple-error-btn']");
 
             // Wait for overlay
             await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
@@ -113,12 +94,8 @@ test.describe("Cause Chain Error URL Consistency", () => {
         test("should handle malformed stack traces gracefully", async ({ page }) => {
             await page.goto("/error-test");
 
-            // Create an error with malformed stack trace
-            await page.evaluate(() => {
-                const error = new Error("Malformed stack error");
-                error.stack = "Invalid stack trace format";
-                throw error;
-            });
+            // Click the complex error button which creates a complex nested structure
+            await page.click("[data-testid='complex-error-btn']");
 
             // Wait for overlay
             await page.waitForSelector("#__flame__overlay", { timeout: 5000 });

@@ -5,6 +5,10 @@ test.describe("Basic Infrastructure Test", () => {
         await page.goto("/");
 
         await expect(page).toHaveTitle(/TanStack/);
+
+        // Homepage should show an error overlay
+        const overlay = page.locator("#__flame__overlay");
+        await expect(overlay).toBeVisible();
     });
 
     test("should load the error test page", async ({ page }) => {
@@ -24,10 +28,15 @@ test.describe("Basic Infrastructure Test", () => {
         await expect(causeChainButton).toBeVisible();
     });
 
-    test("should navigate from home to error test", async ({ page }) => {
+    test("should show error overlay on homepage", async ({ page }) => {
         await page.goto("/");
-        await page.click("text=🧪 Test Error Overlay");
 
-        await expect(page.locator("h1")).toContainText("Error Overlay Test Page");
+        // The homepage should automatically show the error overlay
+        const overlay = page.locator("#__flame__overlay");
+        await expect(overlay).toBeVisible();
+
+        // Should show error heading
+        const heading = page.locator("#__flame__heading");
+        await expect(heading).toBeVisible();
     });
 });

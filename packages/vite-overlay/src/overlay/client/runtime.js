@@ -22,7 +22,7 @@ class ErrorOverlay extends HTMLElement {
      *
      * Structure 1 - Direct Vite server error:
      * @param {Array} error.errors - Array of processed error objects
-     * @param {boolean} error.isServerError - Whether this is a server error
+     * @param {"client"|"server"} error.errorType - The error type
      *
      * Structure 2 - Browser ErrorEvent:
      * @param {string} error.message - The error message
@@ -48,16 +48,16 @@ class ErrorOverlay extends HTMLElement {
         document.body.append(this);
 
         // Handle multiple possible error structures:
-        // 1. Vite server error: { errors: [...], isServerError: boolean }
+        // 1. Vite server error: { errors: [...], errorType: "client" | "server" }
         // 2. Browser ErrorEvent: { message, name, stack, lineno, colno, source }
 
         let payloadErrors = [];
-        let isServerError = false;
+        let errorType = "client";
 
         // Case 1: Direct Vite server error structure
         if (Array.isArray(error?.errors)) {
             payloadErrors = error.errors;
-            isServerError = error.isServerError || false;
+            errorType = error.errorType || "server";
         }
         // Case 2: Browser ErrorEvent structure - create basic error
         else {
@@ -71,12 +71,12 @@ class ErrorOverlay extends HTMLElement {
             };
 
             payloadErrors = [basicError];
-            isServerError = false;
+            errorType = "client";
         }
 
         const payload = {
             errors: payloadErrors,
-            isServerError,
+            errorType,
         };
         this.__flamePayload = payload;
         this.__flameMode = "original";

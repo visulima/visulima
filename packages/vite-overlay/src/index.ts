@@ -119,6 +119,7 @@ const buildExtendedError = async (
     server: ViteServer,
     rootPath: string,
     viteErrorData?: ViteErrorData,
+    errorType: "client" | "server" = "client",
 ): Promise<VisulimaViteOverlayErrorPayload> => {
     const allErrors = getErrorCauses(rawError);
 
@@ -168,7 +169,7 @@ const buildExtendedError = async (
 
     return {
         errors: extendedErrors,
-        isServerError: false,
+        errorType,
     } as VisulimaViteOverlayErrorPayload;
 };
 
@@ -334,7 +335,7 @@ const setupWebSocketInterception = (
                     syntaicError.cause = reconstructCauseChain(raw.cause);
                 }
 
-                const extensionPayload = await buildExtendedError(syntaicError, server, rootPath);
+                const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, undefined, "server");
 
                 // eslint-disable-next-line no-param-reassign
                 payload = extensionPayload;
@@ -416,7 +417,7 @@ const setupHMRHandler = (
                 file: raw?.file,
                 line: raw?.line,
                 plugin: raw?.plugin,
-            } as ViteErrorData);
+            } as ViteErrorData, "client");
 
             recentErrors.set(JSON.stringify(extensionPayload), Date.now());
 

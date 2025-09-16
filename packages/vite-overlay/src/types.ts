@@ -20,7 +20,7 @@ export interface StackLocation {
 
 export interface VisulimaViteOverlayErrorPayload {
     readonly errors: ReadonlyArray<ExtendedError>;
-    readonly isServerError?: boolean;
+    readonly errorType: "client" | "server";
 }
 
 // Individual error cause with detailed debugging information

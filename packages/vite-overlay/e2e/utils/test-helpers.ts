@@ -177,15 +177,17 @@ export async function verifyOriginalSourceLocations(page: Page) {
     const filePathValid = isOriginalSourcePath(header.filePath);
 
     // Check if stack trace contains original source paths
-    // Be more lenient - just check that it has some content
-    const stackHasOriginalPaths = stackTrace.content?.length > 50;
+    // Be more lenient - just check that it has some content and doesn't have <unknown>
+    const stackHasContent = stackTrace.content?.length > 50;
+    const stackHasNoUnknown = !stackTrace.content?.includes("<unknown>:0:0");
 
     const stackHasNoCompiledPaths = !stackTrace.content?.includes("node_modules") && !stackTrace.content?.match(/\.vite\//);
 
     return {
         filePathValid,
-        overallValid: filePathValid && stackHasOriginalPaths && stackHasNoCompiledPaths,
+        overallValid: filePathValid && stackHasContent && stackHasNoUnknown && stackHasNoCompiledPaths,
         stackHasNoCompiledPaths,
-        stackHasOriginalPaths,
+        stackHasContent,
+        stackHasNoUnknown,
     };
 }

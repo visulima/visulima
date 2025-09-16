@@ -4,8 +4,8 @@ import { getErrorNavigation, getOverlayHeader, waitForErrorOverlay } from "./uti
 
 test.describe("Functional Error Overlay Test", () => {
     test.beforeEach(async ({ page }) => {
-        // Ensure clean state for each test
-        await page.goto("/error-test");
+        // Start with homepage to test the initial error
+        await page.goto("/");
 
         // Try to close any existing overlay
         try {
@@ -18,24 +18,52 @@ test.describe("Functional Error Overlay Test", () => {
         } catch {
             // Ignore if no overlay exists
         }
-
-        // Reload page to ensure clean state
-        await page.reload();
-        await page.waitForTimeout(500);
     });
 
-    test("should trigger and display error overlay from test page", async ({ page }) => {
-        // Click the cause chain button to trigger an error
-        await page.click("[data-error-trigger]");
+    test("should display error overlay on homepage load", async ({ page }) => {
+        // The homepage should automatically trigger an error on load
         await waitForErrorOverlay(page, 15_000);
 
         // Verify overlay is visible
         const overlay = page.locator("#__flame__overlay");
-
         await expect(overlay).toBeVisible();
+
+        // Verify it's showing the cause chain error
+        const navigation = await getErrorNavigation(page);
+        expect(Number.parseInt(navigation.total || "0")).toBeGreaterThan(1);
     });
 
-    test("should display multiple errors in cause chain", async ({ page }) => {
+    test("should navigate through homepage cause chain", async ({ page }) => {
+        await waitForErrorOverlay(page, 15_000);
+
+        const navigation = await getErrorNavigation(page);
+        const totalErrors = Number.parseInt(navigation.total || "0");
+
+        if (totalErrors > 1) {
+            // Test navigation between errors
+            const nextButton = page.locator("[data-flame-dialog-error-next]");
+            const previousButton = page.locator("[data-flame-dialog-error-previous]");
+
+            // Navigate to second error
+            await nextButton.click();
+            await page.waitForTimeout(500);
+
+            let updatedNavigation = await getErrorNavigation(page);
+            expect(updatedNavigation.current).toBe("2");
+
+            // Navigate back to first error
+            await previousButton.click();
+            await page.waitForTimeout(500);
+
+            updatedNavigation = await getErrorNavigation(page);
+            expect(updatedNavigation.current).toBe("1");
+        }
+    });
+
+    test("should display multiple errors in cause chain from error-test page", async ({ page }) => {
+        // Navigate to error test page
+        await page.goto("/error-test");
+
         // Click the cause chain button
         await page.click("[data-error-trigger]");
 
@@ -51,6 +79,9 @@ test.describe("Functional Error Overlay Test", () => {
     });
 
     test("should show navigation controls for multiple errors", async ({ page }) => {
+        // Navigate to error test page
+        await page.goto("/error-test");
+
         await page.click("[data-error-trigger]");
         await waitForErrorOverlay(page, 15_000);
 
@@ -70,6 +101,9 @@ test.describe("Functional Error Overlay Test", () => {
     });
 
     test("should display original source locations", async ({ page }) => {
+        // Navigate to error test page
+        await page.goto("/error-test");
+
         await page.click("[data-error-trigger]");
         await waitForErrorOverlay(page, 15_000);
 
@@ -84,6 +118,9 @@ test.describe("Functional Error Overlay Test", () => {
     });
 
     test("should be able to close the overlay", async ({ page }) => {
+        // Navigate to error test page
+        await page.goto("/error-test");
+
         await page.click("[data-error-trigger]");
         await waitForErrorOverlay(page, 15_000);
 
@@ -153,6 +190,42 @@ test.describe("Functional Error Overlay Test", () => {
         expect(headingText).toContain("Error");
 
         console.log("✅ Custom overlay is being used");
+    });
+
+    test("should handle async error button", async ({ page }) => {
+        // Navigate to error test page
+        await page.goto("/error-test");
+
+        // Click async error button
+        await page.click("[data-testid='async-error-btn']");
+        await waitForErrorOverlay(page, 15_000);
+
+        // Verify overlay appears
+        const overlay = page.locator("#__flame__overlay");
+        await expect(overlay).toBeVisible();
+
+        // Check for API-related error message
+        const heading = page.locator("#__flame__heading");
+        const headingText = await heading.textContent();
+        expect(headingText).toContain("API error");
+    });
+
+    test("should handle complex nested error", async ({ page }) => {
+        // Navigate to error test page
+        await page.goto("/error-test");
+
+        // Click complex error button
+        await page.click("[data-testid='complex-error-btn']");
+        await waitForErrorOverlay(page, 15_000);
+
+        // Verify overlay appears
+        const overlay = page.locator("#__flame__overlay");
+        await expect(overlay).toBeVisible();
+
+        // Should have multiple errors in the chain
+        const navigation = await getErrorNavigation(page);
+        const totalErrors = Number.parseInt(navigation.total || "0");
+        expect(totalErrors).toBeGreaterThan(3); // Complex error has 4 levels
     });
 
     test.skip("should display readable stack trace with correct file paths", async ({ page }) => {
