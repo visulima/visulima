@@ -183,7 +183,7 @@ describe(isValidStackFrame, () => {
         });
     });
 
-    it('should reject lines that do not start with "at"', () => {
+    it("should reject lines that do not start with \"at\"", () => {
         const invalidFrames = [
             "myFunction (/path/to/file.js:10:5)",
             "functionName at (/path/to/file.js:10:5)",

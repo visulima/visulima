@@ -2,14 +2,24 @@
 const HTTP_URL_REGEX = /^https?:\/\//;
 
 /**
- * Generates candidate paths for HTTP URLs
+ * Generates candidate paths for HTTP URLs (Vite-specific optimization)
  */
 const generateUrlCandidates = (urlString: string): string[] => {
     const url = new URL(urlString);
-    const pathWithSearch = url.pathname + (url.search || "");
-    const noLeadingSlash = pathWithSearch.startsWith("/") ? pathWithSearch.slice(1) : pathWithSearch;
+    const pathname = url.pathname;
+    const search = url.search || "";
 
-    return [decodeURIComponent(pathWithSearch), decodeURIComponent(noLeadingSlash), decodeURIComponent(url.pathname)];
+    // Vite-specific patterns for module resolution
+    const candidates = [
+        pathname + search, // Full path with query (most common)
+        pathname, // Just pathname
+        pathname.replace(/^\/@fs\//, ''), // Remove @fs prefix
+        decodeURIComponent(pathname + search), // Decoded full path
+        decodeURIComponent(pathname), // Decoded pathname
+    ];
+
+    // Remove duplicates and filter out empty strings
+    return [...new Set(candidates)].filter(Boolean);
 };
 
 /**
@@ -19,25 +29,33 @@ export const isHttpUrl = (value: string): boolean => HTTP_URL_REGEX.test(value);
 
 /**
  * Normalizes a file path and generates multiple candidate IDs for module resolution.
- * This handles both HTTP URLs (from dev server) and local file paths.
+ * Optimized for Vite's module resolution patterns.
  */
 export const normalizeIdCandidates = (filePath: string): string[] => {
-    if (!filePath) {
-        return [];
-    }
+    if (!filePath) return [];
 
     try {
+        // Handle HTTP URLs (Vite dev server)
         if (isHttpUrl(filePath)) {
-            const candidates = generateUrlCandidates(filePath);
-
-            return candidates;
+            return generateUrlCandidates(filePath);
         }
 
-        return [filePath];
-    } catch (error) {
-        // Log the error for debugging but don't throw
-        console.warn(`Failed to normalize path "${filePath}":`, error);
+        // Handle local file paths (Vite-specific optimizations)
+        const candidates = [filePath];
 
+        // Add variations for common Vite patterns
+        if (filePath.startsWith('/')) {
+            candidates.push(filePath.slice(1)); // Remove leading slash
+        }
+
+        if (filePath.includes('?')) {
+            candidates.push(filePath.split('?')[0]); // Remove query params
+        }
+
+        // Remove duplicates and return
+        return [...new Set(candidates)].filter(Boolean);
+    } catch (error) {
+        console.warn(`Failed to normalize path "${filePath}":`, error);
         return [];
     }
 };

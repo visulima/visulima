@@ -69,6 +69,7 @@ class ErrorOverlay extends HTMLElement {
                 originalFilePath: error?.source,
                 originalStack: error?.stack || "",
             };
+
             payloadErrors = [basicError];
             isServerError = false;
         }
@@ -77,7 +78,6 @@ class ErrorOverlay extends HTMLElement {
             errors: payloadErrors,
             isServerError,
         };
-
         this.__flamePayload = payload;
         this.__flameMode = "original";
 

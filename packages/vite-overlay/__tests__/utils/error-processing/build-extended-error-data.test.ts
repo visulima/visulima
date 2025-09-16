@@ -5,7 +5,7 @@ import type { ErrorPayload, ViteDevServer } from "vite";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import buildExtendedErrorData from "../../../src/utils/error-processing";
-import { remapStackToOriginal } from "../../../src/utils/error-processing/remap-stack-to-original";
+import remapStackToOriginal from "../../../src/utils/error-processing/remap-stack-to-original";
 import { retrieveSourceTexts } from "../../../src/utils/error-processing/retrieve-source-texts";
 
 vi.mock("node:fs/promises");

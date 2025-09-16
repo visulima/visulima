@@ -5,8 +5,7 @@ import findModuleForPath from "../find-module-for-path";
 import { normalizeIdCandidates } from "../normalize-id-candidates";
 import resolveOriginalLocation from "../resolve-original-location";
 
-export const remapStackToOriginal = async (server: ViteDevServer, stack: string, header?: { message?: string; name?: string }): Promise<string> => {
-
+const remapStackToOriginal = async (server: ViteDevServer, stack: string, header?: { message?: string; name?: string }): Promise<string> => {
     // Fix malformed React stack traces where "at functionName" and location are not properly separated
     let normalizedStack = stack;
 
@@ -22,84 +21,52 @@ export const remapStackToOriginal = async (server: ViteDevServer, stack: string,
         normalizedStack = normalizedStack.replaceAll(/at ([^<\s]+)(?=\s*at|$)/g, "\n    at $1 <unknown>:0:0");
     }
 
+    // Early return if stack trace looks well-formed and doesn't need remapping
+    if (!normalizedStack.includes("<unknown>") && !normalizedStack.includes("react-dom") && !normalizedStack.includes("react")) {
+        return normalizedStack;
+    }
+
     const frames = parseStacktrace({ stack: normalizedStack } as unknown as Error);
 
     const mapped = await Promise.all(
-        frames.map(async (frame, index) => {
+        frames.map(async (frame) => {
             const { file } = frame;
             const line = frame.line ?? 0;
             const column = frame.column ?? 0;
 
+            // Early return for well-formed frames that don't need remapping
+            if (file && file !== "<unknown>" && line > 0 && column > 0 &&
+                !file.includes("react-dom") && !file.includes("react")) {
+                return frame;
+            }
+
             if (!file || line <= 0 || column <= 0) {
-                // For React-specific frames, try to provide better context even if source maps fail
-                if ((file === "<unknown>" || file.includes('react-dom') || file.includes('react')) && frame.functionName) {
-                    const { functionName } = frame;
+                // For React-specific frames, try to provide better context
+                if ((file === "<unknown>" || (file && (file.includes("react-dom") || file.includes("react")))) && frame.methodName) {
+                    const { methodName: functionName } = frame;
 
                     // React internal functions - provide better descriptions
-                    if (functionName.includes("executeDispatch")) {
-                        return {
-                            ...frame,
-                            column: 0,
-                            file: "[React] Event Dispatcher",
-                            line: 0,
-                        };
+                    const reactMappings = {
+                        executeDispatch: "Event Dispatcher",
+                        runWithFiber: "Fiber Reconciliation",
+                        processDispatchQueue: "Event Queue",
+                        dispatchEvent: "Event System",
+                        batchedUpdates: "Batch Updates",
+                    } as const;
+
+                    for (const [key, description] of Object.entries(reactMappings)) {
+                        if (functionName.includes(key)) {
+                            return { ...frame, file: `[React] ${description}`, column: 0, line: 0 };
+                        }
                     }
 
-                    if (functionName.includes("runWithFiberInDEV") || functionName.includes("runWithFiber")) {
-                        return {
-                            ...frame,
-                            column: 0,
-                            file: "[React] Fiber Reconciliation",
-                            line: 0,
-                        };
-                    }
-
-                    if (functionName.includes("processDispatchQueue")) {
-                        return {
-                            ...frame,
-                            column: 0,
-                            file: "[React] Event Queue",
-                            line: 0,
-                        };
-                    }
-
-                    if (functionName.includes("dispatchEvent")) {
-                        return {
-                            ...frame,
-                            column: 0,
-                            file: "[React] Event System",
-                            line: 0,
-                        };
-                    }
-
-                    if (functionName.includes("batchedUpdates")) {
-                        return {
-                            ...frame,
-                            column: 0,
-                            file: "[React] Batch Updates",
-                            line: 0,
-                        };
-                    }
-
-                    // Generic React function - show the function name with React context
-                    if (file.includes('react-dom') || file.includes('react')) {
-                        return {
-                            ...frame,
-                            column: 0,
-                            file: `[React] ${functionName}`,
-                            line: 0,
-                        };
-                    }
-
-                    // For user functions that couldn't be mapped, try to find source files
+                    // For user functions, try to find source files (only if not anonymous)
                     if (!functionName.includes("$") && !functionName.includes("anonymous")) {
-                        // Try to find modules that might contain this function
                         const candidates = normalizeIdCandidates(functionName);
                         const module_ = findModuleForPath(server, candidates);
 
                         if (module_) {
-                            const resolved = resolveOriginalLocation(module_, "", 1, 1);
-
+                            const resolved = await resolveOriginalLocation(server, module_, "", 1, 1);
                             if (resolved.originalFilePath) {
                                 return {
                                     ...frame,
@@ -123,10 +90,10 @@ export const remapStackToOriginal = async (server: ViteDevServer, stack: string,
                     return frame;
                 }
 
-                const resolved = resolveOriginalLocation(module_, file, line, column);
+                const resolved = await resolveOriginalLocation(server, module_, file, line, column);
 
-                return { ...frame, column: resolved.fileColumn, file: resolved.filePath, line: resolved.fileLine };
-            } catch (error) {
+                return { ...frame, column: resolved.originalFileColumn, file: resolved.originalFilePath, line: resolved.originalFileLine };
+            } catch {
                 return frame;
             }
         }),
@@ -134,3 +101,5 @@ export const remapStackToOriginal = async (server: ViteDevServer, stack: string,
 
     return formatStacktrace(mapped, { header });
 };
+
+export default remapStackToOriginal;

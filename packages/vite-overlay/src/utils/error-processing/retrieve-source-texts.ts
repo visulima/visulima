@@ -18,39 +18,35 @@ export const retrieveSourceTexts = async (
     let originalSourceText: string | undefined;
     let compiledSourceText: string | undefined;
 
-    const moduleObject = module_ as Record<string, unknown> | undefined;
-    const currentMap = moduleObject?.transformResult as Record<string, unknown> | undefined;
-
-    // Try to get original source from current source map
-    if (!originalSourceText && currentMap) {
-        originalSourceText = getSourceFromMap(currentMap, filePath);
-    }
-
-    // Try to get sources via transform request
-    if (!originalSourceText || !compiledSourceText) {
-        const transformId = module_?.id || module_?.url || idCandidates[0];
-
-        if (transformId) {
-            try {
-                const transformed = await server.transformRequest(transformId);
-
-                if (transformed?.map && !originalSourceText) {
-                    originalSourceText = getSourceFromMap(transformed.map, filePath);
-                }
-
-                if (typeof transformed?.code === "string") {
-                    compiledSourceText = transformed.code;
-                }
-            } catch {
-                // Ignore transform errors
-            }
+    // Vite optimization: Check cached transform result first (faster)
+    if (module_?.transformResult) {
+        const cached = module_.transformResult;
+        if (cached.code && !compiledSourceText) {
+            compiledSourceText = cached.code;
+        }
+        if (cached.map && !originalSourceText) {
+            originalSourceText = getSourceFromMap(cached.map, filePath);
         }
     }
 
-    // Fallback to module's transform result
-    if (!compiledSourceText && typeof module_?.transformResult?.code === "string") {
-        compiledSourceText = module_.transformResult.code;
+    // Only call transformRequest if we still need data (slower but fresh)
+    const transformId = module_?.id || module_?.url || idCandidates[0];
+    if (transformId && (!originalSourceText || !compiledSourceText)) {
+        try {
+            const transformed = await server.transformRequest(transformId);
+
+            if (transformed?.code && !compiledSourceText) {
+                compiledSourceText = transformed.code;
+            }
+
+            if (transformed?.map && !originalSourceText) {
+                originalSourceText = getSourceFromMap(transformed.map, filePath);
+            }
+        } catch {
+            // Transform failed, continue to fallbacks
+        }
     }
+
 
     // Fallback to reading original file directly
     if (!originalSourceText && module_?.file) {
@@ -60,6 +56,7 @@ export const retrieveSourceTexts = async (
             // Ignore file read errors
         }
     }
+
 
     return { compiledSourceText, originalSourceText } as const;
 };

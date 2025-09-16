@@ -1,4 +1,5 @@
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
+import type { ViteDevServer } from "vite";
 
 import { isHttpUrl } from "./normalize-id-candidates";
 
@@ -15,34 +16,38 @@ interface ResolvedLocation {
 }
 
 interface ViteModule {
+    id?: string | null;
     transformResult?: {
         map?: any;
-    };
+    } | null;
+    url?: string;
 }
 
 /**
  * Resolves the original position using source maps
  */
 const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: number) => {
-    const traced = new TraceMap(rawMap);
-    const pos = originalPositionFor(traced, {
-        column: Math.max(0, fileColumn - COLUMN_OFFSET),
-        line: fileLine,
-    });
+    try {
+        const traced = new TraceMap(rawMap);
+        const pos = originalPositionFor(traced, {
+            column: Math.max(0, fileColumn - COLUMN_OFFSET),
+            line: fileLine,
+        });
 
-    if (!pos.source || pos.line === undefined || pos.column === undefined) {
-        return null;
+        // Return position if valid
+        if (pos.source && pos.line !== undefined && pos.column !== undefined &&
+            pos.line >= MIN_LINE_NUMBER && pos.column >= MIN_COLUMN_NUMBER) {
+            return {
+                column: pos.column + COLUMN_OFFSET,
+                line: pos.line,
+                source: pos.source,
+            };
+        }
+    } catch {
+        // Silently fail if source map processing fails
     }
 
-    if (pos.line < MIN_LINE_NUMBER || pos.column < MIN_COLUMN_NUMBER) {
-        return null;
-    }
-
-    return {
-        column: pos.column + COLUMN_OFFSET,
-        line: pos.line,
-        source: pos.source,
-    };
+    return null;
 };
 
 /**
@@ -81,15 +86,38 @@ const resolveHttpSourcePath = (urlString: string, sourceName: string): string =>
 
 /**
  * Resolves the original source location from a compiled location using source maps.
- * Handles both HTTP URLs and local file paths.
+ * Uses Vite's built-in source map resolution for consistency with browser behavior.
+ * @param server The Vite dev server instance
  * @param module_ The Vite module containing transform result
  * @param filePath The original file path
  * @param fileLine The line number in the compiled source
  * @param fileColumn The column number in the compiled source
  * @returns Object with resolved filePath, fileLine, and fileColumn
  */
-const resolveOriginalLocation = (module_: ViteModule, filePath: string, fileLine: number, fileColumn: number): ResolvedLocation => {
-    const rawMap = module_?.transformResult?.map;
+const resolveOriginalLocation = async (
+    server: ViteDevServer,
+    module_: ViteModule,
+    filePath: string,
+    fileLine: number,
+    fileColumn: number,
+): Promise<ResolvedLocation> => {
+    // Vite optimization: Use cached transform result first (faster)
+    let rawMap = module_?.transformResult?.map;
+
+    // Only get fresh source map if cached version is insufficient
+    if (!rawMap && (module_?.id || module_?.url)) {
+        const transformId = module_.id || module_.url;
+        if (transformId) {
+            try {
+                const transformed = await server.transformRequest(transformId);
+                if (transformed?.map) {
+                    rawMap = transformed.map;
+                }
+            } catch {
+                // Fall back to cached source map if transformRequest fails
+            }
+        }
+    }
 
     if (!rawMap) {
         return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };

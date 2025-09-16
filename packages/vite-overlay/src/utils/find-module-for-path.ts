@@ -1,111 +1,70 @@
 import type { ModuleNode, ViteDevServer } from "vite";
 
-import type { ModuleMatch } from "../types";
-
-// Constants for module matching scoring
-const EXACT_MATCH_SCORE = 100 as const;
-const CONTAINS_MATCH_SCORE = 50 as const;
-
 /**
- * Extracts relevant paths from a module for matching
+ * Finds the best module match by iterating through all modules.
+ * Only used as fallback when direct lookup fails.
  */
-const getModulePaths = (module: unknown, id: string): ReadonlyArray<string> => {
-    const moduleObject = module as Record<string, unknown>;
-    const file = String(moduleObject.file || "").replaceAll("\\", "/");
-    const idString = String(id || "").replaceAll("\\", "/");
-    const url = String(moduleObject.url || "").replaceAll("\\", "/");
-
-    return [file, idString, url] as const;
-};
-
-/**
- * Gets the match score between a single path and candidate
- */
-const getPathMatchScore = (path: string, candidate: string): number => {
-    // Exact match gets highest score
-    if (path === candidate) {
-        return EXACT_MATCH_SCORE;
-    }
-
-    // Contains match gets medium score
-    if (path.includes(candidate) || candidate.includes(path)) {
-        return CONTAINS_MATCH_SCORE;
-    }
-
-    return 0;
-};
-
-/**
- * Calculates the match score for module paths against candidates
- */
-const calculateMatchScore = (modulePaths: ReadonlyArray<string>, candidates: ReadonlyArray<string>): number => {
-    let maxScore = 0;
-
-    for (const path of modulePaths) {
-        for (const candidate of candidates) {
-            const score = getPathMatchScore(path, candidate);
-
-            maxScore = Math.max(maxScore, score);
-        }
-    }
-
-    return maxScore;
-};
-
-/**
- * Finds the best module match using scoring algorithm
- */
-const findBestModuleMatch = (server: ViteDevServer, normalizedCandidates: ReadonlyArray<string>): ModuleMatch | null => {
-    let bestMatch: ModuleMatch | null = null;
-
+const findBestModuleMatch = (server: ViteDevServer, candidates: ReadonlyArray<string>): ModuleNode | undefined => {
     for (const [id, module] of server.moduleGraph.idToModuleMap) {
-        if (!module)
+        if (!module) {
             continue;
+        }
 
-        const modulePaths = getModulePaths(module, id);
-        const score = calculateMatchScore(modulePaths, normalizedCandidates);
+        const moduleObject = module as unknown as Record<string, unknown>;
+        const modulePaths = [
+            String(moduleObject.file || "").replaceAll("\\", "/"),
+            String(id || "").replaceAll("\\", "/"),
+            String(moduleObject.url || "").replaceAll("\\", "/"),
+        ];
 
-        if (score > 0 && (!bestMatch || score > bestMatch.score)) {
-            bestMatch = { module, score } as const;
+        // Check for exact or partial matches
+        for (const candidate of candidates) {
+            if (modulePaths.some((path) => path === candidate || path.includes(candidate) || candidate.includes(path))) {
+                return module;
+            }
         }
     }
 
-    return bestMatch;
+    return undefined;
 };
 
 /**
  * Finds a module in the Vite module graph by trying various lookup strategies.
- * Uses scoring to determine the best match when multiple candidates exist.
+ * Prioritizes direct lookups for performance, falls back to iteration if needed.
  * @param server The Vite dev server instance
  * @param candidates Array of candidate module IDs to search for
- * @returns The best matching module or null if none found
+ * @returns The best matching module or undefined if none found
  */
-const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleNode | null => {
+const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleNode | undefined => {
+    // Vite optimization: Try the most likely candidates first
+    const prioritizedCandidates = [
+        ...candidates,
+        ...candidates.map((c) => c.replace(/^\/@fs\//, "")), // Remove @fs prefix
+        ...candidates.map((c) => c.replace(/^[./]*/, "")), // Remove leading ./ or /
+    ];
 
-    // Pre-normalize all candidates for performance
-    const normalizedCandidates = candidates.map((c) => c.replaceAll("\\", "/"));
-
-    // First try direct module lookup
-    for (const id of candidates) {
+    // Vite's module graph is optimized for direct ID lookup
+    for (const id of prioritizedCandidates) {
         try {
-            const byId = server.moduleGraph.getModuleById(id);
+            // Try exact ID match first (fastest)
+            const module = server.moduleGraph.getModuleById(id);
+            if (module) {
+                return module;
+            }
 
-            if (byId)
-                return byId;
+            // Try URL lookup for HTTP-style imports
+            const byUrl = (server.moduleGraph as unknown as { getModuleByUrl?: (id: string) => ModuleNode | undefined }).getModuleByUrl?.(id);
 
-            const byUrl = (server.moduleGraph as any).getModuleByUrl?.(id);
-
-            if (byUrl && Object.keys(byUrl).length > 0)
+            if (byUrl) {
                 return byUrl;
+            }
         } catch {
-            // Ignore lookup errors, continue to next candidate
+            // Continue to next candidate
         }
     }
 
-    // Fallback: iterate through all modules with scoring
-    const bestMatch = findBestModuleMatch(server, normalizedCandidates);
-
-    return bestMatch?.module || null;
+    // Only fall back to expensive iteration if direct lookup fails
+    return findBestModuleMatch(server, candidates) || undefined;
 };
 
 export default findModuleForPath;
