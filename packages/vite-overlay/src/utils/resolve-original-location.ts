@@ -71,14 +71,12 @@ const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: num
 
         // Only log if we found a mapping (interesting case)
         if (foundMapping) {
-            console.log(`✅ Source map found mapping with ${foundWithDesc}`);
         }
 
     } catch (error) {
         console.warn("Source map processing failed:", error);
     }
 
-    console.log("❌ No source map mapping found");
     return null;
 };
 
@@ -144,15 +142,9 @@ const resolveOriginalLocation = async (
         const transformId = module_.id || module_.url;
         if (transformId) {
             try {
-                console.log("Requesting fresh source map for:", transformId);
                 const transformed = await server.transformRequest(transformId);
-                console.log("Fresh transform result:", {
-                    hasMap: !!transformed?.map,
-                    hasCode: !!transformed?.code
-                });
                 if (transformed?.map) {
                     rawMap = transformed.map;
-                    console.log("Using fresh source map");
                 }
             } catch (error) {
                 console.warn("Failed to get fresh source map:", error);
@@ -163,7 +155,6 @@ const resolveOriginalLocation = async (
 
     if (!rawMap) {
         // Apply estimation even when no source map is available
-        console.log("📐 No source map available, applying estimation for:", { filePath, fileLine, fileColumn });
 
         let estimatedLine = fileLine;
         let estimatedColumn = fileColumn;
@@ -188,11 +179,6 @@ const resolveOriginalLocation = async (
             estimatedColumn = Math.max(0, fileColumn);
         }
 
-        console.log("📐 Estimation result:", {
-            from: `${fileLine}:${fileColumn}`,
-            to: `${estimatedLine}:${estimatedColumn}`
-        });
-
         return {
             originalFileColumn: estimatedColumn,
             originalFileLine: estimatedLine,
@@ -201,26 +187,13 @@ const resolveOriginalLocation = async (
     }
 
     try {
-        // Debug source map content
-        console.log("Raw source map details:", {
-            version: rawMap?.version,
-            sources: rawMap?.sources,
-            sourcesContent: rawMap?.sourcesContent?.length,
-            mappings: rawMap?.mappings?.substring(0, 100) + "...",
-            hasMappings: !!rawMap?.mappings
-        });
+        // Source map available for resolution
 
         const position = resolveSourceMapPosition(rawMap, fileLine, fileColumn);
 
-        // Debug logging for source map resolution
-        console.log("Source map resolution:", {
-            input: { fileLine, fileColumn },
-            position,
-            filePath
-        });
+        // Source map resolution completed
 
         if (!position) {
-            console.log("No source map position found, using intelligent estimation");
 
             // Intelligent estimation based on common bundling patterns
             // Most bundlers add JSX overhead and imports at the top
@@ -251,11 +224,6 @@ const resolveOriginalLocation = async (
                 estimatedColumn = Math.max(0, fileColumn); // No adjustment for moderate columns
             }
 
-        console.log("📐 Using estimation:", {
-            from: `${fileLine}:${fileColumn}`,
-            to: `${estimatedLine}:${estimatedColumn}`
-        });
-
             return {
                 originalFileColumn: estimatedColumn,
                 originalFileLine: estimatedLine,
@@ -265,16 +233,10 @@ const resolveOriginalLocation = async (
 
         const resolvedPath = resolveSourcePath(filePath, position.source);
 
-        console.log("Resolved position:", {
-            originalFileColumn: position.column,
-            originalFileLine: position.line,
-            originalFilePath: resolvedPath
-        });
-
         return {
             originalFileColumn: position.column,
             originalFileLine: position.line,
-            originalFilePath: resolvedPath,
+            originalFilePath: resolvedPath
         };
     } catch (error) {
         // Log the error for debugging but don't throw

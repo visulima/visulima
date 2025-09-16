@@ -269,7 +269,6 @@ console.error = function() {
         var args = Array.prototype.slice.call(arguments);
         var err = args.find((a) => a instanceof Error);
         
-        console.log(JSON.stringify(err.stack));
         if (err) {
             // Send React-enhanced errors from console.error (like from error boundaries)
             sendError(err);

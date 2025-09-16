@@ -1,9 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { expect, it } from "vitest";
 
 test.describe("Error Overlay E2E Tests", () => {
     test.describe("Basic Error Display", () => {
-        it.skip("should display overlay for runtime errors", async ({ page }) => {
+        test.skip("should display overlay for runtime errors", async ({ page }) => {
             await page.goto("/");
 
             // Trigger a runtime error
@@ -26,7 +25,7 @@ test.describe("Error Overlay E2E Tests", () => {
             await expect(errorMessage).toContainText("Runtime Error");
         });
 
-        it.skip("should display original source locations", async ({ page }) => {
+        test.skip("should display original source locations", async ({ page }) => {
             await page.goto("/");
 
             // Trigger an error with source location
@@ -50,7 +49,7 @@ test.describe("Error Overlay E2E Tests", () => {
     });
 
     test.describe("Cause Chain Handling", () => {
-        it("should display errors with cause chains", async ({ page }) => {
+        test("should display errors with cause chains", async ({ page }) => {
             await page.goto("/error-test");
 
             // Wait for page to load and trigger error with cause chain
@@ -76,7 +75,7 @@ test.describe("Error Overlay E2E Tests", () => {
             await expect(previousButton).toBeVisible();
         });
 
-        it("should navigate through cause chain", async ({ page }) => {
+        test("should navigate through cause chain", async ({ page }) => {
             await page.goto("/cause-chain-test");
 
             // Trigger error with cause chain
@@ -101,7 +100,7 @@ test.describe("Error Overlay E2E Tests", () => {
             expect(backIndex).toBe(initialIndex);
         });
 
-        it("should display original source locations for all causes", async ({ page }) => {
+        test("should display original source locations for all causes", async ({ page }) => {
             await page.goto("/cause-chain-test");
 
             // Trigger error with cause chain
@@ -133,7 +132,7 @@ test.describe("Error Overlay E2E Tests", () => {
     });
 
     test.describe("Code Frame Display", () => {
-        it.skip("should display code frames for original source", async ({ page }) => {
+        test.skip("should display code frames for original source", async ({ page }) => {
             await page.goto("/");
 
             // Trigger error
@@ -151,7 +150,7 @@ test.describe("Error Overlay E2E Tests", () => {
             expect(overlayContent?.length).toBeGreaterThan(10);
         });
 
-        it.skip("should switch between original and compiled views", async ({ page }) => {
+        test.skip("should switch between original and compiled views", async ({ page }) => {
             await page.goto("/");
 
             // Trigger error
@@ -187,7 +186,7 @@ test.describe("Error Overlay E2E Tests", () => {
     });
 
     test.describe("Stack Trace Display", () => {
-        it.skip("should display readable stack traces", async ({ page }) => {
+        test.skip("should display readable stack traces", async ({ page }) => {
             await page.goto("/");
 
             // Trigger error
@@ -209,7 +208,7 @@ test.describe("Error Overlay E2E Tests", () => {
             expect(stackContent?.length).toBeGreaterThan(20);
         });
 
-        it.skip("should have clickable stack trace links", async ({ page }) => {
+        test.skip("should have clickable stack trace links", async ({ page }) => {
             await page.goto("/");
 
             // Trigger error
@@ -234,7 +233,7 @@ test.describe("Error Overlay E2E Tests", () => {
     });
 
     test.describe("Error Overlay UI", () => {
-        it.skip("should be closable", async ({ page }) => {
+        test.skip("should be closable", async ({ page }) => {
             await page.goto("/");
 
             // Trigger error
@@ -261,7 +260,7 @@ test.describe("Error Overlay E2E Tests", () => {
             await expect(overlay).not.toBeVisible();
         });
 
-        it.skip("should close on ESC key", async ({ page }) => {
+        test.skip("should close on ESC key", async ({ page }) => {
             await page.goto("/");
 
             // Trigger error
@@ -285,8 +284,8 @@ test.describe("Error Overlay E2E Tests", () => {
     });
 
     test.describe("Cross-browser Compatibility", () => {
-        it.skip("should work in Chrome", async ({ browserName, page }) => {
-            it.skip(browserName !== "chromium", "Chrome-specific test");
+        test.skip("should work in Chrome", async ({ browserName, page }) => {
+            test.skip(browserName !== "chromium", "Chrome-specific test");
 
             await page.goto("/");
 
@@ -303,8 +302,8 @@ test.describe("Error Overlay E2E Tests", () => {
             await expect(overlay).toBeVisible();
         });
 
-        it.skip("should work in Firefox", async ({ browserName, page }) => {
-            it.skip(browserName !== "firefox", "Firefox-specific test");
+        test.skip("should work in Firefox", async ({ browserName, page }) => {
+            test.skip(browserName !== "firefox", "Firefox-specific test");
 
             await page.goto("/");
 
@@ -321,8 +320,8 @@ test.describe("Error Overlay E2E Tests", () => {
             await expect(overlay).toBeVisible();
         });
 
-        it.skip("should work in Safari", async ({ browserName, page }) => {
-            it.skip(browserName !== "webkit", "Safari-specific test");
+        test.skip("should work in Safari", async ({ browserName, page }) => {
+            test.skip(browserName !== "webkit", "Safari-specific test");
 
             await page.goto("/");
 

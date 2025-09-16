@@ -54,7 +54,7 @@ const extractLocationFromStack = (error: Error) => {
 /**
  * Extracts the query parameter from an HTTP URL
  */
-const extractQueryFromHttpUrl = (url: string): string => {
+export const extractQueryFromHttpUrl = (url: string): string => {
     try {
         const urlObj = new URL(url);
         return urlObj.search;
@@ -66,7 +66,7 @@ const extractQueryFromHttpUrl = (url: string): string => {
 /**
  * Adds query parameter to a base URL if it doesn't already have it
  */
-const addQueryToUrl = (baseUrl: string, query: string): string => {
+export const addQueryToUrl = (baseUrl: string, query: string): string => {
     if (!query || baseUrl.includes('?')) {
         return baseUrl;
     }
@@ -108,11 +108,6 @@ const resolveOriginalLocationInfo = async (
                     ? resolvedFilePath
                     : `${serverRoot}/${resolvedFilePath}`;
 
-                console.log("🔄 Converted HTTP URL to local paths:", {
-                    from: filePath,
-                    modulePath: resolvedFilePath,
-                    sourcePath: resolvedOriginalFilePath
-                });
             } catch (error) {
                 console.warn("Failed to parse HTTP URL:", filePath);
             }
@@ -124,17 +119,8 @@ const resolveOriginalLocationInfo = async (
         if (module_) {
             try {
                 const resolved = await resolveOriginalLocation(server, module_, resolvedFilePath, fileLine, fileColumn);
-                console.log("✅ Source map resolved:", {
-                    originalLine: resolved.originalFileLine,
-                    originalColumn: resolved.originalFileColumn
-                });
                 // Use the resolved local path if available, otherwise use source map result
                 const finalFilePath = resolvedOriginalFilePath || resolved.originalFilePath;
-                console.log("✅ Using resolved file path:", {
-                    original: resolved.originalFilePath,
-                    resolved: resolvedOriginalFilePath,
-                    final: finalFilePath
-                });
 
                 return {
                     originalFileColumn: resolved.originalFileColumn,
@@ -148,7 +134,6 @@ const resolveOriginalLocationInfo = async (
         }
 
         // Apply estimation for all cases where source map resolution fails
-        console.log("📐 Applying estimation for:", { filePath, fileLine, fileColumn });
 
         // Intelligent estimation based on common bundling patterns
         let estimatedLine = fileLine;
@@ -177,11 +162,6 @@ const resolveOriginalLocationInfo = async (
         } else if (fileColumn > 5) {
             estimatedColumn = Math.max(0, fileColumn); // No adjustment for moderate columns
         }
-
-        console.log("📐 Estimation result:", {
-            from: `${fileLine}:${fileColumn}`,
-            to: `${estimatedLine}:${estimatedColumn}`
-        });
 
         return {
             originalFileColumn: estimatedColumn,
@@ -323,12 +303,6 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
         compiledColumn = viteErrorData.column;
         compiledFilePath = viteErrorData.file;
         compiledLine = viteErrorData.line;
-
-        console.log("🎯 Using viteErrorData location:", {
-            compiledLine,
-            compiledColumn,
-            filePath: compiledFilePath.split('/').pop()
-        });
     } else {
         // Extract from stack trace (for primary errors)
         const extracted = extractLocationFromStack(primaryError);
@@ -361,20 +335,8 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
             }
 
             compiledFilePath = httpUrl;
-            console.log("🔄 Converted local path to HTTP URL:", {
-                from: originalLocalPath,
-                projectRoot,
-                relativePath,
-                causeQuery,
-                final: compiledFilePath
-            });
         }
 
-        console.log("🎯 Error location extracted from stack:", {
-            compiledLine,
-            compiledColumn,
-            filePath: compiledFilePath.split('/').pop()
-        });
     }
 
     let { originalFileColumn, originalFileLine, originalFilePath } = await resolveOriginalLocationInfo(
@@ -384,12 +346,6 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
         compiledLine,
         vueErrorInfo,
     );
-
-    console.log("🎯 Final position:", {
-        line: originalFileLine,
-        column: originalFileColumn,
-        file: originalFilePath.split('/').pop()
-    });
 
     // Extract plugin information
     const plugin = viteErrorData?.plugin;
@@ -420,20 +376,10 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
             ? originalFilePath.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '')
             : originalFilePath;
 
-        console.log("Source retrieval setup:", {
-            compiledFilePath,
-            compiledFilePathForRetrieval,
-            originalFilePath,
-            originalFilePathForRetrieval,
-            hasCompiledModule: !!compiledModule,
-            hasOriginalModule: !!originalModule
-        });
-
         // Get compiled source from the appropriate module's transform result
         const moduleForCompiledSource = compiledModule || originalModule;
         if (moduleForCompiledSource?.transformResult?.code) {
             compiledSourceText = moduleForCompiledSource.transformResult.code;
-            console.log("✅ Got compiled source from module transform result");
         }
 
         // Get original source from original module
@@ -444,7 +390,6 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
                 const originalContent = (sourceMap as any).sourcesContent?.[0];
                 if (originalContent) {
                     originalSourceText = originalContent;
-                    console.log("✅ Got original source from source map");
                 }
             } catch (error) {
                 console.warn("Failed to get original source from source map:", error);
@@ -466,13 +411,6 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
         if (!originalSourceText && originalSourceResult.originalSourceText) {
             ({ originalSourceText } = originalSourceResult);
         }
-
-        console.log("Source text results:", {
-            compiledSourceTextLength: compiledSourceText?.length,
-            originalSourceTextLength: originalSourceText?.length,
-            compiledSourcePreview: compiledSourceText?.substring(0, 100),
-            originalSourcePreview: originalSourceText?.substring(0, 100)
-        });
 
         // Generate original code frame (Vite optimization: skip realignment for cached modules)
         if (originalSourceText) {
@@ -531,12 +469,6 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
 
     // Use original snippet if available, otherwise try to provide context
     let promptSnippet = originalSnippet;
-    console.log("🔍 fixPrompt snippet generation:", {
-        hasOriginalSnippet: !!originalSnippet,
-        hasOriginalSourceText: !!originalSourceText,
-        originalFileLine,
-        originalFilePath
-    });
 
     if (!promptSnippet && originalSourceText) {
         // Try to extract context around the error line
@@ -544,20 +476,10 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
         const startLine = Math.max(0, originalFileLine - 3);
         const endLine = Math.min(lines.length, originalFileLine + 2);
         promptSnippet = lines.slice(startLine, endLine).join('\n');
-        console.log("📝 Extracted context from originalSourceText:", {
-            lines: lines.length,
-            startLine,
-            endLine,
-            snippetLength: promptSnippet.length
-        });
     }
     if (!promptSnippet) {
         // Fallback to compiled snippet or generic message
         promptSnippet = compiledSnippet || `Error at line ${originalFileLine} in ${originalFilePath}`;
-        console.log("⚠️ Using fallback snippet:", {
-            usingCompiled: !!compiledSnippet,
-            fallbackMessage: promptSnippet
-        });
     }
 
     const fixPrompt = aiPrompt({

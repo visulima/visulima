@@ -8,6 +8,15 @@ import buildExtendedErrorData from "../../../src/utils/error-processing";
 import remapStackToOriginal from "../../../src/utils/error-processing/remap-stack-to-original";
 import { retrieveSourceTexts } from "../../../src/utils/error-processing/retrieve-source-texts";
 
+// Import the helper functions we want to test
+import {
+    extractQueryFromHttpUrl,
+    addQueryToUrl,
+} from "../../../src/utils/error-processing/index";
+
+// Import parseStacktrace for our tests
+import { parseStacktrace } from "@visulima/error";
+
 vi.mock("node:fs/promises");
 vi.mock("@visulima/error", () => {
     return {
@@ -119,6 +128,9 @@ describe(buildExtendedErrorData, () => {
     const mockServer = {
         moduleGraph: { idToModuleMap: new Map() },
         transformRequest: vi.fn(),
+        config: {
+            root: "/mock/project/root"
+        },
     } as unknown as ViteDevServer;
 
     beforeEach(() => {
@@ -3361,6 +3373,219 @@ Final line`);
 
                 expectTypeOf(result).toBeString();
             });
+        });
+    });
+
+    describe("HTTP URL Conversion Helpers", () => {
+        describe("extractQueryFromHttpUrl", () => {
+            it("should extract query parameters from HTTP URLs", () => {
+                expect(extractQueryFromHttpUrl("http://localhost:5173/src/App.tsx?tsr-split=component")).toBe("?tsr-split=component");
+                expect(extractQueryFromHttpUrl("http://localhost:5173/src/App.tsx?id=123&debug=true")).toBe("?id=123&debug=true");
+                expect(extractQueryFromHttpUrl("https://example.com/file.js?v=1.0.0")).toBe("?v=1.0.0");
+            });
+
+            it("should return empty string for URLs without query parameters", () => {
+                expect(extractQueryFromHttpUrl("http://localhost:5173/src/App.tsx")).toBe("");
+                expect(extractQueryFromHttpUrl("https://example.com/file.js")).toBe("");
+            });
+
+            it("should return empty string for invalid URLs", () => {
+                expect(extractQueryFromHttpUrl("not-a-url")).toBe("");
+                expect(extractQueryFromHttpUrl("")).toBe("");
+                expect(extractQueryFromHttpUrl("file:///path/to/file.js")).toBe("");
+            });
+
+            it("should handle special characters in query parameters", () => {
+                expect(extractQueryFromHttpUrl("http://localhost:5173/src/App.tsx?param=value%20with%20spaces")).toBe("?param=value%20with%20spaces");
+                expect(extractQueryFromHttpUrl("http://localhost:5173/src/App.tsx?param=value+plus")).toBe("?param=value+plus");
+            });
+        });
+
+        describe("addQueryToUrl", () => {
+            it("should add query parameter to URLs without existing query", () => {
+                expect(addQueryToUrl("http://localhost:5173/src/App.tsx", "?tsr-split=component")).toBe("http://localhost:5173/src/App.tsx?tsr-split=component");
+                expect(addQueryToUrl("https://example.com/file.js", "?v=1.0.0")).toBe("https://example.com/file.js?v=1.0.0");
+            });
+
+            it("should not add query parameter if URL already has query", () => {
+                expect(addQueryToUrl("http://localhost:5173/src/App.tsx?existing=param", "?tsr-split=component")).toBe("http://localhost:5173/src/App.tsx?existing=param");
+                expect(addQueryToUrl("https://example.com/file.js?v=1.0.0", "?v=2.0.0")).toBe("https://example.com/file.js?v=1.0.0");
+            });
+
+            it("should not add empty or undefined query parameters", () => {
+                expect(addQueryToUrl("http://localhost:5173/src/App.tsx", "")).toBe("http://localhost:5173/src/App.tsx");
+                expect(addQueryToUrl("http://localhost:5173/src/App.tsx", undefined as any)).toBe("http://localhost:5173/src/App.tsx");
+            });
+
+            it("should handle various URL formats", () => {
+                expect(addQueryToUrl("/relative/path/file.js", "?param=value")).toBe("/relative/path/file.js?param=value");
+                expect(addQueryToUrl("file.js", "?param=value")).toBe("file.js?param=value");
+            });
+        });
+    });
+
+    describe("HTTP URL Conversion Integration", () => {
+        it("should convert local paths to HTTP URLs with query parameters from cause errors", async () => {
+            // Mock server configuration
+            const mockServer = {
+                config: {
+                    root: "/home/user/project"
+                },
+                moduleGraph: {
+                    getModuleById: vi.fn(),
+                    idToModuleMap: new Map(),
+                },
+                transformRequest: vi.fn(),
+            } as unknown as ViteDevServer;
+
+            // Mock module resolution
+            const mockModule = {
+                id: "http://localhost:5173/src/App.tsx?tsr-split=component",
+                transformResult: {
+                    code: 'console.log("compiled code");',
+                    map: {
+                        sources: ["src/App.tsx"],
+                        sourcesContent: ['console.log("original code");'],
+                        mappings: "AAAA",
+                        version: 3,
+                    },
+                },
+            };
+
+            mockServer.moduleGraph.getModuleById = vi.fn().mockReturnValue(mockModule);
+            mockServer.moduleGraph.idToModuleMap.set("http://localhost:5173/src/App.tsx?tsr-split=component", mockModule);
+
+            // Mock parseStacktrace to return cause error with HTTP URL
+            vi.mocked(parseStacktrace).mockImplementation((error: any) => {
+                if (error.stack?.includes("cause")) {
+                    return [{
+                        column: 12,
+                        file: "http://localhost:5173/src/App.tsx?tsr-split=component",
+                        function: "App",
+                        line: 21,
+                    }];
+                }
+                return [{
+                    column: 9,
+                    file: "/home/user/project/src/App.tsx",
+                    function: "App",
+                    line: 20,
+                }];
+            });
+
+            // Mock other dependencies
+            vi.mocked(remapStackToOriginal).mockResolvedValue("Error: Test error\n    at App (src/App.tsx:20:9)");
+            vi.mocked(retrieveSourceTexts).mockResolvedValue({
+                compiledSourceText: 'console.log("compiled code");',
+                originalSourceText: 'console.log("original code");',
+            });
+
+            const primaryError = new Error("Primary error");
+            primaryError.stack = "Error: Primary error\n    at App (/home/user/project/src/App.tsx:20:9)";
+
+            const causeError = new Error("Cause error");
+            causeError.stack = "Error: Cause error\n    at App (http://localhost:5173/src/App.tsx?tsr-split=component:21:12)";
+
+            const allErrors = [primaryError, causeError];
+
+            const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+
+            // Should have detected query parameter from cause error
+            expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx?tsr-split=component");
+
+            // Should show correct compiled code frame
+            expect(result.compiledSnippet).toContain("compiled code");
+            expect(result.compiledLine).toBe(20); // Primary error line
+            expect(result.compiledColumn).toBe(9); // Primary error column
+        });
+
+        it("should handle case where no cause errors have HTTP URLs", async () => {
+            const mockServer = {
+                config: {
+                    root: "/home/user/project"
+                },
+                moduleGraph: {
+                    getModuleById: vi.fn(),
+                    idToModuleMap: new Map(),
+                },
+                transformRequest: vi.fn(),
+            } as unknown as ViteDevServer;
+
+            // Mock parseStacktrace to return only local paths
+            vi.mocked(parseStacktrace).mockReturnValue([{
+                column: 9,
+                file: "/home/user/project/src/App.tsx",
+                function: "App",
+                line: 20,
+            }]);
+
+            // Mock other dependencies
+            vi.mocked(remapStackToOriginal).mockResolvedValue("Error: Test error\n    at App (src/App.tsx:20:9)");
+            vi.mocked(retrieveSourceTexts).mockResolvedValue({
+                compiledSourceText: 'console.log("compiled code");',
+                originalSourceText: 'console.log("original code");',
+            });
+
+            const primaryError = new Error("Primary error");
+            primaryError.stack = "Error: Primary error\n    at App (/home/user/project/src/App.tsx:20:9)";
+
+            const allErrors = [primaryError];
+
+            const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+
+            // Should convert to HTTP URL without query parameter
+            expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");
+        });
+
+        it("should handle malformed URLs gracefully", async () => {
+            const mockServer = {
+                config: {
+                    root: "/home/user/project"
+                },
+                moduleGraph: {
+                    getModuleById: vi.fn(),
+                    idToModuleMap: new Map(),
+                },
+                transformRequest: vi.fn(),
+            } as unknown as ViteDevServer;
+
+            // Mock parseStacktrace to return malformed HTTP URL
+            vi.mocked(parseStacktrace).mockImplementation((error: any) => {
+                if (error.stack?.includes("cause")) {
+                    return [{
+                        column: 12,
+                        file: "not-a-valid-http-url",
+                        function: "App",
+                        line: 21,
+                    }];
+                }
+                return [{
+                    column: 9,
+                    file: "/home/user/project/src/App.tsx",
+                    function: "App",
+                    line: 20,
+                }];
+            });
+
+            // Mock other dependencies
+            vi.mocked(remapStackToOriginal).mockResolvedValue("Error: Test error\n    at App (src/App.tsx:20:9)");
+            vi.mocked(retrieveSourceTexts).mockResolvedValue({
+                compiledSourceText: 'console.log("compiled code");',
+                originalSourceText: 'console.log("original code");',
+            });
+
+            const primaryError = new Error("Primary error");
+            primaryError.stack = "Error: Primary error\n    at App (/home/user/project/src/App.tsx:20:9)";
+
+            const causeError = new Error("Cause error");
+            causeError.stack = "Error: Cause error\n    at App (not-a-valid-http-url:21:12)";
+
+            const allErrors = [primaryError, causeError];
+
+            const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+
+            // Should still convert to HTTP URL without crashing
+            expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");
         });
     });
 });
