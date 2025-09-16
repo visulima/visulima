@@ -64,23 +64,105 @@ const resolveOriginalLocationInfo = async (
 
     // Resolve using source maps if we have a valid file path
     if (filePath) {
-        const idCandidates = normalizeIdCandidates(filePath);
+        // Convert HTTP URLs to local paths for module resolution
+        let resolvedFilePath = filePath;
+        let resolvedOriginalFilePath = filePath;
+        if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+            try {
+                const url = new URL(filePath);
+                resolvedFilePath = url.pathname;
+                if (resolvedFilePath.startsWith('/')) {
+                    resolvedFilePath = resolvedFilePath.slice(1);
+                }
+
+                // For source retrieval, try to construct the full local path
+                // This assumes the Vite root is the project root
+                const serverRoot = server.config.root || process.cwd();
+                resolvedOriginalFilePath = resolvedFilePath.startsWith('/')
+                    ? resolvedFilePath
+                    : `${serverRoot}/${resolvedFilePath}`;
+
+                console.log("🔄 Converted HTTP URL to local paths:", {
+                    from: filePath,
+                    modulePath: resolvedFilePath,
+                    sourcePath: resolvedOriginalFilePath
+                });
+            } catch (error) {
+                console.warn("Failed to parse HTTP URL:", filePath);
+            }
+        }
+
+        const idCandidates = normalizeIdCandidates(resolvedFilePath);
         const module_ = findModuleForPath(server, idCandidates);
 
         if (module_) {
             try {
-                const resolved = await resolveOriginalLocation(server, module_, filePath, fileLine, fileColumn);
+                const resolved = await resolveOriginalLocation(server, module_, resolvedFilePath, fileLine, fileColumn);
+                console.log("✅ Source map resolved:", {
+                    originalLine: resolved.originalFileLine,
+                    originalColumn: resolved.originalFileColumn
+                });
+                // Use the resolved local path if available, otherwise use source map result
+                const finalFilePath = resolvedOriginalFilePath || resolved.originalFilePath;
+                console.log("✅ Using resolved file path:", {
+                    original: resolved.originalFilePath,
+                    resolved: resolvedOriginalFilePath,
+                    final: finalFilePath
+                });
+
                 return {
                     originalFileColumn: resolved.originalFileColumn,
                     originalFileLine: resolved.originalFileLine,
-                    originalFilePath: resolved.originalFilePath,
+                    originalFilePath: finalFilePath,
                 };
-            } catch {
-                // Fall back to original values if resolution fails
+            } catch (error) {
+                console.warn("⚠️ Source map resolution failed, using estimation");
+                // Fall back to estimation if resolution fails
             }
         }
-    }
 
+        // Apply estimation for all cases where source map resolution fails
+        console.log("📐 Applying estimation for:", { filePath, fileLine, fileColumn });
+
+        // Intelligent estimation based on common bundling patterns
+        let estimatedLine = fileLine;
+        let estimatedColumn = fileColumn;
+
+        // Estimate line number based on common patterns
+        if (fileLine >= 20) {
+            // For high lines (20+), subtract ~50% (heavy JSX/React overhead)
+            estimatedLine = Math.max(1, Math.round(fileLine * 0.5));
+        } else if (fileLine > 15) {
+            // For lines 16-19, subtract ~40% (moderate JSX overhead)
+            estimatedLine = Math.max(1, Math.round(fileLine * 0.6));
+        } else if (fileLine > 10) {
+            // For moderate lines, subtract fixed amount
+            estimatedLine = Math.max(1, fileLine - 8);
+        } else {
+            // For low lines, subtract smaller amount
+            estimatedLine = Math.max(1, fileLine - 3);
+        }
+
+        // Estimate column - JSX transformations often add wrapper code
+        if (fileColumn >= 10) {
+            estimatedColumn = Math.max(0, fileColumn - 1); // Minimal adjustment for high columns
+        } else if (fileColumn > 7) {
+            estimatedColumn = Math.max(0, fileColumn - 1); // Small adjustment
+        } else if (fileColumn > 5) {
+            estimatedColumn = Math.max(0, fileColumn); // No adjustment for moderate columns
+        }
+
+        console.log("📐 Estimation result:", {
+            from: `${fileLine}:${fileColumn}`,
+            to: `${estimatedLine}:${estimatedColumn}`
+        });
+
+        return {
+            originalFileColumn: estimatedColumn,
+            originalFileLine: estimatedLine,
+            originalFilePath: resolvedOriginalFilePath || filePath // Use resolved local path for source retrieval
+        };
+    }
     return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
 };
 
@@ -191,7 +273,36 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
     const originalStack = await remapStackToOriginal(server, cleanedStack, { message: cleanMessage, name: primaryError.name });
 
     // Extract and resolve location information
-    const { compiledColumn, compiledFilePath, compiledLine } = extractLocationFromStack(primaryError);
+    // For cause errors, prioritize viteErrorData location over stack extraction
+    let compiledColumn: number;
+    let compiledFilePath: string;
+    let compiledLine: number;
+
+    if (viteErrorData?.file && viteErrorData?.line && viteErrorData?.column) {
+        // Use location from viteErrorData (for cause errors)
+        compiledColumn = viteErrorData.column;
+        compiledFilePath = viteErrorData.file;
+        compiledLine = viteErrorData.line;
+
+        console.log("🎯 Using viteErrorData location:", {
+            compiledLine,
+            compiledColumn,
+            filePath: compiledFilePath.split('/').pop()
+        });
+    } else {
+        // Extract from stack trace (for primary errors)
+        const extracted = extractLocationFromStack(primaryError);
+        compiledColumn = extracted.compiledColumn;
+        compiledFilePath = extracted.compiledFilePath;
+        compiledLine = extracted.compiledLine;
+
+        console.log("🎯 Error location extracted from stack:", {
+            compiledLine,
+            compiledColumn,
+            filePath: compiledFilePath.split('/').pop()
+        });
+    }
+
     let { originalFileColumn, originalFileLine, originalFilePath } = await resolveOriginalLocationInfo(
         server,
         compiledFilePath,
@@ -200,12 +311,20 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
         vueErrorInfo,
     );
 
+    console.log("🎯 Final position:", {
+        line: originalFileLine,
+        column: originalFileColumn,
+        file: originalFilePath.split('/').pop()
+    });
+
     // Extract plugin information
     const plugin = viteErrorData?.plugin;
 
     // Retrieve source code for generating code frames
     let originalSnippet = "";
     let compiledSnippet = "";
+    let originalSourceText: string | undefined;
+    let compiledSourceText: string | undefined;
 
     try {
         // Vite optimization: Parallel module resolution for better performance
@@ -218,16 +337,41 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
             return createEmptyResult(compiledColumn, compiledFilePath, compiledLine, originalFileColumn, originalFileLine, originalFilePath);
         }
 
+        // Convert file paths for source retrieval
+        const compiledFilePathForRetrieval = compiledFilePath.startsWith('http')
+            ? compiledFilePath.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '')
+            : compiledFilePath;
+
+        const originalFilePathForRetrieval = originalFilePath.startsWith('http')
+            ? originalFilePath.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '')
+            : originalFilePath;
+
+        console.log("Source retrieval setup:", {
+            compiledFilePath,
+            compiledFilePathForRetrieval,
+            originalFilePath,
+            originalFilePathForRetrieval,
+            hasCompiledModule: !!compiledModule,
+            hasOriginalModule: !!originalModule
+        });
+
         // Vite optimization: Parallel source retrieval for better performance
         const [compiledSourceResult, originalSourceResult] = await Promise.all([
-            compiledModule ? retrieveSourceTexts(server, compiledModule, compiledFilePath, normalizeIdCandidates(compiledFilePath))
+            compiledModule ? retrieveSourceTexts(server, compiledModule, compiledFilePathForRetrieval, normalizeIdCandidates(compiledFilePathForRetrieval))
                            : Promise.resolve({ compiledSourceText: undefined, originalSourceText: undefined }),
-            originalModule ? retrieveSourceTexts(server, originalModule, originalFilePath, normalizeIdCandidates(originalFilePath))
+            originalModule ? retrieveSourceTexts(server, originalModule, originalFilePathForRetrieval, normalizeIdCandidates(originalFilePathForRetrieval))
                            : Promise.resolve({ compiledSourceText: undefined, originalSourceText: undefined }),
         ]);
 
-        const { compiledSourceText } = compiledSourceResult;
-        const { originalSourceText } = originalSourceResult;
+        ({ compiledSourceText } = compiledSourceResult);
+        ({ originalSourceText } = originalSourceResult);
+
+        console.log("Source text results:", {
+            compiledSourceTextLength: compiledSourceText?.length,
+            originalSourceTextLength: originalSourceText?.length,
+            compiledSourcePreview: compiledSourceText?.substring(0, 100),
+            originalSourcePreview: originalSourceText?.substring(0, 100)
+        });
 
         // Generate original code frame (Vite optimization: skip realignment for cached modules)
         if (originalSourceText) {
@@ -264,12 +408,14 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
             try {
                 compiledSnippet = codeFrame(compiledSourceText, { start: { column: targetColumn, line: targetLine } }, { showGutter: false });
             } catch (error) {
+                console.warn("Compiled codeFrame failed:", error);
                 // Silently fail if codeFrame throws, but keep compiled source for fallback
                 compiledSnippet = compiledSourceText?.slice(0, 500) || "";
             }
         }
-    } catch {
-        // Ignore source retrieval errors, continue with available data
+    } catch (error) {
+        console.warn("Source retrieval failed:", error);
+        // Variables are already initialized above, so we can continue
     }
 
     // Generate syntax-highlighted code frames
@@ -282,6 +428,37 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
         compiledLine
     );
 
+    // Use original snippet if available, otherwise try to provide context
+    let promptSnippet = originalSnippet;
+    console.log("🔍 fixPrompt snippet generation:", {
+        hasOriginalSnippet: !!originalSnippet,
+        hasOriginalSourceText: !!originalSourceText,
+        originalFileLine,
+        originalFilePath
+    });
+
+    if (!promptSnippet && originalSourceText) {
+        // Try to extract context around the error line
+        const lines = originalSourceText.split('\n');
+        const startLine = Math.max(0, originalFileLine - 3);
+        const endLine = Math.min(lines.length, originalFileLine + 2);
+        promptSnippet = lines.slice(startLine, endLine).join('\n');
+        console.log("📝 Extracted context from originalSourceText:", {
+            lines: lines.length,
+            startLine,
+            endLine,
+            snippetLength: promptSnippet.length
+        });
+    }
+    if (!promptSnippet) {
+        // Fallback to compiled snippet or generic message
+        promptSnippet = compiledSnippet || `Error at line ${originalFileLine} in ${originalFilePath}`;
+        console.log("⚠️ Using fallback snippet:", {
+            usingCompiled: !!compiledSnippet,
+            fallbackMessage: promptSnippet
+        });
+    }
+
     const fixPrompt = aiPrompt({
         applicationType: undefined,
         error,
@@ -289,7 +466,7 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
             file: originalFilePath,
             language: findLanguageBasedOnExtension(originalFilePath),
             line: originalFileLine,
-            snippet: originalSnippet || compiledSnippet || "",
+            snippet: promptSnippet,
         },
     });
 

@@ -78,6 +78,7 @@ class ErrorOverlay extends HTMLElement {
             errors: payloadErrors,
             isServerError,
         };
+        console.log(payload)
         this.__flamePayload = payload;
         this.__flameMode = "original";
 

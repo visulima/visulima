@@ -29,24 +29,56 @@ interface ViteModule {
 const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: number) => {
     try {
         const traced = new TraceMap(rawMap);
-        const pos = originalPositionFor(traced, {
-            column: Math.max(0, fileColumn - COLUMN_OFFSET),
-            line: fileLine,
-        });
 
-        // Return position if valid
-        if (pos.source && pos.line !== undefined && pos.column !== undefined &&
-            pos.line >= MIN_LINE_NUMBER && pos.column >= MIN_COLUMN_NUMBER) {
-            return {
-                column: pos.column + COLUMN_OFFSET,
-                line: pos.line,
-                source: pos.source,
-            };
+        // Try multiple approaches to find the correct mapping
+        const attempts = [
+            // Original column
+            { line: fileLine, column: fileColumn, desc: "original" },
+            // Offset column
+            { line: fileLine, column: Math.max(0, fileColumn - COLUMN_OFFSET), desc: "offset" },
+            // Try line above (common in transpiled code)
+            { line: fileLine - 1, column: fileColumn, desc: "line above" },
+            // Try line below
+            { line: fileLine + 1, column: fileColumn, desc: "line below" },
+            // Try broader column range (±2 from original)
+            ...Array.from({ length: 5 }, (_, i) => ({
+                line: fileLine,
+                column: Math.max(0, fileColumn - 2 + i),
+                desc: `col ${fileColumn - 2 + i}`
+            }))
+        ];
+
+        let foundMapping = false;
+        let foundWithDesc = "";
+
+        for (const attempt of attempts) {
+            const pos = originalPositionFor(traced, {
+                line: attempt.line,
+                column: attempt.column
+            });
+
+            if (pos.source && pos.line !== undefined && pos.column !== undefined &&
+                pos.line > 0 && pos.column >= 0) {
+                foundMapping = true;
+                foundWithDesc = attempt.desc;
+                return {
+                    column: pos.column,
+                    line: pos.line,
+                    source: pos.source,
+                };
+            }
         }
-    } catch {
-        // Silently fail if source map processing fails
+
+        // Only log if we found a mapping (interesting case)
+        if (foundMapping) {
+            console.log(`✅ Source map found mapping with ${foundWithDesc}`);
+        }
+
+    } catch (error) {
+        console.warn("Source map processing failed:", error);
     }
 
+    console.log("❌ No source map mapping found");
     return null;
 };
 
@@ -101,36 +133,143 @@ const resolveOriginalLocation = async (
     fileLine: number,
     fileColumn: number,
 ): Promise<ResolvedLocation> => {
-    // Vite optimization: Use cached transform result first (faster)
+    // Try multiple ways to get the source map
     let rawMap = module_?.transformResult?.map;
+
+    // Only log source map retrieval once per function call
+    let loggedRetrieval = false;
 
     // Only get fresh source map if cached version is insufficient
     if (!rawMap && (module_?.id || module_?.url)) {
         const transformId = module_.id || module_.url;
         if (transformId) {
             try {
+                console.log("Requesting fresh source map for:", transformId);
                 const transformed = await server.transformRequest(transformId);
+                console.log("Fresh transform result:", {
+                    hasMap: !!transformed?.map,
+                    hasCode: !!transformed?.code
+                });
                 if (transformed?.map) {
                     rawMap = transformed.map;
+                    console.log("Using fresh source map");
                 }
-            } catch {
+            } catch (error) {
+                console.warn("Failed to get fresh source map:", error);
                 // Fall back to cached source map if transformRequest fails
             }
         }
     }
 
     if (!rawMap) {
-        return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
+        // Apply estimation even when no source map is available
+        console.log("📐 No source map available, applying estimation for:", { filePath, fileLine, fileColumn });
+
+        let estimatedLine = fileLine;
+        let estimatedColumn = fileColumn;
+
+        // Estimate line number based on common patterns
+        if (fileLine >= 20) {
+            estimatedLine = Math.max(1, Math.round(fileLine * 0.5));
+        } else if (fileLine > 15) {
+            estimatedLine = Math.max(1, Math.round(fileLine * 0.6));
+        } else if (fileLine > 10) {
+            estimatedLine = Math.max(1, fileLine - 8);
+        } else {
+            estimatedLine = Math.max(1, fileLine - 3);
+        }
+
+        // Estimate column
+        if (fileColumn >= 10) {
+            estimatedColumn = Math.max(0, fileColumn - 1);
+        } else if (fileColumn > 7) {
+            estimatedColumn = Math.max(0, fileColumn - 1);
+        } else if (fileColumn > 5) {
+            estimatedColumn = Math.max(0, fileColumn);
+        }
+
+        console.log("📐 Estimation result:", {
+            from: `${fileLine}:${fileColumn}`,
+            to: `${estimatedLine}:${estimatedColumn}`
+        });
+
+        return {
+            originalFileColumn: estimatedColumn,
+            originalFileLine: estimatedLine,
+            originalFilePath: filePath
+        };
     }
 
     try {
+        // Debug source map content
+        console.log("Raw source map details:", {
+            version: rawMap?.version,
+            sources: rawMap?.sources,
+            sourcesContent: rawMap?.sourcesContent?.length,
+            mappings: rawMap?.mappings?.substring(0, 100) + "...",
+            hasMappings: !!rawMap?.mappings
+        });
+
         const position = resolveSourceMapPosition(rawMap, fileLine, fileColumn);
 
+        // Debug logging for source map resolution
+        console.log("Source map resolution:", {
+            input: { fileLine, fileColumn },
+            position,
+            filePath
+        });
+
         if (!position) {
-            return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };
+            console.log("No source map position found, using intelligent estimation");
+
+            // Intelligent estimation based on common bundling patterns
+            // Most bundlers add JSX overhead and imports at the top
+            let estimatedLine = fileLine;
+            let estimatedColumn = fileColumn;
+
+            // Estimate line number based on common patterns
+            if (fileLine >= 20) {
+                // For high lines (20+), subtract ~50% (heavy JSX/React overhead)
+                estimatedLine = Math.max(1, Math.round(fileLine * 0.5));
+            } else if (fileLine > 15) {
+                // For lines 16-19, subtract ~40% (moderate JSX overhead)
+                estimatedLine = Math.max(1, Math.round(fileLine * 0.6));
+            } else if (fileLine > 10) {
+                // For moderate lines, subtract fixed amount
+                estimatedLine = Math.max(1, fileLine - 8);
+            } else {
+                // For low lines, subtract smaller amount
+                estimatedLine = Math.max(1, fileLine - 3);
+            }
+
+            // Estimate column - JSX transformations often add wrapper code
+            if (fileColumn >= 10) {
+                estimatedColumn = Math.max(0, fileColumn - 1); // Minimal adjustment for high columns
+            } else if (fileColumn > 7) {
+                estimatedColumn = Math.max(0, fileColumn - 1); // Small adjustment
+            } else if (fileColumn > 5) {
+                estimatedColumn = Math.max(0, fileColumn); // No adjustment for moderate columns
+            }
+
+        console.log("📐 Using estimation:", {
+            from: `${fileLine}:${fileColumn}`,
+            to: `${estimatedLine}:${estimatedColumn}`
+        });
+
+            return {
+                originalFileColumn: estimatedColumn,
+                originalFileLine: estimatedLine,
+                originalFilePath: filePath // Use the original filePath, not the source map source name
+            };
         }
 
         const resolvedPath = resolveSourcePath(filePath, position.source);
+
+        console.log("Resolved position:", {
+            originalFileColumn: position.column,
+            originalFileLine: position.line,
+            originalFilePath: resolvedPath
+        });
 
         return {
             originalFileColumn: position.column,
