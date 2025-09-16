@@ -37,14 +37,40 @@ const extractIndividualErrors = (error: Error): Error[] => {
  * Extracts location information from error stack trace
  */
 const extractLocationFromStack = (error: Error) => {
-    const traces = parseStacktrace(error, { frameLimit: 5 });
-    const trace = traces?.[0];
+    const traces = parseStacktrace(error, { frameLimit: 10 });
 
+    // First, try to find an HTTP URL in any frame (preferring the first frame if it's HTTP)
+    let httpTrace = traces?.find(trace => trace?.file?.startsWith('http'));
+    let trace = httpTrace || traces?.[0];
+
+    // If we found an HTTP trace, use it; otherwise, we'll convert the local path later
     return {
         compiledColumn: trace?.column ?? 0,
         compiledFilePath: trace?.file ?? "",
         compiledLine: trace?.line ?? 0,
     };
+};
+
+/**
+ * Extracts the query parameter from an HTTP URL
+ */
+const extractQueryFromHttpUrl = (url: string): string => {
+    try {
+        const urlObj = new URL(url);
+        return urlObj.search;
+    } catch {
+        return '';
+    }
+};
+
+/**
+ * Adds query parameter to a base URL if it doesn't already have it
+ */
+const addQueryToUrl = (baseUrl: string, query: string): string => {
+    if (!query || baseUrl.includes('?')) {
+        return baseUrl;
+    }
+    return baseUrl + query;
 };
 
 /**
@@ -261,11 +287,25 @@ const generateSyntaxHighlightedFrames = async (
  * @param server The Vite dev server instance for module resolution
  * @returns Promise resolving to extended error data object
  */
-const buildExtendedErrorData = async (error: Error | { message: string; name?: string; stack?: string }, server: ViteDevServer, viteErrorData?: ViteErrorData): Promise<ErrorProcessingResult> => {
+const buildExtendedErrorData = async (error: Error | { message: string; name?: string; stack?: string }, server: ViteDevServer, viteErrorData?: ViteErrorData, allErrors?: Array<Error | { message: string; name?: string; stack?: string }>): Promise<ErrorProcessingResult> => {
     // Extract Vue error info and individual errors
     const vueErrorInfo = error?.message ? parseVueCompilationError(error.message) : undefined;
     const individualErrors = extractIndividualErrors(error);
     const primaryError = individualErrors[0] || error;
+
+    // Extract query parameter from cause error if it exists (for consistency)
+    let causeQuery = '';
+    if (allErrors && allErrors.length > 1) {
+        for (const err of allErrors.slice(1)) {
+            const causeStack = err.stack || '';
+            const causeTraces = parseStacktrace({ stack: causeStack } as Error, { frameLimit: 10 });
+            const causeHttpTrace = causeTraces?.find(trace => trace?.file?.startsWith('http'));
+            if (causeHttpTrace?.file) {
+                causeQuery = extractQueryFromHttpUrl(causeHttpTrace.file);
+                if (causeQuery) break;
+            }
+        }
+    }
 
     // Clean and process error data
     const cleanMessage = cleanErrorMessage(primaryError);
@@ -295,6 +335,40 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
         compiledColumn = extracted.compiledColumn;
         compiledFilePath = extracted.compiledFilePath;
         compiledLine = extracted.compiledLine;
+
+        // Convert local file path to HTTP URL format for consistency with cause errors
+        if (compiledFilePath && !compiledFilePath.startsWith('http')) {
+            // Extract relative path from project root for Vite
+            const projectRoot = server.config.root;
+            const originalLocalPath = compiledFilePath;
+            let relativePath = compiledFilePath;
+
+            // Remove project root from the absolute path to get relative path
+            if (compiledFilePath.startsWith(projectRoot)) {
+                relativePath = compiledFilePath.substring(projectRoot.length);
+            }
+
+            // Ensure it starts with / for HTTP URL
+            if (!relativePath.startsWith('/')) {
+                relativePath = '/' + relativePath;
+            }
+
+            let httpUrl = `http://localhost:5173${relativePath}`;
+
+            // Add query parameter from cause error if found (for module consistency)
+            if (causeQuery) {
+                httpUrl = addQueryToUrl(httpUrl, causeQuery);
+            }
+
+            compiledFilePath = httpUrl;
+            console.log("🔄 Converted local path to HTTP URL:", {
+                from: originalLocalPath,
+                projectRoot,
+                relativePath,
+                causeQuery,
+                final: compiledFilePath
+            });
+        }
 
         console.log("🎯 Error location extracted from stack:", {
             compiledLine,
@@ -355,16 +429,43 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
             hasOriginalModule: !!originalModule
         });
 
-        // Vite optimization: Parallel source retrieval for better performance
+        // Get compiled source from the appropriate module's transform result
+        const moduleForCompiledSource = compiledModule || originalModule;
+        if (moduleForCompiledSource?.transformResult?.code) {
+            compiledSourceText = moduleForCompiledSource.transformResult.code;
+            console.log("✅ Got compiled source from module transform result");
+        }
+
+        // Get original source from original module
+        if (originalModule?.transformResult?.map && !originalSourceText) {
+            const sourceMap = originalModule.transformResult.map;
+            // Try to get original source from source map
+            try {
+                const originalContent = (sourceMap as any).sourcesContent?.[0];
+                if (originalContent) {
+                    originalSourceText = originalContent;
+                    console.log("✅ Got original source from source map");
+                }
+            } catch (error) {
+                console.warn("Failed to get original source from source map:", error);
+            }
+        }
+
+        // Fallback: Parallel source retrieval for any missing sources
         const [compiledSourceResult, originalSourceResult] = await Promise.all([
-            compiledModule ? retrieveSourceTexts(server, compiledModule, compiledFilePathForRetrieval, normalizeIdCandidates(compiledFilePathForRetrieval))
+            !compiledSourceText && compiledModule ? retrieveSourceTexts(server, compiledModule, compiledFilePathForRetrieval, normalizeIdCandidates(compiledFilePathForRetrieval))
                            : Promise.resolve({ compiledSourceText: undefined, originalSourceText: undefined }),
-            originalModule ? retrieveSourceTexts(server, originalModule, originalFilePathForRetrieval, normalizeIdCandidates(originalFilePathForRetrieval))
+            !originalSourceText && originalModule ? retrieveSourceTexts(server, originalModule, originalFilePathForRetrieval, normalizeIdCandidates(originalFilePathForRetrieval))
                            : Promise.resolve({ compiledSourceText: undefined, originalSourceText: undefined }),
         ]);
 
-        ({ compiledSourceText } = compiledSourceResult);
-        ({ originalSourceText } = originalSourceResult);
+        // Use retrieved sources if we didn't get them from transform results
+        if (!compiledSourceText && compiledSourceResult.compiledSourceText) {
+            ({ compiledSourceText } = compiledSourceResult);
+        }
+        if (!originalSourceText && originalSourceResult.originalSourceText) {
+            ({ originalSourceText } = originalSourceResult);
+        }
 
         console.log("Source text results:", {
             compiledSourceTextLength: compiledSourceText?.length,
@@ -403,7 +504,7 @@ const buildExtendedErrorData = async (error: Error | { message: string; name?: s
 
             // Map line number to valid range, fallback to last lines if needed
             const targetLine = Math.min(compiledLine, totalLines) || Math.max(1, totalLines - 2);
-            const targetColumn = lines[targetLine - 1] ? Math.min(compiledColumn || 1, lines[targetLine - 1].length) : 1;
+            const targetColumn = lines[targetLine - 1] ? Math.min(compiledColumn || 1, lines[targetLine - 1]?.length || 1) : 1;
 
             try {
                 compiledSnippet = codeFrame(compiledSourceText, { start: { column: targetColumn, line: targetLine } }, { showGutter: false });

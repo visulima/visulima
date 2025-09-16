@@ -1,5 +1,5 @@
 import { getErrorCauses } from "@visulima/error/error";
-import type { IndexHtmlTransformResult, Plugin, ViteServer, WebSocketClient } from "vite";
+import type { IndexHtmlTransformResult, Plugin, ViteDevServer, WebSocketClient } from "vite";
 
 import { terminalOutput } from "../../../shared/utils/cli-error-builder";
 import { DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
@@ -146,16 +146,16 @@ const buildExtendedError = async (
                         const [, file, line, col] = match;
 
                         causeViteErrorData = {
-                            column: Number.parseInt(col),
+                            column: Number.parseInt(col || '0'),
                             file,
-                            line: Number.parseInt(line),
+                            line: Number.parseInt(line || '0'),
                             plugin: viteErrorData?.plugin,
                         };
                     }
                 }
             }
 
-            const extendedData = await buildExtendedErrorData(error, server, causeViteErrorData);
+            const extendedData = await buildExtendedErrorData(error, server, causeViteErrorData, allErrors);
 
             return {
                 message: error?.message || "",
