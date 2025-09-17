@@ -33,21 +33,21 @@ export const isValidStackFrame: StackFrameValidator = (line: string): boolean =>
     }
 
     // Must contain a file path with supported extension or be an anonymous/native function
-    const hasFileReference
-        = [...SUPPORTED_EXTENSIONS].some((extension) => trimmed.includes(extension)) || [...VALID_STACK_KEYWORDS].some((keyword) => trimmed.includes(keyword));
+    const hasFileReference =
+        [...SUPPORTED_EXTENSIONS].some((extension) => trimmed.includes(extension)) || [...VALID_STACK_KEYWORDS].some((keyword) => trimmed.includes(keyword));
 
     if (!hasFileReference) {
         return false;
     }
 
     // Must have line/column information (format: file:line:column or (file:line:column)) or be native or unknown
-    const hasLocationInfo
-        = /\([^)]*:\d+:\d+\)/.test(trimmed) // (file:line:column)
-            || /\([^)]*:\d+\)/.test(trimmed) // (file:line)
-            || /[^(\s][^:]*:\d+:\d+/.test(trimmed) // file:line:column (without parens)
-            || /[^(\s][^:]*:\d+/.test(trimmed) // file:line (without parens)
-            || trimmed.includes("native") // native functions
-            || trimmed.includes("<unknown>"); // browser couldn't resolve source
+    const hasLocationInfo =
+        /\([^)]*:\d+:\d+\)/.test(trimmed) || // (file:line:column)
+        /\([^)]*:\d+\)/.test(trimmed) || // (file:line)
+        /[^(\s][^:]*:\d+:\d+/.test(trimmed) || // file:line:column (without parens)
+        /[^(\s][^:]*:\d+/.test(trimmed) || // file:line (without parens)
+        trimmed.includes("native") || // native functions
+        trimmed.includes("<unknown>"); // browser couldn't resolve source
 
     return hasLocationInfo;
 };
@@ -120,8 +120,7 @@ const urlToAbsolutePath = (url: string, rootPath: string): string => {
  * Formats an absolute path with optional line and column information
  */
 const formatAbsolutePath = (absolutePath: string, line?: string, col?: string): string => {
-    if (!line)
-        return absolutePath;
+    if (!line) return absolutePath;
 
     const lineCol = col ? `${COLON_SEPARATOR}${col}` : "";
 
@@ -195,8 +194,7 @@ export interface ESBuildMessage {
  * @returns True if the errors appear to be from ESBuild
  */
 export const isESBuildErrorArray = (errors: any[]): boolean => {
-    if (!Array.isArray(errors) || errors.length === 0)
-        return false;
+    if (!Array.isArray(errors) || errors.length === 0) return false;
 
     // Check if at least one error has ESBuild-specific properties
     return errors.some((error: any) => error && typeof error === "object" && (error.location || error.pluginName || error.text));
@@ -265,8 +263,7 @@ export const extractErrors = (error: any): Error[] => {
  * @returns Stack trace with absolute paths
  */
 export const absolutizeStackUrls = (stack: string, rootPath: string): string => {
-    if (!stack)
-        return stack;
+    if (!stack) return stack;
 
     return String(stack).replaceAll(HTTP_URL_PATTERN, (url) => absolutizeUrl(url, rootPath));
 };

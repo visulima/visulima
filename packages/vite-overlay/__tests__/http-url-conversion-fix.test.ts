@@ -35,11 +35,11 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
         const mockModule = {
             id: "http://localhost:5173/src/App.tsx?tsr-split=component",
             transformResult: {
-                code: "console.log(\"compiled with query param\");",
+                code: 'console.log("compiled with query param");',
                 map: {
                     mappings: "AAAA",
                     sources: ["src/App.tsx"],
-                    sourcesContent: ["console.log(\"original source\");"],
+                    sourcesContent: ['console.log("original source");'],
                     version: 3,
                 },
             },

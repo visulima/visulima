@@ -311,8 +311,7 @@ const buildExtendedErrorData = async (
             if (causeHttpTrace?.file) {
                 causeQuery = extractQueryFromHttpUrl(causeHttpTrace.file);
 
-                if (causeQuery)
-                    break;
+                if (causeQuery) break;
             }
         }
     }
@@ -378,11 +377,11 @@ const buildExtendedErrorData = async (
         // Find the first local source file (not node_modules, not .vite, not HTTP)
         const sourceTrace = traces?.find(
             (trace) =>
-                trace?.file
-                && !trace.file.startsWith("http")
-                && !trace.file.includes("node_modules")
-                && !trace.file.includes(".vite")
-                && trace.file.includes(".tsx"), // Focus on TypeScript/React files
+                trace?.file &&
+                !trace.file.startsWith("http") &&
+                !trace.file.includes("node_modules") &&
+                !trace.file.includes(".vite") &&
+                trace.file.includes(".tsx"), // Focus on TypeScript/React files
         );
 
         if (sourceTrace?.file) {
@@ -525,11 +524,11 @@ const buildExtendedErrorData = async (
                 const textAtLocation = new Set(targetCompiledLine.slice(Math.max(0, columnIndex)));
 
                 // Look for error patterns in the compiled frame at this location
-                const hasErrorPattern
-                    = textAtLocation.has("new Error(")
-                        || textAtLocation.has("throw new Error")
-                        || textAtLocation.has("throw ")
-                        || textAtLocation.has(errorMessage.slice(0, 20)); // First 20 chars of error message
+                const hasErrorPattern =
+                    textAtLocation.has("new Error(") ||
+                    textAtLocation.has("throw new Error") ||
+                    textAtLocation.has("throw ") ||
+                    textAtLocation.has(errorMessage.slice(0, 20)); // First 20 chars of error message
 
                 compiledFrameHasCorrectCode = hasErrorPattern;
 
@@ -537,12 +536,12 @@ const buildExtendedErrorData = async (
                 // If source search succeeded but compiled code doesn't contain error patterns,
                 // still show compiled frame as it's useful for debugging
                 if (!compiledFrameHasCorrectCode && sourceSearchWasSuccessful) {
-                    const isCompiledFramework
-                        = originalFilePath.includes(".svelte")
-                            || originalFilePath.includes(".vue")
-                            || originalFilePath.includes(".astro")
-                            || compiledFilePath.includes(".js")
-                            || compiledFilePath.includes(".ts");
+                    const isCompiledFramework =
+                        originalFilePath.includes(".svelte") ||
+                        originalFilePath.includes(".vue") ||
+                        originalFilePath.includes(".astro") ||
+                        compiledFilePath.includes(".js") ||
+                        compiledFilePath.includes(".ts");
 
                     if (isCompiledFramework) {
                         compiledFrameHasCorrectCode = true;

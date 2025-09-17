@@ -62,9 +62,9 @@ describe(patchOverlay, () => {
 
         const result = patchOverlay(inputCode);
 
-        expect(result).toContain("lang=\"en\"");
-        expect(result).toContain("charset=\"UTF-8\"");
+        expect(result).toContain('lang="en"');
+        expect(result).toContain('charset="UTF-8"');
         expect(result).toContain("<title>Test App</title>");
-        expect(result).toContain("<div id=\"app\"></div>");
+        expect(result).toContain('<div id="app"></div>');
     });
 });

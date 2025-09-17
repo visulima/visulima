@@ -161,7 +161,7 @@ test.describe("Functional Error Overlay Test", () => {
         await page.waitForTimeout(2000); // Extra time for React to render
 
         // Wait for the error test page content to appear
-        await page.waitForSelector("h1:has-text(\"Error Overlay Test Page\")", { timeout: 10_000 });
+        await page.waitForSelector('h1:has-text("Error Overlay Test Page")', { timeout: 10_000 });
 
         // Debug: Check if the button exists
         const buttonExists = await page.locator("[data-testid='simple-error-btn']").count();

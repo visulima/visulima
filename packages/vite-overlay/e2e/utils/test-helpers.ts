@@ -117,8 +117,7 @@ export async function switchCodeView(page: Page, mode: "original" | "compiled") 
  * Check if a file path represents an original source file (not compiled)
  */
 export function isOriginalSourcePath(filePath: string | null): boolean {
-    if (!filePath)
-        return false;
+    if (!filePath) return false;
 
     // Should contain original source extensions (handle line numbers like :37)
     const hasOriginalExtension = /\.(tsx?|jsx?|vue|svelte)(:\d+)?$/.test(filePath);
