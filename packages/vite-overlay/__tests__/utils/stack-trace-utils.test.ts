@@ -4,15 +4,10 @@ import { cleanErrorStack, isValidStackFrame } from "../../src/utils/stack-trace-
 
 describe(cleanErrorStack, () => {
     it("should clean Vue compilation errors", () => {
+        expect.assertions(1);
+
         const stack = `Error: [vue/compiler-sfc] Unexpected token, expected "," (4:2)
 
-/home/prisis/WebstormProjects/visulima/visulima/packages/vite-overlay/examples/vite-vue/src/components/HelloWorld.vue
-2  |  defineProps<{
-3  |    msg: string
-4  |    status: {
-   |    ^
-5  |      type: String,
-6  |      validator(value) {
   Plugin: vite:vue
   File: /home/prisis/WebstormProjects/visulima/visulima/packages/vite-overlay/examples/vite-vue/src/components/HelloWorld.vue:4:2
 at constructor (/home/prisis/WebstormProjects/visulima/visulima/node_modules/.pnpm/@babel+parser@7.28.4/node_modules/@babel/parser/lib/index.js:367:19)
@@ -26,6 +21,8 @@ at TypeScriptParserMixin.raise (/home/prisis/WebstormProjects/visulima/visulima/
     });
 
     it("should keep valid JavaScript stack frames", () => {
+        expect.assertions(1);
+
         const stack = `at myFunction (/path/to/file.js:10:5)
 at Class.method (/path/to/file.js:20:15)
 at /path/to/file.js:30:25
@@ -39,6 +36,8 @@ at asyncFunction (/path/to/file.js:50:45)`;
     });
 
     it("should filter out invalid stack frames", () => {
+        expect.assertions(1);
+
         const stack = `at myFunction (/path/to/file.js:10:5)
 Some random text
 at
@@ -54,12 +53,16 @@ at /path/to/file.js:30:25`);
     });
 
     it("should handle empty and null inputs", () => {
+        expect.assertions(3);
+
         expect(cleanErrorStack("")).toBe("");
         expect(cleanErrorStack(null as any)).toBeNull();
         expect(cleanErrorStack(undefined as any)).toBeUndefined();
     });
 
     it("should clean @fs/ paths", () => {
+        expect.assertions(1);
+
         const stack = `at myFunction (/@fs/home/user/project/src/file.js:10:5)
 at anotherFunction (/@fs/home/user/project/src/other.js:20:15)`;
 
@@ -70,6 +73,8 @@ at anotherFunction (/home/user/project/src/other.js:20:15)`);
     });
 
     it("should clean file:// URLs", () => {
+        expect.assertions(1);
+
         const stack = `at myFunction (file:///home/user/project/src/file.js:10:5)
 at anotherFunction (file:///home/user/project/src/other.js:20:15)`;
 

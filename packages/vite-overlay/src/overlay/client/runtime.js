@@ -71,7 +71,6 @@ class ErrorOverlay extends HTMLElement {
             };
 
             payloadErrors = [basicError];
-            errorType = "client";
         }
 
         const payload = {
@@ -84,7 +83,7 @@ class ErrorOverlay extends HTMLElement {
 
         // Update clickable file link if available
         const first = payload.errors && payload.errors[0];
-        const fileElement = this.root.querySelector("#__flame__filelink");
+        const fileElement = this.root.querySelector("#__v_o__filelink");
 
         if (fileElement) {
             const href = first?.originalFilePath || "";
@@ -101,7 +100,7 @@ class ErrorOverlay extends HTMLElement {
             }
         }
 
-        this.text("#__flame__heading", error.name || "Runtime Error");
+        this.text("#__v_o__heading", error.name || "Runtime Error");
 
         // Content rendering is now handled by the pagination component
         // The pagination component will wait for the payload and then render the appropriate content
@@ -132,7 +131,7 @@ class ErrorOverlay extends HTMLElement {
         }
 
         // Initialize close button - only for client errors
-        const closeButton = this.root.querySelector("#__flame__close");
+        const closeButton = this.root.querySelector("#__v_o__close");
 
         if (closeButton) {
             // Only show close button for client errors
@@ -201,7 +200,7 @@ class ErrorOverlay extends HTMLElement {
         const currentError = this.__flamePayload?.errors?.[currentIndex];
 
         if (currentError) {
-            const flameOverlay = this.root.querySelector("#__flame__overlay");
+            const flameOverlay = this.root.querySelector("#__v_o__overlay");
 
             if (flameOverlay) {
                 const html = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || "";
@@ -276,7 +275,7 @@ class ErrorOverlay extends HTMLElement {
 
             // Update the main overlay content based on current index
             const updateOverlayContent = () => {
-                const mount = this.root.querySelector("#__flame__overlay");
+                const mount = this.root.querySelector("#__v_o__overlay");
 
                 if (!mount) {
                     return;
@@ -292,7 +291,7 @@ class ErrorOverlay extends HTMLElement {
                 // Update raw stacktrace pane if present (formatted, with clickable file links)
                 const updateRawStack = (mode) => {
                     try {
-                        const stackHost = this.root.querySelector("#__flame__stacktrace");
+                        const stackHost = this.root.querySelector("#__v_o__stacktrace");
                         const stackElement = stackHost?.querySelector("div:last-child");
 
                         if (stackHost && stackElement) {
@@ -379,9 +378,9 @@ class ErrorOverlay extends HTMLElement {
                 };
 
                 // Render codeframe and set up mode switching
-                const flameOverlay = this.root.querySelector("#__flame__overlay");
-                const headingElement = this.root.querySelector("#__flame__heading");
-                const modeSwitch = this.root.querySelector("#__flame__mode");
+                const flameOverlay = this.root.querySelector("#__v_o__overlay");
+                const headingElement = this.root.querySelector("#__v_o__heading");
+                const modeSwitch = this.root.querySelector("#__v_o__mode");
 
                 if (headingElement) {
                     headingElement.textContent = currentError.name || "Runtime Error";
@@ -538,8 +537,8 @@ class ErrorOverlay extends HTMLElement {
             = localStorage.getItem("hs_theme") || (globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         const isDark = currentTheme === "dark" || document.documentElement.classList.contains("dark");
 
-        const darkButton = this.root.querySelector("[data-hs-theme-click-value=\"dark\"]");
-        const lightButton = this.root.querySelector("[data-hs-theme-click-value=\"light\"]");
+        const darkButton = this.root.querySelector("[data-v-o-theme-click-value=\"dark\"]");
+        const lightButton = this.root.querySelector("[data-v-o-theme-click-value=\"light\"]");
 
         if (isDark) {
             darkButton?.classList.add("hidden");
@@ -556,7 +555,7 @@ class ErrorOverlay extends HTMLElement {
         }
 
         // Setup event listeners
-        const themeButtons = this.root.querySelectorAll("[data-hs-theme-click-value]");
+        const themeButtons = this.root.querySelectorAll("[data-v-o-theme-click-value]");
 
         themeButtons.forEach((button) => {
             button.addEventListener("click", function (e) {
@@ -574,8 +573,8 @@ class ErrorOverlay extends HTMLElement {
                 }
 
                 // Update button visibility using the classes from the component
-                const darkButton = this.closest("#hs-theme-switch")?.querySelector("[data-hs-theme-click-value=\"dark\"]");
-                const lightButton = this.closest("#hs-theme-switch")?.querySelector("[data-hs-theme-click-value=\"light\"]");
+                const darkButton = this.closest("#v-o-theme-switch")?.querySelector("[data-v-o-theme-click-value=\"dark\"]");
+                const lightButton = this.closest("#v-o-theme-switch")?.querySelector("[data-v-o-theme-click-value=\"light\"]");
 
                 if (theme === "dark") {
                     // Dark mode activated - show light button, hide dark button
@@ -594,10 +593,10 @@ class ErrorOverlay extends HTMLElement {
         });
 
         // Manual tooltip implementation for theme buttons
-        const tooltipButtons = this.root.querySelectorAll("#hs-theme-switch .hs-tooltip-toggle");
+        const tooltipButtons = this.root.querySelectorAll("#v-o-theme-switch .v-o-tooltip-toggle");
 
         tooltipButtons.forEach((button) => {
-            const tooltip = button.parentElement?.querySelector(".hs-tooltip-content");
+            const tooltip = button.parentElement?.querySelector(".v-o-tooltip-content");
 
             if (tooltip) {
                 button.addEventListener("mouseenter", () => {

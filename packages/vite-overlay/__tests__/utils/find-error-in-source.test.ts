@@ -5,6 +5,8 @@ import { findErrorInSourceCode } from "../../src/utils/find-error-in-source";
 describe(findErrorInSourceCode, () => {
     describe("standard Error patterns", () => {
         it("should find direct new Error() with double quotes", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test() {
                     throw new Error("Test error message");
@@ -16,6 +18,8 @@ describe(findErrorInSourceCode, () => {
         });
 
         it("should find direct new Error() with single quotes", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test() {
                     throw new Error('Test error message');
@@ -27,6 +31,8 @@ describe(findErrorInSourceCode, () => {
         });
 
         it("should find throw new Error() pattern", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test() {
                     if (condition) {
@@ -40,6 +46,8 @@ describe(findErrorInSourceCode, () => {
         });
 
         it("should find new Error() without throw", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function createError() {
                     return new Error("Creation error");
@@ -53,6 +61,8 @@ describe(findErrorInSourceCode, () => {
 
     describe("custom error classes", () => {
         it("should find custom error class with throw", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 class ValidationError extends Error {
                     constructor(message: string) {
@@ -70,6 +80,8 @@ describe(findErrorInSourceCode, () => {
         });
 
         it("should find custom error class without throw", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 class ApiError extends Error {
                     constructor(message: string, status: number) {
@@ -106,6 +118,8 @@ describe(findErrorInSourceCode, () => {
         });
 
         it("should prioritize custom error class over generic patterns", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 class CustomError extends Error {
                     constructor(message: string) {
@@ -125,6 +139,8 @@ describe(findErrorInSourceCode, () => {
 
     describe("dynamic error messages", () => {
         it("should find dynamic error with line number", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function createDynamicError() {
                     const line = 42;
@@ -137,6 +153,8 @@ describe(findErrorInSourceCode, () => {
         });
 
         it("should find template literal dynamic error", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function createTemplateError() {
                     const context = "validation";

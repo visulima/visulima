@@ -8,6 +8,10 @@ describe(enhanceViteSsrError, () => {
         config: {
             root: "/mock/project/root",
         },
+        ssrFixStacktrace: vi.fn((error: Error) =>
+            // Mock implementation - just return the error as-is
+            error,
+        ),
     } as unknown as ViteDevServer;
 
     beforeEach(() => {
@@ -15,6 +19,8 @@ describe(enhanceViteSsrError, () => {
     });
 
     it("should enhance basic error with file path", async () => {
+        expect.assertions(3);
+
         const rawError = new Error("Module not found");
 
         rawError.stack = `Error: Module not found
@@ -28,6 +34,8 @@ describe(enhanceViteSsrError, () => {
     });
 
     it("should handle errors without stack traces", async () => {
+        expect.assertions(2);
+
         const rawError = new Error("Simple error");
 
         const result = await enhanceViteSsrError(rawError, mockServer);
@@ -37,6 +45,8 @@ describe(enhanceViteSsrError, () => {
     });
 
     it("should handle non-Error objects", async () => {
+        expect.assertions(2);
+
         const rawError = "String error";
 
         const result = await enhanceViteSsrError(rawError, mockServer);
@@ -46,6 +56,8 @@ describe(enhanceViteSsrError, () => {
     });
 
     it("should handle null or undefined errors", async () => {
+        expect.assertions(4);
+
         const result1 = await enhanceViteSsrError(null, mockServer);
         const result2 = await enhanceViteSsrError(undefined, mockServer);
 
@@ -56,6 +68,8 @@ describe(enhanceViteSsrError, () => {
     });
 
     it("should enhance errors with additional properties", async () => {
+        expect.assertions(3);
+
         const rawError = new Error("Custom error");
 
         (rawError as any).code = "MODULE_NOT_FOUND";
@@ -69,6 +83,8 @@ describe(enhanceViteSsrError, () => {
     });
 
     it("should handle errors with complex stack traces", async () => {
+        expect.assertions(3);
+
         const rawError = new Error("Complex error");
 
         rawError.stack = `Error: Complex error
@@ -84,6 +100,8 @@ describe(enhanceViteSsrError, () => {
     });
 
     it("should preserve error name", async () => {
+        expect.assertions(1);
+
         const rawError = new Error("Named error");
 
         rawError.name = "CustomError";

@@ -18,7 +18,7 @@ test.describe("Cause Chain Error Handling", () => {
 
         // Try to close any existing overlay
         try {
-            const closeButton = page.locator("#__flame__close");
+            const closeButton = page.locator("#__v_o__close");
 
             if (await closeButton.isVisible()) {
                 await closeButton.click();

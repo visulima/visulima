@@ -4,7 +4,7 @@ import type { Page } from "@playwright/test";
  * Wait for the error overlay to appear
  */
 export async function waitForErrorOverlay(page: Page, timeout = 10_000) {
-    await page.waitForSelector("#__flame__overlay", { timeout });
+    await page.waitForSelector("#__v_o__overlay", { timeout });
 }
 
 /**
@@ -51,7 +51,7 @@ export async function triggerCauseChainError(page: Page) {
  * Get the current error overlay content
  */
 export async function getOverlayContent(page: Page) {
-    const overlay = page.locator("#__flame__overlay");
+    const overlay = page.locator("#__v_o__overlay");
 
     return {
         html: await overlay.innerHTML(),
@@ -64,8 +64,8 @@ export async function getOverlayContent(page: Page) {
  * Get error overlay header information
  */
 export async function getOverlayHeader(page: Page) {
-    const heading = page.locator("#__flame__heading");
-    const fileLink = page.locator("#__flame__filelink");
+    const heading = page.locator("#__v_o__heading");
+    const fileLink = page.locator("#__v_o__filelink");
 
     return {
         fileHref: await fileLink.getAttribute("href"),
@@ -140,10 +140,10 @@ export function isOriginalSourcePath(filePath: string | null): boolean {
  * Close the error overlay
  */
 export async function closeErrorOverlay(page: Page) {
-    const closeButton = page.locator("#__flame__close");
+    const closeButton = page.locator("#__v_o__close");
 
     await closeButton.click();
-    await page.waitForSelector("#__flame__overlay", { state: "hidden", timeout: 5000 });
+    await page.waitForSelector("#__v_o__overlay", { state: "hidden", timeout: 5000 });
 }
 
 /**
@@ -151,14 +151,14 @@ export async function closeErrorOverlay(page: Page) {
  */
 export async function closeOverlayWithEsc(page: Page) {
     await page.keyboard.press("Escape");
-    await page.waitForSelector("#__flame__overlay", { state: "hidden", timeout: 5000 });
+    await page.waitForSelector("#__v_o__overlay", { state: "hidden", timeout: 5000 });
 }
 
 /**
  * Get stack trace content
  */
 export async function getStackTrace(page: Page) {
-    const stackTrace = page.locator("#__flame__stacktrace");
+    const stackTrace = page.locator("#__v_o__stacktrace");
 
     return {
         content: await stackTrace.textContent(),

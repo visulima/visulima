@@ -11,15 +11,15 @@ test.describe("Cause Chain Error URL Consistency", () => {
             await page.click("[data-error-trigger]");
 
             // Wait for overlay to appear
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Verify overlay is visible
-            const overlay = page.locator("#__flame__overlay");
+            const overlay = page.locator("#__v_o__overlay");
 
             await expect(overlay).toBeVisible();
 
             // Check that both errors are displayed
-            const errorItems = page.locator("#__flame__errors .error-item");
+            const errorItems = page.locator("#__v_o__errors .error-item");
 
             await expect(errorItems).toHaveCount(2);
 
@@ -28,7 +28,7 @@ test.describe("Cause Chain Error URL Consistency", () => {
             const secondError = errorItems.nth(1);
 
             // Check first error (primary)
-            const firstFileLink = firstError.locator("#__flame__filelink");
+            const firstFileLink = firstError.locator("#__v_o__filelink");
             const firstFileText = await firstFileLink.textContent();
 
             expect(firstFileText).toMatch(/^http:\/\/localhost:5173\//);
@@ -36,7 +36,7 @@ test.describe("Cause Chain Error URL Consistency", () => {
             expect(firstFileText).not.toMatch(/^\//); // Should not start with just /
 
             // Check second error (cause)
-            const secondFileLink = secondError.locator("#__flame__filelink");
+            const secondFileLink = secondError.locator("#__v_o__filelink");
             const secondFileText = await secondFileLink.textContent();
 
             expect(secondFileText).toMatch(/^http:\/\/localhost:5173\//);
@@ -57,9 +57,9 @@ test.describe("Cause Chain Error URL Consistency", () => {
             await page.click("[data-error-trigger]");
 
             // Wait for overlay
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
-            const errorItems = page.locator("#__flame__errors .error-item");
+            const errorItems = page.locator("#__v_o__errors .error-item");
 
             // Check first error compiled code frame
             const firstError = errorItems.nth(0);
@@ -93,10 +93,10 @@ test.describe("Cause Chain Error URL Consistency", () => {
             await page.click("[data-testid='simple-error-btn']");
 
             // Wait for overlay
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Should still work and show HTTP URL
-            const fileLink = page.locator("#__flame__filelink");
+            const fileLink = page.locator("#__v_o__filelink");
             const fileText = await fileLink.textContent();
 
             expect(fileText).toMatch(/^http:\/\/localhost:5173\//);
@@ -109,15 +109,15 @@ test.describe("Cause Chain Error URL Consistency", () => {
             await page.click("[data-testid='complex-error-btn']");
 
             // Wait for overlay
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Should not crash and should still show overlay
-            const overlay = page.locator("#__flame__overlay");
+            const overlay = page.locator("#__v_o__overlay");
 
             await expect(overlay).toBeVisible();
 
             // Should have fallback behavior
-            const fileLink = page.locator("#__flame__filelink");
+            const fileLink = page.locator("#__v_o__filelink");
             const fileText = await fileLink.textContent();
 
             // Should either show HTTP URL or fallback gracefully

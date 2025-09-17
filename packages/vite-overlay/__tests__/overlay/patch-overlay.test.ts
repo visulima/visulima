@@ -1,20 +1,43 @@
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { patchOverlay } from "../../src/overlay/patch-overlay";
 
+// Mock the dependencies
+vi.mock("../../../../../shared/utils/editors", () => {
+    return {
+        default: {
+            vscode: "Visual Studio Code",
+            webstorm: "WebStorm",
+        },
+    };
+});
+
+vi.mock("lucide-static/icons/moon-star.svg?data-uri&encoding=css", () => {
+    return {
+        default: "data:image/svg+xml;base64,mock-moon-icon",
+    };
+});
+
+vi.mock("lucide-static/icons/sun.svg?data-uri&encoding=css", () => {
+    return {
+        default: "data:image/svg+xml;base64,mock-sun-icon",
+    };
+});
+
 describe(patchOverlay, () => {
     it("should return modified code when overlay injection is needed", () => {
+        expect.assertions(3);
+
+        // patchOverlay expects Vite client code with ErrorOverlay class
         const inputCode = `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Test</title>
-</head>
-<body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-</body>
-</html>`;
+class ErrorOverlay {
+    constructor(error) {
+        this.error = error;
+        this.root = document.createElement('div');
+        document.body.append(this.root);
+    }
+}
+`;
 
         const result = patchOverlay(inputCode);
 
@@ -23,48 +46,53 @@ describe(patchOverlay, () => {
         expectTypeOf(result).toBeString();
 
         expect(result).not.toBe(inputCode); // Should be modified
+        expect(result).toContain("__v_o__overlay");
     });
 
     it("should inject error overlay scripts", () => {
+        expect.assertions(3);
+
+        // patchOverlay expects Vite client code with ErrorOverlay class
         const inputCode = `
-<!DOCTYPE html>
-<html>
-<body>
-    <div id="app"></div>
-</body>
-</html>`;
+class ErrorOverlay {
+    constructor() {
+        // Original ErrorOverlay implementation
+    }
+}
+`;
 
         const result = patchOverlay(inputCode);
 
-        expect(result).toContain("__flame__overlay");
+        expect(result).toContain("__v_o__overlay");
         expect(result).toContain("ErrorOverlay");
+        expect(result).toContain("window.ErrorOverlay = ErrorOverlay");
     });
 
     it("should handle empty or invalid input", () => {
+        expect.assertions(3);
+
         expect(() => patchOverlay("")).not.toThrow();
-        expect(() => patchOverlay(null as any)).not.toThrow();
-        expect(() => patchOverlay(undefined as any)).not.toThrow();
+        // patchOverlay expects a string, so null/undefined should cause an error
+        expect(() => patchOverlay(null as any)).toThrow();
+        expect(() => patchOverlay(undefined as any)).toThrow();
     });
 
-    it("should preserve existing HTML structure", () => {
+    it("should preserve existing code structure when replacing", () => {
+        expect.assertions(3);
+
+        // patchOverlay works with JavaScript code, not HTML
         const inputCode = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Test App</title>
-</head>
-<body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-</body>
-</html>`;
+var ErrorOverlay = class {
+    constructor(error) {
+        this.error = error;
+    }
+};
+`;
 
         const result = patchOverlay(inputCode);
 
-        expect(result).toContain("lang=\"en\"");
-        expect(result).toContain("charset=\"UTF-8\"");
-        expect(result).toContain("<title>Test App</title>");
-        expect(result).toContain("<div id=\"app\"></div>");
+        expect(result).toContain("var ViteErrorOverlay = ");
+        expect(result).toContain("__v_o__overlay");
+        expect(result).toContain("window.ErrorOverlay = ErrorOverlay");
     });
 });

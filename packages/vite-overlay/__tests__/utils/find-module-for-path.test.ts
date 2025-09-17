@@ -18,6 +18,8 @@ describe(findModuleForPath, () => {
     });
 
     it("should return module when found by exact id", () => {
+        expect.assertions(2);
+
         const mockModule = { id: "/src/App.tsx" };
 
         mockServer.moduleGraph.idToModuleMap.set("/src/App.tsx", mockModule);
@@ -30,6 +32,8 @@ describe(findModuleForPath, () => {
     });
 
     it("should return module when found by url", () => {
+        expect.assertions(1);
+
         const mockModule = { url: "/src/Component.tsx" };
 
         mockServer.moduleGraph.idToModuleMap.set("/src/Component.tsx", mockModule);
@@ -41,6 +45,8 @@ describe(findModuleForPath, () => {
     });
 
     it("should try multiple candidates", () => {
+        expect.assertions(2);
+
         const mockModule = { id: "/src/Utils.ts" };
 
         mockServer.moduleGraph.getModuleById.mockReturnValueOnce(null);
@@ -53,6 +59,8 @@ describe(findModuleForPath, () => {
     });
 
     it("should return undefined when no module is found", () => {
+        expect.assertions(1);
+
         mockServer.moduleGraph.getModuleById.mockReturnValue(null);
 
         const result = findModuleForPath(mockServer, ["/src/Missing.tsx"]);
@@ -61,12 +69,16 @@ describe(findModuleForPath, () => {
     });
 
     it("should handle empty candidates array", () => {
+        expect.assertions(1);
+
         const result = findModuleForPath(mockServer, []);
 
         expect(result).toBeUndefined();
     });
 
     it("should handle null or undefined server", () => {
+        expect.assertions(2);
+
         // These should throw because we can't access moduleGraph on null/undefined
         expect(() => findModuleForPath(null as any, ["/src/App.tsx"])).toThrow();
         expect(() => findModuleForPath(undefined as any, ["/src/App.tsx"])).toThrow();

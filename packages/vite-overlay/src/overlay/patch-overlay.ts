@@ -3,6 +3,8 @@
 import moonStarIcon from "lucide-static/icons/moon-star.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import sunIcon from "lucide-static/icons/sun.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import closeIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
 
 import Editors from "../../../../shared/utils/editors";
 import styleCss from "./client/index.css";
@@ -20,7 +22,7 @@ const WINDOW_ERROR_OVERLAY_GLOBAL = "window.ErrorOverlay = ErrorOverlay;";
 const generateEditorOptions = (): string => {
     try {
         const keys = Object.keys(Editors) as (keyof typeof Editors)[];
-        const options = [AUTO_DETECT_EDITOR_OPTION].concat(keys.map((k) => `<option value="${String(k)}">${String(Editors[k])}</option>`));
+        const options = [AUTO_DETECT_EDITOR_OPTION, ...keys.map((k) => `<option value="${String(k)}">${String(Editors[k])}</option>`)];
 
         return options.join("");
     } catch {
@@ -35,9 +37,9 @@ const generateOverlayTemplate = (): string => {
     const editorOptions = generateEditorOptions();
 
     return `<style>${styleCss}</style>
-<div id="__flame__root" class="fixed inset-0 z-0 flex flex-col items-center pt-[10vh] px-[15px]">
-    <div id="__flame__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
-    <div id="__flame__notch" class="relative z-[2] flex w-full max-w-[var(--flame-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--flame-dialog-border-width)] translate-y-[var(--flame-dialog-border-width)]" style="--stroke-color: var(--flame-border); --background-color: var(--flame-surface);">
+<div id="__v_o__root" class="fixed inset-0 z-0 flex flex-col items-center pt-[10vh] px-[15px]">
+    <div id="__v_o__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
+    <div id="__v_o__notch" class="relative z-[2] flex w-full max-w-[var(--flame-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--flame-dialog-border-width)] translate-y-[var(--flame-dialog-border-width)]" style="--stroke-color: var(--flame-border); --background-color: var(--flame-surface);">
         <div class="error-overlay-notch relative translate-x-[calc(var(--flame-dialog-border-width)*-1)] h-[var(--flame-dialog-notch-height)] p-3 pr-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tl-[var(--flame-dialog-radius)]" data-side="left">
             <nav class="error-overlay-pagination dialog-exclude-closing-from-outside-click flex justify-center items-center gap-2 w-fit">
             <button type="button" aria-disabled="true" data-flame-dialog-error-previous="true" class="error-overlay-pagination-button flex justify-center items-center w-6 h-6 bg-[var(--flame-chip-bg)] rounded-full disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-[var(--flame-red-orange)] hover:bg-[var(--flame-hover-overlay)] transition-colors" disabled>
@@ -75,29 +77,31 @@ const generateOverlayTemplate = (): string => {
             </g>
             </svg>
         </div>
-        <div class="error-overlay-notch flex relative translate-x-[calc(var(--flame-dialog-border-width)*-1)] h-[var(--flame-dialog-notch-height)] p-3 pl-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tr-[var(--flame-dialog-radius)]" data-side="right">
-            <div id="__flame__editor" class="hidden sm:flex items-center gap-1 mr-1">
+        <div class="error-overlay-notch flex gap-1 relative translate-x-[calc(var(--flame-dialog-border-width)*-1)] h-[var(--flame-dialog-notch-height)] p-3 pl-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tr-[var(--flame-dialog-radius)]" data-side="right">
+            <div id="__v_o__editor" class="hidden sm:flex items-center gap-1 mr-1">
                 <label for="editor-selector" class="sr-only">Editor</label>
                 <select id="editor-selector" class="py-1 cursor-pointer px-2 pe-6 block w-44 bg-[var(--flame-surface)] border border-[var(--flame-border)] rounded-[var(--flame-radius-md)] text-xs text-[var(--flame-text)] shadow-[var(--flame-elevation-1)] hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:ring-1 focus:ring-[var(--flame-red-orange)]">${editorOptions}</select>
             </div>
             
-            <div id="hs-theme-switch" class="flex items-center gap-1">
-                <div class="hs-tooltip inline-block">
-                    <button type="button" aria-label="Switch to dark mode" aria-describedby="theme-tooltip-dark" class="hs-tooltip-toggle hs-dark-mode-active:hidden block hs-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-hs-theme-click-value="dark">
-                        <span class="group inline-flex shrink-0 justify-center items-center size-8">
-                            <span class="dui w-5 h-5" style="-webkit-mask-image: url('${moonStarIcon}'); mask-image: url('${moonStarIcon}')"></span>
-                        </span>
-                    </button>
-                    <span id="theme-tooltip-dark" class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-dialog-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">Dark</span>
-                </div>
-                <div class="hs-tooltip inline-block">
-                    <button type="button" aria-label="Switch to light mode" aria-describedby="theme-tooltip-light" class="hs-tooltip-toggle hs-dark-mode-active:block hidden hs-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-hs-theme-click-value="light">
-                        <span class="group inline-flex shrink-0 justify-center items-center size-8">
-                            <span class="dui w-5 h-5" style="-webkit-mask-image: url('${sunIcon}'); mask-image: url('${sunIcon}')"></span>
-                        </span>
-                    </button>
-                    <span id="theme-tooltip-light" class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-10 py-1 px-2 text-xs font-medium rounded-[var(--flame-dialog-radius-md)] shadow-[var(--flame-elevation-1)] bg-[var(--flame-charcoal-black)] text-[var(--flame-white-smoke)]" role="tooltip">Light</span>
-                </div>
+            <div id="v-o-theme-switch" class="flex items-center gap-1">
+                <button type="button" title="Switch to dark mode" aria-label="Switch to dark mode" class="v-o-dark-mode-active:hidden block v-o-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-v-o-theme-click-value="dark">
+                    <span class="group inline-flex shrink-0 justify-center items-center size-8">
+                        <span class="dui w-5 h-5" style="-webkit-mask-image: url('${moonStarIcon}'); mask-image: url('${moonStarIcon}')"></span>
+                    </span>
+                </button>
+                <button type="button" title="Switch to light mode" aria-label="Switch to light mode" class="v-o-dark-mode-active:block hidden v-o-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-v-o-theme-click-value="light">
+                    <span class="group inline-flex shrink-0 justify-center items-center size-8">
+                        <span class="dui w-5 h-5" style="-webkit-mask-image: url('${sunIcon}'); mask-image: url('${sunIcon}')"></span>
+                    </span>
+                </button>
+            </div>
+            
+            <div class="flex items-center">
+                <button type="button" id="__v_o__close" aria-label="Close error overlay" class="font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]">
+                    <span class="group inline-flex shrink-0 justify-center items-center size-8">
+                        <span class="dui w-5 h-5" style="-webkit-mask-image: url('${closeIcon}'); mask-image: url('${closeIcon}')"></span>
+                    </span>
+                </button>
             </div>
 
             <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--flame-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--flame-dialog-border-width))] left-[-54px] pointer-events-none [transform:rotateY(180deg)]" preserveAspectRatio="none">
@@ -121,32 +125,27 @@ const generateOverlayTemplate = (): string => {
         </div>
     </div>
 
-    <div id="__flame__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex w-full max-w-[var(--flame-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--flame-dialog-radius)] bg-[var(--flame-surface)] text-[var(--flame-text)] shadow-[var(--flame-elevation-1)] border-b border-[var(--flame-border)] ">
-        <div id="__flame__header" class="flex items-center justify-between border-b border-[var(--flame-border)] bg-[var(--flame-surface)] px-4 pt-2 pb-3">
-            <div id="__flame__title" class="flex items-center gap-2 font-bold text-[var(--flame-text)]">
-                <span id="__flame__heading" class="leading-none">Runtime Error</span>
-                <a id="__flame__filelink" class="ml-2 text-xs font-normal underline text-[var(--flame-text-muted)] hover:text-[var(--flame-text)]" href="#" target="_blank" rel="noreferrer noopener"></a>
+    <div id="__v_o__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex w-full max-w-[var(--flame-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--flame-dialog-radius)] bg-[var(--flame-surface)] text-[var(--flame-text)] shadow-[var(--flame-elevation-1)] border-b border-[var(--flame-border)] ">
+        <div id="__v_o__header" class="flex items-center justify-between border-b border-[var(--flame-border)] bg-[var(--flame-surface)] px-4 pt-2 pb-3">
+            <div id="__v_o__title" class="flex items-center gap-2 font-bold text-[var(--flame-text)]">
+                <span id="__v_o__heading" class="leading-none">Runtime Error</span>
+                <a id="__v_o__filelink" class="ml-2 text-xs font-normal underline text-[var(--flame-text-muted)] hover:text-[var(--flame-text)]" href="#" target="_blank" rel="noreferrer noopener"></a>
             </div>
             <div class="flex items-center gap-2">
-                <div id="__flame__mode" class="hidden sm:flex items-center gap-1 mr-1">
+                <div id="__v_o__mode" class="hidden sm:flex items-center gap-1 mr-1">
                     <button type="button" data-flame-mode="original" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]">Original</button>
                     <button type="button" data-flame-mode="compiled" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]">Compiled</button>
                 </div>
-                <button type="button" id="__flame__close" aria-label="Close error overlay" class="flex justify-center items-center w-6 h-6 bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" aria-hidden="true">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12.5303 3.53033C12.8232 3.23744 12.8232 2.76256 12.5303 2.46967C12.2374 2.17678 11.7626 2.17678 11.4697 2.46967L8 5.93934L4.53033 2.46967C4.23744 2.17678 3.76256 2.17678 3.46967 2.46967C3.17678 2.76256 3.17678 3.23744 3.46967 3.53033L6.93934 7L3.46967 10.4697C3.17678 10.7626 3.17678 11.2374 3.46967 11.5303C3.76256 11.8232 4.23744 11.8232 4.53033 11.5303L8 8.06066L11.4697 11.5303C11.7626 11.8232 12.2374 11.8232 12.5303 11.5303C12.8232 11.2374 12.8232 10.7626 12.5303 10.4697L9.06066 7L12.5303 3.53033Z" fill="currentColor"></path>
-                    </svg>
-                </button>
             </div>
         </div>
 
-        <div id="__flame__solutions" class="p-4 hidden"></div>
-        <div id="__flame__body" class="relative flex min-h-0 p-4 bg-[var(--flame-surface)]">
-            <div id="__flame__overlay" class="overflow-auto"></div>
+        <div id="__v_o__solutions" class="p-4 hidden"></div>
+        <div id="__v_o__body" class="relative flex min-h-0 p-4 bg-[var(--flame-surface)]">
+            <div id="__v_o__overlay" class="overflow-auto"></div>
         </div>
     </div>
 
-    <div id="__flame__stacktrace" class="relative -mt-5 py-5 w-full max-w-[var(--flame-dialog-max-width)] max-h-[200px] rounded-b-[var(--flame-dialog-radius)] border border-[var(--flame-border)] bg-[var(--flame-surface-muted)] shadow-[var(--flame-elevation-2)]">
+    <div id="__v_o__stacktrace" class="relative -mt-5 py-5 w-full max-w-[var(--flame-dialog-max-width)] max-h-[200px] rounded-b-[var(--flame-dialog-radius)] border border-[var(--flame-border)] bg-[var(--flame-surface-muted)] shadow-[var(--flame-elevation-2)]">
         <div class="px-4 py-2 border-b border-[var(--flame-border)] text-xs text-[var(--flame-text-muted)]">Raw stack trace</div>
         <div class="px-4 py-2 text-[var(--flame-text)] text-xs font-mono leading-5 overflow-auto space-y-0.5 max-h-[140px]"></div>
     </div>

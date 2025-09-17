@@ -13,15 +13,15 @@ test.describe("Error Overlay E2E Tests", () => {
             });
 
             // Wait for overlay to appear
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Verify overlay is visible
-            const overlay = page.locator("#__flame__overlay");
+            const overlay = page.locator("#__v_o__overlay");
 
             await expect(overlay).toBeVisible();
 
             // Verify error message is displayed
-            const errorMessage = page.locator("#__flame__heading");
+            const errorMessage = page.locator("#__v_o__heading");
 
             await expect(errorMessage).toContainText("Runtime Error");
         });
@@ -36,10 +36,10 @@ test.describe("Error Overlay E2E Tests", () => {
             });
 
             // Wait for overlay
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Check if file path is displayed and contains original source path
-            const fileLink = page.locator("#__flame__filelink");
+            const fileLink = page.locator("#__v_o__filelink");
             const fileLinkText = await fileLink.textContent();
 
             // Should show original source path, not compiled path
@@ -60,7 +60,7 @@ test.describe("Error Overlay E2E Tests", () => {
             await page.click("[data-error-trigger]");
 
             // Wait for overlay
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Verify multiple errors are shown
             const errorCount = page.locator("[data-flame-dialog-error-index]");
@@ -81,7 +81,7 @@ test.describe("Error Overlay E2E Tests", () => {
 
             // Trigger error with cause chain
             await page.click("[data-error-trigger]");
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Get initial error index
             const initialIndex = await page.locator("[data-flame-dialog-error-index]").textContent();
@@ -106,10 +106,10 @@ test.describe("Error Overlay E2E Tests", () => {
 
             // Trigger error with cause chain
             await page.click("[data-error-trigger]");
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Check first error
-            let fileLink = page.locator("#__flame__filelink");
+            let fileLink = page.locator("#__v_o__filelink");
             let fileLinkText = await fileLink.textContent();
 
             expect(fileLinkText).toMatch(/\.tsx?:\d+/);
@@ -123,7 +123,7 @@ test.describe("Error Overlay E2E Tests", () => {
             await page.waitForTimeout(100);
 
             // Check second error also has original source location
-            fileLink = page.locator("#__flame__filelink");
+            fileLink = page.locator("#__v_o__filelink");
             fileLinkText = await fileLink.textContent();
 
             expect(fileLinkText).toMatch(/\.tsx?:\d+/);
@@ -141,10 +141,10 @@ test.describe("Error Overlay E2E Tests", () => {
                 throw new Error("Code frame test error");
             });
 
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Check if code frame is displayed
-            const overlay = page.locator("#__flame__overlay");
+            const overlay = page.locator("#__v_o__overlay");
             const overlayContent = await overlay.textContent();
 
             // Should contain some code-like content
@@ -159,7 +159,7 @@ test.describe("Error Overlay E2E Tests", () => {
                 throw new Error("View switching test error");
             });
 
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Check if mode switching buttons are present
             const originalButton = page.locator("[data-flame-mode='original']");
@@ -178,7 +178,7 @@ test.describe("Error Overlay E2E Tests", () => {
                 await page.waitForTimeout(100);
 
                 // Should still have content
-                const overlay = page.locator("#__flame__overlay");
+                const overlay = page.locator("#__v_o__overlay");
                 const overlayContent = await overlay.textContent();
 
                 expect(overlayContent?.length).toBeGreaterThan(0);
@@ -195,10 +195,10 @@ test.describe("Error Overlay E2E Tests", () => {
                 throw new Error("Stack trace test error");
             });
 
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Check if stack trace is displayed
-            const stackTrace = page.locator("#__flame__stacktrace");
+            const stackTrace = page.locator("#__v_o__stacktrace");
 
             await expect(stackTrace).toBeVisible();
 
@@ -217,10 +217,10 @@ test.describe("Error Overlay E2E Tests", () => {
                 throw new Error("Clickable stack trace test");
             });
 
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Check for clickable stack links
-            const stackLinks = page.locator("#__flame__stacktrace .stack-link");
+            const stackLinks = page.locator("#__v_o__stacktrace .stack-link");
             const linkCount = await stackLinks.count();
 
             if (linkCount > 0) {
@@ -242,20 +242,20 @@ test.describe("Error Overlay E2E Tests", () => {
                 throw new Error("Closable test error");
             });
 
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Verify overlay is visible
-            const overlay = page.locator("#__flame__overlay");
+            const overlay = page.locator("#__v_o__overlay");
 
             await expect(overlay).toBeVisible();
 
             // Click close button
-            const closeButton = page.locator("#__flame__close");
+            const closeButton = page.locator("#__v_o__close");
 
             await closeButton.click();
 
             // Wait for overlay to disappear
-            await page.waitForSelector("#__flame__overlay", { state: "hidden", timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { state: "hidden", timeout: 5000 });
 
             // Verify overlay is gone
             await expect(overlay).not.toBeVisible();
@@ -269,16 +269,16 @@ test.describe("Error Overlay E2E Tests", () => {
                 throw new Error("ESC close test error");
             });
 
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Press ESC key
             await page.keyboard.press("Escape");
 
             // Wait for overlay to disappear
-            await page.waitForSelector("#__flame__overlay", { state: "hidden", timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { state: "hidden", timeout: 5000 });
 
             // Verify overlay is gone
-            const overlay = page.locator("#__flame__overlay");
+            const overlay = page.locator("#__v_o__overlay");
 
             await expect(overlay).not.toBeVisible();
         });
@@ -295,10 +295,10 @@ test.describe("Error Overlay E2E Tests", () => {
                 throw new Error("Chrome compatibility test");
             });
 
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Verify overlay works in Chrome
-            const overlay = page.locator("#__flame__overlay");
+            const overlay = page.locator("#__v_o__overlay");
 
             await expect(overlay).toBeVisible();
         });
@@ -313,10 +313,10 @@ test.describe("Error Overlay E2E Tests", () => {
                 throw new Error("Firefox compatibility test");
             });
 
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Verify overlay works in Firefox
-            const overlay = page.locator("#__flame__overlay");
+            const overlay = page.locator("#__v_o__overlay");
 
             await expect(overlay).toBeVisible();
         });
@@ -331,10 +331,10 @@ test.describe("Error Overlay E2E Tests", () => {
                 throw new Error("Safari compatibility test");
             });
 
-            await page.waitForSelector("#__flame__overlay", { timeout: 5000 });
+            await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Verify overlay works in Safari
-            const overlay = page.locator("#__flame__overlay");
+            const overlay = page.locator("#__v_o__overlay");
 
             await expect(overlay).toBeVisible();
         });

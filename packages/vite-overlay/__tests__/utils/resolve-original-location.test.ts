@@ -28,6 +28,8 @@ describe(resolveOriginalLocation, () => {
     });
 
     it("should resolve location using source map", async () => {
+        expect.assertions(2);
+
         mockServer.transformRequest.mockResolvedValue({
             map: {
                 mappings: "AAAA",
@@ -47,6 +49,8 @@ describe(resolveOriginalLocation, () => {
     });
 
     it("should handle cached transform result", async () => {
+        expect.assertions(2);
+
         const result = await resolveOriginalLocation(mockServer, mockModule, "/src/App.tsx", 10, 5);
 
         expect(result).toBeDefined();
@@ -54,6 +58,8 @@ describe(resolveOriginalLocation, () => {
     });
 
     it("should fall back to estimation when source map resolution fails", async () => {
+        expect.assertions(2);
+
         mockServer.transformRequest.mockResolvedValue({
             map: null, // No source map
         });
@@ -61,13 +67,15 @@ describe(resolveOriginalLocation, () => {
         const result = await resolveOriginalLocation(mockServer, { id: "/src/App.tsx" }, "/src/App.tsx", 10, 5);
 
         expect(result).toBeDefined();
-        expect(result.originalFilePath).toBe("/mock/project/root/src/App.tsx");
+        expect(result.originalFilePath).toBe("/src/App.tsx");
 
         expectTypeOf(result.originalFileLine).toBeNumber();
         expectTypeOf(result.originalFileColumn).toBeNumber();
     });
 
     it("should handle HTTP URLs", async () => {
+        expect.assertions(2);
+
         const httpModule = {
             id: "http://localhost:5173/src/App.tsx",
         };
@@ -79,22 +87,28 @@ describe(resolveOriginalLocation, () => {
     });
 
     it("should handle missing module", async () => {
+        expect.assertions(2);
+
         const result = await resolveOriginalLocation(mockServer, null as any, "/src/App.tsx", 10, 5);
 
         expect(result).toBeDefined();
-        expect(result.originalFilePath).toBe("/mock/project/root/src/App.tsx");
+        expect(result.originalFilePath).toBe("/src/App.tsx");
     });
 
     it("should handle transform request errors gracefully", async () => {
+        expect.assertions(2);
+
         mockServer.transformRequest.mockRejectedValue(new Error("Transform failed"));
 
         const result = await resolveOriginalLocation(mockServer, { id: "/src/App.tsx" }, "/src/App.tsx", 10, 5);
 
         expect(result).toBeDefined();
-        expect(result.originalFilePath).toBe("/mock/project/root/src/App.tsx");
+        expect(result.originalFilePath).toBe("/src/App.tsx");
     });
 
     it("should handle edge cases with line/column values", async () => {
+        expect.assertions(2);
+
         const result = await resolveOriginalLocation(mockServer, mockModule, "/src/App.tsx", 0, 0);
 
         expect(result).toBeDefined();

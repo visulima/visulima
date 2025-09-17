@@ -10,7 +10,7 @@ test.describe("Functional Error Overlay Test", () => {
 
         // Try to close any existing overlay
         try {
-            const closeButton = page.locator("#__flame__close");
+            const closeButton = page.locator("#__v_o__close");
 
             if (await closeButton.isVisible()) {
                 await closeButton.click();
@@ -26,7 +26,7 @@ test.describe("Functional Error Overlay Test", () => {
         await waitForErrorOverlay(page, 15_000);
 
         // Verify overlay is visible
-        const overlay = page.locator("#__flame__overlay");
+        const overlay = page.locator("#__v_o__overlay");
 
         await expect(overlay).toBeVisible();
 
@@ -130,7 +130,7 @@ test.describe("Functional Error Overlay Test", () => {
         await waitForErrorOverlay(page, 15_000);
 
         // Verify overlay is visible
-        const overlay = page.locator("#__flame__overlay");
+        const overlay = page.locator("#__v_o__overlay");
 
         await expect(overlay).toBeVisible();
 
@@ -138,7 +138,7 @@ test.describe("Functional Error Overlay Test", () => {
         await page.keyboard.press("Escape");
 
         // Wait for overlay to disappear
-        await page.waitForSelector("#__flame__overlay", { state: "hidden", timeout: 5000 });
+        await page.waitForSelector("#__v_o__overlay", { state: "hidden", timeout: 5000 });
     });
 
     it("should handle simple error button", async ({ page }) => {
@@ -147,7 +147,7 @@ test.describe("Functional Error Overlay Test", () => {
         await waitForErrorOverlay(page, 15_000);
 
         // Verify overlay appears
-        const overlay = page.locator("#__flame__overlay");
+        const overlay = page.locator("#__v_o__overlay");
 
         await expect(overlay).toBeVisible();
     });
@@ -180,9 +180,9 @@ test.describe("Functional Error Overlay Test", () => {
         await waitForErrorOverlay(page, 15_000);
 
         // Check if our custom overlay is being used by looking for our specific elements
-        const flameOverlay = page.locator("#__flame__overlay");
-        const flameHeading = page.locator("#__flame__heading");
-        const flameStacktrace = page.locator("#__flame__stacktrace");
+        const flameOverlay = page.locator("#__v_o__overlay");
+        const flameHeading = page.locator("#__v_o__heading");
+        const flameStacktrace = page.locator("#__v_o__stacktrace");
 
         // Our custom overlay should have these specific elements
         await expect(flameOverlay).toBeVisible();
@@ -206,12 +206,12 @@ test.describe("Functional Error Overlay Test", () => {
         await waitForErrorOverlay(page, 15_000);
 
         // Verify overlay appears
-        const overlay = page.locator("#__flame__overlay");
+        const overlay = page.locator("#__v_o__overlay");
 
         await expect(overlay).toBeVisible();
 
         // Check for API-related error message
-        const heading = page.locator("#__flame__heading");
+        const heading = page.locator("#__v_o__heading");
         const headingText = await heading.textContent();
 
         expect(headingText).toContain("API error");
@@ -226,7 +226,7 @@ test.describe("Functional Error Overlay Test", () => {
         await waitForErrorOverlay(page, 15_000);
 
         // Verify overlay appears
-        const overlay = page.locator("#__flame__overlay");
+        const overlay = page.locator("#__v_o__overlay");
 
         await expect(overlay).toBeVisible();
 
@@ -243,7 +243,7 @@ test.describe("Functional Error Overlay Test", () => {
         await waitForErrorOverlay(page, 15_000);
 
         // Get the stack trace content
-        const stackTrace = page.locator("#__flame__stacktrace");
+        const stackTrace = page.locator("#__v_o__stacktrace");
         const stackContent = await stackTrace.textContent();
 
         // Verify stack trace exists and has content

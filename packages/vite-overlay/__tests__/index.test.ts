@@ -4,6 +4,8 @@ import errorOverlayPlugin from "../src/index.js";
 
 describe(errorOverlayPlugin, () => {
     it("should return a plugin object", () => {
+        expect.assertions(1);
+
         const plugin = errorOverlayPlugin();
 
         expect(plugin).toBeDefined();
@@ -12,12 +14,16 @@ describe(errorOverlayPlugin, () => {
     });
 
     it("should have apply property set to 'serve'", () => {
+        expect.assertions(1);
+
         const plugin = errorOverlayPlugin();
 
         expect(plugin.apply).toBe("serve");
     });
 
     it("should have configureServer method", () => {
+        expect.assertions(1);
+
         const plugin = errorOverlayPlugin();
 
         expect(plugin.configureServer).toBeDefined();
@@ -26,6 +32,8 @@ describe(errorOverlayPlugin, () => {
     });
 
     it("should have transform method", () => {
+        expect.assertions(1);
+
         const plugin = errorOverlayPlugin();
 
         expect(plugin.transform).toBeDefined();
@@ -34,6 +42,8 @@ describe(errorOverlayPlugin, () => {
     });
 
     it("should have transformIndexHtml method", () => {
+        expect.assertions(1);
+
         const plugin = errorOverlayPlugin();
 
         expect(plugin.transformIndexHtml).toBeDefined();

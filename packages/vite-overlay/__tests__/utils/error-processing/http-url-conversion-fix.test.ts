@@ -7,7 +7,7 @@
 import { parseStacktrace } from "@visulima/error";
 import { describe, expect, it, vi } from "vitest";
 
-import buildExtendedErrorData from "../src/utils/error-processing";
+import buildExtendedErrorData from "../../../src/utils/error-processing";
 
 vi.mock("@visulima/error", () => {
     return {
@@ -19,6 +19,8 @@ vi.mock("@visulima/error", () => {
 
 describe("hTTP URL Conversion Fix - Integration Test", () => {
     it("should ensure both primary and cause errors use consistent HTTP URLs for module resolution", async () => {
+        expect.assertions(3);
+
         // Mock server with proper configuration
         const mockServer = {
             config: {
@@ -121,6 +123,8 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
     });
 
     it("should handle cases where no cause errors have HTTP URLs", async () => {
+        expect.assertions(1);
+
         const mockServer = {
             config: {
                 root: "/home/user/project",
@@ -155,6 +159,8 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
     });
 
     it("should gracefully handle malformed URLs in cause errors", async () => {
+        expect.assertions(1);
+
         const mockServer = {
             config: {
                 root: "/home/user/project",
