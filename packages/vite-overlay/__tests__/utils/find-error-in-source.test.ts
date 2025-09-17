@@ -336,7 +336,7 @@ describe(findErrorInSourceCode, () => {
         });
     });
 
-    describe("ReferenceError handling", () => {
+    describe("referenceError handling", () => {
         it("should find undefined variable in direct reference", () => {
             const sourceCode = `
                 function test() {
@@ -344,7 +344,8 @@ describe(findErrorInSourceCode, () => {
                 }
             `;
             const result = findErrorInSourceCode(sourceCode, "myVariable is not defined");
-            expect(result).toEqual({ line: 3, column: 33 });
+
+            expect(result).toEqual({ column: 33, line: 3 });
         });
 
         it("should find undefined variable in template literal", () => {
@@ -355,7 +356,8 @@ describe(findErrorInSourceCode, () => {
                 }
             `;
             const result = findErrorInSourceCode(sourceCode, "undefinedVar is not defined");
-            expect(result).toEqual({ line: 3, column: 46 });
+
+            expect(result).toEqual({ column: 46, line: 3 });
         });
 
         it("should find undefined variable in JSX/Svelte attribute", () => {
@@ -365,7 +367,8 @@ describe(findErrorInSourceCode, () => {
                 }
             `;
             const result = findErrorInSourceCode(sourceCode, "missingClass is not defined");
-            expect(result).toEqual({ line: 3, column: 44 });
+
+            expect(result).toEqual({ column: 44, line: 3 });
         });
 
         it("should find undefined variable in Svelte template", () => {
@@ -378,7 +381,8 @@ describe(findErrorInSourceCode, () => {
                 <p>Welcome {missingVar}!</p>
             `;
             const result = findErrorInSourceCode(sourceCode, "missingVar is not defined");
-            expect(result).toEqual({ line: 7, column: 29 });
+
+            expect(result).toEqual({ column: 29, line: 7 });
         });
 
         it("should handle multiline ReferenceError messages", () => {
@@ -391,7 +395,8 @@ describe(findErrorInSourceCode, () => {
 
         in <unknown>`;
             const result = findErrorInSourceCode(sourceCode, multilineError);
-            expect(result).toEqual({ line: 3, column: 28 });
+
+            expect(result).toEqual({ column: 28, line: 3 });
         });
 
         it("should prioritize variable references over error constructors", () => {
@@ -401,7 +406,8 @@ describe(findErrorInSourceCode, () => {
                 }
             `;
             const result = findErrorInSourceCode(sourceCode, "missingVar is not defined");
-            expect(result).toEqual({ line: 3, column: 37 });
+
+            expect(result).toEqual({ column: 37, line: 3 });
         });
 
         it("should find variable in complex expressions", () => {
@@ -411,11 +417,12 @@ describe(findErrorInSourceCode, () => {
                 }
             `;
             const result = findErrorInSourceCode(sourceCode, "someUndefined is not defined");
-            expect(result).toEqual({ line: 3, column: 28 });
+
+            expect(result).toEqual({ column: 28, line: 3 });
         });
     });
 
-    describe("Error message parsing", () => {
+    describe("error message parsing", () => {
         it("should extract variable name from ReferenceError with stack trace", () => {
             const sourceCode = `
                 function broken() {
@@ -427,7 +434,8 @@ describe(findErrorInSourceCode, () => {
         at broken (app.js:10:20)
         at main (app.js:5:10)`;
             const result = findErrorInSourceCode(sourceCode, errorWithStack);
-            expect(result).toEqual({ line: 3, column: 33 });
+
+            expect(result).toEqual({ column: 33, line: 3 });
         });
 
         it("should handle TypeError for undefined functions", () => {
@@ -437,6 +445,7 @@ describe(findErrorInSourceCode, () => {
                 }
             `;
             const result = findErrorInSourceCode(sourceCode, "missingFunction is not a function");
+
             // TypeError for undefined functions is harder to pinpoint exactly
             // The function call location might not be found due to how the error is generated
             expect(result).toBeDefined(); // At least it shouldn't crash
@@ -449,11 +458,12 @@ describe(findErrorInSourceCode, () => {
                 }
             `;
             const result = findErrorInSourceCode(sourceCode, "Cannot read properties of null (reading invalidProperty)");
-            expect(result).toEqual({ line: 3, column: 33 });
+
+            expect(result).toEqual({ column: 33, line: 3 });
         });
     });
 
-    describe("Import resolution error cases", () => {
+    describe("import resolution error cases", () => {
         it("should handle vite.svg import resolution error", () => {
             const sourceCode = `import "./App.css";
 
@@ -486,7 +496,8 @@ export default App;`;
             const errorMessage = `Failed to resolve import "../vite.svg" from "src/App.tsx". Does the file exist?`;
 
             const result = findErrorInSourceCode(sourceCode, errorMessage);
-            expect(result).toEqual({ line: 5, column: 22 }); // Line 5: points to "../vite.svg" (the problematic import path)
+
+            expect(result).toEqual({ column: 22, line: 5 }); // Line 5: points to "../vite.svg" (the problematic import path)
         });
 
         it("should handle relative import path in error message", () => {
@@ -501,11 +512,12 @@ function App() {
             const errorMessage = `Failed to resolve import "./assets/logo.png" from "src/App.tsx"`;
 
             const result = findErrorInSourceCode(sourceCode, errorMessage);
-            expect(result).toEqual({ line: 2, column: 18 }); // Line 2: points to './assets/logo.png' (the problematic import path)
+
+            expect(result).toEqual({ column: 18, line: 2 }); // Line 2: points to './assets/logo.png' (the problematic import path)
         });
     });
 
-    describe("Real Svelte error cases", () => {
+    describe("real Svelte error cases", () => {
         it("should find svelteLogo1 in real Svelte template", () => {
             const sourceCode = `<script lang="ts">
   import svelteLogo from './assets/svelte.svg'
@@ -552,7 +564,8 @@ function App() {
 
         in <unknown>`;
             const result = findErrorInSourceCode(sourceCode, errorMessage);
-            expect(result).toEqual({ line: 13, column: 17 }); // Line 13: svelteLogo1 (position of 's')
+
+            expect(result).toEqual({ column: 17, line: 13 }); // Line 13: svelteLogo1 (position of 's')
         });
 
         it("should handle multiline Svelte ReferenceError", () => {
@@ -566,7 +579,8 @@ function App() {
 
         in <unknown>`;
             const result = findErrorInSourceCode(sourceCode, multilineError);
-            expect(result).toEqual({ line: 6, column: 5 }); // Line 6: undefinedVar (position of 'u')
+
+            expect(result).toEqual({ column: 5, line: 6 }); // Line 6: undefinedVar (position of 'u')
         });
     });
 });

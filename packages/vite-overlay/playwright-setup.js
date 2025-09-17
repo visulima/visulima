@@ -26,4 +26,3 @@ try {
     console.error("❌ Playwright setup failed:", error.message);
     process.exit(1);
 }
-

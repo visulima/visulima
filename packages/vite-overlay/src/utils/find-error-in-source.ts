@@ -61,17 +61,20 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
     // For dynamic error messages, extract the base pattern
     // Handle different types of runtime errors
     const dynamicErrorPatterns = [
-        /Failed to resolve import ["']([^"']+)["'](?:\s+from ["']([^"']+)["'])?/,  // Import resolution errors
-        /(.+?)\s+from line \d+/,  // "Error from line X"
-        /(.+?)\s+is not defined/,  // "variable is not defined"
-        /(.+?)\s+is not a function/,  // "function is not a function"
+        /Failed to resolve import ["']([^"']+)["'](?:\s+from ["']([^"']+)["'])?/, // Import resolution errors
+        /(.+?)\s+from line \d+/, // "Error from line X"
+        /(.+?)\s+is not defined/, // "variable is not defined"
+        /(.+?)\s+is not a function/, // "function is not a function"
         /Cannot read properties of (.+?)\s+\(reading (.+?)\)/, // "Cannot read properties of null (reading property)"
     ];
 
     let dynamicMatch = null;
+
     for (const pattern of dynamicErrorPatterns) {
         dynamicMatch = errorMessage.match(pattern);
-        if (dynamicMatch) break;
+
+        if (dynamicMatch)
+            break;
     }
 
     // Common error patterns to search for
@@ -169,12 +172,13 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
         if (dynamicMatch[0].includes("Failed to resolve import")) {
             // For import resolution errors, search for the import statement
             const importPath = dynamicMatch[1];
-            console.log(`🔍 Import resolution error detected, searching for import statement: ${importPath}`);
+            // Import resolution error detected
             const specificPatterns = [
-                `import.*from ["']${importPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, // Exact import match
-                `import.*["']${importPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, // Dynamic import
+                `import.*from ["']${importPath.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)}["']`, // Exact import match
+                `import.*["']${importPath.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)}["']`, // Dynamic import
                 importPath, // Just the path as fallback
             ];
+
             errorPatterns.unshift(...specificPatterns);
         } else if (dynamicMatch[0].includes("is not defined")) {
             // For "X is not defined", search for the variable name directly
@@ -186,6 +190,7 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
                 `${variableName}.`, // Property access
                 `=${variableName}`, // Assignment
             ];
+
             errorPatterns.unshift(...specificPatterns);
         } else if (dynamicMatch[0].includes("Cannot read properties")) {
             // For "Cannot read properties of X (reading Y)", search for both X and Y
@@ -197,6 +202,7 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
                 `${objectName}?.${propertyName}`, // Optional chaining
                 `${objectName}[${propertyName}]`, // Bracket notation
             ];
+
             errorPatterns.unshift(...specificPatterns);
         } else {
             // For other dynamic errors like "Error from line X"
@@ -219,6 +225,7 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
                 `new Error(\`${errorMessage.replaceAll("`", "\\`")}\`)`,
                 `throw new Error(\`${errorMessage.replaceAll("`", "\\`")}\`)`,
             ];
+
             errorPatterns.unshift(...specificPatterns);
         }
     }
@@ -313,29 +320,35 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
                     if (dynamicMatch[0].includes("Failed to resolve import")) {
                         // For import resolution errors, point to the import path
                         const importPath = dynamicMatch[1];
+
                         if (line.includes(`"${importPath}"`) || line.includes(`'${importPath}'`)) {
                             // Find the position of the import path in the line
-                            const quoteChar = line.includes(`"${importPath}"`) ? '"' : "'";
+                            const quoteChar = line.includes(`"${importPath}"`) ? "\"" : "'";
                             const pathStart = line.indexOf(`${quoteChar}${importPath}${quoteChar}`);
+
                             actualColumn = pathStart + 1; // 1-based column at the start of the import path
                         }
                     } else if (dynamicMatch[0].includes("is not defined")) {
                         // For variable references, point to the variable name
                         const variableName = dynamicMatch[1];
+
                         if (bestPattern === variableName) {
                             // Direct variable reference - point to the start of the variable
                             actualColumn = bestPatternIndex + 1; // 1-based column
                         } else if (bestPattern.includes(variableName)) {
                             // Pattern contains variable - find variable position within pattern
-                            const varIndex = bestPattern.indexOf(variableName);
-                            actualColumn = bestPatternIndex + varIndex + 1; // 1-based column
+                            const variableIndex = bestPattern.indexOf(variableName);
+
+                            actualColumn = bestPatternIndex + variableIndex + 1; // 1-based column
                         }
                     } else if (dynamicMatch[0].includes("Cannot read properties")) {
                         // For property access, point to the property being accessed
                         const propertyName = dynamicMatch[2];
+
                         if (bestPattern.includes(propertyName)) {
-                            const propIndex = bestPattern.indexOf(propertyName);
-                            actualColumn = bestPatternIndex + propIndex + 1; // 1-based column
+                            const propertyIndex = bestPattern.indexOf(propertyName);
+
+                            actualColumn = bestPatternIndex + propertyIndex + 1; // 1-based column
                         }
                     } else if (bestPattern.includes("new Error(")) {
                         // For Error constructors, point to "new Error("

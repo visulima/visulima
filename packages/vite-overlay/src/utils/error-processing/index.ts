@@ -125,15 +125,10 @@ const resolveOriginalLocationInfo = async (
 
         const idCandidates = normalizeIdCandidates(resolvedFilePath);
 
-        console.log(`🔍 Module resolution: Looking for "${resolvedFilePath}" with candidates:`, idCandidates);
+        // Module resolution
         const module_ = findModuleForPath(server, idCandidates);
 
-        console.log(`🔍 Module found:`, {
-            moduleExists: !!module_,
-            moduleId: module_?.id,
-            moduleKeys: module_ ? Object.keys(module_) : [],
-            moduleUrl: module_?.url,
-        });
+        // Module found
 
         if (module_) {
             try {
@@ -392,12 +387,12 @@ const buildExtendedErrorData = async (
 
         if (sourceTrace?.file) {
             sourceFilePath = sourceTrace.file;
-            console.log(`🎯 Using source file path from stack trace: ${sourceFilePath}`);
+            // Using source file path from stack trace
         }
     }
 
     if (viteErrorData?.file) {
-        console.log(`🎯 Using source file path from viteErrorData: ${sourceFilePath}`);
+        // Using source file path from viteErrorData
     }
 
     let { originalFileColumn, originalFileLine, originalFilePath } = await resolveOriginalLocationInfo(
@@ -484,12 +479,7 @@ const buildExtendedErrorData = async (
 
         // Generate original code frame (Vite optimization: skip realignment for cached modules)
         if (originalSourceText) {
-            console.log(`🎨 Generating original code frame:`, {
-                firstFewLines: originalSourceText.split("\n").slice(0, 3).join("\n"),
-                originalFileColumn,
-                originalFileLine,
-                originalSourceTextLength: originalSourceText.length,
-            });
+            // Generating original code frame
 
             // Only realign if we got fresh compiled source (not from cache)
             if (compiledSourceText && originalFileLine <= 0 && compiledLine > 0) {
@@ -507,12 +497,9 @@ const buildExtendedErrorData = async (
                     { start: { column: Math.max(1, originalFileColumn), line: Math.max(1, originalFileLine) } },
                     { showGutter: false },
                 );
-                console.log(`✅ Generated original code frame:`, {
-                    frameLength: originalSnippet.length,
-                    framePreview: originalSnippet.slice(0, 200),
-                });
-            } catch (error) {
-                console.log(`❌ Failed to generate original code frame:`, error);
+                // Generated original code frame
+            } catch {
+                // Failed to generate original code frame
                 // Silently fail if codeFrame throws, but keep original source for fallback
                 originalSnippet = originalSourceText?.slice(0, 500) || "";
             }
@@ -550,39 +537,28 @@ const buildExtendedErrorData = async (
                 // If source search succeeded but compiled code doesn't contain error patterns,
                 // still show compiled frame as it's useful for debugging
                 if (!compiledFrameHasCorrectCode && sourceSearchWasSuccessful) {
-                    const isCompiledFramework = originalFilePath.includes('.svelte')
-                        || originalFilePath.includes('.vue')
-                        || originalFilePath.includes('.astro')
-                        || compiledFilePath.includes('.js')
-                        || compiledFilePath.includes('.ts');
+                    const isCompiledFramework
+                        = originalFilePath.includes(".svelte")
+                            || originalFilePath.includes(".vue")
+                            || originalFilePath.includes(".astro")
+                            || compiledFilePath.includes(".js")
+                            || compiledFilePath.includes(".ts");
 
                     if (isCompiledFramework) {
                         compiledFrameHasCorrectCode = true;
-                        console.log(`🔄 Allowing compiled frame for transformed framework: ${originalFilePath}`);
+                        // Allowing compiled frame for transformed framework
                     }
                 }
             }
         }
 
-        console.log(`🎯 Smart frame decision:`, {
-            compiledColumn,
-            compiledFrameHasCorrectCode,
-            compiledLine,
-            errorMessage: primaryError.message?.slice(0, 50),
-            shouldGenerateCompiledFrame,
-            sourceSearchWasSuccessful,
-        });
+        // Smart frame decision
 
         // Show compiled frame only when it contains the correct error code
         const showCompiledFrame = shouldGenerateCompiledFrame && compiledFrameHasCorrectCode;
 
         if (showCompiledFrame) {
-            console.log(`🎨 Generating compiled code frame (fallback):`, {
-                compiledColumn,
-                compiledLine,
-                compiledSourceTextLength: compiledSourceText.length,
-                firstFewLines: compiledSourceText.split("\n").slice(0, 3).join("\n"),
-            });
+            // Generating compiled code frame
 
             const lines = compiledSourceText.split("\n");
             const totalLines = lines.length;
@@ -591,16 +567,13 @@ const buildExtendedErrorData = async (
             const targetLine = Math.min(compiledLine, totalLines) || Math.max(1, totalLines - 2);
             const targetColumn = lines[targetLine - 1] ? Math.min(compiledColumn || 1, lines[targetLine - 1]?.length || 1) : 1;
 
-            console.log(`🎯 Compiled frame target: line ${targetLine}, column ${targetColumn}`);
+            // Compiled frame target
 
             try {
                 compiledSnippet = codeFrame(compiledSourceText, { start: { column: targetColumn, line: targetLine } }, { showGutter: false });
-                console.log(`✅ Generated compiled code frame:`, {
-                    frameLength: compiledSnippet.length,
-                    framePreview: compiledSnippet.slice(0, 200),
-                });
+                // Generated compiled code frame
             } catch (error) {
-                console.log(`❌ Failed to generate compiled code frame:`, error);
+                // Failed to generate compiled code frame
                 console.warn("Compiled codeFrame failed:", error);
                 // Silently fail if codeFrame throws, but keep compiled source for fallback
                 compiledSnippet = compiledSourceText?.slice(0, 500) || "";

@@ -7,8 +7,8 @@ describe(findModuleForPath, () => {
     const mockServer = {
         moduleGraph: {
             getModuleById: vi.fn(),
-            idToModuleMap: new Map(),
             getModuleByUrl: vi.fn(),
+            idToModuleMap: new Map(),
         },
     } as unknown as ViteDevServer;
 
@@ -82,8 +82,8 @@ describe(findModuleForPath, () => {
 
             const moduleWithTransform = {
                 id: "/src/App.tsx",
-                url: "/src/App.tsx",
                 transformResult: { code: "compiled code" },
+                url: "/src/App.tsx",
             };
 
             mockServer.moduleGraph.getModuleById.mockReturnValueOnce(moduleWithoutTransform);
@@ -198,10 +198,7 @@ describe(findModuleForPath, () => {
                 transformResult: { code: "compiled code" },
             };
 
-            mockServer.moduleGraph.getModuleById
-                .mockReturnValueOnce(invalidModule1)
-                .mockReturnValueOnce(invalidModule2)
-                .mockReturnValueOnce(validModule);
+            mockServer.moduleGraph.getModuleById.mockReturnValueOnce(invalidModule1).mockReturnValueOnce(invalidModule2).mockReturnValueOnce(validModule);
 
             const result = findModuleForPath(mockServer, ["/missing1", "/missing2", "/src/App.tsx"]);
 

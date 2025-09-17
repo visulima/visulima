@@ -36,8 +36,6 @@ const estimateOriginalPosition = (fileLine: number, fileColumn: number) => {
 
     return { estimatedColumn, estimatedLine };
 };
-
-// Types
 interface ResolvedLocation {
     originalFileColumn: number;
     originalFileLine: number;
@@ -79,8 +77,6 @@ const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: num
             }),
         ];
 
-        let foundMapping = false;
-
         for (const attempt of attempts) {
             const pos = originalPositionFor(traced, {
                 column: attempt.column,
@@ -88,18 +84,12 @@ const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: num
             });
 
             if (pos.source && pos.line !== undefined && pos.column !== undefined && pos.line > 0 && pos.column >= 0) {
-                foundMapping = true;
-
                 return {
                     column: pos.column,
                     line: pos.line,
                     source: pos.source,
                 };
             }
-        }
-
-        // Only log if we found a mapping (interesting case)
-        if (foundMapping) {
         }
     } catch (error) {
         console.warn("Source map processing failed:", error);
@@ -166,15 +156,7 @@ const resolveOriginalLocation = async (
     // First, try to find the error by searching in the original source code
     // This is often more reliable than source maps for runtime errors
     if (errorMessage && module_) {
-        console.log(`🔍 Source code search: Looking for error "${errorMessage}" in module`, {
-            errorIndex,
-            hasTransformResult: !!module_.transformResult,
-            moduleId: module_.id,
-            moduleKeys: Object.keys(module_),
-            moduleType: typeof module_,
-            moduleUrl: module_.url,
-            transformResultKeys: module_.transformResult ? Object.keys(module_.transformResult) : [],
-        });
+        // Search for error in source code
 
         try {
             // Get the original source code from the module
@@ -183,20 +165,13 @@ const resolveOriginalLocation = async (
             // Try to get source from transform result first
             if (module_.transformResult?.map?.sourcesContent?.[0]) {
                 originalSourceCode = module_.transformResult.map.sourcesContent[0];
-                console.log(`📄 Found source code from transform result (${originalSourceCode.length} chars)`);
+                // Found source code from transform result
             } else if (module_.transformResult?.code) {
                 // For some modules, the source might be in the transform result code
                 originalSourceCode = module_.transformResult.code;
-                console.log(`📄 Found source code from transform result code (${originalSourceCode.length} chars)`);
+                // Found source code from transform result code
             } else {
-                console.log(`❌ No source code in transform result`, {
-                    hasMap: !!module_.transformResult?.map,
-                    hasTransformResult: !!module_.transformResult,
-                    hasCode: !!module_.transformResult?.code,
-                    sourcesContentLength: module_.transformResult?.map?.sourcesContent?.length,
-                    moduleKeys: Object.keys(module_),
-                    transformResultKeys: module_.transformResult ? Object.keys(module_.transformResult) : [],
-                });
+                // No source code in transform result
             }
 
             // If not available, try to get fresh transform result
@@ -221,17 +196,20 @@ const resolveOriginalLocation = async (
             // As a last resort, try to read the source file directly from disk
             if (!originalSourceCode && filePath) {
                 try {
-                    const fs = await import('node:fs/promises');
+                    const fs = await import("node:fs/promises");
 
                     // Resolve the file path properly - if it starts with a protocol, extract the path part
                     let resolvedPath = filePath;
-                    if (filePath.includes('://')) {
+
+                    if (filePath.includes("://")) {
                         try {
                             const url = new URL(filePath);
+
                             resolvedPath = url.pathname;
                         } catch {
                             // If URL parsing fails, remove protocol part manually
-                            const protocolIndex = filePath.indexOf('://');
+                            const protocolIndex = filePath.indexOf("://");
+
                             if (protocolIndex !== -1) {
                                 resolvedPath = filePath.slice(protocolIndex + 3);
                             }
@@ -239,16 +217,13 @@ const resolveOriginalLocation = async (
                     }
 
                     // If the path doesn't start with '/', it's relative to the server root
-                    if (!resolvedPath.startsWith('/')) {
+                    if (!resolvedPath.startsWith("/")) {
                         const serverRoot = server.config.root || process.cwd();
-                        console.log(`🔧 Server root: ${serverRoot}, original filePath: ${filePath}`);
+
                         resolvedPath = `${serverRoot}/${resolvedPath}`;
-                        console.log(`🔧 Resolved full path: ${resolvedPath}`);
                     }
 
-                    console.log(`📂 Trying to read source file from: ${resolvedPath}`);
-                    originalSourceCode = await fs.readFile(resolvedPath, 'utf-8');
-                    console.log(`📄 Found source code from file system (${originalSourceCode.length} chars)`);
+                    originalSourceCode = await fs.readFile(resolvedPath, "utf8");
                 } catch (error) {
                     console.warn("Failed to read source file from disk:", error);
                 }
@@ -256,16 +231,6 @@ const resolveOriginalLocation = async (
 
             // Search for the error message in the source code
             if (originalSourceCode) {
-                console.log(`🔍 Source code search: Looking for error "${errorMessage}" in module`, {
-                    errorIndex,
-                    hasTransformResult: !!module_.transformResult,
-                    moduleId: module_.id,
-                    moduleKeys: Object.keys(module_),
-                    moduleType: typeof module_,
-                    moduleUrl: module_.url,
-                    transformResultKeys: module_.transformResult ? Object.keys(module_.transformResult) : [],
-                });
-
                 // For import resolution errors, findErrorInSourceCode will handle the pattern matching
                 // It will detect the error type and search for the import statement instead of the error message
                 const searchMessage = errorMessage;
@@ -273,34 +238,19 @@ const resolveOriginalLocation = async (
                 const foundLocation = findErrorInSourceCode(originalSourceCode, searchMessage, errorIndex);
 
                 if (foundLocation) {
-                    console.log(`🎯 Source code search SUCCESS: Found error at line ${foundLocation.line}, column ${foundLocation.column}`);
-                    console.log(`📄 Source code snippet:`, originalSourceCode.split('\n').slice(foundLocation.line - 2, foundLocation.line + 2).join('\n'));
-
                     return {
                         originalFileColumn: foundLocation.column,
                         originalFileLine: foundLocation.line,
                         originalFilePath: filePath,
                     };
-                } else {
-                    console.log(`❌ Source code search FAILED: Could not find error pattern in source code`);
-                    console.log(`🔍 Searched for: "${errorMessage.includes('Failed to resolve import') ? 'import statement' : 'error message'}"`);
-                    console.log(`📄 First few lines of source code:`, originalSourceCode.split('\n').slice(0, 10).join('\n'));
                 }
-
-                console.log(`❌ Source code search FAILED: Could not find error "${errorMessage}" in source`);
             }
         } catch (error) {
             console.warn("Source code search failed:", error);
         }
-    } else {
-        console.log(`⚠️ Source code search SKIPPED: No error message or module provided`, {
-            hasErrorMessage: !!errorMessage,
-            hasModule: !!module_,
-        });
     }
 
     // Fallback to source map resolution
-    console.log(`🗺️ Falling back to source map resolution`);
     let rawMap = module_?.transformResult?.map;
 
     // Only get fresh source map if cached version is insufficient

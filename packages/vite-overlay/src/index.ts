@@ -9,7 +9,7 @@ import buildExtendedErrorData from "./utils/error-processing";
 import enhanceViteSsrError from "./utils/ssr-error-enhancer";
 import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace-utils";
 
-const logError = (server: ViteServer, prefix: string, error: unknown): void => {
+const logError = (server: ViteDevServer, prefix: string, error: unknown): void => {
     try {
         const message = error instanceof Error ? error.message : String(error);
 
@@ -32,7 +32,7 @@ const logError = (server: ViteServer, prefix: string, error: unknown): void => {
 // https://github.com/vitejs/vite/blob/29a260cb16025408defc2e8186d1fbf17ee099ac/packages/vite/src/node/utils.ts#L486
 
 // Creates a development logger that integrates with Vite's logging system
-const createDevelopmentLogger = (server: ViteServer): DevelopmentLogger => {
+const createDevelopmentLogger = (server: ViteDevServer): DevelopmentLogger => {
     return {
         error: (message: unknown) =>
             server.config.logger.error(String(message ?? ""), {
@@ -83,7 +83,7 @@ const processRuntimeError = async (runtimeError: Error, rootPath: string, develo
     await terminalOutput(runtimeError, { logger: developmentLogger });
 };
 
-const createUnhandledRejectionHandler = (server: ViteServer, rootPath: string, developmentLogger: DevelopmentLogger) => async (reason: unknown) => {
+const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string, developmentLogger: DevelopmentLogger) => async (reason: unknown) => {
     const runtimeError = reason instanceof Error ? reason : new Error(String((reason as any)?.stack || reason));
 
     // For unhandled rejections (can be server or client), apply SSR processing
@@ -116,7 +116,7 @@ const createUnhandledRejectionHandler = (server: ViteServer, rootPath: string, d
 
 const buildExtendedError = async (
     rawError: Error,
-    server: ViteServer,
+    server: ViteDevServer,
     rootPath: string,
     viteErrorData?: ViteErrorData,
     errorType: "client" | "server" = "client",
@@ -147,9 +147,9 @@ const buildExtendedError = async (
                         const [, file, line, col] = match;
 
                         causeViteErrorData = {
-                            column: Number.parseInt(col || "0"),
+                            column: Number.parseInt(col || "0", 10),
                             file,
-                            line: Number.parseInt(line || "0"),
+                            line: Number.parseInt(line || "0", 10),
                             plugin: viteErrorData?.plugin,
                         };
                     }
@@ -160,7 +160,6 @@ const buildExtendedError = async (
             let enhancedViteErrorData = causeViteErrorData;
 
             if (index === 0 && (error as any)?.sourceFile) {
-                console.log('🔧 Using extracted sourceFile for main error:', (error as any).sourceFile);
                 enhancedViteErrorData = {
                     ...causeViteErrorData,
                     file: (error as any).sourceFile,
@@ -290,100 +289,119 @@ console.error = function() {
     return orig.apply(console, arguments);
 }`;
 
+const reconstructCauseChain = (causeData: any): Error | null => {
+    if (!causeData) {
+        return null;
+    }
+
+    const causeError = new Error(String(causeData.message || "Caused by error"));
+
+    causeError.name = String(causeData.name || "Error");
+    causeError.stack = String(causeData.stack || "");
+
+    if (causeData.cause) {
+        causeError.cause = reconstructCauseChain(causeData.cause);
+    }
+
+    return causeError;
+};
+
 /**
  * Sets up WebSocket interception to enhance error payloads before sending.
  */
 const setupWebSocketInterception = (
-    server: ViteServer,
+    server: ViteDevServer,
     shouldSkip: (signature: string) => boolean,
     recentErrors: Map<string, number>,
     rootPath: string,
 ): void => {
-    const origSend = server.ws.send.bind(server.ws);
+    // Enhanced WebSocket interception for all errors
+    const originalSend = server.ws.send.bind(server.ws);
 
     // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
-    server.ws.send = async (payload: any, client?: any): Promise<void> => {
+    server.ws.send = async (data: any, client?: any): Promise<void> => {
         try {
-            if (payload && typeof payload === "object" && payload.type === "error" && payload.err) {
-                const raw = payload.err;
-
-                // Special handling for import resolution errors
-                if (raw?.message?.includes('Failed to resolve import')) {
-                    console.log('🚨 WebSocket: Detected import resolution error:', raw.message);
-
-                    // Extract file path from error message for better module resolution
-                    const match = raw.message.match(/Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/);
-                    if (match) {
-                        const [, importPath, sourceFile] = match;
-                        console.log('📂 WebSocket: Source file:', sourceFile, 'Failed import:', importPath);
-
-                        // We could add the source file to the error for better processing
-                        if (!raw.sourceFile && sourceFile) {
-                            raw.sourceFile = sourceFile;
-                            console.log('📎 WebSocket: Added sourceFile to error payload');
-                        }
-                    }
-                }
-
-                const rawSig = createErrorSignature(raw);
+            // Check if this is an error payload from Vite
+            if (data && typeof data === "object" && data.type === "error" && data.err) {
+                const { err } = data;
+                const rawSig = createErrorSignature(err);
 
                 if (shouldSkip(rawSig)) {
                     return; // drop duplicate
                 }
 
-                const name = String(raw?.name || "Error");
-                const message = String(raw.message);
-                const rawStack = String(raw.stack);
+                // Special handling for import resolution errors
+                if (err.message?.includes("Failed to resolve import")) {
+                    // Extract file path from error message for better module resolution
+                    const match = err.message.match(/Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/);
 
-                // Reconstruct the error with proper cause chain
-                const syntaicError = new Error(message);
+                    if (match) {
+                        const sourceFile = match[2];
+                        // Create our custom error payload for import errors
+                        const importError = new Error(err.message);
 
-                syntaicError.name = name;
-                syntaicError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
+                        importError.name = "ImportResolutionError";
+                        importError.stack = err.stack;
 
-                // If there's a nested cause structure, reconstruct it recursively
-                if (raw.cause) {
-                    // Recursively reconstruct the cause chain
-                    function reconstructCauseChain(causeData: any): Error | null {
-                        if (!causeData)
-                            return null;
+                        // Build extended error data
+                        const extensionPayload = await buildExtendedError(
+                            importError,
+                            server,
+                            rootPath,
+                            {
+                                column: err.loc?.column || 1,
+                                file: sourceFile,
+                                line: err.loc?.line || 1,
+                                plugin: err.plugin || "vite:import-analysis",
+                            },
+                            "server",
+                        );
 
-                        const causeError = new Error(String(causeData.message || "Caused by error"));
+                        data.err = extensionPayload;
+                        recentErrors.set(JSON.stringify(extensionPayload), Date.now());
+                    }
+                } else {
+                    // Handle other types of errors (runtime errors, etc.)
+                    const name = String(err?.name || "Error");
+                    const message = String(err.message);
+                    const rawStack = String(err.stack);
 
-                        causeError.name = String(causeData.name || "Error");
-                        causeError.stack = String(causeData.stack || "");
+                    // Reconstruct the error with proper cause chain
+                    const syntaicError = new Error(message);
 
-                        // Recursively handle nested causes
-                        if (causeData.cause) {
-                            causeError.cause = reconstructCauseChain(causeData.cause);
-                        }
+                    syntaicError.name = name;
+                    syntaicError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
 
-                        return causeError;
+                    // If there's a nested cause structure, reconstruct it recursively
+                    if (err.cause) {
+                        syntaicError.cause = reconstructCauseChain(err.cause);
                     }
 
-                    syntaicError.cause = reconstructCauseChain(raw.cause);
+                    // Build extended error data for non-import errors
+                    const viteErrorData = err.sourceFile
+                        ? {
+                            column: err.column,
+                            file: err.sourceFile,
+                            line: err.line,
+                            plugin: err.plugin,
+                        }
+                        : undefined;
+
+                    const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, viteErrorData, "server");
+
+                    recentErrors.set(JSON.stringify(extensionPayload), Date.now());
+
+                    data.err = extensionPayload;
                 }
-
-                // Pass the extracted sourceFile information to buildExtendedError
-        const viteErrorData = raw.sourceFile ? {
-            file: raw.sourceFile,
-            column: raw.column,
-            line: raw.line,
-            plugin: raw.plugin,
-        } : undefined;
-
-        const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, viteErrorData, "server");
-
-                // eslint-disable-next-line no-param-reassign
-                payload = extensionPayload;
-
-                recentErrors.set(JSON.stringify(extensionPayload), Date.now());
             }
+
+            // For non-error payloads, send as-is
+            originalSend(data, client);
         } catch (error) {
             logError(server, "[visulima:vite-overlay:server] ws.send intercept failed", error);
-        }
 
-        origSend(payload, client);
+            client.send(data, client);
+        }
     };
 };
 
@@ -391,7 +409,7 @@ const setupWebSocketInterception = (
  * Sets up HMR handler for client-reported runtime errors
  */
 const setupHMRHandler = (
-    server: ViteServer,
+    server: ViteDevServer,
     developmentLogger: DevelopmentLogger,
     shouldSkip: (signature: string) => boolean,
     recentErrors: Map<string, number>,
@@ -424,24 +442,6 @@ const setupHMRHandler = (
 
         // If there's a nested cause structure, reconstruct it recursively
         if (raw.cause) {
-            // Recursively reconstruct the cause chain
-            function reconstructCauseChain(causeData: any): Error | null {
-                if (!causeData)
-                    return null;
-
-                const causeError = new Error(String(causeData.message || "Caused by error"));
-
-                causeError.name = String(causeData.name || "Error");
-                causeError.stack = String(causeData.stack || "");
-
-                // Recursively handle nested causes
-                if (causeData.cause) {
-                    causeError.cause = reconstructCauseChain(causeData.cause);
-                }
-
-                return causeError;
-            }
-
             syntaicError.cause = reconstructCauseChain(raw.cause);
         }
 
@@ -490,31 +490,31 @@ const errorOverlayPlugin = (): Plugin => {
             const developmentLogger = createDevelopmentLogger(server);
             const { recentErrors, shouldSkip } = createRecentErrorTracker();
 
-            // Intercept import resolution errors before they become runtime errors
+            // Simple transformRequest interception to catch import errors early
             const originalTransformRequest = server.transformRequest.bind(server);
+
             server.transformRequest = async (url: string, options?: any) => {
                 try {
                     return await originalTransformRequest(url, options);
                 } catch (error: any) {
                     // Check if this is an import resolution error
-                    if (error?.message?.includes('Failed to resolve import')) {
-                        console.log('🎯 Intercepted import resolution error:', error.message);
-
-                        // Extract the import path and source file from the error
+                    if (error?.message?.includes("Failed to resolve import")) {
+                        // Extract source file info and store it for WebSocket interception
                         const match = error.message.match(/Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/);
+
                         if (match) {
                             const [, importPath, sourceFile] = match;
-                            console.log('📁 Source file:', sourceFile, 'Import path:', importPath);
 
-                            // We could enhance the error here with better location info
-                            // before it gets to the WebSocket interception
+                            // Store the source file info on the error for later use
+                            (error as any).sourceFile = sourceFile;
+                            (error as any).importPath = importPath;
                         }
                     }
+
                     throw error;
                 }
             };
 
-            // Intercept any error payload Vite sends and replace with our extended payload
             setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath);
 
             // Handle client-reported errors via HMR

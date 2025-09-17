@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test Error Overlay</title>
+    </head>
+    <body>
+        <div id="app">
+            <h1>Test Error Overlay</h1>
+            <button onclick="triggerError()">Trigger Runtime Error</button>
+            <button onclick="triggerImportError()">Trigger Import Error</button>
+        </div>
+
+        <script>
+            function triggerError() {
+                // Trigger a simple runtime error
+                throw new Error("This is a test runtime error from debug-overlay.html");
+            }
+
+            function triggerImportError() {
+                // Try to import a non-existent module
+                import("./non-existent-module.js").catch((err) => {
+                    // Re-throw to trigger our overlay
+                    throw new Error(`Failed to import: ${err.message}`);
+                });
+            }
+
+            // Also expose global function for direct error reporting
+            window.__flameSendError = function (error) {
+                console.log("Sending error to overlay:", error);
+
+                // Try to create our custom overlay
+                if (window.ErrorOverlay) {
+                    const overlay = new window.ErrorOverlay(error);
+                    console.log("Created overlay:", overlay);
+                } else {
+                    console.log("ErrorOverlay not available");
+                }
+            };
+
+            console.log("Debug page loaded. ErrorOverlay available:", !!window.ErrorOverlay);
+        </script>
+    </body>
+</html>

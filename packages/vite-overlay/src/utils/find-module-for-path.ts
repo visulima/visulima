@@ -36,7 +36,7 @@ const findBestModuleMatch = (server: ViteDevServer, candidates: ReadonlyArray<st
  * @returns The best matching module or undefined if none found
  */
 const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleNode | undefined => {
-    console.log(`🔍 findModuleForPath: Searching for candidates:`, candidates);
+    // Searching for candidates
 
     // Vite optimization: Try the most likely candidates first
     const prioritizedCandidates = [
@@ -45,7 +45,7 @@ const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleN
         ...candidates.map((c) => c.replace(/^[./]*/, "")), // Remove leading ./ or /
     ];
 
-    console.log(`🔍 findModuleForPath: Prioritized candidates:`, prioritizedCandidates);
+    // Prioritized candidates
 
     let bestModule: ModuleNode | undefined;
     let bestModuleScore = 0; // 0 = no module, 1 = has module, 2 = has transform result
@@ -53,25 +53,18 @@ const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleN
     // Vite's module graph is optimized for direct ID lookup
     for (const id of prioritizedCandidates) {
         try {
-            console.log(`🔍 findModuleForPath: Trying candidate "${id}"`);
+            // Trying candidate
 
             // Try exact ID match first (fastest)
-            let module = server.moduleGraph.getModuleById(id);
+            const module = server.moduleGraph.getModuleById(id);
 
             if (module) {
                 // Check if this is a valid module (has some properties)
                 const isValidModule = Object.keys(module).length > 0;
                 const hasTransformResult = !!module.transformResult;
-                const score = (isValidModule && hasTransformResult) ? 2 : (isValidModule ? 1 : 0);
+                const score = isValidModule && hasTransformResult ? 2 : isValidModule ? 1 : 0;
 
-                console.log(`✅ findModuleForPath: Found module by ID "${id}":`, {
-                    hasId: !!module.id,
-                    hasTransformResult,
-                    hasUrl: !!module.url,
-                    keys: Object.keys(module),
-                    isValid: isValidModule,
-                    score,
-                });
+                // Found module by ID
 
                 // Only consider valid modules
                 if (isValidModule) {
@@ -95,16 +88,9 @@ const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleN
                 // Check if this is a valid module (has some properties)
                 const isValidModule = Object.keys(byUrl).length > 0;
                 const hasTransformResult = !!byUrl.transformResult;
-                const score = (isValidModule && hasTransformResult) ? 2 : (isValidModule ? 1 : 0);
+                const score = isValidModule && hasTransformResult ? 2 : isValidModule ? 1 : 0;
 
-                console.log(`✅ findModuleForPath: Found module by URL "${id}":`, {
-                    hasId: !!byUrl.id,
-                    hasTransformResult,
-                    hasUrl: !!byUrl.url,
-                    keys: Object.keys(byUrl),
-                    isValid: isValidModule,
-                    score,
-                });
+                // Found module by URL
 
                 // Only consider valid modules
                 if (isValidModule) {
@@ -118,29 +104,22 @@ const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleN
                     if (hasTransformResult) {
                         return byUrl;
                     }
-                } else {
-                    console.log(`⚠️ findModuleForPath: Module by URL "${id}" is invalid (empty object), continuing...`);
                 }
             }
 
-            console.log(`❌ findModuleForPath: Candidate "${id}" not found`);
-        } catch (error) {
-            console.log(`⚠️ findModuleForPath: Error trying candidate "${id}":`, error);
+            // Candidate not found
+        } catch {
             // Continue to next candidate
         }
     }
 
     // If we found any module (even without transform result), use it
     if (bestModule) {
-        console.log(`🔄 findModuleForPath: Using best available module (score: ${bestModuleScore})`);
         return bestModule;
     }
 
-    console.log(`🔍 findModuleForPath: Direct lookup failed, trying expensive iteration...`);
     // Only fall back to expensive iteration if direct lookup fails
     const result = findBestModuleMatch(server, candidates) || undefined;
-
-    console.log(`🔍 findModuleForPath: Expensive iteration result:`, !!result);
 
     return result;
 };

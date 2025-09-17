@@ -34,7 +34,7 @@ class ErrorOverlay extends HTMLElement {
      */
     constructor(error) {
         super();
-
+        // Debug logging removed
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = overlayTemplate;
         this.dir = "ltr";
