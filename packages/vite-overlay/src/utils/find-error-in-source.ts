@@ -61,6 +61,7 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
     // For dynamic error messages, extract the base pattern
     // Handle different types of runtime errors
     const dynamicErrorPatterns = [
+        /Failed to resolve import ["']([^"']+)["'](?:\s+from ["']([^"']+)["'])?/,  // Import resolution errors
         /(.+?)\s+from line \d+/,  // "Error from line X"
         /(.+?)\s+is not defined/,  // "variable is not defined"
         /(.+?)\s+is not a function/,  // "function is not a function"
@@ -165,7 +166,17 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
     // Add patterns for dynamic error messages
     if (dynamicMatch) {
         // Handle different types of dynamic errors
-        if (dynamicMatch[0].includes("is not defined")) {
+        if (dynamicMatch[0].includes("Failed to resolve import")) {
+            // For import resolution errors, search for the import statement
+            const importPath = dynamicMatch[1];
+            console.log(`🔍 Import resolution error detected, searching for import statement: ${importPath}`);
+            const specificPatterns = [
+                `import.*from ["']${importPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, // Exact import match
+                `import.*["']${importPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, // Dynamic import
+                importPath, // Just the path as fallback
+            ];
+            errorPatterns.unshift(...specificPatterns);
+        } else if (dynamicMatch[0].includes("is not defined")) {
             // For "X is not defined", search for the variable name directly
             const variableName = dynamicMatch[1];
             const specificPatterns = [
@@ -299,7 +310,16 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
 
                 // Handle different types of dynamic errors
                 if (dynamicMatch) {
-                    if (dynamicMatch[0].includes("is not defined")) {
+                    if (dynamicMatch[0].includes("Failed to resolve import")) {
+                        // For import resolution errors, point to the import path
+                        const importPath = dynamicMatch[1];
+                        if (line.includes(`"${importPath}"`) || line.includes(`'${importPath}'`)) {
+                            // Find the position of the import path in the line
+                            const quoteChar = line.includes(`"${importPath}"`) ? '"' : "'";
+                            const pathStart = line.indexOf(`${quoteChar}${importPath}${quoteChar}`);
+                            actualColumn = pathStart + 1; // 1-based column at the start of the import path
+                        }
+                    } else if (dynamicMatch[0].includes("is not defined")) {
                         // For variable references, point to the variable name
                         const variableName = dynamicMatch[1];
                         if (bestPattern === variableName) {

@@ -256,16 +256,35 @@ const resolveOriginalLocation = async (
 
             // Search for the error message in the source code
             if (originalSourceCode) {
-                const foundLocation = findErrorInSourceCode(originalSourceCode, errorMessage, errorIndex);
+                console.log(`🔍 Source code search: Looking for error "${errorMessage}" in module`, {
+                    errorIndex,
+                    hasTransformResult: !!module_.transformResult,
+                    moduleId: module_.id,
+                    moduleKeys: Object.keys(module_),
+                    moduleType: typeof module_,
+                    moduleUrl: module_.url,
+                    transformResultKeys: module_.transformResult ? Object.keys(module_.transformResult) : [],
+                });
+
+                // For import resolution errors, findErrorInSourceCode will handle the pattern matching
+                // It will detect the error type and search for the import statement instead of the error message
+                const searchMessage = errorMessage;
+
+                const foundLocation = findErrorInSourceCode(originalSourceCode, searchMessage, errorIndex);
 
                 if (foundLocation) {
                     console.log(`🎯 Source code search SUCCESS: Found error at line ${foundLocation.line}, column ${foundLocation.column}`);
+                    console.log(`📄 Source code snippet:`, originalSourceCode.split('\n').slice(foundLocation.line - 2, foundLocation.line + 2).join('\n'));
 
                     return {
                         originalFileColumn: foundLocation.column,
                         originalFileLine: foundLocation.line,
                         originalFilePath: filePath,
                     };
+                } else {
+                    console.log(`❌ Source code search FAILED: Could not find error pattern in source code`);
+                    console.log(`🔍 Searched for: "${errorMessage.includes('Failed to resolve import') ? 'import statement' : 'error message'}"`);
+                    console.log(`📄 First few lines of source code:`, originalSourceCode.split('\n').slice(0, 10).join('\n'));
                 }
 
                 console.log(`❌ Source code search FAILED: Could not find error "${errorMessage}" in source`);

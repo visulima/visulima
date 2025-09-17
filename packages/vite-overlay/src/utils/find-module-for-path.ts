@@ -59,26 +59,32 @@ const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleN
             let module = server.moduleGraph.getModuleById(id);
 
             if (module) {
+                // Check if this is a valid module (has some properties)
+                const isValidModule = Object.keys(module).length > 0;
                 const hasTransformResult = !!module.transformResult;
-                const score = hasTransformResult ? 2 : 1;
+                const score = (isValidModule && hasTransformResult) ? 2 : (isValidModule ? 1 : 0);
 
                 console.log(`✅ findModuleForPath: Found module by ID "${id}":`, {
                     hasId: !!module.id,
                     hasTransformResult,
                     hasUrl: !!module.url,
                     keys: Object.keys(module),
+                    isValid: isValidModule,
                     score,
                 });
 
-                // Prioritize modules with transform result
-                if (score > bestModuleScore) {
-                    bestModule = module;
-                    bestModuleScore = score;
-                }
+                // Only consider valid modules
+                if (isValidModule) {
+                    // Prioritize modules with transform result
+                    if (score > bestModuleScore) {
+                        bestModule = module;
+                        bestModuleScore = score;
+                    }
 
-                // If we found a perfect match (has transform result), return immediately
-                if (hasTransformResult) {
-                    return module;
+                    // If we found a perfect match (has transform result), return immediately
+                    if (hasTransformResult) {
+                        return module;
+                    }
                 }
             }
 

@@ -156,7 +156,18 @@ const buildExtendedError = async (
                 }
             }
 
-            const extendedData = await buildExtendedErrorData(error, server, causeViteErrorData, allErrors, index);
+            // For import resolution errors, try to use the sourceFile we extracted
+            let enhancedViteErrorData = causeViteErrorData;
+
+            if (index === 0 && (error as any)?.sourceFile) {
+                console.log('🔧 Using extracted sourceFile for main error:', (error as any).sourceFile);
+                enhancedViteErrorData = {
+                    ...causeViteErrorData,
+                    file: (error as any).sourceFile,
+                };
+            }
+
+            const extendedData = await buildExtendedErrorData(error, server, enhancedViteErrorData, allErrors, index);
 
             return {
                 message: error?.message || "",
@@ -296,6 +307,24 @@ const setupWebSocketInterception = (
             if (payload && typeof payload === "object" && payload.type === "error" && payload.err) {
                 const raw = payload.err;
 
+                // Special handling for import resolution errors
+                if (raw?.message?.includes('Failed to resolve import')) {
+                    console.log('🚨 WebSocket: Detected import resolution error:', raw.message);
+
+                    // Extract file path from error message for better module resolution
+                    const match = raw.message.match(/Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/);
+                    if (match) {
+                        const [, importPath, sourceFile] = match;
+                        console.log('📂 WebSocket: Source file:', sourceFile, 'Failed import:', importPath);
+
+                        // We could add the source file to the error for better processing
+                        if (!raw.sourceFile && sourceFile) {
+                            raw.sourceFile = sourceFile;
+                            console.log('📎 WebSocket: Added sourceFile to error payload');
+                        }
+                    }
+                }
+
                 const rawSig = createErrorSignature(raw);
 
                 if (shouldSkip(rawSig)) {
@@ -335,7 +364,15 @@ const setupWebSocketInterception = (
                     syntaicError.cause = reconstructCauseChain(raw.cause);
                 }
 
-                const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, undefined, "server");
+                // Pass the extracted sourceFile information to buildExtendedError
+        const viteErrorData = raw.sourceFile ? {
+            file: raw.sourceFile,
+            column: raw.column,
+            line: raw.line,
+            plugin: raw.plugin,
+        } : undefined;
+
+        const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, viteErrorData, "server");
 
                 // eslint-disable-next-line no-param-reassign
                 payload = extensionPayload;
@@ -452,6 +489,30 @@ const errorOverlayPlugin = (): Plugin => {
 
             const developmentLogger = createDevelopmentLogger(server);
             const { recentErrors, shouldSkip } = createRecentErrorTracker();
+
+            // Intercept import resolution errors before they become runtime errors
+            const originalTransformRequest = server.transformRequest.bind(server);
+            server.transformRequest = async (url: string, options?: any) => {
+                try {
+                    return await originalTransformRequest(url, options);
+                } catch (error: any) {
+                    // Check if this is an import resolution error
+                    if (error?.message?.includes('Failed to resolve import')) {
+                        console.log('🎯 Intercepted import resolution error:', error.message);
+
+                        // Extract the import path and source file from the error
+                        const match = error.message.match(/Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/);
+                        if (match) {
+                            const [, importPath, sourceFile] = match;
+                            console.log('📁 Source file:', sourceFile, 'Import path:', importPath);
+
+                            // We could enhance the error here with better location info
+                            // before it gets to the WebSocket interception
+                        }
+                    }
+                    throw error;
+                }
+            };
 
             // Intercept any error payload Vite sends and replace with our extended payload
             setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath);

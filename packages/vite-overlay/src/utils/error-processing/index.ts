@@ -137,8 +137,8 @@ const resolveOriginalLocationInfo = async (
 
         if (module_) {
             try {
-                // For source map resolution, use the compiled file path if available
-                const mapFilePath = compiledFilePath || resolvedFilePath;
+                // For source map resolution, use the source file path if available, otherwise fallback to compiled path
+                const mapFilePath = sourceFilePath || compiledFilePath || resolvedFilePath;
                 const resolved = await resolveOriginalLocation(server, module_, mapFilePath, fileLine, fileColumn, errorMessage, errorIndex);
                 // Use the resolved local path if available, otherwise use source map result
                 const finalFilePath = resolvedOriginalFilePath || resolved.originalFilePath;
@@ -374,10 +374,11 @@ const buildExtendedErrorData = async (
         }
     }
 
-    // Extract original source file path from stack trace for better source code search
-    let sourceFilePath = compiledFilePath;
+    // Extract original source file path for better source code search
+    // Prioritize viteErrorData.file (from our WebSocket interception) over stack trace
+    let sourceFilePath = viteErrorData?.file || compiledFilePath;
 
-    if (primaryError.stack) {
+    if (!viteErrorData?.file && primaryError.stack) {
         const traces = parseStacktrace(primaryError, { frameLimit: 10 });
         // Find the first local source file (not node_modules, not .vite, not HTTP)
         const sourceTrace = traces?.find(
@@ -391,8 +392,12 @@ const buildExtendedErrorData = async (
 
         if (sourceTrace?.file) {
             sourceFilePath = sourceTrace.file;
-            console.log(`🎯 Using source file path for resolution: ${sourceFilePath}`);
+            console.log(`🎯 Using source file path from stack trace: ${sourceFilePath}`);
         }
+    }
+
+    if (viteErrorData?.file) {
+        console.log(`🎯 Using source file path from viteErrorData: ${sourceFilePath}`);
     }
 
     let { originalFileColumn, originalFileLine, originalFilePath } = await resolveOriginalLocationInfo(

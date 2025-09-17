@@ -453,6 +453,58 @@ describe(findErrorInSourceCode, () => {
         });
     });
 
+    describe("Import resolution error cases", () => {
+        it("should handle vite.svg import resolution error", () => {
+            const sourceCode = `import "./App.css";
+
+import { useState } from "react";
+
+import viteLogo from "../vite.svg";
+import reactLogo from "./assets/react.svg";
+
+function App() {
+    const [count, setCount] = useState(0);
+
+    return (
+        <>
+            <div>
+                <a href="https://vite.dev" target="_blank">
+                    <img alt="Vite logo" className="logo" src={viteLogo} />
+                </a>
+                <a href="https://react.dev" target="_blank">
+                    <img alt="React logo" className="logo react" src={reactLogo} />
+                </a>
+            </div>
+            <h1>Vite + React</h1>
+        </>
+    );
+}
+
+export default App;`;
+
+            // This is the actual error message from Vite
+            const errorMessage = `Failed to resolve import "../vite.svg" from "src/App.tsx". Does the file exist?`;
+
+            const result = findErrorInSourceCode(sourceCode, errorMessage);
+            expect(result).toEqual({ line: 5, column: 22 }); // Line 5: points to "../vite.svg" (the problematic import path)
+        });
+
+        it("should handle relative import path in error message", () => {
+            const sourceCode = `import React from 'react';
+import logo from './assets/logo.png';
+import styles from './App.module.css';
+
+function App() {
+  return <div className={styles.container}>Hello</div>;
+}`;
+
+            const errorMessage = `Failed to resolve import "./assets/logo.png" from "src/App.tsx"`;
+
+            const result = findErrorInSourceCode(sourceCode, errorMessage);
+            expect(result).toEqual({ line: 2, column: 18 }); // Line 2: points to './assets/logo.png' (the problematic import path)
+        });
+    });
+
     describe("Real Svelte error cases", () => {
         it("should find svelteLogo1 in real Svelte template", () => {
             const sourceCode = `<script lang="ts">
