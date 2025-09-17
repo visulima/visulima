@@ -36,6 +36,7 @@ const estimateOriginalPosition = (fileLine: number, fileColumn: number) => {
 
     return { estimatedColumn, estimatedLine };
 };
+
 interface ResolvedLocation {
     originalFileColumn: number;
     originalFileLine: number;

@@ -133,6 +133,7 @@ class ErrorOverlay extends HTMLElement {
 
         // Initialize close button - only for client errors
         const closeButton = this.root.querySelector("#__flame__close");
+
         if (closeButton) {
             // Only show close button for client errors
             if (this.__flamePayload.errorType === "client") {
@@ -177,9 +178,11 @@ class ErrorOverlay extends HTMLElement {
             text = text
                 .split(" ")
                 .map((v) => {
-                    if (!v.startsWith("https://")) return v;
+                    if (!v.startsWith("https://"))
+                        return v;
 
-                    if (v.endsWith(".")) return `<a target="_blank" href="${v.slice(0, -1)}">${v.slice(0, -1)}</a>.`;
+                    if (v.endsWith("."))
+                        return `<a target="_blank" href="${v.slice(0, -1)}">${v.slice(0, -1)}</a>.`;
 
                     return `<a target="_blank" href="${v}">${v}</a>`;
                 })
@@ -250,9 +253,11 @@ class ErrorOverlay extends HTMLElement {
                 const previousButton = this.root.querySelector("[data-flame-dialog-error-previous]");
                 const nextButton = this.root.querySelector("[data-flame-dialog-error-next]");
 
-                if (indexElement) indexElement.textContent = (currentIndex + 1).toString();
+                if (indexElement)
+                    indexElement.textContent = (currentIndex + 1).toString();
 
-                if (totalElement) totalElement.textContent = totalErrors.toString();
+                if (totalElement)
+                    totalElement.textContent = totalErrors.toString();
 
                 // Update button states
                 if (previousButton) {
@@ -294,8 +299,8 @@ class ErrorOverlay extends HTMLElement {
                             // eslint-disable-next-line no-underscore-dangle
                             const rootPayload = this.__flamePayload || {};
 
-                            const stackText =
-                                mode === "compiled"
+                            const stackText
+                                = mode === "compiled"
                                     ? String(currentError.compiledStack || rootPayload.compiledStack || "")
                                     : String(currentError.originalStack || currentError.stack || rootPayload.originalStack || "");
 
@@ -325,7 +330,8 @@ class ErrorOverlay extends HTMLElement {
                                 // Match: "at func (file:line:col)" or "at file:line:col"
                                 const m = /\s*at\s+(?:(.+?)\s+\()?(.*?):(\d+):(\d+)\)?/.exec(line);
 
-                                if (!m) return `<div class="frame">${escape(line)}</div>`;
+                                if (!m)
+                                    return `<div class="frame">${escape(line)}</div>`;
 
                                 const function_ = m[1] ? escape(m[1]) : "";
                                 const file = m[2];
@@ -355,7 +361,8 @@ class ErrorOverlay extends HTMLElement {
                                         try {
                                             const abs = currentError.originalFilePath || currentError.compiledFilePath || "";
 
-                                            if (abs && abs.endsWith(filePath)) resolved = abs;
+                                            if (abs && abs.endsWith(filePath))
+                                                resolved = abs;
                                         } catch {}
 
                                         const qs = `/__open-in-editor?file=${encodeURIComponent(resolved)}${
@@ -390,13 +397,15 @@ class ErrorOverlay extends HTMLElement {
                 const hasBoth = hasOriginal && hasCompiled;
                 const hasEither = hasOriginal || hasCompiled;
 
-                if (hasBoth && modeSwitch) modeSwitch.classList.remove("hidden");
-                else if (modeSwitch) modeSwitch.classList.add("hidden");
+                if (hasBoth && modeSwitch)
+                    modeSwitch.classList.remove("hidden");
+                else if (modeSwitch)
+                    modeSwitch.classList.add("hidden");
 
                 // Code frames should be provided by the server via VisulimaViteOverlayErrorPayload
 
-                const originalButton = this.root.querySelector('[data-flame-mode="original"]');
-                const compiledButton = this.root.querySelector('[data-flame-mode="compiled"]');
+                const originalButton = this.root.querySelector("[data-flame-mode=\"original\"]");
+                const compiledButton = this.root.querySelector("[data-flame-mode=\"compiled\"]");
 
                 // Hide buttons for tabs that don't have content
                 if (originalButton) {
@@ -408,7 +417,8 @@ class ErrorOverlay extends HTMLElement {
                 }
 
                 const renderCode = (mode) => {
-                    if (!flameOverlay) return;
+                    if (!flameOverlay)
+                        return;
 
                     // Choose the appropriate code frame based on mode
                     let html = "";
@@ -524,12 +534,12 @@ class ErrorOverlay extends HTMLElement {
 
     #initializeThemeToggle() {
         // Initialize button visibility based on current theme
-        const currentTheme =
-            localStorage.getItem("hs_theme") || (globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        const currentTheme
+            = localStorage.getItem("hs_theme") || (globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         const isDark = currentTheme === "dark" || document.documentElement.classList.contains("dark");
 
-        const darkButton = this.root.querySelector('[data-hs-theme-click-value="dark"]');
-        const lightButton = this.root.querySelector('[data-hs-theme-click-value="light"]');
+        const darkButton = this.root.querySelector("[data-hs-theme-click-value=\"dark\"]");
+        const lightButton = this.root.querySelector("[data-hs-theme-click-value=\"light\"]");
 
         if (isDark) {
             darkButton?.classList.add("hidden");
@@ -564,8 +574,8 @@ class ErrorOverlay extends HTMLElement {
                 }
 
                 // Update button visibility using the classes from the component
-                const darkButton = this.closest("#hs-theme-switch")?.querySelector('[data-hs-theme-click-value="dark"]');
-                const lightButton = this.closest("#hs-theme-switch")?.querySelector('[data-hs-theme-click-value="light"]');
+                const darkButton = this.closest("#hs-theme-switch")?.querySelector("[data-hs-theme-click-value=\"dark\"]");
+                const lightButton = this.closest("#hs-theme-switch")?.querySelector("[data-hs-theme-click-value=\"light\"]");
 
                 if (theme === "dark") {
                     // Dark mode activated - show light button, hide dark button

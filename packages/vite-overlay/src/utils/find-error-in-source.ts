@@ -73,7 +73,8 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
     for (const pattern of dynamicErrorPatterns) {
         dynamicMatch = errorMessage.match(pattern);
 
-        if (dynamicMatch) break;
+        if (dynamicMatch)
+            break;
     }
 
     // Common error patterns to search for
@@ -81,17 +82,17 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
         // Direct error message match
         errorMessage,
         // Standard Error constructor patterns
-        `new Error("${errorMessage.replaceAll('"', String.raw`\"`)}")`,
+        `new Error("${errorMessage.replaceAll("\"", String.raw`\"`)}")`,
         `new Error('${errorMessage.replaceAll("'", String.raw`\'`)}')`,
         // Template literal patterns
         `new Error(\`${errorMessage.replaceAll("`", "\\`")}\`)`,
         // Throw patterns for standard Error
-        `throw new Error("${errorMessage.replaceAll('"', String.raw`\"`)}")`,
+        `throw new Error("${errorMessage.replaceAll("\"", String.raw`\"`)}")`,
         `throw new Error('${errorMessage.replaceAll("'", String.raw`\'`)}')`,
         // Throw template literal patterns
         `throw new Error(\`${errorMessage.replaceAll("`", "\\`")}\`)`,
         // Function call patterns that might contain the error
-        `Error("${errorMessage.replaceAll('"', String.raw`\"`)}")`,
+        `Error("${errorMessage.replaceAll("\"", String.raw`\"`)}")`,
         `Error('${errorMessage.replaceAll("'", String.raw`\'`)}')`,
     ];
 
@@ -100,7 +101,8 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
     let foundCount = 0;
 
     for (const [lineIndex, line] of lines.entries()) {
-        if (!line) continue;
+        if (!line)
+            continue;
 
         // Check if this line contains the error message AND any error constructor pattern
         // For template literals, check if the resolved message could match the template structure
@@ -215,9 +217,9 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
                 `throw new Error("${baseMessage}`,
                 `throw new Error('${baseMessage}`,
                 // Exact match of the full error message
-                `new Error("${errorMessage.replaceAll('"', String.raw`\"`)}")`,
+                `new Error("${errorMessage.replaceAll("\"", String.raw`\"`)}")`,
                 `new Error('${errorMessage.replaceAll("'", String.raw`\'`)}')`,
-                `throw new Error("${errorMessage.replaceAll('"', String.raw`\"`)}")`,
+                `throw new Error("${errorMessage.replaceAll("\"", String.raw`\"`)}")`,
                 `throw new Error('${errorMessage.replaceAll("'", String.raw`\'`)}')`,
                 // Template literal version
                 `new Error(\`${errorMessage.replaceAll("`", "\\`")}\`)`,
@@ -229,7 +231,8 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
     }
 
     for (const [lineIndex, line] of lines.entries()) {
-        if (!line) continue;
+        if (!line)
+            continue;
 
         // Check for template literal matches in this line
         if (checkTemplateLiteralMatch(line, errorMessage)) {
@@ -320,7 +323,7 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
 
                         if (line.includes(`"${importPath}"`) || line.includes(`'${importPath}'`)) {
                             // Find the position of the import path in the line
-                            const quoteChar = line.includes(`"${importPath}"`) ? '"' : "'";
+                            const quoteChar = line.includes(`"${importPath}"`) ? "\"" : "'";
                             const pathStart = line.indexOf(`${quoteChar}${importPath}${quoteChar}`);
 
                             actualColumn = pathStart + 1; // 1-based column at the start of the import path

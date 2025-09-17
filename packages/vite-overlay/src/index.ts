@@ -380,11 +380,11 @@ const setupWebSocketInterception = (
                     // Build extended error data for non-import errors
                     const viteErrorData = err.sourceFile
                         ? {
-                              column: err.column,
-                              file: err.sourceFile,
-                              line: err.line,
-                              plugin: err.plugin,
-                          }
+                            column: err.column,
+                            file: err.sourceFile,
+                            line: err.line,
+                            plugin: err.plugin,
+                        }
                         : undefined;
 
                     const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, viteErrorData, "server");
@@ -416,13 +416,13 @@ const setupHMRHandler = (
     rootPath: string,
 ): void => {
     server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
-        const raw =
-            data && typeof data === "object"
+        const raw
+            = data && typeof data === "object"
                 ? (data as RawErrorData)
                 : ({
-                      message: DEFAULT_ERROR_MESSAGE,
-                      stack: "",
-                  } as RawErrorData);
+                    message: DEFAULT_ERROR_MESSAGE,
+                    stack: "",
+                } as RawErrorData);
 
         const rawSig = createErrorSignature(raw);
 

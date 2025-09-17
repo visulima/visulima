@@ -31,9 +31,9 @@ export const realignOriginalPosition = (compiledSource: string, compiledLine: nu
 
     // Try different search strategies in order of precision
     return (
-        tryTokenBasedSearch(candidateToken, originalLines) ||
-        tryLineSubstringSearch(compiledLineText.trim(), originalLines) ||
-        tryWhitespaceInsensitiveSearch(compiledLineText.trim(), originalLines)
+        tryTokenBasedSearch(candidateToken, originalLines)
+        || tryLineSubstringSearch(compiledLineText.trim(), originalLines)
+        || tryWhitespaceInsensitiveSearch(compiledLineText.trim(), originalLines)
     );
 };
 

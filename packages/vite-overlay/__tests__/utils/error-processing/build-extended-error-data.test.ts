@@ -3441,11 +3441,11 @@ Final line`);
             const mockModule = {
                 id: "http://localhost:5173/src/App.tsx?tsr-split=component",
                 transformResult: {
-                    code: 'console.log("compiled code");',
+                    code: "console.log(\"compiled code\");",
                     map: {
                         mappings: "AAAA",
                         sources: ["src/App.tsx"],
-                        sourcesContent: ['console.log("original code");'],
+                        sourcesContent: ["console.log(\"original code\");"],
                         version: 3,
                     },
                 },

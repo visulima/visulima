@@ -9,7 +9,7 @@ import styleCss from "./client/index.css";
 import FlameErrorOverlay from "./client/runtime.js?raw";
 
 // Constants
-const AUTO_DETECT_EDITOR_OPTION = '<option value="">Auto-detected Editor</option>';
+const AUTO_DETECT_EDITOR_OPTION = "<option value=\"\">Auto-detected Editor</option>";
 const VITE_CLIENT_CLASS = "class ErrorOverlay";
 const VITE_ERROR_OVERLAY_CLASS = "var ErrorOverlay = ";
 const WINDOW_ERROR_OVERLAY_GLOBAL = "window.ErrorOverlay = ErrorOverlay;";

@@ -32,7 +32,8 @@ export const isHttpUrl = (value: string): boolean => HTTP_URL_REGEX.test(value);
  * Optimized for Vite's module resolution patterns.
  */
 export const normalizeIdCandidates = (filePath: string): string[] => {
-    if (!filePath) return [];
+    if (!filePath)
+        return [];
 
     try {
         // Handle HTTP URLs (Vite dev server)
