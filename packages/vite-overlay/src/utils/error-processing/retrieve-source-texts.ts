@@ -21,9 +21,11 @@ export const retrieveSourceTexts = async (
     // Vite optimization: Check cached transform result first (faster)
     if (module_?.transformResult) {
         const cached = module_.transformResult;
+
         if (cached.code && !compiledSourceText) {
             compiledSourceText = cached.code;
         }
+
         if (cached.map && !originalSourceText) {
             originalSourceText = getSourceFromMap(cached.map, filePath);
         }
@@ -31,6 +33,7 @@ export const retrieveSourceTexts = async (
 
     // Only call transformRequest if we still need data (slower but fresh)
     const transformId = module_?.id || module_?.url || idCandidates[0];
+
     if (transformId && (!originalSourceText || !compiledSourceText)) {
         try {
             const transformed = await server.transformRequest(transformId);
@@ -47,7 +50,6 @@ export const retrieveSourceTexts = async (
         }
     }
 
-
     // Fallback to reading original file directly
     if (!originalSourceText && module_?.file) {
         try {
@@ -56,7 +58,6 @@ export const retrieveSourceTexts = async (
             // Ignore file read errors
         }
     }
-
 
     return { compiledSourceText, originalSourceText } as const;
 };

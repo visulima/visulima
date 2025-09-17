@@ -6,14 +6,14 @@ const HTTP_URL_REGEX = /^https?:\/\//;
  */
 const generateUrlCandidates = (urlString: string): string[] => {
     const url = new URL(urlString);
-    const pathname = url.pathname;
+    const { pathname } = url;
     const search = url.search || "";
 
     // Vite-specific patterns for module resolution
     const candidates = [
         pathname + search, // Full path with query (most common)
         pathname, // Just pathname
-        pathname.replace(/^\/@fs\//, ''), // Remove @fs prefix
+        pathname.replace(/^\/@fs\//, ""), // Remove @fs prefix
         decodeURIComponent(pathname + search), // Decoded full path
         decodeURIComponent(pathname), // Decoded pathname
     ];
@@ -32,7 +32,8 @@ export const isHttpUrl = (value: string): boolean => HTTP_URL_REGEX.test(value);
  * Optimized for Vite's module resolution patterns.
  */
 export const normalizeIdCandidates = (filePath: string): string[] => {
-    if (!filePath) return [];
+    if (!filePath)
+        return [];
 
     try {
         // Handle HTTP URLs (Vite dev server)
@@ -44,18 +45,19 @@ export const normalizeIdCandidates = (filePath: string): string[] => {
         const candidates = [filePath];
 
         // Add variations for common Vite patterns
-        if (filePath.startsWith('/')) {
+        if (filePath.startsWith("/")) {
             candidates.push(filePath.slice(1)); // Remove leading slash
         }
 
-        if (filePath.includes('?')) {
-            candidates.push(filePath.split('?')[0]); // Remove query params
+        if (filePath.includes("?")) {
+            candidates.push(filePath.split("?")[0]); // Remove query params
         }
 
         // Remove duplicates and return
         return [...new Set(candidates)].filter(Boolean);
     } catch (error) {
         console.warn(`Failed to normalize path "${filePath}":`, error);
+
         return [];
     }
 };

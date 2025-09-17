@@ -17,6 +17,9 @@ describe("stack Remapping Integration Tests", () => {
     at App (/app/dist/app.js:20:15)`;
 
             const mockServer = {
+                config: {
+                    root: "/mock/project/root",
+                },
                 moduleGraph: {
                     idToModuleMap: new Map(),
                 },
@@ -39,6 +42,9 @@ describe("stack Remapping Integration Tests", () => {
     at Component (/app/dist/component.js:0:0)`;
 
             const mockServer = {
+                config: {
+                    root: "/mock/project/root",
+                },
                 moduleGraph: {
                     idToModuleMap: new Map(),
                 },
@@ -60,6 +66,9 @@ describe("stack Remapping Integration Tests", () => {
     at Component (invalid:path:10:5)`;
 
             const mockServer = {
+                config: {
+                    root: "/mock/project/root",
+                },
                 moduleGraph: {
                     idToModuleMap: new Map(),
                 },
@@ -80,6 +89,9 @@ describe("stack Remapping Integration Tests", () => {
             mockError.stack = "";
 
             const mockServer = {
+                config: {
+                    root: "/mock/project/root",
+                },
                 moduleGraph: {
                     idToModuleMap: new Map(),
                 },
@@ -101,6 +113,9 @@ describe("stack Remapping Integration Tests", () => {
     at Component (/app/dist/component.js:10:5)`;
 
             const mockServer = {
+                config: {
+                    root: "/mock/project/root",
+                },
                 moduleGraph: {
                     idToModuleMap: new Map(),
                 },

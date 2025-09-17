@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { expect, it } from "vitest";
 
 import {
     getErrorNavigation,
@@ -31,7 +32,7 @@ test.describe("Cause Chain Error Handling", () => {
         await page.reload();
         await page.waitForTimeout(500);
     });
-    test("should display nested cause chain errors", async ({ page }) => {
+    it("should display nested cause chain errors", async ({ page }) => {
         // Trigger error with cause chain
         await page.click("[data-error-trigger]");
         await waitForErrorOverlay(page);
@@ -47,7 +48,7 @@ test.describe("Cause Chain Error Handling", () => {
         expect(navigation.canGoNext).toBe(true);
     });
 
-    test("should navigate through cause chain", async ({ page }) => {
+    it("should navigate through cause chain", async ({ page }) => {
         // Trigger error with cause chain
         await page.click("[data-error-trigger]");
         await waitForErrorOverlay(page);
@@ -83,7 +84,7 @@ test.describe("Cause Chain Error Handling", () => {
         }
     });
 
-    test("should show original source locations for all errors in chain", async ({ page }) => {
+    it("should show original source locations for all errors in chain", async ({ page }) => {
         // Trigger error with cause chain
         await page.click("[data-error-trigger]");
         await waitForErrorOverlay(page);
@@ -119,7 +120,7 @@ test.describe("Cause Chain Error Handling", () => {
         }
     });
 
-    test("should display multiple errors with navigation", async ({ page }) => {
+    it("should display multiple errors with navigation", async ({ page }) => {
         // Trigger error with cause chain
         await page.click("[data-error-trigger]");
         await waitForErrorOverlay(page);
@@ -137,7 +138,7 @@ test.describe("Cause Chain Error Handling", () => {
         }
     });
 
-    test("should maintain navigation state correctly", async ({ page }) => {
+    it("should maintain navigation state correctly", async ({ page }) => {
         // Trigger error with cause chain
         await page.click("[data-error-trigger]");
         await waitForErrorOverlay(page);
@@ -162,7 +163,7 @@ test.describe("Cause Chain Error Handling", () => {
         expect(lastNavigation.canGoNext).toBe(false);
     });
 
-    test("should allow navigation between errors", async ({ page }) => {
+    it("should allow navigation between errors", async ({ page }) => {
         // Trigger error with cause chain
         await page.click("[data-error-trigger]");
         await waitForErrorOverlay(page);

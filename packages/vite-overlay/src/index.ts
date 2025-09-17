@@ -147,16 +147,16 @@ const buildExtendedError = async (
                         const [, file, line, col] = match;
 
                         causeViteErrorData = {
-                            column: Number.parseInt(col || '0'),
+                            column: Number.parseInt(col || "0"),
                             file,
-                            line: Number.parseInt(line || '0'),
+                            line: Number.parseInt(line || "0"),
                             plugin: viteErrorData?.plugin,
                         };
                     }
                 }
             }
 
-            const extendedData = await buildExtendedErrorData(error, server, causeViteErrorData, allErrors);
+            const extendedData = await buildExtendedErrorData(error, server, causeViteErrorData, allErrors, index);
 
             return {
                 message: error?.message || "",
@@ -412,12 +412,18 @@ const setupHMRHandler = (
             // Process the runtime error using shared logic
             await processRuntimeError(syntaicError, rootPath, developmentLogger);
 
-            const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, {
-                column: raw?.column,
-                file: raw?.file,
-                line: raw?.line,
-                plugin: raw?.plugin,
-            } as ViteErrorData, "client");
+            const extensionPayload = await buildExtendedError(
+                syntaicError,
+                server,
+                rootPath,
+                {
+                    column: raw?.column,
+                    file: raw?.file,
+                    line: raw?.line,
+                    plugin: raw?.plugin,
+                } as ViteErrorData,
+                "client",
+            );
 
             recentErrors.set(JSON.stringify(extensionPayload), Date.now());
 

@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { expect, it } from "vitest";
 
 test.describe("Cause Chain Error URL Consistency", () => {
     test.describe("Error with cause chain should show consistent URLs", () => {
-        test("should display both errors with consistent HTTP URLs", async ({ page }) => {
+        it("should display both errors with consistent HTTP URLs", async ({ page }) => {
             // Navigate to the error test page
             await page.goto("/error-test");
 
@@ -14,10 +15,12 @@ test.describe("Cause Chain Error URL Consistency", () => {
 
             // Verify overlay is visible
             const overlay = page.locator("#__flame__overlay");
+
             await expect(overlay).toBeVisible();
 
             // Check that both errors are displayed
             const errorItems = page.locator("#__flame__errors .error-item");
+
             await expect(errorItems).toHaveCount(2);
 
             // Verify both errors have consistent HTTP URLs
@@ -27,6 +30,7 @@ test.describe("Cause Chain Error URL Consistency", () => {
             // Check first error (primary)
             const firstFileLink = firstError.locator("#__flame__filelink");
             const firstFileText = await firstFileLink.textContent();
+
             expect(firstFileText).toMatch(/^http:\/\/localhost:5173\//);
             expect(firstFileText).not.toContain("file://");
             expect(firstFileText).not.toMatch(/^\//); // Should not start with just /
@@ -34,17 +38,19 @@ test.describe("Cause Chain Error URL Consistency", () => {
             // Check second error (cause)
             const secondFileLink = secondError.locator("#__flame__filelink");
             const secondFileText = await secondFileLink.textContent();
+
             expect(secondFileText).toMatch(/^http:\/\/localhost:5173\//);
             expect(secondFileText).not.toContain("file://");
             expect(secondFileText).not.toMatch(/^\//);
 
             // Both should have the same base URL structure
-            const firstBaseUrl = firstFileText?.split(':')[0] + '://' + firstFileText?.split(':')[1]?.split('/')[0];
-            const secondBaseUrl = secondFileText?.split(':')[0] + '://' + secondFileText?.split(':')[1]?.split('/')[0];
+            const firstBaseUrl = `${firstFileText?.split(":")[0]}://${firstFileText?.split(":")[1]?.split("/")[0]}`;
+            const secondBaseUrl = `${secondFileText?.split(":")[0]}://${secondFileText?.split(":")[1]?.split("/")[0]}`;
+
             expect(firstBaseUrl).toBe(secondBaseUrl);
         });
 
-        test("should show correct compiled code frames for both errors", async ({ page }) => {
+        it("should show correct compiled code frames for both errors", async ({ page }) => {
             await page.goto("/error-test");
 
             // Click the cause chain button
@@ -58,25 +64,29 @@ test.describe("Cause Chain Error URL Consistency", () => {
             // Check first error compiled code frame
             const firstError = errorItems.nth(0);
             const firstCompiledFrame = firstError.locator(".compiled-code-frame");
+
             await expect(firstCompiledFrame).toBeVisible();
 
             // Should contain actual compiled code, not fallback text
             const firstFrameText = await firstCompiledFrame.textContent();
+
             expect(firstFrameText).toContain("function"); // Should show actual compiled function
             expect(firstFrameText).not.toContain("Error at line"); // Should not show fallback
 
             // Check second error compiled code frame
             const secondError = errorItems.nth(1);
             const secondCompiledFrame = secondError.locator(".compiled-code-frame");
+
             await expect(secondCompiledFrame).toBeVisible();
 
             // Should contain actual compiled code
             const secondFrameText = await secondCompiledFrame.textContent();
+
             expect(secondFrameText).toContain("function"); // Should show actual compiled function
             expect(secondFrameText).not.toContain("Error at line"); // Should not show fallback
         });
 
-        test("should handle errors without cause chain gracefully", async ({ page }) => {
+        it("should handle errors without cause chain gracefully", async ({ page }) => {
             await page.goto("/error-test");
 
             // Click the simple error button
@@ -88,10 +98,11 @@ test.describe("Cause Chain Error URL Consistency", () => {
             // Should still work and show HTTP URL
             const fileLink = page.locator("#__flame__filelink");
             const fileText = await fileLink.textContent();
+
             expect(fileText).toMatch(/^http:\/\/localhost:5173\//);
         });
 
-        test("should handle malformed stack traces gracefully", async ({ page }) => {
+        it("should handle malformed stack traces gracefully", async ({ page }) => {
             await page.goto("/error-test");
 
             // Click the complex error button which creates a complex nested structure
@@ -102,6 +113,7 @@ test.describe("Cause Chain Error URL Consistency", () => {
 
             // Should not crash and should still show overlay
             const overlay = page.locator("#__flame__overlay");
+
             await expect(overlay).toBeVisible();
 
             // Should have fallback behavior

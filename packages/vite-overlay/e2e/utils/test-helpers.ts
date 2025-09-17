@@ -186,8 +186,8 @@ export async function verifyOriginalSourceLocations(page: Page) {
     return {
         filePathValid,
         overallValid: filePathValid && stackHasContent && stackHasNoUnknown && stackHasNoCompiledPaths,
-        stackHasNoCompiledPaths,
         stackHasContent,
+        stackHasNoCompiledPaths,
         stackHasNoUnknown,
     };
 }

@@ -35,8 +35,7 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
             const column = frame.column ?? 0;
 
             // Early return for well-formed frames that don't need remapping
-            if (file && file !== "<unknown>" && line > 0 && column > 0 &&
-                !file.includes("react-dom") && !file.includes("react")) {
+            if (file && file !== "<unknown>" && line > 0 && column > 0 && !file.includes("react-dom") && !file.includes("react")) {
                 return frame;
             }
 
@@ -47,16 +46,16 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
 
                     // React internal functions - provide better descriptions
                     const reactMappings = {
-                        executeDispatch: "Event Dispatcher",
-                        runWithFiber: "Fiber Reconciliation",
-                        processDispatchQueue: "Event Queue",
-                        dispatchEvent: "Event System",
                         batchedUpdates: "Batch Updates",
+                        dispatchEvent: "Event System",
+                        executeDispatch: "Event Dispatcher",
+                        processDispatchQueue: "Event Queue",
+                        runWithFiber: "Fiber Reconciliation",
                     } as const;
 
                     for (const [key, description] of Object.entries(reactMappings)) {
                         if (functionName.includes(key)) {
-                            return { ...frame, file: `[React] ${description}`, column: 0, line: 0 };
+                            return { ...frame, column: 0, file: `[React] ${description}`, line: 0 };
                         }
                     }
 
@@ -67,6 +66,7 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
 
                         if (module_) {
                             const resolved = await resolveOriginalLocation(server, module_, "", 1, 1);
+
                             if (resolved.originalFilePath) {
                                 return {
                                     ...frame,
