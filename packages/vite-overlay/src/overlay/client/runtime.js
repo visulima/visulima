@@ -652,7 +652,7 @@ class ErrorOverlay extends HTMLElement {
     #initializeThemeToggle() {
         // Initialize button visibility based on current theme
         const currentTheme
-            = localStorage.getItem("v-o_theme") || (globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+            = localStorage.getItem("__v-o__theme") || (globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         const isDark = currentTheme === "dark" || document.documentElement.classList.contains("dark");
 
         const darkButton = this.root.querySelector("[data-v-o-theme-click-value=\"dark\"]");
@@ -676,32 +676,26 @@ class ErrorOverlay extends HTMLElement {
         const themeButtons = this.root.querySelectorAll("[data-v-o-theme-click-value]");
 
         themeButtons.forEach((button) => {
-            button.addEventListener("click", function (e) {
+            button.addEventListener("click", (e) => {
                 e.preventDefault();
 
-                const theme = this.dataset.hsThemeClickValue;
+                const theme = e.currentTarget.dataset.vOThemeClickValue;
 
                 // Update theme on document element (affects whole page)
                 if (theme === "dark") {
                     document.documentElement.classList.add("dark");
-                    localStorage.setItem("v-o_theme", "dark");
-                } else {
-                    document.documentElement.classList.remove("dark");
-                    localStorage.setItem("v-o_theme", "light");
-                }
+                    localStorage.setItem("__v-o__theme", "dark");
 
-                // Update button visibility using the classes from the component
-                const darkButton = this.closest("#v-o-theme-switch")?.querySelector("[data-v-o-theme-click-value=\"dark\"]");
-                const lightButton = this.closest("#v-o-theme-switch")?.querySelector("[data-v-o-theme-click-value=\"light\"]");
-
-                if (theme === "dark") {
-                    // Dark mode activated - show light button, hide dark button
+                    // Update button visibility for dark mode
                     darkButton?.classList.add("hidden");
                     darkButton?.classList.remove("block");
                     lightButton?.classList.remove("hidden");
                     lightButton?.classList.add("block");
                 } else {
-                    // Light mode activated - show dark button, hide light button
+                    document.documentElement.classList.remove("dark");
+                    localStorage.setItem("__v-o__theme", "light");
+
+                    // Update button visibility for light mode
                     darkButton?.classList.remove("hidden");
                     darkButton?.classList.add("block");
                     lightButton?.classList.add("hidden");
