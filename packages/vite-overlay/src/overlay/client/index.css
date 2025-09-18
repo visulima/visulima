@@ -122,7 +122,6 @@
     }
 }
 
-/* Preline UI base styles */
 @layer base {
     button:not(:disabled),
     [role="button"]:not(:disabled) {
@@ -245,4 +244,9 @@ html.dark .shiki span {
 }
 #__v_o__stacktrace[open] summary svg {
     transform: rotate(90deg);
+}
+
+/* Prevent background scrolling when overlay is open */
+:has(#__v_o__root) {
+    overflow: hidden;
 }

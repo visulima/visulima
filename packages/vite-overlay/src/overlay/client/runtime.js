@@ -1,3 +1,4 @@
+/* eslint-disable no-unsanitized/property */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable func-names */
 /* eslint-disable no-plusplus */
@@ -20,6 +21,18 @@ class ErrorOverlay extends HTMLElement {
     __flamePayload;
 
     /**
+     * Original body overflow value for restoring scroll
+     * @type {string}
+     */
+    #originalBodyOverflow = "";
+
+    /**
+     * Original html overflow value for restoring scroll
+     * @type {string}
+     */
+    #originalHtmlOverflow = "";
+
+    /**
      * Creates an error overlay component
      * @param {object} error - The error object in one of three possible structures:
      *
@@ -39,6 +52,7 @@ class ErrorOverlay extends HTMLElement {
         super();
 
         this.root = this.attachShadow({ mode: "open" });
+        // eslint-disable-next-line no-undef
         this.root.innerHTML = overlayTemplate;
         this.dir = "ltr";
 
@@ -66,6 +80,8 @@ class ErrorOverlay extends HTMLElement {
         this.#initializeThemeToggle();
 
         this.#initializeCopyError();
+
+        this.#initializeScrollBlocking();
 
         this.#initializePagination();
 
@@ -176,6 +192,101 @@ class ErrorOverlay extends HTMLElement {
                 bodyContent.classList.remove("hidden");
             }
         }, 100); // Small delay to ensure DOM is ready
+    }
+
+    #initializeCopyError() {
+        const copyButton = this.root.querySelector("#__v_o__copy_error");
+
+        if (!copyButton) {
+            return;
+        }
+
+        copyButton.addEventListener("click", async (e) => {
+            e.preventDefault();
+
+            try {
+                const payload = this.__flamePayload;
+                const currentError = payload?.errors?.[0]; // Get first error
+
+                if (!currentError) {
+                    console.warn("[v-o] No error data available to copy");
+
+                    return;
+                }
+
+                // Format error information
+                const errorInfo = {
+                    error: {
+                        column: currentError.originalFileColumn || currentError.compiledColumn || 0,
+                        file: currentError.originalFilePath || currentError.compiledFilePath || "",
+                        line: currentError.originalFileLine || currentError.compiledLine || 0,
+                        message: currentError.message || "",
+                        name: currentError.name || "Unknown Error",
+                    },
+                    stack: currentError.originalStack || currentError.compiledStack || "",
+                    timestamp: new Date().toISOString(),
+                    url: globalThis.location.href,
+                    userAgent: navigator.userAgent,
+                };
+
+                // Create formatted text in structured markdown format
+                const codeFrame = currentError?.originalCodeFrameContent || currentError?.compiledCodeFrameContent || "";
+
+                const formattedText = [
+                    "## Error Type",
+                    errorInfo.error.name || "Unknown Error",
+                    "",
+                    "## Error Message",
+                    errorInfo.error.message || "No error message available",
+                    "",
+                    "## Build Output",
+                    errorInfo.error.file ? `${errorInfo.error.file}:${errorInfo.error.line}:${errorInfo.error.column}` : "Unknown location",
+                    errorInfo.error.message || "No error message available",
+                    ...codeFrame ? ["", codeFrame] : [],
+                    "",
+                    errorInfo.stack || "No stack trace available",
+                ].join("\n");
+
+                // Copy to clipboard
+                await navigator.clipboard.writeText(formattedText);
+
+                // Visual feedback
+                const originalText = copyButton.innerHTML;
+
+                // Change to success state
+                copyButton.innerHTML = `
+                    <span class="inline-flex shrink-0 justify-center items-center size-8">
+                        <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <polyline points="20,6 9,17 4,12"></polyline>
+                        </svg>
+                    </span>
+                `;
+
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    copyButton.innerHTML = originalText;
+                }, 2000);
+            } catch (error) {
+                console.error("[v-o] Failed to copy error info:", error);
+
+                // Show error state
+                const originalText = copyButton.innerHTML;
+
+                copyButton.innerHTML = `
+                    <span class="inline-flex shrink-0 justify-center items-center size-8">
+                        <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </span>
+                `;
+
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    copyButton.innerHTML = originalText;
+                }, 2000);
+            }
+        });
     }
 
     #initializePagination() {
@@ -289,7 +400,6 @@ class ErrorOverlay extends HTMLElement {
                     };
                     const html = stackText.split("\n").map(fmt).join("");
 
-                    // eslint-disable-next-line no-unsanitized/property
                     stackElement.innerHTML = html;
                     // Attach open-in-editor handlers
                     stackElement.querySelectorAll(".stack-link").forEach((a) => {
@@ -486,6 +596,65 @@ class ErrorOverlay extends HTMLElement {
         updatePagination();
     }
 
+    #initializeScrollBlocking() {
+        // Store original overflow values
+        this.#originalBodyOverflow = document.body.style.overflow || "";
+        this.#originalHtmlOverflow = document.documentElement.style.overflow || "";
+
+        // Prevent scrolling
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+
+        // Handle overlay removal (when close button is clicked or overlay is removed)
+        const closeButton = this.root.querySelector("#__v_o__close");
+
+        if (closeButton) {
+            closeButton.addEventListener("click", () => {
+                this.#restoreScroll();
+            });
+        }
+
+        // Also restore scroll when the overlay element is removed from DOM
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.removedNodes.forEach((node) => {
+                    if (node === this.root || (node.contains && node.contains(this.root))) {
+                        this.#restoreScroll();
+                        observer.disconnect();
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+        });
+
+        // Fallback: restore scroll when page visibility changes (user switches tabs, etc.)
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") {
+                // User switched away, restore scroll temporarily
+                this.#restoreScroll();
+            } else if (this.root && document.body.contains(this.root)) {
+                // User came back and overlay is still there, block scroll again
+                document.body.style.overflow = "hidden";
+                document.documentElement.style.overflow = "hidden";
+            }
+        });
+
+        // Ensure scroll is restored when the element is destroyed
+        const cleanup = () => {
+            this.#restoreScroll();
+        };
+
+        // Cleanup when the element is removed from DOM
+        this.addEventListener("DOMNodeRemoved", cleanup);
+
+        // Cleanup on page unload
+        window.addEventListener("beforeunload", cleanup);
+    }
+
     #initializeThemeToggle() {
         // Initialize button visibility based on current theme
         const currentTheme
@@ -548,98 +717,14 @@ class ErrorOverlay extends HTMLElement {
         });
     }
 
-    #initializeCopyError() {
-        const copyButton = this.root.querySelector("#__v_o__copy_error");
+    #restoreScroll() {
+        // Restore original overflow values
+        document.body.style.overflow = this.#originalBodyOverflow;
+        document.documentElement.style.overflow = this.#originalHtmlOverflow;
 
-        if (!copyButton) {
-            return;
-        }
-
-        copyButton.addEventListener("click", async (e) => {
-            e.preventDefault();
-
-            try {
-                const payload = this.__flamePayload;
-                const currentError = payload?.errors?.[0]; // Get first error
-
-                if (!currentError) {
-                    console.warn("[v-o] No error data available to copy");
-                    return;
-                }
-
-                // Format error information
-                const errorInfo = {
-                    timestamp: new Date().toISOString(),
-                    error: {
-                        name: currentError.name || "Unknown Error",
-                        message: currentError.message || "",
-                        file: currentError.originalFilePath || currentError.compiledFilePath || "",
-                        line: currentError.originalFileLine || currentError.compiledLine || 0,
-                        column: currentError.originalFileColumn || currentError.compiledColumn || 0
-                    },
-                    stack: currentError.originalStack || currentError.compiledStack || "",
-                    userAgent: navigator.userAgent,
-                    url: window.location.href
-                };
-
-                // Create formatted text in structured markdown format
-                const codeFrame = currentError?.originalCodeFrameContent || currentError?.compiledCodeFrameContent || "";
-
-                const formattedText = [
-                    "## Error Type",
-                    errorInfo.error.name || "Unknown Error",
-                    "",
-                    "## Error Message",
-                    errorInfo.error.message || "No error message available",
-                    "",
-                    "## Build Output",
-                    errorInfo.error.file ? `${errorInfo.error.file}:${errorInfo.error.line}:${errorInfo.error.column}` : "Unknown location",
-                    errorInfo.error.message || "No error message available",
-                    ...(codeFrame ? ["", codeFrame] : []),
-                    "",
-                    errorInfo.stack || "No stack trace available",
-                ].join("\n");
-
-                // Copy to clipboard
-                await navigator.clipboard.writeText(formattedText);
-
-                // Visual feedback
-                const originalText = copyButton.innerHTML;
-
-                // Change to success state
-                copyButton.innerHTML = `
-                    <span class="inline-flex shrink-0 justify-center items-center size-8">
-                        <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <polyline points="20,6 9,17 4,12"></polyline>
-                        </svg>
-                    </span>
-                `;
-
-                // Reset after 2 seconds
-                setTimeout(() => {
-                    copyButton.innerHTML = originalText;
-                }, 2000);
-
-            } catch (error) {
-                console.error("[v-o] Failed to copy error info:", error);
-
-                // Show error state
-                const originalText = copyButton.innerHTML;
-                copyButton.innerHTML = `
-                    <span class="inline-flex shrink-0 justify-center items-center size-8">
-                        <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </span>
-                `;
-
-                // Reset after 2 seconds
-                setTimeout(() => {
-                    copyButton.innerHTML = originalText;
-                }, 2000);
-            }
-        });
+        // Clear stored values
+        this.#originalBodyOverflow = "";
+        this.#originalHtmlOverflow = "";
     }
 }
 

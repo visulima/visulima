@@ -135,7 +135,7 @@ const generateOverlayTemplate = (): string => {
                 <span id="__v_o__heading" class="leading-none rounded-md text-[var(--flame-red-orange)] font-mono text-sm"></span>
                 <a id="__v_o__filelink" class="ml-2 text-xs font-normal font-mono underline text-[var(--flame-text-muted)] hover:text-[var(--flame-text)]" href="#" target="_blank" rel="noreferrer noopener"></a>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2"></div>
                 <div id="__v_o__mode" class="sm:flex items-center gap-1 mr-1">
                     <button type="button" data-flame-mode="original" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]" style="display:none">Original</button>
                     <button type="button" data-flame-mode="compiled" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]" style="display:none">Compiled</button>
@@ -146,7 +146,6 @@ const generateOverlayTemplate = (): string => {
                     </span>
                 </button>
             </div>
-        </div>
 
         <div id="__v_o__message_loader" class="px-4 py-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
             <div class="v-o-skeleton h-4 w-full rounded animate-pulse"></div>
