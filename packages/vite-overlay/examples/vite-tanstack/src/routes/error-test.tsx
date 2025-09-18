@@ -47,7 +47,7 @@ function ErrorTestPage() {
 
         try {
             // Simulate an async error with cause chain
-            await fetch("/non-existent-endpoint");
+            await fetch("https://non-existent-endpoint2314654.com1");
         } catch (fetchError) {
             const apiError = new Error("API error from line " + new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]);
             apiError.cause = fetchError;

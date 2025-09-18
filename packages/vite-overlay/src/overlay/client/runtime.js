@@ -21,7 +21,6 @@ class ErrorOverlay extends HTMLElement {
      */
     __flamePayload;
 
-
     /**
      * Creates an error overlay component
      * @param {object} error - The error object in one of three possible structures:
@@ -582,7 +581,6 @@ class ErrorOverlay extends HTMLElement {
             });
         });
     }
-
 }
 
 // Global error handler for React errors

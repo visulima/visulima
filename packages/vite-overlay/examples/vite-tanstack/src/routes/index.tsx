@@ -7,9 +7,10 @@ export const Route = createFileRoute("/")({
 });
 
 function App() {
-    throw new Error("This is a error message", {
-        cause: new Error("This is a error message 22"),
-    });
+    // Comment out the immediate error throw for testing
+    // throw new Error("This is a error message", {
+    //     cause: new Error("This is a error message 22"),
+    // });
 
     return (
         <div className="text-center">

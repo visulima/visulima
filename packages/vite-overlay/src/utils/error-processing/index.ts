@@ -645,10 +645,10 @@ const buildExtendedErrorData = async (
         errorCount: individualErrors.length,
         fixPrompt,
         originalCodeFrameContent,
-        originalSnippet,
         originalFileColumn,
         originalFileLine,
         originalFilePath,
+        originalSnippet,
         originalSnippet,
         originalStack: originalStack || cleanedStack, // Use processed stack or fallback to cleaned stack
         plugin,

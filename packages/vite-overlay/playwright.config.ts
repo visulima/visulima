@@ -68,7 +68,7 @@ export default defineConfig({
     /* Run your local dev server before starting the tests */
     webServer: [
         {
-            command: "pnpm run dev",
+            command: "cd examples/vite-tanstack && pnpm run dev",
             port: 5173,
             reuseExistingServer: !process.env.CI,
             timeout: 120 * 1000,

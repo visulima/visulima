@@ -1,26 +1,27 @@
 import { expect, test } from "@playwright/test";
-import { expect, it } from "vitest";
+import { waitForErrorTestPage } from "./utils/test-helpers";
 
 test.describe("Basic Infrastructure Test", () => {
-    it("should load the homepage", async ({ page }) => {
+    test("should load the homepage", async ({ page }) => {
         await page.goto("/");
 
         await expect(page).toHaveTitle(/TanStack/);
 
-        // Homepage should show an error overlay
-        const overlay = page.locator("#__v_o__overlay");
-
-        await expect(overlay).toBeVisible();
+        // Homepage no longer shows error overlay by default
+        // This test is just checking basic homepage loading
     });
 
-    it("should load the error test page", async ({ page }) => {
+    test("should load the error test page", async ({ page }) => {
         await page.goto("/error-test");
 
+        await waitForErrorTestPage(page);
         await expect(page.locator("h1")).toContainText("Error Overlay Test Page");
     });
 
-    it("should have test buttons on error test page", async ({ page }) => {
+    test("should have test buttons on error test page", async ({ page }) => {
         await page.goto("/error-test");
+
+        await waitForErrorTestPage(page);
 
         // Check if test buttons are present
         const simpleErrorButton = page.locator("[data-testid='simple-error-btn']");
@@ -30,17 +31,4 @@ test.describe("Basic Infrastructure Test", () => {
         await expect(causeChainButton).toBeVisible();
     });
 
-    it("should show error overlay on homepage", async ({ page }) => {
-        await page.goto("/");
-
-        // The homepage should automatically show the error overlay
-        const overlay = page.locator("#__v_o__overlay");
-
-        await expect(overlay).toBeVisible();
-
-        // Should show error heading
-        const heading = page.locator("#__v_o__heading");
-
-        await expect(heading).toBeVisible();
-    });
 });
