@@ -15,6 +15,8 @@ import { cleanErrorMessage, cleanErrorStack, extractErrors, isESBuildErrorArray,
 import { parseVueCompilationError } from "./parse-vue-compilation-error";
 import remapStackToOriginal from "./remap-stack-to-original";
 import { retrieveSourceTexts } from "./retrieve-source-texts";
+import addQueryToUrl from "./utils/add-query-to-url";
+import extractQueryFromHttpUrl from "./utils/extract-query-from-http-url";
 
 /**
  * Extracts individual errors from different error types
@@ -53,30 +55,6 @@ const extractLocationFromStack = (error: Error) => {
         compiledFilePath: trace?.file ?? "",
         compiledLine: trace?.line ?? 0,
     };
-};
-
-/**
- * Extracts the query parameter from an HTTP URL
- */
-export const extractQueryFromHttpUrl = (url: string): string => {
-    try {
-        const urlObject = new URL(url);
-
-        return urlObject.search;
-    } catch {
-        return "";
-    }
-};
-
-/**
- * Adds query parameter to a base URL if it doesn't already have it
- */
-export const addQueryToUrl = (baseUrl: string, query: string): string => {
-    if (!query || baseUrl.includes("?")) {
-        return baseUrl;
-    }
-
-    return baseUrl + query;
 };
 
 /**
@@ -298,12 +276,10 @@ const buildExtendedErrorData = async (
     allErrors?: (Error | { message: string; name?: string; stack?: string })[],
     errorIndex: number = 0,
 ): Promise<ErrorProcessingResult> => {
-    // Extract Vue error info and individual errors
     const vueErrorInfo = error?.message ? parseVueCompilationError(error.message) : undefined;
     const individualErrors = extractIndividualErrors(error);
     const primaryError = individualErrors[0] || error;
 
-    // Extract query parameter from cause error if it exists (for consistency)
     let causeQuery = "";
 
     if (allErrors && allErrors.length > 1) {
@@ -321,50 +297,41 @@ const buildExtendedErrorData = async (
         }
     }
 
-    // Clean and process error data
     const cleanMessage = cleanErrorMessage(primaryError);
     const cleanedStack = cleanErrorStack(primaryError.stack || "");
     const originalStack = await remapStackToOriginal(server, cleanedStack, { message: cleanMessage, name: primaryError.name });
 
-    // Extract and resolve location information
     // For cause errors, prioritize viteErrorData location over stack extraction
     let compiledColumn: number;
     let compiledFilePath: string;
     let compiledLine: number;
 
     if (viteErrorData?.file && viteErrorData?.line && viteErrorData?.column) {
-        // Use location from viteErrorData (for cause errors)
         compiledColumn = viteErrorData.column;
         compiledFilePath = viteErrorData.file;
         compiledLine = viteErrorData.line;
     } else {
-        // Extract from stack trace (for primary errors)
         const extracted = extractLocationFromStack(primaryError);
 
         compiledColumn = extracted.compiledColumn;
         compiledFilePath = extracted.compiledFilePath;
         compiledLine = extracted.compiledLine;
 
-        // Convert local file path to HTTP URL format for consistency with cause errors
         if (compiledFilePath && !compiledFilePath.startsWith("http")) {
-            // Extract relative path from project root for Vite
             const projectRoot = server.config.root;
-            const originalLocalPath = compiledFilePath;
+
             let relativePath = compiledFilePath;
 
-            // Remove project root from the absolute path to get relative path
             if (compiledFilePath.startsWith(projectRoot)) {
                 relativePath = compiledFilePath.slice(projectRoot.length);
             }
 
-            // Ensure it starts with / for HTTP URL
             if (!relativePath.startsWith("/")) {
                 relativePath = `/${relativePath}`;
             }
 
             let httpUrl = `http://localhost:5173${relativePath}`;
 
-            // Add query parameter from cause error if found (for module consistency)
             if (causeQuery) {
                 httpUrl = addQueryToUrl(httpUrl, causeQuery);
             }
@@ -373,54 +340,44 @@ const buildExtendedErrorData = async (
         }
     }
 
-    // Extract original source file path for better source code search
     // Prioritize viteErrorData.file (from our WebSocket interception) over stack trace
     let sourceFilePath = viteErrorData?.file || compiledFilePath;
 
     if (!viteErrorData?.file && primaryError.stack) {
         const traces = parseStacktrace(primaryError, { frameLimit: 10 });
-        // Find the first local source file (not node_modules, not .vite, not HTTP)
         const sourceTrace = traces?.find(
             (trace) =>
                 trace?.file
                 && !trace.file.startsWith("http")
                 && !trace.file.includes("node_modules")
                 && !trace.file.includes(".vite")
-                && trace.file.includes(".tsx"), // Focus on TypeScript/React files
+                && trace.file.includes(".tsx"),
         );
 
         if (sourceTrace?.file) {
             sourceFilePath = sourceTrace.file;
-            // Using source file path from stack trace
         }
-    }
-
-    if (viteErrorData?.file) {
-        // Using source file path from viteErrorData
     }
 
     let { originalFileColumn, originalFileLine, originalFilePath } = await resolveOriginalLocationInfo(
         server,
-        sourceFilePath, // Use source file path for source code search
+        sourceFilePath,
         compiledColumn,
         compiledLine,
         vueErrorInfo,
         primaryError.message,
-        errorIndex, // Use the provided error index for cause chain handling
-        compiledFilePath, // Pass compiled file path for source map resolution
+        errorIndex,
+        compiledFilePath,
     );
 
-    // Extract plugin information
     const plugin = viteErrorData?.plugin;
 
-    // Retrieve source code for generating code frames
     let originalSnippet = "";
     let compiledSnippet = "";
     let originalSourceText: string | undefined;
     let compiledSourceText: string | undefined;
 
     try {
-        // Vite optimization: Parallel module resolution for better performance
         const [compiledModule, originalModule] = await Promise.all([
             findModuleForPath(server, normalizeIdCandidates(compiledFilePath)),
             findModuleForPath(server, normalizeIdCandidates(originalFilePath)),
@@ -430,7 +387,6 @@ const buildExtendedErrorData = async (
             return createEmptyResult(compiledColumn, compiledFilePath, compiledLine, originalFileColumn, originalFileLine, originalFilePath);
         }
 
-        // Convert file paths for source retrieval
         const compiledFilePathForRetrieval = compiledFilePath.startsWith("http")
             ? compiledFilePath.replace(/^https?:\/\/[^/]+/, "").replace(/^\//, "")
             : compiledFilePath;
@@ -439,30 +395,26 @@ const buildExtendedErrorData = async (
             ? originalFilePath.replace(/^https?:\/\/[^/]+/, "").replace(/^\//, "")
             : originalFilePath;
 
-        // Get compiled source from the appropriate module's transform result
         const moduleForCompiledSource = compiledModule || originalModule;
 
         if (moduleForCompiledSource?.transformResult?.code) {
             compiledSourceText = moduleForCompiledSource.transformResult.code;
         }
 
-        // Get original source from original module
         if (originalModule?.transformResult?.map && !originalSourceText) {
             const sourceMap = originalModule.transformResult.map;
 
-            // Try to get original source from source map
             try {
                 const originalContent = (sourceMap as any).sourcesContent?.[0];
 
                 if (originalContent) {
                     originalSourceText = originalContent;
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.warn("Failed to get original source from source map:", error);
             }
         }
 
-        // Fallback: Parallel source retrieval for any missing sources
         const [compiledSourceResult, originalSourceResult] = await Promise.all([
             !compiledSourceText && compiledModule
                 ? retrieveSourceTexts(server, compiledModule, compiledFilePathForRetrieval, normalizeIdCandidates(compiledFilePathForRetrieval))
@@ -472,7 +424,6 @@ const buildExtendedErrorData = async (
                 : Promise.resolve({ compiledSourceText: undefined, originalSourceText: undefined }),
         ]);
 
-        // Use retrieved sources if we didn't get them from transform results
         if (!compiledSourceText && compiledSourceResult.compiledSourceText) {
             ({ compiledSourceText } = compiledSourceResult);
         }
@@ -481,11 +432,7 @@ const buildExtendedErrorData = async (
             ({ originalSourceText } = originalSourceResult);
         }
 
-        // Generate original code frame (Vite optimization: skip realignment for cached modules)
         if (originalSourceText) {
-            // Generating original code frame
-
-            // Only realign if we got fresh compiled source (not from cache)
             if (compiledSourceText && originalFileLine <= 0 && compiledLine > 0) {
                 const realigned = realignOriginalPosition(compiledSourceText, compiledLine, compiledColumn, originalSourceText);
 
@@ -501,45 +448,34 @@ const buildExtendedErrorData = async (
                     { start: { column: Math.max(1, originalFileColumn), line: Math.max(1, originalFileLine) } },
                     { showGutter: false },
                 );
-                // Generated original code frame
             } catch {
-                // Failed to generate original code frame
-                // Silently fail if codeFrame throws, but keep original source for fallback
                 originalSnippet = originalSourceText?.slice(0, 500) || "";
             }
         }
 
-        // Smart compiled code frame generation
         // Show compiled frame only when it contains the correct error code at the found location
         const shouldGenerateCompiledFrame = compiledSourceText && compiledLine > 0;
         const sourceSearchWasSuccessful = originalFileLine > 0 && originalFileColumn > 0;
-        const sourceLineCount = originalSourceText?.split("\n").length || 0;
 
-        // Verify that the COMPILED frame contains error code at the found line and column
         let compiledFrameHasCorrectCode = false;
 
-        if (shouldGenerateCompiledFrame && compiledLine > 0 && primaryError.message) {
+        if (shouldGenerateCompiledFrame && compiledLine > 0 && primaryError.message && compiledSourceText) {
             const compiledLines = compiledSourceText.split("\n");
-            const targetCompiledLine = compiledLines[compiledLine - 1]; // Convert to 0-based
+            const targetCompiledLine = compiledLines[compiledLine - 1];
 
             if (targetCompiledLine && compiledColumn <= targetCompiledLine.length) {
-                // Check if the compiled frame contains error patterns at the found location
                 const errorMessage = primaryError.message;
-                const columnIndex = Math.max(0, compiledColumn - 1); // Convert to 0-based, ensure non-negative
+                const columnIndex = Math.max(0, compiledColumn - 1);
                 const textAtLocation = new Set(targetCompiledLine.slice(Math.max(0, columnIndex)));
 
-                // Look for error patterns in the compiled frame at this location
                 const hasErrorPattern
                     = textAtLocation.has("new Error(")
                         || textAtLocation.has("throw new Error")
                         || textAtLocation.has("throw ")
-                        || textAtLocation.has(errorMessage.slice(0, 20)); // First 20 chars of error message
+                        || textAtLocation.has(errorMessage.slice(0, 20));
 
                 compiledFrameHasCorrectCode = hasErrorPattern;
 
-                // For frameworks that heavily transform code (Svelte, Vue), be more permissive
-                // If source search succeeded but compiled code doesn't contain error patterns,
-                // still show compiled frame as it's useful for debugging
                 if (!compiledFrameHasCorrectCode && sourceSearchWasSuccessful) {
                     const isCompiledFramework
                         = originalFilePath.includes(".svelte")
@@ -550,45 +486,31 @@ const buildExtendedErrorData = async (
 
                     if (isCompiledFramework) {
                         compiledFrameHasCorrectCode = true;
-                        // Allowing compiled frame for transformed framework
                     }
                 }
             }
         }
 
-        // Smart frame decision
-
-        // Show compiled frame only when it contains the correct error code
         const showCompiledFrame = shouldGenerateCompiledFrame && compiledFrameHasCorrectCode;
 
-        if (showCompiledFrame) {
-            // Generating compiled code frame
-
+        if (showCompiledFrame && compiledSourceText) {
             const lines = compiledSourceText.split("\n");
             const totalLines = lines.length;
 
-            // Map line number to valid range, fallback to last lines if needed
             const targetLine = Math.min(compiledLine, totalLines) || Math.max(1, totalLines - 2);
             const targetColumn = lines[targetLine - 1] ? Math.min(compiledColumn || 1, lines[targetLine - 1]?.length || 1) : 1;
 
-            // Compiled frame target
-
             try {
                 compiledSnippet = codeFrame(compiledSourceText, { start: { column: targetColumn, line: targetLine } }, { showGutter: false });
-                // Generated compiled code frame
-            } catch (error) {
-                // Failed to generate compiled code frame
+            } catch (error: any) {
                 console.warn("Compiled codeFrame failed:", error);
-                // Silently fail if codeFrame throws, but keep compiled source for fallback
                 compiledSnippet = compiledSourceText?.slice(0, 500) || "";
             }
         }
-    } catch (error) {
+    } catch (error: any) {
         console.warn("Source retrieval failed:", error);
-        // Variables are already initialized above, so we can continue
     }
 
-    // Generate syntax-highlighted code frames
     const { compiledCodeFrameContent, originalCodeFrameContent } = await generateSyntaxHighlightedFrames(
         originalSnippet,
         compiledSnippet,
@@ -598,11 +520,9 @@ const buildExtendedErrorData = async (
         compiledLine,
     );
 
-    // Use original snippet if available, otherwise try to provide context
     let promptSnippet = originalSnippet;
 
     if (!promptSnippet && originalSourceText) {
-        // Try to extract context around the error line
         const lines = originalSourceText.split("\n");
         const startLine = Math.max(0, originalFileLine - 3);
         const endLine = Math.min(lines.length, originalFileLine + 2);
@@ -611,7 +531,6 @@ const buildExtendedErrorData = async (
     }
 
     if (!promptSnippet) {
-        // Fallback to compiled snippet or generic message
         promptSnippet = compiledSnippet || `Error at line ${originalFileLine} in ${originalFilePath}`;
     }
 
@@ -650,7 +569,7 @@ const buildExtendedErrorData = async (
         originalFilePath,
         originalSnippet,
         originalSnippet,
-        originalStack: originalStack || cleanedStack, // Use processed stack or fallback to cleaned stack
+        originalStack: originalStack || cleanedStack,
         plugin,
     } as const;
 };

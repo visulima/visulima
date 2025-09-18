@@ -17,7 +17,6 @@ const findBestModuleMatch = (server: ViteDevServer, candidates: ReadonlyArray<st
             String(moduleObject.url || "").replaceAll("\\", "/"),
         ];
 
-        // Check for exact or partial matches
         for (const candidate of candidates) {
             if (modulePaths.some((path) => path === candidate || path.includes(candidate) || candidate.includes(path))) {
                 return module;
@@ -36,89 +35,59 @@ const findBestModuleMatch = (server: ViteDevServer, candidates: ReadonlyArray<st
  * @returns The best matching module or undefined if none found
  */
 const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleNode | undefined => {
-    // Searching for candidates
-
-    // Vite optimization: Try the most likely candidates first
-    const prioritizedCandidates = [
-        ...candidates,
-        ...candidates.map((c) => c.replace(/^\/@fs\//, "")), // Remove @fs prefix
-        ...candidates.map((c) => c.replace(/^[./]*/, "")), // Remove leading ./ or /
-    ];
-
-    // Prioritized candidates
+    const prioritizedCandidates = [...candidates, ...candidates.map((c) => c.replace(/^\/@fs\//, "")), ...candidates.map((c) => c.replace(/^[./]*/, ""))];
 
     let bestModule: ModuleNode | undefined;
-    let bestModuleScore = 0; // 0 = no module, 1 = has module, 2 = has transform result
+    let bestModuleScore = 0;
 
-    // Vite's module graph is optimized for direct ID lookup
     for (const id of prioritizedCandidates) {
         try {
-            // Trying candidate
-
-            // Try exact ID match first (fastest)
             const module = server.moduleGraph.getModuleById(id);
 
             if (module) {
-                // Check if this is a valid module (has some properties)
                 const isValidModule = Object.keys(module).length > 0;
                 const hasTransformResult = !!module.transformResult;
                 const score = isValidModule && hasTransformResult ? 2 : isValidModule ? 1 : 0;
 
-                // Found module by ID
-
-                // Only consider valid modules
                 if (isValidModule) {
-                    // Prioritize modules with transform result
                     if (score > bestModuleScore) {
                         bestModule = module;
                         bestModuleScore = score;
                     }
 
-                    // If we found a perfect match (has transform result), return immediately
                     if (hasTransformResult) {
                         return module;
                     }
                 }
             }
 
-            // Try URL lookup for HTTP-style imports
             const byUrl = (server.moduleGraph as unknown as { getModuleByUrl?: (id: string) => ModuleNode | undefined }).getModuleByUrl?.(id);
 
             if (byUrl) {
-                // Check if this is a valid module (has some properties)
                 const isValidModule = Object.keys(byUrl).length > 0;
                 const hasTransformResult = !!byUrl.transformResult;
                 const score = isValidModule && hasTransformResult ? 2 : isValidModule ? 1 : 0;
 
-                // Found module by URL
-
-                // Only consider valid modules
                 if (isValidModule) {
-                    // Prioritize modules with transform result
                     if (score > bestModuleScore) {
                         bestModule = byUrl;
                         bestModuleScore = score;
                     }
 
-                    // If we found a perfect match (has transform result), return immediately
                     if (hasTransformResult) {
                         return byUrl;
                     }
                 }
             }
-
-            // Candidate not found
         } catch {
             // Continue to next candidate
         }
     }
 
-    // If we found any module (even without transform result), use it
     if (bestModule) {
         return bestModule;
     }
 
-    // Only fall back to expensive iteration if direct lookup fails
     const result = findBestModuleMatch(server, candidates) || undefined;
 
     return result;

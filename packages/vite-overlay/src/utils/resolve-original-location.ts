@@ -154,28 +154,16 @@ const resolveOriginalLocation = async (
     errorMessage?: string,
     errorIndex: number = 0,
 ): Promise<ResolvedLocation> => {
-    // First, try to find the error by searching in the original source code
-    // This is often more reliable than source maps for runtime errors
     if (errorMessage && module_) {
-        // Search for error in source code
-
         try {
-            // Get the original source code from the module
             let originalSourceCode = null;
 
-            // Try to get source from transform result first
             if (module_.transformResult?.map?.sourcesContent?.[0]) {
                 originalSourceCode = module_.transformResult.map.sourcesContent[0];
-                // Found source code from transform result
             } else if (module_.transformResult?.code) {
-                // For some modules, the source might be in the transform result code
                 originalSourceCode = module_.transformResult.code;
-                // Found source code from transform result code
-            } else {
-                // No source code in transform result
             }
 
-            // If not available, try to get fresh transform result
             if (!originalSourceCode && (module_.id || module_.url)) {
                 const transformId = module_.id || module_.url;
 
@@ -194,12 +182,10 @@ const resolveOriginalLocation = async (
                 }
             }
 
-            // As a last resort, try to read the source file directly from disk
             if (!originalSourceCode && filePath) {
                 try {
                     const fs = await import("node:fs/promises");
 
-                    // Resolve the file path properly - if it starts with a protocol, extract the path part
                     let resolvedPath = filePath;
 
                     if (filePath.includes("://")) {
@@ -208,7 +194,6 @@ const resolveOriginalLocation = async (
 
                             resolvedPath = url.pathname;
                         } catch {
-                            // If URL parsing fails, remove protocol part manually
                             const protocolIndex = filePath.indexOf("://");
 
                             if (protocolIndex !== -1) {
@@ -217,7 +202,6 @@ const resolveOriginalLocation = async (
                         }
                     }
 
-                    // If the path doesn't start with '/', it's relative to the server root
                     if (!resolvedPath.startsWith("/")) {
                         const serverRoot = server.config.root || process.cwd();
 
@@ -230,10 +214,7 @@ const resolveOriginalLocation = async (
                 }
             }
 
-            // Search for the error message in the source code
             if (originalSourceCode) {
-                // For import resolution errors, findErrorInSourceCode will handle the pattern matching
-                // It will detect the error type and search for the import statement instead of the error message
                 const searchMessage = errorMessage;
 
                 const foundLocation = findErrorInSourceCode(originalSourceCode, searchMessage, errorIndex);
@@ -251,10 +232,8 @@ const resolveOriginalLocation = async (
         }
     }
 
-    // Fallback to source map resolution
     let rawMap = module_?.transformResult?.map;
 
-    // Only get fresh source map if cached version is insufficient
     if (!rawMap && (module_?.id || module_?.url)) {
         const transformId = module_.id || module_.url;
 
@@ -267,13 +246,11 @@ const resolveOriginalLocation = async (
                 }
             } catch (error) {
                 console.warn("Failed to get fresh source map:", error);
-                // Fall back to cached source map if transformRequest fails
             }
         }
     }
 
     if (!rawMap) {
-        // Apply estimation when no source map is available
         const { estimatedColumn, estimatedLine } = estimateOriginalPosition(fileLine, fileColumn);
 
         return {
@@ -284,14 +261,9 @@ const resolveOriginalLocation = async (
     }
 
     try {
-        // Source map available for resolution
-
         const position = resolveSourceMapPosition(rawMap, fileLine, fileColumn);
 
-        // Source map resolution completed
-
         if (!position) {
-            // Fallback to estimation when source map resolution fails
             const { estimatedColumn, estimatedLine } = estimateOriginalPosition(fileLine, fileColumn);
 
             return {
@@ -309,7 +281,6 @@ const resolveOriginalLocation = async (
             originalFilePath: resolvedPath,
         };
     } catch (error) {
-        // Log the error for debugging but don't throw
         console.warn("Source map resolution failed:", error);
 
         return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };

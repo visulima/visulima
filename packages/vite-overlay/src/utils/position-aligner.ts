@@ -29,7 +29,6 @@ export const realignOriginalPosition = (compiledSource: string, compiledLine: nu
     const originalLines = originalSource.split(/\n/g);
     const candidateToken = extractCandidateToken(compiledLineText, compiledColumn);
 
-    // Try different search strategies in order of precision
     return (
         tryTokenBasedSearch(candidateToken, originalLines)
         || tryLineSubstringSearch(compiledLineText.trim(), originalLines)
@@ -37,14 +36,8 @@ export const realignOriginalPosition = (compiledSource: string, compiledLine: nu
     );
 };
 
-/**
- * Extracts a line from source code by line number (1-based)
- */
 const getLine = (source: string, line: number): string => source.split(/\n/g)[line - 1] ?? "";
 
-/**
- * Removes all whitespace from a string for comparison
- */
 const removeWhitespace = (s: string): string => s.replaceAll(/\s+/g, "");
 
 /**
@@ -58,18 +51,15 @@ const extractCandidateToken = (lineText: string, column: number): string => {
     const start = Math.max(0, column - 1);
     const contextWindow = lineText.slice(start, start + CONTEXT_WINDOW_SIZE);
 
-    // Try to capture a meaningful identifier token first
     const tokenMatch = /[A-Z_$][\w$]{2,}/i.exec(contextWindow);
 
     if (tokenMatch?.[0]) {
         return tokenMatch[0];
     }
 
-    // Fallback to trimmed context
     let candidateToken = contextWindow.trim();
 
     if (candidateToken.length < MIN_LINE_LENGTH) {
-        // Try broader context if token is too short
         const broaderContext = lineText.slice(Math.max(0, start - BROADER_CONTEXT_SIZE), start + BROADER_CONTEXT_SIZE).trim();
 
         candidateToken = broaderContext;
@@ -147,7 +137,6 @@ const tryWhitespaceInsensitiveSearch = (compiledLineTrimmed: string, originalLin
         const matchIndex = normalizedOriginal.indexOf(normalizedCompiled);
 
         if (matchIndex !== -1) {
-            // Map normalized position back to original position
             const originalColumn = mapNormalizedToOriginalPosition(lineText, matchIndex);
 
             if (originalColumn !== -1) {

@@ -18,7 +18,6 @@ export const retrieveSourceTexts = async (
     let originalSourceText: string | undefined;
     let compiledSourceText: string | undefined;
 
-    // Vite optimization: Check cached transform result first (faster)
     if (module_?.transformResult) {
         const cached = module_.transformResult;
 
@@ -31,7 +30,6 @@ export const retrieveSourceTexts = async (
         }
     }
 
-    // Only call transformRequest if we still need data (slower but fresh)
     const transformId = module_?.id || module_?.url || idCandidates[0];
 
     if (transformId && (!originalSourceText || !compiledSourceText)) {
@@ -50,7 +48,6 @@ export const retrieveSourceTexts = async (
         }
     }
 
-    // Fallback to reading original file directly
     if (!originalSourceText && module_?.file) {
         try {
             originalSourceText = await readFile(module_.file, "utf8");

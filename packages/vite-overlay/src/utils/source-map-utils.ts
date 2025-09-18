@@ -54,14 +54,12 @@ const findSourceIndex = (sources: string[] | undefined, wantedSource: string): n
         return -1;
     }
 
-    // Try exact match first (fastest)
     const exactIndex = sources.indexOf(wantedSource);
 
     if (exactIndex !== -1) {
         return exactIndex;
     }
 
-    // Only normalize if needed for partial matching
     const needsNormalization = wantedSource.includes("\\") || wantedSource.includes("/");
 
     if (!needsNormalization) {
@@ -70,14 +68,12 @@ const findSourceIndex = (sources: string[] | undefined, wantedSource: string): n
 
     const normalizedWanted = normalizePath(wantedSource);
 
-    // Try normalized exact match
     const normalizedIndex = sources.indexOf(normalizedWanted);
 
     if (normalizedIndex !== -1) {
         return normalizedIndex;
     }
 
-    // Try partial matches with early exit optimization
     for (const [index, source] of sources.entries()) {
         if (!source || typeof source !== "string") {
             continue;

@@ -1,5 +1,6 @@
+/* eslint-disable no-secrets/no-secrets */
 import { getErrorCauses } from "@visulima/error/error";
-import type { IndexHtmlTransformResult, Plugin, ViteDevServer, WebSocketClient } from "vite";
+import type { IndexHtmlTransformResult, Plugin, PluginOption, ViteDevServer, WebSocketClient } from "vite";
 
 import { terminalOutput } from "../../../shared/utils/cli-error-builder";
 import { DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
@@ -187,7 +188,77 @@ const buildExtendedError = async (
 /**
  * Generates the client-side script that forwards runtime errors to the dev server
  */
-const generateClientScript = (): string => String.raw`
+const generateClientScript = (mode: string, isReact: boolean): string => {
+    const reactLogger = String.raw`// Simple console.error override to catch React error boundary logs
+var orig = console.error;
+
+console.error = function() {
+    function parseConsoleArgs(args: unknown[]) {
+        // See
+        // https://github.com/facebook/react/blob/65a56d0e99261481c721334a3ec4561d173594cd/packages/react-devtools-shared/src/backend/flight/renderer.js#L88-L93
+        //
+        // Logs replayed from the server look like this:
+        // [
+        //   "%c%s%c%o\n\n%s\n\n%s\n",
+        //   "background: #e6e6e6; ...",
+        //   " Server ", // can also be e.g. " Prerender "
+        //   "",
+        //   Error,
+        //   "The above error occurred in the <Page> component.",
+        //   ...
+        // ]
+        if (
+            args.length > 3 &&
+            typeof args[0] === 'string' &&
+            args[0].startsWith('%c%s%c') &&
+            typeof args[1] === 'string' &&
+            typeof args[2] === 'string' &&
+            typeof args[3] === 'string'
+        ) {
+            const environmentName = args[2]
+            const maybeError = args[4]
+
+            return {
+                environmentName: environmentName.trim(),
+                error: isError(maybeError) ? maybeError : null,
+            }
+        }
+
+        return {
+            environmentName: null,
+            error: null,
+        }
+    }
+    
+    function isError(err) {
+        return typeof err === 'object' && err !== null && 'name' in err && 'message' in err;
+    }
+
+    try {
+        if (${mode} !== 'production') {
+            const { error: replayedError } = parseConsoleArgs(args)
+            
+            if (replayedError) {
+                maybeError = replayedError
+            } else if ((args[isError0])) {
+                maybeError = args[0]
+            } else {
+                // See https://github.com/facebook/react/blob/d50323eb845c5fde0d720cae888bf35dedd05506/packages/react-reconciler/src/ReactFiberErrorLogger.js#L78
+                maybeError = args[1]
+            }
+        } else {
+            maybeError = args[0]
+        }
+        
+        if (maybeError) {
+            sendError(maybeError);
+        }
+    } catch {}
+
+    return orig.apply(console, arguments);
+}`;
+
+    return String.raw`
  import { createHotContext } from '/@vite/client';
 
  const hot = createHotContext('/@visulima/vite-overlay');
@@ -262,33 +333,12 @@ window.addEventListener("unhandledrejection", function (evt) {
     sendError(evt.reason);
 });
 
-window.addEventListener('react-error-boundary', async function(e) {
-    var detail = e.detail;
-
-    if (detail && detail.error) {
-        sendError(detail.error);
-    }
-});
-
 // Expose sendError globally for direct error reporting (used by tests)
 window.__flameSendError = sendError;
 
-// Simple console.error override to catch React error boundary logs
-var orig = console.error;
-
-console.error = function() {
-    try {
-        var args = Array.prototype.slice.call(arguments);
-        var err = args.find((a) => a instanceof Error);
-        
-        if (err) {
-            // Send React-enhanced errors from console.error (like from error boundaries)
-            sendError(err);
-        }
-    } catch {}
-
-    return orig.apply(console, arguments);
-}`;
+${isReact ? reactLogger : ""}
+`;
+};
 
 const reconstructCauseChain = (causeData: any): Error | null => {
     if (!causeData) {
@@ -481,9 +531,37 @@ const setupHMRHandler = (
     });
 };
 
-const errorOverlayPlugin = (): Plugin => {
+// Check if React plugins are configured in Vite
+const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): boolean => plugins.flat().some((plugin) =>
+    plugin && (
+        (reactPluginName && (plugin as Plugin).name === reactPluginName)
+        || (plugin as Plugin).name === "vite:react"
+        || (plugin as Plugin).name === "@vitejs/plugin-react"
+        || (typeof plugin === "function" && (plugin as Plugin).name?.includes("react"))
+        || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))
+    ),
+);
+
+const errorOverlayPlugin = (options: {
+    logRuntimeError?: boolean;
+    reactPluginName?: string;
+}): Plugin => {
+    let mode: string;
+    let isReactProject: boolean;
+
     return {
         apply: "serve",
+
+        config(config, environment) {
+            if (config.plugins) {
+                isReactProject = hasReactPlugin(config.plugins, options?.reactPluginName);
+            }
+
+            mode = environment.mode || "development";
+
+            return config;
+        },
+
         // Receive client-reported runtime errors and forward as Vite error payloads
         configureServer(server) {
             const rootPath = server.config.root || process.cwd();
@@ -552,7 +630,7 @@ const errorOverlayPlugin = (): Plugin => {
         transformIndexHtml(): IndexHtmlTransformResult {
             return {
                 html: "",
-                tags: [{ attrs: { type: "module" }, children: generateClientScript(), injectTo: "head" as const, tag: "script" }],
+                tags: [{ attrs: { type: "module" }, children: generateClientScript(mode, isReactProject), injectTo: "head" as const, tag: "script" }],
             };
         },
     };

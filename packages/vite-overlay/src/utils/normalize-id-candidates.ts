@@ -9,16 +9,8 @@ const generateUrlCandidates = (urlString: string): string[] => {
     const { pathname } = url;
     const search = url.search || "";
 
-    // Vite-specific patterns for module resolution
-    const candidates = [
-        pathname + search, // Full path with query (most common)
-        pathname, // Just pathname
-        pathname.replace(/^\/@fs\//, ""), // Remove @fs prefix
-        decodeURIComponent(pathname + search), // Decoded full path
-        decodeURIComponent(pathname), // Decoded pathname
-    ];
+    const candidates = [pathname + search, pathname, pathname.replace(/^\/@fs\//, ""), decodeURIComponent(pathname + search), decodeURIComponent(pathname)];
 
-    // Remove duplicates and filter out empty strings
     return [...new Set(candidates)].filter(Boolean);
 };
 
@@ -36,24 +28,20 @@ export const normalizeIdCandidates = (filePath: string): string[] => {
         return [];
 
     try {
-        // Handle HTTP URLs (Vite dev server)
         if (isHttpUrl(filePath)) {
             return generateUrlCandidates(filePath);
         }
 
-        // Handle local file paths (Vite-specific optimizations)
         const candidates = [filePath];
 
-        // Add variations for common Vite patterns
         if (filePath.startsWith("/")) {
-            candidates.push(filePath.slice(1)); // Remove leading slash
+            candidates.push(filePath.slice(1));
         }
 
         if (filePath.includes("?")) {
-            candidates.push(filePath.split("?")[0]); // Remove query params
+            candidates.push(filePath.split("?")[0]);
         }
 
-        // Remove duplicates and return
         return [...new Set(candidates)].filter(Boolean);
     } catch (error) {
         console.warn(`Failed to normalize path "${filePath}":`, error);

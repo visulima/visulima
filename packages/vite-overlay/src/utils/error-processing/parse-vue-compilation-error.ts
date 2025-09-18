@@ -1,5 +1,5 @@
 /**
- * Parses Vue SFC compilation error messages to extract essential location information
+ * Parses Vue SFC compilation error messages to extract essential location information.
  */
 export const parseVueCompilationError = (errorMessage: string) => {
     // Check if this is a Vue compilation error

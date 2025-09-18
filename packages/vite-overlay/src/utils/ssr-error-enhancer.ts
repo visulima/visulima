@@ -78,7 +78,6 @@ const safeReadFile = async (filePath: string): Promise<string | undefined> => {
  * Applies SSR-specific error enhancements
  */
 const applySsrErrorEnhancements = async (error: EnhancedError, topFile: string | undefined, fileContents: string | undefined): Promise<void> => {
-    // Apply different enhancement strategies
     await enhanceFailedLoadError(error, topFile, fileContents);
     enhanceMdxError(error, topFile);
     await enhanceGlobError(error, topFile, fileContents);
@@ -176,13 +175,10 @@ const enhanceViteSsrError = async (rawError: unknown, server: ViteDevServer): Pr
     // Let Vite improve stack traces (source maps etc.)
     await safeSsrFixStacktrace(server, error);
 
-    // Extract top file from stack trace
     const topFile = extractTopFileFromStack(error);
 
-    // Load file contents for location enhancement
     const fileContents = topFile ? await safeReadFile(topFile) : undefined;
 
-    // Apply SSR-specific error enhancements
     await applySsrErrorEnhancements(error, topFile, fileContents);
 
     return error;

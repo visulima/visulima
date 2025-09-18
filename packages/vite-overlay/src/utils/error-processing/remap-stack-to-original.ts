@@ -10,14 +10,12 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
     let normalizedStack = stack;
 
     if (stack.includes("at ") && !stack.includes("\n    at ")) {
-        // Fix missing newlines and proper indentation for React stack traces
         normalizedStack = stack
             .replace(/^(Error:.*?)at /, "$1\n    at ")
             .replaceAll(/at ([^<\s]+)\s*(<[^>]+>:\d+:\d+)/g, "\n    at $1 $2")
             .replaceAll(/at ([^<\s]+)\s*(<unknown>:\d+:\d+)/g, "\n    at $1 $2")
             .replaceAll(/at ([^<\s]+)\s*<([^>]+)>:\d+:\d+/g, "\n    at $1 <$2>:\d+:\d+");
 
-        // Handle cases where location info is missing
         normalizedStack = normalizedStack.replaceAll(/at ([^<\s]+)(?=\s*at|$)/g, "\n    at $1 <unknown>:0:0");
     }
 
@@ -40,11 +38,9 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
             }
 
             if (!file || line <= 0 || column <= 0) {
-                // For React-specific frames, try to provide better context
                 if ((file === "<unknown>" || (file && (file.includes("react-dom") || file.includes("react")))) && frame.methodName) {
                     const { methodName: functionName } = frame;
 
-                    // React internal functions - provide better descriptions
                     const reactMappings = {
                         batchedUpdates: "Batch Updates",
                         dispatchEvent: "Event System",
@@ -59,7 +55,6 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
                         }
                     }
 
-                    // For user functions, try to find source files (only if not anonymous)
                     if (!functionName.includes("$") && !functionName.includes("anonymous")) {
                         const candidates = normalizeIdCandidates(functionName);
                         const module_ = findModuleForPath(server, candidates);

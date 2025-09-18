@@ -198,7 +198,9 @@ class ErrorOverlay extends HTMLElement {
                     currentError.message || "No error message available",
                     "",
                     "## Build Output",
-                    currentError.originalFilePath ? `${currentError.originalFilePath}:${currentError.originalFileLine}:${currentError.originalFileColumn}` : "Unknown location",
+                    currentError.originalFilePath
+                        ? `${currentError.originalFilePath}:${currentError.originalFileLine}:${currentError.originalFileColumn}`
+                        : "Unknown location",
                     currentError.message || "No error message available",
                     ...codeFrame ? ["", codeFrame] : [],
                     "",

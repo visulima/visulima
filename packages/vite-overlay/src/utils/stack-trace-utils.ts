@@ -53,20 +53,15 @@ export const isValidStackFrame: StackFrameValidator = (line: string): boolean =>
 };
 
 const cleanStackLine: StackLineCleaner = (line: string): string => {
-    // Remove @fs/ paths that Vite adds
     line = line.replaceAll(FS_PATH_PATTERN, PATH_SEPARATOR);
-    // Clean up file:// URLs that might appear
     line = line.replaceAll(FILE_URL_PATTERN, "");
 
-    // Handle <unknown> entries - these are browser limitations, not actual paths
     if (line.includes("<unknown>")) {
-        // Keep the line but mark it as unresolved
         return line.trim() || "";
     }
 
-    // Additional validation: only keep valid stack frames
     if (line.trim() && !isValidStackFrame(line)) {
-        return ""; // Remove invalid stack frames
+        return "";
     }
 
     return line;
@@ -107,10 +102,8 @@ const urlToAbsolutePath = (url: string, rootPath: string): string => {
     const parsedUrl = new URL(url);
     let path = decodeURIComponent(parsedUrl.pathname || "");
 
-    // Remove Vite's @fs/ prefix
     path = path.replaceAll(FS_PATH_PATTERN, PATH_SEPARATOR);
 
-    // Resolve to absolute path
     const absolutePath = resolve(rootPath, path.startsWith(PATH_SEPARATOR) ? path.slice(1) : path);
 
     return absolutePath;
@@ -143,7 +136,7 @@ export const cleanErrorStack = (stack: string): string => {
         .replaceAll("\r", "\n")
         .split(/\n/)
         .map(cleanStackLine)
-        .filter((line) => line.trim() !== "") // Remove empty lines
+        .filter((line) => line.trim() !== "")
         .join("\n");
 };
 
@@ -159,7 +152,6 @@ export const cleanAndResolveErrorStack = (stack: string, server: ViteDevServer, 
         return stack;
     }
 
-    // Clean the stack and absolutize URLs
     return cleanErrorStack(stack);
 };
 
