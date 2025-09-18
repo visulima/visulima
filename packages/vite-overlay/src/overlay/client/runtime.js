@@ -287,7 +287,6 @@ class ErrorOverlay extends HTMLElement {
                         }
 
                         fileElement.textContent = `.${displayPath}${line ? `:${line}` : ""}`;
-                        
                         const editor = localStorage.getItem("vo:editor");
 
                         const url = `/__open-in-editor?file=${encodeURIComponent(fullPath)}${
@@ -357,7 +356,7 @@ class ErrorOverlay extends HTMLElement {
                         const display = `${displayPath}:${ln}:${col}`;
                         const functionHtml = function_ ? `<span class="fn">${function_}</span> ` : "";
 
-                        return `<div class="frame"><span class="muted">at</span> ${functionHtml}<button type="button" class="stack-link underline bg-transparent border-none cursor-pointer text-[var(--flame-text)] hover:text-[var(--flame-text-muted)]" data-file="${escape(displayPath)}" data-line="${ln}" data-column="${col}">${escape(display)}</button></div>`;
+                        return `<div class="frame"><span class="muted">at</span> ${functionHtml}<button type="button" class="stack-link text-left underline bg-transparent border-none cursor-pointer text-[var(--flame-text)] hover:text-[var(--flame-text-muted)]" data-file="${escape(displayPath)}" data-line="${ln}" data-column="${col}">${escape(display)}</button></div>`;
                     };
                     const html = stackText.split("\n").map(fmt).join("");
 
@@ -376,7 +375,7 @@ class ErrorOverlay extends HTMLElement {
                             if (abs && abs.endsWith(filePath)) {
                                 resolved = abs;
                             }
-                            
+
                             const editor = localStorage.getItem("vo:editor");
 
                             const url = `/__open-in-editor?file=${encodeURIComponent(resolved)}${
@@ -556,10 +555,13 @@ class ErrorOverlay extends HTMLElement {
     }
 
     #initializeThemeToggle() {
-        const currentTheme
-            = localStorage.getItem("__v-o__theme") || (globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-        const isDark = currentTheme === "dark" || document.documentElement.classList.contains("dark");
+        const savedTheme = localStorage.getItem("__v-o__theme");
+        const systemPrefersDark = globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
+        const currentTheme = savedTheme || (systemPrefersDark ? "dark" : "light");
 
+        const isDark = currentTheme === "dark";
+
+        const rootElement = this.root.querySelector("#__v_o__root");
         const darkButton = this.root.querySelector("[data-v-o-theme-click-value=\"dark\"]");
         const lightButton = this.root.querySelector("[data-v-o-theme-click-value=\"light\"]");
 
@@ -568,14 +570,16 @@ class ErrorOverlay extends HTMLElement {
             darkButton?.classList.remove("block");
             lightButton?.classList.remove("hidden");
             lightButton?.classList.add("block");
-            document.documentElement.classList.add("dark");
+            rootElement?.classList.add("dark");
         } else {
             darkButton?.classList.remove("hidden");
             darkButton?.classList.add("block");
             lightButton?.classList.add("hidden");
             lightButton?.classList.remove("block");
-            document.documentElement.classList.remove("dark");
+            rootElement?.classList.remove("dark");
         }
+
+        rootElement?.classList.remove("hidden");
 
         const themeButtons = this.root.querySelectorAll("[data-v-o-theme-click-value]");
 
@@ -586,7 +590,7 @@ class ErrorOverlay extends HTMLElement {
                 const theme = e.currentTarget.dataset.vOThemeClickValue;
 
                 if (theme === "dark") {
-                    document.documentElement.classList.add("dark");
+                    rootElement?.classList.add("dark");
                     localStorage.setItem("__v-o__theme", "dark");
 
                     darkButton?.classList.add("hidden");
@@ -594,7 +598,7 @@ class ErrorOverlay extends HTMLElement {
                     lightButton?.classList.remove("hidden");
                     lightButton?.classList.add("block");
                 } else {
-                    document.documentElement.classList.remove("dark");
+                    rootElement?.classList.remove("dark");
                     localStorage.setItem("__v-o__theme", "light");
 
                     darkButton?.classList.remove("hidden");

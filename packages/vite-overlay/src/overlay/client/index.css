@@ -212,11 +212,11 @@
 }
 
 .shiki {
-    @apply max-w-full overflow-auto break-words [&_pre]:max-w-full [&_pre]:overflow-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700;
+    @apply max-w-full overflow-auto break-words pb-4 [&_pre]:max-w-full [&_pre]:overflow-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700;
 }
 
-html.dark .shiki,
-html.dark .shiki span {
+.dark .shiki,
+.dark .shiki span {
     color: var(--shiki-dark) !important;
     background-color: var(--shiki-dark-bg) !important;
     /* Optional, if you also want font styles */

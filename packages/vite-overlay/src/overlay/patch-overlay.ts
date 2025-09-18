@@ -39,7 +39,7 @@ const generateOverlayTemplate = (): string => {
     const editorOptions = generateEditorOptions();
 
     return `<style>${styleCss}</style>
-<div id="__v_o__root" class="fixed inset-0 z-0 flex flex-col items-center pt-[10vh] px-[15px]">
+<div id="__v_o__root" class="fixed inset-0 z-0 flex flex-col items-center pt-[10vh] px-[15px] hidden">
     <div id="__v_o__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
     <div id="__v_o__notch" class="relative z-[2] flex w-full max-w-[var(--flame-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--flame-dialog-border-width)] translate-y-[var(--flame-dialog-border-width)]" style="--stroke-color: var(--flame-border); --background-color: var(--flame-surface);">
         <div class="error-overlay-notch relative translate-x-[calc(var(--flame-dialog-border-width)*-1)] h-[var(--flame-dialog-notch-height)] p-3 pr-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tl-[var(--flame-dialog-radius)]" data-side="left">
@@ -86,12 +86,12 @@ const generateOverlayTemplate = (): string => {
             </div>
             
             <div id="v-o-theme-switch" class="flex items-center gap-1">
-                <button type="button" title="Switch to dark mode" aria-label="Switch to dark mode" class="v-o-dark-mode-active:hidden block v-o-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-v-o-theme-click-value="dark">
+                <button type="button" title="Switch to dark mode" aria-label="Switch to dark mode" class="font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-v-o-theme-click-value="dark">
                     <span class="inline-flex shrink-0 justify-center items-center size-8">
                         <span class="dui w-5 h-5" style="-webkit-mask-image: url('${moonStarIcon}'); mask-image: url('${moonStarIcon}')"></span>
                     </span>
                 </button>
-                <button type="button" title="Switch to light mode" aria-label="Switch to light mode" class="v-o-dark-mode-active:block hidden v-o-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-v-o-theme-click-value="light">
+                <button type="button" title="Switch to light mode" aria-label="Switch to light mode" class="hidden font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-v-o-theme-click-value="light">
                     <span class="inline-flex shrink-0 justify-center items-center size-8">
                         <span class="dui w-5 h-5" style="-webkit-mask-image: url('${sunIcon}'); mask-image: url('${sunIcon}')"></span>
                     </span>
