@@ -412,7 +412,15 @@ class ErrorOverlay extends HTMLElement {
                     return;
                 }
 
-                flameOverlay.innerHTML = mode === "compiled" ? currentError.compiledCodeFrameContent || "" : currentError.originalCodeFrameContent || "";
+                let codeFrame = '<div class="no-code-frame font-mono">No code frame could be generated.</div>';
+
+                if (mode === "compiled" && currentError.compiledCodeFrameContent) {
+                    codeFrame = currentError.compiledCodeFrameContent;
+                } else if (currentError.originalCodeFrameContent) {
+                    codeFrame = currentError.originalCodeFrameContent;
+                }
+
+                flameOverlay.innerHTML = codeFrame;
             };
 
             const activeMode = this.__flameMode || "original";
