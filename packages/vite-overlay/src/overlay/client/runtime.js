@@ -1,3 +1,4 @@
+/* eslint-disable n/no-unsupported-features/node-builtins */
 /* eslint-disable no-unsanitized/property */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable func-names */
@@ -20,17 +21,6 @@ class ErrorOverlay extends HTMLElement {
      */
     __flamePayload;
 
-    /**
-     * Original body overflow value for restoring scroll
-     * @type {string}
-     */
-    #originalBodyOverflow = "";
-
-    /**
-     * Original html overflow value for restoring scroll
-     * @type {string}
-     */
-    #originalHtmlOverflow = "";
 
     /**
      * Creates an error overlay component
@@ -56,12 +46,9 @@ class ErrorOverlay extends HTMLElement {
         this.root.innerHTML = overlayTemplate;
         this.dir = "ltr";
 
-        // Store reference to the element for external access
         this.element = this;
 
-        // Store reference to this instance for pagination component
         this.root.host._errorOverlay = this;
-        // Automatically add to DOM when created
         document.body.append(this);
 
         if (error && (error.errors === undefined || !Array.isArray(error.errors))) {
@@ -81,8 +68,6 @@ class ErrorOverlay extends HTMLElement {
 
         this.#initializeCopyError();
 
-        this.#initializeScrollBlocking();
-
         this.#initializePagination();
 
         this.#hideLoadingStates();
@@ -92,35 +77,29 @@ class ErrorOverlay extends HTMLElement {
         if (editorSelect) {
             let saved = null;
 
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
-            saved = localStorage.getItem("flare:editor");
+            saved = localStorage.getItem("vo:editor");
 
             if (saved && editorSelect.value !== saved) {
                 editorSelect.value = saved;
             }
 
             editorSelect.addEventListener("change", function () {
-                // eslint-disable-next-line n/no-unsupported-features/node-builtins
-                localStorage.setItem("flare:editor", this.value || "");
+                localStorage.setItem("vo:editor", this.value || "");
             });
         }
 
-        // Initialize close button - only for client errors
         const closeButton = this.root.querySelector("#__v_o__close");
 
         if (closeButton) {
-            // Only show close button for client errors
             if (this.__flamePayload.errorType === "client") {
                 closeButton.addEventListener("click", () => {
                     this.close();
                 });
             } else {
-                // Hide close button for server errors
                 closeButton.style.display = "none";
             }
         }
 
-        // Add ESC key handler for closing - only for client errors
         if (this.__flamePayload.errorType === "client") {
             document.addEventListener("keydown", (event) => {
                 if (event.key === "Escape" && this.parentNode) {
@@ -137,7 +116,6 @@ class ErrorOverlay extends HTMLElement {
     }
 
     updateOverlay() {
-        // Force re-render of the current error
         const currentIndex = 0; // Assuming we're showing the first error
 
         const currentError = this.__flamePayload?.errors?.[currentIndex];
@@ -154,9 +132,7 @@ class ErrorOverlay extends HTMLElement {
     }
 
     #hideLoadingStates() {
-        // Add a small delay to ensure content is fully rendered
         setTimeout(() => {
-            // Hide header skeleton and show real content
             const headerSkeleton = this.root.querySelector("#__v_o__header_loader");
             const headerContent = this.root.querySelector("#__v_o__title");
 
@@ -168,7 +144,6 @@ class ErrorOverlay extends HTMLElement {
                 headerContent.classList.remove("hidden");
             }
 
-            // Hide message skeleton and show real content
             const messageSkeleton = this.root.querySelector("#__v_o__message_loader");
             const messageContent = this.root.querySelector("#__v_o__message");
 
@@ -180,7 +155,6 @@ class ErrorOverlay extends HTMLElement {
                 messageContent.classList.remove("hidden");
             }
 
-            // Hide body skeleton and show real content
             const bodySkeleton = this.root.querySelector("#__v_o__body_loader");
             const bodyContent = this.root.querySelector("#__v_o__overlay");
 
@@ -214,46 +188,28 @@ class ErrorOverlay extends HTMLElement {
                     return;
                 }
 
-                // Format error information
-                const errorInfo = {
-                    error: {
-                        column: currentError.originalFileColumn || currentError.compiledColumn || 0,
-                        file: currentError.originalFilePath || currentError.compiledFilePath || "",
-                        line: currentError.originalFileLine || currentError.compiledLine || 0,
-                        message: currentError.message || "",
-                        name: currentError.name || "Unknown Error",
-                    },
-                    stack: currentError.originalStack || currentError.compiledStack || "",
-                    timestamp: new Date().toISOString(),
-                    url: globalThis.location.href,
-                    userAgent: navigator.userAgent,
-                };
-
-                // Create formatted text in structured markdown format
-                const codeFrame = currentError?.originalCodeFrameContent || currentError?.compiledCodeFrameContent || "";
+                const codeFrame = currentError?.originalSnippet || "";
 
                 const formattedText = [
                     "## Error Type",
-                    errorInfo.error.name || "Unknown Error",
+                    currentError.name || "Unknown Error",
                     "",
                     "## Error Message",
-                    errorInfo.error.message || "No error message available",
+                    currentError.message || "No error message available",
                     "",
                     "## Build Output",
-                    errorInfo.error.file ? `${errorInfo.error.file}:${errorInfo.error.line}:${errorInfo.error.column}` : "Unknown location",
-                    errorInfo.error.message || "No error message available",
+                    currentError.originalFilePath ? `${currentError.originalFilePath}:${currentError.originalFileLine}:${currentError.originalFileColumn}` : "Unknown location",
+                    currentError.message || "No error message available",
                     ...codeFrame ? ["", codeFrame] : [],
                     "",
-                    errorInfo.stack || "No stack trace available",
+                    "## Stack Trace",
+                    currentError.stack || "No stack trace available",
                 ].join("\n");
 
-                // Copy to clipboard
                 await navigator.clipboard.writeText(formattedText);
 
-                // Visual feedback
                 const originalText = copyButton.innerHTML;
 
-                // Change to success state
                 copyButton.innerHTML = `
                     <span class="inline-flex shrink-0 justify-center items-center size-8">
                         <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,14 +218,12 @@ class ErrorOverlay extends HTMLElement {
                     </span>
                 `;
 
-                // Reset after 2 seconds
                 setTimeout(() => {
                     copyButton.innerHTML = originalText;
                 }, 2000);
             } catch (error) {
                 console.error("[v-o] Failed to copy error info:", error);
 
-                // Show error state
                 const originalText = copyButton.innerHTML;
 
                 copyButton.innerHTML = `
@@ -281,7 +235,6 @@ class ErrorOverlay extends HTMLElement {
                     </span>
                 `;
 
-                // Reset after 2 seconds
                 setTimeout(() => {
                     copyButton.innerHTML = originalText;
                 }, 2000);
@@ -291,7 +244,6 @@ class ErrorOverlay extends HTMLElement {
 
     #initializePagination() {
         const payload = this.__flamePayload;
-        // Use the processed errors from the payload - they should already be in the correct format
         const errors = Array.isArray(payload.errors) && payload.errors.length > 0 ? payload.errors : [];
         const errorIds = errors.map((e, index) =>
 
@@ -302,7 +254,6 @@ class ErrorOverlay extends HTMLElement {
 
         let currentIndex = 0;
 
-        // Update the main overlay content based on current index
         const updateOverlayContent = () => {
             const mount = this.root.querySelector("#__v_o__overlay");
 
@@ -318,7 +269,6 @@ class ErrorOverlay extends HTMLElement {
             };
 
             const updateFileLink = () => {
-                // Update clickable file link if available
                 const fileElement = this.root.querySelector("#__v_o__filelink");
 
                 if (fileElement) {
@@ -329,10 +279,8 @@ class ErrorOverlay extends HTMLElement {
                         let displayPath = fullPath;
 
                         if (payload.rootPath && fullPath.startsWith(payload.rootPath)) {
-                            // Remove root path to show relative path
                             displayPath = fullPath.slice(payload.rootPath.length);
 
-                            // Ensure it starts with a slash if it doesn't already
                             if (!displayPath.startsWith("/")) {
                                 displayPath = `/${displayPath}`;
                             }
@@ -349,7 +297,6 @@ class ErrorOverlay extends HTMLElement {
                 }
             };
 
-            // Update raw stacktrace pane if present (formatted, with clickable file links)
             const updateRawStack = (mode) => {
                 const stackHost = this.root.querySelector("#__v_o__stacktrace");
                 const stackElement = stackHost?.querySelector("div:last-child");
@@ -382,7 +329,6 @@ class ErrorOverlay extends HTMLElement {
                     };
 
                     const fmt = (line) => {
-                        // Match: "at func (file:line:col)" or "at file:line:col"
                         const m = /\s*at\s+(?:(.+?)\s+\()?(.*?):(\d+):(\d+)\)?/.exec(line);
 
                         if (!m)
@@ -401,7 +347,6 @@ class ErrorOverlay extends HTMLElement {
                     const html = stackText.split("\n").map(fmt).join("");
 
                     stackElement.innerHTML = html;
-                    // Attach open-in-editor handlers
                     stackElement.querySelectorAll(".stack-link").forEach((a) => {
                         a.addEventListener("click", (event_) => {
                             event_.preventDefault();
@@ -409,7 +354,6 @@ class ErrorOverlay extends HTMLElement {
                             const filePath = a.dataset.file || "";
                             const line = a.dataset.line || "";
                             const column = a.dataset.column || "";
-                            // Prefer absolute from currentError if it ends with the display path
                             let resolved = filePath;
 
                             const abs = currentError.originalFilePath || currentError.compiledFilePath || "";
@@ -430,7 +374,6 @@ class ErrorOverlay extends HTMLElement {
                 }
             };
 
-            // Render codeframe and set up mode switching
             const flameOverlay = this.root.querySelector("#__v_o__overlay");
             const headingElement = this.root.querySelector("#__v_o__heading");
             const messageElement = this.root.querySelector("#__v_o__message");
@@ -445,7 +388,6 @@ class ErrorOverlay extends HTMLElement {
                 messageElement.textContent = currentError.message || "";
             }
 
-            // Show tabs conditionally: only show original/compiled tabs if we have both
             const hasOriginal = !!currentError.originalCodeFrameContent;
             const hasCompiled = !!currentError.compiledCodeFrameContent;
 
@@ -458,7 +400,6 @@ class ErrorOverlay extends HTMLElement {
             const originalButton = this.root.querySelector("[data-flame-mode=\"original\"]");
             const compiledButton = this.root.querySelector("[data-flame-mode=\"compiled\"]");
 
-            // Hide buttons for tabs that don't have content
             if (originalButton) {
                 originalButton.style.display = hasOriginal ? "" : "none";
             }
@@ -472,7 +413,6 @@ class ErrorOverlay extends HTMLElement {
                     return;
                 }
 
-                // Choose the appropriate code frame based on mode
                 flameOverlay.innerHTML = mode === "compiled" ? currentError.compiledCodeFrameContent || "" : currentError.originalCodeFrameContent || "";
             };
 
@@ -482,7 +422,6 @@ class ErrorOverlay extends HTMLElement {
             updateFileLink();
             updateRawStack(activeMode);
 
-            // Initialize button states
             if (originalButton && compiledButton) {
                 if (activeMode === "original") {
                     originalButton.classList.add("active");
@@ -501,7 +440,6 @@ class ErrorOverlay extends HTMLElement {
                 renderCode("original");
                 updateRawStack("original");
 
-                // Update button states
                 originalButton?.classList.add("active");
                 compiledButton?.classList.remove("active");
             });
@@ -514,13 +452,11 @@ class ErrorOverlay extends HTMLElement {
                 renderCode("compiled");
                 updateRawStack("compiled");
 
-                // Update button states
                 compiledButton?.classList.add("active");
                 originalButton?.classList.remove("active");
             });
         };
 
-        // Update pagination display
         const updatePagination = () => {
             const indexElement = this.root.querySelector("[data-flame-dialog-error-index]");
             const totalElement = this.root.querySelector("[data-flame-dialog-header-total-count]");
@@ -596,61 +532,7 @@ class ErrorOverlay extends HTMLElement {
         updatePagination();
     }
 
-    #initializeScrollBlocking() {
-        // Store original overflow values
-        this.#originalBodyOverflow = document.body.style.overflow || "";
-        this.#originalHtmlOverflow = document.documentElement.style.overflow || "";
-
-        // Prevent scrolling
-        document.body.style.overflow = "hidden";
-        document.documentElement.style.overflow = "hidden";
-
-        // Handle overlay removal (when close button is clicked or overlay is removed)
-        const closeButton = this.root.querySelector("#__v_o__close");
-
-        if (closeButton) {
-            closeButton.addEventListener("click", () => {
-                this.#restoreScroll();
-            });
-        }
-
-        // Also restore scroll when the overlay element is removed from DOM
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.removedNodes.forEach((node) => {
-                    if (node === this.root || (node.contains && node.contains(this.root))) {
-                        this.#restoreScroll();
-                        observer.disconnect();
-                    }
-                });
-            });
-        });
-
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-        });
-
-        // Fallback: restore scroll when page visibility changes (user switches tabs, etc.)
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "hidden") {
-                // User switched away, restore scroll temporarily
-                this.#restoreScroll();
-            } else if (this.root && document.body.contains(this.root)) {
-                // User came back and overlay is still there, block scroll again
-                document.body.style.overflow = "hidden";
-                document.documentElement.style.overflow = "hidden";
-            }
-        });
-
-        // Cleanup on page unload to ensure scroll is restored
-        window.addEventListener("beforeunload", () => {
-            this.#restoreScroll();
-        });
-    }
-
     #initializeThemeToggle() {
-        // Initialize button visibility based on current theme
         const currentTheme
             = localStorage.getItem("__v-o__theme") || (globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         const isDark = currentTheme === "dark" || document.documentElement.classList.contains("dark");
@@ -672,7 +554,6 @@ class ErrorOverlay extends HTMLElement {
             document.documentElement.classList.remove("dark");
         }
 
-        // Setup event listeners
         const themeButtons = this.root.querySelectorAll("[data-v-o-theme-click-value]");
 
         themeButtons.forEach((button) => {
@@ -681,12 +562,10 @@ class ErrorOverlay extends HTMLElement {
 
                 const theme = e.currentTarget.dataset.vOThemeClickValue;
 
-                // Update theme on document element (affects whole page)
                 if (theme === "dark") {
                     document.documentElement.classList.add("dark");
                     localStorage.setItem("__v-o__theme", "dark");
 
-                    // Update button visibility for dark mode
                     darkButton?.classList.add("hidden");
                     darkButton?.classList.remove("block");
                     lightButton?.classList.remove("hidden");
@@ -695,7 +574,6 @@ class ErrorOverlay extends HTMLElement {
                     document.documentElement.classList.remove("dark");
                     localStorage.setItem("__v-o__theme", "light");
 
-                    // Update button visibility for light mode
                     darkButton?.classList.remove("hidden");
                     darkButton?.classList.add("block");
                     lightButton?.classList.add("hidden");
@@ -705,15 +583,6 @@ class ErrorOverlay extends HTMLElement {
         });
     }
 
-    #restoreScroll() {
-        // Restore original overflow values
-        document.body.style.overflow = this.#originalBodyOverflow;
-        document.documentElement.style.overflow = this.#originalHtmlOverflow;
-
-        // Clear stored values
-        this.#originalBodyOverflow = "";
-        this.#originalHtmlOverflow = "";
-    }
 }
 
 // Global error handler for React errors

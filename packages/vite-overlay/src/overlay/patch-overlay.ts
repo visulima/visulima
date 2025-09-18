@@ -13,7 +13,6 @@ import Editors from "../../../../shared/utils/editors";
 import styleCss from "./client/index.css";
 import FlameErrorOverlay from "./client/runtime.js?raw";
 
-// Constants
 const AUTO_DETECT_EDITOR_OPTION = "<option value=\"\">Auto-detected Editor</option>";
 const VITE_CLIENT_CLASS = "class ErrorOverlay";
 const VITE_ERROR_OVERLAY_CLASS = "var ErrorOverlay = ";
@@ -81,7 +80,7 @@ const generateOverlayTemplate = (): string => {
             </svg>
         </div>
         <div class="error-overlay-notch flex gap-1 relative translate-x-[calc(var(--flame-dialog-border-width)*-1)] h-[var(--flame-dialog-notch-height)] p-3 pl-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tr-[var(--flame-dialog-radius)]" data-side="right">
-            <div id="__v_o__editor" class="hidden sm:flex items-center gap-1 mr-1">
+            <div id="__v_o__editor" class="hidden sm:flex items-center gap-1">
                 <label for="editor-selector" class="sr-only">Editor</label>
                 <select id="editor-selector" class="py-1 cursor-pointer px-2 pe-6 block w-44 bg-[var(--flame-surface)] border border-[var(--flame-border)] rounded-[var(--flame-radius-md)] text-xs text-[var(--flame-text)] shadow-[var(--flame-elevation-1)] hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:ring-1 focus:ring-[var(--flame-red-orange)]">${editorOptions}</select>
             </div>
@@ -128,24 +127,23 @@ const generateOverlayTemplate = (): string => {
         </div>
     </div>
 
-    <div id="__v_o__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex w-full max-w-[var(--flame-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--flame-dialog-radius)] bg-[var(--flame-surface)] text-[var(--flame-text)] shadow-[var(--flame-elevation-1)] border-b border-[var(--flame-border)] ">
-        <div id="__v_o__header" class="flex items-center justify-between border-b border-[var(--flame-border)] bg-[var(--flame-surface)] px-4 py-2">            
+    <div id="__v_o__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex gap-1 w-full max-w-[var(--flame-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--flame-dialog-radius)] bg-[var(--flame-surface)] text-[var(--flame-text)] shadow-[var(--flame-elevation-1)] border-b border-[var(--flame-border)] ">
+        <div id="__v_o__header" class="flex items-center gap-1 justify-between border-b border-[var(--flame-border)] bg-[var(--flame-surface)] px-4 py-2">            
             <div id="__v_o__header_loader" class="v-o-skeleton h-6 w-3/5 rounded animate-pulse"></div>
-            <div id="__v_o__title" class="flex items-center gap-2 min-w-10/12 font-bold text-[var(--flame-text)] hidden">
+            <div id="__v_o__title" class="flex items-center gap-2 w-full font-bold text-[var(--flame-text)] hidden">
                 <span id="__v_o__heading" class="leading-none rounded-md text-[var(--flame-red-orange)] font-mono text-sm"></span>
                 <a id="__v_o__filelink" class="ml-2 text-xs font-normal font-mono underline text-[var(--flame-text-muted)] hover:text-[var(--flame-text)]" href="#" target="_blank" rel="noreferrer noopener"></a>
             </div>
-            <div class="flex items-center gap-2"></div>
-                <div id="__v_o__mode" class="sm:flex items-center gap-1 mr-1">
-                    <button type="button" data-flame-mode="original" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]" style="display:none">Original</button>
-                    <button type="button" data-flame-mode="compiled" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]" style="display:none">Compiled</button>
-                </div>
-                <button type="button" id="__v_o__copy_error" title="Copy Error Info" aria-label="Copy Error Info" class="font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]">
-                    <span class="inline-flex shrink-0 justify-center items-center size-8">
-                        <span class="dui w-5 h-5" style="-webkit-mask-image: url('${copyIcon}'); mask-image: url('${copyIcon}')"></span>
-                    </span>
-                </button>
+            <div id="__v_o__mode" class="sm:flex items-center gap-1">
+                <button type="button" data-flame-mode="original" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]" style="display:none">Original</button>
+                <button type="button" data-flame-mode="compiled" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]" style="display:none">Compiled</button>
             </div>
+            <button type="button" id="__v_o__copy_error" title="Copy Error Info" aria-label="Copy Error Info" class="font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]">
+                <span class="inline-flex shrink-0 justify-center items-center size-8">
+                    <span class="dui w-5 h-5" style="-webkit-mask-image: url('${copyIcon}'); mask-image: url('${copyIcon}')"></span>
+                </span>
+            </button>
+        </div>
 
         <div id="__v_o__message_loader" class="px-4 py-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
             <div class="v-o-skeleton h-4 w-full rounded animate-pulse"></div>
@@ -185,14 +183,12 @@ const generateOverlayTemplate = (): string => {
 export const patchOverlay = (code: string): string => {
     const overlayTemplate = generateOverlayTemplate();
 
-    // Use JSON.stringify to properly escape the template string and avoid octal escape issues
     const templateString = `const overlayTemplate = ${JSON.stringify(overlayTemplate)};`;
 
     let patched = code.replace(VITE_CLIENT_CLASS, `${templateString}\n${FlameErrorOverlay}\nclass ViteErrorOverlay`);
 
     patched = patched.replace(VITE_ERROR_OVERLAY_CLASS, `${templateString}\n${FlameErrorOverlay}\nvar ViteErrorOverlay = `);
 
-    // Make our ErrorOverlay available globally AFTER it's defined
     patched = `${patched}\n\n${WINDOW_ERROR_OVERLAY_GLOBAL};`;
 
     return patched;

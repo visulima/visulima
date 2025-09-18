@@ -33,6 +33,7 @@ export interface ExtendedError {
     readonly compiledSnippet?: string;
     readonly fixPrompt?: string;
     readonly originalCodeFrameContent?: string;
+    readonly originalCodeFrameContentAnsi?: string;
     readonly originalFileColumn?: number;
     readonly originalFileLine?: number;
     readonly originalFilePath?: string;
