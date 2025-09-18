@@ -8,7 +8,7 @@ import getHighlighter, { transformerCompactLineOptions } from "../../../../../sh
 import type { ErrorProcessingResult, ViteErrorData } from "../../types";
 import findModuleForPath from "../find-module-for-path";
 import { normalizeIdCandidates } from "../normalize-id-candidates";
-import { realignOriginalPosition } from "../position-aligner";
+import realignOriginalPosition from "../position-aligner";
 import resolveOriginalLocation from "../resolve-original-location";
 import type { ESBuildMessage } from "../stack-trace-utils";
 import { cleanErrorMessage, cleanErrorStack, extractErrors, isESBuildErrorArray, processESBuildErrors } from "../stack-trace-utils";
@@ -183,7 +183,6 @@ const createEmptyResult = (
         compiledColumn,
         compiledFilePath,
         compiledLine,
-        compiledSnippet: "",
         fixPrompt: "",
         originalCodeFrameContent: undefined,
         originalFileColumn,
@@ -266,7 +265,7 @@ const generateSyntaxHighlightedFrames = async (
  * @returns Promise resolving to extended error data object
  */
 const buildExtendedErrorData = async (
-    error: Error | { message: string; name?: string; stack?: string },
+    error: Error,
     server: ViteDevServer,
     viteErrorData?: ViteErrorData,
     allErrors?: (Error | { message: string; name?: string; stack?: string })[],
@@ -546,7 +545,6 @@ const buildExtendedErrorData = async (
         compiledColumn,
         compiledFilePath,
         compiledLine,
-        compiledSnippet,
         compiledStack: formatStacktrace(
             parseStacktrace({
                 message: cleanMessage,

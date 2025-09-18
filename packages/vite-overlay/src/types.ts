@@ -1,4 +1,5 @@
 import type { ErrorLocation } from "@visulima/error/error";
+import type { Solution } from "@visulima/error/solution";
 
 export type ErrorLike = Error | { message?: string; name?: string; stack?: string };
 
@@ -22,6 +23,7 @@ export interface VisulimaViteOverlayErrorPayload {
     readonly errors: ReadonlyArray<ExtendedError>;
     readonly errorType: "client" | "server";
     readonly rootPath: string;
+    readonly solution?: Solution;
 }
 
 // Individual error cause with detailed debugging information
@@ -30,13 +32,17 @@ export interface ExtendedError {
     readonly compiledColumn?: number;
     readonly compiledFilePath?: string;
     readonly compiledLine?: number;
-    readonly compiledSnippet?: string;
     readonly fixPrompt?: string;
+    readonly hint?: string;
+    readonly message: string;
+    readonly name: string;
     readonly originalCodeFrameContent?: string;
     readonly originalFileColumn?: number;
     readonly originalFileLine?: number;
     readonly originalFilePath?: string;
     readonly originalSnippet?: string;
+    readonly plugin?: string;
+    readonly stack: string;
 }
 
 // Development server logging interface
@@ -92,36 +98,16 @@ export interface ResolvedLocation {
     readonly originalFileLine: number;
     readonly originalFilePath: string;
 }
-
-// Module matching and scoring
-export interface ModuleMatch<T = any> {
-    readonly module: T;
-    readonly score: number;
-}
-
 // Source text retrieval results
 export interface SourceTexts {
     readonly compiledSourceText?: string;
     readonly originalSourceText?: string;
 }
-
-// ESBuild error message format
-export interface ESBuildMessage {
-    readonly location?: {
-        readonly column: number;
-        readonly file: string;
-        readonly line: number;
-    };
-    readonly pluginName?: string;
-    readonly text: string;
-}
-
 export interface ErrorProcessingResult {
     readonly compiledCodeFrameContent?: string;
     readonly compiledColumn: number;
     readonly compiledFilePath: string;
     readonly compiledLine: number;
-    readonly compiledSnippet: string;
     readonly compiledStack?: string;
     readonly errorCount?: number;
     readonly fixPrompt: string;
@@ -133,13 +119,6 @@ export interface ErrorProcessingResult {
     readonly originalStack?: string;
     readonly plugin?: string;
 }
-
-// Type guards for better type safety
-export const isErrorLike = (value: unknown): value is ErrorLike =>
-    typeof value === "object" && value !== null && ("message" in value || "name" in value || "stack" in value);
-
-export const isVueErrorInfo = (value: unknown): value is VueErrorInfo =>
-    typeof value === "object" && value !== null && "column" in value && "filePath" in value && "line" in value;
 
 // Utility types for function signatures
 export type StackFrameValidator = (line: string) => boolean;

@@ -13,6 +13,7 @@ const createSingletonHighlighter = async (langs: LanguageInput[] = []): Promise<
         const highlighterCore: unknown = await createHighlighterCore({
             // Defer loading of themes/langs to the core loader
             themes: [import("@shikijs/themes/github-dark-default"), import("@shikijs/themes/github-light")],
+            // TODO: move this into ono and vite-overlay and add it based on the file extension
             langs: [
                 import("@shikijs/langs/javascript"),
                 import("@shikijs/langs/typescript"),

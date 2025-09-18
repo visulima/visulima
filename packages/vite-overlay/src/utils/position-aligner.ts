@@ -1,40 +1,12 @@
-// Constants
 const CONTEXT_WINDOW_SIZE = 64;
 const BROADER_CONTEXT_SIZE = 16;
 const MIN_TOKEN_LENGTH = 3;
 const MIN_LINE_LENGTH = 4;
 
-// Types
 interface Position {
     column: number;
     line: number;
 }
-
-/**
- * Attempts to realign original source positions when source maps are incomplete or inaccurate.
- * Uses heuristic matching to find the corresponding location in the original source.
- * @param compiledSource The compiled source code
- * @param compiledLine Line number in compiled source (1-based)
- * @param compiledColumn Column number in compiled source (1-based)
- * @param originalSource The original source code
- * @returns Realigned position or null if no match found
- */
-export const realignOriginalPosition = (compiledSource: string, compiledLine: number, compiledColumn: number, originalSource: string): Position | null => {
-    const compiledLineText = getLine(compiledSource, compiledLine);
-
-    if (!compiledLineText) {
-        return null;
-    }
-
-    const originalLines = originalSource.split(/\n/g);
-    const candidateToken = extractCandidateToken(compiledLineText, compiledColumn);
-
-    return (
-        tryTokenBasedSearch(candidateToken, originalLines)
-        || tryLineSubstringSearch(compiledLineText.trim(), originalLines)
-        || tryWhitespaceInsensitiveSearch(compiledLineText.trim(), originalLines)
-    );
-};
 
 const getLine = (source: string, line: number): string => source.split(/\n/g)[line - 1] ?? "";
 
@@ -170,3 +142,31 @@ const mapNormalizedToOriginalPosition = (lineText: string, normalizedPosition: n
 
     return -1;
 };
+
+/**
+ * Attempts to realign original source positions when source maps are incomplete or inaccurate.
+ * Uses heuristic matching to find the corresponding location in the original source.
+ * @param compiledSource The compiled source code
+ * @param compiledLine Line number in compiled source (1-based)
+ * @param compiledColumn Column number in compiled source (1-based)
+ * @param originalSource The original source code
+ * @returns Realigned position or null if no match found
+ */
+const realignOriginalPosition = (compiledSource: string, compiledLine: number, compiledColumn: number, originalSource: string): Position | null => {
+    const compiledLineText = getLine(compiledSource, compiledLine);
+
+    if (!compiledLineText) {
+        return null;
+    }
+
+    const originalLines = originalSource.split(/\n/g);
+    const candidateToken = extractCandidateToken(compiledLineText, compiledColumn);
+
+    return (
+        tryTokenBasedSearch(candidateToken, originalLines)
+        || tryLineSubstringSearch(compiledLineText.trim(), originalLines)
+        || tryWhitespaceInsensitiveSearch(compiledLineText.trim(), originalLines)
+    );
+};
+
+export default realignOriginalPosition;

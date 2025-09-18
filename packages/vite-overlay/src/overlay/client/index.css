@@ -47,67 +47,66 @@
     --tw-contrast: initial: ;
 }
 
-/* Flame Theme Color Variables - Available for use in Tailwind classes */
+/* ono Theme Color Variables - Available for use in Tailwind classes */
 :host {
-    --flame-white-smoke: #f5f5f5;
-    --flame-red-orange: #ff4628;
-    --flame-charcoal-black: #202020;
+    --ono-v-white-smoke: #f5f5f5;
+    --ono-v-red-orange: #ff4628;
+    --ono-v-charcoal-black: #202020;
 
     /* Semantic tokens for a cleaner, modern UI */
-    --flame-bg: var(--flame-white-smoke);
-    --flame-surface: #ffffff;
-    --flame-surface-muted: #fafafa;
-    --flame-border: rgba(185, 200, 215, 0.5);
-    --flame-hover-overlay: rgba(32, 32, 32, 0.05);
+    --ono-v-bg: var(--ono-v-white-smoke);
+    --ono-v-surface: #ffffff;
+    --ono-v-surface-muted: #fafafa;
+    --ono-v-border: rgba(185, 200, 215, 0.5);
+    --ono-v-hover-overlay: rgba(32, 32, 32, 0.05);
 
-    --flame-success: #2ea043;
-    --flame-success-bg: rgba(46, 160, 67, 0.6);
+    --ono-v-success: #2ea043;
+    --ono-v-success-bg: rgba(3, 97, 22, 0.6);
     /* Neutral/chip tokens */
-    --flame-neutral: #6e7681;
-    --flame-neutral-bg: rgba(110, 118, 129, 0.18);
-    --flame-chip-bg: rgba(110, 118, 129, 0.14);
-    --flame-chip-text: var(--flame-text);
+    --ono-v-neutral: #6e7681;
+    --ono-v-neutral-bg: rgba(110, 118, 129, 0.18);
+    --ono-v-chip-bg: rgba(110, 118, 129, 0.14);
+    --ono-v-chip-text: var(--ono-v-text);
 
-    --flame-radius-md: 0.5rem;
-    --flame-radius-lg: 0.75rem;
-    --flame-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02);
-    --flame-elevation-2: 0 10px 25px -5px rgba(32, 32, 32, 0.1), 0 8px 10px -6px rgba(32, 32, 32, 0.1);
+    --ono-v-radius-md: 0.5rem;
+    --ono-v-radius-lg: 0.75rem;
+    --ono-v-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02);
+    --ono-v-elevation-2: 0 10px 25px -5px rgba(32, 32, 32, 0.1), 0 8px 10px -6px rgba(32, 32, 32, 0.1);
 
     /* Accessible text/link tokens */
-    --flame-text: #111827; /* gray-900 */
-    --flame-text-muted: #374151; /* gray-700 */
-    --flame-link: #c4311d; /* slightly darker red-orange for contrast */
-    --flame-muted-on-surface: #374151; /* alias for convenience */
-    --flame-on-accent: #ffffff; /* text on red-orange */
-
-    --flame-dialog-border-width: 1px;
-    --flame-dialog-radius: 12px;
-    --flame-dialog-max-width: 960px;
-    --flame-dialog-row-padding: 16px;
-    --flame-dialog-padding: 12px;
-    --flame-dialog-notch-height: 42px;
+    --ono-v-text: #111827; /* gray-900 */
+    --ono-v-text-muted: #374151; /* gray-700 */
+    --ono-v-link: #c4311d; /* slightly darker red-orange for contrast */
+    --ono-v-muted-on-surface: #374151; /* alias for convenience */
+    --ono-v-on-accent: #ffffff; /* text on red-orange */
+    --ono-v-dialog-border-width: 1px;
+    --ono-v-dialog-radius: 12px;
+    --ono-v-dialog-max-width: 960px;
+    --ono-v-dialog-row-padding: 16px;
+    --ono-v-dialog-padding: 12px;
+    --ono-v-dialog-notch-height: 42px;
 }
 
 /* Dark mode semantic mapping */
 .dark {
-    --flame-bg: #161b22;
-    --flame-surface: #0d1117;
-    --flame-surface-muted: #0f141b;
-    --flame-border: rgba(48, 54, 61, 0.6);
-    --flame-text: #c9d1d9; /* github dark fg */
-    --flame-text-muted: #8b949e; /* github dark muted fg */
-    --flame-link: #ff6a52; /* keep flame accent */
-    --flame-muted-on-surface: #8b949e;
-    --flame-hover-overlay: rgba(240, 246, 252, 0.06);
-    --flame-on-accent: #ffffff;
+    --ono-v-bg: #161b22;
+    --ono-v-surface: #0d1117;
+    --ono-v-surface-muted: #0f141b;
+    --ono-v-border: rgba(48, 54, 61, 0.6);
+    --ono-v-text: #c9d1d9; /* github dark fg */
+    --ono-v-text-muted: #8b949e; /* github dark muted fg */
+    --ono-v-link: #ff6a52; /* keep ono accent */
+    --ono-v-muted-on-surface: #8b949e;
+    --ono-v-hover-overlay: rgba(240, 246, 252, 0.06);
+    --ono-v-on-accent: #ffffff;
 
-    --flame-success: #2ea043;
-    --flame-success-bg: rgba(46, 160, 67, 0.2);
+    --ono-v-success: #2ea043;
+    --ono-v-success-bg: rgba(46, 160, 67, 0.2);
     /* Neutral/chip tokens for dark */
-    --flame-neutral: #6e7681;
-    --flame-neutral-bg: rgba(110, 118, 129, 0.25);
-    --flame-chip-bg: rgba(110, 118, 129, 0.2);
-    --flame-chip-text: var(--flame-text);
+    --ono-v-neutral: #6e7681;
+    --ono-v-neutral-bg: rgba(110, 118, 129, 0.25);
+    --ono-v-chip-bg: rgba(110, 118, 129, 0.2);
+    --ono-v-chip-text: var(--ono-v-text);
 }
 
 /* Respect reduced motion preferences */
@@ -129,61 +128,83 @@
     }
 
     body {
-        background-color: var(--flame-bg);
-        color: var(--flame-text);
+        background-color: var(--ono-v-bg);
+        color: var(--ono-v-text);
     }
     pre,
     code {
-        color: var(--flame-text);
+        color: var(--ono-v-text);
     }
     .text-muted {
-        color: var(--flame-text-muted);
+        color: var(--ono-v-text-muted);
     }
 
     a {
-        color: var(--flame-link);
+        color: var(--ono-v-link);
     }
-
     a:hover {
         text-decoration: underline;
     }
 
     ::selection {
-        background: color-mix(in srgb, var(--flame-red-orange) 20%, transparent);
+        background: color-mix(in srgb, var(--ono-v-red-orange) 20%, transparent);
     }
 
     kbd {
-        background-color: var(--flame-chip-bg);
-        color: var(--flame-chip-text);
+        background-color: var(--ono-v-chip-bg);
+        color: var(--ono-v-chip-text);
         border-radius: 0.375rem;
         padding: 0.125rem 0.375rem;
-        font-size: 0.75rem;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font:
+            0.75rem ui-monospace,
+            SFMono-Regular,
+            Menlo,
+            Monaco,
+            Consolas,
+            "Liberation Mono",
+            "Courier New",
+            monospace;
     }
 
     hr {
-        border-color: var(--flame-border);
+        border-color: var(--ono-v-border);
     }
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Defaults hover styles on all devices */
+@custom-variant hover (&:hover);
+
 @media (min-width: 576px) {
     :host {
-        --flame-dialog-max-width: 540px;
+        --ono-v-dialog-max-width: 540px;
     }
 }
 
 @media (min-width: 768px) {
     :host {
-        --flame-dialog-max-width: 720px;
+        --ono-v-dialog-max-width: 720px;
     }
 }
 
 @media (min-width: 992px) {
     :host {
-        --flame-dialog-max-width: 960px;
+        --ono-v-dialog-max-width: 960px;
     }
+}
+
+/* Consistent focus outline for interactive elements */
+button:focus-visible,
+[role="tab"]:focus-visible,
+summary:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[data-open-in-editor]:focus-visible,
+.js-clipboard:focus-visible {
+    outline: 2px solid var(--ono-v-red-orange);
+    outline-offset: 2px;
 }
 
 .lucide {

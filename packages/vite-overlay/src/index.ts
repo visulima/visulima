@@ -1,14 +1,21 @@
 /* eslint-disable no-secrets/no-secrets */
 import { getErrorCauses } from "@visulima/error/error";
-import type { IndexHtmlTransformResult, Plugin, PluginOption, ViteDevServer, WebSocketClient } from "vite";
+import type { Solution, SolutionFinder } from "@visulima/error/solution";
+import { errorHintFinder, ruleBasedFinder } from "@visulima/error/solution";
+import DOMPurify from "dompurify";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { parse } from "marked";
+import type { IndexHtmlTransformResult, Plugin, PluginOption, TransformOptions, ViteDevServer, WebSocketClient } from "vite";
 
 import { terminalOutput } from "../../../shared/utils/cli-error-builder";
+import findLanguageBasedOnExtension from "../../../shared/utils/find-language-based-on-extension";
 import { DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
 import { patchOverlay } from "./overlay/patch-overlay";
-import type { DevelopmentLogger, RawErrorData, RecentErrorTracker, VisulimaViteOverlayErrorPayload, ViteErrorData } from "./types";
+import type { DevelopmentLogger, ExtendedError, RawErrorData, RecentErrorTracker, VisulimaViteOverlayErrorPayload, ViteErrorData } from "./types";
 import buildExtendedErrorData from "./utils/error-processing";
 import enhanceViteSsrError from "./utils/ssr-error-enhancer";
 import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace-utils";
+import viteSolutionFinder from "./utils/vite-solution-finder";
 
 const logError = (server: ViteDevServer, prefix: string, error: unknown): void => {
     try {
@@ -115,12 +122,75 @@ const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string
     server.ws.send({ err: runtimeError, type: "error" } as any);
 };
 
+// Find solution for an error using solution finders
+const findSolution = async (
+    error: ExtendedError,
+    solutionFinders: SolutionFinder[],
+): Promise<Solution | undefined> => {
+    let hint: Solution | undefined;
+
+    solutionFinders.push(errorHintFinder, viteSolutionFinder, ruleBasedFinder);
+
+    for await (const handler of solutionFinders.toSorted((a, b) => b.priority - a.priority)) {
+        if (hint) {
+            break;
+        }
+
+        const { handle: solutionHandler, name } = handler;
+
+        if (process.env.DEBUG) {
+            // eslint-disable-next-line no-console
+            console.debug(`Running solution finder: ${name}`);
+        }
+
+        if (typeof solutionHandler !== "function") {
+            continue;
+        }
+
+        try {
+            hint = await solutionHandler({
+                hint: error?.hint ?? "",
+                message: error.message,
+                name: error.name,
+                stack: error?.stack,
+            }, {
+                file: error?.originalFilePath ?? "",
+                language: findLanguageBasedOnExtension(error?.originalFilePath ?? ""),
+                line: error?.originalFileLine ?? 0,
+                snippet: error?.originalSnippet ?? "",
+            });
+
+            if (hint === undefined) {
+                return undefined;
+            }
+
+            const parsedHeader = await parse(hint.header ?? "");
+            const parsedBody = await parse(hint.body ?? "");
+
+            if (parsedBody === "") {
+                return undefined;
+            }
+
+            return {
+                body: DOMPurify.sanitize(String(parsedBody)),
+                header: DOMPurify.sanitize(String(parsedHeader)),
+            };
+        } catch {
+            // Ignore solution finder errors and continue with other finders
+            continue;
+        }
+    }
+
+    return hint;
+};
+
 const buildExtendedError = async (
     rawError: Error,
     server: ViteDevServer,
     rootPath: string,
-    viteErrorData?: ViteErrorData,
-    errorType: "client" | "server" = "client",
+    viteErrorData: ViteErrorData | undefined,
+    errorType: "client" | "server",
+    solutionFinders: SolutionFinder[],
 ): Promise<VisulimaViteOverlayErrorPayload> => {
     const allErrors = getErrorCauses(rawError);
 
@@ -170,6 +240,7 @@ const buildExtendedError = async (
             const extendedData = await buildExtendedErrorData(error, server, enhancedViteErrorData, allErrors, index);
 
             return {
+                hint: error?.hint,
                 message: error?.message || "",
                 name: error?.name || DEFAULT_ERROR_NAME,
                 stack: absolutizeStackUrls(cleanErrorStack(error?.stack || ""), rootPath),
@@ -178,10 +249,14 @@ const buildExtendedError = async (
         }),
     );
 
+    // Find solution for the main error
+    const solution = await findSolution(extendedErrors[0] as ExtendedError, solutionFinders);
+
     return {
         errors: extendedErrors,
         errorType,
         rootPath,
+        solution,
     } as VisulimaViteOverlayErrorPayload;
 };
 
@@ -229,7 +304,7 @@ console.error = function() {
             error: null,
         }
     }
-    
+
     function isError(err) {
         return typeof err === 'object' && err !== null && 'name' in err && 'message' in err;
     }
@@ -237,7 +312,7 @@ console.error = function() {
     try {
         if (${mode} !== 'production') {
             const { error: replayedError } = parseConsoleArgs(args)
-            
+
             if (replayedError) {
                 maybeError = replayedError
             } else if ((args[isError0])) {
@@ -249,7 +324,7 @@ console.error = function() {
         } else {
             maybeError = args[0]
         }
-        
+
         if (maybeError) {
             sendError(maybeError);
         }
@@ -340,6 +415,7 @@ ${isReact ? reactLogger : ""}
 `;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const reconstructCauseChain = (causeData: any): Error | null => {
     if (!causeData) {
         return null;
@@ -365,6 +441,7 @@ const setupWebSocketInterception = (
     shouldSkip: (signature: string) => boolean,
     recentErrors: Map<string, number>,
     rootPath: string,
+    solutionFinders: SolutionFinder[],
 ): void => {
     // Enhanced WebSocket interception for all errors
     const originalSend = server.ws.send.bind(server.ws);
@@ -406,10 +483,14 @@ const setupWebSocketInterception = (
                                 plugin: err.plugin || "vite:import-analysis",
                             },
                             "server",
+                            solutionFinders,
                         );
 
                         data.err = extensionPayload;
+
                         recentErrors.set(JSON.stringify(extensionPayload), Date.now());
+
+                        console.log("extensionPayload", extensionPayload);
                     }
                 } else {
                     // Handle other types of errors (runtime errors, etc.)
@@ -438,11 +519,13 @@ const setupWebSocketInterception = (
                         }
                         : undefined;
 
-                    const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, viteErrorData, "server");
+                    const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, viteErrorData, "server", solutionFinders);
+
+                    data.err = extensionPayload;
 
                     recentErrors.set(JSON.stringify(extensionPayload), Date.now());
 
-                    data.err = extensionPayload;
+                    console.log("extensionPayload", extensionPayload);
                 }
             }
 
@@ -465,6 +548,7 @@ const setupHMRHandler = (
     shouldSkip: (signature: string) => boolean,
     recentErrors: Map<string, number>,
     rootPath: string,
+    solutionFinders: SolutionFinder[],
 ): void => {
     server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
         const raw
@@ -511,11 +595,20 @@ const setupHMRHandler = (
                     plugin: raw?.plugin,
                 } as ViteErrorData,
                 "client",
+                solutionFinders,
             );
 
             recentErrors.set(JSON.stringify(extensionPayload), Date.now());
 
-            client.send({ err: extensionPayload as any, type: "error" });
+            const payload: any = { err: extensionPayload, type: "error" };
+
+            // Inject solution into overlay if available
+            if (extensionPayload.solution) {
+                payload.solutions = extensionPayload.solution;
+            }
+
+            client.send(payload);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             logError(server, "[visulima:vite-overlay:server] failed to build extended client error", error);
 
@@ -545,6 +638,7 @@ const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): bool
 const errorOverlayPlugin = (options: {
     logRuntimeError?: boolean;
     reactPluginName?: string;
+    solutionFinders?: SolutionFinder[];
 }): Plugin => {
     let mode: string;
     let isReactProject: boolean;
@@ -572,9 +666,10 @@ const errorOverlayPlugin = (options: {
             // Simple transformRequest interception to catch import errors early
             const originalTransformRequest = server.transformRequest.bind(server);
 
-            server.transformRequest = async (url: string, options?: any) => {
+            server.transformRequest = async (url: string, transformOptions?: TransformOptions) => {
                 try {
-                    return await originalTransformRequest(url, options);
+                    return await originalTransformRequest(url, transformOptions);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } catch (error: any) {
                     // Check if this is an import resolution error
                     if (error?.message?.includes("Failed to resolve import")) {
@@ -594,10 +689,10 @@ const errorOverlayPlugin = (options: {
                 }
             };
 
-            setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath);
+            setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? []);
 
             // Handle client-reported errors via HMR
-            setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath);
+            setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? []);
 
             // Capture unhandled rejections on the dev server process and surface them in the overlay
             const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
@@ -612,8 +707,8 @@ const errorOverlayPlugin = (options: {
         name: PLUGIN_NAME,
 
         // Replace Vite's overlay class with our custom overlay (Astro-style patch)
-        transform(code, id, options): string | null {
-            if (options?.ssr) {
+        transform(code, id, transformOptions): string | null {
+            if (transformOptions?.ssr) {
                 // eslint-disable-next-line unicorn/no-null
                 return null;
             }

@@ -373,7 +373,6 @@ src/components/Test.vue
             expect(result).toHaveProperty("originalCodeFrameContent");
             expect(result).toHaveProperty("compiledCodeFrameContent");
             expect(result).toHaveProperty("originalSnippet");
-            expect(result).toHaveProperty("compiledSnippet");
         });
     });
 
@@ -3497,7 +3496,6 @@ Final line`);
             expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");
 
             // Should show correct compiled code frame
-            expect(result.compiledSnippet).toBeDefined();
             expect(result.compiledLine).toBe(20); // Primary error line
             expect(result.compiledColumn).toBe(9); // Primary error column
         });

@@ -49,6 +49,9 @@ class ErrorOverlay extends HTMLElement {
 
         this.root.host._errorOverlay = this;
 
+        // Store global reference for solution updates
+        globalThis.__v_o__current = this;
+
         document.body.append(this);
 
         if (error && (error.errors === undefined || !Array.isArray(error.errors))) {
@@ -62,6 +65,7 @@ class ErrorOverlay extends HTMLElement {
         };
 
         this.__flamePayload = payload;
+
         this.__flameMode = "original";
 
         this.#initializeThemeToggle();
@@ -69,6 +73,12 @@ class ErrorOverlay extends HTMLElement {
         this.#initializeCopyError();
 
         this.#initializePagination();
+        console.log(error);
+
+        // Inject solution into the overlay if available
+        if (error.solution) {
+            this.#injectSolution(error.solution);
+        }
 
         this.#hideLoadingStates();
 
@@ -358,7 +368,7 @@ class ErrorOverlay extends HTMLElement {
                         const display = `${displayPath}:${ln}:${col}`;
                         const functionHtml = function_ ? `<span class="fn">${function_}</span> ` : "";
 
-                        return `<div class="frame"><span class="muted">at</span> ${functionHtml}<button type="button" class="stack-link text-left underline bg-transparent border-none cursor-pointer text-[var(--flame-text)] hover:text-[var(--flame-text-muted)]" data-file="${escape(displayPath)}" data-line="${ln}" data-column="${col}">${escape(display)}</button></div>`;
+                        return `<div class="frame"><span class="muted">at</span> ${functionHtml}<button type="button" class="stack-link text-left underline bg-transparent border-none cursor-pointer text-[var(--ono-v-text)] hover:text-[var(--ono-v-text-muted)]" data-file="${escape(displayPath)}" data-line="${ln}" data-column="${col}">${escape(display)}</button></div>`;
                     };
                     const html = stackText.split("\n").map(fmt).join("");
 
@@ -610,6 +620,34 @@ class ErrorOverlay extends HTMLElement {
                 }
             });
         });
+    }
+
+    #injectSolution(solution) {
+        const solutionsContainer = this.root.querySelector("#__v_o__solutions");
+
+        if (solutionsContainer && solution) {
+            // Generate HTML from solution object
+            let html = "";
+
+            if (solution.header) {
+                html += `<h3 class="text-lg font-semibold mb-2 text-[var(--ono-v-text)]">${solution.header}</h3>`;
+            }
+
+            if (solution.body) {
+                html += `<div class="text-sm text-[var(--ono-v-text-muted)]">${solution.body}</div>`;
+            }
+
+            // Set the HTML content and show the container
+            solutionsContainer.innerHTML = html;
+            solutionsContainer.classList.remove("hidden");
+
+            // Make sure the solutions appear after the message
+            const messageElement = this.root.querySelector("#__v_o__message");
+
+            if (messageElement) {
+                messageElement.after(solutionsContainer);
+            }
+        }
     }
 }
 
