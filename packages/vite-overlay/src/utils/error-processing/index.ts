@@ -186,7 +186,6 @@ const createEmptyResult = (
         compiledSnippet: "",
         fixPrompt: "",
         originalCodeFrameContent: undefined,
-        originalCodeFrameContentAnsi: undefined,
         originalFileColumn,
         originalFileLine,
         originalFilePath,
@@ -206,7 +205,6 @@ const generateSyntaxHighlightedFrames = async (
     compiledLine: number,
 ) => {
     let originalCodeFrameContent: string | undefined;
-    let originalCodeFrameContentAnsi: string | undefined;
     let compiledCodeFrameContent: string | undefined;
 
     // Always process both snippets individually, even if one is empty
@@ -232,8 +230,6 @@ const generateSyntaxHighlightedFrames = async (
     };
 
     if (originalSnippet && originalSnippet.trim()) {
-        originalCodeFrameContentAnsi = originalSnippet;
-
         try {
             originalCodeFrameContent = highlighter.codeToHtml(originalSnippet, {
                 ...highlightOptions,
@@ -567,7 +563,6 @@ const buildExtendedErrorData = async (
         originalFileColumn,
         originalFileLine,
         originalFilePath,
-        originalSnippet,
         originalSnippet,
         originalStack: originalStack || cleanedStack,
         plugin,
