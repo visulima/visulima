@@ -132,7 +132,7 @@ const generateOverlayTemplate = (): string => {
             <div id="__v_o__header_loader" class="v-o-skeleton h-6 w-3/5 rounded animate-pulse"></div>
             <div id="__v_o__title" class="flex items-center gap-2 w-full font-bold text-[var(--flame-text)] hidden">
                 <span id="__v_o__heading" class="leading-none rounded-md text-[var(--flame-red-orange)] font-mono text-sm"></span>
-                <a id="__v_o__filelink" class="ml-2 text-xs font-normal font-mono underline text-[var(--flame-text-muted)] hover:text-[var(--flame-text)]" href="#" target="_blank" rel="noreferrer noopener"></a>
+                <button type="button" id="__v_o__filelink" class="ml-2 text-xs font-normal font-mono underline text-[var(--flame-text-muted)] hover:text-[var(--flame-text)] bg-transparent border-none cursor-pointer"></button>
             </div>
             <div id="__v_o__mode" class="sm:flex items-center gap-1">
                 <button type="button" data-flame-mode="original" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]" style="display:none">Original</button>

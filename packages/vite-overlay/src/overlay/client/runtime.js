@@ -48,6 +48,7 @@ class ErrorOverlay extends HTMLElement {
         this.element = this;
 
         this.root.host._errorOverlay = this;
+
         document.body.append(this);
 
         if (error && (error.errors === undefined || !Array.isArray(error.errors))) {
@@ -244,9 +245,8 @@ class ErrorOverlay extends HTMLElement {
     #initializePagination() {
         const payload = this.__flamePayload;
         const errors = Array.isArray(payload.errors) && payload.errors.length > 0 ? payload.errors : [];
-        const errorIds = errors.map((e, index) =>
-
-            String(e.__id || [e.originalFilePath || "", e.originalFileLine || 0, e.name || "", e.message || ""].join("|")),
+        const errorIds = errors.map((error) =>
+            String(error.__id || [error.originalFilePath || "", error.originalFileLine || 0, error.name || "", error.message || ""].join("|")),
         );
 
         const totalErrors = errors.length;
@@ -272,7 +272,8 @@ class ErrorOverlay extends HTMLElement {
 
                 if (fileElement) {
                     const fullPath = currentError?.originalFilePath || "";
-                    const line = currentError?.originalFileLine || 0;
+                    const line = currentError?.originalFileLine;
+                    const column = currentError?.originalFileColumn;
 
                     if (fullPath) {
                         let displayPath = fullPath;
@@ -286,11 +287,26 @@ class ErrorOverlay extends HTMLElement {
                         }
 
                         fileElement.textContent = `.${displayPath}${line ? `:${line}` : ""}`;
-                        fileElement.setAttribute("href", fullPath);
-                        fileElement.classList.remove("hidden");
+                        
+                        const editor = localStorage.getItem("vo:editor");
+
+                        const url = `/__open-in-editor?file=${encodeURIComponent(fullPath)}${
+                            line ? `&line=${line}` : ""
+                        }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
+
+                        // Remove any existing event listeners
+                        const newFileElement = fileElement.cloneNode(true);
+
+                        fileElement.parentNode.replaceChild(newFileElement, fileElement);
+
+                        newFileElement.addEventListener("click", (event) => {
+                            event.preventDefault();
+                            fetch(url, { method: "POST" });
+                        });
+
+                        newFileElement.classList.remove("hidden");
                     } else {
                         fileElement.textContent = "";
-                        fileElement.setAttribute("href", "#");
                         fileElement.classList.add("hidden");
                     }
                 }
@@ -313,18 +329,18 @@ class ErrorOverlay extends HTMLElement {
                             .replaceAll("&", "&amp;")
                             .replaceAll("<", "&lt;")
                             .replaceAll(">", "&gt;");
-                    const normalizePath = (p) => {
-                        if (/^https?:\/\//i.test(p)) {
-                            const u = new URL(p);
 
-                            p = u.pathname || "";
+                    const normalizePath = (path) => {
+                        if (/^https?:\/\//i.test(path)) {
+                            const u = new URL(path);
+
+                            path = u.pathname || "";
                         }
 
-                        p = decodeURIComponent(p);
+                        path = decodeURIComponent(path);
+                        path = String(path || "").replace(/^\/@fs\//, "/");
 
-                        p = String(p || "").replace(/^\/@fs\//, "/");
-
-                        return p;
+                        return path;
                     };
 
                     const fmt = (line) => {
@@ -341,18 +357,18 @@ class ErrorOverlay extends HTMLElement {
                         const display = `${displayPath}:${ln}:${col}`;
                         const functionHtml = function_ ? `<span class="fn">${function_}</span> ` : "";
 
-                        return `<div class="frame"><span class="muted">at</span> ${functionHtml}<a href="#" class="stack-link" data-file="${escape(displayPath)}" data-line="${ln}" data-column="${col}">${escape(display)}</a></div>`;
+                        return `<div class="frame"><span class="muted">at</span> ${functionHtml}<button type="button" class="stack-link underline bg-transparent border-none cursor-pointer text-[var(--flame-text)] hover:text-[var(--flame-text-muted)]" data-file="${escape(displayPath)}" data-line="${ln}" data-column="${col}">${escape(display)}</button></div>`;
                     };
                     const html = stackText.split("\n").map(fmt).join("");
 
                     stackElement.innerHTML = html;
-                    stackElement.querySelectorAll(".stack-link").forEach((a) => {
-                        a.addEventListener("click", (event_) => {
+                    stackElement.querySelectorAll(".stack-link").forEach((button) => {
+                        button.addEventListener("click", (event_) => {
                             event_.preventDefault();
 
-                            const filePath = a.dataset.file || "";
-                            const line = a.dataset.line || "";
-                            const column = a.dataset.column || "";
+                            const filePath = button.dataset.file || "";
+                            const line = button.dataset.line || "";
+                            const column = button.dataset.column || "";
                             let resolved = filePath;
 
                             const abs = currentError.originalFilePath || currentError.compiledFilePath || "";
@@ -360,14 +376,14 @@ class ErrorOverlay extends HTMLElement {
                             if (abs && abs.endsWith(filePath)) {
                                 resolved = abs;
                             }
+                            
+                            const editor = localStorage.getItem("vo:editor");
 
-                            const qs = `/__open-in-editor?file=${encodeURIComponent(resolved)}${
+                            const url = `/__open-in-editor?file=${encodeURIComponent(resolved)}${
                                 line ? `&line=${line}` : ""
-                            }${column ? `&column=${column}` : ""}`;
+                            }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
 
-                            a.setAttribute("href", qs);
-
-                            fetch(qs);
+                            fetch(url, { method: "POST" });
                         });
                     });
                 }
@@ -412,7 +428,7 @@ class ErrorOverlay extends HTMLElement {
                     return;
                 }
 
-                let codeFrame = '<div class="no-code-frame font-mono">No code frame could be generated.</div>';
+                let codeFrame = "<div class=\"no-code-frame font-mono\">No code frame could be generated.</div>";
 
                 if (mode === "compiled" && currentError.compiledCodeFrameContent) {
                     codeFrame = currentError.compiledCodeFrameContent;
@@ -439,8 +455,8 @@ class ErrorOverlay extends HTMLElement {
                 }
             }
 
-            originalButton?.addEventListener("click", (e) => {
-                e.preventDefault();
+            originalButton?.addEventListener("click", (event) => {
+                event.preventDefault();
 
                 this.__flameMode = "original";
 
@@ -451,8 +467,8 @@ class ErrorOverlay extends HTMLElement {
                 compiledButton?.classList.remove("active");
             });
 
-            compiledButton?.addEventListener("click", (e) => {
-                e.preventDefault();
+            compiledButton?.addEventListener("click", (event) => {
+                event.preventDefault();
 
                 this.__flameMode = "compiled";
 
@@ -496,9 +512,9 @@ class ErrorOverlay extends HTMLElement {
         const nextButton = this.root.querySelector("[data-flame-dialog-error-next]");
 
         if (previousButton) {
-            previousButton.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+            previousButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
 
                 if (currentIndex > 0) {
                     currentIndex--;
@@ -508,9 +524,9 @@ class ErrorOverlay extends HTMLElement {
         }
 
         if (nextButton) {
-            nextButton.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+            nextButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
 
                 if (currentIndex < totalErrors - 1) {
                     currentIndex++;
