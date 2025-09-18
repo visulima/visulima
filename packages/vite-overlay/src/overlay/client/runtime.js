@@ -630,11 +630,11 @@ class ErrorOverlay extends HTMLElement {
             let html = "";
 
             if (solution.header) {
-                html += `<h3 class="text-lg font-semibold mb-2 text-[var(--ono-v-text)]">${solution.header}</h3>`;
+                html += solution.header;
             }
 
             if (solution.body) {
-                html += `<div class="text-sm text-[var(--ono-v-text-muted)]">${solution.body}</div>`;
+                html += solution.body;
             }
 
             // Set the HTML content and show the container

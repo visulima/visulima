@@ -4351,6 +4351,9 @@ importers:
       dompurify:
         specifier: ^3.2.7
         version: 3.2.7
+      fastest-levenshtein:
+        specifier: ^1.0.16
+        version: 1.0.16
       shiki:
         specifier: ^3.12.2
         version: 3.12.2
@@ -23735,7 +23738,7 @@ packages:
   vite-hot-client@2.1.0:
     resolution: {integrity: sha512-7SpgZmU7R+dDnSmvXE1mfDtnHLHQSisdySVR7lO8ceAXvM0otZeuQQ6C8LrS5d/aYyP/QZ0hI0L+dIPrm4YlFQ==}
     peerDependencies:
-      vite: '>=7.1.5'
+      vite: '>=5.4.20'
 
 >>>>>>> ec6632a8 (feat(vite-overlay): add examples for Solid and Svelte frameworks)
   vite-node@1.6.1:

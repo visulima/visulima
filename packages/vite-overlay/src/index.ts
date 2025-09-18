@@ -15,7 +15,7 @@ import type { DevelopmentLogger, ExtendedError, RawErrorData, RecentErrorTracker
 import buildExtendedErrorData from "./utils/error-processing";
 import enhanceViteSsrError from "./utils/ssr-error-enhancer";
 import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace-utils";
-import viteSolutionFinder from "./utils/vite-solution-finder";
+import createViteSolutionFinder from "./utils/vite-solution-finder";
 
 const logError = (server: ViteDevServer, prefix: string, error: unknown): void => {
     try {
@@ -123,19 +123,12 @@ const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string
 };
 
 // Find solution for an error using solution finders
-const findSolution = async (
-    error: ExtendedError,
-    solutionFinders: SolutionFinder[],
-): Promise<Solution | undefined> => {
+const findSolution = async (error: ExtendedError, solutionFinders: SolutionFinder[], rootPath: string): Promise<Solution | undefined> => {
     let hint: Solution | undefined;
 
-    solutionFinders.push(errorHintFinder, viteSolutionFinder, ruleBasedFinder);
+    solutionFinders.push(errorHintFinder, createViteSolutionFinder(rootPath), ruleBasedFinder);
 
     for await (const handler of solutionFinders.toSorted((a, b) => b.priority - a.priority)) {
-        if (hint) {
-            break;
-        }
-
         const { handle: solutionHandler, name } = handler;
 
         if (process.env.DEBUG) {
@@ -148,38 +141,41 @@ const findSolution = async (
         }
 
         try {
-            hint = await solutionHandler({
-                hint: error?.hint ?? "",
-                message: error.message,
-                name: error.name,
-                stack: error?.stack,
-            }, {
-                file: error?.originalFilePath ?? "",
-                language: findLanguageBasedOnExtension(error?.originalFilePath ?? ""),
-                line: error?.originalFileLine ?? 0,
-                snippet: error?.originalSnippet ?? "",
-            });
+            const result = await solutionHandler(
+                {
+                    hint: error?.hint ?? "",
+                    message: error.message,
+                    name: error.name,
+                    stack: error?.stack,
+                },
+                {
+                    file: error?.originalFilePath ?? "",
+                    language: findLanguageBasedOnExtension(error?.originalFilePath ?? ""),
+                    line: error?.originalFileLine ?? 0,
+                    snippet: error?.originalSnippet ?? "",
+                },
+            );
 
-            if (hint === undefined) {
-                return undefined;
+            if (result === undefined) {
+                continue;
             }
 
-            const parsedHeader = await parse(hint.header ?? "");
-            const parsedBody = await parse(hint.body ?? "");
+            const parsedHeader = (await parse(result.header ?? "")) as string;
+            const parsedBody = (await parse(result.body ?? "")) as string;
 
-            if (parsedBody === "") {
-                return undefined;
-            }
-
-            return {
-                body: DOMPurify.sanitize(String(parsedBody)),
-                header: DOMPurify.sanitize(String(parsedHeader)),
+            hint = {
+                body: parsedBody,
+                header: parsedHeader,
             };
+
+            break;
         } catch {
             // Ignore solution finder errors and continue with other finders
             continue;
         }
     }
+
+    console.log("result", hint);
 
     return hint;
 };
@@ -250,7 +246,7 @@ const buildExtendedError = async (
     );
 
     // Find solution for the main error
-    const solution = await findSolution(extendedErrors[0] as ExtendedError, solutionFinders);
+    const solution = await findSolution(extendedErrors[0] as ExtendedError, solutionFinders, rootPath);
 
     return {
         errors: extendedErrors,
@@ -608,7 +604,7 @@ const setupHMRHandler = (
             }
 
             client.send(payload);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             logError(server, "[visulima:vite-overlay:server] failed to build extended client error", error);
 
@@ -625,21 +621,20 @@ const setupHMRHandler = (
 };
 
 // Check if React plugins are configured in Vite
-const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): boolean => plugins.flat().some((plugin) =>
-    plugin && (
-        (reactPluginName && (plugin as Plugin).name === reactPluginName)
-        || (plugin as Plugin).name === "vite:react"
-        || (plugin as Plugin).name === "@vitejs/plugin-react"
-        || (typeof plugin === "function" && (plugin as Plugin).name?.includes("react"))
-        || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))
-    ),
-);
+const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): boolean =>
+    plugins
+        .flat()
+        .some(
+            (plugin) =>
+                plugin
+                && ((reactPluginName && (plugin as Plugin).name === reactPluginName)
+                    || (plugin as Plugin).name === "vite:react"
+                    || (plugin as Plugin).name === "@vitejs/plugin-react"
+                    || (typeof plugin === "function" && (plugin as Plugin).name?.includes("react"))
+                    || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))),
+        );
 
-const errorOverlayPlugin = (options: {
-    logRuntimeError?: boolean;
-    reactPluginName?: string;
-    solutionFinders?: SolutionFinder[];
-}): Plugin => {
+const errorOverlayPlugin = (options: { logRuntimeError?: boolean; reactPluginName?: string; solutionFinders?: SolutionFinder[] }): Plugin => {
     let mode: string;
     let isReactProject: boolean;
 

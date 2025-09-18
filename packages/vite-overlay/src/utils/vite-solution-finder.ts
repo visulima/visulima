@@ -1,0 +1,401 @@
+import fs from "node:fs";
+import path from "node:path";
+
+import type { Solution, SolutionFinder } from "@visulima/error/solution";
+import { distance } from "fastest-levenshtein";
+
+// Configuration constants
+const MAX_SEARCH_DEPTH = 4;
+const MAX_FILES_TO_SEARCH = 1000;
+const MAX_SUGGESTIONS = 5;
+const NAME_SIMILARITY_THRESHOLD = 0.5;
+
+// File type categories for better organization
+const SCRIPT_EXTENSIONS = [".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs"];
+const STYLE_EXTENSIONS = [".css", ".scss", ".sass", ".less"];
+const ASSET_EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico"];
+const RELEVANT_EXTENSIONS = new Set([...ASSET_EXTENSIONS, ...SCRIPT_EXTENSIONS, ...STYLE_EXTENSIONS]);
+
+interface FileCandidate {
+    baseName: string;
+    extension: string;
+    fullPath: string;
+    path: string;
+    relevanceScore: number;
+}
+
+/**
+ * Get a properly formatted relative path
+ */
+const getRelativePath = (fromDirectory: string, toPath: string): string => {
+    const relativePath = path.relative(fromDirectory, toPath);
+
+    return relativePath.startsWith(".") ? relativePath : `./${relativePath}`;
+};
+
+/**
+ * Get human-readable context for path distance
+ */
+const getPathContext = (pathDistance: number): string => {
+    if (pathDistance === 0)
+        return "";
+
+    if (pathDistance === 1)
+        return " (in parent directory)";
+
+    if (pathDistance === 2)
+        return " (in grandparent directory)";
+
+    return ` (${pathDistance} directories away)`;
+};
+
+/**
+ * Calculate the path distance between two directories
+ */
+const calculatePathDistance = (fromDirectory: string, toDirectory: string): number => {
+    try {
+        const relativePath = path.relative(fromDirectory, toDirectory);
+        const segments = relativePath.split(path.sep).filter((s) => s && s !== ".");
+
+        // Count upward movements (..) and directory changes
+        let distance = 0;
+
+        for (const segment of segments) {
+            if (segment === "..") {
+                distance += 2; // Penalize going up directories more
+            } else {
+                distance += 1; // Penalize changing directories
+            }
+        }
+
+        return distance;
+    } catch {
+        return 10; // High penalty for unresolvable paths
+    }
+};
+
+/**
+ * Calculate relevance score for a file candidate based on import requirements
+ */
+const calculateRelevanceScore = (importBaseName: string, importExtension: string, baseName: string, fileExtension: string): number => {
+    // Same extension - highest relevance
+    if (importExtension && fileExtension === importExtension) {
+        const nameDistance = distance(importBaseName, baseName);
+
+        return nameDistance <= Math.max(3, Math.floor(importBaseName.length * NAME_SIMILARITY_THRESHOLD)) ? 10 - nameDistance : 0;
+    }
+
+    // No extension specified - look for relevant files
+    if (!importExtension) {
+        const nameDistance = distance(importBaseName, baseName);
+
+        // Exact name match gets high score
+        if (nameDistance === 0)
+            return 9;
+
+        // Close matches with relevant extensions
+        if (nameDistance <= Math.max(2, Math.floor(importBaseName.length * 0.3)) && RELEVANT_EXTENSIONS.has(fileExtension)) {
+            return 7 - nameDistance;
+        }
+
+        return 0;
+    }
+
+    // Different extension but similar name - lower priority
+    const nameDistance = distance(importBaseName, baseName);
+
+    return nameDistance <= Math.max(2, Math.floor(importBaseName.length * 0.4)) ? 5 - nameDistance : 0;
+};
+
+/**
+ * Walk directory tree and collect relevant file candidates
+ */
+const collectFileCandidates = (rootDirectory: string, importBaseName: string, importExtension: string): FileCandidate[] => {
+    const candidates: FileCandidate[] = [];
+
+    const walk = (dir: string, depth = 0): void => {
+        if (depth > MAX_SEARCH_DEPTH || candidates.length > MAX_FILES_TO_SEARCH)
+            return;
+
+        try {
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+            for (const entry of entries) {
+                if (candidates.length > MAX_FILES_TO_SEARCH)
+                    break;
+
+                const fullPath = path.join(dir, entry.name);
+
+                if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules") {
+                    walk(fullPath, depth + 1);
+                } else if (entry.isFile()) {
+                    const extension = path.extname(entry.name);
+                    const baseName = path.basename(entry.name, extension);
+                    const score = calculateRelevanceScore(importBaseName, importExtension, baseName, extension);
+
+                    if (score > 0) {
+                        candidates.push({
+                            baseName,
+                            extension,
+                            fullPath,
+                            path: fullPath,
+                            relevanceScore: score,
+                        });
+                    }
+                }
+            }
+        } catch {
+            // Skip directories we can't read
+        }
+    };
+
+    walk(rootDirectory);
+
+    return candidates;
+};
+
+const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: string): string => {
+    const importName = path.basename(importPath);
+    const importExtension = path.extname(importName);
+    const importBaseName = path.basename(importName, importExtension);
+
+    // Resolve the directory where the import should be relative to
+    const fromDirectory = path.dirname(fromFile);
+
+    // Collect relevant file candidates
+    const candidates = collectFileCandidates(rootDirectory, importBaseName, importExtension);
+
+    // Calculate final scores combining relevance, path proximity, and name similarity
+    const scoredFiles = candidates.map((candidate) => {
+        const nameDistance = distance(importBaseName, candidate.baseName);
+        const pathDistance = calculatePathDistance(fromDirectory, path.dirname(candidate.fullPath));
+
+        // Simplified scoring: relevance is most important, then path proximity
+        const score = candidate.relevanceScore * 0.7 + pathDistance * 0.2 + nameDistance * 0.1;
+
+        return { ...candidate, nameDistance, pathDistance, score };
+    });
+
+    // Sort by score (lower is better)
+    scoredFiles.sort((a, b) => a.score - b.score);
+
+    // Generate suggestions from global search results
+    const suggestions: string[] = [];
+    const topMatches = scoredFiles.slice(0, 8);
+    let hasPublicFileSuggestions = false;
+
+    for (const match of topMatches) {
+        const suggestionPath = getRelativePath(fromDirectory, match.fullPath);
+
+        if (!suggestions.includes(suggestionPath)) {
+            const context = getPathContext(match.pathDistance);
+
+            suggestions.push(suggestionPath + context);
+
+            // Check if this file is in a public folder
+            const normalizedPath = match.fullPath.replaceAll("\\", "/");
+            const pathSegments = normalizedPath.split("/");
+            const publicIndex = pathSegments.indexOf("public");
+
+            if (publicIndex !== -1 && publicIndex < pathSegments.length - 1) {
+                hasPublicFileSuggestions = true;
+            }
+        }
+    }
+
+    // Remove duplicates and limit to top suggestions
+    let finalSuggestions = `<ul>${[...new Set(suggestions)].slice(0, MAX_SUGGESTIONS).map((suggestion) => `<li>\`${suggestion}\`</li>`).join("\n")}</ul>`;
+
+    // If we found public asset files, add a note about accessing them via absolute URLs
+    if (hasPublicFileSuggestions) {
+        const publicFileName = importName;
+
+        // Only show this note for asset files (not scripts/styles which might be imported)
+        const isAssetFile = [...ASSET_EXTENSIONS].some((extension) => publicFileName.includes(extension));
+
+        if (isAssetFile) {
+            finalSuggestions += `Files in the \`public\` folder should be accessed via absolute URLs like \`/${publicFileName}\` instead of importing them as modules.`;
+        }
+    }
+
+    return finalSuggestions;
+};
+
+/**
+ * Common Vite error patterns and their solutions
+ */
+const ERROR_PATTERNS = [
+    {
+        solution: {
+            body: "Browser APIs like `window` and `document` are not available during server-side rendering. Use dynamic imports or check for SSR environment before using browser APIs.",
+            header: "SSR Browser API Error",
+        },
+        test: (message: string) => message.includes("window is not defined") || message.includes("document is not defined"),
+    },
+    {
+        solution: {
+            body: "Some plugins need specific ordering. Use `enforce: 'pre'` for plugins that need to run first, or `enforce: 'post'` for plugins that need to run last.",
+            header: "Plugin Ordering Issue",
+        },
+        test: (message: string) => message.includes("Plugin ordering") || message.includes("enforce"),
+    },
+    {
+        solution: {
+            body: "CSS Modules require proper configuration. Make sure your CSS files use the `.module.css` extension and are imported correctly.",
+            header: "CSS Modules Configuration",
+        },
+        test: (message: string) => message.includes("CSS Modules") || message.includes("module.css"),
+    },
+    {
+        solution: {
+            body: "Only variables prefixed with `VITE_` are exposed to the client. Server-only variables should not be prefixed with `VITE_`.",
+            header: "Environment Variables",
+        },
+        test: (message: string) => message.includes("VITE_") || message.includes("process.env"),
+    },
+    {
+        solution: {
+            body: "For static assets, use the `new URL('./path/to/asset', import.meta.url)` syntax or import them and use the returned URL.",
+            header: "Asset Import Issue",
+        },
+        test: (message: string) => message.includes("Failed to load") && (message.includes(".png") || message.includes(".jpg") || message.includes(".svg")),
+    },
+    {
+        solution: {
+            body: "Some issues only occur in production builds. Check if the error happens in development mode. You might need different configurations for build vs dev.",
+            header: "Build vs Development Mode",
+        },
+        test: (message: string) => message.includes("production") || message.includes("build"),
+    },
+    {
+        solution: {
+            body: "HMR issues can occur with certain patterns. Make sure you're not mutating module-level variables and consider using `import.meta.hot` guards.",
+            header: "Hot Module Replacement Issue",
+        },
+        test: (message: string) => message.includes("HMR") || message.includes("hot reload"),
+    },
+    {
+        solution: {
+            body: "Check your `tsconfig.json` and make sure it includes proper paths and compiler options. For Vite, you might need a `vite-env.d.ts` file.",
+            header: "TypeScript Configuration",
+        },
+        test: (message: string, file?: string) => message.includes("TypeScript") || (file && file.endsWith(".ts")),
+    },
+    {
+        solution: {
+            body: "Some dependencies need to be excluded from pre-bundling. Add them to `optimizeDeps.exclude` in your Vite config.",
+            header: "Dependency Optimization",
+        },
+        test: (message: string) => message.includes("optimizeDeps") || message.includes("pre-bundling"),
+    },
+    {
+        solution: {
+            body: "Configure path aliases in your Vite config using the `resolve.alias` option to match your TypeScript path mappings.",
+            header: "Path Resolution",
+        },
+        test: (message: string) => message.includes("resolve.alias") || message.includes("Cannot find module"),
+    },
+    {
+        solution: {
+            body: "Server middleware and proxy settings should be configured in the `server` section of your Vite config.",
+            header: "Server Configuration",
+        },
+        test: (message: string) => message.includes("middleware") || message.includes("proxy"),
+    },
+    {
+        solution: {
+            body: "Check your plugin configuration in `vite.config.js/ts`. Make sure all required options are provided and options are correctly typed.",
+            header: "Plugin Configuration",
+        },
+        test: (message: string) => message.includes("plugin") && message.includes("configuration"),
+    },
+    {
+        solution: {
+            body: "Configure your build output directory using `build.outDir` in your Vite config. Make sure the directory is writable.",
+            header: "Build Output Configuration",
+        },
+        test: (message: string) => message.includes("build.outDir") || message.includes("dist"),
+    },
+] as const;
+
+const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
+    return {
+        // eslint-disable-next-line sonarjs/cognitive-complexity
+        async handle(error, context): Promise<Solution | undefined> {
+            const { file, language } = context;
+            const message = error.message ?? "";
+
+            // 1. Import resolution errors with file suggestions
+            if (message.includes("Failed to resolve import") || message.includes("Cannot resolve module")) {
+            // Extract the import path from the error message
+                const importMatch = message.match(/Failed to resolve import ["']([^"']+)["']/);
+                const moduleMatch = message.match(/Cannot resolve module ["']([^"']+)["']/);
+
+                const importPath = importMatch?.[1] || moduleMatch?.[1];
+
+                if (importPath && file) {
+                    const suggestions = findSimilarFiles(importPath, file, rootPath);
+
+                    if (suggestions) {
+                        return {
+                            body: `The import path \`${importPath}\` could not be resolved.<br/><br/>Did you mean one of these files?<br/>${suggestions}`,
+                        };
+                    }
+
+                    // Check for common plugin issues
+                    if ([".jsx", ".tsx"].includes(language as string) || message.includes("react")) {
+                        return {
+                            body: "Install and configure the React plugin. Add `@vitejs/plugin-react` to your dependencies and include it in your Vite config.",
+                            header: "Missing React Plugin",
+                        };
+                    }
+
+                    if (language === "vue") {
+                        return {
+                            body: "Install and configure the Vue plugin. Add `@vitejs/plugin-vue` to your dependencies and include it in your Vite config.",
+                            header: "Missing Vue Plugin",
+                        };
+                    }
+                }
+            }
+
+            // Check relative import issues with file extension
+            if (message.includes("Cannot resolve") && (language === "typescript" || language === "javascript")) {
+                const relativeImportMatch = message.match(/Cannot resolve ["'](\.\.?\/[^"']*)["']/);
+
+                if (relativeImportMatch) {
+                    const importPath = relativeImportMatch[1];
+
+                    if (importPath && file) {
+                        const suggestions = findSimilarFiles(importPath, file, rootPath);
+
+                        if (suggestions) {
+                            return {
+                                body: `Cannot resolve \`${importPath}\`. Did you mean one of these files?${suggestions}`,
+                                header: "File Not Found",
+                            };
+                        }
+                    }
+                }
+
+                return {
+                    body: "In Vite, you may need to include file extensions in imports, especially for TypeScript files. Try adding `.js` extension to your imports.",
+                    header: "Missing File Extension",
+                };
+            }
+
+            // Check common error patterns
+            for (const pattern of ERROR_PATTERNS) {
+                if (pattern.test(message, file)) {
+                    return pattern.solution;
+                }
+            }
+
+            return undefined; // No solution found
+        },
+        name: "vite-solution-finder",
+        priority: 20, // Higher priority than general finders
+    };
+};
+
+export default createViteSolutionFinder;
