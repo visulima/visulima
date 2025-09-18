@@ -247,6 +247,10 @@ const ruleBasedFinder: SolutionFinder = {
                 .map((m) => `#### ${m.match.title}\n\n${m.match.md}`)
                 .join("\n\n---\n\n");
 
+            if (sections === "") {
+                return undefined;
+            }
+
             return { body: sections, header: "### Potential fixes detected" };
         } catch {
             return undefined;

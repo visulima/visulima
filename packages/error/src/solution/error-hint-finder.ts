@@ -4,11 +4,11 @@ type HintError = Error & { hint: Solution | string[] | string | undefined };
 
 const errorHintFinder: SolutionFinder = {
     handle: async (error: HintError): Promise<Solution | undefined> => {
-        if (error.hint === undefined) {
+        if (error.hint === undefined || error.hint === null) {
             return undefined;
         }
 
-        if (typeof error.hint === "string") {
+        if (typeof error.hint === "string" && error.hint !== "") {
             return { body: error.hint };
         }
 
