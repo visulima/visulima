@@ -1,3 +1,6 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable func-names */
+/* eslint-disable no-plusplus */
 // @ts-nocheck
 class ErrorOverlay extends HTMLElement {
     /**
@@ -34,7 +37,7 @@ class ErrorOverlay extends HTMLElement {
      */
     constructor(error) {
         super();
-        // Debug logging removed
+
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = overlayTemplate;
         this.dir = "ltr";
@@ -47,71 +50,27 @@ class ErrorOverlay extends HTMLElement {
         // Automatically add to DOM when created
         document.body.append(this);
 
-        // Handle multiple possible error structures:
-        // 1. Vite server error: { errors: [...], errorType: "client" | "server" }
-        // 2. Browser ErrorEvent: { message, name, stack, lineno, colno, source }
-
-        let payloadErrors = [];
-        let errorType = "client";
-
-        // Case 1: Direct Vite server error structure
-        if (Array.isArray(error?.errors)) {
-            payloadErrors = error.errors;
-            errorType = error.errorType || "server";
-        }
-        // Case 2: Browser ErrorEvent structure - create basic error
-        else {
-            const basicError = {
-                message: error?.message || "Runtime error",
-                name: error?.name || "Error",
-                originalFileColumn: error?.colno,
-                originalFileLine: error?.lineno,
-                originalFilePath: error?.source,
-                originalStack: error?.stack || "",
-            };
-
-            payloadErrors = [basicError];
+        if (error && (error.errors === undefined || !Array.isArray(error.errors))) {
+            return;
         }
 
         const payload = {
-            errors: payloadErrors,
-            errorType,
+            errors: error.errors,
+            errorType: error.errorType || "server",
+            rootPath: error.rootPath || "",
         };
 
         this.__flamePayload = payload;
         this.__flameMode = "original";
 
-        // Update clickable file link if available
-        const first = payload.errors && payload.errors[0];
-        const fileElement = this.root.querySelector("#__v_o__filelink");
+        this.#initializeThemeToggle();
 
-        if (fileElement) {
-            const href = first?.originalFilePath || "";
-            const line = first?.originalFileLine || 0;
+        this.#initializeCopyError();
 
-            if (href) {
-                fileElement.textContent = `${href}${line ? `:${line}` : ""}`;
-                fileElement.setAttribute("href", href);
-                fileElement.classList.remove("hidden");
-            } else {
-                fileElement.textContent = "";
-                fileElement.setAttribute("href", "#");
-                fileElement.classList.add("hidden");
-            }
-        }
-
-        this.text("#__v_o__heading", error.name || "Runtime Error");
-
-        // Content rendering is now handled by the pagination component
-        // The pagination component will wait for the payload and then render the appropriate content
-
-        // Initialize component functionality
-        this.#initializeComponents();
-
-        // Initialize pagination (will wait for overlay to be ready)
         this.#initializePagination();
 
-        // Initialize editor selector (persist to localStorage)
+        this.#hideLoadingStates();
+
         const editorSelect = this.root.querySelector("#editor-selector");
 
         if (editorSelect) {
@@ -161,42 +120,10 @@ class ErrorOverlay extends HTMLElement {
         }
     }
 
-    text(selector, text, html = false) {
-        if (!text) {
-            return;
-        }
-
-        const element = this.root.querySelector(selector);
-
-        if (!element) {
-            return;
-        }
-
-        if (html) {
-            // Automatically detect links
-            text = text
-                .split(" ")
-                .map((v) => {
-                    if (!v.startsWith("https://"))
-                        return v;
-
-                    if (v.endsWith("."))
-                        return `<a target="_blank" href="${v.slice(0, -1)}">${v.slice(0, -1)}</a>.`;
-
-                    return `<a target="_blank" href="${v}">${v}</a>`;
-                })
-                .join(" ");
-
-            element.innerHTML = text.trim();
-        } else {
-            element.textContent = text.trim();
-        }
-    }
-
     updateOverlay() {
         // Force re-render of the current error
         const currentIndex = 0; // Assuming we're showing the first error
-        // eslint-disable-next-line no-underscore-dangle
+
         const currentError = this.__flamePayload?.errors?.[currentIndex];
 
         if (currentError) {
@@ -210,331 +137,359 @@ class ErrorOverlay extends HTMLElement {
         }
     }
 
-    // Private component initialization methods
-    #initializeComponents() {
-        // Initialize theme toggle
-        this.#initializeThemeToggle();
+    #hideLoadingStates() {
+        // Add a small delay to ensure content is fully rendered
+        setTimeout(() => {
+            // Hide header skeleton and show real content
+            const headerSkeleton = this.root.querySelector("#__v_o__header_loader");
+            const headerContent = this.root.querySelector("#__v_o__title");
+
+            if (headerSkeleton) {
+                headerSkeleton.style.display = "none";
+            }
+
+            if (headerContent) {
+                headerContent.classList.remove("hidden");
+            }
+
+            // Hide message skeleton and show real content
+            const messageSkeleton = this.root.querySelector("#__v_o__message_loader");
+            const messageContent = this.root.querySelector("#__v_o__message");
+
+            if (messageSkeleton) {
+                messageSkeleton.style.display = "none";
+            }
+
+            if (messageContent) {
+                messageContent.classList.remove("hidden");
+            }
+
+            // Hide body skeleton and show real content
+            const bodySkeleton = this.root.querySelector("#__v_o__body_loader");
+            const bodyContent = this.root.querySelector("#__v_o__overlay");
+
+            if (bodySkeleton) {
+                bodySkeleton.style.display = "none";
+            }
+
+            if (bodyContent) {
+                bodyContent.classList.remove("hidden");
+            }
+        }, 100); // Small delay to ensure DOM is ready
     }
 
     #initializePagination() {
-        // Wait for the overlay to be fully ready
-        const initializeWhenReady = () => {
-            // Check if we're attached to the DOM and have the shadow root
-            if (!this.isConnected || !this.shadowRoot) {
-                setTimeout(initializeWhenReady, 50);
+        const payload = this.__flamePayload;
+        // Use the processed errors from the payload - they should already be in the correct format
+        const errors = Array.isArray(payload.errors) && payload.errors.length > 0 ? payload.errors : [];
+        const errorIds = errors.map((e, index) =>
 
+            String(e.__id || [e.originalFilePath || "", e.originalFileLine || 0, e.name || "", e.message || ""].join("|")),
+        );
+
+        const totalErrors = errors.length;
+
+        let currentIndex = 0;
+
+        // Update the main overlay content based on current index
+        const updateOverlayContent = () => {
+            const mount = this.root.querySelector("#__v_o__overlay");
+
+            if (!mount) {
                 return;
             }
 
-            // Check if payload is ready
-            // eslint-disable-next-line no-underscore-dangle
-            if (!this.__flamePayload) {
-                setTimeout(initializeWhenReady, 100);
-
-                return;
-            }
-
-            // eslint-disable-next-line no-underscore-dangle
-            const payload = this.__flamePayload;
-            // Use the processed errors from the payload - they should already be in the correct format
-            const errors = Array.isArray(payload.errors) && payload.errors.length > 0 ? payload.errors : [];
-            const errorIds = errors.map((e, index) =>
-                // eslint-disable-next-line no-underscore-dangle
-                String(e.__id || [e.originalFilePath || "", e.originalFileLine || 0, e.name || "", e.message || ""].join("|")),
-            );
-            const totalErrors = errors.length;
-            let currentIndex = 0;
-
-            // Update pagination display
-            const updatePagination = () => {
-                const indexElement = this.root.querySelector("[data-flame-dialog-error-index]");
-                const totalElement = this.root.querySelector("[data-flame-dialog-header-total-count]");
-                const previousButton = this.root.querySelector("[data-flame-dialog-error-previous]");
-                const nextButton = this.root.querySelector("[data-flame-dialog-error-next]");
-
-                if (indexElement)
-                    indexElement.textContent = (currentIndex + 1).toString();
-
-                if (totalElement)
-                    totalElement.textContent = totalErrors.toString();
-
-                // Update button states
-                if (previousButton) {
-                    previousButton.disabled = currentIndex === 0;
-                    previousButton.setAttribute("aria-disabled", currentIndex === 0);
-                }
-
-                if (nextButton) {
-                    nextButton.disabled = currentIndex >= totalErrors - 1;
-                    nextButton.setAttribute("aria-disabled", currentIndex >= totalErrors - 1);
-                }
-
-                // Update overlay content
-                updateOverlayContent();
+            const currentError = errors[currentIndex] || {
+                compiledStack: payload.compiledStack,
+                message: payload.message,
+                name: payload.name,
+                originalStack: payload.originalStack,
             };
 
-            // Update the main overlay content based on current index
-            const updateOverlayContent = () => {
-                const mount = this.root.querySelector("#__v_o__overlay");
+            const updateFileLink = () => {
+                // Update clickable file link if available
+                const fileElement = this.root.querySelector("#__v_o__filelink");
 
-                if (!mount) {
+                if (fileElement) {
+                    const fullPath = currentError?.originalFilePath || "";
+                    const line = currentError?.originalFileLine || 0;
+
+                    if (fullPath) {
+                        let displayPath = fullPath;
+
+                        if (payload.rootPath && fullPath.startsWith(payload.rootPath)) {
+                            // Remove root path to show relative path
+                            displayPath = fullPath.slice(payload.rootPath.length);
+
+                            // Ensure it starts with a slash if it doesn't already
+                            if (!displayPath.startsWith("/")) {
+                                displayPath = `/${displayPath}`;
+                            }
+                        }
+
+                        fileElement.textContent = `.${displayPath}${line ? `:${line}` : ""}`;
+                        fileElement.setAttribute("href", fullPath);
+                        fileElement.classList.remove("hidden");
+                    } else {
+                        fileElement.textContent = "";
+                        fileElement.setAttribute("href", "#");
+                        fileElement.classList.add("hidden");
+                    }
+                }
+            };
+
+            // Update raw stacktrace pane if present (formatted, with clickable file links)
+            const updateRawStack = (mode) => {
+                const stackHost = this.root.querySelector("#__v_o__stacktrace");
+                const stackElement = stackHost?.querySelector("div:last-child");
+
+                if (stackHost && stackElement) {
+                    const rootPayload = this.__flamePayload || {};
+
+                    const stackText
+                        = mode === "compiled"
+                            ? String(currentError.compiledStack || rootPayload.compiledStack || "")
+                            : String(currentError.originalStack || currentError.stack || rootPayload.originalStack || "");
+
+                    const escape = (s) =>
+                        String(s || "")
+                            .replaceAll("&", "&amp;")
+                            .replaceAll("<", "&lt;")
+                            .replaceAll(">", "&gt;");
+                    const normalizePath = (p) => {
+                        if (/^https?:\/\//i.test(p)) {
+                            const u = new URL(p);
+
+                            p = u.pathname || "";
+                        }
+
+                        p = decodeURIComponent(p);
+
+                        p = String(p || "").replace(/^\/@fs\//, "/");
+
+                        return p;
+                    };
+
+                    const fmt = (line) => {
+                        // Match: "at func (file:line:col)" or "at file:line:col"
+                        const m = /\s*at\s+(?:(.+?)\s+\()?(.*?):(\d+):(\d+)\)?/.exec(line);
+
+                        if (!m)
+                            return `<div class="frame">${escape(line)}</div>`;
+
+                        const function_ = m[1] ? escape(m[1]) : "";
+                        const file = m[2];
+                        const ln = m[3];
+                        const col = m[4];
+                        const displayPath = normalizePath(file);
+                        const display = `${displayPath}:${ln}:${col}`;
+                        const functionHtml = function_ ? `<span class="fn">${function_}</span> ` : "";
+
+                        return `<div class="frame"><span class="muted">at</span> ${functionHtml}<a href="#" class="stack-link" data-file="${escape(displayPath)}" data-line="${ln}" data-column="${col}">${escape(display)}</a></div>`;
+                    };
+                    const html = stackText.split("\n").map(fmt).join("");
+
+                    // eslint-disable-next-line no-unsanitized/property
+                    stackElement.innerHTML = html;
+                    // Attach open-in-editor handlers
+                    stackElement.querySelectorAll(".stack-link").forEach((a) => {
+                        a.addEventListener("click", (event_) => {
+                            event_.preventDefault();
+
+                            const filePath = a.dataset.file || "";
+                            const line = a.dataset.line || "";
+                            const column = a.dataset.column || "";
+                            // Prefer absolute from currentError if it ends with the display path
+                            let resolved = filePath;
+
+                            const abs = currentError.originalFilePath || currentError.compiledFilePath || "";
+
+                            if (abs && abs.endsWith(filePath)) {
+                                resolved = abs;
+                            }
+
+                            const qs = `/__open-in-editor?file=${encodeURIComponent(resolved)}${
+                                line ? `&line=${line}` : ""
+                            }${column ? `&column=${column}` : ""}`;
+
+                            a.setAttribute("href", qs);
+
+                            fetch(qs);
+                        });
+                    });
+                }
+            };
+
+            // Render codeframe and set up mode switching
+            const flameOverlay = this.root.querySelector("#__v_o__overlay");
+            const headingElement = this.root.querySelector("#__v_o__heading");
+            const messageElement = this.root.querySelector("#__v_o__message");
+            const modeSwitch = this.root.querySelector("#__v_o__mode");
+
+            if (headingElement) {
+                headingElement.textContent = currentError.name || "";
+                headingElement.dataset.errorId = errorIds[currentIndex] || "";
+            }
+
+            if (messageElement) {
+                messageElement.textContent = currentError.message || "";
+            }
+
+            // Show tabs conditionally: only show original/compiled tabs if we have both
+            const hasOriginal = !!currentError.originalCodeFrameContent;
+            const hasCompiled = !!currentError.compiledCodeFrameContent;
+
+            if (hasOriginal && hasCompiled && modeSwitch) {
+                modeSwitch.classList.remove("hidden");
+            } else if (modeSwitch) {
+                modeSwitch.classList.add("hidden");
+            }
+
+            const originalButton = this.root.querySelector("[data-flame-mode=\"original\"]");
+            const compiledButton = this.root.querySelector("[data-flame-mode=\"compiled\"]");
+
+            // Hide buttons for tabs that don't have content
+            if (originalButton) {
+                originalButton.style.display = hasOriginal ? "" : "none";
+            }
+
+            if (compiledButton) {
+                compiledButton.style.display = hasCompiled ? "" : "none";
+            }
+
+            const renderCode = (mode) => {
+                if (!flameOverlay) {
                     return;
                 }
 
-                const currentError = errors[currentIndex] || {
-                    compiledStack: payload.compiledStack,
-                    message: payload.message,
-                    name: payload.name,
-                    originalStack: payload.originalStack,
-                };
-
-                // Update raw stacktrace pane if present (formatted, with clickable file links)
-                const updateRawStack = (mode) => {
-                    try {
-                        const stackHost = this.root.querySelector("#__v_o__stacktrace");
-                        const stackElement = stackHost?.querySelector("div:last-child");
-
-                        if (stackHost && stackElement) {
-                            // eslint-disable-next-line no-underscore-dangle
-                            const rootPayload = this.__flamePayload || {};
-
-                            const stackText
-                                = mode === "compiled"
-                                    ? String(currentError.compiledStack || rootPayload.compiledStack || "")
-                                    : String(currentError.originalStack || currentError.stack || rootPayload.originalStack || "");
-
-                            const escape = (s) =>
-                                String(s || "")
-                                    .replaceAll("&", "&amp;")
-                                    .replaceAll("<", "&lt;")
-                                    .replaceAll(">", "&gt;");
-                            const normalizePath = (p) => {
-                                try {
-                                    if (/^https?:\/\//i.test(p)) {
-                                        const u = new URL(p);
-
-                                        p = u.pathname || "";
-                                    }
-                                } catch {}
-
-                                try {
-                                    p = decodeURIComponent(p);
-                                } catch {}
-
-                                p = String(p || "").replace(/^\/@fs\//, "/");
-
-                                return p;
-                            };
-                            const fmt = (line) => {
-                                // Match: "at func (file:line:col)" or "at file:line:col"
-                                const m = /\s*at\s+(?:(.+?)\s+\()?(.*?):(\d+):(\d+)\)?/.exec(line);
-
-                                if (!m)
-                                    return `<div class="frame">${escape(line)}</div>`;
-
-                                const function_ = m[1] ? escape(m[1]) : "";
-                                const file = m[2];
-                                const ln = m[3];
-                                const col = m[4];
-                                const displayPath = normalizePath(file);
-                                const display = `${displayPath}:${ln}:${col}`;
-                                const functionHtml = function_ ? `<span class="fn">${function_}</span> ` : "";
-
-                                return `<div class="frame"><span class="muted">at</span> ${functionHtml}<a href="#" class="stack-link" data-file="${escape(displayPath)}" data-line="${ln}" data-column="${col}">${escape(display)}</a></div>`;
-                            };
-                            const html = stackText.split("\n").map(fmt).join("");
-
-                            stackElement.innerHTML = html;
-                            // Attach open-in-editor handlers
-                            stackElement.querySelectorAll(".stack-link").forEach((a) => {
-                                a.addEventListener("click", (event_) => {
-                                    event_.preventDefault();
-
-                                    try {
-                                        const filePath = a.dataset.file || "";
-                                        const line = a.dataset.line || "";
-                                        const column = a.dataset.column || "";
-                                        // Prefer absolute from currentError if it ends with the display path
-                                        let resolved = filePath;
-
-                                        try {
-                                            const abs = currentError.originalFilePath || currentError.compiledFilePath || "";
-
-                                            if (abs && abs.endsWith(filePath))
-                                                resolved = abs;
-                                        } catch {}
-
-                                        const qs = `/__open-in-editor?file=${encodeURIComponent(resolved)}${
-                                            line ? `&line=${line}` : ""
-                                        }${column ? `&column=${column}` : ""}`;
-
-                                        a.setAttribute("href", qs);
-                                        fetch(qs);
-                                    } catch {}
-                                });
-                            });
-                        }
-                    } catch {}
-                };
-
-                // Render codeframe and set up mode switching
-                const flameOverlay = this.root.querySelector("#__v_o__overlay");
-                const headingElement = this.root.querySelector("#__v_o__heading");
-                const modeSwitch = this.root.querySelector("#__v_o__mode");
-
-                if (headingElement) {
-                    headingElement.textContent = currentError.name || "Runtime Error";
-
-                    try {
-                        headingElement.dataset.errorId = errorIds[currentIndex] || "";
-                    } catch {}
-                }
-
-                // Show tabs conditionally: only show original/compiled tabs if we have both
-                const hasOriginal = !!currentError.originalCodeFrameContent;
-                const hasCompiled = !!currentError.compiledCodeFrameContent;
-                const hasBoth = hasOriginal && hasCompiled;
-                const hasEither = hasOriginal || hasCompiled;
-
-                if (hasBoth && modeSwitch)
-                    modeSwitch.classList.remove("hidden");
-                else if (modeSwitch)
-                    modeSwitch.classList.add("hidden");
-
-                // Code frames should be provided by the server via VisulimaViteOverlayErrorPayload
-
-                const originalButton = this.root.querySelector("[data-flame-mode=\"original\"]");
-                const compiledButton = this.root.querySelector("[data-flame-mode=\"compiled\"]");
-
-                // Hide buttons for tabs that don't have content
-                if (originalButton) {
-                    originalButton.style.display = hasOriginal ? "" : "none";
-                }
-
-                if (compiledButton) {
-                    compiledButton.style.display = hasCompiled ? "" : "none";
-                }
-
-                const renderCode = (mode) => {
-                    if (!flameOverlay)
-                        return;
-
-                    // Choose the appropriate code frame based on mode
-                    let html = "";
-
-                    if (mode === "compiled") {
-                        html = currentError.compiledCodeFrameContent || "";
-                    } else {
-                        // Default to original mode
-                        html = currentError.originalCodeFrameContent || "";
-                    }
-
-                    flameOverlay.innerHTML = html || "";
-                };
-
-                const activeMode = this.__flameMode || "original";
-
-                renderCode(activeMode);
-                updateRawStack(activeMode);
-
-                // Initialize button states
-                if (originalButton && compiledButton) {
-                    if (activeMode === "original") {
-                        originalButton.classList.add("active");
-                        compiledButton.classList.remove("active");
-                    } else {
-                        compiledButton.classList.add("active");
-                        originalButton.classList.remove("active");
-                    }
-                }
-
-                originalButton?.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    this.__flameMode = "original";
-                    renderCode("original");
-                    updateRawStack("original");
-
-                    // Update button states
-                    originalButton?.classList.add("active");
-                    compiledButton?.classList.remove("active");
-                });
-
-                compiledButton?.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    this.__flameMode = "compiled";
-                    renderCode("compiled");
-                    updateRawStack("compiled");
-
-                    // Update button states
-                    compiledButton?.classList.add("active");
-                    originalButton?.classList.remove("active");
-                });
+                // Choose the appropriate code frame based on mode
+                flameOverlay.innerHTML = mode === "compiled" ? currentError.compiledCodeFrameContent || "" : currentError.originalCodeFrameContent || "";
             };
 
-            // Set up event listeners
+            const activeMode = this.__flameMode || "original";
+
+            renderCode(activeMode);
+            updateFileLink();
+            updateRawStack(activeMode);
+
+            // Initialize button states
+            if (originalButton && compiledButton) {
+                if (activeMode === "original") {
+                    originalButton.classList.add("active");
+                    compiledButton.classList.remove("active");
+                } else {
+                    compiledButton.classList.add("active");
+                    originalButton.classList.remove("active");
+                }
+            }
+
+            originalButton?.addEventListener("click", (e) => {
+                e.preventDefault();
+
+                this.__flameMode = "original";
+
+                renderCode("original");
+                updateRawStack("original");
+
+                // Update button states
+                originalButton?.classList.add("active");
+                compiledButton?.classList.remove("active");
+            });
+
+            compiledButton?.addEventListener("click", (e) => {
+                e.preventDefault();
+
+                this.__flameMode = "compiled";
+
+                renderCode("compiled");
+                updateRawStack("compiled");
+
+                // Update button states
+                compiledButton?.classList.add("active");
+                originalButton?.classList.remove("active");
+            });
+        };
+
+        // Update pagination display
+        const updatePagination = () => {
+            const indexElement = this.root.querySelector("[data-flame-dialog-error-index]");
+            const totalElement = this.root.querySelector("[data-flame-dialog-header-total-count]");
             const previousButton = this.root.querySelector("[data-flame-dialog-error-previous]");
             const nextButton = this.root.querySelector("[data-flame-dialog-error-next]");
 
-            if (previousButton) {
-                previousButton.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+            if (indexElement)
+                indexElement.textContent = (currentIndex + 1).toString();
 
-                    if (currentIndex > 0) {
-                        currentIndex--;
-                        updatePagination();
-                    }
-                });
+            if (totalElement)
+                totalElement.textContent = totalErrors.toString();
+
+            // Update button states
+            if (previousButton) {
+                previousButton.disabled = currentIndex === 0;
+                previousButton.setAttribute("aria-disabled", currentIndex === 0);
             }
 
             if (nextButton) {
-                nextButton.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    if (currentIndex < totalErrors - 1) {
-                        currentIndex++;
-                        updatePagination();
-                    }
-                });
+                nextButton.disabled = currentIndex >= totalErrors - 1;
+                nextButton.setAttribute("aria-disabled", currentIndex >= totalErrors - 1);
             }
 
-            // Selection by error id (external)
-            const selectById = (id) => {
-                try {
-                    const index = errorIds.indexOf(String(id || ""));
-
-                    if (index !== -1) {
-                        currentIndex = index;
-                        updatePagination();
-                    }
-                } catch {}
-            };
-
-            try {
-                globalThis.__flameSelectError = selectById;
-            } catch {}
-
-            try {
-                globalThis.addEventListener("flame:select-error", (event_) => {
-                    try {
-                        selectById(event_?.detail?.id);
-                    } catch {}
-                });
-            } catch {}
-
-            // Initialize
-            updatePagination();
+            // Update overlay content
+            updateOverlayContent();
         };
 
-        // Start the initialization process
-        initializeWhenReady();
+        // Set up event listeners
+        const previousButton = this.root.querySelector("[data-flame-dialog-error-previous]");
+        const nextButton = this.root.querySelector("[data-flame-dialog-error-next]");
+
+        if (previousButton) {
+            previousButton.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updatePagination();
+                }
+            });
+        }
+
+        if (nextButton) {
+            nextButton.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (currentIndex < totalErrors - 1) {
+                    currentIndex++;
+                    updatePagination();
+                }
+            });
+        }
+
+        // Selection by error id (external)
+        const selectById = (id) => {
+            const index = errorIds.indexOf(String(id || ""));
+
+            if (index !== -1) {
+                currentIndex = index;
+
+                updatePagination();
+            }
+        };
+
+        globalThis.__flameSelectError = selectById;
+
+        globalThis.addEventListener("flame:select-error", (event_) => {
+            selectById(event_?.detail?.id);
+        });
+
+        updatePagination();
     }
 
     #initializeThemeToggle() {
         // Initialize button visibility based on current theme
         const currentTheme
-            = localStorage.getItem("hs_theme") || (globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+            = localStorage.getItem("v-o_theme") || (globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         const isDark = currentTheme === "dark" || document.documentElement.classList.contains("dark");
 
         const darkButton = this.root.querySelector("[data-v-o-theme-click-value=\"dark\"]");
@@ -566,10 +521,10 @@ class ErrorOverlay extends HTMLElement {
                 // Update theme on document element (affects whole page)
                 if (theme === "dark") {
                     document.documentElement.classList.add("dark");
-                    localStorage.setItem("hs_theme", "dark");
+                    localStorage.setItem("v-o_theme", "dark");
                 } else {
                     document.documentElement.classList.remove("dark");
-                    localStorage.setItem("hs_theme", "light");
+                    localStorage.setItem("v-o_theme", "light");
                 }
 
                 // Update button visibility using the classes from the component
@@ -591,23 +546,98 @@ class ErrorOverlay extends HTMLElement {
                 }
             });
         });
+    }
 
-        // Manual tooltip implementation for theme buttons
-        const tooltipButtons = this.root.querySelectorAll("#v-o-theme-switch .v-o-tooltip-toggle");
+    #initializeCopyError() {
+        const copyButton = this.root.querySelector("#__v_o__copy_error");
 
-        tooltipButtons.forEach((button) => {
-            const tooltip = button.parentElement?.querySelector(".v-o-tooltip-content");
+        if (!copyButton) {
+            return;
+        }
 
-            if (tooltip) {
-                button.addEventListener("mouseenter", () => {
-                    tooltip.classList.remove("invisible", "opacity-0");
-                    tooltip.classList.add("visible", "opacity-100");
-                });
+        copyButton.addEventListener("click", async (e) => {
+            e.preventDefault();
 
-                button.addEventListener("mouseleave", () => {
-                    tooltip.classList.remove("visible", "opacity-100");
-                    tooltip.classList.add("invisible", "opacity-0");
-                });
+            try {
+                const payload = this.__flamePayload;
+                const currentError = payload?.errors?.[0]; // Get first error
+
+                if (!currentError) {
+                    console.warn("[v-o] No error data available to copy");
+                    return;
+                }
+
+                // Format error information
+                const errorInfo = {
+                    timestamp: new Date().toISOString(),
+                    error: {
+                        name: currentError.name || "Unknown Error",
+                        message: currentError.message || "",
+                        file: currentError.originalFilePath || currentError.compiledFilePath || "",
+                        line: currentError.originalFileLine || currentError.compiledLine || 0,
+                        column: currentError.originalFileColumn || currentError.compiledColumn || 0
+                    },
+                    stack: currentError.originalStack || currentError.compiledStack || "",
+                    userAgent: navigator.userAgent,
+                    url: window.location.href
+                };
+
+                // Create formatted text in structured markdown format
+                const codeFrame = currentError?.originalCodeFrameContent || currentError?.compiledCodeFrameContent || "";
+
+                const formattedText = [
+                    "## Error Type",
+                    errorInfo.error.name || "Unknown Error",
+                    "",
+                    "## Error Message",
+                    errorInfo.error.message || "No error message available",
+                    "",
+                    "## Build Output",
+                    errorInfo.error.file ? `${errorInfo.error.file}:${errorInfo.error.line}:${errorInfo.error.column}` : "Unknown location",
+                    errorInfo.error.message || "No error message available",
+                    ...(codeFrame ? ["", codeFrame] : []),
+                    "",
+                    errorInfo.stack || "No stack trace available",
+                ].join("\n");
+
+                // Copy to clipboard
+                await navigator.clipboard.writeText(formattedText);
+
+                // Visual feedback
+                const originalText = copyButton.innerHTML;
+
+                // Change to success state
+                copyButton.innerHTML = `
+                    <span class="inline-flex shrink-0 justify-center items-center size-8">
+                        <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <polyline points="20,6 9,17 4,12"></polyline>
+                        </svg>
+                    </span>
+                `;
+
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    copyButton.innerHTML = originalText;
+                }, 2000);
+
+            } catch (error) {
+                console.error("[v-o] Failed to copy error info:", error);
+
+                // Show error state
+                const originalText = copyButton.innerHTML;
+                copyButton.innerHTML = `
+                    <span class="inline-flex shrink-0 justify-center items-center size-8">
+                        <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </span>
+                `;
+
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    copyButton.innerHTML = originalText;
+                }, 2000);
             }
         });
     }

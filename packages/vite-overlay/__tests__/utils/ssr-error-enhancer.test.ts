@@ -8,9 +8,10 @@ describe(enhanceViteSsrError, () => {
         config: {
             root: "/mock/project/root",
         },
-        ssrFixStacktrace: vi.fn((error: Error) =>
-            // Mock implementation - just return the error as-is
-            error,
+        ssrFixStacktrace: vi.fn(
+            (error: Error) =>
+                // Mock implementation - just return the error as-is
+                error,
         ),
     } as unknown as ViteDevServer;
 

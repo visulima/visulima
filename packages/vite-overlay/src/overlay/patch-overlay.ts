@@ -1,4 +1,7 @@
 /* eslint-disable no-secrets/no-secrets */
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+import copyIcon from "lucide-static/icons/copy.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import moonStarIcon from "lucide-static/icons/moon-star.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -85,12 +88,12 @@ const generateOverlayTemplate = (): string => {
             
             <div id="v-o-theme-switch" class="flex items-center gap-1">
                 <button type="button" title="Switch to dark mode" aria-label="Switch to dark mode" class="v-o-dark-mode-active:hidden block v-o-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-v-o-theme-click-value="dark">
-                    <span class="group inline-flex shrink-0 justify-center items-center size-8">
+                    <span class="inline-flex shrink-0 justify-center items-center size-8">
                         <span class="dui w-5 h-5" style="-webkit-mask-image: url('${moonStarIcon}'); mask-image: url('${moonStarIcon}')"></span>
                     </span>
                 </button>
                 <button type="button" title="Switch to light mode" aria-label="Switch to light mode" class="v-o-dark-mode-active:block hidden v-o-dark-mode font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]" data-v-o-theme-click-value="light">
-                    <span class="group inline-flex shrink-0 justify-center items-center size-8">
+                    <span class="inline-flex shrink-0 justify-center items-center size-8">
                         <span class="dui w-5 h-5" style="-webkit-mask-image: url('${sunIcon}'); mask-image: url('${sunIcon}')"></span>
                     </span>
                 </button>
@@ -98,7 +101,7 @@ const generateOverlayTemplate = (): string => {
             
             <div class="flex items-center">
                 <button type="button" id="__v_o__close" aria-label="Close error overlay" class="font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]">
-                    <span class="group inline-flex shrink-0 justify-center items-center size-8">
+                    <span class="inline-flex shrink-0 justify-center items-center size-8">
                         <span class="dui w-5 h-5" style="-webkit-mask-image: url('${closeIcon}'); mask-image: url('${closeIcon}')"></span>
                     </span>
                 </button>
@@ -126,34 +129,59 @@ const generateOverlayTemplate = (): string => {
     </div>
 
     <div id="__v_o__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex w-full max-w-[var(--flame-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--flame-dialog-radius)] bg-[var(--flame-surface)] text-[var(--flame-text)] shadow-[var(--flame-elevation-1)] border-b border-[var(--flame-border)] ">
-        <div id="__v_o__header" class="flex items-center justify-between border-b border-[var(--flame-border)] bg-[var(--flame-surface)] px-4 pt-2 pb-3">
-            <div id="__v_o__title" class="flex items-center gap-2 font-bold text-[var(--flame-text)]">
-                <span id="__v_o__heading" class="leading-none">Runtime Error</span>
-                <a id="__v_o__filelink" class="ml-2 text-xs font-normal underline text-[var(--flame-text-muted)] hover:text-[var(--flame-text)]" href="#" target="_blank" rel="noreferrer noopener"></a>
+        <div id="__v_o__header" class="flex items-center justify-between border-b border-[var(--flame-border)] bg-[var(--flame-surface)] px-4 py-2">            
+            <div id="__v_o__header_loader" class="v-o-skeleton h-6 w-3/5 rounded animate-pulse"></div>
+            <div id="__v_o__title" class="flex items-center gap-2 min-w-10/12 font-bold text-[var(--flame-text)] hidden">
+                <span id="__v_o__heading" class="leading-none rounded-md text-[var(--flame-red-orange)] font-mono text-sm"></span>
+                <a id="__v_o__filelink" class="ml-2 text-xs font-normal font-mono underline text-[var(--flame-text-muted)] hover:text-[var(--flame-text)]" href="#" target="_blank" rel="noreferrer noopener"></a>
             </div>
             <div class="flex items-center gap-2">
-                <div id="__v_o__mode" class="hidden sm:flex items-center gap-1 mr-1">
-                    <button type="button" data-flame-mode="original" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]">Original</button>
-                    <button type="button" data-flame-mode="compiled" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]">Compiled</button>
+                <div id="__v_o__mode" class="sm:flex items-center gap-1 mr-1">
+                    <button type="button" data-flame-mode="original" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]" style="display:none">Original</button>
+                    <button type="button" data-flame-mode="compiled" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--flame-text)] bg-[var(--flame-chip-bg)] rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)]" style="display:none">Compiled</button>
                 </div>
+                <button type="button" id="__v_o__copy_error" title="Copy Error Info" aria-label="Copy Error Info" class="font-medium rounded-full hover:bg-[var(--flame-hover-overlay)] focus:outline-hidden focus:bg-[var(--flame-hover-overlay)] text-[var(--flame-text)]">
+                    <span class="inline-flex shrink-0 justify-center items-center size-8">
+                        <span class="dui w-5 h-5" style="-webkit-mask-image: url('${copyIcon}'); mask-image: url('${copyIcon}')"></span>
+                    </span>
+                </button>
             </div>
         </div>
 
-        <div id="__v_o__solutions" class="p-4 hidden"></div>
-        <div id="__v_o__body" class="relative flex min-h-0 p-4 bg-[var(--flame-surface)]">
-            <div id="__v_o__overlay" class="overflow-auto"></div>
+        <div id="__v_o__message_loader" class="px-4 py-2 bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)]">
+            <div class="v-o-skeleton h-4 w-full rounded animate-pulse"></div>
+        </div>
+        <div id="__v_o__message" class="px-4 py-2 text-sm text-[var(--flame-red-orange)] font-mono bg-[var(--flame-surface-muted)] border-b border-[var(--flame-border)] font-medium hidden"></div>
+        <div id="__v_o__solutions" class="px-4 py-2 hidden"></div>
+        <div id="__v_o__body" class="relative flex min-h-0 px-4 py-2 bg-[var(--flame-surface)]">
+            <div id="__v_o__body_loader" class="w-full space-y-1.5">
+                <div class="v-o-skeleton h-4 w-full rounded animate-pulse"></div>
+                <div class="v-o-skeleton h-4 w-3/4 rounded animate-pulse"></div>
+                <div class="v-o-skeleton h-4 w-1/2 rounded animate-pulse"></div>
+                <div class="v-o-skeleton h-4 w-2/3 rounded animate-pulse"></div>
+                <div class="v-o-skeleton h-4 w-4/5 rounded animate-pulse"></div>
+                <div class="v-o-skeleton h-4 w-1/3 rounded animate-pulse"></div>
+                <div class="v-o-skeleton h-4 w-2/5 rounded animate-pulse"></div>
+                <div class="v-o-skeleton h-4 w-3/5 rounded animate-pulse"></div>
+            </div>
+            <div id="__v_o__overlay" class="overflow-auto hidden"></div>
         </div>
     </div>
 
-    <div id="__v_o__stacktrace" class="relative -mt-5 py-5 w-full max-w-[var(--flame-dialog-max-width)] max-h-[200px] rounded-b-[var(--flame-dialog-radius)] border border-[var(--flame-border)] bg-[var(--flame-surface-muted)] shadow-[var(--flame-elevation-2)]">
-        <div class="px-4 py-2 border-b border-[var(--flame-border)] text-xs text-[var(--flame-text-muted)]">Raw stack trace</div>
-        <div class="px-4 py-2 text-[var(--flame-text)] text-xs font-mono leading-5 overflow-auto space-y-0.5 max-h-[140px]"></div>
-    </div>
+    <details id="__v_o__stacktrace" class="relative -mt-5 pt-5 w-full max-w-[var(--flame-dialog-max-width)] rounded-b-[var(--flame-dialog-radius)] bg-[var(--flame-surface-muted)] shadow-[var(--flame-elevation-2)]">
+        <summary class="cursor-pointer px-4 py-3 text-xs font-mono text-[var(--flame-text-muted)] hover:text-[var(--flame-text)] transition-colors duration-200 list-none flex items-center gap-2 font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+            Raw stack trace
+        </summary>
+        <div class="px-4 py-3 text-[var(--flame-text)] text-xs rounded-b-[var(--flame-dialog-radius)] font-mono leading-5 overflow-auto space-y-0.5 max-h-[140px] bg-[var(--flame-surface)] border-t border-[var(--flame-border)]"></div>
+    </details>
 </div>`;
 };
 
 /**
- * Patches Vite's client code to replace the default error overlay with our custom overlay
+ * Patches Vite's client code to replace the default error overlay with our custom overlay.
  */
 export const patchOverlay = (code: string): string => {
     const overlayTemplate = generateOverlayTemplate();

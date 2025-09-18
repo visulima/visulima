@@ -180,6 +180,7 @@ const buildExtendedError = async (
     return {
         errors: extendedErrors,
         errorType,
+        rootPath,
     } as VisulimaViteOverlayErrorPayload;
 };
 

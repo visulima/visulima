@@ -44,8 +44,7 @@
     --tw-ring-offset-shadow: 0 0 #0000;
     --tw-blur: initial;
     --tw-brightness: initial;
-    --tw-contrast:                   
-;
+    --tw-contrast: initial: ;
 }
 
 /* Flame Theme Color Variables - Available for use in Tailwind classes */
@@ -87,7 +86,6 @@
     --flame-dialog-row-padding: 16px;
     --flame-dialog-padding: 12px;
     --flame-dialog-notch-height: 42px;
-    --flame-dialog-border-width: 1px;
 }
 
 /* Dark mode semantic mapping */
@@ -146,6 +144,7 @@
     a {
         color: var(--flame-link);
     }
+    
     a:hover {
         text-decoration: underline;
     }
@@ -230,4 +229,20 @@ html.dark .shiki span {
 .dark [type="checkbox"]:checked,
 .dark [type="radio"]:checked {
     background-color: currentColor;
+}
+
+.v-o-skeleton {
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 25%, transparent 50%, rgba(0, 0, 0, 0.08) 75%);
+    background-size: 200% 100%;
+}
+.dark .v-o-skeleton {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, transparent 50%, rgba(255, 255, 255, 0.1) 75%);
+}
+
+/* Accordion arrow animation */
+#__v_o__stacktrace summary svg {
+    transition: transform 0.2s ease;
+}
+#__v_o__stacktrace[open] summary svg {
+    transform: rotate(90deg);
 }
