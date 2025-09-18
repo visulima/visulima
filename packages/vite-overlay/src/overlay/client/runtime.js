@@ -643,16 +643,10 @@ class ErrorOverlay extends HTMLElement {
             }
         });
 
-        // Ensure scroll is restored when the element is destroyed
-        const cleanup = () => {
+        // Cleanup on page unload to ensure scroll is restored
+        window.addEventListener("beforeunload", () => {
             this.#restoreScroll();
-        };
-
-        // Cleanup when the element is removed from DOM
-        this.addEventListener("DOMNodeRemoved", cleanup);
-
-        // Cleanup on page unload
-        window.addEventListener("beforeunload", cleanup);
+        });
     }
 
     #initializeThemeToggle() {
