@@ -1,3 +1,15 @@
+## @visulima/cerebro [1.1.50](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.49...@visulima/cerebro@1.1.50) (2025-09-19)
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 1.0.34
+* **@visulima/pail:** upgraded to 2.1.28
+
 ## @visulima/cerebro [1.1.49](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.48...@visulima/cerebro@1.1.49) (2025-09-12)
 
 
