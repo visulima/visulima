@@ -116,8 +116,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development packem build",
-        "build:prod": "cross-env NODE_ENV=production packem build",
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:attw": "attw --pack",
@@ -149,7 +149,6 @@
         "@vitest/ui": "^3.1.4",
         "clone-deep": "^4.0.1",
         "conventional-changelog-conventionalcommits": "9.0.0",
-        "cross-env": "^7.0.3",
         "deep-copy": "^1.4.2",
         "esbuild": "0.25.4",
         "eslint": "8.57.0",

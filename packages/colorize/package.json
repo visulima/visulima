@@ -165,8 +165,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development packem build",
-        "build:prod": "cross-env NODE_ENV=production packem build",
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint",
@@ -200,7 +200,6 @@
         "ansi-regex": "^6.2.0",
         "ansi-styles": "^6.2.1",
         "conventional-changelog-conventionalcommits": "9.1.0",
-        "cross-env": "^10.0.0",
         "esbuild": "0.25.9",
         "eslint": "9.35.0",
         "prettier": "^3.6.2",
