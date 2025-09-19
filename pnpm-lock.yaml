@@ -440,9 +440,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.5
         version: 0.25.5
@@ -882,9 +879,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: ^0.25.5
         version: 0.25.10
@@ -997,9 +991,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.4
         version: 0.25.4
@@ -1103,9 +1094,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
-      cross-env:
-        specifier: ^10.0.0
-        version: 10.0.0
       esbuild:
         specifier: 0.25.9
         version: 0.25.9
@@ -1245,9 +1233,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.4
         version: 0.25.4
@@ -1498,9 +1483,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       deep-copy:
         specifier: ^1.4.2
         version: 1.4.2
@@ -1618,9 +1600,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
-      cross-env:
-        specifier: ^10.0.0
-        version: 10.0.0
       esbuild:
         specifier: 0.25.9
         version: 0.25.9
@@ -1815,9 +1794,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.4
         version: 0.25.4
@@ -1902,9 +1878,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.4
         version: 0.25.4
@@ -1993,9 +1966,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       detect-indent:
         specifier: ^7.0.1
         version: 7.0.1
@@ -2165,9 +2135,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       cross-fetch:
         specifier: ^4.1.0
         version: 4.1.0
@@ -2292,9 +2259,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       csv-parse:
         specifier: ^5.6.0
         version: 5.6.0
@@ -2397,9 +2361,6 @@ importers:
       '@vitest/ui':
         specifier: ^3.2.0
         version: 3.2.4(vitest@3.2.4)
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.5
         version: 0.25.5
@@ -2500,9 +2461,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.4
         version: 0.25.4
@@ -2709,9 +2667,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       deeks:
         specifier: ^3.1.1
         version: 3.1.1
@@ -2836,9 +2791,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
-      cross-env:
-        specifier: ^10.0.0
-        version: 10.0.0
       cssnano:
         specifier: 7.1.1
         version: 7.1.1(postcss@8.5.6)
@@ -3003,9 +2955,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       dot-prop:
         specifier: ^9.0.0
         version: 9.0.0
@@ -3114,9 +3063,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.4
         version: 0.25.4
@@ -3226,9 +3172,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.4
         version: 0.25.4
@@ -3374,9 +3317,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.4
         version: 0.25.4
@@ -3489,9 +3429,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
-      cross-env:
-        specifier: 10.0.0
-        version: 10.0.0
       esbuild:
         specifier: 0.25.9
         version: 0.25.9
@@ -3568,9 +3505,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       dot-prop:
         specifier: ^9.0.0
         version: 9.0.0
@@ -3705,9 +3639,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.4
         version: 0.25.4
@@ -3939,9 +3870,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: ^0.25.5
         version: 0.25.10
@@ -4060,9 +3988,6 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: 9.0.0
         version: 9.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       esbuild:
         specifier: 0.25.4
         version: 0.25.4

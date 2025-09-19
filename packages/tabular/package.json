@@ -83,8 +83,8 @@
         "dist"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development packem build",
-        "build:prod": "cross-env NODE_ENV=production packem build",
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:attw": "attw --pack",
@@ -116,7 +116,6 @@
         "@vitest/ui": "^3.2.0",
         "ansi-regex": "^6.1.0",
         "conventional-changelog-conventionalcommits": "9.0.0",
-        "cross-env": "^7.0.3",
         "esbuild": "^0.25.5",
         "eslint": "9.28.0",
         "jiti": "2.4.2",
