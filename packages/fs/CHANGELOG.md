@@ -1,3 +1,14 @@
+## @visulima/fs [3.1.8](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.7...@visulima/fs@3.1.8) (2025-09-19)
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.6.1
+
 ## @visulima/fs [3.1.7](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.6...@visulima/fs@3.1.7) (2025-09-12)
 
 ### Miscellaneous Chores
