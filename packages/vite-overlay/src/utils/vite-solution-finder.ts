@@ -251,7 +251,13 @@ const ERROR_PATTERNS = [
     },
     {
         solution: {
-            body: "Only variables prefixed with `VITE_` are exposed to the client. Server-only variables should not be prefixed with `VITE_`.",
+            body: [
+                "Only variables prefixed with `VITE_` are exposed on `import.meta.env` to the client at build time.",
+                "Server-only variables should not be prefixed with `VITE_`.",
+                "- Do not use `process.env` in browser code; prefer `import.meta.env.*`",
+                "- Custom vars must be prefixed with `VITE_` to be exposed to client",
+                "- For TS, add `/// <reference types=\"vite/client\" />` for type-safe access",
+            ].join("\n"),
             header: "Environment Variables",
         },
         test: (message: string) => message.includes("VITE_") || message.includes("process.env"),
