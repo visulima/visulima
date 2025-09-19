@@ -61,7 +61,7 @@
     --ono-v-hover-overlay: rgba(32, 32, 32, 0.05);
 
     --ono-v-success: #2ea043;
-    --ono-v-success-bg: rgba(3, 97, 22, 0.6);
+    --ono-v-success-bg: rgb(214, 238, 209);
     /* Neutral/chip tokens */
     --ono-v-neutral: #6e7681;
     --ono-v-neutral-bg: rgba(110, 118, 129, 0.18);

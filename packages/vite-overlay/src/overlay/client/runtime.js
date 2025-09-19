@@ -13,13 +13,13 @@ class ErrorOverlay extends HTMLElement {
      * The current mode for displaying error information ('original' | 'compiled')
      * @type {string}
      */
-    __flameMode;
+    __v_oMode;
 
     /**
      * The error payload containing all error information
      * @type {VisulimaViteOverlayErrorPayload}
      */
-    __flamePayload;
+    __v_oPayload;
 
     /**
      * Creates an error overlay component
@@ -64,9 +64,9 @@ class ErrorOverlay extends HTMLElement {
             rootPath: error.rootPath || "",
         };
 
-        this.__flamePayload = payload;
+        this.__v_oPayload = payload;
 
-        this.__flameMode = "original";
+        this.__v_oMode = "original";
 
         this.#initializeThemeToggle();
 
@@ -101,7 +101,7 @@ class ErrorOverlay extends HTMLElement {
         const closeButton = this.root.querySelector("#__v_o__close");
 
         if (closeButton) {
-            if (this.__flamePayload.errorType === "client") {
+            if (this.__v_oPayload.errorType === "client") {
                 closeButton.addEventListener("click", () => {
                     this.close();
                 });
@@ -110,7 +110,7 @@ class ErrorOverlay extends HTMLElement {
             }
         }
 
-        if (this.__flamePayload.errorType === "client") {
+        if (this.__v_oPayload.errorType === "client") {
             document.addEventListener("keydown", (event) => {
                 if (event.key === "Escape" && this.parentNode) {
                     this.close();
@@ -128,7 +128,7 @@ class ErrorOverlay extends HTMLElement {
     updateOverlay() {
         const currentIndex = 0; // Assuming we're showing the first error
 
-        const currentError = this.__flamePayload?.errors?.[currentIndex];
+        const currentError = this.__v_oPayload?.errors?.[currentIndex];
 
         if (currentError) {
             const flameOverlay = this.root.querySelector("#__v_o__overlay");
@@ -189,7 +189,7 @@ class ErrorOverlay extends HTMLElement {
             e.preventDefault();
 
             try {
-                const payload = this.__flamePayload;
+                const payload = this.__v_oPayload;
                 const currentError = payload?.errors?.[0]; // Get first error
 
                 if (!currentError) {
@@ -255,7 +255,7 @@ class ErrorOverlay extends HTMLElement {
     }
 
     #initializePagination() {
-        const payload = this.__flamePayload;
+        const payload = this.__v_oPayload;
         const errors = Array.isArray(payload.errors) && payload.errors.length > 0 ? payload.errors : [];
         const errorIds = errors.map((error) =>
             String(error.__id || [error.originalFilePath || "", error.originalFileLine || 0, error.name || "", error.message || ""].join("|")),
@@ -328,7 +328,7 @@ class ErrorOverlay extends HTMLElement {
                 const stackElement = stackHost?.querySelector("div:last-child");
 
                 if (stackHost && stackElement) {
-                    const rootPayload = this.__flamePayload || {};
+                    const rootPayload = this.__v_oPayload || {};
 
                     const stackText
                         = mode === "compiled"
@@ -450,7 +450,7 @@ class ErrorOverlay extends HTMLElement {
                 flameOverlay.innerHTML = codeFrame;
             };
 
-            const activeMode = this.__flameMode || "original";
+            const activeMode = this.__v_oMode || "original";
 
             renderCode(activeMode);
             updateFileLink();
@@ -469,7 +469,7 @@ class ErrorOverlay extends HTMLElement {
             originalButton?.addEventListener("click", (event) => {
                 event.preventDefault();
 
-                this.__flameMode = "original";
+                this.__v_oMode = "original";
 
                 renderCode("original");
                 updateRawStack("original");
@@ -481,7 +481,7 @@ class ErrorOverlay extends HTMLElement {
             compiledButton?.addEventListener("click", (event) => {
                 event.preventDefault();
 
-                this.__flameMode = "compiled";
+                this.__v_oMode = "compiled";
 
                 renderCode("compiled");
                 updateRawStack("compiled");
@@ -557,9 +557,9 @@ class ErrorOverlay extends HTMLElement {
             }
         };
 
-        globalThis.__flameSelectError = selectById;
+        globalThis.__v_oSelectError = selectById;
 
-        globalThis.addEventListener("flame:select-error", (event_) => {
+        globalThis.addEventListener("v-o:select-error", (event_) => {
             selectById(event_?.detail?.id);
         });
 
@@ -623,7 +623,8 @@ class ErrorOverlay extends HTMLElement {
     }
 
     #injectSolution(solution) {
-        const solutionsContainer = this.root.querySelector("#__v_o__solutions");
+        const solutions = this.root.querySelector("#__v_o__solutions");
+        const solutionsContainer = this.root.querySelector("#__v_o__solutions_container");
 
         if (solutionsContainer && solution) {
             // Generate HTML from solution object
@@ -639,53 +640,7 @@ class ErrorOverlay extends HTMLElement {
 
             // Set the HTML content and show the container
             solutionsContainer.innerHTML = html;
-            solutionsContainer.classList.remove("hidden");
-
-            // Make sure the solutions appear after the message
-            const messageElement = this.root.querySelector("#__v_o__message");
-
-            if (messageElement) {
-                messageElement.after(solutionsContainer);
-            }
+            solutions.classList.remove("hidden");
         }
     }
-}
-
-// Global error handler for React errors
-try {
-    const originalError = globalThis.onerror;
-
-    globalThis.onerror = function (message, source, lineno, colno, error) {
-        // Try to instantiate our overlay manually
-        try {
-            const OverlayClass = globalThis.ErrorOverlay || globalThis.FlameErrorOverlay;
-
-            if (error && typeof OverlayClass === "function") {
-                const overlay = new OverlayClass({
-                    colno,
-                    lineno,
-                    message: error.message || String(message),
-                    name: error.name || "Error",
-                    source,
-                    stack: error.stack,
-                });
-
-                // Add the overlay to the DOM if it exists
-                if (overlay && overlay.element) {
-                    document.body.append(overlay.element);
-                }
-            }
-        } catch (error_) {
-            console.error("[flame:client] Failed to create overlay:", error_);
-        }
-
-        // Call original handler
-        if (originalError) {
-            return originalError.call(this, message, source, lineno, colno, error);
-        }
-
-        return false;
-    };
-} catch (error) {
-    console.error("[flame:client] Failed to install global error handler:", error);
 }

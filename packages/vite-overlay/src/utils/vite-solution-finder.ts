@@ -214,7 +214,7 @@ const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: s
         const isAssetFile = [...ASSET_EXTENSIONS].some((extension) => publicFileName.includes(extension));
 
         if (isAssetFile) {
-            finalSuggestions += `Files in the \`public\` folder should be accessed via absolute URLs like \`/${publicFileName}\` instead of importing them as modules.`;
+            finalSuggestions += `Files in the \`public\` folder should be accessed via absolute URLs like \`/${publicFileName}\`.`;
         }
     }
 

@@ -482,11 +482,10 @@ const setupWebSocketInterception = (
                             solutionFinders,
                         );
 
+                        // eslint-disable-next-line no-param-reassign
                         data.err = extensionPayload;
 
                         recentErrors.set(JSON.stringify(extensionPayload), Date.now());
-
-                        console.log("extensionPayload", extensionPayload);
                     }
                 } else {
                     // Handle other types of errors (runtime errors, etc.)
@@ -520,8 +519,6 @@ const setupWebSocketInterception = (
                     data.err = extensionPayload;
 
                     recentErrors.set(JSON.stringify(extensionPayload), Date.now());
-
-                    console.log("extensionPayload", extensionPayload);
                 }
             }
 

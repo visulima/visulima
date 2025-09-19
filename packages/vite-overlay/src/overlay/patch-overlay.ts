@@ -8,6 +8,8 @@ import moonStarIcon from "lucide-static/icons/moon-star.svg?data-uri&encoding=cs
 import sunIcon from "lucide-static/icons/sun.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import closeIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
 
 import Editors from "../../../../shared/utils/editors";
 import styleCss from "./client/index.css";
@@ -84,24 +86,24 @@ const generateOverlayTemplate = (): string => {
                 <label for="editor-selector" class="sr-only">Editor</label>
                 <select id="editor-selector" class="py-1 cursor-pointer px-2 pe-6 block w-44 bg-[var(--ono-v-surface)] border border-[var(--ono-v-border)] rounded-[var(--ono-v-radius-md)] text-xs text-[var(--ono-v-text)] shadow-[var(--ono-v-elevation-1)] hover:bg-[var(--ono-v-hover-overlay)] focus:outline-hidden focus:ring-1 focus:ring-[var(--ono-v-red-orange)]">${editorOptions}</select>
             </div>
-            
+
             <div id="v-o-theme-switch" class="flex items-center gap-1">
                 <button type="button" title="Switch to dark mode" aria-label="Switch to dark mode" class="font-medium rounded-full hover:bg-[var(--ono-v-hover-overlay)] focus:outline-hidden focus:bg-[var(--ono-v-hover-overlay)] text-[var(--ono-v-text)]" data-v-o-theme-click-value="dark">
                     <span class="inline-flex shrink-0 justify-center items-center size-8">
-                        <span class="dui w-5 h-5" style="-webkit-mask-image: url('${moonStarIcon}'); mask-image: url('${moonStarIcon}')"></span>
+                        <span class="dui size-5" style="-webkit-mask-image: url('${moonStarIcon}'); mask-image: url('${moonStarIcon}')"></span>
                     </span>
                 </button>
                 <button type="button" title="Switch to light mode" aria-label="Switch to light mode" class="hidden font-medium rounded-full hover:bg-[var(--ono-v-hover-overlay)] focus:outline-hidden focus:bg-[var(--ono-v-hover-overlay)] text-[var(--ono-v-text)]" data-v-o-theme-click-value="light">
                     <span class="inline-flex shrink-0 justify-center items-center size-8">
-                        <span class="dui w-5 h-5" style="-webkit-mask-image: url('${sunIcon}'); mask-image: url('${sunIcon}')"></span>
+                        <span class="dui size-5" style="-webkit-mask-image: url('${sunIcon}'); mask-image: url('${sunIcon}')"></span>
                     </span>
                 </button>
             </div>
-            
+
             <div class="flex items-center">
                 <button type="button" id="__v_o__close" aria-label="Close error overlay" class="font-medium rounded-full hover:bg-[var(--ono-v-hover-overlay)] focus:outline-hidden focus:bg-[var(--ono-v-hover-overlay)] text-[var(--ono-v-text)]">
                     <span class="inline-flex shrink-0 justify-center items-center size-8">
-                        <span class="dui w-5 h-5" style="-webkit-mask-image: url('${closeIcon}'); mask-image: url('${closeIcon}')"></span>
+                        <span class="dui size-5" style="-webkit-mask-image: url('${closeIcon}'); mask-image: url('${closeIcon}')"></span>
                     </span>
                 </button>
             </div>
@@ -128,7 +130,7 @@ const generateOverlayTemplate = (): string => {
     </div>
 
     <div id="__v_o__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex w-full max-w-[var(--ono-v-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--ono-v-dialog-radius)] bg-[var(--ono-v-surface)] text-[var(--ono-v-text)] shadow-[var(--ono-v-elevation-1)] border-b border-[var(--ono-v-border)] ">
-        <div id="__v_o__header" class="flex items-center gap-1 justify-between border-b border-[var(--ono-v-border)] bg-[var(--ono-v-surface)] px-4 py-2">            
+        <div id="__v_o__header" class="flex items-center gap-1 justify-between border-b border-[var(--ono-v-border)] bg-[var(--ono-v-surface)] px-4 py-2">
             <div id="__v_o__header_loader" class="v-o-skeleton h-6 w-3/5 rounded animate-pulse"></div>
             <div id="__v_o__title" class="flex items-center gap-2 w-full font-bold text-[var(--ono-v-text)] hidden">
                 <span id="__v_o__heading" class="leading-none rounded-md text-[var(--ono-v-red-orange)] font-mono text-sm"></span>
@@ -140,7 +142,7 @@ const generateOverlayTemplate = (): string => {
             </div>
             <button type="button" id="__v_o__copy_error" title="Copy Error Info" aria-label="Copy Error Info" class="font-medium rounded-full hover:bg-[var(--ono-v-hover-overlay)] focus:outline-hidden focus:bg-[var(--ono-v-hover-overlay)] text-[var(--ono-v-text)]">
                 <span class="inline-flex shrink-0 justify-center items-center size-8">
-                    <span class="dui w-5 h-5" style="-webkit-mask-image: url('${copyIcon}'); mask-image: url('${copyIcon}')"></span>
+                    <span class="dui size-5" style="-webkit-mask-image: url('${copyIcon}'); mask-image: url('${copyIcon}')"></span>
                 </span>
             </button>
         </div>
@@ -149,7 +151,12 @@ const generateOverlayTemplate = (): string => {
             <div class="v-o-skeleton h-4 w-full rounded animate-pulse"></div>
         </div>
         <div id="__v_o__message" class="px-4 py-2 text-sm text-[var(--ono-v-red-orange)] font-mono bg-[var(--ono-v-surface-muted)] border-b border-[var(--ono-v-border)] font-medium hidden"></div>
-        <div id="__v_o__solutions" class="px-4 py-2 hidden bg-[var(--ono-v-success-bg)] m-1 mb-0 prose prose-sm max-w-full prose-headings:text-white prose-ul:list-none prose-hr:my-6 prose-hr:border"></div>
+        <div id="__v_o__solutions" class="relative hidden">
+            <div title="Possible Solution" class="bg-[#b0c8aa] dark:bg-lime-800 rounded-[var(--ono-v-radius-md)] absolute top-4 right-4 z-10 size-6.5 flex items-center justify-center shadow-[var(--ono-v-elevation-1)]">
+                <span class="dui size-5" style="-webkit-mask-image: url('${infoIcon}'); mask-image: url('${infoIcon}')"></span>
+            </div>
+            <div id="__v_o__solutions_container" class="px-4 py-2 bg-[var(--ono-v-success-bg)] m-1 mb-0 prose prose-sm max-w-full prose-headings:text-white prose-ul:list-none prose-hr:my-6 prose-hr:border dark:prose-invert"></div>
+        </div>
         <div id="__v_o__body" class="relative flex min-h-0 px-4 py-2 bg-[var(--ono-v-surface)]">
             <div id="__v_o__body_loader" class="w-full space-y-1.5">
                 <div class="v-o-skeleton h-4 w-full rounded animate-pulse"></div>
