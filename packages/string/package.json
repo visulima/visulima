@@ -575,7 +575,7 @@
         "test:watch": "pnpm run generate:charmap && vitest"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "16.2.10",
+        "@anolilab/eslint-config": "16.3.0",
         "@anolilab/semantic-release-pnpm": "1.1.11",
         "@anolilab/semantic-release-preset": "10.0.5",
         "@arethetypeswrong/cli": "0.18.1",
@@ -594,7 +594,7 @@
         "eslint": "9.28.0",
         "eslint-plugin-you-dont-need-lodash-underscore": "6.14.0",
         "fastest-levenshtein": "1.0.16",
-        "get-east-asian-width": "1.3.0",
+        "get-east-asian-width": "1.4.0",
         "rimraf": "6.0.1",
         "secretlint": "9.3.3",
         "semantic-release": "24.2.5",
