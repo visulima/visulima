@@ -1,3 +1,13 @@
+## @visulima/error [4.6.1](https://github.com/visulima/visulima/compare/@visulima/error@4.6.0...@visulima/error@4.6.1) (2025-09-19)
+
+### Bug Fixes
+
+* **error:** improve error hint handling and update license documentation ([bc019ed](https://github.com/visulima/visulima/commit/bc019ed786452b5ced8ce37f91e730916d0c3406))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+
 ## @visulima/error [4.6.0](https://github.com/visulima/visulima/compare/@visulima/error@4.5.0...@visulima/error@4.6.0) (2025-09-12)
 
 ### Features
