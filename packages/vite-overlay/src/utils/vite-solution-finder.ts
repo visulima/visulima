@@ -204,7 +204,10 @@ const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: s
     }
 
     // Remove duplicates and limit to top suggestions
-    let finalSuggestions = `<ul>${[...new Set(suggestions)].slice(0, MAX_SUGGESTIONS).map((suggestion) => `<li>\`${suggestion}\`</li>`).join("\n")}</ul>`;
+    let finalSuggestions = `<ul>${[...new Set(suggestions)]
+        .slice(0, MAX_SUGGESTIONS)
+        .map((suggestion) => `<li>\`${suggestion}\`</li>`)
+        .join("\n")}</ul>`;
 
     // If we found public asset files, add a note about accessing them via absolute URLs
     if (hasPublicFileSuggestions) {
@@ -327,7 +330,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
 
             // 1. Import resolution errors with file suggestions
             if (message.includes("Failed to resolve import") || message.includes("Cannot resolve module")) {
-            // Extract the import path from the error message
+                // Extract the import path from the error message
                 const importMatch = message.match(/Failed to resolve import ["']([^"']+)["']/);
                 const moduleMatch = message.match(/Cannot resolve module ["']([^"']+)["']/);
 

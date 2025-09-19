@@ -3,13 +3,13 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import copyIcon from "lucide-static/icons/copy.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
+import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import moonStarIcon from "lucide-static/icons/moon-star.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import sunIcon from "lucide-static/icons/sun.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import closeIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
 
 import Editors from "../../../../shared/utils/editors";
 import styleCss from "./client/index.css";
