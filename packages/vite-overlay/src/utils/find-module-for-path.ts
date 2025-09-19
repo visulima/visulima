@@ -35,6 +35,7 @@ const findBestModuleMatch = (server: ViteDevServer, candidates: ReadonlyArray<st
  * @param candidates Array of candidate file paths to search for
  * @returns The matching module node or undefined if not found
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleNode | undefined => {
     const prioritizedCandidates = [...candidates, ...candidates.map((c) => c.replace(/^\/@fs\//, "")), ...candidates.map((c) => c.replace(/^[./]*/, ""))];
 
@@ -43,21 +44,29 @@ const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleN
 
     for (const id of prioritizedCandidates) {
         try {
-            const module = server.moduleGraph.getModuleById(id);
+            // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/naming-convention
+            const module_ = server.moduleGraph.getModuleById(id);
 
-            if (module) {
-                const isValidModule = Object.keys(module).length > 0;
-                const hasTransformResult = !!module.transformResult;
-                const score = isValidModule && hasTransformResult ? 2 : isValidModule ? 1 : 0;
+            if (module_) {
+                const isValidModule = Object.keys(module_).length > 0;
+                const hasTransformResult = !!module_.transformResult;
+
+                let score = 0;
+
+                if (isValidModule && hasTransformResult) {
+                    score = 2;
+                } else if (isValidModule) {
+                    score = 1;
+                }
 
                 if (isValidModule) {
                     if (score > bestModuleScore) {
-                        bestModule = module;
+                        bestModule = module_;
                         bestModuleScore = score;
                     }
 
                     if (hasTransformResult) {
-                        return module;
+                        return module_;
                     }
                 }
             }
@@ -67,7 +76,14 @@ const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleN
             if (byUrl) {
                 const isValidModule = Object.keys(byUrl).length > 0;
                 const hasTransformResult = !!byUrl.transformResult;
-                const score = isValidModule && hasTransformResult ? 2 : isValidModule ? 1 : 0;
+
+                let score = 0;
+
+                if (isValidModule && hasTransformResult) {
+                    score = 2;
+                } else if (isValidModule) {
+                    score = 1;
+                }
 
                 if (isValidModule) {
                     if (score > bestModuleScore) {
@@ -94,8 +110,4 @@ const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleN
     return result;
 };
 
-/**
- * Default export for finding modules in Vite's module graph.
- * @see findModuleForPath
- */
 export default findModuleForPath;

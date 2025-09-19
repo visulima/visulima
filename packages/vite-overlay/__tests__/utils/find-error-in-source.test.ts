@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { findErrorInSourceCode } from "../../src/utils/find-error-in-source";
+import findErrorInSourceCode from "../../src/utils/find-error-in-source";
 
 describe(findErrorInSourceCode, () => {
     describe("standard Error patterns", () => {

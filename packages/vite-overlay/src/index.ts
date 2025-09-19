@@ -14,7 +14,7 @@ import type { DevelopmentLogger, ExtendedError, RawErrorData, RecentErrorTracker
 import buildExtendedErrorData from "./utils/error-processing";
 import enhanceViteSsrError from "./utils/ssr-error-enhancer";
 import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace-utils";
-import createViteSolutionFinder from "./utils/vite-solution-finder";
+import createViteSolutionFinder from "./utils/create-vite-solution-finder";
 
 /**
  * Logs an error using the Vite dev server's logger with a prefix.
@@ -110,7 +110,7 @@ const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string
     const runtimeError = reason instanceof Error ? reason : new Error(String((reason as any)?.stack || reason));
 
     try {
-        server.ssrFixStacktrace(runtimeError as any);
+        server.ssrFixStacktrace(runtimeError as Error);
     } catch (error) {
         logError(server, "[visulima:vite-overlay:server] ssrFixStacktrace failed", error);
     }

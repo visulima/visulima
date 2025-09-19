@@ -7,10 +7,10 @@ import type { ErrorPayload, ViteDevServer } from "vite";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import buildExtendedErrorData from "../../../src/utils/error-processing";
-// Import the helper functions we want to test
-import { addQueryToUrl, extractQueryFromHttpUrl } from "../../../src/utils/error-processing/index";
 import remapStackToOriginal from "../../../src/utils/error-processing/remap-stack-to-original";
-import { retrieveSourceTexts } from "../../../src/utils/error-processing/retrieve-source-texts";
+import retrieveSourceTexts from "../../../src/utils/error-processing/retrieve-source-texts";
+import addQueryToUrl from "../../../src/utils/error-processing/utils/add-query-to-url";
+import extractQueryFromHttpUrl from "../../../src/utils/error-processing/utils/extract-query-from-http-url";
 
 vi.mock("node:fs/promises");
 vi.mock("@visulima/error", () => {
@@ -364,7 +364,7 @@ src/components/Test.vue
 
     describe("code frame generation", () => {
         it("should generate code frames when source is available", async () => {
-            expect.assertions(4);
+            expect.assertions(3);
 
             const error = new Error("Test error");
 
@@ -3374,23 +3374,31 @@ Final line`);
     describe("hTTP URL Conversion Helpers", () => {
         describe(extractQueryFromHttpUrl, () => {
             it("should extract query parameters from HTTP URLs", () => {
+                expect.assertions(3);
+
                 expect(extractQueryFromHttpUrl("http://localhost:5173/src/App.tsx?tsr-split=component")).toBe("?tsr-split=component");
                 expect(extractQueryFromHttpUrl("http://localhost:5173/src/App.tsx?id=123&debug=true")).toBe("?id=123&debug=true");
                 expect(extractQueryFromHttpUrl("https://example.com/file.js?v=1.0.0")).toBe("?v=1.0.0");
             });
 
             it("should return empty string for URLs without query parameters", () => {
+                expect.assertions(2);
+
                 expect(extractQueryFromHttpUrl("http://localhost:5173/src/App.tsx")).toBe("");
                 expect(extractQueryFromHttpUrl("https://example.com/file.js")).toBe("");
             });
 
             it("should return empty string for invalid URLs", () => {
+                expect.assertions(3);
+
                 expect(extractQueryFromHttpUrl("not-a-url")).toBe("");
                 expect(extractQueryFromHttpUrl("")).toBe("");
                 expect(extractQueryFromHttpUrl("file:///path/to/file.js")).toBe("");
             });
 
             it("should handle special characters in query parameters", () => {
+                expect.assertions(2);
+
                 expect(extractQueryFromHttpUrl("http://localhost:5173/src/App.tsx?param=value%20with%20spaces")).toBe("?param=value%20with%20spaces");
                 expect(extractQueryFromHttpUrl("http://localhost:5173/src/App.tsx?param=value+plus")).toBe("?param=value+plus");
             });
@@ -3398,6 +3406,8 @@ Final line`);
 
         describe(addQueryToUrl, () => {
             it("should add query parameter to URLs without existing query", () => {
+                expect.assertions(2);
+
                 expect(addQueryToUrl("http://localhost:5173/src/App.tsx", "?tsr-split=component")).toBe(
                     "http://localhost:5173/src/App.tsx?tsr-split=component",
                 );
@@ -3405,6 +3415,8 @@ Final line`);
             });
 
             it("should not add query parameter if URL already has query", () => {
+                expect.assertions(2);
+                
                 expect(addQueryToUrl("http://localhost:5173/src/App.tsx?existing=param", "?tsr-split=component")).toBe(
                     "http://localhost:5173/src/App.tsx?existing=param",
                 );
@@ -3412,11 +3424,15 @@ Final line`);
             });
 
             it("should not add empty or undefined query parameters", () => {
+                expect.assertions(2);
+
                 expect(addQueryToUrl("http://localhost:5173/src/App.tsx", "")).toBe("http://localhost:5173/src/App.tsx");
                 expect(addQueryToUrl("http://localhost:5173/src/App.tsx", undefined as any)).toBe("http://localhost:5173/src/App.tsx");
             });
 
             it("should handle various URL formats", () => {
+                expect.assertions(2);
+
                 expect(addQueryToUrl("/relative/path/file.js", "?param=value")).toBe("/relative/path/file.js?param=value");
                 expect(addQueryToUrl("file.js", "?param=value")).toBe("file.js?param=value");
             });
@@ -3425,6 +3441,8 @@ Final line`);
 
     describe("hTTP URL Conversion Integration", () => {
         it("should convert local paths to HTTP URLs with query parameters from cause errors", async () => {
+            expect.assertions(3);
+
             // Mock server configuration
             const mockServer = {
                 config: {
@@ -3501,6 +3519,8 @@ Final line`);
         });
 
         it("should handle case where no cause errors have HTTP URLs", async () => {
+            expect.assertions(1);
+
             const mockServer = {
                 config: {
                     root: "/home/user/project",
@@ -3538,6 +3558,8 @@ Final line`);
         });
 
         it("should handle malformed URLs gracefully", async () => {
+            expect.assertions(1);
+
             const mockServer = {
                 config: {
                     root: "/home/user/project",

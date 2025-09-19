@@ -1,32 +1,16 @@
-const PATH_SEPARATOR = "/";
-const BACKSLASH_SEPARATOR = "\\";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { normalize } from "@visulima/path";
 
 interface SourceMap {
     sources?: string[];
     sourcesContent?: (string | null)[];
 }
 
-export const getSourceFromMap = (map: SourceMap, wantedSource: string | undefined): string | undefined => {
-    if (!isValidSourceMap(map)) {
-        return undefined;
-    }
-
-    if (!wantedSource && map.sourcesContent?.[0]) {
-        return getSourceContent(map.sourcesContent[0]);
-    }
-
-    const sourceIndex = findSourceIndex(map.sources, wantedSource || "");
-
-    if (sourceIndex >= 0 && map.sourcesContent?.[sourceIndex]) {
-        return getSourceContent(map.sourcesContent[sourceIndex]);
-    }
-
-    return map.sourcesContent?.[0] ? getSourceContent(map.sourcesContent[0]) : undefined;
-};
-
 const isValidSourceMap = (map: SourceMap): boolean => Boolean(map && Array.isArray(map.sources) && Array.isArray(map.sourcesContent));
 
 const getSourceContent = (content: string | null | undefined): string | undefined => (typeof content === "string" ? content : undefined);
+
+const isPartialMatch = (source: string, wanted: string): boolean => source === wanted || source.endsWith(wanted) || wanted.endsWith(source);
 
 const findSourceIndex = (sources: string[] | undefined, wantedSource: string): number => {
     if (!sources || sources.length === 0) {
@@ -45,8 +29,7 @@ const findSourceIndex = (sources: string[] | undefined, wantedSource: string): n
         return -1;
     }
 
-    const normalizedWanted = normalizePath(wantedSource);
-
+    const normalizedWanted = normalize(wantedSource);
     const normalizedIndex = sources.indexOf(normalizedWanted);
 
     if (normalizedIndex !== -1) {
@@ -58,7 +41,7 @@ const findSourceIndex = (sources: string[] | undefined, wantedSource: string): n
             continue;
         }
 
-        const normalizedSource = normalizePath(source);
+        const normalizedSource = normalize(source);
 
         if (isPartialMatch(normalizedSource, normalizedWanted)) {
             return index;
@@ -68,6 +51,22 @@ const findSourceIndex = (sources: string[] | undefined, wantedSource: string): n
     return -1;
 };
 
-const normalizePath = (path: string): string => path.replaceAll(BACKSLASH_SEPARATOR, PATH_SEPARATOR);
+const getSourceFromMap = (map: SourceMap, wantedSource: string | undefined): string | undefined => {
+    if (!isValidSourceMap(map)) {
+        return undefined;
+    }
 
-const isPartialMatch = (source: string, wanted: string): boolean => source === wanted || source.endsWith(wanted) || wanted.endsWith(source);
+    if (!wantedSource && map.sourcesContent?.[0]) {
+        return getSourceContent(map.sourcesContent[0]);
+    }
+
+    const sourceIndex = findSourceIndex(map.sources, wantedSource || "");
+
+    if (sourceIndex >= 0 && map.sourcesContent?.[sourceIndex]) {
+        return getSourceContent(map.sourcesContent[sourceIndex]);
+    }
+
+    return map.sourcesContent?.[0] ? getSourceContent(map.sourcesContent[0]) : undefined;
+};
+
+export default getSourceFromMap;

@@ -1,7 +1,7 @@
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import type { ViteDevServer } from "vite";
 
-import { findErrorInSourceCode } from "./find-error-in-source";
+import findErrorInSourceCode from "./find-error-in-source";
 import { isHttpUrl } from "./normalize-id-candidates";
 
 // Constants

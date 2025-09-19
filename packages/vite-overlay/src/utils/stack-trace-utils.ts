@@ -2,7 +2,7 @@ import { stripVTControlCharacters } from "node:util";
 
 import { resolve } from "@visulima/path";
 
-import type { PluginPattern, StackFrameValidator, SupportedExtension } from "../types";
+import type { StackFrameValidator, SupportedExtension } from "../types";
 
 const PATH_SEPARATOR = "/" as const;
 const COLON_SEPARATOR = ":" as const;
@@ -149,21 +149,6 @@ export const cleanErrorStack = (stack: string): string => {
         .map(cleanStackLine)
         .filter((line) => line.trim() !== "")
         .join("\n");
-};
-
-/**
- * Cleans and resolves an error stack trace for better readability.
- * @param stack The raw stack trace string
- * @param server The Vite dev server instance
- * @param rootPath The root directory path
- * @returns The cleaned and resolved stack trace
- */
-export const cleanAndResolveErrorStack = (stack: string, server: ViteDevServer, rootPath: string): string => {
-    if (!stack) {
-        return stack;
-    }
-
-    return cleanErrorStack(stack);
 };
 
 /**

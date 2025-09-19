@@ -14,7 +14,7 @@ import type { ESBuildMessage } from "../stack-trace-utils";
 import { cleanErrorMessage, cleanErrorStack, extractErrors, isESBuildErrorArray, processESBuildErrors } from "../stack-trace-utils";
 import { parseVueCompilationError } from "./parse-vue-compilation-error";
 import remapStackToOriginal from "./remap-stack-to-original";
-import { retrieveSourceTexts } from "./retrieve-source-texts";
+import retrieveSourceTexts from "./retrieve-source-texts";
 import addQueryToUrl from "./utils/add-query-to-url";
 import extractQueryFromHttpUrl from "./utils/extract-query-from-http-url";
 

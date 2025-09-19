@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getSourceFromMap } from "../../src/utils/source-map-utils";
+import getSourceFromMap from "../../src/utils/get-source-from-map";
 
 describe(getSourceFromMap, () => {
     it("should return source content when found by exact match", () => {

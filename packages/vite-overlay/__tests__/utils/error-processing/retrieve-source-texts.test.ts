@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import type { ViteDevServer } from "vite";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { retrieveSourceTexts } from "../../../src/utils/error-processing/retrieve-source-texts";
+import retrieveSourceTexts from "../../../src/utils/error-processing/retrieve-source-texts";
 
 // Mock dependencies
 vi.mock("node:fs/promises");

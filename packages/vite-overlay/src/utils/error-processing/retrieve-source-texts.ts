@@ -3,13 +3,13 @@ import { readFile } from "node:fs/promises";
 import type { ViteDevServer } from "vite";
 
 import type { SourceTexts } from "../../types";
-import { getSourceFromMap } from "../source-map-utils";
+import getSourceFromMap from "../get-source-from-map";
 
 /**
  * Retrieves original and compiled source texts from various sources.
  * Attempts multiple strategies to find source code for error context.
  */
-export const retrieveSourceTexts = async (
+const retrieveSourceTexts = async (
     server: ViteDevServer,
     module_: unknown,
     filePath: string,
@@ -58,3 +58,5 @@ export const retrieveSourceTexts = async (
 
     return { compiledSourceText, originalSourceText } as const;
 };
+
+export default retrieveSourceTexts;
