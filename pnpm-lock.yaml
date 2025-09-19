@@ -489,8 +489,8 @@ importers:
         specifier: 3.0.20
         version: 3.0.20(zod@3.25.76)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.83
-        version: 2.0.83(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)
+        specifier: 2.0.84
+        version: 2.0.84(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)
       '@visulima/path':
         specifier: 1.4.0
         version: 1.4.0
@@ -610,8 +610,8 @@ importers:
         specifier: 2.0.39
         version: 2.0.39(@prisma/client@6.15.0(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(prisma@6.15.0(magicast@0.3.5)(typescript@5.8.3))
       '@visulima/fs':
-        specifier: 3.1.7
-        version: 3.1.7(yaml@2.8.1)
+        specifier: 3.1.8
+        version: 3.1.8(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.1.4
         version: 3.2.4(vitest@3.2.4)
@@ -913,11 +913,11 @@ importers:
         specifier: 1.4.23
         version: 1.4.23
       '@visulima/find-cache-dir':
-        specifier: 1.0.33
-        version: 1.0.33(yaml@2.8.1)
+        specifier: 1.0.34
+        version: 1.0.34(yaml@2.8.1)
       '@visulima/pail':
-        specifier: 2.1.27
-        version: 2.1.27(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
+        specifier: 2.1.28
+        version: 2.1.28(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -1634,8 +1634,8 @@ importers:
         specifier: 2.0.3
         version: 2.0.3
       '@visulima/error':
-        specifier: 4.6.0
-        version: 4.6.0(ai@5.0.34(zod@3.25.76))
+        specifier: 4.6.1
+        version: 4.6.1(ai@5.0.34(zod@3.25.76))
       http-errors:
         specifier: ^2.0.0
         version: 2.0.0
@@ -1746,8 +1746,8 @@ importers:
   packages/find-cache-dir:
     dependencies:
       '@visulima/fs':
-        specifier: 3.1.7
-        version: 3.1.7(yaml@2.8.1)
+        specifier: 3.1.8
+        version: 3.1.8(yaml@2.8.1)
       '@visulima/path':
         specifier: 1.4.0
         version: 1.4.0
@@ -1952,8 +1952,8 @@ importers:
         specifier: 18.19.71
         version: 18.19.71
       '@visulima/error':
-        specifier: 4.6.0
-        version: 4.6.0(ai@5.0.34(zod@3.25.76))
+        specifier: 4.6.1
+        version: 4.6.1(ai@5.0.34(zod@3.25.76))
       '@visulima/packem':
         specifier: 1.19.1
         version: 1.19.1(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@18.19.71)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.4)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.3(typedoc@0.28.4(typescript@5.8.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.4(typescript@5.8.3)))(typedoc@0.28.4(typescript@5.8.3))(typescript@5.8.3)(yaml@2.8.1)
@@ -2066,8 +2066,6 @@ importers:
       vitest:
         specifier: ^3.1.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.5.2)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-
-  packages/fs/__bench__/fixtures/a/b: {}
 
   packages/fs/__fixtures__/find-up: {}
 
@@ -2512,8 +2510,8 @@ importers:
         specifier: ^10.1.1
         version: 10.1.1(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 3.1.7
-        version: 3.1.7(yaml@2.8.1)
+        specifier: 3.1.8
+        version: 3.1.8(yaml@2.8.1)
       comment-parser:
         specifier: ^1.4.1
         version: 1.4.1
@@ -2736,8 +2734,8 @@ importers:
         specifier: ^3.12.2
         version: 3.12.2
       '@visulima/error':
-        specifier: 4.6.0
-        version: 4.6.0(ai@5.0.34(zod@3.25.76))
+        specifier: 4.6.1
+        version: 4.6.1(ai@5.0.34(zod@3.25.76))
       isomorphic-dompurify:
         specifier: ^2.28.0
         version: 2.28.0(postcss@8.5.6)
@@ -2891,8 +2889,8 @@ importers:
         specifier: ^5.1.10
         version: 5.1.12(@types/node@18.19.71)
       '@visulima/fs':
-        specifier: 3.1.7
-        version: 3.1.7(yaml@2.8.1)
+        specifier: 3.1.8
+        version: 3.1.8(yaml@2.8.1)
       '@visulima/path':
         specifier: 1.4.0
         version: 1.4.0
@@ -3117,8 +3115,8 @@ importers:
         specifier: 1.4.23
         version: 1.4.23
       '@visulima/error':
-        specifier: 4.6.0
-        version: 4.6.0(ai@5.0.34(zod@3.25.76))
+        specifier: 4.6.1
+        version: 4.6.1(ai@5.0.34(zod@3.25.76))
       '@visulima/fmt':
         specifier: 1.1.15
         version: 1.1.15
@@ -3936,8 +3934,8 @@ importers:
   packages/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 3.1.7
-        version: 3.1.7(yaml@2.8.1)
+        specifier: 3.1.8
+        version: 3.1.8(yaml@2.8.1)
       '@visulima/path':
         specifier: 1.4.0
         version: 1.4.0
@@ -10305,8 +10303,8 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/error@4.6.0':
-    resolution: {integrity: sha512-tzqgIn/5202xkVTndd8vxZ9ZWbJKrodr5zHIq+Xjh/g+uvlIMuWvcBUxO7Z7R9+pMKTRExIVlNUAPN3G3GUHHQ==}
+  '@visulima/error@4.6.1':
+    resolution: {integrity: sha512-dkObYJfyytzCXyTgOa9zXsvHE3Fn4hglRbE4wQqQ+SKRs1xMCuOJzbJ5UNNNK5I5vxPlv15NzibzSwOZq9Nxqg==}
     engines: {node: '>=18.0.0 <=24.x'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -10327,8 +10325,8 @@ packages:
     resolution: {integrity: sha512-EWD8XxufhhX0AbSP98t977E/6XvZw4wtsD3UMAr7xw83PhRfTS3uQsnk4Trcppf03bjx7y/R044qfyQZiuetGg==}
     engines: {node: '>=18.0.0 <=23.x'}
 
-  '@visulima/find-cache-dir@1.0.33':
-    resolution: {integrity: sha512-q+rkRobMKg6sPhza9R37GRfJso2CdhxCrnPo+LbH7XcCO70kGhRsgvqwY3w8Dcvs2ybgJQ0zSS0DgxLKf0qBlg==}
+  '@visulima/find-cache-dir@1.0.34':
+    resolution: {integrity: sha512-eQXTTD+C9UBVRoUoytlVM0SJK+MsUFemXAHJFuoyLVcMFwsFKYrKum9VxRstQszLreSavzDJ71w5ZfY4sX/h2A==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/fmt@1.1.14':
@@ -10381,8 +10379,8 @@ packages:
       yaml:
         optional: true
 
-  '@visulima/fs@3.1.7':
-    resolution: {integrity: sha512-mjQc1UYKdo06RD/EoLBmU8gg+gXn0L9OL7CfNDSDqGtNRXtnoQJ1msKE6sUwP0lzPVV391BoDfpePfUF2jD9Og==}
+  '@visulima/fs@3.1.8':
+    resolution: {integrity: sha512-LQLoX/G/9Tv6YUgiPoC1DZ2O8NGJuVFIuGYwvWI07BKZX2idOu9UOeI9Ozr84+k8B6Wdwo/g1gEkDMssInBp0w==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -10430,8 +10428,8 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.83':
-    resolution: {integrity: sha512-hQhRQVJ4Fss7Rb+v+ANxYI+pZcdLKcN1cpVTQy8gpWZTXnlDqS/Ogy4Oydd2M63CyicU6i/5tNijDWmTdogG4A==}
+  '@visulima/jsdoc-open-api@2.0.84':
+    resolution: {integrity: sha512-18cJuTc2uT+bT+d9f2UFZYqGDvbwrta/D733tn/1tAnYUR0rjtz1fvFAdSBRSYKwTy3g0m6SSc3AaKbgxba2ow==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -10974,8 +10972,8 @@ packages:
       rotating-file-stream:
         optional: true
 
-  '@visulima/pail@2.1.27':
-    resolution: {integrity: sha512-4Wm1CFB9mKuMdDc5eFz+lSRakyxD1vOliYiTfKW/aeBHEI4BrWMMN6kSFXGU1xrBPcp8Ytnm/gERqt3ZxBnzgg==}
+  '@visulima/pail@2.1.28':
+    resolution: {integrity: sha512-qzUR9DXqvT0Mwcs/lanAAzcBRLajZc3t/FmbLvL5Ua+x+DBsfGOMn+zyuLTBDu7/gBR35ftLJuCc9szFDVrgkw==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -22885,7 +22883,7 @@ snapshots:
 
   '@anolilab/rc@1.1.7(yaml@2.8.1)':
     dependencies:
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/path': 1.4.0
       ini: 5.0.0
       ts-deepmerge: 7.0.3
@@ -22894,7 +22892,7 @@ snapshots:
 
   '@anolilab/rc@2.0.3(yaml@2.8.1)':
     dependencies:
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/path': 1.4.0
       ini: 5.0.0
       ts-deepmerge: 7.0.3
@@ -22904,7 +22902,7 @@ snapshots:
   '@anolilab/semantic-release-clean-package-json@2.0.2(yaml@2.8.1)':
     dependencies:
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/path': 1.4.0
     transitivePeerDependencies:
       - yaml
@@ -22912,7 +22910,7 @@ snapshots:
   '@anolilab/semantic-release-clean-package-json@3.0.3(yaml@2.8.1)':
     dependencies:
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/path': 1.4.0
     transitivePeerDependencies:
       - yaml
@@ -22921,7 +22919,7 @@ snapshots:
     dependencies:
       '@anolilab/rc': 1.1.7(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/package': 3.5.9(@types/node@18.19.71)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       execa: 9.6.0
@@ -22937,7 +22935,7 @@ snapshots:
     dependencies:
       '@anolilab/rc': 1.1.7(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/package': 3.5.9(@types/node@22.15.29)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       execa: 9.6.0
@@ -22953,7 +22951,7 @@ snapshots:
     dependencies:
       '@anolilab/rc': 2.0.3(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/package': 3.5.9(@types/node@24.3.1)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       execa: 9.6.0
@@ -22969,7 +22967,7 @@ snapshots:
     dependencies:
       '@anolilab/rc': 2.0.3(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/package': 3.5.9(@types/node@24.5.2)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       execa: 9.6.0
@@ -30875,7 +30873,7 @@ snapshots:
 
   '@visulima/error@4.4.18': {}
 
-  '@visulima/error@4.6.0(ai@5.0.34(zod@3.25.76))':
+  '@visulima/error@4.6.1(ai@5.0.34(zod@3.25.76))':
     optionalDependencies:
       ai: 5.0.34(zod@3.25.76)
 
@@ -30900,9 +30898,9 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/find-cache-dir@1.0.33(yaml@2.8.1)':
+  '@visulima/find-cache-dir@1.0.34(yaml@2.8.1)':
     dependencies:
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/path': 1.4.0
     transitivePeerDependencies:
       - yaml
@@ -30935,7 +30933,7 @@ snapshots:
     optionalDependencies:
       yaml: 2.8.1
 
-  '@visulima/fs@3.1.7(yaml@2.8.1)':
+  '@visulima/fs@3.1.8(yaml@2.8.1)':
     dependencies:
       '@visulima/path': 1.4.0
     optionalDependencies:
@@ -30959,10 +30957,10 @@ snapshots:
 
   '@visulima/is-ansi-color-supported@2.2.14': {}
 
-  '@visulima/jsdoc-open-api@2.0.83(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.84(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.1(openapi-types@12.1.3)
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       read-pkg-up: 7.0.1
@@ -32144,10 +32142,10 @@ snapshots:
       '@visulima/redact': 1.0.15
       rotating-file-stream: 3.2.6
 
-  '@visulima/pail@2.1.27(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)':
+  '@visulima/pail@2.1.28(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)':
     dependencies:
       '@visulima/colorize': 1.4.23
-      '@visulima/error': 4.6.0(ai@5.0.34(zod@3.25.76))
+      '@visulima/error': 4.6.1(ai@5.0.34(zod@3.25.76))
       '@visulima/fmt': 1.1.15
       '@visulima/inspector': 1.0.24
       safe-stable-stringify: 2.5.0
@@ -32181,7 +32179,7 @@ snapshots:
   '@visulima/rollup-plugin-css@1.0.0-alpha.3(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.3.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.0)(yaml@2.8.1)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.50.0)
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/package': 3.5.9(@types/node@24.3.1)(yaml@2.8.1)
       '@visulima/packem-share': 1.0.0-alpha.9(@types/node@24.3.1)(rollup@4.50.0)(yaml@2.8.1)
       '@visulima/path': 1.4.0
@@ -32213,7 +32211,7 @@ snapshots:
   '@visulima/rollup-plugin-css@1.0.0-alpha.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.0)(yaml@2.8.1)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.50.0)
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/package': 3.5.9(@types/node@24.5.2)(yaml@2.8.1)
       '@visulima/packem-share': 1.0.0-alpha.10(@types/node@24.5.2)(rollup@4.50.0)(yaml@2.8.1)
       '@visulima/path': 1.4.0
