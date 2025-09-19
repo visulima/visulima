@@ -540,6 +540,7 @@ const setupWebSocketInterception = (
  * @param recentErrors Map of recent error signatures
  * @param rootPath The root path of the project
  * @param solutionFinders Array of solution finder handlers
+ * @param logClientRuntimeError Whether to log/display runtime errors
  */
 const setupHMRHandler = (
     server: ViteDevServer,
@@ -548,8 +549,14 @@ const setupHMRHandler = (
     recentErrors: Map<string, number>,
     rootPath: string,
     solutionFinders: SolutionFinder[],
+    logClientRuntimeError: boolean,
 ): void => {
     server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
+        // Skip processing client runtime errors if logClientRuntimeError is disabled
+        if (!logClientRuntimeError) {
+            return;
+        }
+
         const raw
             = data && typeof data === "object"
                 ? (data as RawErrorData)
@@ -642,12 +649,12 @@ const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): bool
  * Main Vite plugin for error overlay functionality.
  * Intercepts runtime errors and displays them in a user-friendly overlay.
  * @param options Plugin configuration options
- * @param options.logRuntimeError Whether to log runtime errors (optional)
+ * @param options.logClientRuntimeError Whether to log client runtime errors (optional)
  * @param options.reactPluginName Custom React plugin name (optional)
  * @param options.solutionFinders Custom solution finders (optional)
  * @returns The Vite plugin configuration
  */
-const errorOverlayPlugin = (options: { logRuntimeError?: boolean; reactPluginName?: string; solutionFinders?: SolutionFinder[] }): Plugin => {
+const errorOverlayPlugin = (options: { logClientRuntimeError?: boolean; reactPluginName?: string; solutionFinders?: SolutionFinder[] }): Plugin => {
     let mode: string;
     let isReactProject: boolean;
 
@@ -694,7 +701,7 @@ const errorOverlayPlugin = (options: { logRuntimeError?: boolean; reactPluginNam
 
             setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? []);
 
-            setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? []);
+            setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? [], options?.logClientRuntimeError ?? true);
 
             const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
 
