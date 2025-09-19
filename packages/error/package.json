@@ -187,7 +187,7 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.2.25",
+        "@anolilab/eslint-config": "^16.2.26",
         "@anolilab/prettier-config": "^6.0.4",
         "@anolilab/semantic-release-pnpm": "^2.0.3",
         "@anolilab/semantic-release-preset": "^11.0.3",
@@ -199,7 +199,7 @@
         "@visulima/path": "1.4.0",
         "@vitest/coverage-v8": "^3.2.4",
         "@vitest/ui": "^3.2.4",
-        "ai": "^5.0.34",
+        "ai": "^5.0.44",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "cross-env": "^10.0.0",
         "esbuild": "0.25.9",
@@ -212,7 +212,7 @@
         "vitest": "^3.2.4"
     },
     "peerDependencies": {
-        "ai": "^5.0.30"
+        "ai": "^5.0.44"
     },
     "peerDependenciesMeta": {
         "ai": {
