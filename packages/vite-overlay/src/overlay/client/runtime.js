@@ -73,7 +73,6 @@ class ErrorOverlay extends HTMLElement {
         this.#initializeCopyError();
 
         this.#initializePagination();
-        console.log(error);
 
         // Inject solution into the overlay if available
         if (error.solution) {

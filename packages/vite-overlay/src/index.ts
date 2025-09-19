@@ -175,8 +175,6 @@ const findSolution = async (error: ExtendedError, solutionFinders: SolutionFinde
         }
     }
 
-    console.log("result", hint);
-
     return hint;
 };
 
