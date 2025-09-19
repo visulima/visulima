@@ -4,13 +4,11 @@ import path from "node:path";
 import type { Solution, SolutionFinder } from "@visulima/error/solution";
 import { distance } from "fastest-levenshtein";
 
-// Configuration constants
 const MAX_SEARCH_DEPTH = 4;
 const MAX_FILES_TO_SEARCH = 1000;
 const MAX_SUGGESTIONS = 5;
 const NAME_SIMILARITY_THRESHOLD = 0.5;
 
-// File type categories for better organization
 const SCRIPT_EXTENSIONS = [".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs"];
 const STYLE_EXTENSIONS = [".css", ".scss", ".sass", ".less"];
 const ASSET_EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico"];
@@ -25,7 +23,10 @@ interface FileCandidate {
 }
 
 /**
- * Get a properly formatted relative path
+ * Gets the relative path from one directory to another, ensuring it starts with './' if needed.
+ * @param fromDirectory The source directory
+ * @param toPath The target path
+ * @returns The relative path string
  */
 const getRelativePath = (fromDirectory: string, toPath: string): string => {
     const relativePath = path.relative(fromDirectory, toPath);
@@ -34,7 +35,9 @@ const getRelativePath = (fromDirectory: string, toPath: string): string => {
 };
 
 /**
- * Get human-readable context for path distance
+ * Gets a human-readable description of the path distance for file suggestions.
+ * @param pathDistance The number of directory levels away
+ * @returns A descriptive string about the path location
  */
 const getPathContext = (pathDistance: number): string => {
     if (pathDistance === 0)
@@ -50,50 +53,49 @@ const getPathContext = (pathDistance: number): string => {
 };
 
 /**
- * Calculate the path distance between two directories
+ * Calculates the distance between two directories based on their path relationship.
+ * @param fromDirectory The source directory
+ * @param toDirectory The target directory
+ * @returns The calculated path distance
  */
 const calculatePathDistance = (fromDirectory: string, toDirectory: string): number => {
     try {
         const relativePath = path.relative(fromDirectory, toDirectory);
         const segments = relativePath.split(path.sep).filter((s) => s && s !== ".");
 
-        // Count upward movements (..) and directory changes
         let distance = 0;
 
         for (const segment of segments) {
-            if (segment === "..") {
-                distance += 2; // Penalize going up directories more
-            } else {
-                distance += 1; // Penalize changing directories
-            }
+            distance += segment === ".." ? 2 : 1;
         }
 
         return distance;
     } catch {
-        return 10; // High penalty for unresolvable paths
+        return 10;
     }
 };
 
 /**
- * Calculate relevance score for a file candidate based on import requirements
+ * Calculates how relevant a file is as a suggestion for a failed import.
+ * @param importBaseName The base name of the import being attempted
+ * @param importExtension The extension of the import being attempted
+ * @param baseName The base name of the candidate file
+ * @param fileExtension The extension of the candidate file
+ * @returns A relevance score (higher is better)
  */
 const calculateRelevanceScore = (importBaseName: string, importExtension: string, baseName: string, fileExtension: string): number => {
-    // Same extension - highest relevance
     if (importExtension && fileExtension === importExtension) {
         const nameDistance = distance(importBaseName, baseName);
 
         return nameDistance <= Math.max(3, Math.floor(importBaseName.length * NAME_SIMILARITY_THRESHOLD)) ? 10 - nameDistance : 0;
     }
 
-    // No extension specified - look for relevant files
     if (!importExtension) {
         const nameDistance = distance(importBaseName, baseName);
 
-        // Exact name match gets high score
         if (nameDistance === 0)
             return 9;
 
-        // Close matches with relevant extensions
         if (nameDistance <= Math.max(2, Math.floor(importBaseName.length * 0.3)) && RELEVANT_EXTENSIONS.has(fileExtension)) {
             return 7 - nameDistance;
         }
@@ -101,14 +103,17 @@ const calculateRelevanceScore = (importBaseName: string, importExtension: string
         return 0;
     }
 
-    // Different extension but similar name - lower priority
     const nameDistance = distance(importBaseName, baseName);
 
     return nameDistance <= Math.max(2, Math.floor(importBaseName.length * 0.4)) ? 5 - nameDistance : 0;
 };
 
 /**
- * Walk directory tree and collect relevant file candidates
+ * Collects file candidates that could match a failed import by walking the directory tree.
+ * @param rootDirectory The root directory to search from
+ * @param importBaseName The base name of the import being attempted
+ * @param importExtension The extension of the import being attempted
+ * @returns Array of file candidates with relevance scores
  */
 const collectFileCandidates = (rootDirectory: string, importBaseName: string, importExtension: string): FileCandidate[] => {
     const candidates: FileCandidate[] = [];
@@ -154,32 +159,33 @@ const collectFileCandidates = (rootDirectory: string, importBaseName: string, im
     return candidates;
 };
 
+/**
+ * Finds similar files to a failed import and generates HTML suggestions.
+ * @param importPath The import path that failed
+ * @param fromFile The file that attempted the import
+ * @param rootDirectory The root directory to search from
+ * @returns HTML string with file suggestions
+ */
 const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: string): string => {
     const importName = path.basename(importPath);
     const importExtension = path.extname(importName);
     const importBaseName = path.basename(importName, importExtension);
 
-    // Resolve the directory where the import should be relative to
     const fromDirectory = path.dirname(fromFile);
 
-    // Collect relevant file candidates
     const candidates = collectFileCandidates(rootDirectory, importBaseName, importExtension);
 
-    // Calculate final scores combining relevance, path proximity, and name similarity
     const scoredFiles = candidates.map((candidate) => {
         const nameDistance = distance(importBaseName, candidate.baseName);
         const pathDistance = calculatePathDistance(fromDirectory, path.dirname(candidate.fullPath));
 
-        // Simplified scoring: relevance is most important, then path proximity
         const score = candidate.relevanceScore * 0.7 + pathDistance * 0.2 + nameDistance * 0.1;
 
         return { ...candidate, nameDistance, pathDistance, score };
     });
 
-    // Sort by score (lower is better)
     scoredFiles.sort((a, b) => a.score - b.score);
 
-    // Generate suggestions from global search results
     const suggestions: string[] = [];
     const topMatches = scoredFiles.slice(0, 8);
     let hasPublicFileSuggestions = false;
@@ -192,7 +198,6 @@ const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: s
 
             suggestions.push(suggestionPath + context);
 
-            // Check if this file is in a public folder
             const normalizedPath = match.fullPath.replaceAll("\\", "/");
             const pathSegments = normalizedPath.split("/");
             const publicIndex = pathSegments.indexOf("public");
@@ -203,17 +208,14 @@ const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: s
         }
     }
 
-    // Remove duplicates and limit to top suggestions
     let finalSuggestions = `<ul>${[...new Set(suggestions)]
         .slice(0, MAX_SUGGESTIONS)
         .map((suggestion) => `<li>\`${suggestion}\`</li>`)
         .join("\n")}</ul>`;
 
-    // If we found public asset files, add a note about accessing them via absolute URLs
     if (hasPublicFileSuggestions) {
         const publicFileName = importName;
 
-        // Only show this note for asset files (not scripts/styles which might be imported)
         const isAssetFile = [...ASSET_EXTENSIONS].some((extension) => publicFileName.includes(extension));
 
         if (isAssetFile) {
@@ -224,9 +226,6 @@ const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: s
     return finalSuggestions;
 };
 
-/**
- * Common Vite error patterns and their solutions
- */
 const ERROR_PATTERNS = [
     {
         solution: {
@@ -327,6 +326,12 @@ const ERROR_PATTERNS = [
     },
 ] as const;
 
+/**
+ * Creates a solution finder specifically designed for Vite-related errors.
+ * Provides intelligent suggestions for common Vite import resolution and configuration issues.
+ * @param rootPath The root path of the project
+ * @returns A solution finder object for Vite-specific error handling
+ */
 const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
     return {
         // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -407,4 +412,8 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
     };
 };
 
+/**
+ * Default export for creating Vite solution finders.
+ * @see createViteSolutionFinder
+ */
 export default createViteSolutionFinder;

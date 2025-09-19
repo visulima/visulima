@@ -1,4 +1,3 @@
-/* eslint-disable no-secrets/no-secrets */
 import { getErrorCauses } from "@visulima/error/error";
 import type { Solution, SolutionFinder } from "@visulima/error/solution";
 import { errorHintFinder, ruleBasedFinder } from "@visulima/error/solution";
@@ -17,6 +16,12 @@ import enhanceViteSsrError from "./utils/ssr-error-enhancer";
 import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace-utils";
 import createViteSolutionFinder from "./utils/vite-solution-finder";
 
+/**
+ * Logs an error using the Vite dev server's logger with a prefix.
+ * @param server The Vite dev server instance
+ * @param prefix The prefix to prepend to the error message
+ * @param error The error to log
+ */
 const logError = (server: ViteDevServer, prefix: string, error: unknown): void => {
     try {
         const message = error instanceof Error ? error.message : String(error);
@@ -27,19 +32,11 @@ const logError = (server: ViteDevServer, prefix: string, error: unknown): void =
     }
 };
 
-// Based on
-// https://github.com/hi-ogawa/unocss-preset-antd/tree/main/packages/vite-runtime-error-overlay
-
-// based on the idea in
-// https://github.com/vitejs/vite/pull/6274#issuecomment-1087749460
-// https://github.com/vitejs/vite/issues/2076
-
-// frame generation logic is based on
-// https://github.com/vitejs/vite/blob/a073ac4493e54a2204b5b816fbc7d600df3b34ce/packages/vite/src/node/ssr/ssrStacktrace.ts#L23
-// https://github.com/vitejs/vite/blob/0a76652c335e7c0bd8d223186b5533c0e10cac90/packages/vite/src/node/server/middlewares/error.ts#L45
-// https://github.com/vitejs/vite/blob/29a260cb16025408defc2e8186d1fbf17ee099ac/packages/vite/src/node/utils.ts#L486
-
-// Creates a development logger that integrates with Vite's logging system
+/**
+ * Creates a development logger that wraps the Vite dev server's logger.
+ * @param server The Vite dev server instance
+ * @returns A development logger interface
+ */
 const createDevelopmentLogger = (server: ViteDevServer): DevelopmentLogger => {
     return {
         error: (message: unknown) =>
@@ -51,50 +48,67 @@ const createDevelopmentLogger = (server: ViteDevServer): DevelopmentLogger => {
     };
 };
 
-// Creates a tracker for recent errors to prevent spam
+/**
+ * Creates a tracker for recent errors to prevent duplicate error reporting.
+ * @returns An object containing recent errors map and shouldSkip function
+ */
 const createRecentErrorTracker = (): RecentErrorTracker => {
     const recentErrors = new Map<string, number>();
 
+    /**
+     * Checks if an error signature should be skipped based on recent occurrence.
+     * @param signature The error signature to check
+     * @returns True if the error should be skipped
+     */
     const shouldSkip = (signature: string): boolean => {
         const now = Date.now();
         const lastOccurrence = recentErrors.get(signature) || 0;
 
         if (now - lastOccurrence < RECENT_ERROR_TTL_MS) {
-            return true; // Skip this duplicate error
+            return true;
         }
 
         recentErrors.set(signature, now);
 
-        return false; // Process this new error
+        return false;
     };
 
     return { recentErrors, shouldSkip };
 };
 
-// Generates a unique signature for error deduplication
+/**
+ * Creates a signature string from an error for deduplication purposes.
+ * @param raw The error object or raw error data
+ * @returns A string signature combining message and stack
+ */
 const createErrorSignature = (raw: Error | RawErrorData): string => `${String(raw?.message || "")}\n${String(raw?.stack || "")}`;
 
 /**
- * Common error processing logic shared between HMR handler and unhandled rejection handler
+ * Processes a runtime error by cleaning its stack trace and outputting it to the terminal.
+ * @param runtimeError The runtime error to process
+ * @param rootPath The root path of the project
+ * @param developmentLogger The development logger to use
  */
 const processRuntimeError = async (runtimeError: Error, rootPath: string, developmentLogger: DevelopmentLogger): Promise<void> => {
-    // For client-side runtime errors, just clean the stack trace
-    // SSR processing is not appropriate for client-side errors
     try {
-        // eslint-disable-next-line no-param-reassign
         runtimeError.stack = absolutizeStackUrls(cleanErrorStack(String(runtimeError.stack || "")), rootPath);
     } catch {
         // Ignore stack cleaning errors
     }
 
-    // Pretty dev-server logs using cli-handler (ANSI formatted + optional solutions)
     await terminalOutput(runtimeError, { logger: developmentLogger });
 };
 
+/**
+ * Creates a handler for unhandled promise rejections.
+ * @param server The Vite dev server instance
+ * @param rootPath The root path of the project
+ * @param developmentLogger The development logger to use
+ * @returns A function that handles unhandled rejections
+ */
 const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string, developmentLogger: DevelopmentLogger) => async (reason: unknown) => {
     const runtimeError = reason instanceof Error ? reason : new Error(String((reason as any)?.stack || reason));
 
-    // For unhandled rejections (can be server or client), apply SSR processing
     try {
         server.ssrFixStacktrace(runtimeError as any);
     } catch (error) {
@@ -109,7 +123,6 @@ const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string
         logError(server, "[visulima:vite-overlay:server] enhanceViteSsrError failed", error);
     }
 
-    // Clean the stack trace
     try {
         runtimeError.stack = absolutizeStackUrls(cleanErrorStack(String(runtimeError.stack || "")), rootPath);
     } catch {
@@ -117,12 +130,16 @@ const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string
     }
 
     await terminalOutput(runtimeError, { logger: developmentLogger });
-
-    // Let our ws interceptor normalize to extended payload
     server.ws.send({ err: runtimeError, type: "error" } as any);
 };
 
-// Find solution for an error using solution finders
+/**
+ * Finds a solution for an error by running through available solution finders.
+ * @param error The extended error to find a solution for
+ * @param solutionFinders Array of solution finder handlers
+ * @param rootPath The root path of the project
+ * @returns A solution object if found, undefined otherwise
+ */
 const findSolution = async (error: ExtendedError, solutionFinders: SolutionFinder[], rootPath: string): Promise<Solution | undefined> => {
     let hint: Solution | undefined;
 
@@ -170,7 +187,6 @@ const findSolution = async (error: ExtendedError, solutionFinders: SolutionFinde
 
             break;
         } catch {
-            // Ignore solution finder errors and continue with other finders
             continue;
         }
     }
@@ -178,6 +194,16 @@ const findSolution = async (error: ExtendedError, solutionFinders: SolutionFinde
     return hint;
 };
 
+/**
+ * Builds extended error data by processing all error causes and finding solutions.
+ * @param rawError The original error to process
+ * @param server The Vite dev server instance
+ * @param rootPath The root path of the project
+ * @param viteErrorData Additional Vite-specific error data
+ * @param errorType The type of error (client or server)
+ * @param solutionFinders Array of solution finder handlers
+ * @returns A comprehensive error payload with all processed errors and solutions
+ */
 const buildExtendedError = async (
     rawError: Error,
     server: ViteDevServer,
@@ -192,20 +218,15 @@ const buildExtendedError = async (
         throw new Error("No errors found in the error stack");
     }
 
-    // Build extended data for all causes (main cause + all nested causes)
-    // Pass viteErrorData to all errors in the chain, not just the first one
     const extendedErrors = await Promise.all(
         allErrors.map(async (error, index) => {
-            // For cause errors, try to extract location info from their stack trace
             let causeViteErrorData = viteErrorData;
 
             if (index > 0) {
-                // For cause errors, try to extract location from their stack trace
                 const stackLines = error?.stack?.split("\n") || [];
                 const firstStackLine = stackLines.find((line) => line.includes("at ") && !line.includes("node_modules"));
 
                 if (firstStackLine) {
-                    // Try to extract file, line, column from stack trace
                     const match = firstStackLine.match(/at\s+[^(\s]+\s*\(([^:)]+):(\d+):(\d+)\)/) || firstStackLine.match(/at\s+([^:)]+):(\d+):(\d+)/);
 
                     if (match) {
@@ -221,7 +242,6 @@ const buildExtendedError = async (
                 }
             }
 
-            // For import resolution errors, try to use the sourceFile we extracted
             let enhancedViteErrorData = causeViteErrorData;
 
             if (index === 0 && (error as any)?.sourceFile) {
@@ -243,7 +263,6 @@ const buildExtendedError = async (
         }),
     );
 
-    // Find solution for the main error
     const solution = await findSolution(extendedErrors[0] as ExtendedError, solutionFinders, rootPath);
 
     return {
@@ -255,27 +274,16 @@ const buildExtendedError = async (
 };
 
 /**
- * Generates the client-side script that forwards runtime errors to the dev server
+ * Generates the client-side script for error interception and reporting.
+ * @param mode The current Vite mode (development/production)
+ * @param isReact Whether the project is using React
+ * @returns The client-side JavaScript code as a string
  */
 const generateClientScript = (mode: string, isReact: boolean): string => {
-    const reactLogger = String.raw`// Simple console.error override to catch React error boundary logs
-var orig = console.error;
+    const reactLogger = String.raw`var orig = console.error;
 
 console.error = function() {
-    function parseConsoleArgs(args: unknown[]) {
-        // See
-        // https://github.com/facebook/react/blob/65a56d0e99261481c721334a3ec4561d173594cd/packages/react-devtools-shared/src/backend/flight/renderer.js#L88-L93
-        //
-        // Logs replayed from the server look like this:
-        // [
-        //   "%c%s%c%o\n\n%s\n\n%s\n",
-        //   "background: #e6e6e6; ...",
-        //   " Server ", // can also be e.g. " Prerender "
-        //   "",
-        //   Error,
-        //   "The above error occurred in the <Page> component.",
-        //   ...
-        // ]
+    function parseConsoleArgs(args) {
         if (
             args.length > 3 &&
             typeof args[0] === 'string' &&
@@ -312,7 +320,6 @@ console.error = function() {
             } else if ((args[isError0])) {
                 maybeError = args[0]
             } else {
-                // See https://github.com/facebook/react/blob/d50323eb845c5fde0d720cae888bf35dedd05506/packages/react-reconciler/src/ReactFiberErrorLogger.js#L78
                 maybeError = args[1]
             }
         } else {
@@ -348,7 +355,6 @@ async function sendError(error, loc) {
     } catch {}
 
 
-    // Recursively extract full cause chain as nested structure
     function extractCauseChain(err) {
         if (!err || !err.cause) {
             return null;
@@ -362,7 +368,6 @@ async function sendError(error, loc) {
             cause: null
         };
 
-        // Build nested structure by traversing the chain
         var currentNested = rootCause;
         current = current.cause;
 
@@ -402,14 +407,17 @@ window.addEventListener("unhandledrejection", function (evt) {
     sendError(evt.reason);
 });
 
-// Expose sendError globally for direct error reporting (used by tests)
 window.__flameSendError = sendError;
 
 ${isReact ? reactLogger : ""}
 `;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ * Reconstructs an error object from cause chain data received from the client.
+ * @param causeData The cause data object from the client
+ * @returns A reconstructed Error object with cause chain
+ */
 const reconstructCauseChain = (causeData: any): Error | null => {
     if (!causeData) {
         return null;
@@ -428,7 +436,12 @@ const reconstructCauseChain = (causeData: any): Error | null => {
 };
 
 /**
- * Sets up WebSocket interception to enhance error payloads before sending.
+ * Sets up WebSocket message interception to handle error data from the client.
+ * @param server The Vite dev server instance
+ * @param shouldSkip Function to check if an error should be skipped
+ * @param recentErrors Map of recent error signatures
+ * @param rootPath The root path of the project
+ * @param solutionFinders Array of solution finder handlers
  */
 const setupWebSocketInterception = (
     server: ViteDevServer,
@@ -437,35 +450,29 @@ const setupWebSocketInterception = (
     rootPath: string,
     solutionFinders: SolutionFinder[],
 ): void => {
-    // Enhanced WebSocket interception for all errors
     const originalSend = server.ws.send.bind(server.ws);
 
     // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
     server.ws.send = async (data: any, client?: any): Promise<void> => {
         try {
-            // Check if this is an error payload from Vite
             if (data && typeof data === "object" && data.type === "error" && data.err) {
                 const { err } = data;
                 const rawSig = createErrorSignature(err);
 
                 if (shouldSkip(rawSig)) {
-                    return; // drop duplicate
+                    return;
                 }
 
-                // Special handling for import resolution errors
                 if (err.message?.includes("Failed to resolve import")) {
-                    // Extract file path from error message for better module resolution
                     const match = err.message.match(/Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/);
 
                     if (match) {
                         const sourceFile = match[2];
-                        // Create our custom error payload for import errors
                         const importError = new Error(err.message);
 
                         importError.name = "ImportResolutionError";
                         importError.stack = err.stack;
 
-                        // Build extended error data
                         const extensionPayload = await buildExtendedError(
                             importError,
                             server,
@@ -486,23 +493,19 @@ const setupWebSocketInterception = (
                         recentErrors.set(JSON.stringify(extensionPayload), Date.now());
                     }
                 } else {
-                    // Handle other types of errors (runtime errors, etc.)
                     const name = String(err?.name || "Error");
                     const message = String(err.message);
                     const rawStack = String(err.stack);
 
-                    // Reconstruct the error with proper cause chain
                     const syntaicError = new Error(message);
 
                     syntaicError.name = name;
                     syntaicError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
 
-                    // If there's a nested cause structure, reconstruct it recursively
                     if (err.cause) {
                         syntaicError.cause = reconstructCauseChain(err.cause);
                     }
 
-                    // Build extended error data for non-import errors
                     const viteErrorData = err.sourceFile
                         ? {
                             column: err.column,
@@ -520,7 +523,6 @@ const setupWebSocketInterception = (
                 }
             }
 
-            // For non-error payloads, send as-is
             originalSend(data, client);
         } catch (error) {
             logError(server, "[visulima:vite-overlay:server] ws.send intercept failed", error);
@@ -531,7 +533,13 @@ const setupWebSocketInterception = (
 };
 
 /**
- * Sets up HMR handler for client-reported runtime errors
+ * Sets up HMR (Hot Module Replacement) handler for client-side error messages.
+ * @param server The Vite dev server instance
+ * @param developmentLogger The development logger to use
+ * @param shouldSkip Function to check if an error should be skipped
+ * @param recentErrors Map of recent error signatures
+ * @param rootPath The root path of the project
+ * @param solutionFinders Array of solution finder handlers
  */
 const setupHMRHandler = (
     server: ViteDevServer,
@@ -553,26 +561,23 @@ const setupHMRHandler = (
         const rawSig = createErrorSignature(raw);
 
         if (shouldSkip(rawSig)) {
-            return; // duplicate runtime error
+            return;
         }
 
         const name = String(raw?.name || "Error");
         const message = String(raw.message);
         const rawStack = String(raw.stack);
 
-        // Reconstruct the error with proper cause chain
         const syntaicError = new Error(message);
 
         syntaicError.name = name;
         syntaicError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
 
-        // If there's a nested cause structure, reconstruct it recursively
         if (raw.cause) {
             syntaicError.cause = reconstructCauseChain(raw.cause);
         }
 
         try {
-            // Process the runtime error using shared logic
             await processRuntimeError(syntaicError, rootPath, developmentLogger);
 
             const extensionPayload = await buildExtendedError(
@@ -593,7 +598,6 @@ const setupHMRHandler = (
 
             const payload: any = { err: extensionPayload, type: "error" };
 
-            // Inject solution into overlay if available
             if (extensionPayload.solution) {
                 payload.solutions = extensionPayload.solution;
             }
@@ -615,7 +619,12 @@ const setupHMRHandler = (
     });
 };
 
-// Check if React plugins are configured in Vite
+/**
+ * Checks if the Vite configuration includes a React plugin.
+ * @param plugins Array of Vite plugins to check
+ * @param reactPluginName Optional custom React plugin name to look for
+ * @returns True if a React plugin is found
+ */
 const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): boolean =>
     plugins
         .flat()
@@ -629,6 +638,15 @@ const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): bool
                     || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))),
         );
 
+/**
+ * Main Vite plugin for error overlay functionality.
+ * Intercepts runtime errors and displays them in a user-friendly overlay.
+ * @param options Plugin configuration options
+ * @param options.logRuntimeError Whether to log runtime errors (optional)
+ * @param options.reactPluginName Custom React plugin name (optional)
+ * @param options.solutionFinders Custom solution finders (optional)
+ * @returns The Vite plugin configuration
+ */
 const errorOverlayPlugin = (options: { logRuntimeError?: boolean; reactPluginName?: string; solutionFinders?: SolutionFinder[] }): Plugin => {
     let mode: string;
     let isReactProject: boolean;
@@ -646,14 +664,12 @@ const errorOverlayPlugin = (options: { logRuntimeError?: boolean; reactPluginNam
             return config;
         },
 
-        // Receive client-reported runtime errors and forward as Vite error payloads
         configureServer(server) {
             const rootPath = server.config.root || process.cwd();
 
             const developmentLogger = createDevelopmentLogger(server);
             const { recentErrors, shouldSkip } = createRecentErrorTracker();
 
-            // Simple transformRequest interception to catch import errors early
             const originalTransformRequest = server.transformRequest.bind(server);
 
             server.transformRequest = async (url: string, transformOptions?: TransformOptions) => {
@@ -661,15 +677,12 @@ const errorOverlayPlugin = (options: { logRuntimeError?: boolean; reactPluginNam
                     return await originalTransformRequest(url, transformOptions);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } catch (error: any) {
-                    // Check if this is an import resolution error
                     if (error?.message?.includes("Failed to resolve import")) {
-                        // Extract source file info and store it for WebSocket interception
                         const match = error.message.match(/Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/);
 
                         if (match) {
                             const [, importPath, sourceFile] = match;
 
-                            // Store the source file info on the error for later use
                             (error as any).sourceFile = sourceFile;
                             (error as any).importPath = importPath;
                         }
@@ -681,10 +694,8 @@ const errorOverlayPlugin = (options: { logRuntimeError?: boolean; reactPluginNam
 
             setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? []);
 
-            // Handle client-reported errors via HMR
             setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? []);
 
-            // Capture unhandled rejections on the dev server process and surface them in the overlay
             const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
 
             process.on("unhandledRejection", handleUnhandledRejection);
@@ -696,7 +707,6 @@ const errorOverlayPlugin = (options: { logRuntimeError?: boolean; reactPluginNam
 
         name: PLUGIN_NAME,
 
-        // Replace Vite's overlay class with our custom overlay (Astro-style patch)
         transform(code, id, transformOptions): string | null {
             if (transformOptions?.ssr) {
                 // eslint-disable-next-line unicorn/no-null
@@ -711,7 +721,6 @@ const errorOverlayPlugin = (options: { logRuntimeError?: boolean; reactPluginNam
             return patchOverlay(code);
         },
 
-        // Inject a tiny bridge that forwards runtime errors to the dev server over HMR
         transformIndexHtml(): IndexHtmlTransformResult {
             return {
                 html: "",
@@ -721,4 +730,8 @@ const errorOverlayPlugin = (options: { logRuntimeError?: boolean; reactPluginNam
     };
 };
 
+/**
+ * Default export of the Vite error overlay plugin.
+ * Use this plugin to enable error overlay functionality in your Vite project.
+ */
 export default errorOverlayPlugin;

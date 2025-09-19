@@ -4,38 +4,23 @@
 /* eslint-disable func-names */
 /* eslint-disable no-plusplus */
 // @ts-nocheck
+/**
+ * Custom HTML element that displays error overlays in the browser.
+ * Provides interactive error display with theme switching, code frames, and navigation.
+ * @augments HTMLElement
+ */
 class ErrorOverlay extends HTMLElement {
     /**
      * @typedef {import('../types').VisulimaViteOverlayErrorPayload} VisulimaViteOverlayErrorPayload
      */
 
-    /**
-     * The current mode for displaying error information ('original' | 'compiled')
-     * @type {string}
-     */
     __v_oMode;
 
-    /**
-     * The error payload containing all error information
-     * @type {VisulimaViteOverlayErrorPayload}
-     */
     __v_oPayload;
 
     /**
-     * Creates an error overlay component
-     * @param {object} error - The error object in one of three possible structures:
-     *
-     * Structure 1 - Direct Vite server error:
-     * @param {Array} error.errors - Array of processed error objects
-     * @param {"client"|"server"} error.errorType - The error type
-     *
-     * Structure 2 - Browser ErrorEvent:
-     * @param {string} error.message - The error message
-     * @param {string} error.name - The error name/type
-     * @param {string} error.stack - The error stack trace
-     * @param {number} [error.lineno] - Line number where error occurred
-     * @param {number} [error.colno] - Column number where error occurred
-     * @param {string} [error.source] - Source URL where error occurred
+     * Creates a new ErrorOverlay instance.
+     * @param {VisulimaViteOverlayErrorPayload} error - The error payload to display
      */
     constructor(error) {
         super();
@@ -49,7 +34,6 @@ class ErrorOverlay extends HTMLElement {
 
         this.root.host._errorOverlay = this;
 
-        // Store global reference for solution updates
         globalThis.__v_o__current = this;
 
         document.body.append(this);
@@ -74,7 +58,6 @@ class ErrorOverlay extends HTMLElement {
 
         this.#initializePagination();
 
-        // Inject solution into the overlay if available
         if (error.solution) {
             this.#injectSolution(error.solution);
         }
@@ -118,12 +101,18 @@ class ErrorOverlay extends HTMLElement {
         }
     }
 
+    /**
+     * Removes the error overlay from the DOM.
+     */
     close() {
         if (this.parentNode) {
             this.remove();
         }
     }
 
+    /**
+     * Updates the overlay content with the current error's code frame.
+     */
     updateOverlay() {
         const currentIndex = 0; // Assuming we're showing the first error
 
@@ -140,6 +129,10 @@ class ErrorOverlay extends HTMLElement {
         }
     }
 
+    /**
+     * Hides loading skeleton states and shows the actual content after a brief delay.
+     * @private
+     */
     #hideLoadingStates() {
         setTimeout(() => {
             const headerSkeleton = this.root.querySelector("#__v_o__header_loader");
@@ -177,6 +170,10 @@ class ErrorOverlay extends HTMLElement {
         }, 100); // Small delay to ensure DOM is ready
     }
 
+    /**
+     * Initializes the copy error functionality that copies error details to clipboard.
+     * @private
+     */
     #initializeCopyError() {
         const copyButton = this.root.querySelector("#__v_o__copy_error");
 
@@ -253,6 +250,10 @@ class ErrorOverlay extends HTMLElement {
         });
     }
 
+    /**
+     * Initializes pagination functionality for navigating between multiple errors.
+     * @private
+     */
     #initializePagination() {
         const payload = this.__v_oPayload;
         const errors = Array.isArray(payload.errors) && payload.errors.length > 0 ? payload.errors : [];
@@ -565,6 +566,10 @@ class ErrorOverlay extends HTMLElement {
         updatePagination();
     }
 
+    /**
+     * Initializes the theme toggle functionality for switching between light and dark modes.
+     * @private
+     */
     #initializeThemeToggle() {
         const savedTheme = localStorage.getItem("__v-o__theme");
         const systemPrefersDark = globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -621,6 +626,11 @@ class ErrorOverlay extends HTMLElement {
         });
     }
 
+    /**
+     * Injects solution content into the overlay for display.
+     * @param {object} solution - The solution object containing header and body
+     * @private
+     */
     #injectSolution(solution) {
         const solutions = this.root.querySelector("#__v_o__solutions");
         const solutionsContainer = this.root.querySelector("#__v_o__solutions_container");

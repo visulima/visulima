@@ -5,8 +5,15 @@ import findModuleForPath from "../find-module-for-path";
 import { normalizeIdCandidates } from "../normalize-id-candidates";
 import resolveOriginalLocation from "../resolve-original-location";
 
+/**
+ * Remaps a stack trace from compiled locations to original source locations using source maps.
+ * Handles React-specific stack frames and module resolution for better debugging experience.
+ * @param server The Vite dev server instance
+ * @param stack The stack trace string to remap
+ * @param header Optional header information for the formatted stack trace
+ * @returns Promise resolving to the remapped stack trace
+ */
 const remapStackToOriginal = async (server: ViteDevServer, stack: string, header?: { message?: string; name?: string }): Promise<string> => {
-    // Fix malformed React stack traces where "at functionName" and location are not properly separated
     let normalizedStack = stack;
 
     if (stack.includes("at ") && !stack.includes("\n    at ")) {
@@ -19,7 +26,6 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
         normalizedStack = normalizedStack.replaceAll(/at ([^<\s]+)(?=\s*at|$)/g, "\n    at $1 <unknown>:0:0");
     }
 
-    // Early return if stack trace looks well-formed and doesn't need remapping
     if (!normalizedStack.includes("<unknown>") && !normalizedStack.includes("react-dom") && !normalizedStack.includes("react")) {
         return normalizedStack;
     }
@@ -32,7 +38,6 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
             const line = frame.line ?? 0;
             const column = frame.column ?? 0;
 
-            // Early return for well-formed frames that don't need remapping
             if (file && file !== "<unknown>" && line > 0 && column > 0 && !file.includes("react-dom") && !file.includes("react")) {
                 return frame;
             }
@@ -97,4 +102,8 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
     return formatStacktrace(mapped, { header });
 };
 
+/**
+ * Default export for remapping stack traces to original source locations.
+ * @see remapStackToOriginal
+ */
 export default remapStackToOriginal;

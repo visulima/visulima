@@ -1,8 +1,9 @@
 /**
- * Parses Vue SFC compilation error messages to extract essential location information.
+ * Parses Vue SFC compilation error messages to extract file, line, and column information.
+ * @param errorMessage The Vue compilation error message to parse
+ * @returns Object containing parsed error information or null if not a Vue error
  */
 export const parseVueCompilationError = (errorMessage: string) => {
-    // Check if this is a Vue compilation error
     if (!errorMessage.includes("[vue/compiler-sfc]")) {
         return null;
     }
@@ -11,8 +12,6 @@ export const parseVueCompilationError = (errorMessage: string) => {
     let line = 0;
     let column = 0;
 
-    // Extract file path and position from the error message
-    // Try to extract position from the error message format: "(4:2)"
     const positionPattern = /\((\d+):(\d+)\)/;
     const positionMatch = errorMessage.match(positionPattern);
 
@@ -21,7 +20,6 @@ export const parseVueCompilationError = (errorMessage: string) => {
         column = Number.parseInt(positionMatch[2], 10);
     }
 
-    // Find the file path in the error message
     const filePathPattern = /(\S+\.vue)/;
     const fileMatch = errorMessage.match(filePathPattern);
 
@@ -29,10 +27,8 @@ export const parseVueCompilationError = (errorMessage: string) => {
         filePath = fileMatch[1];
     }
 
-    // Extract just the error message (first line)
     const message = errorMessage.split("\n")[0] || errorMessage;
 
-    // Return only essential information
     if (filePath && line > 0 && column > 0) {
         return {
             column,

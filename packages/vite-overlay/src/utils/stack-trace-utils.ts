@@ -4,35 +4,30 @@ import { resolve } from "@visulima/path";
 
 import type { PluginPattern, StackFrameValidator, SupportedExtension } from "../types";
 
-// Constants
 const PATH_SEPARATOR = "/" as const;
 const COLON_SEPARATOR = ":" as const;
 const AT_PREFIX = "at " as const;
 
-// Regex patterns (compiled once for performance)
 const HTTP_URL_PATTERN = /https?:\/\/[^\s)]+/g as const;
 const FILE_URL_PATTERN = /file:\/\//g as const;
 const FS_PATH_PATTERN = /\/@fs\//g as const;
 
-// File extensions that indicate valid stack frames
 const SUPPORTED_EXTENSIONS = new Set<SupportedExtension>([".cjs", ".js", ".jsx", ".mjs", ".svelte", ".ts", ".tsx", ".vue"]);
 
-// Keywords that indicate valid stack frames
 const VALID_STACK_KEYWORDS = new Set<string>(["<anonymous>", "<unknown>", "native"]);
 
 /**
- * Checks if a line is a valid JavaScript stack frame.
- * Optimized for performance with early returns and Set lookups.
+ * Validates if a stack trace line represents a valid stack frame.
+ * @param line The stack trace line to validate
+ * @returns True if the line is a valid stack frame
  */
 export const isValidStackFrame: StackFrameValidator = (line: string): boolean => {
-    // Must start with 'at' after trimming (allows for indentation)
     const trimmed = line.trim();
 
     if (!trimmed.startsWith(AT_PREFIX)) {
         return false;
     }
 
-    // Must contain a file path with supported extension or be an anonymous/native function
     const hasFileReference
         = [...SUPPORTED_EXTENSIONS].some((extension) => trimmed.includes(extension)) || [...VALID_STACK_KEYWORDS].some((keyword) => trimmed.includes(keyword));
 
@@ -40,18 +35,22 @@ export const isValidStackFrame: StackFrameValidator = (line: string): boolean =>
         return false;
     }
 
-    // Must have line/column information (format: file:line:column or (file:line:column)) or be native or unknown
     const hasLocationInfo
-        = /\([^)]*:\d+:\d+\)/.test(trimmed) // (file:line:column)
-            || /\([^)]*:\d+\)/.test(trimmed) // (file:line)
-            || /[^(\s][^:]*:\d+:\d+/.test(trimmed) // file:line:column (without parens)
-            || /[^(\s][^:]*:\d+/.test(trimmed) // file:line (without parens)
-            || trimmed.includes("native") // native functions
-            || trimmed.includes("<unknown>"); // browser couldn't resolve source
+        = /\([^)]*:\d+:\d+\)/.test(trimmed)
+            || /\([^)]*:\d+\)/.test(trimmed)
+            || /[^(\s][^:]*:\d+:\d+/.test(trimmed)
+            || /[^(\s][^:]*:\d+/.test(trimmed)
+            || trimmed.includes("native")
+            || trimmed.includes("<unknown>");
 
     return hasLocationInfo;
 };
 
+/**
+ * Cleans a single stack trace line by removing file URLs and validating the line.
+ * @param line The stack trace line to clean
+ * @returns The cleaned stack line or empty string if invalid
+ */
 const cleanStackLine: StackLineCleaner = (line: string): string => {
     line = line.replaceAll(FS_PATH_PATTERN, PATH_SEPARATOR);
     line = line.replaceAll(FILE_URL_PATTERN, "");
@@ -68,7 +67,10 @@ const cleanStackLine: StackLineCleaner = (line: string): string => {
 };
 
 /**
- * Converts a single HTTP URL to an absolute filesystem path
+ * Converts an HTTP URL to an absolute filesystem path with location info.
+ * @param url The HTTP URL to convert
+ * @param rootPath The root directory for path resolution
+ * @returns The absolute path with line and column information
  */
 const absolutizeUrl = (url: string, rootPath: string): string => {
     try {
@@ -84,7 +86,9 @@ const absolutizeUrl = (url: string, rootPath: string): string => {
 };
 
 /**
- * Parses a URL and extracts line/column location information
+ * Parses a URL to extract the base URL and location information (line and column).
+ * @param url The URL to parse
+ * @returns Object containing baseUrl, line, and column information
  */
 const parseUrlWithLocation = (url: string) => {
     const locationMatch = url.match(/:(\d+)(?::(\d+))?$/);
@@ -96,7 +100,10 @@ const parseUrlWithLocation = (url: string) => {
 };
 
 /**
- * Converts a URL to an absolute filesystem path
+ * Converts a URL to an absolute filesystem path.
+ * @param url The URL to convert
+ * @param rootPath The root directory for path resolution
+ * @returns The absolute filesystem path
  */
 const urlToAbsolutePath = (url: string, rootPath: string): string => {
     const parsedUrl = new URL(url);
@@ -110,7 +117,11 @@ const urlToAbsolutePath = (url: string, rootPath: string): string => {
 };
 
 /**
- * Formats an absolute path with optional line and column information
+ * Formats an absolute path with optional line and column information.
+ * @param absolutePath The absolute filesystem path
+ * @param line Optional line number
+ * @param col Optional column number
+ * @returns The formatted path with location information
  */
 const formatAbsolutePath = (absolutePath: string, line?: string, col?: string): string => {
     if (!line)
@@ -122,9 +133,9 @@ const formatAbsolutePath = (absolutePath: string, line?: string, col?: string): 
 };
 
 /**
- * Cleans up stack trace by removing unnecessary paths and normalizing format.
- * @param stack Raw stack trace string
- * @returns Cleaned stack trace string
+ * Cleans an error stack trace by normalizing line endings and filtering invalid stack frames.
+ * @param stack The raw stack trace string
+ * @returns The cleaned stack trace
  */
 export const cleanErrorStack = (stack: string): string => {
     if (!stack) {
@@ -141,11 +152,11 @@ export const cleanErrorStack = (stack: string): string => {
 };
 
 /**
- * Enhanced stack trace cleaning with source map support.
- * @param stack Raw stack trace string
- * @param server Vite dev server instance
- * @param rootPath Root directory path
- * @returns Cleaned stack trace
+ * Cleans and resolves an error stack trace for better readability.
+ * @param stack The raw stack trace string
+ * @param server The Vite dev server instance
+ * @param rootPath The root directory path
+ * @returns The cleaned and resolved stack trace
  */
 export const cleanAndResolveErrorStack = (stack: string, server: ViteDevServer, rootPath: string): string => {
     if (!stack) {
@@ -156,10 +167,9 @@ export const cleanAndResolveErrorStack = (stack: string, server: ViteDevServer, 
 };
 
 /**
- * Strips ANSI escape codes from error messages.
- * Handles both message strings and Error objects.
- * @param error Error object or message string
- * @returns Clean text without ANSI codes
+ * Cleans an error message by removing VT control characters.
+ * @param error The error object or error message string
+ * @returns The cleaned error message
  */
 export const cleanErrorMessage = (error: Error | string): string => {
     const message = typeof error === "string" ? error : error.message || String(error);
@@ -167,9 +177,6 @@ export const cleanErrorMessage = (error: Error | string): string => {
     return stripVTControlCharacters(message);
 };
 
-/**
- * Type for ESBuild error messages
- */
 export interface ESBuildMessage {
     location?: {
         column: number;
@@ -181,24 +188,21 @@ export interface ESBuildMessage {
 }
 
 /**
- * Checks if an array of errors looks like ESBuild errors.
- * ESBuild typically returns an array of error objects with specific properties.
- * @param errors Array of error objects to check
- * @returns True if the errors appear to be from ESBuild
+ * Checks if an array contains ESBuild error objects.
+ * @param errors Array of potential ESBuild errors
+ * @returns True if the array contains ESBuild errors
  */
 export const isESBuildErrorArray = (errors: any[]): boolean => {
     if (!Array.isArray(errors) || errors.length === 0)
         return false;
 
-    // Check if at least one error has ESBuild-specific properties
     return errors.some((error: any) => error && typeof error === "object" && (error.location || error.pluginName || error.text));
 };
 
 /**
- * Processes ESBuild error arrays and extracts useful information.
+ * Processes ESBuild error messages into a standardized format.
  * @param esbuildErrors Array of ESBuild error messages
- * @param rootFolder Optional root folder for path resolution
- * @returns Array of processed error objects
+ * @returns Array of processed error objects with standardized structure
  */
 export const processESBuildErrors = (
     esbuildErrors: ESBuildMessage[],

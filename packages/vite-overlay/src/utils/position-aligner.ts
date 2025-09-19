@@ -12,9 +12,6 @@ const getLine = (source: string, line: number): string => source.split(/\n/g)[li
 
 const removeWhitespace = (s: string): string => s.replaceAll(/\s+/g, "");
 
-/**
- * Extracts a candidate token around the given column position
- */
 const extractCandidateToken = (lineText: string, column: number): string => {
     if (column <= 0 || column > lineText.length) {
         return "";
@@ -40,9 +37,6 @@ const extractCandidateToken = (lineText: string, column: number): string => {
     return candidateToken;
 };
 
-/**
- * Strategy 1: Token-based search (most precise)
- */
 const tryTokenBasedSearch = (candidateToken: string, originalLines: string[]): Position | null => {
     if (!candidateToken || candidateToken.length < MIN_TOKEN_LENGTH) {
         return null;
@@ -63,9 +57,6 @@ const tryTokenBasedSearch = (candidateToken: string, originalLines: string[]): P
     return null;
 };
 
-/**
- * Strategy 2: Full line substring match
- */
 const tryLineSubstringSearch = (compiledLineTrimmed: string, originalLines: string[]): Position | null => {
     if (!compiledLineTrimmed) {
         return null;
@@ -86,9 +77,6 @@ const tryLineSubstringSearch = (compiledLineTrimmed: string, originalLines: stri
     return null;
 };
 
-/**
- * Strategy 3: Whitespace-insensitive full line match
- */
 const tryWhitespaceInsensitiveSearch = (compiledLineTrimmed: string, originalLines: string[]): Position | null => {
     if (!compiledLineTrimmed) {
         return null;
@@ -120,9 +108,6 @@ const tryWhitespaceInsensitiveSearch = (compiledLineTrimmed: string, originalLin
     return null;
 };
 
-/**
- * Maps a normalized position back to the original position in the text
- */
 const mapNormalizedToOriginalPosition = (lineText: string, normalizedPosition: number): number => {
     let nonWhitespaceCount = 0;
 
@@ -142,16 +127,6 @@ const mapNormalizedToOriginalPosition = (lineText: string, normalizedPosition: n
 
     return -1;
 };
-
-/**
- * Attempts to realign original source positions when source maps are incomplete or inaccurate.
- * Uses heuristic matching to find the corresponding location in the original source.
- * @param compiledSource The compiled source code
- * @param compiledLine Line number in compiled source (1-based)
- * @param compiledColumn Column number in compiled source (1-based)
- * @param originalSource The original source code
- * @returns Realigned position or null if no match found
- */
 const realignOriginalPosition = (compiledSource: string, compiledLine: number, compiledColumn: number, originalSource: string): Position | null => {
     const compiledLineText = getLine(compiledSource, compiledLine);
 

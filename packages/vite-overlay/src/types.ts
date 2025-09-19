@@ -3,16 +3,13 @@ import type { Solution } from "@visulima/error/solution";
 
 export type ErrorLike = Error | { message?: string; name?: string; stack?: string };
 
-// Plugin and framework detection
 export interface PluginPattern {
     readonly name: string;
     readonly pattern: RegExp;
 }
 
-// File extension types
 export type SupportedExtension = ".js" | ".ts" | ".mjs" | ".cjs" | ".jsx" | ".tsx" | ".vue" | ".svelte";
 
-// Stack frame location information
 export interface StackLocation {
     readonly column?: number;
     readonly file?: string;
@@ -26,7 +23,6 @@ export interface VisulimaViteOverlayErrorPayload {
     readonly solution?: Solution;
 }
 
-// Individual error cause with detailed debugging information
 export interface ExtendedError {
     readonly compiledCodeFrameContent?: string;
     readonly compiledColumn?: number;
@@ -45,23 +41,20 @@ export interface ExtendedError {
     readonly stack: string;
 }
 
-// Development server logging interface
 export interface DevelopmentLogger {
     readonly error: (message: unknown) => void;
     readonly log: (message: unknown) => void;
 }
 
-// Error deduplication and rate limiting
 export interface RecentErrorTracker {
     readonly recentErrors: Map<string, number>;
     readonly shouldSkip: (signature: string) => boolean;
 }
 
-// Raw error data from client-side error reporting
 export interface RawErrorData {
     readonly cause?: {
         readonly cause?: {
-            readonly cause?: any; // Recursive nested structure
+            readonly cause?: any;
             readonly message?: string | null;
             readonly name?: string | null;
             readonly stack?: string | null;
@@ -80,7 +73,6 @@ export interface RawErrorData {
     readonly stack: string;
 }
 
-// Vue SFC compilation error information
 export interface VueErrorInfo {
     readonly column: number;
     readonly line: number;
@@ -92,17 +84,17 @@ export type ViteErrorData = ErrorLocation & {
     plugin?: string;
 };
 
-// Source map resolution results
 export interface ResolvedLocation {
     readonly originalFileColumn: number;
     readonly originalFileLine: number;
     readonly originalFilePath: string;
 }
-// Source text retrieval results
+
 export interface SourceTexts {
     readonly compiledSourceText?: string;
     readonly originalSourceText?: string;
 }
+
 export interface ErrorProcessingResult {
     readonly compiledCodeFrameContent?: string;
     readonly compiledColumn: number;
@@ -120,5 +112,4 @@ export interface ErrorProcessingResult {
     readonly plugin?: string;
 }
 
-// Utility types for function signatures
 export type StackFrameValidator = (line: string) => boolean;

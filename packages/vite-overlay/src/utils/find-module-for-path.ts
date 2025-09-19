@@ -1,8 +1,10 @@
 import type { ModuleNode, ViteDevServer } from "vite";
 
 /**
- * Finds the best module match by iterating through all modules.
- * Only used as fallback when direct lookup fails.
+ * Finds the best module match by comparing candidate paths against all modules in the module graph.
+ * @param server The Vite dev server instance
+ * @param candidates Array of candidate file paths to match against
+ * @returns The best matching module node or undefined if no match found
  */
 const findBestModuleMatch = (server: ViteDevServer, candidates: ReadonlyArray<string>): ModuleNode | undefined => {
     for (const [id, module] of server.moduleGraph.idToModuleMap) {
@@ -28,11 +30,10 @@ const findBestModuleMatch = (server: ViteDevServer, candidates: ReadonlyArray<st
 };
 
 /**
- * Finds a module in the Vite module graph by trying various lookup strategies.
- * Prioritizes direct lookups for performance, falls back to iteration if needed.
+ * Finds a module in Vite's module graph using various strategies and candidate paths.
  * @param server The Vite dev server instance
- * @param candidates Array of candidate module IDs to search for
- * @returns The best matching module or undefined if none found
+ * @param candidates Array of candidate file paths to search for
+ * @returns The matching module node or undefined if not found
  */
 const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleNode | undefined => {
     const prioritizedCandidates = [...candidates, ...candidates.map((c) => c.replace(/^\/@fs\//, "")), ...candidates.map((c) => c.replace(/^[./]*/, ""))];
@@ -93,4 +94,8 @@ const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleN
     return result;
 };
 
+/**
+ * Default export for finding modules in Vite's module graph.
+ * @see findModuleForPath
+ */
 export default findModuleForPath;

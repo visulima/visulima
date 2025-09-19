@@ -1,12 +1,8 @@
 /**
- * Error location finding utilities for source code
- */
-
-/**
- * Checks if a template literal in source code could resolve to the target error message
- * @param line The source code line containing a template literal
- * @param targetMessage The error message we're looking for
- * @returns true if the template could resolve to the target message
+ * Checks if a line contains a template literal that could match the target error message.
+ * @param line The source code line to check
+ * @param targetMessage The error message to match against
+ * @returns True if the line contains a matching template literal
  */
 const checkTemplateLiteralMatch = (line: string, targetMessage: string): boolean => {
     const templateLiteralRegex = /`([^`]*(?:\$\{[^}]+\}[^`]*)*)`/g;
@@ -39,12 +35,11 @@ const checkTemplateLiteralMatch = (line: string, targetMessage: string): boolean
 };
 
 /**
- * Searches for error message in source code to find exact line and column
- * This is more reliable than source maps for runtime errors
+ * Finds the location of an error message within source code by analyzing error patterns.
  * @param sourceCode The source code to search in
- * @param errorMessage The error message to find
- * @param occurrenceIndex Which occurrence to find (0-based)
- * @returns The line and column where the error was found, or null if not found
+ * @param errorMessage The error message to locate
+ * @param occurrenceIndex The index of occurrence to find (default: 0)
+ * @returns The line and column location of the error, or null if not found
  */
 export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurrenceIndex: number = 0): { column: number; line: number } | null => {
     if (!sourceCode || !errorMessage) {
@@ -82,8 +77,6 @@ export const findErrorInSourceCode = (sourceCode: string, errorMessage: string, 
         `Error('${errorMessage.replaceAll("'", String.raw`\'`)}')`,
     ];
 
-    // First pass: Look for custom error classes that contain the error message
-    // This handles cases like: throw new CustomError("message") or new CustomError("message")
     let foundCount = 0;
 
     for (const [lineIndex, line] of lines.entries()) {

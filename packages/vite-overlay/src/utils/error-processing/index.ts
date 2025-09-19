@@ -19,10 +19,11 @@ import addQueryToUrl from "./utils/add-query-to-url";
 import extractQueryFromHttpUrl from "./utils/extract-query-from-http-url";
 
 /**
- * Extracts individual errors from different error types
+ * Extracts individual errors from an error object, handling ESBuild error arrays.
+ * @param error The error object to process
+ * @returns Array of individual error objects
  */
 const extractIndividualErrors = (error: Error): Error[] => {
-    // Handle ESBuild error arrays
     if (Array.isArray(error) && isESBuildErrorArray(error as unknown[])) {
         const processedErrors = processESBuildErrors(error as ESBuildMessage[]);
 
@@ -40,16 +41,16 @@ const extractIndividualErrors = (error: Error): Error[] => {
 };
 
 /**
- * Extracts location information from error stack trace
+ * Extracts location information from an error's stack trace.
+ * @param error The error object to extract location from
+ * @returns Object containing compiled file path, line, and column information
  */
 const extractLocationFromStack = (error: Error) => {
     const traces = parseStacktrace(error, { frameLimit: 10 });
 
-    // First, try to find an HTTP URL in any frame (preferring the first frame if it's HTTP)
     const httpTrace = traces?.find((trace) => trace?.file?.startsWith("http"));
     const trace = httpTrace || traces?.[0];
 
-    // If we found an HTTP trace, use it; otherwise, we'll convert the local path later
     return {
         compiledColumn: trace?.column ?? 0,
         compiledFilePath: trace?.file ?? "",
@@ -58,7 +59,16 @@ const extractLocationFromStack = (error: Error) => {
 };
 
 /**
- * Resolves original source location using source maps and source code search
+ * Resolves original source location information using source maps and module resolution.
+ * @param server The Vite dev server instance
+ * @param sourceFilePath The source file path
+ * @param compiledFileColumn The column in the compiled file
+ * @param compiledFileLine The line in the compiled file
+ * @param vueErrorInfo Optional Vue-specific error information
+ * @param errorMessage Optional error message for better resolution
+ * @param errorIndex Index of the error in case of multiple errors
+ * @param compiledFilePath Optional compiled file path
+ * @returns Promise resolving to original location information
  */
 const resolveOriginalLocationInfo = async (
     server: ViteDevServer,
@@ -70,14 +80,11 @@ const resolveOriginalLocationInfo = async (
     errorIndex: number = 0,
     compiledFilePath?: string,
 ) => {
-    // Use Vue error info if available, otherwise use provided values
     const filePath = vueErrorInfo?.originalFilePath || sourceFilePath;
     const fileLine = vueErrorInfo?.line ?? compiledFileLine;
     const fileColumn = vueErrorInfo?.column ?? compiledFileColumn;
 
-    // Resolve using source maps if we have a valid file path
     if (filePath) {
-        // Convert HTTP URLs to local paths for module resolution
         let resolvedFilePath = filePath;
         let resolvedOriginalFilePath = filePath;
 
@@ -91,8 +98,6 @@ const resolveOriginalLocationInfo = async (
                     resolvedFilePath = resolvedFilePath.slice(1);
                 }
 
-                // For source retrieval, try to construct the full local path
-                // This assumes the Vite root is the project root
                 const serverRoot = server.config.root || process.cwd();
 
                 resolvedOriginalFilePath = resolvedFilePath.startsWith("/") ? resolvedFilePath : `${serverRoot}/${resolvedFilePath}`;
@@ -103,17 +108,12 @@ const resolveOriginalLocationInfo = async (
 
         const idCandidates = normalizeIdCandidates(resolvedFilePath);
 
-        // Module resolution
         const module_ = findModuleForPath(server, idCandidates);
-
-        // Module found
 
         if (module_) {
             try {
-                // For source map resolution, use the source file path if available, otherwise fallback to compiled path
                 const mapFilePath = sourceFilePath || compiledFilePath || resolvedFilePath;
                 const resolved = await resolveOriginalLocation(server, module_, mapFilePath, fileLine, fileColumn, errorMessage, errorIndex);
-                // Use the resolved local path if available, otherwise use source map result
                 const finalFilePath = resolvedOriginalFilePath || resolved.originalFilePath;
 
                 return {
@@ -123,38 +123,28 @@ const resolveOriginalLocationInfo = async (
                 };
             } catch {
                 console.warn("⚠️ Source map resolution failed, using estimation");
-                // Fall back to estimation if resolution fails
             }
         }
 
-        // Apply estimation for all cases where source map resolution fails
-
-        // Intelligent estimation based on common bundling patterns
         let estimatedLine = fileLine;
         let estimatedColumn = fileColumn;
 
-        // Estimate line number based on common patterns
         if (fileLine >= 20) {
-            // For high lines (20+), subtract ~50% (heavy JSX/React overhead)
             estimatedLine = Math.max(1, Math.round(fileLine * 0.5));
         } else if (fileLine > 15) {
-            // For lines 16-19, subtract ~40% (moderate JSX overhead)
             estimatedLine = Math.max(1, Math.round(fileLine * 0.6));
         } else if (fileLine > 10) {
-            // For moderate lines, subtract fixed amount
             estimatedLine = Math.max(1, fileLine - 8);
         } else {
-            // For low lines, subtract smaller amount
             estimatedLine = Math.max(1, fileLine - 3);
         }
 
-        // Estimate column - JSX transformations often add wrapper code
         if (fileColumn >= 10) {
-            estimatedColumn = Math.max(0, fileColumn - 1); // Minimal adjustment for high columns
+            estimatedColumn = Math.max(0, fileColumn - 1);
         } else if (fileColumn > 7) {
-            estimatedColumn = Math.max(0, fileColumn - 1); // Small adjustment
+            estimatedColumn = Math.max(0, fileColumn - 1);
         } else if (fileColumn > 5) {
-            estimatedColumn = Math.max(0, fileColumn); // No adjustment for moderate columns
+            estimatedColumn = Math.max(0, fileColumn);
         }
 
         return {
@@ -193,7 +183,14 @@ const createEmptyResult = (
 };
 
 /**
- * Generates syntax-highlighted code frames for client-side rendering
+ * Generates syntax-highlighted HTML code frames for both original and compiled code.
+ * @param originalSnippet The original source code snippet
+ * @param compiledSnippet The compiled source code snippet
+ * @param originalFilePath Path to the original source file
+ * @param compiledFilePath Path to the compiled source file
+ * @param originalFileLine Line number in the original file
+ * @param compiledLine Line number in the compiled file
+ * @returns Promise resolving to object with highlighted code frames
  */
 const generateSyntaxHighlightedFrames = async (
     originalSnippet: string,
@@ -206,12 +203,9 @@ const generateSyntaxHighlightedFrames = async (
     let originalCodeFrameContent: string | undefined;
     let compiledCodeFrameContent: string | undefined;
 
-    // Always process both snippets individually, even if one is empty
-
     const hlLangOriginal = findLanguageBasedOnExtension(originalFilePath) || "text";
     const hlLangCompiled = findLanguageBasedOnExtension(compiledFilePath) || hlLangOriginal;
 
-    // Load required language support
     const langs: LanguageInput[] = [];
     const requiredLangs = new Set([hlLangCompiled, hlLangOriginal]);
 
@@ -567,4 +561,8 @@ const buildExtendedErrorData = async (
     } as const;
 };
 
+/**
+ * Default export for building extended error data with source maps and code frames.
+ * @see buildExtendedErrorData
+ */
 export default buildExtendedErrorData;
