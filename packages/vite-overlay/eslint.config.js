@@ -20,14 +20,9 @@ export default createConfig(
     {
         files: ["./e2e/**"],
         rules: {
-            "vitest/no-conditional-in-setup": "off",
-            "vitest/no-conditional-in-setup": "off",
-            "vitest/no-conditional-in-teardown": "off",
-            "vitest/no-conditional-in-teardown": "off",
-            "vitest/no-conditional-in-test": "off",
-            "vitest/no-conditional-in-test": "off",
-            "vitest/no-focused-tests": "off",
-            "vitest/no-skipped-tests": "off",
+            "vitest/consistent-test-filename": "off",
+            "vitest/prefer-importing-vitest-globals": "off",
+            "vitest/require-hook": "off",
         },
     },
 );

@@ -34,6 +34,7 @@ test.describe("Cause Chain Error Handling", () => {
         await page.reload();
         await page.waitForTimeout(500);
     });
+
     test("should display nested cause chain errors", async ({ page }) => {
         // Trigger error with cause chain
         await page.click("[data-error-trigger]");
@@ -42,7 +43,7 @@ test.describe("Cause Chain Error Handling", () => {
         // Verify we have multiple errors
         const navigation = await getErrorNavigation(page);
 
-        expect(Number.parseInt(navigation.total || "0")).toBeGreaterThan(1);
+        expect(Number.parseInt(navigation.total || "0", 10)).toBeGreaterThan(1);
 
         // Verify first error is displayed
         expect(navigation.current).toBe("1");

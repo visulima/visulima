@@ -61,6 +61,7 @@ describe(resolveOriginalLocation, () => {
         expect.assertions(2);
 
         mockServer.transformRequest.mockResolvedValue({
+            // eslint-disable-next-line unicorn/no-null
             map: null, // No source map
         });
 
@@ -89,6 +90,7 @@ describe(resolveOriginalLocation, () => {
     it("should handle missing module", async () => {
         expect.assertions(2);
 
+        // eslint-disable-next-line unicorn/no-null, @typescript-eslint/no-explicit-any
         const result = await resolveOriginalLocation(mockServer, null as any, "/src/App.tsx", 10, 5);
 
         expect(result).toBeDefined();

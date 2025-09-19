@@ -14,7 +14,7 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Test error message");
 
-            expect(result).toEqual({ column: 27, line: 3 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 3 }); // Position of 'new' keyword
         });
 
         it("should find direct new Error() with single quotes", () => {
@@ -27,7 +27,7 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Test error message");
 
-            expect(result).toEqual({ column: 27, line: 3 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 3 }); // Position of 'new' keyword
         });
 
         it("should find throw new Error() pattern", () => {
@@ -42,7 +42,7 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Validation failed");
 
-            expect(result).toEqual({ column: 31, line: 4 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 31, line: 4 }); // Position of 'new' keyword
         });
 
         it("should find new Error() without throw", () => {
@@ -55,7 +55,7 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Creation error");
 
-            expect(result).toEqual({ column: 28, line: 3 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 28, line: 3 }); // Position of 'new' keyword
         });
     });
 
@@ -76,7 +76,7 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Invalid input provided");
 
-            expect(result).toEqual({ column: 27, line: 9 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 9 }); // Position of 'new' keyword
         });
 
         it("should find custom error class without throw", () => {
@@ -95,10 +95,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Network request failed");
 
-            expect(result).toEqual({ column: 28, line: 9 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 28, line: 9 }); // Position of 'new' keyword
         });
 
-        it.skip("should find custom error with template literal", () => {
+        it.todo("should find custom error with template literal", () => {
+            expect.hasAssertions();
+
             // TODO: Implement support for template literals in custom error constructors
             // This requires parsing constructor arguments and template literal resolution
             const sourceCode = `
@@ -114,7 +116,7 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "HTTP 404: Not found");
 
-            expect(result).toEqual({ column: 28, line: 8 });
+            expect(result).toStrictEqual({ column: 28, line: 8 });
         });
 
         it("should prioritize custom error class over generic patterns", () => {
@@ -133,7 +135,7 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Test message");
 
-            expect(result).toEqual({ column: 27, line: 9 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 9 }); // Position of 'new' keyword
         });
     });
 
@@ -149,7 +151,7 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Error from line 42");
 
-            expect(result).toEqual({ column: 27, line: 4 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 4 }); // Position of 'new' keyword
         });
 
         it("should find template literal dynamic error", () => {
@@ -163,10 +165,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Error in validation context");
 
-            expect(result).toEqual({ column: 27, line: 4 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 4 }); // Position of 'new' keyword
         });
 
         it("should prioritize template literal patterns for dynamic errors", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function mixedErrors() {
                     throw new Error(\`Dynamic error: \${value}\`);
@@ -175,12 +179,14 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Dynamic error: test");
 
-            expect(result).toEqual({ column: 27, line: 3 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 3 }); // Position of 'new' keyword
         });
     });
 
     describe("multiple occurrences", () => {
         it("should find first occurrence by default", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test1() {
                     throw new Error("Duplicate message");
@@ -192,10 +198,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Duplicate message");
 
-            expect(result).toEqual({ column: 27, line: 3 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 3 }); // Position of 'new' keyword
         });
 
         it("should find second occurrence with occurrenceIndex = 1", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test1() {
                     throw new Error("Duplicate message");
@@ -207,10 +215,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Duplicate message", 1);
 
-            expect(result).toEqual({ column: 27, line: 7 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 7 }); // Position of 'new' keyword
         });
 
         it("should return null when occurrenceIndex is out of range", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test() {
                     throw new Error("Single message");
@@ -224,12 +234,16 @@ describe(findErrorInSourceCode, () => {
 
     describe("edge cases", () => {
         it("should return null for empty source code", () => {
+            expect.assertions(1);
+
             const result = findErrorInSourceCode("", "error message");
 
             expect(result).toBeNull();
         });
 
         it("should return null for empty error message", () => {
+            expect.assertions(1);
+
             const sourceCode = "console.log('test');";
             const result = findErrorInSourceCode(sourceCode, "");
 
@@ -237,6 +251,8 @@ describe(findErrorInSourceCode, () => {
         });
 
         it("should return null when error message is not found", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test() {
                     console.log("Hello world");
@@ -248,6 +264,8 @@ describe(findErrorInSourceCode, () => {
         });
 
         it("should handle lines with only whitespace", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test() {
 
@@ -256,10 +274,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Test message");
 
-            expect(result).toEqual({ column: 27, line: 4 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 4 }); // Position of 'new' keyword
         });
 
         it("should handle multi-line error constructors", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test() {
                     throw new Error(
@@ -269,12 +289,14 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Multi-line error message");
 
-            expect(result).toEqual({ column: 26, line: 4 });
+            expect(result).toStrictEqual({ column: 26, line: 4 });
         });
     });
 
     describe("complex scenarios", () => {
-        it.skip("should handle nested error classes correctly", () => {
+        it.todo("should handle nested error classes correctly", () => {
+            expect.hasAssertions();
+
             // TODO: Implement support for template literals in inherited error constructors
             // This requires parsing inheritance chains and constructor argument resolution
             const sourceCode = `
@@ -296,10 +318,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Validation failed for email: invalid@format");
 
-            expect(result).toEqual({ column: 28, line: 14 });
+            expect(result).toStrictEqual({ column: 28, line: 14 });
         });
 
         it("should handle mixed error patterns in same file", () => {
+            expect.assertions(3);
+
             const sourceCode = `
                 // Standard Error
                 function func1() {
@@ -327,20 +351,22 @@ describe(findErrorInSourceCode, () => {
             // Should find custom error first due to priority
             const customResult = findErrorInSourceCode(sourceCode, "Custom error message");
 
-            expect(customResult).toEqual({ column: 27, line: 15 }); // Position of 'new' keyword
+            expect(customResult).toStrictEqual({ column: 27, line: 15 }); // Position of 'new' keyword
 
             // Should find standard error
             const standardResult = findErrorInSourceCode(sourceCode, "Standard error");
 
-            expect(standardResult).toEqual({ column: 27, line: 4 }); // Position of 'new' keyword
+            expect(standardResult).toStrictEqual({ column: 27, line: 4 }); // Position of 'new' keyword
 
             // Should find dynamic error
             const dynamicResult = findErrorInSourceCode(sourceCode, "Error from line 123");
 
-            expect(dynamicResult).toEqual({ column: 27, line: 21 }); // Position of 'new' keyword
+            expect(dynamicResult).toStrictEqual({ column: 27, line: 21 }); // Position of 'new' keyword
         });
 
         it("should handle complex template literals", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function complexError() {
                     const userId = 123;
@@ -350,12 +376,14 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "User 123 attempted delete but insufficient permissions");
 
-            expect(result).toEqual({ column: 27, line: 5 }); // Position of 'new' keyword
+            expect(result).toStrictEqual({ column: 27, line: 5 }); // Position of 'new' keyword
         });
     });
 
     describe("referenceError handling", () => {
         it("should find undefined variable in direct reference", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test() {
                     console.log(myVariable);
@@ -363,10 +391,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "myVariable is not defined");
 
-            expect(result).toEqual({ column: 33, line: 3 });
+            expect(result).toStrictEqual({ column: 33, line: 3 });
         });
 
         it("should find undefined variable in template literal", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function greet() {
                     const message = \`Hello \${undefinedVar}!\`;
@@ -375,10 +405,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "undefinedVar is not defined");
 
-            expect(result).toEqual({ column: 46, line: 3 });
+            expect(result).toStrictEqual({ column: 46, line: 3 });
         });
 
         it("should find undefined variable in JSX/Svelte attribute", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function Component() {
                     return <div className={missingClass}>Hello</div>;
@@ -386,10 +418,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "missingClass is not defined");
 
-            expect(result).toEqual({ column: 44, line: 3 });
+            expect(result).toStrictEqual({ column: 44, line: 3 });
         });
 
         it("should find undefined variable in Svelte template", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 <script>
                     let userName = "John";
@@ -400,10 +434,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "missingVar is not defined");
 
-            expect(result).toEqual({ column: 29, line: 7 });
+            expect(result).toStrictEqual({ column: 29, line: 7 });
         });
 
         it("should handle multiline ReferenceError messages", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function problematic() {
                     return undefinedVariable + 1;
@@ -414,10 +450,12 @@ describe(findErrorInSourceCode, () => {
         in <unknown>`;
             const result = findErrorInSourceCode(sourceCode, multilineError);
 
-            expect(result).toEqual({ column: 28, line: 3 });
+            expect(result).toStrictEqual({ column: 28, line: 3 });
         });
 
         it("should prioritize variable references over error constructors", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function test() {
                     throw new Error(missingVar + " not found");
@@ -425,10 +463,12 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "missingVar is not defined");
 
-            expect(result).toEqual({ column: 37, line: 3 });
+            expect(result).toStrictEqual({ column: 37, line: 3 });
         });
 
         it("should find variable in complex expressions", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function calculate() {
                     return someUndefined * 2 + otherMissing;
@@ -436,12 +476,14 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "someUndefined is not defined");
 
-            expect(result).toEqual({ column: 28, line: 3 });
+            expect(result).toStrictEqual({ column: 28, line: 3 });
         });
     });
 
     describe("error message parsing", () => {
         it("should extract variable name from ReferenceError with stack trace", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function broken() {
                     console.log(brokenVar);
@@ -453,10 +495,12 @@ describe(findErrorInSourceCode, () => {
         at main (app.js:5:10)`;
             const result = findErrorInSourceCode(sourceCode, errorWithStack);
 
-            expect(result).toEqual({ column: 33, line: 3 });
+            expect(result).toStrictEqual({ column: 33, line: 3 });
         });
 
         it("should handle TypeError for undefined functions", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function callUndefined() {
                     return missingFunction();
@@ -470,6 +514,8 @@ describe(findErrorInSourceCode, () => {
         });
 
         it("should handle property access errors", () => {
+            expect.assertions(1);
+
             const sourceCode = `
                 function accessProperty() {
                     return null.invalidProperty;
@@ -477,12 +523,14 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Cannot read properties of null (reading invalidProperty)");
 
-            expect(result).toEqual({ column: 33, line: 3 });
+            expect(result).toStrictEqual({ column: 33, line: 3 });
         });
     });
 
     describe("import resolution error cases", () => {
         it("should handle vite.svg import resolution error", () => {
+            expect.assertions(1);
+
             const sourceCode = `import "./App.css";
 
 import { useState } from "react";
@@ -515,10 +563,12 @@ export default App;`;
 
             const result = findErrorInSourceCode(sourceCode, errorMessage);
 
-            expect(result).toEqual({ column: 22, line: 5 }); // Line 5: points to "../vite.svg" (the problematic import path)
+            expect(result).toStrictEqual({ column: 22, line: 5 }); // Line 5: points to "../vite.svg" (the problematic import path)
         });
 
         it("should handle relative import path in error message", () => {
+            expect.assertions(1);
+
             const sourceCode = `import React from 'react';
 import logo from './assets/logo.png';
 import styles from './App.module.css';
@@ -531,12 +581,14 @@ function App() {
 
             const result = findErrorInSourceCode(sourceCode, errorMessage);
 
-            expect(result).toEqual({ column: 18, line: 2 }); // Line 2: points to './assets/logo.png' (the problematic import path)
+            expect(result).toStrictEqual({ column: 18, line: 2 }); // Line 2: points to './assets/logo.png' (the problematic import path)
         });
     });
 
     describe("real Svelte error cases", () => {
         it("should find svelteLogo1 in real Svelte template", () => {
+            expect.assertions(1);
+
             const sourceCode = `<script lang="ts">
   import svelteLogo from './assets/svelte.svg'
   import viteLogo from '/vite.svg'
@@ -583,10 +635,12 @@ function App() {
         in <unknown>`;
             const result = findErrorInSourceCode(sourceCode, errorMessage);
 
-            expect(result).toEqual({ column: 17, line: 13 }); // Line 13: svelteLogo1 (position of 's')
+            expect(result).toStrictEqual({ column: 17, line: 13 }); // Line 13: svelteLogo1 (position of 's')
         });
 
         it("should handle multiline Svelte ReferenceError", () => {
+            expect.assertions(1);
+
             const sourceCode = `<script>
   let count = 0;
 </script>
@@ -598,7 +652,7 @@ function App() {
         in <unknown>`;
             const result = findErrorInSourceCode(sourceCode, multilineError);
 
-            expect(result).toEqual({ column: 5, line: 6 }); // Line 6: undefinedVar (position of 'u')
+            expect(result).toStrictEqual({ column: 5, line: 6 }); // Line 6: undefinedVar (position of 'u')
         });
     });
 });
