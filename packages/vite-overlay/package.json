@@ -45,8 +45,8 @@
         "CHANGELOG.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development packem build",
-        "build:prod": "cross-env NODE_ENV=production packem build",
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:attw": "attw --pack",
@@ -97,12 +97,12 @@
         "@vitest/ui": "^3.2.4",
         "marked": "^16.2.1",
         "conventional-changelog-conventionalcommits": "9.1.0",
-        "cross-env": "^10.0.0",
         "cssnano": "7.1.1",
         "esbuild": "^0.25.9",
         "eslint": "9.35.0",
         "lucide-static": "^0.544.0",
         "prettier": "^3.6.2",
+        "publint": "^0.3.12",
         "prettier-plugin-tailwindcss": "0.6.14",
         "rimraf": "^6.0.1",
         "secretlint": "11.2.4",
@@ -112,8 +112,11 @@
         "vite": "^7.1.5",
         "vitest": "^3.2.4"
     },
+    "peerDependencies": {  
+        "vite": "^6 || ^7"  
+    }, 
     "engines": {
-        "node": ">=20.18 <=24.x"
+        "node": ">=20.19 <=24.x"
     },
     "publishConfig": {
         "access": "public",

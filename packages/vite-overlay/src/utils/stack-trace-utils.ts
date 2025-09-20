@@ -4,13 +4,15 @@ import { resolve } from "@visulima/path";
 
 import type { StackFrameValidator, SupportedExtension } from "../types";
 
+type StackLineCleaner = (line: string) => string;
+
 const PATH_SEPARATOR = "/" as const;
 const COLON_SEPARATOR = ":" as const;
 const AT_PREFIX = "at " as const;
 
-const HTTP_URL_PATTERN = /https?:\/\/[^\s)]+/g as const;
-const FILE_URL_PATTERN = /file:\/\//g as const;
-const FS_PATH_PATTERN = /\/@fs\//g as const;
+const HTTP_URL_PATTERN = /https?:\/\/[^\s)]+/g;
+const FILE_URL_PATTERN = /file:\/\//g;
+const FS_PATH_PATTERN = /\/@fs\//g;
 
 const SUPPORTED_EXTENSIONS = new Set<SupportedExtension>([".cjs", ".js", ".jsx", ".mjs", ".svelte", ".ts", ".tsx", ".vue"]);
 
@@ -147,7 +149,7 @@ export const cleanErrorStack = (stack: string): string => {
         .replaceAll("\r", "\n")
         .split(/\n/)
         .map(cleanStackLine)
-        .filter((line) => line.trim() !== "")
+        .filter((line: string) => line.trim() !== "")
         .join("\n");
 };
 
@@ -161,62 +163,6 @@ export const cleanErrorMessage = (error: Error | string): string => {
 
     return stripVTControlCharacters(message);
 };
-
-export interface ESBuildMessage {
-    location?: {
-        column: number;
-        file: string;
-        line: number;
-    };
-    pluginName?: string;
-    text: string;
-}
-
-/**
- * Checks if an array contains ESBuild error objects.
- * @param errors Array of potential ESBuild errors
- * @returns True if the array contains ESBuild errors
- */
-export const isESBuildErrorArray = (errors: any[]): boolean => {
-    if (!Array.isArray(errors) || errors.length === 0)
-        return false;
-
-    return errors.some((error: any) => error && typeof error === "object" && (error.location || error.pluginName || error.text));
-};
-
-/**
- * Processes ESBuild error messages into a standardized format.
- * @param esbuildErrors Array of ESBuild error messages
- * @returns Array of processed error objects with standardized structure
- */
-export const processESBuildErrors = (
-    esbuildErrors: ESBuildMessage[],
-): {
-    column?: number;
-    file?: string;
-    line?: number;
-    message: string;
-    plugin?: string;
-}[] =>
-    esbuildErrors.map((buildError, index) => {
-        const { location, pluginName, text } = buildError;
-
-        const processedError: any = {
-            message: text || `ESBuild error #${index + 1}`,
-        };
-
-        if (location) {
-            processedError.file = location.file;
-            processedError.line = location.line;
-            processedError.column = location.column;
-        }
-
-        if (pluginName) {
-            processedError.plugin = pluginName;
-        }
-
-        return processedError;
-    });
 
 /**
  * Checks if an error is an AggregateError (contains multiple errors).

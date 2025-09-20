@@ -18,7 +18,7 @@ export default createConfig(
         ],
     },
     {
-        files: ["./e2e/**"],
+        files: ["./__tests__/e2e/**"],
         rules: {
             "vitest/consistent-test-filename": "off",
             "vitest/prefer-importing-vitest-globals": "off",

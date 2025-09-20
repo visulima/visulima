@@ -1,7 +1,7 @@
 import type { ViteDevServer } from "vite";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import enhanceViteSsrError from "../../src/utils/ssr-error-enhancer";
+import enhanceViteSsrError from "../../../src/utils/ssr-error-enhancer";
 
 describe(enhanceViteSsrError, () => {
     const mockServer = {

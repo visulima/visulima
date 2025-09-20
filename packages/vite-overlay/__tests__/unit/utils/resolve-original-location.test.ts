@@ -1,7 +1,7 @@
 import type { ViteDevServer } from "vite";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import resolveOriginalLocation from "../../src/utils/resolve-original-location";
+import resolveOriginalLocation from "../../../src/utils/resolve-original-location";
 
 describe(resolveOriginalLocation, () => {
     const mockServer = {

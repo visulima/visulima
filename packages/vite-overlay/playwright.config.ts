@@ -49,7 +49,7 @@ export default defineConfig({
     reporter: "html",
     /* Retry on CI only */
     retries: process.env.CI ? 2 : 0,
-    testDir: "./e2e",
+    testDir: "./__tests__/e2e",
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         /* Base URL to use in actions like `await page.goto('/')`. */

@@ -18,8 +18,8 @@ const retrieveSourceTexts = async (
     let originalSourceText: string | undefined;
     let compiledSourceText: string | undefined;
 
-    if (module_?.transformResult) {
-        const cached = module_.transformResult;
+    if (module_ && typeof module_ === "object" && "transformResult" in module_ && module_.transformResult) {
+        const cached = module_.transformResult as { code?: string; map?: any };
 
         if (cached.code && !compiledSourceText) {
             compiledSourceText = cached.code;
@@ -30,7 +30,9 @@ const retrieveSourceTexts = async (
         }
     }
 
-    const transformId = module_?.id || module_?.url || idCandidates[0];
+    const transformId = (module_ && typeof module_ === "object" && (("id" in module_ && module_.id) || ("url" in module_ && module_.url))) ?
+        ((("id" in module_ && module_.id) || ("url" in module_ && module_.url)) as string) :
+        idCandidates[0];
 
     if (transformId && (!originalSourceText || !compiledSourceText)) {
         try {
@@ -41,16 +43,19 @@ const retrieveSourceTexts = async (
             }
 
             if (transformed?.map && !originalSourceText) {
-                originalSourceText = getSourceFromMap(transformed.map, filePath);
+                const map = transformed.map;
+                if (typeof map === "object" && map !== null && "mappings" in map && (map as any).mappings !== "") {
+                    originalSourceText = getSourceFromMap(map as any, filePath);
+                }
             }
         } catch {
             // Transform failed, continue to fallbacks
         }
     }
 
-    if (!originalSourceText && module_?.file) {
+    if (!originalSourceText && module_ && typeof module_ === "object" && "file" in module_ && module_.file) {
         try {
-            originalSourceText = await readFile(module_.file, "utf8");
+            originalSourceText = await readFile(module_.file as string, "utf8");
         } catch {
             // Ignore file read errors
         }

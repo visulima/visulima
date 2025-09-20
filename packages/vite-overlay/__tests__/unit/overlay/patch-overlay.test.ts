@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import { patchOverlay } from "../../src/overlay/patch-overlay";
+import { patchOverlay } from "../../../src/overlay/patch-overlay";
 
 // Mock the dependencies
 vi.mock("../../../../../shared/utils/editors", () => {

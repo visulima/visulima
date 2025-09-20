@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseVueCompilationError } from "../../../src/utils/error-processing/parse-vue-compilation-error";
+import { parseVueCompilationError } from "../../../../src/utils/error-processing/parse-vue-compilation-error";
 
 describe(parseVueCompilationError, () => {
     describe("vue SFC compilation error parsing", () => {

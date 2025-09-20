@@ -15,7 +15,7 @@ export const parseVueCompilationError = (errorMessage: string) => {
     const positionPattern = /\((\d+):(\d+)\)/;
     const positionMatch = errorMessage.match(positionPattern);
 
-    if (positionMatch) {
+    if (positionMatch && positionMatch[1] && positionMatch[2]) {
         line = Number.parseInt(positionMatch[1], 10);
         column = Number.parseInt(positionMatch[2], 10);
     }
@@ -23,7 +23,7 @@ export const parseVueCompilationError = (errorMessage: string) => {
     const filePathPattern = /(\S+\.vue)/;
     const fileMatch = errorMessage.match(filePathPattern);
 
-    if (fileMatch) {
+    if (fileMatch && fileMatch[1]) {
         filePath = fileMatch[1];
     }
 

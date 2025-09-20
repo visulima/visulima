@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { isHttpUrl, normalizeIdCandidates } from "../../src/utils/normalize-id-candidates";
+import { isHttpUrl, normalizeIdCandidates } from "../../../src/utils/normalize-id-candidates";
 
 // Import the actual functions without mocking
 

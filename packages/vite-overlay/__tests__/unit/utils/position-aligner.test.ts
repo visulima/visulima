@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import realignOriginalPosition from "../../src/utils/position-aligner";
+import realignOriginalPosition from "../../../src/utils/position-aligner";
 
 describe(realignOriginalPosition, () => {
     it("should return null for empty or invalid inputs", () => {

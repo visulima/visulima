@@ -46,6 +46,7 @@ interface ResolvedLocation {
 interface ViteModule {
     id?: string | null;
     transformResult?: {
+        code?: string;
         map?: any;
     } | null;
     url?: string;

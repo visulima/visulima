@@ -51,6 +51,7 @@ const checkTemplateLiteralMatch = (line: string, targetMessage: string): boolean
 
     for (const match of matches) {
         const templateContent = match[1];
+        if (!templateContent) continue;
         const staticParts = templateContent.split(VARIABLE_PLACEHOLDER_REGEX);
 
         // Check if all static parts are present in the target message
@@ -61,6 +62,7 @@ const checkTemplateLiteralMatch = (line: string, targetMessage: string): boolean
         }
 
         // Try regex matching for dynamic content
+        if (!templateContent) continue;
         const pattern = templateContent.replaceAll(VARIABLE_PLACEHOLDER_REGEX, "(.+?)");
 
         try {
@@ -211,6 +213,7 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
     const addDynamicPatterns = (dynamicMatch: RegExpMatchArray, errorMessage: string, errorPatterns: string[]) => {
         if (dynamicMatch[0].includes("Failed to resolve import")) {
             const importPath = dynamicMatch[1];
+            if (!importPath) return;
             const escapedPath = escapeRegex(importPath);
 
             errorPatterns.unshift(
@@ -220,6 +223,7 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
             );
         } else if (dynamicMatch[0].includes("is not defined")) {
             const variableName = dynamicMatch[1];
+            if (!variableName) return;
 
             errorPatterns.unshift(
                 variableName,
@@ -231,6 +235,7 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
         } else if (dynamicMatch[0].includes("Cannot read properties")) {
             const objectName = dynamicMatch[1];
             const propertyName = dynamicMatch[2];
+            if (!propertyName) return;
 
             errorPatterns.unshift(
                 propertyName,
@@ -240,6 +245,7 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
             );
         } else {
             const baseMessage = dynamicMatch[1];
+            if (!baseMessage) return;
             const escapedMessage = escapeRegex(errorMessage);
             const escapedBase = escapeRegex(baseMessage);
 
@@ -305,7 +311,7 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
      * @param occurrenceIndex Which occurrence to find
      * @returns The location if found, null otherwise
      */
-    const processPatternLines = (lines: string[], errorPatterns: string[], dynamicMatch: RegExpMatchArray | null, errorMessage: string, occurrenceIndex: number) => {
+    const processPatternLines = (lines: string[], errorPatterns: string[], dynamicMatch: RegExpMatchArray | null, occurrenceIndex: number) => {
         let foundCount = 0;
 
         for (const [lineIndex, line] of lines.entries()) {
@@ -363,16 +369,16 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
         } else if (dynamicMatch[0].includes("is not defined")) {
             const variableName = dynamicMatch[1];
 
-            if (pattern === variableName)
+            if (variableName && pattern === variableName)
                 return patternIndex + 1;
 
-            if (pattern.includes(variableName)) {
+            if (variableName && pattern.includes(variableName)) {
                 return patternIndex + pattern.indexOf(variableName) + 1;
             }
         } else if (dynamicMatch[0].includes("Cannot read properties")) {
             const propertyName = dynamicMatch[2];
 
-            if (pattern.includes(propertyName)) {
+            if (propertyName && pattern.includes(propertyName)) {
                 return patternIndex + pattern.indexOf(propertyName) + 1;
             }
         } else if (pattern.includes("new Error(")) {
@@ -389,7 +395,7 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
         return templateResult;
 
     // Third pass: Look for general pattern matches
-    return processPatternLines(lines, errorPatterns, dynamicMatch, errorMessage, occurrenceIndex);
+    return processPatternLines(lines, errorPatterns, dynamicMatch, occurrenceIndex);
 };
 
 export default findErrorInSourceCode;

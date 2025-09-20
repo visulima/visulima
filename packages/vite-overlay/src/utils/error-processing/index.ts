@@ -10,8 +10,9 @@ import findModuleForPath from "../find-module-for-path";
 import { normalizeIdCandidates } from "../normalize-id-candidates";
 import realignOriginalPosition from "../position-aligner";
 import resolveOriginalLocation from "../resolve-original-location";
-import type { ESBuildMessage } from "../stack-trace-utils";
-import { cleanErrorMessage, cleanErrorStack, extractErrors, isESBuildErrorArray, processESBuildErrors } from "../stack-trace-utils";
+import { cleanErrorMessage, cleanErrorStack, extractErrors } from "../stack-trace-utils";
+import { isESBuildErrorArray, processESBuildErrors } from "../esbuild-error-utils";
+import type { ESBuildMessage } from "../esbuild-error-utils";
 import { parseVueCompilationError } from "./parse-vue-compilation-error";
 import remapStackToOriginal from "./remap-stack-to-original";
 import retrieveSourceTexts from "./retrieve-source-texts";
@@ -28,11 +29,11 @@ const extractIndividualErrors = (error: Error): Error[] => {
         const processedErrors = processESBuildErrors(error as ESBuildMessage[]);
 
         return processedErrors.map(
-            ({ message, name, stack }) =>
+            (error) =>
                 ({
-                    message: message || "ESBuild error",
-                    name: name || "Error",
-                    stack: stack || "",
+                    message: error.message || "ESBuild error",
+                    name: error.name || "Error",
+                    stack: error.stack || "",
                 }) as Error,
         );
     }

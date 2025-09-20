@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import errorOverlayPlugin from "../src/index.js";
+import errorOverlayPlugin from "../../src/index.js";
 
 describe(errorOverlayPlugin, () => {
     it("should return a plugin object", () => {

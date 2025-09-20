@@ -111,7 +111,7 @@ const tryWhitespaceInsensitiveSearch = (compiledLineTrimmed: string, originalLin
 const mapNormalizedToOriginalPosition = (lineText: string, normalizedPosition: number): number => {
     let nonWhitespaceCount = 0;
 
-    for (const [index, char] of lineText.entries()) {
+    for (const [index, char] of [...lineText].entries()) {
         if (typeof char !== "string") {
             continue;
         }

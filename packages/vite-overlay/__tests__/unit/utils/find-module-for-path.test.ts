@@ -1,7 +1,7 @@
 import type { ViteDevServer } from "vite";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import findModuleForPath from "../../src/utils/find-module-for-path";
+import findModuleForPath from "../../../src/utils/find-module-for-path";
 
 describe(findModuleForPath, () => {
     const mockServer = {

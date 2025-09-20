@@ -6,11 +6,11 @@ import { parseStacktrace } from "@visulima/error";
 import type { ErrorPayload, ViteDevServer } from "vite";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import buildExtendedErrorData from "../../../src/utils/error-processing";
-import remapStackToOriginal from "../../../src/utils/error-processing/remap-stack-to-original";
-import retrieveSourceTexts from "../../../src/utils/error-processing/retrieve-source-texts";
-import addQueryToUrl from "../../../src/utils/error-processing/utils/add-query-to-url";
-import extractQueryFromHttpUrl from "../../../src/utils/error-processing/utils/extract-query-from-http-url";
+import buildExtendedErrorData from "../../../../src/utils/error-processing";
+import remapStackToOriginal from "../../../../src/utils/error-processing/remap-stack-to-original";
+import retrieveSourceTexts from "../../../../src/utils/error-processing/retrieve-source-texts";
+import addQueryToUrl from "../../../../src/utils/error-processing/utils/add-query-to-url";
+import extractQueryFromHttpUrl from "../../../../src/utils/error-processing/utils/extract-query-from-http-url";
 
 vi.mock("node:fs/promises");
 vi.mock("@visulima/error", () => {

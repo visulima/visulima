@@ -27,7 +27,10 @@ export const normalizeIdCandidates = (filePath: string): string[] => {
         }
 
         if (filePath.includes("?")) {
-            candidates.push(filePath.split("?")[0]);
+            const pathWithoutQuery = filePath.split("?")[0];
+            if (pathWithoutQuery) {
+                candidates.push(pathWithoutQuery);
+            }
         }
 
         return [...new Set(candidates)].filter(Boolean);

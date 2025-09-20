@@ -1,7 +1,6 @@
 import { getErrorCauses } from "@visulima/error/error";
 import type { Solution, SolutionFinder } from "@visulima/error/solution";
 import { errorHintFinder, ruleBasedFinder } from "@visulima/error/solution";
-import DOMPurify from "dompurify";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { parse } from "marked";
 import type { IndexHtmlTransformResult, Plugin, PluginOption, TransformOptions, ViteDevServer, WebSocketClient } from "vite";
@@ -254,7 +253,7 @@ const buildExtendedError = async (
             const extendedData = await buildExtendedErrorData(error, server, enhancedViteErrorData, allErrors, index);
 
             return {
-                hint: error?.hint,
+                hint: (error as ExtendedError)?.hint,
                 message: error?.message || "",
                 name: error?.name || DEFAULT_ERROR_NAME,
                 stack: absolutizeStackUrls(cleanErrorStack(error?.stack || ""), rootPath),

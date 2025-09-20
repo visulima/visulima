@@ -7,7 +7,7 @@
 import { parseStacktrace } from "@visulima/error";
 import { describe, expect, it, vi } from "vitest";
 
-import buildExtendedErrorData from "../../../src/utils/error-processing";
+import buildExtendedErrorData from "../../../../src/utils/error-processing";
 
 vi.mock("@visulima/error", () => {
     return {
