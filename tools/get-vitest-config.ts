@@ -17,7 +17,7 @@ export const getVitestConfig = (options: ViteUserConfig = {}) => {
                 provider: "v8",
                 reporter: ["clover", "cobertura", "lcov", "text", "html"],
                 include: ["src"],
-                exclude: ["__fixtures__/**", "__bench__/**", "scripts/**", "src/**/types.ts", "src/module.d.ts", "src/reset.d.ts"],
+                exclude: ["__fixtures__/**", "__bench__/**", "scripts/**", "src/**/types.ts", "src/module.d.ts", "src/reset.d.ts", "e2e"],
             },
             environment: "node",
             reporters: process.env.CI_PREFLIGHT ? ["default", "github-actions"] : ["default"],
