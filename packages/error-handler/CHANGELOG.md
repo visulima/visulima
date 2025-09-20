@@ -1,3 +1,13 @@
+## @visulima/error-handler [1.0.4](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.3...@visulima/error-handler@1.0.4) (2025-09-20)
+
+### Bug Fixes
+
+* update error-handler configuration and improve code formatting ([0e9717c](https://github.com/visulima/visulima/commit/0e9717c6a642dde4c6d02974143d94597ed72dbd))
+
+### Miscellaneous Chores
+
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
 ## @visulima/error-handler [1.0.3](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.2...@visulima/error-handler@1.0.3) (2025-09-19)
 
 ### Miscellaneous Chores

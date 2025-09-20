@@ -1,6 +1,6 @@
 {
     "name": "@visulima/error-handler",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Error handlers for use in development and production environments.",
     "keywords": [
         "visulima",
