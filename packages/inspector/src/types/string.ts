@@ -19,7 +19,6 @@ const hex = 16;
 const unicodeLength = 4;
 
 const escape = (char: string): string =>
-
     escapeCharacters[char as keyof typeof escapeCharacters] || `\\u${`0000${(char.codePointAt(0) as number).toString(hex)}`.slice(-unicodeLength)}`;
 
 const inspectString = (string_: string, options: Options): string => {

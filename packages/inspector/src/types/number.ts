@@ -19,5 +19,8 @@ export default function inspectNumber(number: number, options: Options): string 
         return options.stylize(1 / number === Number.POSITIVE_INFINITY ? "+0" : "-0", "number");
     }
 
-    return options.stylize(truncate(options.numericSeparator ? addNumericSeparator(number, number.toString()) : number.toString(), options.maxStringLength), "number");
+    return options.stylize(
+        truncate(options.numericSeparator ? addNumericSeparator(number, number.toString()) : number.toString(), options.maxStringLength),
+        "number",
+    );
 }

@@ -54,7 +54,7 @@ describe("inspect with Maps", () => {
                     quoteStyle: "double",
                 },
             ),
-        ).toBe('Map (3) { "a" => 1, "b" => 2, "c" => 3 }');
+        ).toBe("Map (3) { \"a\" => 1, \"b\" => 2, \"c\" => 3 }");
     });
 
     it("should correctly indent a Map's contents", () => {
@@ -65,12 +65,8 @@ describe("inspect with Maps", () => {
         map.set({ a: 1 }, ["b"]);
         map.set(3, Number.NaN);
 
-        expect(inspect(map, { indent: 2 }), "Map keys are not indented (two)").toMatchInlineSnapshot(
-            `"Map (2) { { a: 1 } => [ 'b' ], 3 => NaN }"`,
-        );
-        expect(inspect(map, { indent: "\t" }), "Map keys are not indented (tabs)").toMatchInlineSnapshot(
-            `"Map (2) { { a: 1 } => [ 'b' ], 3 => NaN }"`,
-        );
+        expect(inspect(map, { indent: 2 }), "Map keys are not indented (two)").toMatchInlineSnapshot(`"Map (2) { { a: 1 } => [ 'b' ], 3 => NaN }"`);
+        expect(inspect(map, { indent: "\t" }), "Map keys are not indented (tabs)").toMatchInlineSnapshot(`"Map (2) { { a: 1 } => [ 'b' ], 3 => NaN }"`);
         expect(inspect(map, { indent: "\t", quoteStyle: "double" }), "Map keys are not indented (tabs + double quotes)").toMatchInlineSnapshot(
             `"Map (2) { { a: 1 } => [ "b" ], 3 => NaN }"`,
         );
@@ -603,6 +599,7 @@ describe("inspect with Maps", () => {
                 expect.assertions(1);
 
                 const map = new Map();
+
                 map.set("a", map);
 
                 expect(inspect(map)).toBe("Map (1) { 'a' => [Circular] }");
@@ -612,6 +609,7 @@ describe("inspect with Maps", () => {
                 expect.assertions(1);
 
                 const map = new Map();
+
                 map.set("a", new Map([["b", map]]));
 
                 expect(inspect(map)).toBe("Map (1) { 'a' => Map (1) { 'b' => [Circular] } }");
@@ -624,6 +622,7 @@ describe("inspect with Maps", () => {
             expect.assertions(1);
 
             const map = new Map();
+
             // @ts-expect-error - testing non-standard property
             map.foo = "bar";
 
@@ -636,8 +635,8 @@ describe("inspect with Maps", () => {
             expect.assertions(1);
 
             const map = new Map([
-                ["b", 1],
                 ["a", 2],
+                ["b", 1],
             ]);
 
             expect(inspect(map, { sorted: true })).toBe("Map (2) { 'a' => 2, 'b' => 1 }");

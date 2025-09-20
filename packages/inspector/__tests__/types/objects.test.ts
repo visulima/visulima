@@ -59,7 +59,7 @@ describe.each([
     it("should quote keys containing a double quote", () => {
         expect.assertions(1);
 
-        expect(function_({ '"': 1 })).toBe(`${tag}{ '"': 1 }`);
+        expect(function_({ "\"": 1 })).toBe(`${tag}{ '"': 1 }`);
     });
 
     if (name === "Objects") {
@@ -252,8 +252,8 @@ describe.each([
             expect(
                 function_(
                     {
-                        b: 1,
                         a: 2,
+                        b: 1,
                     },
                     { sorted: true },
                 ),
@@ -265,35 +265,98 @@ describe.each([
         it("should not invoke getters by default", () => {
             expect.assertions(1);
 
-            expect(function_({ get a() { return 1; } })).toBe(`${tag}{ a: [Function: get a] }`);
+            expect(
+                function_({
+                    get a() {
+                        return 1;
+                    },
+                }),
+            ).toBe(`${tag}{ a: [Function: get a] }`);
         });
 
         it("should invoke getters when 'getters' is true", () => {
             expect.assertions(1);
 
-            expect(function_({ get a() { return 1; } }, { getters: true })).toBe(`${tag}{ a: 1 }`);
+            expect(
+                function_(
+                    {
+                        get a() {
+                            return 1;
+                        },
+                    },
+                    { getters: true },
+                ),
+            ).toBe(`${tag}{ a: 1 }`);
         });
 
         it("should invoke getters when 'getters' is 'get'", () => {
             expect.assertions(1);
 
-            expect(function_({ get a() { return 1; } }, { getters: "get" })).toBe(`${tag}{ a: 1 }`);
+            expect(
+                function_(
+                    {
+                        get a() {
+                            return 1;
+                        },
+                    },
+                    { getters: "get" },
+                ),
+            ).toBe(`${tag}{ a: 1 }`);
         });
 
         it("should not invoke getters when 'getters' is 'set'", () => {
             expect.assertions(1);
 
-            expect(function_({ get a() { return 1; } }, { getters: "set" })).toBe(`${tag}{ a: [Function: get a] }`);
+            expect(
+                function_(
+                    {
+                        get a() {
+                            return 1;
+                        },
+                    },
+                    { getters: "set" },
+                ),
+            ).toBe(`${tag}{ a: [Function: get a] }`);
         });
 
         it("should handle objects with both getters and setters correctly", () => {
             expect.assertions(3);
 
-            expect(function_({ get a() { return 1; }, set a(v) {} }, { getters: true })).toBe(`${tag}{ a: 1 }`);
+            expect(
+                function_(
+                    {
+                        get a() {
+                            return 1;
+                        },
+                        set a(v) {},
+                    },
+                    { getters: true },
+                ),
+            ).toBe(`${tag}{ a: 1 }`);
 
-            expect(function_({ get a() { return 1; }, set a(v) {} }, { getters: "get" })).toBe(`${tag}{ a: 1 }`);
+            expect(
+                function_(
+                    {
+                        get a() {
+                            return 1;
+                        },
+                        set a(v) {},
+                    },
+                    { getters: "get" },
+                ),
+            ).toBe(`${tag}{ a: 1 }`);
 
-            expect(function_({ get a() { return 1; }, set a(v) {} }, { getters: "set" })).toBe(`${tag}{ a: [Function: get a] }`);
+            expect(
+                function_(
+                    {
+                        get a() {
+                            return 1;
+                        },
+                        set a(v) {},
+                    },
+                    { getters: "set" },
+                ),
+            ).toBe(`${tag}{ a: [Function: get a] }`);
         });
 
         it("should handle getters that throw errors", () => {
@@ -311,7 +374,6 @@ describe.each([
         it("should show an empty object for a class with only a getter", () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line @typescript-eslint/no-extraneous-class
             class Foo {
                 public get a() {
                     return 1;
@@ -323,15 +385,18 @@ describe.each([
 
         it("should show properties for a class with a constructor and a getter", () => {
             expect.assertions(1);
+
             function Foo() {
                 // @ts-expect-error - testing non-standard property
                 this.b = 2;
             }
+
             Object.defineProperty(Foo.prototype, "a", {
                 get() {
                     return 1;
                 },
             });
+
             expect(inspect(new Foo())).toBe("Foo { b: 2 }");
         });
     });

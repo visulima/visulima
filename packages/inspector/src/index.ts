@@ -31,7 +31,11 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         options.indent = 2;
     }
 
-    if (options.indent !== undefined && options.indent !== "\t" && !(Number.parseInt(options.indent as unknown as string, 10) === options.indent && options.indent > 0)) {
+    if (
+        options.indent !== undefined
+        && options.indent !== "\t"
+        && !(Number.parseInt(options.indent as unknown as string, 10) === options.indent && options.indent > 0)
+    ) {
         throw new TypeError("option \"indent\" must be \"\\t\", an integer > 0, or `undefined`");
     }
 

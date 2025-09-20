@@ -25,13 +25,13 @@ describe("inspect with Symbols", () => {
     it("should inspect a Symbol with a description and double quotes", () => {
         expect.assertions(1);
 
-        expect(inspect(Symbol('ab"c'))).toBe('Symbol(ab"c)');
+        expect(inspect(Symbol("ab\"c"))).toBe("Symbol(ab\"c)");
     });
 
     it("should inspect a Symbol with a description and unicode characters", () => {
         expect.assertions(1);
 
-        expect(inspect(Symbol("\u001B"))).toBe("Symbol(\\u001b)");
+        expect(inspect(Symbol("\u001B"))).toBe(String.raw`Symbol(\u001b)`);
     });
 
     it("should inspect an object with Symbol.toStringTag", () => {

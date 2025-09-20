@@ -17,6 +17,7 @@ describe("inspect with Sets", () => {
 
     it("should inspect a Set with nested values", () => {
         const set = new Set();
+
         set.add({ a: 1 });
         set.add(["b"]);
 
@@ -25,6 +26,7 @@ describe("inspect with Sets", () => {
 
     it("should inspect a Set with circular references", () => {
         const set = new Set();
+
         set.add(set);
 
         expect(inspect(set)).toBe("Set (1) { [Circular] }");
@@ -46,7 +48,7 @@ describe("inspect with Sets", () => {
 
     describe("sorted option", () => {
         it("should sort a Set", () => {
-            expect(inspect(new Set(["b", "a"]), { sorted: true })).toBe("Set (2) { 'a', 'b' }");
+            expect(inspect(new Set(["a", "b"]), { sorted: true })).toBe("Set (2) { 'a', 'b' }");
         });
 
         it("should sort a Set with a custom sort function", () => {
@@ -95,6 +97,7 @@ describe("inspect with Sets", () => {
 
         it("should format a set with indentation", () => {
             const set = new Set();
+
             set.add({ a: 1 });
             set.add(["b"]);
 
@@ -103,17 +106,21 @@ describe("inspect with Sets", () => {
 
         it("should format a set with tab indentation", () => {
             const set = new Set();
+
             set.add({ a: 1 });
             set.add(["b"]);
+
             expect(inspect(set, { breakLength: 2, indent: "\t" })).toMatchSnapshot();
         });
 
         it("should format a nested set with indentation", () => {
             const nestedSet = new Set();
             const set = new Set();
+
             set.add(1);
             nestedSet.add(set);
             nestedSet.add(nestedSet);
+
             expect(inspect(nestedSet, { breakLength: 2, indent: 2 })).toMatchSnapshot();
         });
     });

@@ -25,7 +25,7 @@ describe("inspect with Strings", () => {
         expect.assertions(1);
 
         expect(
-            inspect('ab"c', {
+            inspect("ab\"c", {
                 quoteStyle: "double",
             }),
         ).toBe(String.raw`"ab\"c"`);

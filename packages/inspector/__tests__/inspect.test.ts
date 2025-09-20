@@ -102,44 +102,47 @@ describe("inspect with Objects", () => {
         expect(inspect(object, { customInspect: true })).toBe("{ sub: { foo: 'bar' } }");
     });
 
-    it.skipIf(globalThis.window !== undefined)("should prioritize 'util.inspect.custom' symbol over 'inspect' method for custom inspection on node", async () => {
-        expect.assertions(4);
+    it.skipIf(globalThis.window !== undefined)(
+        "should prioritize 'util.inspect.custom' symbol over 'inspect' method for custom inspection on node",
+        async () => {
+            expect.assertions(4);
 
-        const utilityInspect = await import("node:util").then((m) => m.inspect);
+            const utilityInspect = await import("node:util").then((m) => m.inspect);
 
-        const object = {
-            inspect: function stringInspect() {
-                return "string";
-            },
-        };
+            const object = {
+                inspect: function stringInspect() {
+                    return "string";
+                },
+            };
 
-        object[utilityInspect.custom] = function custom() {
-            return "symbol";
-        };
+            object[utilityInspect.custom] = function custom() {
+                return "symbol";
+            };
 
-        const symbolResult = "[ symbol, [] ]";
-        const stringResult = "[ string, [] ]";
-        const falseResult
-            = "[ { inspect: [Function: function stringInspect() {\n        return \"string\";\n      }], [Symbol(nodejs.util.inspect.custom)]: [Function: function custom() {\n      return \"symbol\";\n    }] }, [] ]";
+            const symbolResult = "[ symbol, [] ]";
+            const stringResult = "[ string, [] ]";
+            const falseResult
+                = "[ { inspect: [Function: function stringInspect() {\n        return \"string\";\n      }], [Symbol(nodejs.util.inspect.custom)]: [Function: function custom() {\n      return \"symbol\";\n    }] }, [] ]";
 
-        const symbolStringFallback = utilityInspect.custom ? symbolResult : stringResult;
+            const symbolStringFallback = utilityInspect.custom ? symbolResult : stringResult;
 
-        expect(inspect([object, []])).toBe(symbolStringFallback);
-        expect(inspect([object, []], { customInspect: true })).toBe(symbolStringFallback);
-        expect(inspect([object, []], { customInspect: false })).toBe(falseResult);
+            expect(inspect([object, []])).toBe(symbolStringFallback);
+            expect(inspect([object, []], { customInspect: true })).toBe(symbolStringFallback);
+            expect(inspect([object, []], { customInspect: false })).toBe(falseResult);
 
-        const object2 = {
-            inspect: function stringInspect() {
-                return "string";
-            },
-        };
+            const object2 = {
+                inspect: function stringInspect() {
+                    return "string";
+                },
+            };
 
-        object2[Symbol.for("nodejs.util.inspect.custom")] = function custom() {
-            return "symbol";
-        };
+            object2[Symbol.for("nodejs.util.inspect.custom")] = function custom() {
+                return "symbol";
+            };
 
-        expect(inspect([object2, []], { customInspect: false })).toBe(falseResult);
-    });
+            expect(inspect([object2, []], { customInspect: false })).toBe(falseResult);
+        },
+    );
 
     it("should respect the 'depth' option when inspecting nested objects", () => {
         expect.assertions(3);

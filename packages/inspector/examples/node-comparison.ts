@@ -107,7 +107,7 @@ const valuesToInspect = [
     (function () {
         // eslint-disable-next-line prefer-rest-params
         return arguments;
-    // @ts-expect-error - we are testing arguments
+        // @ts-expect-error - we are testing arguments
     })(1, 2, 3),
 
     // Boxed Primitives
@@ -152,37 +152,41 @@ for (const value of valuesToInspect) {
     console.log("-".repeat(80));
 
     console.log("node:util.inspect:");
-    console.log(utilityInspect(value, {
-        breakLength: 80,
-        colors: true,
-        compact: true,
-        customInspect: true,
-        // eslint-disable-next-line unicorn/no-null
-        depth: null,
-        getters: false,
-        // eslint-disable-next-line unicorn/no-null
-        maxArrayLength: null,
-        // eslint-disable-next-line unicorn/no-null
-        maxStringLength: null,
-        showHidden: true,
-        showProxy: true,
-        sorted: false,
-    }));
+    console.log(
+        utilityInspect(value, {
+            breakLength: 80,
+            colors: true,
+            compact: true,
+            customInspect: true,
+            // eslint-disable-next-line unicorn/no-null
+            depth: null,
+            getters: false,
+            // eslint-disable-next-line unicorn/no-null
+            maxArrayLength: null,
+            // eslint-disable-next-line unicorn/no-null
+            maxStringLength: null,
+            showHidden: true,
+            showProxy: true,
+            sorted: false,
+        }),
+    );
 
     console.log("-".repeat(80));
 
     console.log("@visulima/inspector:");
-    console.log(inspect(value, {
-        breakLength: 80,
-        compact: true,
-        customInspect: true,
-        depth: undefined,
-        getters: false,
-        maxArrayLength: undefined,
-        maxStringLength: undefined,
-        showHidden: true,
-        showProxy: true,
-        sorted: false,
-    }));
+    console.log(
+        inspect(value, {
+            breakLength: 80,
+            compact: true,
+            customInspect: true,
+            depth: undefined,
+            getters: false,
+            maxArrayLength: undefined,
+            maxStringLength: undefined,
+            showHidden: true,
+            showProxy: true,
+            sorted: false,
+        }),
+    );
     console.log("=".repeat(80), "\n");
 }

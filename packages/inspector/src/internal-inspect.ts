@@ -80,11 +80,11 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     WeakSet: (_value: WeakSet<any>, options: InternalOptions) => options.stylize("WeakSet{…}", "special"),
 } as const;
 
-const inspectCustom = (value: object, options: InternalOptions, type: string, inspectFn: typeof inspect): string | undefined => {
+const inspectCustom = (value: object, options: InternalOptions, type: string, inspectFunction_: InternalInspect): string | undefined => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (globalThis.window === undefined && typeof (value as any)[Symbol.for("nodejs.util.inspect.custom")] === "function") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type
-        return ((value as any)[Symbol.for("nodejs.util.inspect.custom")] as Function)(options.depth, options, inspectFn);
+        return ((value as any)[Symbol.for("nodejs.util.inspect.custom")] as Function)(options.depth, options, inspectFunction_);
     }
 
     if ("inspect" in value && typeof value.inspect === "function") {

@@ -11,8 +11,10 @@ const quoteComplexKey = (key: string, options: Options): string => {
         return stringifiedKey.replaceAll("\"", String.raw`\"`);
     }
 
-    // eslint-disable-next-line sonarjs/anchor-precedence
-    return stringifiedKey.replaceAll("'", String.raw`\'`).replaceAll(String.raw`\"`, "\"").replaceAll(/^"|"$/g, "'");
+    return stringifiedKey
+        .replaceAll("'", String.raw`\'`)
+        .replaceAll(String.raw`\"`, "\"")
+        .replaceAll(/^"|"$/g, "'");
 };
 
 const inspectProperty = ([key, value]: [unknown, unknown], object: unknown, options: Options, inspect: InternalInspect): string => {

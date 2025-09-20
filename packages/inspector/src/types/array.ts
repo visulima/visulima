@@ -13,7 +13,13 @@ const multiLineValues = (values: unknown[]): boolean => {
     return false;
 };
 
-const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options, inspect: InternalInspect, indent: Indent | undefined, depth: number): string => {
+const inspectArray: InspectType<unknown[]> = (
+    array: unknown[],
+    options: Options,
+    inspect: InternalInspect,
+    indent: Indent | undefined,
+    depth: number,
+): string => {
     // Object.keys will always output the Array indices first, so we can slice by
     // `array.length` to get non-index properties
     const nonIndexProperties = Object.keys(array).slice(array.length);

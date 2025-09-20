@@ -22,9 +22,7 @@ describe.each([Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray])("inspec
             expect(inspect(new TypedArray([1, 2, 3]), { maxStringLength: 40 })).toBe(`${TypedArray.name} (3) [ 1, 2, 3 ]`);
         });
 
-        it.each(
-            Array.from({ length: 20 }, (_, index) => index + 1).reverse(),
-        )("should truncate a TypedArray when maxStringLength is %s", (length) => {
+        it.each(Array.from({ length: 20 }, (_, index) => index + 1).reverse())("should truncate a TypedArray when maxStringLength is %s", (length) => {
             expect.assertions(1);
 
             expect(inspect(new TypedArray([1, 2, 3]), { maxStringLength: length })).toBe(`${TypedArray.name} (3) [ …(3) ]`);
