@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 
-import { parseStacktrace, type ErrorLocation } from "@visulima/error";
+import type { ErrorLocation } from "@visulima/error";
+import { parseStacktrace } from "@visulima/error";
 import type { ViteDevServer } from "vite";
 
 const MDX_FILE_PATTERN = /\.mdx$/i;

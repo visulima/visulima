@@ -126,8 +126,9 @@ const urlToAbsolutePath = (url: string, rootPath: string): string => {
  * @returns The formatted path with location information
  */
 const formatAbsolutePath = (absolutePath: string, line?: string, col?: string): string => {
-    if (!line)
+    if (!line) {
         return absolutePath;
+    }
 
     const lineCol = col ? `${COLON_SEPARATOR}${col}` : "";
 
@@ -192,8 +193,9 @@ export const extractErrors = (error: any): Error[] => {
  * @returns Stack trace with absolute paths
  */
 export const absolutizeStackUrls = (stack: string, rootPath: string): string => {
-    if (!stack)
+    if (!stack) {
         return stack;
+    }
 
     return String(stack).replaceAll(HTTP_URL_PATTERN, (url) => absolutizeUrl(url, rootPath));
 };

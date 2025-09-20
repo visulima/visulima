@@ -51,7 +51,11 @@ const checkTemplateLiteralMatch = (line: string, targetMessage: string): boolean
 
     for (const match of matches) {
         const templateContent = match[1];
-        if (!templateContent) continue;
+
+        if (!templateContent) {
+            continue;
+        }
+
         const staticParts = templateContent.split(VARIABLE_PLACEHOLDER_REGEX);
 
         // Check if all static parts are present in the target message
@@ -62,7 +66,10 @@ const checkTemplateLiteralMatch = (line: string, targetMessage: string): boolean
         }
 
         // Try regex matching for dynamic content
-        if (!templateContent) continue;
+        if (!templateContent) {
+            continue;
+        }
+
         const pattern = templateContent.replaceAll(VARIABLE_PLACEHOLDER_REGEX, "(.+?)");
 
         try {
@@ -97,8 +104,9 @@ const findDynamicErrorMatch = (errorMessage: string): RegExpMatchArray | null =>
     for (const pattern of DYNAMIC_ERROR_PATTERNS) {
         const match = errorMessage.match(pattern);
 
-        if (match)
+        if (match) {
             return match;
+        }
     }
 
     return null;
@@ -116,8 +124,10 @@ const findBestErrorConstructor = (line: string) => {
     for (const pattern of ERROR_CONSTRUCTOR_PATTERNS) {
         const match = line.match(pattern);
 
-        if (match // Prefer "throw new" over just "new" for better accuracy
-            && (!bestMatch || (pattern.source.includes("throw") && !bestPattern?.source.includes("throw")))) {
+        if (
+            match // Prefer "throw new" over just "new" for better accuracy
+            && (!bestMatch || (pattern.source.includes("throw") && !bestPattern?.source.includes("throw")))
+        ) {
             bestMatch = match;
             bestPattern = pattern;
         }
@@ -173,8 +183,9 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
         let foundCount = 0;
 
         for (const [lineIndex, line] of lines.entries()) {
-            if (!line)
+            if (!line) {
                 continue;
+            }
 
             const hasErrorMessage = line.includes(errorMessage) || checkTemplateLiteralMatch(line, errorMessage);
             const hasErrorConstructor = ERROR_CONSTRUCTOR_PATTERNS.some((pattern) => pattern.test(line));
@@ -201,8 +212,9 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
     // First pass: Look for lines with both error message and constructor
     const constructorResult = processErrorConstructorLines(lines, errorMessage, occurrenceIndex);
 
-    if (constructorResult)
+    if (constructorResult) {
         return constructorResult;
+    }
 
     /**
      * Adds specific patterns based on dynamic error match.
@@ -213,39 +225,38 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
     const addDynamicPatterns = (dynamicMatch: RegExpMatchArray, errorMessage: string, errorPatterns: string[]) => {
         if (dynamicMatch[0].includes("Failed to resolve import")) {
             const importPath = dynamicMatch[1];
-            if (!importPath) return;
+
+            if (!importPath) {
+                return;
+            }
+
             const escapedPath = escapeRegex(importPath);
 
-            errorPatterns.unshift(
-                `import.*from ["']${escapedPath}["']`,
-                `import.*["']${escapedPath}["']`,
-                importPath,
-            );
+            errorPatterns.unshift(`import.*from ["']${escapedPath}["']`, `import.*["']${escapedPath}["']`, importPath);
         } else if (dynamicMatch[0].includes("is not defined")) {
             const variableName = dynamicMatch[1];
-            if (!variableName) return;
 
-            errorPatterns.unshift(
-                variableName,
-                `{${variableName}}`,
-                `src={${variableName}}`,
-                `${variableName}.`,
-                `=${variableName}`,
-            );
+            if (!variableName) {
+                return;
+            }
+
+            errorPatterns.unshift(variableName, `{${variableName}}`, `src={${variableName}}`, `${variableName}.`, `=${variableName}`);
         } else if (dynamicMatch[0].includes("Cannot read properties")) {
             const objectName = dynamicMatch[1];
             const propertyName = dynamicMatch[2];
-            if (!propertyName) return;
 
-            errorPatterns.unshift(
-                propertyName,
-                `${objectName}.${propertyName}`,
-                `${objectName}?.${propertyName}`,
-                `${objectName}[${propertyName}]`,
-            );
+            if (!propertyName) {
+                return;
+            }
+
+            errorPatterns.unshift(propertyName, `${objectName}.${propertyName}`, `${objectName}?.${propertyName}`, `${objectName}[${propertyName}]`);
         } else {
             const baseMessage = dynamicMatch[1];
-            if (!baseMessage) return;
+
+            if (!baseMessage) {
+                return;
+            }
+
             const escapedMessage = escapeRegex(errorMessage);
             const escapedBase = escapeRegex(baseMessage);
 
@@ -282,8 +293,9 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
         let foundCount = 0;
 
         for (const [lineIndex, line] of lines.entries()) {
-            if (!line || !checkTemplateLiteralMatch(line, errorMessage))
+            if (!line || !checkTemplateLiteralMatch(line, errorMessage)) {
                 continue;
+            }
 
             const { bestMatch, bestPattern } = findBestErrorConstructor(line);
 
@@ -315,8 +327,9 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
         let foundCount = 0;
 
         for (const [lineIndex, line] of lines.entries()) {
-            if (!line)
+            if (!line) {
                 continue;
+            }
 
             let bestPatternIndex = -1;
             let bestPattern: string | null = null;
@@ -355,8 +368,9 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
      * @returns The calculated column position
      */
     const calculatePatternColumn = (patternIndex: number, pattern: string, line: string, dynamicMatch: RegExpMatchArray | null): number => {
-        if (!dynamicMatch)
+        if (!dynamicMatch) {
             return patternIndex + 1;
+        }
 
         if (dynamicMatch[0].includes("Failed to resolve import")) {
             const importPath = dynamicMatch[1];
@@ -369,8 +383,9 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
         } else if (dynamicMatch[0].includes("is not defined")) {
             const variableName = dynamicMatch[1];
 
-            if (variableName && pattern === variableName)
+            if (variableName && pattern === variableName) {
                 return patternIndex + 1;
+            }
 
             if (variableName && pattern.includes(variableName)) {
                 return patternIndex + pattern.indexOf(variableName) + 1;
@@ -391,8 +406,9 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
     // Second pass: Look for template literal matches
     const templateResult = processTemplateLiteralLines(lines, errorMessage, occurrenceIndex);
 
-    if (templateResult)
+    if (templateResult) {
         return templateResult;
+    }
 
     // Third pass: Look for general pattern matches
     return processPatternLines(lines, errorPatterns, dynamicMatch, occurrenceIndex);

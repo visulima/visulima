@@ -25,8 +25,8 @@
 
 ---
 
-| Light Mode                       | Dark Mode                      | Solution Mode              |
-| -------------------------------- | ------------------------------ | -------------------------------- 
+| Light Mode                       | Dark Mode                      | Solution Mode                         |
+| -------------------------------- | ------------------------------ | ------------------------------------- |
 | ![light](./__assets__/light.png) | ![dark](./__assets__/dark.png) | ![light](./__assets__/light-hint.png) |
 
 ## Features
@@ -34,7 +34,6 @@
 - **Enhanced Error Display** - Rich, interactive error overlays with syntax highlighting
 - **Source Map Integration** - Shows original `.tsx`/`.ts` files instead of compiled paths
 - **Cause Chain Navigation** - Navigate through multi-level error chains with original source locations
-- **Cross-browser Support** - Works seamlessly in Chromium, Firefox, and WebKit
 - **Beautiful UI** - Modern, accessible interface with light/dark theme support
 - **Intelligent Solutions** - AI-powered error analysis and suggested fixes
 - **Real-time Updates** - Hot Module Replacement (HMR) integration for instant error feedback
@@ -93,29 +92,32 @@ export default defineConfig({
 
 #### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `logClientRuntimeError` | `boolean` | `true` | Enable/disable client-side runtime error logging and overlay display |
-| `reactPluginName` | `string` | `undefined` | Custom React plugin name for detection (useful for custom React plugins) |
-| `solutionFinders` | `SolutionFinder[]` | `[]` | Array of custom solution finder functions for enhanced error analysis |
+| Option                  | Type               | Default     | Description                                                              |
+| ----------------------- | ------------------ | ----------- | ------------------------------------------------------------------------ |
+| `logClientRuntimeError` | `boolean`          | `true`      | Enable/disable client-side runtime error logging and overlay display     |
+| `reactPluginName`       | `string`           | `undefined` | Custom React plugin name for detection (useful for custom React plugins) |
+| `solutionFinders`       | `SolutionFinder[]` | `[]`        | Array of custom solution finder functions for enhanced error analysis    |
 
 ## Error Handling
 
 The plugin automatically handles various types of errors:
 
 ### Client-Side Errors
+
 - Runtime JavaScript errors
 - Unhandled promise rejections
 - React component errors (when React plugin is detected)
 - Async context errors
 
 ### Server-Side Errors (SSR)
+
 - Build-time errors during SSR
 - Import resolution failures
 - Module loading errors
 - Plugin-specific errors
 
 ### Special Cases
+
 - **Vue SFC Compilation Errors** - Enhanced parsing for `.vue` files
 - **Import Resolution Errors** - Smart suggestions for missing modules
 - **TypeScript Errors** - Source map integration for `.tsx`/`.ts` files
@@ -194,7 +196,6 @@ The error overlay uses a custom design system with CSS custom properties:
 --ono-v-surface: #0d1117;
 --ono-v-text: #c9d1d9;
 ```
-
 
 ## Supported Node.js Versions
 

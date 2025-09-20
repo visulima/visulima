@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+
 import { waitForErrorTestPage } from "./utils/test-helpers";
 
 test.describe("Cause Chain Error URL Consistency", () => {
@@ -22,6 +23,7 @@ test.describe("Cause Chain Error URL Consistency", () => {
 
             // Check if there's content in the overlay
             const overlayContent = await overlay.textContent();
+
             expect(overlayContent?.length).toBeGreaterThan(0);
 
             // Check file link exists and has proper format
@@ -65,6 +67,7 @@ test.describe("Cause Chain Error URL Consistency", () => {
             } else {
                 // If no compiled button, just verify original view has content
                 const overlayContent = await page.locator("#__v_o__overlay").textContent();
+
                 expect(overlayContent?.length).toBeGreaterThan(0);
             }
         });

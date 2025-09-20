@@ -14,8 +14,9 @@ export interface ESBuildMessage extends Error {
  * @returns True if the array contains ESBuild errors
  */
 export const isESBuildErrorArray = (errors: any[]): boolean => {
-    if (!Array.isArray(errors) || errors.length === 0)
+    if (!Array.isArray(errors) || errors.length === 0) {
         return false;
+    }
 
     return errors.some((error: any) => error && typeof error === "object" && (error.location || error.pluginName || error.text));
 };

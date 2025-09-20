@@ -10,10 +10,10 @@ import findLanguageBasedOnExtension from "../../../shared/utils/find-language-ba
 import { DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
 import { patchOverlay } from "./overlay/patch-overlay";
 import type { DevelopmentLogger, ExtendedError, RawErrorData, RecentErrorTracker, VisulimaViteOverlayErrorPayload, ViteErrorData } from "./types";
+import createViteSolutionFinder from "./utils/create-vite-solution-finder";
 import buildExtendedErrorData from "./utils/error-processing";
 import enhanceViteSsrError from "./utils/ssr-error-enhancer";
-import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace-utils";
-import createViteSolutionFinder from "./utils/create-vite-solution-finder";
+import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace";
 
 /**
  * Logs an error using the Vite dev server's logger with a prefix.
@@ -398,6 +398,32 @@ async function sendError(error, loc) {
     });
 }
 
+
+
+let stackTraceRegistered = false;
+
+const MAX_STACK_LENGTH = 50;
+
+/**
+ * Registers the stack trace limit for better error capturing.
+ * @param {number} limit - The stack trace limit to register.
+ */
+// eslint-disable-next-line func-style
+function registerStackTraceLimit(limit = MAX_STACK_LENGTH) {
+    if (stackTraceRegistered) {
+        return;
+    }
+
+    try {
+        Error.stackTraceLimit = limit;
+        stackTraceRegistered = true;
+    } catch {
+        // Not all browsers support this so we don't care if it errors
+    }
+}
+
+registerStackTraceLimit();
+
 window.addEventListener("error", function (evt) {
     sendError(evt.error, { filename: evt.filename, lineno: evt.lineno, colno: evt.colno });
 });
@@ -700,7 +726,15 @@ const errorOverlayPlugin = (options: { logClientRuntimeError?: boolean; reactPlu
 
             setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? []);
 
-            setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? [], options?.logClientRuntimeError ?? true);
+            setupHMRHandler(
+                server,
+                developmentLogger,
+                shouldSkip,
+                recentErrors,
+                rootPath,
+                options?.solutionFinders ?? [],
+                options?.logClientRuntimeError ?? true,
+            );
 
             const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
 
