@@ -1,0 +1,273 @@
+@import "tailwindcss" source("../../../");
+
+@source "../../../src/overlay/client/**/*";
+
+/* Plugins */
+@plugin '@tailwindcss/typography';
+@plugin '@tailwindcss/forms';
+
+/* workaround for tailwindcss shadowdom support @see https://github.com/tailwindlabs/tailwindcss/issues/15005 */
+:host {
+    --tw-divide-y-reverse: 0;
+    --tw-border-style: solid;
+    --tw-font-weight: initial;
+    --tw-tracking: initial;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    --tw-translate-z: 0;
+    --tw-rotate-x: rotateX(0);
+    --tw-rotate-y: rotateY(0);
+    --tw-rotate-z: rotateZ(0);
+    --tw-skew-x: skewX(0);
+    --tw-skew-y: skewY(0);
+    --tw-space-x-reverse: 0;
+    --tw-gradient-position: initial;
+    --tw-gradient-from: #0000;
+    --tw-gradient-via: #0000;
+    --tw-gradient-to: #0000;
+    --tw-gradient-stops: initial;
+    --tw-gradient-via-stops: initial;
+    --tw-gradient-from-position: 0%;
+    --tw-gradient-via-position: 50%;
+    --tw-gradient-to-position: 100%;
+    --tw-shadow: 0 0 #0000;
+    --tw-shadow-color: initial;
+    --tw-inset-shadow: 0 0 #0000;
+    --tw-inset-shadow-color: initial;
+    --tw-ring-color: initial;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-inset-ring-color: initial;
+    --tw-inset-ring-shadow: 0 0 #0000;
+    --tw-ring-inset: initial;
+    --tw-ring-offset-width: 0px;
+    --tw-ring-offset-color: #fff;
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-blur: initial;
+    --tw-brightness: initial;
+    --tw-contrast: initial: ;
+}
+
+/* ono Theme Color Variables - Available for use in Tailwind classes */
+:host {
+    --ono-v-white-smoke: #f5f5f5;
+    --ono-v-red-orange: #ff4628;
+    --ono-v-charcoal-black: #202020;
+
+    /* Semantic tokens for a cleaner, modern UI */
+    --ono-v-bg: var(--ono-v-white-smoke);
+    --ono-v-surface: #ffffff;
+    --ono-v-surface-muted: #fafafa;
+    --ono-v-border: rgba(185, 200, 215, 0.5);
+    --ono-v-hover-overlay: rgba(32, 32, 32, 0.05);
+
+    --ono-v-success: #2ea043;
+    --ono-v-success-bg: rgb(214, 238, 209);
+    /* Neutral/chip tokens */
+    --ono-v-neutral: #6e7681;
+    --ono-v-neutral-bg: rgba(110, 118, 129, 0.18);
+    --ono-v-chip-bg: rgba(110, 118, 129, 0.14);
+    --ono-v-chip-text: var(--ono-v-text);
+
+    --ono-v-radius-md: 0.5rem;
+    --ono-v-radius-lg: 0.75rem;
+    --ono-v-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02);
+    --ono-v-elevation-2: 0 10px 25px -5px rgba(32, 32, 32, 0.1), 0 8px 10px -6px rgba(32, 32, 32, 0.1);
+
+    /* Accessible text/link tokens */
+    --ono-v-text: #111827; /* gray-900 */
+    --ono-v-text-muted: #374151; /* gray-700 */
+    --ono-v-link: #c4311d; /* slightly darker red-orange for contrast */
+    --ono-v-muted-on-surface: #374151; /* alias for convenience */
+    --ono-v-on-accent: #ffffff; /* text on red-orange */
+    --ono-v-dialog-border-width: 1px;
+    --ono-v-dialog-radius: 12px;
+    --ono-v-dialog-max-width: 960px;
+    --ono-v-dialog-row-padding: 16px;
+    --ono-v-dialog-padding: 12px;
+    --ono-v-dialog-notch-height: 42px;
+}
+
+/* Dark mode semantic mapping */
+.dark {
+    --ono-v-bg: #161b22;
+    --ono-v-surface: #0d1117;
+    --ono-v-surface-muted: #0f141b;
+    --ono-v-border: rgba(48, 54, 61, 0.6);
+    --ono-v-text: #c9d1d9; /* github dark fg */
+    --ono-v-text-muted: #8b949e; /* github dark muted fg */
+    --ono-v-link: #ff6a52; /* keep ono accent */
+    --ono-v-muted-on-surface: #8b949e;
+    --ono-v-hover-overlay: rgba(240, 246, 252, 0.06);
+    --ono-v-on-accent: #ffffff;
+
+    --ono-v-success: #2ea043;
+    --ono-v-success-bg: rgba(46, 160, 67, 0.2);
+    /* Neutral/chip tokens for dark */
+    --ono-v-neutral: #6e7681;
+    --ono-v-neutral-bg: rgba(110, 118, 129, 0.25);
+    --ono-v-chip-bg: rgba(110, 118, 129, 0.2);
+    --ono-v-chip-text: var(--ono-v-text);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+@layer base {
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+
+    body {
+        background-color: var(--ono-v-bg);
+        color: var(--ono-v-text);
+    }
+    pre,
+    code {
+        color: var(--ono-v-text);
+    }
+    .text-muted {
+        color: var(--ono-v-text-muted);
+    }
+
+    a {
+        color: var(--ono-v-link);
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+
+    ::selection {
+        background: color-mix(in srgb, var(--ono-v-red-orange) 20%, transparent);
+    }
+
+    kbd {
+        background-color: var(--ono-v-chip-bg);
+        color: var(--ono-v-chip-text);
+        border-radius: 0.375rem;
+        padding: 0.125rem 0.375rem;
+        font:
+            0.75rem ui-monospace,
+            SFMono-Regular,
+            Menlo,
+            Monaco,
+            Consolas,
+            "Liberation Mono",
+            "Courier New",
+            monospace;
+    }
+
+    hr {
+        border-color: var(--ono-v-border);
+    }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Defaults hover styles on all devices */
+@custom-variant hover (&:hover);
+
+@media (min-width: 576px) {
+    :host {
+        --ono-v-dialog-max-width: 540px;
+    }
+}
+
+@media (min-width: 768px) {
+    :host {
+        --ono-v-dialog-max-width: 720px;
+    }
+}
+
+@media (min-width: 992px) {
+    :host {
+        --ono-v-dialog-max-width: 960px;
+    }
+}
+
+/* Consistent focus outline for interactive elements */
+button:focus-visible,
+[role="tab"]:focus-visible,
+summary:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[data-open-in-editor]:focus-visible,
+.js-clipboard:focus-visible {
+    outline: 2px solid var(--ono-v-red-orange);
+    outline-offset: 2px;
+}
+
+.lucide {
+    @apply size-4;
+}
+
+.dui {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    background-color: currentColor;
+    /* Explicit mask properties for broader browser support */
+    -webkit-mask-image: var(--icon);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-image: var(--icon);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+}
+
+/* Ensure hidden overrides .dui display */
+.dui.hidden {
+    display: none !important;
+}
+
+.shiki {
+    @apply max-w-full overflow-auto pb-4 break-words [&_pre]:max-w-full [&_pre]:overflow-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700;
+}
+
+.dark .shiki,
+.dark .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    /* Optional, if you also want font styles */
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+.dark [type="checkbox"]:checked,
+.dark [type="radio"]:checked {
+    background-color: currentColor;
+}
+
+.v-o-skeleton {
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 25%, transparent 50%, rgba(0, 0, 0, 0.08) 75%);
+    background-size: 200% 100%;
+}
+.dark .v-o-skeleton {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, transparent 50%, rgba(255, 255, 255, 0.1) 75%);
+}
+
+/* Accordion arrow animation */
+#__v_o__stacktrace summary svg {
+    transition: transform 0.2s ease;
+}
+#__v_o__stacktrace[open] summary svg {
+    transform: rotate(90deg);
+}
+
+/* Prevent background scrolling when overlay is open */
+:has(#__v_o__root) {
+    overflow: hidden;
+}

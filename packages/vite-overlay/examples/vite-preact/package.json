@@ -1,0 +1,20 @@
+{
+    "name": "vite_overlay_vite-preact",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc -b && vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "preact": "^10.27.0"
+    },
+    "devDependencies": {
+        "@preact/preset-vite": "^2.10.2",
+        "@visulima/vite-overlay": "workspace:*",
+        "typescript": "~5.8.3",
+        "vite": "^7.1.2"
+    }
+}

@@ -21,10 +21,10 @@ const runSolutionFinders = async (error: Error, solutionFinders: SolutionFinder[
     const firstTrace = (parseStacktrace(error, { frameLimit: 1 })[0] ?? {}) as { file?: string; line?: number };
 
     for await (const handler of candidates.sort((a, b) => a.priority - b.priority)) {
-        const { handle, name } = handler;
+        const { handle, name: _name } = handler;
 
         if (debug) {
-            console.debug(`Running solution finder: ${name}`);
+            // Debug: Running solution finder: ${name}
         }
 
         if (typeof handle !== "function") {

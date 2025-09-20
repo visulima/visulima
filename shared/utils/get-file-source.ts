@@ -23,8 +23,6 @@ const getFileSource = async (file: string): Promise<string | undefined> => {
 
             return source;
         } catch (error) {
-            console.log(error);
-
             return undefined;
         }
     }
@@ -40,8 +38,6 @@ const getFileSource = async (file: string): Promise<string | undefined> => {
 
         return source;
     } catch (error) {
-        console.log(error);
-
         return undefined;
     }
 };
