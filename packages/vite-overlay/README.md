@@ -59,7 +59,7 @@ Add the plugin to your Vite configuration:
 
 ```typescript
 import { defineConfig } from "vite";
-import { errorOverlay } from "@visulima/vite-overlay";
+import errorOverlay from "@visulima/vite-overlay";
 
 export default defineConfig({
     plugins: [errorOverlay()],
@@ -72,7 +72,7 @@ The plugin accepts an optional configuration object:
 
 ```typescript
 import { defineConfig } from "vite";
-import { errorOverlay } from "@visulima/vite-overlay";
+import errorOverlay from "@visulima/vite-overlay";
 
 export default defineConfig({
     plugins: [
@@ -139,7 +139,7 @@ You can extend the plugin with custom solution finders:
 
 ```typescript
 import { defineConfig } from "vite";
-import { errorOverlay } from "@visulima/vite-overlay";
+import errorOverlay from "@visulima/vite-overlay";
 import type { SolutionFinder } from "@visulima/error/solution";
 
 const customSolutionFinder: SolutionFinder = {
