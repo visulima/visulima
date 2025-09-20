@@ -194,15 +194,7 @@ importers:
         version: 9.1.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(storybook@9.1.4(@testing-library/dom@10.4.1)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.2)
       '@storybook/react-vite':
         specifier: ^9.1.4
-<<<<<<< HEAD
-<<<<<<< HEAD
-        version: 9.1.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(rollup@4.50.2)(storybook@9.1.4(@testing-library/dom@10.4.0)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
-        version: 9.1.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(rollup@4.50.0)(storybook@9.1.4(@testing-library/dom@10.4.1)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> bfdcd4e4 (feat(vite-overlay): update dependencies and enhance error handling utilities)
-=======
         version: 9.1.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(rollup@4.50.2)(storybook@9.1.4(@testing-library/dom@10.4.1)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
       '@storybook/test-runner':
         specifier: ^0.23.0
         version: 0.23.0(@types/node@24.3.1)(storybook@9.1.4(@testing-library/dom@10.4.1)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))
@@ -538,7 +530,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -953,7 +945,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -1219,7 +1211,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -1334,7 +1326,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -1469,7 +1461,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -1715,21 +1707,8 @@ importers:
         specifier: 24.5.2
         version: 24.5.2
       '@visulima/packem':
-<<<<<<< HEAD
         specifier: 2.0.0-alpha.20
-        version: 2.0.0-alpha.20(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.6.7(@swc/helpers@0.5.15))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)
-=======
-        specifier: 2.0.0-alpha.19
-<<<<<<< HEAD
-<<<<<<< HEAD
-        version: 2.0.0-alpha.19(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.6.7(@swc/helpers@0.5.15))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)
-=======
-        version: 2.0.0-alpha.19(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@22.15.27)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.9)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
-        version: 2.0.0-alpha.19(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
+        version: 2.0.0-alpha.20(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)
       '@vitest/coverage-v8':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
@@ -1808,7 +1787,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -1901,7 +1880,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -1989,7 +1968,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -2160,7 +2139,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -2284,7 +2263,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -2443,14 +2422,10 @@ importers:
         version: 2.2.0(eslint@9.28.0(jiti@2.5.1))
       playwright:
         specifier: ^1.52.0
-<<<<<<< HEAD
-        version: 1.52.0
+        version: 1.55.0
       publint:
         specifier: ^0.3.12
         version: 0.3.12
-=======
-        version: 1.55.0
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
       rimraf:
         specifier: 6.0.1
         version: 6.0.1
@@ -2502,7 +2477,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -2611,7 +2586,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -2711,7 +2686,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -2990,7 +2965,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -3122,7 +3097,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -3225,7 +3200,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -3376,7 +3351,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -3573,7 +3548,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -3707,7 +3682,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -4065,7 +4040,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.6.2)
@@ -4556,7 +4531,7 @@ importers:
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^6.2.0
-        version: 6.2.0(svelte@5.39.2)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
+        version: 6.2.0(svelte@5.39.3)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       '@tsconfig/svelte':
         specifier: ^5.0.5
         version: 5.0.5
@@ -4565,10 +4540,10 @@ importers:
         version: link:../..
       svelte:
         specifier: ^5.38.10
-        version: 5.39.2
+        version: 5.39.3
       svelte-check:
         specifier: ^4.3.1
-        version: 4.3.1(picomatch@4.0.3)(svelte@5.39.2)(typescript@5.9.2)
+        version: 4.3.1(picomatch@4.0.3)(svelte@5.39.3)(typescript@5.9.2)
       typescript:
         specifier: ~5.9.2
         version: 5.9.2
@@ -4583,13 +4558,13 @@ importers:
         version: 4.1.13(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       '@tanstack/react-router':
         specifier: ^1.131.44
-        version: 1.131.48(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 1.131.49(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tanstack/react-router-devtools':
         specifier: ^1.131.44
-        version: 1.131.48(@tanstack/react-router@1.131.48(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.131.48)(csstype@3.1.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(tiny-invariant@1.3.3)
+        version: 1.131.49(@tanstack/react-router@1.131.49(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.131.48)(csstype@3.1.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(tiny-invariant@1.3.3)
       '@tanstack/router-plugin':
         specifier: ^1.131.44
-        version: 1.131.48(@tanstack/react-router@1.131.48(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite-plugin-solid@2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(webpack@5.99.9(@swc/core@1.13.5))
+        version: 1.131.49(@tanstack/react-router@1.131.49(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite-plugin-solid@2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(webpack@5.99.9(@swc/core@1.13.5))
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -6995,12 +6970,6 @@ packages:
   '@napi-rs/wasm-runtime@0.2.4':
     resolution: {integrity: sha512-9zESzOO5aDByvhIAsOy9TbpZ0Ur2AJbUI7UT73kcUTS2mxAMHOBaa1st/jAymNoCtvrit99kkzT1FZuXVcgfIQ==}
 
-<<<<<<< HEAD
-  '@napi-rs/wasm-runtime@1.0.5':
-    resolution: {integrity: sha512-TBr9Cf9onSAS2LQ2+QHx6XcC6h9+RIzJgbqG3++9TUZSH204AwEy5jg3BTQ0VATsyoGj4ee49tN/y6rvaOOtcg==}
-
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
   '@napi-rs/wasm-runtime@1.0.5':
     resolution: {integrity: sha512-TBr9Cf9onSAS2LQ2+QHx6XcC6h9+RIzJgbqG3++9TUZSH204AwEy5jg3BTQ0VATsyoGj4ee49tN/y6rvaOOtcg==}
 
@@ -7777,20 +7746,11 @@ packages:
     cpu: [arm]
     os: [android]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-android-arm-eabi@11.8.2':
     resolution: {integrity: sha512-7hykBf8S24IRbO4ueulT9SfYQjTeSOOimKc/CQrWXIWQy1WTePXSNcPq2RkVHO7DdLM8p8X4DVPYy+850Bo93g==}
     cpu: [arm]
     os: [android]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-android-arm64@11.6.1':
     resolution: {integrity: sha512-xjL/FKKc5p8JkFWiH7pJWSzsewif3fRf1rw2qiRxRvq1uIa6l7Zoa14Zq2TNWEsqDjdeOrlJtfWiPNRnevK0oQ==}
     cpu: [arm64]
@@ -7806,20 +7766,11 @@ packages:
     cpu: [arm64]
     os: [android]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-android-arm64@11.8.2':
     resolution: {integrity: sha512-y41bxENMjlFuLSLCPWd4A+1PR7T5rU9+e7+4alje3sHgrpRmS3hIU+b1Cvck4qmcUgd0I98NmYxRM65kXGEObQ==}
     cpu: [arm64]
     os: [android]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-darwin-arm64@11.0.0':
     resolution: {integrity: sha512-z6CnehLGNst2pCFz2noiUDnqH6k4dXwxoE8/xz9k4AxIGJohTWvD1CXThlHL+Y0z9mbne+mqz+F5Fet+/8VB1g==}
     cpu: [arm64]
@@ -7840,20 +7791,11 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-darwin-arm64@11.8.2':
     resolution: {integrity: sha512-P/Zobk9OwQAblAMeiVyOtuX2LjGN8oq5HonvN3mp9S6Kx1GKxREbf5qW+g24Rvhf5WS7et+EmopUGRHSdAItGQ==}
     cpu: [arm64]
     os: [darwin]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-darwin-arm64@4.2.0':
     resolution: {integrity: sha512-DP+KY4nXRJvL5XayKda0P7NCjcP1zZ5x6RZznMM/bMPCBrjcYNG4XKV9v/EbkSq3Et24mEJFYOM55WmPxtqf0w==}
     cpu: [arm64]
@@ -7879,20 +7821,11 @@ packages:
     cpu: [x64]
     os: [darwin]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-darwin-x64@11.8.2':
     resolution: {integrity: sha512-EMAQoO9uTiz2H0z71bVzTL77eoBAlN5+KD7HUc9ayYJ5TprU+Oeaml4y4fmsFyspSPN/vGJzEvOWl5GR0adwtw==}
     cpu: [x64]
     os: [darwin]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-darwin-x64@4.2.0':
     resolution: {integrity: sha512-k8wrYcZPE94Wq7QvLi7FVqdbnlg52L/J7dZOvdjmQaJN9zp2Gg/rhIXlXGf1yFqOC0NfiDIW0C4CpEat/zmw+Q==}
     cpu: [x64]
@@ -7918,20 +7851,11 @@ packages:
     cpu: [x64]
     os: [freebsd]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-freebsd-x64@11.8.2':
     resolution: {integrity: sha512-Fzeupf4tH9woMm6O/pirEtuzO5docwTrs747Nxqh33OSkz7GbrevyDpx1Q1pc2l3JA2BlDX4zm18tW5ys65bjA==}
     cpu: [x64]
     os: [freebsd]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-freebsd-x64@4.2.0':
     resolution: {integrity: sha512-ozYwrwsJMBPCF6PEvO4UeGcV1klyV3raVMoZeGPElF0QQpWTiLiOc1CEN3U/H82ZVYWLMDLNPTmTOdsc3CELqA==}
     cpu: [x64]
@@ -7957,20 +7881,11 @@ packages:
     cpu: [arm]
     os: [linux]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm-gnueabihf@11.8.2':
     resolution: {integrity: sha512-r9IiPTwc5STC2JahU/rfkbO2BE14MqAVmFbtF7uW7KFaZX/lUnFltkQ5jpwAgKqcef5aIZTJI95qJ03XZw08Rg==}
     cpu: [arm]
     os: [linux]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm-gnueabihf@4.2.0':
     resolution: {integrity: sha512-3LjgnQBIrQywemSbVJvjCP+X6kcmChF1NRytgccbVCtOFocNh8JWtykdUnAbeJRY8SeM49QP0WtAPlEEdHMNTQ==}
     cpu: [arm]
@@ -7991,20 +7906,11 @@ packages:
     cpu: [arm]
     os: [linux]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm-musleabihf@11.8.2':
     resolution: {integrity: sha512-Q5D8FbxOyQYcWn5s9yv+DyFvcMSUXE87hmL9WG6ICdNZiMUA8DmIbzK1xEnOtDjorEFU44bwH3I9SnqL1kyOsg==}
     cpu: [arm]
     os: [linux]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm64-gnu@11.0.0':
     resolution: {integrity: sha512-DcWjQ5y87FjO0Qq2VFQl/VJ8VZOBm+ptF1aTlu4r8g13A8tgwuwkIAa+ppzakO0UlTcB7pctue/bR35nbh8B9A==}
     cpu: [arm64]
@@ -8025,20 +7931,11 @@ packages:
     cpu: [arm64]
     os: [linux]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm64-gnu@11.8.2':
     resolution: {integrity: sha512-8g2Y72gavZ8fesZD22cKo0Z8g8epynwShu7M+wpAoOq432IGUyUxPUKB2/nvyogPToaAlb1OsRiX/za8W4h8Aw==}
     cpu: [arm64]
     os: [linux]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm64-gnu@4.2.0':
     resolution: {integrity: sha512-mMB1AvqzTH25rbUo1eRfvFzNqBopX6aRlDmO1fIVVzIWi6YJNKckxbkGaatez4hH/n86IR6aEdZFM3qBUjn3Tg==}
     cpu: [arm64]
@@ -8064,20 +7961,11 @@ packages:
     cpu: [arm64]
     os: [linux]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm64-musl@11.8.2':
     resolution: {integrity: sha512-N3BPWnIDRmHn/xPDZGKnzFwWxwH1hvs3aVnw4jvMAYarPNDZfbAY+fjHSIwkypV+ozMoJ5lK5PzRO5BOtEx2oQ==}
     cpu: [arm64]
     os: [linux]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm64-musl@4.2.0':
     resolution: {integrity: sha512-9oPBU8Yb35z15/14LzALn/8rRwwrtfe19l25N1MRZVSONGiOwfzWNqDNjWiDdyW+EUt/hlylmFOItZmreL6iIw==}
     cpu: [arm64]
@@ -8098,20 +7986,11 @@ packages:
     cpu: [ppc64]
     os: [linux]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-ppc64-gnu@11.8.2':
     resolution: {integrity: sha512-AXW2AyjENmzNuZD3Z2TO1QWoZzfULWR1otDzw/+MAVMRXBy3W50XxDqNAflRiLB4o0aI0oDTwMfeyuhVv9Ur8Q==}
     cpu: [ppc64]
     os: [linux]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-riscv64-gnu@11.0.0':
     resolution: {integrity: sha512-eZAWAFQBVqFN0IE5l3JwUm+t/AmPNv8qis8mI0q1bXAxXdSLxISSpvhAok+TFcCpnU2+JicvRU7XZaQZ4aJGMA==}
     cpu: [riscv64]
@@ -8132,20 +8011,11 @@ packages:
     cpu: [riscv64]
     os: [linux]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-riscv64-gnu@11.8.2':
     resolution: {integrity: sha512-oX+qxJdqOfrJUkGWmcNpu7wiFs6E7KH6hqUORkMAgl4yW+LZxPTz5P4DHvTqTFMywbs9hXVu2KQrdD8ROrdhMQ==}
     cpu: [riscv64]
     os: [linux]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-riscv64-musl@11.6.1':
     resolution: {integrity: sha512-ODJOJng6f3QxpAXhLel3kyWs8rPsJeo9XIZHzA7p//e+5kLMDU7bTVk4eZnUHuxsqsB8MEvPCicJkKCEuur5Ag==}
     cpu: [riscv64]
@@ -8161,20 +8031,11 @@ packages:
     cpu: [riscv64]
     os: [linux]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-riscv64-musl@11.8.2':
     resolution: {integrity: sha512-TG7LpxXjqlpD1aWnAXw6vMgY74KNV92exPixzEj4AKm4LdGsfnSWYTTJcTQ7deFMYxvBGrZ+qEy8DjGx+5w9GQ==}
     cpu: [riscv64]
     os: [linux]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-s390x-gnu@11.0.0':
     resolution: {integrity: sha512-sqcZRzhUmn2If7KYHDQKJ4GfH7cQPZSeNUrSyRdSnc6NjgH5EyxsDZdj4OXm7OtfRUpO1jdB5fEU1seBDmZkGQ==}
     cpu: [s390x]
@@ -8195,20 +8056,11 @@ packages:
     cpu: [s390x]
     os: [linux]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-s390x-gnu@11.8.2':
     resolution: {integrity: sha512-1PpXMq0KMD3CQPn3v/UqU4NM2JFjry+mLIH1d3iNVL2vlwRt9lxRfpXTiyiFJrtroUIyeKhw0QbHbF2UfnZVKQ==}
     cpu: [s390x]
     os: [linux]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-x64-gnu@11.0.0':
     resolution: {integrity: sha512-WQh9d49ouC581egTEgSzCQD+MeaB/G3uWukuG/XG/njgZyfobNasWgyBrWvlBVbsuc3FQ3MdbLKTQc4+TdgoBw==}
     cpu: [x64]
@@ -8229,20 +8081,11 @@ packages:
     cpu: [x64]
     os: [linux]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-x64-gnu@11.8.2':
     resolution: {integrity: sha512-V1iYhEDbjQzj+o7JgTYVllRgNZ56Tjw0rPBWw03KJQ8Nphy00Vf7AySf22vV0K/93V1lPCgOSbI5/iunRnIfAw==}
     cpu: [x64]
     os: [linux]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-x64-gnu@4.2.0':
     resolution: {integrity: sha512-8wU4fwHb0b45i0qMBJ24UYBEtaLyvYWUOqVVCn0SpQZ1mhWWC8dvD6+zIVAKRVex/cKdgzi3imXoKGIDqVEu9w==}
     cpu: [x64]
@@ -8268,20 +8111,11 @@ packages:
     cpu: [x64]
     os: [linux]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-x64-musl@11.8.2':
     resolution: {integrity: sha512-2hYNXEZSUM7qLEk4uuY3GmMqLU+860v+8PzbloVvRRjTWtHsLZyB5w+5p2gel38eaTcSYfZ2zvp3xcSpKDAbaw==}
     cpu: [x64]
     os: [linux]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-x64-musl@4.2.0':
     resolution: {integrity: sha512-5CS2wlGxzESPJCj4NlNGr73QCku75VpGtkwNp8qJF4hLELKAzkoqIB0eBbcvNPg8m2rB7YeXb1u+puGUKXDhNQ==}
     cpu: [x64]
@@ -8307,20 +8141,11 @@ packages:
     engines: {node: '>=14.0.0'}
     cpu: [wasm32]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-wasm32-wasi@11.8.2':
     resolution: {integrity: sha512-TjFqB+1siSqhd+S64Hf2qbxqWqtFIlld4DDEVotxOjj5//rX/6uwAL1HWnUHSNIni+wpcyQoXPhO3fBgppCvuA==}
     engines: {node: '>=14.0.0'}
     cpu: [wasm32]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-wasm32-wasi@4.2.0':
     resolution: {integrity: sha512-VOLpvmVAQZjvj/7Et/gYzW6yBqL9VKjLWOGaFiQ7cvTpY9R9d/1mrNKEuP3beDHF2si2fM5f2pl9bL+N4tvwiA==}
     engines: {node: '>=14.0.0'}
@@ -8346,20 +8171,11 @@ packages:
     cpu: [arm64]
     os: [win32]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-win32-arm64-msvc@11.8.2':
     resolution: {integrity: sha512-fs0X6RcAC/khWbXIhPaYQjFHkrFVUtC2IOw1QEx2unRoe6M11tlYbY9NHr3VFBC3nwVpodX+b14A7jGMkAQK8A==}
     cpu: [arm64]
     os: [win32]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-win32-arm64-msvc@4.2.0':
     resolution: {integrity: sha512-8tPj93hd1H5vXMtud1jN3C+prLZnvNzGw+BuyMer1+Z6RCQZHqn0XrfCalcuDOggKUYFagcKDdpdhv/CSW2/ZQ==}
     cpu: [arm64]
@@ -8380,20 +8196,11 @@ packages:
     cpu: [ia32]
     os: [win32]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-win32-ia32-msvc@11.8.2':
     resolution: {integrity: sha512-7oEl1ThswVePprRQFc3tzW9IZgVi5xaus/KP3k56eKi2tYpAM0hBvehD8WBsmpgBEb7pe2pI08h9OZveAddt3Q==}
     cpu: [ia32]
     os: [win32]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-win32-x64-msvc@11.0.0':
     resolution: {integrity: sha512-MQOHEcEPOFH1frJogqWGbfUityamKj/BLokDylguWzXOX72GZq/DRrcRB0rCztc+YlWsXuX6gOi1YO6gOS/zoA==}
     cpu: [x64]
@@ -8414,20 +8221,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-win32-x64-msvc@11.8.2':
     resolution: {integrity: sha512-MngRjE/gpQpg3QcnWRqxX5Nbr/vZJSG7oxhXeHUeOhdFgg+0xCuGpDtwqFmGGVKnd6FQg0gKVo1MqDAERLkEPA==}
     cpu: [x64]
     os: [win32]
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-win32-x64-msvc@4.2.0':
     resolution: {integrity: sha512-of3dYwB4RN825qq9kBu/79QPVXDZFb5S/opLtJScLqyRhI6owkFWV4P9VmFih8dfBh/7SImdvt/B4HQTF1fthg==}
     cpu: [x64]
@@ -10689,23 +10487,23 @@ packages:
     resolution: {integrity: sha512-cs1WKawpXIe+vSTeiZUuSBy8JFjEuDgdMKZFRLKwQysKo8y2q6Q1HvS74Yw+m5IhOW1nTZooa6rlgdfXcgFAaw==}
     engines: {node: '>=12'}
 
-  '@tanstack/react-router-devtools@1.131.48':
-    resolution: {integrity: sha512-b0D2Zvab60+uotkl25bhU2NXOdCMMWRennY5YDeV6TS1ZRG5m17DZAzIspw9SCi51eC+H/j8inVcxIrQYaB5AQ==}
+  '@tanstack/react-router-devtools@1.131.49':
+    resolution: {integrity: sha512-GdF7OaSCgyjuei9Cc9FsKR+ab+URvsWsoVBsCrvap7oWv0tXlga9bWSwaaF7erVI9gYaQt/iR/hQdGi88Ua8CQ==}
     engines: {node: '>=12'}
     peerDependencies:
-      '@tanstack/react-router': ^1.131.48
+      '@tanstack/react-router': ^1.131.49
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
-  '@tanstack/react-router@1.131.48':
-    resolution: {integrity: sha512-iT9k/+J4vkoXyI1lBu0StSCLXgfOIMf/IDPh+pZ5HhMPab/wx0PDgIFFgEq9qM1CCykDnKqqeDY0QZWBUS4V1A==}
+  '@tanstack/react-router@1.131.49':
+    resolution: {integrity: sha512-WHgWJ053W8VU8lUYh8abSHVPeQdpaCpfaUAbV+3uYXbip2G+qlmI/Gsbh/BBV3bYtIi6l3t5dqx3ffCXNTzB5Q==}
     engines: {node: '>=12'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
-  '@tanstack/react-store@0.7.5':
-    resolution: {integrity: sha512-A+WZtEnHZpvbKXm8qR+xndNKywBLez2KKKKEQc7w0Qs45GvY1LpRI3BTZNmELwEVim8+Apf99iEDH2J+MUIzlQ==}
+  '@tanstack/react-store@0.7.7':
+    resolution: {integrity: sha512-qqT0ufegFRDGSof9D/VqaZgjNgp4tRPHZIJq2+QIHkMUtHjaJ0lYrrXjeIUJvjnTbgPfSD1XgOMEt0lmANn6Zg==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -10735,12 +10533,12 @@ packages:
     resolution: {integrity: sha512-spLqLJ1pD6y8wTxdKSRUS7fMINbuqsTEk1Ot0wxdrD1lKwJT8F7yKovSfl+h2WcifFN84B1gc5F3ZRmcp7fTeA==}
     engines: {node: '>=12'}
 
-  '@tanstack/router-plugin@1.131.48':
-    resolution: {integrity: sha512-5Bt7M3rP6bYNIwFYhLj5AjPdfBqWmrjIliq06rV1iCQ8GJvXPVSuZHwT+jDzxEsyRzHUjk5kuK3ytimXmexpSQ==}
+  '@tanstack/router-plugin@1.131.49':
+    resolution: {integrity: sha512-npL9wqKGMAqaTPqZyZIp1k+omo5Imwvlg/gqQdnphZYIhCJGoxe8CBGQT2zrVnRtL5D7BD9vvpRh2moEDaJF8A==}
     engines: {node: '>=12'}
     peerDependencies:
       '@rsbuild/core': '>=1.0.2'
-      '@tanstack/react-router': ^1.131.48
+      '@tanstack/react-router': ^1.131.49
       vite: '>=5.4.20'
       vite-plugin-solid: ^2.11.2
       webpack: '>=5.92.0'
@@ -10760,8 +10558,8 @@ packages:
     resolution: {integrity: sha512-sr3x0d2sx9YIJoVth0QnfEcAcl+39sQYaNQxThtHmRpyeFYNyM2TTH+Ud3TNEnI3bbzmLYEUD+7YqB987GzhDA==}
     engines: {node: '>=12'}
 
-  '@tanstack/store@0.7.5':
-    resolution: {integrity: sha512-qd/OjkjaFRKqKU4Yjipaen/EOB9MyEg6Wr9fW103RBPACf1ZcKhbhcu2S5mj5IgdPib6xFIgCUti/mKVkl+fRw==}
+  '@tanstack/store@0.7.7':
+    resolution: {integrity: sha512-xa6pTan1bcaqYDS9BDpSiS63qa6EoDkPN9RsRaxHuDdVDNntzq3xNwR5YKTU/V3SkSyC9T4YVOPh2zRQN0nhIQ==}
 
   '@tanstack/virtual-core@3.8.1':
     resolution: {integrity: sha512-uNtAwenT276M9QYCjTBoHZ8X3MUeCRoGK59zPi92hMIxdfS9AyHjkDWJ94WroDxnv48UE+hIeo21BU84jKc8aQ==}
@@ -11012,32 +10810,12 @@ packages:
       tree-sitter:
         optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  '@tybys/wasm-util@0.10.1':
-    resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
-=======
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@tsconfig/node22@22.0.2':
     resolution: {integrity: sha512-Kmwj4u8sDRDrMYRoN9FDEcXD8UpBSaPQQ24Gz+Gamqfm7xxn+GBR7ge/Z7pK8OXNGyUzbSwJj+TH6B+DS/epyA==}
 
   '@tsconfig/svelte@5.0.5':
     resolution: {integrity: sha512-48fAnUjKye38FvMiNOj0J9I/4XlQQiZlpe9xaNPfe8vy2Y1hFBt8g1yqf2EGjVvHavo4jf2lC+TQyENCr4BJBQ==}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> ec6632a8 (feat(vite-overlay): add examples for Solid and Svelte frameworks)
-  '@tybys/wasm-util@0.10.0':
-    resolution: {integrity: sha512-VyyPYFlOMNylG45GoAe0xDoLwWuowvf92F9kySqzYh8vmYm7D2u4iUJKa1tOUpS70Ku13ASrOkS4ScXFsTaCNQ==}
->>>>>>> 79c48e67 (feat(vite-overlay): add examples for Solid and Svelte frameworks)
-
-=======
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
 
@@ -12898,25 +12676,6 @@ packages:
     resolution: {integrity: sha512-2qEo5xLEYYAWf3s9AG0Sup1qLQ190TUvJNVomTyfEUzdBG2d7mrrFStc4dyQIADmhzUbdDdp8wm+Bdw4JEs5tA==}
     engines: {node: '>=18.0.0 <=23.x'}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  '@visulima/tsconfig@1.1.21':
-    resolution: {integrity: sha512-jekwOd6AftmmCjxmeO5b1n+79BRFmvddRUJC4e2+jOqmUicr1lVfST/IawfUnOeKkTD24KtEkdY2U+YDeZZdwQ==}
-=======
-<<<<<<< HEAD
-  '@visulima/tsconfig@1.1.20':
-    resolution: {integrity: sha512-d596dCEjg/ZPK6ZXyWprtdJ8y+Yn6q8ej6KicTi2LA8zDOyBWOOYHYHi2gr5acFZIB+woYkCM7GIvaY9x10jlA==}
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-    engines: {node: '>=18.0.0 <=23.x'}
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
-=======
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@visulima/tsconfig@1.1.21':
     resolution: {integrity: sha512-jekwOd6AftmmCjxmeO5b1n+79BRFmvddRUJC4e2+jOqmUicr1lVfST/IawfUnOeKkTD24KtEkdY2U+YDeZZdwQ==}
     engines: {node: '>=18.0.0 <=23.x'}
@@ -13828,18 +13587,8 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   baseline-browser-mapping@2.8.6:
     resolution: {integrity: sha512-wrH5NNqren/QMtKUEEJf7z86YjfqW/2uw3IL3/xpqZUC95SSVIFXYQeeGjL6FT/X68IROu6RMehZQS5foy2BXw==}
-=======
-  baseline-browser-mapping@2.8.4:
-    resolution: {integrity: sha512-L+YvJwGAgwJBV1p6ffpSTa2KRc69EeeYGYjRVWKs0GKrK+LON0GC0gV+rKSNtALEDvMDqkvCFq9r1r94/Gjwxw==}
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  baseline-browser-mapping@2.8.6:
-    resolution: {integrity: sha512-wrH5NNqren/QMtKUEEJf7z86YjfqW/2uw3IL3/xpqZUC95SSVIFXYQeeGjL6FT/X68IROu6RMehZQS5foy2BXw==}
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
     hasBin: true
 
   basic-ftp@5.0.5:
@@ -15241,19 +14990,8 @@ packages:
     engines: {node: '>=0.10.0'}
     hasBin: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   electron-to-chromium@1.5.222:
     resolution: {integrity: sha512-gA7psSwSwQRE60CEoLz6JBCQPIxNeuzB2nL8vE03GK/OHxlvykbLyeiumQy1iH5C2f3YbRAZpGCMT12a/9ih9w==}
-
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-  electron-to-chromium@1.5.220:
-    resolution: {integrity: sha512-TWXijEwR1ggr4BdAKrb1nMNqYLTx1/4aD1fkeZU+FVJGTKu53/T7UyHKXlqEX3Ub02csyHePbHmkvnrjcaYzMA==}
-=======
-  electron-to-chromium@1.5.222:
-    resolution: {integrity: sha512-gA7psSwSwQRE60CEoLz6JBCQPIxNeuzB2nL8vE03GK/OHxlvykbLyeiumQy1iH5C2f3YbRAZpGCMT12a/9ih9w==}
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
 
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
@@ -19560,12 +19298,6 @@ packages:
   node-readfiles@0.2.0:
     resolution: {integrity: sha512-SU00ZarexNlE4Rjdm83vglt5Y9yiQ+XI1XpflWlb7q7UTN1JUItm69xMeiQCTxtTfnzt+83T8Cx+vI2ED++VDA==}
 
-<<<<<<< HEAD
-  node-releases@2.0.21:
-    resolution: {integrity: sha512-5b0pgg78U3hwXkCM8Z9b2FJdPZlr9Psr9V2gQPESdGHqbntyFJKFW4r5TeWGFzafGY3hzs1JC62VEQMbl1JFkw==}
-
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
   node-releases@2.0.21:
     resolution: {integrity: sha512-5b0pgg78U3hwXkCM8Z9b2FJdPZlr9Psr9V2gQPESdGHqbntyFJKFW4r5TeWGFzafGY3hzs1JC62VEQMbl1JFkw==}
 
@@ -20027,18 +19759,9 @@ packages:
   oxc-resolver@11.8.0:
     resolution: {integrity: sha512-iTBXOucxbG40DGURl0cXChZn1WbvXteW4F/U3SZNbhlixFhd3+ZoHU8cmavOSS+Ob9GUPEUoZhGpj1empxwAiQ==}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   oxc-resolver@11.8.2:
     resolution: {integrity: sha512-SM31gnF1l4T8YA7dkAcBhA+jc336bc8scy0Tetz6ndzGmV6c0R99SRnx6In0V5ffwvn1Isjo9I9EGSLF4xi3TA==}
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  oxc-resolver@11.8.2:
-    resolution: {integrity: sha512-SM31gnF1l4T8YA7dkAcBhA+jc336bc8scy0Tetz6ndzGmV6c0R99SRnx6In0V5ffwvn1Isjo9I9EGSLF4xi3TA==}
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   oxc-resolver@4.2.0:
     resolution: {integrity: sha512-x9bzmn1rQRu2cRT6dC6qOCKyStDVubXsf5H3UloUG/UFjzufmNu8DHTxafYDaSlA9Y+rorD+EnmF7sWSaFdd7g==}
 
@@ -20114,13 +19837,6 @@ packages:
     resolution: {integrity: sha512-jdZ10MCxavHoIHwJ5oweOtYy6ElPixEHaMkz0AuaEMovR1MRpVvYFzIEHRxgMEpXYzNpRVByFAniAzwmd1/uug==}
     engines: {node: '>=20'}
 
-<<<<<<< HEAD
-  p-queue@8.1.1:
-    resolution: {integrity: sha512-aNZ+VfjobsWryoiPnEApGGmf5WmNsCo9xu8dfaYamG5qaLP7ClhLN6NgsFe6SwJ2UbLEBK5dv9x8Mn5+RVhMWQ==}
-    engines: {node: '>=18'}
-
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
   p-queue@8.1.1:
     resolution: {integrity: sha512-aNZ+VfjobsWryoiPnEApGGmf5WmNsCo9xu8dfaYamG5qaLP7ClhLN6NgsFe6SwJ2UbLEBK5dv9x8Mn5+RVhMWQ==}
     engines: {node: '>=18'}
@@ -22558,8 +22274,8 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: '>=5.0.0'
 
-  svelte@5.39.2:
-    resolution: {integrity: sha512-x4Me4TgiNprpLugcXyKbcGQhHdjWpITZzSeegv3jjIyA4jObVKBhNchGGDv257Eeolg3vUUSa4n2HGFMYNaPvg==}
+  svelte@5.39.3:
+    resolution: {integrity: sha512-7Jwus6iXviGZAvhqbeYu3NNHA6LGyQ8EbmjdAhJUDade5rrW6g9VnBbRhUuYX4pMZLHozijsFolt88zvKPfsbQ==}
     engines: {node: '>=18'}
 
   svgo@4.0.0:
@@ -24340,7 +24056,7 @@ snapshots:
       - '@types/node'
       - typescript
 
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)':
+  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react-hooks@5.2.0(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-testing-library@7.6.8(eslint@8.57.0)(typescript@5.8.3))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       '@babel/core': 7.28.4
@@ -24373,7 +24089,7 @@ snapshots:
       eslint-plugin-no-only-tests: 3.3.0
       eslint-plugin-no-secrets: 0.8.9(eslint@8.57.0)
       eslint-plugin-no-use-extend-native: 0.5.0
-      eslint-plugin-perfectionist: 2.11.0(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+      eslint-plugin-perfectionist: 2.11.0(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       eslint-plugin-promise: 6.4.0(eslint@8.57.0)
       eslint-plugin-regexp: 2.10.0(eslint@8.57.0)
       eslint-plugin-security: 1.7.1
@@ -24412,7 +24128,7 @@ snapshots:
       - svelte-eslint-parser
       - vue-eslint-parser
 
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)':
+  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.5.0(eslint@8.57.0))(@babel/core@7.28.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.2(eslint@8.57.0))(eslint-plugin-no-unsanitized@4.1.4(eslint@8.57.0))(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.18.2(tailwindcss@4.1.13))(eslint-plugin-tsdoc@0.4.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint-plugin-you-dont-need-lodash-underscore@6.14.0)(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       '@babel/core': 7.28.4
@@ -24445,7 +24161,7 @@ snapshots:
       eslint-plugin-no-only-tests: 3.3.0
       eslint-plugin-no-secrets: 0.8.9(eslint@8.57.0)
       eslint-plugin-no-use-extend-native: 0.5.0
-      eslint-plugin-perfectionist: 2.11.0(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3)
+      eslint-plugin-perfectionist: 2.11.0(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3)
       eslint-plugin-promise: 6.4.0(eslint@8.57.0)
       eslint-plugin-regexp: 2.10.0(eslint@8.57.0)
       eslint-plugin-security: 1.7.1
@@ -24494,13 +24210,8 @@ snapshots:
       '@html-eslint/parser': 0.41.0
       '@stylistic/eslint-plugin': 4.4.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)
       '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)
-<<<<<<< HEAD
-      '@typescript-eslint/eslint-plugin': 8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)
-      '@typescript-eslint/parser': 8.43.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)
-=======
       '@typescript-eslint/eslint-plugin': 8.44.0(@typescript-eslint/parser@8.44.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)
       '@typescript-eslint/parser': 8.44.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
       '@visulima/package': 3.5.10(@types/node@22.15.29)(yaml@2.8.1)
       '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
       '@vitest/eslint-plugin': 1.3.9(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)(vitest@3.2.1)
@@ -24572,13 +24283,8 @@ snapshots:
       '@html-eslint/parser': 0.41.0
       '@stylistic/eslint-plugin': 4.4.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
       '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-<<<<<<< HEAD
-      '@typescript-eslint/eslint-plugin': 8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-      '@typescript-eslint/parser': 8.43.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
-=======
       '@typescript-eslint/eslint-plugin': 8.44.0(@typescript-eslint/parser@8.44.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
       '@typescript-eslint/parser': 8.44.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
       '@visulima/package': 3.5.10(@types/node@22.15.29)(yaml@2.8.1)
       '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
       '@vitest/eslint-plugin': 1.3.9(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
@@ -24803,24 +24509,11 @@ snapshots:
       '@html-eslint/parser': 0.46.2(jiti@2.4.2)
       '@stylistic/eslint-plugin': 5.3.1(eslint@9.28.0(jiti@2.4.2))
       '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.9.2)
-<<<<<<< HEAD
-      '@typescript-eslint/parser': 8.43.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.9.2)
-      '@typescript-eslint/types': 8.43.0
-<<<<<<< HEAD
-      '@visulima/package': 3.5.10(@types/node@22.15.29)(yaml@2.8.1)
-      '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
-      '@vitest/eslint-plugin': 1.3.9(eslint@9.28.0(jiti@2.5.1))(typescript@5.9.2)(vitest@3.2.4)
-=======
-      '@visulima/package': 3.5.9(@types/node@22.15.29)(yaml@2.8.1)
-      '@visulima/tsconfig': 1.1.20(yaml@2.8.1)
-=======
       '@typescript-eslint/parser': 8.44.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.9.2)
       '@typescript-eslint/types': 8.44.0
       '@visulima/package': 3.5.10(@types/node@22.15.29)(yaml@2.8.1)
       '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
       '@vitest/eslint-plugin': 1.3.9(eslint@9.28.0(jiti@2.4.2))(typescript@5.9.2)(vitest@3.2.4)
->>>>>>> bfdcd4e4 (feat(vite-overlay): update dependencies and enhance error handling utilities)
       confusing-browser-globals: 1.0.11
       eslint: 9.28.0(jiti@2.4.2)
       eslint-config-flat-gitignore: 2.1.0(eslint@9.28.0(jiti@2.4.2))
@@ -24882,162 +24575,6 @@ snapshots:
       - vitest
       - yaml
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  '@anolilab/eslint-config@16.3.0(102ea05f556fa0f5b4fadd29e8bfae90)':
-=======
-  '@anolilab/eslint-config@16.3.0(3295aac38f2ec62a465658a2902b4526)':
->>>>>>> ce3dc51b (feat(vite-overlay): update dependencies and enhance error handling utilities)
-    dependencies:
-      '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.35.0(jiti@2.5.1))
-      '@eslint/compat': 1.3.2(eslint@9.35.0(jiti@2.5.1))
-      '@eslint/js': 9.36.0
-      '@eslint/markdown': 7.2.0
-      '@html-eslint/eslint-plugin': 0.46.2(eslint@9.35.0(jiti@2.5.1))(jiti@2.5.1)
-      '@html-eslint/parser': 0.46.2(jiti@2.5.1)
-      '@stylistic/eslint-plugin': 5.3.1(eslint@9.35.0(jiti@2.5.1))
-      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      '@typescript-eslint/parser': 8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      '@typescript-eslint/types': 8.43.0
-      '@visulima/package': 3.5.10(@types/node@24.3.1)(yaml@2.8.1)
-      '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
-      '@vitest/eslint-plugin': 1.3.9(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)(vitest@3.2.4)
-      confusing-browser-globals: 1.0.11
-      eslint: 9.35.0(jiti@2.5.1)
-      eslint-config-flat-gitignore: 2.1.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-flat-config-utils: 2.1.1
-      eslint-import-resolver-node: 0.3.9
-<<<<<<< HEAD
-      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.35.0(jiti@2.5.1)))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1)))(eslint@9.35.0(jiti@2.5.1))
-      eslint-merge-processors: 2.0.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-antfu: 3.1.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-compat: 6.0.2(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-erasable-syntax-only: 0.3.1(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-es-x: 9.1.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-html: 8.1.3
-      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-jsdoc: 56.1.2(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-jsonc: 2.20.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-n: 17.21.3(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-no-for-of-array: 0.1.0(eslint@9.35.0(jiti@2.5.1))(typescript-eslint@8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(typescript@5.9.2)
-=======
-      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.44.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.34.0(jiti@2.5.1)))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.44.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.5.1)))(eslint@9.34.0(jiti@2.5.1))
-      eslint-merge-processors: 2.0.0(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-antfu: 3.1.1(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-compat: 6.0.2(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-erasable-syntax-only: 0.3.1(@typescript-eslint/parser@8.43.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-es-x: 9.1.0(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-html: 8.1.3
-      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.44.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-jsdoc: 56.1.2(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-jsonc: 2.20.1(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-n: 17.21.3(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-no-for-of-array: 0.1.0(eslint@9.34.0(jiti@2.5.1))(typescript-eslint@8.43.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(typescript@5.9.2)
->>>>>>> ce3dc51b (feat(vite-overlay): update dependencies and enhance error handling utilities)
-      eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-no-secrets: 2.2.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-no-unsanitized: 4.1.4(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-perfectionist: 4.15.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-promise: 7.2.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-regexp: 2.10.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-security: 3.0.1
-<<<<<<< HEAD
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-sonarjs: 3.0.5(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-toml: 0.12.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-unicorn: 61.0.2(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-unused-imports: 4.2.0(@typescript-eslint/eslint-plugin@8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-yml: 1.18.0(eslint@9.35.0(jiti@2.5.1))
-=======
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-sonarjs: 3.0.5(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-toml: 0.12.0(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-unicorn: 61.0.2(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-unused-imports: 4.2.0(@typescript-eslint/eslint-plugin@8.44.0(@typescript-eslint/parser@8.44.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.5.1))
-      eslint-plugin-yml: 1.18.0(eslint@9.34.0(jiti@2.5.1))
->>>>>>> ce3dc51b (feat(vite-overlay): update dependencies and enhance error handling utilities)
-      globals: 16.4.0
-      jsonc-eslint-parser: 2.4.0
-      parse-gitignore: 2.0.0
-      semver: 7.7.2
-      toml-eslint-parser: 0.10.0
-      typescript-eslint: 8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      yaml-eslint-parser: 1.3.0
-    optionalDependencies:
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-react: 7.37.5(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-react-hooks: 5.2.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-tailwindcss: 3.18.2(tailwindcss@4.1.13)
-      eslint-plugin-testing-library: 7.6.8(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-tsdoc: 0.4.0
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      eslint-plugin-zod: 1.4.0(eslint@9.35.0(jiti@2.5.1))
-      tailwind-csstree: 0.1.4
-      typescript: 5.9.2
-    transitivePeerDependencies:
-      - '@eslint/json'
-      - '@types/node'
-      - '@typescript-eslint/eslint-plugin'
-      - '@typescript-eslint/utils'
-      - eslint-plugin-import
-      - jiti
-      - supports-color
-      - vitest
-      - yaml
-
-<<<<<<< HEAD
-  '@anolilab/eslint-config@16.3.0(4c33fd90088a87b50761b61801654040)':
-    dependencies:
-      '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.36.0(jiti@2.5.1))
-      '@eslint/compat': 1.3.2(eslint@9.36.0(jiti@2.5.1))
-      '@eslint/js': 9.36.0
-      '@eslint/markdown': 7.2.0
-      '@html-eslint/eslint-plugin': 0.46.2(eslint@9.36.0(jiti@2.5.1))(jiti@2.5.1)
-      '@html-eslint/parser': 0.46.2(jiti@2.5.1)
-      '@stylistic/eslint-plugin': 5.3.1(eslint@9.36.0(jiti@2.5.1))
-      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2)
-      '@typescript-eslint/parser': 8.43.0(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2)
-      '@typescript-eslint/types': 8.43.0
-      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
-      '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
-      '@vitest/eslint-plugin': 1.3.9(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2)(vitest@3.2.4)
-      confusing-browser-globals: 1.0.11
-      eslint: 9.36.0(jiti@2.5.1)
-      eslint-config-flat-gitignore: 2.1.0(eslint@9.36.0(jiti@2.5.1))
-      eslint-flat-config-utils: 2.1.1
-      eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.43.0(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.36.0(jiti@2.5.1)))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.43.0(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.36.0(jiti@2.5.1)))(eslint@9.36.0(jiti@2.5.1))
-      eslint-merge-processors: 2.0.0(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-antfu: 3.1.1(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-compat: 6.0.2(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-erasable-syntax-only: 0.3.1(@typescript-eslint/parser@8.43.0(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-es-x: 9.1.0(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-html: 8.1.3
-      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.43.0(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-jsdoc: 56.1.2(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-jsonc: 2.20.1(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-n: 17.21.3(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-no-for-of-array: 0.1.0(eslint@9.36.0(jiti@2.5.1))(typescript-eslint@8.43.0(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2))(typescript@5.9.2)
-      eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-no-secrets: 2.2.1(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-no-unsanitized: 4.1.4(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-perfectionist: 4.15.0(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-promise: 7.2.1(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-regexp: 2.10.0(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-security: 3.0.1
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-sonarjs: 3.0.5(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-toml: 0.12.0(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-unicorn: 61.0.2(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-unused-imports: 4.2.0(@typescript-eslint/eslint-plugin@8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.36.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.36.0(jiti@2.5.1))
-      eslint-plugin-yml: 1.18.0(eslint@9.36.0(jiti@2.5.1))
-=======
-=======
->>>>>>> 120f0c1b (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@anolilab/eslint-config@16.3.0(9020b5940e9e520fc8f1135d51a7579a)':
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.35.0(jiti@2.5.1))
@@ -25121,17 +24658,6 @@ snapshots:
       '@eslint/compat': 1.3.2(eslint@9.35.0(jiti@2.5.1))
       '@eslint/js': 9.36.0
       '@eslint/markdown': 7.2.0
-<<<<<<< HEAD
-      '@html-eslint/eslint-plugin': 0.46.2(eslint@9.28.0(jiti@2.4.2))(jiti@2.4.2)
-      '@html-eslint/parser': 0.46.2(jiti@2.4.2)
-      '@stylistic/eslint-plugin': 5.3.1(eslint@9.28.0(jiti@2.4.2))
-      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.28.0(jiti@2.4.2))(typescript@5.9.2)
-      '@typescript-eslint/parser': 8.43.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.9.2)
-      '@typescript-eslint/types': 8.43.0
-      '@visulima/package': 3.5.10(@types/node@22.15.29)(yaml@2.8.1)
-      '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
-      '@vitest/eslint-plugin': 1.3.9(eslint@9.28.0(jiti@2.4.2))(typescript@5.9.2)(vitest@3.2.4)
-=======
       '@html-eslint/eslint-plugin': 0.46.2(eslint@9.35.0(jiti@2.5.1))(jiti@2.5.1)
       '@html-eslint/parser': 0.46.2(jiti@2.5.1)
       '@stylistic/eslint-plugin': 5.3.1(eslint@9.35.0(jiti@2.5.1))
@@ -25141,7 +24667,6 @@ snapshots:
       '@visulima/package': 3.5.10(@types/node@24.3.1)(yaml@2.8.1)
       '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
       '@vitest/eslint-plugin': 1.3.9(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)(vitest@3.2.4)
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       confusing-browser-globals: 1.0.11
       eslint: 9.35.0(jiti@2.5.1)
       eslint-config-flat-gitignore: 2.1.0(eslint@9.35.0(jiti@2.5.1))
@@ -25213,13 +24738,8 @@ snapshots:
       '@html-eslint/parser': 0.46.2(jiti@2.5.1)
       '@stylistic/eslint-plugin': 5.3.1(eslint@9.28.0(jiti@2.5.1))
       '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)
-<<<<<<< HEAD
-      '@typescript-eslint/parser': 8.43.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)
-      '@typescript-eslint/types': 8.43.0
-=======
       '@typescript-eslint/parser': 8.44.0(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)
       '@typescript-eslint/types': 8.44.0
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
       '@visulima/package': 3.5.10(@types/node@22.15.29)(yaml@2.8.1)
       '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
       '@vitest/eslint-plugin': 1.3.9(eslint@9.28.0(jiti@2.5.1))(typescript@5.8.3)(vitest@3.2.4)
@@ -25361,112 +24881,6 @@ snapshots:
       - vitest
       - yaml
 
-<<<<<<< HEAD
-  '@anolilab/eslint-config@16.3.0(d1322ae590b5a8ed8bdef26350ec8896)':
-    dependencies:
-      '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.35.0(jiti@2.5.1))
-      '@eslint/compat': 1.3.2(eslint@9.35.0(jiti@2.5.1))
-      '@eslint/js': 9.35.0
->>>>>>> ce3dc51b (feat(vite-overlay): update dependencies and enhance error handling utilities)
-      '@eslint/markdown': 7.2.0
-      '@html-eslint/eslint-plugin': 0.46.2(eslint@9.35.0(jiti@2.5.1))(jiti@2.5.1)
-      '@html-eslint/parser': 0.46.2(jiti@2.5.1)
-      '@stylistic/eslint-plugin': 5.3.1(eslint@9.35.0(jiti@2.5.1))
-      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-<<<<<<< HEAD
-      '@typescript-eslint/parser': 8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      '@typescript-eslint/types': 8.43.0
-=======
-      '@typescript-eslint/parser': 8.44.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      '@typescript-eslint/types': 8.44.0
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-      '@visulima/package': 3.5.10(@types/node@24.3.1)(yaml@2.8.1)
-      '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
-      '@vitest/eslint-plugin': 1.3.9(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)(vitest@3.2.4)
-      confusing-browser-globals: 1.0.11
-      eslint: 9.35.0(jiti@2.5.1)
-      eslint-config-flat-gitignore: 2.1.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-flat-config-utils: 2.1.1
-      eslint-import-resolver-node: 0.3.9
-<<<<<<< HEAD
-      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-i@2.29.1(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1)))(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.35.0(jiti@2.5.1)))(eslint@9.35.0(jiti@2.5.1))
-=======
-      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.44.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.35.0(jiti@2.5.1)))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.44.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1)))(eslint@9.35.0(jiti@2.5.1))
->>>>>>> ce3dc51b (feat(vite-overlay): update dependencies and enhance error handling utilities)
-      eslint-merge-processors: 2.0.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-antfu: 3.1.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-compat: 6.0.2(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-erasable-syntax-only: 0.3.1(@typescript-eslint/parser@8.44.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-es-x: 9.1.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-html: 8.1.3
-<<<<<<< HEAD
-      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.35.0(jiti@2.5.1))
-=======
-      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.44.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.35.0(jiti@2.5.1))
->>>>>>> ce3dc51b (feat(vite-overlay): update dependencies and enhance error handling utilities)
-      eslint-plugin-jsdoc: 56.1.2(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-jsonc: 2.20.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-n: 17.21.3(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-no-for-of-array: 0.1.0(eslint@9.35.0(jiti@2.5.1))(typescript-eslint@8.44.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(typescript@5.9.2)
-      eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-no-secrets: 2.2.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-no-unsanitized: 4.1.4(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-perfectionist: 4.15.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-promise: 7.2.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-regexp: 2.10.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-security: 3.0.1
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-sonarjs: 3.0.5(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-toml: 0.12.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-unicorn: 61.0.2(eslint@9.35.0(jiti@2.5.1))
-<<<<<<< HEAD
-      eslint-plugin-unused-imports: 4.2.0(@typescript-eslint/eslint-plugin@8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1))
-=======
-      eslint-plugin-unused-imports: 4.2.0(@typescript-eslint/eslint-plugin@8.44.0(@typescript-eslint/parser@8.44.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.5.1))
->>>>>>> ce3dc51b (feat(vite-overlay): update dependencies and enhance error handling utilities)
-      eslint-plugin-yml: 1.18.0(eslint@9.35.0(jiti@2.5.1))
-      globals: 16.4.0
-      jsonc-eslint-parser: 2.4.0
-      parse-gitignore: 2.0.0
-      semver: 7.7.2
-      toml-eslint-parser: 0.10.0
-      typescript-eslint: 8.44.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      yaml-eslint-parser: 1.3.0
-    optionalDependencies:
-<<<<<<< HEAD
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-react: 7.37.5(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-react-hooks: 5.2.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-storybook: 9.1.4(eslint@9.35.0(jiti@2.5.1))(storybook@9.1.4(@testing-library/dom@10.4.0)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.2)
-=======
-      '@eslint/css': 0.11.0
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-react: 7.37.5(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-react-hooks: 5.2.0(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-react-refresh: 0.4.20(eslint@9.35.0(jiti@2.5.1))
->>>>>>> ce3dc51b (feat(vite-overlay): update dependencies and enhance error handling utilities)
-      eslint-plugin-tailwindcss: 3.18.2(tailwindcss@4.1.13)
-      eslint-plugin-testing-library: 7.6.8(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      eslint-plugin-tsdoc: 0.4.0
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@9.35.0(jiti@2.5.1))
-      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      eslint-plugin-zod: 1.4.0(eslint@9.35.0(jiti@2.5.1))
-      tailwind-csstree: 0.1.4
-      typescript: 5.9.2
-    transitivePeerDependencies:
-      - '@eslint/json'
-      - '@types/node'
-      - '@typescript-eslint/eslint-plugin'
-      - '@typescript-eslint/utils'
-      - eslint-plugin-import
-      - jiti
-      - supports-color
-      - vitest
-      - yaml
-
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@anolilab/lint-staged-config@3.0.31(@types/node@24.3.1)(eslint@9.36.0(jiti@2.5.1))(husky@9.1.7)(lint-staged@16.1.6)(prettier@3.6.2)(secretlint@11.2.4)(vitest@3.2.4)(yaml@2.8.1)':
     dependencies:
       '@visulima/fs': 3.1.6(yaml@2.8.1)
@@ -25558,28 +24972,7 @@ snapshots:
       '@anolilab/rc': 1.1.7(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-<<<<<<< HEAD
-<<<<<<< HEAD
       '@visulima/package': 3.5.10(@types/node@18.19.71)(yaml@2.8.1)
-=======
-=======
-<<<<<<< HEAD
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
->>>>>>> 00cd09ec (feat(vite-overlay): enhance error overlay tests and improve error handling)
-      '@visulima/package': 3.5.9(@types/node@18.19.71)(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.6(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
->>>>>>> 0123ee02 (chore: update)
-=======
->>>>>>> 19341bf3 (fix(pnpm-lock): resolve version conflicts and update dependencies)
-      '@visulima/package': 3.5.10(@types/node@18.19.71)(yaml@2.8.1)
-<<<<<<< HEAD
->>>>>>> affef7e5 (feat(vite-overlay): enhance error overlay tests and improve error handling)
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
->>>>>>> ac4a1983 (chore: update)
       '@visulima/path': 1.4.0
       execa: 9.6.0
       ini: 5.0.0
@@ -25595,28 +24988,7 @@ snapshots:
       '@anolilab/rc': 1.1.7(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-<<<<<<< HEAD
-<<<<<<< HEAD
       '@visulima/package': 3.5.10(@types/node@22.15.29)(yaml@2.8.1)
-=======
-=======
-<<<<<<< HEAD
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
->>>>>>> 00cd09ec (feat(vite-overlay): enhance error overlay tests and improve error handling)
-      '@visulima/package': 3.5.9(@types/node@22.15.29)(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.6(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
->>>>>>> 0123ee02 (chore: update)
-=======
->>>>>>> 19341bf3 (fix(pnpm-lock): resolve version conflicts and update dependencies)
-      '@visulima/package': 3.5.10(@types/node@22.15.29)(yaml@2.8.1)
-<<<<<<< HEAD
->>>>>>> affef7e5 (feat(vite-overlay): enhance error overlay tests and improve error handling)
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
->>>>>>> ac4a1983 (chore: update)
       '@visulima/path': 1.4.0
       execa: 9.6.0
       ini: 5.0.0
@@ -25632,39 +25004,7 @@ snapshots:
       '@anolilab/rc': 2.0.3(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-<<<<<<< HEAD
-<<<<<<< HEAD
       '@visulima/package': 3.5.10(@types/node@24.3.1)(yaml@2.8.1)
-=======
-=======
-=======
->>>>>>> 0123ee02 (chore: update)
-<<<<<<< HEAD
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.6(yaml@2.8.1)
-<<<<<<< HEAD
->>>>>>> 120f0c1b (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
->>>>>>> 4fe12d38 (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-      '@visulima/package': 3.5.9(@types/node@24.3.1)(yaml@2.8.1)
-<<<<<<< HEAD
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-=======
-=======
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
->>>>>>> 42237f88 (chore: update)
-=======
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
->>>>>>> e2d558d0 (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
-=======
->>>>>>> 19341bf3 (fix(pnpm-lock): resolve version conflicts and update dependencies)
-      '@visulima/package': 3.5.10(@types/node@24.3.1)(yaml@2.8.1)
-<<<<<<< HEAD
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       '@visulima/path': 1.4.0
       execa: 9.6.0
       ini: 5.0.0
@@ -25680,54 +25020,7 @@ snapshots:
       '@anolilab/rc': 2.0.3(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-<<<<<<< HEAD
-<<<<<<< HEAD
-      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
-=======
-=======
-<<<<<<< HEAD
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
-<<<<<<< HEAD
->>>>>>> 4fe12d38 (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 0123ee02 (chore: update)
-      '@visulima/package': 3.5.9(@types/node@24.5.2)(yaml@2.8.1)
-=======
-      '@visulima/package': 3.5.9(@types/node@24.3.1)(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.6(yaml@2.8.1)
-<<<<<<< HEAD
-      '@visulima/package': 3.5.9(@types/node@24.5.1)(yaml@2.8.1)
->>>>>>> 4e712640 (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-<<<<<<< HEAD
->>>>>>> 120f0c1b (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-<<<<<<< HEAD
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-=======
-=======
-<<<<<<< HEAD
       '@visulima/package': 3.5.10(@types/node@24.5.1)(yaml@2.8.1)
->>>>>>> affef7e5 (feat(vite-overlay): enhance error overlay tests and improve error handling)
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
-<<<<<<< HEAD
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
-=======
->>>>>>> e2d558d0 (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
-=======
->>>>>>> 19341bf3 (fix(pnpm-lock): resolve version conflicts and update dependencies)
-      '@visulima/package': 3.5.10(@types/node@24.5.1)(yaml@2.8.1)
-<<<<<<< HEAD
->>>>>>> 42237f88 (chore: update)
->>>>>>> ac4a1983 (chore: update)
-=======
       '@visulima/path': 1.4.0
       execa: 9.6.0
       ini: 5.0.0
@@ -25744,7 +25037,6 @@ snapshots:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       '@visulima/path': 1.4.0
       execa: 9.6.0
       ini: 5.0.0
@@ -28138,16 +27430,6 @@ snapshots:
       '@emnapi/runtime': 1.5.0
       '@tybys/wasm-util': 0.9.0
 
-<<<<<<< HEAD
-  '@napi-rs/wasm-runtime@1.0.5':
-    dependencies:
-      '@emnapi/core': 1.5.0
-      '@emnapi/runtime': 1.5.0
-      '@tybys/wasm-util': 0.10.1
-    optional: true
-
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
   '@napi-rs/wasm-runtime@1.0.5':
     dependencies:
       '@emnapi/core': 1.5.0
@@ -28674,14 +27956,6 @@ snapshots:
   '@oxc-parser/binding-wasm32-wasi@0.86.0':
     dependencies:
       '@napi-rs/wasm-runtime': 1.0.5
-<<<<<<< HEAD
-    optional: true
-
-  '@oxc-parser/binding-wasm32-wasi@0.89.0':
-    dependencies:
-      '@napi-rs/wasm-runtime': 1.0.5
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
     optional: true
 
   '@oxc-parser/binding-wasm32-wasi@0.89.0':
@@ -28740,18 +28014,9 @@ snapshots:
   '@oxc-resolver/binding-android-arm-eabi@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-android-arm-eabi@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-android-arm-eabi@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-android-arm64@11.6.1':
     optional: true
 
@@ -28761,18 +28026,9 @@ snapshots:
   '@oxc-resolver/binding-android-arm64@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-android-arm64@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-android-arm64@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-darwin-arm64@11.0.0':
     optional: true
 
@@ -28785,18 +28041,9 @@ snapshots:
   '@oxc-resolver/binding-darwin-arm64@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-darwin-arm64@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-darwin-arm64@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-darwin-arm64@4.2.0':
     optional: true
 
@@ -28812,18 +28059,9 @@ snapshots:
   '@oxc-resolver/binding-darwin-x64@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-darwin-x64@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-darwin-x64@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-darwin-x64@4.2.0':
     optional: true
 
@@ -28839,18 +28077,9 @@ snapshots:
   '@oxc-resolver/binding-freebsd-x64@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-freebsd-x64@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-freebsd-x64@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-freebsd-x64@4.2.0':
     optional: true
 
@@ -28866,18 +28095,9 @@ snapshots:
   '@oxc-resolver/binding-linux-arm-gnueabihf@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-linux-arm-gnueabihf@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-linux-arm-gnueabihf@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm-gnueabihf@4.2.0':
     optional: true
 
@@ -28890,18 +28110,9 @@ snapshots:
   '@oxc-resolver/binding-linux-arm-musleabihf@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-linux-arm-musleabihf@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-linux-arm-musleabihf@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm64-gnu@11.0.0':
     optional: true
 
@@ -28914,18 +28125,9 @@ snapshots:
   '@oxc-resolver/binding-linux-arm64-gnu@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-linux-arm64-gnu@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-linux-arm64-gnu@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm64-gnu@4.2.0':
     optional: true
 
@@ -28941,18 +28143,9 @@ snapshots:
   '@oxc-resolver/binding-linux-arm64-musl@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-linux-arm64-musl@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-linux-arm64-musl@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-arm64-musl@4.2.0':
     optional: true
 
@@ -28965,18 +28158,9 @@ snapshots:
   '@oxc-resolver/binding-linux-ppc64-gnu@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-linux-ppc64-gnu@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-linux-ppc64-gnu@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-riscv64-gnu@11.0.0':
     optional: true
 
@@ -28989,18 +28173,9 @@ snapshots:
   '@oxc-resolver/binding-linux-riscv64-gnu@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-linux-riscv64-gnu@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-linux-riscv64-gnu@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-riscv64-musl@11.6.1':
     optional: true
 
@@ -29010,18 +28185,9 @@ snapshots:
   '@oxc-resolver/binding-linux-riscv64-musl@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-linux-riscv64-musl@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-linux-riscv64-musl@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-s390x-gnu@11.0.0':
     optional: true
 
@@ -29034,18 +28200,9 @@ snapshots:
   '@oxc-resolver/binding-linux-s390x-gnu@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-linux-s390x-gnu@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-linux-s390x-gnu@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-x64-gnu@11.0.0':
     optional: true
 
@@ -29058,18 +28215,9 @@ snapshots:
   '@oxc-resolver/binding-linux-x64-gnu@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-linux-x64-gnu@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-linux-x64-gnu@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-x64-gnu@4.2.0':
     optional: true
 
@@ -29085,18 +28233,9 @@ snapshots:
   '@oxc-resolver/binding-linux-x64-musl@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-linux-x64-musl@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-linux-x64-musl@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-linux-x64-musl@4.2.0':
     optional: true
 
@@ -29113,19 +28252,6 @@ snapshots:
   '@oxc-resolver/binding-wasm32-wasi@11.7.1':
     dependencies:
       '@napi-rs/wasm-runtime': 1.0.5
-<<<<<<< HEAD
-    optional: true
-
-  '@oxc-resolver/binding-wasm32-wasi@11.8.0':
-    dependencies:
-      '@napi-rs/wasm-runtime': 1.0.5
-    optional: true
-
-  '@oxc-resolver/binding-wasm32-wasi@11.8.2':
-    dependencies:
-      '@napi-rs/wasm-runtime': 1.0.5
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
     optional: true
 
   '@oxc-resolver/binding-wasm32-wasi@11.8.0':
@@ -29155,18 +28281,9 @@ snapshots:
   '@oxc-resolver/binding-win32-arm64-msvc@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-win32-arm64-msvc@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-win32-arm64-msvc@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-win32-arm64-msvc@4.2.0':
     optional: true
 
@@ -29179,18 +28296,9 @@ snapshots:
   '@oxc-resolver/binding-win32-ia32-msvc@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-win32-ia32-msvc@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-win32-ia32-msvc@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-win32-x64-msvc@11.0.0':
     optional: true
 
@@ -29203,18 +28311,9 @@ snapshots:
   '@oxc-resolver/binding-win32-x64-msvc@11.8.0':
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   '@oxc-resolver/binding-win32-x64-msvc@11.8.2':
     optional: true
 
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@oxc-resolver/binding-win32-x64-msvc@11.8.2':
-    optional: true
-
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@oxc-resolver/binding-win32-x64-msvc@4.2.0':
     optional: true
 
@@ -30093,15 +29192,7 @@ snapshots:
       estree-walker: 2.0.2
       fdir: 6.5.0(picomatch@4.0.3)
       is-reference: 1.2.1
-<<<<<<< HEAD
-<<<<<<< HEAD
       magic-string: 0.30.19
-=======
-      magic-string: 0.30.18
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-      magic-string: 0.30.19
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
       picomatch: 4.0.3
     optionalDependencies:
       rollup: 4.50.2
@@ -30152,15 +29243,7 @@ snapshots:
       astring: 1.8.6
       estree-walker: 2.0.2
       fast-glob: 3.3.3
-<<<<<<< HEAD
-<<<<<<< HEAD
       magic-string: 0.30.19
-=======
-      magic-string: 0.30.18
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-      magic-string: 0.30.19
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
     optionalDependencies:
       rollup: 4.50.2
 
@@ -30200,15 +29283,7 @@ snapshots:
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
       estree-walker: 2.0.2
-<<<<<<< HEAD
-<<<<<<< HEAD
       magic-string: 0.30.19
-=======
-      magic-string: 0.30.18
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-      magic-string: 0.30.19
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
     optionalDependencies:
       rollup: 4.50.2
 
@@ -30323,15 +29398,7 @@ snapshots:
   '@rollup/plugin-replace@6.0.2(rollup@4.50.2)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
-<<<<<<< HEAD
-<<<<<<< HEAD
       magic-string: 0.30.19
-=======
-      magic-string: 0.30.18
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-      magic-string: 0.30.19
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
     optionalDependencies:
       rollup: 4.50.2
 
@@ -30365,14 +29432,11 @@ snapshots:
     optionalDependencies:
       rollup: 4.50.2
 
-<<<<<<< HEAD
-=======
   '@rollup/pluginutils@4.2.1':
     dependencies:
       estree-walker: 2.0.2
       picomatch: 2.3.1
 
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
   '@rollup/pluginutils@5.1.4(rollup@4.34.9)':
     dependencies:
       '@types/estree': 1.0.8
@@ -31950,25 +31014,12 @@ snapshots:
       react-dom: 19.1.1(react@19.1.1)
       storybook: 9.1.4(@testing-library/dom@10.4.1)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  '@storybook/react-vite@9.1.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(rollup@4.50.2)(storybook@9.1.4(@testing-library/dom@10.4.0)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-    dependencies:
-      '@joshwooding/vite-plugin-react-docgen-typescript': 0.6.1(typescript@5.9.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-      '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
-      '@storybook/builder-vite': 9.1.4(storybook@9.1.4(@testing-library/dom@10.4.0)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-      '@storybook/react': 9.1.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(storybook@9.1.4(@testing-library/dom@10.4.0)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.2)
-=======
-  '@storybook/react-vite@9.1.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(rollup@4.50.0)(storybook@9.1.4(@testing-library/dom@10.4.1)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-=======
   '@storybook/react-vite@9.1.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(rollup@4.50.2)(storybook@9.1.4(@testing-library/dom@10.4.1)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
     dependencies:
       '@joshwooding/vite-plugin-react-docgen-typescript': 0.6.1(typescript@5.9.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
       '@storybook/builder-vite': 9.1.4(storybook@9.1.4(@testing-library/dom@10.4.1)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       '@storybook/react': 9.1.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(storybook@9.1.4(@testing-library/dom@10.4.1)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(prettier@3.6.2)(vite@7.1.5(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.2)
->>>>>>> bfdcd4e4 (feat(vite-overlay): update dependencies and enhance error handling utilities)
       find-up: 7.0.0
       magic-string: 0.30.19
       react: 19.1.1
@@ -32212,22 +31263,22 @@ snapshots:
     dependencies:
       acorn: 8.15.0
 
-  '@sveltejs/vite-plugin-svelte-inspector@5.0.1(@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.2)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(svelte@5.39.2)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
+  '@sveltejs/vite-plugin-svelte-inspector@5.0.1(@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.3)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(svelte@5.39.3)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 6.2.0(svelte@5.39.2)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
+      '@sveltejs/vite-plugin-svelte': 6.2.0(svelte@5.39.3)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       debug: 4.4.1
-      svelte: 5.39.2
+      svelte: 5.39.3
       vite: 7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
-  '@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.2)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
+  '@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.3)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 5.0.1(@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.2)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(svelte@5.39.2)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
+      '@sveltejs/vite-plugin-svelte-inspector': 5.0.1(@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.3)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(svelte@5.39.3)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       debug: 4.4.1
       deepmerge: 4.3.1
       magic-string: 0.30.19
-      svelte: 5.39.2
+      svelte: 5.39.3
       vite: 7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vitefu: 1.1.1(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
     transitivePeerDependencies:
@@ -32740,9 +31791,9 @@ snapshots:
 
   '@tanstack/history@1.131.2': {}
 
-  '@tanstack/react-router-devtools@1.131.48(@tanstack/react-router@1.131.48(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.131.48)(csstype@3.1.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(tiny-invariant@1.3.3)':
+  '@tanstack/react-router-devtools@1.131.49(@tanstack/react-router@1.131.49(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.131.48)(csstype@3.1.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(tiny-invariant@1.3.3)':
     dependencies:
-      '@tanstack/react-router': 1.131.48(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/react-router': 1.131.49(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tanstack/router-devtools-core': 1.131.48(@tanstack/router-core@1.131.48)(csstype@3.1.3)(tiny-invariant@1.3.3)
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
@@ -32751,10 +31802,10 @@ snapshots:
       - csstype
       - tiny-invariant
 
-  '@tanstack/react-router@1.131.48(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@tanstack/react-router@1.131.49(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@tanstack/history': 1.131.2
-      '@tanstack/react-store': 0.7.5(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/react-store': 0.7.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tanstack/router-core': 1.131.48
       isbot: 5.1.30
       react: 19.1.1
@@ -32762,9 +31813,9 @@ snapshots:
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  '@tanstack/react-store@0.7.5(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@tanstack/react-store@0.7.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
-      '@tanstack/store': 0.7.5
+      '@tanstack/store': 0.7.7
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
       use-sync-external-store: 1.5.0(react@19.1.1)
@@ -32778,7 +31829,7 @@ snapshots:
   '@tanstack/router-core@1.131.48':
     dependencies:
       '@tanstack/history': 1.131.2
-      '@tanstack/store': 0.7.5
+      '@tanstack/store': 0.7.7
       cookie-es: 1.2.2
       seroval: 1.3.2
       seroval-plugins: 1.3.3(seroval@1.3.2)
@@ -32808,7 +31859,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.131.48(@tanstack/react-router@1.131.48(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite-plugin-solid@2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(webpack@5.99.9(@swc/core@1.13.5))':
+  '@tanstack/router-plugin@1.131.49(@tanstack/react-router@1.131.49(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite-plugin-solid@2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(webpack@5.99.9(@swc/core@1.13.5))':
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.4)
@@ -32825,7 +31876,7 @@ snapshots:
       unplugin: 2.3.10
       zod: 3.25.76
     optionalDependencies:
-      '@tanstack/react-router': 1.131.48(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/react-router': 1.131.49(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       vite: 7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-plugin-solid: 2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.5(@types/node@24.5.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       webpack: 5.99.9(@swc/core@1.13.5)
@@ -32843,7 +31894,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/store@0.7.5': {}
+  '@tanstack/store@0.7.7': {}
 
   '@tanstack/virtual-core@3.8.1': {}
 
@@ -33303,31 +32354,10 @@ snapshots:
       tree-sitter: 0.22.1
     optional: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  '@tybys/wasm-util@0.10.1':
-=======
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@tsconfig/node22@22.0.2': {}
 
   '@tsconfig/svelte@5.0.5': {}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> ec6632a8 (feat(vite-overlay): add examples for Solid and Svelte frameworks)
-  '@tybys/wasm-util@0.10.0':
->>>>>>> 79c48e67 (feat(vite-overlay): add examples for Solid and Svelte frameworks)
-    dependencies:
-      tslib: 2.8.1
-    optional: true
-
-=======
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@tybys/wasm-util@0.10.1':
     dependencies:
       tslib: 2.8.1
@@ -34803,10 +33833,6 @@ snapshots:
     transitivePeerDependencies:
       - csstype
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
   '@visulima/package@3.5.10(@types/node@18.19.71)(yaml@2.8.1)':
     dependencies:
       '@inquirer/confirm': 5.1.12(@types/node@18.19.71)
@@ -34817,22 +33843,6 @@ snapshots:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  '@visulima/package@3.5.10(@types/node@22.15.27)(yaml@2.8.1)':
-    dependencies:
-      '@inquirer/confirm': 5.1.12(@types/node@22.15.27)
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      normalize-package-data: 7.0.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@visulima/package@3.5.10(@types/node@22.15.29)(yaml@2.8.1)':
     dependencies:
       '@inquirer/confirm': 5.1.12(@types/node@22.15.29)
@@ -34853,17 +33863,9 @@ snapshots:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
-  '@visulima/package@3.5.10(@types/node@24.5.2)(yaml@2.8.1)':
-    dependencies:
-      '@inquirer/confirm': 5.1.12(@types/node@24.5.2)
-=======
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
   '@visulima/package@3.5.10(@types/node@24.5.1)(yaml@2.8.1)':
     dependencies:
       '@inquirer/confirm': 5.1.12(@types/node@24.5.1)
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
       '@visulima/fs': 3.1.7(yaml@2.8.1)
       '@visulima/path': 1.4.0
       normalize-package-data: 7.0.0
@@ -34965,60 +33967,6 @@ snapshots:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  '@visulima/package@3.5.9(@types/node@18.19.71)(yaml@2.8.1)':
-    dependencies:
-      '@inquirer/confirm': 5.1.12(@types/node@18.19.71)
-      '@visulima/fs': 3.1.6(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      normalize-package-data: 7.0.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
-  '@visulima/package@3.5.9(@types/node@22.15.29)(yaml@2.8.1)':
-    dependencies:
-      '@inquirer/confirm': 5.1.12(@types/node@22.15.29)
-      '@visulima/fs': 3.1.6(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      normalize-package-data: 7.0.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
-  '@visulima/package@3.5.9(@types/node@24.3.1)(yaml@2.8.1)':
-    dependencies:
-      '@inquirer/confirm': 5.1.12(@types/node@24.3.1)
-      '@visulima/fs': 3.1.6(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      normalize-package-data: 7.0.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
-<<<<<<< HEAD
-  '@visulima/package@3.5.9(@types/node@24.5.2)(yaml@2.8.1)':
-    dependencies:
-      '@inquirer/confirm': 5.1.12(@types/node@24.5.2)
-=======
-  '@visulima/package@3.5.9(@types/node@24.5.1)(yaml@2.8.1)':
-    dependencies:
-      '@inquirer/confirm': 5.1.12(@types/node@24.5.1)
->>>>>>> 120f0c1b (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-      '@visulima/fs': 3.1.6(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      normalize-package-data: 7.0.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-  '@visulima/packem-rollup@1.0.0-alpha.13(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@24.3.1)(esbuild@0.25.9)(picomatch@4.0.3)(rollup@4.50.0)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)':
-=======
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@visulima/packem-rollup@1.0.0-alpha.13(@swc/core@1.13.5)(@types/node@24.3.1)(esbuild@0.25.9)(picomatch@4.0.3)(rolldown@1.0.0-beta.38)(rollup@4.50.0)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)':
     dependencies:
       '@babel/parser': 7.28.3
@@ -35105,114 +34053,7 @@ snapshots:
       - rolldown
       - yaml
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  '@visulima/packem-rollup@1.0.0-alpha.15(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@24.5.2)(esbuild@0.25.10)(picomatch@4.0.3)(rollup@4.50.2)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)':
-    dependencies:
-      '@babel/parser': 7.28.4
-      '@rollup/plugin-alias': 5.1.1(rollup@4.50.2)
-      '@rollup/plugin-commonjs': 28.0.6(rollup@4.50.2)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.50.2)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.50.2)
-      '@rollup/plugin-json': 6.1.0(rollup@4.50.2)
-      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.50.2)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.50.2)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.50.2)
-      '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
-      '@visulima/find-cache-dir': 1.0.33(yaml@2.8.1)
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.11(@types/node@24.5.2)(rollup@4.50.2)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      '@visulima/source-map': 1.0.20
-      glob-parent: 6.0.2
-      magic-string: 0.30.19
-      mlly: 1.8.0
-      oxc-parser: 0.89.0
-      oxc-resolver: 11.8.0
-      rollup: 4.50.2
-      rollup-plugin-dts: 6.2.3(rollup@4.50.2)(typescript@5.9.2)
-      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.50.2)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.50.2)
-      rollup-plugin-pure: 0.4.0(rollup@4.50.2)
-      rollup-plugin-visualizer: 6.0.3(rollup@4.50.2)
-      rs-module-lexer: 2.5.1
-      semver: 7.7.2
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@swc/core': 1.6.7(@swc/helpers@0.5.15)
-      esbuild: 0.25.10
-      sucrase: 3.35.0
-      typescript: 5.9.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - picomatch
-      - rolldown
-      - yaml
-
-=======
-<<<<<<< HEAD
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-<<<<<<< HEAD
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-  '@visulima/packem-share@1.0.0-alpha.10(@types/node@24.5.2)(rollup@4.50.0)(yaml@2.8.1)':
-    dependencies:
-      '@visulima/colorize': 1.4.23
-      '@visulima/fs': 3.1.5(yaml@2.8.1)
-      '@visulima/package': 3.5.8(@types/node@24.5.2)(yaml@2.8.1)
-=======
-  '@visulima/packem-rollup@1.0.0-alpha.14(@swc/core@1.13.5)(@types/node@24.3.1)(esbuild@0.25.9)(picomatch@4.0.3)(rollup@4.50.0)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)':
-=======
-  '@visulima/packem-rollup@1.0.0-alpha.14(@swc/core@1.13.5)(@types/node@24.3.1)(esbuild@0.25.9)(picomatch@4.0.3)(rolldown@1.0.0-beta.38)(rollup@4.50.0)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)':
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
-    dependencies:
-      '@babel/parser': 7.28.4
-      '@rollup/plugin-alias': 5.1.1(rollup@4.50.0)
-      '@rollup/plugin-commonjs': 28.0.6(rollup@4.50.0)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.50.0)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.50.0)
-      '@rollup/plugin-json': 6.1.0(rollup@4.50.0)
-      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.50.0)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.50.0)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.50.0)
-      '@rollup/pluginutils': 5.3.0(rollup@4.50.0)
-      '@visulima/find-cache-dir': 1.0.31(yaml@2.8.1)
-      '@visulima/fs': 3.1.5(yaml@2.8.1)
-      '@visulima/package': 3.5.8(@types/node@24.3.1)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.10(@types/node@24.3.1)(rollup@4.50.0)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      '@visulima/source-map': 1.0.20
-      glob-parent: 6.0.2
-      magic-string: 0.30.18
-      mlly: 1.8.0
-      oxc-parser: 0.86.0
-      oxc-resolver: 11.7.1
-      rollup: 4.50.0
-      rollup-plugin-dts: 6.2.3(rollup@4.50.0)(typescript@5.9.2)
-      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.50.0)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.50.0)
-      rollup-plugin-pure: 0.4.0(rollup@4.50.0)
-      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.38)(rollup@4.50.0)
-      rs-module-lexer: 2.5.1
-      semver: 7.7.2
-      tinyglobby: 0.2.14
-    optionalDependencies:
-      '@swc/core': 1.13.5
-      esbuild: 0.25.9
-      sucrase: 3.35.0
-      typescript: 5.9.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - picomatch
-      - rolldown
-      - yaml
-
-  '@visulima/packem-rollup@1.0.0-alpha.15(@swc/core@1.13.5)(@types/node@24.5.1)(esbuild@0.25.9)(picomatch@4.0.3)(rolldown@1.0.0-beta.38)(rollup@4.50.2)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)':
-=======
   '@visulima/packem-rollup@1.0.0-alpha.15(@swc/core@1.13.5)(@types/node@24.5.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.38)(rollup@4.50.2)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)':
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
     dependencies:
       '@babel/parser': 7.28.4
       '@rollup/plugin-alias': 5.1.1(rollup@4.50.2)
@@ -35255,33 +34096,54 @@ snapshots:
       - rolldown
       - yaml
 
+  '@visulima/packem-rollup@1.0.0-alpha.15(@swc/core@1.13.5)(@types/node@24.5.2)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.38)(rollup@4.50.2)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)':
+    dependencies:
+      '@babel/parser': 7.28.4
+      '@rollup/plugin-alias': 5.1.1(rollup@4.50.2)
+      '@rollup/plugin-commonjs': 28.0.6(rollup@4.50.2)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.50.2)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.50.2)
+      '@rollup/plugin-json': 6.1.0(rollup@4.50.2)
+      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.50.2)
+      '@rollup/plugin-replace': 6.0.2(rollup@4.50.2)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.50.2)
+      '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
+      '@visulima/find-cache-dir': 1.0.33(yaml@2.8.1)
+      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
+      '@visulima/packem-share': 1.0.0-alpha.11(@types/node@24.5.2)(rollup@4.50.2)(yaml@2.8.1)
+      '@visulima/path': 1.4.0
+      '@visulima/source-map': 1.0.20
+      glob-parent: 6.0.2
+      magic-string: 0.30.19
+      mlly: 1.8.0
+      oxc-parser: 0.89.0
+      oxc-resolver: 11.8.0
+      rollup: 4.50.2
+      rollup-plugin-dts: 6.2.3(rollup@4.50.2)(typescript@5.9.2)
+      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.50.2)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.50.2)
+      rollup-plugin-pure: 0.4.0(rollup@4.50.2)
+      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.38)(rollup@4.50.2)
+      rs-module-lexer: 2.5.1
+      semver: 7.7.2
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@swc/core': 1.13.5
+      esbuild: 0.25.10
+      sucrase: 3.35.0
+      typescript: 5.9.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - picomatch
+      - rolldown
+      - yaml
+
   '@visulima/packem-share@1.0.0-alpha.10(@types/node@24.5.2)(rollup@4.50.0)(yaml@2.8.1)':
     dependencies:
       '@visulima/colorize': 1.4.23
       '@visulima/fs': 3.1.5(yaml@2.8.1)
-<<<<<<< HEAD
-      '@visulima/package': 3.5.8(@types/node@22.15.27)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      rollup: 4.50.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
-<<<<<<< HEAD
-  '@visulima/packem-share@1.0.0-alpha.11(@types/node@24.5.2)(rollup@4.50.2)(yaml@2.8.1)':
-    dependencies:
-      '@visulima/colorize': 1.4.23
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
-=======
-  '@visulima/packem-share@1.0.0-alpha.10(@types/node@24.3.1)(rollup@4.50.0)(yaml@2.8.1)':
-    dependencies:
-      '@visulima/colorize': 1.4.23
-      '@visulima/fs': 3.1.5(yaml@2.8.1)
-      '@visulima/package': 3.5.8(@types/node@24.3.1)(yaml@2.8.1)
-=======
       '@visulima/package': 3.5.8(@types/node@24.5.2)(yaml@2.8.1)
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       '@visulima/path': 1.4.0
       rollup: 4.50.0
     transitivePeerDependencies:
@@ -35293,11 +34155,17 @@ snapshots:
       '@visulima/colorize': 1.4.23
       '@visulima/fs': 3.1.7(yaml@2.8.1)
       '@visulima/package': 3.5.10(@types/node@24.5.1)(yaml@2.8.1)
-<<<<<<< HEAD
->>>>>>> 120f0c1b (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
+      '@visulima/path': 1.4.0
+      rollup: 4.50.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - yaml
+
+  '@visulima/packem-share@1.0.0-alpha.11(@types/node@24.5.2)(rollup@4.50.2)(yaml@2.8.1)':
+    dependencies:
+      '@visulima/colorize': 1.4.23
+      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       rollup: 4.50.2
     transitivePeerDependencies:
@@ -36090,155 +34958,6 @@ snapshots:
       tinyexec: 1.0.1
       tinyglobby: 0.2.14
     optionalDependencies:
-<<<<<<< HEAD
-      '@swc/core': 1.6.7(@swc/helpers@0.5.15)
-      '@tailwindcss/node': 4.1.13
-      '@tailwindcss/oxide': 4.1.13
-      cssnano: 7.1.1(postcss@8.5.6)
-      esbuild: 0.25.9
-      icss-utils: 5.1.0(postcss@8.5.6)
-      lightningcss: 1.30.1
-      postcss: 8.5.6
-      postcss-load-config: 6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
-      postcss-modules-scope: 3.2.1(postcss@8.5.6)
-      postcss-modules-values: 4.0.0(postcss@8.5.6)
-      postcss-value-parser: 4.2.0
-      sucrase: 3.35.0
-      typedoc: 0.28.5(typescript@5.9.2)
-      typedoc-plugin-markdown: 4.6.4(typedoc@0.28.5(typescript@5.9.2))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.5(typescript@5.9.2))
-      typescript: 5.9.2
-    transitivePeerDependencies:
-      - '@75lb/nature'
-      - '@csstools/css-parser-algorithms'
-      - '@csstools/css-tokenizer'
-      - '@csstools/postcss-slow-plugins'
-      - '@types/node'
-      - '@visulima/css-style-inject'
-      - '@visulima/redact'
-      - p-queue
-      - rolldown
-      - rotating-file-stream
-      - yaml
-
-<<<<<<< HEAD
-  '@visulima/packem@2.0.0-alpha.19(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.6.7(@swc/helpers@0.5.15))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)':
-=======
-  '@visulima/packem@2.0.0-alpha.19(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@22.15.27)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.9)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)':
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 0.11.0
-      '@rollup/pluginutils': 5.3.0(rollup@4.50.0)
-      '@visulima/cerebro': 1.1.46(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)(yaml@2.8.1)
-      '@visulima/colorize': 1.4.23
-      '@visulima/find-cache-dir': 1.0.31(yaml@2.8.1)
-      '@visulima/fs': 3.1.5(yaml@2.8.1)
-      '@visulima/humanizer': 1.2.2
-<<<<<<< HEAD
-      '@visulima/package': 3.5.8(@types/node@24.5.2)(yaml@2.8.1)
-      '@visulima/packem-rollup': 1.0.0-alpha.14(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@24.5.2)(esbuild@0.25.10)(picomatch@4.0.3)(rollup@4.50.0)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.10(@types/node@24.5.2)(rollup@4.50.0)(yaml@2.8.1)
-=======
-      '@visulima/package': 3.5.8(@types/node@22.15.27)(yaml@2.8.1)
-      '@visulima/packem-rollup': 1.0.0-alpha.14(@swc/core@1.13.5)(@types/node@22.15.27)(esbuild@0.25.9)(picomatch@4.0.3)(rolldown@1.0.0-beta.38)(rollup@4.50.0)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.10(@types/node@22.15.27)(rollup@4.50.0)(yaml@2.8.1)
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
-      '@visulima/pail': 2.1.25(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)
-      '@visulima/path': 1.4.0
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.0)(yaml@2.8.1)
-      '@visulima/source-map': 1.0.20
-      '@visulima/tsconfig': 1.1.19(yaml@2.8.1)
-      browserslist: 4.25.4
-      defu: 6.1.4
-      fastest-levenshtein: 1.0.16
-      hookable: 5.5.3
-      jiti: 2.5.1
-      magic-string: 0.30.18
-      mlly: 1.8.0
-      picomatch: 4.0.3
-      rollup: 4.50.0
-      semver: 7.7.2
-      tinyexec: 1.0.1
-      tinyglobby: 0.2.14
-    optionalDependencies:
-      '@swc/core': 1.6.7(@swc/helpers@0.5.15)
-      '@tailwindcss/node': 4.1.13
-      '@tailwindcss/oxide': 4.1.13
-      cssnano: 7.1.1(postcss@8.5.6)
-<<<<<<< HEAD
-      esbuild: 0.25.10
-=======
-      esbuild: 0.25.9
-      icss-utils: 5.1.0(postcss@8.5.6)
-      lightningcss: 1.30.1
-      postcss: 8.5.6
-      postcss-load-config: 6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
-      postcss-modules-scope: 3.2.1(postcss@8.5.6)
-      postcss-modules-values: 4.0.0(postcss@8.5.6)
-      postcss-value-parser: 4.2.0
-      sucrase: 3.35.0
-      typedoc: 0.28.5(typescript@5.9.2)
-      typedoc-plugin-markdown: 4.6.4(typedoc@0.28.5(typescript@5.9.2))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.5(typescript@5.9.2))
-      typescript: 5.9.2
-    transitivePeerDependencies:
-      - '@75lb/nature'
-      - '@csstools/css-parser-algorithms'
-      - '@csstools/css-tokenizer'
-      - '@csstools/postcss-slow-plugins'
-      - '@types/node'
-      - '@visulima/css-style-inject'
-      - '@visulima/redact'
-      - p-queue
-      - rolldown
-      - rotating-file-stream
-      - yaml
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-  '@visulima/packem@2.0.0-alpha.20(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.6.7(@swc/helpers@0.5.15))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)':
-=======
-  '@visulima/packem@2.0.0-alpha.20(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.1)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.9)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)':
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  '@visulima/packem@2.0.0-alpha.19(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.3.1)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.9)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 0.11.0
-      '@rollup/pluginutils': 5.3.0(rollup@4.50.0)
-      '@visulima/cerebro': 1.1.46(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)(yaml@2.8.1)
-      '@visulima/colorize': 1.4.23
-      '@visulima/find-cache-dir': 1.0.31(yaml@2.8.1)
-      '@visulima/fs': 3.1.5(yaml@2.8.1)
-      '@visulima/humanizer': 1.2.2
-      '@visulima/package': 3.5.8(@types/node@24.3.1)(yaml@2.8.1)
-      '@visulima/packem-rollup': 1.0.0-alpha.14(@swc/core@1.13.5)(@types/node@24.3.1)(esbuild@0.25.9)(picomatch@4.0.3)(rolldown@1.0.0-beta.38)(rollup@4.50.0)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.10(@types/node@24.3.1)(rollup@4.50.0)(yaml@2.8.1)
-      '@visulima/pail': 2.1.25(@visulima/redact@1.0.15)(rotating-file-stream@3.2.6)
-      '@visulima/path': 1.4.0
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.3.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.0)(yaml@2.8.1)
-      '@visulima/source-map': 1.0.20
-      '@visulima/tsconfig': 1.1.19(yaml@2.8.1)
-      browserslist: 4.25.4
-      defu: 6.1.4
-      fastest-levenshtein: 1.0.16
-      hookable: 5.5.3
-      jiti: 2.5.1
-      magic-string: 0.30.18
-      mlly: 1.8.0
-      picomatch: 4.0.3
-      rollup: 4.50.0
-      semver: 7.7.2
-      tinyexec: 1.0.1
-      tinyglobby: 0.2.14
-    optionalDependencies:
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       '@swc/core': 1.13.5
       '@tailwindcss/node': 4.1.13
       '@tailwindcss/oxide': 4.1.13
@@ -36271,10 +34990,6 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-<<<<<<< HEAD
-  '@visulima/packem@2.0.0-alpha.20(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.1)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.9)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)':
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
   '@visulima/packem@2.0.0-alpha.19(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(@visulima/redact@1.0.15)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
@@ -36339,7 +35054,6 @@ snapshots:
       - yaml
 
   '@visulima/packem@2.0.0-alpha.20(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.1)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)':
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -36349,21 +35063,12 @@ snapshots:
       '@visulima/find-cache-dir': 1.0.33(yaml@2.8.1)
       '@visulima/fs': 3.1.7(yaml@2.8.1)
       '@visulima/humanizer': 1.2.2
-<<<<<<< HEAD
-      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
-      '@visulima/packem-rollup': 1.0.0-alpha.15(@swc/core@1.6.7(@swc/helpers@0.5.15))(@types/node@24.5.2)(esbuild@0.25.10)(picomatch@4.0.3)(rollup@4.50.2)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.11(@types/node@24.5.2)(rollup@4.50.2)(yaml@2.8.1)
-      '@visulima/pail': 2.1.27(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
-      '@visulima/path': 1.4.0
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.2)(yaml@2.8.1)
-=======
       '@visulima/package': 3.5.10(@types/node@24.5.1)(yaml@2.8.1)
       '@visulima/packem-rollup': 1.0.0-alpha.15(@swc/core@1.13.5)(@types/node@24.5.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.38)(rollup@4.50.2)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)
       '@visulima/packem-share': 1.0.0-alpha.11(@types/node@24.5.1)(rollup@4.50.2)(yaml@2.8.1)
       '@visulima/pail': 2.1.27(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
       '@visulima/path': 1.4.0
       '@visulima/rollup-plugin-css': 1.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.2)(yaml@2.8.1)
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
       '@visulima/source-map': 1.0.20
       '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
       browserslist: 4.26.2
@@ -36379,23 +35084,75 @@ snapshots:
       tinyexec: 1.0.1
       tinyglobby: 0.2.15
     optionalDependencies:
-<<<<<<< HEAD
-      '@swc/core': 1.6.7(@swc/helpers@0.5.15)
-      '@tailwindcss/node': 4.1.13
-      '@tailwindcss/oxide': 4.1.13
-      cssnano: 7.1.1(postcss@8.5.6)
-      esbuild: 0.25.10
-=======
       '@swc/core': 1.13.5
       '@tailwindcss/node': 4.1.13
       '@tailwindcss/oxide': 4.1.13
       cssnano: 7.1.1(postcss@8.5.6)
-<<<<<<< HEAD
-      esbuild: 0.25.9
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
       esbuild: 0.25.10
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
+      icss-utils: 5.1.0(postcss@8.5.6)
+      lightningcss: 1.30.1
+      postcss: 8.5.6
+      postcss-load-config: 6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1)
+      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
+      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
+      postcss-modules-scope: 3.2.1(postcss@8.5.6)
+      postcss-modules-values: 4.0.0(postcss@8.5.6)
+      postcss-value-parser: 4.2.0
+      sucrase: 3.35.0
+      typedoc: 0.28.5(typescript@5.9.2)
+      typedoc-plugin-markdown: 4.6.4(typedoc@0.28.5(typescript@5.9.2))
+      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.5(typescript@5.9.2))
+      typescript: 5.9.2
+    transitivePeerDependencies:
+      - '@75lb/nature'
+      - '@csstools/css-parser-algorithms'
+      - '@csstools/css-tokenizer'
+      - '@csstools/postcss-slow-plugins'
+      - '@types/node'
+      - '@visulima/css-style-inject'
+      - '@visulima/redact'
+      - ai
+      - p-queue
+      - rolldown
+      - rotating-file-stream
+      - yaml
+
+  '@visulima/packem@2.0.0-alpha.20(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.38)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.6.4(typedoc@0.28.5(typescript@5.9.2)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.9.2)))(typedoc@0.28.5(typescript@5.9.2))(typescript@5.9.2)(yaml@2.8.1)':
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@clack/prompts': 0.11.0
+      '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
+      '@visulima/cerebro': 1.1.49(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)(yaml@2.8.1)
+      '@visulima/colorize': 1.4.23
+      '@visulima/find-cache-dir': 1.0.33(yaml@2.8.1)
+      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/humanizer': 1.2.2
+      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
+      '@visulima/packem-rollup': 1.0.0-alpha.15(@swc/core@1.13.5)(@types/node@24.5.2)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.38)(rollup@4.50.2)(sucrase@3.35.0)(typescript@5.9.2)(yaml@2.8.1)
+      '@visulima/packem-share': 1.0.0-alpha.11(@types/node@24.5.2)(rollup@4.50.2)(yaml@2.8.1)
+      '@visulima/pail': 2.1.27(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
+      '@visulima/path': 1.4.0
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.2)(yaml@2.8.1)
+      '@visulima/source-map': 1.0.20
+      '@visulima/tsconfig': 1.1.21(yaml@2.8.1)
+      browserslist: 4.26.2
+      defu: 6.1.4
+      fastest-levenshtein: 1.0.16
+      hookable: 5.5.3
+      jiti: 2.5.1
+      magic-string: 0.30.19
+      mlly: 1.8.0
+      picomatch: 4.0.3
+      rollup: 4.50.2
+      semver: 7.7.2
+      tinyexec: 1.0.1
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@swc/core': 1.13.5
+      '@tailwindcss/node': 4.1.13
+      '@tailwindcss/oxide': 4.1.13
+      cssnano: 7.1.1(postcss@8.5.6)
+      esbuild: 0.25.10
       icss-utils: 5.1.0(postcss@8.5.6)
       lightningcss: 1.30.1
       postcss: 8.5.6
@@ -36458,40 +35215,6 @@ snapshots:
       '@visulima/redact': 1.0.15
       rotating-file-stream: 3.2.6
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  '@visulima/pail@2.1.27(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)':
-    dependencies:
-      '@visulima/colorize': 1.4.23
-      '@visulima/error': 4.6.0(ai@5.0.34(zod@3.25.76))
-      '@visulima/fmt': 1.1.15
-      '@visulima/inspector': 1.0.24
-      safe-stable-stringify: 2.5.0
-    optionalDependencies:
-      '@visulima/redact': 1.0.15
-      rotating-file-stream: 3.2.6
-    transitivePeerDependencies:
-      - ai
-
-=======
-<<<<<<< HEAD
->>>>>>> ac4a1983 (chore: update)
-  '@visulima/pail@2.1.28(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)':
-    dependencies:
-      '@visulima/colorize': 1.4.23
-      '@visulima/error': 4.6.1(ai@5.0.34(zod@3.25.76))
-      '@visulima/fmt': 1.1.15
-      '@visulima/inspector': 1.0.24
-      safe-stable-stringify: 2.5.0
-    optionalDependencies:
-      rotating-file-stream: 3.2.6
-    transitivePeerDependencies:
-      - ai
-
-=======
->>>>>>> 0123ee02 (chore: update)
-=======
->>>>>>> 19341bf3 (fix(pnpm-lock): resolve version conflicts and update dependencies)
   '@visulima/pail@2.1.27(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)':
     dependencies:
       '@visulima/colorize': 1.4.23
@@ -36543,36 +35266,11 @@ snapshots:
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.50.0)
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-<<<<<<< HEAD
-<<<<<<< HEAD
       '@visulima/package': 3.5.10(@types/node@24.3.1)(yaml@2.8.1)
       '@visulima/packem-share': 1.0.0-alpha.9(@types/node@24.3.1)(rollup@4.50.0)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       mlly: 1.8.0
       oxc-resolver: 11.8.2
-=======
-=======
-<<<<<<< HEAD
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
->>>>>>> 00cd09ec (feat(vite-overlay): enhance error overlay tests and improve error handling)
-      '@visulima/package': 3.5.9(@types/node@24.3.1)(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.6(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
->>>>>>> 0123ee02 (chore: update)
-=======
->>>>>>> 19341bf3 (fix(pnpm-lock): resolve version conflicts and update dependencies)
-      '@visulima/package': 3.5.10(@types/node@24.3.1)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.9(@types/node@24.3.1)(rollup@4.50.0)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      mlly: 1.8.0
-<<<<<<< HEAD
-      oxc-resolver: 11.8.0
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
-      oxc-resolver: 11.8.2
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       p-queue: 8.1.1
       rollup: 4.50.0
       source-map-js: 1.2.1
@@ -36600,40 +35298,11 @@ snapshots:
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.50.0)
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-<<<<<<< HEAD
-<<<<<<< HEAD
       '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
-=======
-=======
-<<<<<<< HEAD
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
-<<<<<<< HEAD
->>>>>>> 00cd09ec (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 0123ee02 (chore: update)
-      '@visulima/package': 3.5.9(@types/node@24.5.2)(yaml@2.8.1)
-<<<<<<< HEAD
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
-=======
-      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
->>>>>>> e2d558d0 (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
-=======
-      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
->>>>>>> 19341bf3 (fix(pnpm-lock): resolve version conflicts and update dependencies)
       '@visulima/packem-share': 1.0.0-alpha.10(@types/node@24.5.2)(rollup@4.50.0)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       mlly: 1.8.0
-<<<<<<< HEAD
-<<<<<<< HEAD
       oxc-resolver: 11.8.2
-=======
-      oxc-resolver: 11.8.0
       p-queue: 8.1.1
       rollup: 4.50.0
       source-map-js: 1.2.1
@@ -36657,22 +35326,17 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/rollup-plugin-css@1.0.0-alpha.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.3.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.0)(yaml@2.8.1)':
+  '@visulima/rollup-plugin-css@1.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.2)(yaml@2.8.1)':
     dependencies:
-      '@rollup/pluginutils': 5.3.0(rollup@4.50.0)
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.3.1)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.10(@types/node@24.3.1)(rollup@4.50.0)(yaml@2.8.1)
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
+      '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
+      '@visulima/package': 3.5.10(@types/node@24.5.1)(yaml@2.8.1)
+      '@visulima/packem-share': 1.0.0-alpha.11(@types/node@24.5.1)(rollup@4.50.2)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       mlly: 1.8.0
-      oxc-resolver: 11.8.0
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
       oxc-resolver: 11.8.2
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       p-queue: 8.1.1
-      rollup: 4.50.0
+      rollup: 4.50.2
       source-map-js: 1.2.1
     optionalDependencies:
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
@@ -36694,7 +35358,6 @@ snapshots:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
   '@visulima/rollup-plugin-css@1.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.2)(yaml@2.8.1)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
@@ -36704,21 +35367,6 @@ snapshots:
       '@visulima/path': 1.4.0
       mlly: 1.8.0
       oxc-resolver: 11.8.2
-=======
-  '@visulima/rollup-plugin-css@1.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.2)(yaml@2.8.1)':
-    dependencies:
-      '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.5.1)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.11(@types/node@24.5.1)(rollup@4.50.2)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      mlly: 1.8.0
-<<<<<<< HEAD
-      oxc-resolver: 11.8.0
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-      oxc-resolver: 11.8.2
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       p-queue: 8.1.1
       rollup: 4.50.2
       source-map-js: 1.2.1
@@ -36786,30 +35434,6 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  '@visulima/tsconfig@1.1.21(yaml@2.8.1)':
-=======
-<<<<<<< HEAD
-  '@visulima/tsconfig@1.1.20(yaml@2.8.1)':
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-    dependencies:
-      '@visulima/fs': 3.1.7(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      jsonc-parser: 3.3.1
-      resolve-pkg-maps: 1.0.0
-    transitivePeerDependencies:
-      - yaml
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  '@vitejs/plugin-react-swc@4.0.1(vite@7.1.5(@types/node@24.5.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-=======
-=======
->>>>>>> 818d69bc (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   '@visulima/tsconfig@1.1.21(yaml@2.8.1)':
     dependencies:
       '@visulima/fs': 3.1.7(yaml@2.8.1)
@@ -36876,11 +35500,7 @@ snapshots:
       '@vitest/mocker': 3.2.0(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(vite@7.1.5(@types/node@22.15.29)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       '@vitest/utils': 3.2.0
       magic-string: 0.30.19
-<<<<<<< HEAD
-      sirv: 3.0.1
-=======
       sirv: 3.0.2
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
       tinyrainbow: 2.0.0
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/browser@3.2.0)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       ws: 8.18.2
@@ -38164,15 +36784,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   baseline-browser-mapping@2.8.6: {}
-=======
-  baseline-browser-mapping@2.8.4: {}
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-  baseline-browser-mapping@2.8.6: {}
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
 
   basic-ftp@5.0.5: {}
 
@@ -38305,80 +36917,36 @@ snapshots:
   browserslist@4.24.4:
     dependencies:
       caniuse-lite: 1.0.30001741
-<<<<<<< HEAD
-<<<<<<< HEAD
       electron-to-chromium: 1.5.222
-=======
-      electron-to-chromium: 1.5.220
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
-      electron-to-chromium: 1.5.222
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       node-releases: 2.0.21
       update-browserslist-db: 1.1.3(browserslist@4.24.4)
 
   browserslist@4.24.5:
     dependencies:
       caniuse-lite: 1.0.30001741
-<<<<<<< HEAD
-<<<<<<< HEAD
       electron-to-chromium: 1.5.222
-=======
-      electron-to-chromium: 1.5.220
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
-      electron-to-chromium: 1.5.222
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       node-releases: 2.0.21
       update-browserslist-db: 1.1.3(browserslist@4.24.5)
 
   browserslist@4.25.2:
     dependencies:
       caniuse-lite: 1.0.30001741
-<<<<<<< HEAD
-<<<<<<< HEAD
       electron-to-chromium: 1.5.222
-=======
-      electron-to-chromium: 1.5.220
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
-      electron-to-chromium: 1.5.222
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       node-releases: 2.0.21
       update-browserslist-db: 1.1.3(browserslist@4.25.2)
 
   browserslist@4.25.4:
     dependencies:
       caniuse-lite: 1.0.30001741
-<<<<<<< HEAD
-<<<<<<< HEAD
       electron-to-chromium: 1.5.222
-=======
-      electron-to-chromium: 1.5.220
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-=======
-      electron-to-chromium: 1.5.222
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       node-releases: 2.0.21
       update-browserslist-db: 1.1.3(browserslist@4.25.4)
 
   browserslist@4.26.2:
     dependencies:
-<<<<<<< HEAD
-<<<<<<< HEAD
       baseline-browser-mapping: 2.8.6
       caniuse-lite: 1.0.30001741
       electron-to-chromium: 1.5.222
-=======
-      baseline-browser-mapping: 2.8.4
-      caniuse-lite: 1.0.30001741
-      electron-to-chromium: 1.5.220
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-      baseline-browser-mapping: 2.8.6
-      caniuse-lite: 1.0.30001741
-      electron-to-chromium: 1.5.222
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
       node-releases: 2.0.21
       update-browserslist-db: 1.1.3(browserslist@4.26.2)
 
@@ -39694,16 +38262,7 @@ snapshots:
     dependencies:
       jake: 10.9.1
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   electron-to-chromium@1.5.222: {}
-
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
-  electron-to-chromium@1.5.220: {}
-=======
-  electron-to-chromium@1.5.222: {}
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
 
   emittery@0.13.1: {}
 
@@ -41699,14 +40258,14 @@ snapshots:
       is-obj-prop: 1.0.0
       is-proto-prop: 2.0.0
 
-  eslint-plugin-perfectionist@2.11.0(eslint@8.57.0)(svelte@5.39.2)(typescript@5.8.3):
+  eslint-plugin-perfectionist@2.11.0(eslint@8.57.0)(svelte@5.39.3)(typescript@5.8.3):
     dependencies:
       '@typescript-eslint/utils': 7.15.0(eslint@8.57.0)(typescript@5.8.3)
       eslint: 8.57.0
       minimatch: 9.0.5
       natural-compare-lite: 1.4.0
     optionalDependencies:
-      svelte: 5.39.2
+      svelte: 5.39.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -47530,11 +46089,6 @@ snapshots:
     dependencies:
       es6-promise: 3.3.1
 
-<<<<<<< HEAD
-  node-releases@2.0.21: {}
-
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
   node-releases@2.0.21: {}
 
   nopt@7.2.1:
@@ -48175,10 +46729,6 @@ snapshots:
       '@oxc-resolver/binding-win32-ia32-msvc': 11.8.0
       '@oxc-resolver/binding-win32-x64-msvc': 11.8.0
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   oxc-resolver@11.8.2:
     dependencies:
       napi-postinstall: 0.3.3
@@ -48203,11 +46753,6 @@ snapshots:
       '@oxc-resolver/binding-win32-ia32-msvc': 11.8.2
       '@oxc-resolver/binding-win32-x64-msvc': 11.8.2
 
-<<<<<<< HEAD
-=======
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
->>>>>>> 46b5fb9e (fix(pnpm-lock): update swc/core version and resolve dependency conflicts)
   oxc-resolver@4.2.0:
     optionalDependencies:
       '@oxc-resolver/binding-darwin-arm64': 4.2.0
@@ -48287,14 +46832,6 @@ snapshots:
       mimic-function: 5.0.1
       type-fest: 4.41.0
 
-<<<<<<< HEAD
-  p-queue@8.1.1:
-    dependencies:
-      eventemitter3: 5.0.1
-      p-timeout: 6.1.4
-
-=======
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
   p-queue@8.1.1:
     dependencies:
       eventemitter3: 5.0.1
@@ -49948,15 +48485,7 @@ snapshots:
 
   rollup-plugin-dts@6.2.3(rollup@4.50.2)(typescript@5.9.2):
     dependencies:
-<<<<<<< HEAD
-<<<<<<< HEAD
       magic-string: 0.30.19
-=======
-      magic-string: 0.30.18
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-      magic-string: 0.30.19
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
       rollup: 4.50.2
       typescript: 5.9.2
     optionalDependencies:
@@ -50023,15 +48552,7 @@ snapshots:
       commenting: 1.1.0
       fdir: 6.5.0(picomatch@4.0.3)
       lodash: 4.17.21
-<<<<<<< HEAD
-<<<<<<< HEAD
       magic-string: 0.30.19
-=======
-      magic-string: 0.30.18
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-      magic-string: 0.30.19
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
       moment: 2.30.1
       package-name-regex: 2.0.6
       rollup: 4.50.2
@@ -50082,15 +48603,7 @@ snapshots:
   rollup-plugin-pure@0.4.0(rollup@4.50.2):
     dependencies:
       estree-walker: 3.0.3
-<<<<<<< HEAD
-<<<<<<< HEAD
       magic-string: 0.30.19
-=======
-      magic-string: 0.30.18
->>>>>>> 991fbcad (fix(pnpm-lock): update package versions and enhance exclusion patterns in vitest config)
-=======
-      magic-string: 0.30.19
->>>>>>> 5e56751d (feat(vite-overlay): enhance error overlay tests and improve error handling)
       rollup: 4.50.2
       unplugin-utils: 0.2.5
 
@@ -51468,19 +49981,19 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte-check@4.3.1(picomatch@4.0.3)(svelte@5.39.2)(typescript@5.9.2):
+  svelte-check@4.3.1(picomatch@4.0.3)(svelte@5.39.3)(typescript@5.9.2):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       chokidar: 4.0.3
       fdir: 6.5.0(picomatch@4.0.3)
       picocolors: 1.1.1
       sade: 1.8.1
-      svelte: 5.39.2
+      svelte: 5.39.3
       typescript: 5.9.2
     transitivePeerDependencies:
       - picomatch
 
-  svelte@5.39.2:
+  svelte@5.39.3:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.5.5
