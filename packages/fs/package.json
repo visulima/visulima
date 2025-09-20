@@ -218,6 +218,7 @@
         "eslint-plugin-vitest-globals": "^1.5.0",
         "fast-safe-stringify": "2.1.1",
         "prettier": "^3.5.3",
+        "publint": "^0.3.12",
         "redos-detector": "^6.1.2",
         "rimraf": "6.0.1",
         "safe-regex2": "^5.0.0",

@@ -174,6 +174,7 @@
         "eslint": "9.36.0",
         "node-mocks-http": "^1.17.2",
         "prettier": "^3.6.2",
+        "publint": "^0.3.12",
         "rimraf": "^6.0.1",
         "secretlint": "11.2.4",
         "semantic-release": "^24.2.8",
