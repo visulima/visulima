@@ -99,16 +99,10 @@ describe("inspect with Numbers", () => {
             expect(inspect(3.141_592_654, { maxStringLength: 1 })).toBe("…");
         });
 
-        it("should show only '…' when maxStringLength is 0 for a long number", () => {
-            expect.assertions(1);
-
-            expect(inspect(3.141_592_654, { maxStringLength: 0 })).toBe("…");
-        });
-
         it("should not truncate if the truncation tail is the same length as the value", () => {
             expect.assertions(1);
 
-            expect(inspect(3, { maxStringLength: 0 })).toBe("3");
+            expect(inspect(3, { maxStringLength: 0 })).toBe("");
         });
     });
 

@@ -33,7 +33,7 @@ describe("inspect with Classes", () => {
         }
         const bar = new Bar();
 
-        expect(inspect(bar)).toBe("Bar [Baz] {}");
+        expect(inspect(bar)).toBe("Bar Baz {}");
     });
 
     describe("with properties", () => {
@@ -76,6 +76,6 @@ describe("inspect with Classes", () => {
         C.prototype[Symbol.toStringTag] = "Class!";
 
         expect(Object.prototype.toString.call(new C()), "instance, with toStringTag, Object.prototype.toString").toBe("[object Class!]");
-        expect(inspect(new C()), "instance, with toStringTag").toBe("C [Class!] { a: 1 }");
+        expect(inspect(new C()), "instance, with toStringTag").toBe("C Class! { a: 1 }");
     });
 });

@@ -79,16 +79,17 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
         stringTag = "Object";
     }
 
-    const tag
-        = hasToStringTag && protoTag
-            ? `[${stringTag}: ${protoTag}] `
-            : stringTag && protoTag
-                ? `[${stringTag}: ${protoTag}] `
-                : stringTag
-                    ? `${stringTag} `
-                    : protoTag
-                        ? `[${protoTag}] `
-                        : "";
+    let tag: string = "";
+
+    if (hasToStringTag && protoTag) {
+        tag = `[${stringTag}: ${protoTag}] `;
+    } else if (stringTag && protoTag) {
+        tag = `[${stringTag}: ${protoTag}] `;
+    } else if (stringTag) {
+        tag = `${stringTag} `;
+    } else if (protoTag) {
+        tag = `[${protoTag}] `;
+    }
 
     if (properties.length === 0 && symbols.length === 0) {
         return `${tag}{}`;

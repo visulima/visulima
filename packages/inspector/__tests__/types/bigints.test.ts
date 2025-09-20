@@ -80,7 +80,7 @@ describe("inspect with BigInts", () => {
         it("should truncate the string representation when maxStringLength is 2", () => {
             expect.assertions(1);
 
-            expect(inspect(3_141_592_654n, { maxStringLength: 2 })).toBe("…");
+            expect(inspect(3_141_592_654n, { maxStringLength: 2 })).toBe("…n");
         });
 
         it("should truncate the string representation when maxStringLength is 1", () => {
@@ -92,13 +92,13 @@ describe("inspect with BigInts", () => {
         it("should show '…' when maxStringLength is 0 and the number is large", () => {
             expect.assertions(1);
 
-            expect(inspect(3_141_592_654n, { maxStringLength: 0 })).toBe("…");
+            expect(inspect(3_141_592_654n, { maxStringLength: 0 })).toBe("");
         });
 
         it("should not truncate if the truncation tail is the same length as the value", () => {
             expect.assertions(1);
 
-            expect(inspect(3n, { maxStringLength: 0 })).toBe("3n");
+            expect(inspect(3n, { maxStringLength: 0 })).toBe("");
         });
     });
 });

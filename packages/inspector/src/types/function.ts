@@ -1,3 +1,4 @@
+import { TRUNCATOR } from "../constants";
 import type { InspectType, Options } from "../types";
 import truncate from "../utils/truncate";
 
@@ -18,7 +19,13 @@ const inspectFunction: InspectType<ToStringable> = (function_: ToStringable, opt
         return options.stylize(`[${functionType}]`, "special");
     }
 
-    return options.stylize(`[${functionType} ${truncate(name, options.maxStringLength - 11)}]`, "special");
+    let truncated = truncate(name, options.maxStringLength - 11);
+
+    if (truncated === "") {
+        truncated = TRUNCATOR;
+    }
+
+    return options.stylize(`[${functionType} ${truncated}]`, "special");
 };
 
 export default inspectFunction;
