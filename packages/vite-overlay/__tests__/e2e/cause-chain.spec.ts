@@ -122,6 +122,7 @@ test.describe("Cause Chain Error Handling", () => {
                 expect(header.filePath).toMatch(/\.tsx?:\d+/);
                 expect(header.filePath).not.toContain("node_modules");
             }
+
             expect(stackTrace.isVisible).toBe(true);
             expect(stackTrace.content?.length).toBeGreaterThan(10);
         }

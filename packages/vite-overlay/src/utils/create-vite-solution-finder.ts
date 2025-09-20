@@ -40,14 +40,17 @@ const getRelativePath = (fromDirectory: string, toPath: string): string => {
  * @returns A descriptive string about the path location
  */
 const getPathContext = (pathDistance: number): string => {
-    if (pathDistance === 0)
+    if (pathDistance === 0) {
         return "";
+    }
 
-    if (pathDistance === 1)
+    if (pathDistance === 1) {
         return " (in parent directory)";
+    }
 
-    if (pathDistance === 2)
+    if (pathDistance === 2) {
         return " (in grandparent directory)";
+    }
 
     return ` (${pathDistance} directories away)`;
 };
@@ -93,8 +96,9 @@ const calculateRelevanceScore = (importBaseName: string, importExtension: string
     if (!importExtension) {
         const nameDistance = distance(importBaseName, baseName);
 
-        if (nameDistance === 0)
+        if (nameDistance === 0) {
             return 9;
+        }
 
         if (nameDistance <= Math.max(2, Math.floor(importBaseName.length * 0.3)) && RELEVANT_EXTENSIONS.has(fileExtension)) {
             return 7 - nameDistance;
@@ -118,18 +122,19 @@ const calculateRelevanceScore = (importBaseName: string, importExtension: string
 const collectFileCandidates = (rootDirectory: string, importBaseName: string, importExtension: string): FileCandidate[] => {
     const candidates: FileCandidate[] = [];
 
-    const walk = (dir: string, depth = 0): void => {
-        if (depth > MAX_SEARCH_DEPTH || candidates.length > MAX_FILES_TO_SEARCH)
+    const walk = (directory: string, depth = 0): void => {
+        if (depth > MAX_SEARCH_DEPTH || candidates.length > MAX_FILES_TO_SEARCH) {
             return;
+        }
 
         try {
-            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            const entries = fs.readdirSync(directory, { withFileTypes: true });
 
             for (const entry of entries) {
                 if (candidates.length > MAX_FILES_TO_SEARCH)
                     break;
 
-                const fullPath = path.join(dir, entry.name);
+                const fullPath = path.join(directory, entry.name);
 
                 if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules") {
                     walk(fullPath, depth + 1);

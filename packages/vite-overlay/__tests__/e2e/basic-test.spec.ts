@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+
 import { waitForErrorTestPage } from "./utils/test-helpers";
 
 test.describe("Basic Infrastructure Test", () => {
@@ -15,6 +16,7 @@ test.describe("Basic Infrastructure Test", () => {
         await page.goto("/error-test");
 
         await waitForErrorTestPage(page);
+
         await expect(page.locator("h1")).toContainText("Error Overlay Test Page");
     });
 
@@ -30,5 +32,4 @@ test.describe("Basic Infrastructure Test", () => {
         await expect(simpleErrorButton).toBeVisible();
         await expect(causeChainButton).toBeVisible();
     });
-
 });

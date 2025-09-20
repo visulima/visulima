@@ -3416,7 +3416,7 @@ Final line`);
 
             it("should not add query parameter if URL already has query", () => {
                 expect.assertions(2);
-                
+
                 expect(addQueryToUrl("http://localhost:5173/src/App.tsx?existing=param", "?tsr-split=component")).toBe(
                     "http://localhost:5173/src/App.tsx?existing=param",
                 );

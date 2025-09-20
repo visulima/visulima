@@ -3,8 +3,19 @@
     "version": "1.0.0",
     "description": "Improved vite overlay",
     "keywords": [
-        "visulima",
-        "vite-overlay"
+        "vite",
+        "vite-plugin",
+        "vite-overlay",
+        "vite-error-overlay",
+        "error-overlay",
+        "error-handling",
+        "source-map",
+        "typescript",
+        "react",
+        "vue",
+        "svelte",
+        "overlay",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/vite-overlay",
     "bugs": {

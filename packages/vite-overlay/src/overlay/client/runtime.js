@@ -3,7 +3,10 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable func-names */
 /* eslint-disable no-plusplus */
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
+
 /**
  * Custom HTML element that displays error overlays in the browser.
  * Provides interactive error display with theme switching, code frames, and navigation.
@@ -301,7 +304,9 @@ class ErrorOverlay extends HTMLElement {
                         fileElement.textContent = `.${displayPath}${line ? `:${line}` : ""}`;
                         const editor = localStorage.getItem("vo:editor");
 
-                        const url = `/__open-in-editor?file=${encodeURIComponent(fullPath)}${
+                        // injected by the hmr plugin when served
+                        // eslint-disable-next-line no-undef
+                        const url = `${base}__open-in-editor?file=${encodeURIComponent(fullPath)}${
                             line ? `&line=${line}` : ""
                         }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
 
@@ -312,7 +317,7 @@ class ErrorOverlay extends HTMLElement {
 
                         newFileElement.addEventListener("click", (event) => {
                             event.preventDefault();
-                            fetch(url, { method: "POST" });
+                            fetch(url);
                         });
 
                         newFileElement.classList.remove("hidden");
@@ -357,8 +362,9 @@ class ErrorOverlay extends HTMLElement {
                     const fmt = (line) => {
                         const m = /\s*at\s+(?:(.+?)\s+\()?(.*?):(\d+):(\d+)\)?/.exec(line);
 
-                        if (!m)
+                        if (!m) {
                             return `<div class="frame">${escape(line)}</div>`;
+                        }
 
                         const function_ = m[1] ? escape(m[1]) : "";
                         const file = m[2];
@@ -390,11 +396,13 @@ class ErrorOverlay extends HTMLElement {
 
                             const editor = localStorage.getItem("vo:editor");
 
-                            const url = `/__open-in-editor?file=${encodeURIComponent(resolved)}${
+                            // injected by the hmr plugin when served
+                            // eslint-disable-next-line no-undef
+                            const url = `${base}__open-in-editor?file=${encodeURIComponent(resolved)}${
                                 line ? `&line=${line}` : ""
                             }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
 
-                            fetch(url, { method: "POST" });
+                            fetch(url);
                         });
                     });
                 }
@@ -497,11 +505,13 @@ class ErrorOverlay extends HTMLElement {
             const previousButton = this.root.querySelector("[data-flame-dialog-error-previous]");
             const nextButton = this.root.querySelector("[data-flame-dialog-error-next]");
 
-            if (indexElement)
+            if (indexElement) {
                 indexElement.textContent = (currentIndex + 1).toString();
+            }
 
-            if (totalElement)
+            if (totalElement) {
                 totalElement.textContent = totalErrors.toString();
+            }
 
             // Update button states
             if (previousButton) {

@@ -20,7 +20,6 @@ test.describe("Functional Error Overlay Test", () => {
         }
     });
 
-
     test("should display multiple errors in cause chain from error-test page", async ({ page }) => {
         // Navigate to error test page
         await page.goto("/error-test");

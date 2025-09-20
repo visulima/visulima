@@ -6,13 +6,13 @@ import type { ViteDevServer } from "vite";
 import findLanguageBasedOnExtension from "../../../../../shared/utils/find-language-based-on-extension";
 import getHighlighter, { transformerCompactLineOptions } from "../../../../../shared/utils/get-highlighter";
 import type { ErrorProcessingResult, ViteErrorData } from "../../types";
+import type { ESBuildMessage } from "../esbuild-error";
+import { isESBuildErrorArray, processESBuildErrors } from "../esbuild-error";
 import findModuleForPath from "../find-module-for-path";
 import { normalizeIdCandidates } from "../normalize-id-candidates";
 import realignOriginalPosition from "../position-aligner";
 import resolveOriginalLocation from "../resolve-original-location";
-import { cleanErrorMessage, cleanErrorStack, extractErrors } from "../stack-trace-utils";
-import { isESBuildErrorArray, processESBuildErrors } from "../esbuild-error-utils";
-import type { ESBuildMessage } from "../esbuild-error-utils";
+import { cleanErrorMessage, cleanErrorStack, extractErrors } from "../stack-trace";
 import { parseVueCompilationError } from "./parse-vue-compilation-error";
 import remapStackToOriginal from "./remap-stack-to-original";
 import retrieveSourceTexts from "./retrieve-source-texts";
@@ -281,8 +281,9 @@ const buildExtendedErrorData = async (
             if (causeHttpTrace?.file) {
                 causeQuery = extractQueryFromHttpUrl(causeHttpTrace.file);
 
-                if (causeQuery)
+                if (causeQuery) {
                     break;
+                }
             }
         }
     }

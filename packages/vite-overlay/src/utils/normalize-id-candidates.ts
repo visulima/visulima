@@ -12,8 +12,9 @@ const generateUrlCandidates = (urlString: string): string[] => {
 
 export const isHttpUrl = (value: string): boolean => HTTP_URL_REGEX.test(value);
 export const normalizeIdCandidates = (filePath: string): string[] => {
-    if (!filePath)
+    if (!filePath) {
         return [];
+    }
 
     try {
         if (isHttpUrl(filePath)) {
@@ -28,6 +29,7 @@ export const normalizeIdCandidates = (filePath: string): string[] => {
 
         if (filePath.includes("?")) {
             const pathWithoutQuery = filePath.split("?")[0];
+
             if (pathWithoutQuery) {
                 candidates.push(pathWithoutQuery);
             }
