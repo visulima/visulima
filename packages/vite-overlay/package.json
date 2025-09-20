@@ -1,6 +1,6 @@
 {
     "name": "@visulima/vite-overlay",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Improved vite overlay",
     "keywords": [
         "vite",
