@@ -14,8 +14,10 @@ describe("json-error-handler with normal Error", () => {
         expect(String(res.getHeader("content-type"))).toBe("application/json; charset=utf-8");
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
+
         // eslint-disable-next-line no-underscore-dangle
-        const data = JSON.parse(res._getData()) as { statusCode: number; error: string; message: string };
+        const data = JSON.parse(res._getData()) as { error: string; message: string; statusCode: number };
+
         expect(data.statusCode).toBe(500);
         expect(data.error).toBe("Internal Server Error");
     });

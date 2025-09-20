@@ -1,12 +1,12 @@
 declare module "jstoxml" {
     export interface JsToXmlOptions {
-        indent?: string;
-        header?: string | boolean;
-        attributeReplacements?: Record<string, string>;
-        attributeFilter?: (key: string, value: unknown) => boolean;
         attributeExplicitTrue?: boolean;
+        attributeFilter?: (key: string, value: unknown) => boolean;
+        attributeReplacements?: Record<string, string>;
         contentMap?: (content: string) => string;
         contentReplacements?: Record<string, string>;
+        header?: string | boolean;
+        indent?: string;
         selfCloseTags?: boolean;
     }
 

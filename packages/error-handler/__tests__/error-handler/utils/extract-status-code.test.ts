@@ -3,11 +3,12 @@ import { describe, expect, it } from "vitest";
 
 import { extractStatusCode } from "../../../src/error-handler/utils/extract-status-code";
 
-describe("extractStatusCode", () => {
+describe(extractStatusCode, () => {
     it("should extract status code from error.statusCode", () => {
         expect.assertions(1);
 
         const error = new Error("Test error");
+
         (error as any).statusCode = 404;
 
         const result = extractStatusCode(error);
@@ -19,6 +20,7 @@ describe("extractStatusCode", () => {
         expect.assertions(1);
 
         const error = new Error("Test error");
+
         (error as any).status = 403;
 
         const result = extractStatusCode(error);
@@ -30,6 +32,7 @@ describe("extractStatusCode", () => {
         expect.assertions(1);
 
         const error = new Error("Test error");
+
         (error as any).statusCode = 404;
         (error as any).status = 403;
 
@@ -65,6 +68,7 @@ describe("extractStatusCode", () => {
 
         testCases.forEach((statusCode) => {
             const error = new Error("Test error");
+
             (error as any).statusCode = statusCode;
 
             const result = extractStatusCode(error);
@@ -80,6 +84,7 @@ describe("extractStatusCode", () => {
 
         testCases.forEach((statusCode) => {
             const error = new Error("Test error");
+
             (error as any).statusCode = statusCode;
 
             const result = extractStatusCode(error);
@@ -92,6 +97,7 @@ describe("extractStatusCode", () => {
         expect.assertions(1);
 
         const error = new Error("Test error");
+
         (error as any).statusCode = 200;
 
         const result = extractStatusCode(error);
@@ -103,6 +109,7 @@ describe("extractStatusCode", () => {
         expect.assertions(1);
 
         const error = new Error("Test error");
+
         (error as any).statusCode = 700;
 
         const result = extractStatusCode(error);
@@ -114,6 +121,7 @@ describe("extractStatusCode", () => {
         expect.assertions(1);
 
         const error = new Error("Test error");
+
         (error as any).statusCode = "404";
 
         const result = extractStatusCode(error);
@@ -135,9 +143,11 @@ describe("extractStatusCode", () => {
         expect.assertions(2);
 
         const error1 = new Error("Test error");
+
         (error1 as any).statusCode = 399; // Below 400
 
         const error2 = new Error("Test error");
+
         (error2 as any).statusCode = 600; // Above 599
 
         const result1 = extractStatusCode(error1);

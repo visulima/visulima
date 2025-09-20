@@ -23,11 +23,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/error-handler artifact additionally contains code with the following licenses:
 ISC, MIT
 
 # Bundled dependencies:
+
 ## depd
+
 License: MIT
 By: Douglas Christopher Wilson
 Repository: dougwilson/nodejs-depd
@@ -55,9 +58,10 @@ Repository: dougwilson/nodejs-depd
 > TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 > SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## http-errors
+
 License: MIT
 By: Jonathan Ong, Alan Plum, Douglas Christopher Wilson
 Repository: jshttp/http-errors
@@ -85,9 +89,10 @@ Repository: jshttp/http-errors
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
+---
 
 ## inherits
+
 License: ISC
 Repository: git://github.com/isaacs/inherits
 
@@ -107,9 +112,10 @@ Repository: git://github.com/isaacs/inherits
 > OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 > PERFORMANCE OF THIS SOFTWARE.
 
----------------------------------------
+---
 
 ## setprototypeof
+
 License: ISC
 By: Wes Todd
 Repository: https://github.com/wesleytodd/setprototypeof.git
@@ -128,9 +134,10 @@ Repository: https://github.com/wesleytodd/setprototypeof.git
 > OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 > CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
----------------------------------------
+---
 
 ## statuses
+
 License: MIT
 By: Douglas Christopher Wilson, Jonathan Ong
 Repository: jshttp/statuses
@@ -158,9 +165,10 @@ Repository: jshttp/statuses
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
+---
 
 ## toidentifier
+
 License: MIT
 By: Douglas Christopher Wilson, Nick Baugh
 Repository: component/toidentifier

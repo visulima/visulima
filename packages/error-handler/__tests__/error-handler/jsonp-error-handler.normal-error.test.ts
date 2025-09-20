@@ -14,11 +14,15 @@ describe("jsonp-error-handler with normal Error", () => {
         expect(String(res.getHeader("content-type"))).toBe("application/javascript; charset=utf-8");
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
+
         // eslint-disable-next-line no-underscore-dangle
         const body = res._getData();
+
         expect(body.startsWith("myCb(")).toBe(true);
+
         const json = body.slice("myCb(".length, -2);
         const parsed = JSON.parse(json) as { statusCode: number };
+
         expect(parsed.statusCode).toBe(500);
     });
 });

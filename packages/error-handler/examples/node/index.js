@@ -1,13 +1,19 @@
 import { createServer } from "node:http";
 
-import httpDisplayer from "../../dist/handler/http/node-handler.js";
+import httpDisplayer from "@visulima/error-handler/dist/handler/http/node-handler.js";
 
 // Deeper stack builders (sync + async levels)
+/**
+ *
+ */
 function parseEnvironmentConfig() {
     // Deepest sync failure
     throw new Error("Invalid environment configuration: missing 'APP_SECRET'");
 }
 
+/**
+ *
+ */
 function initializeModelLayer() {
     try {
         parseEnvironmentConfig();
@@ -16,6 +22,9 @@ function initializeModelLayer() {
     }
 }
 
+/**
+ *
+ */
 async function queryDatabase() {
     // Simulate async boundary
     await Promise.resolve();
@@ -50,9 +59,13 @@ function computeRecommendations(profile) {
     return [profile];
 }
 
+/**
+ *
+ */
 async function renderController() {
     try {
         const profile = await loadUserProfile("user-123");
+
         computeRecommendations(profile);
     } catch (innerError) {
         throw new Error("Controller render failed", { cause: innerError });
@@ -64,7 +77,7 @@ const port = 3000;
 const server = createServer(async (request, response) => {
     /** @param {unknown} error */
     async function show(error) {
-        const displayer = await httpDisplayer(/** @type {Error} */ (error), { showTrace: true });
+        const displayer = await httpDisplayer(/** @type {Error} */ error, { showTrace: true });
 
         return displayer(request, response);
     }
@@ -75,56 +88,56 @@ const server = createServer(async (request, response) => {
     if (url.pathname === "/esm-cjs") {
         try {
             throw new Error("Error [ERR_REQUIRE_ESM]: Must use import to load ES Module");
-        } catch (err) {
-            return show(err);
+        } catch (error) {
+            return show(error);
         }
     }
 
     if (url.pathname === "/export-mismatch") {
         try {
             throw new Error("Attempted import error: default export not found");
-        } catch (err) {
-            return show(err);
+        } catch (error) {
+            return show(error);
         }
     }
 
     if (url.pathname === "/enoent") {
         try {
             throw new Error("Cannot find module './Foo' imported from ./bar");
-        } catch (err) {
-            return show(err);
+        } catch (error) {
+            return show(error);
         }
     }
 
     if (url.pathname === "/ts-paths") {
         try {
             throw new Error("TS2307: Cannot find module '@app/utils'");
-        } catch (err) {
-            return show(err);
+        } catch (error) {
+            return show(error);
         }
     }
 
     if (url.pathname === "/dns") {
         try {
             throw new Error("getaddrinfo ENOTFOUND api.example.com");
-        } catch (err) {
-            return show(err);
+        } catch (error) {
+            return show(error);
         }
     }
 
     if (url.pathname === "/hydration") {
         try {
             throw new Error("Hydration failed because the initial UI does not match what was rendered on the server");
-        } catch (err) {
-            return show(err);
+        } catch (error) {
+            return show(error);
         }
     }
 
     if (url.pathname === "/undefined-prop") {
         try {
             throw new Error("TypeError: Cannot read properties of undefined (reading 'foo')");
-        } catch (err) {
-            return show(err);
+        } catch (error) {
+            return show(error);
         }
     }
 
@@ -135,10 +148,12 @@ const server = createServer(async (request, response) => {
         const error = new Error("This is a error message, that is really long error message, This is a error message, that is really long error message", {
             cause: controllerError,
         });
+
         error.hint = "This is a hint message";
 
         try {
             await show(error);
+
             return;
         } catch (error_) {
             console.error("Error in error-handler's httpDisplayer or its handler:", error_);

@@ -2,9 +2,9 @@ import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import { setErrorHeaders } from "../../../src/error-handler/utils/set-error-headers";
+import setErrorHeaders from "../../../src/error-handler/utils/set-error-headers";
 
-describe("setErrorHeaders", () => {
+describe(setErrorHeaders, () => {
     it("should set error headers on response", () => {
         expect.assertions(1);
 
@@ -13,17 +13,18 @@ describe("setErrorHeaders", () => {
         });
 
         const error = new httpErrors.BadRequest();
+
         error.headers = {
-            "X-Test": "test",
             "x-custom": "custom",
+            "X-Test": "test",
         } as any;
 
         setErrorHeaders(res, error);
 
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getHeaders()).toStrictEqual({
-            "x-test": "test",
             "x-custom": "custom",
+            "x-test": "test",
         });
     });
 
@@ -65,6 +66,7 @@ describe("setErrorHeaders", () => {
         });
 
         const error = new httpErrors.BadRequest();
+
         error.headers = {
             "Set-Cookie": ["cookie1=value1", "cookie2=value2"],
         } as any;
@@ -85,19 +87,20 @@ describe("setErrorHeaders", () => {
         });
 
         const error = new httpErrors.BadRequest();
+
         error.headers = {
+            "X-Boolean": true,
             "X-Number": 42,
             "X-String": "test",
-            "X-Boolean": true,
         } as any;
 
         setErrorHeaders(res, error);
 
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getHeaders()).toStrictEqual({
+            "x-boolean": true, // Mock doesn't convert to string
             "x-number": 42, // Mock doesn't convert to string
             "x-string": "test",
-            "x-boolean": true, // Mock doesn't convert to string
         });
     });
 });

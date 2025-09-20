@@ -15,8 +15,10 @@ describe("json-error-handler with http-errors", () => {
         expect(String(res.getHeader("content-type"))).toBe("application/json; charset=utf-8");
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(400);
+
         // eslint-disable-next-line no-underscore-dangle
-        const data = JSON.parse(res._getData()) as { statusCode: number; error: string; message: string };
+        const data = JSON.parse(res._getData()) as { error: string; message: string; statusCode: number };
+
         expect(data.statusCode).toBe(400);
         expect(data.error).toBe("Bad Request");
     });

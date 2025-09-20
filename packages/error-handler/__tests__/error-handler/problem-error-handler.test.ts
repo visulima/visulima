@@ -20,7 +20,7 @@ describe("problem-error-handler", () => {
         expect(res._getStatusCode()).toBe(500);
         expect(String(res.getHeader("content-type"))).toBe("application/problem+json");
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe('{"type":"about:blank","title":"Internal Server Error","status":500,"detail":"test"}');
+        expect(res._getData()).toBe("{\"type\":\"about:blank\",\"title\":\"Internal Server Error\",\"status\":500,\"detail\":\"test\"}");
     });
 
     it("should render http-errors", () => {
@@ -40,6 +40,6 @@ describe("problem-error-handler", () => {
         expect(res._getStatusCode()).toBe(403);
         expect(String(res.getHeader("content-type"))).toBe("application/problem+json");
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe('{"type":"about:blank","title":"Forbidden","status":403,"detail":"Forbidden"}');
+        expect(res._getData()).toBe("{\"type\":\"about:blank\",\"title\":\"Forbidden\",\"status\":403,\"detail\":\"Forbidden\"}");
     });
 });

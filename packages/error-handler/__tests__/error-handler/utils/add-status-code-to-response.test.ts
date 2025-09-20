@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { addStatusCodeToResponse } from "../../../src/error-handler/utils/add-status-code-to-response";
 
-describe("addStatusCodeToResponse", () => {
+describe(addStatusCodeToResponse, () => {
     it("should set status code from error.statusCode", () => {
         expect.assertions(1);
 
@@ -13,6 +13,7 @@ describe("addStatusCodeToResponse", () => {
         });
 
         const error = new httpErrors.BadRequest();
+
         error.statusCode = 404;
 
         addStatusCodeToResponse(res, error);
@@ -29,6 +30,7 @@ describe("addStatusCodeToResponse", () => {
         });
 
         const error = new Error("Test error");
+
         (error as any).status = 403;
 
         addStatusCodeToResponse(res, error);
@@ -45,6 +47,7 @@ describe("addStatusCodeToResponse", () => {
         });
 
         const error = new Error("Test error");
+
         (error as any).statusCode = 404;
         (error as any).status = 403;
 
@@ -79,6 +82,7 @@ describe("addStatusCodeToResponse", () => {
         res.statusCode = 404; // Pre-set status
 
         const error = new Error("Test error");
+
         (error as any).statusCode = 403;
 
         addStatusCodeToResponse(res, error);
@@ -98,6 +102,7 @@ describe("addStatusCodeToResponse", () => {
             });
 
             const error = new Error("Test error");
+
             (error as any).statusCode = statusCode;
 
             addStatusCodeToResponse(res, error);
@@ -118,6 +123,7 @@ describe("addStatusCodeToResponse", () => {
             });
 
             const error = new Error("Test error");
+
             (error as any).statusCode = statusCode;
 
             addStatusCodeToResponse(res, error);
@@ -135,6 +141,7 @@ describe("addStatusCodeToResponse", () => {
         });
 
         const error = new Error("Test error");
+
         (error as any).statusCode = 999; // Invalid status code
 
         addStatusCodeToResponse(res, error);
@@ -151,6 +158,7 @@ describe("addStatusCodeToResponse", () => {
         });
 
         const error = new Error("Test error");
+
         (error as any).statusCode = "404"; // String instead of number
 
         addStatusCodeToResponse(res, error);

@@ -13,8 +13,8 @@ describe("httpHandler CSP nonce option", () => {
         const handler = await httpHandler(error, { cspNonce: nonce });
 
         const { req, res } = createMocks({
-            method: "GET",
             headers: { accept: "text/html" },
+            method: "GET",
         });
 
         await handler(req, res);
