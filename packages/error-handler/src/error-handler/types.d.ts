@@ -6,10 +6,7 @@ export type ErrorHandler = <Request extends IncomingMessage, Response extends Se
     response: Response,
 ) => Promise<void> | void;
 
-export type FetchErrorHandler = (
-    error: unknown,
-    request: Request,
-) => Promise<Response> | Response;
+export type FetchErrorHandler = (error: unknown, request: Request) => Promise<Response>;
 
 export type ErrorHandlers = {
     handler: ErrorHandler;

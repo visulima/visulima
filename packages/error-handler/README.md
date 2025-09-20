@@ -62,7 +62,7 @@ const server = createServer(async (req, res) => {
         throw new Error("Boom!");
     } catch (error) {
         const handler = await httpHandler(error as Error, {
-            showTrace: process.env.NODE_ENV !== "production"
+            showTrace: process.env.NODE_ENV !== "production",
         });
         return handler(req, res);
     }
@@ -85,7 +85,7 @@ app.get("/", async (req, res) => {
         throw new Error("Example error");
     } catch (error) {
         const handler = await httpHandler(error as Error, {
-            showTrace: process.env.NODE_ENV !== "production"
+            showTrace: process.env.NODE_ENV !== "production",
         });
         return handler(req, res);
     }
@@ -110,7 +110,7 @@ app.get("/error", () => {
 
 app.onError(async (error, c) => {
     const handler = await fetchHandler(error as Error, {
-        showTrace: process.env.NODE_ENV !== "production"
+        showTrace: process.env.NODE_ENV !== "production",
     });
     return handler(c.req.raw);
 });
@@ -130,7 +130,7 @@ export default {
             throw new Error("Boom");
         } catch (error) {
             const handler = await fetchHandler(error as Error, {
-                showTrace: process.env.NODE_ENV !== "production"
+                showTrace: process.env.NODE_ENV !== "production",
             });
             return handler(request);
         }
@@ -147,7 +147,7 @@ Deno.serve(async (request: Request) => {
         throw new Error("Boom");
     } catch (error) {
         const handler = await fetchHandler(error as Error, {
-            showTrace: process.env.NODE_ENV !== "production"
+            showTrace: process.env.NODE_ENV !== "production",
         });
         return handler(request);
     }
@@ -192,10 +192,12 @@ const handler = await httpHandler(error, {
 Node.js HTTP handler for Express, Connect, Fastify, Koa, and similar frameworks.
 
 **Parameters:**
+
 - `error: Error` - The error to handle
 - `options?: HtmlErrorHandlerOptions & { showTrace?: boolean; extraHandlers?: ErrorHandlers }`
 
 **Options:**
+
 - `showTrace?: boolean` - Include stack trace in responses (default: `true`)
 - `extraHandlers?: ErrorHandlers` - Custom handlers for specific Accept headers
 - `errorPage?: string | ((params) => string | Promise<string>)` - Custom HTML error page
@@ -207,10 +209,12 @@ Node.js HTTP handler for Express, Connect, Fastify, Koa, and similar frameworks.
 Fetch API handler for Cloudflare Workers, Deno, Bun, and other Fetch-based runtimes.
 
 **Parameters:**
+
 - `error: Error` - The error to handle
 - `options?: HtmlErrorHandlerOptions & { showTrace?: boolean; extraHandlers?: FetchErrorHandlers }`
 
 **Options:**
+
 - Same as `httpHandler` but uses `FetchErrorHandlers` for custom handlers
 - `onError?: (error, request, response) => void | Promise<void>` - Callback for custom error logging
 
@@ -228,13 +232,15 @@ type FetchErrorHandlers = {
 }[];
 
 type HtmlErrorHandlerOptions = {
-    errorPage?: string | ((params: {
-        error: Error;
-        request: IncomingMessage;
-        response: ServerResponse;
-        reasonPhrase: string;
-        statusCode: number;
-    }) => string | Promise<string>);
+    errorPage?:
+        | string
+        | ((params: {
+              error: Error;
+              request: IncomingMessage;
+              response: ServerResponse;
+              reasonPhrase: string;
+              statusCode: number;
+          }) => string | Promise<string>);
     cspNonce?: string;
     onError?: (error: Error, request: IncomingMessage, response: ServerResponse) => void | Promise<void>;
 };
@@ -253,7 +259,7 @@ const server = createServer(async (req, res) => {
         throw new Error("Test error");
     } catch (error) {
         const handler = await httpHandler(error as Error, {
-            showTrace: process.env.NODE_ENV !== "production"
+            showTrace: process.env.NODE_ENV !== "production",
         });
         return handler(req, res);
     }
@@ -275,7 +281,7 @@ const handler = await httpHandler(error, {
             <p>${error.message}</p>
         </body>
         </html>`,
-    showTrace: false
+    showTrace: false,
 });
 ```
 
@@ -286,7 +292,7 @@ import httpHandler from "@visulima/error-handler/handler/http/node";
 
 const handler = await httpHandler(error, {
     cspNonce: "nonce-abc123", // Will be added to <style> tags
-    showTrace: process.env.NODE_ENV !== "production"
+    showTrace: process.env.NODE_ENV !== "production",
 });
 ```
 
@@ -303,7 +309,7 @@ const handler = await httpHandler(error, {
         // Or send to external logging service
         // logToService({ error: error.message, url: request.url, method: request.method });
     },
-    showTrace: process.env.NODE_ENV !== "production"
+    showTrace: process.env.NODE_ENV !== "production",
 });
 ```
 
@@ -373,8 +379,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

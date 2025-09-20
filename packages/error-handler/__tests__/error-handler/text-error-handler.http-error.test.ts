@@ -11,6 +11,7 @@ describe("text-error-handler with http-errors", () => {
         const { req, res } = createMocks({ method: "GET" });
 
         const error = new httpErrors.BadRequest();
+
         error.expose = false;
         await textErrorHandler()(error as unknown as Error, req, res);
 

@@ -1,10 +1,11 @@
+/* eslint-disable unicorn/prevent-abbreviations */
 import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
 import { addStatusCodeToResponse } from "../../src/error-handler/utils/add-status-code-to-response";
 import { sendJson } from "../../src/error-handler/utils/send-json";
-import { setErrorHeaders } from "../../src/error-handler/utils/set-error-headers";
+import setErrorHeaders from "../../src/error-handler/utils/set-error-headers";
 
 describe("error-handler/utils", () => {
     it("should set error headers", () => {
@@ -38,7 +39,7 @@ describe("error-handler/utils", () => {
         sendJson(res, { test: "test" });
 
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe('{"test":"test"}');
+        expect(res._getData()).toBe("{\"test\":\"test\"}");
     });
 
     it("should add status code to response", () => {

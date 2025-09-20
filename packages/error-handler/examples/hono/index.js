@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
-import { Hono } from "hono";
 // @ts-ignore - resolved after build: dist/handler/fetch-handler.mjs is generated
-import fetchHandler from "../../dist/handler/http/fetch-handler.js";
+import fetchHandler from "@visulima/error-handler/dist/handler/http/fetch-handler.js";
+import { Hono } from "hono";
 
 const app = new Hono();
 
@@ -11,8 +11,9 @@ app.get("/error", () => {
 });
 
 // Handle errors via fetch-based handler
-app.onError(async (err, c) => {
-    const handler = await fetchHandler(/** @type {Error} */ (err), { showTrace: true });
+app.onError(async (error, c) => {
+    const handler = await fetchHandler(/** @type {Error} */ error, { showTrace: true });
+
     return handler(c.req.raw);
 });
 

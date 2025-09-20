@@ -1,5 +1,5 @@
 import type { BaseCliOptions } from "../../../../shared/utils/cli-error-builder";
-import { buildOutput, terminalOutput } from "../../../../shared/utils/cli-error-builder";
+import { buildOutput } from "../../../../shared/utils/cli-error-builder";
 
 export type { BaseCliOptions, CliHandlerOptions } from "../../../../shared/utils/cli-error-builder";
 
@@ -13,4 +13,4 @@ export const ansiHandler = async (error: Error, options: BaseCliOptions = {}): P
     return `${errorAnsi}\n\n${solutionBox}`;
 };
 
-export const cliHandler = terminalOutput;
+export { terminalOutput as cliHandler } from "../../../../shared/utils/cli-error-builder";

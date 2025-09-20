@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { sendFetchJson } from "../../../src/error-handler/utils/send-fetch-json";
 
-describe("sendFetchJson", () => {
+describe(sendFetchJson, () => {
     it("should create Response with JSON body and default content type", () => {
         expect.assertions(3);
 
-        const data = { test: "test", number: 42 };
+        const data = { number: 42, test: "test" };
         const status = 200;
 
         const response = sendFetchJson(data, status);
@@ -64,30 +64,30 @@ describe("sendFetchJson", () => {
         expect.assertions(1);
 
         const data = {
+            items: ["item1", "item2"],
             user: {
                 id: 123,
                 name: "John Doe",
                 preferences: {
-                    theme: "dark",
                     notifications: true,
+                    theme: "dark",
                 },
             },
-            items: ["item1", "item2"],
         };
 
         const response = sendFetchJson(data, 200);
         const body = await response.json();
 
         expect(body).toEqual({
+            items: ["item1", "item2"],
             user: {
                 id: 123,
                 name: "John Doe",
                 preferences: {
-                    theme: "dark",
                     notifications: true,
+                    theme: "dark",
                 },
             },
-            items: ["item1", "item2"],
         });
     });
 
@@ -135,7 +135,9 @@ describe("sendFetchJson", () => {
         expect.assertions(1);
 
         const largeData = {
-            items: Array.from({ length: 1000 }, (_, i) => ({ id: i, name: `Item ${i}` })),
+            items: Array.from({ length: 1000 }, (_, index) => {
+                return { id: index, name: `Item ${index}` };
+            }),
         };
 
         const response = sendFetchJson(largeData, 200);

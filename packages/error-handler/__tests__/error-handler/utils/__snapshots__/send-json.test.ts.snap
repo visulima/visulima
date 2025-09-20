@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`sendJson > should handle complex nested objects > response-data 1`] = `"{"items":["item1","item2"],"user":{"id":123,"name":"John Doe","preferences":{"notifications":true,"theme":"dark"}}}"`;
+
+exports[`sendJson > should send JSON with default content type > response-data 1`] = `"{"number":42,"test":"test"}"`;
