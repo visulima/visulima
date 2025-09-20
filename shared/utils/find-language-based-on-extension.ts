@@ -53,6 +53,33 @@ const findLanguageBasedOnExtension = (file: string): string => {
         case "mdx": {
             return "mdx";
         }
+        case "svelte": {
+            return "svelte";
+        }
+        case "vue": {
+            return "vue";
+        }
+        case "html": {
+            return "html";
+        }
+        case "css": {
+            return "css";
+        }
+        case "scss": {
+            return "scss";
+        }
+        case "less": {
+            return "less";
+        }
+        case "sass": {
+            return "sass";
+        }
+        case "stylus": {
+            return "stylus";
+        }
+        case "styl": {
+            return "styl";
+        }
         default: {
             return "javascript";
         }
