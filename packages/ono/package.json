@@ -127,6 +127,7 @@
         "openai": "5.21.0",
         "prettier": "^3.6.2",
         "prettier-plugin-tailwindcss": "0.6.14",
+        "publint": "^0.3.12",
         "rimraf": "^6.0.1",
         "semantic-release": "^24.2.8",
         "sort-package-json": "^3.4.0",

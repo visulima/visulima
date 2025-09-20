@@ -108,6 +108,7 @@
         "json-schema": "0.4.0",
         "prettier": "3.6.2",
         "prisma": "6.15.0",
+        "publint": "^0.3.12",
         "rimraf": "6.0.1",
         "semantic-release": "24.2.7",
         "type-fest": "4.41.0",

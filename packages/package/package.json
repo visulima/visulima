@@ -199,6 +199,7 @@
         "execa": "^9.5.3",
         "npm": "^11.4.0",
         "prettier": "^3.5.3",
+        "publint": "^0.3.12",
         "rimraf": "6.0.1",
         "semantic-release": "24.2.4",
         "tempy": "^3.1.0",

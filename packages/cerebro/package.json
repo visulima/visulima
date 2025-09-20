@@ -109,7 +109,8 @@
         "@visulima/pail": "2.1.28",
         "cli-table3": "^0.6.5",
         "command-line-args": "^6.0.1",
-        "fastest-levenshtein": "^1.0.16"
+        "fastest-levenshtein": "^1.0.16",
+        "publint": "^0.3.12"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",

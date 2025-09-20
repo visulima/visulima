@@ -107,6 +107,7 @@
         "@visulima/fs": "3.1.8",
         "comment-parser": "^1.4.1",
         "lodash.mergewith": "^4.6.2",
+        "publint": "^0.3.12",
         "read-pkg-up": "^7.0.1",
         "yaml": "^2.8.0"
     },

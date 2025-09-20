@@ -121,6 +121,7 @@
         "filter-obj": "^6.1.0",
         "is-plain-obj": "^4.1.0",
         "prettier": "^3.5.3",
+        "publint": "^0.3.12",
         "rimraf": "6.0.1",
         "secretlint": "9.3.2",
         "semantic-release": "^24.2.4",
