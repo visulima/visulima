@@ -80,15 +80,15 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     WeakSet: (_value: WeakSet<any>, options: InternalOptions) => options.stylize("WeakSet{…}", "special"),
 } as const;
 
-const inspectCustom = (value: object, options: InternalOptions, type: string, depth: number): string | undefined => {
+const inspectCustom = (value: object, options: InternalOptions, type: string, inspectFn: typeof inspect): string | undefined => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (globalThis.window === undefined && typeof (value as any)[Symbol.for("nodejs.util.inspect.custom")] === "function") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type
-        return ((value as any)[Symbol.for("nodejs.util.inspect.custom")] as Function)(depth, options);
+        return ((value as any)[Symbol.for("nodejs.util.inspect.custom")] as Function)(options.depth, options, inspectFn);
     }
 
     if ("inspect" in value && typeof value.inspect === "function") {
-        return value.inspect(depth, options);
+        return value.inspect(options.depth, options);
     }
 
     if ("constructor" in value && constructorMap.has(value.constructor)) {
@@ -145,7 +145,10 @@ export const internalInspect = (value: unknown, options: InternalOptions, depth:
 
     // If `options.customInspect` is set to true then try to use the custom inspector
     if (options.customInspect && value) {
-        const output = inspectCustom(value, options, type, options.depth === undefined ? Number.POSITIVE_INFINITY : options.depth - depth);
+        // eslint-disable-next-line no-param-reassign
+        options.depth = options.depth === undefined ? Number.POSITIVE_INFINITY : options.depth - depth;
+
+        const output = inspectCustom(value, options, type, inspect);
 
         if (output) {
             if (typeof output === "string") {
