@@ -1,6 +1,6 @@
 {
     "name": "@visulima/vite-overlay",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Improved vite overlay",
     "keywords": [
         "vite",
@@ -83,7 +83,7 @@
         "@shikijs/langs": "^3.12.2",
         "@shikijs/themes": "^3.12.2",
         "@visulima/boxen": "2.0.3",
-        "@visulima/error": "4.6.1",
+        "@visulima/error": "4.6.2",
         "shiki": "^3.12.2"
     },
     "devDependencies": {
