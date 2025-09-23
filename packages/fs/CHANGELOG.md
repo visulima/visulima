@@ -1,3 +1,14 @@
+## @visulima/fs [3.1.9](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.8...@visulima/fs@3.1.9) (2025-09-23)
+
+### Miscellaneous Chores
+
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.6.2
+
 ## @visulima/fs [3.1.8](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.7...@visulima/fs@3.1.8) (2025-09-19)
 
 ### Miscellaneous Chores
