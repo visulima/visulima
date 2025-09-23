@@ -55,17 +55,17 @@ class ErrorOverlay extends HTMLElement {
 
         this.__v_oMode = "original";
 
-        this.#initializeThemeToggle();
-        this.#initializeBalloon(payload.errors.length);
-        this.#restoreBalloonState();
-        this.#initializeCopyError();
-        this.#initializePagination();
+        this._initializeThemeToggle();
+        this._initializeBalloon(payload.errors.length);
+        this._restoreBalloonState();
+        this._initializeCopyError();
+        this._initializePagination();
 
         if (error.solution) {
-            this.#injectSolution(error.solution);
+            this._injectSolution(error.solution);
         }
 
-        this.#hideLoadingStates();
+        this._hideLoadingStates();
 
         const editorSelect = this.root.querySelector("#editor-selector");
 
@@ -105,48 +105,10 @@ class ErrorOverlay extends HTMLElement {
     }
 
     /**
-     * Removes the error overlay from the DOM.
-     */
-    close() {
-        if (this.parentNode) {
-            const balloon = this.root.querySelector("#__v_o__balloon");
-
-            if (balloon) {
-                const rootElement = this.root.querySelector("#__v_o__root");
-
-                rootElement.classList.add("hidden");
-
-                this.#saveBalloonState("overlay", "closed");
-            } else {
-                this.remove();
-            }
-        }
-    }
-
-    /**
-     * Updates the overlay content with the current error's code frame.
-     */
-    updateOverlay() {
-        const currentIndex = 0;
-
-        const currentError = this.__v_oPayload?.errors?.[currentIndex];
-
-        if (currentError) {
-            const flameOverlay = this.root.querySelector("#__v_o__overlay");
-
-            if (flameOverlay) {
-                const html = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || "";
-
-                flameOverlay.innerHTML = html;
-            }
-        }
-    }
-
-    /**
      * Hides loading skeleton states and shows the actual content after a brief delay.
      * @private
      */
-    #hideLoadingStates() {
+    _hideLoadingStates() {
         setTimeout(() => {
             const headerSkeleton = this.root.querySelector("#__v_o__header_loader");
             const headerContent = this.root.querySelector("#__v_o__title");
@@ -190,7 +152,7 @@ class ErrorOverlay extends HTMLElement {
      * @private
      * @param {number} total - The total number of errors to display
      */
-    #initializeBalloon(total) {
+    _initializeBalloon(total) {
         try {
             const balloon = this.root.querySelector("#__v_o__balloon");
             const countElement = this.root.querySelector("#__v_o__balloon_count");
@@ -199,7 +161,7 @@ class ErrorOverlay extends HTMLElement {
             if (balloon && countElement) {
                 countElement.textContent = total.toString();
 
-                this.#restoreBalloonState();
+                this._restoreBalloonState();
 
                 balloon.classList.toggle("hidden", total <= 0);
 
@@ -210,14 +172,14 @@ class ErrorOverlay extends HTMLElement {
 
                     if (classes.contains("hidden")) {
                         classes.remove("hidden");
-                        this.#saveBalloonState("overlay", "open");
+                        this._saveBalloonState("overlay", "open");
                     } else {
                         classes.add("hidden");
-                        this.#saveBalloonState("overlay", "closed");
+                        this._saveBalloonState("overlay", "closed");
                     }
                 };
 
-                this.#makeBalloonDraggable(balloon);
+                this._makeBalloonDraggable(balloon);
 
                 balloon.addEventListener("click", clickHandler);
             }
@@ -230,7 +192,7 @@ class ErrorOverlay extends HTMLElement {
      * Initializes the copy error functionality that copies error details to clipboard.
      * @private
      */
-    #initializeCopyError() {
+    _initializeCopyError() {
         const copyButton = this.root.querySelector("#__v_o__copy_error");
 
         if (!copyButton) {
@@ -242,7 +204,7 @@ class ErrorOverlay extends HTMLElement {
 
             try {
                 const payload = this.__v_oPayload;
-                const currentError = payload?.errors?.[0];
+                const currentError = payload && payload.errors && payload.errors[0];
 
                 if (!currentError) {
                     console.warn("[v-o] No error data available to copy");
@@ -250,7 +212,7 @@ class ErrorOverlay extends HTMLElement {
                     return;
                 }
 
-                const codeFrame = currentError?.originalSnippet || "";
+                const codeFrame = (currentError && currentError.originalSnippet) || "";
 
                 const formattedText = [
                     "## Error Type",
@@ -310,7 +272,7 @@ class ErrorOverlay extends HTMLElement {
      * Initializes pagination functionality for navigating between multiple errors.
      * @private
      */
-    #initializePagination() {
+    _initializePagination() {
         const payload = this.__v_oPayload;
         const errors = Array.isArray(payload.errors) && payload.errors.length > 0 ? payload.errors : [];
         const errorIds = errors.map((error) =>
@@ -339,9 +301,9 @@ class ErrorOverlay extends HTMLElement {
                 const fileElement = this.root.querySelector("#__v_o__filelink");
 
                 if (fileElement) {
-                    const fullPath = currentError?.originalFilePath || "";
-                    const line = currentError?.originalFileLine;
-                    const column = currentError?.originalFileColumn;
+                    const fullPath = (currentError && currentError.originalFilePath) || "";
+                    const line = currentError && currentError.originalFileLine;
+                    const column = currentError && currentError.originalFileColumn;
 
                     if (fullPath) {
                         const isHttpLink = /^https?:\/\//i.test(fullPath);
@@ -389,7 +351,7 @@ class ErrorOverlay extends HTMLElement {
 
             const updateRawStack = (mode) => {
                 const stackHost = this.root.querySelector("#__v_o__stacktrace");
-                const stackElement = stackHost?.querySelector("div:last-child");
+                const stackElement = stackHost && stackHost.querySelector("div:last-child");
 
                 if (stackHost && stackElement) {
                     const rootPayload = this.__v_oPayload || {};
@@ -533,29 +495,39 @@ class ErrorOverlay extends HTMLElement {
                 }
             }
 
-            originalButton?.addEventListener("click", (event) => {
-                event.preventDefault();
+            if (originalButton) {
+                originalButton.addEventListener("click", (event) => {
+                    event.preventDefault();
 
-                this.__v_oMode = "original";
+                    this.__v_oMode = "original";
 
-                renderCode("original");
-                updateRawStack("original");
+                    renderCode("original");
+                    updateRawStack("original");
 
-                originalButton?.classList.add("active");
-                compiledButton?.classList.remove("active");
-            });
+                    if (originalButton)
+                        originalButton.classList.add("active");
 
-            compiledButton?.addEventListener("click", (event) => {
-                event.preventDefault();
+                    if (compiledButton)
+                        compiledButton.classList.remove("active");
+                });
+            }
 
-                this.__v_oMode = "compiled";
+            if (compiledButton) {
+                compiledButton.addEventListener("click", (event) => {
+                    event.preventDefault();
 
-                renderCode("compiled");
-                updateRawStack("compiled");
+                    this.__v_oMode = "compiled";
 
-                compiledButton?.classList.add("active");
-                originalButton?.classList.remove("active");
-            });
+                    renderCode("compiled");
+                    updateRawStack("compiled");
+
+                    if (compiledButton)
+                        compiledButton.classList.add("active");
+
+                    if (originalButton)
+                        originalButton.classList.remove("active");
+                });
+            }
         };
 
         const updatePagination = () => {
@@ -625,7 +597,7 @@ class ErrorOverlay extends HTMLElement {
         globalThis.__v_oSelectError = selectById;
 
         globalThis.addEventListener("v-o:select-error", (event_) => {
-            selectById(event_?.detail?.id);
+            selectById(event_ && event_.detail && event_.detail.id);
         });
 
         updatePagination();
@@ -635,7 +607,7 @@ class ErrorOverlay extends HTMLElement {
      * Initializes the theme toggle functionality for switching between light and dark modes.
      * @private
      */
-    #initializeThemeToggle() {
+    _initializeThemeToggle() {
         const savedTheme = localStorage.getItem("__v-o__theme");
         const systemPrefersDark = globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
         const currentTheme = savedTheme || (systemPrefersDark ? "dark" : "light");
@@ -647,20 +619,35 @@ class ErrorOverlay extends HTMLElement {
         const lightButton = this.root.querySelector("[data-v-o-theme-click-value=\"light\"]");
 
         if (isDark) {
-            darkButton?.classList.add("hidden");
-            darkButton?.classList.remove("block");
-            lightButton?.classList.remove("hidden");
-            lightButton?.classList.add("block");
-            rootElement?.classList.add("dark");
+            if (darkButton) {
+                darkButton.classList.add("hidden");
+                darkButton.classList.remove("block");
+            }
+
+            if (lightButton) {
+                lightButton.classList.remove("hidden");
+                lightButton.classList.add("block");
+            }
+
+            if (rootElement)
+                rootElement.classList.add("dark");
         } else {
-            darkButton?.classList.remove("hidden");
-            darkButton?.classList.add("block");
-            lightButton?.classList.add("hidden");
-            lightButton?.classList.remove("block");
-            rootElement?.classList.remove("dark");
+            if (darkButton) {
+                darkButton.classList.remove("hidden");
+                darkButton.classList.add("block");
+            }
+
+            if (lightButton) {
+                lightButton.classList.add("hidden");
+                lightButton.classList.remove("block");
+            }
+
+            if (rootElement)
+                rootElement.classList.remove("dark");
         }
 
-        rootElement?.classList.remove("hidden");
+        if (rootElement)
+            rootElement.classList.remove("hidden");
 
         const themeButtons = this.root.querySelectorAll("[data-v-o-theme-click-value]");
 
@@ -671,21 +658,35 @@ class ErrorOverlay extends HTMLElement {
                 const theme = event.currentTarget.dataset.vOThemeClickValue;
 
                 if (theme === "dark") {
-                    rootElement?.classList.add("dark");
+                    if (rootElement)
+                        rootElement.classList.add("dark");
+
                     localStorage.setItem("__v-o__theme", "dark");
 
-                    darkButton?.classList.add("hidden");
-                    darkButton?.classList.remove("block");
-                    lightButton?.classList.remove("hidden");
-                    lightButton?.classList.add("block");
+                    if (darkButton) {
+                        darkButton.classList.add("hidden");
+                        darkButton.classList.remove("block");
+                    }
+
+                    if (lightButton) {
+                        lightButton.classList.remove("hidden");
+                        lightButton.classList.add("block");
+                    }
                 } else {
-                    rootElement?.classList.remove("dark");
+                    if (rootElement)
+                        rootElement.classList.remove("dark");
+
                     localStorage.setItem("__v-o__theme", "light");
 
-                    darkButton?.classList.remove("hidden");
-                    darkButton?.classList.add("block");
-                    lightButton?.classList.add("hidden");
-                    lightButton?.classList.remove("block");
+                    if (darkButton) {
+                        darkButton.classList.remove("hidden");
+                        darkButton.classList.add("block");
+                    }
+
+                    if (lightButton) {
+                        lightButton.classList.add("hidden");
+                        lightButton.classList.remove("block");
+                    }
                 }
             });
         });
@@ -696,7 +697,7 @@ class ErrorOverlay extends HTMLElement {
      * @param {object} solution - The solution object containing header and body
      * @private
      */
-    #injectSolution(solution) {
+    _injectSolution(solution) {
         const solutions = this.root.querySelector("#__v_o__solutions");
         const solutionsContainer = this.root.querySelector("#__v_o__solutions_container");
 
@@ -721,7 +722,7 @@ class ErrorOverlay extends HTMLElement {
      * @private
      * @param {HTMLElement} balloon - The balloon element
      */
-    #makeBalloonDraggable(balloon) {
+    _makeBalloonDraggable(balloon) {
         let isDragging = false;
         let startX;
         let startY;
@@ -765,7 +766,7 @@ class ErrorOverlay extends HTMLElement {
             balloon.style.bottom = "auto";
             balloon.style.transform = "none";
 
-            this.#saveBalloonState("position", closestCorner.name);
+            this._saveBalloonState("position", closestCorner.name);
         };
 
         const handleMouseUp = () => {
@@ -799,7 +800,7 @@ class ErrorOverlay extends HTMLElement {
      * Restores balloon state and position from localStorage
      * @private
      */
-    #restoreBalloonState() {
+    _restoreBalloonState() {
         try {
             const balloonStates = JSON.parse(localStorage.getItem("v-o-balloon") || "{}");
             const balloon = this.root.querySelector("#__v_o__balloon");
@@ -862,7 +863,7 @@ class ErrorOverlay extends HTMLElement {
      * @param {string} value - The state value
      */
     // eslint-disable-next-line class-methods-use-this
-    #saveBalloonState(key, value) {
+    _saveBalloonState(key, value) {
         try {
             const item = localStorage.getItem("v-o-balloon");
             const balloonStates = item ? JSON.parse(item) : {};
@@ -872,6 +873,44 @@ class ErrorOverlay extends HTMLElement {
             localStorage.setItem("v-o-balloon", JSON.stringify(balloonStates));
         } catch {
             // Fail silently if localStorage is not available
+        }
+    }
+
+    /**
+     * Removes the error overlay from the DOM.
+     */
+    close() {
+        if (this.parentNode) {
+            const balloon = this.root.querySelector("#__v_o__balloon");
+
+            if (balloon) {
+                const rootElement = this.root.querySelector("#__v_o__root");
+
+                rootElement.classList.add("hidden");
+
+                this._saveBalloonState("overlay", "closed");
+            } else {
+                this.remove();
+            }
+        }
+    }
+
+    /**
+     * Updates the overlay content with the current error's code frame.
+     */
+    updateOverlay() {
+        const currentIndex = 0;
+
+        const currentError = this.__v_oPayload && this.__v_oPayload.errors && this.__v_oPayload.errors[currentIndex];
+
+        if (currentError) {
+            const flameOverlay = this.root.querySelector("#__v_o__overlay");
+
+            if (flameOverlay) {
+                const html = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || "";
+
+                flameOverlay.innerHTML = html;
+            }
         }
     }
 }
