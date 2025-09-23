@@ -16,8 +16,47 @@ import { cleanErrorMessage, cleanErrorStack, extractErrors } from "../stack-trac
 import { parseVueCompilationError } from "./parse-vue-compilation-error";
 import remapStackToOriginal from "./remap-stack-to-original";
 import retrieveSourceTexts from "./retrieve-source-texts";
+import shikiDiffTransformer from "./shiki-diff-transformer";
 import addQueryToUrl from "./utils/add-query-to-url";
 import extractQueryFromHttpUrl from "./utils/extract-query-from-http-url";
+
+const REACT_HYDRATION_ERROR_LINK = "https://react.dev/link/hydration-mismatch";
+
+/**
+ * Processes React hydration diff content to extract and format relevant differences.
+ * @param errorMessage The raw error message containing hydration diff
+ * @returns Formatted diff content with markers and limited context
+ */
+const processHydrationDiff = (error: Error): string | undefined => {
+    const [hydrationMessage, diffContentMessage] = error.message.split(REACT_HYDRATION_ERROR_LINK);
+
+    if (hydrationMessage) {
+        const [message] = hydrationMessage?.split("\n\n") as string[];
+
+        // eslint-disable-next-line no-param-reassign
+        error.message = (message as string).replace(" This can happen if a SSR-ed Client Component used:", "");
+    }
+
+    const transformedDiffContent: string[] = [];
+
+    for (const line of diffContentMessage?.trim()?.split("\n") || []) {
+        if (line.startsWith("+ ")) {
+            transformedDiffContent.push(`[!code ++] ${line.slice(1)}`);
+        } else if (line.startsWith("- ")) {
+            transformedDiffContent.push(`[!code --] ${line.slice(1)}`);
+        } else if (!line.includes(" ...")) {
+            transformedDiffContent.push(line);
+        }
+    }
+
+    const indexOfFirstDiff = transformedDiffContent.findIndex((line) => line.startsWith("[!code ++]"));
+
+    if (indexOfFirstDiff === -1) {
+        return undefined;
+    }
+
+    return transformedDiffContent.slice(Math.max(0, indexOfFirstDiff - 5)).join("\n");
+};
 
 /**
  * Extracts individual errors from an error object, handling ESBuild error arrays.
@@ -266,12 +305,13 @@ const buildExtendedErrorData = async (
     framework?: string,
     viteErrorData?: ViteErrorData,
     allErrors?: (Error | { message: string; name?: string; stack?: string })[],
-// eslint-disable-next-line sonarjs/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<ErrorProcessingResult> => {
     const vueErrorInfo = framework === "vue" && error?.message ? parseVueCompilationError(error.message) : undefined;
     const individualErrors = extractIndividualErrors(error);
     const primaryError = individualErrors[0] || error;
-    const isReactHydrationError = framework === "react" && (error.message.includes("hydration") || error.message.includes("hydrating"));
+    const isReactHydrationError
+        = framework === "react" && error.message && (error.message.toLowerCase().includes("hydration") || error.message.toLowerCase().includes("hydrating"));
 
     let causeQuery = "";
 
@@ -296,9 +336,9 @@ const buildExtendedErrorData = async (
     const originalStack = await remapStackToOriginal(server, cleanedStack, { message: cleanMessage, name: primaryError.name });
 
     // For cause errors, prioritize viteErrorData location over stack extraction
-    let compiledColumn: number;
-    let compiledFilePath: string;
-    let compiledLine: number;
+    let compiledColumn: number | undefined;
+    let compiledFilePath: string | undefined;
+    let compiledLine: number | undefined;
 
     if (viteErrorData?.file && viteErrorData?.line && viteErrorData?.column) {
         compiledColumn = viteErrorData.column;
@@ -324,13 +364,50 @@ const buildExtendedErrorData = async (
                 relativePath = `/${relativePath}`;
             }
 
-            let httpUrl = `http://localhost:5173${relativePath}`;
+            const port = server.config.server.port || server.config.preview?.port || 5173;
+            const host = server.config.server.host || server.config.preview?.host || "localhost";
+            const protocol = server.config.server.https ? "https" : "http";
+
+            let httpUrl = `${protocol}://${host}:${port}${relativePath}`;
 
             if (causeQuery) {
                 httpUrl = addQueryToUrl(httpUrl, causeQuery);
             }
 
             compiledFilePath = httpUrl;
+        }
+    }
+
+    if (isReactHydrationError) {
+        const diffContent = processHydrationDiff(error);
+
+        if (diffContent) {
+            const highlighter = await getHighlighter();
+
+            return {
+                errorCount: 1,
+                fixPrompt: aiPrompt({
+                    applicationType: undefined,
+                    error,
+                    file: {
+                        file: compiledFilePath,
+                        language: "jsx",
+                        line: compiledLine,
+                        snippet: diffContent,
+                    },
+                }),
+                message: error.message,
+                originalCodeFrameContent: highlighter.codeToHtml(diffContent as string, {
+                    lang: compiledFilePath ? findLanguageBasedOnExtension(compiledFilePath) : "text",
+                    themes: { dark: "github-dark-default", light: "github-light" },
+                    transformers: [shikiDiffTransformer()],
+                }),
+                originalFileColumn: compiledColumn,
+                originalFileLine: compiledLine,
+                originalFilePath: compiledFilePath,
+                originalSnippet: diffContent as string,
+                originalStack: error.stack || "",
+            } as const;
         }
     }
 
@@ -353,6 +430,7 @@ const buildExtendedErrorData = async (
         }
     }
 
+    // eslint-disable-next-line prefer-const
     let { originalFileColumn, originalFileLine, originalFilePath } = await resolveOriginalLocationInfo(
         server,
         sourceFilePath,

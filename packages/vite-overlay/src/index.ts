@@ -244,9 +244,11 @@ const buildExtendedError = async (
 
             let enhancedViteErrorData = causeViteErrorData;
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (index === 0 && (error as any)?.sourceFile) {
                 enhancedViteErrorData = {
                     ...causeViteErrorData,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     file: (error as any).sourceFile,
                 };
             }
@@ -327,6 +329,7 @@ console.error = function() {
         }
 
         if (maybeError) {
+        /**
             try {
                 var ownerStack = null;
                 var mod = await import('react');
@@ -337,7 +340,7 @@ console.error = function() {
 
                 maybeError.ownerStack = ownerStack;
             } catch {}
-
+*/
             sendError(maybeError);
         }
     } catch {}
@@ -668,7 +671,9 @@ const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): bool
             (plugin) =>
                 plugin
                 && ((reactPluginName && (plugin as Plugin).name === reactPluginName)
-                    || (plugin as Plugin).name === "vite:react"
+                    || (plugin as Plugin).name === "vite:react-swc"
+                    || (plugin as Plugin).name === "vite:react-refresh"
+                    || (plugin as Plugin).name === "vite:react-babel"
                     || (plugin as Plugin).name === "@vitejs/plugin-react"
                     || (typeof plugin === "function" && (plugin as Plugin).name?.includes("react"))
                     || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))),
@@ -703,7 +708,12 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
  * @param options.vuePluginName Custom Vue plugin name (optional)
  * @returns The Vite plugin configuration
  */
-const errorOverlayPlugin = (options: { logClientRuntimeError?: boolean; reactPluginName?: string; solutionFinders?: SolutionFinder[]; vuePluginName?: string }): Plugin => {
+const errorOverlayPlugin = (options: {
+    logClientRuntimeError?: boolean;
+    reactPluginName?: string;
+    solutionFinders?: SolutionFinder[];
+    vuePluginName?: string;
+}): Plugin => {
     let mode: string;
     let isReactProject: boolean;
     let isVueProject: boolean;

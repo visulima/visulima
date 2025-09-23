@@ -233,7 +233,7 @@ textarea:focus-visible,
 }
 
 .shiki {
-    @apply max-w-full overflow-auto pb-4 break-words [&_pre]:max-w-full [&_pre]:overflow-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-500 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700;
+    @apply max-h-[300px] max-w-full overflow-auto pb-4 break-words [&_pre]:max-w-full [&_pre]:overflow-auto;
 }
 
 .dark .shiki,
@@ -244,6 +244,48 @@ textarea:focus-visible,
     font-style: var(--shiki-dark-font-style) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+.shiki.has-diff .diff {
+    @apply relative;
+}
+
+.shiki.has-diff .diff span {
+    @apply my-0.5 px-2;
+}
+
+.shiki.has-diff .diff.add span {
+    @apply bg-green-500/15;
+}
+
+.shiki.has-diff .diff.remove span {
+    @apply bg-red-500/15;
+}
+
+.shiki.has-diff .diff.add::before {
+    @apply absolute left-3 mt-0.5 mr-2 font-bold text-green-500;
+    content: "+";
+}
+
+.shiki.has-diff .diff.remove::before {
+    @apply absolute left-3 mt-0.5 mr-2 font-bold text-red-500;
+    content: "−";
+}
+
+.dark .shiki.has-diff .diff.add span {
+    @apply bg-green-500/20!;
+}
+
+.dark .shiki.has-diff .diff.remove span {
+    @apply bg-red-500/20!;
+}
+
+.dark .shiki.has-diff .diff.add::before {
+    @apply text-green-400;
+}
+
+.dark .shiki.has-diff .diff.remove::before {
+    @apply text-red-400;
 }
 
 .dark [type="checkbox"]:checked,
@@ -270,4 +312,67 @@ textarea:focus-visible,
 /* Prevent background scrolling when overlay is open */
 :has(#__v_o__root) {
     overflow: hidden;
+}
+
+/* Custom scrollbar design for the main overlay */
+#__v_o__root {
+    /* Webkit browsers (Chrome, Safari, Edge) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--ono-v-border) transparent;
+}
+
+/* Webkit scrollbar styling */
+#__v_o__root::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+#__v_o__root::-webkit-scrollbar-track {
+    background: var(--ono-v-surface-muted);
+    border-radius: 4px;
+}
+
+#__v_o__root::-webkit-scrollbar-thumb {
+    background: var(--ono-v-border);
+    border-radius: 4px;
+    border: 1px solid var(--ono-v-surface-muted);
+}
+
+#__v_o__root::-webkit-scrollbar-thumb:hover {
+    background: var(--ono-v-neutral);
+}
+
+#__v_o__root::-webkit-scrollbar-thumb:active {
+    background: var(--ono-v-link);
+}
+
+/* Corner where horizontal and vertical scrollbars meet */
+#__v_o__root::-webkit-scrollbar-corner {
+    background: var(--ono-v-surface-muted);
+}
+
+/* Dark mode scrollbar styling */
+.dark #__v_o__root {
+    scrollbar-color: rgba(110, 118, 129, 0.6) transparent;
+}
+
+.dark #__v_o__root::-webkit-scrollbar-track {
+    background: rgba(15, 20, 27, 0.8);
+}
+
+.dark #__v_o__root::-webkit-scrollbar-thumb {
+    background: rgba(110, 118, 129, 0.6);
+    border-color: rgba(15, 20, 27, 0.8);
+}
+
+.dark #__v_o__root::-webkit-scrollbar-thumb:hover {
+    background: rgba(110, 118, 129, 0.6);
+}
+
+.dark #__v_o__root::-webkit-scrollbar-thumb:active {
+    background: var(--ono-v-red-orange);
+}
+
+.dark #__v_o__root::-webkit-scrollbar-corner {
+    background: rgba(15, 20, 27, 0.8);
 }
