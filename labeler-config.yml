@@ -58,6 +58,9 @@
 "package: object":
     - changed-files:
           - any-glob-to-any-file: "packages/object/**/*"
+"package: ono":
+    - changed-files:
+          - any-glob-to-any-file: "packages/ono/**/*"
 "package: package":
     - changed-files:
           - any-glob-to-any-file: "packages/package/**/*"
@@ -88,6 +91,9 @@
 "package: tsconfig":
     - changed-files:
           - any-glob-to-any-file: "packages/tsconfig/**/*"
+"package: vite-overlay":
+    - changed-files:
+          - any-glob-to-any-file: "packages/vite-overlay/**/*"
 "documentation":
     - changed-files:
           - any-glob-to-any-file: "docs/**/*"
