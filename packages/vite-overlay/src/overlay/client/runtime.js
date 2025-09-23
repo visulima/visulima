@@ -157,9 +157,14 @@ class ErrorOverlay extends HTMLElement {
             const balloon = this.root.querySelector("#__v_o__balloon");
             const countElement = this.root.querySelector("#__v_o__balloon_count");
             const rootElement = this.root.querySelector("#__v_o__root");
+            const textElement = this.root.querySelector("#__v_o__balloon_text");
 
             if (balloon && countElement) {
                 countElement.textContent = total.toString();
+
+                if (textElement) {
+                    textElement.textContent = total === 1 ? "Error" : "Errors";
+                }
 
                 this._restoreBalloonState();
 

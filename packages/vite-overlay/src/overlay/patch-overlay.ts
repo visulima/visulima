@@ -188,7 +188,7 @@ ${
         ? `
 <button type="button" id="__v_o__balloon" title="Toggle error overlay" aria-label="Toggle error overlay" class="fixed z-[2147483647] inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-[var(--ono-v-red-orange)] text-white font-sans text-xs leading-none shadow-lg cursor-pointer transition-all duration-200 hover:brightness-105" style="bottom: 8px; right: 8px;">
     <span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold">0</span>
-    <span>Errors</span>
+    <span id="__v_o__balloon_text">Errors</span>
 </button>`
         : ""
 }`;
