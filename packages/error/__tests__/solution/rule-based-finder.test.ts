@@ -58,15 +58,6 @@ describe("solution/rule-based-finder", () => {
         expect(result?.body).toContain("Network/DNS connection issue");
     });
 
-    it("should detect react hydration mismatch", async () => {
-        expect.assertions(1);
-
-        const error = new Error("Hydration failed because the initial UI does not match");
-        const result = await ruleBasedFinder.handle(error, { file: "page.tsx", line: 2 });
-
-        expect(result?.body).toContain("React hydration mismatch");
-    });
-
     it("should detect undefined property access", async () => {
         expect.assertions(1);
 

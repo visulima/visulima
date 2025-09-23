@@ -182,29 +182,6 @@ const rules: Rule[] = [
         },
     },
     {
-        name: "react-hydration-mismatch",
-        test: (error): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
-
-            if (has(message, "hydration failed", "did not match", "expected server html", "text content does not match")) {
-                return {
-                    md: [
-                        "Client and server rendered markup differ.",
-                        "",
-                        "Checklist:",
-                        "- Avoid non-deterministic rendering during SSR (dates, random, locale).",
-                        "- Ensure feature flags / env checks are consistent between server and client.",
-                        "- Wrap browser-only code with guards (e.g., check `typeof window !== 'undefined'`).",
-                        "- Ensure data used on server matches client rehydration data.",
-                    ].join("\n"),
-                    title: "React hydration mismatch",
-                };
-            }
-
-            return undefined;
-        },
-    },
-    {
         name: "undefined-property",
         test: (error): RuleMatch | undefined => {
             const message = (error?.message || String(error || "")).toString();
