@@ -161,7 +161,7 @@ const resolveOriginalLocationInfo = async (
 };
 
 /**
- * Creates empty result when no modules are found
+ * Creates empty result when no modules are found.
  */
 const createEmptyResult = (
     compiledColumn: number,

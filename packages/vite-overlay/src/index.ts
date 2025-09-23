@@ -329,18 +329,6 @@ console.error = function() {
         }
 
         if (maybeError) {
-        /**
-            try {
-                var ownerStack = null;
-                var mod = await import('react');
-
-                if (mod && typeof mod.captureOwnerStack === 'function') {
-                    ownerStack = mod.captureOwnerStack();
-                }
-
-                maybeError.ownerStack = ownerStack;
-            } catch {}
-*/
             sendError(maybeError);
         }
     } catch {}
