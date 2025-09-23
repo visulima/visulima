@@ -1,3 +1,13 @@
+## @visulima/error [4.6.2](https://github.com/visulima/visulima/compare/@visulima/error@4.6.1...@visulima/error@4.6.2) (2025-09-23)
+
+### Bug Fixes
+
+* remove react hydration mismatch rule and associated test ([2621681](https://github.com/visulima/visulima/commit/2621681958eef16714a9a40c056b15b2e2d31a8c))
+
+### Miscellaneous Chores
+
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
 ## @visulima/error [4.6.1](https://github.com/visulima/visulima/compare/@visulima/error@4.6.0...@visulima/error@4.6.1) (2025-09-19)
 
 ### Bug Fixes
