@@ -17,13 +17,15 @@ const shikiDiffTransformer = (options: Options = {}): ShikiTransformer => {
 
             lines.forEach((line) => {
                 for (const child of line.children as Element[]) {
-                    if (child.type !== "element")
+                    if (child.type !== "element") {
                         continue;
+                    }
 
                     const text = child.children[0];
 
-                    if (text.type !== "text")
+                    if (text.type !== "text") {
                         continue;
+                    }
 
                     if (text.value.startsWith("[!code ++]")) {
                         text.value = text.value.slice(10);
