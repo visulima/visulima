@@ -1,3 +1,10 @@
+## @visulima/ono [1.0.4](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.3...@visulima/ono@1.0.4) (2025-09-23)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.6.2
+
 ## @visulima/ono [1.0.3](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.2...@visulima/ono@1.0.3) (2025-09-19)
 
 
