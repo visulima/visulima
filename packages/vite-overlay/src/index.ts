@@ -699,6 +699,7 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
 const errorOverlayPlugin = (options: {
     logClientRuntimeError?: boolean;
     reactPluginName?: string;
+    showBallonButton?: boolean;
     solutionFinders?: SolutionFinder[];
     vuePluginName?: string;
 }): Plugin => {
@@ -793,7 +794,7 @@ const errorOverlayPlugin = (options: {
                 return null;
             }
 
-            return patchOverlay(code);
+            return patchOverlay(code, options?.showBallonButton ?? true);
         },
 
         transformIndexHtml(): IndexHtmlTransformResult {

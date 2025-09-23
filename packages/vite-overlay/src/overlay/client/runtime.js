@@ -56,6 +56,8 @@ class ErrorOverlay extends HTMLElement {
         this.__v_oMode = "original";
 
         this.#initializeThemeToggle();
+        // Initialize floating balloon that shows error count and toggles overlay visibility
+        this.#initializeBalloon(payload.errors.length);
 
         this.#initializeCopyError();
 
@@ -171,6 +173,44 @@ class ErrorOverlay extends HTMLElement {
                 bodyContent.classList.remove("hidden");
             }
         }, 100); // Small delay to ensure DOM is ready
+    }
+
+    /**
+     * Initializes the floating balloon button that shows the error count
+     * and toggles the overlay open/close when clicked.
+     * The balloon is already present in the DOM template.
+     * @private
+     * @param {number} total - The total number of errors to display
+     */
+    #initializeBalloon(total) {
+        try {
+            const balloon = this.root.querySelector("#__v_o__balloon");
+            const countElement = this.root.querySelector("#__v_o__balloon_count");
+            const rootElement = this.root.querySelector("#__v_o__root");
+
+            if (balloon && countElement) {
+                countElement.textContent = total.toString();
+
+                balloon.classList.toggle("hidden", total <= 0);
+
+                // Set up click handler to toggle overlay visibility
+                const clickHandler = (event) => {
+                    event.preventDefault();
+
+                    const classes = rootElement.classList;
+
+                    if (classes.contains("hidden")) {
+                        classes.remove("hidden");
+                    } else {
+                        classes.add("hidden");
+                    }
+                };
+
+                balloon.addEventListener("click", clickHandler);
+            }
+        } catch {
+            // Fail silently if DOM is not available
+        }
     }
 
     /**
@@ -666,6 +706,24 @@ class ErrorOverlay extends HTMLElement {
             // Set the HTML content and show the container
             solutionsContainer.innerHTML = html;
             solutions.classList.remove("hidden");
+        }
+    }
+
+    /**
+     * Updates the balloon visibility based on overlay state.
+     * The balloon should be hidden when the overlay is visible and shown when closed.
+     * @private
+     */
+    #updateBalloonVisibility() {
+        try {
+            const balloon = document.querySelector("#__v_o__balloon");
+
+            if (balloon) {
+                // Show balloon when overlay is closed, hide when overlay is open
+                balloon.classList.toggle("hidden", this.parentNode);
+            }
+        } catch {
+            // Fail silently if DOM is not available
         }
     }
 }
