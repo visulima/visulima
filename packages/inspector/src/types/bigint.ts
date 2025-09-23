@@ -4,9 +4,13 @@ import addNumericSeparator from "../utils/add-numeric-separator";
 import truncate from "../utils/truncate";
 
 const inspectBigInt = (number: bigint, options: Options): string => {
-    let nums = truncate(number.toString(), options.truncate - 1);
+    let nums = truncate(number.toString(), options.maxStringLength - 1);
 
-    if (nums !== TRUNCATOR) {
+    if (options.maxStringLength === 1) {
+        nums = TRUNCATOR;
+    }
+
+    if (nums !== "" && options.maxStringLength > 1) {
         nums += "n";
     }
 

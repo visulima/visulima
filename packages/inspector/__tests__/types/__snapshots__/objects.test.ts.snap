@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`inspect with Objects > should correctly indent a simple object > simple object with indent 1`] = `"{ a: 1, b: 2 }"`;
+
+exports[`inspect with Objects > should correctly indent a simple object > simple object with indent 2`] = `"{ a: 1, b: 2 }"`;
+
+exports[`inspect with Objects > should correctly indent a two-level nested object > two deep object with indent 1`] = `"{ a: 1, b: { c: 3, d: 4 } }"`;
+
+exports[`inspect with Objects > should correctly indent a two-level nested object > two deep object with indent 2`] = `"{ a: 1, b: { c: 3, d: 4 } }"`;
+
+exports[`inspect with Objects with null prototype > should correctly indent a simple object > simple object with indent 1`] = `"{ a: 1, b: 2 }"`;
+
+exports[`inspect with Objects with null prototype > should correctly indent a simple object > simple object with indent 2`] = `"{ a: 1, b: 2 }"`;
+
+exports[`inspect with Objects with null prototype > should correctly indent a two-level nested object > two deep object with indent 1`] = `"{ a: 1, b: { c: 3, d: 4 } }"`;
+
+exports[`inspect with Objects with null prototype > should correctly indent a two-level nested object > two deep object with indent 2`] = `"{ a: 1, b: { c: 3, d: 4 } }"`;

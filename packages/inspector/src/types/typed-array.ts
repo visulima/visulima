@@ -1,13 +1,13 @@
-import { TRUNCATOR } from "../constants";
-import type { InspectType, InternalInspect, Options } from "../types";
+import type { Indent, InspectType, InternalInspect, Options } from "../types";
+import { indentedJoin } from "../utils/indent";
 import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
 import truncate from "../utils/truncate";
 
 type TypedArray = Float32Array | Float64Array | Int8Array | Int16Array | Int32Array | Uint8Array | Uint8ClampedArray | Uint16Array | Uint32Array;
 
-const getArrayName = (array: TypedArray) => {
-    // We need to special case Node.js' Buffers, which report to be Uint8Array
+const getArrayName = (array: TypedArray): string => {
+    // We need to special case Node.js's Buffer, which is a Uint8Array
     if (typeof Buffer === "function" && array instanceof Buffer) {
         return "Buffer";
     }
@@ -19,52 +19,58 @@ const getArrayName = (array: TypedArray) => {
     return array.constructor.name;
 };
 
-const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: Options, inspect: InternalInspect): string => {
+// This custom inspector can handle both numbers and property pairs
+const inspectTypedArrayItem = (item: [unknown, unknown], object: unknown, options: Options, inspect: InternalInspect): string => {
+    if (Array.isArray(item)) {
+        // It's a property `[key, value]`
+        return inspectProperty(item, object, options, inspect);
+    }
+
+    // It's a number from the typed array
+    const stringified = String(item);
+    const truncated = truncate(stringified, options.maxStringLength ?? Number.POSITIVE_INFINITY);
+
+    return options.stylize(truncated, "number");
+};
+
+const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: Options, inspect: InternalInspect, indent, depth): string => {
     const name = getArrayName(array);
-
-    // eslint-disable-next-line no-param-reassign
-    options.truncate -= name.length + 4;
-
-    // Object.keys will always output the Array indices first, so we can slice by
-    // `array.length` to get non-index properties
     const nonIndexProperties = Object.keys(array).slice(array.length);
 
     if (array.length === 0 && nonIndexProperties.length === 0) {
-        return `${name}[]`;
+        return `${name}${name === "Buffer" ? "" : " (0) "}[]`;
     }
 
-    // As we know TypedArrays only contain Unsigned Integers, we can skip inspecting each one and simply
-    // stylise the toString() value of them
-    let output = "";
+    const allItems = [...array, ...nonIndexProperties.map((key) => [key, array[key as keyof typeof array]])];
 
-    // eslint-disable-next-line no-plusplus
-    for (let index = 0; index < array.length; index++) {
-        const string = `${options.stylize(truncate(array[index] as number, options.truncate), "number")}${index === array.length - 1 ? "" : ", "}`;
+    let breakLines: boolean = false;
 
-        // eslint-disable-next-line no-param-reassign
-        options.truncate -= string.length;
+    if (options.breakLength) {
+        const temporaryOptions = { ...options, compact: false, maxStringLength: Number.POSITIVE_INFINITY };
+        const contentsForCheck = inspectList(allItems, array, temporaryOptions, inspect, inspectTypedArrayItem);
+        const singleLineOutput = `${name}[ ${contentsForCheck} ]`;
 
-        if (array[index] !== array.length && options.truncate <= 3) {
-            output += `${TRUNCATOR}(${array.length - (array[index] as number) + 1})`;
-            break;
-        }
-
-        output += string;
+        breakLines = singleLineOutput.length > options.breakLength;
     }
 
-    let propertyContents = "";
+    const multiline = (options.compact === false || (typeof options.compact === "number" && depth >= options.compact) || breakLines) && indent !== undefined;
 
-    if (nonIndexProperties.length > 0) {
-        propertyContents = inspectList(
-            nonIndexProperties.map((key) => [key, array[key as keyof typeof array]]),
-            array,
-            options,
-            inspect,
-            inspectProperty,
-        );
+    let returnValue = inspectList(
+        allItems,
+        array,
+        {
+            ...options,
+            maxStringLength: options.maxStringLength - name.length - 4, // account for "[]" and spaces
+        },
+        inspect,
+        inspectTypedArrayItem,
+    );
+
+    if (multiline) {
+        returnValue = indentedJoin(returnValue, indent as Indent);
     }
 
-    return `${name}[ ${output}${propertyContents ? `, ${propertyContents}` : ""} ]`;
+    return `${name}${name === "Buffer" ? "" : ` (${array.length}) `}[ ${returnValue} ]`;
 };
 
 export default inspectTypedArray;

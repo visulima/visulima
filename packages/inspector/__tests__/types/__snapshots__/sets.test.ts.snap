@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`inspect with Sets > compact option > should format a nested set with indentation 1`] = `
+"Set (2) {
+  Set (1) {
+    1
+  },
+  [Circular]
+}"
+`;
+
+exports[`inspect with Sets > compact option > should format a set on multiple lines if it exceeds breakLength 1`] = `
+"Set (2) {
+  1,
+  2
+}"
+`;
+
+exports[`inspect with Sets > compact option > should format a set on multiple lines when compact is false 1`] = `
+"Set (2) {
+  1,
+  2
+}"
+`;
+
+exports[`inspect with Sets > compact option > should format a set with indentation 1`] = `
+"Set (2) {
+  {
+    a: 1
+  },
+  [
+    'b'
+  ]
+}"
+`;
+
+exports[`inspect with Sets > compact option > should format a set with tab indentation 1`] = `
+"Set (2) {
+	{
+		a: 1
+	},
+	[
+		'b'
+	]
+}"
+`;

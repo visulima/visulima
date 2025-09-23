@@ -42,26 +42,27 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.mjs",
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            },
             "import": {
                 "types": "./dist/index.d.mts",
                 "default": "./dist/index.mjs"
+            },
+            "browser": "./dist/index.browser.js",
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
-    "browser": "./dist/index.mjs",
+    "browser": "./dist/index.browser.mjs",
     "types": "dist/index.d.ts",
     "typesVersions": {
         ">=5.0": {
             ".": [
-                "./dist/index.d.ts"
+                "./dist/index.d.ts",
+                "./dist/index.browser.d.ts"
             ]
         }
     },
@@ -79,6 +80,8 @@
         "lint:eslint": "eslint .",
         "lint:eslint:fix": "eslint . --fix",
         "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
         "test:browser:chrome": "vitest run --browser.name=chromium --browser.headless=true --browser.provider=playwright",
@@ -89,36 +92,41 @@
         "test:watch": "vitest",
         "ts:coverage": "typescript-coverage-report"
     },
+    "dependencies": {
+        "type-fest": "^5.0.1"
+    },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.2.10",
-        "@anolilab/semantic-release-pnpm": "1.1.11",
-        "@anolilab/semantic-release-preset": "^10.0.5",
-        "@arethetypeswrong/cli": "^0.18.1",
-        "@babel/core": "^7.27.4",
-        "@secretlint/secretlint-rule-preset-recommend": "^9.3.3",
+        "@visulima/string": "workspace:*",
+        "jiti": "2.5.1",
+        "@anolilab/prettier-config": "^6.0.4",
+        "prettier": "^3.6.2",
+        "@anolilab/eslint-config": "^16.3.0",
+        "@anolilab/semantic-release-pnpm": "2.0.3",
+        "@anolilab/semantic-release-preset": "^11.0.3",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@babel/core": "^7.28.4",
+        "@secretlint/secretlint-rule-preset-recommend": "^11.2.4",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "22.15.29",
+        "@types/node": "24.5.2",
         "@visulima/colorize": "1.4.23",
-        "@visulima/packem": "1.19.4",
-        "@vitest/browser": "^3.2.0",
-        "@vitest/coverage-v8": "^3.2.0",
-        "@vitest/ui": "^3.2.0",
-        "esbuild": "0.25.5",
-        "eslint": "9.28.0",
-        "eslint-plugin-playwright": "2.2.0",
-        "playwright": "^1.52.0",
-        "publint": "^0.3.12",
+        "@visulima/packem": "2.0.0-alpha.20",
+        "@vitest/browser": "^3.2.4",
+        "@vitest/coverage-v8": "^3.2.4",
+        "@vitest/ui": "^3.2.4",
+        "esbuild": "0.25.10",
+        "eslint": "9.36.0",
+        "eslint-plugin-playwright": "2.2.2",
+        "playwright": "^1.55.0",
+        "publint": "^0.3.13",
         "rimraf": "6.0.1",
-        "secretlint": "9.3.3",
-        "semantic-release": "^24.2.5",
-        "type-fest": "^4.41.0",
-        "typescript": "5.8.3",
+        "secretlint": "11.2.4",
+        "semantic-release": "^24.2.9",
+        "typescript": "5.9.2",
         "typescript-coverage-report": "^1.1.1",
-        "vitest": "^3.2.0",
-        "webdriverio": "^9.15.0"
+        "vitest": "^3.2.4"
     },
     "engines": {
-        "node": ">=18.0.0 <=23.x"
+        "node": ">=20.18.0 <=24.x"
     },
     "publishConfig": {
         "access": "public",

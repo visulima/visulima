@@ -1,5 +1,3 @@
-import { types } from "node:util";
-
 import { internalInspect } from "./internal-inspect";
 import type { InternalOptions, Options } from "./types";
 import inspectNumber from "./types/number";
@@ -23,7 +21,7 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         showHidden: false,
         showProxy: false,
         sorted: false,
-        stylize: <S extends string>(s: S) => s,
+        stylize: <S extends string>(s: S) => s.toString(),
         ...options_,
     } satisfies Options;
 
@@ -59,11 +57,11 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         return options.stylize("undefined", "undefined");
     }
 
-    if (options.showProxy && types.isProxy(value)) {
+    if (options.showProxy) {
         (options as InternalOptions).proxyHandler = inspectProxy;
     }
 
-    return internalInspect(value, options as InternalOptions, 0, []);
+    return internalInspect(value, options, 0, []);
 };
 
 export type { Options } from "./types";

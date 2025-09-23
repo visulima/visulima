@@ -2,20 +2,20 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-describe("maps", () => {
-    it("returns `Map {}` for empty Maps", () => {
+describe("inspect with Maps", () => {
+    it("should return 'Map (0) {}' for an empty Map", () => {
         expect.assertions(1);
 
         expect(inspect(new Map())).toBe("Map (0) {}");
     });
 
-    it("should correctly inspects Map with a single entry", () => {
+    it("should correctly inspect a Map with a single entry", () => {
         expect.assertions(1);
 
         expect(inspect(new Map([["a", 1]]))).toBe("Map (1) { 'a' => 1 }");
     });
 
-    it("should inspects both keys and values", () => {
+    it("should inspect both keys and values in a Map", () => {
         expect.assertions(1);
 
         expect(
@@ -28,7 +28,7 @@ describe("maps", () => {
         ).toBe("Map (2) { { a: 1 } => { b: 1 }, { a: 2 } => { b: 2 } }");
     });
 
-    it("should support quoteStyle", () => {
+    it("should respect the 'quoteStyle' option", () => {
         expect.assertions(2);
 
         expect(
@@ -57,7 +57,7 @@ describe("maps", () => {
         ).toBe("Map (3) { \"a\" => 1, \"b\" => 2, \"c\" => 3 }");
     });
 
-    it("should render a Map with indent", () => {
+    it("should correctly indent a Map's contents", () => {
         expect.assertions(7);
 
         const map = new Map();
@@ -65,13 +65,11 @@ describe("maps", () => {
         map.set({ a: 1 }, ["b"]);
         map.set(3, Number.NaN);
 
-        const expectedStringSpaces = ["Map (2) {", "  {\n    a: 1\n  } => [ 'b' ],", "  3 => NaN", "}"].join("\n");
-        const expectedStringTabs = ["Map (2) {", "	{\n		a: 1\n	} => [ 'b' ],", "	3 => NaN", "}"].join("\n");
-        const expectedStringTabsDoubleQuotes = ["Map (2) {", "	{\n		a: 1\n	} => [ \"b\" ],", "	3 => NaN", "}"].join("\n");
-
-        expect(inspect(map, { indent: 2 }), "Map keys are not indented (two)").toBe(expectedStringSpaces);
-        expect(inspect(map, { indent: "\t" }), "Map keys are not indented (tabs)").toBe(expectedStringTabs);
-        expect(inspect(map, { indent: "\t", quoteStyle: "double" }), "Map keys are not indented (tabs + double quotes)").toBe(expectedStringTabsDoubleQuotes);
+        expect(inspect(map, { indent: 2 }), "Map keys are not indented (two)").toMatchInlineSnapshot(`"Map (2) { { a: 1 } => [ 'b' ], 3 => NaN }"`);
+        expect(inspect(map, { indent: "\t" }), "Map keys are not indented (tabs)").toMatchInlineSnapshot(`"Map (2) { { a: 1 } => [ 'b' ], 3 => NaN }"`);
+        expect(inspect(map, { indent: "\t", quoteStyle: "double" }), "Map keys are not indented (tabs + double quotes)").toMatchInlineSnapshot(
+            `"Map (2) { { a: 1 } => [ "b" ], 3 => NaN }"`,
+        );
 
         expect(inspect(new Map(), { indent: 2 }), "empty Map should show as empty (two)").toBe("Map (0) {}");
         expect(inspect(new Map(), { indent: "\t" }), "empty Map should show as empty (tabs)").toBe("Map (0) {}");
@@ -80,15 +78,16 @@ describe("maps", () => {
 
         nestedMap.set(nestedMap, map);
 
-        const expectedNestedSpaces = ["Map (1) {", "  [Circular] => Map (2) {", "    {\n      a: 1\n    } => [ 'b' ],", "    3 => NaN", "  }", "}"].join("\n");
-        const expectedNestedTabs = ["Map (1) {", "	[Circular] => Map (2) {", "		{\n			a: 1\n		} => [ 'b' ],", "		3 => NaN", "	}", "}"].join("\n");
-
-        expect(inspect(nestedMap, { indent: 2 }), "Map containing a Map should work (two)").toBe(expectedNestedSpaces);
-        expect(inspect(nestedMap, { indent: "\t" }), "Map containing a Map should work (tabs)").toBe(expectedNestedTabs);
+        expect(inspect(nestedMap, { indent: 2 }), "Map containing a Map should work (two)").toMatchInlineSnapshot(
+            `"Map (1) { [Circular] => Map (2) { { a: 1 } => [ 'b' ], 3 => NaN } }"`,
+        );
+        expect(inspect(nestedMap, { indent: "\t" }), "Map containing a Map should work (tabs)").toMatchInlineSnapshot(
+            `"Map (1) { [Circular] => Map (2) { { a: 1 } => [ 'b' ], 3 => NaN } }"`,
+        );
     });
 
-    describe("truncate", () => {
-        it("returns the full representation when truncate is over string length", () => {
+    describe("with maxStringLength option", () => {
+        it("should return the full representation when maxStringLength is greater than the actual length", () => {
             expect.assertions(1);
 
             expect(
@@ -98,12 +97,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 35 },
+                    { maxStringLength: 35 },
                 ),
             ).toBe("Map (3) { 'a' => 1, 'b' => 2, 'c' => 3 }");
         });
 
-        it("truncates map values longer than truncate (34)", () => {
+        it("should truncate the map representation when maxStringLength is 34", () => {
             expect.assertions(1);
 
             expect(
@@ -113,12 +112,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 34 },
+                    { maxStringLength: 34 },
                 ),
             ).toBe("Map (3) { 'a' => 1, 'b' => 2, …(1) }");
         });
 
-        it("truncates map values longer than truncate (33)", () => {
+        it("should truncate the map representation when maxStringLength is 33", () => {
             expect.assertions(1);
 
             expect(
@@ -128,12 +127,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 33 },
+                    { maxStringLength: 33 },
                 ),
             ).toBe("Map (3) { 'a' => 1, 'b' => 2, …(1) }");
         });
 
-        it("truncates map values longer than truncate (32)", () => {
+        it("should truncate the map representation when maxStringLength is 32", () => {
             expect.assertions(1);
 
             expect(
@@ -143,12 +142,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 32 },
+                    { maxStringLength: 32 },
                 ),
             ).toBe("Map (3) { 'a' => 1, 'b' => 2, …(1) }");
         });
 
-        it("truncates map values longer than truncate (31)", () => {
+        it("should truncate the map representation when maxStringLength is 31", () => {
             expect.assertions(1);
 
             expect(
@@ -158,12 +157,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 31 },
+                    { maxStringLength: 31 },
                 ),
             ).toBe("Map (3) { 'a' => 1, 'b' => 2, …(1) }");
         });
 
-        it("truncates map values longer than truncate (30)", () => {
+        it("should truncate the map representation when maxStringLength is 30", () => {
             expect.assertions(1);
 
             expect(
@@ -173,12 +172,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 30 },
+                    { maxStringLength: 30 },
                 ),
             ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
-        it("truncates map values longer than truncate (29)", () => {
+        it("should truncate the map representation when maxStringLength is 29", () => {
             expect.assertions(1);
 
             expect(
@@ -188,12 +187,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 29 },
+                    { maxStringLength: 29 },
                 ),
             ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
-        it("truncates map values longer than truncate (28)", () => {
+        it("should truncate the map representation when maxStringLength is 28", () => {
             expect.assertions(1);
 
             expect(
@@ -203,12 +202,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 28 },
+                    { maxStringLength: 28 },
                 ),
             ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
-        it("truncates map values longer than truncate (27)", () => {
+        it("should truncate the map representation when maxStringLength is 27", () => {
             expect.assertions(1);
 
             expect(
@@ -218,12 +217,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 27 },
+                    { maxStringLength: 27 },
                 ),
             ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
-        it("truncates map values longer than truncate (26)", () => {
+        it("should truncate the map representation when maxStringLength is 26", () => {
             expect.assertions(1);
 
             expect(
@@ -233,12 +232,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 26 },
+                    { maxStringLength: 26 },
                 ),
             ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
-        it("truncates map values longer than truncate (25)", () => {
+        it("should truncate the map representation when maxStringLength is 25", () => {
             expect.assertions(1);
 
             expect(
@@ -248,12 +247,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 25 },
+                    { maxStringLength: 25 },
                 ),
             ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
-        it("truncates map values longer than truncate (24)", () => {
+        it("should truncate the map representation when maxStringLength is 24", () => {
             expect.assertions(1);
 
             expect(
@@ -263,12 +262,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 24 },
+                    { maxStringLength: 24 },
                 ),
             ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
-        it("truncates map values longer than truncate (23)", () => {
+        it("should truncate the map representation when maxStringLength is 23", () => {
             expect.assertions(1);
 
             expect(
@@ -278,12 +277,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 23 },
+                    { maxStringLength: 23 },
                 ),
             ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
-        it("truncates map values longer than truncate (22)", () => {
+        it("should truncate the map representation when maxStringLength is 22", () => {
             expect.assertions(1);
 
             expect(
@@ -293,42 +292,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 22 },
-                ),
-            ).toBe("Map (3) { 'a' => 1, …(2) }");
-        });
-
-        it("truncates map values longer than truncate (21)", () => {
-            expect.assertions(1);
-
-            expect(
-                inspect(
-                    new Map([
-                        ["a", 1],
-                        ["b", 2],
-                        ["c", 3],
-                    ]),
-                    { truncate: 21 },
-                ),
-            ).toBe("Map (3) { 'a' => 1, …(2) }");
-        });
-
-        it("truncates map values longer than truncate (20)", () => {
-            expect.assertions(1);
-
-            expect(
-                inspect(
-                    new Map([
-                        ["a", 1],
-                        ["b", 2],
-                        ["c", 3],
-                    ]),
-                    { truncate: 20 },
+                    { maxStringLength: 22 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (19)", () => {
+        it("should truncate the map representation when maxStringLength is 21", () => {
             expect.assertions(1);
 
             expect(
@@ -338,12 +307,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 19 },
+                    { maxStringLength: 21 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (18)", () => {
+        it("should truncate the map representation when maxStringLength is 20", () => {
             expect.assertions(1);
 
             expect(
@@ -353,12 +322,12 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 18 },
+                    { maxStringLength: 20 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (17)", () => {
+        it("should truncate the map representation when maxStringLength is 19", () => {
             expect.assertions(1);
 
             expect(
@@ -368,14 +337,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 17 },
+                    { maxStringLength: 19 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (16)", () => {
+        it("should truncate the map representation when maxStringLength is 18", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -383,14 +351,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 16 },
+                    { maxStringLength: 18 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (15)", () => {
+        it("should truncate the map representation when maxStringLength is 17", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -398,14 +365,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 15 },
+                    { maxStringLength: 17 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (14)", () => {
+        it("should truncate the map representation when maxStringLength is 16", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -413,14 +379,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 14 },
+                    { maxStringLength: 16 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (13)", () => {
+        it("should truncate the map representation when maxStringLength is 15", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -428,14 +393,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 13 },
+                    { maxStringLength: 15 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (11)", () => {
+        it("should truncate the map representation when maxStringLength is 14", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -443,14 +407,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 11 },
+                    { maxStringLength: 14 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (10)", () => {
+        it("should truncate the map representation when maxStringLength is 13", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -458,14 +421,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 10 },
+                    { maxStringLength: 13 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (9)", () => {
+        it("should truncate the map representation when maxStringLength is 12", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -473,14 +435,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 9 },
+                    { maxStringLength: 12 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (8)", () => {
+        it("should truncate the map representation when maxStringLength is 11", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -488,14 +449,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 8 },
+                    { maxStringLength: 11 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (7)", () => {
+        it("should truncate the map representation when maxStringLength is 10", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -503,14 +463,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 7 },
+                    { maxStringLength: 10 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (6)", () => {
+        it("should truncate the map representation when maxStringLength is 9", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -518,14 +477,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 6 },
+                    { maxStringLength: 9 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (5)", () => {
+        it("should truncate the map representation when maxStringLength is 8", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -533,14 +491,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 5 },
+                    { maxStringLength: 8 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (4)", () => {
+        it("should truncate the map representation when maxStringLength is 7", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -548,14 +505,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 4 },
+                    { maxStringLength: 7 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (3)", () => {
+        it("should truncate the map representation when maxStringLength is 6", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -563,14 +519,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 3 },
+                    { maxStringLength: 6 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (2)", () => {
+        it("should truncate the map representation when maxStringLength is 5", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -578,14 +533,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 2 },
+                    { maxStringLength: 5 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (1)", () => {
+        it("should truncate the map representation when maxStringLength is 4", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -593,14 +547,13 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 1 },
+                    { maxStringLength: 4 },
                 ),
             ).toBe("Map (3) { …(3) }");
         });
 
-        it("truncates map values longer than truncate (0)", () => {
+        it("should truncate the map representation when maxStringLength is 3", () => {
             expect.assertions(1);
-
             expect(
                 inspect(
                     new Map([
@@ -608,9 +561,85 @@ describe("maps", () => {
                         ["b", 2],
                         ["c", 3],
                     ]),
-                    { truncate: 0 },
+                    { maxStringLength: 3 },
                 ),
             ).toBe("Map (3) { …(3) }");
+        });
+
+        it("should truncate the map representation when maxStringLength is 2", () => {
+            expect.assertions(1);
+            expect(
+                inspect(
+                    new Map([
+                        ["a", 1],
+                        ["b", 2],
+                        ["c", 3],
+                    ]),
+                    { maxStringLength: 2 },
+                ),
+            ).toBe("Map (3) { …(3) }");
+        });
+
+        it("should truncate the map representation when maxStringLength is 1", () => {
+            expect.assertions(1);
+            expect(
+                inspect(
+                    new Map([
+                        ["a", 1],
+                        ["b", 2],
+                        ["c", 3],
+                    ]),
+                    { maxStringLength: 1 },
+                ),
+            ).toBe("Map (3) { …(3) }");
+        });
+
+        describe("with circular references", () => {
+            it("should handle circular references in Maps", () => {
+                expect.assertions(1);
+
+                const map = new Map();
+
+                map.set("a", map);
+
+                expect(inspect(map)).toBe("Map (1) { 'a' => [Circular] }");
+            });
+
+            it("should handle deeply circular references in Maps", () => {
+                expect.assertions(1);
+
+                const map = new Map();
+
+                map.set("a", new Map([["b", map]]));
+
+                expect(inspect(map)).toBe("Map (1) { 'a' => Map (1) { 'b' => [Circular] } }");
+            });
+        });
+    });
+
+    describe("with non-map properties", () => {
+        it("should not output non-map properties", () => {
+            expect.assertions(1);
+
+            const map = new Map();
+
+            // @ts-expect-error - testing non-standard property
+            map.foo = "bar";
+
+            expect(inspect(map)).toBe("Map (0) {}");
+        });
+    });
+
+    describe("with sorted option", () => {
+        it("should sort Maps when sorted is true", () => {
+            expect.assertions(1);
+
+            const map = new Map([
+                ["a", 2],
+                ["b", 1],
+            ]);
+
+            expect(inspect(map, { sorted: true })).toBe("Map (2) { 'a' => 2, 'b' => 1 }");
         });
     });
 });
