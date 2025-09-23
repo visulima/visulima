@@ -351,7 +351,7 @@ const buildExtendedErrorData = async (
                 errorCount: 1,
                 fixPrompt: aiPrompt({
                     applicationType: undefined,
-                    error,
+                    error: primaryError,
                     file: {
                         file: compiledFilePath,
                         language: "jsx",
@@ -359,7 +359,7 @@ const buildExtendedErrorData = async (
                         snippet: diffContent,
                     },
                 }),
-                message: error.message,
+                message: primaryError.message,
                 originalCodeFrameContent: highlighter.codeToHtml(diffContent as string, {
                     lang: compiledFilePath ? findLanguageBasedOnExtension(compiledFilePath) : "text",
                     themes: { dark: "github-dark-default", light: "github-light" },
@@ -369,7 +369,7 @@ const buildExtendedErrorData = async (
                 originalFileLine: compiledLine,
                 originalFilePath: compiledFilePath,
                 originalSnippet: diffContent as string,
-                originalStack: error.stack || "",
+                originalStack: primaryError.stack || "",
             } as const;
         }
     }
