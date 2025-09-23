@@ -1,3 +1,15 @@
+## @visulima/cerebro [1.1.51](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.50...@visulima/cerebro@1.1.51) (2025-09-23)
+
+### Miscellaneous Chores
+
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 1.0.35
+* **@visulima/pail:** upgraded to 2.1.29
+
 ## @visulima/cerebro [1.1.50](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.49...@visulima/cerebro@1.1.50) (2025-09-19)
 
 ### Miscellaneous Chores
