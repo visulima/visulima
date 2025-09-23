@@ -1,3 +1,10 @@
+## @visulima/error-handler [1.0.5](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.4...@visulima/error-handler@1.0.5) (2025-09-23)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.6.2
+
 ## @visulima/error-handler [1.0.4](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.3...@visulima/error-handler@1.0.4) (2025-09-20)
 
 ### Bug Fixes
