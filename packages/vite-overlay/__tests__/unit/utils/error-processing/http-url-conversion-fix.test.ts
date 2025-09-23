@@ -112,7 +112,7 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
         });
 
         // Process the primary error
-        const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+        const result = await buildExtendedErrorData(primaryError, mockServer, 0, undefined, undefined, allErrors);
 
         // Verify the fix: both errors should resolve to the same HTTP URL with query parameter
         expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx?tsr-split=component");
@@ -152,7 +152,7 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
 
         const allErrors = [primaryError];
 
-        const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+        const result = await buildExtendedErrorData(primaryError, mockServer, 0, undefined, undefined, allErrors);
 
         // Should convert to HTTP URL without query parameter
         expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");
@@ -207,7 +207,7 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
 
         const allErrors = [primaryError, causeError];
 
-        const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+        const result = await buildExtendedErrorData(primaryError, mockServer, 0, undefined, undefined, allErrors);
 
         // Should still convert to valid HTTP URL despite malformed cause error
         expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");

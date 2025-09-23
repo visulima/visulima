@@ -29,11 +29,11 @@ const extractIndividualErrors = (error: Error): Error[] => {
         const processedErrors = processESBuildErrors(error as ESBuildMessage[]);
 
         return processedErrors.map(
-            (error) =>
+            (processedError) =>
                 ({
-                    message: error.message || "ESBuild error",
-                    name: error.name || "Error",
-                    stack: error.stack || "",
+                    message: processedError.message || "ESBuild error",
+                    name: processedError.name || "Error",
+                    stack: processedError.stack || "",
                 }) as Error,
         );
     }
@@ -262,19 +262,22 @@ const generateSyntaxHighlightedFrames = async (
 const buildExtendedErrorData = async (
     error: Error,
     server: ViteDevServer,
+    errorIndex: number,
+    framework?: string,
     viteErrorData?: ViteErrorData,
     allErrors?: (Error | { message: string; name?: string; stack?: string })[],
-    errorIndex: number = 0,
+// eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<ErrorProcessingResult> => {
-    const vueErrorInfo = error?.message ? parseVueCompilationError(error.message) : undefined;
+    const vueErrorInfo = framework === "vue" && error?.message ? parseVueCompilationError(error.message) : undefined;
     const individualErrors = extractIndividualErrors(error);
     const primaryError = individualErrors[0] || error;
+    const isReactHydrationError = framework === "react" && (error.message.includes("hydration") || error.message.includes("hydrating"));
 
     let causeQuery = "";
 
     if (allErrors && allErrors.length > 1) {
-        for (const error_ of allErrors.slice(1)) {
-            const causeStack = error_.stack || "";
+        for (const allError of allErrors.slice(1)) {
+            const causeStack = allError.stack || "";
             const causeTraces = parseStacktrace({ stack: causeStack } as Error, { frameLimit: 10 });
             const causeHttpTrace = causeTraces?.find((trace) => trace?.file?.startsWith("http"));
 

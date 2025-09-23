@@ -27,7 +27,7 @@ class ErrorOverlay extends HTMLElement {
      */
     constructor(error) {
         super();
-
+console.log("error", error);
         this.root = this.attachShadow({ mode: "open" });
         // eslint-disable-next-line no-undef
         this.root.innerHTML = overlayTemplate;
