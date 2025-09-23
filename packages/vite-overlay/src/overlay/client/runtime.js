@@ -291,9 +291,10 @@ class ErrorOverlay extends HTMLElement {
                     const column = currentError?.originalFileColumn;
 
                     if (fullPath) {
+                        const isHttpLink = /^https?:\/\//i.test(fullPath);
                         let displayPath = fullPath;
 
-                        if (payload.rootPath && fullPath.startsWith(payload.rootPath)) {
+                        if (!isHttpLink && payload.rootPath && fullPath.startsWith(payload.rootPath)) {
                             displayPath = fullPath.slice(payload.rootPath.length);
 
                             if (!displayPath.startsWith("/")) {
@@ -301,14 +302,8 @@ class ErrorOverlay extends HTMLElement {
                             }
                         }
 
-                        fileElement.textContent = `.${displayPath}${line ? `:${line}` : ""}`;
+                        fileElement.textContent = isHttpLink ? fullPath : `.${displayPath}${line ? `:${line}` : ""}`;
                         const editor = localStorage.getItem("vo:editor");
-
-                        // injected by the hmr plugin when served
-                        // eslint-disable-next-line no-undef
-                        const url = `${base}__open-in-editor?file=${encodeURIComponent(fullPath)}${
-                            line ? `&line=${line}` : ""
-                        }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
 
                         // Remove any existing event listeners
                         const newFileElement = fileElement.cloneNode(true);
@@ -317,7 +312,18 @@ class ErrorOverlay extends HTMLElement {
 
                         newFileElement.addEventListener("click", (event) => {
                             event.preventDefault();
-                            fetch(url);
+
+                            if (isHttpLink) {
+                                globalThis.open(fullPath, "_blank");
+                            } else {
+                                // injected by the hmr plugin when served
+                                // eslint-disable-next-line no-undef
+                                const url = `${base}__open-in-editor?file=${encodeURIComponent(fullPath)}${
+                                    line ? `&line=${line}` : ""
+                                }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
+
+                                fetch(url);
+                            }
                         });
 
                         newFileElement.classList.remove("hidden");

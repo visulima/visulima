@@ -129,7 +129,7 @@ const resolveOriginalLocationInfo = async (
             }
         }
 
-        let estimatedLine = fileLine;
+        let estimatedLine;
         let estimatedColumn = fileColumn;
 
         if (fileLine >= 20) {
