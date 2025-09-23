@@ -4188,18 +4188,20 @@ importers:
       '@shikijs/themes':
         specifier: 3.13.0
         version: 3.13.0
-      '@shikijs/transformers':
-        specifier: 3.13.0
-        version: 3.13.0
       '@visulima/boxen':
         specifier: 2.0.3
         version: 2.0.3
       '@visulima/error':
+<<<<<<< HEAD
         specifier: 4.6.2
         version: 4.6.2(ai@5.0.34(zod@3.25.76))
       dompurify:
         specifier: ^3.2.7
         version: 3.2.7
+=======
+        specifier: 4.6.1
+        version: 4.6.1(ai@5.0.34(zod@3.25.76))
+>>>>>>> 8f131c59 (chore(vite-overlay): remove unused dependencies from package.json and pnpm-lock.yaml)
       fastest-levenshtein:
         specifier: ^1.0.16
         version: 1.0.16
@@ -10261,9 +10263,6 @@ packages:
 
   '@shikijs/themes@3.13.0':
     resolution: {integrity: sha512-Vxw1Nm1/Od8jyA7QuAenaV78BG2nSr3/gCGdBkLpfLscddCkzkL36Q5b67SrLLfvAJTOUzW39x4FHVCFriPVgg==}
-
-  '@shikijs/transformers@3.13.0':
-    resolution: {integrity: sha512-833lcuVzcRiG+fXvgslWsM2f4gHpjEgui1ipIknSizRuTgMkNZupiXE5/TVJ6eSYfhNBFhBZKkReKWO2GgYmqA==}
 
   '@shikijs/types@3.13.0':
     resolution: {integrity: sha512-oM9P+NCFri/mmQ8LoFGVfVyemm5Hi27330zuOBp0annwJdKH1kOLndw3zCtAVDehPLg9fKqoEx3Ht/wNZxolfw==}
@@ -32161,11 +32160,6 @@ snapshots:
 
   '@shikijs/themes@3.13.0':
     dependencies:
-      '@shikijs/types': 3.13.0
-
-  '@shikijs/transformers@3.13.0':
-    dependencies:
-      '@shikijs/core': 3.13.0
       '@shikijs/types': 3.13.0
 
   '@shikijs/types@3.13.0':
