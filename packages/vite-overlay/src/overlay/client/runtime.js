@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable no-param-reassign */
 /* eslint-disable n/no-unsupported-features/node-builtins */
 /* eslint-disable no-unsanitized/property */
@@ -29,6 +30,16 @@ class ErrorOverlay extends HTMLElement {
      */
     constructor(error) {
         super();
+
+        const previous = globalThis.__v_o__current;
+
+        if (previous && previous !== this) {
+            if (previous.parentNode) {
+                previous.remove();
+            } else if (typeof previous.close === "function") {
+                previous.close();
+            }
+        }
 
         this.root = this.attachShadow({ mode: "open" });
         // eslint-disable-next-line no-undef

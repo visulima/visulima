@@ -263,21 +263,21 @@ textarea:focus-visible,
 }
 
 .shiki.has-diff .diff.add::before {
-    @apply absolute left-3 mt-0.5 mr-2 font-bold text-green-500;
+    @apply absolute left-3 mt-0.5 font-bold text-green-500 pointer-events-none select-none;
     content: "+";
 }
 
 .shiki.has-diff .diff.remove::before {
-    @apply absolute left-3 mt-0.5 mr-2 font-bold text-red-500;
+    @apply absolute left-3 mt-0.5 font-bold text-red-500 pointer-events-none select-none;
     content: "−";
 }
 
-.dark .shiki.has-diff .diff.add span {
-    @apply bg-green-500/20!;
+.dark .shiki.has-diff .diff.add {
+    @apply !bg-green-500/20;
 }
 
-.dark .shiki.has-diff .diff.remove span {
-    @apply bg-red-500/20!;
+.dark .shiki.has-diff .diff.remove {
+    @apply !bg-red-500/20;
 }
 
 .dark .shiki.has-diff .diff.add::before {
