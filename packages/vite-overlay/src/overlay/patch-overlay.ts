@@ -40,17 +40,7 @@ const generateEditorOptions = (): string => {
 const generateOverlayTemplate = (showBallonButton: boolean): string => {
     const editorOptions = generateEditorOptions();
 
-    let ballonButton = "";
-
-    if (showBallonButton) {
-        ballonButton = `<button type="button" id="__v_o__balloon" title="Toggle error overlay" aria-label="Toggle error overlay" class="fixed bottom-10 right-2 z-[999999] inline-flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--ono-v-red-orange)] text-white font-sans text-xs leading-none shadow-lg cursor-pointer transition-all duration-200 hover:brightness-105 hidden">
-    <span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold">0</span>
-    <span>Errors</span>
-</button>`;
-    }
-
     return `<style>${styleCss}</style>
-${ballonButton}
 <div id="__v_o__root" class="fixed inset-0 z-0 flex flex-col items-center pt-[10vh] px-[15px] hidden">
     <div id="__v_o__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
     <div id="__v_o__notch" class="relative z-[2] flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
@@ -191,7 +181,17 @@ ${ballonButton}
         </summary>
         <div class="px-4 py-3 text-[var(--ono-v-text)] text-xs rounded-b-[var(--ono-v-dialog-radius)] font-mono leading-5 overflow-auto space-y-0.5 max-h-[140px] bg-[var(--ono-v-surface)] border-t border-[var(--ono-v-border)]"></div>
     </details>
-</div>`;
+</div>
+
+${
+    showBallonButton
+        ? `
+<button type="button" id="__v_o__balloon" title="Toggle error overlay" aria-label="Toggle error overlay" class="fixed z-[2147483647] inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-[var(--ono-v-red-orange)] text-white font-sans text-xs leading-none shadow-lg cursor-pointer transition-all duration-200 hover:brightness-105" style="bottom: 8px; right: 8px;">
+    <span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold">0</span>
+    <span>Errors</span>
+</button>`
+        : ""
+}`;
 };
 
 /**

@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable n/no-unsupported-features/node-builtins */
 /* eslint-disable no-unsanitized/property */
 /* eslint-disable no-underscore-dangle */
@@ -12,6 +13,7 @@
  * Provides interactive error display with theme switching, code frames, and navigation.
  * @augments HTMLElement
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class ErrorOverlay extends HTMLElement {
     /**
      * @typedef {import('../types').VisulimaViteOverlayErrorPayload} VisulimaViteOverlayErrorPayload
@@ -39,8 +41,6 @@ class ErrorOverlay extends HTMLElement {
 
         globalThis.__v_o__current = this;
 
-        document.body.append(this);
-
         if (error && (error.errors === undefined || !Array.isArray(error.errors))) {
             return;
         }
@@ -56,11 +56,9 @@ class ErrorOverlay extends HTMLElement {
         this.__v_oMode = "original";
 
         this.#initializeThemeToggle();
-        // Initialize floating balloon that shows error count and toggles overlay visibility
         this.#initializeBalloon(payload.errors.length);
-
+        this.#restoreBalloonState();
         this.#initializeCopyError();
-
         this.#initializePagination();
 
         if (error.solution) {
@@ -72,7 +70,7 @@ class ErrorOverlay extends HTMLElement {
         const editorSelect = this.root.querySelector("#editor-selector");
 
         if (editorSelect) {
-            let saved = null;
+            let saved;
 
             saved = localStorage.getItem("vo:editor");
 
@@ -111,7 +109,17 @@ class ErrorOverlay extends HTMLElement {
      */
     close() {
         if (this.parentNode) {
-            this.remove();
+            const balloon = this.root.querySelector("#__v_o__balloon");
+
+            if (balloon) {
+                const rootElement = this.root.querySelector("#__v_o__root");
+
+                rootElement.classList.add("hidden");
+
+                this.#saveBalloonState("overlay", "closed");
+            } else {
+                this.remove();
+            }
         }
     }
 
@@ -119,7 +127,7 @@ class ErrorOverlay extends HTMLElement {
      * Updates the overlay content with the current error's code frame.
      */
     updateOverlay() {
-        const currentIndex = 0; // Assuming we're showing the first error
+        const currentIndex = 0;
 
         const currentError = this.__v_oPayload?.errors?.[currentIndex];
 
@@ -172,7 +180,7 @@ class ErrorOverlay extends HTMLElement {
             if (bodyContent) {
                 bodyContent.classList.remove("hidden");
             }
-        }, 100); // Small delay to ensure DOM is ready
+        }, 100);
     }
 
     /**
@@ -191,9 +199,10 @@ class ErrorOverlay extends HTMLElement {
             if (balloon && countElement) {
                 countElement.textContent = total.toString();
 
+                this.#restoreBalloonState();
+
                 balloon.classList.toggle("hidden", total <= 0);
 
-                // Set up click handler to toggle overlay visibility
                 const clickHandler = (event) => {
                     event.preventDefault();
 
@@ -201,10 +210,14 @@ class ErrorOverlay extends HTMLElement {
 
                     if (classes.contains("hidden")) {
                         classes.remove("hidden");
+                        this.#saveBalloonState("overlay", "open");
                     } else {
                         classes.add("hidden");
+                        this.#saveBalloonState("overlay", "closed");
                     }
                 };
+
+                this.#makeBalloonDraggable(balloon);
 
                 balloon.addEventListener("click", clickHandler);
             }
@@ -224,12 +237,12 @@ class ErrorOverlay extends HTMLElement {
             return;
         }
 
-        copyButton.addEventListener("click", async (e) => {
-            e.preventDefault();
+        copyButton.addEventListener("click", async (event) => {
+            event.preventDefault();
 
             try {
                 const payload = this.__v_oPayload;
-                const currentError = payload?.errors?.[0]; // Get first error
+                const currentError = payload?.errors?.[0];
 
                 if (!currentError) {
                     console.warn("[v-o] No error data available to copy");
@@ -559,7 +572,6 @@ class ErrorOverlay extends HTMLElement {
                 totalElement.textContent = totalErrors.toString();
             }
 
-            // Update button states
             if (previousButton) {
                 previousButton.disabled = currentIndex === 0;
                 previousButton.setAttribute("aria-disabled", currentIndex === 0);
@@ -570,11 +582,9 @@ class ErrorOverlay extends HTMLElement {
                 nextButton.setAttribute("aria-disabled", currentIndex >= totalErrors - 1);
             }
 
-            // Update overlay content
             updateOverlayContent();
         };
 
-        // Set up event listeners
         const previousButton = this.root.querySelector("[data-flame-dialog-error-previous]");
         const nextButton = this.root.querySelector("[data-flame-dialog-error-next]");
 
@@ -602,7 +612,6 @@ class ErrorOverlay extends HTMLElement {
             });
         }
 
-        // Selection by error id (external)
         const selectById = (id) => {
             const index = errorIds.indexOf(String(id || ""));
 
@@ -656,10 +665,10 @@ class ErrorOverlay extends HTMLElement {
         const themeButtons = this.root.querySelectorAll("[data-v-o-theme-click-value]");
 
         themeButtons.forEach((button) => {
-            button.addEventListener("click", (e) => {
-                e.preventDefault();
+            button.addEventListener("click", (event) => {
+                event.preventDefault();
 
-                const theme = e.currentTarget.dataset.vOThemeClickValue;
+                const theme = event.currentTarget.dataset.vOThemeClickValue;
 
                 if (theme === "dark") {
                     rootElement?.classList.add("dark");
@@ -692,7 +701,6 @@ class ErrorOverlay extends HTMLElement {
         const solutionsContainer = this.root.querySelector("#__v_o__solutions_container");
 
         if (solutionsContainer && solution) {
-            // Generate HTML from solution object
             let html = "";
 
             if (solution.header) {
@@ -703,27 +711,167 @@ class ErrorOverlay extends HTMLElement {
                 html += solution.body;
             }
 
-            // Set the HTML content and show the container
             solutionsContainer.innerHTML = html;
             solutions.classList.remove("hidden");
         }
     }
 
     /**
-     * Updates the balloon visibility based on overlay state.
-     * The balloon should be hidden when the overlay is visible and shown when closed.
+     * Makes the balloon draggable with corner constraints
+     * @private
+     * @param {HTMLElement} balloon - The balloon element
+     */
+    #makeBalloonDraggable(balloon) {
+        let isDragging = false;
+        let startX;
+        let startY;
+        let balloonRect;
+
+        const handleMouseMove = (event) => {
+            if (!isDragging)
+                return;
+
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const balloonWidth = balloonRect.width;
+            const balloonHeight = balloonRect.height;
+
+            let newX = event.clientX - startX;
+            let newY = event.clientY - startY;
+
+            const padding = 8;
+            const corners = [
+                { name: "top-left", x: padding, y: padding },
+                { name: "top-right", x: windowWidth - balloonWidth - padding, y: padding },
+                { name: "bottom-left", x: padding, y: windowHeight - balloonHeight - padding },
+                { name: "bottom-right", x: windowWidth - balloonWidth - padding, y: windowHeight - balloonHeight - padding },
+            ];
+
+            let closestCorner = corners[0];
+            let minDistance = Infinity;
+
+            corners.forEach((corner) => {
+                const distance = Math.hypot(newX - corner.x, newY - corner.y);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestCorner = corner;
+                }
+            });
+
+            balloon.style.left = `${closestCorner.x}px`;
+            balloon.style.top = `${closestCorner.y}px`;
+            balloon.style.right = "auto";
+            balloon.style.bottom = "auto";
+            balloon.style.transform = "none";
+
+            this.#saveBalloonState("position", closestCorner.name);
+        };
+
+        const handleMouseUp = () => {
+            if (!isDragging)
+                return;
+
+            isDragging = false;
+            document.removeEventListener("mousemove", handleMouseMove);
+            document.removeEventListener("mouseup", handleMouseUp);
+            balloon.style.cursor = "pointer";
+        };
+
+        const handleMouseDown = (event) => {
+            if (event.target.closest("#__v_o__balloon_count"))
+                return; // Don't drag when clicking count
+
+            isDragging = true;
+            balloonRect = balloon.getBoundingClientRect();
+            startX = event.clientX - balloonRect.left;
+            startY = event.clientY - balloonRect.top;
+
+            document.addEventListener("mousemove", handleMouseMove);
+            document.addEventListener("mouseup", handleMouseUp);
+            balloon.style.cursor = "grabbing";
+        };
+
+        balloon.addEventListener("mousedown", handleMouseDown);
+    }
+
+    /**
+     * Restores balloon state and position from localStorage
      * @private
      */
-    #updateBalloonVisibility() {
+    #restoreBalloonState() {
         try {
-            const balloon = document.querySelector("#__v_o__balloon");
+            const balloonStates = JSON.parse(localStorage.getItem("v-o-balloon") || "{}");
+            const balloon = this.root.querySelector("#__v_o__balloon");
+            const rootElement = this.root.querySelector("#__v_o__root");
 
-            if (balloon) {
-                // Show balloon when overlay is closed, hide when overlay is open
-                balloon.classList.toggle("hidden", this.parentNode);
+            if (balloon && rootElement) {
+                if (balloonStates.overlay === "open") {
+                    rootElement.classList.remove("hidden");
+                } else if (balloonStates.overlay === "closed") {
+                    rootElement.classList.add("hidden");
+                }
+
+                if (balloonStates.position) {
+                    const positions = ["top-left", "top-right", "bottom-left", "bottom-right"];
+
+                    if (positions.includes(balloonStates.position)) {
+                        balloon.style.top = "";
+                        balloon.style.bottom = "";
+                        balloon.style.left = "";
+                        balloon.style.right = "";
+                        balloon.style.transform = "";
+
+                        switch (balloonStates.position) {
+                            case "bottom-left": {
+                                balloon.style.bottom = "8px";
+                                balloon.style.left = "8px";
+                                break;
+                            }
+                            case "bottom-right": {
+                                balloon.style.bottom = "8px";
+                                balloon.style.right = "8px";
+                                break;
+                            }
+                            case "top-left": {
+                                balloon.style.top = "8px";
+                                balloon.style.left = "8px";
+                                break;
+                            }
+                            case "top-right": {
+                                balloon.style.top = "8px";
+                                balloon.style.right = "8px";
+                                break;
+                            }
+                            default: {
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         } catch {
-            // Fail silently if DOM is not available
+            // Fail silently if localStorage is not available
+        }
+    }
+
+    /**
+     * Saves balloon state and position to localStorage
+     * @private
+     * @param {string} key - The state key ('overlay' or 'position')
+     * @param {string} value - The state value
+     */
+    // eslint-disable-next-line class-methods-use-this
+    #saveBalloonState(key, value) {
+        try {
+            const item = localStorage.getItem("v-o-balloon");
+            const balloonStates = item ? JSON.parse(item) : {};
+
+            balloonStates[key] = value;
+
+            localStorage.setItem("v-o-balloon", JSON.stringify(balloonStates));
+        } catch {
+            // Fail silently if localStorage is not available
         }
     }
 }
