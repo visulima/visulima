@@ -1,3 +1,14 @@
+## @visulima/find-cache-dir [1.0.35](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@1.0.34...@visulima/find-cache-dir@1.0.35) (2025-09-23)
+
+### Miscellaneous Chores
+
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 3.1.9
+
 ## @visulima/find-cache-dir [1.0.34](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@1.0.33...@visulima/find-cache-dir@1.0.34) (2025-09-19)
 
 ### Miscellaneous Chores
