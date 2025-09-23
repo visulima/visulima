@@ -1,3 +1,4 @@
+/* eslint-disable vitest/require-mock-type-parameters */
 // Mock all dependencies first
 import { readFile } from "node:fs/promises";
 
@@ -122,7 +123,17 @@ vi.mock("../../vite-error-adapter", () => {
 describe(buildExtendedErrorData, () => {
     const mockServer = {
         config: {
+            preview: {
+                host: "localhost",
+                https: false,
+                port: 5173,
+            },
             root: "/mock/project/root",
+            server: {
+                host: "localhost",
+                https: false,
+                port: 5173,
+            },
         },
         moduleGraph: { idToModuleMap: new Map() },
         transformRequest: vi.fn(),
@@ -3020,10 +3031,6 @@ Final line`);
     });
 
     describe(retrieveSourceTexts, () => {
-        const mockServer = {
-            transformRequest: vi.fn(),
-        } as unknown as ViteDevServer;
-
         const mockReadFile = vi.mocked(readFile);
 
         beforeEach(() => {
@@ -3443,16 +3450,12 @@ Final line`);
         it("should convert local paths to HTTP URLs with query parameters from cause errors", async () => {
             expect.assertions(3);
 
-            // Mock server configuration
-            const mockServer = {
-                config: {
-                    root: "/home/user/project",
-                },
+            const mockServer2 = {
+                ...mockServer,
                 moduleGraph: {
                     getModuleById: vi.fn(),
                     idToModuleMap: new Map(),
                 },
-                transformRequest: vi.fn(),
             } as unknown as ViteDevServer;
 
             // Mock module resolution
@@ -3469,8 +3472,8 @@ Final line`);
                 },
             };
 
-            vi.spyOn(mockServer.moduleGraph, "getModuleById").mockImplementation().mockReturnValue(mockModule);
-            mockServer.moduleGraph.idToModuleMap.set("http://localhost:5173/src/App.tsx?tsr-split=component", mockModule);
+            vi.spyOn(mockServer2.moduleGraph, "getModuleById").mockImplementation().mockReturnValue(mockModule);
+            mockServer2.moduleGraph.idToModuleMap.set("http://localhost:5173/src/App.tsx?tsr-split=component", mockModule);
 
             // Mock parseStacktrace to return cause error with HTTP URL
             vi.mocked(parseStacktrace).mockImplementation((error: any) => {
@@ -3508,10 +3511,10 @@ Final line`);
 
             const allErrors = [primaryError, causeError];
 
-            const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+            const result = await buildExtendedErrorData(primaryError, mockServer2, undefined, undefined, undefined, allErrors);
 
             // Should convert to HTTP URL format
-            expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");
+            expect(result.compiledFilePath).toBe("http://localhost:5173/home/user/project/src/App.tsx");
 
             // Should show correct compiled code frame
             expect(result.compiledLine).toBe(20); // Primary error line
@@ -3521,15 +3524,12 @@ Final line`);
         it("should handle case where no cause errors have HTTP URLs", async () => {
             expect.assertions(1);
 
-            const mockServer = {
-                config: {
-                    root: "/home/user/project",
-                },
+            const mockServer2 = {
+                ...mockServer,
                 moduleGraph: {
                     getModuleById: vi.fn(),
                     idToModuleMap: new Map(),
                 },
-                transformRequest: vi.fn(),
             } as unknown as ViteDevServer;
 
             // Mock parseStacktrace to return only local paths
@@ -3551,24 +3551,21 @@ Final line`);
 
             const allErrors = [primaryError];
 
-            const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+            const result = await buildExtendedErrorData(primaryError, mockServer2, undefined, undefined, allErrors);
 
             // Should convert to HTTP URL without query parameter
-            expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");
+            expect(result.compiledFilePath).toBe("http://localhost:5173/home/user/project/src/App.tsx");
         });
 
         it("should handle malformed URLs gracefully", async () => {
             expect.assertions(1);
 
-            const mockServer = {
-                config: {
-                    root: "/home/user/project",
-                },
+            const mockServer2 = {
+                ...mockServer,
                 moduleGraph: {
                     getModuleById: vi.fn(),
                     idToModuleMap: new Map(),
                 },
-                transformRequest: vi.fn(),
             } as unknown as ViteDevServer;
 
             // Mock parseStacktrace to return malformed HTTP URL
@@ -3607,10 +3604,10 @@ Final line`);
 
             const allErrors = [primaryError, causeError];
 
-            const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+            const result = await buildExtendedErrorData(primaryError, mockServer2, undefined, undefined, undefined, allErrors);
 
             // Should still convert to HTTP URL without crashing
-            expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");
+            expect(result.compiledFilePath).toBe("http://localhost:5173/home/user/project/src/App.tsx");
         });
     });
 
@@ -3629,17 +3626,10 @@ Final line`);
         at Component (/app/dist/component.js:10:5)
         at App (/app/dist/app.js:20:15)`;
 
-                const mockServer = {
-                    config: {
-                        root: "/mock/project/root",
-                    },
-                    moduleGraph: {
-                        idToModuleMap: new Map(),
-                    },
+                const result = await buildExtendedErrorData(mockError, {
+                    ...mockServer,
                     transformRequest: vi.fn().mockRejectedValue(new Error("Transform failed")),
-                } as unknown as ViteDevServer;
-
-                const result = await buildExtendedErrorData(mockError, mockServer);
+                });
 
                 expect(result).toBeDefined();
 
@@ -3656,17 +3646,10 @@ Final line`);
         at anonymous
         at Component (/app/dist/component.js:0:0)`;
 
-                const mockServer = {
-                    config: {
-                        root: "/mock/project/root",
-                    },
-                    moduleGraph: {
-                        idToModuleMap: new Map(),
-                    },
+                const result = await buildExtendedErrorData(mockError, {
+                    ...mockServer,
                     transformRequest: vi.fn().mockRejectedValue(new Error("Transform failed")),
-                } as unknown as ViteDevServer;
-
-                const result = await buildExtendedErrorData(mockError, mockServer);
+                });
 
                 expect(result).toBeDefined();
 
@@ -3681,16 +3664,6 @@ Final line`);
 
                 mockError.stack = `Error: Invalid path error
         at Component (invalid:path:10:5)`;
-
-                const mockServer = {
-                    config: {
-                        root: "/mock/project/root",
-                    },
-                    moduleGraph: {
-                        idToModuleMap: new Map(),
-                    },
-                    transformRequest: vi.fn().mockRejectedValue(new Error("Transform failed")),
-                } as unknown as ViteDevServer;
 
                 const result = await buildExtendedErrorData(mockError, mockServer);
 
@@ -3707,17 +3680,10 @@ Final line`);
 
                 mockError.stack = "";
 
-                const mockServer = {
-                    config: {
-                        root: "/mock/project/root",
-                    },
-                    moduleGraph: {
-                        idToModuleMap: new Map(),
-                    },
+                const result = await buildExtendedErrorData(mockError, {
+                    ...mockServer,
                     transformRequest: vi.fn().mockRejectedValue(new Error("Transform failed")),
-                } as unknown as ViteDevServer;
-
-                const result = await buildExtendedErrorData(mockError, mockServer);
+                });
 
                 expect(result).toBeDefined();
 
@@ -3733,17 +3699,10 @@ Final line`);
                 mockError.stack = `Error: Processing error
         at Component (/app/dist/component.js:10:5)`;
 
-                const mockServer = {
-                    config: {
-                        root: "/mock/project/root",
-                    },
-                    moduleGraph: {
-                        idToModuleMap: new Map(),
-                    },
+                const result = await buildExtendedErrorData(mockError, {
+                    ...mockServer,
                     transformRequest: vi.fn().mockRejectedValue(new Error("Transform failed")),
-                } as unknown as ViteDevServer;
-
-                const result = await buildExtendedErrorData(mockError, mockServer);
+                });
 
                 expect(result).toBeDefined();
 

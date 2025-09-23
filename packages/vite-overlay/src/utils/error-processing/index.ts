@@ -13,50 +13,13 @@ import { normalizeIdCandidates } from "../normalize-id-candidates";
 import realignOriginalPosition from "../position-aligner";
 import resolveOriginalLocation from "../resolve-original-location";
 import { cleanErrorMessage, cleanErrorStack, extractErrors } from "../stack-trace";
-import { parseVueCompilationError } from "./parse-vue-compilation-error";
+import parseVueCompilationError from "./parse-vue-compilation-error";
+import processHydrationDiff from "./process-hydration-diff";
 import remapStackToOriginal from "./remap-stack-to-original";
 import retrieveSourceTexts from "./retrieve-source-texts";
 import shikiDiffTransformer from "./shiki-diff-transformer";
 import addQueryToUrl from "./utils/add-query-to-url";
 import extractQueryFromHttpUrl from "./utils/extract-query-from-http-url";
-
-const REACT_HYDRATION_ERROR_LINK = "https://react.dev/link/hydration-mismatch";
-
-/**
- * Processes React hydration diff content to extract and format relevant differences.
- * @param errorMessage The raw error message containing hydration diff
- * @returns Formatted diff content with markers and limited context
- */
-const processHydrationDiff = (error: Error): string | undefined => {
-    const [hydrationMessage, diffContentMessage] = error.message.split(REACT_HYDRATION_ERROR_LINK);
-
-    if (hydrationMessage) {
-        const [message] = hydrationMessage?.split("\n\n") as string[];
-
-        // eslint-disable-next-line no-param-reassign
-        error.message = (message as string).replace(" This can happen if a SSR-ed Client Component used:", "");
-    }
-
-    const transformedDiffContent: string[] = [];
-
-    for (const line of diffContentMessage?.trim()?.split("\n") || []) {
-        if (line.startsWith("+ ")) {
-            transformedDiffContent.push(`[!code ++] ${line.slice(1)}`);
-        } else if (line.startsWith("- ")) {
-            transformedDiffContent.push(`[!code --] ${line.slice(1)}`);
-        } else if (!line.includes(" ...")) {
-            transformedDiffContent.push(line);
-        }
-    }
-
-    const indexOfFirstDiff = transformedDiffContent.findIndex((line) => line.startsWith("[!code ++]"));
-
-    if (indexOfFirstDiff === -1) {
-        return undefined;
-    }
-
-    return transformedDiffContent.slice(Math.max(0, indexOfFirstDiff - 5)).join("\n");
-};
 
 /**
  * Extracts individual errors from an error object, handling ESBuild error arrays.
@@ -301,7 +264,7 @@ const generateSyntaxHighlightedFrames = async (
 const buildExtendedErrorData = async (
     error: Error,
     server: ViteDevServer,
-    errorIndex: number,
+    errorIndex: number = 0,
     framework?: string,
     viteErrorData?: ViteErrorData,
     allErrors?: (Error | { message: string; name?: string; stack?: string })[],

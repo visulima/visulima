@@ -24,7 +24,17 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
         // Mock server with proper configuration
         const mockServer = {
             config: {
+                preview: {
+                    host: "localhost",
+                    https: false,
+                    port: 5173,
+                },
                 root: "/home/user/project",
+                server: {
+                    host: "localhost",
+                    https: false,
+                    port: 5173,
+                },
             },
             moduleGraph: {
                 getModuleById: vi.fn(),
@@ -127,7 +137,17 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
 
         const mockServer = {
             config: {
+                preview: {
+                    host: "localhost",
+                    https: false,
+                    port: 5173,
+                },
                 root: "/home/user/project",
+                server: {
+                    host: "localhost",
+                    https: false,
+                    port: 5173,
+                },
             },
             moduleGraph: {
                 getModuleById: vi.fn(),
@@ -163,7 +183,17 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
 
         const mockServer = {
             config: {
+                preview: {
+                    host: "localhost",
+                    https: false,
+                    port: 5173,
+                },
                 root: "/home/user/project",
+                server: {
+                    host: "localhost",
+                    https: false,
+                    port: 5173,
+                },
             },
             moduleGraph: {
                 getModuleById: vi.fn(),
