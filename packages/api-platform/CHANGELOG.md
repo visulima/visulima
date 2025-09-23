@@ -1,3 +1,15 @@
+## @visulima/api-platform [3.0.49](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.48...@visulima/api-platform@3.0.49) (2025-09-23)
+
+### Miscellaneous Chores
+
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.85
+* **@visulima/fs:** upgraded to 3.1.9
+
 ## @visulima/api-platform [3.0.48](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.47...@visulima/api-platform@3.0.48) (2025-09-19)
 
 
