@@ -1,3 +1,9 @@
+## @visulima/tsconfig [1.2.0](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.23...@visulima/tsconfig@1.2.0) (2025-09-24)
+
+### Features
+
+* **tsconfig:** added support for typescript 5.9 ([b107d4e](https://github.com/visulima/visulima/commit/b107d4ee8a1f6df34e8613b08a377786283c9ff0))
+
 ## @visulima/tsconfig [1.1.23](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.22...@visulima/tsconfig@1.1.23) (2025-09-23)
 
 ### Miscellaneous Chores
