@@ -57,23 +57,23 @@
     "type": "module",
     "exports": {
         ".": {
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            },
             "import": {
                 "types": "./dist/index.d.mts",
                 "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
             }
         },
         "./language/*": {
-            "require": {
-                "types": "./dist/language/*.d.cts",
-                "default": "./dist/language/*.cjs"
-            },
             "import": {
                 "types": "./dist/language/*.d.mts",
                 "default": "./dist/language/*.mjs"
+            },
+            "require": {
+                "types": "./dist/language/*.d.cts",
+                "default": "./dist/language/*.cjs"
             }
         },
         "./package.json": "./package.json"
