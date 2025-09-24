@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseVueCompilationError } from "../../../../src/utils/error-processing/parse-vue-compilation-error";
+import parseVueCompilationError from "../../../../src/utils/error-processing/parse-vue-compilation-error";
 
 describe(parseVueCompilationError, () => {
     describe("vue SFC compilation error parsing", () => {
@@ -54,7 +54,7 @@ components/Button.vue
             const errorMessage = "SyntaxError: Unexpected token '}'";
             const result = parseVueCompilationError(errorMessage);
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
 
         it("should return null when no position information is found", () => {
@@ -69,7 +69,7 @@ src/App.vue
 
             const result = parseVueCompilationError(errorMessage);
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
 
         it("should return null when no file path is found", () => {
@@ -85,7 +85,7 @@ src/App.vue
 
             const result = parseVueCompilationError(errorMessage);
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
 
         it("should handle multiline error messages", () => {
@@ -122,7 +122,7 @@ src/App.vue`;
 
             const result = parseVueCompilationError(errorMessage);
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
 
         it("should handle relative file paths", () => {

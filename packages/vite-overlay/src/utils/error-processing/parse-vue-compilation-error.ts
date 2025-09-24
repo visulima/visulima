@@ -3,9 +3,9 @@
  * @param errorMessage The Vue compilation error message to parse
  * @returns Object containing parsed error information or null if not a Vue error
  */
-export const parseVueCompilationError = (errorMessage: string) => {
+const parseVueCompilationError = (errorMessage: string): { column: number; line: number; message: string; originalFilePath: string } | undefined => {
     if (!errorMessage.includes("[vue/compiler-sfc]")) {
-        return null;
+        return undefined;
     }
 
     let filePath = "";
@@ -20,11 +20,12 @@ export const parseVueCompilationError = (errorMessage: string) => {
         column = Number.parseInt(positionMatch[2], 10);
     }
 
+    // eslint-disable-next-line sonarjs/slow-regex
     const filePathPattern = /(\S+\.vue)/;
     const fileMatch = errorMessage.match(filePathPattern);
 
     if (fileMatch && fileMatch[1]) {
-        filePath = fileMatch[1];
+        filePath = fileMatch[1] || "";
     }
 
     const message = errorMessage.split("\n")[0] || errorMessage;
@@ -38,5 +39,7 @@ export const parseVueCompilationError = (errorMessage: string) => {
         };
     }
 
-    return null;
+    return undefined;
 };
+
+export default parseVueCompilationError;

@@ -7,7 +7,6 @@ export default defineConfig({
     failOnWarn: false,
     transformer,
     runtime: "node",
-    declaration: false,
     rollup: {
         css: {
             mode: "inline",

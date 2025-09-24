@@ -1,3 +1,5 @@
+/* eslint-disable sonarjs/cognitive-complexity */
+/* eslint-disable no-param-reassign */
 /* eslint-disable n/no-unsupported-features/node-builtins */
 /* eslint-disable no-unsanitized/property */
 /* eslint-disable no-underscore-dangle */
@@ -12,6 +14,7 @@
  * Provides interactive error display with theme switching, code frames, and navigation.
  * @augments HTMLElement
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class ErrorOverlay extends HTMLElement {
     /**
      * @typedef {import('../types').VisulimaViteOverlayErrorPayload} VisulimaViteOverlayErrorPayload
@@ -28,6 +31,16 @@ class ErrorOverlay extends HTMLElement {
     constructor(error) {
         super();
 
+        const previous = globalThis.__v_o__current;
+
+        if (previous && previous !== this) {
+            if (previous.parentNode) {
+                previous.remove();
+            } else if (typeof previous.close === "function") {
+                previous.close();
+            }
+        }
+
         this.root = this.attachShadow({ mode: "open" });
         // eslint-disable-next-line no-undef
         this.root.innerHTML = overlayTemplate;
@@ -38,8 +51,6 @@ class ErrorOverlay extends HTMLElement {
         this.root.host._errorOverlay = this;
 
         globalThis.__v_o__current = this;
-
-        document.body.append(this);
 
         if (error && (error.errors === undefined || !Array.isArray(error.errors))) {
             return;
@@ -55,22 +66,22 @@ class ErrorOverlay extends HTMLElement {
 
         this.__v_oMode = "original";
 
-        this.#initializeThemeToggle();
-
-        this.#initializeCopyError();
-
-        this.#initializePagination();
+        this._initializeThemeToggle();
+        this._initializeBalloon(payload.errors.length);
+        this._restoreBalloonState();
+        this._initializeCopyError();
+        this._initializePagination();
 
         if (error.solution) {
-            this.#injectSolution(error.solution);
+            this._injectSolution(error.solution);
         }
 
-        this.#hideLoadingStates();
+        this._hideLoadingStates();
 
         const editorSelect = this.root.querySelector("#editor-selector");
 
         if (editorSelect) {
-            let saved = null;
+            let saved;
 
             saved = localStorage.getItem("vo:editor");
 
@@ -105,38 +116,10 @@ class ErrorOverlay extends HTMLElement {
     }
 
     /**
-     * Removes the error overlay from the DOM.
-     */
-    close() {
-        if (this.parentNode) {
-            this.remove();
-        }
-    }
-
-    /**
-     * Updates the overlay content with the current error's code frame.
-     */
-    updateOverlay() {
-        const currentIndex = 0; // Assuming we're showing the first error
-
-        const currentError = this.__v_oPayload?.errors?.[currentIndex];
-
-        if (currentError) {
-            const flameOverlay = this.root.querySelector("#__v_o__overlay");
-
-            if (flameOverlay) {
-                const html = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || "";
-
-                flameOverlay.innerHTML = html;
-            }
-        }
-    }
-
-    /**
      * Hides loading skeleton states and shows the actual content after a brief delay.
      * @private
      */
-    #hideLoadingStates() {
+    _hideLoadingStates() {
         setTimeout(() => {
             const headerSkeleton = this.root.querySelector("#__v_o__header_loader");
             const headerContent = this.root.querySelector("#__v_o__title");
@@ -170,26 +153,74 @@ class ErrorOverlay extends HTMLElement {
             if (bodyContent) {
                 bodyContent.classList.remove("hidden");
             }
-        }, 100); // Small delay to ensure DOM is ready
+        }, 100);
+    }
+
+    /**
+     * Initializes the floating balloon button that shows the error count
+     * and toggles the overlay open/close when clicked.
+     * The balloon is already present in the DOM template.
+     * @private
+     * @param {number} total - The total number of errors to display
+     */
+    _initializeBalloon(total) {
+        try {
+            const balloon = this.root.querySelector("#__v_o__balloon");
+            const countElement = this.root.querySelector("#__v_o__balloon_count");
+            const rootElement = this.root.querySelector("#__v_o__root");
+            const textElement = this.root.querySelector("#__v_o__balloon_text");
+
+            if (balloon && countElement) {
+                countElement.textContent = total.toString();
+
+                if (textElement) {
+                    textElement.textContent = total === 1 ? "Error" : "Errors";
+                }
+
+                this._restoreBalloonState();
+
+                balloon.classList.toggle("hidden", total <= 0);
+
+                const clickHandler = (event) => {
+                    event.preventDefault();
+
+                    const classes = rootElement.classList;
+
+                    if (classes.contains("hidden")) {
+                        classes.remove("hidden");
+                        this._saveBalloonState("overlay", "open");
+                    } else {
+                        classes.add("hidden");
+                        this._saveBalloonState("overlay", "closed");
+                    }
+                };
+
+                this._makeBalloonDraggable(balloon);
+
+                balloon.addEventListener("click", clickHandler);
+            }
+        } catch {
+            // Fail silently if DOM is not available
+        }
     }
 
     /**
      * Initializes the copy error functionality that copies error details to clipboard.
      * @private
      */
-    #initializeCopyError() {
+    _initializeCopyError() {
         const copyButton = this.root.querySelector("#__v_o__copy_error");
 
         if (!copyButton) {
             return;
         }
 
-        copyButton.addEventListener("click", async (e) => {
-            e.preventDefault();
+        copyButton.addEventListener("click", async (event) => {
+            event.preventDefault();
 
             try {
                 const payload = this.__v_oPayload;
-                const currentError = payload?.errors?.[0]; // Get first error
+                const currentError = payload && payload.errors && payload.errors[0];
 
                 if (!currentError) {
                     console.warn("[v-o] No error data available to copy");
@@ -197,7 +228,7 @@ class ErrorOverlay extends HTMLElement {
                     return;
                 }
 
-                const codeFrame = currentError?.originalSnippet || "";
+                const codeFrame = (currentError && currentError.originalSnippet) || "";
 
                 const formattedText = [
                     "## Error Type",
@@ -257,7 +288,7 @@ class ErrorOverlay extends HTMLElement {
      * Initializes pagination functionality for navigating between multiple errors.
      * @private
      */
-    #initializePagination() {
+    _initializePagination() {
         const payload = this.__v_oPayload;
         const errors = Array.isArray(payload.errors) && payload.errors.length > 0 ? payload.errors : [];
         const errorIds = errors.map((error) =>
@@ -286,14 +317,15 @@ class ErrorOverlay extends HTMLElement {
                 const fileElement = this.root.querySelector("#__v_o__filelink");
 
                 if (fileElement) {
-                    const fullPath = currentError?.originalFilePath || "";
-                    const line = currentError?.originalFileLine;
-                    const column = currentError?.originalFileColumn;
+                    const fullPath = (currentError && currentError.originalFilePath) || "";
+                    const line = currentError && currentError.originalFileLine;
+                    const column = currentError && currentError.originalFileColumn;
 
                     if (fullPath) {
+                        const isHttpLink = /^https?:\/\//i.test(fullPath);
                         let displayPath = fullPath;
 
-                        if (payload.rootPath && fullPath.startsWith(payload.rootPath)) {
+                        if (!isHttpLink && payload.rootPath && fullPath.startsWith(payload.rootPath)) {
                             displayPath = fullPath.slice(payload.rootPath.length);
 
                             if (!displayPath.startsWith("/")) {
@@ -301,14 +333,8 @@ class ErrorOverlay extends HTMLElement {
                             }
                         }
 
-                        fileElement.textContent = `.${displayPath}${line ? `:${line}` : ""}`;
+                        fileElement.textContent = isHttpLink ? fullPath : `.${displayPath}${line ? `:${line}` : ""}`;
                         const editor = localStorage.getItem("vo:editor");
-
-                        // injected by the hmr plugin when served
-                        // eslint-disable-next-line no-undef
-                        const url = `${base}__open-in-editor?file=${encodeURIComponent(fullPath)}${
-                            line ? `&line=${line}` : ""
-                        }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
 
                         // Remove any existing event listeners
                         const newFileElement = fileElement.cloneNode(true);
@@ -317,7 +343,18 @@ class ErrorOverlay extends HTMLElement {
 
                         newFileElement.addEventListener("click", (event) => {
                             event.preventDefault();
-                            fetch(url);
+
+                            if (isHttpLink) {
+                                globalThis.open(fullPath, "_blank");
+                            } else {
+                                // injected by the hmr plugin when served
+                                // eslint-disable-next-line no-undef
+                                const url = `${base}__open-in-editor?file=${encodeURIComponent(fullPath)}${
+                                    line ? `&line=${line}` : ""
+                                }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
+
+                                fetch(url);
+                            }
                         });
 
                         newFileElement.classList.remove("hidden");
@@ -330,7 +367,7 @@ class ErrorOverlay extends HTMLElement {
 
             const updateRawStack = (mode) => {
                 const stackHost = this.root.querySelector("#__v_o__stacktrace");
-                const stackElement = stackHost?.querySelector("div:last-child");
+                const stackElement = stackHost && stackHost.querySelector("div:last-child");
 
                 if (stackHost && stackElement) {
                     const rootPayload = this.__v_oPayload || {};
@@ -474,29 +511,39 @@ class ErrorOverlay extends HTMLElement {
                 }
             }
 
-            originalButton?.addEventListener("click", (event) => {
-                event.preventDefault();
+            if (originalButton) {
+                originalButton.addEventListener("click", (event) => {
+                    event.preventDefault();
 
-                this.__v_oMode = "original";
+                    this.__v_oMode = "original";
 
-                renderCode("original");
-                updateRawStack("original");
+                    renderCode("original");
+                    updateRawStack("original");
 
-                originalButton?.classList.add("active");
-                compiledButton?.classList.remove("active");
-            });
+                    if (originalButton)
+                        originalButton.classList.add("active");
 
-            compiledButton?.addEventListener("click", (event) => {
-                event.preventDefault();
+                    if (compiledButton)
+                        compiledButton.classList.remove("active");
+                });
+            }
 
-                this.__v_oMode = "compiled";
+            if (compiledButton) {
+                compiledButton.addEventListener("click", (event) => {
+                    event.preventDefault();
 
-                renderCode("compiled");
-                updateRawStack("compiled");
+                    this.__v_oMode = "compiled";
 
-                compiledButton?.classList.add("active");
-                originalButton?.classList.remove("active");
-            });
+                    renderCode("compiled");
+                    updateRawStack("compiled");
+
+                    if (compiledButton)
+                        compiledButton.classList.add("active");
+
+                    if (originalButton)
+                        originalButton.classList.remove("active");
+                });
+            }
         };
 
         const updatePagination = () => {
@@ -513,7 +560,6 @@ class ErrorOverlay extends HTMLElement {
                 totalElement.textContent = totalErrors.toString();
             }
 
-            // Update button states
             if (previousButton) {
                 previousButton.disabled = currentIndex === 0;
                 previousButton.setAttribute("aria-disabled", currentIndex === 0);
@@ -524,11 +570,9 @@ class ErrorOverlay extends HTMLElement {
                 nextButton.setAttribute("aria-disabled", currentIndex >= totalErrors - 1);
             }
 
-            // Update overlay content
             updateOverlayContent();
         };
 
-        // Set up event listeners
         const previousButton = this.root.querySelector("[data-flame-dialog-error-previous]");
         const nextButton = this.root.querySelector("[data-flame-dialog-error-next]");
 
@@ -556,7 +600,6 @@ class ErrorOverlay extends HTMLElement {
             });
         }
 
-        // Selection by error id (external)
         const selectById = (id) => {
             const index = errorIds.indexOf(String(id || ""));
 
@@ -570,7 +613,7 @@ class ErrorOverlay extends HTMLElement {
         globalThis.__v_oSelectError = selectById;
 
         globalThis.addEventListener("v-o:select-error", (event_) => {
-            selectById(event_?.detail?.id);
+            selectById(event_ && event_.detail && event_.detail.id);
         });
 
         updatePagination();
@@ -580,7 +623,7 @@ class ErrorOverlay extends HTMLElement {
      * Initializes the theme toggle functionality for switching between light and dark modes.
      * @private
      */
-    #initializeThemeToggle() {
+    _initializeThemeToggle() {
         const savedTheme = localStorage.getItem("__v-o__theme");
         const systemPrefersDark = globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
         const currentTheme = savedTheme || (systemPrefersDark ? "dark" : "light");
@@ -592,45 +635,74 @@ class ErrorOverlay extends HTMLElement {
         const lightButton = this.root.querySelector("[data-v-o-theme-click-value=\"light\"]");
 
         if (isDark) {
-            darkButton?.classList.add("hidden");
-            darkButton?.classList.remove("block");
-            lightButton?.classList.remove("hidden");
-            lightButton?.classList.add("block");
-            rootElement?.classList.add("dark");
+            if (darkButton) {
+                darkButton.classList.add("hidden");
+                darkButton.classList.remove("block");
+            }
+
+            if (lightButton) {
+                lightButton.classList.remove("hidden");
+                lightButton.classList.add("block");
+            }
+
+            if (rootElement)
+                rootElement.classList.add("dark");
         } else {
-            darkButton?.classList.remove("hidden");
-            darkButton?.classList.add("block");
-            lightButton?.classList.add("hidden");
-            lightButton?.classList.remove("block");
-            rootElement?.classList.remove("dark");
+            if (darkButton) {
+                darkButton.classList.remove("hidden");
+                darkButton.classList.add("block");
+            }
+
+            if (lightButton) {
+                lightButton.classList.add("hidden");
+                lightButton.classList.remove("block");
+            }
+
+            if (rootElement)
+                rootElement.classList.remove("dark");
         }
 
-        rootElement?.classList.remove("hidden");
+        if (rootElement)
+            rootElement.classList.remove("hidden");
 
         const themeButtons = this.root.querySelectorAll("[data-v-o-theme-click-value]");
 
         themeButtons.forEach((button) => {
-            button.addEventListener("click", (e) => {
-                e.preventDefault();
+            button.addEventListener("click", (event) => {
+                event.preventDefault();
 
-                const theme = e.currentTarget.dataset.vOThemeClickValue;
+                const theme = event.currentTarget.dataset.vOThemeClickValue;
 
                 if (theme === "dark") {
-                    rootElement?.classList.add("dark");
+                    if (rootElement)
+                        rootElement.classList.add("dark");
+
                     localStorage.setItem("__v-o__theme", "dark");
 
-                    darkButton?.classList.add("hidden");
-                    darkButton?.classList.remove("block");
-                    lightButton?.classList.remove("hidden");
-                    lightButton?.classList.add("block");
+                    if (darkButton) {
+                        darkButton.classList.add("hidden");
+                        darkButton.classList.remove("block");
+                    }
+
+                    if (lightButton) {
+                        lightButton.classList.remove("hidden");
+                        lightButton.classList.add("block");
+                    }
                 } else {
-                    rootElement?.classList.remove("dark");
+                    if (rootElement)
+                        rootElement.classList.remove("dark");
+
                     localStorage.setItem("__v-o__theme", "light");
 
-                    darkButton?.classList.remove("hidden");
-                    darkButton?.classList.add("block");
-                    lightButton?.classList.add("hidden");
-                    lightButton?.classList.remove("block");
+                    if (darkButton) {
+                        darkButton.classList.remove("hidden");
+                        darkButton.classList.add("block");
+                    }
+
+                    if (lightButton) {
+                        lightButton.classList.add("hidden");
+                        lightButton.classList.remove("block");
+                    }
                 }
             });
         });
@@ -641,12 +713,11 @@ class ErrorOverlay extends HTMLElement {
      * @param {object} solution - The solution object containing header and body
      * @private
      */
-    #injectSolution(solution) {
+    _injectSolution(solution) {
         const solutions = this.root.querySelector("#__v_o__solutions");
         const solutionsContainer = this.root.querySelector("#__v_o__solutions_container");
 
         if (solutionsContainer && solution) {
-            // Generate HTML from solution object
             let html = "";
 
             if (solution.header) {
@@ -657,9 +728,205 @@ class ErrorOverlay extends HTMLElement {
                 html += solution.body;
             }
 
-            // Set the HTML content and show the container
             solutionsContainer.innerHTML = html;
             solutions.classList.remove("hidden");
+        }
+    }
+
+    /**
+     * Makes the balloon draggable with corner constraints
+     * @private
+     * @param {HTMLElement} balloon - The balloon element
+     */
+    _makeBalloonDraggable(balloon) {
+        let isDragging = false;
+        let startX;
+        let startY;
+        let balloonRect;
+
+        const handleMouseMove = (event) => {
+            if (!isDragging)
+                return;
+
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const balloonWidth = balloonRect.width;
+            const balloonHeight = balloonRect.height;
+
+            let newX = event.clientX - startX;
+            let newY = event.clientY - startY;
+
+            const padding = 8;
+            const corners = [
+                { name: "top-left", x: padding, y: padding },
+                { name: "top-right", x: windowWidth - balloonWidth - padding, y: padding },
+                { name: "bottom-left", x: padding, y: windowHeight - balloonHeight - padding },
+                { name: "bottom-right", x: windowWidth - balloonWidth - padding, y: windowHeight - balloonHeight - padding },
+            ];
+
+            let closestCorner = corners[0];
+            let minDistance = Infinity;
+
+            corners.forEach((corner) => {
+                const distance = Math.hypot(newX - corner.x, newY - corner.y);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestCorner = corner;
+                }
+            });
+
+            balloon.style.left = `${closestCorner.x}px`;
+            balloon.style.top = `${closestCorner.y}px`;
+            balloon.style.right = "auto";
+            balloon.style.bottom = "auto";
+            balloon.style.transform = "none";
+
+            this._saveBalloonState("position", closestCorner.name);
+        };
+
+        const handleMouseUp = () => {
+            if (!isDragging)
+                return;
+
+            isDragging = false;
+            document.removeEventListener("mousemove", handleMouseMove);
+            document.removeEventListener("mouseup", handleMouseUp);
+            balloon.style.cursor = "pointer";
+        };
+
+        const handleMouseDown = (event) => {
+            if (event.target.closest("#__v_o__balloon_count"))
+                return; // Don't drag when clicking count
+
+            isDragging = true;
+            balloonRect = balloon.getBoundingClientRect();
+            startX = event.clientX - balloonRect.left;
+            startY = event.clientY - balloonRect.top;
+
+            document.addEventListener("mousemove", handleMouseMove);
+            document.addEventListener("mouseup", handleMouseUp);
+            balloon.style.cursor = "grabbing";
+        };
+
+        balloon.addEventListener("mousedown", handleMouseDown);
+    }
+
+    /**
+     * Restores balloon state and position from localStorage
+     * @private
+     */
+    _restoreBalloonState() {
+        try {
+            const balloonStates = JSON.parse(localStorage.getItem("v-o-balloon") || "{}");
+            const balloon = this.root.querySelector("#__v_o__balloon");
+            const rootElement = this.root.querySelector("#__v_o__root");
+
+            if (balloon && rootElement) {
+                if (balloonStates.overlay === "open") {
+                    rootElement.classList.remove("hidden");
+                } else if (balloonStates.overlay === "closed") {
+                    rootElement.classList.add("hidden");
+                }
+
+                if (balloonStates.position) {
+                    const positions = ["top-left", "top-right", "bottom-left", "bottom-right"];
+
+                    if (positions.includes(balloonStates.position)) {
+                        balloon.style.top = "";
+                        balloon.style.bottom = "";
+                        balloon.style.left = "";
+                        balloon.style.right = "";
+                        balloon.style.transform = "";
+
+                        switch (balloonStates.position) {
+                            case "bottom-left": {
+                                balloon.style.bottom = "8px";
+                                balloon.style.left = "8px";
+                                break;
+                            }
+                            case "bottom-right": {
+                                balloon.style.bottom = "8px";
+                                balloon.style.right = "8px";
+                                break;
+                            }
+                            case "top-left": {
+                                balloon.style.top = "8px";
+                                balloon.style.left = "8px";
+                                break;
+                            }
+                            case "top-right": {
+                                balloon.style.top = "8px";
+                                balloon.style.right = "8px";
+                                break;
+                            }
+                            default: {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch {
+            // Fail silently if localStorage is not available
+        }
+    }
+
+    /**
+     * Saves balloon state and position to localStorage
+     * @private
+     * @param {string} key - The state key ('overlay' or 'position')
+     * @param {string} value - The state value
+     */
+    // eslint-disable-next-line class-methods-use-this
+    _saveBalloonState(key, value) {
+        try {
+            const item = localStorage.getItem("v-o-balloon");
+            const balloonStates = item ? JSON.parse(item) : {};
+
+            balloonStates[key] = value;
+
+            localStorage.setItem("v-o-balloon", JSON.stringify(balloonStates));
+        } catch {
+            // Fail silently if localStorage is not available
+        }
+    }
+
+    /**
+     * Removes the error overlay from the DOM.
+     */
+    close() {
+        if (this.parentNode) {
+            const balloon = this.root.querySelector("#__v_o__balloon");
+
+            if (balloon) {
+                const rootElement = this.root.querySelector("#__v_o__root");
+
+                rootElement.classList.add("hidden");
+
+                this._saveBalloonState("overlay", "closed");
+            } else {
+                this.remove();
+            }
+        }
+    }
+
+    /**
+     * Updates the overlay content with the current error's code frame.
+     */
+    updateOverlay() {
+        const currentIndex = 0;
+
+        const currentError = this.__v_oPayload && this.__v_oPayload.errors && this.__v_oPayload.errors[currentIndex];
+
+        if (currentError) {
+            const flameOverlay = this.root.querySelector("#__v_o__overlay");
+
+            if (flameOverlay) {
+                const html = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || "";
+
+                flameOverlay.innerHTML = html;
+            }
         }
     }
 }
