@@ -3,18 +3,20 @@ import createDurationLanguage from "./util/create-duration-language";
 
 // Map Swedish aliases to standard keys
 const svUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    å: "y",
+    år: "y",
     d: "d",
     dag: "d",
     dagar: "d",
+    mån: "mo",
+    månad: "mo",
+    månader: "mo",
     millisekund: "ms",
     millisekunder: "ms",
     min: "m",
     minut: "m",
     minuter: "m",
     ms: "ms",
-    mån: "mo",
-    månad: "mo",
-    månader: "mo",
     s: "s",
     sek: "s",
     sekund: "s",
@@ -25,8 +27,6 @@ const svUnitMap: Record<string, keyof DurationUnitMeasures> = {
     v: "w",
     vecka: "w",
     veckor: "w",
-    å: "y",
-    år: "y",
 } as const;
 
 export const durationLanguage = createDurationLanguage(

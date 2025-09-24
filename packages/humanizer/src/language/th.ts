@@ -6,6 +6,7 @@ const thUnitMap: Record<string, keyof DurationUnitMeasures> = {
     ชม: "h",
     ชั่วโมง: "h",
     ด: "mo",
+    เดือน: "mo",
     น: "m",
     นท: "m",
     นาที: "m",
@@ -20,7 +21,6 @@ const thUnitMap: Record<string, keyof DurationUnitMeasures> = {
     สป: "w",
     สัปดาห์: "w",
     อาทิตย์: "w",
-    เดือน: "mo",
 } as const;
 
 // Thai doesn't use plural forms for units

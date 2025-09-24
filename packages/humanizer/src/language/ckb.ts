@@ -3,14 +3,14 @@ import createDurationLanguage from "./util/create-duration-language";
 
 // Map Sorani Kurdish aliases to standard keys
 const ckbUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    چرکە: "s",
     خولەک: "m",
+    ڕۆژ: "d",
     ساڵ: "y",
+    کاتژمێر: "h",
     مانگ: "mo",
     "میلی چرکە": "ms",
     هەفتە: "w",
-    چرکە: "s",
-    ڕۆژ: "d",
-    کاتژمێر: "h",
 };
 
 export const durationLanguage = createDurationLanguage(

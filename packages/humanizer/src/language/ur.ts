@@ -11,6 +11,9 @@ const urUnitMap: Record<string, keyof DurationUnitMeasures> = {
     سال: "y",
     سیک: "s", // Abbreviation
     سیکنڈ: "s",
+    گھ: "h", // Abbreviation
+    گھنٹہ: "h",
+    گھنٹے: "h",
     م: "m", // Abbreviation
     ماہ: "mo", // Alternative word
     مل: "ms", // Abbreviation
@@ -19,9 +22,6 @@ const urUnitMap: Record<string, keyof DurationUnitMeasures> = {
     مہ: "mo", // Abbreviation
     مہینہ: "mo",
     مہینے: "mo",
-    گھ: "h", // Abbreviation
-    گھنٹہ: "h",
-    گھنٹے: "h",
     ہ: "w", // Abbreviation
     ہفتہ: "w",
     ہفتے: "w",

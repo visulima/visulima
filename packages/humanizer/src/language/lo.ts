@@ -7,6 +7,7 @@ const loUnitMap: Record<string, keyof DurationUnitMeasures> = {
     ຊມ: "h", // abbr. hour
     ຊົ່ວໂມງ: "h", // suamong
     ດ: "mo", // abbr. month
+    ເດືອນ: "mo", // deuan
     ທ: "w", // abbr. week
     ນທ: "m", // abbr. minute
     ນາທີ: "m", // nathi
@@ -19,7 +20,6 @@ const loUnitMap: Record<string, keyof DurationUnitMeasures> = {
     ວທ: "s", // abbr. second
     ວິນາທີ: "s", // vinathi
     ອາທິດ: "w", // athit
-    ເດືອນ: "mo", // deuan
 } as const;
 
 export const durationLanguage = createDurationLanguage(

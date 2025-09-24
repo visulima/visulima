@@ -3,21 +3,24 @@ import createDurationLanguage from "./util/create-duration-language";
 
 // Map Icelandic aliases to standard keys
 const isUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    ár: "y",
+    árið: "y",
+    árin: "y",
     d: "d",
     dagar: "d",
     dagur: "d",
     klst: "h",
     klukkutímar: "h",
     klukkutími: "h",
-    millisekúnda: "ms",
-    millisekúndur: "ms",
-    ms: "ms",
     mán: "mo",
     mánuðir: "mo",
     mánuður: "mo",
+    millisekúnda: "ms",
+    millisekúndur: "ms",
     mín: "m",
     mínúta: "m",
     mínútur: "m",
+    ms: "ms",
     s: "s",
     sek: "s",
     sekúnda: "s",
@@ -27,9 +30,6 @@ const isUnitMap: Record<string, keyof DurationUnitMeasures> = {
     v: "w",
     vika: "w",
     vikur: "w",
-    ár: "y",
-    árin: "y",
-    árið: "y",
 } as const;
 
 export const durationLanguage = createDurationLanguage(

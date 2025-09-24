@@ -15,15 +15,15 @@ const mnUnitMap: Record<string, keyof DurationUnitMeasures> = {
     мс: "ms",
     мсек: "ms",
     он: "y",
+    ө: "d",
+    өд: "d",
+    өдөр: "d",
     с: "s",
     сар: "mo",
     сек: "s",
     секунд: "s",
     ц: "h",
     цаг: "h",
-    ө: "d",
-    өд: "d",
-    өдөр: "d",
 } as const;
 
 // Mongolian doesn't use plural forms for time units

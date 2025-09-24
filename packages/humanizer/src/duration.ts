@@ -23,7 +23,6 @@ const toFixed = (number_: number, fixed: number): number => {
     // eslint-disable-next-line no-param-reassign
     fixed = fixed || -1;
 
-    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     const matches = new RegExp(`^-?\\d+(?:.\\d{0,${String(fixed)}})?`).exec(number_.toString());
 
     if (matches === null) {
@@ -60,7 +59,6 @@ const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationL
     let normalizedUnitCount = unitCount;
 
     if (maxDecimalPoints !== undefined) {
-        // normalizedUnitCount = Math.floor(unitCount * 10 ** maxDecimalPoints) / 10 ** maxDecimalPoints;
         normalizedUnitCount = toFixed(unitCount, maxDecimalPoints);
     }
 
@@ -71,10 +69,9 @@ const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationL
         if (digitReplacements) {
             formattedCount = "";
 
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const char of countString) {
                 // `char` should always be 0-9 at this point.
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+
                 formattedCount += char === "." ? decimal : digitReplacements[char as keyof typeof digitReplacements];
             }
         } else {
@@ -84,7 +81,6 @@ const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationL
         formattedCount = "";
     }
 
-    // eslint-disable-next-line security/detect-object-injection
     const languageWord = language[unitName];
     let word = languageWord as string;
 
@@ -126,17 +122,15 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
     let unitCount: number;
     let msRemaining: number = ms;
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    // eslint-disable-next-line no-plusplus
     for (index = 0; index < units.length; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         unitName = units[index] as DurationUnitName;
 
-        // eslint-disable-next-line security/detect-object-injection
         const unitMs = unitMeasures[unitName];
         const isLast = index === units.length - 1;
 
         unitCount = isLast ? msRemaining / unitMs : Math.floor(msRemaining / unitMs);
-        // eslint-disable-next-line security/detect-object-injection
+
         unitCounts[unitName] = unitCount;
 
         msRemaining -= unitCount * unitMs;
@@ -148,15 +142,13 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
         // updates to something like `{ y: 7, m: 6.2 }`.
         let unitsRemainingBeforeRound = largest;
 
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
+        // eslint-disable-next-line no-plusplus
         for (index = 0; index < units.length; index++) {
-            // eslint-disable-next-line security/detect-object-injection
             unitName = units[index] as DurationUnitName;
-            // eslint-disable-next-line security/detect-object-injection
+
             unitCount = unitCounts[unitName] as number;
 
             if (unitCount === 0) {
-                // eslint-disable-next-line no-continue
                 continue;
             }
 
@@ -165,17 +157,17 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
 
             // "Take" the rest of the units into this one.
             if (unitsRemainingBeforeRound === 0) {
-                // eslint-disable-next-line @typescript-eslint/naming-convention,no-loops/no-loops,no-underscore-dangle,no-plusplus
+                // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle,no-plusplus
                 for (let index_ = index + 1; index_ < units.length; index_++) {
-                    // eslint-disable-next-line no-underscore-dangle,security/detect-object-injection
+                    // eslint-disable-next-line no-underscore-dangle
                     const smallerUnitName = units[index_] as DurationUnitName;
-                    // eslint-disable-next-line security/detect-object-injection
+
                     const smallerUnitCount = unitCounts[smallerUnitName] as number;
 
                     // @ts-expect-error unitCounts[unitName] is defined
-                    // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/restrict-plus-operands
+
                     unitCounts[unitName] += (smallerUnitCount * unitMeasures[smallerUnitName]) / unitMeasures[unitName];
-                    // eslint-disable-next-line security/detect-object-injection
+
                     unitCounts[smallerUnitName] = 0;
                 }
 
@@ -189,21 +181,18 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
         // unit. For example, "3 days, 23.99 hours" should be rounded to "4 days".
         // It can also require multiple passes. For example, "6 days, 23.99 hours"
         // should become "1 week".
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
+        // eslint-disable-next-line no-plusplus
         for (index = units.length - 1; index >= 0; index--) {
-            // eslint-disable-next-line security/detect-object-injection
             unitName = units[index] as DurationUnitName;
-            // eslint-disable-next-line security/detect-object-injection
+
             unitCount = unitCounts[unitName] as number;
 
             if (unitCount === 0) {
-                // eslint-disable-next-line no-continue
                 continue;
             }
 
             const rounded = Math.round(unitCount);
 
-            // eslint-disable-next-line security/detect-object-injection
             unitCounts[unitName] = rounded;
 
             if (index === 0) {
@@ -211,16 +200,15 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
             }
 
             const previousUnitName: DurationUnitName = units[index - 1] as DurationUnitName;
-            // eslint-disable-next-line security/detect-object-injection
+
             const previousUnitMs = unitMeasures[previousUnitName];
-            // eslint-disable-next-line security/detect-object-injection
+
             const amountOfPreviousUnit = Math.floor((rounded * unitMeasures[unitName]) / previousUnitMs);
 
             if (amountOfPreviousUnit) {
                 // @ts-expect-error unitCounts[previousUnitName] is defined
-                // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/restrict-plus-operands
                 unitCounts[previousUnitName] += amountOfPreviousUnit;
-                // eslint-disable-next-line security/detect-object-injection
+
                 unitCounts[unitName] = 0;
             } else {
                 break;
@@ -230,11 +218,10 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
 
     const result: DurationPiece[] = [];
 
-    // eslint-disable-next-line no-plusplus,no-loops/no-loops
+    // eslint-disable-next-line no-plusplus
     for (index = 0; index < units.length && result.length < largest; index++) {
-        // eslint-disable-next-line security/detect-object-injection
         unitName = units[index] as DurationUnitName;
-        // eslint-disable-next-line security/detect-object-injection
+
         unitCount = unitCounts[unitName] as number;
 
         // If the result is not rounded, and `largest` option has been set, aggregate the rest and apply the
@@ -244,12 +231,11 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
             let index_;
             let remainder = 0;
 
-            // eslint-disable-next-line no-loops/no-loops,no-plusplus
+            // eslint-disable-next-line no-plusplus
             for (index_ = index + 1, units.length; index_ < units.length; index_++) {
-                // eslint-disable-next-line no-underscore-dangle,security/detect-object-injection
+                // eslint-disable-next-line no-underscore-dangle
                 const remainderUnitName = units[index_] as DurationUnitName;
 
-                // eslint-disable-next-line security/detect-object-injection
                 remainder += (unitCounts[remainderUnitName] as number) * (options.unitMeasures[remainderUnitName] / options.unitMeasures[unitName]);
             }
 
@@ -268,7 +254,6 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
     return result;
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: number): string => {
     const { language, units } = options;
 
@@ -301,7 +286,7 @@ const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: num
 
     const renderedPieces: string[] = [];
 
-    // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention,no-restricted-syntax,no-underscore-dangle
+    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
     for (const piece_ of pieces) {
         const piece = piece_ as DurationPiece;
 
@@ -315,7 +300,6 @@ const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: num
     } else if (pieces.length === 2) {
         result = renderedPieces.join(conjunction);
     } else {
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         result = renderedPieces.slice(0, -1).join(delimiter) + (serialComma ? "," : "") + conjunction + renderedPieces.at(-1);
     }
 
