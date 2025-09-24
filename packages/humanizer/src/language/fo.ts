@@ -3,17 +3,20 @@ import createDurationLanguage from "./util/create-duration-language";
 
 // Map Faroese aliases to standard keys
 const foUnitMap: Record<string, keyof DurationUnitMeasures> = {
+    ár: "y",
+    árið: "y",
+    árini: "y",
     d: "d",
     dagar: "d",
     dagur: "d",
+    mánaðir: "mo",
+    mánaður: "mo",
     millisekund: "ms",
     min: "m",
     minuttir: "m",
     minuttur: "m",
     mnð: "mo",
     ms: "ms",
-    mánaðir: "mo",
-    mánaður: "mo",
     s: "s",
     sek: "s",
     sekund: "s",
@@ -23,9 +26,6 @@ const foUnitMap: Record<string, keyof DurationUnitMeasures> = {
     v: "w",
     vika: "w",
     vikur: "w",
-    ár: "y",
-    árini: "y",
-    árið: "y",
 } as const;
 
 export const durationLanguage = createDurationLanguage(

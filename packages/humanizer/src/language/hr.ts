@@ -42,6 +42,7 @@ export const durationLanguage = createDurationLanguage(
         if (counter % 10 === 2 || counter % 10 === 3 || counter % 10 === 4) {
             return "godine";
         }
+
         return "godina";
     },
     (counter) => {
@@ -59,6 +60,7 @@ export const durationLanguage = createDurationLanguage(
         if (counter % 10 === 1 && counter !== 11) {
             return "tjedan";
         }
+
         return "tjedna";
     },
     (counter) => (counter === 1 ? "dan" : "dana"),

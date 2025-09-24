@@ -155,29 +155,28 @@ const BYTE_SIZES = {
     ],
 } as const;
 
-type ByteSize =
-    | (typeof BYTE_SIZES)["iec_octet"][number]["short"]
-    | (typeof BYTE_SIZES)["iec"][number]["short"]
-    | (typeof BYTE_SIZES)["metric_octet"][number]["short"]
-    | (typeof BYTE_SIZES)["metric"][number]["short"];
-type LongByteSize =
-    | (typeof BYTE_SIZES)["iec_octet"][number]["long"]
-    | (typeof BYTE_SIZES)["iec"][number]["long"]
-    | (typeof BYTE_SIZES)["metric_octet"][number]["long"]
-    | (typeof BYTE_SIZES)["metric"][number]["long"];
+type ByteSize
+    = | (typeof BYTE_SIZES)["iec_octet"][number]["short"]
+        | (typeof BYTE_SIZES)["iec"][number]["short"]
+        | (typeof BYTE_SIZES)["metric_octet"][number]["short"]
+        | (typeof BYTE_SIZES)["metric"][number]["short"];
+type LongByteSize
+    = | (typeof BYTE_SIZES)["iec_octet"][number]["long"]
+        | (typeof BYTE_SIZES)["iec"][number]["long"]
+        | (typeof BYTE_SIZES)["metric_octet"][number]["long"]
+        | (typeof BYTE_SIZES)["metric"][number]["long"];
 
 type Unit = ByteSize | LongByteSize;
 
 /**
  * Parse a localized number to a float.
- * @param stringNumber - the localized number
- * @param locale - [optional] the locale that the number is represented in. Omit this parameter to use the current locale.
+ * @param stringNumber
+ * @param locale [optional] the locale that the number is represented in. Omit this parameter to use the current locale.
  */
 const parseLocalizedNumber = (stringNumber: string, locale: string): number => {
     const thousandSeparator = new Intl.NumberFormat(locale).format(11_111).replaceAll(/\p{Number}/gu, "");
     const decimalSeparator = new Intl.NumberFormat(locale).format(1.1).replaceAll(/\p{Number}/gu, "");
 
-    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     return Number.parseFloat(stringNumber.replaceAll(new RegExp(`\\${thousandSeparator}`, "g"), "").replace(new RegExp(`\\${decimalSeparator}`), "."));
 };
 
@@ -186,7 +185,6 @@ const fromBase = (base: 2 | 10) => {
         return 1024;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (base === 10) {
         return 1000;
     }
@@ -196,9 +194,8 @@ const fromBase = (base: 2 | 10) => {
 
 /**
  * Parse the given bytesize string and return bytes.
- *
- * @param value - The string to parse
- * @param options - Options for the conversion from string to bytes
+ * @param value The string to parse
+ * @param options Options for the conversion from string to bytes
  * @throws Error if `value` is not a non-empty string or a number
  */
 export const parseBytes = (value: string, options?: ParseByteOptions): number => {
@@ -217,9 +214,9 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
         throw new TypeError("Value exceeds the maximum length of 100 characters.");
     }
 
-    const match =
-        // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/no-unused-capturing-group,regexp/no-misleading-capturing-group,security/detect-unsafe-regex
-        /^(?<value>-?(?:\d+(([.,])\d+)*)?[.,]?\d+) *(?<type>bytes?|b|kb|kib|mb|mib|gb|gib|tb|tib|pb|pib|eb|eib|zb|zib|yb|yib|(kilo|kibi|mega|mebi|giga|gibi|tera|tebi|peta|pebi|exa|exbi|zetta|zebi|yotta|yobi)?bytes)?$/i.exec(
+    const match
+        // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/no-unused-capturing-group,regexp/no-misleading-capturing-group,sonarjs/slow-regex,sonarjs/regex-complexity
+        = /^(?<value>-?(?:\d+(([.,])\d+)*)?[.,]?\d+) *(?<type>bytes?|b|kb|kib|mb|mib|gb|gib|tb|tib|pb|pib|eb|eib|zb|zib|yb|yib|(kilo|kibi|mega|mebi|giga|gibi|tera|tebi|peta|pebi|exa|exbi|zetta|zebi|yotta|yobi)?bytes)?$/i.exec(
             value,
         );
     // Named capture groups need to be manually typed today.
@@ -251,9 +248,8 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
 /**
  * Formats the given bytes into a human-readable string.
  * Per default, it will use the closest unit to the given value.
- *
- * @param bytes - The bytes to format
- * @param options - Options for the conversion from bytes to string
+ * @param bytes The bytes to format
+ * @param options Options for the conversion from bytes to string
  */
 export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize>): string => {
     if (typeof bytes !== "number" || !Number.isFinite(bytes)) {
@@ -280,8 +276,7 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
     const base = fromBase(givenBase as 2 | 10);
 
     const absoluteBytes = Math.abs(bytes);
-    const space = (options?.space ?? true) ? " " : "";
-    // eslint-disable-next-line security/detect-object-injection
+    const space = options?.space ?? true ? " " : "";
     const referenceTable = BYTE_SIZES[units];
 
     const requestedUnitIndex = referenceTable.findIndex((unit) => unit.short === requestedUnit);
@@ -289,12 +284,11 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
     if (bytes === 0) {
         const level = Math.min(0, Math.max(requestedUnitIndex, referenceTable.length - 1));
 
-        // eslint-disable-next-line security/detect-object-injection,prefer-template
+        // eslint-disable-next-line prefer-template
         return "0" + space + (referenceTable[level] as { long: string; short: string })[long ? "long" : "short"];
     }
 
-    const level = requestedUnitIndex >= 0 ? requestedUnitIndex : Math.min(Math.floor(Math.log(absoluteBytes) / Math.log(base)), referenceTable.length - 1);
-    // eslint-disable-next-line security/detect-object-injection
+    const level = requestedUnitIndex === -1 ? Math.min(Math.floor(Math.log(absoluteBytes) / Math.log(base)), referenceTable.length - 1) : requestedUnitIndex;
     const unit = (referenceTable[level] as { long: string; short: string })[long ? "long" : "short"];
 
     const value = bytes / base ** level;

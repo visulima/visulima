@@ -15,18 +15,14 @@ const STANDARD_UNIT_MEASURES: DurationUnitMeasures = {
 };
 
 const ESCAPE_REGEX = /[-/\\^$*+?.()|[\]{}]/g;
-// eslint-disable-next-line security/detect-unsafe-regex
 const ISO_FORMAT = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i;
-// eslint-disable-next-line security/detect-unsafe-regex
 const COLON_FORMAT = /^(?:(\d+):)?(?:(\d+):)?(\d+)$/;
-// eslint-disable-next-line security/detect-unsafe-regex
 const NUMERIC_STRING_REGEX = /^[+-]?\d+(?:\.\d+)?$/;
 
 /**
  * Parses a human-readable duration string into milliseconds using specified language units.
- *
- * @param value - The string to parse (e.g., "1h 20min", "2 days", "-3 hafta").
- * @param options - Optional configuration including language and default unit.
+ * @param value The string to parse (e.g., "1h 20min", "2 days", "-3 hafta").
+ * @param options Optional configuration including language and default unit.
  * @returns The duration in milliseconds, or undefined if the string cannot be parsed.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -45,13 +41,12 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
     const placeholderSeparator = language.placeholderSeparator ?? "_";
 
     // Escape separators for use in regex
-    const escapedDecimal = decimalSeparator.replaceAll(ESCAPE_REGEX, "\\$&");
-    const escapedGroup = groupSeparator.replaceAll(ESCAPE_REGEX, "\\$&");
-    const escapedPlaceholder = placeholderSeparator.replaceAll(ESCAPE_REGEX, "\\$&");
+    const escapedDecimal = decimalSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
+    const escapedGroup = groupSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
+    const escapedPlaceholder = placeholderSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
 
     const currentUnitMap = (language.unitMap ?? englishUnitMap) as Record<string, keyof DurationUnitMeasures>; // Fallback needed if englishUnitMap is not guaranteed
 
-    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     let processedValue = value.replaceAll(new RegExp(`(\\d)[${escapedPlaceholder}${escapedGroup}](\\d)`, "g"), "$1$2");
 
     if (decimalSeparator !== ".") {
@@ -62,11 +57,9 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         const numberOnly = Number.parseFloat(processedValue.trim());
 
         if (!Number.isNaN(numberOnly)) {
-            // eslint-disable-next-line security/detect-object-injection
             const unitKey = currentUnitMap[defaultUnit];
 
             if (unitKey !== undefined) {
-                // eslint-disable-next-line security/detect-object-injection
                 return numberOnly * STANDARD_UNIT_MEASURES[unitKey];
             }
         }
@@ -99,7 +92,9 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
             // Format:  mm:ss     → groups [1]=mm, [3]=ss
             minutes = Number.parseInt(colonMatch[1], 10);
         }
+
         seconds = Number.parseInt(colonMatch[3] ?? "0", 10);
+
         // Calculate total milliseconds
         return hours * 3_600_000 + minutes * 60_000 + seconds * 1000;
     }
@@ -107,12 +102,10 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
     const currentUnitMapKeys = Object.keys(currentUnitMap);
 
     const regexKeys = currentUnitMapKeys
-        // eslint-disable-next-line etc/no-assign-mutated-array
-        .sort((a, b) => b.length - a.length)
-        .map((k) => k.replaceAll(ESCAPE_REGEX, "\\$&")) // escape meta chars
+        .toSorted((a, b) => b.length - a.length)
+        .map((k) => k.replaceAll(ESCAPE_REGEX, String.raw`\$&`)) // escape meta chars
         .join("|");
 
-    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     const durationRegex = new RegExp(`(-?\\d*\\.?\\d+)\\s*(${regexKeys})`, "gi");
 
     let totalMs = 0;
@@ -125,7 +118,7 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
     durationRegex.lastIndex = 0;
 
     // Loop through matches using exec on the *fully processed* string
-    // eslint-disable-next-line no-loops/no-loops,no-cond-assign
+    // eslint-disable-next-line no-cond-assign
     while ((match = durationRegex.exec(processedValue)) !== null) {
         if (!unitsFound) {
             firstMatchIndex = match.index; // Record start index of the first match
@@ -137,7 +130,6 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         const unitString = match[2];
 
         if (!numberString || !unitString) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -150,11 +142,9 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         const unitKey = currentUnitMap[unitString.toLowerCase()];
 
         if (unitKey === undefined) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
-        // eslint-disable-next-line security/detect-object-injection
         const unitValue = STANDARD_UNIT_MEASURES[unitKey];
 
         if (Number.isNaN(parsedNumber)) {

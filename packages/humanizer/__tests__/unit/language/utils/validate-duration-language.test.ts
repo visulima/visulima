@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { DurationDigitReplacements } from "../../../../src";
 import validateDurationLanguage from "../../../../src/language/util/validate-duration-language";
 
-describe("validateDurationLanguage", () => {
+describe(validateDurationLanguage, () => {
     it("should not throw any error when all required properties are present and have the correct types", () => {
         expect.assertions(1);
 

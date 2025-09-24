@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { formatBytes, parseBytes } from "../../src/bytes";
 
-describe("formatBytes", () => {
+describe(formatBytes, () => {
     it("should use the closest unit without any decimals in a short format", () => {
         expect.assertions(1);
 
@@ -261,12 +261,11 @@ describe("formatBytes", () => {
     }>(testCases)("should support $description", ({ expectedUnit, expectedValue, options = {}, value }) => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         expect(formatBytes(value, { ...options })).toBe(`${expectedValue} ${expectedUnit}`);
     });
 });
 
-describe("parseBytes", () => {
+describe(parseBytes, () => {
     it("should parse the number", () => {
         expect.assertions(1);
 

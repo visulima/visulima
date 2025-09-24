@@ -6,7 +6,7 @@ import { durationLanguage as trDurationLanguage } from "../../src/language/tr";
 import parseDuration from "../../src/parse-duration";
 import type { DurationDigitReplacements, DurationLanguage, DurationUnitName } from "../../src/types";
 
-describe("duration", () => {
+describe(duration, () => {
     it("should throw a error on invalid input", () => {
         expect.assertions(2);
 
@@ -135,7 +135,7 @@ describe("duration", () => {
         expect(duration(121_500, options)).toBe("2 minutes, 2 seconds");
     });
 
-    it('should do rounding with the "units" option', () => {
+    it("should do rounding with the \"units\" option", () => {
         expect.assertions(4);
 
         expect(duration(86_364_000, { round: true, units: ["y", "mo", "w", "d", "h"] })).toBe("1 day");
@@ -146,7 +146,7 @@ describe("duration", () => {
         );
     });
 
-    it('should do rounding with the "largest" option', () => {
+    it("should do rounding with the \"largest\" option", () => {
         expect.assertions(4);
 
         const options = { round: true, units: ["y", "mo", "w", "d", "h", "m", "s"] as DurationUnitName[] };
@@ -157,7 +157,7 @@ describe("duration", () => {
         expect(duration(2_838_550, { largest: 3, round: true })).toBe("47 minutes, 19 seconds");
     });
 
-    it('should do rounding with the "maxDecimalPoints" option', () => {
+    it("should do rounding with the \"maxDecimalPoints\" option", () => {
         expect.assertions(8);
 
         expect(duration(8123.456_789, { maxDecimalPoints: 2 })).toBe("8.12 seconds");
@@ -206,7 +206,7 @@ describe("duration", () => {
         expect(duration(61_000, { delimiter: "&&", language })).toBe("1 m&&1 s");
     });
 
-    it('should uses "." as a fallback for a missing decimal', () => {
+    it("should uses \".\" as a fallback for a missing decimal", () => {
         expect.assertions(2);
 
         const options = {
@@ -256,17 +256,17 @@ describe("duration", () => {
             "5700447535712568836077099940756733789893155997141203595856084373514626483384973958669126034778249561502424497511237394223564222694364034207523704550467323597984839883832803211448677387442583997465622415920063861691545637902816557209722493636863373550063350653353143175061459195234630260059944318435y 207d 22h 14m 18.3s",
         ],
         [
-            0n +
-                // 1ms
-                1n +
-                // 2s
-                2n * 1000n +
-                // 3m
-                3n * 1000n * 60n +
-                // 4h
-                4n * 1000n * 60n * 60n +
-                // Days
-                BigInt(Number.MAX_VALUE) * 1000n * 60n * 60n * 24n,
+            0n
+            // 1ms
+            + 1n
+            // 2s
+            + 2n * 1000n
+            // 3m
+            + 3n * 1000n * 60n
+            // 4h
+            + 4n * 1000n * 60n * 60n
+            // Days
+            + BigInt(Number.MAX_VALUE) * 1000n * 60n * 60n * 24n,
             "492518667085565947437061434881381799446768678152999990681965689871663728164461750029012489404840762113809476584970910860915948840793052555530048073160376758865890165963154197469165726275039257381029776735493517650149543114803350542920023450224995474725473496449711570325310074468272054469179189112833218790y 18d 4h 3m 2s",
         ],
     ])("should handle (%s) Big numbers", (input, expected) => {
@@ -275,7 +275,7 @@ describe("duration", () => {
         expect(duration(input, { units: ["y", "mo", "w", "d", "h", "m", "s"] as DurationUnitName[] })).toStrictEqual(expected);
     });
 
-    it('should handle rounding with the "largest" option without truncating the largest units', () => {
+    it("should handle rounding with the \"largest\" option without truncating the largest units", () => {
         expect.assertions(6);
 
         const options = { largest: 2, round: true };
@@ -299,7 +299,7 @@ describe("duration", () => {
         expect(duration(Number.POSITIVE_INFINITY, { maxDecimalPoints: 2, units: ["h", "m"] })).toBe("Infinity hours");
     });
 
-    it('can return floating point result with the "maxDecimalPoint" and the "largest" options', () => {
+    it("can return floating point result with the \"maxDecimalPoint\" and the \"largest\" options", () => {
         expect.assertions(11);
 
         expect(duration(8123.456_789, { largest: 1, maxDecimalPoints: 1, round: false })).toBe("8.1 seconds");
@@ -325,7 +325,7 @@ describe("duration", () => {
         );
     });
 
-    it('can return floating point result with the "maxDecimalPoint", "largest" and "units" options', () => {
+    it("can return floating point result with the \"maxDecimalPoint\", \"largest\" and \"units\" options", () => {
         expect.assertions(3);
 
         const options = { maxDecimalPoints: 1, round: false, units: ["h", "m"] as DurationUnitName[] };
@@ -336,7 +336,7 @@ describe("duration", () => {
     });
 });
 
-describe("parseDuration", () => {
+describe(parseDuration, () => {
     it("should parse basic time units", () => {
         expect.assertions(8);
 
@@ -462,6 +462,7 @@ describe("parseDuration", () => {
         expect(parseDuration("abc")).toBeUndefined();
         expect(parseDuration("100 units")).toBeUndefined(); // 'units' is not a valid unit
         expect(parseDuration("1h 20m blah")).toBeUndefined(); // Extra non-numeric characters after valid parsing
+        // eslint-disable-next-line unicorn/no-null
         expect(parseDuration(null as unknown)).toBeUndefined(); // Use unknown instead of any
         expect(parseDuration(undefined as unknown)).toBeUndefined(); // Use unknown instead of any
         expect(parseDuration(123 as unknown)).toBeUndefined(); // Use unknown instead of any

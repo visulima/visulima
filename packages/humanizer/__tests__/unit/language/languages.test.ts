@@ -58,6 +58,7 @@ import { durationLanguage as sk } from "../../../src/language/sk";
 import { durationLanguage as sl } from "../../../src/language/sl";
 import { durationLanguage as sq } from "../../../src/language/sq";
 import { durationLanguage as sr } from "../../../src/language/sr";
+import { durationLanguage as srLatn } from "../../../src/language/sr_Latn";
 import { durationLanguage as sv } from "../../../src/language/sv";
 import { durationLanguage as sw } from "../../../src/language/sw";
 import { durationLanguage as ta } from "../../../src/language/ta";
@@ -125,6 +126,7 @@ const importedLanguages = {
     sl,
     sq,
     sr,
+    sr_Latn: srLatn,
     sv,
     sw,
     ta,
@@ -147,17 +149,15 @@ describe("localized duration", () => {
         const definitionNames = readdirSync(fixturePath).filter((f) => extname(f) === ".tsv");
 
         /**
-         * @param {string} filePath
-         * @returns {Promise<Array<[number, string]>>}
+         * @param filePath
+         * @returns
          */
         const readPairs = async (filePath: string): Promise<[number, string][]> => {
             /** @type {Array<[number, string]>} */
             const result: [number, string][] = [];
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             const parser = createReadStream(filePath).pipe(parseCSV({ delimiter: "\t" }));
 
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for await (const [msString, expectedResult] of parser) {
                 result.push([Number.parseFloat(msString), expectedResult]);
             }
@@ -165,7 +165,6 @@ describe("localized duration", () => {
             return result;
         };
 
-        // eslint-disable-next-line compat/compat
         await Promise.all(
             definitionNames.map(async (fileName) => {
                 const language = basename(fileName, ".tsv");
@@ -179,16 +178,14 @@ describe("localized duration", () => {
     it("should load all fixture files", () => {
         expect.assertions(2);
 
-        expect(languages.has("en")).toBeTruthy();
-        expect(languages.has("es")).toBeTruthy();
+        expect(languages.has("en")).toBe(true);
+        expect(languages.has("es")).toBe(true);
     });
 
     it("humanizes all languages correctly with the top-level function", () => {
-        expect.assertions(3311);
+        expect.assertions(3382);
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const [language, pairs] of languages) {
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const [milliseconds, expectedResult] of pairs) {
                 expect(
                     duration(milliseconds, {

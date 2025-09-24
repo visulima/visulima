@@ -4,8 +4,9 @@ import createDurationLanguage from "./util/create-duration-language";
 // Map Japanese aliases to standard keys
 const jaUnitMap: Record<string, keyof DurationUnitMeasures> = {
     か月: "mo",
-    しゅう: "w",
+    ヶ月: "mo",
     じかん: "h",
+    しゅう: "w",
     つき: "mo",
     にち: "d",
     ねん: "y",
@@ -13,7 +14,6 @@ const jaUnitMap: Record<string, keyof DurationUnitMeasures> = {
     ふん: "m",
     ミリびょう: "ms",
     ミリ秒: "ms",
-    ヶ月: "mo",
     分: "m",
     分間: "m",
     年: "y",
