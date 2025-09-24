@@ -24,7 +24,7 @@ env:
 jobs:
     files-changed:
         name: "Detect what files changed"
-        runs-on: "ubuntu-22.04"
+        runs-on: "ubuntu-24.04"
         timeout-minutes: 3
         # Map a step output to a job output
         outputs:
@@ -177,7 +177,7 @@ jobs:
         name: "Check Test Run"
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
         if: "always() && (needs.test.result == 'success' || needs.test.result == 'skipped')"
-        runs-on: "ubuntu-22.04"
+        runs-on: "ubuntu-24.04"
         steps:
             # If any jobs we depend on fail, we will fail since this is a required check
             # NOTE: A timeout is considered a failure
