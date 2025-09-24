@@ -13,9 +13,11 @@ import { normalizeIdCandidates } from "../normalize-id-candidates";
 import realignOriginalPosition from "../position-aligner";
 import resolveOriginalLocation from "../resolve-original-location";
 import { cleanErrorMessage, cleanErrorStack, extractErrors } from "../stack-trace";
-import { parseVueCompilationError } from "./parse-vue-compilation-error";
+import parseVueCompilationError from "./parse-vue-compilation-error";
+import processHydrationDiff from "./process-hydration-diff";
 import remapStackToOriginal from "./remap-stack-to-original";
 import retrieveSourceTexts from "./retrieve-source-texts";
+import shikiDiffTransformer from "./shiki-diff-transformer";
 import addQueryToUrl from "./utils/add-query-to-url";
 import extractQueryFromHttpUrl from "./utils/extract-query-from-http-url";
 
@@ -29,11 +31,11 @@ const extractIndividualErrors = (error: Error): Error[] => {
         const processedErrors = processESBuildErrors(error as ESBuildMessage[]);
 
         return processedErrors.map(
-            (error) =>
+            (processedError) =>
                 ({
-                    message: error.message || "ESBuild error",
-                    name: error.name || "Error",
-                    stack: error.stack || "",
+                    message: processedError.message || "ESBuild error",
+                    name: processedError.name || "Error",
+                    stack: processedError.stack || "",
                 }) as Error,
         );
     }
@@ -127,7 +129,7 @@ const resolveOriginalLocationInfo = async (
             }
         }
 
-        let estimatedLine = fileLine;
+        let estimatedLine;
         let estimatedColumn = fileColumn;
 
         if (fileLine >= 20) {
@@ -159,7 +161,7 @@ const resolveOriginalLocationInfo = async (
 };
 
 /**
- * Creates empty result when no modules are found
+ * Creates empty result when no modules are found.
  */
 const createEmptyResult = (
     compiledColumn: number,
@@ -262,19 +264,23 @@ const generateSyntaxHighlightedFrames = async (
 const buildExtendedErrorData = async (
     error: Error,
     server: ViteDevServer,
+    errorIndex: number = 0,
+    framework?: string,
     viteErrorData?: ViteErrorData,
     allErrors?: (Error | { message: string; name?: string; stack?: string })[],
-    errorIndex: number = 0,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<ErrorProcessingResult> => {
-    const vueErrorInfo = error?.message ? parseVueCompilationError(error.message) : undefined;
+    const vueErrorInfo = framework === "vue" && error?.message ? parseVueCompilationError(error.message) : undefined;
     const individualErrors = extractIndividualErrors(error);
     const primaryError = individualErrors[0] || error;
+    const isReactHydrationError
+        = framework === "react" && error.message && (error.message.toLowerCase().includes("hydration") || error.message.toLowerCase().includes("hydrating"));
 
     let causeQuery = "";
 
     if (allErrors && allErrors.length > 1) {
-        for (const error_ of allErrors.slice(1)) {
-            const causeStack = error_.stack || "";
+        for (const allError of allErrors.slice(1)) {
+            const causeStack = allError.stack || "";
             const causeTraces = parseStacktrace({ stack: causeStack } as Error, { frameLimit: 10 });
             const causeHttpTrace = causeTraces?.find((trace) => trace?.file?.startsWith("http"));
 
@@ -293,9 +299,9 @@ const buildExtendedErrorData = async (
     const originalStack = await remapStackToOriginal(server, cleanedStack, { message: cleanMessage, name: primaryError.name });
 
     // For cause errors, prioritize viteErrorData location over stack extraction
-    let compiledColumn: number;
-    let compiledFilePath: string;
-    let compiledLine: number;
+    let compiledColumn: number | undefined;
+    let compiledFilePath: string | undefined;
+    let compiledLine: number | undefined;
 
     if (viteErrorData?.file && viteErrorData?.line && viteErrorData?.column) {
         compiledColumn = viteErrorData.column;
@@ -321,13 +327,50 @@ const buildExtendedErrorData = async (
                 relativePath = `/${relativePath}`;
             }
 
-            let httpUrl = `http://localhost:5173${relativePath}`;
+            const port = server.config.server.port || server.config.preview?.port || 5173;
+            const host = server.config.server.host || server.config.preview?.host || "localhost";
+            const protocol = server.config.server.https ? "https" : "http";
+
+            let httpUrl = `${protocol}://${host}:${port}${relativePath}`;
 
             if (causeQuery) {
                 httpUrl = addQueryToUrl(httpUrl, causeQuery);
             }
 
             compiledFilePath = httpUrl;
+        }
+    }
+
+    if (isReactHydrationError) {
+        const diffContent = processHydrationDiff(error);
+
+        if (diffContent) {
+            const highlighter = await getHighlighter();
+
+            return {
+                errorCount: 1,
+                fixPrompt: aiPrompt({
+                    applicationType: undefined,
+                    error: primaryError,
+                    file: {
+                        file: compiledFilePath,
+                        language: "jsx",
+                        line: compiledLine,
+                        snippet: diffContent,
+                    },
+                }),
+                message: primaryError.message,
+                originalCodeFrameContent: highlighter.codeToHtml(diffContent as string, {
+                    lang: compiledFilePath ? findLanguageBasedOnExtension(compiledFilePath) : "text",
+                    themes: { dark: "github-dark-default", light: "github-light" },
+                    transformers: [shikiDiffTransformer()],
+                }),
+                originalFileColumn: compiledColumn,
+                originalFileLine: compiledLine,
+                originalFilePath: compiledFilePath,
+                originalSnippet: diffContent as string,
+                originalStack: primaryError.stack || "",
+            } as const;
         }
     }
 
@@ -350,6 +393,7 @@ const buildExtendedErrorData = async (
         }
     }
 
+    // eslint-disable-next-line prefer-const
     let { originalFileColumn, originalFileLine, originalFilePath } = await resolveOriginalLocationInfo(
         server,
         sourceFilePath,

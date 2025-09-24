@@ -210,6 +210,7 @@ const buildExtendedError = async (
     viteErrorData: ViteErrorData | undefined,
     errorType: "client" | "server",
     solutionFinders: SolutionFinder[],
+    framework: string | undefined,
 ): Promise<VisulimaViteOverlayErrorPayload> => {
     const allErrors = getErrorCauses(rawError);
 
@@ -243,14 +244,16 @@ const buildExtendedError = async (
 
             let enhancedViteErrorData = causeViteErrorData;
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (index === 0 && (error as any)?.sourceFile) {
                 enhancedViteErrorData = {
                     ...causeViteErrorData,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     file: (error as any).sourceFile,
                 };
             }
 
-            const extendedData = await buildExtendedErrorData(error, server, enhancedViteErrorData, allErrors, index);
+            const extendedData = await buildExtendedErrorData(error, server, index, framework, enhancedViteErrorData, allErrors);
 
             return {
                 hint: (error as ExtendedError)?.hint,
@@ -343,17 +346,6 @@ async function sendError(error, loc) {
         error = new Error("(unknown runtime error)");
     }
 
-    var ownerStack = null;
-
-    try {
-        var mod = await import('react');
-
-        if (mod && typeof mod.captureOwnerStack === 'function') {
-            ownerStack = mod.captureOwnerStack();
-        }
-    } catch {}
-
-
     function extractCauseChain(err) {
         if (!err || !err.cause) {
             return null;
@@ -391,14 +383,12 @@ async function sendError(error, loc) {
         message: error.message,
         stack: error.stack,
         cause: causeChain,
-        ownerStack,
+        ownerStack: error?.ownerStack || null,
         file: loc?.filename || null,
         line: loc?.lineno || null,
         column: loc?.colno || null
     });
 }
-
-
 
 let stackTraceRegistered = false;
 
@@ -445,6 +435,7 @@ ${isReact ? reactLogger : ""}
  */
 const reconstructCauseChain = (causeData: any): Error | null => {
     if (!causeData) {
+        // eslint-disable-next-line unicorn/no-null
         return null;
     }
 
@@ -474,6 +465,7 @@ const setupWebSocketInterception = (
     recentErrors: Map<string, number>,
     rootPath: string,
     solutionFinders: SolutionFinder[],
+    framework: string | undefined,
 ): void => {
     const originalSend = server.ws.send.bind(server.ws);
 
@@ -510,6 +502,7 @@ const setupWebSocketInterception = (
                             },
                             "server",
                             solutionFinders,
+                            framework,
                         );
 
                         // eslint-disable-next-line no-param-reassign
@@ -540,7 +533,7 @@ const setupWebSocketInterception = (
                         }
                         : undefined;
 
-                    const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, viteErrorData, "server", solutionFinders);
+                    const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, viteErrorData, "server", solutionFinders, framework);
 
                     data.err = extensionPayload;
 
@@ -575,6 +568,7 @@ const setupHMRHandler = (
     rootPath: string,
     solutionFinders: SolutionFinder[],
     logClientRuntimeError: boolean,
+    framework: string | undefined,
 ): void => {
     server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
         // Skip processing client runtime errors if logClientRuntimeError is disabled
@@ -624,6 +618,7 @@ const setupHMRHandler = (
                 } as ViteErrorData,
                 "client",
                 solutionFinders,
+                framework,
             );
 
             recentErrors.set(JSON.stringify(extensionPayload), Date.now());
@@ -664,10 +659,31 @@ const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): bool
             (plugin) =>
                 plugin
                 && ((reactPluginName && (plugin as Plugin).name === reactPluginName)
-                    || (plugin as Plugin).name === "vite:react"
+                    || (plugin as Plugin).name === "vite:react-swc"
+                    || (plugin as Plugin).name === "vite:react-refresh"
+                    || (plugin as Plugin).name === "vite:react-babel"
                     || (plugin as Plugin).name === "@vitejs/plugin-react"
                     || (typeof plugin === "function" && (plugin as Plugin).name?.includes("react"))
                     || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))),
+        );
+
+/**
+ * Checks if the Vite configuration includes a Vue plugin.
+ * @param plugins Array of Vite plugins to check
+ * @param vuePluginName Optional custom Vue plugin name to look for
+ * @returns True if a Vue plugin is found
+ */
+const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean =>
+    plugins
+        .flat()
+        .some(
+            (plugin) =>
+                plugin
+                && ((vuePluginName && (plugin as Plugin).name === vuePluginName)
+                    || (plugin as Plugin).name === "vite:vue"
+                    || (plugin as Plugin).name === "@vitejs/plugin-vue"
+                    || (typeof plugin === "function" && (plugin as Plugin).name?.includes("vue"))
+                    || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("Vue"))),
         );
 
 /**
@@ -677,11 +693,19 @@ const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): bool
  * @param options.logClientRuntimeError Whether to log client runtime errors (optional)
  * @param options.reactPluginName Custom React plugin name (optional)
  * @param options.solutionFinders Custom solution finders (optional)
+ * @param options.vuePluginName Custom Vue plugin name (optional)
  * @returns The Vite plugin configuration
  */
-const errorOverlayPlugin = (options: { logClientRuntimeError?: boolean; reactPluginName?: string; solutionFinders?: SolutionFinder[] }): Plugin => {
+const errorOverlayPlugin = (options: {
+    logClientRuntimeError?: boolean;
+    reactPluginName?: string;
+    showBallonButton?: boolean;
+    solutionFinders?: SolutionFinder[];
+    vuePluginName?: string;
+}): Plugin => {
     let mode: string;
     let isReactProject: boolean;
+    let isVueProject: boolean;
 
     return {
         apply: "serve",
@@ -689,6 +713,7 @@ const errorOverlayPlugin = (options: { logClientRuntimeError?: boolean; reactPlu
         config(config, environment) {
             if (config.plugins) {
                 isReactProject = hasReactPlugin(config.plugins, options?.reactPluginName);
+                isVueProject = hasVuePlugin(config.plugins, options?.vuePluginName);
             }
 
             mode = environment.mode || "development";
@@ -715,7 +740,9 @@ const errorOverlayPlugin = (options: { logClientRuntimeError?: boolean; reactPlu
                         if (match) {
                             const [, importPath, sourceFile] = match;
 
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (error as any).sourceFile = sourceFile;
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (error as any).importPath = importPath;
                         }
                     }
@@ -724,7 +751,15 @@ const errorOverlayPlugin = (options: { logClientRuntimeError?: boolean; reactPlu
                 }
             };
 
-            setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? []);
+            let framework: string | undefined;
+
+            if (isReactProject) {
+                framework = "react";
+            } else if (isVueProject) {
+                framework = "vue";
+            }
+
+            setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? [], framework);
 
             setupHMRHandler(
                 server,
@@ -734,6 +769,7 @@ const errorOverlayPlugin = (options: { logClientRuntimeError?: boolean; reactPlu
                 rootPath,
                 options?.solutionFinders ?? [],
                 options?.logClientRuntimeError ?? true,
+                framework,
             );
 
             const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
@@ -758,7 +794,7 @@ const errorOverlayPlugin = (options: { logClientRuntimeError?: boolean; reactPlu
                 return null;
             }
 
-            return patchOverlay(code);
+            return patchOverlay(code, options?.showBallonButton ?? true);
         },
 
         transformIndexHtml(): IndexHtmlTransformResult {

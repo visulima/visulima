@@ -197,6 +197,29 @@ The error overlay uses a custom design system with CSS custom properties:
 --ono-v-text: #c9d1d9;
 ```
 
+## Browser Support
+
+The error overlay is designed to work in all modern browsers with at least 1% global market share. This includes:
+
+| Browser | Minimum Version | Release Date |
+|---------|-----------------|--------------|
+| **Chrome** | 91+ | January 2021 |
+| **Firefox** | 91+ | August 2021 |
+| **Safari** | 14.1+ | April 2021 |
+| **Edge** | 91+ | January 2021 |
+| **iOS Safari** | 14.5+ | April 2021 |
+| **Opera** | 77+ | February 2021 |
+| **Samsung Internet** | 16+ | October 2021 |
+
+### Browser Features Used
+
+The overlay uses modern JavaScript features that are well-supported in the target browsers:
+
+- **ES2015+ Features**: Classes, arrow functions, template literals, destructuring
+- **Shadow DOM API**: For component isolation and styling encapsulation
+- **localStorage**: For persisting user preferences and state
+- **Modern DOM APIs**: Query selectors, event listeners, CSS custom properties
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).

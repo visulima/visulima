@@ -35,9 +35,9 @@ const generateEditorOptions = (): string => {
 };
 
 /**
- * Generates the overlay template with dynamic editor options
+ * Generates the overlay template with dynamic editor options.
  */
-const generateOverlayTemplate = (): string => {
+const generateOverlayTemplate = (showBallonButton: boolean): string => {
     const editorOptions = generateEditorOptions();
 
     return `<style>${styleCss}</style>
@@ -152,12 +152,12 @@ const generateOverlayTemplate = (): string => {
         </div>
         <div id="__v_o__message" class="px-4 py-2 text-sm text-[var(--ono-v-red-orange)] font-mono bg-[var(--ono-v-surface-muted)] border-b border-[var(--ono-v-border)] font-medium hidden"></div>
         <div id="__v_o__solutions" class="relative hidden">
-            <div title="Possible Solution" class="bg-[#b0c8aa] dark:bg-lime-800 rounded-[var(--ono-v-radius-md)] absolute top-4 right-4 z-10 size-6.5 flex items-center justify-center shadow-[var(--ono-v-elevation-1)]">
+            <div title="Possible Solution" class="bg-[#b0c8aa] dark:bg-lime-800 rounded-[var(--ono-v-radius-md)] absolute top-4 right-6 z-10 size-6.5 flex items-center justify-center shadow-[var(--ono-v-elevation-1)]">
                 <span class="dui size-5" style="-webkit-mask-image: url('${infoIcon}'); mask-image: url('${infoIcon}')"></span>
             </div>
-            <div id="__v_o__solutions_container" class="px-4 py-2 bg-[var(--ono-v-success-bg)] m-1 mb-0 prose prose-sm max-w-full prose-headings:text-white prose-ul:list-none prose-hr:my-6 prose-hr:border dark:prose-invert"></div>
+            <div id="__v_o__solutions_container" class="max-h-50 overflow-y-auto px-4 py-2 bg-[var(--ono-v-success-bg)] m-1 mb-0 prose prose-sm max-w-full prose-headings:text-white prose-ul:list-none prose-hr:my-6 prose-hr:border dark:prose-invert"></div>
         </div>
-        <div id="__v_o__body" class="relative flex min-h-0 px-4 py-2 bg-[var(--ono-v-surface)]">
+        <div id="__v_o__body" class="relative flex min-h-0 mx-1 py-2 bg-[var(--ono-v-surface)]">
             <div id="__v_o__body_loader" class="w-full space-y-1.5">
                 <div class="v-o-skeleton h-4 w-full rounded animate-pulse"></div>
                 <div class="v-o-skeleton h-4 w-3/4 rounded animate-pulse"></div>
@@ -168,7 +168,7 @@ const generateOverlayTemplate = (): string => {
                 <div class="v-o-skeleton h-4 w-2/5 rounded animate-pulse"></div>
                 <div class="v-o-skeleton h-4 w-3/5 rounded animate-pulse"></div>
             </div>
-            <div id="__v_o__overlay" class="overflow-auto hidden"></div>
+            <div id="__v_o__overlay" class="overflow-auto w-full hidden"></div>
         </div>
     </div>
 
@@ -181,14 +181,24 @@ const generateOverlayTemplate = (): string => {
         </summary>
         <div class="px-4 py-3 text-[var(--ono-v-text)] text-xs rounded-b-[var(--ono-v-dialog-radius)] font-mono leading-5 overflow-auto space-y-0.5 max-h-[140px] bg-[var(--ono-v-surface)] border-t border-[var(--ono-v-border)]"></div>
     </details>
-</div>`;
+</div>
+
+${
+    showBallonButton
+        ? `
+<button type="button" id="__v_o__balloon" title="Toggle error overlay" aria-label="Toggle error overlay" class="fixed z-[2147483647] inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-[var(--ono-v-red-orange)] text-white font-sans text-xs leading-none shadow-lg cursor-pointer transition-all duration-200 hover:brightness-105" style="bottom: 8px; right: 8px;">
+    <span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold">0</span>
+    <span id="__v_o__balloon_text">Errors</span>
+</button>`
+        : ""
+}`;
 };
 
 /**
  * Patches Vite's client code to replace the default error overlay with our custom overlay.
  */
-export const patchOverlay = (code: string): string => {
-    const overlayTemplate = generateOverlayTemplate();
+export const patchOverlay = (code: string, showBallonButton: boolean): string => {
+    const overlayTemplate = generateOverlayTemplate(showBallonButton);
 
     const templateString = `const overlayTemplate = ${JSON.stringify(overlayTemplate)};`;
 

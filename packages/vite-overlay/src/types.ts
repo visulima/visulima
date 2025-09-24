@@ -23,21 +23,10 @@ export interface VisulimaViteOverlayErrorPayload {
     readonly solution?: Solution;
 }
 
-export interface ExtendedError {
-    readonly compiledCodeFrameContent?: string;
-    readonly compiledColumn?: number;
-    readonly compiledFilePath?: string;
-    readonly compiledLine?: number;
-    readonly fixPrompt?: string;
+export interface ExtendedError extends ErrorProcessingResult {
     readonly hint?: string;
     readonly message: string;
     readonly name: string;
-    readonly originalCodeFrameContent?: string;
-    readonly originalFileColumn?: number;
-    readonly originalFileLine?: number;
-    readonly originalFilePath?: string;
-    readonly originalSnippet?: string;
-    readonly plugin?: string;
     readonly stack: string;
 }
 
@@ -54,6 +43,7 @@ export interface RecentErrorTracker {
 export interface RawErrorData {
     readonly cause?: {
         readonly cause?: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             readonly cause?: any;
             readonly message?: string | null;
             readonly name?: string | null;
@@ -97,12 +87,13 @@ export interface SourceTexts {
 
 export interface ErrorProcessingResult {
     readonly compiledCodeFrameContent?: string;
-    readonly compiledColumn: number;
-    readonly compiledFilePath: string;
-    readonly compiledLine: number;
+    readonly compiledColumn?: number;
+    readonly compiledFilePath?: string;
+    readonly compiledLine?: number;
     readonly compiledStack?: string;
     readonly errorCount?: number;
     readonly fixPrompt: string;
+    readonly message?: string;
     readonly originalCodeFrameContent?: string;
     readonly originalFileColumn: number;
     readonly originalFileLine: number;

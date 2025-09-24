@@ -1,3 +1,4 @@
+/* eslint-disable vitest/require-mock-type-parameters */
 // Mock all dependencies first
 import { readFile } from "node:fs/promises";
 
@@ -122,7 +123,17 @@ vi.mock("../../vite-error-adapter", () => {
 describe(buildExtendedErrorData, () => {
     const mockServer = {
         config: {
+            preview: {
+                host: "localhost",
+                https: false,
+                port: 5173,
+            },
             root: "/mock/project/root",
+            server: {
+                host: "localhost",
+                https: false,
+                port: 5173,
+            },
         },
         moduleGraph: { idToModuleMap: new Map() },
         transformRequest: vi.fn(),
@@ -138,7 +149,7 @@ describe(buildExtendedErrorData, () => {
 
             const error = new Error("Test error");
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
 
@@ -154,7 +165,7 @@ describe(buildExtendedErrorData, () => {
             const error2 = new Error("Error 2");
             const aggregateError = new AggregateError([error1, error2], "Multiple errors");
 
-            const result = await buildExtendedErrorData(aggregateError, mockServer);
+            const result = await buildExtendedErrorData(aggregateError, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
 
@@ -169,7 +180,7 @@ describe(buildExtendedErrorData, () => {
                 { location: { column: 15, file: "/src/file2.ts", line: 20 }, message: "ESBuild error 2" },
             ];
 
-            const result = await buildExtendedErrorData(esbuildErrors as any, mockServer);
+            const result = await buildExtendedErrorData(esbuildErrors as any, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
 
@@ -188,7 +199,7 @@ describe(buildExtendedErrorData, () => {
                 },
             };
 
-            const result = await buildExtendedErrorData(error, mockServer, rawError as ErrorPayload["err"]);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined, rawError as ErrorPayload["err"]);
 
             expect(result).toHaveProperty("originalFilePath");
             expect(result).toHaveProperty("originalFileLine");
@@ -208,7 +219,7 @@ describe(buildExtendedErrorData, () => {
                 id: "/src/components/Button.tsx",
             };
 
-            const result = await buildExtendedErrorData(error, mockServer, rawError as ErrorPayload["err"]);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined, rawError as ErrorPayload["err"]);
 
             expect(result).toHaveProperty("originalFilePath");
 
@@ -229,7 +240,7 @@ src/components/Test.vue
 
             const error = new Error(errorMessage);
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expect(result).toHaveProperty("originalFilePath");
             expect(result).toHaveProperty("originalFileLine");
@@ -247,7 +258,7 @@ src/components/Test.vue
 
             error.stack = "";
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expect(result).toHaveProperty("compiledFilePath");
             expect(result).toHaveProperty("compiledLine");
@@ -265,7 +276,7 @@ src/components/Test.vue
 
             error.stack = "Invalid stack format";
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expect(result).toHaveProperty("compiledFilePath");
             expect(result).toHaveProperty("compiledLine");
@@ -277,7 +288,7 @@ src/components/Test.vue
 
             const error = new Error("TypeScript error");
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expect(result).toHaveProperty("fixPrompt");
 
@@ -292,7 +303,7 @@ src/components/Test.vue
                 plugin: "vite-plugin-test",
             };
 
-            const result = await buildExtendedErrorData(error, mockServer, rawError as ErrorPayload["err"]);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined, rawError as ErrorPayload["err"]);
 
             expectTypeOf(result).toBeObject();
 
@@ -306,7 +317,7 @@ src/components/Test.vue
 
             error.name = "CustomError";
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expectTypeOf(result).toBeObject();
 
@@ -318,7 +329,7 @@ src/components/Test.vue
 
             const error = [new Error("Single error in array")];
 
-            const result = await buildExtendedErrorData(error as any, mockServer);
+            const result = await buildExtendedErrorData(error as any, mockServer, 0, undefined);
 
             expectTypeOf(result).toBeObject();
 
@@ -330,7 +341,7 @@ src/components/Test.vue
 
             const error = new Error("Test error");
 
-            const result = await buildExtendedErrorData(error, mockServer, undefined);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined, undefined);
 
             expect(result).toHaveProperty("originalFilePath");
         });
@@ -340,7 +351,7 @@ src/components/Test.vue
 
             const error = new Error("Test error");
 
-            const result = await buildExtendedErrorData(error, mockServer, null as any);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined, null as any);
 
             expect(result).toHaveProperty("originalFilePath");
         });
@@ -354,7 +365,7 @@ src/components/Test.vue
 
             error.stack = "Error: Test error\n    at Component (/src/App.tsx:10:5)";
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expect(result).toHaveProperty("originalFilePath");
             expect(result).toHaveProperty("originalFileLine");
@@ -368,7 +379,7 @@ src/components/Test.vue
 
             const error = new Error("Test error");
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expect(result).toHaveProperty("originalCodeFrameContent");
             expect(result).toHaveProperty("compiledCodeFrameContent");
@@ -382,7 +393,7 @@ src/components/Test.vue
 
             const error = new Error("Test error");
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expectTypeOf(result).toBeObject();
 
@@ -396,7 +407,7 @@ src/components/Test.vue
             const longMessage = "A".repeat(10_000);
             const error = new Error(longMessage);
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expectTypeOf(result).toBeObject();
         });
@@ -406,7 +417,7 @@ src/components/Test.vue
 
             const error = new Error("Error with special chars: ñáéíóú 🚀 🔥 中文 🎉");
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expectTypeOf(result).toBeObject();
         });
@@ -419,7 +430,7 @@ Line 2 with content
 Line 3 with more content
 Final line`);
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
 
             expectTypeOf(result).toBeObject();
         });
@@ -432,7 +443,7 @@ Final line`);
             (error as any).code = 500;
             (error as any).statusCode = 500;
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -445,7 +456,7 @@ Final line`);
             (error as any).customProperty = "custom value";
             (error as any).metadata = { key: "value" };
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -457,7 +468,7 @@ Final line`);
 
             Object.freeze(error);
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -471,7 +482,7 @@ Final line`);
             circular.self = circular;
             (error as any).circular = circular;
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -485,7 +496,7 @@ Final line`);
 
             Object.setPrototypeOf(error, null);
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -500,7 +511,7 @@ Final line`);
                 get: () => "computed value",
             });
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -513,7 +524,7 @@ Final line`);
 
             (error as any)[symbolKey] = "symbol value";
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -528,7 +539,7 @@ Final line`);
                 value: "hidden value",
             });
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -540,7 +551,7 @@ Final line`);
 
             Error.prototype.customMethod = () => "custom";
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
 
@@ -561,7 +572,7 @@ Final line`);
     at eval (<anonymous>:1:1)
     at anonymous (<anonymous>)`;
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -576,7 +587,7 @@ Final line`);
     at executeDynamicCode (/src/utils/dynamic.ts:8:5)
     at <anonymous>:1:1`;
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -591,7 +602,7 @@ Final line`);
     at userMethod (/src/user/code.js:12:8)
     at <anonymous>`;
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -608,7 +619,7 @@ Final line`);
 
             error.stack = stack;
 
-            const result = await buildExtendedErrorData(error, mockServer);
+            const result = await buildExtendedErrorData(error, mockServer, 0);
 
             expectTypeOf(result).toBeObject();
         });
@@ -623,7 +634,7 @@ Final line`);
 
                 error.stack = "    at processCSS (/src/styles/main.scss:12:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -635,7 +646,7 @@ Final line`);
 
                 error.stack = "    at compileSCSS (/src/styles/variables.scss:8:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -647,7 +658,7 @@ Final line`);
 
                 error.stack = "    at processSass (/src/styles/utils.scss:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -659,7 +670,7 @@ Final line`);
 
                 error.stack = "    at parseCSS (/src/styles/component.css:20:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -671,7 +682,7 @@ Final line`);
 
                 error.stack = "    at importCSS (/src/styles/main.css:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -685,7 +696,7 @@ Final line`);
 
                 error.stack = "    at processImage (/src/assets/logo.png:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -697,7 +708,7 @@ Final line`);
 
                 error.stack = "    at compressImage (/src/assets/background.jpg:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -709,7 +720,7 @@ Final line`);
 
                 error.stack = "    at resizeImage (/src/assets/banner.webp:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -721,7 +732,7 @@ Final line`);
 
                 error.stack = "    at processSVG (/src/assets/icon.svg:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -735,7 +746,7 @@ Final line`);
 
                 error.stack = "    at loadFont (/src/assets/fonts/roboto.woff2:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -747,7 +758,7 @@ Final line`);
 
                 error.stack = "    at parseFont (/src/assets/fonts/custom.unknown:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -759,7 +770,7 @@ Final line`);
 
                 error.stack = "    at subsetFont (/src/assets/fonts/icon.ttf:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -773,7 +784,7 @@ Final line`);
 
                 error.stack = "    at minifyJS (/src/utils/helpers.js:25:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -785,7 +796,7 @@ Final line`);
 
                 error.stack = "    at transpileJS (/src/legacy/browser.js:5:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -799,7 +810,7 @@ Final line`);
 
                 error.stack = "    at optimizeAsset (/src/assets/large-file.js:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -811,7 +822,7 @@ Final line`);
 
                 error.stack = "    at compressAsset (/src/assets/data.json:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -823,7 +834,7 @@ Final line`);
 
                 error.stack = "    at cacheAsset (/src/assets/bundle.js:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -837,7 +848,7 @@ Final line`);
 
                 error.stack = "    at postcss (/src/styles/main.css:10:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -849,7 +860,7 @@ Final line`);
 
                 error.stack = "    at parsePostCSS (/src/styles/components.css:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -861,7 +872,7 @@ Final line`);
 
                 error.stack = "    at tailwind (/src/styles/app.css:20:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -875,7 +886,7 @@ Final line`);
 
                 error.stack = "    at importAsset (/src/components/Image.vue:5:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -887,7 +898,7 @@ Final line`);
 
                 error.stack = "    at validateAsset (/src/assets/data.txt:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -903,7 +914,7 @@ Final line`);
 
                 error.stack = "    at splitChunks (/node_modules/rollup/dist/rollup.js:123:45)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -915,7 +926,7 @@ Final line`);
 
                 error.stack = "    at generateChunk (/src/router/lazyRoutes.ts:15:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -927,7 +938,7 @@ Final line`);
 
                 error.stack = "    at optimizeShared (/node_modules/vite/dist/node/optimizer.js:234:56)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -941,7 +952,7 @@ Final line`);
 
                 error.stack = "    at analyzeTree (/node_modules/rollup/dist/analyzer.js:67:23)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -953,7 +964,7 @@ Final line`);
 
                 error.stack = "    at detectSideEffects (/src/utils/sideEffects.ts:12:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -965,7 +976,7 @@ Final line`);
 
                 error.stack = "    at checkUnused (/node_modules/rollup/dist/plugins/warn-unused.js:45:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -979,7 +990,7 @@ Final line`);
 
                 error.stack = "    at minify (/node_modules/terser/dist/bundle.min.js:123:45)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -991,7 +1002,7 @@ Final line`);
 
                 error.stack = "    at minifyCSS (/node_modules/clean-css/lib/clean.js:67:23)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1003,7 +1014,7 @@ Final line`);
 
                 error.stack = "    at minifyHTML (/node_modules/html-minifier/index.js:89:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1017,7 +1028,7 @@ Final line`);
 
                 error.stack = "    at eliminateDeadCode (/node_modules/rollup/dist/optimizer.js:156:34)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1029,7 +1040,7 @@ Final line`);
 
                 error.stack = "    at hoistScope (/node_modules/rollup/dist/scope.js:78:56)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1041,7 +1052,7 @@ Final line`);
 
                 error.stack = "    at foldConstants (/src/utils/constants.ts:25:18)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1055,7 +1066,7 @@ Final line`);
 
                 error.stack = "    at checkSizeLimit (/node_modules/vite/dist/node/build.js:234:67)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1067,7 +1078,7 @@ Final line`);
 
                 error.stack = "    at compressAsset (/node_modules/vite/dist/node/compress.js:89:23)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1079,7 +1090,7 @@ Final line`);
 
                 error.stack = "    at hashAsset (/node_modules/vite/dist/node/hash.js:45:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1093,7 +1104,7 @@ Final line`);
 
                 error.stack = "    at validateConfig (/vite.config.ts:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1105,7 +1116,7 @@ Final line`);
 
                 error.stack = "    at validatePlugin (/src/plugins/my-plugin.ts:10:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1117,7 +1128,7 @@ Final line`);
 
                 error.stack = "    at validateOutput (/vite.config.ts:25:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1131,7 +1142,7 @@ Final line`);
 
                 error.stack = "    at generateSourceMap (/node_modules/source-map/lib/source-map-generator.js:123:45)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1143,7 +1154,7 @@ Final line`);
 
                 error.stack = "    at validateSourceMap (/node_modules/source-map/lib/source-map-consumer.js:67:23)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1157,7 +1168,7 @@ Final line`);
 
                 error.stack = "    at optimizePreload (/node_modules/vite/dist/node/preload.js:89:34)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1169,7 +1180,7 @@ Final line`);
 
                 error.stack = "    at optimizePrefetch (/src/utils/prefetch.ts:12:18)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1185,7 +1196,7 @@ Final line`);
 
                 error.stack = "    at render (/src/components/App.server.tsx:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1197,7 +1208,7 @@ Final line`);
 
                 error.stack = "    at hydrate (/src/components/HydrateMe.tsx:20:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1209,7 +1220,7 @@ Final line`);
 
                 error.stack = "    at useSSRContext (/src/hooks/useSSR.ts:8:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1221,7 +1232,7 @@ Final line`);
 
                 error.stack = "    at getServerSideProps (/src/pages/index.tsx:25:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1235,7 +1246,7 @@ Final line`);
 
                 error.stack = "    at prerender (/src/pages/dynamic.tsx:12:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1247,7 +1258,7 @@ Final line`);
 
                 error.stack = "    at prerenderRoute (/src/routes/404.tsx:5:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1259,7 +1270,7 @@ Final line`);
 
                 error.stack = "    at prerenderAsset (/src/assets/missing.svg:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1273,7 +1284,7 @@ Final line`);
 
                 error.stack = "    at devOnly (/src/utils/dev.ts:8:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1285,7 +1296,7 @@ Final line`);
 
                 error.stack = "    at prodOnly (/src/utils/prod.ts:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1297,7 +1308,7 @@ Final line`);
 
                 error.stack = "    at getEnv (/src/config/env.ts:10:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1311,7 +1322,7 @@ Final line`);
 
                 error.stack = "    at checkBrowser (/src/utils/compatibility.ts:5:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1323,7 +1334,7 @@ Final line`);
 
                 error.stack = "    at loadPolyfills (/src/utils/polyfills.ts:12:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1335,7 +1346,7 @@ Final line`);
 
                 error.stack = "    at detectFeatures (/src/utils/features.ts:18:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1349,7 +1360,7 @@ Final line`);
 
                 error.stack = "    at checkNodeVersion (/src/utils/node.ts:8:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1361,7 +1372,7 @@ Final line`);
 
                 error.stack = "    at require (/src/server/utils.ts:5:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1375,7 +1386,7 @@ Final line`);
 
                 error.stack = "    at esModuleTarget (/src/utils/esmodules.ts:12:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1387,7 +1398,7 @@ Final line`);
 
                 error.stack = "    at commonjsTarget (/src/utils/commonjs.ts:15:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1399,7 +1410,7 @@ Final line`);
 
                 error.stack = "    at libraryTarget (/src/lib/index.ts:8:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1413,7 +1424,7 @@ Final line`);
 
                 error.stack = "    at middleware (/src/middleware/auth.ts:10:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1425,7 +1436,7 @@ Final line`);
 
                 error.stack = "    at setupProxy (/vite.config.ts:25:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1437,7 +1448,7 @@ Final line`);
 
                 error.stack = "    at corsMiddleware (/src/middleware/cors.ts:15:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1451,7 +1462,7 @@ Final line`);
 
                 error.stack = "    at serveStatic (/src/public/large-file.zip:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1463,7 +1474,7 @@ Final line`);
 
                 error.stack = "    at cacheAsset (/src/.vite/cache/assets:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1479,7 +1490,7 @@ Final line`);
 
                 error.stack = "    at readFile (/src/utils/config.ts:8:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1491,7 +1502,7 @@ Final line`);
 
                 error.stack = "    at writeFile (/node_modules/vite/dist/node/build.js:123:45)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1503,7 +1514,7 @@ Final line`);
 
                 error.stack = "    at mkdir (/node_modules/vite/dist/node/fs.js:67:23)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1515,7 +1526,7 @@ Final line`);
 
                 error.stack = "    at execFile (/src/build/postcss.ts:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1529,7 +1540,7 @@ Final line`);
 
                 error.stack = "    at readFile (/src/router/routes.ts:12:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1541,7 +1552,7 @@ Final line`);
 
                 error.stack = "    at mkdir (/vite.config.ts:25:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1553,7 +1564,7 @@ Final line`);
 
                 error.stack = "    at resolveModule (/node_modules/vite/dist/node/resolver.js:89:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1567,7 +1578,7 @@ Final line`);
 
                 error.stack = "    at writeFile (/node_modules/vite/dist/node/build.js:156:34)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1579,7 +1590,7 @@ Final line`);
 
                 error.stack = "    at createFile (/src/utils/cache.ts:20:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1593,7 +1604,7 @@ Final line`);
 
                 error.stack = "    at readFile (/src/components/Image.vue:8:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1605,7 +1616,7 @@ Final line`);
 
                 error.stack = "    at access (/src/utils/fs.ts:12:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1619,7 +1630,7 @@ Final line`);
 
                 error.stack = "    at writeFile (/src/utils/database.ts:25:18)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1631,7 +1642,7 @@ Final line`);
 
                 error.stack = "    at openFile (/src/services/lock.ts:10:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1645,7 +1656,7 @@ Final line`);
 
                 error.stack = "    at access (/mnt/network-drive/src:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1657,7 +1668,7 @@ Final line`);
 
                 error.stack = "    at readFile (/network/path/config.json:5:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1671,7 +1682,7 @@ Final line`);
 
                 error.stack = "    at readlink (/src/linked-config.ts:8:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1683,7 +1694,7 @@ Final line`);
 
                 error.stack = "    at resolveSymlink (/src/utils/paths.ts:15:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1697,7 +1708,7 @@ Final line`);
 
                 error.stack = "    at openFile (/src/utils/batch.ts:20:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1709,7 +1720,7 @@ Final line`);
 
                 error.stack = "    at closeFile (/src/services/cleanup.ts:12:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1723,7 +1734,7 @@ Final line`);
 
                 error.stack = "    at createPath (/src/utils/deeply/nested/very/long/path/to/file.ts:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1735,7 +1746,7 @@ Final line`);
 
                 error.stack = "    at validatePath (/src/utils/validation.ts:8:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1751,7 +1762,7 @@ Final line`);
 
                 error.stack = "    at Component (/src/App.tsx:15:10)\n    at React.Component (react.js:123:45)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1763,7 +1774,7 @@ Final line`);
 
                 error.stack = "    at useEffect (/src/hooks/useData.ts:8:5)\n    at callback (/src/App.tsx:12:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1775,7 +1786,7 @@ Final line`);
 
                 error.stack = "    at ListItem (/src/components/List.tsx:25:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1787,7 +1798,7 @@ Final line`);
 
                 error.stack = "    at setState (/src/hooks/useCounter.ts:12:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1801,7 +1812,7 @@ Final line`);
 
                 error.stack = "    at compile (/node_modules/svelte/src/compiler/index.js:456:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1813,7 +1824,7 @@ Final line`);
 
                 error.stack = "    at writable (/src/stores/userStore.ts:8:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1825,7 +1836,7 @@ Final line`);
 
                 error.stack = "    at derived (/src/stores/derivedStore.ts:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1837,7 +1848,7 @@ Final line`);
 
                 error.stack = "    at fade (/src/components/Modal.svelte:20:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1851,7 +1862,7 @@ Final line`);
 
                 error.stack = "    at createSignal (/src/hooks/useCounter.ts:5:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1863,7 +1874,7 @@ Final line`);
 
                 error.stack = "    at createEffect (/src/components/Timer.tsx:10:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1875,7 +1886,7 @@ Final line`);
 
                 error.stack = "    at createStore (/src/stores/appStore.ts:25:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1887,7 +1898,7 @@ Final line`);
 
                 error.stack = "    at createResource (/src/hooks/useData.ts:12:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1901,7 +1912,7 @@ Final line`);
 
                 error.stack = "    at setup (/src/components/Counter.vue:8:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1913,7 +1924,7 @@ Final line`);
 
                 error.stack = "    at compileTemplate (/src/components/List.vue:12:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1925,7 +1936,7 @@ Final line`);
 
                 error.stack = "    at useRouter (/src/composables/useNavigation.ts:5:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1937,7 +1948,7 @@ Final line`);
 
                 error.stack = "    at useStore (/src/stores/user.ts:8:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1951,7 +1962,7 @@ Final line`);
 
                 error.stack = "    at AstroComponent (/src/components/Header.astro:5:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1963,7 +1974,7 @@ Final line`);
 
                 error.stack = "    at createIsland (/src/components/Interactive.tsx:10:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1980,7 +1991,7 @@ Final line`);
                 error.stack = "    at transform (/node_modules/@vitejs/plugin-react/dist/index.js:123:45)";
                 error.plugin = "vite-plugin-react";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -1993,7 +2004,7 @@ Final line`);
                 error.stack = "    at compileSFC (/node_modules/@vitejs/plugin-vue/dist/index.js:67:12)";
                 error.plugin = "vite-plugin-vue";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2006,7 +2017,7 @@ Final line`);
                 error.stack = "    at legacyTransform (/node_modules/@vitejs/plugin-legacy/dist/index.js:89:23)";
                 error.plugin = "vite-plugin-legacy";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2021,7 +2032,7 @@ Final line`);
                 error.stack = "    at terser (/node_modules/rollup-plugin-terser/dist/index.js:45:67)";
                 error.plugin = "rollup-plugin-terser";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2034,7 +2045,7 @@ Final line`);
                 error.stack = "    at esbuildTransform (/node_modules/esbuild/lib/main.js:123:89)";
                 error.plugin = "esbuild";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2047,7 +2058,7 @@ Final line`);
                 error.stack = "    at swcTransform (/node_modules/@swc/core/index.js:234:56)";
                 error.plugin = "@swc/core";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2062,7 +2073,7 @@ Final line`);
                 error.stack = "    at autoprefixer (/node_modules/autoprefixer/lib/autoprefixer.js:78:34)";
                 error.plugin = "postcss";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2075,7 +2086,7 @@ Final line`);
                 error.stack = "    at tailwindJit (/node_modules/tailwindcss/lib/jit/index.js:156:78)";
                 error.plugin = "tailwindcss";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2088,7 +2099,7 @@ Final line`);
                 error.stack = "    at cssModules (/node_modules/postcss-modules/index.js:89:45)";
                 error.plugin = "postcss-modules";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2103,7 +2114,7 @@ Final line`);
                 error.stack = "    at imagemin (/node_modules/vite-plugin-imagemin/dist/index.js:67:23)";
                 error.plugin = "vite-plugin-imagemin";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2116,7 +2127,7 @@ Final line`);
                 error.stack = "    at svgr (/node_modules/vite-plugin-svgr/dist/index.js:45:12)";
                 error.plugin = "vite-plugin-svgr";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2129,7 +2140,7 @@ Final line`);
                 error.stack = "    at loadFonts (/node_modules/vite-plugin-fonts/dist/index.js:89:34)";
                 error.plugin = "vite-plugin-fonts";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2144,7 +2155,7 @@ Final line`);
                 error.stack = "    at customPlugin (/src/plugins/my-plugin.ts:15:8)";
                 error.plugin = "my-custom-plugin";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2157,7 +2168,7 @@ Final line`);
                 error.stack = "    at validateConfig (/src/plugins/config-validator.ts:5:12)";
                 error.plugin = "config-validator";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2170,7 +2181,7 @@ Final line`);
                 error.stack = "    at buildStart (/src/plugins/lifecycle.ts:20:15)";
                 error.plugin = "lifecycle-plugin";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2185,7 +2196,7 @@ Final line`);
                 error.stack = "    at checkDependencies (/node_modules/plugin-checker/index.js:34:67)";
                 error.plugin = "dependency-checker";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2198,7 +2209,7 @@ Final line`);
                 error.stack = "    at checkVersion (/node_modules/version-checker/index.js:12:45)";
                 error.plugin = "version-checker";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2213,7 +2224,7 @@ Final line`);
                 error.stack = "    at runtime (/src/plugins/runtime-error.ts:8:10)";
                 error.plugin = "runtime-error-plugin";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2226,7 +2237,7 @@ Final line`);
                 error.stack = "    at asyncOperation (/src/plugins/async-plugin.ts:25:18)";
                 error.plugin = "async-plugin";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2242,7 +2253,7 @@ Final line`);
 
                 error.stack = "    at connectHMR (/node_modules/vite/dist/client/client.js:123:45)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2254,7 +2265,7 @@ Final line`);
 
                 error.stack = "    at applyHMR (/node_modules/vite/dist/client/client.js:234:56)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2266,7 +2277,7 @@ Final line`);
 
                 error.stack = "    at checkBoundary (/src/components/App.tsx:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2278,7 +2289,7 @@ Final line`);
 
                 error.stack = "    at updateCSS (/src/styles/main.css:25:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2292,7 +2303,7 @@ Final line`);
 
                 error.stack = "    at connectWS (/node_modules/vite/dist/client/client.js:345:67)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2304,7 +2315,7 @@ Final line`);
 
                 error.stack = "    at reconnectWS (/node_modules/vite/dist/client/client.js:456:78)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2316,7 +2327,7 @@ Final line`);
 
                 error.stack = "    at parseMessage (/node_modules/vite/dist/client/client.js:567:89)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2330,7 +2341,7 @@ Final line`);
 
                 error.stack = "    at fetchResource (/src/hooks/useData.ts:12:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2342,7 +2353,7 @@ Final line`);
 
                 error.stack = "    at fetchAPI (/src/services/api.ts:8:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2354,7 +2365,7 @@ Final line`);
 
                 error.stack = "    at timeoutRequest (/src/utils/http.ts:20:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2366,7 +2377,7 @@ Final line`);
 
                 error.stack = "    at resolveDNS (/src/services/network.ts:5:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2380,7 +2391,7 @@ Final line`);
 
                 error.stack = "    at startServer (/node_modules/vite/dist/node/index.js:123:45)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2392,7 +2403,7 @@ Final line`);
 
                 error.stack = "    at executeMiddleware (/src/middleware/auth.ts:15:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2404,7 +2415,7 @@ Final line`);
 
                 error.stack = "    at setupProxy (/vite.config.ts:25:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2416,7 +2427,7 @@ Final line`);
 
                 error.stack = "    at watchFiles (/node_modules/vite/dist/node/watcher.js:67:23)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2430,7 +2441,7 @@ Final line`);
 
                 error.stack = "    at processData (/src/utils/array.ts:10:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2442,7 +2453,7 @@ Final line`);
 
                 error.stack = "    at useUndefined (/src/components/Test.tsx:8:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2454,7 +2465,7 @@ Final line`);
 
                 error.stack = "    at eval (/src/dynamic-code.js:5:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2466,7 +2477,7 @@ Final line`);
 
                 error.stack = "    at asyncOperation (/src/services/async.ts:20:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2480,7 +2491,7 @@ Final line`);
 
                 error.stack = "    at saveToStorage (/src/utils/storage.ts:12:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2492,7 +2503,7 @@ Final line`);
 
                 error.stack = "    at getFromSession (/src/utils/session.ts:8:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2504,7 +2515,7 @@ Final line`);
 
                 error.stack = "    at getLocation (/src/hooks/useGeolocation.ts:10:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2518,7 +2529,7 @@ Final line`);
 
                 error.stack = "    at registerSW (/src/sw.js:5:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2530,7 +2541,7 @@ Final line`);
 
                 error.stack = "    at postMessage (/src/workers/communication.ts:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2546,7 +2557,7 @@ Final line`);
 
                 error.stack = "    at checkType (/src/utils/math.ts:25:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2558,7 +2569,7 @@ Final line`);
 
                 error.stack = "    at validateInput (/src/components/Input.tsx:15:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2570,7 +2581,7 @@ Final line`);
 
                 error.stack = "    at processData (/src/hooks/useData.ts:8:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2582,7 +2593,7 @@ Final line`);
 
                 error.stack = "    at handleUser (/src/services/userService.ts:20:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2596,7 +2607,7 @@ Final line`);
 
                 error.stack = "    at createUser (/src/types/user.ts:12:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2608,7 +2619,7 @@ Final line`);
 
                 error.stack = "    at UserService (/src/services/UserService.ts:5:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2620,7 +2631,7 @@ Final line`);
 
                 error.stack = "    at setStatus (/src/models/Order.ts:18:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2632,7 +2643,7 @@ Final line`);
 
                 error.stack = "    at import (/src/server.ts:1:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2646,7 +2657,7 @@ Final line`);
 
                 error.stack = "    at global (/src/types/globals.d.ts:5:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2658,7 +2669,7 @@ Final line`);
 
                 error.stack = "    at declare (/src/types/window.d.ts:10:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2670,7 +2681,7 @@ Final line`);
 
                 error.stack = "    at module (/src/types/express.d.ts:8:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2684,7 +2695,7 @@ Final line`);
 
                 error.stack = "    at ConditionalType (/src/types/utility.ts:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2696,7 +2707,7 @@ Final line`);
 
                 error.stack = "    at MappedType (/src/types/mapped.ts:20:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2708,7 +2719,7 @@ Final line`);
 
                 error.stack = "    at TemplateLiteral (/src/types/strings.ts:12:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2720,7 +2731,7 @@ Final line`);
 
                 error.stack = "    at UtilityTypes (/src/types/utility.ts:25:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2734,7 +2745,7 @@ Final line`);
 
                 error.stack = "    at import (/src/main.ts:3:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2746,7 +2757,7 @@ Final line`);
 
                 error.stack = "    at implicitAny (/src/utils/helper.ts:10:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2758,7 +2769,7 @@ Final line`);
 
                 error.stack = "    at decorator (/src/decorators/log.ts:5:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2774,7 +2785,7 @@ Final line`);
 
                 error.stack = "    at import (/src/App.tsx:5:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2786,7 +2797,7 @@ Final line`);
 
                 error.stack = "    at import (/src/utils/helper.ts:1:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2798,7 +2809,7 @@ Final line`);
 
                 error.stack = "    at import (/src/views/Home.vue:10:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2810,7 +2821,7 @@ Final line`);
 
                 error.stack = "    at import (/src/App.tsx:8:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2824,7 +2835,7 @@ Final line`);
 
                 error.stack = "    at resolve (/node_modules/vite/src/node/index.ts:123:45)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2836,7 +2847,7 @@ Final line`);
 
                 error.stack = "    at circularCheck (/node_modules/vite/src/node/analyzer.ts:67:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2848,7 +2859,7 @@ Final line`);
 
                 error.stack = "    at dynamicImport (/src/router/index.ts:15:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2862,7 +2873,7 @@ Final line`);
 
                 error.stack = "    at import (/src/components/List.tsx:3:15)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2874,7 +2885,7 @@ Final line`);
 
                 error.stack = "    at import (/src/pages/Home.tsx:1:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2886,7 +2897,7 @@ Final line`);
 
                 error.stack = "    at import (/src/hooks/useData.ts:2:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2898,7 +2909,7 @@ Final line`);
 
                 error.stack = "    at export (/src/index.ts:5:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2912,7 +2923,7 @@ Final line`);
 
                 error.stack = "    at import (/src/router/lazyRoutes.ts:12:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2924,7 +2935,7 @@ Final line`);
 
                 error.stack = "    at dynamicImport (/src/utils/lazyLoad.ts:8:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2936,7 +2947,7 @@ Final line`);
 
                 error.stack = "    at dynamicImport (/src/components/DynamicLoader.tsx:15:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2950,7 +2961,7 @@ Final line`);
 
                 error.stack = "    at import (/src/utils/external.ts:3:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2962,7 +2973,7 @@ Final line`);
 
                 error.stack = "    at import (/src/internal/deep/file.ts:1:5)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2974,7 +2985,7 @@ Final line`);
 
                 error.stack = "    at import (/src/components/Nested.tsx:8:12)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -2986,7 +2997,7 @@ Final line`);
 
                 error.stack = "    at import (/src/assets/unknown.unknown:1:1)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -3000,7 +3011,7 @@ Final line`);
 
                 error.stack = "    at import (/src/utils/fileUtils.ts:1:8)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -3012,7 +3023,7 @@ Final line`);
 
                 error.stack = "    at require (/src/server/utils.ts:5:10)";
 
-                const result = await buildExtendedErrorData(error, mockServer);
+                const result = await buildExtendedErrorData(error, mockServer, 0);
 
                 expectTypeOf(result).toBeObject();
             });
@@ -3020,10 +3031,6 @@ Final line`);
     });
 
     describe(retrieveSourceTexts, () => {
-        const mockServer = {
-            transformRequest: vi.fn(),
-        } as unknown as ViteDevServer;
-
         const mockReadFile = vi.mocked(readFile);
 
         beforeEach(() => {
@@ -3443,16 +3450,12 @@ Final line`);
         it("should convert local paths to HTTP URLs with query parameters from cause errors", async () => {
             expect.assertions(3);
 
-            // Mock server configuration
-            const mockServer = {
-                config: {
-                    root: "/home/user/project",
-                },
+            const mockServer2 = {
+                ...mockServer,
                 moduleGraph: {
                     getModuleById: vi.fn(),
                     idToModuleMap: new Map(),
                 },
-                transformRequest: vi.fn(),
             } as unknown as ViteDevServer;
 
             // Mock module resolution
@@ -3469,8 +3472,8 @@ Final line`);
                 },
             };
 
-            vi.spyOn(mockServer.moduleGraph, "getModuleById").mockImplementation().mockReturnValue(mockModule);
-            mockServer.moduleGraph.idToModuleMap.set("http://localhost:5173/src/App.tsx?tsr-split=component", mockModule);
+            vi.spyOn(mockServer2.moduleGraph, "getModuleById").mockImplementation().mockReturnValue(mockModule);
+            mockServer2.moduleGraph.idToModuleMap.set("http://localhost:5173/src/App.tsx?tsr-split=component", mockModule);
 
             // Mock parseStacktrace to return cause error with HTTP URL
             vi.mocked(parseStacktrace).mockImplementation((error: any) => {
@@ -3508,10 +3511,10 @@ Final line`);
 
             const allErrors = [primaryError, causeError];
 
-            const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+            const result = await buildExtendedErrorData(primaryError, mockServer2, undefined, undefined, undefined, allErrors);
 
             // Should convert to HTTP URL format
-            expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");
+            expect(result.compiledFilePath).toBe("http://localhost:5173/home/user/project/src/App.tsx");
 
             // Should show correct compiled code frame
             expect(result.compiledLine).toBe(20); // Primary error line
@@ -3521,15 +3524,12 @@ Final line`);
         it("should handle case where no cause errors have HTTP URLs", async () => {
             expect.assertions(1);
 
-            const mockServer = {
-                config: {
-                    root: "/home/user/project",
-                },
+            const mockServer2 = {
+                ...mockServer,
                 moduleGraph: {
                     getModuleById: vi.fn(),
                     idToModuleMap: new Map(),
                 },
-                transformRequest: vi.fn(),
             } as unknown as ViteDevServer;
 
             // Mock parseStacktrace to return only local paths
@@ -3551,24 +3551,21 @@ Final line`);
 
             const allErrors = [primaryError];
 
-            const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+            const result = await buildExtendedErrorData(primaryError, mockServer2, undefined, undefined, allErrors);
 
             // Should convert to HTTP URL without query parameter
-            expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");
+            expect(result.compiledFilePath).toBe("http://localhost:5173/home/user/project/src/App.tsx");
         });
 
         it("should handle malformed URLs gracefully", async () => {
             expect.assertions(1);
 
-            const mockServer = {
-                config: {
-                    root: "/home/user/project",
-                },
+            const mockServer2 = {
+                ...mockServer,
                 moduleGraph: {
                     getModuleById: vi.fn(),
                     idToModuleMap: new Map(),
                 },
-                transformRequest: vi.fn(),
             } as unknown as ViteDevServer;
 
             // Mock parseStacktrace to return malformed HTTP URL
@@ -3607,10 +3604,10 @@ Final line`);
 
             const allErrors = [primaryError, causeError];
 
-            const result = await buildExtendedErrorData(primaryError, mockServer, undefined, allErrors);
+            const result = await buildExtendedErrorData(primaryError, mockServer2, undefined, undefined, undefined, allErrors);
 
             // Should still convert to HTTP URL without crashing
-            expect(result.compiledFilePath).toBe("http://localhost:5173/src/App.tsx");
+            expect(result.compiledFilePath).toBe("http://localhost:5173/home/user/project/src/App.tsx");
         });
     });
 
@@ -3629,17 +3626,10 @@ Final line`);
         at Component (/app/dist/component.js:10:5)
         at App (/app/dist/app.js:20:15)`;
 
-                const mockServer = {
-                    config: {
-                        root: "/mock/project/root",
-                    },
-                    moduleGraph: {
-                        idToModuleMap: new Map(),
-                    },
+                const result = await buildExtendedErrorData(mockError, {
+                    ...mockServer,
                     transformRequest: vi.fn().mockRejectedValue(new Error("Transform failed")),
-                } as unknown as ViteDevServer;
-
-                const result = await buildExtendedErrorData(mockError, mockServer);
+                });
 
                 expect(result).toBeDefined();
 
@@ -3656,17 +3646,10 @@ Final line`);
         at anonymous
         at Component (/app/dist/component.js:0:0)`;
 
-                const mockServer = {
-                    config: {
-                        root: "/mock/project/root",
-                    },
-                    moduleGraph: {
-                        idToModuleMap: new Map(),
-                    },
+                const result = await buildExtendedErrorData(mockError, {
+                    ...mockServer,
                     transformRequest: vi.fn().mockRejectedValue(new Error("Transform failed")),
-                } as unknown as ViteDevServer;
-
-                const result = await buildExtendedErrorData(mockError, mockServer);
+                });
 
                 expect(result).toBeDefined();
 
@@ -3681,16 +3664,6 @@ Final line`);
 
                 mockError.stack = `Error: Invalid path error
         at Component (invalid:path:10:5)`;
-
-                const mockServer = {
-                    config: {
-                        root: "/mock/project/root",
-                    },
-                    moduleGraph: {
-                        idToModuleMap: new Map(),
-                    },
-                    transformRequest: vi.fn().mockRejectedValue(new Error("Transform failed")),
-                } as unknown as ViteDevServer;
 
                 const result = await buildExtendedErrorData(mockError, mockServer);
 
@@ -3707,17 +3680,10 @@ Final line`);
 
                 mockError.stack = "";
 
-                const mockServer = {
-                    config: {
-                        root: "/mock/project/root",
-                    },
-                    moduleGraph: {
-                        idToModuleMap: new Map(),
-                    },
+                const result = await buildExtendedErrorData(mockError, {
+                    ...mockServer,
                     transformRequest: vi.fn().mockRejectedValue(new Error("Transform failed")),
-                } as unknown as ViteDevServer;
-
-                const result = await buildExtendedErrorData(mockError, mockServer);
+                });
 
                 expect(result).toBeDefined();
 
@@ -3733,17 +3699,10 @@ Final line`);
                 mockError.stack = `Error: Processing error
         at Component (/app/dist/component.js:10:5)`;
 
-                const mockServer = {
-                    config: {
-                        root: "/mock/project/root",
-                    },
-                    moduleGraph: {
-                        idToModuleMap: new Map(),
-                    },
+                const result = await buildExtendedErrorData(mockError, {
+                    ...mockServer,
                     transformRequest: vi.fn().mockRejectedValue(new Error("Transform failed")),
-                } as unknown as ViteDevServer;
-
-                const result = await buildExtendedErrorData(mockError, mockServer);
+                });
 
                 expect(result).toBeDefined();
 

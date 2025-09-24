@@ -1,0 +1,33 @@
+{
+    "name": "vite_overlay_vite-tanstack-hydration",
+    "private": true,
+    "sideEffects": false,
+    "type": "module",
+    "scripts": {
+        "dev": "vite dev",
+        "build": "vite build && tsc --noEmit",
+        "start": "vite start"
+    },
+    "dependencies": {
+        "@tanstack/react-router": "^1.131.50",
+        "@tanstack/react-router-devtools": "^1.131.50",
+        "@tanstack/react-start": "^1.131.50",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "redaxios": "^0.5.1",
+        "tailwind-merge": "^2.5.5"
+    },
+    "devDependencies": {
+        "@visulima/vite-overlay": "workspace:*",
+        "@vitejs/plugin-react": "^5.0.2",
+        "@types/node": "^22.5.4",
+        "@types/react": "^19.0.8",
+        "@types/react-dom": "^19.0.3",
+        "autoprefixer": "^10.4.20",
+        "postcss": "^8.4.49",
+        "tailwindcss": "^3.4.15",
+        "typescript": "^5.6.2",
+        "vite": "^6.3.5",
+        "vite-tsconfig-paths": "^5.1.3"
+    }
+}

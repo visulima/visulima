@@ -22,6 +22,12 @@ interface FileCandidate {
     relevanceScore: number;
 }
 
+const has = (message: string, ...needles: string[]): boolean => {
+    const lower = message.toLowerCase();
+
+    return needles.some((n) => lower.includes(n.toLowerCase()));
+};
+
 /**
  * Gets the relative path from one directory to another, ensuring it starts with './' if needed.
  * @param fromDirectory The source directory
@@ -66,13 +72,13 @@ const calculatePathDistance = (fromDirectory: string, toDirectory: string): numb
         const relativePath = path.relative(fromDirectory, toDirectory);
         const segments = relativePath.split(path.sep).filter((s) => s && s !== ".");
 
-        let distance = 0;
+        let pathDistance = 0;
 
         for (const segment of segments) {
-            distance += segment === ".." ? 2 : 1;
+            pathDistance += segment === ".." ? 2 : 1;
         }
 
-        return distance;
+        return pathDistance;
     } catch {
         return 10;
     }
@@ -237,21 +243,21 @@ const ERROR_PATTERNS = [
             body: "Browser APIs like `window` and `document` are not available during server-side rendering. Use dynamic imports or check for SSR environment before using browser APIs.",
             header: "SSR Browser API Error",
         },
-        test: (message: string) => message.includes("window is not defined") || message.includes("document is not defined"),
+        test: (message: string) => has(message, "window is not defined", "document is not defined"),
     },
     {
         solution: {
             body: "Some plugins need specific ordering. Use `enforce: 'pre'` for plugins that need to run first, or `enforce: 'post'` for plugins that need to run last.",
             header: "Plugin Ordering Issue",
         },
-        test: (message: string) => message.includes("Plugin ordering") || message.includes("enforce"),
+        test: (message: string) => has(message, "Plugin ordering", "enforce"),
     },
     {
         solution: {
             body: "CSS Modules require proper configuration. Make sure your CSS files use the `.module.css` extension and are imported correctly.",
             header: "CSS Modules Configuration",
         },
-        test: (message: string) => message.includes("CSS Modules") || message.includes("module.css"),
+        test: (message: string) => has(message, "CSS Modules", "module.css"),
     },
     {
         solution: {
@@ -264,70 +270,90 @@ const ERROR_PATTERNS = [
             ].join("\n"),
             header: "Environment Variables",
         },
-        test: (message: string) => message.includes("VITE_") || message.includes("process.env"),
+        test: (message: string) => has(message, "VITE_", "process.env"),
     },
     {
         solution: {
             body: "For static assets, use the `new URL('./path/to/asset', import.meta.url)` syntax or import them and use the returned URL.",
             header: "Asset Import Issue",
         },
-        test: (message: string) => message.includes("Failed to load") && (message.includes(".png") || message.includes(".jpg") || message.includes(".svg")),
+        test: (message: string) => has(message, "Failed to load") && has(message, ".png", ".jpg", ".svg"),
     },
     {
         solution: {
             body: "Some issues only occur in production builds. Check if the error happens in development mode. You might need different configurations for build vs dev.",
             header: "Build vs Development Mode",
         },
-        test: (message: string) => message.includes("production") || message.includes("build"),
+        test: (message: string) => has(message, "production", "build"),
     },
     {
         solution: {
             body: "HMR issues can occur with certain patterns. Make sure you're not mutating module-level variables and consider using `import.meta.hot` guards.",
             header: "Hot Module Replacement Issue",
         },
-        test: (message: string) => message.includes("HMR") || message.includes("hot reload"),
+        test: (message: string) => has(message, "HMR", "hot reload"),
     },
     {
         solution: {
             body: "Check your `tsconfig.json` and make sure it includes proper paths and compiler options. For Vite, you might need a `vite-env.d.ts` file.",
             header: "TypeScript Configuration",
         },
-        test: (message: string, file?: string) => message.includes("TypeScript") || (file && file.endsWith(".ts")),
+        test: (message: string, file?: string) => has(message, "TypeScript") || (file && file.endsWith(".ts")),
     },
     {
         solution: {
             body: "Some dependencies need to be excluded from pre-bundling. Add them to `optimizeDeps.exclude` in your Vite config.",
             header: "Dependency Optimization",
         },
-        test: (message: string) => message.includes("optimizeDeps") || message.includes("pre-bundling"),
+        test: (message: string) => has(message, "optimizeDeps", "pre-bundling"),
     },
     {
         solution: {
             body: "Configure path aliases in your Vite config using the `resolve.alias` option to match your TypeScript path mappings.",
             header: "Path Resolution",
         },
-        test: (message: string) => message.includes("resolve.alias") || message.includes("Cannot find module"),
+        test: (message: string) => has(message, "resolve.alias", "Cannot find module"),
     },
     {
         solution: {
             body: "Server middleware and proxy settings should be configured in the `server` section of your Vite config.",
             header: "Server Configuration",
         },
-        test: (message: string) => message.includes("middleware") || message.includes("proxy"),
+        test: (message: string) => has(message, "middleware", "proxy"),
     },
     {
         solution: {
             body: "Check your plugin configuration in `vite.config.js/ts`. Make sure all required options are provided and options are correctly typed.",
             header: "Plugin Configuration",
         },
-        test: (message: string) => message.includes("plugin") && message.includes("configuration"),
+        test: (message: string) => has(message, "plugin", "configuration"),
     },
     {
         solution: {
             body: "Configure your build output directory using `build.outDir` in your Vite config. Make sure the directory is writable.",
             header: "Build Output Configuration",
         },
-        test: (message: string) => message.includes("build.outDir") || message.includes("dist"),
+        test: (message: string) => has(message, "build.outDir", "dist"),
+    },
+    // React
+    {
+        solution: {
+            body: [
+                "Client and server rendered markup differ.",
+                "",
+                "Checklist:",
+                "- A server/client branch `if (typeof window !== 'undefined')`.",
+                "- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.",
+                "- Date formatting in a user's locale which doesn't match the server.",
+                "- External changing data without sending a snapshot of it along with the HTML.",
+                "- Invalid HTML tag nesting.",
+                "",
+                "It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.",
+                "",
+                "https://react.dev/link/hydration-mismatch",
+            ].join("\n"),
+        },
+        test: (message: string) => has(message, "hydration failed", "did not match", "expected server html", "text content does not match"),
     },
 ] as const;
 
@@ -345,7 +371,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
             const message = error.message ?? "";
 
             // 1. Import resolution errors with file suggestions
-            if (message.includes("Failed to resolve import") || message.includes("Cannot resolve module")) {
+            if (has(message, "Failed to resolve import", "Cannot resolve module")) {
                 // Extract the import path from the error message
                 const importMatch = message.match(/Failed to resolve import ["']([^"']+)["']/);
                 const moduleMatch = message.match(/Cannot resolve module ["']([^"']+)["']/);
@@ -362,7 +388,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
                     }
 
                     // Check for common plugin issues
-                    if ([".jsx", ".tsx"].includes(language as string) || message.includes("react")) {
+                    if ([".jsx", ".tsx"].includes(language as string) || has(message, "react")) {
                         return {
                             body: "Install and configure the React plugin. Add `@vitejs/plugin-react` to your dependencies and include it in your Vite config.",
                             header: "Missing React Plugin",
@@ -379,7 +405,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
             }
 
             // Check relative import issues with file extension
-            if (message.includes("Cannot resolve") && (language === "typescript" || language === "javascript")) {
+            if (has(message, "Cannot resolve") && (language === "typescript" || language === "javascript")) {
                 const relativeImportMatch = message.match(/Cannot resolve ["'](\.\.?\/[^"']*)["']/);
 
                 if (relativeImportMatch) {

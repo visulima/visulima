@@ -112,7 +112,11 @@ export const transformerCompactLineOptions = (
         name: '@shikijs/transformers:compact-line-options',
         line(node, line) {
             const lineOption = lineOptions.find((o) => o.line === line);
-            if (lineOption?.classes) this.addClassToHast(node, lineOption.classes);
+        
+            if (lineOption?.classes) {
+                this.addClassToHast(node, lineOption.classes);
+            }
+        
             return node;
         },
     } as ShikiTransformer;

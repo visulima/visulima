@@ -45,6 +45,7 @@ ignoredBuiltDependencies:
   - '@anolilab/prettier-config'
 
 onlyBuiltDependencies:
+  - '@parcel/watcher'
   - '@pnpm/exe'
   - '@prisma/client'
   - '@prisma/engines'
