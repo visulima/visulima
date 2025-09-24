@@ -2,7 +2,7 @@
  * A modified version from `https://github.com/privatenumber/get-tsconfig/blob/develop/tests/specs/parse-tsconfig/extends/merges.spec.ts`
  *
  * MIT License
- * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 import { symlinkSync } from "node:fs";
 import { rm } from "node:fs/promises";
@@ -19,7 +19,6 @@ import { getTscTsconfig, parseVersion } from "../helpers";
 const typescriptVersion = parseVersion(tsVersion);
 
 if (!typescriptVersion) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     throw new Error(`Invalid TypeScript version format: ${tsVersion}`);
 }
 
@@ -51,7 +50,7 @@ describe("parse-tsconfig merges", () => {
         it("invalid json", async () => {
             expect.assertions(1);
 
-            writeFileSync(join(distribution, "tsconfig.empty.json"), 'require("fs")');
+            writeFileSync(join(distribution, "tsconfig.empty.json"), "require(\"fs\")");
             writeJsonSync(join(distribution, "tsconfig.json"), {
                 extends: "./tsconfig.empty.json",
             });
@@ -69,6 +68,7 @@ describe("parse-tsconfig merges", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -85,6 +85,7 @@ describe("parse-tsconfig merges", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -109,6 +110,7 @@ describe("parse-tsconfig merges", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -135,6 +137,7 @@ describe("parse-tsconfig merges", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -194,10 +197,10 @@ describe("parse-tsconfig merges", () => {
             include: ["../src/*"],
         });
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         symlinkSync(join(distribution, "symlink-source"), join(distribution, "project/symlink"));
 
         const expectedTsconfig = await getTscTsconfig(join(distribution, "project"));
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "project", "tsconfig.json"));
@@ -205,8 +208,8 @@ describe("parse-tsconfig merges", () => {
         expect({
             ...tsconfig,
             // See https://github.com/privatenumber/get-tsconfig/issues/73
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-            include: tsconfig.include?.map((includePath) => ("symlink/../" + includePath) as string),
+
+            include: tsconfig.include?.map((includePath) => `symlink/../${includePath}` as string),
         }).toStrictEqual(expectedTsconfig);
     });
 
@@ -225,6 +228,7 @@ describe("parse-tsconfig merges", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -250,6 +254,7 @@ describe("parse-tsconfig merges", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -270,6 +275,7 @@ describe("parse-tsconfig merges", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -291,9 +297,11 @@ describe("parse-tsconfig merges", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
 
@@ -311,9 +319,11 @@ describe("parse-tsconfig merges", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
 
@@ -334,6 +344,7 @@ describe("parse-tsconfig merges", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -354,10 +365,10 @@ describe("parse-tsconfig merges", () => {
             });
             writeFileSync(join(distribution, "project", "a.ts"), "");
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             symlinkSync(join(distribution, "symlink-source"), join(distribution, "project", "symlink"));
 
             const expectedTsconfig = await getTscTsconfig(join(distribution, "project"));
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "project", "tsconfig.json"));
@@ -389,6 +400,7 @@ describe("parse-tsconfig merges", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -419,6 +431,7 @@ describe("parse-tsconfig merges", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -444,6 +457,7 @@ describe("parse-tsconfig merges", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -468,13 +482,14 @@ describe("parse-tsconfig merges", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
         expect({
             ...parsedTsconfig,
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+
             include: parsedTsconfig.include?.map((includePath) => `configs/../${includePath}`),
         }).toStrictEqual(expectedTsconfig);
     });
@@ -504,12 +519,13 @@ describe("parse-tsconfig merges", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(join(distribution, "extended"));
+
             delete expectedTsconfig.files;
 
             const parsedTsconfig = readTsConfig(join(distribution, "extended", "tsconfig.json"));
 
             // @ts-expect-error Symbol is private
-            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
 
             /**
@@ -560,12 +576,13 @@ describe("parse-tsconfig merges", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(join(distribution, "extended"));
+
             delete expectedTsconfig.files;
 
             const parsedTsconfig = readTsConfig(join(distribution, "extended", "tsconfig.json"));
 
             // @ts-expect-error Symbol is private
-            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
 
             /**
@@ -595,12 +612,13 @@ describe("parse-tsconfig merges", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(join(distribution, "extended"));
+
             delete expectedTsconfig.files;
 
             const parsedTsconfig = readTsConfig(join(distribution, "extended", "tsconfig.json"));
 
             // @ts-expect-error Symbol is private
-            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
 
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);

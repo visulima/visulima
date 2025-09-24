@@ -2,7 +2,7 @@
  * A modified version of `resolveExtendsPath` from `https://github.com/privatenumber/get-tsconfig/blob/develop/src/parse-tsconfig/resolve-extends-path.ts`
  *
  * MIT License
- * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 import { statSync } from "node:fs";
 import Module from "node:module";
@@ -19,7 +19,6 @@ import type { Cache } from "../types";
 const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath, { buffer: false })) as unknown;
 
 const getPnpApi = () => {
-    // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error,@typescript-eslint/ban-ts-comment
     // @ts-ignore - This is a private API
     const { findPnpApi } = Module;
 
@@ -28,7 +27,7 @@ const getPnpApi = () => {
 };
 
 const resolveFromPackageJsonPath = (packageJsonPath: string, subpath: string, ignoreExports?: boolean, cache?: Cache<string>) => {
-    const cacheKey = "resolveFromPackageJsonPath:" + packageJsonPath + ":" + subpath + ":" + (ignoreExports ? "yes" : "no");
+    const cacheKey = `resolveFromPackageJsonPath:${packageJsonPath}:${subpath}:${ignoreExports ? "yes" : "no"}`;
 
     if (cache?.has(cacheKey)) {
         return cache.get(cacheKey);
@@ -79,7 +78,6 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
 
     if (isAbsolute(filePath)) {
         if (isAccessibleSync(filePath)) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (statSync(filePath).isFile()) {
                 return filePath;
             }
@@ -95,8 +93,8 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
     }
 
     const [orgOrName, ...remaining] = requestedPath.split("/");
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-    const packageName = ((orgOrName as string).startsWith("@") ? (orgOrName as string) + "/" + (remaining as string[]).shift() : orgOrName) as string;
+
+    const packageName = ((orgOrName as string).startsWith("@") ? `${orgOrName as string}/${(remaining as string[]).shift()}` : orgOrName) as string;
     const subpath = remaining.join("/");
 
     const pnpApi = getPnpApi();
@@ -149,7 +147,6 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
         },
     );
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (!packagePath || !statSync(packagePath).isDirectory()) {
         return undefined;
     }
@@ -164,7 +161,6 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
             return undefined;
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         if (resolvedPath && isAccessibleSync(resolvedPath) && statSync(resolvedPath).isFile()) {
             return resolvedPath;
         }
@@ -174,7 +170,7 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
     const jsonExtension = fullPackagePath.endsWith(".json");
 
     if (!jsonExtension) {
-        const fullPackagePathWithJson = fullPackagePath + ".json";
+        const fullPackagePathWithJson = `${fullPackagePath}.json`;
 
         if (isAccessibleSync(fullPackagePathWithJson)) {
             return fullPackagePathWithJson;
@@ -185,7 +181,6 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
         return undefined;
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (statSync(fullPackagePath).isDirectory()) {
         const fullPackageJsonPath = join(fullPackagePath, PACKAGE_JSON);
 

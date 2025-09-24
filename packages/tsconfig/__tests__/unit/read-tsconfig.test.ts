@@ -2,7 +2,7 @@
  * A modified version from `https://github.com/privatenumber/get-tsconfig/blob/develop/tests/specs/parse-tsconfig/parses.spec.ts`
  *
  * MIT License
- * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 import { rm } from "node:fs/promises";
 
@@ -18,7 +18,6 @@ import { getTscTsconfig, parseVersion } from "../helpers";
 const typescriptVersion = parseVersion(tsVersion);
 
 if (!typescriptVersion) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     throw new Error(`Invalid TypeScript version format: ${tsVersion}`);
 }
 
@@ -48,9 +47,11 @@ describe("parses tsconfig", () => {
             writeFileSync(join(distribution, "tsconfig.json"), "");
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
 
@@ -69,7 +70,7 @@ describe("parses tsconfig", () => {
         it("json non-object", async () => {
             expect.assertions(1);
 
-            writeFileSync(join(distribution, "tsconfig.json"), '"asdf"');
+            writeFileSync(join(distribution, "tsconfig.json"), "\"asdf\"");
 
             expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("Failed to parse tsconfig at");
         });
@@ -80,9 +81,11 @@ describe("parses tsconfig", () => {
             writeJsonSync(join(distribution, "tsconfig.json"), {});
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
     });
@@ -112,6 +115,24 @@ describe("parses tsconfig", () => {
         expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
     });
 
+    it("implicit config", async () => {
+        expect.assertions(1);
+
+        writeJsonSync(join(distribution, "tsconfig.json"), {
+            compilerOptions: {
+                module: "preserve",
+                target: "es2022",
+            },
+        });
+
+        const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
+        const expectedTsconfig = await getTscTsconfig(distribution);
+
+        delete expectedTsconfig.files;
+
+        expect(expectedTsconfig).toStrictEqual(parsedTsconfig);
+    });
+
     describe("baseUrl", () => {
         it("relative path", async () => {
             expect.assertions(1);
@@ -125,6 +146,7 @@ describe("parses tsconfig", () => {
             const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
@@ -142,6 +164,7 @@ describe("parses tsconfig", () => {
             const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
@@ -203,6 +226,7 @@ describe("parses tsconfig", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -232,6 +256,7 @@ describe("parses tsconfig", () => {
             process.chdir(fixturePath);
 
             const expectedTsconfig = await getTscTsconfig(".");
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig("./tsconfig.json", {
@@ -239,7 +264,6 @@ describe("parses tsconfig", () => {
             });
 
             // @ts-expect-error - We're testing a private property
-            // eslint-disable-next-line security/detect-object-injection
             delete tsconfig?.compilerOptions?.[implicitBaseUrlSymbol];
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);

@@ -45,10 +45,10 @@ describe("tsconfig", () => {
                     },
                 );
             }
+
             const tsconfigFilePath = join(distribution, "tsconfig.json");
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            expect(existsSync(tsconfigFilePath)).toBeTruthy();
+            expect(existsSync(tsconfigFilePath)).toBe(true);
         });
     });
 });

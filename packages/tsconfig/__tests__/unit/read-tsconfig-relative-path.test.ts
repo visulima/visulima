@@ -2,7 +2,7 @@
  * A modified version from `https://github.com/privatenumber/get-tsconfig/blob/develop/tests/specs/parse-tsconfig/extends/resolves/relative-path.spec.ts`
  *
  * MIT License
- * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 import { rm } from "node:fs/promises";
 
@@ -18,7 +18,6 @@ import { getTscTsconfig, parseVersion } from "../helpers";
 const typescriptVersion = parseVersion(tsVersion);
 
 if (!typescriptVersion) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     throw new Error(`Invalid TypeScript version format: ${tsVersion}`);
 }
 
@@ -52,6 +51,7 @@ describe("relative path", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -82,6 +82,7 @@ describe("relative path", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -106,6 +107,7 @@ describe("relative path", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -187,6 +189,7 @@ describe("relative path", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));

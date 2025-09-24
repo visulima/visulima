@@ -1,8 +1,10 @@
+/* eslint-disable unicorn/no-null */
+
 /**
  * A modified version from `https://github.com/privatenumber/get-tsconfig/blob/develop/tests/specs/parse-tsconfig/extends/resolves/node-modules.spec.ts`
  *
  * MIT License
- * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -21,7 +23,6 @@ import { esc, getTscTsconfig, parseVersion } from "../helpers";
 const typescriptVersion = parseVersion(tsVersion);
 
 if (!typescriptVersion) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     throw new Error(`Invalid TypeScript version format: ${tsVersion}`);
 }
 
@@ -68,7 +69,7 @@ describe("node_modules", () => {
         it("implicit tsconfig.json", async () => {
             expect.assertions(1);
 
-            writeFileSync(join(distribution, "node_modules", "dep", "index.js"), 'require("fs")');
+            writeFileSync(join(distribution, "node_modules", "dep", "index.js"), "require(\"fs\")");
             writeJsonSync(join(distribution, "node_modules", "dep", "package.json"), {
                 main: "./index.js",
             });
@@ -83,6 +84,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -104,6 +106,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -131,6 +134,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -152,6 +156,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -178,6 +183,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -204,6 +210,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -227,6 +234,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -248,6 +256,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -273,6 +282,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
@@ -315,7 +325,7 @@ describe("node_modules", () => {
         });
     });
 
-    it('directory named "tsconfig.json"', async () => {
+    it("directory named \"tsconfig.json\"", async () => {
         expect.assertions(1);
 
         writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.json", "tsconfig.json"), {
@@ -329,6 +339,7 @@ describe("node_modules", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -353,6 +364,7 @@ describe("node_modules", () => {
         });
 
         const expectedTsconfig = await getTscTsconfig(fixturePath);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(fixturePath, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -385,6 +397,7 @@ describe("node_modules", () => {
             process.chdir(fixturePath);
 
             const expectedTsconfig = await getTscTsconfig(".");
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig("./tsconfig.json");
@@ -419,6 +432,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -510,6 +524,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -540,6 +555,7 @@ describe("node_modules", () => {
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
+
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -606,6 +622,7 @@ describe("node_modules", () => {
                 });
 
                 const expectedTsconfig = await getTscTsconfig(distribution);
+
                 delete expectedTsconfig.files;
 
                 const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
