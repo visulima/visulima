@@ -17,7 +17,7 @@ const removeStyleAndDataAttributes = (inputString: string) => {
         .replaceAll("<!--$?-->", "")
         .replaceAll("<!--/$-->", "");
 
-    resultString = resultString.replaceAll(styleRegex, (match, styleValue) => {
+    resultString = resultString.replaceAll(styleRegex, (_, styleValue) => {
         // Add a semicolon at the end of the style attribute if it doesn't already exist and remove spacing to remove false positives
         const updatedStyle = styleValue.trim().endsWith(";") ? styleValue : `${styleValue};`;
 

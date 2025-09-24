@@ -1,4 +1,5 @@
-import type { Element, MetaNode, ShikiTransformer } from "shiki/types";
+import type { ShikiTransformer } from "shiki/types";
+import type { Element, ElementContent, ElementContentMap } from 'hast';
 
 type Options = {
     classActivePre?: string;
@@ -10,10 +11,10 @@ const shikiDiffTransformer = (options: Options = {}): ShikiTransformer => {
     const { classActivePre = "has-diff", classLineAdd = "diff add", classLineRemove = "diff remove" } = options;
 
     return {
-        code(node: MetaNode) {
+        code(node: Element) {
             this.addClassToHast(this.pre, classActivePre);
 
-            const lines = node.children.filter((nodeChild: Element) => nodeChild.type === "element") as Element[];
+            const lines = node.children.filter((nodeChild: ElementContent) => nodeChild.type === "element") as Element[];
 
             lines.forEach((line) => {
                 for (const child of line.children as Element[]) {
@@ -21,7 +22,7 @@ const shikiDiffTransformer = (options: Options = {}): ShikiTransformer => {
                         continue;
                     }
 
-                    const text = child.children[0];
+                    const text = child.children[0] as ElementContentMap["text"];
 
                     if (text.type !== "text") {
                         continue;
