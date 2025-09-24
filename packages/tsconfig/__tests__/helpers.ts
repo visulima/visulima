@@ -12,7 +12,7 @@ const tscPath = resolve("node_modules/.bin/tsc");
  * Escape the slash `\` in ESC-symbol.
  * Use it to show by an error the received ESC sequence string in console output.
  */
-export const esc = (string_: string): string => string_.replaceAll("", "\\x1b");
+export const esc = (string_: string): string => string_.replaceAll("", String.raw`\x1b`);
 
 /**
  * Return output of javascript file.
@@ -29,10 +29,10 @@ export const execScriptSync = (file: string, flags: string[] = []): string => {
  * Copy of the function from the package `get-tsconfig`.
  *
  * MIT License
- * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 export const getTscTsconfig = async (cwd: string, filePath?: string): Promise<TsConfigJson> => {
-    const output = await execa(tscPath, ["--showConfig", ...(filePath ? ["--project", filePath] : [])], { cwd });
+    const output = await execa(tscPath, ["--showConfig", ...filePath ? ["--project", filePath] : []], { cwd });
 
     return JSON.parse(output.stdout) as TsConfigJson;
 };
@@ -51,6 +51,5 @@ export const parseVersion = (version: string): Options["tscCompatible"] | undefi
         return undefined;
     }
 
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `${major}.${minor}` as Options["tscCompatible"];
 };

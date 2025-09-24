@@ -2,7 +2,7 @@
  * A modified version from `https://github.com/privatenumber/get-tsconfig/blob/master/tests/specs/parse-tsconfig/extends/resolves/symbolic-link.spec.ts`
  *
  * MIT License
- * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 import { rm, symlink } from "node:fs/promises";
 import path from "node:path";
@@ -19,12 +19,12 @@ import { getTscTsconfig, parseVersion } from "../helpers";
 const typescriptVersion = parseVersion(tsVersion);
 
 if (!typescriptVersion) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     throw new Error(`Invalid TypeScript version format: ${tsVersion}`);
 }
 
 const validate = async (directoryPath: string) => {
     const expectedTsconfig = await getTscTsconfig(directoryPath);
+
     delete expectedTsconfig.files;
 
     const tsconfig = readTsConfig(path.join(directoryPath, "tsconfig.json"), { tscCompatible: typescriptVersion });
@@ -62,7 +62,6 @@ describe("symbolic link", () => {
             },
         });
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await symlink(join(distribution, "tsconfig.symlink-source.json"), join(distribution, "tsconfig.symlink.json"));
 
         await validate(distribution);
@@ -85,7 +84,6 @@ describe("symbolic link", () => {
             extends: "./symlink/tsconfig.json",
         });
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await symlink(join(distribution, "symlink-source"), join(distribution, "symlink"));
 
         await validate(distribution);
@@ -108,7 +106,6 @@ describe("symbolic link", () => {
             extends: "./tsconfig.base.json",
         });
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await symlink(join(distribution, "symlink-source", "tsconfig.main.json"), join(distribution, "project", "tsconfig.json"));
 
         await validate(join(distribution, "project"));
@@ -137,7 +134,6 @@ describe("symbolic link", () => {
             extends: "../tsconfig.base.json",
         });
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await symlink(join(distribution, "symlink-source"), join(distribution, "project", "symlink"));
 
         await validate(join(distribution, "project"));
