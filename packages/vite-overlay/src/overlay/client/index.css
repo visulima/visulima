@@ -250,10 +250,6 @@ textarea:focus-visible,
     @apply relative;
 }
 
-.shiki.has-diff .diff span {
-    @apply my-0.5 px-2;
-}
-
 .shiki.has-diff .diff.add span {
     @apply bg-green-500/15;
 }

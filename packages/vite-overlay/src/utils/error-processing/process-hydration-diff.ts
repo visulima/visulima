@@ -56,7 +56,11 @@ const processHydrationDiff = (error: Error): string | undefined => {
         }
     }
 
-    const indexOfFirstDiff = transformedDiffContent.findIndex((line) => line.startsWith("[!code ++]"));
+    let indexOfFirstDiff = transformedDiffContent.findIndex((line) => line.startsWith("[!code ++]"));
+
+    if (indexOfFirstDiff === -1) {
+        indexOfFirstDiff = transformedDiffContent.findIndex((line) => line.startsWith("[!code --]"));
+    }
 
     if (indexOfFirstDiff === -1) {
         return undefined;
