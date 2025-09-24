@@ -928,18 +928,8 @@ importers:
         specifier: 1.0.35
         version: 1.0.35(yaml@2.8.1)
       '@visulima/pail':
-<<<<<<< HEAD
-<<<<<<< HEAD
         specifier: 2.1.29
         version: 2.1.29(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
-=======
-        specifier: 2.1.28
-        version: 2.1.28(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
->>>>>>> 6d5fc782 (feat(vite-overlay): improve react hydration error handling)
-=======
-        specifier: 2.1.29
-        version: 2.1.29(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
->>>>>>> 96457efe (chore(pnpm-lock): update package versions for consistency and compatibility)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -4197,21 +4187,8 @@ importers:
         specifier: 2.0.3
         version: 2.0.3
       '@visulima/error':
-<<<<<<< HEAD
-<<<<<<< HEAD
         specifier: 4.6.2
         version: 4.6.2(ai@5.0.34(zod@3.25.76))
-      dompurify:
-        specifier: ^3.2.7
-        version: 3.2.7
-=======
-        specifier: 4.6.1
-        version: 4.6.1(ai@5.0.34(zod@3.25.76))
->>>>>>> 8f131c59 (chore(vite-overlay): remove unused dependencies from package.json and pnpm-lock.yaml)
-=======
-        specifier: 4.6.2
-        version: 4.6.2(ai@5.0.34(zod@3.25.76))
->>>>>>> 96457efe (chore(pnpm-lock): update package versions for consistency and compatibility)
       fastest-levenshtein:
         specifier: ^1.0.16
         version: 1.0.16
@@ -12135,8 +12112,8 @@ packages:
       ai:
         optional: true
 
-  '@visulima/error@4.6.2':
-    resolution: {integrity: sha512-GUl2nFMK+TgmhxabMzdZMjr6+YgE7ttwNJFcKZ26Z4Rh68LzrmhksD+zxvLqs4W2ik+Xi5Sd7hQ2BKmVZGbfyQ==}
+  '@visulima/error@4.6.1':
+    resolution: {integrity: sha512-dkObYJfyytzCXyTgOa9zXsvHE3Fn4hglRbE4wQqQ+SKRs1xMCuOJzbJ5UNNNK5I5vxPlv15NzibzSwOZq9Nxqg==}
     engines: {node: '>=18.0.0 <=24.x'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -12171,8 +12148,8 @@ packages:
     resolution: {integrity: sha512-q+rkRobMKg6sPhza9R37GRfJso2CdhxCrnPo+LbH7XcCO70kGhRsgvqwY3w8Dcvs2ybgJQ0zSS0DgxLKf0qBlg==}
     engines: {node: '>=18.0.0 <=23.x'}
 
-  '@visulima/find-cache-dir@1.0.35':
-    resolution: {integrity: sha512-z686U0T/l+ZizdxLmvIxdS1YiP60bhsz3+U6hLxHgMhaHABgfsXnJUvExwovxg/us473CTtxA/eAImdNAruTAg==}
+  '@visulima/find-cache-dir@1.0.34':
+    resolution: {integrity: sha512-eQXTTD+C9UBVRoUoytlVM0SJK+MsUFemXAHJFuoyLVcMFwsFKYrKum9VxRstQszLreSavzDJ71w5ZfY4sX/h2A==}
     engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/find-cache-dir@1.0.35':
@@ -12239,8 +12216,8 @@ packages:
       yaml:
         optional: true
 
-  '@visulima/fs@3.1.9':
-    resolution: {integrity: sha512-0D9iREfekQmjAgOq+L3CU9TgpeunIwQ4BISq0vxEZuv2CjOLqqHGlkgFRlEgh2pBrHO3azF0OUGbPoK/1QmCUQ==}
+  '@visulima/fs@3.1.8':
+    resolution: {integrity: sha512-LQLoX/G/9Tv6YUgiPoC1DZ2O8NGJuVFIuGYwvWI07BKZX2idOu9UOeI9Ozr84+k8B6Wdwo/g1gEkDMssInBp0w==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -13085,8 +13062,8 @@ packages:
       rotating-file-stream:
         optional: true
 
-  '@visulima/pail@2.1.29':
-    resolution: {integrity: sha512-g8iC7QEeZ0NjEcoMBX9voUFIbf1/cXNJl9WK9vlSNRvW0x2MznfdMpfP3H5YY8HWyXRRPBslNRnvyl7dhwwxIA==}
+  '@visulima/pail@2.1.28':
+    resolution: {integrity: sha512-qzUR9DXqvT0Mwcs/lanAAzcBRLajZc3t/FmbLvL5Ua+x+DBsfGOMn+zyuLTBDu7/gBR35ftLJuCc9szFDVrgkw==}
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -13452,7 +13429,7 @@ packages:
     resolution: {integrity: sha512-tmyFgixPZCx2+e6VO9TNITWcCQl8+Nl/E8YbAyPVv85QCc7/A3JrdfG2A8gIzvVhWuzMOVrFW1aReaNxrI6tbw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
-      vite: '>=7.1.5'
+      vite: '>=5.4.20'
 
   '@vitejs/plugin-vue@6.0.1':
     resolution: {integrity: sha512-+MaE752hU0wfPFJEUAIxqw18+20euHHdxVtMvbFcOEpjEyfqXH/5DCoTHiVJ0J29EhTJdoTkjEv5YBKU9dnoTw==}
@@ -13544,7 +13521,7 @@ packages:
     resolution: {integrity: sha512-46ryTE9RZO/rfDd7pEqFl7etuyzekzEhUbTW3BvmeO/BcCMEgq59BKhek3dXDWgAj4oMK6OZi+vRr1wPW6qjEQ==}
     peerDependencies:
       msw: ^2.4.9
-      vite: '>=7.1.5'
+      vite: '>=5.4.20'
     peerDependenciesMeta:
       msw:
         optional: true
@@ -24541,7 +24518,7 @@ packages:
   vite-hot-client@2.1.0:
     resolution: {integrity: sha512-7SpgZmU7R+dDnSmvXE1mfDtnHLHQSisdySVR7lO8ceAXvM0otZeuQQ6C8LrS5d/aYyP/QZ0hI0L+dIPrm4YlFQ==}
     peerDependencies:
-      vite: '>=7.1.5'
+      vite: '>=5.4.20'
 
   vite-node@1.6.1:
     resolution: {integrity: sha512-YAXkfvGtuTzwWbDSACdJSg4A4DZiAqckWe90Zapc/sEX3XvHcw1NdurM/6od8J207tSDqNbSsgdCacBgvJKFuA==}
@@ -24597,7 +24574,7 @@ packages:
   vite-tsconfig-paths@5.1.4:
     resolution: {integrity: sha512-cYj0LRuLV2c2sMqhqhGpaO3LretdtMn/BVX4cPLanIZuwwrkVl+lK84E/miEXkCHWXuq65rhNN4rXsBcOB3S4w==}
     peerDependencies:
-      vite: '>=7.1.5'
+      vite: '>=5.4.20'
     peerDependenciesMeta:
       vite:
         optional: true
@@ -24685,7 +24662,7 @@ packages:
   vitefu@1.1.1:
     resolution: {integrity: sha512-B/Fegf3i8zh0yFbpzZ21amWzHmuNlLlmJT6n7bu5e+pCHUKQIfXSYokrqOBGEMMe9UG2sostKQF9mml/vYaWJQ==}
     peerDependencies:
-      vite: '>=7.1.5'
+      vite: '>=5.4.20'
     peerDependenciesMeta:
       vite:
         optional: true
@@ -26154,17 +26131,6 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-<<<<<<< HEAD
-  '@anolilab/semantic-release-clean-package-json@3.0.3(yaml@2.8.1)':
-    dependencies:
-      '@semantic-release/error': 4.0.0
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-    transitivePeerDependencies:
-      - yaml
-
-=======
->>>>>>> 45726555 (fix(vite-overlay): update dependency versions in pnpm-lock.yaml)
   '@anolilab/semantic-release-clean-package-json@3.0.4(yaml@2.8.1)':
     dependencies:
       '@semantic-release/error': 4.0.0
@@ -26177,17 +26143,8 @@ snapshots:
     dependencies:
       '@anolilab/rc': 1.1.7(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
-<<<<<<< HEAD
-<<<<<<< HEAD
       '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@18.19.71)(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
->>>>>>> 96457efe (chore(pnpm-lock): update package versions for consistency and compatibility)
       '@visulima/package': 3.5.11(@types/node@18.19.71)(yaml@2.8.1)
->>>>>>> 45726555 (fix(vite-overlay): update dependency versions in pnpm-lock.yaml)
       '@visulima/path': 1.4.0
       execa: 9.6.0
       ini: 5.0.0
@@ -26202,82 +26159,24 @@ snapshots:
     dependencies:
       '@anolilab/rc': 1.1.7(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
-<<<<<<< HEAD
-<<<<<<< HEAD
       '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@22.15.29)(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/package': 3.5.11(@types/node@22.15.29)(yaml@2.8.1)
->>>>>>> 96457efe (chore(pnpm-lock): update package versions for consistency and compatibility)
-      '@visulima/path': 1.4.0
-      execa: 9.6.0
-      ini: 5.0.0
-      normalize-url: 8.0.2
-      registry-auth-token: 5.1.0
-      semver: 7.7.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
-  '@anolilab/semantic-release-pnpm@2.0.3(@types/node@24.3.1)(yaml@2.8.1)':
-    dependencies:
-      '@anolilab/rc': 2.0.3(yaml@2.8.1)
-      '@semantic-release/error': 4.0.0
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.3.1)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      execa: 9.6.0
-      ini: 5.0.0
-      normalize-url: 8.0.2
-=======
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/package': 3.5.11(@types/node@22.15.29)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       execa: 9.6.0
       ini: 5.0.0
       normalize-url: 8.1.0
->>>>>>> 45726555 (fix(vite-overlay): update dependency versions in pnpm-lock.yaml)
       registry-auth-token: 5.1.0
       semver: 7.7.2
     transitivePeerDependencies:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
-  '@anolilab/semantic-release-pnpm@2.0.3(@types/node@24.5.1)(yaml@2.8.1)':
-    dependencies:
-      '@anolilab/rc': 2.0.3(yaml@2.8.1)
-      '@semantic-release/error': 4.0.0
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.5.1)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      execa: 9.6.0
-      ini: 5.0.0
-      normalize-url: 8.0.2
-      registry-auth-token: 5.1.0
-      semver: 7.7.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
-=======
->>>>>>> 6d5fc782 (feat(vite-overlay): improve react hydration error handling)
   '@anolilab/semantic-release-pnpm@2.0.3(@types/node@24.5.2)(yaml@2.8.1)':
     dependencies:
       '@anolilab/rc': 2.0.3(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
-<<<<<<< HEAD
-<<<<<<< HEAD
       '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
->>>>>>> 96457efe (chore(pnpm-lock): update package versions for consistency and compatibility)
       '@visulima/package': 3.5.11(@types/node@24.5.2)(yaml@2.8.1)
->>>>>>> 45726555 (fix(vite-overlay): update dependency versions in pnpm-lock.yaml)
       '@visulima/path': 1.4.0
       execa: 9.6.0
       ini: 5.0.0
@@ -35619,7 +35518,7 @@ snapshots:
     optionalDependencies:
       ai: 5.0.34(zod@3.25.76)
 
-  '@visulima/error@4.6.2(ai@5.0.34(zod@3.25.76))':
+  '@visulima/error@4.6.1(ai@5.0.34(zod@3.25.76))':
     optionalDependencies:
       ai: 5.0.34(zod@3.25.76)
 
@@ -35655,9 +35554,9 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/find-cache-dir@1.0.35(yaml@2.8.1)':
+  '@visulima/find-cache-dir@1.0.34(yaml@2.8.1)':
     dependencies:
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/path': 1.4.0
     transitivePeerDependencies:
       - yaml
@@ -35703,7 +35602,7 @@ snapshots:
     optionalDependencies:
       yaml: 2.8.1
 
-  '@visulima/fs@3.1.9(yaml@2.8.1)':
+  '@visulima/fs@3.1.8(yaml@2.8.1)':
     dependencies:
       '@visulima/path': 1.4.0
     optionalDependencies:
@@ -35739,11 +35638,7 @@ snapshots:
       '@visulima/fs': 3.1.9(yaml@2.8.1)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
-<<<<<<< HEAD
-      publint: 0.3.12
-=======
       publint: 0.3.13
->>>>>>> 96457efe (chore(pnpm-lock): update package versions for consistency and compatibility)
       read-pkg-up: 7.0.1
       yaml: 2.8.1
     optionalDependencies:
@@ -37182,14 +37077,10 @@ snapshots:
     transitivePeerDependencies:
       - ai
 
-<<<<<<< HEAD
-  '@visulima/pail@2.1.29(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)':
-=======
   '@visulima/pail@2.1.28(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)':
->>>>>>> 6d5fc782 (feat(vite-overlay): improve react hydration error handling)
     dependencies:
       '@visulima/colorize': 1.4.23
-      '@visulima/error': 4.6.2(ai@5.0.34(zod@3.25.76))
+      '@visulima/error': 4.6.1(ai@5.0.34(zod@3.25.76))
       '@visulima/fmt': 1.1.15
       '@visulima/inspector': 1.0.24
       safe-stable-stringify: 2.5.0
@@ -37236,17 +37127,8 @@ snapshots:
   '@visulima/rollup-plugin-css@1.0.0-alpha.3(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.3.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.0)(yaml@2.8.1)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.50.0)
-<<<<<<< HEAD
-<<<<<<< HEAD
       '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.3.1)(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
->>>>>>> 96457efe (chore(pnpm-lock): update package versions for consistency and compatibility)
       '@visulima/package': 3.5.11(@types/node@24.3.1)(yaml@2.8.1)
->>>>>>> 45726555 (fix(vite-overlay): update dependency versions in pnpm-lock.yaml)
       '@visulima/packem-share': 1.0.0-alpha.9(@types/node@24.3.1)(rollup@4.50.0)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       mlly: 1.8.0
@@ -37277,17 +37159,8 @@ snapshots:
   '@visulima/rollup-plugin-css@1.0.0-alpha.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.0)(yaml@2.8.1)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.50.0)
-<<<<<<< HEAD
-<<<<<<< HEAD
       '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
->>>>>>> 96457efe (chore(pnpm-lock): update package versions for consistency and compatibility)
       '@visulima/package': 3.5.11(@types/node@24.5.2)(yaml@2.8.1)
->>>>>>> 45726555 (fix(vite-overlay): update dependency versions in pnpm-lock.yaml)
       '@visulima/packem-share': 1.0.0-alpha.10(@types/node@24.5.2)(rollup@4.50.0)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       mlly: 1.8.0
@@ -37315,56 +37188,11 @@ snapshots:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
-  '@visulima/rollup-plugin-css@1.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.2)(yaml@2.8.1)':
-    dependencies:
-      '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
-<<<<<<< HEAD
-<<<<<<< HEAD
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.5.1)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.11(@types/node@24.5.1)(rollup@4.50.2)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      mlly: 1.8.0
-      oxc-resolver: 11.8.2
-      p-queue: 8.1.1
-      rollup: 4.50.2
-      source-map-js: 1.2.1
-    optionalDependencies:
-      '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
-      '@csstools/css-tokenizer': 3.0.4
-      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.5.6)
-      '@tailwindcss/node': 4.1.13
-      '@tailwindcss/oxide': 4.1.13
-      cssnano: 7.1.1(postcss@8.5.6)
-      icss-utils: 5.1.0(postcss@8.5.6)
-      lightningcss: 1.30.1
-      postcss: 8.5.6
-      postcss-load-config: 6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
-      postcss-modules-scope: 3.2.1(postcss@8.5.6)
-      postcss-modules-values: 4.0.0(postcss@8.5.6)
-      postcss-value-parser: 4.2.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
-  '@visulima/rollup-plugin-css@1.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.2)(yaml@2.8.1)':
-=======
   '@visulima/rollup-plugin-css@1.0.0-alpha.5(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.50.2)(yaml@2.8.1)':
->>>>>>> 6d5fc782 (feat(vite-overlay): improve react hydration error handling)
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.50.2)
       '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-=======
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
->>>>>>> 96457efe (chore(pnpm-lock): update package versions for consistency and compatibility)
       '@visulima/package': 3.5.11(@types/node@24.5.2)(yaml@2.8.1)
->>>>>>> 45726555 (fix(vite-overlay): update dependency versions in pnpm-lock.yaml)
       '@visulima/packem-share': 1.0.0-alpha.11(@types/node@24.5.2)(rollup@4.50.2)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       mlly: 1.8.0
