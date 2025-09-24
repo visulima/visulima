@@ -1,3 +1,9 @@
+## @visulima/vite-overlay [1.1.0](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.0.2...@visulima/vite-overlay@1.1.0) (2025-09-24)
+
+### Features
+
+* **vite-overlay:** improve react hydration error handling ([#526](https://github.com/visulima/visulima/issues/526)) ([d82e0ad](https://github.com/visulima/visulima/commit/d82e0ad94bafc4c23af0e5d4745c3a23a8d4746f))
+
 ## @visulima/vite-overlay [1.0.2](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.0.1...@visulima/vite-overlay@1.0.2) (2025-09-23)
 
 
