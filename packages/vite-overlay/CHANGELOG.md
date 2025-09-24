@@ -1,3 +1,9 @@
+## @visulima/vite-overlay [1.1.1](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.1.0...@visulima/vite-overlay@1.1.1) (2025-09-24)
+
+### Bug Fixes
+
+* **vite-overlay:** improve error processing logic ([b03dffc](https://github.com/visulima/visulima/commit/b03dffc589b7aa6d26528ac001cd54d50cdbf7e8))
+
 ## @visulima/vite-overlay [1.1.0](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.0.2...@visulima/vite-overlay@1.1.0) (2025-09-24)
 
 ### Features
