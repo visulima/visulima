@@ -1,3 +1,18 @@
+## @visulima/humanizer [1.3.0](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.2.2...@visulima/humanizer@1.3.0) (2025-09-24)
+
+### Features
+
+* **humanizer:** Added new language support for Serbian (Latin) in `src/language/sr_Latn.ts`. ([b7e0413](https://github.com/visulima/visulima/commit/b7e0413eb98707a4030415fc75096572835e7092))
+
+### Bug Fixes
+
+* **humanizer:** restore 'require' exports for types and default files in package.json ([be263a7](https://github.com/visulima/visulima/commit/be263a7649b852dd62cc40f9f0cf0370416f1f84))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
 ## @visulima/humanizer [1.2.2](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.2.1...@visulima/humanizer@1.2.2) (2025-06-04)
 
 
