@@ -41,7 +41,7 @@ const generateOverlayTemplate = (showBallonButton: boolean): string => {
     const editorOptions = generateEditorOptions();
 
     return `<style>${styleCss}</style>
-<div id="__v_o__root" class="fixed inset-0 z-0 flex flex-col items-center pt-[10vh] px-[15px] hidden">
+<div id="__v_o__root" class="fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px] hidden">
     <div id="__v_o__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
     <div id="__v_o__notch" class="relative z-[2] flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
         <div class="error-overlay-notch relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pr-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tl-[var(--ono-v-dialog-radius)]" data-side="left">
