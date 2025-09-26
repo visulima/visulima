@@ -118,7 +118,7 @@
         "conventional-changelog-conventionalcommits": "9.0.0",
         "esbuild": "^0.25.5",
         "eslint": "9.28.0",
-        "jiti": "2.4.2",
+        "jiti": "2.6.0",
         "publint": "^0.3.12",
         "rimraf": "^6.0.1",
         "secretlint": "9.3.3",
@@ -126,7 +126,7 @@
         "terminal-size": "4.0.0",
         "type-fest": "^4.41.0",
         "typedoc": "0.28.5",
-        "typedoc-plugin-markdown": "4.6.4",
+        "typedoc-plugin-markdown": "4.9.0",
         "typedoc-plugin-rename-defaults": "0.7.3",
         "typescript": "^5.8.3",
         "vitest": "^3.2.0"
