@@ -200,7 +200,7 @@
         "@anolilab/semantic-release-preset": "^10.0.5",
         "@arethetypeswrong/cli": "^0.18.1",
         "@babel/core": "^7.27.1",
-        "@rushstack/eslint-plugin-security": "^0.10.0",
+        "@rushstack/eslint-plugin-security": "^0.11.0",
         "@types/node": "18.19.71",
         "@visulima/error": "4.6.2",
         "@visulima/packem": "1.19.1",
@@ -226,14 +226,14 @@
         "tempy": "^3.1.0",
         "type-fest": "^4.41.0",
         "typedoc": "0.28.4",
-        "typedoc-plugin-markdown": "4.6.3",
+        "typedoc-plugin-markdown": "4.9.0",
         "typedoc-plugin-rename-defaults": "0.7.3",
         "typescript": "5.8.3",
         "vitest": "^3.1.4",
         "yaml": "^2.8.0"
     },
     "peerDependencies": {
-        "yaml": "^2.7.0"
+        "yaml": "^2.8.1"
     },
     "peerDependenciesMeta": {
         "yaml": {
