@@ -105,7 +105,7 @@
         "@vitest/ui": "^3.2.0",
         "esbuild": "0.25.5",
         "eslint": "9.28.0",
-        "eslint-plugin-playwright": "2.2.0",
+        "eslint-plugin-playwright": "2.2.2",
         "playwright": "^1.52.0",
         "publint": "^0.3.12",
         "rimraf": "6.0.1",
