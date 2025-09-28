@@ -3,7 +3,7 @@ import type { IncomingMessage } from "node:http";
 import { join } from "node:path";
 import { pipeline } from "node:stream";
 
-import { walk } from "@visulima/readdir";
+import { walk } from "@visulima/fs";
 import etag from "etag";
 
 import type { HttpError } from "../../utils";

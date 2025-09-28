@@ -1,6 +1,7 @@
+import { rm } from "node:fs/promises";
 import {
-    afterAll, beforeAll, describe, expect, it, jest,
-} from "@jest/globals";
+    afterAll, beforeAll, describe, expect, it,
+} from "vitest";
 import { join } from "node:path";
 import supertest from "supertest";
 
@@ -10,7 +11,6 @@ import {
     metadata, storageOptions, testfile, testRoot,
 } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
-import { rm } from "node:fs/promises";
 
 jest.mock("fs/promises", () => {
     // eslint-disable-next-line unicorn/prefer-module
@@ -20,11 +20,7 @@ jest.mock("fs/promises", () => {
     // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
-    // eslint-disable-next-line unicorn/prefer-module
-    return {
-        __esModule: true,
-        ...fs.promises,
-    };
+    return fs.promises;
 });
 
 jest.mock("fs", () => {
@@ -35,39 +31,25 @@ jest.mock("fs", () => {
     // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
-    // eslint-disable-next-line unicorn/prefer-module
-    return {
-        __esModule: true,
-        ...fs,
-    };
+    return fs;
 });
 
-// eslint-disable-next-line radar/no-identical-functions
-jest.mock("node:fs", () => {
-    // eslint-disable-next-line unicorn/prefer-module
-    const process = require("node:process");
-    process.chdir("/");
-
-    // eslint-disable-next-line unicorn/prefer-module
-    const { fs } = require("memfs");
-
-    // eslint-disable-next-line unicorn/prefer-module
-    return {
-        __esModule: true,
-        ...fs,
-    };
-});
-
-describe("Express Multipart", () => {
+describe("HTTP Multipart", () => {
     let response: supertest.Response;
     let uri = "";
 
-    const basePath = "/multipart";
-    const directory = join(testRoot, "multipart");
+    const basePath = "/http-multipart";
+    const directory = join(testRoot, "http-multipart");
     const options = { ...storageOptions, directory };
     const multipart = new Multipart({ storage: new DiskStorage(options) });
 
-    app.use(basePath, multipart.handle);
+    app.use(basePath, async (req, res) => {
+        const handler = await import("../../../src/http/multipart");
+        const httpMultipartHandler = handler.default;
+
+        const multipartHandler = httpMultipartHandler({ storage: new DiskStorage(options) });
+        await multipartHandler(req, res);
+    });
 
     function create(): supertest.Test {
         return supertest(app).post(basePath).attach("file", testfile.asBuffer, testfile.name);

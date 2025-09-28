@@ -6,14 +6,26 @@ import {
 
 import LocalMetaStorage from "../../../src/storage/local/local-meta-storage";
 import { metafile, testRoot as uploadRoot } from "../../__helpers__/config";
-import { cleanup } from "../../__helpers__/utils";
+import { rm } from "node:fs/promises";
 
 describe("LocalMetaStorage", () => {
     const testRoot = join(uploadRoot, "local-meta-storage");
 
-    beforeEach(() => cleanup(testRoot));
+    beforeEach(async () => {
+        try {
+            await rm(testRoot, { recursive: true, force: true });
+        } catch {
+            // ignore if directory doesn't exist
+        }
+    });
 
-    afterEach(() => cleanup(testRoot));
+    afterEach(async () => {
+        try {
+            await rm(testRoot, { recursive: true, force: true });
+        } catch {
+            // ignore if directory doesn't exist
+        }
+    });
 
     it("defaults", () => {
         const meta = new LocalMetaStorage({ directory: testRoot });

@@ -8,7 +8,7 @@ import {
 import { fsp } from "../../../src/utils/fs";
 import { StreamChecksum, streamChecksum } from "../../../src/utils/pipes/stream-checksum";
 import { testRoot } from "../../__helpers__/config";
-import { cleanup } from "../../__helpers__/utils";
+import { rm } from "node:fs/promises";
 
 const createTestFile = async (path: string, filepath: string) => {
     await fsp.mkdir(path, { recursive: true });
@@ -20,9 +20,21 @@ describe("utils", () => {
         const directory = join(testRoot, "stream-checksum");
         const file = join(directory, "test.txt");
 
-        beforeAll(async () => cleanup(directory));
+        beforeAll(async () => {
+            try {
+                await rm(directory, { recursive: true, force: true });
+            } catch {
+                // ignore if directory doesn't exist
+            }
+        });
 
-        afterAll(async () => cleanup(directory));
+        afterAll(async () => {
+            try {
+                await rm(directory, { recursive: true, force: true });
+            } catch {
+                // ignore if directory doesn't exist
+            }
+        });
 
         describe("stream-checksum", () => {
             it("should return a stream checksum", async () => {
