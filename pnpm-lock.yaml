@@ -2896,7 +2896,7 @@ importers:
     devDependencies:
       bun-types:
         specifier: latest
-        version: 1.2.22(@types/react@19.1.13)
+        version: 1.2.23(@types/react@19.1.13)
 
   packages/ono/examples/cli:
     dependencies:
@@ -14297,8 +14297,8 @@ packages:
   builtins@5.1.0:
     resolution: {integrity: sha512-SW9lzGTLvWTP1AY8xeAMZimqDrIaSdLQUcVr9DMef51niJ022Ri87SwRRKYm4A6iHfkPaiVUu/Duw2Wc4J7kKg==}
 
-  bun-types@1.2.22:
-    resolution: {integrity: sha512-hwaAu8tct/Zn6Zft4U9BsZcXkYomzpHJX28ofvx7k0Zz2HNz54n1n+tDgxoWFGB4PcFvJXJQloPhaV2eP3Q6EA==}
+  bun-types@1.2.23:
+    resolution: {integrity: sha512-R9f0hKAZXgFU3mlrA0YpE/fiDvwV0FT9rORApt2aQVWSuJDzZOyB5QLc0N/4HF57CS8IXJ6+L5E4W1bW6NS2Aw==}
     peerDependencies:
       '@types/react': ^19
 
@@ -38256,7 +38256,7 @@ snapshots:
     dependencies:
       semver: 7.7.2
 
-  bun-types@1.2.22(@types/react@19.1.13):
+  bun-types@1.2.23(@types/react@19.1.13):
     dependencies:
       '@types/node': 24.5.2
       '@types/react': 19.1.13
