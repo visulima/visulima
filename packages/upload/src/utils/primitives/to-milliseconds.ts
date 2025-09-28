@@ -1,4 +1,4 @@
-import duration from "parse-duration";
+import { parseDuration } from "@visulima/humanizer";
 
 /**
  * Convert a human-readable duration to ms
@@ -12,7 +12,7 @@ const toMilliseconds = (value: number | string | undefined): number | null => {
         return null;
     }
 
-    return duration(value as string, "ms");
+    return parseDuration(value as string, "ms");
 };
 
 export default toMilliseconds;

@@ -6,7 +6,7 @@ import {
 
 import { ensureFile, removeFile } from "../../src/utils/fs";
 import { testRoot as uploadRoot } from "../__helpers__/config";
-import { cleanup } from "../__helpers__/utils";
+import { rm } from "node:fs/promises";
 
 describe("utils", () => {
     describe("fs", () => {
@@ -14,9 +14,21 @@ describe("utils", () => {
         const direction = join(testRoot, "0", "1", "2");
         const filepath = join(direction, "3", "file.ext");
 
-        beforeEach(() => cleanup(testRoot));
+        beforeEach(async () => {
+            try {
+                await rm(testRoot, { recursive: true, force: true });
+            } catch {
+                // ignore if directory doesn't exist
+            }
+        });
 
-        afterEach(() => cleanup(testRoot));
+        afterEach(async () => {
+            try {
+                await rm(testRoot, { recursive: true, force: true });
+            } catch {
+                // ignore if directory doesn't exist
+            }
+        });
 
         it("ensureFile(file)", async () => {
             const size = await ensureFile(filepath);

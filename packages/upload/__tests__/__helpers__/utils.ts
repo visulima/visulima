@@ -2,7 +2,7 @@ import { BinaryLike, BinaryToTextEncoding, createHash } from "node:crypto";
 import { IncomingMessage } from "node:http";
 import { Socket } from "node:net";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import rimraf from "rimraf";
+import { rimraf } from "rimraf";
 
 export function cleanup(directory: string): Promise<any> {
     // eslint-disable-next-line compat/compat

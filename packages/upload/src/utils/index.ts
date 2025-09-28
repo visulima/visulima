@@ -1,7 +1,7 @@
 import fnv1a from "@sindresorhus/fnv1a";
 import mem from "mem";
 
-export const hash = mem((value: string) => fnv1a.bigInt(value, { size: 64 }).toString(16));
+export const hash = mem((value: string) => fnv1a(value, { size: 64 }).toString(16));
 
 export type { ErrorResponses } from "./errors";
 export { ErrorMap, ERRORS, isUploadError,throwErrorCode, UploadError } from "./errors";

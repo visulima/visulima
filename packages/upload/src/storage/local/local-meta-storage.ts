@@ -1,7 +1,5 @@
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-
-import normalize from "normalize-path";
+import { join, normalize } from "@visulima/path";
 
 import { removeFile } from "../../utils";
 import { fsp } from "../../utils/fs";
