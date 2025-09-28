@@ -8,7 +8,7 @@ import { fsp } from "../../src/utils/fs";
 import RangeChecksum from "../../src/utils/range-checksum";
 import RangeHasher from "../../src/utils/range-hasher";
 import { testRoot as rootPath } from "../__helpers__/config";
-import { cleanup } from "../__helpers__/utils";
+import { rm } from "node:fs/promises";
 
 const createTestFile = async (testRoot: string, filepath: string) => {
     await fsp.mkdir(testRoot, { recursive: true });
@@ -19,9 +19,21 @@ describe("utils", async () => {
     const testRoot = join(rootPath, "range-hasher");
     const filepath = join(testRoot, "file.ext");
 
-    beforeEach(() => cleanup(testRoot));
+    beforeEach(async () => {
+        try {
+            await rm(testRoot, { recursive: true, force: true });
+        } catch {
+            // ignore if directory doesn't exist
+        }
+    });
 
-    afterEach(() => cleanup(testRoot));
+    afterEach(async () => {
+        try {
+            await rm(testRoot, { recursive: true, force: true });
+        } catch {
+            // ignore if directory doesn't exist
+        }
+    });
 
     describe("range-hasher", async () => {
         it("hex", async () => {
