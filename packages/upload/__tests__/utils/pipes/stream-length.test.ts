@@ -8,7 +8,7 @@ import {
 import { fsp } from "../../../src/utils/fs";
 import StreamLength from "../../../src/utils/pipes/stream-length";
 import { testRoot } from "../../__helpers__/config";
-import { cleanup } from "../../__helpers__/utils";
+import { rm } from "node:fs/promises";
 
 const createTestFile = async (path: string, filepath: string) => {
     await fsp.mkdir(path, { recursive: true });
@@ -19,9 +19,21 @@ describe("utils", () => {
     describe("pipes", () => {
         const directory = join(testRoot, "stream-length");
 
-        afterEach(async () => cleanup(directory));
+        afterEach(async () => {
+            try {
+                await rm(directory, { recursive: true, force: true });
+            } catch {
+                // ignore if directory doesn't exist
+            }
+        });
 
-        beforeEach(async () => cleanup(directory));
+        beforeEach(async () => {
+            try {
+                await rm(directory, { recursive: true, force: true });
+            } catch {
+                // ignore if directory doesn't exist
+            }
+        });
 
         describe("stream-length", () => {
             const file = join(directory, "test.txt");

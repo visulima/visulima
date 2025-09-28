@@ -4,7 +4,7 @@ import { inspect } from "node:util";
 
 import { parse } from "bytes";
 import { LRUCache as Cache } from "lru-cache";
-import normalize from "normalize-path";
+import { normalize } from "@visulima/path";
 import typeis from "type-is";
 
 import type { ErrorResponses, HttpError, Logger, UploadResponse, ValidatorConfig } from "../utils";

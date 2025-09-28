@@ -1,4 +1,4 @@
-import duration from "parse-duration";
+import { parseDuration } from "@visulima/humanizer";
 
 /**
  * Convert a human-readable duration to seconds
@@ -8,7 +8,8 @@ const toSeconds = (value: number | string): number => {
         return value;
     }
 
-    return duration(value as string, "sec");
+    // milliseconds to seconds
+    return (parseDuration(value as string) ?? 0) / 1000;
 };
 
 export default toSeconds;
