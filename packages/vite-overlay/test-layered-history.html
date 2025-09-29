@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vite Overlay Layered History Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #ff4628;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #e03e24;
+        }
+        .error-demo {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #ff4628;
+        }
+        .feature-highlight {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .keyboard-shortcuts {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Vite Overlay Layered History Test</h1>
+        <p>This page tests the new <strong>Mac Time Machine-like layered history</strong> functionality with scroll-based navigation.</p>
+        
+        <div class="feature-highlight">
+            <h3>✨ New Features</h3>
+            <ul>
+                <li><strong>Layered History:</strong> Historical errors are stacked behind the current one with 3D depth</li>
+                <li><strong>Scroll Navigation:</strong> Mouse wheel scrolling cycles through error history</li>
+                <li><strong>Mac Time Machine UI:</strong> Smooth transitions with perspective and blur effects</li>
+                <li><strong>Visual Depth:</strong> Each layer has different opacity, scale, and blur based on distance</li>
+                <li><strong>Loop Navigation:</strong> Seamlessly loops from last to first error and vice versa</li>
+            </ul>
+        </div>
+
+        <div class="error-demo">
+            <h3>🎯 Test Error Generation</h3>
+            <p>Click the buttons below to generate different types of errors and test the layered history feature:</p>
+            
+            <button onclick="generateClientError()">Generate Client Error</button>
+            <button onclick="generateServerError()">Generate Server Error</button>
+            <button onclick="generateSyntaxError()">Generate Syntax Error</button>
+            <button onclick="generateAsyncError()">Generate Network Error</button>
+            <button onclick="generateValidationError()">Generate Validation Error</button>
+            <button onclick="clearHistory()">Clear History</button>
+        </div>
+
+        <div class="keyboard-shortcuts">
+            <h3>⌨️ Keyboard Shortcuts</h3>
+            <ul>
+                <li><strong>H:</strong> Toggle history mode on/off</li>
+                <li><strong>Arrow Keys:</strong> Navigate through history (when history mode is enabled)</li>
+                <li><strong>Home/End:</strong> Jump to first/last error</li>
+                <li><strong>Escape:</strong> Close overlay or exit history mode</li>
+            </ul>
+        </div>
+
+        <div class="error-demo">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li><strong>Generate Errors:</strong> Click any of the error generation buttons above</li>
+                <li><strong>Enable History:</strong> Click the clock icon (🕐) in the error overlay navigation</li>
+                <li><strong>Scroll Navigation:</strong> Use your mouse wheel over the overlay to cycle through historical errors</li>
+                <li><strong>Visual Feedback:</strong> Notice how historical errors appear behind the current one with depth effects</li>
+                <li><strong>Loop Navigation:</strong> Continue scrolling to see the seamless loop from last to first error</li>
+                <li><strong>Keyboard Control:</strong> Press 'H' to toggle history mode, then use arrow keys to navigate</li>
+            </ol>
+        </div>
+
+        <div class="feature-highlight">
+            <h3>🎨 Visual Effects</h3>
+            <ul>
+                <li><strong>3D Perspective:</strong> Historical errors are positioned in 3D space behind the current one</li>
+                <li><strong>Depth Blur:</strong> Further errors have more blur for depth perception</li>
+                <li><strong>Scale Effects:</strong> Background errors are slightly smaller to show distance</li>
+                <li><strong>Opacity Gradients:</strong> Closer errors are more opaque, distant ones fade out</li>
+                <li><strong>Smooth Transitions:</strong> All changes are animated with cubic-bezier easing</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Mock the Vite overlay functionality for testing
+        let errorCount = 0;
+        
+        function generateClientError() {
+            errorCount++;
+            const error = new Error(`Client Error #${errorCount}: Cannot read property 'value' of undefined`);
+            error.name = 'TypeError';
+            error.stack = `TypeError: Client Error #${errorCount}: Cannot read property 'value' of undefined
+    at UserProfile.handleSubmit (UserProfile.jsx:${Math.floor(Math.random() * 50) + 25}:15)
+    at HTMLFormElement.onSubmit (UserProfile.jsx:${Math.floor(Math.random() * 50) + 25}:8)`;
+            
+            showErrorOverlay({
+                errors: [{
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack,
+                    originalFilePath: '/src/components/UserProfile.jsx',
+                    originalFileLine: Math.floor(Math.random() * 50) + 25,
+                    originalFileColumn: Math.floor(Math.random() * 20) + 1,
+                    originalCodeFrameContent: `<div class="code-frame">
+                        <pre><code>function UserProfile() {
+  const [user, setUser] = useState(null);
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    <span style="background: #ffebee; color: #c62828;">const email = user.email.value;</span>
+    // This line causes the error
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="email" />
+      <button type="submit">Save</button>
+    </form>
+  );
+}</code></pre>
+                    </div>`
+                }],
+                errorType: 'client',
+                rootPath: '/workspace/react-app'
+            });
+        }
+        
+        function generateServerError() {
+            errorCount++;
+            const error = new Error(`Server Error #${errorCount}: Database connection timeout`);
+            error.name = 'DatabaseError';
+            error.stack = `DatabaseError: Server Error #${errorCount}: Database connection timeout
+    at Database.connect (database.js:${Math.floor(Math.random() * 30) + 20}:15)
+    at async initializeApp (server.js:${Math.floor(Math.random() * 30) + 20}:8)`;
+            
+            showErrorOverlay({
+                errors: [{
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack,
+                    originalFilePath: '/server/database.js',
+                    originalFileLine: Math.floor(Math.random() * 30) + 20,
+                    originalFileColumn: Math.floor(Math.random() * 20) + 1,
+                    originalCodeFrameContent: `<div class="code-frame">
+                        <pre><code>async function connect() {
+  try {
+    const connection = await pool.connect();
+    <span style="background: #ffebee; color: #c62828;">await connection.query('SELECT * FROM users');</span>
+    return connection;
+  } catch (error) {
+    throw new DatabaseError('Connection timeout');
+  }
+}</code></pre>
+                    </div>`
+                }],
+                errorType: 'server',
+                rootPath: '/workspace/react-app'
+            });
+        }
+        
+        function generateSyntaxError() {
+            errorCount++;
+            const error = new Error(`Syntax Error #${errorCount}: Unexpected token '}'`);
+            error.name = 'SyntaxError';
+            error.stack = `SyntaxError: Server Error #${errorCount}: Unexpected token '}'
+    at Object.parse (parser.js:${Math.floor(Math.random() * 20) + 10}:15)
+    at parseFile (compiler.js:${Math.floor(Math.random() * 20) + 10}:8)`;
+            
+            showErrorOverlay({
+                errors: [{
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack,
+                    originalFilePath: '/src/utils/parser.js',
+                    originalFileLine: Math.floor(Math.random() * 20) + 10,
+                    originalFileColumn: Math.floor(Math.random() * 20) + 1,
+                    originalCodeFrameContent: `<div class="code-frame">
+                        <pre><code>function parseConfig(config) {
+  const parsed = JSON.parse(config);
+  <span style="background: #ffebee; color: #c62828;">return parsed;</span>
+  } // <-- Missing closing brace
+}</code></pre>
+                    </div>`
+                }],
+                errorType: 'client',
+                rootPath: '/workspace/react-app'
+            });
+        }
+        
+        function generateAsyncError() {
+            errorCount++;
+            const error = new Error(`Network Error #${errorCount}: Failed to fetch API data`);
+            error.name = 'NetworkError';
+            error.stack = `NetworkError: Network Error #${errorCount}: Failed to fetch API data
+    at async fetchData (api.js:${Math.floor(Math.random() * 30) + 15}:8)
+    at async processData (api.js:${Math.floor(Math.random() * 30) + 15}:12)`;
+            
+            showErrorOverlay({
+                errors: [{
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack,
+                    originalFilePath: '/src/api/data.js',
+                    originalFileLine: Math.floor(Math.random() * 30) + 15,
+                    originalFileColumn: Math.floor(Math.random() * 20) + 1,
+                    originalCodeFrameContent: `<div class="code-frame">
+                        <pre><code>async function fetchData() {
+  try {
+    const response = await fetch('/api/data');
+    <span style="background: #ffebee; color: #c62828;">const data = await response.json();</span>
+    return data;
+  } catch (error) {
+    throw new NetworkError('Failed to fetch data');
+  }
+}</code></pre>
+                    </div>`
+                }],
+                errorType: 'client',
+                rootPath: '/workspace/react-app'
+            });
+        }
+        
+        function generateValidationError() {
+            errorCount++;
+            const error = new Error(`Validation Error #${errorCount}: Invalid email format`);
+            error.name = 'ValidationError';
+            error.stack = `ValidationError: Validation Error #${errorCount}: Invalid email format
+    at validateEmail (validation.js:${Math.floor(Math.random() * 25) + 15}:8)
+    at validateForm (form.js:${Math.floor(Math.random() * 25) + 15}:12)`;
+            
+            showErrorOverlay({
+                errors: [{
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack,
+                    originalFilePath: '/src/utils/validation.js',
+                    originalFileLine: Math.floor(Math.random() * 25) + 15,
+                    originalFileColumn: Math.floor(Math.random() * 20) + 1,
+                    originalCodeFrameContent: `<div class="code-frame">
+                        <pre><code>function validateEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  <span style="background: #ffebee; color: #c62828;">if (!emailRegex.test(email)) {</span>
+    throw new ValidationError('Invalid email format');
+  }
+  return true;
+}</code></pre>
+                    </div>`
+                }],
+                errorType: 'client',
+                rootPath: '/workspace/react-app'
+            });
+        }
+        
+        function clearHistory() {
+            localStorage.removeItem('v-o-error-history');
+            alert('Error history cleared! Generate some new errors to test the layered history feature.');
+        }
+        
+        function showErrorOverlay(payload) {
+            // Create a mock error overlay element
+            const overlay = document.createElement('div');
+            overlay.id = '__v_o__root';
+            overlay.className = 'fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px]';
+            overlay.style.background = 'rgba(0,0,0,0.6)';
+            overlay.style.backdropFilter = 'blur(4px)';
+            
+            // This would normally be handled by the Vite overlay
+            // For testing, we'll show a detailed alert with the new features
+            const features = `
+🚀 NEW LAYERED HISTORY FEATURES:
+
+✨ Mac Time Machine-like UI
+• Historical errors stack behind current one
+• 3D perspective with depth and blur effects
+• Smooth transitions between errors
+
+🖱️ Scroll Navigation
+• Mouse wheel over overlay cycles through history
+• Seamless loop from last to first error
+• Visual depth indicators
+
+⌨️ Keyboard Controls
+• Press 'H' to toggle history mode
+• Arrow keys navigate when history is enabled
+• Home/End jump to first/last error
+
+🎨 Visual Effects
+• Closer errors: 95% scale, 70% opacity, 1px blur
+• Further errors: 90% scale, 40% opacity, 2px blur
+• Distant errors: 85% scale, 20% opacity, 3px blur
+            `;
+            
+            alert(`Error Overlay would show here with payload:\n\nError Type: ${payload.errorType}\nError Name: ${payload.errors[0].name}\nMessage: ${payload.errors[0].message}\n\n${features}\n\nCheck the browser console for the full payload.`);
+            
+            console.log('Error Overlay Payload:', payload);
+            console.log('🚀 Layered History Features:', {
+                layeredUI: 'Historical errors stack behind current one with 3D depth',
+                scrollNavigation: 'Mouse wheel cycles through error history',
+                macTimeMachine: 'Smooth transitions with perspective and blur effects',
+                keyboardControls: 'H to toggle, arrows to navigate, Home/End to jump',
+                visualDepth: 'Different opacity, scale, and blur based on distance'
+            });
+        }
+        
+        // Add some initial instructions
+        console.log('🚀 Vite Overlay Layered History Test Page Loaded');
+        console.log('Click the buttons to generate test errors and see the new layered history functionality');
+        console.log('Features: 3D layered UI, scroll navigation, Mac Time Machine effects');
+    </script>
+</body>
+</html>

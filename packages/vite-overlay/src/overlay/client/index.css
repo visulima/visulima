@@ -373,138 +373,187 @@ textarea:focus-visible,
     background: rgba(15, 20, 27, 0.8);
 }
 
-/* Error History Panel Styles */
-#__v_o__history_panel {
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+/* Layered History System - Mac Time Machine Style */
+#__v_o__history_layers {
+    perspective: 1000px;
+    perspective-origin: center center;
 }
 
-#__v_o__history_panel.hidden {
+.history-overlay-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10vh 15px;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-style: preserve-3d;
+}
+
+.history-overlay-layer.active {
+    pointer-events: auto;
+    z-index: 1;
+}
+
+.history-overlay-layer.behind {
+    transform: translateZ(-50px) scale(0.95);
+    opacity: 0.7;
+    filter: blur(1px);
+}
+
+.history-overlay-layer.far-behind {
+    transform: translateZ(-100px) scale(0.9);
+    opacity: 0.4;
+    filter: blur(2px);
+}
+
+.history-overlay-layer.very-far-behind {
+    transform: translateZ(-150px) scale(0.85);
+    opacity: 0.2;
+    filter: blur(3px);
+}
+
+.history-overlay-layer.hidden {
+    transform: translateZ(-200px) scale(0.8);
     opacity: 0;
-    visibility: hidden;
+    pointer-events: none;
 }
 
-#__v_o__history_timeline {
-    scroll-behavior: smooth;
-    scrollbar-width: thin;
-    scrollbar-color: var(--ono-v-border) transparent;
+/* History overlay content */
+.history-overlay-content {
+    width: 100%;
+    max-width: var(--ono-v-dialog-max-width);
+    background: var(--ono-v-surface);
+    border-radius: var(--ono-v-dialog-radius);
+    box-shadow: var(--ono-v-elevation-2);
+    border: 1px solid var(--ono-v-border);
+    overflow: hidden;
+    transform: translateZ(0);
 }
 
-#__v_o__history_timeline::-webkit-scrollbar {
-    width: 6px;
-}
-
-#__v_o__history_timeline::-webkit-scrollbar-track {
+.history-overlay-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--ono-v-border);
     background: var(--ono-v-surface-muted);
-    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-#__v_o__history_timeline::-webkit-scrollbar-thumb {
-    background: var(--ono-v-border);
-    border-radius: 3px;
-    border: 1px solid var(--ono-v-surface-muted);
+.history-overlay-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ono-v-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-#__v_o__history_timeline::-webkit-scrollbar-thumb:hover {
-    background: var(--ono-v-neutral);
+.history-overlay-timestamp {
+    font-size: 11px;
+    color: var(--ono-v-text-muted);
+    font-family: monospace;
 }
 
-.dark #__v_o__history_timeline {
-    scrollbar-color: rgba(110, 118, 129, 0.6) transparent;
+.history-overlay-type {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.dark #__v_o__history_timeline::-webkit-scrollbar-track {
-    background: rgba(15, 20, 27, 0.8);
+.history-overlay-type.client {
+    background: rgba(59, 130, 246, 0.1);
+    color: rgb(59, 130, 246);
 }
 
-.dark #__v_o__history_timeline::-webkit-scrollbar-thumb {
-    background: rgba(110, 118, 129, 0.6);
-    border-color: rgba(15, 20, 27, 0.8);
+.history-overlay-type.server {
+    background: rgba(239, 68, 68, 0.1);
+    color: rgb(239, 68, 68);
 }
 
-.dark #__v_o__history_timeline::-webkit-scrollbar-thumb:hover {
-    background: rgba(110, 118, 129, 0.8);
+.history-overlay-body {
+    padding: 16px;
+    max-height: 200px;
+    overflow: hidden;
 }
 
-/* Error History Item Styles */
-.error-history-item {
-    @apply relative p-3 rounded-lg border border-[var(--ono-v-border)] bg-[var(--ono-v-surface-muted)] cursor-pointer transition-all duration-200 hover:bg-[var(--ono-v-hover-overlay)] hover:border-[var(--ono-v-red-orange)] hover:shadow-sm;
+.history-overlay-message {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--ono-v-red-orange);
+    margin-bottom: 8px;
+    line-height: 1.4;
+    word-break: break-word;
 }
 
-.error-history-item.active {
-    @apply border-[var(--ono-v-red-orange)] bg-[var(--ono-v-hover-overlay)] shadow-sm;
+.history-overlay-file {
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--ono-v-text-muted);
+    margin-bottom: 4px;
 }
 
-.error-history-item::before {
-    content: '';
-    position: absolute;
-    left: -8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 4px;
-    background: var(--ono-v-border);
-    border-radius: 50%;
-    transition: all 0.2s ease;
+.history-overlay-preview {
+    font-family: monospace;
+    font-size: 10px;
+    color: var(--ono-v-text-muted);
+    background: var(--ono-v-surface-muted);
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--ono-v-border);
+    max-height: 60px;
+    overflow: hidden;
+    line-height: 1.3;
 }
 
-.error-history-item.active::before {
-    background: var(--ono-v-red-orange);
-    width: 6px;
-    height: 6px;
-    left: -9px;
+/* Scroll indicator */
+#__v_o__history_indicator {
+    transition: opacity 0.3s ease;
 }
 
-.error-history-item:hover::before {
-    background: var(--ono-v-red-orange);
-    width: 6px;
-    height: 6px;
-    left: -9px;
+#__v_o__history_indicator.visible {
+    opacity: 1;
 }
 
-.error-history-item:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    left: -6px;
-    top: 20px;
-    bottom: -12px;
-    width: 2px;
-    background: var(--ono-v-border);
-    opacity: 0.5;
+/* Scroll hint animation */
+@keyframes scroll-hint {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
 }
 
-.error-history-preview {
-    @apply text-xs font-mono text-[var(--ono-v-text-muted)] truncate mb-1;
+.history-scroll-hint {
+    animation: scroll-hint 2s ease-in-out infinite;
 }
 
-.error-history-timestamp {
-    @apply text-xs text-[var(--ono-v-text-muted)] opacity-75;
+/* Dark mode adjustments */
+.dark .history-overlay-type.client {
+    background: rgba(59, 130, 246, 0.2);
+    color: rgb(147, 197, 253);
 }
 
-.error-history-type {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+.dark .history-overlay-type.server {
+    background: rgba(239, 68, 68, 0.2);
+    color: rgb(252, 165, 165);
 }
 
-.error-history-type.client {
-    @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300;
+/* Smooth transitions for layer changes */
+.history-overlay-layer {
+    will-change: transform, opacity, filter;
 }
 
-.error-history-type.server {
-    @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
-}
-
-/* Mac Time Machine-like smooth scrolling */
-.error-history-timeline-scroll {
-    scroll-behavior: smooth;
-    scroll-padding: 20px;
-}
-
-/* Momentum scrolling for better Mac-like feel */
-@media (hover: hover) and (pointer: fine) {
-    .error-history-timeline-scroll {
-        scroll-behavior: auto;
-    }
-    
-    .error-history-timeline-scroll.smooth-scroll {
-        scroll-behavior: smooth;
-    }
+/* Prevent text selection during scroll navigation */
+#__v_o__root.scrolling-history {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }

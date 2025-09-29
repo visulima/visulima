@@ -26,9 +26,13 @@ class ErrorOverlay extends HTMLElement {
 
     __v_oHistory = [];
 
-    __v_oHistoryPanel = null;
+    __v_oHistoryLayers = null;
 
     __v_oCurrentHistoryIndex = -1;
+
+    __v_oHistoryEnabled = false;
+
+    __v_oScrollTimeout = null;
 
     /**
      * Creates a new ErrorOverlay instance.
@@ -124,27 +128,23 @@ class ErrorOverlay extends HTMLElement {
                     }
                 }
                 
-                // History panel keyboard navigation
-                if (this.__v_oHistoryPanel && !this.__v_oHistoryPanel.classList.contains('hidden')) {
-                    if (event.key === "ArrowUp") {
+                // History mode keyboard navigation
+                if (this.__v_oHistoryEnabled && this.__v_oHistory.length > 1) {
+                    if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
                         event.preventDefault();
-                        this._navigateHistoryUp();
-                    } else if (event.key === "ArrowDown") {
+                        this._navigateHistoryByScroll(-1);
+                    } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
                         event.preventDefault();
-                        this._navigateHistoryDown();
+                        this._navigateHistoryByScroll(1);
                     } else if (event.key === "Home") {
                         event.preventDefault();
                         this._navigateToHistoryItem(0);
                     } else if (event.key === "End") {
                         event.preventDefault();
                         this._navigateToHistoryItem(this.__v_oHistory.length - 1);
-                    } else if (event.key === "Enter" || event.key === " ") {
+                    } else if (event.key === "h" || event.key === "H") {
                         event.preventDefault();
-                        const activeItem = this.root.querySelector('.error-history-item.active');
-                        if (activeItem) {
-                            const index = parseInt(activeItem.dataset.historyIndex);
-                            this._navigateToHistoryItem(index);
-                        }
+                        this._toggleHistoryMode();
                     }
                 }
             });
@@ -152,14 +152,15 @@ class ErrorOverlay extends HTMLElement {
     }
 
     /**
-     * Initializes the error history functionality with Mac Time Machine-like scrolling.
+     * Initializes the layered error history functionality with Mac Time Machine-like scrolling.
      * @private
      */
     _initializeHistory() {
         this._loadHistoryFromStorage();
         this._addCurrentErrorToHistory();
-        this._initializeHistoryPanel();
+        this._initializeHistoryLayers();
         this._initializeHistoryToggle();
+        this._initializeScrollNavigation();
     }
 
     /**
@@ -258,68 +259,118 @@ class ErrorOverlay extends HTMLElement {
     }
 
     /**
-     * Initializes the history panel UI.
+     * Initializes the layered history system.
      * @private
      */
-    _initializeHistoryPanel() {
-        this.__v_oHistoryPanel = this.root.querySelector("#__v_o__history_panel");
-        if (!this.__v_oHistoryPanel) {
+    _initializeHistoryLayers() {
+        this.__v_oHistoryLayers = this.root.querySelector("#__v_o__history_layers");
+        if (!this.__v_oHistoryLayers) {
             return;
         }
 
-        this._renderHistoryTimeline();
-        this._initializeHistoryClose();
+        this._renderHistoryLayers();
     }
 
     /**
-     * Renders the history timeline with all stored errors.
+     * Renders the layered history overlays behind the current one.
      * @private
      */
-    _renderHistoryTimeline() {
-        const timeline = this.root.querySelector("#__v_o__history_timeline");
-        if (!timeline) {
+    _renderHistoryLayers() {
+        if (!this.__v_oHistoryLayers) {
             return;
         }
+
+        // Clear existing layers
+        this.__v_oHistoryLayers.innerHTML = '';
 
         if (this.__v_oHistory.length === 0) {
-            timeline.innerHTML = '<div class="text-center text-[var(--ono-v-text-muted)] text-sm py-8">No error history yet</div>';
             return;
         }
 
-        const historyHTML = this.__v_oHistory.map((entry, index) => {
-            const isActive = index === this.__v_oCurrentHistoryIndex;
-            const timeAgo = this._formatTimeAgo(entry.timestamp);
-            const preview = this._truncateText(entry.message, 60);
-            
-            return `
-                <div class="error-history-item ${isActive ? 'active' : ''}" 
-                     data-history-index="${index}" 
-                     data-error-id="${entry.id}">
-                    <div class="flex items-start justify-between mb-2">
-                        <span class="error-history-type ${entry.errorType}">${entry.errorType}</span>
-                        <span class="error-history-timestamp">${timeAgo}</span>
-                    </div>
-                    <div class="error-history-preview" title="${this._escapeHtml(entry.message)}">
-                        ${this._escapeHtml(preview)}
-                    </div>
-                    ${entry.file ? `<div class="text-xs text-[var(--ono-v-text-muted)] mt-1 truncate" title="${this._escapeHtml(entry.file)}">
-                        ${this._escapeHtml(this._getRelativePath(entry.file))}${entry.line ? `:${entry.line}` : ''}
-                    </div>` : ''}
-                </div>
-            `;
-        }).join('');
+        // Create layers for each historical error (excluding current)
+        this.__v_oHistory.forEach((entry, index) => {
+            if (index === this.__v_oCurrentHistoryIndex) {
+                return; // Skip current error as it's already displayed
+            }
 
-        timeline.innerHTML = historyHTML;
-        timeline.classList.add('error-history-timeline-scroll');
-
-        // Add click handlers for history items
-        timeline.querySelectorAll('.error-history-item').forEach(item => {
-            item.addEventListener('click', (event) => {
-                event.preventDefault();
-                const index = parseInt(item.dataset.historyIndex);
-                this._navigateToHistoryItem(index);
-            });
+            const layer = this._createHistoryLayer(entry, index);
+            this.__v_oHistoryLayers.appendChild(layer);
         });
+
+        this._updateHistoryLayersVisibility();
+    }
+
+    /**
+     * Creates a single history layer element.
+     * @private
+     * @param {Object} entry - The history entry
+     * @param {number} index - The index in history
+     * @returns {HTMLElement} The layer element
+     */
+    _createHistoryLayer(entry, index) {
+        const layer = document.createElement('div');
+        layer.className = 'history-overlay-layer';
+        layer.dataset.historyIndex = index;
+        layer.dataset.errorId = entry.id;
+
+        const timeAgo = this._formatTimeAgo(entry.timestamp);
+        const preview = this._truncateText(entry.message, 100);
+        const relativePath = this._getRelativePath(entry.file);
+
+        layer.innerHTML = `
+            <div class="history-overlay-content">
+                <div class="history-overlay-header">
+                    <div class="history-overlay-title">
+                        <span class="history-overlay-type ${entry.errorType}">${entry.errorType}</span>
+                        <span>${this._escapeHtml(entry.name)}</span>
+                    </div>
+                    <div class="history-overlay-timestamp">${timeAgo}</div>
+                </div>
+                <div class="history-overlay-body">
+                    <div class="history-overlay-message">${this._escapeHtml(entry.message)}</div>
+                    ${entry.file ? `<div class="history-overlay-file">${this._escapeHtml(relativePath)}${entry.line ? `:${entry.line}` : ''}</div>` : ''}
+                    <div class="history-overlay-preview">${this._escapeHtml(preview)}</div>
+                </div>
+            </div>
+        `;
+
+        return layer;
+    }
+
+    /**
+     * Updates the visibility and positioning of history layers.
+     * @private
+     */
+    _updateHistoryLayersVisibility() {
+        if (!this.__v_oHistoryLayers) {
+            return;
+        }
+
+        const layers = this.__v_oHistoryLayers.querySelectorAll('.history-overlay-layer');
+        const currentIndex = this.__v_oCurrentHistoryIndex;
+
+        layers.forEach((layer, layerIndex) => {
+            const historyIndex = parseInt(layer.dataset.historyIndex);
+            const distanceFromCurrent = Math.abs(historyIndex - currentIndex);
+
+            // Remove all position classes
+            layer.classList.remove('active', 'behind', 'far-behind', 'very-far-behind', 'hidden');
+
+            // Apply appropriate class based on distance
+            if (distanceFromCurrent === 0) {
+                layer.classList.add('active');
+            } else if (distanceFromCurrent === 1) {
+                layer.classList.add('behind');
+            } else if (distanceFromCurrent === 2) {
+                layer.classList.add('far-behind');
+            } else if (distanceFromCurrent === 3) {
+                layer.classList.add('very-far-behind');
+            } else {
+                layer.classList.add('hidden');
+            }
+        });
+
+        this._updateHistoryIndicator();
     }
 
     /**
@@ -386,6 +437,72 @@ class ErrorOverlay extends HTMLElement {
     }
 
     /**
+     * Initializes scroll-based navigation for the layered history system.
+     * @private
+     */
+    _initializeScrollNavigation() {
+        const rootElement = this.root.querySelector("#__v_o__root");
+        if (!rootElement) {
+            return;
+        }
+
+        let isScrolling = false;
+        let scrollDirection = 0;
+
+        const handleWheel = (event) => {
+            if (!this.__v_oHistoryEnabled || this.__v_oHistory.length <= 1) {
+                return;
+            }
+
+            event.preventDefault();
+            
+            // Determine scroll direction
+            const delta = event.deltaY;
+            if (Math.abs(delta) < 10) {
+                return; // Ignore small scroll movements
+            }
+
+            scrollDirection = delta > 0 ? 1 : -1;
+            
+            if (isScrolling) {
+                return; // Prevent rapid scrolling
+            }
+
+            isScrolling = true;
+            this._navigateHistoryByScroll(scrollDirection);
+            
+            // Reset scrolling flag after animation
+            setTimeout(() => {
+                isScrolling = false;
+            }, 300);
+        };
+
+        rootElement.addEventListener('wheel', handleWheel, { passive: false });
+    }
+
+    /**
+     * Navigates through history using scroll direction.
+     * @private
+     * @param {number} direction - 1 for forward, -1 for backward
+     */
+    _navigateHistoryByScroll(direction) {
+        if (this.__v_oHistory.length <= 1) {
+            return;
+        }
+
+        let newIndex = this.__v_oCurrentHistoryIndex + direction;
+        
+        // Loop around
+        if (newIndex < 0) {
+            newIndex = this.__v_oHistory.length - 1;
+        } else if (newIndex >= this.__v_oHistory.length) {
+            newIndex = 0;
+        }
+
+        this._navigateToHistoryItem(newIndex);
+    }
+
+    /**
      * Navigates to a specific history item.
      * @private
      * @param {number} index - The index of the history item
@@ -404,11 +521,11 @@ class ErrorOverlay extends HTMLElement {
         // Re-render the overlay with the historical error
         this._updateOverlayWithHistoryError();
         
-        // Update the history timeline to show active state
-        this._updateHistoryTimelineActiveState();
+        // Update the layered history display
+        this._updateHistoryLayersVisibility();
         
-        // Close the history panel
-        this._closeHistoryPanel();
+        // Show scroll hint briefly
+        this._showScrollHint();
     }
 
     /**
@@ -432,16 +549,43 @@ class ErrorOverlay extends HTMLElement {
     }
 
     /**
-     * Updates the active state in the history timeline.
+     * Updates the history indicator in the navigation.
      * @private
      */
-    _updateHistoryTimelineActiveState() {
-        const timeline = this.root.querySelector("#__v_o__history_timeline");
-        if (!timeline) return;
+    _updateHistoryIndicator() {
+        const indicator = this.root.querySelector("#__v_o__history_indicator");
+        const countElement = this.root.querySelector("#__v_o__history_count");
+        const totalElement = this.root.querySelector("#__v_o__history_total");
 
-        timeline.querySelectorAll('.error-history-item').forEach((item, index) => {
-            item.classList.toggle('active', index === this.__v_oCurrentHistoryIndex);
-        });
+        if (!indicator || !countElement || !totalElement) {
+            return;
+        }
+
+        if (this.__v_oHistory.length <= 1) {
+            indicator.classList.add('hidden');
+            return;
+        }
+
+        countElement.textContent = (this.__v_oCurrentHistoryIndex + 1).toString();
+        totalElement.textContent = this.__v_oHistory.length.toString();
+        indicator.classList.remove('hidden');
+    }
+
+    /**
+     * Shows a brief scroll hint animation.
+     * @private
+     */
+    _showScrollHint() {
+        const indicator = this.root.querySelector("#__v_o__history_indicator");
+        if (!indicator) {
+            return;
+        }
+
+        indicator.classList.add('history-scroll-hint');
+        
+        setTimeout(() => {
+            indicator.classList.remove('history-scroll-hint');
+        }, 2000);
     }
 
     /**
@@ -456,118 +600,35 @@ class ErrorOverlay extends HTMLElement {
 
         toggleButton.addEventListener('click', (event) => {
             event.preventDefault();
-            this._toggleHistoryPanel();
+            this._toggleHistoryMode();
         });
     }
 
     /**
-     * Initializes the history panel close button.
+     * Toggles the history mode on/off.
      * @private
      */
-    _initializeHistoryClose() {
-        const closeButton = this.root.querySelector("#__v_o__history_close");
-        if (!closeButton) {
-            return;
-        }
-
-        closeButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            this._closeHistoryPanel();
-        });
-
-        // Close on backdrop click
-        this.__v_oHistoryPanel?.addEventListener('click', (event) => {
-            if (event.target === this.__v_oHistoryPanel) {
-                this._closeHistoryPanel();
-            }
-        });
-    }
-
-    /**
-     * Toggles the history panel visibility.
-     * @private
-     */
-    _toggleHistoryPanel() {
-        if (!this.__v_oHistoryPanel) {
-            return;
-        }
-
-        if (this.__v_oHistoryPanel.classList.contains('hidden')) {
-            this._openHistoryPanel();
-        } else {
-            this._closeHistoryPanel();
-        }
-    }
-
-    /**
-     * Opens the history panel.
-     * @private
-     */
-    _openHistoryPanel() {
-        if (!this.__v_oHistoryPanel) {
-            return;
-        }
-
-        this.__v_oHistoryPanel.classList.remove('hidden');
-        this._renderHistoryTimeline();
+    _toggleHistoryMode() {
+        this.__v_oHistoryEnabled = !this.__v_oHistoryEnabled;
         
-        // Scroll to current error in history
-        if (this.__v_oCurrentHistoryIndex >= 0) {
-            this._scrollToCurrentHistoryItem();
-        }
-    }
-
-    /**
-     * Closes the history panel.
-     * @private
-     */
-    _closeHistoryPanel() {
-        if (!this.__v_oHistoryPanel) {
-            return;
-        }
-
-        this.__v_oHistoryPanel.classList.add('hidden');
-    }
-
-    /**
-     * Scrolls to the current history item in the timeline.
-     * @private
-     */
-    _scrollToCurrentHistoryItem() {
-        const timeline = this.root.querySelector("#__v_o__history_timeline");
-        if (!timeline) return;
-
-        const currentItem = timeline.querySelector(`[data-history-index="${this.__v_oCurrentHistoryIndex}"]`);
-        if (currentItem) {
-            currentItem.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center',
-                inline: 'nearest'
-            });
-        }
-    }
-
-    /**
-     * Navigates up in the history timeline.
-     * @private
-     */
-    _navigateHistoryUp() {
-        if (this.__v_oCurrentHistoryIndex > 0) {
-            this.__v_oCurrentHistoryIndex--;
-            this._updateHistoryTimelineActiveState();
-            this._scrollToCurrentHistoryItem();
-        }
-    }
-
-    /**
-     * Navigates down in the history timeline.
-     * @private
-     */
-    _navigateHistoryDown() {
-        if (this.__v_oCurrentHistoryIndex < this.__v_oHistory.length - 1) {
-            this.__v_oCurrentHistoryIndex++;
-            this._updateHistoryTimelineActiveState();
-            this._scrollToCurrentHistoryItem();
+        const rootElement = this.root.querySelector("#__v_o__root");
+        const indicator = this.root.querySelector("#__v_o__history_indicator");
+        
+        if (this.__v_oHistoryEnabled) {
+            rootElement.classList.add('scrolling-history');
+            if (indicator) {
+                indicator.classList.add('visible');
+            }
+            this._renderHistoryLayers();
+            this._showScrollHint();
+        } else {
+            rootElement.classList.remove('scrolling-history');
+            if (indicator) {
+                indicator.classList.add('hidden');
+            }
+            if (this.__v_oHistoryLayers) {
+                this.__v_oHistoryLayers.innerHTML = '';
+            }
         }
     }
 

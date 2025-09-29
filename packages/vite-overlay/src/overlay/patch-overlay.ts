@@ -61,11 +61,19 @@ const generateOverlayTemplate = (showBallonButton: boolean): string => {
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M6.75011 3.93945L7.28044 4.46978L10.1037 7.29301C10.4942 7.68353 10.4942 8.3167 10.1037 8.70722L7.28044 11.5304L6.75011 12.0608L5.68945 11.0001L6.21978 10.4698L8.68945 8.00011L6.21978 5.53044L5.68945 5.00011L6.75011 3.93945Z" fill="currentColor"></path>
                 </svg>
             </button>
-            <button type="button" id="__v_o__history_toggle" title="Toggle Error History" aria-label="Toggle Error History" class="error-overlay-history-button flex justify-center items-center w-6 h-6 bg-[var(--ono-v-chip-bg)] rounded-full hover:bg-[var(--ono-v-hover-overlay)] focus-visible:outline focus-visible:outline-[var(--ono-v-red-orange)] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="history">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM2.5 8a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0ZM8 4a.5.5 0 0 1 .5.5v3.5a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4Z" fill="currentColor"></path>
-                </svg>
-            </button>
+            <div class="flex items-center gap-1">
+                <button type="button" id="__v_o__history_toggle" title="Toggle Error History" aria-label="Toggle Error History" class="error-overlay-history-button flex justify-center items-center w-6 h-6 bg-[var(--ono-v-chip-bg)] rounded-full hover:bg-[var(--ono-v-hover-overlay)] focus-visible:outline focus-visible:outline-[var(--ono-v-red-orange)] transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="history">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM2.5 8a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0ZM8 4a.5.5 0 0 1 .5.5v3.5a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4Z" fill="currentColor"></path>
+                    </svg>
+                </button>
+                <div id="__v_o__history_indicator" class="hidden flex items-center gap-1 text-xs text-[var(--ono-v-text-muted)]">
+                    <span id="__v_o__history_count">0</span>
+                    <span>/</span>
+                    <span id="__v_o__history_total">0</span>
+                    <span class="text-[10px]">scroll to navigate</span>
+                </div>
+            </div>
             </nav>
             <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--ono-v-dialog-border-width))] right-[-54px] pointer-events-none" preserveAspectRatio="none">
             <mask id="error_overlay_nav_mask0_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" style="mask-type: alpha;">
@@ -134,22 +142,9 @@ const generateOverlayTemplate = (showBallonButton: boolean): string => {
         </div>
     </div>
 
-    <div id="__v_o__history_panel" class="fixed inset-0 z-[2147483646] hidden bg-black/60 backdrop-blur-sm">
-        <div class="absolute right-0 top-0 h-full w-80 bg-[var(--ono-v-surface)] border-l border-[var(--ono-v-border)] shadow-[var(--ono-v-elevation-2)] overflow-hidden">
-            <div class="flex items-center justify-between p-4 border-b border-[var(--ono-v-border)]">
-                <h3 class="text-lg font-semibold text-[var(--ono-v-text)]">Error History</h3>
-                <button type="button" id="__v_o__history_close" class="text-[var(--ono-v-text-muted)] hover:text-[var(--ono-v-text)] transition-colors">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" fill="currentColor"/>
-                    </svg>
-                </button>
-            </div>
-            <div id="__v_o__history_timeline" class="h-full overflow-y-auto p-4 space-y-3">
-                <div class="text-center text-[var(--ono-v-text-muted)] text-sm py-8">
-                    No error history yet
-                </div>
-            </div>
-        </div>
+    <!-- History overlay layers - stacked behind current overlay -->
+    <div id="__v_o__history_layers" class="fixed inset-0 z-[2147483645] pointer-events-none">
+        <!-- Historical error overlays will be dynamically inserted here -->
     </div>
 
     <div id="__v_o__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex w-full max-w-[var(--ono-v-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--ono-v-dialog-radius)] bg-[var(--ono-v-surface)] text-[var(--ono-v-text)] shadow-[var(--ono-v-elevation-1)] border-b border-[var(--ono-v-border)] ">
