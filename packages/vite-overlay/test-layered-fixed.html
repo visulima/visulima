@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vite Overlay - Layered History Test (Fixed)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .instructions {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Vite Overlay - Layered History Test (Fixed)</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Click "Generate Error 1" to create the first error</li>
+                <li>Click "Generate Error 2" to create the second error</li>
+                <li>Click "Generate Error 3" to create the third error</li>
+                <li>Click the clock icon (🕐) in the error overlay to enable history mode</li>
+                <li>Scroll with your mouse wheel over the main error overlay</li>
+                <li>You should see historical errors moving in 3D space behind/around the current one</li>
+            </ol>
+        </div>
+
+        <div>
+            <button onclick="generateError1()">Generate Error 1</button>
+            <button onclick="generateError2()">Generate Error 2</button>
+            <button onclick="generateError3()">Generate Error 3</button>
+            <button onclick="clearHistory()">Clear History</button>
+        </div>
+
+        <div class="debug-info">
+            <h4>🐛 Debug Console:</h4>
+            <div id="debug-log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Capture console.log for debugging
+        const originalLog = console.log;
+        const debugLog = document.getElementById('debug-log');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const logEntry = document.createElement('div');
+            logEntry.textContent = args.join(' ');
+            logEntry.style.marginBottom = '5px';
+            logEntry.style.padding = '2px 5px';
+            logEntry.style.backgroundColor = '#f8f9fa';
+            logEntry.style.borderLeft = '3px solid #007bff';
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        };
+
+        // Error generation functions
+        function generateError1() {
+            console.log('🚀 Generating Error 1...');
+            throw new Error('First error from line 1 - This is a test error');
+        }
+
+        function generateError2() {
+            console.log('🚀 Generating Error 2...');
+            throw new Error('Second error from line 2 - This is another test error');
+        }
+
+        function generateError3() {
+            console.log('🚀 Generating Error 3...');
+            throw new Error('Third error from line 3 - This is the final test error');
+        }
+
+        function clearHistory() {
+            console.log('🧹 Clearing history...');
+            localStorage.removeItem('vite-overlay-error-history');
+            location.reload();
+        }
+
+        // Initialize error overlay
+        console.log('🔧 Initializing Vite Overlay...');
+        
+        // Simulate the Vite overlay initialization
+        window.addEventListener('error', (event) => {
+            console.log('❌ Error caught:', event.error.message);
+        });
+
+        console.log('✅ Test page loaded. Generate some errors to test the layered history!');
+    </script>
+
+    <!-- Load the Vite Overlay -->
+    <script type="module">
+        // This would normally be loaded by Vite, but for testing we'll simulate it
+        console.log('📦 Loading Vite Overlay...');
+        
+        // Simulate the overlay being loaded
+        setTimeout(() => {
+            console.log('✅ Vite Overlay loaded successfully!');
+            console.log('💡 Now generate some errors and test the layered history feature.');
+        }, 1000);
+    </script>
+</body>
+</html>

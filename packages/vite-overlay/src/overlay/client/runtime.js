@@ -277,6 +277,7 @@ class ErrorOverlay extends HTMLElement {
      */
     _renderHistoryLayers() {
         if (!this.__v_oHistoryLayers) {
+            console.log('[v-o] No history layers container found');
             return;
         }
 
@@ -284,13 +285,17 @@ class ErrorOverlay extends HTMLElement {
         this.__v_oHistoryLayers.innerHTML = '';
 
         if (this.__v_oHistory.length === 0) {
+            console.log('[v-o] No history to render');
             return;
         }
+
+        console.log(`[v-o] Rendering ${this.__v_oHistory.length} history layers`);
 
         // Create layers for ALL historical errors (including current for positioning)
         this.__v_oHistory.forEach((entry, index) => {
             const layer = this._createHistoryLayer(entry, index);
             this.__v_oHistoryLayers.appendChild(layer);
+            console.log(`[v-o] Created layer for history index ${index}:`, entry.payload.message);
         });
 
         this._updateHistoryLayersVisibility();
@@ -329,6 +334,14 @@ class ErrorOverlay extends HTMLElement {
                 </div>
             </div>
         `;
+
+        console.log(`[v-o] Created history layer ${index}:`, {
+            message: entry.message,
+            file: entry.file,
+            type: entry.errorType,
+            timestamp: timeAgo,
+            name: entry.name
+        });
 
         return layer;
     }
@@ -379,6 +392,8 @@ class ErrorOverlay extends HTMLElement {
                 layer.classList.add('hidden');
             }
         });
+
+        console.log(`[v-o] Updated ${layers.length} history layers for current index ${currentIndex}`);
 
         this._updateHistoryIndicator();
     }
@@ -553,10 +568,17 @@ class ErrorOverlay extends HTMLElement {
             return;
         }
 
-        // Don't change the main overlay content - only update the background layers
+        // Update the current history index
         this.__v_oCurrentHistoryIndex = index;
         
-        // Update only the layered history display (background layers)
+        // Update the main overlay to show the current error
+        const historyEntry = this.__v_oHistory[index];
+        this.__v_oPayload = historyEntry.payload;
+        
+        // Re-render the main overlay with the current error
+        this._updateOverlayWithHistoryError();
+        
+        // Update the layered history display (background layers)
         this._updateHistoryLayersVisibility();
         
         // Show scroll hint briefly
