@@ -405,16 +405,34 @@ textarea:focus-visible,
     filter: blur(1px);
 }
 
+.history-overlay-layer.in-front {
+    transform: translateZ(50px) scale(1.05);
+    opacity: 0.8;
+    filter: blur(0.5px);
+}
+
 .history-overlay-layer.far-behind {
     transform: translateZ(-100px) scale(0.9);
     opacity: 0.4;
     filter: blur(2px);
 }
 
+.history-overlay-layer.far-in-front {
+    transform: translateZ(100px) scale(1.1);
+    opacity: 0.6;
+    filter: blur(0px);
+}
+
 .history-overlay-layer.very-far-behind {
     transform: translateZ(-150px) scale(0.85);
     opacity: 0.2;
     filter: blur(3px);
+}
+
+.history-overlay-layer.very-far-in-front {
+    transform: translateZ(150px) scale(1.15);
+    opacity: 0.4;
+    filter: blur(0px);
 }
 
 .history-overlay-layer.hidden {

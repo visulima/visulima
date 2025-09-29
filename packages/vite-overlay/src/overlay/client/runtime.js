@@ -287,12 +287,8 @@ class ErrorOverlay extends HTMLElement {
             return;
         }
 
-        // Create layers for each historical error (excluding current)
+        // Create layers for ALL historical errors (including current for positioning)
         this.__v_oHistory.forEach((entry, index) => {
-            if (index === this.__v_oCurrentHistoryIndex) {
-                return; // Skip current error as it's already displayed
-            }
-
             const layer = this._createHistoryLayer(entry, index);
             this.__v_oHistoryLayers.appendChild(layer);
         });
@@ -349,23 +345,37 @@ class ErrorOverlay extends HTMLElement {
         const layers = this.__v_oHistoryLayers.querySelectorAll('.history-overlay-layer');
         const currentIndex = this.__v_oCurrentHistoryIndex;
 
-        layers.forEach((layer, layerIndex) => {
+        layers.forEach((layer) => {
             const historyIndex = parseInt(layer.dataset.historyIndex);
-            const distanceFromCurrent = Math.abs(historyIndex - currentIndex);
+            const relativePosition = historyIndex - currentIndex;
 
             // Remove all position classes
-            layer.classList.remove('active', 'behind', 'far-behind', 'very-far-behind', 'hidden');
+            layer.classList.remove('active', 'behind', 'in-front', 'far-behind', 'far-in-front', 'very-far-behind', 'very-far-in-front', 'hidden');
 
-            // Apply appropriate class based on distance
-            if (distanceFromCurrent === 0) {
-                layer.classList.add('active');
-            } else if (distanceFromCurrent === 1) {
+            // Apply appropriate class based on relative position
+            if (relativePosition === 0) {
+                // Current error - hide this layer as it's shown in main overlay
+                layer.classList.add('hidden');
+            } else if (relativePosition === 1) {
+                // Next error in history (behind current)
                 layer.classList.add('behind');
-            } else if (distanceFromCurrent === 2) {
+            } else if (relativePosition === -1) {
+                // Previous error in history (in front of current)
+                layer.classList.add('in-front');
+            } else if (relativePosition === 2) {
+                // Two steps behind
                 layer.classList.add('far-behind');
-            } else if (distanceFromCurrent === 3) {
+            } else if (relativePosition === -2) {
+                // Two steps in front
+                layer.classList.add('far-in-front');
+            } else if (relativePosition === 3) {
+                // Three steps behind
                 layer.classList.add('very-far-behind');
+            } else if (relativePosition === -3) {
+                // Three steps in front
+                layer.classList.add('very-far-in-front');
             } else {
+                // Too far away
                 layer.classList.add('hidden');
             }
         });
@@ -543,16 +553,10 @@ class ErrorOverlay extends HTMLElement {
             return;
         }
 
-        const historyEntry = this.__v_oHistory[index];
+        // Don't change the main overlay content - only update the background layers
         this.__v_oCurrentHistoryIndex = index;
         
-        // Update the current payload with the historical error
-        this.__v_oPayload = historyEntry.payload;
-        
-        // Re-render the overlay with the historical error
-        this._updateOverlayWithHistoryError();
-        
-        // Update the layered history display
+        // Update only the layered history display (background layers)
         this._updateHistoryLayersVisibility();
         
         // Show scroll hint briefly
