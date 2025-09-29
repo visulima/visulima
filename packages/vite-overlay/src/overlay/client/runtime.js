@@ -314,23 +314,83 @@ class ErrorOverlay extends HTMLElement {
         layer.dataset.historyIndex = index;
         layer.dataset.errorId = entry.id;
 
+        // Create a complete overlay structure that matches the main overlay
         const timeAgo = this._formatTimeAgo(entry.timestamp);
-        const preview = this._truncateText(entry.message, 100);
         const relativePath = this._getRelativePath(entry.file);
+        const errorType = entry.errorType || 'error';
+        const errorMessage = this._escapeHtml(entry.message || 'Unknown error');
+        const errorFile = entry.file ? this._escapeHtml(relativePath) : 'Unknown file';
+        const errorLine = entry.line ? `:${entry.line}` : '';
 
         layer.innerHTML = `
-            <div class="history-overlay-content">
-                <div class="history-overlay-header">
-                    <div class="history-overlay-title">
-                        <span class="history-overlay-type ${entry.errorType}">${entry.errorType}</span>
-                        <span>${this._escapeHtml(entry.name)}</span>
+            <div class="fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px]">
+                <div class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
+                <div class="relative z-[2] flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
+                    <div class="error-overlay-notch relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pr-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tl-[var(--ono-v-dialog-radius)]" data-side="left">
+                        <nav class="error-overlay-pagination dialog-exclude-closing-from-outside-click flex justify-center items-center gap-2 w-fit">
+                            <div class="error-overlay-pagination-count inline-flex justify-center items-center min-w-8 h-5 gap-1 text-[var(--ono-v-text)] text-center text-[11px] font-medium leading-4 rounded-full px-1.5">
+                                <span>${index + 1}</span>
+                                <span class="text-[var(--ono-v-text-muted)]">/</span>
+                                <span>${this.__v_oHistory.length}</span>
+                            </div>
+                        </nav>
+                        <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--ono-v-dialog-border-width))] right-[-54px] pointer-events-none" preserveAspectRatio="none">
+                            <mask id="error_overlay_nav_mask0_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" style="mask-type: alpha;">
+                                <mask id="error_overlay_nav_path_1_outside_1_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" fill="black">
+                                <rect fill="white" y="-1" width="60" height="43"></rect>
+                                <path d="M1 0L8.0783 0C15.772 0 22.7836 4.41324 26.111 11.3501L34.8889 29.6498C38.2164 36.5868 45.228 41 52.9217 41H60H1L1 0Z"></path>
+                                </mask>
+                                <path d="M1 0L8.0783 0C15.772 0 22.7836 4.41324 26.111 11.3501L34.8889 29.6498C38.2164 36.5868 45.228 41 52.9217 41H60H1L1 0Z" fill="white"></path>
+                                <path d="M1 0V-1H0V0L1 0ZM1 41H0V42H1V41ZM34.8889 29.6498L33.9873 30.0823L34.8889 29.6498ZM26.111 11.3501L27.0127 10.9177L26.111 11.3501ZM1 1H8.0783V-1H1V1ZM60 40H1V42H60V40ZM2 41V0L0 0L0 41H2ZM25.2094 11.7826L33.9873 30.0823L35.7906 29.2174L27.0127 10.9177L25.2094 11.7826ZM52.9217 42H60V40H52.9217V42ZM33.9873 30.0823C37.4811 37.3661 44.8433 42 52.9217 42V40C45.6127 40 38.9517 35.8074 35.7906 29.2174L33.9873 30.0823ZM8.0783 1C15.3873 1 22.0483 5.19257 25.2094 11.7826L27.0127 10.9177C23.5188 3.6339 16.1567 -1 8.0783 -1V1Z" fill="black" mask="url(#error_overlay_nav_path_1_outside_1_2667_14687)"></path>
+                            </mask>
+                            <g mask="url(#error_overlay_nav_mask0_2667_14687)">
+                                <mask id="error_overlay_nav_path_3_outside_2_2667_14687" maskUnits="userSpaceOnUse" x="-1" y="0.0244141" width="60" height="43" fill="black">
+                                <rect fill="white" x="-1" y="0.0244141" width="60" height="43"></rect>
+                                <path d="M0 1.02441H7.0783C14.772 1.02441 21.7836 5.43765 25.111 12.3746L33.8889 30.6743C37.2164 37.6112 44.228 42.0244 51.9217 42.0244H59H0L0 1.02441Z"></path>
+                                </mask>
+                                <path d="M0 1.02441H7.0783C14.772 1.02441 21.7836 5.43765 25.111 12.3746L33.8889 30.6743C37.2164 37.6112 44.228 42.0244 51.9217 42.0244H59H0L0 1.02441Z" fill="var(--background-color)"></path>
+                                <path d="M0 1.02441L0 0.0244141H-1V1.02441H0ZM0 42.0244H-1V43.0244H0L0 42.0244ZM33.8889 30.6743L32.9873 31.1068L33.8889 30.6743ZM25.111 12.3746L26.0127 11.9421L25.111 12.3746ZM0 2.02441H7.0783V0.0244141H0L0 2.02441ZM59 41.0244H0L0 43.0244H59V41.0244ZM1 42.0244L1 1.02441H-1L-1 42.0244H1ZM24.2094 12.8071L32.9873 31.1068L34.7906 30.2418L26.0127 11.9421L24.2094 12.8071ZM51.9217 43.0244H59V41.0244H51.9217V43.0244ZM32.9873 31.1068C36.4811 38.3905 43.8433 43.0244 51.9217 43.0244V41.0244C44.6127 41.0244 37.9517 36.8318 34.7906 30.2418L32.9873 31.1068ZM7.0783 2.02441C14.3873 2.02441 21.0483 6.21699 24.2094 12.8071L26.0127 11.9421C22.5188 4.65831 15.1567 0.0244141 7.0783 0.0244141V2.02441Z" fill="var(--stroke-color)" mask="url(#error_overlay_nav_path_3_outside_2_2667_14687)"></path>
+                            </g>
+                        </svg>
                     </div>
-                    <div class="history-overlay-timestamp">${timeAgo}</div>
+                    <div class="error-overlay-notch flex gap-1 relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pl-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tr-[var(--ono-v-dialog-radius)]" data-side="right">
+                        <div class="flex items-center gap-1 text-xs text-[var(--ono-v-text-muted)]">
+                            <span>${timeAgo}</span>
+                        </div>
+                        <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--ono-v-dialog-border-width))] left-[-54px] pointer-events-none [transform:rotateY(180deg)]" preserveAspectRatio="none">
+                            <mask id="error_overlay_nav_mask0_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" style="mask-type: alpha;">
+                                <mask id="error_overlay_nav_path_1_outside_1_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" fill="black">
+                                <rect fill="white" y="-1" width="60" height="43"></rect>
+                                <path d="M1 0L8.0783 0C15.772 0 22.7836 4.41324 26.111 11.3501L34.8889 29.6498C38.2164 36.5868 45.228 41 52.9217 41H60H1L1 0Z"></path>
+                                </mask>
+                                <path d="M1 0L8.0783 0C15.772 0 22.7836 4.41324 26.111 11.3501L34.8889 29.6498C38.2164 36.5868 45.228 41 52.9217 41H60H1L1 0Z" fill="white"></path>
+                                <path d="M1 0V-1H0V0L1 0ZM1 41H0V42H1V41ZM34.8889 29.6498L33.9873 30.0823L34.8889 29.6498ZM26.111 11.3501L27.0127 10.9177L26.111 11.3501ZM1 1H8.0783V-1H1V1ZM60 40H1V42H60V40ZM2 41V0L0 0L0 41H2ZM25.2094 11.7826L33.9873 30.0823L35.7906 29.2174L27.0127 10.9177L25.2094 11.7826ZM52.9217 42H60V40H52.9217V42ZM33.9873 30.0823C37.4811 37.3661 44.8433 42 52.9217 42V40C45.6127 40 38.9517 35.8074 35.7906 29.2174L33.9873 30.0823ZM8.0783 1C15.3873 1 22.0483 5.19257 25.2094 11.7826L27.0127 10.9177C23.5188 3.6339 16.1567 -1 8.0783 -1V1Z" fill="black" mask="url(#error_overlay_nav_path_1_outside_1_2667_14687)"></path>
+                            </mask>
+                            <g mask="url(#error_overlay_nav_mask0_2667_14687)">
+                                <mask id="error_overlay_nav_path_3_outside_2_2667_14687" maskUnits="userSpaceOnUse" x="-1" y="0.0244141" width="60" height="43" fill="black">
+                                <rect fill="white" x="-1" y="0.0244141" width="60" height="43"></rect>
+                                <path d="M0 1.02441H7.0783C14.772 1.02441 21.7836 5.43765 25.111 12.3746L33.8889 30.6743C37.2164 37.6112 44.228 42.0244 51.9217 42.0244H59H0L0 1.02441Z"></path>
+                                </mask>
+                                <path d="M0 1.02441H7.0783C14.772 1.02441 21.7836 5.43765 25.111 12.3746L33.8889 30.6743C37.2164 37.6112 44.228 42.0244 51.9217 42.0244H59H0L0 1.02441Z" fill="var(--background-color)"></path>
+                                <path d="M0 1.02441L0 0.0244141H-1V1.02441H0ZM0 42.0244H-1V43.0244H0L0 42.0244ZM33.8889 30.6743L32.9873 31.1068L33.8889 30.6743ZM25.111 12.3746L26.0127 11.9421L25.111 12.3746ZM0 2.02441H7.0783V0.0244141H0L0 2.02441ZM59 41.0244H0L0 43.0244H59V41.0244ZM1 42.0244L1 1.02441H-1L-1 42.0244H1ZM24.2094 12.8071L32.9873 31.1068L34.7906 30.2418L26.0127 11.9421L24.2094 12.8071ZM51.9217 43.0244H59V41.0244H51.9217V43.0244ZM32.9873 31.1068C36.4811 38.3905 43.8433 43.0244 51.9217 43.0244V41.0244C44.6127 41.0244 37.9517 36.8318 34.7906 30.2418L32.9873 31.1068ZM7.0783 2.02441C14.3873 2.02441 21.0483 6.21699 24.2094 12.8071L26.0127 11.9421C22.5188 4.65831 15.1567 0.0244141 7.0783 0.0244141V2.02441Z" fill="var(--stroke-color)" mask="url(#error_overlay_nav_path_3_outside_2_2667_14687)"></path>
+                            </g>
+                        </svg>
+                    </div>
                 </div>
-                <div class="history-overlay-body">
-                    <div class="history-overlay-message">${this._escapeHtml(entry.message)}</div>
-                    ${entry.file ? `<div class="history-overlay-file">${this._escapeHtml(relativePath)}${entry.line ? `:${entry.line}` : ''}</div>` : ''}
-                    <div class="history-overlay-preview">${this._escapeHtml(preview)}</div>
+
+                <div role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex w-full max-w-[var(--ono-v-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--ono-v-dialog-radius)] bg-[var(--ono-v-surface)] text-[var(--ono-v-text)] shadow-[var(--ono-v-elevation-1)] border-b border-[var(--ono-v-border)]">
+                    <div class="flex items-center gap-1 justify-between border-b border-[var(--ono-v-border)] bg-[var(--ono-v-surface)] px-4 py-2">
+                        <div class="flex items-center gap-2 w-full font-bold text-[var(--ono-v-text)]">
+                            <span class="leading-none rounded-md text-[var(--ono-v-red-orange)] font-mono text-sm">${errorType}</span>
+                            <button type="button" class="ml-2 text-xs font-normal font-mono underline text-[var(--ono-v-text-muted)] hover:text-[var(--ono-v-text)] bg-transparent border-none cursor-pointer">${errorFile}${errorLine}</button>
+                        </div>
+                    </div>
+                    <div class="px-4 py-2 text-sm text-[var(--ono-v-red-orange)] font-mono bg-[var(--ono-v-surface-muted)] border-b border-[var(--ono-v-border)] font-medium">${errorMessage}</div>
+                    <div class="relative flex min-h-0 mx-1 py-2 bg-[var(--ono-v-surface)]">
+                        <div class="overflow-auto w-full">
+                            <div class="text-xs font-mono text-[var(--ono-v-text-muted)] whitespace-pre-wrap">${this._escapeHtml(entry.stack || 'No stack trace available')}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -338,7 +398,7 @@ class ErrorOverlay extends HTMLElement {
         console.log(`[v-o] Created history layer ${index}:`, {
             message: entry.message,
             file: entry.file,
-            type: entry.errorType,
+            type: errorType,
             timestamp: timeAgo,
             name: entry.name
         });
