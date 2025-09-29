@@ -372,3 +372,139 @@ textarea:focus-visible,
 .dark #__v_o__root::-webkit-scrollbar-corner {
     background: rgba(15, 20, 27, 0.8);
 }
+
+/* Error History Panel Styles */
+#__v_o__history_panel {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#__v_o__history_panel.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+#__v_o__history_timeline {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ono-v-border) transparent;
+}
+
+#__v_o__history_timeline::-webkit-scrollbar {
+    width: 6px;
+}
+
+#__v_o__history_timeline::-webkit-scrollbar-track {
+    background: var(--ono-v-surface-muted);
+    border-radius: 3px;
+}
+
+#__v_o__history_timeline::-webkit-scrollbar-thumb {
+    background: var(--ono-v-border);
+    border-radius: 3px;
+    border: 1px solid var(--ono-v-surface-muted);
+}
+
+#__v_o__history_timeline::-webkit-scrollbar-thumb:hover {
+    background: var(--ono-v-neutral);
+}
+
+.dark #__v_o__history_timeline {
+    scrollbar-color: rgba(110, 118, 129, 0.6) transparent;
+}
+
+.dark #__v_o__history_timeline::-webkit-scrollbar-track {
+    background: rgba(15, 20, 27, 0.8);
+}
+
+.dark #__v_o__history_timeline::-webkit-scrollbar-thumb {
+    background: rgba(110, 118, 129, 0.6);
+    border-color: rgba(15, 20, 27, 0.8);
+}
+
+.dark #__v_o__history_timeline::-webkit-scrollbar-thumb:hover {
+    background: rgba(110, 118, 129, 0.8);
+}
+
+/* Error History Item Styles */
+.error-history-item {
+    @apply relative p-3 rounded-lg border border-[var(--ono-v-border)] bg-[var(--ono-v-surface-muted)] cursor-pointer transition-all duration-200 hover:bg-[var(--ono-v-hover-overlay)] hover:border-[var(--ono-v-red-orange)] hover:shadow-sm;
+}
+
+.error-history-item.active {
+    @apply border-[var(--ono-v-red-orange)] bg-[var(--ono-v-hover-overlay)] shadow-sm;
+}
+
+.error-history-item::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--ono-v-border);
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.error-history-item.active::before {
+    background: var(--ono-v-red-orange);
+    width: 6px;
+    height: 6px;
+    left: -9px;
+}
+
+.error-history-item:hover::before {
+    background: var(--ono-v-red-orange);
+    width: 6px;
+    height: 6px;
+    left: -9px;
+}
+
+.error-history-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 20px;
+    bottom: -12px;
+    width: 2px;
+    background: var(--ono-v-border);
+    opacity: 0.5;
+}
+
+.error-history-preview {
+    @apply text-xs font-mono text-[var(--ono-v-text-muted)] truncate mb-1;
+}
+
+.error-history-timestamp {
+    @apply text-xs text-[var(--ono-v-text-muted)] opacity-75;
+}
+
+.error-history-type {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.error-history-type.client {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300;
+}
+
+.error-history-type.server {
+    @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
+}
+
+/* Mac Time Machine-like smooth scrolling */
+.error-history-timeline-scroll {
+    scroll-behavior: smooth;
+    scroll-padding: 20px;
+}
+
+/* Momentum scrolling for better Mac-like feel */
+@media (hover: hover) and (pointer: fine) {
+    .error-history-timeline-scroll {
+        scroll-behavior: auto;
+    }
+    
+    .error-history-timeline-scroll.smooth-scroll {
+        scroll-behavior: smooth;
+    }
+}
