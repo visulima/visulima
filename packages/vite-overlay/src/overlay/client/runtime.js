@@ -443,6 +443,7 @@ class ErrorOverlay extends HTMLElement {
     _initializeScrollNavigation() {
         const rootElement = this.root.querySelector("#__v_o__root");
         if (!rootElement) {
+            console.warn('[v-o] Root element not found for scroll navigation');
             return;
         }
 
@@ -450,34 +451,63 @@ class ErrorOverlay extends HTMLElement {
         let scrollDirection = 0;
 
         const handleWheel = (event) => {
+            console.log('[v-o] Wheel event detected:', {
+                historyEnabled: this.__v_oHistoryEnabled,
+                historyLength: this.__v_oHistory.length,
+                deltaY: event.deltaY,
+                target: event.target
+            });
+
+            // Only handle scroll events when history is enabled and we have multiple errors
             if (!this.__v_oHistoryEnabled || this.__v_oHistory.length <= 1) {
+                console.log('[v-o] Wheel event ignored - history not enabled or insufficient errors');
                 return;
             }
 
+            // Prevent default scrolling behavior
             event.preventDefault();
+            event.stopPropagation();
             
             // Determine scroll direction
             const delta = event.deltaY;
-            if (Math.abs(delta) < 10) {
-                return; // Ignore small scroll movements
+            if (Math.abs(delta) < 5) {
+                console.log('[v-o] Wheel event ignored - delta too small:', delta);
+                return; // Ignore very small scroll movements
             }
 
             scrollDirection = delta > 0 ? 1 : -1;
             
             if (isScrolling) {
+                console.log('[v-o] Wheel event ignored - already scrolling');
                 return; // Prevent rapid scrolling
             }
 
+            console.log('[v-o] Processing wheel event - direction:', scrollDirection);
             isScrolling = true;
             this._navigateHistoryByScroll(scrollDirection);
             
             // Reset scrolling flag after animation
             setTimeout(() => {
                 isScrolling = false;
-            }, 300);
+            }, 400);
         };
 
-        rootElement.addEventListener('wheel', handleWheel, { passive: false });
+        // Add wheel event listener with proper options
+        rootElement.addEventListener('wheel', handleWheel, { 
+            passive: false, 
+            capture: true 
+        });
+
+        // Also add to the backdrop for better coverage
+        const backdrop = this.root.querySelector("#__v_o__backdrop");
+        if (backdrop) {
+            backdrop.addEventListener('wheel', handleWheel, { 
+                passive: false, 
+                capture: true 
+            });
+        }
+
+        console.log('[v-o] Scroll navigation initialized');
     }
 
     /**
@@ -499,6 +529,7 @@ class ErrorOverlay extends HTMLElement {
             newIndex = 0;
         }
 
+        console.log(`[v-o] Scrolling history: ${direction > 0 ? 'forward' : 'backward'} (${this.__v_oCurrentHistoryIndex} → ${newIndex})`);
         this._navigateToHistoryItem(newIndex);
     }
 
@@ -613,22 +644,33 @@ class ErrorOverlay extends HTMLElement {
         
         const rootElement = this.root.querySelector("#__v_o__root");
         const indicator = this.root.querySelector("#__v_o__history_indicator");
+        const toggleButton = this.root.querySelector("#__v_o__history_toggle");
         
         if (this.__v_oHistoryEnabled) {
             rootElement.classList.add('scrolling-history');
             if (indicator) {
                 indicator.classList.add('visible');
             }
+            if (toggleButton) {
+                toggleButton.style.background = 'var(--ono-v-red-orange)';
+                toggleButton.style.color = 'white';
+            }
             this._renderHistoryLayers();
             this._showScrollHint();
+            console.log('[v-o] History mode enabled - scroll to navigate through errors');
         } else {
             rootElement.classList.remove('scrolling-history');
             if (indicator) {
                 indicator.classList.add('hidden');
             }
+            if (toggleButton) {
+                toggleButton.style.background = '';
+                toggleButton.style.color = '';
+            }
             if (this.__v_oHistoryLayers) {
                 this.__v_oHistoryLayers.innerHTML = '';
             }
+            console.log('[v-o] History mode disabled');
         }
     }
 

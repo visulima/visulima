@@ -550,10 +550,20 @@ textarea:focus-visible,
     will-change: transform, opacity, filter;
 }
 
+/* Enable pointer events for scroll navigation */
+#__v_o__root {
+    pointer-events: auto;
+}
+
 /* Prevent text selection during scroll navigation */
 #__v_o__root.scrolling-history {
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    cursor: grab;
+}
+
+#__v_o__root.scrolling-history:active {
+    cursor: grabbing;
 }
