@@ -34,14 +34,7 @@ const generateEditorOptions = (): string => {
     }
 };
 
-/**
- * Generates the overlay template with dynamic editor options.
- */
-const generateOverlayTemplate = (showBallonButton: boolean): string => {
-    const editorOptions = generateEditorOptions();
-
-    return `<style>${styleCss}</style>
-<div id="__v_o__root" class="fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px] hidden">
+const rootElement = (rootId: string, editorOptions: string, hideRightNavigation: boolean = false) => `<div id="${rootId}" class="fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px] hidden">
     <div id="__v_o__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
     <div id="__v_o__notch" class="relative z-[2] flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
         <div class="error-overlay-notch relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pr-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tl-[var(--ono-v-dialog-radius)]" data-side="left">
@@ -95,7 +88,9 @@ const generateOverlayTemplate = (showBallonButton: boolean): string => {
             </svg>
         </div>
         <div class="error-overlay-notch flex gap-1 relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pl-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tr-[var(--ono-v-dialog-radius)]" data-side="right">
-            <div id="__v_o__editor" class="hidden sm:flex items-center gap-1">
+            ${hideRightNavigation
+                ? ""
+                : `<div id="__v_o__editor" class="hidden sm:flex items-center gap-1">
                 <label for="editor-selector" class="sr-only">Editor</label>
                 <select id="editor-selector" class="py-1 cursor-pointer px-2 pe-6 block w-44 bg-[var(--ono-v-surface)] border border-[var(--ono-v-border)] rounded-[var(--ono-v-radius-md)] text-xs text-[var(--ono-v-text)] shadow-[var(--ono-v-elevation-1)] hover:bg-[var(--ono-v-hover-overlay)] focus:outline-hidden focus:ring-1 focus:ring-[var(--ono-v-red-orange)]">${editorOptions}</select>
             </div>
@@ -119,7 +114,7 @@ const generateOverlayTemplate = (showBallonButton: boolean): string => {
                         <span class="dui size-5" style="-webkit-mask-image: url('${closeIcon}'); mask-image: url('${closeIcon}')"></span>
                     </span>
                 </button>
-            </div>
+            </div>`}
 
             <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--ono-v-dialog-border-width))] left-[-54px] pointer-events-none [transform:rotateY(180deg)]" preserveAspectRatio="none">
                 <mask id="error_overlay_nav_mask0_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" style="mask-type: alpha;">
@@ -140,11 +135,6 @@ const generateOverlayTemplate = (showBallonButton: boolean): string => {
                 </g>
             </svg>
         </div>
-    </div>
-
-    <!-- History overlay layers - stacked behind current overlay -->
-    <div id="__v_o__history_layers" class="fixed inset-0 z-[2147483645] pointer-events-none">
-        <!-- Historical error overlays will be dynamically inserted here -->
     </div>
 
     <div id="__v_o__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex w-full max-w-[var(--ono-v-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--ono-v-dialog-radius)] bg-[var(--ono-v-surface)] text-[var(--ono-v-text)] shadow-[var(--ono-v-elevation-1)] border-b border-[var(--ono-v-border)] ">
@@ -199,7 +189,16 @@ const generateOverlayTemplate = (showBallonButton: boolean): string => {
         </summary>
         <div class="px-4 py-3 text-[var(--ono-v-text)] text-xs rounded-b-[var(--ono-v-dialog-radius)] font-mono leading-5 overflow-auto space-y-0.5 max-h-[140px] bg-[var(--ono-v-surface)] border-t border-[var(--ono-v-border)]"></div>
     </details>
-</div>
+</div>`;
+
+/**
+ * Generates the overlay template with dynamic editor options.
+ */
+const generateOverlayTemplate = (showBallonButton: boolean): string => {
+    const editorOptions = generateEditorOptions();
+
+    return `<style>${styleCss}</style>
+${rootElement("__v_o__root", editorOptions)}
 
 ${
     showBallonButton

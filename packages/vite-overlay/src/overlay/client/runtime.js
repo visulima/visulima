@@ -120,14 +120,9 @@ class ErrorOverlay extends HTMLElement {
         if (this.__v_oPayload.errorType === "client") {
             document.addEventListener("keydown", (event) => {
                 if (event.key === "Escape" && this.parentNode) {
-                    // Close history panel if open, otherwise close overlay
-                    if (this.__v_oHistoryPanel && !this.__v_oHistoryPanel.classList.contains('hidden')) {
-                        this._closeHistoryPanel();
-                    } else {
-                        this.close();
-                    }
+                    this.close();
                 }
-                
+
                 // History mode keyboard navigation
                 if (this.__v_oHistoryEnabled && this.__v_oHistory.length > 1) {
                     if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
@@ -156,40 +151,12 @@ class ErrorOverlay extends HTMLElement {
      * @private
      */
     _initializeHistory() {
-        this._loadHistoryFromStorage();
         this._addCurrentErrorToHistory();
         this._initializeHistoryLayers();
         this._initializeHistoryToggle();
         this._initializeScrollNavigation();
     }
 
-    /**
-     * Loads error history from localStorage.
-     * @private
-     */
-    _loadHistoryFromStorage() {
-        try {
-            const stored = localStorage.getItem("v-o-error-history");
-            if (stored) {
-                this.__v_oHistory = JSON.parse(stored);
-            }
-        } catch (error) {
-            console.warn("[v-o] Failed to load error history:", error);
-            this.__v_oHistory = [];
-        }
-    }
-
-    /**
-     * Saves error history to localStorage.
-     * @private
-     */
-    _saveHistoryToStorage() {
-        try {
-            localStorage.setItem("v-o-error-history", JSON.stringify(this.__v_oHistory));
-        } catch (error) {
-            console.warn("[v-o] Failed to save error history:", error);
-        }
-    }
 
     /**
      * Adds the current error to the history.
@@ -229,8 +196,6 @@ class ErrorOverlay extends HTMLElement {
         if (this.__v_oHistory.length > 50) {
             this.__v_oHistory = this.__v_oHistory.slice(0, 50);
         }
-
-        this._saveHistoryToStorage();
     }
 
     /**
@@ -247,7 +212,7 @@ class ErrorOverlay extends HTMLElement {
             error.originalFileLine || 0,
             error.originalFileColumn || 0
         ].join("|");
-        
+
         // Simple hash function
         let hash = 0;
         for (let i = 0; i < key.length; i++) {
@@ -263,9 +228,15 @@ class ErrorOverlay extends HTMLElement {
      * @private
      */
     _initializeHistoryLayers() {
-        this.__v_oHistoryLayers = this.root.querySelector("#__v_o__history_layers");
+        // Create the history layers container if it doesn't exist
         if (!this.__v_oHistoryLayers) {
-            return;
+            this.__v_oHistoryLayers = document.querySelector("#__v_o__history_layers");
+            if (!this.__v_oHistoryLayers) {
+                this.__v_oHistoryLayers = document.createElement("div");
+                this.__v_oHistoryLayers.id = "__v_o__history_layers";
+                this.__v_oHistoryLayers.className = "fixed inset-0 z-[2147483645] pointer-events-none";
+                document.body.appendChild(this.__v_oHistoryLayers);
+            }
         }
 
         this._renderHistoryLayers();
@@ -294,8 +265,12 @@ class ErrorOverlay extends HTMLElement {
         // Create layers for ALL historical errors (including current for positioning)
         this.__v_oHistory.forEach((entry, index) => {
             const layer = this._createHistoryLayer(entry, index);
-            this.__v_oHistoryLayers.appendChild(layer);
-            console.log(`[v-o] Created layer for history index ${index}:`, entry.payload.message);
+            if (layer) {
+                this.__v_oHistoryLayers.appendChild(layer);
+                console.log(`[v-o] Created layer for history index ${index}:`, entry.payload.message);
+            } else {
+                console.warn(`[v-o] Failed to create layer for history index ${index}`);
+            }
         });
 
         this._updateHistoryLayersVisibility();
@@ -309,29 +284,21 @@ class ErrorOverlay extends HTMLElement {
      * @returns {HTMLElement} The layer element
      */
     _createHistoryLayer(entry, index) {
-        const layer = document.createElement('div');
-        layer.className = 'history-overlay-layer';
-        layer.dataset.historyIndex = index;
-        layer.dataset.errorId = entry.id;
-
-        // Create a complete overlay structure that matches the main overlay
-        const timeAgo = this._formatTimeAgo(entry.timestamp);
-        const relativePath = this._getRelativePath(entry.file);
-        const errorType = entry.errorType || 'error';
-        const errorMessage = this._escapeHtml(entry.message || 'Unknown error');
-        const errorFile = entry.file ? this._escapeHtml(relativePath) : 'Unknown file';
-        const errorLine = entry.line ? `:${entry.line}` : '';
-
-        layer.innerHTML = `
-            <div class="fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px]">
-                <div class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
-                <div class="relative z-[2] flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
+        // Create the template element if it doesn't exist
+        let templateElement = document.querySelector("#__v_o__history_layer");
+        if (!templateElement) {
+            templateElement = document.createElement("div");
+            templateElement.id = "__v_o__history_layer";
+            templateElement.className = "fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px] hidden";
+            templateElement.innerHTML = `
+                <div id="__v_o__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-none"></div>
+                <div id="__v_o__notch" class="relative z-[2] flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
                     <div class="error-overlay-notch relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pr-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tl-[var(--ono-v-dialog-radius)]" data-side="left">
                         <nav class="error-overlay-pagination dialog-exclude-closing-from-outside-click flex justify-center items-center gap-2 w-fit">
                             <div class="error-overlay-pagination-count inline-flex justify-center items-center min-w-8 h-5 gap-1 text-[var(--ono-v-text)] text-center text-[11px] font-medium leading-4 rounded-full px-1.5">
-                                <span>${index + 1}</span>
+                                <span>1</span>
                                 <span class="text-[var(--ono-v-text-muted)]">/</span>
-                                <span>${this.__v_oHistory.length}</span>
+                                <span>1</span>
                             </div>
                         </nav>
                         <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--ono-v-dialog-border-width))] right-[-54px] pointer-events-none" preserveAspectRatio="none">
@@ -355,7 +322,7 @@ class ErrorOverlay extends HTMLElement {
                     </div>
                     <div class="error-overlay-notch flex gap-1 relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pl-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tr-[var(--ono-v-dialog-radius)]" data-side="right">
                         <div class="flex items-center gap-1 text-xs text-[var(--ono-v-text-muted)]">
-                            <span>${timeAgo}</span>
+                            <span>Just now</span>
                         </div>
                         <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--ono-v-dialog-border-width))] left-[-54px] pointer-events-none [transform:rotateY(180deg)]" preserveAspectRatio="none">
                             <mask id="error_overlay_nav_mask0_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" style="mask-type: alpha;">
@@ -381,19 +348,85 @@ class ErrorOverlay extends HTMLElement {
                 <div role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex w-full max-w-[var(--ono-v-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--ono-v-dialog-radius)] bg-[var(--ono-v-surface)] text-[var(--ono-v-text)] shadow-[var(--ono-v-elevation-1)] border-b border-[var(--ono-v-border)]">
                     <div class="flex items-center gap-1 justify-between border-b border-[var(--ono-v-border)] bg-[var(--ono-v-surface)] px-4 py-2">
                         <div class="flex items-center gap-2 w-full font-bold text-[var(--ono-v-text)]">
-                            <span class="leading-none rounded-md text-[var(--ono-v-red-orange)] font-mono text-sm">${errorType}</span>
-                            <button type="button" class="ml-2 text-xs font-normal font-mono underline text-[var(--ono-v-text-muted)] hover:text-[var(--ono-v-text)] bg-transparent border-none cursor-pointer">${errorFile}${errorLine}</button>
+                            <span class="leading-none rounded-md text-[var(--ono-v-red-orange)] font-mono text-sm">error</span>
+                            <button type="button" class="ml-2 text-xs font-normal font-mono underline text-[var(--ono-v-text-muted)] hover:text-[var(--ono-v-text)] bg-transparent border-none cursor-pointer">Unknown file</button>
                         </div>
                     </div>
-                    <div class="px-4 py-2 text-sm text-[var(--ono-v-red-orange)] font-mono bg-[var(--ono-v-surface-muted)] border-b border-[var(--ono-v-border)] font-medium">${errorMessage}</div>
+                    <div class="px-4 py-2 text-sm text-[var(--ono-v-red-orange)] font-mono bg-[var(--ono-v-surface-muted)] border-b border-[var(--ono-v-border)] font-medium">Unknown error</div>
                     <div class="relative flex min-h-0 mx-1 py-2 bg-[var(--ono-v-surface)]">
                         <div class="overflow-auto w-full">
-                            <div class="text-xs font-mono text-[var(--ono-v-text-muted)] whitespace-pre-wrap">${this._escapeHtml(entry.stack || 'No stack trace available')}</div>
+                            <div class="text-xs font-mono text-[var(--ono-v-text-muted)] whitespace-pre-wrap">No stack trace available</div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+            this.__v_oHistoryLayers.appendChild(templateElement);
+        }
+
+        // Clone the template element
+        const layer = templateElement.cloneNode(true);
+
+        // Update the ID to be unique
+        layer.id = `__v_o__history_layer_${index + 1}`;
+
+        // Set classes and data attributes
+        layer.className = 'history-overlay-layer';
+        layer.dataset.historyIndex = index;
+        layer.dataset.errorId = entry.id;
+
+        // Update content with history entry data
+        const timeAgo = this._formatTimeAgo(entry.timestamp);
+        const relativePath = this._getRelativePath(entry.file);
+        const errorType = entry.errorType || 'error';
+        const errorMessage = this._escapeHtml(entry.message || 'Unknown error');
+        const errorFile = entry.file ? this._escapeHtml(relativePath) : 'Unknown file';
+        const errorLine = entry.line ? `:${entry.line}` : '';
+
+        // Update pagination count
+        const paginationCount = layer.querySelector('.error-overlay-pagination-count span:first-child');
+        if (paginationCount) {
+            paginationCount.textContent = (index + 1).toString();
+        }
+
+        const totalCount = layer.querySelector('.error-overlay-pagination-count span:last-child');
+        if (totalCount) {
+            totalCount.textContent = this.__v_oHistory.length.toString();
+        }
+
+        // Update timestamp
+        const timeElement = layer.querySelector('.error-overlay-notch[data-side="right"] span');
+        if (timeElement) {
+            timeElement.textContent = timeAgo;
+        }
+
+        // Update error type
+        const errorTypeElement = layer.querySelector('.text-[var(--ono-v-red-orange)]');
+        if (errorTypeElement) {
+            errorTypeElement.textContent = errorType;
+        }
+
+        // Update file link
+        const fileButton = layer.querySelector('button[class*="underline"]');
+        if (fileButton) {
+            fileButton.textContent = `${errorFile}${errorLine}`;
+        }
+
+        // Update error message
+        const messageElement = layer.querySelector('.text-sm.text-[var(--ono-v-red-orange)].font-mono.bg-[var(--ono-v-surface-muted)]');
+        if (messageElement) {
+            messageElement.textContent = errorMessage;
+        }
+
+        // Update stack trace
+        const stackElement = layer.querySelector('.text-xs.font-mono.text-[var(--ono-v-text-muted)].whitespace-pre-wrap');
+        if (stackElement) {
+            stackElement.textContent = this._escapeHtml(entry.stack || 'No stack trace available');
+        }
+
+        // Remove the original template element if this is the first layer
+        if (index === 0) {
+            templateElement.remove();
+        }
 
         console.log(`[v-o] Created history layer ${index}:`, {
             message: entry.message,
@@ -552,7 +585,7 @@ class ErrorOverlay extends HTMLElement {
             // Prevent default scrolling behavior
             event.preventDefault();
             event.stopPropagation();
-            
+
             // Determine scroll direction
             const delta = event.deltaY;
             if (Math.abs(delta) < 5) {
@@ -561,7 +594,7 @@ class ErrorOverlay extends HTMLElement {
             }
 
             scrollDirection = delta > 0 ? 1 : -1;
-            
+
             if (isScrolling) {
                 console.log('[v-o] Wheel event ignored - already scrolling');
                 return; // Prevent rapid scrolling
@@ -570,7 +603,7 @@ class ErrorOverlay extends HTMLElement {
             console.log('[v-o] Processing wheel event - direction:', scrollDirection);
             isScrolling = true;
             this._navigateHistoryByScroll(scrollDirection);
-            
+
             // Reset scrolling flag after animation
             setTimeout(() => {
                 isScrolling = false;
@@ -578,17 +611,17 @@ class ErrorOverlay extends HTMLElement {
         };
 
         // Add wheel event listener with proper options
-        rootElement.addEventListener('wheel', handleWheel, { 
-            passive: false, 
-            capture: true 
+        rootElement.addEventListener('wheel', handleWheel, {
+            passive: false,
+            capture: true
         });
 
         // Also add to the backdrop for better coverage
         const backdrop = this.root.querySelector("#__v_o__backdrop");
         if (backdrop) {
-            backdrop.addEventListener('wheel', handleWheel, { 
-                passive: false, 
-                capture: true 
+            backdrop.addEventListener('wheel', handleWheel, {
+                passive: false,
+                capture: true
             });
         }
 
@@ -606,7 +639,7 @@ class ErrorOverlay extends HTMLElement {
         }
 
         let newIndex = this.__v_oCurrentHistoryIndex + direction;
-        
+
         // Loop around
         if (newIndex < 0) {
             newIndex = this.__v_oHistory.length - 1;
@@ -630,17 +663,17 @@ class ErrorOverlay extends HTMLElement {
 
         // Update the current history index
         this.__v_oCurrentHistoryIndex = index;
-        
+
         // Update the main overlay to show the current error
         const historyEntry = this.__v_oHistory[index];
         this.__v_oPayload = historyEntry.payload;
-        
+
         // Re-render the main overlay with the current error
         this._updateOverlayWithHistoryError();
-        
+
         // Update the layered history display (background layers)
         this._updateHistoryLayersVisibility();
-        
+
         // Show scroll hint briefly
         this._showScrollHint();
     }
@@ -654,12 +687,12 @@ class ErrorOverlay extends HTMLElement {
         if (typeof this._updatePagination === 'function') {
             this._updatePagination();
         }
-        
+
         // Force re-render of the overlay content
         const mount = this.root.querySelector("#__v_o__overlay");
         if (mount && this.__v_oPayload && this.__v_oPayload.errors && this.__v_oPayload.errors.length > 0) {
             const currentError = this.__v_oPayload.errors[0];
-            const codeFrame = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || 
+            const codeFrame = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent ||
                 '<div class="no-code-frame font-mono">No code frame could be generated.</div>';
             mount.innerHTML = codeFrame;
         }
@@ -699,7 +732,7 @@ class ErrorOverlay extends HTMLElement {
         }
 
         indicator.classList.add('history-scroll-hint');
-        
+
         setTimeout(() => {
             indicator.classList.remove('history-scroll-hint');
         }, 2000);
@@ -727,11 +760,11 @@ class ErrorOverlay extends HTMLElement {
      */
     _toggleHistoryMode() {
         this.__v_oHistoryEnabled = !this.__v_oHistoryEnabled;
-        
+
         const rootElement = this.root.querySelector("#__v_o__root");
         const indicator = this.root.querySelector("#__v_o__history_indicator");
         const toggleButton = this.root.querySelector("#__v_o__history_toggle");
-        
+
         if (this.__v_oHistoryEnabled) {
             rootElement.classList.add('scrolling-history');
             if (indicator) {
@@ -1574,6 +1607,30 @@ class ErrorOverlay extends HTMLElement {
                 const html = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || "";
 
                 flameOverlay.innerHTML = html;
+            }
+
+            // Check if this is a new error and add it to history
+            const currentErrorId = this._generateErrorId(currentError);
+            const isNewError = !this.__v_oHistory.some(entry => entry.id === currentErrorId);
+
+            if (isNewError) {
+                // Store the current payload temporarily
+                const previousPayload = this.__v_oPayload;
+
+                // Update the payload
+                this.__v_oPayload = {
+                    ...this.__v_oPayload,
+                    errors: [currentError]
+                };
+
+                // Add to history
+                this._addCurrentErrorToHistory();
+
+                // Re-render history layers
+                this._renderHistoryLayers();
+
+                // Restore the full payload for display
+                this.__v_oPayload = previousPayload;
             }
         }
     }
