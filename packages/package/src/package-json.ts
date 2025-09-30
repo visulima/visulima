@@ -288,7 +288,15 @@ export const ensurePackages = async (
 ): Promise<void> => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (process.env.CI || (isNode && !process.stdout?.isTTY)) {
-        console.warn("Skipping package installation because the process is not interactive.");
+        const message = `Skipping package installation for [${packages.join(", ")}] because the process is not interactive.`;
+
+        if (options.throwOnWarn) {
+            throw new Error(message);
+        } else if (options.logger?.warn) {
+            options.logger.warn(message);
+        } else {
+            console.warn(message);
+        }
 
         return;
     }
