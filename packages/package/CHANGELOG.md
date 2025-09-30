@@ -1,3 +1,9 @@
+## @visulima/package [3.6.0](https://github.com/visulima/visulima/compare/@visulima/package@3.5.12...@visulima/package@3.6.0) (2025-09-30)
+
+### Features
+
+* **package:** enhance package installation warnings and options ([640aaf7](https://github.com/visulima/visulima/commit/640aaf76efb345565695165f8c46a95833c74b1e))
+
 ## @visulima/package [3.5.12](https://github.com/visulima/visulima/compare/@visulima/package@3.5.11...@visulima/package@3.5.12) (2025-09-23)
 
 ### Miscellaneous Chores
