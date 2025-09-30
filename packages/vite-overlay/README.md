@@ -201,15 +201,15 @@ The error overlay uses a custom design system with CSS custom properties:
 
 The error overlay is designed to work in all modern browsers with at least 1% global market share. This includes:
 
-| Browser | Minimum Version | Release Date |
-|---------|-----------------|--------------|
-| **Chrome** | 91+ | January 2021 |
-| **Firefox** | 91+ | August 2021 |
-| **Safari** | 14.1+ | April 2021 |
-| **Edge** | 91+ | January 2021 |
-| **iOS Safari** | 14.5+ | April 2021 |
-| **Opera** | 77+ | February 2021 |
-| **Samsung Internet** | 16+ | October 2021 |
+| Browser              | Minimum Version | Release Date  |
+| -------------------- | --------------- | ------------- |
+| **Chrome**           | 91+             | January 2021  |
+| **Firefox**          | 91+             | August 2021   |
+| **Safari**           | 14.1+           | April 2021    |
+| **Edge**             | 91+             | January 2021  |
+| **iOS Safari**       | 14.5+           | April 2021    |
+| **Opera**            | 77+             | February 2021 |
+| **Samsung Internet** | 16+             | October 2021  |
 
 ### Browser Features Used
 

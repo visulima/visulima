@@ -259,12 +259,12 @@ textarea:focus-visible,
 }
 
 .shiki.has-diff .diff.add::before {
-    @apply absolute left-3 mt-0.5 font-bold text-green-500 pointer-events-none select-none;
+    @apply pointer-events-none absolute left-3 mt-0.5 font-bold text-green-500 select-none;
     content: "+";
 }
 
 .shiki.has-diff .diff.remove::before {
-    @apply absolute left-3 mt-0.5 font-bold text-red-500 pointer-events-none select-none;
+    @apply pointer-events-none absolute left-3 mt-0.5 font-bold text-red-500 select-none;
     content: "−";
 }
 
@@ -544,8 +544,13 @@ textarea:focus-visible,
 
 /* Scroll hint animation */
 @keyframes scroll-hint {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-2px); }
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
 }
 
 .history-scroll-hint {
