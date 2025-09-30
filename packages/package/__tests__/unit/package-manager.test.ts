@@ -30,7 +30,7 @@ vi.mock("node:child_process", () => {
 delete process.env.npm_config_user_agent;
 
 describe("package-manager", () => {
-    describe("getPackageManagerVersion", () => {
+    describe(getPackageManagerVersion, () => {
         it("should return the package manager version", () => {
             expect.assertions(2);
 
@@ -150,8 +150,10 @@ describe("package-manager", () => {
         });
     });
 
-    describe("generateMissingPackagesInstallMessage", () => {
+    describe(generateMissingPackagesInstallMessage, () => {
         it("should generate install message with default package managers for single missing package", () => {
+            expect.assertions(4);
+
             const result = generateMissingPackagesInstallMessage("test-package", ["lodash"], {});
 
             expect(result).toContain("test-package could not find the following package\n\n  lodash");
@@ -161,6 +163,8 @@ describe("package-manager", () => {
         });
 
         it("should throw error when packageManagers array is empty", () => {
+            expect.assertions(1);
+
             expect(() => {
                 generateMissingPackagesInstallMessage("test-package", ["lodash"], {
                     packageManagers: [],
@@ -169,6 +173,8 @@ describe("package-manager", () => {
         });
 
         it("should generate install message with default package managers for multiple missing packages", () => {
+            expect.assertions(3);
+
             const packageName = "my-package";
             const missingPackages = ["lodash", "express"];
             const options = {};
@@ -181,6 +187,8 @@ describe("package-manager", () => {
         });
 
         it("should generate install message with custom package managers list", () => {
+            expect.assertions(1);
+
             const packageName = "my-package";
             const missingPackages = ["lodash"];
             const options = { packageManagers: ["bun"] as PackageManager[] };
@@ -191,6 +199,8 @@ describe("package-manager", () => {
         });
 
         it("should generate install message with pre and post messages", () => {
+            expect.assertions(3);
+
             const packageName = "my-package";
             const missingPackages = ["lodash"];
             const options = { postMessage: "Post-message", preMessage: "Pre-message" };

@@ -16,18 +16,17 @@ export interface RootMonorepo<T extends Strategy = Strategy> {
 /**
  * An asynchronous function to find the root directory path and strategy for a monorepo based on
  * the given current working directory (cwd).
- *
- * @param cwd - The current working directory. The type of `cwd` is part of an `Options` type, specifically `Options["cwd"]`.
- *              Default is undefined.
+ * @param cwd The current working directory. The type of `cwd` is part of an `Options` type, specifically `Options["cwd"]`.
+ * Default is undefined.
  * @returns A `Promise` that resolves to the root directory path and strategy for the monorepo.
- *          The type of the returned promise is `Promise<RootMonorepo>`.
+ * The type of the returned promise is `Promise&lt;RootMonorepo>`.
  * @throws An `Error` if no monorepo root can be found using lerna, yarn, pnpm, or npm as indicators.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo> => {
     const workspaceFilePath = await findUp(["lerna.json", "turbo.json"], {
         type: "file",
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     if (workspaceFilePath?.endsWith("lerna.json")) {
@@ -49,9 +48,7 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
         if (["npm", "yarn"].includes(packageManager)) {
             const packageJsonFilePath = join(path, "package.json");
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (existsSync(packageJsonFilePath)) {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 const packageJson = readFileSync(join(path, "package.json"), "utf8");
 
                 if (packageJson.includes("workspaces")) {
@@ -64,7 +61,6 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
         } else if (packageManager === "pnpm") {
             const pnpmWorkspacesFilePath = join(path, "pnpm-workspace.yaml");
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (existsSync(pnpmWorkspacesFilePath)) {
                 return {
                     path,
@@ -86,18 +82,17 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
 /**
  * An function to find the root directory path and strategy for a monorepo based on
  * the given current working directory (cwd).
- *
- * @param cwd - The current working directory. The type of `cwd` is part of an `Options` type, specifically `Options["cwd"]`.
- *              Default is undefined.
+ * @param cwd The current working directory. The type of `cwd` is part of an `Options` type, specifically `Options["cwd"]`.
+ * Default is undefined.
  * @returns A `Promise` that resolves to the root directory path and strategy for the monorepo.
- *          The type of the returned promise is `Promise<RootMonorepo>`.
+ * The type of the returned promise is `Promise&lt;RootMonorepo>`.
  * @throws An `Error` if no monorepo root can be found using lerna, yarn, pnpm, or npm as indicators.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
     const workspaceFilePath = findUpSync(["lerna.json", "turbo.json"], {
         type: "file",
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     if (workspaceFilePath?.endsWith("lerna.json")) {
@@ -119,9 +114,7 @@ export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
         if (["npm", "yarn"].includes(packageManager)) {
             const packageJsonFilePath = join(path, "package.json");
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (existsSync(packageJsonFilePath)) {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 const packageJson = readFileSync(join(path, "package.json"), "utf8");
 
                 if (packageJson.includes("workspaces")) {
@@ -134,7 +127,6 @@ export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
         } else if (packageManager === "pnpm") {
             const pnpmWorkspacesFilePath = join(path, "pnpm-workspace.yaml");
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (existsSync(pnpmWorkspacesFilePath)) {
                 return {
                     path,

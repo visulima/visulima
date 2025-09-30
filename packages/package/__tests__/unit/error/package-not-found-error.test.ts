@@ -18,6 +18,7 @@ describe("packageNotFoundError", () => {
 
         const packageName = "react";
         const error = new PackageNotFoundError(packageName);
+
         expect(error.message).toContain(`Package '${packageName}' was not found. Please install it using 'pnpm install ${packageName}'`);
     });
 
@@ -26,6 +27,7 @@ describe("packageNotFoundError", () => {
 
         const packageName = [];
         const error = new PackageNotFoundError(packageName);
+
         expect(error.message).toContain("Package was not found.");
     });
 
