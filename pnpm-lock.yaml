@@ -2109,6 +2109,8 @@ importers:
         specifier: ^3.1.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.5.2)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
+  packages/fs/__bench__/fixtures/a/b: {}
+
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
@@ -12087,7 +12089,6 @@ packages:
   '@visulima/nextra-theme-docs@4.0.26':
     resolution: {integrity: sha512-eGQn1GmpnoQJwBWYIOgwGTuCu1o7jnTko68Sb9Z5eBszY0XfMcsU1sm9pYQ6y+EMyj2g2O/Hs8uZ1n8P9CULEg==}
     engines: {node: '>=18.* <=22.*'}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       next: '>=13.1.6'
       nextra: '>=2.2.13'
