@@ -24,7 +24,9 @@ const fixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "_
 
 const { mockConfirm, mockInstallPackage } = vi.hoisted(() => {
     return {
+        // eslint-disable-next-line vitest/require-mock-type-parameters
         mockConfirm: vi.fn(),
+        // eslint-disable-next-line vitest/require-mock-type-parameters
         mockInstallPackage: vi.fn(),
     };
 });
@@ -91,7 +93,7 @@ describe("package-json", () => {
                 });
             }
 
-            expect(isAccessibleSync(join(distribution, "package.json"))).toBeTruthy();
+            expect(isAccessibleSync(join(distribution, "package.json"))).toBe(true);
 
             const packageJsonFile = readJsonSync(join(distribution, "package.json"));
 
@@ -99,7 +101,7 @@ describe("package-json", () => {
         });
     });
 
-    describe("parsePackageJson", () => {
+    describe(parsePackageJson, () => {
         it("should accept a valid package.json object and return a normalized package.json object", () => {
             expect.assertions(1);
 
@@ -143,7 +145,7 @@ describe("package-json", () => {
                     strict: true,
                 });
 
-                expect(true).toBeFalsy();
+                expect(true).toBe(false);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 expect(error).toBeInstanceOf(Error);
@@ -152,6 +154,8 @@ describe("package-json", () => {
         });
 
         it("should not throw in strict mode when no warnings occur", () => {
+            expect.assertions(1);
+
             const validPackage = {
                 author: "Test Author",
                 description: "A test package",
@@ -185,7 +189,7 @@ describe("package-json", () => {
                     strict: true,
                 });
 
-                expect(true).toBeFalsy();
+                expect(true).toBe(false);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
@@ -208,7 +212,7 @@ describe("package-json", () => {
                     strict: true,
                 });
 
-                expect(true).toBeFalsy();
+                expect(true).toBe(false);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
@@ -231,7 +235,7 @@ describe("package-json", () => {
                     strict: true,
                 });
 
-                expect(true).toBeFalsy();
+                expect(true).toBe(false);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
@@ -254,7 +258,7 @@ describe("package-json", () => {
                     strict: true,
                 });
 
-                expect(true).toBeFalsy();
+                expect(true).toBe(false);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 expect(error).toBeInstanceOf(Error);
@@ -330,7 +334,7 @@ describe("package-json", () => {
         });
     });
 
-    describe("getPackageJsonProperty", () => {
+    describe(getPackageJsonProperty, () => {
         it("should return the value of the specified property", () => {
             expect.assertions(1);
 
@@ -365,14 +369,13 @@ describe("package-json", () => {
                 version: "1.0.0",
             };
 
-            // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
             const result = getPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "dependencies.dependency-1", undefined);
 
             expect(result).toBeUndefined();
         });
     });
 
-    describe("hasPackageJsonProperty", () => {
+    describe(hasPackageJsonProperty, () => {
         it("should return true if the property exists in the package.json file", () => {
             expect.assertions(1);
 
@@ -383,7 +386,7 @@ describe("package-json", () => {
 
             const result = hasPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "name");
 
-            expect(result).toBeTruthy();
+            expect(result).toBe(true);
         });
 
         it("should return false if the property does not exist in the package.json file", () => {
@@ -396,11 +399,11 @@ describe("package-json", () => {
 
             const result = hasPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "author");
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
     });
 
-    describe("hasPackageJsonAnyDependency", () => {
+    describe(hasPackageJsonAnyDependency, () => {
         it("should return true if any of the specified dependencies exist in the package.json file", () => {
             expect.assertions(1);
 
@@ -415,7 +418,7 @@ describe("package-json", () => {
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-3"]);
 
-            expect(result).toBeTruthy();
+            expect(result).toBe(true);
         });
 
         it("should return false if none of the specified dependencies exist in the package.json file", () => {
@@ -432,7 +435,7 @@ describe("package-json", () => {
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-3", "dependency-4"]);
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
 
         it("should return false if the dependencies property is undefined", () => {
@@ -445,13 +448,14 @@ describe("package-json", () => {
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
 
         it("should return false if the dependencies property is null", () => {
             expect.assertions(1);
 
             const packageJson = {
+                // eslint-disable-next-line unicorn/no-null
                 dependencies: null,
                 name: "test-package",
                 version: "1.0.0",
@@ -459,7 +463,7 @@ describe("package-json", () => {
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
 
         it("should return false if the dependencies property is an empty object", () => {
@@ -473,7 +477,7 @@ describe("package-json", () => {
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
 
         it("should return false if the dependencies property is an empty array", () => {
@@ -487,16 +491,18 @@ describe("package-json", () => {
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
     });
 
-    describe("ensurePackages", () => {
+    describe(ensurePackages, () => {
         beforeEach(() => {
             vi.resetAllMocks();
         });
 
         it("should install packages when user confirms and packages are missing", async () => {
+            expect.assertions(2);
+
             mockConfirm.mockResolvedValue(true);
 
             vi.stubGlobal("process", {
@@ -522,6 +528,8 @@ describe("package-json", () => {
         });
 
         it("should install packages when user confirms and packages are missing with custom message function", async () => {
+            expect.assertions(2);
+
             mockConfirm.mockResolvedValue(true);
 
             vi.stubGlobal("process", {
@@ -551,6 +559,8 @@ describe("package-json", () => {
         });
 
         it("should not install packages when the packages are already installed", async () => {
+            expect.assertions(2);
+
             mockConfirm.mockResolvedValue(true);
 
             vi.stubGlobal("process", {
@@ -578,6 +588,8 @@ describe("package-json", () => {
         });
 
         it("should return early when running in CI environment", async () => {
+            expect.assertions(2);
+
             vi.stubGlobal("process", {
                 argv: [],
                 env: { CI: true },
@@ -596,6 +608,8 @@ describe("package-json", () => {
         });
 
         it("should return early when not in TTY environment", async () => {
+            expect.assertions(2);
+
             vi.stubGlobal("process", {
                 argv: [],
                 env: { CI: false },

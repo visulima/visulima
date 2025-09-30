@@ -5,8 +5,8 @@ import { findPackageManagerSync } from "../package-manager";
  */
 class PackageNotFoundError extends Error {
     /**
-     * @param {string} packageName - The name of the package that was not found.
-     * @param {string} packageManager - The package manager used to install the package.
+     * @param packageName The name of the package that was not found.
+     * @param packageManager The package manager used to install the package.
      */
     public constructor(packageName: string[] | string, packageManager?: string) {
         if (typeof packageName === "string") {
@@ -16,6 +16,7 @@ class PackageNotFoundError extends Error {
 
         if (packageName.length === 0) {
             super("Package was not found.");
+
             return;
         }
 

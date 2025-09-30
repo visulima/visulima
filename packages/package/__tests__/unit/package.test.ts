@@ -65,6 +65,7 @@ describe("package", () => {
             if (name === "findPackageRoot") {
                 result = await result;
             }
+
             expect(result).toBe(distribution);
         });
 
@@ -78,7 +79,7 @@ describe("package", () => {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 await expect(async () => await function_(distribution)).rejects.toThrow("Could not find root directory");
             } else {
-                // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/promise-function-async
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(() => function_(distribution)).toThrow("Could not find root directory");
             }
         });
@@ -91,7 +92,7 @@ describe("package", () => {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 await expect(async () => await function_(distribution)).rejects.toThrow("Could not find root directory");
             } else {
-                // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/promise-function-async
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(() => function_(distribution)).toThrow("Could not find root directory");
             }
         });

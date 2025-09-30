@@ -13,7 +13,6 @@ const packageMangerFindUpMatcher = (directory: string): string | undefined => {
     let lockFile: string | undefined;
 
     lockFileNames.forEach((lockFileName) => {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         if (!lockFile && existsSync(join(directory, lockFileName))) {
             lockFile = join(directory, lockFileName);
         }
@@ -24,9 +23,8 @@ const packageMangerFindUpMatcher = (directory: string): string | undefined => {
     }
 
     const packageJsonFilePath = join(directory, "package.json");
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
+
     if (existsSync(packageJsonFilePath)) {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const packageJson = parsePackageJson(readFileSync(packageJsonFilePath, "utf8"));
 
         if (packageJson.packageManager !== undefined) {
@@ -91,17 +89,16 @@ const findPackageManagerOnFile = (foundFile: string | undefined): PackageManager
 
 /**
  * An asynchronous function that finds a lock file in the specified directory or any of its parent directories.
- *
- * @param cwd - Optional. The directory path to start the search from. The type of `cwd` is part of an `Options` type,
+ * @param cwd Optional. The directory path to start the search from. The type of `cwd` is part of an `Options` type,
  * specifically `URL | string`. Defaults to the current working directory.
  * @returns A `Promise` that resolves with the path of the found lock file.
- * The type of the returned promise is `Promise<string>`.
+ * The type of the returned promise is `Promise&lt;string>`.
  * @throws An `Error` if no lock file is found.
  */
 export const findLockFile = async (cwd?: URL | string): Promise<string> => {
     const filePath = await findUp(lockFileNames, {
         type: "file",
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     if (!filePath) {
@@ -114,7 +111,7 @@ export const findLockFile = async (cwd?: URL | string): Promise<string> => {
 export const findLockFileSync = (cwd?: URL | string): string => {
     const filePath = findUpSync(lockFileNames, {
         type: "file",
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     if (!filePath) {
@@ -135,16 +132,15 @@ export type PackageManagerResult = {
  * An asynchronous function that finds the package manager used in a project based on the presence of lock files
  * or package.json configuration. If found, it returns the package manager and the path to the lock file or package.json.
  * Throws an error if no lock file or package.json is found.
- *
- * @param cwd - Optional. The current working directory to start the search from. The type of `cwd` is part of an `Options`
+ * @param cwd Optional. The current working directory to start the search from. The type of `cwd` is part of an `Options`
  * type, specifically `URL | string`.
  * @returns A `Promise` that resolves to an object containing the package manager and path.
- * The return type of the function is `Promise<PackageManagerResult>`.
+ * The return type of the function is `Promise&lt;PackageManagerResult>`.
  * @throws An `Error` if no lock file or package.json is found.
  */
 export const findPackageManager = async (cwd?: URL | string): Promise<PackageManagerResult> => {
     const foundFile = await findUp(packageMangerFindUpMatcher, {
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     return findPackageManagerOnFile(foundFile);
@@ -154,17 +150,16 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
  * An function that finds the package manager used in a project based on the presence of lock files
  * or package.json configuration. If found, it returns the package manager and the path to the lock file or package.json.
  * Throws an error if no lock file or package.json is found.
- *
- * @param cwd - Optional. The current working directory to start the search from. The type of `cwd` is part of an `Options`
+ * @param cwd Optional. The current working directory to start the search from. The type of `cwd` is part of an `Options`
  * type, specifically `URL | string`.
  * @returns A `Promise` that resolves to an object containing the package manager and path.
- * The return type of the function is `Promise<PackageManagerResult>`.
+ * The return type of the function is `Promise&lt;PackageManagerResult>`.
  * @throws An `Error` if no lock file or package.json is found.
  */
 
 export const findPackageManagerSync = (cwd?: URL | string): PackageManagerResult => {
     const foundFile = findUpSync(packageMangerFindUpMatcher, {
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     return findPackageManagerOnFile(foundFile);
@@ -172,26 +167,25 @@ export const findPackageManagerSync = (cwd?: URL | string): PackageManagerResult
 
 /**
  * Function that retrieves the version of the specified package manager.
- *
- * @param name - The name of the package manager. The type of `name` is `string`.
+ * @param name The name of the package manager. The type of `name` is `string`.
  * @returns The version of the package manager. The return type of the function is `string`.
  */
+// eslint-disable-next-line sonarjs/os-command
 export const getPackageManagerVersion = (name: string): string => execSync(`${name} --version`).toString("utf8").trim();
 
 /**
  * An asynchronous function that detects what package manager executes the process.
  *
  * Supports npm, pnpm, Yarn, cnpm, and bun. And also any other package manager that sets the npm_config_user_agent env variable.
- *
  * @returns A `Promise` that resolves to an object containing the name and version of the package manager,
  * or undefined if the package manager information cannot be determined. The return type of the function
- * is `Promise<{ name: PackageManager | "cnpm"; version: string } | undefined>`.
+ * is `Promise&lt;{ name: PackageManager | "cnpm"; version: string } | undefined>`.
  */
 export const identifyInitiatingPackageManager = async (): Promise<
     | {
-          name: PackageManager | "cnpm";
-          version: string;
-      }
+        name: PackageManager | "cnpm";
+        version: string;
+    }
     | undefined
 > => {
     if (!process.env.npm_config_user_agent) {
@@ -210,16 +204,13 @@ export const identifyInitiatingPackageManager = async (): Promise<
 
 /**
  * Function that generates a message to install missing packages.
- *
- * @param packageName - The name of the package that requires the missing packages.
- * @param missingPackages - An array of missing package names.
- * @param options - An object containing optional parameters:
- *   - `packageManagers` (optional): An array of package managers to include in the message. Defaults to \["npm", "pnpm", "yarn"\].
- *   - `postMessage` (optional): A string to append to the end of the message.
- *   - `preMessage` (optional): A string to prepend to the beginning of the message.
- *
+ * @param packageName The name of the package that requires the missing packages.
+ * @param missingPackages An array of missing package names.
+ * @param options An object containing optional parameters:
+ * @param options.packageManagers An array of package managers to include in the message. Defaults to \["npm", "pnpm", "yarn"\].
+ * @param options.postMessage A string to append to the end of the message.
+ * @param options.preMessage A string to prepend to the beginning of the message.
  * @returns A string message with instructions to install the missing packages using the specified package managers.
- *
  * @throws An `Error` if no package managers are provided in the options.
  */
 export const generateMissingPackagesInstallMessage = (
@@ -264,6 +255,7 @@ To install the missing package${s}, please run the following command:
 
     const packageManagerCommands = options.packageManagers.map((packageManager) => {
         const missingPackagesString = missingPackages.map((element) => atLatest(element)).join(" ");
+
         switch (packageManager) {
             case "bun": {
                 return `  bun add ${missingPackagesString} -D`;

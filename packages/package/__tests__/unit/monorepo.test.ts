@@ -16,7 +16,6 @@ describe("monorepo", () => {
     describe.each([
         ["findMonorepoRoot", findMonorepoRoot],
         ["findMonorepoRootSync", findMonorepoRootSync],
-        // eslint-disable-next-line sonarjs/cognitive-complexity
     ])("%s", (name, _function) => {
         describe.each(scenarios)(`using scenario %s`, (scenario) => {
             const strategy = scenario.includes("-") ? scenario.split("-")[0] : scenario;

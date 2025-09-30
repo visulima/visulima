@@ -30,10 +30,10 @@ export type EnsurePackagesOptions = {
     devDeps?: boolean;
     /** Additional options for package installation (excluding cwd and dev which are handled separately) */
     installPackage?: Omit<InstallPackageOptions, "cwd" | "dev">;
-    /** Whether to include peer dependencies in the operation */
-    peerDeps?: boolean;
     /** Custom logger interface for warning messages */
     logger?: { warn: (message: string) => void };
+    /** Whether to include peer dependencies in the operation */
+    peerDeps?: boolean;
     /** Whether to throw an error when warnings are logged instead of just logging them */
     throwOnWarn?: boolean;
 };
