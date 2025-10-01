@@ -123,6 +123,74 @@ export const switchCodeView = async (page: Page, mode: "original" | "compiled") 
 };
 
 /**
+ * Get the current error title/name
+ */
+export const getErrorTitle = async (page: Page): Promise<string> => await page.evaluate(() => {
+    const overlay = document.querySelector("error-overlay");
+
+    if (overlay && overlay.shadowRoot) {
+        const titleElement = overlay.shadowRoot.querySelector("#__v_o__heading");
+
+        return titleElement ? titleElement.textContent || "" : "";
+    }
+
+    return "";
+});
+
+/**
+ * Get the current error message
+ */
+export const getErrorMessage = async (page: Page): Promise<string> => await page.evaluate(() => {
+    const overlay = document.querySelector("error-overlay");
+
+    if (overlay && overlay.shadowRoot) {
+        const messageElement = overlay.shadowRoot.querySelector("#__v_o__message");
+
+        return messageElement ? messageElement.textContent || "" : "";
+    }
+
+    return "";
+});
+
+/**
+ * Get the current file path being displayed
+ */
+export const getCurrentFilePath = async (page: Page): Promise<string> => await page.evaluate(() => {
+    const overlay = document.querySelector("error-overlay");
+
+    if (overlay && overlay.shadowRoot) {
+        const fileElement = overlay.shadowRoot.querySelector("#__v_o__filelink");
+
+        return fileElement ? fileElement.textContent || "" : "";
+    }
+
+    return "";
+});
+
+/**
+ * Check if the code frame contains a specific line number
+ */
+export const codeFrameContainsLine = async (page: Page, lineNumber: number): Promise<boolean> => await page.evaluate((line) => {
+    const overlay = document.querySelector("error-overlay");
+
+    if (overlay && overlay.shadowRoot) {
+        const overlayElement = overlay.shadowRoot.querySelector("#__v_o__overlay");
+        const overlayText = overlayElement ? overlayElement.textContent || "" : "";
+
+        return overlayText.includes(`:${line}`) || overlayText.includes(`${line}:`);
+    }
+
+    return false;
+}, lineNumber);
+
+/**
+ * Wait for the overlay to update after navigation
+ */
+export const waitForOverlayUpdate = async (page: Page, timeout = 1000) => {
+    await page.waitForTimeout(timeout);
+};
+
+/**
  * Check if a file path represents an original source file (not compiled)
  */
 export const isOriginalSourcePath = (filePath: string | null): boolean => {
