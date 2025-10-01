@@ -154,28 +154,28 @@ class ErrorOverlay extends HTMLElement {
                     switch (event.key) {
                         case "ArrowDown":
                         case "ArrowRight": {
-                            event.preventDefault();
-                            this._navigateHistoryByScroll(1);
+                        event.preventDefault();
+                        this._navigateHistoryByScroll(1);
 
                             break;
                         }
                         case "ArrowLeft":
                         case "ArrowUp": {
-                            event.preventDefault();
+                        event.preventDefault();
                             this._navigateHistoryByScroll(-1);
 
                             break;
                         }
                         case "End": {
-                            event.preventDefault();
-                            this._navigateToHistoryItem(this.__v_oHistory.length - 1);
+                        event.preventDefault();
+                        this._navigateToHistoryItem(this.__v_oHistory.length - 1);
 
                             break;
                         }
                         case "h":
                         case "H": {
-                            event.preventDefault();
-                            this._toggleHistoryMode();
+                        event.preventDefault();
+                        this._toggleHistoryMode();
 
                             break;
                         }
@@ -215,8 +215,8 @@ class ErrorOverlay extends HTMLElement {
         };
 
         // Always add error to history (no deduplication to show frequency)
-        this.__v_oHistory.unshift(historyEntry);
-        this.__v_oCurrentHistoryIndex = 0;
+            this.__v_oHistory.unshift(historyEntry);
+            this.__v_oCurrentHistoryIndex = 0;
 
         // Limit history to 50 entries to prevent memory issues
         if (this.__v_oHistory.length > 50) {
@@ -266,6 +266,7 @@ class ErrorOverlay extends HTMLElement {
             historyIndicator: root.querySelector("#__v_o__history_indicator"),
             historyLayers: this.__v_oHistoryLayers,
             historyToggle: root.querySelector("#__v_o__history_toggle"),
+            historyLayerDepth: root.querySelector("#__v_o__history_layer_depth"),
             message: root.querySelector(String.raw`.text-sm.text-\[var\(--ono-v-red-orange\)\].font-mono.bg-\[var\(--ono-v-surface-muted\)\]`),
             overlay: root.querySelector("#__v_o__overlay"),
             root: this.root.querySelector("#__v_o__root"),
@@ -295,84 +296,12 @@ class ErrorOverlay extends HTMLElement {
      * @returns {HTMLElement} The layer element
      */
     _createHistoryLayer(entry, index) {
-        // Create the template element if it doesn't exist
-        let templateElement = document.querySelector("#__v_o__history_layer");
+        // Get the existing template element from the DOM
+        const templateElement = this.root.querySelector("#__v_o__history_layer");
 
         if (!templateElement) {
-            templateElement = document.createElement("div");
-            templateElement.id = "__v_o__history_layer";
-            templateElement.className = "fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px] hidden";
-            templateElement.innerHTML = `
-                <div id="__v_o__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-none"></div>
-                <div id="__v_o__notch" class="relative z-[2] flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
-                    <div class="error-overlay-notch relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pr-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tl-[var(--ono-v-dialog-radius)]" data-side="left">
-                        <nav class="error-overlay-pagination dialog-exclude-closing-from-outside-click flex justify-center items-center gap-2 w-fit">
-                            <div class="error-overlay-pagination-count inline-flex justify-center items-center min-w-8 h-5 gap-1 text-[var(--ono-v-text)] text-center text-[11px] font-medium leading-4 rounded-full px-1.5">
-                                <span>1</span>
-                                <span class="text-[var(--ono-v-text-muted)]">/</span>
-                                <span>1</span>
-                            </div>
-                        </nav>
-                        <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--ono-v-dialog-border-width))] right-[-54px] pointer-events-none" preserveAspectRatio="none">
-                            <mask id="error_overlay_nav_mask0_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" style="mask-type: alpha;">
-                                <mask id="error_overlay_nav_path_1_outside_1_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" fill="black">
-                                <rect fill="white" y="-1" width="60" height="43"></rect>
-                                <path d="M1 0L8.0783 0C15.772 0 22.7836 4.41324 26.111 11.3501L34.8889 29.6498C38.2164 36.5868 45.228 41 52.9217 41H60H1L1 0Z"></path>
-                                </mask>
-                                <path d="M1 0L8.0783 0C15.772 0 22.7836 4.41324 26.111 11.3501L34.8889 29.6498C38.2164 36.5868 45.228 41 52.9217 41H60H1L1 0Z" fill="white"></path>
-                                <path d="M1 0V-1H0V0L1 0ZM1 41H0V42H1V41ZM34.8889 29.6498L33.9873 30.0823L34.8889 29.6498ZM26.111 11.3501L27.0127 10.9177L26.111 11.3501ZM1 1H8.0783V-1H1V1ZM60 40H1V42H60V40ZM2 41V0L0 0L0 41H2ZM25.2094 11.7826L33.9873 30.0823L35.7906 29.2174L27.0127 10.9177L25.2094 11.7826ZM52.9217 42H60V40H52.9217V42ZM33.9873 30.0823C37.4811 37.3661 44.8433 42 52.9217 42V40C45.6127 40 38.9517 35.8074 35.7906 29.2174L33.9873 30.0823ZM8.0783 1C15.3873 1 22.0483 5.19257 25.2094 11.7826L27.0127 10.9177C23.5188 3.6339 16.1567 -1 8.0783 -1V1Z" fill="black" mask="url(#error_overlay_nav_path_1_outside_1_2667_14687)"></path>
-                            </mask>
-                            <g mask="url(#error_overlay_nav_mask0_2667_14687)">
-                                <mask id="error_overlay_nav_path_3_outside_2_2667_14687" maskUnits="userSpaceOnUse" x="-1" y="0.0244141" width="60" height="43" fill="black">
-                                <rect fill="white" x="-1" y="0.0244141" width="60" height="43"></rect>
-                                <path d="M0 1.02441H7.0783C14.772 1.02441 21.7836 5.43765 25.111 12.3746L33.8889 30.6743C37.2164 37.6112 44.228 42.0244 51.9217 42.0244H59H0L0 1.02441Z"></path>
-                                </mask>
-                                <path d="M0 1.02441H7.0783C14.772 1.02441 21.7836 5.43765 25.111 12.3746L33.8889 30.6743C37.2164 37.6112 44.228 42.0244 51.9217 42.0244H59H0L0 1.02441Z" fill="var(--background-color)"></path>
-                                <path d="M0 1.02441L0 0.0244141H-1V1.02441H0ZM0 42.0244H-1V43.0244H0L0 42.0244ZM33.8889 30.6743L32.9873 31.1068L33.8889 30.6743ZM25.111 12.3746L26.0127 11.9421L25.111 12.3746ZM0 2.02441H7.0783V0.0244141H0L0 2.02441ZM59 41.0244H0L0 43.0244H59V41.0244ZM1 42.0244L1 1.02441H-1L-1 42.0244H1ZM24.2094 12.8071L32.9873 31.1068L34.7906 30.2418L26.0127 11.9421L24.2094 12.8071ZM51.9217 43.0244H59V41.0244H51.9217V43.0244ZM32.9873 31.1068C36.4811 38.3905 43.8433 43.0244 51.9217 43.0244V41.0244C44.6127 41.0244 37.9517 36.8318 34.7906 30.2418L32.9873 31.1068ZM7.0783 2.02441C14.3873 2.02441 21.0483 6.21699 24.2094 12.8071L26.0127 11.9421C22.5188 4.65831 15.1567 0.0244141 7.0783 0.0244141V2.02441Z" fill="var(--stroke-color)" mask="url(#error_overlay_nav_path_3_outside_2_2667_14687)"></path>
-                            </g>
-                        </svg>
-                    </div>
-                    <div class="error-overlay-notch flex gap-1 relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pl-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tr-[var(--ono-v-dialog-radius)]" data-side="right">
-                        <div class="flex items-center gap-1 text-xs text-[var(--ono-v-text-muted)]">
-                            <span>Just now</span>
-                        </div>
-                        <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--ono-v-dialog-border-width))] left-[-54px] pointer-events-none [transform:rotateY(180deg)]" preserveAspectRatio="none">
-                            <mask id="error_overlay_nav_mask0_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" style="mask-type: alpha;">
-                                <mask id="error_overlay_nav_path_1_outside_1_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" fill="black">
-                                <rect fill="white" y="-1" width="60" height="43"></rect>
-                                <path d="M1 0L8.0783 0C15.772 0 22.7836 4.41324 26.111 11.3501L34.8889 29.6498C38.2164 36.5868 45.228 41 52.9217 41H60H1L1 0Z"></path>
-                                </mask>
-                                <path d="M1 0L8.0783 0C15.772 0 22.7836 4.41324 26.111 11.3501L34.8889 29.6498C38.2164 36.5868 45.228 41 52.9217 41H60H1L1 0Z" fill="white"></path>
-                                <path d="M1 0V-1H0V0L1 0ZM1 41H0V42H1V41ZM34.8889 29.6498L33.9873 30.0823L34.8889 29.6498ZM26.111 11.3501L27.0127 10.9177L26.111 11.3501ZM1 1H8.0783V-1H1V1ZM60 40H1V42H60V40ZM2 41V0L0 0L0 41H2ZM25.2094 11.7826L33.9873 30.0823L35.7906 29.2174L27.0127 10.9177L25.2094 11.7826ZM52.9217 42H60V40H52.9217V42ZM33.9873 30.0823C37.4811 37.3661 44.8433 42 52.9217 42V40C45.6127 40 38.9517 35.8074 35.7906 29.2174L33.9873 30.0823ZM8.0783 1C15.3873 1 22.0483 5.19257 25.2094 11.7826L27.0127 10.9177C23.5188 3.6339 16.1567 -1 8.0783 -1V1Z" fill="black" mask="url(#error_overlay_nav_path_1_outside_1_2667_14687)"></path>
-                            </mask>
-                            <g mask="url(#error_overlay_nav_mask0_2667_14687)">
-                                <mask id="error_overlay_nav_path_3_outside_2_2667_14687" maskUnits="userSpaceOnUse" x="-1" y="0.0244141" width="60" height="43" fill="black">
-                                <rect fill="white" x="-1" y="0.0244141" width="60" height="43"></rect>
-                                <path d="M0 1.02441H7.0783C14.772 1.02441 21.7836 5.43765 25.111 12.3746L33.8889 30.6743C37.2164 37.6112 44.228 42.0244 51.9217 42.0244H59H0L0 1.02441Z"></path>
-                                </mask>
-                                <path d="M0 1.02441H7.0783C14.772 1.02441 21.7836 5.43765 25.111 12.3746L33.8889 30.6743C37.2164 37.6112 44.228 42.0244 51.9217 42.0244H59H0L0 1.02441Z" fill="var(--background-color)"></path>
-                                <path d="M0 1.02441L0 0.0244141H-1V1.02441H0ZM0 42.0244H-1V43.0244H0L0 42.0244ZM33.8889 30.6743L32.9873 31.1068L33.8889 30.6743ZM25.111 12.3746L26.0127 11.9421L25.111 12.3746ZM0 2.02441H7.0783V0.0244141H0L0 2.02441ZM59 41.0244H0L0 43.0244H59V41.0244ZM1 42.0244L1 1.02441H-1L-1 42.0244H1ZM24.2094 12.8071L32.9873 31.1068L34.7906 30.2418L26.0127 11.9421L24.2094 12.8071ZM51.9217 43.0244H59V41.0244H51.9217V43.0244ZM32.9873 31.1068C36.4811 38.3905 43.8433 43.0244 51.9217 43.0244V41.0244C44.6127 41.0244 37.9517 36.8318 34.7906 30.2418L32.9873 31.1068ZM7.0783 2.02441C14.3873 2.02441 21.0483 6.21699 24.2094 12.8071L26.0127 11.9421C22.5188 4.65831 15.1567 0.0244141 7.0783 0.0244141V2.02441Z" fill="var(--stroke-color)" mask="url(#error_overlay_nav_path_3_outside_2_2667_14687)"></path>
-                            </g>
-                        </svg>
-                    </div>
-                </div>
-
-                <div role="dialog" aria-modal="true" aria-label="Runtime Error Overlay" class="relative z-10 flex w-full max-w-[var(--ono-v-dialog-max-width)] max-h-[calc(100%-56px)] scale-100 opacity-100 flex-col overflow-hidden rounded-b-[var(--ono-v-dialog-radius)] bg-[var(--ono-v-surface)] text-[var(--ono-v-text)] shadow-[var(--ono-v-elevation-1)] border-b border-[var(--ono-v-border)]">
-                    <div class="flex items-center gap-1 justify-between border-b border-[var(--ono-v-border)] bg-[var(--ono-v-surface)] px-4 py-2">
-                        <div class="flex items-center gap-2 w-full font-bold text-[var(--ono-v-text)]">
-                            <span class="leading-none rounded-md text-[var(--ono-v-red-orange)] font-mono text-sm">error</span>
-                            <button type="button" class="ml-2 text-xs font-normal font-mono underline text-[var(--ono-v-text-muted)] hover:text-[var(--ono-v-text)] bg-transparent border-none cursor-pointer">Unknown file</button>
-                        </div>
-                    </div>
-                    <div class="px-4 py-2 text-sm text-[var(--ono-v-red-orange)] font-mono bg-[var(--ono-v-surface-muted)] border-b border-[var(--ono-v-border)] font-medium">Unknown error</div>
-                    <div class="relative flex min-h-0 mx-1 py-2 bg-[var(--ono-v-surface)]">
-                        <div class="overflow-auto w-full">
-                            <div class="text-xs font-mono text-[var(--ono-v-text-muted)] whitespace-pre-wrap">No stack trace available</div>
-                    </div>
-                </div>
-            </div>
-        `;
-            this.__v_oHistoryLayers.append(templateElement);
+            console.warn("[v-o] History layer template not found in DOM");
+            return null;
         }
 
         // Clone the template element
@@ -583,23 +512,23 @@ class ErrorOverlay extends HTMLElement {
 
             if (balloonText) {
                 balloonText.textContent = total === 1 ? "Error" : "Errors";
-            }
+                }
 
-            this._restoreBalloonState();
+                this._restoreBalloonState();
 
-            balloon.classList.toggle("hidden", total <= 0);
+                balloon.classList.toggle("hidden", total <= 0);
 
-            const clickHandler = (event) => {
-                event.preventDefault();
+                const clickHandler = (event) => {
+                    event.preventDefault();
                 const isHidden = root.classList.contains("hidden");
 
                 root.classList.toggle("hidden");
                 this._saveBalloonState("overlay", isHidden ? "open" : "closed");
-            };
+                };
 
-            this._makeBalloonDraggable(balloon);
+                this._makeBalloonDraggable(balloon);
 
-            balloon.addEventListener("click", clickHandler);
+                balloon.addEventListener("click", clickHandler);
         } catch {
             // Fail silently if DOM is not available
         }
@@ -691,30 +620,10 @@ class ErrorOverlay extends HTMLElement {
      */
     _initializeHistory() {
         this._addCurrentErrorToHistory();
-        this._initializeHistoryLayers();
+        this._renderHistoryLayers();
         this._initializeHistoryToggle();
         this._initializeScrollNavigation();
         this._updateHistoryToggleVisibility();
-    }
-
-    /**
-     * Initializes the layered history system.
-     * @private
-     */
-    _initializeHistoryLayers() {
-        // Create the history layers container if it doesn't exist
-        if (!this.__v_oHistoryLayers) {
-            this.__v_oHistoryLayers = document.querySelector("#__v_o__history_layers");
-
-            if (!this.__v_oHistoryLayers) {
-                this.__v_oHistoryLayers = document.createElement("div");
-                this.__v_oHistoryLayers.id = "__v_o__history_layers";
-                this.__v_oHistoryLayers.className = "fixed inset-0 z-[2147483645] pointer-events-none";
-                document.body.append(this.__v_oHistoryLayers);
-            }
-        }
-
-        this._renderHistoryLayers();
     }
 
     /**
@@ -1494,20 +1403,28 @@ class ErrorOverlay extends HTMLElement {
      */
     _toggleHistoryMode() {
         this.__v_oHistoryEnabled = !this.__v_oHistoryEnabled;
-        const { historyIndicator, historyToggle, root } = this.__elements || {};
+
+        const { historyIndicator, historyToggle, historyLayerDepth, root } = this.__elements || {};
 
         if (this.__v_oHistoryEnabled) {
             if (root && typeof root.classList?.add === "function")
                 root.classList.add("scrolling-history");
 
-            if (historyIndicator && typeof historyIndicator.classList?.add === "function")
-                historyIndicator.classList.add("visible");
+            if (historyIndicator && typeof historyIndicator.classList?.add === "function") {
+                historyIndicator.classList.remove("hidden");
+            }
 
             if (historyToggle) {
                 historyToggle.style.background = "var(--ono-v-red-orange)";
                 historyToggle.style.color = "white";
             }
 
+            if (historyLayerDepth && typeof historyLayerDepth.classList?.add === "function") {
+                historyLayerDepth.classList.remove("opacity-0");
+                historyLayerDepth.classList.add("opacity-100");
+            }
+
+            this._updateHistoryIndicator();
             this._renderHistoryLayers();
         } else {
             // Jump back to the newest/most recent error when disabling history mode
@@ -1526,6 +1443,11 @@ class ErrorOverlay extends HTMLElement {
                 historyToggle.style.color = "";
             }
 
+            if (historyLayerDepth && typeof historyLayerDepth.classList?.add === "function") {
+                historyLayerDepth.classList.remove("opacity-100");
+                historyLayerDepth.classList.add("opacity-0");
+            }
+
             if (this.__v_oHistoryLayers) {
                 this.__v_oHistoryLayers.innerHTML = "";
             }
@@ -1539,8 +1461,9 @@ class ErrorOverlay extends HTMLElement {
     _updateHistoryIndicator() {
         const indicator = this.__elements?.historyIndicator;
 
-        if (!indicator)
+        if (!indicator) {
             return;
+        }
 
         const countElement = indicator.querySelector("#__v_o__history_count");
         const totalElement = indicator.querySelector("#__v_o__history_total");
@@ -1556,6 +1479,7 @@ class ErrorOverlay extends HTMLElement {
 
         countElement.textContent = (this.__v_oCurrentHistoryIndex + 1).toString();
         totalElement.textContent = this.__v_oHistory.length.toString();
+
         indicator.classList.remove("hidden");
     }
 
@@ -1640,8 +1564,9 @@ class ErrorOverlay extends HTMLElement {
     _updateHistoryToggleVisibility() {
         const toggleButton = this.__elements?.historyToggle;
 
-        if (!toggleButton)
+        if (!toggleButton) {
             return;
+        }
 
         toggleButton.style.display = this.__v_oHistory.length <= 1 ? "none" : "";
     }

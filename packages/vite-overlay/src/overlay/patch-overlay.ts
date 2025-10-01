@@ -38,9 +38,9 @@ const rootElement = (
     rootId: string,
     editorOptions: string,
     hideRightNavigation: boolean = false,
-) => `<div id="${rootId}" class="fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px] hidden">
+) => `<div id="${rootId}" class="fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px] shadow-[var(--ono-v-elevation-2)] hidden">
     <div id="__v_o__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
-    <div id="__v_o__notch" class="relative z-[2] flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
+    <div id="__v_o__notch" class="relative z-2 flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
         <div class="error-overlay-notch relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pr-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tl-[var(--ono-v-dialog-radius)]" data-side="left">
             <nav class="error-overlay-pagination dialog-exclude-closing-from-outside-click flex justify-center items-center gap-2 w-fit">
             <button type="button" aria-disabled="true" data-flame-dialog-error-previous="true" class="error-overlay-pagination-button flex justify-center items-center w-6 h-6 bg-[var(--ono-v-chip-bg)] rounded-full disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-[var(--ono-v-red-orange)] hover:bg-[var(--ono-v-hover-overlay)] transition-colors" disabled>
@@ -64,7 +64,7 @@ const rootElement = (
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM2.5 8a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0ZM8 4a.5.5 0 0 1 .5.5v3.5a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4Z" fill="currentColor"></path>
                     </svg>
                 </button>
-                <div id="__v_o__history_indicator" class="hidden flex items-center gap-1 text-xs text-[var(--ono-v-text-muted)]">
+                <div id="__v_o__history_indicator" class="flex items-center gap-1 text-xs text-[var(--ono-v-text-muted)] hidden">
                     <span id="__v_o__history_count">0</span>
                     <span>/</span>
                     <span id="__v_o__history_total">0</span>
@@ -72,7 +72,7 @@ const rootElement = (
                 </div>
             </div>
             </nav>
-            <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--ono-v-dialog-border-width))] right-[-54px] pointer-events-none" preserveAspectRatio="none">
+            <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-1 h-[calc(100%+var(--ono-v-dialog-border-width))] right-[-54px] pointer-events-none" preserveAspectRatio="none">
             <mask id="error_overlay_nav_mask0_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" style="mask-type: alpha;">
                 <mask id="error_overlay_nav_path_1_outside_1_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" fill="black">
                 <rect fill="white" y="-1" width="60" height="43"></rect>
@@ -122,7 +122,7 @@ const rootElement = (
             </div>`
             }
 
-            <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-[1] h-[calc(100%+var(--ono-v-dialog-border-width))] left-[-54px] pointer-events-none [transform:rotateY(180deg)]" preserveAspectRatio="none">
+            <svg width="60" height="42" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-notch-tail absolute top-[calc(var(--ono-v-dialog-border-width)*-1)] -z-1 h-[calc(100%+var(--ono-v-dialog-border-width))] left-[-54px] pointer-events-none [transform:rotateY(180deg)]" preserveAspectRatio="none">
                 <mask id="error_overlay_nav_mask0_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" style="mask-type: alpha;">
                     <mask id="error_overlay_nav_path_1_outside_1_2667_14687" maskUnits="userSpaceOnUse" x="0" y="-1" width="60" height="43" fill="black">
                     <rect fill="white" y="-1" width="60" height="43"></rect>
@@ -195,7 +195,15 @@ const rootElement = (
         </summary>
         <div class="px-4 py-3 text-[var(--ono-v-text)] text-xs rounded-b-[var(--ono-v-dialog-radius)] font-mono leading-5 overflow-auto space-y-0.5 max-h-[140px] bg-[var(--ono-v-surface)] border-t border-[var(--ono-v-border)]"></div>
     </details>
+    <div id="__v_o__history_layer_depth" class="relative flex items-center flex-col -z-1 w-full max-w-[calc(var(--ono-v-dialog-max-width)-24px)] h-10 opacity-0 transition-opacity duration-200">
+        <div id="__v_o__history_layer_depth_1" class="relative w-full rounded-b-[var(--ono-v-dialog-radius)] h-5 bg-[var(--ono-v-surface-muted)] inset-shadow-[var(--ono-v-elevation-2)] -mt-3 shadow-md"></div>
+        <div id="__v_o__history_layer_depth_2" class="relative w-[calc(100%-24px)] rounded-b-[var(--ono-v-dialog-radius)] h-5 bg-[var(--ono-v-surface-muted)] inset-shadow-[var(--ono-v-elevation-2)] -mt-3 -z-1"></div>
+    </div>
 </div>`;
+
+const historyLayerTemplate = (
+    layerId: string = "__v_o__history_layer",
+) => rootElement(layerId, "", false);
 
 /**
  * Generates the overlay template with dynamic editor options.
@@ -205,6 +213,7 @@ const generateOverlayTemplate = (showBallonButton: boolean): string => {
 
     return `<style>${styleCss}</style>
 ${rootElement("__v_o__root", editorOptions)}
+${historyLayerTemplate()}
 
 ${
     showBallonButton
