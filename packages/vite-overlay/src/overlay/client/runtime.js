@@ -586,6 +586,7 @@ class ErrorOverlay extends HTMLElement {
             }
 
             this._restoreBalloonState();
+
             balloon.classList.toggle("hidden", total <= 0);
 
             const clickHandler = (event) => {
@@ -597,6 +598,7 @@ class ErrorOverlay extends HTMLElement {
             };
 
             this._makeBalloonDraggable(balloon);
+
             balloon.addEventListener("click", clickHandler);
         } catch {
             // Fail silently if DOM is not available
@@ -1236,12 +1238,33 @@ class ErrorOverlay extends HTMLElement {
         let startY;
         let balloonRect;
 
+        // Function to detect scrollbar visibility
+        const hasScrollbar = () => {
+            const hasVerticalScrollbar = document.body.scrollHeight > window.innerHeight;
+            const hasHorizontalScrollbar = document.body.scrollWidth > window.innerWidth;
+
+            return { horizontal: hasHorizontalScrollbar, vertical: hasVerticalScrollbar };
+        };
+
+        // Function to get viewport dimensions accounting for scrollbars
+        const getViewportDimensions = () => {
+            const scrollbarInfo = hasScrollbar();
+            const scrollbarWidth = scrollbarInfo.vertical ? window.innerWidth - document.documentElement.clientWidth : 0;
+            const scrollbarHeight = scrollbarInfo.horizontal ? window.innerHeight - document.documentElement.clientHeight : 0;
+
+            return {
+                hasHorizontalScrollbar: scrollbarInfo.horizontal,
+                hasVerticalScrollbar: scrollbarInfo.vertical,
+                height: window.innerHeight - scrollbarHeight,
+                width: window.innerWidth - scrollbarWidth,
+            };
+        };
+
         const handleMouseMove = (event) => {
             if (!isDragging)
                 return;
 
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
+            const viewport = getViewportDimensions();
             const balloonWidth = balloonRect.width;
             const balloonHeight = balloonRect.height;
 
@@ -1251,9 +1274,9 @@ class ErrorOverlay extends HTMLElement {
             const padding = 8;
             const corners = [
                 { name: "top-left", x: padding, y: padding },
-                { name: "top-right", x: windowWidth - balloonWidth - padding, y: padding },
-                { name: "bottom-left", x: padding, y: windowHeight - balloonHeight - padding },
-                { name: "bottom-right", x: windowWidth - balloonWidth - padding, y: windowHeight - balloonHeight - padding },
+                { name: "top-right", x: viewport.width - balloonWidth - padding, y: padding },
+                { name: "bottom-left", x: padding, y: viewport.height - balloonHeight - padding },
+                { name: "bottom-right", x: viewport.width - balloonWidth - padding, y: viewport.height - balloonHeight - padding },
             ];
 
             let closestCorner = corners[0];
@@ -1268,10 +1291,8 @@ class ErrorOverlay extends HTMLElement {
                 }
             });
 
-            balloon.style.left = `${closestCorner.x}px`;
-            balloon.style.top = `${closestCorner.y}px`;
-            balloon.style.right = "auto";
-            balloon.style.bottom = "auto";
+            // Use inset for smooth dragging during movement
+            balloon.style.inset = `${closestCorner.y}px auto auto ${closestCorner.x}px`;
             balloon.style.transform = "none";
 
             this._saveBalloonState("position", closestCorner.name);
