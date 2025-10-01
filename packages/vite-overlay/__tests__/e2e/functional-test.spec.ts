@@ -37,7 +37,7 @@ test.describe("Functional Error Overlay Test", () => {
         // Check if we have multiple errors
         const navigation = await getErrorNavigation(page);
 
-        expect(Number.parseInt(navigation.total || "0")).toBeGreaterThan(1);
+        expect(Number.parseInt(navigation.total || "0", 10)).toBeGreaterThan(1);
     });
 
     test("should show navigation controls for multiple errors", async ({ page }) => {
@@ -50,17 +50,15 @@ test.describe("Functional Error Overlay Test", () => {
         await waitForErrorOverlay(page, 15_000);
 
         const navigation = await getErrorNavigation(page);
-        const totalErrors = Number.parseInt(navigation.total || "0");
+        const totalErrors = Number.parseInt(navigation.total || "0", 10);
 
         if (totalErrors > 1) {
             // Should have navigation buttons
-            const nextButton = page.locator("[data-flame-dialog-error-next]");
-            const previousButton = page.locator("[data-flame-dialog-error-previous]");
+            const nextButton = page.locator("#__v_o__error-overlay-pagination-next");
+            const previousButton = page.locator("#__v_o__error-overlay-pagination-previous");
 
             await expect(nextButton).toBeVisible();
             await expect(previousButton).toBeVisible();
-
-            console.log("✅ Navigation controls are present");
         }
     });
 
@@ -129,12 +127,10 @@ test.describe("Functional Error Overlay Test", () => {
         // Debug: Check if the button exists
         const buttonExists = await page.locator("[data-testid='simple-error-btn']").count();
 
-        console.log(`Button exists: ${buttonExists}`);
-
         if (buttonExists === 0) {
             // Take a screenshot for debugging
             await page.screenshot({ path: "debug-no-button.png" });
-            console.log("Page content:", await page.content());
+
             throw new Error("Test button not found");
         }
 
@@ -156,8 +152,6 @@ test.describe("Functional Error Overlay Test", () => {
         const headingText = await flameHeading.textContent();
 
         expect(headingText).toContain("Error");
-
-        console.log("✅ Custom overlay is being used");
     });
 
     test("should handle async error button", async ({ page }) => {
@@ -203,7 +197,7 @@ test.describe("Functional Error Overlay Test", () => {
 
         // Should have multiple errors in the chain
         const navigation = await getErrorNavigation(page);
-        const totalErrors = Number.parseInt(navigation.total || "0");
+        const totalErrors = Number.parseInt(navigation.total || "0", 10);
 
         expect(totalErrors).toBeGreaterThan(0); // Complex error should have at least 1 level
     });
@@ -235,7 +229,5 @@ test.describe("Functional Error Overlay Test", () => {
 
         // Verify it contains the error function name
         expect(stackContent).toContain("triggerSimpleError");
-
-        console.log("Stack trace content:", stackContent);
     });
 });

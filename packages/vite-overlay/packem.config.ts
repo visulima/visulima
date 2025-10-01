@@ -17,7 +17,15 @@ export default defineConfig({
     validation: {
         dependencies: {
             unused: {
-                exclude: ["@jridgewell/trace-mapping", "@shikijs/langs", "@shikijs/themes", "@visulima/boxen", "@visulima/error", "fastest-levenshtein", "shiki"],
+                exclude: [
+                    "@jridgewell/trace-mapping",
+                    "@shikijs/langs",
+                    "@shikijs/themes",
+                    "@visulima/boxen",
+                    "@visulima/error",
+                    "fastest-levenshtein",
+                    "shiki",
+                ],
             },
         },
     },
