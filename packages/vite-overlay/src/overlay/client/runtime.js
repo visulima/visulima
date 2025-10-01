@@ -20,6 +20,19 @@ class ErrorOverlay extends HTMLElement {
      * @typedef {import('../types').VisulimaViteOverlayErrorPayload} VisulimaViteOverlayErrorPayload
      */
 
+    static COPY_SUCCESS_DELAY = 2000;
+
+    static DRAG_THRESHOLD = 5;
+
+    // Constants
+    static HISTORY_LIMIT = 50;
+
+    static LOADING_DELAY = 100;
+
+    static SCROLL_PADDING = 8;
+
+    static WHEEL_TIMEOUT = 100;
+
     // Cached DOM elements for performance
     __elements = {};
 
@@ -36,14 +49,6 @@ class ErrorOverlay extends HTMLElement {
     __v_oPayload;
 
     __v_oScrollTimeout = undefined;
-
-    // Constants
-    static HISTORY_LIMIT = 50;
-    static SCROLL_PADDING = 8;
-    static LOADING_DELAY = 100;
-    static COPY_SUCCESS_DELAY = 2000;
-    static WHEEL_TIMEOUT = 100;
-    static DRAG_THRESHOLD = 5;
 
     /**
      * Gets the global error history, creating it if it doesn't exist.
@@ -158,28 +163,28 @@ class ErrorOverlay extends HTMLElement {
                     switch (event.key) {
                         case "ArrowDown":
                         case "ArrowRight": {
-                        event.preventDefault();
-                        this._navigateHistoryByScroll(1);
+                            event.preventDefault();
+                            this._navigateHistoryByScroll(1);
 
                             break;
                         }
                         case "ArrowLeft":
                         case "ArrowUp": {
-                        event.preventDefault();
+                            event.preventDefault();
                             this._navigateHistoryByScroll(-1);
 
                             break;
                         }
                         case "End": {
-                        event.preventDefault();
-                        this._navigateToHistoryItem(this.__v_oHistory.length - 1);
+                            event.preventDefault();
+                            this._navigateToHistoryItem(this.__v_oHistory.length - 1);
 
                             break;
                         }
                         case "h":
                         case "H": {
-                        event.preventDefault();
-                        this._toggleHistoryMode();
+                            event.preventDefault();
+                            this._toggleHistoryMode();
 
                             break;
                         }
@@ -219,8 +224,8 @@ class ErrorOverlay extends HTMLElement {
         };
 
         // Always add error to history (no deduplication to show frequency)
-            this.__v_oHistory.unshift(historyEntry);
-            this.__v_oCurrentHistoryIndex = 0;
+        this.__v_oHistory.unshift(historyEntry);
+        this.__v_oCurrentHistoryIndex = 0;
 
         // Limit history to prevent memory issues
         if (this.__v_oHistory.length > ErrorOverlay.HISTORY_LIMIT) {
@@ -270,6 +275,7 @@ class ErrorOverlay extends HTMLElement {
             historyIndicator: root.querySelector("#__v_o__history_indicator"),
             historyLayerDepth: root.querySelector("#__v_o__history_layer_depth"),
             historyLayers: this.__v_oHistoryLayers,
+            historyTimestamp: root.querySelector("#__v_o__history_timestamp"),
             historyToggle: root.querySelector("#__v_o__history_toggle"),
             message: root.querySelector(String.raw`.text-sm.text-\[var\(--ono-v-red-orange\)\].font-mono.bg-\[var\(--ono-v-surface-muted\)\]`),
             nextButton: root.querySelector("#__v_o__error-overlay-pagination-next"),
@@ -294,43 +300,6 @@ class ErrorOverlay extends HTMLElement {
         }
 
         this.__eventListeners.clear();
-    }
-
-    /**
-     * Escapes HTML special characters.
-     * @private
-     * @param {string} text - The text to escape
-     * @returns {string} Escaped text
-     */
-    _escapeHtml(text) {
-        if (!text)
-            return "";
-
-        return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
-    }
-
-    /**
-     * Formats a timestamp as a human-readable "time ago" string.
-     * @private
-     * @param {number} timestamp - The timestamp to format
-     * @returns {string} Formatted time string
-     */
-    _formatTimeAgo(timestamp) {
-        const diff = Date.now() - timestamp;
-        const minutes = Math.floor(diff / 60_000);
-        const hours = Math.floor(diff / 3_600_000);
-        const days = Math.floor(diff / 86_400_000);
-
-        if (days > 0)
-            return `${days}d ago`;
-
-        if (hours > 0)
-            return `${hours}h ago`;
-
-        if (minutes > 0)
-            return `${minutes}m ago`;
-
-        return "Just now";
     }
 
     /**
@@ -378,6 +347,7 @@ class ErrorOverlay extends HTMLElement {
     _hideLoadingStates() {
         const hideElement = (selector) => {
             const element = this.root.querySelector(selector);
+
             if (element) {
                 element.style.display = "none";
             }
@@ -385,6 +355,7 @@ class ErrorOverlay extends HTMLElement {
 
         const showElement = (selector) => {
             const element = this.root.querySelector(selector);
+
             if (element) {
                 element.classList.remove("hidden");
             }
@@ -409,31 +380,32 @@ class ErrorOverlay extends HTMLElement {
     _initializeBalloon(total) {
         const { balloon, balloonCount, balloonText, root } = this.__elements || {};
 
-        if (!balloon || !balloonCount || !root)
+        if (!balloon || !balloonCount || !root) {
             return;
+        }
 
         try {
             balloonCount.textContent = total.toString();
 
             if (balloonText) {
                 balloonText.textContent = total === 1 ? "Error" : "Errors";
-                }
+            }
 
-                this._restoreBalloonState();
+            this._restoreBalloonState();
 
-                balloon.classList.toggle("hidden", total <= 0);
+            balloon.classList.toggle("hidden", total <= 0);
 
-                const clickHandler = (event) => {
-                    event.preventDefault();
+            const clickHandler = (event) => {
+                event.preventDefault();
                 const isHidden = root.classList.contains("hidden");
 
                 root.classList.toggle("hidden");
                 this._saveBalloonState("overlay", isHidden ? "open" : "closed");
-                };
+            };
 
-                this._makeBalloonDraggable(balloon);
+            this._makeBalloonDraggable(balloon);
 
-                balloon.addEventListener("click", clickHandler);
+            balloon.addEventListener("click", clickHandler);
         } catch {
             // Fail silently if DOM is not available
         }
@@ -1235,11 +1207,12 @@ class ErrorOverlay extends HTMLElement {
                         const positionStyles = {
                             "bottom-left": { bottom: "8px", left: "8px" },
                             "bottom-right": { bottom: "8px", right: "8px" },
-                            "top-left": { top: "8px", left: "8px" },
-                            "top-right": { top: "8px", right: "8px" },
+                            "top-left": { left: "8px", top: "8px" },
+                            "top-right": { right: "8px", top: "8px" },
                         };
 
                         const styles = positionStyles[balloonStates.position];
+
                         if (styles) {
                             Object.assign(balloon.style, styles);
                         }
@@ -1332,11 +1305,11 @@ class ErrorOverlay extends HTMLElement {
                 this.__v_oHistoryLayers.innerHTML = "";
             }
 
-            // Reset main overlay timestamp to default
-            const timeElement = this.root.querySelector(".error-overlay-notch[data-side=\"right\"] span");
+            const timeElement = this.__elements.historyTimestamp;
 
-            if (timeElement)
-                timeElement.textContent = "Just now";
+            if (timeElement) {
+                timeElement.classList.add("hidden");
+            }
         }
     }
 
@@ -1382,7 +1355,7 @@ class ErrorOverlay extends HTMLElement {
         const currentIndex = this.__v_oCurrentHistoryIndex;
 
         layers.forEach((layer) => {
-            const historyIndex = Number.parseInt(layer.dataset.historyIndex);
+            const historyIndex = Number.parseInt(layer.dataset.historyIndex, 10);
             const relativePosition = historyIndex - currentIndex;
 
             // Remove all position classes
@@ -1400,6 +1373,7 @@ class ErrorOverlay extends HTMLElement {
             };
 
             const className = positionClasses[relativePosition] || "hidden";
+
             layer.classList.add(className);
         });
 
@@ -1428,15 +1402,25 @@ class ErrorOverlay extends HTMLElement {
     _updateMainOverlayTimestamp() {
         const historyEntry = this.__v_oHistory[this.__v_oCurrentHistoryIndex];
 
-        if (!historyEntry) {
-            return;
-        }
-
         // Update timestamp on right notch
-        const timeElement = this.root.querySelector(".error-overlay-notch[data-side=\"right\"] span");
+        const timeElement = this.__elements.historyTimestamp;
 
-        if (timeElement) {
-            timeElement.textContent = this._formatTimeAgo(historyEntry.timestamp);
+        if (timeElement && historyEntry) {
+            timeElement.classList.remove("hidden");
+            // the span inside the time element
+            const span = timeElement.querySelector("span");
+
+            if (span) {
+                span.textContent = new Date(historyEntry.timestamp).toLocaleString("en-US", {
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    month: "2-digit",
+                    second: "2-digit",
+                    timeZone: "UTC",
+                    year: "numeric",
+                });
+            }
         }
     }
 

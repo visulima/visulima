@@ -40,7 +40,7 @@ const rootElement = (
     hideRightNavigation: boolean = false,
 ) => `<div id="${rootId}" class="fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px] shadow-[var(--ono-v-elevation-2)] hidden">
     <div id="__v_o__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
-    <div id="__v_o__notch" class="relative z-2 flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
+    <div id="__v_o__notch" class="relative z-2 flex w-full max-w-[var(--ono-v-dialog-max-width)] items-end justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
         <div class="error-overlay-notch relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pr-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tl-[var(--ono-v-dialog-radius)]" data-side="left">
             <nav class="error-overlay-pagination dialog-exclude-closing-from-outside-click flex justify-center items-center gap-2 w-fit">
             <button id="__v_o__error-overlay-pagination-previous" type="button" aria-disabled="true" class="error-overlay-pagination-button flex justify-center items-center w-6 h-6 bg-[var(--ono-v-chip-bg)] rounded-full disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-[var(--ono-v-red-orange)] hover:bg-[var(--ono-v-hover-overlay)] transition-colors" disabled>
@@ -90,6 +90,9 @@ const rootElement = (
                 <path d="M0 1.02441L0 0.0244141H-1V1.02441H0ZM0 42.0244H-1V43.0244H0L0 42.0244ZM33.8889 30.6743L32.9873 31.1068L33.8889 30.6743ZM25.111 12.3746L26.0127 11.9421L25.111 12.3746ZM0 2.02441H7.0783V0.0244141H0L0 2.02441ZM59 41.0244H0L0 43.0244H59V41.0244ZM1 42.0244L1 1.02441H-1L-1 42.0244H1ZM24.2094 12.8071L32.9873 31.1068L34.7906 30.2418L26.0127 11.9421L24.2094 12.8071ZM51.9217 43.0244H59V41.0244H51.9217V43.0244ZM32.9873 31.1068C36.4811 38.3905 43.8433 43.0244 51.9217 43.0244V41.0244C44.6127 41.0244 37.9517 36.8318 34.7906 30.2418L32.9873 31.1068ZM7.0783 2.02441C14.3873 2.02441 21.0483 6.21699 24.2094 12.8071L26.0127 11.9421C22.5188 4.65831 15.1567 0.0244141 7.0783 0.0244141V2.02441Z" fill="var(--stroke-color)" mask="url(#error_overlay_nav_path_3_outside_2_2667_14687)"></path>
             </g>
             </svg>
+        </div>
+        <div id="__v_o__history_timestamp" class="grow text-sm text-[var(--ono-v-text-muted)] flex items-end justify-center hidden">
+            <span class="bg-white rounded-t-[var(--ono-v-dialog-radius)] px-3"></span>
         </div>
         <div class="error-overlay-notch flex gap-1 relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pl-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tr-[var(--ono-v-dialog-radius)]" data-side="right">
             ${
