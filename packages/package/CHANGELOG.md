@@ -1,3 +1,13 @@
+## @visulima/package [3.6.1](https://github.com/visulima/visulima/compare/@visulima/package@3.6.0...@visulima/package@3.6.1) (2025-10-01)
+
+### Bug Fixes
+
+* update package dependencies and remove ESLint configuration files ([f964ad7](https://github.com/visulima/visulima/commit/f964ad7d7e6e27da19b8b9b283552336192fd596))
+
+### Miscellaneous Chores
+
+* update LICENSE and package.json for consistency ([c2d6ad4](https://github.com/visulima/visulima/commit/c2d6ad41322581639f37c6c648919fba2986211e))
+
 ## @visulima/package [3.6.0](https://github.com/visulima/visulima/compare/@visulima/package@3.5.12...@visulima/package@3.6.0) (2025-09-30)
 
 ### Features
