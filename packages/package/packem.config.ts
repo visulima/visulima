@@ -14,5 +14,12 @@ export default defineConfig({
         },
     },
     transformer,
-    // cjsInterop: true,
+    cjsInterop: true,
+    validation: {
+        dependencies: {
+            unused: {
+                exclude: ["yaml"],
+            },
+        },
+    },
 }) as BuildConfig;

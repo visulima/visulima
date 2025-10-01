@@ -1,12 +1,14 @@
 <div align="center">
   <h3>Visulima package</h3>
   <p>
-  One Package to rule them all, finds your root-dir, monorepo or package manager is built on top of
+  A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json files with advanced features like catalog resolution.
+
+Built on top of
 
 [@visulima/fs](https://github.com/visulima/visulima/tree/main/packages/fs),
 [@visulima/path](https://github.com/visulima/visulima/tree/main/packages/path),
 [normalize-package-data](https://github.com/npm/normalize-package-data),
-[pathe](https://github.com/unjs/pathe),and
+[pathe](https://github.com/unjs/pathe), and
 [type-fest](https://github.com/sindresorhus/type-fest)
 
   </p>
@@ -34,109 +36,209 @@
 
 ## Install
 
-```sh
+```bash
 npm install @visulima/package
 ```
 
-```sh
+```bash
 yarn add @visulima/package
 ```
 
-```sh
+```bash
 pnpm add @visulima/package
 ```
 
-## Usage
+## API
 
-### findMonorepoRoot
+### Monorepo Detection
 
-Find the root directory path and strategy for a monorepo based on the given current working directory (cwd).
+#### findMonorepoRoot
 
-```ts
+Finds the root directory and strategy for a monorepo by searching for workspace configuration files.
+
+```typescript
 import { findMonorepoRoot } from "@visulima/package";
-// or import { findMonorepoRoot } from '@visulima/package/monorepo';
 
-const root = findMonorepoRoot(); // => /Users/../Projects/visulima
+const result = await findMonorepoRoot();
+// => { path: '/path/to/monorepo', strategy: 'pnpm' }
 ```
 
-### findPackageRoot
+Supports detection of:
 
-Find the root directory path and strategy for a package based on the given current working directory (cwd).
+- pnpm workspaces (pnpm-workspace.yaml)
+- npm/yarn workspaces (package.json workspaces field)
+- Lerna (lerna.json)
+- Turborepo (turbo.json)
 
-```ts
+### Package Detection
+
+#### findPackageRoot
+
+Finds the root directory of a package by locating its package.json file.
+
+```typescript
 import { findPackageRoot } from "@visulima/package";
-// or import { findPackageRoot } from '@visulima/package/package';
 
-const root = findPackageRoot(); // => /Users/../Projects/visulima/packages/package
+const result = await findPackageRoot();
+// => { path: '/path/to/package', strategy: 'package' }
 ```
 
-### findPackageJson
+#### findPackageJson
 
-Find the package.json file in the specified directory or its parent directories.
+Finds and parses a package.json file, searching parent directories if needed.
 
-```ts
+```typescript
 import { findPackageJson } from "@visulima/package";
-// or import { findPackageJson } from '@visulima/package/package-json';
 
-const root = findPackageJson(); // => /Users/../Projects/visulima/packages/package/package.json
+const result = await findPackageJson();
+// => { packageJson: { name: 'my-package', ... }, path: '/path/to/package.json' }
 ```
 
-### writePackageJson
+### Package Manager Detection
 
-Writes the package.json file with the given data.
+#### findPackageManager
 
-```ts
-import { writePackageJson } from "@visulima/package";
-// or import { writePackageJson } from '@visulima/package/package-json';
+Detects the package manager used in a project by examining lock files and package.json.
 
-writePackageJson({ name: "visulima" } /* ,{ cwd: "./" }*/);
+```typescript
+import { findPackageManager } from "@visulima/package";
+
+const result = await findPackageManager();
+// => { packageManager: 'pnpm', path: '/path/to/project' }
 ```
 
-### parsePackageJson
+#### findLockFile
 
-Parse the package.json file.
+Finds the lock file for the current project.
 
-```ts
+```typescript
+import { findLockFile } from "@visulima/package";
+
+const lockFile = await findLockFile();
+// => '/path/to/pnpm-lock.yaml'
+```
+
+#### getPackageManagerVersion
+
+Retrieves the version of a specific package manager.
+
+```typescript
+import { getPackageManagerVersion } from "@visulima/package";
+
+const version = await getPackageManagerVersion("pnpm");
+// => '8.15.0'
+```
+
+### Package.json Operations
+
+#### parsePackageJson
+
+Parses and normalizes package.json data with optional catalog resolution support.
+
+```typescript
 import { parsePackageJson } from "@visulima/package";
 
-const packageJson = parsePackageJson(/* object or package.json as string */);
+// Basic parsing
+const packageJson = await parsePackageJson("./package.json");
+
+// With catalog resolution (pnpm workspaces only)
+const packageJson = await parsePackageJson("./package.json", {
+    resolveCatalogs: true,
+});
+
+// Synchronous version
+import { parsePackageJsonSync } from "@visulima/package";
+
+const packageJson = parsePackageJsonSync("./package.json", {
+    resolveCatalogs: true,
+});
 ```
 
-### findLockFile
+**Catalog Resolution**: When `resolveCatalogs: true` is set, the function will:
 
-Asynchronously finds a lock file in the specified directory or any of its parent directories.
+1. Search for `pnpm-workspace.yaml` in parent directories
+2. Verify the package.json is part of the workspace
+3. Resolve catalog references like `"react": "catalog:"` to actual versions
 
-```ts
-import { findLockFile } from "@visulima/package";
-// or import { findLockFile } from '@visulima/package/package-manager';
+Example with pnpm catalogs:
 
-const lockFile = await findLockFile(); // => /Users/../Projects/visulima/packages/package/package-lock.json
+```yaml
+# pnpm-workspace.yaml
+catalog:
+    react: ^18.0.0
+    typescript: ^5.0.0
+
+catalogs:
+    next:
+        react: ^19.0.0
+
+packages:
+    - packages/*
 ```
 
-### findPackageManager
-
-Finds the package manager used in a project based on the presence of lock files or package.json configuration.
-
-If found, returns the package manager and the path to the lock file or package.json.
-
-Throws an error if no lock file or package.json is found.
-
-```ts
-import { findPackageManager } from "@visulima/package";
-// or import { findPackageManager } from '@visulima/package/package-manager';
-
-const { packageManager, path } = findPackageManager(); // => { packageManager: 'npm', path: '/Users/../Projects/visulima/packages/package' }
+```json
+// package.json
+{
+    "dependencies": {
+        "react": "catalog:",
+        "typescript": "catalog:",
+        "next": "catalog:next"
+    }
+}
 ```
 
-### getPackageManagerVersion
+After resolution:
 
-Retrieves the version of the specified package manager.
+```json
+{
+    "dependencies": {
+        "react": "^18.0.0",
+        "typescript": "^5.0.0",
+        "next": "^19.0.0"
+    }
+}
+```
 
-```ts
-import { getPackageManagerVersion } from "@visulima/package";
-// or import { getPackageManagerVersion } from '@visulima/package/package-manager';
+#### writePackageJson
 
-const version = await getPackageManagerVersion("npm"); // => 7.5.4
+Writes normalized package.json data to a file.
+
+```typescript
+import { writePackageJson } from "@visulima/package";
+
+await writePackageJson({
+    name: "my-package",
+    version: "1.0.0",
+});
+```
+
+#### Package.json Utilities
+
+```typescript
+import { getPackageJsonProperty, hasPackageJsonProperty, hasPackageJsonAnyDependency } from "@visulima/package";
+
+const packageJson = await parsePackageJson("./package.json");
+
+// Get a property value
+const name = getPackageJsonProperty(packageJson, "name");
+
+// Check if property exists
+const hasScripts = hasPackageJsonProperty(packageJson, "scripts");
+
+// Check for dependencies
+const hasReact = hasPackageJsonAnyDependency(packageJson, ["react", "preact"]);
+```
+
+### Package Installation
+
+#### ensurePackages
+
+Ensures specified packages are installed, prompting the user if needed.
+
+```typescript
+import { ensurePackages } from "@visulima/package";
+
+await ensurePackages(packageJson, ["typescript", "@types/node"], "devDependencies");
 ```
 
 ## Supported Node.js Versions
