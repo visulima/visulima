@@ -1,14 +1,16 @@
 import { expect, test } from "@playwright/test";
 
 import {
+    getErrorMessage,
     getErrorNavigation,
+    getErrorTitle,
     getOverlayHeader,
     getStackTrace,
     navigateErrors,
-    triggerCauseChainError,
     verifyOriginalSourceLocations,
     waitForErrorOverlay,
     waitForErrorTestPage,
+    waitForOverlayUpdate,
 } from "./utils/test-helpers";
 
 test.describe("Cause Chain Error Handling", () => {
@@ -57,7 +59,7 @@ test.describe("Cause Chain Error Handling", () => {
         await waitForErrorOverlay(page);
 
         const initialNavigation = await getErrorNavigation(page);
-        const totalErrors = Number.parseInt(initialNavigation.total || "1");
+        const totalErrors = Number.parseInt(initialNavigation.total || "1", 10);
 
         // Navigate through all errors
         for (let index = 1; index < totalErrors; index++) {
@@ -93,7 +95,7 @@ test.describe("Cause Chain Error Handling", () => {
         await waitForErrorOverlay(page);
 
         const navigation = await getErrorNavigation(page);
-        const totalErrors = Number.parseInt(navigation.total || "1");
+        const totalErrors = Number.parseInt(navigation.total || "1", 10);
 
         // Check each error in the chain
         for (let index = 1; index <= totalErrors; index++) {
@@ -134,7 +136,7 @@ test.describe("Cause Chain Error Handling", () => {
         await waitForErrorOverlay(page);
 
         const navigation = await getErrorNavigation(page);
-        const totalErrors = Number.parseInt(navigation.total || "1");
+        const totalErrors = Number.parseInt(navigation.total || "1", 10);
 
         // Verify we have multiple errors
         expect(totalErrors).toBeGreaterThan(1);
@@ -152,7 +154,7 @@ test.describe("Cause Chain Error Handling", () => {
         await waitForErrorOverlay(page);
 
         const navigation = await getErrorNavigation(page);
-        const totalErrors = Number.parseInt(navigation.total || "1");
+        const totalErrors = Number.parseInt(navigation.total || "1", 10);
 
         // Test navigation boundaries
         expect(navigation.canGoPrev).toBe(false);
@@ -160,6 +162,7 @@ test.describe("Cause Chain Error Handling", () => {
 
         // Navigate to last error
         for (let index = 1; index < totalErrors; index++) {
+            // eslint-disable-next-line no-await-in-loop
             await navigateErrors(page, "next");
         }
 
@@ -205,5 +208,135 @@ test.describe("Cause Chain Error Handling", () => {
             expect(backNavigation.canGoPrev).toBe(false);
             expect(backNavigation.canGoNext).toBe(true);
         }
+    });
+
+    test("should preserve cause chain in historical errors", async ({ page }) => {
+        // Test the core issue: when navigating to cause errors in historical errors,
+        // the code frames should be properly displayed instead of "No code frame could be generated"
+
+        // Trigger a cause chain error
+        await page.click("[data-error-trigger]");
+        await waitForErrorOverlay(page);
+
+        // Capture the original error details
+        const originalTitle = await getErrorTitle(page);
+        const originalMessage = await getErrorMessage(page);
+
+        // Verify we have multiple cause errors in the current error
+        const initialNavigation = await getErrorNavigation(page);
+        const totalErrors = Number.parseInt(initialNavigation.total || "1", 10);
+
+        expect(totalErrors).toBeGreaterThan(1);
+
+        // Navigate to the last cause error to verify we can navigate through them
+        // eslint-disable-next-line no-plusplus
+        for (let index = 1; index < totalErrors; index++) {
+            // eslint-disable-next-line no-await-in-loop
+            await navigateErrors(page, "next");
+            // eslint-disable-next-line no-await-in-loop
+            await waitForOverlayUpdate(page, 200);
+        }
+
+        // Verify we're at the last cause error
+        const lastNavigation = await getErrorNavigation(page);
+
+        expect(lastNavigation.current).toBe(totalErrors.toString());
+
+        // Check that we can navigate to cause errors (basic functionality test)
+        // Navigation should work - that's the main fix we implemented
+
+        // Verify the code frame is displayed (not "No code frame could be generated")
+        const overlay = page.locator("#__v_o__overlay");
+        const overlayText = await overlay.textContent();
+
+        expect(overlayText).not.toContain("No code frame could be generated");
+        expect(overlayText?.length).toBeGreaterThan(10);
+
+        // Now trigger a simple error to create history
+        await page.locator("#__v_o__close").click();
+        await page.waitForTimeout(500);
+
+        await page.click("[data-testid='simple-error-btn']");
+        await page.waitForTimeout(500);
+        await page.locator("#__v_o__balloon").click();
+        await waitForErrorOverlay(page);
+
+        // Capture the simple error details
+        const simpleErrorTitle = await getErrorTitle(page);
+        const simpleErrorMessage = await getErrorMessage(page);
+
+        // Enable history mode
+        const historyToggle = page.locator("#__v_o__history_toggle");
+
+        await historyToggle.click();
+        await page.waitForSelector("#__v_o__history_indicator", { timeout: 5000 });
+
+        // Verify history indicator shows we have errors in history
+        const historyTotal = page.locator("#__v_o__history_total");
+        const totalText = await historyTotal.textContent();
+
+        expect(Number.parseInt(totalText || "0")).toBeGreaterThan(0);
+
+        // Navigate back to the cause chain error in history by directly calling the navigation method
+        await page.evaluate(() => {
+            const overlay = (globalThis as any).__v_o__current;
+
+            if (overlay && typeof overlay._navigateHistoryByScroll === "function") {
+                overlay._navigateHistoryByScroll(-1); // Navigate backward in history
+            }
+        });
+        await waitForOverlayUpdate(page, 500);
+
+        // Verify we're now showing the cause chain error from history
+        const historyTitle = await getErrorTitle(page);
+        const historyMessage = await getErrorMessage(page);
+
+        expect(historyTitle).toBe(originalTitle); // Should match the original cause chain error
+        expect(historyMessage).toBe(originalMessage); // Should match the original cause chain error
+
+        const historyNavigation = await getErrorNavigation(page);
+        const historyTotalErrors = Number.parseInt(historyNavigation.total || "1");
+
+        expect(historyTotalErrors).toBeGreaterThan(1); // Should still have multiple cause errors
+
+        // Test that we can navigate through cause errors in the historical error
+        for (let index = 1; index <= historyTotalErrors; index++) {
+            const currentHistoryNav = await getErrorNavigation(page);
+
+            expect(currentHistoryNav.current).toBe(index.toString());
+
+            // Check that error title and message are correct for each cause error
+            const currentTitle = await getErrorTitle(page);
+            const currentMessage = await getErrorMessage(page);
+
+            expect(currentTitle).toBeDefined();
+            expect(currentMessage).toBeDefined();
+
+            // Check that code frame is properly displayed for each cause error
+            const historyOverlay = page.locator("#__v_o__overlay");
+            const historyOverlayText = await historyOverlay.textContent();
+
+            // The key assertion: should not show "No code frame could be generated"
+            expect(historyOverlayText).not.toContain("No code frame could be generated");
+
+            // Should have some meaningful content
+            expect(historyOverlayText?.length).toBeGreaterThan(10);
+
+            // Navigate to next cause error if not at the last one
+            if (index < historyTotalErrors) {
+                await navigateErrors(page, "next");
+                await waitForOverlayUpdate(page, 200);
+            }
+        }
+
+        // Test scrolling back to newer errors
+        await page.mouse.wheel(0, 100); // Scroll back to newer error
+        await waitForOverlayUpdate(page, 500);
+
+        const backToSimpleTitle = await getErrorTitle(page);
+        const backToSimpleMessage = await getErrorMessage(page);
+
+        expect(backToSimpleTitle).toBe(simpleErrorTitle);
+        expect(backToSimpleMessage).toBe(simpleErrorMessage);
     });
 });

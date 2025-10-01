@@ -259,12 +259,12 @@ textarea:focus-visible,
 }
 
 .shiki.has-diff .diff.add::before {
-    @apply absolute left-3 mt-0.5 font-bold text-green-500 pointer-events-none select-none;
+    @apply pointer-events-none absolute left-3 mt-0.5 font-bold text-green-500 select-none;
     content: "+";
 }
 
 .shiki.has-diff .diff.remove::before {
-    @apply absolute left-3 mt-0.5 font-bold text-red-500 pointer-events-none select-none;
+    @apply pointer-events-none absolute left-3 mt-0.5 font-bold text-red-500 select-none;
     content: "−";
 }
 
@@ -371,4 +371,22 @@ textarea:focus-visible,
 
 .dark #__v_o__root::-webkit-scrollbar-corner {
     background: rgba(15, 20, 27, 0.8);
+}
+
+/* Enable pointer events for scroll navigation */
+#__v_o__root {
+    pointer-events: auto;
+}
+
+/* Prevent text selection during scroll navigation */
+#__v_o__root.scrolling-history {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    cursor: grab;
+}
+
+#__v_o__root.scrolling-history:active {
+    cursor: grabbing;
 }

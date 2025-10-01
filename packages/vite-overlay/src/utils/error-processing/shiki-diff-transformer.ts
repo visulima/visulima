@@ -1,5 +1,5 @@
+import type { Element, ElementContent, ElementContentMap } from "hast";
 import type { ShikiTransformer } from "shiki/types";
-import type { Element, ElementContent, ElementContentMap } from 'hast';
 
 type Options = {
     classActivePre?: string;

@@ -14,6 +14,8 @@ export default createConfig(
             "packem.config.ts",
             ".secretlintrc.cjs",
             "package.json",
+            "playwright-setup.js",
+            ".prettierrc.cjs",
             "README.md",
         ],
     },

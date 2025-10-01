@@ -86,6 +86,8 @@ describe(findModuleForPath, () => {
 
     describe("module scoring and prioritization", () => {
         it("should prioritize modules with transform result (score 2)", () => {
+            expect.assertions(1);
+
             const moduleWithoutTransform = {
                 id: "/src/App.tsx",
                 url: "/src/App.tsx",
@@ -107,6 +109,8 @@ describe(findModuleForPath, () => {
         });
 
         it("should return valid module without transform result when no better option (score 1)", () => {
+            expect.assertions(1);
+
             const validModule = {
                 id: "/src/App.tsx",
                 url: "/src/App.tsx",
@@ -121,6 +125,8 @@ describe(findModuleForPath, () => {
         });
 
         it("should skip invalid modules (empty objects, score 0)", () => {
+            expect.assertions(1);
+
             const invalidModule = {}; // Empty object - no properties
             const validModule = {
                 id: "/src/App.tsx",
@@ -137,6 +143,8 @@ describe(findModuleForPath, () => {
         });
 
         it("should handle URL lookup returning invalid modules", () => {
+            expect.assertions(1);
+
             const invalidUrlModule = {}; // Empty object from URL lookup
             const validIdModule = {
                 id: "/src/App.tsx",
@@ -155,6 +163,8 @@ describe(findModuleForPath, () => {
         });
 
         it("should handle missing files that result in invalid modules", () => {
+            expect.assertions(1);
+
             // Simulate a missing file that returns empty module objects
             const invalidModule = {}; // Empty object - represents missing file
 
@@ -168,6 +178,8 @@ describe(findModuleForPath, () => {
         });
 
         it("should prefer modules with transform result over URL lookup without transform result", () => {
+            expect.assertions(1);
+
             const urlModule = {
                 url: "/src/App.tsx",
                 // No transformResult
@@ -190,6 +202,8 @@ describe(findModuleForPath, () => {
 
     describe("real-world error scenarios", () => {
         it("should handle vite.svg import error gracefully", () => {
+            expect.assertions(1);
+
             // Simulate the vite.svg missing file scenario
             const invalidModule = {}; // Empty object representing missing file
 
@@ -203,6 +217,8 @@ describe(findModuleForPath, () => {
         });
 
         it("should handle multiple invalid candidates before finding valid one", () => {
+            expect.assertions(1);
+
             const invalidModule1 = {};
             const invalidModule2 = {};
             const validModule = {
