@@ -1,3 +1,5 @@
+/* eslint-disable no-bitwise */
+/* eslint-disable class-methods-use-this */
 /* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable no-param-reassign */
 /* eslint-disable n/no-unsupported-features/node-builtins */
@@ -81,6 +83,10 @@ class ErrorOverlay extends HTMLElement {
         const previous = globalThis.__v_o__current;
 
         if (previous && previous !== this) {
+            if (typeof previous._cleanupEventListeners === "function") {
+                previous._cleanupEventListeners();
+            }
+
             if (previous.parentNode) {
                 previous.remove();
             } else if (typeof previous.close === "function") {
@@ -152,7 +158,7 @@ class ErrorOverlay extends HTMLElement {
         }
 
         if (this.__v_oPayload.errorType === "client") {
-            document.addEventListener("keydown", (event) => {
+            this._addEventListener(document, "keydown", (event) => {
                 if (event.key === "Escape" && this.parentNode) {
                     this.close();
                 }
@@ -274,7 +280,6 @@ class ErrorOverlay extends HTMLElement {
             heading: root.querySelector("#__v_o__heading"),
             historyIndicator: root.querySelector("#__v_o__history_indicator"),
             historyLayerDepth: root.querySelector("#__v_o__history_layer_depth"),
-            historyLayers: this.__v_oHistoryLayers,
             historyTimestamp: root.querySelector("#__v_o__history_timestamp"),
             historyToggle: root.querySelector("#__v_o__history_toggle"),
             message: root.querySelector(String.raw`.text-sm.text-\[var\(--ono-v-red-orange\)\].font-mono.bg-\[var\(--ono-v-surface-muted\)\]`),
@@ -315,7 +320,7 @@ class ErrorOverlay extends HTMLElement {
         let hash = 0;
 
         for (let index = 0; index < key.length; index++) {
-            hash = ((hash << 5) - hash + key.charCodeAt(index)) & 0xff_ff_ff_ff;
+            hash = ((hash << 5) - hash + key.codePointAt(index)) & 0xff_ff_ff_ff;
         }
 
         return Math.abs(hash).toString(36);
@@ -1103,16 +1108,18 @@ class ErrorOverlay extends HTMLElement {
         };
 
         const handleMouseDown = (event) => {
-            if (event.target.closest("#__v_o__balloon_count"))
+            if (event.target.closest("#__v_o__balloon_count")) {
                 return; // Don't drag when clicking count
+            }
 
             isDragging = true;
             balloonRect = balloon.getBoundingClientRect();
             startX = event.clientX - balloonRect.left;
             startY = event.clientY - balloonRect.top;
 
-            document.addEventListener("mousemove", handleMouseMove);
-            document.addEventListener("mouseup", handleMouseUp);
+            this._addEventListener(document, "mousemove", handleMouseMove);
+            this._addEventListener(document, "mouseup", handleMouseUp);
+
             balloon.style.cursor = "grabbing";
         };
 
@@ -1161,9 +1168,6 @@ class ErrorOverlay extends HTMLElement {
 
         // Re-render the main overlay with the current error
         this._updateOverlayWithHistoryError();
-
-        // Update the layered history display (background layers)
-        this._updateHistoryLayersVisibility();
 
         // Update the history indicator
         this._updateHistoryIndicator();
@@ -1230,7 +1234,7 @@ class ErrorOverlay extends HTMLElement {
      * @param {string} key - The state key ('overlay' or 'position')
      * @param {string} value - The state value
      */
-    // eslint-disable-next-line class-methods-use-this
+
     _saveBalloonState(key, value) {
         try {
             const item = localStorage.getItem("v-o-balloon");
@@ -1301,10 +1305,6 @@ class ErrorOverlay extends HTMLElement {
                 historyLayerDepth.classList.add("opacity-0");
             }
 
-            if (this.__v_oHistoryLayers) {
-                this.__v_oHistoryLayers.innerHTML = "";
-            }
-
             const timeElement = this.__elements.historyTimestamp;
 
             if (timeElement) {
@@ -1340,45 +1340,6 @@ class ErrorOverlay extends HTMLElement {
         totalElement.textContent = this.__v_oHistory.length.toString();
 
         indicator.classList.remove("hidden");
-    }
-
-    /**
-     * Updates the visibility and positioning of history layers.
-     * @private
-     */
-    _updateHistoryLayersVisibility() {
-        if (!this.__v_oHistoryLayers) {
-            return;
-        }
-
-        const layers = this.__v_oHistoryLayers.querySelectorAll(".history-overlay-layer");
-        const currentIndex = this.__v_oCurrentHistoryIndex;
-
-        layers.forEach((layer) => {
-            const historyIndex = Number.parseInt(layer.dataset.historyIndex, 10);
-            const relativePosition = historyIndex - currentIndex;
-
-            // Remove all position classes
-            layer.classList.remove("active", "behind", "in-front", "far-behind", "far-in-front", "very-far-behind", "very-far-in-front", "hidden");
-
-            // Apply appropriate class based on relative position
-            const positionClasses = {
-                [-3]: "very-far-in-front",
-                [-2]: "far-in-front",
-                [-1]: "in-front",
-                0: "hidden",
-                1: "behind",
-                2: "far-behind",
-                3: "very-far-behind",
-            };
-
-            const className = positionClasses[relativePosition] || "hidden";
-
-            layer.classList.add(className);
-        });
-
-        this._updateHistoryIndicator();
-        this._updateHistoryToggleVisibility();
     }
 
     /**
@@ -1490,6 +1451,7 @@ class ErrorOverlay extends HTMLElement {
             message: currentError.message || "",
             name: currentError.name || "Error",
             payload: { ...this.__v_oPayload }, // Preserve full payload including all cause errors
+            stack: currentError.stack || currentError.originalStack || "",
             timestamp: Date.now(),
         };
 

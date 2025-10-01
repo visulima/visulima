@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { isHttpUrl, normalizeIdCandidates } from "../../../src/utils/normalize-id-candidates";
 
@@ -93,7 +93,7 @@ describe(normalizeIdCandidates, () => {
 
         const candidates = normalizeIdCandidates("");
 
-        expect(candidates).toEqual([]);
+        expect(candidates).toStrictEqual([]);
         expect(candidates).toHaveLength(0);
     });
 
@@ -102,6 +102,6 @@ describe(normalizeIdCandidates, () => {
 
         expect(() => normalizeIdCandidates(null as any)).not.toThrow();
         expect(() => normalizeIdCandidates(undefined as any)).not.toThrow();
-        expect(normalizeIdCandidates("")).toEqual([]);
+        expect(normalizeIdCandidates("")).toStrictEqual([]);
     });
 });

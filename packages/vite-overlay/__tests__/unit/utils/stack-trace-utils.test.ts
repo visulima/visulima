@@ -87,6 +87,8 @@ at anotherFunction (/home/user/project/src/other.js:20:15)`);
     });
 
     it("should preserve unknown locations from browser", () => {
+        expect.assertions(1);
+
         const stack = `at App <unknown>:0:0
 at Object.react_stack_bottom_frame <unknown>:0:0
 at renderWithHooks <unknown>:0:0
@@ -104,6 +106,8 @@ at updateFunctionComponent <unknown>:0:0`);
 
 describe("mixed content handling", () => {
     it("should handle mixed valid and invalid content", () => {
+        expect.assertions(1);
+
         const stack = `Error: Something went wrong
 at validFunction (/path/to/file.js:10:5)
 Some error description here
@@ -120,6 +124,8 @@ at /path/to/file.js:30:25`);
     });
 
     it("should handle TypeScript files", () => {
+        expect.assertions(1);
+
         const stack = `at myFunction (/path/to/file.ts:10:5)
 at Class.method (/path/to/file.ts:20:15)
 at /path/to/file.ts:30:25`;
@@ -130,6 +136,8 @@ at /path/to/file.ts:30:25`;
     });
 
     it("should handle ES modules", () => {
+        expect.assertions(1);
+
         const stack = `at myFunction (/path/to/file.mjs:10:5)
 at anotherFunction (/path/to/file.cjs:20:15)`;
 
@@ -139,6 +147,8 @@ at anotherFunction (/path/to/file.cjs:20:15)`;
     });
 
     it("should handle native functions", () => {
+        expect.assertions(1);
+
         const stack = `at myFunction (/path/to/file.js:10:5)
 at nativeFunction (native)
 at anotherFunction (/path/to/other.js:20:15)`;
@@ -149,6 +159,8 @@ at anotherFunction (/path/to/other.js:20:15)`;
     });
 
     it("should handle anonymous functions", () => {
+        expect.assertions(1);
+
         const stack = `at myFunction (/path/to/file.js:10:5)
 at <anonymous> (/path/to/file.js:20:15)
 at anotherFunction (/path/to/other.js:30:25)`;
@@ -159,6 +171,8 @@ at anotherFunction (/path/to/other.js:30:25)`;
     });
 
     it("should remove empty lines after filtering", () => {
+        expect.assertions(1);
+
         const stack = `at myFunction (/path/to/file.js:10:5)
 
 Invalid line
@@ -174,6 +188,8 @@ at anotherFunction (/path/to/other.js:20:15)`);
 
 describe(isValidStackFrame, () => {
     it("should validate standard stack frame format", () => {
+        expect.assertions(8);
+
         const validFrames = [
             "at myFunction (/path/to/file.js:10:5)",
             "at Class.method (/path/to/file.js:20:15)",
@@ -191,6 +207,8 @@ describe(isValidStackFrame, () => {
     });
 
     it("should reject lines that do not start with \"at\"", () => {
+        expect.assertions(3);
+
         const invalidFrames = [
             "myFunction (/path/to/file.js:10:5)",
             "functionName at (/path/to/file.js:10:5)",
@@ -203,6 +221,8 @@ describe(isValidStackFrame, () => {
     });
 
     it("should accept indented stack frames", () => {
+        expect.assertions(3);
+
         const validIndentedFrames = [
             "  at myFunction (/path/to/file.js:10:5)",
             "    at Class.method (/path/to/file.js:20:15)",
@@ -215,6 +235,8 @@ describe(isValidStackFrame, () => {
     });
 
     it("should reject frames without valid file references", () => {
+        expect.assertions(8);
+
         const invalidFrames = [
             "at myFunction", // No file
             "at myFunction ()", // Empty parentheses
@@ -232,6 +254,8 @@ describe(isValidStackFrame, () => {
     });
 
     it("should handle edge cases", () => {
+        expect.assertions(4);
+
         expect(isValidStackFrame("")).toBe(false);
         expect(isValidStackFrame("   ")).toBe(false);
         expect(isValidStackFrame("at")).toBe(false);
@@ -239,17 +263,23 @@ describe(isValidStackFrame, () => {
     });
 
     it("should handle native functions without location", () => {
+        expect.assertions(2);
+
         expect(isValidStackFrame("at nativeFunction (native)")).toBe(true);
         expect(isValidStackFrame("at anotherNative (native)")).toBe(true);
     });
 
     it("should handle unknown locations from browser", () => {
+        expect.assertions(3);
+
         expect(isValidStackFrame("at App <unknown>:0:0")).toBe(true);
         expect(isValidStackFrame("at renderWithHooks <unknown>:0:0")).toBe(true);
         expect(isValidStackFrame("at Component <unknown>:10:5")).toBe(true);
     });
 
     it("should handle anonymous functions", () => {
+        expect.assertions(2);
+
         expect(isValidStackFrame("at <anonymous> (/path/to/file.js:10:5)")).toBe(true);
         expect(isValidStackFrame("at <anonymous> (file.js:10:5)")).toBe(true);
     });

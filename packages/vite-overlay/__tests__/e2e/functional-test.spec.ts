@@ -37,7 +37,7 @@ test.describe("Functional Error Overlay Test", () => {
         // Check if we have multiple errors
         const navigation = await getErrorNavigation(page);
 
-        expect(Number.parseInt(navigation.total || "0")).toBeGreaterThan(1);
+        expect(Number.parseInt(navigation.total || "0", 10)).toBeGreaterThan(1);
     });
 
     test("should show navigation controls for multiple errors", async ({ page }) => {
@@ -50,7 +50,7 @@ test.describe("Functional Error Overlay Test", () => {
         await waitForErrorOverlay(page, 15_000);
 
         const navigation = await getErrorNavigation(page);
-        const totalErrors = Number.parseInt(navigation.total || "0");
+        const totalErrors = Number.parseInt(navigation.total || "0", 10);
 
         if (totalErrors > 1) {
             // Should have navigation buttons
@@ -197,7 +197,7 @@ test.describe("Functional Error Overlay Test", () => {
 
         // Should have multiple errors in the chain
         const navigation = await getErrorNavigation(page);
-        const totalErrors = Number.parseInt(navigation.total || "0");
+        const totalErrors = Number.parseInt(navigation.total || "0", 10);
 
         expect(totalErrors).toBeGreaterThan(0); // Complex error should have at least 1 level
     });
