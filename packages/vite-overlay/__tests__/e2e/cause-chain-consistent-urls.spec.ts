@@ -50,7 +50,7 @@ test.describe("Cause Chain Error URL Consistency", () => {
             await page.waitForSelector("#__v_o__overlay", { timeout: 5000 });
 
             // Check if compiled mode button exists
-            const compiledButton = page.locator('[data-flame-mode="compiled"]');
+            const compiledButton = page.locator("[data-flame-mode=\"compiled\"]");
 
             if (await compiledButton.isVisible()) {
                 // Click compiled button to switch views

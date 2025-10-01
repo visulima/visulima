@@ -1,3 +1,4 @@
+/* eslint-disable no-secrets/no-secrets */
 /* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable no-param-reassign */
 /* eslint-disable n/no-unsupported-features/node-builtins */
@@ -20,11 +21,16 @@ class ErrorOverlay extends HTMLElement {
      * @typedef {import('../types').VisulimaViteOverlayErrorPayload} VisulimaViteOverlayErrorPayload
      */
 
+    // Cached DOM elements for performance
+    __elements = {};
+
+    // Event listeners for cleanup
+    __eventListeners = new Map();
+
+    // Core state
     __v_oCurrentHistoryIndex = -1;
 
     __v_oHistoryEnabled = false;
-
-    __v_oHistoryLayers = null;
 
     __v_oMode;
 
@@ -59,6 +65,7 @@ class ErrorOverlay extends HTMLElement {
     constructor(error) {
         super();
 
+        // Remove previous instance
         const previous = globalThis.__v_o__current;
 
         if (previous && previous !== this) {
@@ -75,9 +82,7 @@ class ErrorOverlay extends HTMLElement {
         this.dir = "ltr";
 
         this.element = this;
-
         this.root.host._errorOverlay = this;
-
         globalThis.__v_o__current = this;
 
         if (error && (error.errors === undefined || !Array.isArray(error.errors))) {
@@ -91,8 +96,10 @@ class ErrorOverlay extends HTMLElement {
         };
 
         this.__v_oPayload = payload;
-
         this.__v_oMode = "original";
+
+        // Cache DOM elements for performance
+        this._cacheElements();
 
         this._initializeThemeToggle();
         this._initializeBalloon(payload.errors.length);
@@ -143,6 +150,7 @@ class ErrorOverlay extends HTMLElement {
 
                 // History mode keyboard navigation
                 if (this.__v_oHistoryEnabled && this.__v_oHistory.length > 1) {
+                    // eslint-disable-next-line default-case
                     switch (event.key) {
                         case "ArrowDown":
                         case "ArrowRight": {
@@ -223,6 +231,69 @@ class ErrorOverlay extends HTMLElement {
         if (this.__v_oHistory.length > 50) {
             this.__v_oHistory = this.__v_oHistory.slice(0, 50);
         }
+    }
+
+    /**
+     * Adds an event listener with cleanup tracking.
+     * @private
+     * @param {Element} element - The element to add the listener to
+     * @param {string} event - The event type
+     * @param {Function} handler - The event handler
+     * @param {object} options - Event listener options
+     */
+    _addEventListener(element, event, handler, options = {}) {
+        if (!element)
+            return;
+
+        element.addEventListener(event, handler, options);
+        const key = `${element.id || element.className || "unknown"}_${event}`;
+
+        if (!this.__eventListeners.has(key)) {
+            this.__eventListeners.set(key, []);
+        }
+
+        this.__eventListeners.get(key).push({ element, event, handler, options });
+    }
+
+    /**
+     * Initializes cached DOM element references for performance.
+     * @private
+     */
+    _cacheElements() {
+        const { root } = this;
+
+        if (!root) {
+            return;
+        }
+
+        this.__elements = {
+            balloon: root.querySelector("#__v_o__balloon"),
+            balloonCount: root.querySelector("#__v_o__balloon_count"),
+            balloonText: root.querySelector("#__v_o__balloon_text"),
+            fileButton: root.querySelector("button[class*=\"underline\"]"),
+            heading: root.querySelector("#__v_o__heading"),
+            historyIndicator: root.querySelector("#__v_o__history_indicator"),
+            historyLayers: this.__v_oHistoryLayers,
+            historyToggle: root.querySelector("#__v_o__history_toggle"),
+            message: root.querySelector(String.raw`.text-sm.text-\[var\(--ono-v-red-orange\)\].font-mono.bg-\[var\(--ono-v-surface-muted\)\]`),
+            overlay: root.querySelector("#__v_o__overlay"),
+            root: this.root.querySelector("#__v_o__root"),
+            stackElement: root.querySelector(String.raw`.text-xs.font-mono.text-\[var\(--ono-v-text-muted\)\].whitespace-pre-wrap`),
+        };
+    }
+
+    /**
+     * Cleans up all event listeners.
+     * @private
+     */
+    _cleanupEventListeners() {
+        for (const listeners of this.__eventListeners.values()) {
+            for (const { element, event, handler, options } of listeners) {
+                element.removeEventListener(event, handler, options);
+            }
+        }
+
+        this.__eventListeners.clear();
     }
 
     /**
@@ -408,12 +479,10 @@ class ErrorOverlay extends HTMLElement {
      * @returns {string} Formatted time string
      */
     _formatTimeAgo(timestamp) {
-        const now = Date.now();
-        const diff = now - timestamp;
-        const seconds = Math.floor(diff / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const hours = Math.floor(minutes / 60);
-        const days = Math.floor(hours / 24);
+        const diff = Date.now() - timestamp;
+        const minutes = Math.floor(diff / 60_000);
+        const hours = Math.floor(diff / 3_600_000);
+        const days = Math.floor(diff / 86_400_000);
 
         if (days > 0)
             return `${days}d ago`;
@@ -434,16 +503,13 @@ class ErrorOverlay extends HTMLElement {
      * @returns {string} A unique identifier for the error
      */
     _generateErrorId(error) {
-        const key = [error.name || "", error.message || "", error.originalFilePath || "", error.originalFileLine || 0, error.originalFileColumn || 0].join("|");
+        const key = `${error.name || ""}|${error.message || ""}|${error.originalFilePath || ""}|${error.originalFileLine || 0}|${error.originalFileColumn || 0}`;
 
         // Simple hash function
         let hash = 0;
 
         for (let index = 0; index < key.length; index++) {
-            const char = key.charCodeAt(index);
-
-            hash = (hash << 5) - hash + char;
-            hash &= hash; // Convert to 32-bit integer
+            hash = ((hash << 5) - hash + key.charCodeAt(index)) & 0xff_ff_ff_ff;
         }
 
         return Math.abs(hash).toString(36);
@@ -512,46 +578,35 @@ class ErrorOverlay extends HTMLElement {
     /**
      * Initializes the floating balloon button that shows the error count
      * and toggles the overlay open/close when clicked.
-     * The balloon is already present in the DOM template.
      * @private
      * @param {number} total - The total number of errors to display
      */
     _initializeBalloon(total) {
+        const { balloon, balloonCount, balloonText, root } = this.__elements || {};
+
+        if (!balloon || !balloonCount || !root)
+            return;
+
         try {
-            const balloon = this.root.querySelector("#__v_o__balloon");
-            const countElement = this.root.querySelector("#__v_o__balloon_count");
-            const rootElement = this.root.querySelector("#__v_o__root");
-            const textElement = this.root.querySelector("#__v_o__balloon_text");
+            balloonCount.textContent = total.toString();
 
-            if (balloon && countElement) {
-                countElement.textContent = total.toString();
-
-                if (textElement) {
-                    textElement.textContent = total === 1 ? "Error" : "Errors";
-                }
-
-                this._restoreBalloonState();
-
-                balloon.classList.toggle("hidden", total <= 0);
-
-                const clickHandler = (event) => {
-                    event.preventDefault();
-
-                    const classes = rootElement.classList;
-
-                    if (classes.contains("hidden")) {
-                        classes.remove("hidden");
-                        this._saveBalloonState("overlay", "open");
-                    } else {
-                        classes.add("hidden");
-                        this._saveBalloonState("overlay", "closed");
-                    }
-                };
-
-                this._makeBalloonDraggable(balloon);
-
-                balloon.addEventListener("click", clickHandler);
+            if (balloonText) {
+                balloonText.textContent = total === 1 ? "Error" : "Errors";
             }
+
+            this._restoreBalloonState();
+            balloon.classList.toggle("hidden", total <= 0);
+
+            const clickHandler = (event) => {
+                event.preventDefault();
+                const isHidden = root.classList.contains("hidden");
+
+                root.classList.toggle("hidden");
+                this._saveBalloonState("overlay", isHidden ? "open" : "closed");
+            };
+
+            this._makeBalloonDraggable(balloon);
+            balloon.addEventListener("click", clickHandler);
         } catch {
             // Fail silently if DOM is not available
         }
@@ -1029,49 +1084,39 @@ class ErrorOverlay extends HTMLElement {
      * @private
      */
     _initializeScrollNavigation() {
-        const rootElement = this.root.querySelector("#__v_o__root");
+        const rootElement = this.__elements?.root;
 
-        if (!rootElement) {
-            console.warn("[v-o] Root element not found for scroll navigation");
-
+        if (!rootElement)
             return;
-        }
 
         const handleWheel = (event) => {
             // Only handle scroll events when history is enabled and we have multiple errors
-            if (!this.__v_oHistoryEnabled || this.__v_oHistory.length <= 1) {
+            if (!this.__v_oHistoryEnabled || this.__v_oHistory.length <= 1)
                 return;
-            }
 
             // Prevent default scrolling behavior
             event.preventDefault();
             event.stopPropagation();
 
-            // Determine scroll direction
-            const delta = event.deltaY;
+            // Ignore very small scroll movements
+            if (Math.abs(event.deltaY) < 5)
+                return;
 
-            if (Math.abs(delta) < 5) {
-                return; // Ignore very small scroll movements
-            }
+            const scrollDirection = event.deltaY > 0 ? 1 : -1;
 
-            const scrollDirection = delta > 0 ? 1 : -1;
             this._navigateHistoryByScroll(scrollDirection);
         };
 
         // Add wheel event listener with proper options
-        rootElement.addEventListener("wheel", handleWheel, {
-            capture: true,
-            passive: false,
-        });
+        const options = { capture: true, passive: false };
+
+        this._addEventListener(rootElement, "wheel", handleWheel, options);
 
         // Also add to the backdrop for better coverage
         const backdrop = this.root.querySelector("#__v_o__backdrop");
 
         if (backdrop) {
-            backdrop.addEventListener("wheel", handleWheel, {
-                capture: true,
-                passive: false,
-            });
+            this._addEventListener(backdrop, "wheel", handleWheel, options);
         }
     }
 
@@ -1086,7 +1131,7 @@ class ErrorOverlay extends HTMLElement {
 
         const isDark = currentTheme === "dark";
 
-        const rootElement = this.root.querySelector("#__v_o__root");
+        const rootElement = this.__elements.root;
         const darkButton = this.root.querySelector("[data-v-o-theme-click-value=\"dark\"]");
         const lightButton = this.root.querySelector("[data-v-o-theme-click-value=\"light\"]");
 
@@ -1359,7 +1404,7 @@ class ErrorOverlay extends HTMLElement {
         try {
             const balloonStates = JSON.parse(localStorage.getItem("v-o-balloon") || "{}");
             const balloon = this.root.querySelector("#__v_o__balloon");
-            const rootElement = this.root.querySelector("#__v_o__root");
+            const rootElement = this.__elements.root;
 
             if (balloon && rootElement) {
                 if (balloonStates.overlay === "open") {
@@ -1437,21 +1482,18 @@ class ErrorOverlay extends HTMLElement {
      */
     _toggleHistoryMode() {
         this.__v_oHistoryEnabled = !this.__v_oHistoryEnabled;
-
-        const rootElement = this.root.querySelector("#__v_o__root");
-        const indicator = this.root.querySelector("#__v_o__history_indicator");
-        const toggleButton = this.root.querySelector("#__v_o__history_toggle");
+        const { historyIndicator, historyToggle, root } = this.__elements || {};
 
         if (this.__v_oHistoryEnabled) {
-            rootElement.classList.add("scrolling-history");
+            if (root && typeof root.classList?.add === "function")
+                root.classList.add("scrolling-history");
 
-            if (indicator) {
-                indicator.classList.add("visible");
-            }
+            if (historyIndicator && typeof historyIndicator.classList?.add === "function")
+                historyIndicator.classList.add("visible");
 
-            if (toggleButton) {
-                toggleButton.style.background = "var(--ono-v-red-orange)";
-                toggleButton.style.color = "white";
+            if (historyToggle) {
+                historyToggle.style.background = "var(--ono-v-red-orange)";
+                historyToggle.style.color = "white";
             }
 
             this._renderHistoryLayers();
@@ -1461,15 +1503,15 @@ class ErrorOverlay extends HTMLElement {
                 this._navigateToHistoryItem(0);
             }
 
-            rootElement.classList.remove("scrolling-history");
+            if (root && typeof root.classList?.remove === "function")
+                root.classList.remove("scrolling-history");
 
-            if (indicator) {
-                indicator.classList.add("hidden");
-            }
+            if (historyIndicator && typeof historyIndicator.classList?.add === "function")
+                historyIndicator.classList.add("hidden");
 
-            if (toggleButton) {
-                toggleButton.style.background = "";
-                toggleButton.style.color = "";
+            if (historyToggle) {
+                historyToggle.style.background = "";
+                historyToggle.style.color = "";
             }
 
             if (this.__v_oHistoryLayers) {
@@ -1483,13 +1525,16 @@ class ErrorOverlay extends HTMLElement {
      * @private
      */
     _updateHistoryIndicator() {
-        const indicator = this.root.querySelector("#__v_o__history_indicator");
-        const countElement = this.root.querySelector("#__v_o__history_count");
-        const totalElement = this.root.querySelector("#__v_o__history_total");
+        const indicator = this.__elements?.historyIndicator;
 
-        if (!indicator || !countElement || !totalElement) {
+        if (!indicator)
             return;
-        }
+
+        const countElement = indicator.querySelector("#__v_o__history_count");
+        const totalElement = indicator.querySelector("#__v_o__history_total");
+
+        if (!countElement || !totalElement)
+            return;
 
         if (this.__v_oHistory.length <= 1) {
             indicator.classList.add("hidden");
@@ -1500,24 +1545,6 @@ class ErrorOverlay extends HTMLElement {
         countElement.textContent = (this.__v_oCurrentHistoryIndex + 1).toString();
         totalElement.textContent = this.__v_oHistory.length.toString();
         indicator.classList.remove("hidden");
-    }
-
-    /**
-     * Updates the visibility of the history toggle button based on history length.
-     * @private
-     */
-    _updateHistoryToggleVisibility() {
-        const toggleButton = this.root.querySelector("#__v_o__history_toggle");
-
-        if (!toggleButton) {
-            return;
-        }
-
-        if (this.__v_oHistory.length <= 1) {
-            toggleButton.style.display = "none";
-        } else {
-            toggleButton.style.display = "";
-        }
     }
 
     /**
@@ -1595,6 +1622,19 @@ class ErrorOverlay extends HTMLElement {
     }
 
     /**
+     * Updates the visibility of the history toggle button based on history length.
+     * @private
+     */
+    _updateHistoryToggleVisibility() {
+        const toggleButton = this.__elements?.historyToggle;
+
+        if (!toggleButton)
+            return;
+
+        toggleButton.style.display = this.__v_oHistory.length <= 1 ? "none" : "";
+    }
+
+    /**
      * Updates the overlay content with a historical error.
      * @private
      */
@@ -1609,68 +1649,54 @@ class ErrorOverlay extends HTMLElement {
             const currentError = this.__v_oPayload.errors[0];
 
             // Update heading
-            const headingElement = this.root.querySelector("#__v_o__heading");
-
-            if (headingElement) {
-                headingElement.textContent = currentError.name || "Error";
+            if (this.__elements.heading) {
+                this.__elements.heading.textContent = currentError.name || "Error";
             }
 
             // Update file link
-            const fileButton = this.root.querySelector("button[class*=\"underline\"]");
-
-            if (fileButton) {
+            if (this.__elements.fileButton) {
                 const relativePath = this._getRelativePath(currentError.originalFilePath || "");
                 const errorLine = currentError.originalFileLine ? `:${currentError.originalFileLine}` : "";
 
-                fileButton.textContent = `${relativePath}${errorLine}`;
+                this.__elements.fileButton.textContent = `${relativePath}${errorLine}`;
             }
 
             // Update error message
-            const messageElement = this.root.querySelector(
-                String.raw`.text-sm.text-\[var\(--ono-v-red-orange\)\].font-mono.bg-\[var\(--ono-v-surface-muted\)\]`,
-            );
-
-            if (messageElement) {
-                messageElement.textContent = currentError.message || "Unknown error";
+            if (this.__elements.message) {
+                this.__elements.message.textContent = currentError.message || "Unknown error";
             }
 
             // Update stack trace
-            const stackElement = this.root.querySelector(String.raw`.text-xs.font-mono.text-\[var\(--ono-v-text-muted\)\].whitespace-pre-wrap`);
-
-            if (stackElement) {
-                stackElement.textContent = this._escapeHtml(currentError.stack || "No stack trace available");
+            if (this.__elements.stackElement) {
+                this.__elements.stackElement.textContent = this._escapeHtml(currentError.stack || "No stack trace available");
             }
 
             // Update code frame
-            const mount = this.root.querySelector("#__v_o__overlay");
-
-            if (mount) {
+            if (this.__elements.overlay) {
                 const codeFrame
                     = currentError.originalCodeFrameContent
                         || currentError.compiledCodeFrameContent
                         || "<div class=\"no-code-frame font-mono\">No code frame could be generated.</div>";
 
-                mount.innerHTML = codeFrame;
+                this.__elements.overlay.innerHTML = codeFrame;
             }
         }
     }
 
     /**
-     * Removes the error overlay from the DOM.
+     * Closes the error overlay dialog (hides it).
      */
     close() {
         if (this.parentNode) {
-            const balloon = this.root.querySelector("#__v_o__balloon");
+            const root = this.__elements?.root;
 
-            if (balloon) {
-                const rootElement = this.root.querySelector("#__v_o__root");
-
-                rootElement.classList.add("hidden");
+            if (root && typeof root.classList?.add === "function") {
+                root.classList.add("hidden");
 
                 this._saveBalloonState("overlay", "closed");
-            } else {
-                this.remove();
             }
+
+            // Don't remove the overlay - just hide it so it can be reopened
         }
     }
 
@@ -1678,61 +1704,61 @@ class ErrorOverlay extends HTMLElement {
      * Updates the overlay content with the current error's code frame.
      */
     updateOverlay() {
-        const currentIndex = 0;
+        const currentError = this.__v_oPayload?.errors?.[0];
 
-        const currentError = this.__v_oPayload && this.__v_oPayload.errors && this.__v_oPayload.errors[currentIndex];
+        if (!currentError)
+            return;
 
-        if (currentError) {
-            const flameOverlay = this.root.querySelector("#__v_o__overlay");
+        // Reopen overlay if it's hidden when new errors occur
+        const root = this.__elements?.root;
 
-            if (flameOverlay) {
-                const html = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || "";
+        if (root && root.classList.contains("hidden")) {
+            root.classList.remove("hidden");
 
-                flameOverlay.innerHTML = html;
+            this._saveBalloonState("overlay", "open");
+        }
+
+        // Update code frame
+        const overlay = this.__elements?.overlay;
+
+        if (overlay) {
+            overlay.innerHTML = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || "";
+        }
+
+        // Check if this is a new error and add it to history
+        const currentErrorId = this._generateErrorId(currentError);
+        const isNewError = !this.__v_oHistory.some((entry) => entry.id === currentErrorId);
+
+        if (isNewError) {
+            const historyEntry = {
+                column: currentError.originalFileColumn || 0,
+                errorType: this.__v_oPayload.errorType || "client",
+                file: currentError.originalFilePath || "",
+                id: currentErrorId,
+                line: currentError.originalFileLine || 0,
+                message: currentError.message || "",
+                name: currentError.name || "Error",
+                payload: { ...this.__v_oPayload, errors: [currentError] },
+                timestamp: Date.now(),
+            };
+
+            const existingIndex = this.__v_oHistory.findIndex((entry) => entry.id === historyEntry.id);
+
+            if (existingIndex === -1) {
+                this.__v_oHistory.unshift(historyEntry);
+                this.__v_oCurrentHistoryIndex = 0;
+            } else {
+                this.__v_oHistory[existingIndex].timestamp = historyEntry.timestamp;
+                this.__v_oCurrentHistoryIndex = existingIndex;
             }
 
-            // Check if this is a new error and add it to history
-            const currentErrorId = this._generateErrorId(currentError);
-            const isNewError = !this.__v_oHistory.some((entry) => entry.id === currentErrorId);
-
-            if (isNewError) {
-                // Create history entry directly
-                const historyEntry = {
-                    column: currentError.originalFileColumn || 0,
-                    errorType: this.__v_oPayload.errorType || "client",
-                    file: currentError.originalFilePath || "",
-                    id: currentErrorId,
-                    line: currentError.originalFileLine || 0,
-                    message: currentError.message || "",
-                    name: currentError.name || "Error",
-                    payload: { ...this.__v_oPayload, errors: [currentError] },
-                    timestamp: Date.now(),
-                };
-
-                // Check if this error already exists in history (avoid duplicates)
-                const existingIndex = this.__v_oHistory.findIndex((entry) => entry.id === historyEntry.id);
-
-                if (existingIndex === -1) {
-                    // Add new error to history
-                    this.__v_oHistory.unshift(historyEntry);
-                    this.__v_oCurrentHistoryIndex = 0;
-                } else {
-                    // Update timestamp for existing error
-                    this.__v_oHistory[existingIndex].timestamp = historyEntry.timestamp;
-                    this.__v_oCurrentHistoryIndex = existingIndex;
-                }
-
-                // Limit history to 50 entries to prevent memory issues
-                if (this.__v_oHistory.length > 50) {
-                    this.__v_oHistory = this.__v_oHistory.slice(0, 50);
-                }
-
-                // Re-render history layers
-                this._renderHistoryLayers();
-
-                // Update history toggle visibility
-                this._updateHistoryToggleVisibility();
+            // Limit history to 50 entries
+            if (this.__v_oHistory.length > 50) {
+                this.__v_oHistory.length = 50;
             }
+
+            this._renderHistoryLayers();
+            this._updateHistoryToggleVisibility();
         }
     }
 }
