@@ -52,63 +52,63 @@
     "type": "module",
     "exports": {
         ".": {
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            },
             "import": {
                 "types": "./dist/index.d.mts",
                 "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
             }
         },
         "./monorepo": {
-            "require": {
-                "types": "./dist/monorepo.d.cts",
-                "default": "./dist/monorepo.cjs"
-            },
             "import": {
                 "types": "./dist/monorepo.d.mts",
                 "default": "./dist/monorepo.mjs"
+            },
+            "require": {
+                "types": "./dist/monorepo.d.cts",
+                "default": "./dist/monorepo.cjs"
             }
         },
         "./package": {
-            "require": {
-                "types": "./dist/package.d.cts",
-                "default": "./dist/package.cjs"
-            },
             "import": {
                 "types": "./dist/package.d.mts",
                 "default": "./dist/package.mjs"
+            },
+            "require": {
+                "types": "./dist/package.d.cts",
+                "default": "./dist/package.cjs"
             }
         },
         "./package-json": {
-            "require": {
-                "types": "./dist/package-json.d.cts",
-                "default": "./dist/package-json.cjs"
-            },
             "import": {
                 "types": "./dist/package-json.d.mts",
                 "default": "./dist/package-json.mjs"
+            },
+            "require": {
+                "types": "./dist/package-json.d.cts",
+                "default": "./dist/package-json.cjs"
             }
         },
         "./package-manager": {
-            "require": {
-                "types": "./dist/package-manager.d.cts",
-                "default": "./dist/package-manager.cjs"
-            },
             "import": {
                 "types": "./dist/package-manager.d.mts",
                 "default": "./dist/package-manager.mjs"
+            },
+            "require": {
+                "types": "./dist/package-manager.d.cts",
+                "default": "./dist/package-manager.cjs"
             }
         },
         "./error": {
-            "require": {
-                "types": "./dist/error.d.cts",
-                "default": "./dist/error.cjs"
-            },
             "import": {
                 "types": "./dist/error.d.mts",
                 "default": "./dist/error.mjs"
+            },
+            "require": {
+                "types": "./dist/error.d.cts",
+                "default": "./dist/error.cjs"
             }
         },
         "./package.json": "./package.json"
