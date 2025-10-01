@@ -43,17 +43,17 @@ const rootElement = (
     <div id="__v_o__notch" class="relative z-2 flex w-full max-w-[var(--ono-v-dialog-max-width)] items-center justify-between outline-none translate-x-[var(--ono-v-dialog-border-width)] translate-y-[var(--ono-v-dialog-border-width)]" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
         <div class="error-overlay-notch relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pr-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tl-[var(--ono-v-dialog-radius)]" data-side="left">
             <nav class="error-overlay-pagination dialog-exclude-closing-from-outside-click flex justify-center items-center gap-2 w-fit">
-            <button type="button" aria-disabled="true" data-flame-dialog-error-previous="true" class="error-overlay-pagination-button flex justify-center items-center w-6 h-6 bg-[var(--ono-v-chip-bg)] rounded-full disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-[var(--ono-v-red-orange)] hover:bg-[var(--ono-v-hover-overlay)] transition-colors" disabled>
+            <button id="__v_o__error-overlay-pagination-previous" type="button" aria-disabled="true" class="error-overlay-pagination-button flex justify-center items-center w-6 h-6 bg-[var(--ono-v-chip-bg)] rounded-full disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-[var(--ono-v-red-orange)] hover:bg-[var(--ono-v-hover-overlay)] transition-colors" disabled>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="previous" class="error-overlay-pagination-button-icon">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M9.24996 12.0608L8.71963 11.5304L5.89641 8.70722C5.50588 8.3167 5.50588 7.68353 5.89641 7.29301L8.71963 4.46978L9.24996 3.93945L10.3106 5.00011L9.78029 5.53044L7.31062 8.00011L9.78029 10.4698L10.3106 11.0001L9.24996 12.0608Z" fill="currentColor"></path>
                 </svg>
             </button>
-            <div class="error-overlay-pagination-count inline-flex justify-center items-center min-w-8 h-5 gap-1 text-[var(--ono-v-text)] text-center text-[11px] font-medium leading-4 rounded-full px-1.5">
-                <span data-flame-dialog-error-index="0">1</span>
+            <div id="__v_o__error-overlay_pagination_count" class="inline-flex justify-center items-center min-w-8 h-5 gap-1 text-[var(--ono-v-text)] text-center text-[11px] font-medium leading-4 rounded-full px-1.5">
+                <span id="__v_o__pagination_current">1</span>
                 <span class="text-[var(--ono-v-text-muted)]">/</span>
-                <span data-flame-dialog-header-total-count="true">1</span>
+                <span id="__v_o__pagination_total">1</span>
             </div>
-            <button type="button" aria-disabled="true" data-flame-dialog-error-next="true" class="error-overlay-pagination-button flex justify-center items-center w-6 h-6 bg-[var(--ono-v-chip-bg)] rounded-full disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-[var(--ono-v-red-orange)] hover:bg-[var(--ono-v-hover-overlay)] transition-colors" disabled>
+            <button type="button" id="__v_o__error-overlay-pagination-next" aria-disabled="true" class="error-overlay-pagination-button flex justify-center items-center w-6 h-6 bg-[var(--ono-v-chip-bg)] rounded-full disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-[var(--ono-v-red-orange)] hover:bg-[var(--ono-v-hover-overlay)] transition-colors" disabled>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="error-overlay-pagination-button-icon" aria-label="next">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M6.75011 3.93945L7.28044 4.46978L10.1037 7.29301C10.4942 7.68353 10.4942 8.3167 10.1037 8.70722L7.28044 11.5304L6.75011 12.0608L5.68945 11.0001L6.21978 10.4698L8.68945 8.00011L6.21978 5.53044L5.68945 5.00011L6.75011 3.93945Z" fill="currentColor"></path>
                 </svg>
@@ -201,10 +201,6 @@ const rootElement = (
     </div>
 </div>`;
 
-const historyLayerTemplate = (
-    layerId: string = "__v_o__history_layer",
-) => rootElement(layerId, "", false);
-
 /**
  * Generates the overlay template with dynamic editor options.
  */
@@ -213,7 +209,6 @@ const generateOverlayTemplate = (showBallonButton: boolean): string => {
 
     return `<style>${styleCss}</style>
 ${rootElement("__v_o__root", editorOptions)}
-${historyLayerTemplate()}
 
 ${
     showBallonButton
