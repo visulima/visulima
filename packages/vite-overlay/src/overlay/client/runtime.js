@@ -214,18 +214,9 @@ class ErrorOverlay extends HTMLElement {
             timestamp: Date.now(),
         };
 
-        // Check if this error already exists in history (avoid duplicates)
-        const existingIndex = this.__v_oHistory.findIndex((entry) => entry.id === historyEntry.id);
-
-        if (existingIndex === -1) {
-            // Add new error to history
-            this.__v_oHistory.unshift(historyEntry);
-            this.__v_oCurrentHistoryIndex = 0;
-        } else {
-            // Update timestamp for existing error
-            this.__v_oHistory[existingIndex].timestamp = historyEntry.timestamp;
-            this.__v_oCurrentHistoryIndex = existingIndex;
-        }
+        // Always add error to history (no deduplication to show frequency)
+        this.__v_oHistory.unshift(historyEntry);
+        this.__v_oCurrentHistoryIndex = 0;
 
         // Limit history to 50 entries to prevent memory issues
         if (this.__v_oHistory.length > 50) {
@@ -1725,40 +1716,30 @@ class ErrorOverlay extends HTMLElement {
             overlay.innerHTML = currentError.originalCodeFrameContent || currentError.compiledCodeFrameContent || "";
         }
 
-        // Check if this is a new error and add it to history
+        // Always add errors to history (no deduplication) to show error frequency
         const currentErrorId = this._generateErrorId(currentError);
-        const isNewError = !this.__v_oHistory.some((entry) => entry.id === currentErrorId);
+        const historyEntry = {
+            column: currentError.originalFileColumn || 0,
+            errorType: this.__v_oPayload.errorType || "client",
+            file: currentError.originalFilePath || "",
+            id: currentErrorId,
+            line: currentError.originalFileLine || 0,
+            message: currentError.message || "",
+            name: currentError.name || "Error",
+            payload: { ...this.__v_oPayload, errors: [currentError] },
+            timestamp: Date.now(),
+        };
 
-        if (isNewError) {
-            const historyEntry = {
-                column: currentError.originalFileColumn || 0,
-                errorType: this.__v_oPayload.errorType || "client",
-                file: currentError.originalFilePath || "",
-                id: currentErrorId,
-                line: currentError.originalFileLine || 0,
-                message: currentError.message || "",
-                name: currentError.name || "Error",
-                payload: { ...this.__v_oPayload, errors: [currentError] },
-                timestamp: Date.now(),
-            };
+        // Always add new error to history (no deduplication to show frequency)
+        this.__v_oHistory.unshift(historyEntry);
+        this.__v_oCurrentHistoryIndex = 0;
 
-            const existingIndex = this.__v_oHistory.findIndex((entry) => entry.id === historyEntry.id);
-
-            if (existingIndex === -1) {
-                this.__v_oHistory.unshift(historyEntry);
-                this.__v_oCurrentHistoryIndex = 0;
-            } else {
-                this.__v_oHistory[existingIndex].timestamp = historyEntry.timestamp;
-                this.__v_oCurrentHistoryIndex = existingIndex;
-            }
-
-            // Limit history to 50 entries
-            if (this.__v_oHistory.length > 50) {
-                this.__v_oHistory.length = 50;
-            }
-
-            this._renderHistoryLayers();
-            this._updateHistoryToggleVisibility();
+        // Limit history to 50 entries
+        if (this.__v_oHistory.length > 50) {
+            this.__v_oHistory.length = 50;
         }
+
+        this._renderHistoryLayers();
+        this._updateHistoryToggleVisibility();
     }
 }
