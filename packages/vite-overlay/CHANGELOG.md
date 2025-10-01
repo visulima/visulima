@@ -1,3 +1,9 @@
+## @visulima/vite-overlay [1.2.0](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.1.1...@visulima/vite-overlay@1.2.0) (2025-10-01)
+
+### Features
+
+* **vite-overlay:** add client error history to vite overlay ([#528](https://github.com/visulima/visulima/issues/528)) ([29b7908](https://github.com/visulima/visulima/commit/29b79085f7ffe1b3c14f59f87ef76514eed8291c))
+
 ## @visulima/vite-overlay [1.1.1](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.1.0...@visulima/vite-overlay@1.1.1) (2025-09-24)
 
 ### Bug Fixes
