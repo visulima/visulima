@@ -833,11 +833,7 @@ importers:
         version: 8.0.1
       vitest:
         specifier: ^1.3.1
-<<<<<<< HEAD
-        version: 1.6.1(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 1.6.1(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/boxen/__fixtures__/package/cjs:
     dependencies:
@@ -1685,11 +1681,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.3.0
-<<<<<<< HEAD
-        version: 16.3.0(c001e02f832b952043e57d798faf13c9)
-=======
         version: 16.3.0(f57ba02e289590e19614f6e4087274ac)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@anolilab/semantic-release-pnpm':
         specifier: 2.0.3
         version: 2.0.3(@types/node@24.5.2)(yaml@2.8.1)
@@ -2115,13 +2107,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
-<<<<<<< HEAD
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.0)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-
-  packages/fs/__bench__/fixtures/a/b: {}
-=======
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/fs/__bench__/fixtures/a/b: {}
 
@@ -2464,11 +2450,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
-<<<<<<< HEAD
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.0)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/is-ansi-color-supported:
     devDependencies:
@@ -3309,11 +3291,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
-<<<<<<< HEAD
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.0)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/pail/__fixtures__/package/cjs:
     dependencies:
@@ -3637,11 +3615,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.4
-<<<<<<< HEAD
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.0)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/redact/__fixtures__/package/cjs:
     dependencies:
@@ -3894,11 +3868,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.1
-<<<<<<< HEAD
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.0)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       wrap-ansi:
         specifier: 9.0.0
         version: 9.0.0
@@ -4165,11 +4135,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.3.0
-<<<<<<< HEAD
-        version: 16.3.0(c001e02f832b952043e57d798faf13c9)
-=======
         version: 16.3.0(5fc2005a8abaf4584d0cfb7e755444eb)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@anolilab/prettier-config':
         specifier: ^6.0.4
         version: 6.0.4(prettier@3.6.2)
@@ -4178,11 +4144,7 @@ importers:
         version: 2.0.4(@types/node@24.6.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^11.0.4
-<<<<<<< HEAD
-        version: 11.0.4(@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.5.2)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@24.2.9(typescript@5.9.3)))(semantic-release@24.2.9(typescript@5.9.3))(yaml@2.8.1)
-=======
         version: 11.0.4(@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.6.1)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@24.2.9(typescript@5.9.3)))(semantic-release@24.2.9(typescript@5.9.3))(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -4221,11 +4183,7 @@ importers:
         version: 24.6.1
       '@visulima/packem':
         specifier: 2.0.0-alpha.21
-<<<<<<< HEAD
-        version: 2.0.0-alpha.21(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.41)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.13(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.13(typescript@5.9.3)))(typedoc@0.28.13(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
-=======
         version: 2.0.0-alpha.21(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.6.1)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.41)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.13(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.13(typescript@5.9.3)))(typedoc@0.28.13(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@visulima/path':
         specifier: 1.4.0
         version: 1.4.0
@@ -4278,22 +4236,14 @@ importers:
         specifier: ^4.1.13
         version: 4.1.13
       typescript:
-<<<<<<< HEAD
-        specifier: ^5.9.2
-=======
         specifier: ^5.9.3
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
         version: 5.9.3
       vite:
         specifier: ^7.1.7
         version: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vitest:
         specifier: ^3.2.4
-<<<<<<< HEAD
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.5.2)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.5.2)(typescript@5.9.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.9.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/vite-overlay/examples/vite-preact:
     dependencies:
@@ -4303,11 +4253,7 @@ importers:
     devDependencies:
       '@preact/preset-vite':
         specifier: ^2.10.2
-<<<<<<< HEAD
-        version: 2.10.2(@babel/core@7.28.4)(preact@10.27.2)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
         version: 2.10.2(@babel/core@7.28.4)(preact@10.27.2)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@visulima/vite-overlay':
         specifier: workspace:*
         version: link:../..
@@ -4316,11 +4262,7 @@ importers:
         version: 5.8.3
       vite:
         specifier: '>=7.1.5'
-<<<<<<< HEAD
-        version: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/vite-overlay/examples/vite-react:
     dependencies:
@@ -4345,11 +4287,7 @@ importers:
         version: link:../..
       '@vitejs/plugin-react':
         specifier: ^5.0.2
-<<<<<<< HEAD
-        version: 5.0.2(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
         version: 5.0.2(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       eslint:
         specifier: ^9.35.0
         version: 9.36.0(jiti@2.6.0)
@@ -4370,11 +4308,7 @@ importers:
         version: 8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
       vite:
         specifier: ^7.1.5
-<<<<<<< HEAD
-        version: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/vite-overlay/examples/vite-react-rolldown:
     dependencies:
@@ -4399,11 +4333,7 @@ importers:
         version: link:../..
       '@vitejs/plugin-react':
         specifier: ^5.0.2
-<<<<<<< HEAD
-        version: 5.0.2(rolldown-vite@7.1.14(@types/node@24.6.0)(esbuild@0.25.10)(jiti@2.6.0)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
         version: 5.0.2(rolldown-vite@7.1.14(@types/node@24.6.1)(esbuild@0.25.10)(jiti@2.6.0)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       eslint:
         specifier: ^9.35.0
         version: 9.36.0(jiti@2.6.0)
@@ -4424,11 +4354,7 @@ importers:
         version: 8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
       vite:
         specifier: npm:rolldown-vite@latest
-<<<<<<< HEAD
-        version: rolldown-vite@7.1.14(@types/node@24.6.0)(esbuild@0.25.10)(jiti@2.6.0)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: rolldown-vite@7.1.14(@types/node@24.6.1)(esbuild@0.25.10)(jiti@2.6.0)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/vite-overlay/examples/vite-react-swc:
     dependencies:
@@ -4453,11 +4379,7 @@ importers:
         version: link:../..
       '@vitejs/plugin-react-swc':
         specifier: ^4.0.1
-<<<<<<< HEAD
-        version: 4.1.0(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
         version: 4.1.0(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       eslint:
         specifier: ^9.35.0
         version: 9.36.0(jiti@2.6.0)
@@ -4478,11 +4400,7 @@ importers:
         version: 8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
       vite:
         specifier: ^7.1.5
-<<<<<<< HEAD
-        version: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/vite-overlay/examples/vite-solidjs:
     dependencies:
@@ -4498,17 +4416,10 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^7.1.5
-<<<<<<< HEAD
-        version: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vite-plugin-solid:
-        specifier: ^2.11.8
-        version: 2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
         version: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-plugin-solid:
         specifier: ^2.11.8
         version: 2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/vite-overlay/examples/vite-ssr-react:
     dependencies:
@@ -4533,11 +4444,7 @@ importers:
         version: 5.0.3
       '@types/node':
         specifier: ^24.5.1
-<<<<<<< HEAD
-        version: 24.6.0
-=======
         version: 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@types/react':
         specifier: ^19.1.13
         version: 19.1.13
@@ -4549,11 +4456,7 @@ importers:
         version: link:../..
       '@vitejs/plugin-react':
         specifier: ^5.0.2
-<<<<<<< HEAD
-        version: 5.0.2(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
         version: 5.0.2(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       cross-env:
         specifier: ^10.0.0
         version: 10.0.0
@@ -4562,21 +4465,13 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^7.1.5
-<<<<<<< HEAD
-        version: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/vite-overlay/examples/vite-svelte:
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^6.2.0
-<<<<<<< HEAD
-        version: 6.2.0(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
         version: 6.2.0(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@tsconfig/svelte':
         specifier: ^5.0.5
         version: 5.0.5
@@ -4594,37 +4489,22 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^7.1.5
-<<<<<<< HEAD
-        version: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   packages/vite-overlay/examples/vite-tanstack:
     dependencies:
       '@tailwindcss/vite':
         specifier: ^4.1.13
-<<<<<<< HEAD
-        version: 4.1.13(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
         version: 4.1.13(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@tanstack/react-router':
         specifier: ^1.131.44
         version: 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tanstack/react-router-devtools':
         specifier: ^1.131.44
-<<<<<<< HEAD
-        version: 1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.2)(@types/node@24.6.0)(csstype@3.1.3)(jiti@2.6.0)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(terser@5.31.1)(tiny-invariant@1.3.3)(tsx@4.20.5)(yaml@2.8.1)
-      '@tanstack/router-plugin':
-        specifier: ^1.131.44
-        version: 1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite-plugin-solid@2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(webpack@5.99.9(@swc/core@1.13.5))
-=======
         version: 1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.2)(@types/node@24.6.1)(csstype@3.1.3)(jiti@2.6.0)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(terser@5.31.1)(tiny-invariant@1.3.3)(tsx@4.20.5)(yaml@2.8.1)
       '@tanstack/router-plugin':
         specifier: ^1.131.44
         version: 1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite-plugin-solid@2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(webpack@5.99.9(@swc/core@1.13.5))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -4652,11 +4532,7 @@ importers:
         version: link:../..
       '@vitejs/plugin-react':
         specifier: ^5.0.2
-<<<<<<< HEAD
-        version: 5.0.2(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
         version: 5.0.2(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       jsdom:
         specifier: ^27.0.0
         version: 27.0.0(postcss@8.5.6)
@@ -4665,17 +4541,10 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^7.1.5
-<<<<<<< HEAD
-        version: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.0)(typescript@5.9.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
         version: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.9.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       web-vitals:
         specifier: ^5.1.0
         version: 5.1.0
@@ -4749,21 +4618,13 @@ importers:
         version: 22.0.2
       '@types/node':
         specifier: ^24.5.0
-<<<<<<< HEAD
-        version: 24.6.0
-=======
         version: 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@visulima/vite-overlay':
         specifier: workspace:*
         version: link:../..
       '@vitejs/plugin-vue':
         specifier: ^6.0.1
-<<<<<<< HEAD
-        version: 6.0.1(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3))
-=======
         version: 6.0.1(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@vue/tsconfig':
         specifier: ^0.8.1
         version: 0.8.1(typescript@5.9.3)(vue@3.5.21(typescript@5.9.3))
@@ -4775,17 +4636,10 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^7.1.5
-<<<<<<< HEAD
-        version: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vite-plugin-vue-devtools:
-        specifier: ^8.0.2
-        version: 8.0.2(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3))
-=======
         version: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-plugin-vue-devtools:
         specifier: ^8.0.2
         version: 8.0.2(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       vue-tsc:
         specifier: ^3.0.7
         version: 3.0.7(typescript@5.9.3)
@@ -6710,7 +6564,7 @@ packages:
     resolution: {integrity: sha512-Fjyxfux0rMPXMSob79OmddfpK5ArJa2xLkLCV+zamHkbeXQtSNKOi0keiBKyHZ/hCRKjigjmKGp4AJnDFq8PUw==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
-      hono: '>=4.9.7'
+      hono: '>=4.9.6'
 
   '@html-eslint/eslint-plugin@0.20.0':
     resolution: {integrity: sha512-P5DeuqL5TmIGIiWjeezGDZPM3rXzL715MEU0QR9xOOmqNTshG3yLsk7fkfLsLiDjm0x6r4e13/5mUCbEQTek7Q==}
@@ -11489,8 +11343,8 @@ packages:
   '@types/node-fetch@2.6.11':
     resolution: {integrity: sha512-24xFj9R5+rfQJLRyM56qh+wnVSYhyXC2tkoBndtY0U+vubqNsYXGjufB2nn8Q6gt0LrARwL6UBtMCSVCwl4B1g==}
 
-  '@types/node@18.19.128':
-    resolution: {integrity: sha512-m7wxXGpPpqxp2QDi/rpih5O772APRuBIa/6XiGqLNoM1txkjI8Sz1V4oSXJxQLTz/yP5mgy9z6UXEO6/lP70Gg==}
+  '@types/node@18.19.129':
+    resolution: {integrity: sha512-hrmi5jWt2w60ayox3iIXwpMEnfUvOLJCRtrOPbHtH15nTjvO7uhnelvrdAs0dO0/zl5DZ3ZbahiaXEVb54ca/A==}
 
   '@types/node@18.19.71':
     resolution: {integrity: sha512-evXpcgtZm8FY4jqBSN8+DmOTcVkkvTmAayeo4Wf3m1xAruyVGzGuDh/Fb/WWX2yLItUiho42ozyJjB0dw//Tkw==}
@@ -11507,13 +11361,11 @@ packages:
   '@types/node@24.5.2':
     resolution: {integrity: sha512-FYxk1I7wPv3K2XBaoyH2cTnocQEu8AOZ60hPbsyukMPLv5/5qr7V1i8PLHdl6Zf87I+xZXFvPCXYjiTFq+YSDQ==}
 
-<<<<<<< HEAD
   '@types/node@24.6.0':
     resolution: {integrity: sha512-F1CBxgqwOMc4GKJ7eY22hWhBVQuMYTtqI8L0FcszYcpYX0fzfDGpez22Xau8Mgm7O9fI+zA/TYIdq3tGWfweBA==}
-=======
+
   '@types/node@24.6.1':
     resolution: {integrity: sha512-ljvjjs3DNXummeIaooB4cLBKg2U6SPI6Hjra/9rRIy7CpM0HpLtG9HptkMKAb4HYWy5S7HUvJEuWgr/y0U8SHw==}
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -13967,10 +13819,6 @@ packages:
 
   ansi-truncate@1.2.0:
     resolution: {integrity: sha512-/SLVrxNIP8o8iRHjdK3K9s2hDqdvb86NEjZOAB6ecWFsOo+9obaby97prnvAPn6j7ExXCpbvtlJFYPkkspg4BQ==}
-
-  ansis@4.2.0:
-    resolution: {integrity: sha512-HqZ5rWlFjGiV0tDm3UxxgNRqsOTniqoKZu0pIAfh7TZQMGuZK+hH0drySty0si0QXj1ieop4+SkSfPZBPPkHig==}
-    engines: {node: '>=14'}
 
   ansis@4.2.0:
     resolution: {integrity: sha512-HqZ5rWlFjGiV0tDm3UxxgNRqsOTniqoKZu0pIAfh7TZQMGuZK+hH0drySty0si0QXj1ieop4+SkSfPZBPPkHig==}
@@ -25382,8 +25230,6 @@ snapshots:
       - vitest
       - yaml
 
-<<<<<<< HEAD
-=======
   '@anolilab/eslint-config@16.3.0(5fc2005a8abaf4584d0cfb7e755444eb)':
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.36.0(jiti@2.6.0))
@@ -25461,7 +25307,6 @@ snapshots:
       - vitest
       - yaml
 
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
   '@anolilab/eslint-config@16.3.0(682214388e190bf90ddfd77a5ad4eb33)':
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.35.0(jiti@2.6.0))
@@ -25768,88 +25613,6 @@ snapshots:
       - vitest
       - yaml
 
-<<<<<<< HEAD
-  '@anolilab/eslint-config@16.3.0(c001e02f832b952043e57d798faf13c9)':
-=======
-  '@anolilab/eslint-config@16.3.0(f57ba02e289590e19614f6e4087274ac)':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
-    dependencies:
-      '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.36.0(jiti@2.6.0))
-      '@eslint/compat': 1.3.2(eslint@9.36.0(jiti@2.6.0))
-      '@eslint/js': 9.36.0
-      '@eslint/markdown': 7.2.0
-      '@html-eslint/eslint-plugin': 0.46.2(eslint@9.36.0(jiti@2.6.0))(jiti@2.6.0)
-      '@html-eslint/parser': 0.46.2(jiti@2.6.0)
-      '@stylistic/eslint-plugin': 5.3.1(eslint@9.36.0(jiti@2.6.0))
-      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
-      '@typescript-eslint/parser': 8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
-      '@typescript-eslint/types': 8.44.0
-      '@visulima/package': 3.5.12(@types/node@24.5.2)(yaml@2.8.1)
-      '@visulima/tsconfig': 1.1.22(yaml@2.8.1)
-      '@vitest/eslint-plugin': 1.3.9(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)(vitest@3.2.4)
-      confusing-browser-globals: 1.0.11
-      eslint: 9.36.0(jiti@2.6.0)
-      eslint-config-flat-gitignore: 2.1.0(eslint@9.36.0(jiti@2.6.0))
-      eslint-flat-config-utils: 2.1.1
-      eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.36.0(jiti@2.6.0)))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3))(eslint@9.36.0(jiti@2.6.0)))(eslint@9.36.0(jiti@2.6.0))
-      eslint-merge-processors: 2.0.0(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-antfu: 3.1.1(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-compat: 6.0.2(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-erasable-syntax-only: 0.3.1(@typescript-eslint/parser@8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3))(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
-      eslint-plugin-es-x: 9.1.0(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-html: 8.1.3
-      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-jsdoc: 56.1.2(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-jsonc: 2.20.1(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-n: 17.21.3(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
-      eslint-plugin-no-for-of-array: 0.1.0(eslint@9.36.0(jiti@2.6.0))(typescript-eslint@8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3))(typescript@5.9.3)
-      eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-no-secrets: 2.2.1(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-no-unsanitized: 4.1.4(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-perfectionist: 4.15.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
-      eslint-plugin-promise: 7.2.1(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-regexp: 2.10.0(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-security: 3.0.1
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-sonarjs: 3.0.5(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-toml: 0.12.0(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-unicorn: 61.0.2(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-unused-imports: 4.2.0(@typescript-eslint/eslint-plugin@8.44.0(@typescript-eslint/parser@8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3))(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3))(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-yml: 1.18.0(eslint@9.36.0(jiti@2.6.0))
-      globals: 16.4.0
-      jsonc-eslint-parser: 2.4.0
-      parse-gitignore: 2.0.0
-      semver: 7.7.2
-      toml-eslint-parser: 0.10.0
-      typescript-eslint: 8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
-<<<<<<< HEAD
-      yaml-eslint-parser: 1.3.0
-    optionalDependencies:
-      '@eslint/css': 0.11.1
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-react: 7.37.5(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-react-hooks: 5.2.0(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-react-refresh: 0.4.20(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-tailwindcss: 3.18.2(tailwindcss@4.1.13)
-      eslint-plugin-testing-library: 7.6.8(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
-      eslint-plugin-tsdoc: 0.4.0
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@9.36.0(jiti@2.6.0))
-      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      eslint-plugin-zod: 1.4.0(eslint@9.36.0(jiti@2.6.0))
-      tailwind-csstree: 0.1.4
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@eslint/json'
-      - '@types/node'
-      - '@typescript-eslint/eslint-plugin'
-      - '@typescript-eslint/utils'
-      - eslint-plugin-import
-      - jiti
-      - supports-color
-      - vitest
-      - yaml
-
   '@anolilab/eslint-config@16.3.0(e32a595a921a4bd909114f0840b2859d)':
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.36.0(jiti@2.6.0))
@@ -25977,8 +25740,6 @@ snapshots:
       semver: 7.7.2
       toml-eslint-parser: 0.10.0
       typescript-eslint: 8.44.0(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.3)
-=======
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       yaml-eslint-parser: 1.3.0
     optionalDependencies:
       '@eslint/css': 0.11.0
@@ -26180,20 +25941,28 @@ snapshots:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
   '@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.6.0)(yaml@2.8.1)':
-=======
-  '@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.6.1)(yaml@2.8.1)':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@anolilab/rc': 2.0.4(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 3.1.9(yaml@2.8.1)
-<<<<<<< HEAD
       '@visulima/package': 3.5.12(@types/node@24.6.0)(yaml@2.8.1)
-=======
+      '@visulima/path': 1.4.0
+      execa: 9.6.0
+      ini: 5.0.0
+      normalize-url: 8.1.0
+      registry-auth-token: 5.1.0
+      semver: 7.7.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - yaml
+
+  '@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.6.1)(yaml@2.8.1)':
+    dependencies:
+      '@anolilab/rc': 2.0.4(yaml@2.8.1)
+      '@semantic-release/error': 4.0.0
+      '@visulima/fs': 3.1.9(yaml@2.8.1)
       '@visulima/package': 3.5.12(@types/node@24.6.1)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@visulima/path': 1.4.0
       execa: 9.6.0
       ini: 5.0.0
@@ -26384,11 +26153,7 @@ snapshots:
       - supports-color
       - yaml
 
-<<<<<<< HEAD
   '@anolilab/semantic-release-preset@11.0.4(@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.6.0)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@24.2.9(typescript@5.9.3)))(semantic-release@24.2.9(typescript@5.9.3))(yaml@2.8.1)':
-=======
-  '@anolilab/semantic-release-preset@11.0.4(@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.6.1)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@24.2.9(typescript@5.9.3)))(semantic-release@24.2.9(typescript@5.9.3))(yaml@2.8.1)':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@anolilab/semantic-release-clean-package-json': 3.0.4(yaml@2.8.1)
       '@semantic-release/changelog': 6.0.3(semantic-release@24.2.9(typescript@5.9.3))
@@ -26400,11 +26165,25 @@ snapshots:
       conventional-changelog-conventionalcommits: 9.1.0
       semantic-release: 24.2.9(typescript@5.9.3)
     optionalDependencies:
-<<<<<<< HEAD
       '@anolilab/semantic-release-pnpm': 2.0.4(@types/node@24.6.0)(yaml@2.8.1)
-=======
+      '@semantic-release/npm': 12.0.2(semantic-release@24.2.9(typescript@5.9.3))
+    transitivePeerDependencies:
+      - supports-color
+      - yaml
+
+  '@anolilab/semantic-release-preset@11.0.4(@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.6.1)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@24.2.9(typescript@5.9.3)))(semantic-release@24.2.9(typescript@5.9.3))(yaml@2.8.1)':
+    dependencies:
+      '@anolilab/semantic-release-clean-package-json': 3.0.4(yaml@2.8.1)
+      '@semantic-release/changelog': 6.0.3(semantic-release@24.2.9(typescript@5.9.3))
+      '@semantic-release/commit-analyzer': 13.0.1(semantic-release@24.2.9(typescript@5.9.3))
+      '@semantic-release/exec': 7.1.0(semantic-release@24.2.9(typescript@5.9.3))
+      '@semantic-release/git': 10.0.1(semantic-release@24.2.9(typescript@5.9.3))
+      '@semantic-release/github': 11.0.6(semantic-release@24.2.9(typescript@5.9.3))
+      '@semantic-release/release-notes-generator': 14.1.0(semantic-release@24.2.9(typescript@5.9.3))
+      conventional-changelog-conventionalcommits: 9.1.0
+      semantic-release: 24.2.9(typescript@5.9.3)
+    optionalDependencies:
       '@anolilab/semantic-release-pnpm': 2.0.4(@types/node@24.6.1)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@semantic-release/npm': 12.0.2(semantic-release@24.2.9(typescript@5.9.3))
     transitivePeerDependencies:
       - supports-color
@@ -28224,23 +28003,19 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.5.2
 
-<<<<<<< HEAD
   '@inquirer/confirm@5.1.18(@types/node@24.6.0)':
-=======
-  '@inquirer/confirm@5.1.12(@types/node@24.6.1)':
-    dependencies:
-      '@inquirer/core': 10.1.13(@types/node@24.6.1)
-      '@inquirer/type': 3.0.7(@types/node@24.6.1)
-    optionalDependencies:
-      '@types/node': 24.6.1
-
-  '@inquirer/core@10.1.13(@types/node@18.19.71)':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@inquirer/core': 10.2.2(@types/node@24.6.0)
       '@inquirer/type': 3.0.8(@types/node@24.6.0)
     optionalDependencies:
       '@types/node': 24.6.0
+
+  '@inquirer/confirm@5.1.18(@types/node@24.6.1)':
+    dependencies:
+      '@inquirer/core': 10.2.2(@types/node@24.6.1)
+      '@inquirer/type': 3.0.8(@types/node@24.6.1)
+    optionalDependencies:
+      '@types/node': 24.6.1
 
   '@inquirer/core@10.2.2(@types/node@18.19.71)':
     dependencies:
@@ -28294,32 +28069,31 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.5.2
 
-<<<<<<< HEAD
   '@inquirer/core@10.2.2(@types/node@24.6.0)':
     dependencies:
       '@inquirer/ansi': 1.0.0
       '@inquirer/figures': 1.0.13
       '@inquirer/type': 3.0.8(@types/node@24.6.0)
-=======
-  '@inquirer/core@10.1.13(@types/node@24.6.1)':
-    dependencies:
-      '@inquirer/figures': 1.0.12
-      '@inquirer/type': 3.0.7(@types/node@24.6.1)
-      ansi-escapes: 4.3.2
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       cli-width: 4.1.0
       mute-stream: 2.0.0
       signal-exit: 4.1.0
       wrap-ansi: 6.2.0
       yoctocolors-cjs: 2.1.2
     optionalDependencies:
-<<<<<<< HEAD
       '@types/node': 24.6.0
-=======
-      '@types/node': 24.6.1
 
-  '@inquirer/figures@1.0.12': {}
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
+  '@inquirer/core@10.2.2(@types/node@24.6.1)':
+    dependencies:
+      '@inquirer/ansi': 1.0.0
+      '@inquirer/figures': 1.0.13
+      '@inquirer/type': 3.0.8(@types/node@24.6.1)
+      cli-width: 4.1.0
+      mute-stream: 2.0.0
+      signal-exit: 4.1.0
+      wrap-ansi: 6.2.0
+      yoctocolors-cjs: 2.1.2
+    optionalDependencies:
+      '@types/node': 24.6.1
 
   '@inquirer/figures@1.0.13': {}
 
@@ -28339,15 +28113,13 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.5.2
 
-<<<<<<< HEAD
   '@inquirer/type@3.0.8(@types/node@24.6.0)':
     optionalDependencies:
       '@types/node': 24.6.0
-=======
-  '@inquirer/type@3.0.7(@types/node@24.6.1)':
+
+  '@inquirer/type@3.0.8(@types/node@24.6.1)':
     optionalDependencies:
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@isaacs/balanced-match@4.0.1': {}
 
@@ -28381,11 +28153,7 @@ snapshots:
   '@jest/console@29.7.0':
     dependencies:
       '@jest/types': 29.6.3
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       chalk: 4.1.2
       jest-message-util: 29.7.0
       jest-util: 29.7.0
@@ -28398,22 +28166,14 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       ci-info: 3.9.0
       exit: 0.1.2
       graceful-fs: 4.2.11
       jest-changed-files: 29.7.0
-<<<<<<< HEAD
-      jest-config: 29.7.0(@types/node@24.6.0)
-=======
       jest-config: 29.7.0(@types/node@24.6.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       jest-haste-map: 29.7.0
       jest-message-util: 29.7.0
       jest-regex-util: 29.6.3
@@ -28444,11 +28204,7 @@ snapshots:
     dependencies:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       jest-mock: 29.7.0
 
   '@jest/expect-utils@29.7.0':
@@ -28466,11 +28222,7 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@sinonjs/fake-timers': 10.3.0
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       jest-message-util: 29.7.0
       jest-mock: 29.7.0
       jest-util: 29.7.0
@@ -28494,11 +28246,7 @@ snapshots:
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
       '@jridgewell/trace-mapping': 0.3.31
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       chalk: 4.1.2
       collect-v8-coverage: 1.0.2
       exit: 0.1.2
@@ -28572,11 +28320,7 @@ snapshots:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@types/yargs': 17.0.32
       chalk: 4.1.2
 
@@ -29723,31 +29467,18 @@ snapshots:
 
   '@popperjs/core@2.11.8': {}
 
-<<<<<<< HEAD
-  '@preact/preset-vite@2.10.2(@babel/core@7.28.4)(preact@10.27.2)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-=======
   '@preact/preset-vite@2.10.2(@babel/core@7.28.4)(preact@10.27.2)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-transform-react-jsx': 7.27.1(@babel/core@7.28.4)
       '@babel/plugin-transform-react-jsx-development': 7.27.1(@babel/core@7.28.4)
-<<<<<<< HEAD
-      '@prefresh/vite': 2.4.10(preact@10.27.2)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
       '@prefresh/vite': 2.4.10(preact@10.27.2)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@rollup/pluginutils': 4.2.1
       babel-plugin-transform-hook-names: 1.0.2(@babel/core@7.28.4)
       debug: 4.4.1
       picocolors: 1.1.1
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vite-prerender-plugin: 0.5.12(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-prerender-plugin: 0.5.12(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     transitivePeerDependencies:
       - preact
       - supports-color
@@ -29760,11 +29491,7 @@ snapshots:
 
   '@prefresh/utils@1.2.1': {}
 
-<<<<<<< HEAD
-  '@prefresh/vite@2.4.10(preact@10.27.2)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-=======
   '@prefresh/vite@2.4.10(preact@10.27.2)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@babel/core': 7.28.4
       '@prefresh/babel-plugin': 0.5.2
@@ -29772,11 +29499,7 @@ snapshots:
       '@prefresh/utils': 1.2.1
       '@rollup/pluginutils': 4.2.1
       preact: 10.27.2
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     transitivePeerDependencies:
       - supports-color
 
@@ -32940,20 +32663,6 @@ snapshots:
     dependencies:
       acorn: 8.15.0
 
-<<<<<<< HEAD
-  '@sveltejs/vite-plugin-svelte-inspector@5.0.1(@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-    dependencies:
-      '@sveltejs/vite-plugin-svelte': 6.2.0(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-      debug: 4.4.1
-      svelte: 5.39.3
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-    dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 5.0.1(@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
   '@sveltejs/vite-plugin-svelte-inspector@5.0.1(@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
     dependencies:
       '@sveltejs/vite-plugin-svelte': 6.2.0(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
@@ -32966,18 +32675,12 @@ snapshots:
   '@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
     dependencies:
       '@sveltejs/vite-plugin-svelte-inspector': 5.0.1(@sveltejs/vite-plugin-svelte@6.2.0(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(svelte@5.39.3)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       debug: 4.4.1
       deepmerge: 4.3.1
       magic-string: 0.30.19
       svelte: 5.39.3
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vitefu: 1.1.1(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vitefu: 1.1.1(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     transitivePeerDependencies:
       - supports-color
 
@@ -33479,20 +33182,12 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.1.13
 
-<<<<<<< HEAD
-  '@tailwindcss/vite@4.1.13(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-=======
   '@tailwindcss/vite@4.1.13(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@tailwindcss/node': 4.1.13
       '@tailwindcss/oxide': 4.1.13
       tailwindcss: 4.1.13
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@tanstack/directive-functions-plugin@1.132.0(vite@6.3.6(@types/node@22.15.29)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
     dependencies:
@@ -33532,15 +33227,6 @@ snapshots:
       - tsx
       - yaml
 
-<<<<<<< HEAD
-  '@tanstack/react-router-devtools@1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.2)(@types/node@24.6.0)(csstype@3.1.3)(jiti@2.6.0)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(terser@5.31.1)(tiny-invariant@1.3.3)(tsx@4.20.5)(yaml@2.8.1)':
-    dependencies:
-      '@tanstack/react-router': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@tanstack/router-devtools-core': 1.132.2(@tanstack/router-core@1.132.2)(@types/node@24.6.0)(csstype@3.1.3)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tiny-invariant@1.3.3)(tsx@4.20.5)(yaml@2.8.1)
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
   '@tanstack/react-router-devtools@1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.2)(@types/node@24.6.1)(csstype@3.1.3)(jiti@2.6.0)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(terser@5.31.1)(tiny-invariant@1.3.3)(tsx@4.20.5)(yaml@2.8.1)':
     dependencies:
       '@tanstack/react-router': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -33548,7 +33234,6 @@ snapshots:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     transitivePeerDependencies:
       - '@tanstack/router-core'
       - '@types/node'
@@ -33663,22 +33348,14 @@ snapshots:
       - tsx
       - yaml
 
-<<<<<<< HEAD
-  '@tanstack/router-devtools-core@1.132.2(@tanstack/router-core@1.132.2)(@types/node@24.6.0)(csstype@3.1.3)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tiny-invariant@1.3.3)(tsx@4.20.5)(yaml@2.8.1)':
-=======
   '@tanstack/router-devtools-core@1.132.2(@tanstack/router-core@1.132.2)(@types/node@24.6.1)(csstype@3.1.3)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tiny-invariant@1.3.3)(tsx@4.20.5)(yaml@2.8.1)':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@tanstack/router-core': 1.132.2
       clsx: 2.1.1
       goober: 2.1.16(csstype@3.1.3)
       solid-js: 1.9.9
       tiny-invariant: 1.3.3
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     optionalDependencies:
       csstype: 3.1.3
     transitivePeerDependencies:
@@ -33731,11 +33408,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  '@tanstack/router-plugin@1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite-plugin-solid@2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(webpack@5.99.9(@swc/core@1.13.5))':
-=======
   '@tanstack/router-plugin@1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite-plugin-solid@2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)))(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(webpack@5.99.9(@swc/core@1.13.5))':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.4)
@@ -33753,13 +33426,8 @@ snapshots:
       zod: 3.25.76
     optionalDependencies:
       '@tanstack/react-router': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vite-plugin-solid: 2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-plugin-solid: 2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       webpack: 5.99.9(@swc/core@1.13.5)
     transitivePeerDependencies:
       - supports-color
@@ -34321,11 +33989,7 @@ snapshots:
 
   '@types/accepts@1.3.7':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/acorn@4.0.6':
     dependencies:
@@ -34357,11 +34021,7 @@ snapshots:
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/braces@3.0.4': {}
 
@@ -34371,11 +34031,7 @@ snapshots:
 
   '@types/cli-progress@3.11.6':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/cli-table@0.3.4': {}
 
@@ -34383,29 +34039,17 @@ snapshots:
 
   '@types/concat-stream@2.0.3':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-
-  '@types/connect@3.4.38':
-    dependencies:
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
 
   '@types/connect@3.4.38':
     dependencies:
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/content-disposition@0.5.8': {}
 
   '@types/conventional-commits-parser@5.0.0':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/cookie@0.6.0': {}
 
@@ -34414,19 +34058,11 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/express': 5.0.3
       '@types/keygrip': 1.0.6
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-
-  '@types/cors@2.8.19':
-    dependencies:
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
 
   '@types/cors@2.8.19':
     dependencies:
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/debug@4.1.12':
     dependencies:
@@ -34458,22 +34094,14 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.5':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
 
   '@types/express-serve-static-core@5.0.6':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
@@ -34498,19 +34126,11 @@ snapshots:
   '@types/fs-extra@11.0.4':
     dependencies:
       '@types/jsonfile': 6.1.4
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-
-  '@types/graceful-fs@4.1.9':
-    dependencies:
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
 
   '@types/graceful-fs@4.1.9':
     dependencies:
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/hast@2.3.10':
     dependencies:
@@ -34554,11 +34174,7 @@ snapshots:
 
   '@types/jsonfile@6.1.4':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/jstoxml@5.0.0': {}
 
@@ -34577,11 +34193,7 @@ snapshots:
       '@types/http-errors': 2.0.5
       '@types/keygrip': 1.0.6
       '@types/koa-compose': 3.2.8
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/koa__router@12.0.4':
     dependencies:
@@ -34590,11 +34202,7 @@ snapshots:
   '@types/liftoff@4.0.3':
     dependencies:
       '@types/fined': 1.1.5
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/lodash.clonedeep@4.5.9':
     dependencies:
@@ -34652,14 +34260,10 @@ snapshots:
 
   '@types/node-fetch@2.6.11':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       form-data: 4.0.4
 
-  '@types/node@18.19.128':
+  '@types/node@18.19.129':
     dependencies:
       undici-types: 5.26.5
 
@@ -34683,11 +34287,11 @@ snapshots:
     dependencies:
       undici-types: 7.12.0
 
-<<<<<<< HEAD
   '@types/node@24.6.0':
-=======
+    dependencies:
+      undici-types: 7.13.0
+
   '@types/node@24.6.1':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       undici-types: 7.13.0
 
@@ -34732,20 +34336,12 @@ snapshots:
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/serve-static@1.15.7':
     dependencies:
       '@types/http-errors': 2.0.5
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@types/send': 0.17.4
 
   '@types/sinonjs__fake-timers@8.1.5': {}
@@ -34764,11 +34360,7 @@ snapshots:
 
   '@types/through@0.0.33':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/tough-cookie@4.0.5': {}
 
@@ -34786,19 +34378,11 @@ snapshots:
 
   '@types/wait-on@5.3.4':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-
-  '@types/webpack@5.28.5(@swc/core@1.13.5)':
-    dependencies:
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
 
   '@types/webpack@5.28.5(@swc/core@1.13.5)':
     dependencies:
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       tapable: 2.2.1
       webpack: 5.99.9(@swc/core@1.13.5)
     transitivePeerDependencies:
@@ -34811,11 +34395,7 @@ snapshots:
 
   '@types/ws@8.5.10':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@types/xregexp@4.4.0':
     dependencies:
@@ -34829,11 +34409,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.44.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.8.3))(eslint@8.57.0)(typescript@5.8.3)':
@@ -36010,10 +35586,9 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/package@3.5.11(@types/node@24.6.1)(yaml@2.8.1)':
+  '@visulima/package@3.5.11(@types/node@24.6.0)(yaml@2.8.1)':
     dependencies:
-<<<<<<< HEAD
-      '@inquirer/confirm': 5.1.18(@types/node@24.5.2)
+      '@inquirer/confirm': 5.1.18(@types/node@24.6.0)
       '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/path': 1.4.0
       normalize-package-data: 7.0.0
@@ -36021,12 +35596,9 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/package@3.5.11(@types/node@24.6.0)(yaml@2.8.1)':
+  '@visulima/package@3.5.11(@types/node@24.6.1)(yaml@2.8.1)':
     dependencies:
-      '@inquirer/confirm': 5.1.18(@types/node@24.6.0)
-=======
-      '@inquirer/confirm': 5.1.12(@types/node@24.6.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
+      '@inquirer/confirm': 5.1.18(@types/node@24.6.1)
       '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/path': 1.4.0
       normalize-package-data: 7.0.0
@@ -36086,7 +35658,7 @@ snapshots:
 
   '@visulima/package@3.5.12(@types/node@24.6.1)(yaml@2.8.1)':
     dependencies:
-      '@inquirer/confirm': 5.1.12(@types/node@24.6.1)
+      '@inquirer/confirm': 5.1.18(@types/node@24.6.1)
       '@visulima/fs': 3.1.9(yaml@2.8.1)
       '@visulima/path': 1.4.0
       normalize-package-data: 7.0.0
@@ -36350,54 +35922,6 @@ snapshots:
       - rolldown
       - yaml
 
-<<<<<<< HEAD
-  '@visulima/packem-rollup@1.0.0-alpha.16(@swc/core@1.13.5)(@types/node@24.5.2)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.41)(rollup@4.52.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
-=======
-  '@visulima/packem-rollup@1.0.0-alpha.16(@swc/core@1.13.5)(@types/node@24.6.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.41)(rollup@4.52.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
-    dependencies:
-      '@babel/parser': 7.28.4
-      '@rollup/plugin-alias': 5.1.1(rollup@4.52.0)
-      '@rollup/plugin-commonjs': 28.0.6(rollup@4.52.0)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.52.0)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.52.0)
-      '@rollup/plugin-json': 6.1.0(rollup@4.52.0)
-      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.52.0)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.52.0)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.52.0)
-      '@rollup/pluginutils': 5.3.0(rollup@4.52.0)
-      '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 3.5.11(@types/node@24.6.1)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.12(@types/node@24.6.1)(rollup@4.52.0)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      '@visulima/source-map': 1.0.20
-      glob-parent: 6.0.2
-      magic-string: 0.30.19
-      mlly: 1.8.0
-      oxc-parser: 0.91.0
-      oxc-resolver: 11.8.2
-      rollup: 4.52.0
-      rollup-plugin-dts: 6.2.3(rollup@4.52.0)(typescript@5.9.3)
-      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.52.0)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.52.0)
-      rollup-plugin-pure: 0.4.0(rollup@4.52.0)
-      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.41)(rollup@4.52.0)
-      rs-module-lexer: 2.6.0
-      semver: 7.7.2
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@swc/core': 1.13.5
-      esbuild: 0.25.10
-      sucrase: 3.35.0
-      typescript: 5.9.3
-<<<<<<< HEAD
-    transitivePeerDependencies:
-      - '@types/node'
-      - picomatch
-      - rolldown
-      - yaml
-
   '@visulima/packem-rollup@1.0.0-alpha.16(@swc/core@1.13.5)(@types/node@24.6.0)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.41)(rollup@4.52.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
     dependencies:
       '@babel/parser': 7.28.4
@@ -36435,8 +35959,49 @@ snapshots:
       esbuild: 0.25.10
       sucrase: 3.35.0
       typescript: 5.9.3
-=======
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
+    transitivePeerDependencies:
+      - '@types/node'
+      - picomatch
+      - rolldown
+      - yaml
+
+  '@visulima/packem-rollup@1.0.0-alpha.16(@swc/core@1.13.5)(@types/node@24.6.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.41)(rollup@4.52.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
+    dependencies:
+      '@babel/parser': 7.28.4
+      '@rollup/plugin-alias': 5.1.1(rollup@4.52.0)
+      '@rollup/plugin-commonjs': 28.0.6(rollup@4.52.0)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.52.0)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.52.0)
+      '@rollup/plugin-json': 6.1.0(rollup@4.52.0)
+      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.52.0)
+      '@rollup/plugin-replace': 6.0.2(rollup@4.52.0)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.52.0)
+      '@rollup/pluginutils': 5.3.0(rollup@4.52.0)
+      '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
+      '@visulima/package': 3.5.11(@types/node@24.6.1)(yaml@2.8.1)
+      '@visulima/packem-share': 1.0.0-alpha.12(@types/node@24.6.1)(rollup@4.52.0)(yaml@2.8.1)
+      '@visulima/path': 1.4.0
+      '@visulima/source-map': 1.0.20
+      glob-parent: 6.0.2
+      magic-string: 0.30.19
+      mlly: 1.8.0
+      oxc-parser: 0.91.0
+      oxc-resolver: 11.8.2
+      rollup: 4.52.0
+      rollup-plugin-dts: 6.2.3(rollup@4.52.0)(typescript@5.9.3)
+      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.52.0)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.52.0)
+      rollup-plugin-pure: 0.4.0(rollup@4.52.0)
+      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.41)(rollup@4.52.0)
+      rs-module-lexer: 2.6.0
+      semver: 7.7.2
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@swc/core': 1.13.5
+      esbuild: 0.25.10
+      sucrase: 3.35.0
+      typescript: 5.9.3
     transitivePeerDependencies:
       - '@types/node'
       - picomatch
@@ -36465,22 +36030,22 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/packem-share@1.0.0-alpha.12(@types/node@24.6.1)(rollup@4.52.0)(yaml@2.8.1)':
+  '@visulima/packem-share@1.0.0-alpha.12(@types/node@24.6.0)(rollup@4.52.0)(yaml@2.8.1)':
     dependencies:
       '@visulima/colorize': 1.4.23
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 3.5.11(@types/node@24.6.1)(yaml@2.8.1)
+      '@visulima/package': 3.5.11(@types/node@24.6.0)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       rollup: 4.52.0
     transitivePeerDependencies:
       - '@types/node'
       - yaml
 
-  '@visulima/packem-share@1.0.0-alpha.12(@types/node@24.6.0)(rollup@4.52.0)(yaml@2.8.1)':
+  '@visulima/packem-share@1.0.0-alpha.12(@types/node@24.6.1)(rollup@4.52.0)(yaml@2.8.1)':
     dependencies:
       '@visulima/colorize': 1.4.23
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 3.5.11(@types/node@24.6.0)(yaml@2.8.1)
+      '@visulima/package': 3.5.11(@types/node@24.6.1)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       rollup: 4.52.0
     transitivePeerDependencies:
@@ -37496,81 +37061,6 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-<<<<<<< HEAD
-  '@visulima/packem@2.0.0-alpha.21(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.5.2)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.41)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.13(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.13(typescript@5.9.3)))(typedoc@0.28.13(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
-=======
-  '@visulima/packem@2.0.0-alpha.21(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.6.1)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.41)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.13(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.13(typescript@5.9.3)))(typedoc@0.28.13(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 0.11.0
-      '@rollup/pluginutils': 5.3.0(rollup@4.52.0)
-      '@visulima/cerebro': 1.1.50(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)(yaml@2.8.1)
-      '@visulima/colorize': 1.4.23
-      '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/humanizer': 1.2.2
-<<<<<<< HEAD
-      '@visulima/package': 3.5.11(@types/node@24.5.2)(yaml@2.8.1)
-      '@visulima/packem-rollup': 1.0.0-alpha.16(@swc/core@1.13.5)(@types/node@24.5.2)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.41)(rollup@4.52.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.12(@types/node@24.5.2)(rollup@4.52.0)(yaml@2.8.1)
-=======
-      '@visulima/package': 3.5.11(@types/node@24.6.1)(yaml@2.8.1)
-      '@visulima/packem-rollup': 1.0.0-alpha.16(@swc/core@1.13.5)(@types/node@24.6.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.41)(rollup@4.52.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.12(@types/node@24.6.1)(rollup@4.52.0)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
-      '@visulima/pail': 2.1.28(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
-      '@visulima/path': 1.4.0
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.6(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.6.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.0)(yaml@2.8.1)
-      '@visulima/source-map': 1.0.20
-      '@visulima/tsconfig': 1.1.22(yaml@2.8.1)
-      browserslist: 4.26.2
-      defu: 6.1.4
-      fastest-levenshtein: 1.0.16
-      hookable: 5.5.3
-      jiti: 2.6.0
-      magic-string: 0.30.19
-      mlly: 1.8.0
-      picomatch: 4.0.3
-      rollup: 4.52.0
-      semver: 7.7.2
-      tinyexec: 1.0.1
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@swc/core': 1.13.5
-      '@tailwindcss/node': 4.1.13
-      '@tailwindcss/oxide': 4.1.13
-      cssnano: 7.1.1(postcss@8.5.6)
-      esbuild: 0.25.10
-      icss-utils: 5.1.0(postcss@8.5.6)
-      lightningcss: 1.30.1
-      postcss: 8.5.6
-      postcss-load-config: 6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
-      postcss-modules-scope: 3.2.1(postcss@8.5.6)
-      postcss-modules-values: 4.0.0(postcss@8.5.6)
-      postcss-value-parser: 4.2.0
-      sucrase: 3.35.0
-      typedoc: 0.28.13(typescript@5.9.3)
-      typedoc-plugin-markdown: 4.9.0(typedoc@0.28.13(typescript@5.9.3))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.13(typescript@5.9.3))
-      typescript: 5.9.3
-<<<<<<< HEAD
-    transitivePeerDependencies:
-      - '@75lb/nature'
-      - '@csstools/css-parser-algorithms'
-      - '@csstools/css-tokenizer'
-      - '@csstools/postcss-slow-plugins'
-      - '@types/node'
-      - '@visulima/css-style-inject'
-      - '@visulima/redact'
-      - ai
-      - p-queue
-      - rolldown
-      - rotating-file-stream
-      - yaml
-
   '@visulima/packem@2.0.0-alpha.21(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.6.0)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.41)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.13(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.13(typescript@5.9.3)))(typedoc@0.28.13(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
@@ -37621,8 +37111,70 @@ snapshots:
       typedoc-plugin-markdown: 4.9.0(typedoc@0.28.13(typescript@5.9.3))
       typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.13(typescript@5.9.3))
       typescript: 5.9.3
-=======
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
+    transitivePeerDependencies:
+      - '@75lb/nature'
+      - '@csstools/css-parser-algorithms'
+      - '@csstools/css-tokenizer'
+      - '@csstools/postcss-slow-plugins'
+      - '@types/node'
+      - '@visulima/css-style-inject'
+      - '@visulima/redact'
+      - ai
+      - p-queue
+      - rolldown
+      - rotating-file-stream
+      - yaml
+
+  '@visulima/packem@2.0.0-alpha.21(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.6.1)(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.41)(rotating-file-stream@3.2.6)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.13(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.13(typescript@5.9.3)))(typedoc@0.28.13(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@clack/prompts': 0.11.0
+      '@rollup/pluginutils': 5.3.0(rollup@4.52.0)
+      '@visulima/cerebro': 1.1.50(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)(yaml@2.8.1)
+      '@visulima/colorize': 1.4.23
+      '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
+      '@visulima/humanizer': 1.2.2
+      '@visulima/package': 3.5.11(@types/node@24.6.1)(yaml@2.8.1)
+      '@visulima/packem-rollup': 1.0.0-alpha.16(@swc/core@1.13.5)(@types/node@24.6.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.41)(rollup@4.52.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+      '@visulima/packem-share': 1.0.0-alpha.12(@types/node@24.6.1)(rollup@4.52.0)(yaml@2.8.1)
+      '@visulima/pail': 2.1.28(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
+      '@visulima/path': 1.4.0
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.6(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.6.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.0)(yaml@2.8.1)
+      '@visulima/source-map': 1.0.20
+      '@visulima/tsconfig': 1.1.22(yaml@2.8.1)
+      browserslist: 4.26.2
+      defu: 6.1.4
+      fastest-levenshtein: 1.0.16
+      hookable: 5.5.3
+      jiti: 2.6.0
+      magic-string: 0.30.19
+      mlly: 1.8.0
+      picomatch: 4.0.3
+      rollup: 4.52.0
+      semver: 7.7.2
+      tinyexec: 1.0.1
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@swc/core': 1.13.5
+      '@tailwindcss/node': 4.1.13
+      '@tailwindcss/oxide': 4.1.13
+      cssnano: 7.1.1(postcss@8.5.6)
+      esbuild: 0.25.10
+      icss-utils: 5.1.0(postcss@8.5.6)
+      lightningcss: 1.30.1
+      postcss: 8.5.6
+      postcss-load-config: 6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1)
+      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
+      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
+      postcss-modules-scope: 3.2.1(postcss@8.5.6)
+      postcss-modules-values: 4.0.0(postcss@8.5.6)
+      postcss-value-parser: 4.2.0
+      sucrase: 3.35.0
+      typedoc: 0.28.13(typescript@5.9.3)
+      typedoc-plugin-markdown: 4.9.0(typedoc@0.28.13(typescript@5.9.3))
+      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.13(typescript@5.9.3))
+      typescript: 5.9.3
     transitivePeerDependencies:
       - '@75lb/nature'
       - '@csstools/css-parser-algorithms'
@@ -37827,12 +37379,12 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/rollup-plugin-css@1.0.0-alpha.6(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.6.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.0)(yaml@2.8.1)':
+  '@visulima/rollup-plugin-css@1.0.0-alpha.6(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.6.0)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.0)(yaml@2.8.1)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.52.0)
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 3.5.11(@types/node@24.6.1)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.12(@types/node@24.6.1)(rollup@4.52.0)(yaml@2.8.1)
+      '@visulima/package': 3.5.11(@types/node@24.6.0)(yaml@2.8.1)
+      '@visulima/packem-share': 1.0.0-alpha.12(@types/node@24.6.0)(rollup@4.52.0)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       mlly: 1.8.0
       oxc-resolver: 11.8.2
@@ -37859,12 +37411,12 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/rollup-plugin-css@1.0.0-alpha.6(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.6.0)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.0)(yaml@2.8.1)':
+  '@visulima/rollup-plugin-css@1.0.0-alpha.6(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.13)(@tailwindcss/oxide@4.1.13)(@types/node@24.6.1)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.1)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.0)(yaml@2.8.1)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.52.0)
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 3.5.11(@types/node@24.6.0)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.12(@types/node@24.6.0)(rollup@4.52.0)(yaml@2.8.1)
+      '@visulima/package': 3.5.11(@types/node@24.6.1)(yaml@2.8.1)
+      '@visulima/packem-share': 1.0.0-alpha.12(@types/node@24.6.1)(rollup@4.52.0)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       mlly: 1.8.0
       oxc-resolver: 11.8.2
@@ -37953,17 +37505,6 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-<<<<<<< HEAD
-  '@vitejs/plugin-react-swc@4.1.0(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-    dependencies:
-      '@rolldown/pluginutils': 1.0.0-beta.35
-      '@swc/core': 1.13.5
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-    transitivePeerDependencies:
-      - '@swc/helpers'
-
-  '@vitejs/plugin-react@5.0.2(rolldown-vite@7.1.14(@types/node@24.6.0)(esbuild@0.25.10)(jiti@2.6.0)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-=======
   '@vitejs/plugin-react-swc@4.1.0(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-beta.35
@@ -37973,7 +37514,6 @@ snapshots:
       - '@swc/helpers'
 
   '@vitejs/plugin-react@5.0.2(rolldown-vite@7.1.14(@types/node@24.6.1)(esbuild@0.25.10)(jiti@2.6.0)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.4)
@@ -37981,11 +37521,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.34
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-<<<<<<< HEAD
-      vite: rolldown-vite@7.1.14(@types/node@24.6.0)(esbuild@0.25.10)(jiti@2.6.0)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
       vite: rolldown-vite@7.1.14(@types/node@24.6.1)(esbuild@0.25.10)(jiti@2.6.0)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     transitivePeerDependencies:
       - supports-color
 
@@ -38013,11 +37549,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  '@vitejs/plugin-react@5.0.2(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-=======
   '@vitejs/plugin-react@5.0.2(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.4)
@@ -38025,16 +37557,6 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.34
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@vitejs/plugin-vue@6.0.1(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3))':
-    dependencies:
-      '@rolldown/pluginutils': 1.0.0-beta.29
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
@@ -38043,7 +37565,6 @@ snapshots:
     dependencies:
       '@rolldown/pluginutils': 1.0.0-beta.29
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       vue: 3.5.21(typescript@5.9.3)
 
   '@vitest/browser@3.2.0(msw@2.8.4(@types/node@22.15.29)(typescript@5.8.3))(playwright@1.55.1)(vite@7.1.7(@types/node@22.15.29)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vitest@3.2.4)(webdriverio@9.15.0)':
@@ -38332,39 +37853,32 @@ snapshots:
       msw: 2.8.4(@types/node@24.5.2)(typescript@5.9.3)
       vite: 7.1.7(@types/node@24.5.2)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
-<<<<<<< HEAD
-  '@vitest/mocker@3.2.4(msw@2.8.4(@types/node@24.6.0)(typescript@5.8.3))(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-=======
-  '@vitest/mocker@3.2.4(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
+  '@vitest/mocker@3.2.4(msw@2.8.4(@types/node@24.6.0)(typescript@5.9.3))(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.19
     optionalDependencies:
-<<<<<<< HEAD
-      msw: 2.8.4(@types/node@24.6.0)(typescript@5.8.3)
+      msw: 2.8.4(@types/node@24.6.0)(typescript@5.9.3)
       vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
-  '@vitest/mocker@3.2.4(msw@2.8.4(@types/node@24.6.0)(typescript@5.9.3))(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
-=======
+  '@vitest/mocker@3.2.4(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
+    dependencies:
+      '@vitest/spy': 3.2.4
+      estree-walker: 3.0.3
+      magic-string: 0.30.19
+    optionalDependencies:
       msw: 2.8.4(@types/node@24.6.1)(typescript@5.8.3)
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
   '@vitest/mocker@3.2.4(msw@2.8.4(@types/node@24.6.1)(typescript@5.9.3))(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.19
     optionalDependencies:
-<<<<<<< HEAD
-      msw: 2.8.4(@types/node@24.6.0)(typescript@5.9.3)
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
       msw: 2.8.4(@types/node@24.6.1)(typescript@5.9.3)
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   '@vitest/pretty-format@2.0.5':
     dependencies:
@@ -38577,22 +38091,14 @@ snapshots:
       de-indent: 1.0.2
       he: 1.2.0
 
-<<<<<<< HEAD
-  '@vue/devtools-core@8.0.2(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3))':
-=======
   '@vue/devtools-core@8.0.2(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3))':
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@vue/devtools-kit': 8.0.2
       '@vue/devtools-shared': 8.0.2
       mitt: 3.0.1
       nanoid: 5.1.5
       pathe: 2.0.3
-<<<<<<< HEAD
-      vite-hot-client: 2.1.0(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
       vite-hot-client: 2.1.0(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       vue: 3.5.21(typescript@5.9.3)
     transitivePeerDependencies:
       - vite
@@ -38855,7 +38361,7 @@ snapshots:
 
   '@yarnpkg/pnp@4.1.2':
     dependencies:
-      '@types/node': 18.19.128
+      '@types/node': 18.19.129
       '@yarnpkg/fslib': 3.1.3
 
   '@zeit/schemas@2.36.0': {}
@@ -39027,8 +38533,6 @@ snapshots:
   ansi-truncate@1.2.0:
     dependencies:
       fast-string-truncated-width: 1.2.1
-
-  ansis@4.2.0: {}
 
   ansis@4.2.0: {}
 
@@ -39586,11 +39090,7 @@ snapshots:
 
   bun-types@1.2.23(@types/react@19.1.13):
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@types/react': 19.1.13
 
   bundle-name@4.1.0:
@@ -46106,11 +45606,7 @@ snapshots:
       '@jest/expect': 29.7.0
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       chalk: 4.1.2
       co: 4.6.0
       dedent: 1.5.3
@@ -46179,11 +45675,7 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
-<<<<<<< HEAD
-  jest-config@29.7.0(@types/node@24.6.0):
-=======
   jest-config@29.7.0(@types/node@24.6.1):
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@babel/core': 7.28.4
       '@jest/test-sequencer': 29.7.0
@@ -46208,11 +45700,7 @@ snapshots:
       slash: 3.0.0
       strip-json-comments: 3.1.1
     optionalDependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
@@ -46248,11 +45736,7 @@ snapshots:
       '@jest/environment': 29.7.0
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       jest-mock: 29.7.0
       jest-util: 29.7.0
 
@@ -46262,11 +45746,7 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@types/graceful-fs': 4.1.9
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -46312,11 +45792,7 @@ snapshots:
   jest-mock@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       jest-util: 29.7.0
 
   jest-playwright-preset@4.0.0(jest-circus@29.7.0)(jest-environment-node@29.7.0)(jest-runner@29.7.0)(jest@29.7.0(@types/node@24.3.1)):
@@ -46383,11 +45859,7 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       chalk: 4.1.2
       emittery: 0.13.1
       graceful-fs: 4.2.11
@@ -46415,11 +45887,7 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       chalk: 4.1.2
       cjs-module-lexer: 1.3.1
       collect-v8-coverage: 1.0.2
@@ -46469,11 +45937,7 @@ snapshots:
   jest-util@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
@@ -46503,11 +45967,7 @@ snapshots:
     dependencies:
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       emittery: 0.13.1
@@ -46516,21 +45976,13 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
   jest-worker@29.7.0:
     dependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       jest-util: 29.7.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
@@ -48572,7 +48024,6 @@ snapshots:
     optional: true
 
   msw@2.8.4(@types/node@24.5.2)(typescript@5.9.2):
-<<<<<<< HEAD
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
       '@bundled-es-modules/statuses': 1.0.1
@@ -48624,66 +48075,12 @@ snapshots:
       - '@types/node'
     optional: true
 
-  msw@2.8.4(@types/node@24.6.0)(typescript@5.8.3):
-    dependencies:
-      '@bundled-es-modules/cookie': 2.0.1
-      '@bundled-es-modules/statuses': 1.0.1
-      '@bundled-es-modules/tough-cookie': 0.1.6
-      '@inquirer/confirm': 5.1.18(@types/node@24.6.0)
-      '@mswjs/interceptors': 0.37.1
-      '@open-draft/deferred-promise': 2.2.0
-      '@open-draft/until': 2.1.0
-      '@types/cookie': 0.6.0
-      '@types/statuses': 2.0.5
-      graphql: 16.9.0
-      headers-polyfill: 4.0.3
-      is-node-process: 1.2.0
-      outvariant: 1.4.3
-      path-to-regexp: 6.3.0
-      picocolors: 1.1.1
-      strict-event-emitter: 0.5.1
-      type-fest: 4.41.0
-      yargs: 17.7.2
-    optionalDependencies:
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - '@types/node'
-    optional: true
-
   msw@2.8.4(@types/node@24.6.0)(typescript@5.9.3):
-=======
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
       '@bundled-es-modules/statuses': 1.0.1
       '@bundled-es-modules/tough-cookie': 0.1.6
       '@inquirer/confirm': 5.1.18(@types/node@24.6.0)
-      '@mswjs/interceptors': 0.37.1
-      '@open-draft/deferred-promise': 2.2.0
-      '@open-draft/until': 2.1.0
-      '@types/cookie': 0.6.0
-      '@types/statuses': 2.0.5
-      graphql: 16.9.0
-      headers-polyfill: 4.0.3
-      is-node-process: 1.2.0
-      outvariant: 1.4.3
-      path-to-regexp: 6.3.0
-      picocolors: 1.1.1
-      strict-event-emitter: 0.5.1
-      type-fest: 4.41.0
-      yargs: 17.7.2
-    optionalDependencies:
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@types/node'
-    optional: true
-
-  msw@2.8.4(@types/node@24.5.2)(typescript@5.9.3):
-    dependencies:
-      '@bundled-es-modules/cookie': 2.0.1
-      '@bundled-es-modules/statuses': 1.0.1
-      '@bundled-es-modules/tough-cookie': 0.1.6
-      '@inquirer/confirm': 5.1.12(@types/node@24.5.2)
       '@mswjs/interceptors': 0.37.1
       '@open-draft/deferred-promise': 2.2.0
       '@open-draft/until': 2.1.0
@@ -48709,7 +48106,7 @@ snapshots:
       '@bundled-es-modules/cookie': 2.0.1
       '@bundled-es-modules/statuses': 1.0.1
       '@bundled-es-modules/tough-cookie': 0.1.6
-      '@inquirer/confirm': 5.1.12(@types/node@24.6.1)
+      '@inquirer/confirm': 5.1.18(@types/node@24.6.1)
       '@mswjs/interceptors': 0.37.1
       '@open-draft/deferred-promise': 2.2.0
       '@open-draft/until': 2.1.0
@@ -48735,7 +48132,7 @@ snapshots:
       '@bundled-es-modules/cookie': 2.0.1
       '@bundled-es-modules/statuses': 1.0.1
       '@bundled-es-modules/tough-cookie': 0.1.6
-      '@inquirer/confirm': 5.1.12(@types/node@24.6.1)
+      '@inquirer/confirm': 5.1.18(@types/node@24.6.1)
       '@mswjs/interceptors': 0.37.1
       '@open-draft/deferred-promise': 2.2.0
       '@open-draft/until': 2.1.0
@@ -51390,11 +50787,7 @@ snapshots:
       glob: 11.0.0
       package-json-from-dist: 1.0.0
 
-<<<<<<< HEAD
-  rolldown-vite@7.1.14(@types/node@24.6.0)(esbuild@0.25.10)(jiti@2.6.0)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
-=======
   rolldown-vite@7.1.14(@types/node@24.6.1)(esbuild@0.25.10)(jiti@2.6.0)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@oxc-project/runtime': 0.92.0
       fdir: 6.5.0(picomatch@4.0.3)
@@ -51404,11 +50797,7 @@ snapshots:
       rolldown: 1.0.0-beta.41
       tinyglobby: 0.2.15
     optionalDependencies:
-<<<<<<< HEAD
-      '@types/node': 24.6.0
-=======
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       esbuild: 0.25.10
       fsevents: 2.3.3
       jiti: 2.6.0
@@ -54818,19 +54207,6 @@ snapshots:
       '@types/unist': 3.0.2
       vfile-message: 4.0.2
 
-<<<<<<< HEAD
-  vite-dev-rpc@1.1.0(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
-    dependencies:
-      birpc: 2.5.0
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vite-hot-client: 2.1.0(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-
-  vite-hot-client@2.1.0(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
-    dependencies:
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-
-  vite-node@1.6.1(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
-=======
   vite-dev-rpc@1.1.0(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
     dependencies:
       birpc: 2.5.0
@@ -54842,17 +54218,12 @@ snapshots:
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
   vite-node@1.6.1(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       pathe: 1.1.2
       picocolors: 1.1.1
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -54993,9 +54364,27 @@ snapshots:
       - tsx
       - yaml
 
-<<<<<<< HEAD
   vite-node@3.2.4(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
-=======
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.1
+      es-module-lexer: 1.7.0
+      pathe: 2.0.3
+      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+    transitivePeerDependencies:
+      - '@types/node'
+      - jiti
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
   vite-node@3.2.4(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
     dependencies:
       cac: 6.7.14
@@ -55018,28 +54407,6 @@ snapshots:
       - yaml
 
   vite-plugin-inspect@11.3.3(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
-    dependencies:
-      cac: 6.7.14
-      debug: 4.4.1
-      es-module-lexer: 1.7.0
-      pathe: 2.0.3
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-    transitivePeerDependencies:
-      - '@types/node'
-      - jiti
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-      - tsx
-      - yaml
-
-  vite-plugin-inspect@11.3.3(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
     dependencies:
       ansis: 4.2.0
       debug: 4.4.1
@@ -55049,13 +54416,8 @@ snapshots:
       perfect-debounce: 2.0.0
       sirv: 3.0.2
       unplugin-utils: 0.3.0
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vite-dev-rpc: 1.1.0(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-dev-rpc: 1.1.0(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     transitivePeerDependencies:
       - supports-color
 
@@ -55075,11 +54437,7 @@ snapshots:
       - supports-color
     optional: true
 
-<<<<<<< HEAD
-  vite-plugin-solid@2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
-=======
   vite-plugin-solid@2.11.8(@testing-library/jest-dom@6.8.0)(solid-js@1.9.9)(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@babel/core': 7.28.4
       '@types/babel__core': 7.20.5
@@ -55087,50 +54445,29 @@ snapshots:
       merge-anything: 5.1.7
       solid-js: 1.9.9
       solid-refresh: 0.6.3(solid-js@1.9.9)
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vitefu: 1.1.1(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vitefu: 1.1.1(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     optionalDependencies:
       '@testing-library/jest-dom': 6.8.0
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  vite-plugin-vue-devtools@8.0.2(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3)):
-    dependencies:
-      '@vue/devtools-core': 8.0.2(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3))
-=======
   vite-plugin-vue-devtools@8.0.2(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3)):
     dependencies:
       '@vue/devtools-core': 8.0.2(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))(vue@3.5.21(typescript@5.9.3))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@vue/devtools-kit': 8.0.2
       '@vue/devtools-shared': 8.0.2
       execa: 9.6.0
       sirv: 3.0.2
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vite-plugin-inspect: 11.3.3(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-      vite-plugin-vue-inspector: 5.3.2(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-plugin-inspect: 11.3.3(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       vite-plugin-vue-inspector: 5.3.2(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     transitivePeerDependencies:
       - '@nuxt/kit'
       - supports-color
       - vue
 
-<<<<<<< HEAD
-  vite-plugin-vue-inspector@5.3.2(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
-=======
   vite-plugin-vue-inspector@5.3.2(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-proposal-decorators': 7.28.0(@babel/core@7.28.4)
@@ -55141,19 +54478,11 @@ snapshots:
       '@vue/compiler-dom': 3.5.21
       kolorist: 1.8.0
       magic-string: 0.30.19
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-    transitivePeerDependencies:
-      - supports-color
-
-  vite-prerender-plugin@0.5.12(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
   vite-prerender-plugin@0.5.12(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       kolorist: 1.8.0
       magic-string: 0.30.19
@@ -55161,11 +54490,7 @@ snapshots:
       simple-code-frame: 1.3.0
       source-map: 0.7.4
       stack-trace: 1.0.0-pre2
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
 
   vite-tsconfig-paths@5.1.4(typescript@5.9.2)(vite@7.1.7(@types/node@24.3.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
     dependencies:
@@ -55291,11 +54616,7 @@ snapshots:
       tsx: 4.20.5
       yaml: 2.8.1
 
-<<<<<<< HEAD
   vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
-=======
-  vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       esbuild: 0.25.10
       fdir: 6.5.0(picomatch@4.0.3)
@@ -55304,11 +54625,24 @@ snapshots:
       rollup: 4.50.0
       tinyglobby: 0.2.15
     optionalDependencies:
-<<<<<<< HEAD
       '@types/node': 24.6.0
-=======
+      fsevents: 2.3.3
+      jiti: 2.6.0
+      lightningcss: 1.30.1
+      terser: 5.31.1
+      tsx: 4.20.5
+      yaml: 2.8.1
+
+  vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
+    dependencies:
+      esbuild: 0.25.10
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
+      postcss: 8.5.6
+      rollup: 4.50.0
+      tinyglobby: 0.2.15
+    optionalDependencies:
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       fsevents: 2.3.3
       jiti: 2.6.0
       lightningcss: 1.30.1
@@ -55320,19 +54654,11 @@ snapshots:
     optionalDependencies:
       vite: 6.3.6(@types/node@22.15.29)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
-<<<<<<< HEAD
-  vitefu@1.1.1(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
-    optionalDependencies:
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-
-  vitest@1.6.1(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
-=======
   vitefu@1.1.1(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)):
     optionalDependencies:
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
 
   vitest@1.6.1(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
@@ -55351,19 +54677,11 @@ snapshots:
       strip-literal: 2.1.1
       tinybench: 2.9.0
       tinypool: 0.8.4
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vite-node: 1.6.1(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 24.6.0
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-node: 1.6.1(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@vitest/ui': 3.2.4(vitest@3.2.4)
       jsdom: 27.0.0(postcss@8.5.6)
     transitivePeerDependencies:
@@ -55820,19 +55138,11 @@ snapshots:
       - tsx
       - yaml
 
-<<<<<<< HEAD
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.0)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
+  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.0)(typescript@5.9.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.8.4(@types/node@24.6.0)(typescript@5.8.3))(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
-    dependencies:
-      '@types/chai': 5.2.2
-      '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
+      '@vitest/mocker': 3.2.4(msw@2.8.4(@types/node@24.6.0)(typescript@5.9.3))(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -55850,21 +55160,12 @@ snapshots:
       tinyglobby: 0.2.15
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-<<<<<<< HEAD
       vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-node: 3.2.4(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/debug': 4.1.12
       '@types/node': 24.6.0
-=======
-      vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vite-node: 3.2.4(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/debug': 4.1.12
-      '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
       '@vitest/ui': 3.2.4(vitest@3.2.4)
       jsdom: 27.0.0(postcss@8.5.6)
     transitivePeerDependencies:
@@ -55881,19 +55182,11 @@ snapshots:
       - tsx
       - yaml
 
-<<<<<<< HEAD
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.6.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.0)(typescript@5.9.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
+  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.8.4(@types/node@24.6.0)(typescript@5.9.3))(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
-=======
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.9.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
-    dependencies:
-      '@types/chai': 5.2.2
-      '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.8.4(@types/node@24.6.1)(typescript@5.9.3))(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
+      '@vitest/mocker': 3.2.4(msw@2.8.4(@types/node@24.6.1)(typescript@5.8.3))(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -55911,21 +55204,56 @@ snapshots:
       tinyglobby: 0.2.15
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-<<<<<<< HEAD
-      vite: 7.1.7(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      vite-node: 3.2.4(@types/node@24.6.0)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/debug': 4.1.12
-      '@types/node': 24.6.0
-=======
       vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       vite-node: 3.2.4(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/debug': 4.1.12
       '@types/node': 24.6.1
->>>>>>> dab084b1 (refactor: Update dependencies and enhance error overlay tests)
+      '@vitest/ui': 3.2.4(vitest@3.2.4)
+      jsdom: 27.0.0(postcss@8.5.6)
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
+  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.6.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.8.4(@types/node@24.6.1)(typescript@5.9.3))(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1):
+    dependencies:
+      '@types/chai': 5.2.2
+      '@vitest/expect': 3.2.4
+      '@vitest/mocker': 3.2.4(msw@2.8.4(@types/node@24.6.1)(typescript@5.9.3))(vite@7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1))
+      '@vitest/pretty-format': 3.2.4
+      '@vitest/runner': 3.2.4
+      '@vitest/snapshot': 3.2.4
+      '@vitest/spy': 3.2.4
+      '@vitest/utils': 3.2.4
+      chai: 5.2.0
+      debug: 4.4.1
+      expect-type: 1.2.1
+      magic-string: 0.30.19
+      pathe: 2.0.3
+      picomatch: 4.0.3
+      std-env: 3.9.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.15
+      tinypool: 1.1.1
+      tinyrainbow: 2.0.0
+      vite: 7.1.7(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+      vite-node: 3.2.4(@types/node@24.6.1)(jiti@2.6.0)(lightningcss@1.30.1)(terser@5.31.1)(tsx@4.20.5)(yaml@2.8.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/debug': 4.1.12
+      '@types/node': 24.6.1
       '@vitest/ui': 3.2.4(vitest@3.2.4)
       jsdom: 27.0.0(postcss@8.5.6)
     transitivePeerDependencies:
