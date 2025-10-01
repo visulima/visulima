@@ -86,6 +86,78 @@ describe("pnpm", () => {
 
             expect(result).toBe(false);
         });
+
+        it("should return true for packages in workspace with /** recursive pattern", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+            const packagePath = join(temporaryDirection, "packages", "nested", "deep", "my-package", "package.json");
+            const workspacePackages = ["packages/**"];
+
+            const result = isPackageInWorkspace(workspacePath, packagePath, workspacePackages);
+
+            expect(result).toBe(true);
+        });
+
+        it("should return true for packages in workspace with /** pattern matching exact directory", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+            const packagePath = join(temporaryDirection, "packages", "package.json");
+            const workspacePackages = ["packages/**"];
+
+            const result = isPackageInWorkspace(workspacePath, packagePath, workspacePackages);
+
+            expect(result).toBe(true);
+        });
+
+        it("should return false for packages outside workspace with /** pattern", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+            const packagePath = join(temporaryDirection, "other", "nested", "deep", "my-package", "package.json");
+            const workspacePackages = ["packages/**"];
+
+            const result = isPackageInWorkspace(workspacePath, packagePath, workspacePackages);
+
+            expect(result).toBe(false);
+        });
+
+        it("should handle leading ./ in patterns", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+            const packagePath = join(temporaryDirection, "packages", "my-package", "package.json");
+            const workspacePackages = ["./packages/*"];
+
+            const result = isPackageInWorkspace(workspacePath, packagePath, workspacePackages);
+
+            expect(result).toBe(true);
+        });
+
+        it("should handle leading ./ in recursive patterns", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+            const packagePath = join(temporaryDirection, "packages", "nested", "deep", "my-package", "package.json");
+            const workspacePackages = ["./packages/**"];
+
+            const result = isPackageInWorkspace(workspacePath, packagePath, workspacePackages);
+
+            expect(result).toBe(true);
+        });
+
+        it("should handle leading ./ in relative paths", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+            const packagePath = join(temporaryDirection, "packages", "my-package", "package.json");
+            const workspacePackages = ["packages/*"];
+
+            const result = isPackageInWorkspace(workspacePath, packagePath, workspacePackages);
+
+            expect(result).toBe(true);
+        });
     });
 
     describe(readPnpmCatalogs, () => {
@@ -341,7 +413,6 @@ describe("pnpm", () => {
             resolveDependenciesCatalogReferences(dependencies, catalogs);
 
             expect(dependencies).toStrictEqual({
-
                 invalid: 123,
                 react: "^18.0.0",
             });

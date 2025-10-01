@@ -1,6 +1,5 @@
 import { existsSync } from "node:fs";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { installPackage } from "@antfu/install-pkg";
 import confirm from "@inquirer/confirm";
 import type { FindUpOptions, WriteJsonOptions } from "@visulima/fs";

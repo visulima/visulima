@@ -20,19 +20,30 @@ export const isPackageInWorkspace = (workspacePath: string, packagePath: string,
 
     // Check if the relative path matches any workspace package pattern
     return workspacePackages.some((pattern) => {
-        if (pattern === "." && relativePath === ".") {
+        // Normalize pattern and relativePath by stripping leading "./"
+        const normalizedPattern = pattern.startsWith("./") ? pattern.slice(2) : pattern;
+        const normalizedRelativePath = relativePath.startsWith("./") ? relativePath.slice(2) : relativePath;
+
+        if (normalizedPattern === "." && normalizedRelativePath === ".") {
             return true;
         }
 
-        // Simple glob matching for common patterns
-        if (pattern.endsWith("/*")) {
-            const prefix = pattern.slice(0, -2);
+        // Handle recursive glob patterns ending with "/**"
+        if (normalizedPattern.endsWith("/**")) {
+            const prefix = normalizedPattern.slice(0, -3);
 
-            return relativePath.startsWith(`${prefix}/`) || relativePath === prefix;
+            return normalizedRelativePath === prefix || normalizedRelativePath.startsWith(`${prefix}/`);
+        }
+
+        // Simple glob matching for patterns ending with "/*"
+        if (normalizedPattern.endsWith("/*")) {
+            const prefix = normalizedPattern.slice(0, -2);
+
+            return normalizedRelativePath.startsWith(`${prefix}/`) || normalizedRelativePath === prefix;
         }
 
         // Exact match
-        return relativePath === pattern || relativePath.startsWith(`${pattern}/`);
+        return normalizedRelativePath === normalizedPattern || normalizedRelativePath.startsWith(`${normalizedPattern}/`);
     });
 };
 
