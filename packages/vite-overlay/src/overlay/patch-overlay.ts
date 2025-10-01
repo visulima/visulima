@@ -92,7 +92,7 @@ const rootElement = (
             </svg>
         </div>
         <div id="__v_o__history_timestamp" class="grow text-sm text-[var(--ono-v-text-muted)] flex items-end justify-center hidden">
-            <span class="bg-white rounded-t-[var(--ono-v-dialog-radius)] px-3"></span>
+            <span class="bg-[var(--ono-v-surface)] rounded-t-[var(--ono-v-dialog-radius)] px-3"></span>
         </div>
         <div class="error-overlay-notch flex gap-1 relative translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-[var(--ono-v-dialog-notch-height)] p-3 pl-0 bg-[var(--background-color)] border border-[var(--stroke-color)] border-b-0 rounded-tr-[var(--ono-v-dialog-radius)]" data-side="right">
             ${
