@@ -694,6 +694,7 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
  * @param options.reactPluginName Custom React plugin name (optional)
  * @param options.solutionFinders Custom solution finders (optional)
  * @param options.vuePluginName Custom Vue plugin name (optional)
+ * @param options.showBallonButton Whether to show the balloon button (optional)
  * @returns The Vite plugin configuration
  */
 const errorOverlayPlugin = (options: {
@@ -702,7 +703,7 @@ const errorOverlayPlugin = (options: {
     showBallonButton?: boolean;
     solutionFinders?: SolutionFinder[];
     vuePluginName?: string;
-}): Plugin => {
+} = {}): Plugin => {
     let mode: string;
     let isReactProject: boolean;
     let isVueProject: boolean;
