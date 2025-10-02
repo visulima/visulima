@@ -1,3 +1,9 @@
+## @visulima/vite-overlay [1.2.1](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.2.0...@visulima/vite-overlay@1.2.1) (2025-10-02)
+
+### Bug Fixes
+
+* **vite-overlay:**  added missing default empty object ([f065c04](https://github.com/visulima/visulima/commit/f065c049f269613033284ea6b3ad08f66274f00d))
+
 ## @visulima/vite-overlay [1.2.0](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.1.1...@visulima/vite-overlay@1.2.0) (2025-10-01)
 
 ### Features
