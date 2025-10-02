@@ -5,7 +5,7 @@ import { findUp, findUpSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
 import { dirname, join } from "@visulima/path";
 
-import { parsePackageJson } from "./package-json";
+import { parsePackageJson, parsePackageJsonSync } from "./package-json";
 
 const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"];
 
@@ -25,7 +25,7 @@ const packageMangerFindUpMatcher = (directory: string): string | undefined => {
     const packageJsonFilePath = join(directory, "package.json");
 
     if (existsSync(packageJsonFilePath)) {
-        const packageJson = parsePackageJson(readFileSync(packageJsonFilePath, "utf8"));
+        const packageJson = parsePackageJsonSync(readFileSync(packageJsonFilePath, "utf8"));
 
         if (packageJson.packageManager !== undefined) {
             return packageJsonFilePath;
@@ -35,13 +35,65 @@ const packageMangerFindUpMatcher = (directory: string): string | undefined => {
     return undefined;
 };
 
-const findPackageManagerOnFile = (foundFile: string | undefined): PackageManagerResult => {
+const findPackageManagerOnFile = async (foundFile: string | undefined): Promise<PackageManagerResult> => {
     if (!foundFile) {
         throw new NotFoundError("Could not find a package manager");
     }
 
     if (foundFile.endsWith("package.json")) {
-        const packageJson = parsePackageJson(foundFile);
+        const packageJson = await parsePackageJson(foundFile);
+
+        if (packageJson.packageManager) {
+            const packageManagerNames = ["npm", "yarn", "pnpm", "bun"] as const;
+            const foundPackageManager = packageManagerNames.find((prefix) => (packageJson.packageManager as string).startsWith(prefix));
+
+            if (foundPackageManager) {
+                return {
+                    packageManager: foundPackageManager,
+                    path: dirname(foundFile),
+                };
+            }
+        }
+    }
+
+    if (foundFile.endsWith("yarn.lock")) {
+        return {
+            packageManager: "yarn",
+            path: dirname(foundFile),
+        };
+    }
+
+    if (foundFile.endsWith("package-lock.json") || foundFile.endsWith("npm-shrinkwrap.json")) {
+        return {
+            packageManager: "npm",
+            path: dirname(foundFile),
+        };
+    }
+
+    if (foundFile.endsWith("pnpm-lock.yaml")) {
+        return {
+            packageManager: "pnpm",
+            path: dirname(foundFile),
+        };
+    }
+
+    if (foundFile.endsWith("bun.lockb")) {
+        return {
+            packageManager: "bun",
+            path: dirname(foundFile),
+        };
+    }
+
+    throw new NotFoundError("Could not find a package manager");
+};
+
+const findPackageManagerOnFileSync = (foundFile: string | undefined): PackageManagerResult => {
+    if (!foundFile) {
+        throw new NotFoundError("Could not find a package manager");
+    }
+
+    if (foundFile.endsWith("package.json")) {
+        const packageJson = parsePackageJsonSync(foundFile);
 
         if (packageJson.packageManager) {
             const packageManagerNames = ["npm", "yarn", "pnpm", "bun"] as const;
@@ -162,7 +214,7 @@ export const findPackageManagerSync = (cwd?: URL | string): PackageManagerResult
         ...cwd && { cwd },
     });
 
-    return findPackageManagerOnFile(foundFile);
+    return findPackageManagerOnFileSync(foundFile);
 };
 
 /**

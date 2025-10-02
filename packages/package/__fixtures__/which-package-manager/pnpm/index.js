@@ -1,4 +1,4 @@
-import { identifyInitiatingPackageManager } from "../../../dist/package-manager.cjs";
+import { identifyInitiatingPackageManager } from "../../../dist/package-manager.js";
 
 const pm = await identifyInitiatingPackageManager();
 
