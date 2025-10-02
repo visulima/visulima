@@ -1,6 +1,5 @@
 import { existsSync } from "node:fs";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { installPackage } from "@antfu/install-pkg";
 import confirm from "@inquirer/confirm";
 import type { FindUpOptions, WriteJsonOptions } from "@visulima/fs";
@@ -14,6 +13,7 @@ import type { Input } from "normalize-package-data";
 import normalizeData from "normalize-package-data";
 import type { JsonObject, Paths } from "type-fest";
 
+import { readPnpmCatalogs, readPnpmCatalogsSync, resolveCatalogReferences } from "./pnpm";
 import type { Cache, EnsurePackagesOptions, NormalizedPackageJson, PackageJson } from "./types";
 import isNode from "./utils/is-node";
 
@@ -183,14 +183,16 @@ export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJso
  * @param packageFile
  * @param options
  * @param options.ignoreWarnings List of warning messages or patterns to skip in strict mode
+ * @param options.resolveCatalogs Whether to resolve pnpm catalog references
  * @param options.strict Whether to throw errors on normalization warnings
  * @returns
  * @throws {Error} If the packageFile parameter is not an object or a string or if strict mode is enabled and normalize warnings are thrown.
  */
-export const parsePackageJson = (
+export const parsePackageJsonSync = (
     packageFile: JsonObject | string,
     options?: {
         ignoreWarnings?: (RegExp | string)[];
+        resolveCatalogs?: boolean;
         strict?: boolean;
     },
 ): NormalizedPackageJson => {
@@ -209,6 +211,64 @@ export const parsePackageJson = (
         json = readJsonSync(packageFile as string);
     } else {
         json = parseJson(packageFile as string);
+    }
+
+    // Resolve catalog references if enabled and we have a file path
+    if (options?.resolveCatalogs && isString && existsSync(packageFile as string)) {
+        const catalogs = readPnpmCatalogsSync(packageFile as string);
+
+        if (catalogs) {
+            resolveCatalogReferences(json as JsonObject, catalogs);
+        }
+    }
+
+    normalizeInput(json as Input, options?.strict ?? false, options?.ignoreWarnings);
+
+    return json as NormalizedPackageJson;
+};
+
+/**
+ * An asynchronous function to parse the package.json file/object/string and return normalize the data.
+ * @param packageFile
+ * @param options
+ * @param options.ignoreWarnings List of warning messages or patterns to skip in strict mode
+ * @param options.strict Whether to throw errors on normalization warnings
+ * @param options.resolveCatalogs Whether to resolve pnpm catalog references
+ * @returns
+ * @throws {Error} If the packageFile parameter is not an object or a string or if strict mode is enabled and normalize warnings are thrown.
+ */
+export const parsePackageJson = async (
+    packageFile: JsonObject | string,
+    options?: {
+        ignoreWarnings?: (RegExp | string)[];
+        resolveCatalogs?: boolean;
+        strict?: boolean;
+    },
+): Promise<NormalizedPackageJson> => {
+    const isObject = packageFile !== null && typeof packageFile === "object" && !Array.isArray(packageFile);
+    const isString = typeof packageFile === "string";
+
+    if (!isObject && !isString) {
+        throw new TypeError("`packageFile` should be either an `object` or a `string`.");
+    }
+
+    let json;
+
+    if (isObject) {
+        json = structuredClone(packageFile);
+    } else if (existsSync(packageFile as string)) {
+        json = await readJson(packageFile as string);
+    } else {
+        json = parseJson(packageFile as string);
+    }
+
+    // Resolve catalog references if enabled
+    if (options?.resolveCatalogs && isString && existsSync(packageFile as string)) {
+        const catalogs = await readPnpmCatalogs(packageFile as string);
+
+        if (catalogs) {
+            resolveCatalogReferences(json as JsonObject, catalogs);
+        }
     }
 
     normalizeInput(json as Input, options?.strict ?? false, options?.ignoreWarnings);

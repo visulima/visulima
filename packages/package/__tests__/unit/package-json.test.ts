@@ -1,7 +1,8 @@
+import { writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
-import { isAccessibleSync, readJsonSync } from "@visulima/fs";
+import { isAccessibleSync, readJsonSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join, toNamespacedPath } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -15,6 +16,7 @@ import {
     hasPackageJsonAnyDependency,
     hasPackageJsonProperty,
     parsePackageJson,
+    parsePackageJsonSync,
     writePackageJson,
     writePackageJsonSync,
 } from "../../src/package-json";
@@ -102,7 +104,17 @@ describe("package-json", () => {
     });
 
     describe(parsePackageJson, () => {
-        it("should accept a valid package.json object and return a normalized package.json object", () => {
+        let distribution: string;
+
+        beforeEach(() => {
+            distribution = temporaryDirectory();
+        });
+
+        afterEach(async () => {
+            await rm(distribution, { recursive: true });
+        });
+
+        it("should accept a valid package.json object and return a normalized package.json object", async () => {
             expect.assertions(1);
 
             const packageFile = {
@@ -114,7 +126,7 @@ describe("package-json", () => {
                 version: "1.0.0",
             };
 
-            const result = parsePackageJson(packageFile);
+            const result = await parsePackageJson(packageFile);
 
             expect(result).toStrictEqual({
                 _id: "test-package@1.0.0",
@@ -128,7 +140,7 @@ describe("package-json", () => {
             });
         });
 
-        it("should throw an error in strict mode when warnings are found during package.json parsing", () => {
+        it("should throw an error in strict mode when warnings are found during package.json parsing", async () => {
             expect.assertions(2);
 
             const packageFile = {
@@ -141,7 +153,7 @@ describe("package-json", () => {
             };
 
             try {
-                parsePackageJson(packageFile, {
+                await parsePackageJson(packageFile, {
                     strict: true,
                 });
 
@@ -153,7 +165,7 @@ describe("package-json", () => {
             }
         });
 
-        it("should not throw in strict mode when no warnings occur", () => {
+        it("should not throw in strict mode when no warnings occur", async () => {
             expect.assertions(1);
 
             const validPackage = {
@@ -170,12 +182,10 @@ describe("package-json", () => {
                 version: "1.0.0",
             };
 
-            expect(() => {
-                parsePackageJson(validPackage, { strict: true });
-            }).not.toThrow();
+            await expect(parsePackageJson(validPackage, { strict: true })).resolves.not.toThrow();
         });
 
-        it("should skip warnings that match exact strings in ignoreWarnings", () => {
+        it("should skip warnings that match exact strings in ignoreWarnings", async () => {
             expect.assertions(3);
 
             const packageFile = {
@@ -184,7 +194,7 @@ describe("package-json", () => {
             };
 
             try {
-                parsePackageJson(packageFile, {
+                await parsePackageJson(packageFile, {
                     ignoreWarnings: ["No description", "No repository field."],
                     strict: true,
                 });
@@ -198,7 +208,7 @@ describe("package-json", () => {
             }
         });
 
-        it("should skip warnings that match regex patterns in ignoreWarnings", () => {
+        it("should skip warnings that match regex patterns in ignoreWarnings", async () => {
             expect.assertions(3);
 
             const packageFile = {
@@ -207,7 +217,7 @@ describe("package-json", () => {
             };
 
             try {
-                parsePackageJson(packageFile, {
+                await parsePackageJson(packageFile, {
                     ignoreWarnings: [/No description/, /repository field/],
                     strict: true,
                 });
@@ -221,7 +231,7 @@ describe("package-json", () => {
             }
         });
 
-        it("should skip warnings using both string and regex patterns", () => {
+        it("should skip warnings using both string and regex patterns", async () => {
             expect.assertions(3);
 
             const packageFile = {
@@ -230,7 +240,7 @@ describe("package-json", () => {
             };
 
             try {
-                parsePackageJson(packageFile, {
+                await parsePackageJson(packageFile, {
                     ignoreWarnings: ["No description", /repository field/],
                     strict: true,
                 });
@@ -244,7 +254,7 @@ describe("package-json", () => {
             }
         });
 
-        it("should throw on warnings that don't match ignoreWarnings patterns", () => {
+        it("should throw on warnings that don't match ignoreWarnings patterns", async () => {
             expect.assertions(2);
 
             const packageFile = {
@@ -253,7 +263,7 @@ describe("package-json", () => {
             };
 
             try {
-                parsePackageJson(packageFile, {
+                await parsePackageJson(packageFile, {
                     ignoreWarnings: ["Different warning", /unrelated.*/],
                     strict: true,
                 });
@@ -266,12 +276,12 @@ describe("package-json", () => {
             }
         });
 
-        it("should accept a valid package.json file path and return a normalized package.json object", () => {
+        it("should accept a valid package.json file path and return a normalized package.json object", async () => {
             expect.assertions(1);
 
             const packageFile = join(fixturePath, "simple-package.json");
 
-            const result = parsePackageJson(packageFile);
+            const result = await parsePackageJson(packageFile);
 
             expect(result).toStrictEqual({
                 _id: "test@1.0.0",
@@ -281,7 +291,7 @@ describe("package-json", () => {
             });
         });
 
-        it("should accept a valid package.json string and return a normalized package.json object", () => {
+        it("should accept a valid package.json string and return a normalized package.json object", async () => {
             expect.assertions(1);
 
             const packageFile = `{
@@ -293,7 +303,7 @@ describe("package-json", () => {
         }
       }`;
 
-            const result = parsePackageJson(packageFile);
+            const result = await parsePackageJson(packageFile);
 
             expect(result).toStrictEqual({
                 _id: "test-package@1.0.0",
@@ -307,29 +317,332 @@ describe("package-json", () => {
             });
         });
 
-        it("should throw a TypeError if the input is not an object or a string", () => {
+        it("should throw a TypeError if the input is not an object or a string", async () => {
             expect.assertions(1);
 
             const packageFile = 123;
 
-            expect(() => {
+            await expect(() =>
                 // @ts-expect-error - testing invalid input
-                parsePackageJson(packageFile);
-            }).toThrow(TypeError);
+                parsePackageJson(packageFile),
+            ).rejects.toThrow(TypeError);
         });
 
-        it("should handle and return a normalized package.json object for an empty package.json file", () => {
+        it("should handle and return a normalized package.json object for an empty package.json file", async () => {
             expect.assertions(1);
 
             const packageFile = {};
 
-            const result = parsePackageJson(packageFile);
+            const result = await parsePackageJson(packageFile);
 
             expect(result).toStrictEqual({
                 _id: "@",
                 name: "",
                 readme: "ERROR: No README data found!",
                 version: "",
+            });
+        });
+
+        it("should resolve catalog references when resolveCatalogs is enabled and catalog exists", async () => {
+            expect.assertions(1);
+
+            // Mock the file system to return a package.json with catalog references
+            const mockPackageJson = {
+                dependencies: {
+                    react: "catalog:",
+                    typescript: "catalog:",
+                },
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            // Create a temporary directory with package.json and pnpm-workspace.yaml
+            const packageJsonPath = join(distribution, "package.json");
+            const workspacePath = join(distribution, "pnpm-workspace.yaml");
+
+            // Write package.json with catalog references
+            writeJsonSync(packageJsonPath, mockPackageJson);
+
+            // Write pnpm-workspace.yaml with catalog definitions
+            const workspaceContent = `catalog:
+  react: ^18.0.0
+  typescript: ^5.0.0
+packages:
+  - .
+`;
+
+            writeFileSync(workspacePath, workspaceContent);
+
+            const result = await parsePackageJson(packageJsonPath, { resolveCatalogs: true });
+
+            expect(result).toStrictEqual({
+                _id: "test-package@1.0.0",
+                dependencies: {
+                    react: "^18.0.0",
+                    typescript: "^5.0.0",
+                },
+                name: "test-package",
+                readme: "ERROR: No README data found!",
+                version: "1.0.0",
+            });
+        });
+
+        it("should resolve named catalog references when resolveCatalogs is enabled", async () => {
+            expect.assertions(1);
+
+            const mockPackageJson = {
+                dependencies: {
+                    next: "catalog:next",
+                    react: "catalog:next",
+                },
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            const packageJsonPath = join(distribution, "package.json");
+            const workspacePath = join(distribution, "pnpm-workspace.yaml");
+
+            writeJsonSync(packageJsonPath, mockPackageJson);
+
+            const workspaceContent = `catalogs:
+  next:
+    react: ^19.0.0
+    next: ^15.0.0
+packages:
+  - .
+`;
+
+            writeFileSync(workspacePath, workspaceContent);
+
+            const result = await parsePackageJson(packageJsonPath, { resolveCatalogs: true });
+
+            expect(result).toStrictEqual({
+                _id: "test-package@1.0.0",
+                dependencies: {
+                    next: "^15.0.0",
+                    react: "^19.0.0",
+                },
+                name: "test-package",
+                readme: "ERROR: No README data found!",
+                version: "1.0.0",
+            });
+        });
+
+        it("should not resolve catalog references when resolveCatalogs is false or undefined", async () => {
+            expect.assertions(1);
+
+            const mockPackageJson = {
+                dependencies: {
+                    react: "catalog:",
+                },
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            const packageJsonPath = join(distribution, "package.json");
+            const workspacePath = join(distribution, "pnpm-workspace.yaml");
+
+            writeJsonSync(packageJsonPath, mockPackageJson);
+
+            const workspaceContent = `catalog:
+  react: ^18.0.0
+packages:
+  - .
+`;
+
+            writeFileSync(workspacePath, workspaceContent);
+
+            const result = await parsePackageJson(packageJsonPath, { resolveCatalogs: false });
+
+            expect(result).toStrictEqual({
+                _id: "test-package@1.0.0",
+                dependencies: {
+                    react: "catalog:",
+                },
+                name: "test-package",
+                readme: "ERROR: No README data found!",
+                version: "1.0.0",
+            });
+        });
+
+        it("should handle catalog references in all dependency fields", async () => {
+            expect.assertions(1);
+
+            const mockPackageJson = {
+                dependencies: {
+                    react: "catalog:",
+                },
+                devDependencies: {
+                    typescript: "catalog:",
+                },
+                name: "test-package",
+                optionalDependencies: {
+                    eslint: "catalog:",
+                },
+                peerDependencies: {
+                    node: "catalog:",
+                },
+                version: "1.0.0",
+            };
+
+            const packageJsonPath = join(distribution, "package.json");
+            const workspacePath = join(distribution, "pnpm-workspace.yaml");
+
+            writeJsonSync(packageJsonPath, mockPackageJson);
+
+            const workspaceContent = `catalog:
+  react: ^18.0.0
+  typescript: ^5.0.0
+  node: ^20.0.0
+  eslint: ^8.0.0
+packages:
+  - .
+`;
+
+            writeFileSync(workspacePath, workspaceContent);
+
+            const result = await parsePackageJson(packageJsonPath, { resolveCatalogs: true });
+
+            expect(result).toStrictEqual({
+                _id: "test-package@1.0.0",
+                dependencies: {
+                    eslint: "^8.0.0",
+                    react: "^18.0.0",
+                },
+                devDependencies: {
+                    typescript: "^5.0.0",
+                },
+                name: "test-package",
+                optionalDependencies: {
+                    eslint: "^8.0.0",
+                },
+                peerDependencies: {
+                    node: "^20.0.0",
+                },
+                readme: "ERROR: No README data found!",
+                version: "1.0.0",
+            });
+        });
+
+        it("should resolve catalog references synchronously when resolveCatalogs is enabled and catalog exists", () => {
+            expect.assertions(1);
+
+            // Mock the file system to return a package.json with catalog references
+            const mockPackageJson = {
+                dependencies: {
+                    react: "catalog:",
+                    typescript: "catalog:",
+                },
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            // Create a temporary directory with package.json and pnpm-workspace.yaml
+            const packageJsonPath = join(distribution, "package.json");
+            const workspacePath = join(distribution, "pnpm-workspace.yaml");
+
+            // Write package.json with catalog references
+            writeJsonSync(packageJsonPath, mockPackageJson);
+
+            // Write pnpm-workspace.yaml with catalog definitions
+            const workspaceContent = `catalog:
+  react: ^18.0.0
+  typescript: ^5.0.0
+packages:
+  - .
+`;
+
+            writeFileSync(workspacePath, workspaceContent);
+
+            const result = parsePackageJsonSync(packageJsonPath, { resolveCatalogs: true });
+
+            expect(result).toStrictEqual({
+                _id: "test-package@1.0.0",
+                dependencies: {
+                    react: "^18.0.0",
+                    typescript: "^5.0.0",
+                },
+                name: "test-package",
+                readme: "ERROR: No README data found!",
+                version: "1.0.0",
+            });
+        });
+
+        it("should resolve named catalog references synchronously when resolveCatalogs is enabled", () => {
+            expect.assertions(1);
+
+            const mockPackageJson = {
+                dependencies: {
+                    next: "catalog:next",
+                    react: "catalog:next",
+                },
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            const packageJsonPath = join(distribution, "package.json");
+            const workspacePath = join(distribution, "pnpm-workspace.yaml");
+
+            writeJsonSync(packageJsonPath, mockPackageJson);
+
+            const workspaceContent = `catalogs:
+  next:
+    react: ^19.0.0
+    next: ^15.0.0
+packages:
+  - .
+`;
+
+            writeFileSync(workspacePath, workspaceContent);
+
+            const result = parsePackageJsonSync(packageJsonPath, { resolveCatalogs: true });
+
+            expect(result).toStrictEqual({
+                _id: "test-package@1.0.0",
+                dependencies: {
+                    next: "^15.0.0",
+                    react: "^19.0.0",
+                },
+                name: "test-package",
+                readme: "ERROR: No README data found!",
+                version: "1.0.0",
+            });
+        });
+
+        it("should not resolve catalog references synchronously when resolveCatalogs is false or undefined", () => {
+            expect.assertions(1);
+
+            const mockPackageJson = {
+                dependencies: {
+                    react: "catalog:",
+                },
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            const packageJsonPath = join(distribution, "package.json");
+            const workspacePath = join(distribution, "pnpm-workspace.yaml");
+
+            writeJsonSync(packageJsonPath, mockPackageJson);
+
+            const workspaceContent = `catalog:
+  react: ^18.0.0
+packages:
+  - .
+`;
+
+            writeFileSync(workspacePath, workspaceContent);
+
+            const result = parsePackageJsonSync(packageJsonPath, { resolveCatalogs: false });
+
+            expect(result).toStrictEqual({
+                _id: "test-package@1.0.0",
+                dependencies: {
+                    react: "catalog:",
+                },
+                name: "test-package",
+                readme: "ERROR: No README data found!",
+                version: "1.0.0",
             });
         });
     });
