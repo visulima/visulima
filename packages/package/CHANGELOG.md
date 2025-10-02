@@ -1,3 +1,9 @@
+## @visulima/package [4.0.2](https://github.com/visulima/visulima/compare/@visulima/package@4.0.1...@visulima/package@4.0.2) (2025-10-02)
+
+### Bug Fixes
+
+* enhance package JSON parsing with error handling for resolveCatalogs option ([c921937](https://github.com/visulima/visulima/commit/c9219378c6f561d35bb2dc9d6754356b4e46de77))
+
 ## @visulima/package [4.0.1](https://github.com/visulima/visulima/compare/@visulima/package@4.0.0...@visulima/package@4.0.1) (2025-10-02)
 
 ### Bug Fixes
