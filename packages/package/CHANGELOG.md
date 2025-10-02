@@ -1,3 +1,15 @@
+## @visulima/package [4.0.0](https://github.com/visulima/visulima/compare/@visulima/package@3.6.1...@visulima/package@4.0.0) (2025-10-02)
+
+### ⚠ BREAKING CHANGES
+
+* **package:** - parsePackageJson is now async and returns Promise<NormalizedPackageJson>
+- Removed CommonJS exports - package is now ESM-only
+- All functions must be awaited when upgrading from v3.x
+
+### Features
+
+* **package:** add pnpm catalog protocol support with breaking changes ([#529](https://github.com/visulima/visulima/issues/529)) ([76e72bd](https://github.com/visulima/visulima/commit/76e72bdb40192f271837e90acca026ef1eb79907))
+
 ## @visulima/package [3.6.1](https://github.com/visulima/visulima/compare/@visulima/package@3.6.0...@visulima/package@3.6.1) (2025-10-01)
 
 ### Bug Fixes
