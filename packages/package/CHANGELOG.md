@@ -1,3 +1,9 @@
+## @visulima/package [4.0.1](https://github.com/visulima/visulima/compare/@visulima/package@4.0.0...@visulima/package@4.0.1) (2025-10-02)
+
+### Bug Fixes
+
+* **package:** export additional pnpm types and functions ([f623d28](https://github.com/visulima/visulima/commit/f623d28b74d9e559995759646e51c1020b407d64))
+
 ## @visulima/package [4.0.0](https://github.com/visulima/visulima/compare/@visulima/package@3.6.1...@visulima/package@4.0.0) (2025-10-02)
 
 ### ⚠ BREAKING CHANGES
