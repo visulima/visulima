@@ -257,7 +257,7 @@ export const parsePackageJson = async (
     if (isObject) {
         json = structuredClone(packageFile);
     } else if (existsSync(packageFile as string)) {
-        json = readJsonSync(packageFile as string);
+        json = await readJson(packageFile as string);
     } else {
         json = parseJson(packageFile as string);
     }

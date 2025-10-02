@@ -195,7 +195,7 @@ function findFilesWithParsePackageJson(dir, files = []) {
         } else if (stat.isFile() && (item.endsWith(".ts") || item.endsWith(".js"))) {
             const content = fs.readFileSync(fullPath, "utf8");
 
-            if (content.includes("parsePackageJson") && (!content.includes("await parsePackageJson") || content.includes("require(\"@visulima/package\")"))) {
+            if (content.includes("parsePackageJson") && (!content.includes("await parsePackageJson") || content.includes('require("@visulima/package")'))) {
                 files.push(fullPath);
             }
         }

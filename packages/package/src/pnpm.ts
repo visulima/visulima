@@ -1,6 +1,6 @@
 import { findUp, findUpSync } from "@visulima/fs";
 import { readYaml, readYamlSync } from "@visulima/fs/yaml";
-import { dirname } from "@visulima/path";
+import { dirname, relative } from "@visulima/path";
 import type { JsonObject } from "type-fest";
 
 export type PnpmCatalog = Record<string, string>;
@@ -16,7 +16,7 @@ export const isPackageInWorkspace = (workspacePath: string, packagePath: string,
     const packageDirectory = dirname(packagePath);
 
     // Calculate relative path from workspace root to package directory
-    const relativePath = packageDirectory === workspaceDirectory ? "." : packageDirectory.replace(`${workspaceDirectory}/`, "");
+    const relativePath = packageDirectory === workspaceDirectory ? "." : relative(workspaceDirectory, packageDirectory);
 
     // Check if the relative path matches any workspace package pattern
     return workspacePackages.some((pattern) => {
@@ -38,6 +38,11 @@ export const isPackageInWorkspace = (workspacePath: string, packagePath: string,
         // Simple glob matching for patterns ending with "/*"
         if (normalizedPattern.endsWith("/*")) {
             const prefix = normalizedPattern.slice(0, -2);
+
+            // Empty prefix (pattern "/*") matches direct children (no slashes in path)
+            if (prefix === "") {
+                return normalizedRelativePath !== "." && !normalizedRelativePath.includes("/");
+            }
 
             return normalizedRelativePath.startsWith(`${prefix}/`) || normalizedRelativePath === prefix;
         }

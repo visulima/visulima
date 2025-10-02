@@ -158,6 +158,42 @@ describe("pnpm", () => {
 
             expect(result).toBe(true);
         });
+
+        it("should return true for packages in workspace with root /* pattern", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+            const packagePath = join(temporaryDirection, "packages", "package.json");
+            const workspacePackages = ["/*"];
+
+            const result = isPackageInWorkspace(workspacePath, packagePath, workspacePackages);
+
+            expect(result).toBe(true);
+        });
+
+        it("should return false for packages in nested directories with root /* pattern", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+            const packagePath = join(temporaryDirection, "packages", "nested", "my-package", "package.json");
+            const workspacePackages = ["/*"];
+
+            const result = isPackageInWorkspace(workspacePath, packagePath, workspacePackages);
+
+            expect(result).toBe(false);
+        });
+
+        it("should return false for root package with root /* pattern", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+            const packagePath = join(temporaryDirection, "package.json");
+            const workspacePackages = ["/*"];
+
+            const result = isPackageInWorkspace(workspacePath, packagePath, workspacePackages);
+
+            expect(result).toBe(false);
+        });
     });
 
     describe(readPnpmCatalogs, () => {
