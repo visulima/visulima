@@ -1,6 +1,6 @@
 {
     "name": "@visulima/package",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "description": "A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json files with advanced features like catalog resolution.",
     "keywords": [
         "anolilab",
