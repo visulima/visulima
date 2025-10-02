@@ -204,21 +204,27 @@ export const parsePackageJsonSync = (
     }
 
     let json;
+    let isFile = false;
 
     if (isObject) {
         json = structuredClone(packageFile);
     } else if (existsSync(packageFile as string)) {
         json = readJsonSync(packageFile as string);
+        isFile = true;
     } else {
         json = parseJson(packageFile as string);
     }
 
     // Resolve catalog references if enabled and we have a file path
-    if (options?.resolveCatalogs && isString && existsSync(packageFile as string)) {
-        const catalogs = readPnpmCatalogsSync(packageFile as string);
+    if (options?.resolveCatalogs) {
+        if (isFile) {
+            const catalogs = readPnpmCatalogsSync(packageFile as string);
 
-        if (catalogs) {
-            resolveCatalogReferences(json as JsonObject, catalogs);
+            if (catalogs) {
+                resolveCatalogReferences(json as JsonObject, catalogs);
+            }
+        } else {
+            throw new Error("The 'resolveCatalogs' option can only be used on a file path.");
         }
     }
 
@@ -253,21 +259,27 @@ export const parsePackageJson = async (
     }
 
     let json;
+    let isFile = false;
 
     if (isObject) {
         json = structuredClone(packageFile);
     } else if (existsSync(packageFile as string)) {
         json = await readJson(packageFile as string);
+        isFile = true;
     } else {
         json = parseJson(packageFile as string);
     }
 
     // Resolve catalog references if enabled
-    if (options?.resolveCatalogs && isString && existsSync(packageFile as string)) {
-        const catalogs = await readPnpmCatalogs(packageFile as string);
+    if (options?.resolveCatalogs) {
+        if (isFile) {
+            const catalogs = await readPnpmCatalogs(packageFile as string);
 
-        if (catalogs) {
-            resolveCatalogReferences(json as JsonObject, catalogs);
+            if (catalogs) {
+                resolveCatalogReferences(json as JsonObject, catalogs);
+            }
+        } else {
+            throw new Error("The 'resolveCatalogs' option can only be used on a file path.");
         }
     }
 

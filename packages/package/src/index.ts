@@ -11,6 +11,7 @@ export {
     hasPackageJsonAnyDependency,
     hasPackageJsonProperty,
     parsePackageJson,
+    parsePackageJsonSync,
     writePackageJson,
     writePackageJsonSync,
 } from "./package-json";
@@ -25,5 +26,12 @@ export {
     identifyInitiatingPackageManager,
 } from "./package-manager";
 export type { PnpmCatalog, PnpmCatalogs } from "./pnpm";
-export { isPackageInWorkspace, readPnpmCatalogs, readPnpmCatalogsSync, resolveCatalogReference, resolveCatalogReferences, resolveDependenciesCatalogReferences } from "./pnpm";
+export {
+    isPackageInWorkspace,
+    readPnpmCatalogs,
+    readPnpmCatalogsSync,
+    resolveCatalogReference,
+    resolveCatalogReferences,
+    resolveDependenciesCatalogReferences,
+} from "./pnpm";
 export type { EnsurePackagesOptions, NormalizedPackageJson, PackageJson } from "./types";

@@ -524,6 +524,80 @@ packages:
             });
         });
 
+        it("should throw an error when resolveCatalogs is true but input is not a file path", async () => {
+            expect.assertions(2);
+
+            const packageFile = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            try {
+                await parsePackageJson(packageFile, { resolveCatalogs: true });
+
+                expect(true).toBe(false);
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                expect(error).toBeInstanceOf(Error);
+                expect(error.message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
+            }
+        });
+
+        it("should throw an error when resolveCatalogs is true but input is a JSON string", async () => {
+            expect.assertions(2);
+
+            const packageFile = "{\"name\": \"test-package\", \"version\": \"1.0.0\"}";
+
+            try {
+                await parsePackageJson(packageFile, { resolveCatalogs: true });
+
+                expect(true).toBe(false);
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                expect(error).toBeInstanceOf(Error);
+                expect(error.message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
+            }
+        });
+
+        it("should throw an error synchronously when resolveCatalogs is true but input is not a file path", () => {
+            expect.assertions(2);
+
+            const packageFile = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            try {
+                parsePackageJsonSync(packageFile, { resolveCatalogs: true });
+
+                expect(true).toBe(false);
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                expect(error).toBeInstanceOf(Error);
+                expect(error.message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
+            }
+        });
+
+        it("should throw an error synchronously when resolveCatalogs is true but input is a JSON string", () => {
+            expect.assertions(2);
+
+            const packageFile = "{\"name\": \"test-package\", \"version\": \"1.0.0\"}";
+
+            try {
+                parsePackageJsonSync(packageFile, { resolveCatalogs: true });
+
+                expect(true).toBe(false);
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                expect(error).toBeInstanceOf(Error);
+                expect(error.message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
+            }
+        });
+
         it("should resolve catalog references synchronously when resolveCatalogs is enabled and catalog exists", () => {
             expect.assertions(1);
 
