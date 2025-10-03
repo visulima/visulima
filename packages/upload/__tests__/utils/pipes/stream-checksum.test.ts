@@ -1,9 +1,10 @@
 import { createReadStream } from "node:fs";
-import { rm, mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { PassThrough, pipeline } from "node:stream";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
 import { StreamChecksum, streamChecksum } from "../../../src/utils/pipes/stream-checksum";
 import { testRoot } from "../../__helpers__/config";
 

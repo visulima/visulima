@@ -30,6 +30,6 @@ const wasabi = (parameters?: CreateWasabiClientParameters) => {
         endpoint: `https://s3.${region}.wasabisys.com`,
         region,
     });
-}
+};
 
 export default wasabi;

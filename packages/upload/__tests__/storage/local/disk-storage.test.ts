@@ -13,7 +13,7 @@ import FileWriteStream from "../../__helpers__/streams/file-write-stream";
 import RequestReadStream from "../../__helpers__/streams/request-read-stream";
 import { deepClone } from "../../__helpers__/utils";
 
-vi.mock("fs/promises", () => {
+vi.mock(import("node:fs/promises"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -27,7 +27,7 @@ vi.mock("fs/promises", () => {
     };
 });
 
-vi.mock("fs", () => {
+vi.mock(import("node:fs"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -42,7 +42,7 @@ vi.mock("fs", () => {
 });
 
 // eslint-disable-next-line radar/no-identical-functions
-vi.mock("node:fs", () => {
+vi.mock(import("node:fs"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -180,7 +180,7 @@ describe(DiskStorage, () => {
             const file = await storage.write({ ...metafile, body: readStream, start: 0 });
 
             expect(file.bytesWritten).toBeNaN();
-            expect(close).toHaveBeenCalledOnce();
+            expect(close).toHaveBeenCalledOnceExactlyOnceWith();
         });
 
         it("should reject on invalid range", async () => {

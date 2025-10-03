@@ -9,7 +9,7 @@ import DiskStorage from "../../../src/storage/local/disk-storage";
 import { metadata, storageOptions, testfile, testRoot } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
 
-vi.mock("node:fs/promises", () => {
+vi.mock(import("node:fs/promises"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -19,7 +19,7 @@ vi.mock("node:fs/promises", () => {
     return fs.promises;
 });
 
-vi.mock("node:fs", () => {
+vi.mock(import("node:fs"), () => {
     const process = require("node:process");
 
     process.chdir("/");

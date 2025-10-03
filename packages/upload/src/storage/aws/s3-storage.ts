@@ -254,7 +254,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
                         Key: file.name,
                         PartNumber: partNumber,
                         UploadId: file.UploadId,
-                        ...(part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum, } : {})
+                        ...part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {},
                     }),
                     { abortSignal } as HttpHandlerOptions,
                 );
