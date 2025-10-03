@@ -1,4 +1,5 @@
 import { tmpdir } from "node:os";
+
 import { join, normalize } from "@visulima/path";
 
 import { removeFile } from "../../utils";
@@ -16,7 +17,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     constructor(config?: LocalMetaStorageOptions) {
         super(config);
 
-        this.directory = (config?.directory || join(tmpdir(), "Upload_meta")).replaceAll('\\', "/");
+        this.directory = (config?.directory || join(tmpdir(), "Upload_meta")).replaceAll("\\", "/");
 
         this.accessCheck().catch((error) => {
             this.logger?.error("[error]: Could not write to directory: %O", error);
@@ -25,7 +26,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     /**
      * Returns metafile path
-     * @param id - upload id
+     * @param id upload id
      */
     public getMetaPath = (id: string): string => normalize(`${this.directory}/${this.prefix + id + this.suffix}`);
 
@@ -35,13 +36,13 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
      */
     public getIdFromPath = (metaFilePath: string): string => metaFilePath.slice(`${this.directory}/${this.prefix}`.length, -this.suffix.length);
 
-    public async save(id: string, file: T): Promise<T> {
+    public override async save(id: string, file: T): Promise<T> {
         await fsp.writeFile(this.getMetaPath(id), JSON.stringify(file));
 
         return file;
     }
 
-    public async touch(id: string, file: T): Promise<T> {
+    public override async touch(id: string, file: T): Promise<T> {
         const time = new Date();
 
         await fsp.utimes(this.getMetaPath(id), time, time);
@@ -49,7 +50,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
         return file;
     }
 
-    public async get(id: string): Promise<T> {
+    public override async get(id: string): Promise<T> {
         const json = await fsp.readFile(this.getMetaPath(id), { encoding: "utf8" });
 
         if (json === undefined) {
@@ -59,7 +60,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
         return JSON.parse(json) as T;
     }
 
-    public async delete(id: string): Promise<void> {
+    public override async delete(id: string): Promise<void> {
         await removeFile(this.getMetaPath(id));
     }
 

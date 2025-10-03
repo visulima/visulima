@@ -5,7 +5,7 @@ import pick from "../../../src/utils/primitives/pick";
 describe("utils", () => {
     describe("primitives", () => {
         it("pick", () => {
-            expect(pick({ test: "test", rest: "rest" }, ["test"])).toMatchObject({
+            expect(pick({ rest: "rest", test: "test" }, ["test"])).toMatchObject({
                 test: "test",
             });
         });

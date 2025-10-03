@@ -3,14 +3,15 @@ import { dirname } from "node:path";
 
 /**
  * Ensures that the file exists and returns it size
- * @param path - filename or path to a local file
- * @param overwrite - force creating new empty file
+ * @param path filename or path to a local file
+ * @param overwrite force creating new empty file
  * @returns file size
  */
 export async function ensureFile(path: string, overwrite = false): Promise<number> {
     await fsp.mkdir(dirname(path), { recursive: true });
 
     const open = await fsp.open(path, overwrite ? "w" : "a");
+
     await open.close();
 
     const stat = await fsp.stat(path);
@@ -28,7 +29,7 @@ export async function removeFile(path: string): Promise<void> {
 
     return fsp.unlink(path).catch((error: NodeJS.ErrnoException): void => {
         if (error.code !== "ENOENT")
-throw error;
+            throw error;
     });
 }
 

@@ -1,19 +1,18 @@
+import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
-import {
-    afterEach, beforeEach, describe, expect, it,
-} from "vitest";
+
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import LocalMetaStorage from "../../../src/storage/local/local-meta-storage";
 import { metafile, testRoot as uploadRoot } from "../../__helpers__/config";
-import { rm } from "node:fs/promises";
 
-describe("LocalMetaStorage", () => {
+describe(LocalMetaStorage, () => {
     const testRoot = join(uploadRoot, "local-meta-storage");
 
     beforeEach(async () => {
         try {
-            await rm(testRoot, { recursive: true, force: true });
+            await rm(testRoot, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -21,7 +20,7 @@ describe("LocalMetaStorage", () => {
 
     afterEach(async () => {
         try {
-            await rm(testRoot, { recursive: true, force: true });
+            await rm(testRoot, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -37,9 +36,9 @@ describe("LocalMetaStorage", () => {
 
     it("custom", () => {
         const meta = new LocalMetaStorage({
+            directory: join(tmpdir(), "meta"),
             prefix: ".",
             suffix: ".",
-            directory: join(tmpdir(), "meta"),
         });
 
         const metaPath = meta.getMetaPath(metafile.id);

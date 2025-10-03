@@ -1,5 +1,4 @@
-
-import type { GaxiosError,RetryConfig  } from "gaxios";
+import type { GaxiosError, RetryConfig } from "gaxios";
 
 import type { FilePart } from "../utils/file";
 import { hasContent } from "../utils/file";
@@ -14,8 +13,10 @@ export function getRangeEnd(range: string): number {
 export function buildContentRange(part: GCSFile & Partial<FilePart>): string {
     if (hasContent(part)) {
         const end = part.contentLength ? part.start + part.contentLength - 1 : "*";
+
         return `bytes ${part.start}-${end}/${part.size ?? "*"}`;
     }
+
     return `bytes */${part.size ?? "*"}`;
 }
 

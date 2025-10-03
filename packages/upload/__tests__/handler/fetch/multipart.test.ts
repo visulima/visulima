@@ -1,37 +1,32 @@
 import { rm } from "node:fs/promises";
-import {
-    describe, expect, it,
-} from "vitest";
+
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import Multipart from "../../../src/handler/multipart";
 import DiskStorage from "../../../src/storage/local/disk-storage";
-import {
-    metadata, storageOptions, testfile, testRoot,
-} from "../../__helpers__/config";
+import { storageOptions, testfile, testRoot } from "../../__helpers__/config";
 
-jest.mock("fs/promises", () => {
-    // eslint-disable-next-line unicorn/prefer-module
+vi.mock("fs/promises", () => {
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
     return fs.promises;
 });
 
-jest.mock("fs", () => {
-    // eslint-disable-next-line unicorn/prefer-module
+vi.mock("fs", () => {
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
     return fs;
 });
 
-describe("Fetch Multipart", () => {
+describe("fetch Multipart", () => {
     const basePath = "/multipart";
     const directory = `${testRoot}/fetch-multipart`;
     const options = { ...storageOptions, directory };
@@ -39,18 +34,19 @@ describe("Fetch Multipart", () => {
 
     function create(): Request {
         const formData = new FormData();
+
         formData.append("file", new Blob([testfile.asBuffer]), testfile.name);
         formData.append("custom", "customField");
 
         return new Request(`${basePath}`, {
-            method: "POST",
             body: formData,
+            method: "POST",
         });
     }
 
     beforeAll(async () => {
         try {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -58,7 +54,7 @@ describe("Fetch Multipart", () => {
 
     afterAll(async () => {
         try {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -70,7 +66,7 @@ describe("Fetch Multipart", () => {
         });
     });
 
-    describe("POST", () => {
+    describe("pOST", () => {
         it("should support custom fields", async () => {
             const request = create();
             const handler = await import("../../../src/fetch/multipart");
@@ -85,11 +81,11 @@ describe("Fetch Multipart", () => {
 
         it("should handle errors", async () => {
             const request = new Request(`${basePath}`, {
-                method: "POST",
+                body: JSON.stringify({ invalid: "data" }),
                 headers: {
                     "content-type": "application/json",
                 },
-                body: JSON.stringify({ invalid: "data" }),
+                method: "POST",
             });
 
             const handler = await import("../../../src/fetch/multipart");
@@ -99,12 +95,14 @@ describe("Fetch Multipart", () => {
             const response = await multipartHandler(request);
 
             expect(response.status).toBe(400);
+
             const body = await response.json();
+
             expect(body.error).toBeDefined();
         });
     });
 
-    describe("OPTIONS", () => {
+    describe("oPTIONS", () => {
         it("should 204", async () => {
             const request = new Request(`${basePath}`, {
                 method: "OPTIONS",

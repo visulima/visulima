@@ -1,40 +1,35 @@
 import { rm } from "node:fs/promises";
-import {
-    afterAll, beforeAll, describe, expect, it,
-} from "vitest";
 import { join } from "node:path";
+
 import supertest from "supertest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import Multipart from "../../../src/handler/multipart";
 import DiskStorage from "../../../src/storage/local/disk-storage";
-import {
-    metadata, storageOptions, testfile, testRoot,
-} from "../../__helpers__/config";
+import { metadata, storageOptions, testfile, testRoot } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
 
-jest.mock("fs/promises", () => {
-    // eslint-disable-next-line unicorn/prefer-module
+vi.mock("fs/promises", () => {
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
     return fs.promises;
 });
 
-jest.mock("fs", () => {
-    // eslint-disable-next-line unicorn/prefer-module
+vi.mock("fs", () => {
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
     return fs;
 });
 
-describe("HTTP Multipart", () => {
+describe("hTTP Multipart", () => {
     let response: supertest.Response;
     let uri = "";
 
@@ -43,12 +38,13 @@ describe("HTTP Multipart", () => {
     const options = { ...storageOptions, directory };
     const multipart = new Multipart({ storage: new DiskStorage(options) });
 
-    app.use(basePath, async (req, res) => {
+    app.use(basePath, async (request, res) => {
         const handler = await import("../../../src/http/multipart");
         const httpMultipartHandler = handler.default;
 
         const multipartHandler = httpMultipartHandler({ storage: new DiskStorage(options) });
-        await multipartHandler(req, res);
+
+        await multipartHandler(request, res);
     });
 
     function create(): supertest.Test {
@@ -57,7 +53,7 @@ describe("HTTP Multipart", () => {
 
     beforeAll(async () => {
         try {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -65,7 +61,7 @@ describe("HTTP Multipart", () => {
 
     afterAll(async () => {
         try {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -77,11 +73,11 @@ describe("HTTP Multipart", () => {
         });
     });
 
-    describe("POST", () => {
+    describe("pOST", () => {
         it("should support custom fields", async () => {
             response = await supertest(app).post(basePath).field("custom", "customField").attach("file", testfile.asBuffer, {
-                filename: testfile.filename,
                 contentType: testfile.contentType,
+                filename: testfile.filename,
             });
 
             expect(response.status).toBe(200);
@@ -112,7 +108,7 @@ describe("HTTP Multipart", () => {
         });
     });
 
-    describe("OPTIONS", () => {
+    describe("oPTIONS", () => {
         it("should 204", async () => {
             response = await supertest(app).options(basePath);
 
@@ -120,7 +116,7 @@ describe("HTTP Multipart", () => {
         });
     });
 
-    describe("DELETE", () => {
+    describe("dELETE", () => {
         it("should 204", async () => {
             const test = await create();
 

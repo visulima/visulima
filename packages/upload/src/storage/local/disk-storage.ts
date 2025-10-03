@@ -10,7 +10,7 @@ import type { HttpError } from "../../utils";
 import { ensureFile, ERRORS, fsp, removeFile, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
-import type { DiskStorageOptions } from "../types.d";
+import type { DiskStorageOptions } from "../types";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
 import { File, getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { FileReturn } from "../utils/file/types";
@@ -20,13 +20,13 @@ import LocalMetaStorage from "./local-meta-storage";
  * Local Disk Storage
  */
 class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileReturn> {
-    checksumTypes = ["md5", "sha1"];
+    override checksumTypes = ["md5", "sha1"];
 
     directory: string;
 
     meta: MetaStorage<TFile>;
 
-    constructor(public config: DiskStorageOptions<TFile>) {
+    constructor(public override config: DiskStorageOptions<TFile>) {
         super(config);
 
         this.directory = config.directory;
@@ -45,7 +45,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         });
     }
 
-    public normalizeError(error: Error): HttpError {
+    public override normalizeError(error: Error): HttpError {
         return super.normalizeError(error);
     }
 
@@ -104,7 +104,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         await this.lock(path);
 
         try {
-            file.bytesWritten = (part as FilePart).start || (await ensureFile(path));
+            file.bytesWritten = (part as FilePart).start || await ensureFile(path);
 
             if (hasContent(part)) {
                 if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
@@ -137,8 +137,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
     /**
      * Get uploaded file.
-     *
-     * @param {FileQuery} id
+     * @param id
      */
     public async get({ id }: FileQuery): Promise<FileReturn> {
         const file = await this.checkIfExpired(await this.meta.get(id));
@@ -146,9 +145,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         const content = await fsp.readFile(this.getFilePath(name));
 
         return {
-            ETag: etag(content),
             content,
             contentType,
+            ETag: etag(content),
             expiredAt,
             id,
             metadata,
@@ -191,7 +190,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         }
     }
 
-    public async list(): Promise<TFile[]> {
+    public override async list(): Promise<TFile[]> {
         const config = {
             followSymlinks: false,
             includeDirs: false,
@@ -201,9 +200,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
         const { directory } = this;
 
-        // eslint-disable-next-line no-restricted-syntax
         for await (const founding of walk(directory, config)) {
-
             const { suffix } = this.meta;
             const { path } = founding;
 

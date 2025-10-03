@@ -1,14 +1,13 @@
 import { createReadStream } from "node:fs";
+import { rm } from "node:fs/promises";
 import { join } from "node:path";
 import { pipeline } from "node:stream";
-import {
-    afterEach, beforeEach, describe, expect, it,
-} from "vitest";
+
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { fsp } from "../../../src/utils/fs";
 import StreamLength from "../../../src/utils/pipes/stream-length";
 import { testRoot } from "../../__helpers__/config";
-import { rm } from "node:fs/promises";
 
 const createTestFile = async (path: string, filepath: string) => {
     await fsp.mkdir(path, { recursive: true });
@@ -21,7 +20,7 @@ describe("utils", () => {
 
         afterEach(async () => {
             try {
-                await rm(directory, { recursive: true, force: true });
+                await rm(directory, { force: true, recursive: true });
             } catch {
                 // ignore if directory doesn't exist
             }
@@ -29,7 +28,7 @@ describe("utils", () => {
 
         beforeEach(async () => {
             try {
-                await rm(directory, { recursive: true, force: true });
+                await rm(directory, { force: true, recursive: true });
             } catch {
                 // ignore if directory doesn't exist
             }
@@ -43,14 +42,14 @@ describe("utils", () => {
 
                 const transformer = new StreamLength();
 
-                expect(transformer.length).toBe(0);
+                expect(transformer).toHaveLength(0);
 
                 const stream = pipeline(createReadStream(file), transformer, (error) => {
                     expect(error).toBeUndefined();
                 });
 
                 expect(stream).toBeInstanceOf(StreamLength);
-                expect(stream.length).toBe(0);
+                expect(stream).toHaveLength(0);
             });
         });
     });

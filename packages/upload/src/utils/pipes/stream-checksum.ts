@@ -1,4 +1,4 @@
-import type { BinaryToTextEncoding , Hash } from "node:crypto";
+import type { BinaryToTextEncoding, Hash } from "node:crypto";
 import { createHash } from "node:crypto";
 import { PassThrough, Transform } from "node:stream";
 
@@ -19,7 +19,7 @@ export class StreamChecksum extends Transform {
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    _transform(chunk: Buffer, _encoding: string, done: () => void): void {
+    override _transform(chunk: Buffer, _encoding: string, done: () => void): void {
         this.push(chunk);
         this.hash.update(chunk);
         this.length += chunk.length;
@@ -28,7 +28,7 @@ export class StreamChecksum extends Transform {
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    _flush(callback: (error?: Error) => void): void {
+    override _flush(callback: (error?: Error) => void): void {
         this.digest = this.hash.digest(this.encoding);
 
         if (this.checksum && this.checksum !== this.digest) {

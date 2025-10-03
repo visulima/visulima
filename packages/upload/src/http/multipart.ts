@@ -1,14 +1,14 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import type { UploadFile } from "../storage/utils/file";
 import Multipart from "../handler/multipart";
 import type { UploadOptions } from "../handler/types";
+import type { UploadFile } from "../storage/utils/file";
 
 const httpMultipartHandler = <TFile extends UploadFile>(
     options: UploadOptions<TFile> & {
         onError?: (error: Error, request: IncomingMessage, response: ServerResponse) => void | Promise<void>;
     },
-): ((request: IncomingMessage, response: ServerResponse) => Promise<void>) => {
+): (request: IncomingMessage, response: ServerResponse) => Promise<void> => {
     const multipart = new Multipart<TFile, IncomingMessage, ServerResponse>(options);
 
     return async (request: IncomingMessage, response: ServerResponse): Promise<void> => {

@@ -75,7 +75,7 @@ yarn add @azure/storage-blob
 pnpm add @azure/storage-blob
 ```
 
-> Note: If you hit this error: "TypeError: Expected signal to be an instanceof AbortSignal" [#784](https://github.com/node-fetch/node-fetch/issues/784)  you need to install node-fetch 4.0.0-beta or higher.
+> Note: If you hit this error: "TypeError: Expected signal to be an instanceof AbortSignal" [#784](https://github.com/node-fetch/node-fetch/issues/784) you need to install node-fetch 4.0.0-beta or higher.
 
 ### Google Cloud Storage
 
@@ -105,8 +105,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

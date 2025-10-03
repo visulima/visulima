@@ -4,7 +4,7 @@ import mem from "mem";
 export const hash = mem((value: string) => fnv1a(value, { size: 64 }).toString(16));
 
 export type { ErrorResponses } from "./errors";
-export { ErrorMap, ERRORS, isUploadError,throwErrorCode, UploadError } from "./errors";
+export { ErrorMap, ERRORS, isUploadError, throwErrorCode, UploadError } from "./errors";
 export type { PathMatch } from "./file-path-url-matcher";
 export { default as filePathUrlMatcher } from "./file-path-url-matcher";
 export { ensureFile, fsp, removeFile } from "./fs";
@@ -24,7 +24,7 @@ export {
     uuidRegex,
 } from "./http";
 export { default as Locker } from "./locker";
-export { StreamChecksum,streamChecksum } from "./pipes/stream-checksum";
+export { StreamChecksum, streamChecksum } from "./pipes/stream-checksum";
 export { default as StreamLength } from "./pipes/stream-length";
 export { default as isEqual } from "./primitives/is-equal";
 export { default as isRecord } from "./primitives/is-record";
@@ -47,5 +47,5 @@ export type {
     Validation,
     ValidationError,
     ValidatorConfig,
-} from "./types.d";
-export { isValidationError,default as Validator } from "./validator";
+} from "./types";
+export { isValidationError, default as Validator } from "./validator";

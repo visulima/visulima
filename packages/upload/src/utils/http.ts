@@ -36,14 +36,14 @@ const extractForwarded = (request: IncomingMessage): { host: string; proto: stri
 
 /**
  * Reads the body from the request.
- * @param request - request object
- * @param encoding - encoding to use
- * @param limit - optional limit on the size of the body
+ * @param request request object
+ * @param encoding encoding to use
+ * @param limit optional limit on the size of the body
  */
 export function readBody(
     request: IncomingMessage,
-    // eslint-disable-next-line default-param-last,unicorn/text-encoding-identifier-case
-    encoding: "ascii" | "base64" | "base64url" | "binary" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf8" | "utf16le" = "utf8" as BufferEncoding,
+    // eslint-disable-next-line default-param-last
+    encoding: BufferEncoding = "utf8",
     limit: number | undefined,
 ): Promise<string> {
     // eslint-disable-next-line compat/compat
@@ -65,9 +65,9 @@ export function readBody(
 
 /**
  * Retrieve the value of a specific header of an HTTP request.
- * @param request - request object
- * @param name - name of the header
- * @param all - if true, returns  all values of the header, comma-separated, otherwise returns the last value.
+ * @param request request object
+ * @param name name of the header
+ * @param all if true, returns  all values of the header, comma-separated, otherwise returns the last value.
  */
 export function getHeader(request: IncomingMessage, name: string, all = false): string {
     const raw = request.headers?.[name.toLowerCase()];
@@ -81,8 +81,8 @@ export function getHeader(request: IncomingMessage, name: string, all = false): 
 
 /**
  * Reads the body of the incoming metadata request and parses it as JSON.
- * @param request - incoming metadata request
- * @param limit - optional limit on the size of the body
+ * @param request incoming metadata request
+ * @param limit optional limit on the size of the body
  */
 export async function getMetadata(request: IncomingMessageWithBody<Record<any, any>>, limit = 16_777_216): Promise<Record<any, any>> {
     if (!typeis(request, ["json"])) {
@@ -154,6 +154,7 @@ export function extractProto(request: IncomingMessage): string {
  */
 export function getBaseUrl(request: IncomingMessage): string {
     let { host, proto } = extractForwarded(request);
+
     host ||= extractHost(request);
     proto ||= extractProto(request);
 
@@ -178,7 +179,7 @@ export function normalizeHookResponse<T>(callback: (file: T) => Promise<UploadRe
     };
 }
 
-/*
+/**
  * @internal
  */
 export function normalizeOnErrorResponse(callback: (error: HttpError) => UploadResponse) {
@@ -193,7 +194,7 @@ export function normalizeOnErrorResponse(callback: (error: HttpError) => UploadR
     };
 }
 
-/*
+/**
  * @internal
  */
 export const getRealPath = (request: IncomingMessage & { originalUrl?: string }): string => {
@@ -207,12 +208,12 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
     return realPath;
 };
 
-/*
+/**
  * @internal
  */
 export const uuidRegex = /(?:[\dA-Z]+-){2}[\dA-Z]+/i;
 
-/*
+/**
  * @internal
  */
 export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => {

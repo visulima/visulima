@@ -1,7 +1,5 @@
-
 import type { RetryConfig } from "gaxios";
-import type { GoogleAuthOptions } from "google-auth-library";
-import type { GoogleAuth } from "google-auth-library";
+import type { GoogleAuth, GoogleAuthOptions } from "google-auth-library";
 
 import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
@@ -33,10 +31,12 @@ export interface GCStorageOptions extends BaseStorageOptions<GCSFile>, Omit<Goog
      * Google Cloud Storage bucket
      */
     bucket?: string;
+
     /**
      * Force compatible client upload directly to GCS
      */
     clientDirectUpload?: boolean;
+
     /**
      * Configure metafiles storage
      * @example
@@ -58,9 +58,9 @@ export interface GCStorageOptions extends BaseStorageOptions<GCSFile>, Omit<Goog
     metaStorageConfig?: GCSMetaStorageOptions | LocalMetaStorageOptions;
 }
 
-export interface GCSMetaStorageOptions extends Omit<GoogleAuthOptions, "authClient" | "projectId">, MetaStorageOptions, StorageSettings {
+export interface GCSMetaStorageOptions extends MetaStorageOptions, Omit<GoogleAuthOptions, "authClient" | "projectId">, StorageSettings {
     /**
-     * @internal - used for internal client inheritance, if same client is used for meta and file storage
+     * @internal
      */
     authClient?: GoogleAuth;
 

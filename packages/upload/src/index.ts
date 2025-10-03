@@ -1,7 +1,9 @@
+export { fetchMultipartHandler, fetchTusHandler } from "./fetch";
 export { default as AbstractBaseHandler } from "./handler/base-handler";
 export { default as Multipart } from "./handler/multipart";
 export { default as Tus, TUS_RESUMABLE, TUS_VERSION } from "./handler/tus";
-export type { AsyncHandler, BaseHandler, Handlers, MethodHandler, RequestEvent,UploadErrorEvent, UploadEvent, UploadOptions } from "./handler/types.d";
+export type { AsyncHandler, BaseHandler, Handlers, MethodHandler, RequestEvent, UploadErrorEvent, UploadEvent, UploadOptions } from "./handler/types";
+export { httpMultipartHandler, httpTusHandler } from "./http";
 export { default as DiskStorage } from "./storage/local/disk-storage";
 export { default as LocalMetaStorage } from "./storage/local/local-meta-storage";
 export { default as MetaStorage } from "./storage/meta-storage";
@@ -17,8 +19,8 @@ export type {
     OnError,
     OnUpdate,
     PurgeList,
-} from "./storage/types.d";
-export type { FileInit, FilePart, FileQuery, UploadEventType,UploadFile } from "./storage/utils/file";
+} from "./storage/types";
+export type { FileInit, FilePart, FileQuery, UploadEventType, UploadFile } from "./storage/utils/file";
 export {
     extractMimeType,
     extractOriginalName,
@@ -34,10 +36,8 @@ export {
 } from "./storage/utils/file";
 export { default as tusSwagger } from "./swagger/tus-swagger";
 export { default as multipartSwagger } from "./swagger/xhr-swagger";
-export { fetchTusHandler, fetchMultipartHandler } from "./fetch";
-export { httpTusHandler, httpMultipartHandler } from "./http";
-export { ErrorMap,ERRORS, isUploadError, throwErrorCode, UploadError } from "./utils/errors";
-export { appendHeader, getBaseUrl,getHeader, getMetadata, readBody, setHeaders } from "./utils/http";
+export { ErrorMap, ERRORS, isUploadError, throwErrorCode, UploadError } from "./utils/errors";
+export { appendHeader, getBaseUrl, getHeader, getMetadata, readBody, setHeaders } from "./utils/http";
 export type {
     Header,
     Headers,

@@ -1,8 +1,8 @@
-import type { BinaryToTextEncoding , Hash } from "node:crypto";
+import type { BinaryToTextEncoding, Hash } from "node:crypto";
 import { createHash } from "node:crypto";
 import { Transform } from "node:stream";
 
-import type { RangeChecksum as IRangeChecksum, RangeHasher as IRangeHasher } from "./types.d";
+import type { RangeChecksum as IRangeChecksum, RangeHasher as IRangeHasher } from "./types";
 
 class RangeChecksum extends Transform implements IRangeChecksum {
     hash: Hash;

@@ -1,13 +1,11 @@
 import { createRequest, createResponse } from "node-mocks-http";
-import {
-    afterEach, beforeEach, describe, expect, it, vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import TestUploader from "../__helpers__/handler/test-uploader";
 import MockLogger from "../__helpers__/mock-logger";
 import TestStorage from "../__helpers__/storage/test-storage";
 
-describe("BaseHandler", () => {
+describe("baseHandler", () => {
     const storage = new TestStorage({ directory: "/files", logger: console });
 
     let uploader: TestUploader;
@@ -20,22 +18,24 @@ describe("BaseHandler", () => {
         vi.restoreAllMocks();
     });
 
-    it("BaseHandler.compose registers correct HTTP methods as handlers", () => {
+    it("baseHandler.compose registers correct HTTP methods as handlers", () => {
         const logger = new MockLogger();
 
-        uploader = new TestUploader({ storage: new TestStorage({ logger, directory: "/files" }) });
+        uploader = new TestUploader({ storage: new TestStorage({ directory: "/files", logger }) });
 
-        expect(logger.debug).toBeCalledWith("Registered handler: %s", "GET, OPTIONS");
+        expect(logger.debug).toHaveBeenCalledTimes(2);
+        expect(logger.debug).toHaveBeenCalledWith("Registered handler: %s", "GET, OPTIONS");
     });
 
-    it("BaseHandler.errorResponses setter updates internalErrorResponses correctly", () => {
+    it("baseHandler.errorResponses setter updates internalErrorResponses correctly", () => {
         // eslint-disable-next-line radar/no-duplicate-string
         uploader.errorResponses = { FileNotFound: { message: "Not Found!", statusCode: 404 } };
+
         // @ts-expect-error
         expect(uploader.internalErrorResponses.FileNotFound).toEqual({ message: "Not Found!", statusCode: 404 });
     });
 
-    it("BaseHandler.assembleErrors merges default and custom error responses correctly", () => {
+    it("baseHandler.assembleErrors merges default and custom error responses correctly", () => {
         const errorObject = { message: "Not Found!", statusCode: 404 };
 
         // @ts-expect-error
@@ -45,15 +45,16 @@ describe("BaseHandler", () => {
         expect(uploader.internalErrorResponses.FileNotFound).toEqual(errorObject);
         // @ts-expect-error
         expect(uploader.internalErrorResponses.InvalidRange).toEqual({
-            message: "Invalid or missing content-range header",
             code: "InvalidRange",
+            message: "Invalid or missing content-range header",
             statusCode: 400,
         });
     });
 
-    it("BaseHandler.handle calls correct handler based on request method", async () => {
+    it("baseHandler.handle calls correct handler based on request method", async () => {
         // eslint-disable-next-line compat/compat
         const getHandler = vi.fn(() => Promise.resolve({}));
+
         // @ts-expect-error
         uploader.registeredHandlers.set("GET", getHandler);
 
@@ -62,20 +63,22 @@ describe("BaseHandler", () => {
 
         await uploader.handle(request, response);
 
-        expect(getHandler).toHaveBeenCalled();
+        expect(getHandler).toHaveBeenCalledTimes(1);
+        expect(getHandler).toHaveBeenCalledWith(request, response);
     });
 
-    it("BaseHandler.get returns list of uploaded files", async () => {
-        uploader.list = vi.fn().mockResolvedValue([]);
+    it("baseHandler.get returns list of uploaded files", async () => {
+        vi.spyOn(uploader, "list").mockImplementation().mockResolvedValue([]);
 
         const request = createRequest({ method: "GET", url: "/uploads" });
         const response = createResponse();
 
         await uploader.handle(request, response);
 
-        expect(uploader.list).toHaveBeenCalled();
+        expect(uploader.list).toHaveBeenCalledTimes(1);
+        expect(uploader.list).toHaveBeenCalledWith(request, response);
         // eslint-disable-next-line no-underscore-dangle
-        expect(response._getStatusCode()).toEqual(200);
+        expect(response._getStatusCode()).toBe(200);
         // eslint-disable-next-line no-underscore-dangle
         expect(response._getHeaders()).toEqual({});
     });
@@ -161,15 +164,16 @@ describe("BaseHandler", () => {
 
         uploader.sendError(response, error);
 
+        expect(sendSpy).toHaveBeenCalledTimes(1);
         expect(sendSpy).toHaveBeenCalledWith(response, {
-            statusCode: 500,
             body: {
                 error: {
-                    message: "Generic Upload Error",
                     code: "GenericUploadError",
+                    message: "Generic Upload Error",
                 },
             },
             headers: undefined,
+            statusCode: 500,
         });
     });
 });

@@ -1,6 +1,6 @@
 import mem from "mem";
 
-import type { HttpError } from "./types.d";
+import type { HttpError } from "./types";
 
 export enum ERRORS {
     BAD_REQUEST = "BadRequest",
@@ -43,7 +43,7 @@ export const ErrorMap = mem((): ErrorResponses => {
         FileNotFound: [404, "Not found"],
         Forbidden: [403, "Authenticated user is not allowed access"],
         Gone: [410, "The file for this url no longer exists"],
-        InvalidContentType: [400, 'Invalid or missing "content-type" header'],
+        InvalidContentType: [400, "Invalid or missing \"content-type\" header"],
         InvalidFileName: [400, "Invalid file name or it cannot be retrieved"],
         InvalidFileSize: [400, "File size cannot be retrieved"],
         InvalidRange: [400, "Invalid or missing content-range header"],
@@ -70,7 +70,7 @@ export const ErrorMap = mem((): ErrorResponses => {
 })();
 
 export class UploadError extends Error {
-    public name = "UploadError";
+    public override name = "UploadError";
 
     public UploadErrorCode: ERRORS = ERRORS.UNKNOWN_ERROR;
 

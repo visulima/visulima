@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ErrorMap } from "../../src/utils/errors";
-import type { HttpError, ValidatorConfig } from "../../src/utils/types.d";
+import type { HttpError, ValidatorConfig } from "../../src/utils/types";
 import Validator from "../../src/utils/validator";
 
 describe("utils", () => {
@@ -9,11 +9,11 @@ describe("utils", () => {
         const validator = new Validator();
 
         const size: Required<ValidatorConfig<any>> = {
-            value: 100,
             isValid(file) {
                 return file.size <= this.value;
             },
             response: ErrorMap.RequestEntityTooLarge as HttpError,
+            value: 100,
         };
 
         it("should be able to add and verify", async () => {
@@ -23,7 +23,7 @@ describe("utils", () => {
                 validator.verify({
                     size: 150,
                 }),
-            ).rejects.toThrowError();
+            ).rejects.toThrow();
         });
     });
 });

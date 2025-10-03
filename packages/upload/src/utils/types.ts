@@ -5,7 +5,7 @@ import type { Transform } from "node:stream";
 import type { LRUCache as Cache } from "lru-cache";
 
 export interface RangeChecksum extends Transform {
-    digest: (encoding: BinaryToTextEncoding = "hex") => string;
+    digest: (encoding: BinaryToTextEncoding) => string;
 
     hash: Hash;
 
@@ -23,18 +23,18 @@ export interface RangeHasher extends Cache<string, Hash> {
 
     hex: (path: string) => string;
 
-    init: (path: string, start = 0) => Promise<Hash>;
+    init: (path: string, start: number) => Promise<Hash>;
 
-    updateFromFs: (path: string, start = 0, initial?: Hash) => Promise<Hash>;
+    updateFromFs: (path: string, start: number, initial?: Hash) => Promise<Hash>;
 }
 
 export interface HttpErrorBody {
-    UploadErrorCode?: string;
     code: string;
     detail?: Record<string, any> | string;
     message: string;
     name?: string;
     retryable?: boolean;
+    UploadErrorCode?: string;
 }
 
 export interface HttpError<T = HttpErrorBody> extends UploadResponse<T> {
