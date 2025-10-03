@@ -34,8 +34,6 @@ export {
     updateMetadata,
     updateSize,
 } from "./storage/utils/file";
-export { default as tusSwagger } from "./swagger/tus-swagger";
-export { default as multipartSwagger } from "./swagger/xhr-swagger";
 export { ErrorMap, ERRORS, isUploadError, throwErrorCode, UploadError } from "./utils/errors";
 export { appendHeader, getBaseUrl, getHeader, getMetadata, readBody, setHeaders } from "./utils/http";
 export type {

@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`swagger:xhr > should match snapshot 1`] = `
+exports[`openapi:xhr > should match snapshot 1`] = `
 {
   "components": {
     "examples": {
@@ -283,7 +283,7 @@ exports[`swagger:xhr > should match snapshot 1`] = `
                   },
                   "metadata": {
                     "description": "JSON stringifies metadata",
-                    "example": "{ \\"name\\": \\"video.mp4\\", \\"mimeType\\": \\"video/mp4\\", \\"size\\": 741, \\"lastModified\\": 1631750105530 }",
+                    "example": "{ "name": "video.mp4", "mimeType": "video/mp4", "size": 741, "lastModified": 1631750105530 }",
                     "type": "string",
                   },
                 },
@@ -549,7 +549,7 @@ exports[`swagger:xhr > should match snapshot 1`] = `
 }
 `;
 
-exports[`swagger:xhr > should match snapshot with custom options 1`] = `
+exports[`openapi:xhr > should match snapshot with custom options 1`] = `
 {
   "components": {
     "examples": {
@@ -832,7 +832,7 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
                   },
                   "metadata": {
                     "description": "JSON stringifies metadata",
-                    "example": "{ \\"name\\": \\"video.mp4\\", \\"mimeType\\": \\"video/mp4\\", \\"size\\": 741, \\"lastModified\\": 1631750105530 }",
+                    "example": "{ "name": "video.mp4", "mimeType": "video/mp4", "size": 741, "lastModified": 1631750105530 }",
                     "type": "string",
                   },
                 },
@@ -1098,7 +1098,7 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
 }
 `;
 
-exports[`swagger:xhr > should match snapshot with custom options 2`] = `
+exports[`openapi:xhr > should match snapshot with custom options 2`] = `
 {
   "components": {
     "examples": {
@@ -1381,7 +1381,7 @@ exports[`swagger:xhr > should match snapshot with custom options 2`] = `
                   },
                   "metadata": {
                     "description": "JSON stringifies metadata",
-                    "example": "{ \\"name\\": \\"video.mp4\\", \\"mimeType\\": \\"video/mp4\\", \\"size\\": 741, \\"lastModified\\": 1631750105530 }",
+                    "example": "{ "name": "video.mp4", "mimeType": "video/mp4", "size": 741, "lastModified": 1631750105530 }",
                     "type": "string",
                   },
                 },
