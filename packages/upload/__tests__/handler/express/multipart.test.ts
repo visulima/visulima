@@ -1,26 +1,22 @@
-import {
-    afterAll, beforeAll, describe, expect, it, jest,
-} from "@jest/globals";
+import { rm } from "node:fs/promises";
 import { join } from "node:path";
+
+import { afterAll, beforeAll, describe, expect, it, jest } from "@jest/globals";
 import supertest from "supertest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import Multipart from "../../../src/handler/multipart";
 import DiskStorage from "../../../src/storage/local/disk-storage";
-import {
-    metadata, storageOptions, testfile, testRoot,
-} from "../../__helpers__/config";
+import { metadata, storageOptions, testfile, testRoot } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
-import { rm } from "node:fs/promises";
 
 jest.mock("fs/promises", () => {
-    // eslint-disable-next-line unicorn/prefer-module
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
-    // eslint-disable-next-line unicorn/prefer-module
     return {
         __esModule: true,
         ...fs.promises,
@@ -28,14 +24,12 @@ jest.mock("fs/promises", () => {
 });
 
 jest.mock("fs", () => {
-    // eslint-disable-next-line unicorn/prefer-module
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
-    // eslint-disable-next-line unicorn/prefer-module
     return {
         __esModule: true,
         ...fs,
@@ -44,21 +38,19 @@ jest.mock("fs", () => {
 
 // eslint-disable-next-line radar/no-identical-functions
 jest.mock("node:fs", () => {
-    // eslint-disable-next-line unicorn/prefer-module
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
-    // eslint-disable-next-line unicorn/prefer-module
     return {
         __esModule: true,
         ...fs,
     };
 });
 
-describe("Express Multipart", () => {
+describe("express Multipart", () => {
     let response: supertest.Response;
     let uri = "";
 
@@ -75,7 +67,7 @@ describe("Express Multipart", () => {
 
     beforeAll(async () => {
         try {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -83,7 +75,7 @@ describe("Express Multipart", () => {
 
     afterAll(async () => {
         try {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -95,11 +87,11 @@ describe("Express Multipart", () => {
         });
     });
 
-    describe("POST", () => {
+    describe("pOST", () => {
         it("should support custom fields", async () => {
             response = await supertest(app).post(basePath).field("custom", "customField").attach("file", testfile.asBuffer, {
-                filename: testfile.filename,
                 contentType: testfile.contentType,
+                filename: testfile.filename,
             });
 
             expect(response.status).toBe(200);
@@ -130,7 +122,7 @@ describe("Express Multipart", () => {
         });
     });
 
-    describe("OPTIONS", () => {
+    describe("oPTIONS", () => {
         it("should 204", async () => {
             response = await supertest(app).options(basePath);
 
@@ -138,7 +130,7 @@ describe("Express Multipart", () => {
         });
     });
 
-    describe("DELETE", () => {
+    describe("dELETE", () => {
         it("should 204", async () => {
             const test = await create();
 

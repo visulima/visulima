@@ -27,19 +27,16 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
             schemas: {
                 "Tus-Checksum-Algorithm": {
                     description:
-
                         "Added by the checksum extension. The Tus-Checksum-Algorithm response header MUST be a comma-separated list of the checksum algorithms supported by the server.",
                     type: "string",
                 },
                 "Tus-Extension": {
                     description:
-
                         "The Tus-Extension response header MUST be a comma-separated list of the extensions supported by the Server. If no extensions are supported, the Tus-Extension header MUST be omitted.",
                     type: "string",
                 },
                 "Tus-Max-Size": {
                     description:
-
                         "The Tus-Max-Size response header MUST be a non-negative integer indicating the maximum allowed size of an entire upload in bytes. The Server SHOULD set this header if there is a known hard limit.",
                     type: "integer",
                 },
@@ -50,19 +47,16 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                 },
                 "Tus-Version": {
                     description:
-
                         "The Tus-Version response header MUST be a comma-separated list of protocol versions supported by the Server. The list MUST be sorted by Server's preference where the first one is the most preferred one.",
                     type: "string",
                 },
                 "Upload-Checksum": {
                     description:
-
                         "Added by the checksum extension. The Upload-Checksum request header contains information about the checksum of the current body payload. The header MUST consist of the name of the used checksum algorithm and the Base64 encoded checksum separated by a space.",
                     type: "string",
                 },
                 "Upload-Length": {
                     description:
-
                         "The Upload-Length request and response header indicates the size of the entire upload in bytes. The value MUST be a non-negative integer. In the concatenation extension, the Client MUST NOT include the Upload-Length header in the final upload creation",
                     type: "integer",
                 },
@@ -87,7 +81,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
             [`${path.trimEnd()}/{id}`]: {
                 delete: {
                     description:
-
                         "When receiving a DELETE request for an existing upload the Server SHOULD free associated resources and MUST respond with the 204 No Content status confirming that the upload was terminated. For all future requests to this URL, the Server SHOULD respond with the 404 Not Found or 410 Gone status.",
                     operationId: `${pathHash}TusFilesDelete`,
                     parameters: [
@@ -217,7 +210,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                                 },
                             },
                             description:
-                                
                                 "If the resource is not found, the Server SHOULD return either the 404 Not Found, 410 Gone or 403 Forbidden status without the Upload-Offset header.",
                             headers: {
                                 "Tus-Resumable": {
@@ -239,7 +231,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                                 },
                             },
                             description:
-
                                 "If the resource is not found, the Server SHOULD return either the 404 Not Found, 410 Gone or 403 Forbidden status without the Upload-Offset header.",
                             headers: {
                                 "Tus-Resumable": {
@@ -277,7 +268,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                 },
                 patch: {
                     description:
-
                         "The Server SHOULD accept PATCH requests against any upload URL and apply the bytes contained in the message at the given offset specified by the Upload-Offset header. All PATCH requests MUST use Content-Type: application/offset+octet-stream, otherwise the server SHOULD return a 415 Unsupported Media Type status.",
                     operationId: `${pathHash}TusFilePatch`,
                     parameters: [
@@ -344,7 +334,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                                 },
                                 "Upload-Expires": {
                                     description:
-
                                         "Added by the expiration extension. The Upload-Expires response header indicates the time after which the unfinished upload expires. A Server MAY wish to remove incomplete upload after a given period of time to prevent abandoned upload from taking up extra storage. The Client SHOULD use this header to determine if an upload is still valid before attempting to resume the upload. This header MUST be included in every PATCH response if the upload is going to expire. If the expiration is known at the creation, the Upload-Expires header MUST be included in the response to the initial POST request. Its value MAY change over time. If a Client does attempt to resume an upload which has since been removed by the Server, the Server SHOULD respond with the 404 Not Found or 410 Gone status. The latter one SHOULD be used if the Server is keeping track of expired upload. In both cases the Client SHOULD start a new upload. The value of the Upload-Expires header MUST be in RFC 7231 datetime format.",
                                     schema: {
                                         type: "string",
@@ -383,7 +372,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                                 },
                             },
                             description:
-
                                 "In the concatenation extension, the Server MUST respond with the 403 Forbidden status to PATCH requests against a final upload URL and MUST NOT modify the final or its partial upload.",
                             headers: {
                                 "Tus-Resumable": {
@@ -419,7 +407,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                                 },
                             },
                             description:
-
                                 "PATCH request with Upload-Offset unequal to the offset of the resource on the server. The Upload-Offset header's value MUST be equal to the current offset of the resource.",
                             headers: {
                                 "Tus-Resumable": {
@@ -567,16 +554,14 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                         },
                         {
                             in: "header",
-                            
+
                             name: "Tus-Resumable",
                             schema: {
-                                
                                 $ref: "#/components/schemas/Tus-Resumable",
                             },
                         },
                         {
                             description:
-
                                 "Added by the Creation extension. The Upload-Metadata request and response header MUST consist of one or more comma-separated key-value pairs. The key and value MUST be separated by a space. The key MUST NOT contain spaces and commas and MUST NOT be empty. The key SHOULD be ASCII encoded and the value MUST be Base64 encoded. All keys MUST be unique. The value MAY be empty. In these cases, the space, which would normally separate the key and the value, MAY be left out. Since metadata can contain arbitrary binary values, Servers SHOULD carefully validate metadata values or sanitize them before using them as header values to avoid header smuggling.",
                             in: "header",
                             name: "Upload-Metadata",
@@ -586,7 +571,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                         },
                         {
                             description:
-
                                 "Added by the Concatenation extension. The Upload-Concat request and response header MUST be set in both partial and final upload creation requests. It indicates whether the upload is either a partial or final upload. If the upload is a partial one, the header value MUST be partial. In the case of a final upload, its value MUST be final followed by a semicolon and a space-separated list of partial upload URLs that will be concatenated. The partial upload URLs MAY be absolute or relative and MUST NOT contain spaces as defined in RFC 3986.",
                             in: "header",
                             name: "Upload-Concat",
@@ -596,7 +580,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                         },
                         {
                             description:
-
                                 "Added by the Creation Defer Length extension. The Upload-Defer-Length request and response header indicates that the size of the upload is not known currently and will be transferred later. Its value MUST be 1. If the length of an upload is not deferred, this header MUST be omitted.",
                             in: "header",
                             name: "Upload-Defer-Length",
@@ -609,7 +592,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                             in: "header",
                             name: "Upload-Offset",
                             schema: {
-                                
                                 $ref: "#/components/schemas/Upload-Offset",
                             },
                         },
@@ -649,7 +631,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                                 },
                                 "Upload-Expires": {
                                     description:
-
                                         "Added by the Creation With Upload Extension in combination with the expiration extension. The Upload-Expires response header indicates the time after which the unfinished upload expires. A Server MAY wish to remove incomplete upload after a given period of time to prevent abandoned upload from taking up extra storage. The Client SHOULD use this header to determine if an upload is still valid before attempting to resume the upload. This header MUST be included in every PATCH response if the upload is going to expire. If the expiration is known at the creation, the Upload-Expires header MUST be included in the response to the initial POST request. Its value MAY change over time. If a Client does attempt to resume an upload which has since been removed by the Server, the Server SHOULD respond with the 404 Not Found or 410 Gone status. The latter one SHOULD be used if the Server is keeping track of expired upload. In both cases the Client SHOULD start a new upload. The value of the Upload-Expires header MUST be in RFC 7231 datetime format.",
                                     schema: {
                                         type: "string",
@@ -666,13 +647,11 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                             content: {
                                 "application/json": {
                                     schema: {
-                                        
                                         $ref: "#/components/schemas/Error",
                                     },
                                 },
                             },
                             description:
-
                                 "Added by the Creation With Upload Extension in combination with the checksum extension. The checksum algorithm is not supported by the server",
                             headers: {
                                 "Tus-Resumable": {
@@ -690,10 +669,9 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                                     },
                                 },
                             },
-                            
+
                             description: "Precondition Failed",
                             headers: {
-                                
                                 "Tus-Resumable": {
                                     schema: {
                                         $ref: "#/components/schemas/Tus-Resumable",
@@ -701,7 +679,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                                 },
                                 "Tus-Version": {
                                     schema: {
-                                        
                                         $ref: "#/components/schemas/Tus-Version",
                                     },
                                 },
@@ -716,7 +693,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                                 },
                             },
                             description:
-
                                 "If the length of the upload exceeds the maximum, which MAY be specified using the Tus-Max-Size header, the Server MUST respond with the 413 Request Entity Too Large status.",
                             headers: {
                                 "Tus-Resumable": {
@@ -762,7 +738,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
                         },
                     },
                     summary:
-
                         "An empty POST request is used to create a new upload resource. The Upload-Length header indicates the size of the entire upload in bytes. If the Creation With Upload extension is available, the Client MAY include parts of the upload in the initial Creation request",
                     tags,
                 },

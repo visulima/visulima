@@ -1,5 +1,5 @@
 import fnv1a from "@sindresorhus/fnv1a";
-import mem from "mem";
+import mem from "memoize";
 
 export const hash = mem((value: string) => fnv1a(value, { size: 64 }).toString(16));
 
@@ -7,7 +7,6 @@ export type { ErrorResponses } from "./errors";
 export { ErrorMap, ERRORS, isUploadError, throwErrorCode, UploadError } from "./errors";
 export type { PathMatch } from "./file-path-url-matcher";
 export { default as filePathUrlMatcher } from "./file-path-url-matcher";
-export { ensureFile, fsp, removeFile } from "./fs";
 export {
     appendHeader,
     extractHost,

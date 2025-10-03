@@ -60,7 +60,6 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
     public override async options(): Promise<ResponseFile<TFile>> {
         const headers = {
             "Access-Control-Allow-Headers":
-
                 "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
             "Access-Control-Allow-Methods": Tus.methods.map((method) => method.toUpperCase()).join(", "),
             "Access-Control-Max-Age": 86_400,
@@ -206,7 +205,6 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
                 ...file,
                 headers: this.buildHeaders(file, {
                     "Upload-Offset": file.bytesWritten,
-                    
                 }) as Record<string, string | number>,
                 statusCode: file.status === "completed" ? 200 : 204,
             };
@@ -265,7 +263,6 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
             const file = await this.storage.delete({ id });
 
             if (file.status === undefined) {
-                
                 throw createHttpError(404, "File not found");
             }
 
@@ -323,15 +320,16 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
 export const TUS_RESUMABLE = TUS_RESUMABLE_VERSION;
 export const TUS_VERSION = TUS_VERSION_VERSION;
 
-export const serializeMetadata = (object: Metadata): string => Object.entries(object)
-    .map(([key, value]) => {
-        if (value === undefined) {
-            return key;
-        }
+export const serializeMetadata = (object: Metadata): string =>
+    Object.entries(object)
+        .map(([key, value]) => {
+            if (value === undefined) {
+                return key;
+            }
 
-        return `${key} ${Buffer.from(String(value)).toString("base64")}`;
-    })
-    .toString();
+            return `${key} ${Buffer.from(String(value)).toString("base64")}`;
+        })
+        .toString();
 
 export const parseMetadata = (encoded = ""): Metadata => {
     const kvPairs = encoded.split(",").map((kv) => kv.split(" "));

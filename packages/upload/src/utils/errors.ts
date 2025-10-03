@@ -1,4 +1,4 @@
-import mem from "mem";
+import mem from "memoize";
 
 import type { HttpError } from "./types";
 
@@ -75,6 +75,16 @@ export class UploadError extends Error {
     public UploadErrorCode: ERRORS = ERRORS.UNKNOWN_ERROR;
 
     public detail?: unknown;
+
+    public constructor(code: ERRORS = ERRORS.UNKNOWN_ERROR, message?: string, detail?: unknown) {
+        super(message || code);
+        this.name = 'UploadError';
+        this.detail = detail;
+        
+        if (Object.values(ERRORS).includes(code)) {
+            this.UploadErrorCode = code;
+        }
+    }
 }
 
 export const isUploadError = (error: unknown): error is UploadError => !!(error as UploadError).UploadErrorCode;

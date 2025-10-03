@@ -40,7 +40,6 @@ class MetaStorage<T> {
      */
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
     public async delete(_id: string): Promise<void> {
-        
         throw new Error("Not implemented");
     }
 

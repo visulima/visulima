@@ -1,0 +1,27 @@
+{
+    "name": "upload_example_express-multipart-s3",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "tsnd -r dotenv/config index"
+    },
+    "dependencies": {
+        "@aws-sdk/abort-controller": "^3.374.0",
+        "@aws-sdk/client-s3": "^3.901.0",
+        "@aws-sdk/credential-providers": "^3.901.0",
+        "@aws-sdk/s3-request-presigner": "^3.901.0",
+        "@aws-sdk/types": "^3.901.0",
+        "@visulima/upload": "workspace:*",
+        "aws-crt": "^1.27.3",
+        "cors": "2.8.5",
+        "copy-file": "^11.1.0",
+        "dotenv": "^17.2.3",
+        "express": "^5.1.0",
+        "winston": "^3.18.3"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.3",
+        "ts-node-dev": "^2.0.0"
+    }
+}

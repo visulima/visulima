@@ -1,0 +1,8 @@
+{
+    "name": "upload_example_deno",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "deno run --allow-net --allow-read --allow-write --allow-env index.ts"
+    }
+}

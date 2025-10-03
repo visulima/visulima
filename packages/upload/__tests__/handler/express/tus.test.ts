@@ -1,28 +1,22 @@
-import {
-    afterAll, beforeAll, describe, expect, it, jest,
-} from "@jest/globals";
-import { join } from "node:path";
-import supertest from "supertest";
-
-import Tus, {
-    parseMetadata, serializeMetadata, TUS_RESUMABLE, TUS_VERSION,
-} from "../../../src/handler/tus";
-import DiskStorage from "../../../src/storage/local/disk-storage";
-import {
-    metadata, metafile, storageOptions, testfile, testRoot,
-} from "../../__helpers__/config";
-import app from "../../__helpers__/express-app";
 import { rm } from "node:fs/promises";
+import { join } from "node:path";
+
+import { afterAll, beforeAll, describe, expect, it, jest } from "@jest/globals";
+import supertest from "supertest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+import Tus, { parseMetadata, serializeMetadata, TUS_RESUMABLE, TUS_VERSION } from "../../../src/handler/tus";
+import DiskStorage from "../../../src/storage/local/disk-storage";
+import { metadata, metafile, storageOptions, testfile, testRoot } from "../../__helpers__/config";
+import app from "../../__helpers__/express-app";
 
 jest.mock("fs/promises", () => {
-    // eslint-disable-next-line unicorn/prefer-module
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
-    // eslint-disable-next-line unicorn/prefer-module
     return {
         __esModule: true,
         ...fs.promises,
@@ -30,14 +24,12 @@ jest.mock("fs/promises", () => {
 });
 
 jest.mock("fs", () => {
-    // eslint-disable-next-line unicorn/prefer-module
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
-    // eslint-disable-next-line unicorn/prefer-module
     return {
         __esModule: true,
         ...fs,
@@ -46,26 +38,25 @@ jest.mock("fs", () => {
 
 // eslint-disable-next-line radar/no-identical-functions
 jest.mock("node:fs", () => {
-    // eslint-disable-next-line unicorn/prefer-module
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
-    // eslint-disable-next-line unicorn/prefer-module
     return {
         __esModule: true,
         ...fs,
     };
 });
 
-const exposedHeaders = (response: supertest.Response): string[] => response
-    .get("Access-Control-Expose-Headers")
-    .split(",")
-    .map((s) => s.toLowerCase());
+const exposedHeaders = (response: supertest.Response): string[] =>
+    response
+        .get("Access-Control-Expose-Headers")
+        .split(",")
+        .map((s) => s.toLowerCase());
 
-describe("Express Tus", () => {
+describe("express Tus", () => {
     let uri = "";
     const basePath = "/tus";
     const directory = join(testRoot, "tus");
@@ -89,7 +80,7 @@ describe("Express Tus", () => {
 
     beforeAll(async () => {
         try {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -97,7 +88,7 @@ describe("Express Tus", () => {
 
     afterAll(async () => {
         try {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -109,7 +100,7 @@ describe("Express Tus", () => {
         });
     });
 
-    describe("POST", () => {
+    describe("pOST", () => {
         it("should 201", async () => {
             // eslint-disable-next-line radar/no-duplicate-string
             const response = await create().expect("tus-resumable", TUS_RESUMABLE);
@@ -122,7 +113,7 @@ describe("Express Tus", () => {
         });
     });
 
-    describe("PATCH", () => {
+    describe("pATCH", () => {
         it("should 204 and Upload-Offset", async () => {
             const test = await create();
 
@@ -165,7 +156,7 @@ describe("Express Tus", () => {
         });
     });
 
-    describe("HEAD", () => {
+    describe("hEAD", () => {
         // eslint-disable-next-line radar/no-duplicate-string
         it("should 204", async () => {
             const test = await create();
@@ -204,7 +195,7 @@ describe("Express Tus", () => {
 
             const id = uri.replace("/tus/", "").replace(".mp4", "");
 
-            tus.storage.update({ id }, { size: Number.NaN, metadata: { size: Number.NaN } });
+            tus.storage.update({ id }, { metadata: { size: Number.NaN }, size: Number.NaN });
 
             const response = await supertest(app).head(uri).set("Tus-Resumable", TUS_RESUMABLE);
 
@@ -219,7 +210,7 @@ describe("Express Tus", () => {
         });
     });
 
-    describe("OPTIONS", () => {
+    describe("oPTIONS", () => {
         it("should 204", async () => {
             const response = await supertest(app).options(basePath).set("Tus-Resumable", TUS_RESUMABLE);
 
@@ -231,14 +222,14 @@ describe("Express Tus", () => {
             expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
             expect(response.header["access-control-allow-methods"]).toBe("DELETE, GET, HEAD, OPTIONS, PATCH, POST");
             expect(response.header["access-control-allow-headers"]).toBe(
-                // eslint-disable-next-line max-len
+
                 "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
             );
             expect(response.header["access-control-max-age"]).toBe("86400");
         });
     });
 
-    describe("DELETE", () => {
+    describe("dELETE", () => {
         it("should 204", async () => {
             const test = await create();
 
@@ -258,7 +249,7 @@ describe("Express Tus", () => {
         });
     });
 
-    describe("POST (creation-with-upload)", () => {
+    describe("pOST (creation-with-upload)", () => {
         it("should return upload-offset", async () => {
             const response = await supertest(app)
                 .post(basePath)
@@ -284,7 +275,6 @@ describe("Express Tus", () => {
         });
 
         it("should parse single key/value", () => {
-            // eslint-disable-next-line no-secrets/no-secrets
             const sample = "name dGl0bGUubXA0";
 
             expect(parseMetadata(sample)).toEqual({ name: "title.mp4" });
@@ -301,11 +291,11 @@ describe("Express Tus", () => {
             const sample = "name dGl0bGUubXA0,mimeType dmlkZW8vbXA0,size ODM4NjkyNTM=,lastModified MTQzNzM5MDEzODIzMQ==,is_ok";
 
             expect(parseMetadata(sample)).toEqual({
-                name: "title.mp4",
-                mimeType: "video/mp4",
-                size: "83869253",
-                lastModified: "1437390138231",
                 is_ok: "",
+                lastModified: "1437390138231",
+                mimeType: "video/mp4",
+                name: "title.mp4",
+                size: "83869253",
             });
         });
     });

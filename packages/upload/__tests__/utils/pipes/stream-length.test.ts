@@ -1,17 +1,15 @@
 import { createReadStream } from "node:fs";
-import { rm } from "node:fs/promises";
+import { rm, mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pipeline } from "node:stream";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-
-import { fsp } from "../../../src/utils/fs";
 import StreamLength from "../../../src/utils/pipes/stream-length";
 import { testRoot } from "../../__helpers__/config";
 
 const createTestFile = async (path: string, filepath: string) => {
-    await fsp.mkdir(path, { recursive: true });
-    await fsp.writeFile(filepath, "test", "utf8");
+    await mkdir(path, { recursive: true });
+    await writeFile(filepath, "test", "utf8");
 };
 
 describe("utils", () => {

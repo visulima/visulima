@@ -1,13 +1,14 @@
 import { createWriteStream } from "node:fs";
+import { rm, mkdir, stat, truncate, copyFile, rename, unlink } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
 import { join } from "node:path";
 import { pipeline } from "node:stream";
 
-import { walk } from "@visulima/fs";
+import { walk, ensureFile, readFile } from "@visulima/fs";
 import etag from "etag";
 
 import type { HttpError } from "../../utils";
-import { ensureFile, ERRORS, fsp, removeFile, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
+import { ERRORS, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { DiskStorageOptions } from "../types";
@@ -114,7 +115,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 const [bytesWritten, errorCode] = await this.lazyWrite({ ...part, ...file });
 
                 if (errorCode) {
-                    await fsp.truncate(path, file.bytesWritten);
+                    await truncate(path, file.bytesWritten);
 
                     return throwErrorCode(errorCode);
                 }
@@ -142,7 +143,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     public async get({ id }: FileQuery): Promise<FileReturn> {
         const file = await this.checkIfExpired(await this.meta.get(id));
         const { bytesWritten, contentType, expiredAt, metadata, modifiedAt, name, originalName, size } = file;
-        const content = await fsp.readFile(this.getFilePath(name));
+        const content = await readFile(this.getFilePath(name));
 
         return {
             content,
@@ -162,7 +163,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         try {
             const file = await this.getMeta(id);
 
-            await removeFile(this.getFilePath(file.name));
+            await rm(this.getFilePath(file.name), { force: true });
             await this.deleteMeta(id);
 
             return { ...file, status: "deleted" };
@@ -174,18 +175,18 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     public async copy(name: string, destination: string): Promise<void> {
-        await fsp.copyFile(this.getFilePath(name), destination);
+        await copyFile(this.getFilePath(name), destination);
     }
 
     public async move(name: string, destination: string): Promise<void> {
         const source = this.getFilePath(name);
 
         try {
-            await fsp.rename(source, destination);
+            await rename(source, destination);
         } catch (error: any) {
             if (error?.code === "EXDEV") {
                 await this.copy(source, destination);
-                await fsp.unlink(source);
+                await unlink(source);
             }
         }
     }
@@ -205,7 +206,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             const { path } = founding;
 
             if (!path.includes(suffix)) {
-                const { birthtime, ctime, mtime } = await fsp.stat(path);
+                const { birthtime, ctime, mtime } = await stat(path);
 
                 uploads.push({ createdAt: birthtime || ctime, id: path.replace(directory, ""), modifiedAt: mtime } as TFile);
             }
@@ -249,7 +250,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     private async accessCheck(): Promise<void> {
-        await fsp.mkdir(this.directory, { recursive: true });
+        await mkdir(this.directory, { recursive: true });
     }
 }
 

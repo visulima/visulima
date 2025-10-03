@@ -1,0 +1,16 @@
+{
+    "name": "upload_example_hono",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "tsx index.ts"
+    },
+    "dependencies": {
+        "@visulima/upload": "workspace:*",
+        "hono": "^4.9.9"
+    },
+    "devDependencies": {
+        "@types/node": "^24.6.2",
+        "tsx": "^4.20.6"
+    }
+}

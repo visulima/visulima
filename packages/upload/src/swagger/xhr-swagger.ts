@@ -59,17 +59,15 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                     operationId: `${pathHash}MultipartCancel`,
                     parameters: [
                         {
-                            
                             $ref: "#/components/parameters/UploadIDinPath",
                         },
                     ],
                     responses: {
                         204: {
-                            
                             description: "No Content",
                         },
                     },
-                    
+
                     summary: "Cancel upload",
                     tags,
                 },
@@ -108,16 +106,13 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                             description: "The file already exists, send a resume request",
                             headers: {
                                 ETag: {
-                                    
                                     description: "Upload ETag",
                                     schema: {
-                                        
                                         example: "d41d8cd98f00b204e9800998ecf8427e",
                                         type: "string",
                                     },
                                 },
                                 Location: {
-                                    
                                     description: "Resumable URI",
                                     schema: {
                                         // eslint-disable-next-line no-secrets/no-secrets
@@ -127,10 +122,8 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                                     },
                                 },
                                 "X-Upload-Expires": {
-                                    
                                     description: "Upload expiration date",
                                     schema: {
-                                        
                                         example: "2021-08-25T11:12:26.635Z",
                                         format: "date-time",
                                         type: "string",
@@ -142,10 +135,8 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                             description: "Upload accepted, send the file contents",
                             headers: {
                                 ETag: {
-                                    
                                     description: "Upload ETag",
                                     schema: {
-                                        
                                         example: "d41d8cd98f00b204e9800998ecf8427e",
                                         type: "string",
                                     },
@@ -171,7 +162,6 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                         },
                         400: {
                             content: {
-                                
                                 "application/json": {
                                     example: {
                                         error: {
@@ -181,7 +171,6 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                                         },
                                     },
                                     schema: {
-                                        
                                         $ref: "#/components/schemas/Error",
                                     },
                                 },
@@ -265,7 +254,7 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                             description: "Error",
                         },
                     },
-                    
+
                     summary: "Create upload",
                     tags,
                 },

@@ -1,8 +1,9 @@
 import { createWriteStream } from "node:fs";
+import { truncate } from "node:fs/promises";
 import { pipeline } from "node:stream";
 
-import { ensureFile, ERRORS, RangeHasher, removeFile, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
-import { fsp } from "../../utils/fs";
+import { ensureFile, remove } from "@visulima/fs";
+import { ERRORS, RangeHasher, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
 import type { DiskStorageWithChecksumOptions } from "../types";
 import type { File, FilePart, FileQuery } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
@@ -27,7 +28,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
 
             this.hashes.delete(path);
 
-            await removeFile(path);
+            await remove(path);
             await this.deleteMeta(id);
 
             return { ...file, status: "deleted" };
@@ -70,7 +71,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
                 const [bytesWritten, errorCode] = await this.lazyWrite({ ...part, ...file });
 
                 if (errorCode) {
-                    await fsp.truncate(path, file.bytesWritten);
+                    await truncate(path, file.bytesWritten);
 
                     return throwErrorCode(errorCode);
                 }

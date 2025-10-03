@@ -239,7 +239,6 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
                     throw new Error(`Exceeded ${this.MAX_PARTS} as part of the upload to ${this.bucket}.`);
                 }
 
-                const checksumMD5 = part.checksumAlgorithm === "md5" ? part.checksum : "";
                 const partNumber = file.Parts.length + 1;
 
                 const controller = new AbortController();
@@ -252,10 +251,10 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
                         Body: part.body,
                         Bucket: this.bucket,
                         ContentLength: part.contentLength || 0,
-                        ContentMD5: checksumMD5,
                         Key: file.name,
                         PartNumber: partNumber,
                         UploadId: file.UploadId,
+                        ...(part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum, } : {})
                     }),
                     { abortSignal } as HttpHandlerOptions,
                 );

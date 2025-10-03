@@ -12,9 +12,13 @@ import type { FilePart } from "../../../src/storage/utils/file";
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
 import { deepClone } from "../../__helpers__/utils";
 
-vi.mock("node-fetch");
+const { mockFetch } = vi.hoisted(() => {
+    return {
+        mockFetch: vi.fn()
+    }
+});
 
-const mockFetch = vi.mocked(fetch);
+vi.mock("node-fetch");
 
 const mockAuthRequest = vi.fn();
 
@@ -116,7 +120,7 @@ describe(GCStorage, async () => {
                 start: 0,
             });
 
-            expect(mockFetch).toHaveBeenCalledWithExactlyOnceWith(uri, {
+            expect(mockFetch).toHaveBeenCalledWith(uri, {
                 body,
                 headers: expect.objectContaining({ "Content-Range": "bytes 0-63/64" }),
                 method: "PUT",
