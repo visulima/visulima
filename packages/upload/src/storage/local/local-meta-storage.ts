@@ -1,9 +1,8 @@
 import { tmpdir } from "node:os";
+import { mkdir, readFile, utimes, writeFile } from "node:fs/promises";
 
 import { join, normalize } from "@visulima/path";
-
-import { removeFile } from "../../utils";
-import { fsp } from "../../utils/fs";
+import { remove } from "@visulima/fs";
 import MetaStorage from "../meta-storage";
 import type { MetaStorageOptions } from "../types";
 import type { File } from "../utils/file";
@@ -37,7 +36,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     public getIdFromPath = (metaFilePath: string): string => metaFilePath.slice(`${this.directory}/${this.prefix}`.length, -this.suffix.length);
 
     public override async save(id: string, file: T): Promise<T> {
-        await fsp.writeFile(this.getMetaPath(id), JSON.stringify(file));
+        await writeFile(this.getMetaPath(id), JSON.stringify(file));
 
         return file;
     }
@@ -45,13 +44,13 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     public override async touch(id: string, file: T): Promise<T> {
         const time = new Date();
 
-        await fsp.utimes(this.getMetaPath(id), time, time);
+        await utimes(this.getMetaPath(id), time, time);
 
         return file;
     }
 
     public override async get(id: string): Promise<T> {
-        const json = await fsp.readFile(this.getMetaPath(id), { encoding: "utf8" });
+        const json = await readFile(this.getMetaPath(id), { encoding: "utf8" });
 
         if (json === undefined) {
             throw new TypeError("Invalid metafile");
@@ -61,11 +60,11 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async delete(id: string): Promise<void> {
-        await removeFile(this.getMetaPath(id));
+        await remove(this.getMetaPath(id));
     }
 
     private async accessCheck(): Promise<void> {
-        await fsp.mkdir(this.directory, { recursive: true });
+        await mkdir(this.directory, { recursive: true });
     }
 }
 

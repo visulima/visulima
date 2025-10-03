@@ -141,7 +141,6 @@ class Multipart<
             const file = await this.storage.delete({ id });
 
             if (file.status === undefined) {
-                
                 throw createHttpError(404, "File not found");
             }
 
