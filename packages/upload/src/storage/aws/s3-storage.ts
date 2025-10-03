@@ -62,10 +62,7 @@ const PART_SIZE = 16 * 1024 * 1024;
  * ```
  */
 class S3Storage extends BaseStorage<S3File, FileReturn> {
-    /**
-     * S3 multipart upload does not allow more than 10000 parts.
-     */
-    private MAX_PARTS = 10_000;
+    public override checksumTypes = ["md5"];
 
     protected bucket: string;
 
@@ -73,7 +70,10 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
     protected meta: MetaStorage<S3File>;
 
-    public override checksumTypes = ["md5"];
+    /**
+     * S3 multipart upload does not allow more than 10000 parts.
+     */
+    private MAX_PARTS = 10_000;
 
     private readonly partSize = PART_SIZE;
 
