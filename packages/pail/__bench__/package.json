@@ -9,9 +9,9 @@
         "@visulima/pail": "workspace:*",
         "bunyan": "^1.8.15",
         "consola": "^3.4.2",
-        "pino": "^9.7.0",
-        "tslog": "^4.9.3",
-        "winston": "^3.17.0"
+        "pino": "^9.12.0",
+        "tslog": "^4.10.0",
+        "winston": "^3.18.1"
     },
     "devDependencies": {
         "typescript": "5.8.3",

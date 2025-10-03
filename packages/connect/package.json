@@ -97,7 +97,7 @@
         "@anolilab/semantic-release-preset": "^10.0.5",
         "@arethetypeswrong/cli": "^0.18.1",
         "@babel/core": "^7.27.1",
-        "@rushstack/eslint-plugin-security": "^0.10.0",
+        "@rushstack/eslint-plugin-security": "^0.11.0",
         "@types/http-errors": "^2.0.4",
         "@types/node": "18.19.71",
         "@visulima/nextra-theme-docs": "4.0.26",
@@ -115,7 +115,7 @@
         "eslint-plugin-vitest-globals": "^1.5.0",
         "eslint-plugin-zod": "^1.4.0",
         "express": "^5.1.0",
-        "fastify": "^5.3.3",
+        "fastify": "^5.6.1",
         "isomorphic-fetch": "^3.0.0",
         "prettier": "^3.5.3",
         "publint": "^0.3.12",
@@ -126,7 +126,7 @@
         "zod": "^3.25.13"
     },
     "peerDependencies": {
-        "zod": "^3.22.4"
+        "zod": "^3.25.76"
     },
     "engines": {
         "node": ">=18.0.0 <=23.x"
