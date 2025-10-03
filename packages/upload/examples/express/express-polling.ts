@@ -1,4 +1,4 @@
-import { DiskFile, DiskStorage, Upload } from "@visulima/upload";
+import { DiskFile, DiskStorage, httpMultipartHandler } from "@visulima/upload";
 import { copyFile } from "copy-file";
 import express from "express";
 import fs from "node:fs";
@@ -50,8 +50,8 @@ const onComplete: express.RequestHandler = (req, res) => {
     }
 };
 
-const upload = new Upload({ storage });
+const handle = httpMultipartHandler({ storage });
 
-app.use("/files", upload.upload, onComplete);
+app.use("/files", handle, onComplete);
 
 app.listen(PORT, () => console.log("listening on port:", PORT));
