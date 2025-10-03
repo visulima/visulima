@@ -1,6 +1,6 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import type { S3ClientConfig } from "@aws-sdk/client-s3";
 
-import type { CreateBackblazeClientParams as CreateBackblazeClientParameters } from "./types";
+import type { CreateBackblazeClientParameters } from "./types";
 
 /**
  * Create a Backblaze B2 client, compatible with the S3 API.
@@ -10,7 +10,7 @@ import type { CreateBackblazeClientParams as CreateBackblazeClientParameters } f
  * - `B2_APP_KEY_ID`
  * - `B2_APP_KEY`
  */
-export const backblaze = (parameters?: CreateBackblazeClientParameters) => {
+export const backblaze = (parameters?: CreateBackblazeClientParameters): S3ClientConfig => {
     const { applicationKey, applicationKeyId, region } = parameters ?? {
         applicationKey: process.env.AWS_SECRET_ACCESS_KEY || process.env.B2_APP_KEY || process.env.BACKBLAZE_APP_KEY,
         applicationKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.B2_APP_KEY_ID || process.env.BACKBLAZE_APP_KEY_ID,
@@ -21,14 +21,14 @@ export const backblaze = (parameters?: CreateBackblazeClientParameters) => {
         throw new Error("Missing required parameters for Backblaze B2 client.");
     }
 
-    return new S3Client({
+    return {
         credentials: {
             accessKeyId: applicationKeyId,
             secretAccessKey: applicationKey,
         },
         endpoint: `https://s3.${region}.backblazeb2.com`,
         region,
-    });
+    };
 };
 
 export default backblaze;

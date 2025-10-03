@@ -1,6 +1,6 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import type { S3ClientConfig } from "@aws-sdk/client-s3";
 
-import type { CreateDigitalOceanClientParams as CreateDigitalOceanClientParameters } from "./types";
+import type { CreateDigitalOceanClientParameters } from "./types";
 
 /**
  * Create a DigitalOcean Spaces client, compatible with the S3 API.
@@ -10,7 +10,7 @@ import type { CreateDigitalOceanClientParams as CreateDigitalOceanClientParamete
  * - `SPACES_KEY`
  * - `SPACES_SECRET`
  */
-const digitalOcean = (parameters?: CreateDigitalOceanClientParameters) => {
+const digitalOcean = (parameters?: CreateDigitalOceanClientParameters): S3ClientConfig => {
     const { key, region, secret } = parameters ?? {
         key: process.env.AWS_ACCESS_KEY_ID || process.env.SPACES_KEY,
         region: process.env.AWS_REGION || process.env.SPACES_REGION,
@@ -21,7 +21,7 @@ const digitalOcean = (parameters?: CreateDigitalOceanClientParameters) => {
         throw new Error("Missing required parameters for DigitalOcean Spaces client.");
     }
 
-    return new S3Client({
+    return {
         credentials: {
             accessKeyId: key,
             secretAccessKey: secret,
@@ -29,7 +29,7 @@ const digitalOcean = (parameters?: CreateDigitalOceanClientParameters) => {
         endpoint: `https://${region}.digitaloceanspaces.com`,
         forcePathStyle: false,
         region: "us-east-1",
-    });
+    };
 };
 
 export default digitalOcean;

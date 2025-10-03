@@ -1,6 +1,6 @@
 import express from "express";
-import type { UploadFile } from "../../../packages/upload";
-import { Tus } from "../../../packages/upload";
+import type { UploadFile } from "@visulima/upload";
+import { Tus } from "@visulima/upload";
 import { GCStorage } from "@visulima/upload/gcs";
 import Cors from "cors";
 

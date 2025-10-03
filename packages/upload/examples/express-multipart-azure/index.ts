@@ -1,6 +1,6 @@
 import express from "express";
-import type { UploadFile } from "../../../packages/upload";
-import { Multipart } from "../../../packages/upload";
+import type { UploadFile } from "@visulima/upload";
+import { Multipart } from "@visulima/upload";
 import { AzureStorage } from "@visulima/upload/azure";
 import Cors from "cors";
 

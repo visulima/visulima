@@ -1,18 +1,4 @@
-import type { S3Client } from "@aws-sdk/client-s3";
-
-export type HelperBaseParams = {
-    /**
-     * The name of the bucket where the file is stored.
-     */
-    bucketName: string;
-
-    /**
-     * The S3 client.
-     */
-    client: S3Client;
-};
-
-export type CreateCloudflareClientParams = {
+export type CreateCloudflareClientParameters = {
     /**
      * Cloudflare R2 access key ID.
      */
@@ -36,7 +22,7 @@ export type CreateCloudflareClientParams = {
     secretAccessKey: string;
 };
 
-export type CreateMinioClientParams = {
+export type CreateMinioClientParameters = {
     /**
      * Minio access key ID.
      */
@@ -58,7 +44,7 @@ export type CreateMinioClientParams = {
     secretAccessKey: string;
 };
 
-export type CreateBackblazeClientParams = {
+export type CreateBackblazeClientParameters = {
     /**
      * Backblaze B2 application key.
      */
@@ -75,7 +61,7 @@ export type CreateBackblazeClientParams = {
     region: string;
 };
 
-export type CreateWasabiClientParams = {
+export type CreateWasabiClientParameters = {
     /**
      * Wasabi access key ID.
      */
@@ -92,7 +78,7 @@ export type CreateWasabiClientParams = {
     secretAccessKey: string;
 };
 
-export type CreateDigitalOceanClientParams = {
+export type CreateDigitalOceanClientParameters = {
     /**
      * DigitalOcean Spaces key.
      */
@@ -109,7 +95,7 @@ export type CreateDigitalOceanClientParams = {
     secret: string;
 };
 
-export type CreateTigrisClientParams = {
+export type CreateTigrisClientParameters = {
     /**
      * Tigris access key ID.
      */

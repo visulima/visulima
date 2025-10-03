@@ -1,6 +1,6 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import type { S3ClientConfig } from "@aws-sdk/client-s3";
 
-import type { CreateCloudflareClientParams as CreateCloudflareClientParameters } from "./types";
+import type { CreateCloudflareClientParameters } from "./types";
 
 /**
  * Create a Cloudflare R2 client, compatible with the S3 API.
@@ -11,7 +11,7 @@ import type { CreateCloudflareClientParams as CreateCloudflareClientParameters }
  * - `AWS_SECRET_ACCESS_KEY`
  * - `CLOUDFLARE_JURISDICTION`
  */
-export const cloudflare = (parameters?: CreateCloudflareClientParameters) => {
+export const cloudflare = (parameters?: CreateCloudflareClientParameters): S3ClientConfig => {
     const { accessKeyId, accountId, jurisdiction, secretAccessKey } = parameters ?? {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.CLOUDFLARE_ACCESS_KEY_ID || process.env.CLOUDFLARE_ACCESS_KEY,
         accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
@@ -23,14 +23,14 @@ export const cloudflare = (parameters?: CreateCloudflareClientParameters) => {
         throw new Error("Missing required parameters for Cloudflare R2 client.");
     }
 
-    return new S3Client({
+    return {
         credentials: {
             accessKeyId,
             secretAccessKey,
         },
         endpoint: `https://${accountId}.${jurisdiction ? `${jurisdiction}.` : ""}r2.cloudflarestorage.com`,
         region: "auto",
-    });
+    };
 };
 
 export default cloudflare;
