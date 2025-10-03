@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { Readable } from "node:stream";
 
 import Tus from "../handler/tus";
 import type { UploadOptions } from "../handler/types";
@@ -29,7 +30,10 @@ const fetchTusHandler = <TFile extends UploadFile>(
             }
 
             // Convert Request to Node.js IncomingMessage-like object
-            const nodeRequest = {
+            const bodyBuffer = request.body ? new Uint8Array(await request.arrayBuffer()) : new Uint8Array();
+            const nodeRequest = Readable.from(bodyBuffer);
+
+            Object.assign(nodeRequest, {
                 // Store the original request for body access
                 _originalRequest: request,
                 // Add required IncomingMessage properties
@@ -48,18 +52,25 @@ const fetchTusHandler = <TFile extends UploadFile>(
                 removeListener: () => {},
                 setEncoding: () => {},
                 url: request.url,
-            } as any as IncomingMessage;
+            });
 
             // Create a Response wrapper that mimics ServerResponse
             let responseStatus = 200;
             let responseHeaders: Record<string, string | string[]> = {};
             let responseBody: any = null;
 
+            let resolveResponse: () => void;
+            const responsePromise = new Promise<void>((resolve) => {
+                resolveResponse = resolve;
+            });
+
             const nodeResponse = {
                 end: (data?: any) => {
                     if (data !== undefined) {
                         responseBody = data;
                     }
+
+                    resolveResponse();
                 },
                 flushHeaders: () => {
                     (this as any).headersSent = true;
@@ -89,12 +100,14 @@ const fetchTusHandler = <TFile extends UploadFile>(
 
             await tus.handle(nodeRequest, nodeResponse);
 
+            await responsePromise;
+
             // Convert headers to a format suitable for Response
             const responseInit: ResponseInit = {
                 headers: Object.fromEntries(
                     Object.entries(responseHeaders).map(([key, value]) => [key, Array.isArray(value) ? value.join(", ") : String(value ?? "")]),
                 ),
-                status: responseStatus,
+                status: nodeResponse.statusCode,
             };
 
             return new Response(responseBody, responseInit);

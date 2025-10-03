@@ -1,16 +1,15 @@
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 
-import { afterAll, beforeAll, describe, expect, it, jest } from "@jest/globals";
 import supertest from "supertest";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import Tus, { parseMetadata, serializeMetadata, TUS_RESUMABLE, TUS_VERSION } from "../../../src/handler/tus";
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import { metadata, metafile, storageOptions, testfile, testRoot } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
 
-jest.mock("fs/promises", () => {
+vi.mock(import("node:fs/promises"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -23,7 +22,7 @@ jest.mock("fs/promises", () => {
     };
 });
 
-jest.mock("fs", () => {
+vi.mock(import("node:fs"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -37,7 +36,7 @@ jest.mock("fs", () => {
 });
 
 // eslint-disable-next-line radar/no-identical-functions
-jest.mock("node:fs", () => {
+vi.mock(import("node:fs"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -222,7 +221,6 @@ describe("express Tus", () => {
             expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
             expect(response.header["access-control-allow-methods"]).toBe("DELETE, GET, HEAD, OPTIONS, PATCH, POST");
             expect(response.header["access-control-allow-headers"]).toBe(
-
                 "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
             );
             expect(response.header["access-control-max-age"]).toBe("86400");

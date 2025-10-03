@@ -29,6 +29,6 @@ export const backblaze = (parameters?: CreateBackblazeClientParameters) => {
         endpoint: `https://s3.${region}.backblazeb2.com`,
         region,
     });
-}
+};
 
 export default backblaze;

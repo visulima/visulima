@@ -30,6 +30,6 @@ const tigris = (parameters?: CreateTigrisClientParameters) => {
         forcePathStyle: false,
         region: "auto",
     });
-}
+};
 
 export default tigris;
