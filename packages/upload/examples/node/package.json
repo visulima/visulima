@@ -1,0 +1,15 @@
+{
+    "name": "upload_example_node",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "tsx index.ts"
+    },
+    "dependencies": {
+        "@visulima/upload": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^24.6.2",
+        "tsx": "^4.20.6"
+    }
+}

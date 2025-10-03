@@ -35,7 +35,6 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
         responses: {
             200: {
                 content: {
-                    
                     "application/json": {
                         examples: {
                             Default: {
@@ -46,7 +45,6 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                             },
                         },
                         schema: {
-                            
                             $ref: "#/components/schemas/FileMeta",
                         },
                     },
@@ -57,7 +55,6 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                 content: {
                     "application/json": {
                         schema: {
-                            
                             $ref: "#/components/schemas/Error",
                         },
                     },
@@ -65,7 +62,7 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                 description: "Error",
             },
         },
-        
+
         summary: "List upload",
         tags,
     };
@@ -90,29 +87,23 @@ export const sharedGet = (operationId: string, tags: string[] | undefined): Open
                 description: "OK",
                 headers: {
                     ETag: {
-                        
                         description: "Upload ETag",
                         schema: {
-                            
                             example: "d41d8cd98f00b204e9800998ecf8427e",
                             type: "string",
                         },
                     },
                     "Last-Modified": {
-                        
                         description: "Upload last modified date",
                         schema: {
-                            
                             example: "2021-08-25T11:12:26.635Z",
                             format: "date-time",
                             type: "string",
                         },
                     },
                     "X-Upload-Expires": {
-                        
                         description: "Upload expiration date",
                         schema: {
-                            
                             example: "2021-08-25T11:12:26.635Z",
                             format: "date-time",
                             type: "string",

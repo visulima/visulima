@@ -37,7 +37,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
 
     protected internalErrorResponses = {} as ErrorResponses;
 
-    constructor({ storage }: UploadOptions<TFile>) {
+    public constructor({ storage }: UploadOptions<TFile>) {
         super();
 
         this.storage = storage;

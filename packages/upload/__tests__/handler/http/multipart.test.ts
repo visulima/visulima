@@ -9,7 +9,7 @@ import DiskStorage from "../../../src/storage/local/disk-storage";
 import { metadata, storageOptions, testfile, testRoot } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
 
-vi.mock("fs/promises", () => {
+vi.mock("node:fs/promises", () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -19,7 +19,7 @@ vi.mock("fs/promises", () => {
     return fs.promises;
 });
 
-vi.mock("fs", () => {
+vi.mock("node:fs", () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -39,12 +39,7 @@ describe("hTTP Multipart", () => {
     const multipart = new Multipart({ storage: new DiskStorage(options) });
 
     app.use(basePath, async (request, res) => {
-        const handler = await import("../../../src/http/multipart");
-        const httpMultipartHandler = handler.default;
-
-        const multipartHandler = httpMultipartHandler({ storage: new DiskStorage(options) });
-
-        await multipartHandler(request, res);
+        multipart.handle(request, res);
     });
 
     function create(): supertest.Test {
