@@ -1,6 +1,6 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import type { S3ClientConfig } from "@aws-sdk/client-s3";
 
-import type { CreateWasabiClientParams as CreateWasabiClientParameters } from "./types";
+import type { CreateWasabiClientParameters } from "./types";
 
 /**
  * Create a Wasabi client, compatible with the S3 API.
@@ -10,7 +10,7 @@ import type { CreateWasabiClientParams as CreateWasabiClientParameters } from ".
  * - `AWS_ACCESS_KEY_ID`
  * - `AWS_SECRET_ACCESS_KEY`
  */
-const wasabi = (parameters?: CreateWasabiClientParameters) => {
+const wasabi = (parameters?: CreateWasabiClientParameters): S3ClientConfig => {
     const { accessKeyId, region, secretAccessKey } = parameters ?? {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.WASABI_ACCESS_KEY_ID || process.env.WASABI_ACCESS_KEY,
         region: process.env.AWS_REGION || process.env.WASABI_REGION,
@@ -21,7 +21,7 @@ const wasabi = (parameters?: CreateWasabiClientParameters) => {
         throw new Error("Missing required parameters for Wasabi client.");
     }
 
-    return new S3Client({
+    return {
         apiVersion: "2006-03-01",
         credentials: {
             accessKeyId,
@@ -29,7 +29,7 @@ const wasabi = (parameters?: CreateWasabiClientParameters) => {
         },
         endpoint: `https://s3.${region}.wasabisys.com`,
         region,
-    });
+    };
 };
 
 export default wasabi;

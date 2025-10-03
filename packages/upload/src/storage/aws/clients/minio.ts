@@ -1,6 +1,6 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import type { S3ClientConfig } from "@aws-sdk/client-s3";
 
-import type { CreateMinioClientParams as CreateMinioClientParameters } from "./types";
+import type { CreateMinioClientParameters } from "./types";
 
 /**
  * Create a Minio client, compatible with the S3 API.
@@ -11,7 +11,7 @@ import type { CreateMinioClientParams as CreateMinioClientParameters } from "./t
  * - `AWS_SECRET_ACCESS_KEY`
  * - `MINIO_ENDPOINT`
  */
-const minio = (parameters?: CreateMinioClientParameters) => {
+const minio = (parameters?: CreateMinioClientParameters): S3ClientConfig => {
     const { accessKeyId, endpoint, region, secretAccessKey } = parameters ?? {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.MINIO_ACCESS_KEY_ID || process.env.MINIO_ACCESS_KEY,
         endpoint: process.env.AWS_ENDPOINT || process.env.MINIO_ENDPOINT,
@@ -23,7 +23,7 @@ const minio = (parameters?: CreateMinioClientParameters) => {
         throw new Error("Missing required parameters for Minio client.");
     }
 
-    return new S3Client({
+    return {
         credentials: {
             accessKeyId,
             secretAccessKey,
@@ -31,7 +31,7 @@ const minio = (parameters?: CreateMinioClientParameters) => {
         endpoint,
         forcePathStyle: true,
         region,
-    });
+    };
 };
 
 export default minio;
