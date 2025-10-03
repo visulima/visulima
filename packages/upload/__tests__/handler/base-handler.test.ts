@@ -26,7 +26,7 @@ describe("baseHandler", () => {
         uploader = new TestUploader({ storage: new TestStorage({ directory: "/files", logger }) });
 
         expect(logger.debug).toHaveBeenCalledTimes(2);
-        expect(logger.debug).toHaveBeenCalledWith("Registered handler: %s", "GET, OPTIONS");
+        expect(logger.debug).toHaveBeenCalledWithExactlyOnceWith("Registered handler: %s", "GET, OPTIONS");
     });
 
     it("baseHandler.errorResponses setter updates internalErrorResponses correctly", () => {
@@ -39,7 +39,6 @@ describe("baseHandler", () => {
 
     it("baseHandler.assembleErrors merges default and custom error responses correctly", () => {
         expect.assertions(2);
-
 
         const errorObject = { message: "Not Found!", statusCode: 404 };
 
@@ -65,7 +64,7 @@ describe("baseHandler", () => {
         await uploader.handle(request, response);
 
         expect(getHandler).toHaveBeenCalledTimes(1);
-        expect(getHandler).toHaveBeenCalledWith(request, response);
+        expect(getHandler).toHaveBeenCalledWithExactlyOnceWith(request, response);
     });
 
     it("baseHandler.get returns list of uploaded files", async () => {
@@ -77,7 +76,7 @@ describe("baseHandler", () => {
         await uploader.handle(request, response);
 
         expect(uploader.list).toHaveBeenCalledTimes(1);
-        expect(uploader.list).toHaveBeenCalledWith(request, response);
+        expect(uploader.list).toHaveBeenCalledWithExactlyOnceWith(request, response);
         // eslint-disable-next-line no-underscore-dangle
         expect(response._getStatusCode()).toBe(200);
         // eslint-disable-next-line no-underscore-dangle
@@ -166,7 +165,7 @@ describe("baseHandler", () => {
         uploader.sendError(response, error);
 
         expect(sendSpy).toHaveBeenCalledTimes(1);
-        expect(sendSpy).toHaveBeenCalledWith(response, {
+        expect(sendSpy).toHaveBeenCalledWithExactlyOnceWith(response, {
             body: {
                 error: {
                     code: "GenericUploadError",

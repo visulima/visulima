@@ -81,11 +81,12 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
             }
         }
 
-        this.accessCheck().catch((error) => {
-            this.isReady = false;
-
-            throw error;
-        });
+        this.isReady = false;
+        this.accessCheck()
+            .then(() => {
+                this.isReady = true;
+            })
+            .catch((error) => this.logger?.error("Storage access check failed: %O", error));
     }
 
     public async create(request: IncomingMessage, config: FileInit): Promise<AzureFile> {
