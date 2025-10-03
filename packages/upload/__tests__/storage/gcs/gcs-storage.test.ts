@@ -121,7 +121,7 @@ describe(GCStorage, async () => {
             });
 
             expect(mockFetch).toHaveBeenCalledTimes(1);
-            expect(mockFetch).toHaveBeenCalledWith(uri, {
+            expect(mockFetch).toHaveBeenCalledWithExactlyOnceWith(uri, {
                 body,
                 headers: expect.objectContaining({ "Content-Range": "bytes 0-63/64" }),
                 method: "PUT",
@@ -185,13 +185,13 @@ describe(GCStorage, async () => {
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWith({
+            expect(mockAuthRequest).toHaveBeenCalledWithExactlyOnceWith({
                 url: "https://storage.googleapis.com/storage/v1/b/test-bucket",
             });
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWith({
+            expect(mockAuthRequest).toHaveBeenCalledWithExactlyOnceWith({
                 body: "",
                 headers: { "Content-Type": "application/json" },
                 method: "POST",
@@ -207,7 +207,7 @@ describe(GCStorage, async () => {
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWith({
+            expect(mockAuthRequest).toHaveBeenCalledWithExactlyOnceWith({
                 body: "",
                 headers: { "Content-Type": "application/json" },
                 method: "POST",

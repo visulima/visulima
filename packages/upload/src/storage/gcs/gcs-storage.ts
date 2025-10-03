@@ -59,7 +59,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
     private readonly userProject: string | undefined;
 
-    constructor(public override config: GCStorageOptions) {
+    public constructor(public override config: GCStorageOptions) {
         super(config);
 
         const bucketName = config.bucket || process.env.GCS_BUCKET;
@@ -113,11 +113,12 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
             }
         }
 
-        this.accessCheck().catch((error: ClientError) => {
-            this.isReady = false;
-
-            throw error;
-        });
+        this.isReady = false;
+        this.accessCheck()
+            .then(() => {
+                this.isReady = true;
+            })
+            .catch((error) => this.logger?.error("Storage access check failed: %O", error));
     }
 
     public override normalizeError(error: ClientError): HttpError {

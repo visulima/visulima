@@ -2,6 +2,7 @@ import { createWriteStream } from "node:fs";
 import { truncate } from "node:fs/promises";
 import { pipeline } from "node:stream";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureFile, remove } from "@visulima/fs";
 
 import { ERRORS, RangeHasher, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
@@ -16,13 +17,13 @@ import DiskStorage from "./disk-storage";
 class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFile> {
     private hashes: RangeHasher;
 
-    constructor(config: DiskStorageWithChecksumOptions<TFile>) {
+    public constructor(config: DiskStorageWithChecksumOptions<TFile>) {
         super(config);
 
         this.hashes = new RangeHasher(config?.checksum === "sha1" ? "sha1" : "md5");
     }
 
-    public async delete({ id }: FileQuery): Promise<TFile> {
+    public override async delete({ id }: FileQuery): Promise<TFile> {
         try {
             const file = await this.getMeta(id);
             const path = this.getFilePath(file.name);
@@ -40,7 +41,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
         return { id } as TFile;
     }
 
-    async write(part: FilePart | FileQuery): Promise<TFile> {
+    public override async write(part: FilePart | FileQuery): Promise<TFile> {
         const file = await this.getMeta(part.id);
 
         await this.checkIfExpired(file);
@@ -104,8 +105,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
         }
     }
 
-    protected lazyWrite(part: File & FilePart): Promise<[number, ERRORS?]> {
-        // eslint-disable-next-line compat/compat
+    protected override lazyWrite(part: File & FilePart): Promise<[number, ERRORS?]> {
         return new Promise((resolve, reject) => {
             const path = this.getFilePath(part.name);
             const destination = createWriteStream(path, { flags: "r+", start: part.start });

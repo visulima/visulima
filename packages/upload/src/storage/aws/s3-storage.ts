@@ -132,11 +132,12 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             }
         }
 
-        this.accessCheck().catch((error: AwsError) => {
-            this.isReady = false;
-
-            throw error;
-        });
+        this.isReady = false;
+        this.accessCheck()
+            .then(() => {
+                this.isReady = true;
+            })
+            .catch((error) => this.logger?.error("Storage access check failed: %O", error));
     }
 
     public override normalizeError(error: AwsError): HttpError {

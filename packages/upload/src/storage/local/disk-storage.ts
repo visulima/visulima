@@ -1,10 +1,11 @@
 import { createWriteStream } from "node:fs";
-import { copyFile, mkdir, rename, rm, stat, truncate, unlink } from "node:fs/promises";
+import { copyFile, mkdir, rename, stat, truncate, unlink } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
 import { join } from "node:path";
 import { pipeline } from "node:stream";
 
-import { ensureFile, readFile, walk } from "@visulima/fs";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { ensureFile, readFile, remove, walk } from "@visulima/fs";
 import etag from "etag";
 
 import type { HttpError } from "../../utils";
@@ -21,13 +22,13 @@ import LocalMetaStorage from "./local-meta-storage";
  * Local Disk Storage
  */
 class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileReturn> {
-    override checksumTypes = ["md5", "sha1"];
+    public override checksumTypes = ["md5", "sha1"];
 
-    directory: string;
+    public directory: string;
 
-    meta: MetaStorage<TFile>;
+    public meta: MetaStorage<TFile>;
 
-    constructor(public override config: DiskStorageOptions<TFile>) {
+    public constructor(public override config: DiskStorageOptions<TFile>) {
         super(config);
 
         this.directory = config.directory;
@@ -40,10 +41,14 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             this.meta = new LocalMetaStorage(metaConfig);
         }
 
-        this.accessCheck().catch((error) => {
-            this.isReady = false;
-            this.logger?.error("[error]: Could not write to directory: %O", error);
-        });
+        this.isReady = false;
+        this.accessCheck()
+            .then(() => {
+                this.isReady = true;
+            })
+            .catch((error) => {
+                this.logger?.error("Storage access check failed: %O", error);
+            });
     }
 
     public override normalizeError(error: Error): HttpError {
@@ -163,7 +168,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         try {
             const file = await this.getMeta(id);
 
-            await rm(this.getFilePath(file.name), { force: true });
+            await remove(this.getFilePath(file.name), { force: true });
             await this.deleteMeta(id);
 
             return { ...file, status: "deleted" };
@@ -223,14 +228,20 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     protected lazyWrite(part: File & FilePart): Promise<[number, ERRORS?]> {
-        // eslint-disable-next-line compat/compat
         return new Promise((resolve, reject) => {
             const destination = createWriteStream(this.getFilePath(part.name), { flags: "r+", start: part.start });
             const lengthChecker = new StreamLength(part.contentLength || (part.size as number) - part.start);
             const checksumChecker = streamChecksum(part.checksum as string, part.checksumAlgorithm as string);
             const keepPartial = !part.checksum;
-            const failWithCode = (code?: ERRORS): void => {
+
+            const cleanupStreams = (): void => {
                 destination.close();
+                lengthChecker.destroy();
+                checksumChecker.destroy();
+            };
+
+            const failWithCode = (code?: ERRORS): void => {
+                cleanupStreams();
                 resolve([Number.NaN, code]);
             };
 
@@ -241,6 +252,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
             pipeline(part.body, lengthChecker, checksumChecker, destination, (error) => {
                 if (error) {
+                    cleanupStreams();
+
                     return reject(error);
                 }
 
