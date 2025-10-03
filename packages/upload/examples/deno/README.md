@@ -49,6 +49,7 @@ curl http://localhost:3002/files
 ## Permissions
 
 This example requires the following Deno permissions:
+
 - `--allow-net` - Network access
 - `--allow-read` - File system read access
 - `--allow-write` - File system write access

@@ -16,7 +16,7 @@ const storage = new S3Storage({
     onComplete: (file: UploadFile) => console.log("File upload complete: ", file),
 });
 
-const tus = new Tus({ storage })
+const tus = new Tus({ storage });
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
@@ -36,4 +36,3 @@ app.use("/files", tus.handle, (request, response) => {
 });
 
 app.listen(PORT, () => console.log("listening on port:", PORT));
-

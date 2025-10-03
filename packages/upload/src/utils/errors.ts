@@ -78,9 +78,9 @@ export class UploadError extends Error {
 
     public constructor(code: ERRORS = ERRORS.UNKNOWN_ERROR, message?: string, detail?: unknown) {
         super(message || code);
-        this.name = 'UploadError';
+        this.name = "UploadError";
         this.detail = detail;
-        
+
         if (Object.values(ERRORS).includes(code)) {
             this.UploadErrorCode = code;
         }

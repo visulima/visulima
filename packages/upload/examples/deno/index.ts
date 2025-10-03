@@ -1,11 +1,11 @@
-import { Multipart, DiskStorage } from 'npm:@visulima/upload';
+import { Multipart, DiskStorage } from "npm:@visulima/upload";
 
-const PORT = parseInt(Deno.env.get('PORT') || '3002');
+const PORT = parseInt(Deno.env.get("PORT") || "3002");
 
 // Storage configuration
 const storage = new DiskStorage({
-    directory: './uploads',
-    maxUploadSize: '100MB',
+    directory: "./uploads",
+    maxUploadSize: "100MB",
 });
 
 // Multipart handler
@@ -16,62 +16,62 @@ async function handleRequest(request: Request): Promise<Response> {
 
     // Enable CORS
     const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
     };
 
     // Handle preflight requests
-    if (request.method === 'OPTIONS') {
+    if (request.method === "OPTIONS") {
         return new Response(null, { headers: corsHeaders });
     }
 
     try {
         switch (url.pathname) {
-            case '/health':
-                if (request.method === 'GET') {
-                    return new Response(JSON.stringify({ status: 'OK', runtime: 'deno' }), {
-                        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            case "/health":
+                if (request.method === "GET") {
+                    return new Response(JSON.stringify({ status: "OK", runtime: "deno" }), {
+                        headers: { ...corsHeaders, "Content-Type": "application/json" },
                     });
                 }
                 break;
 
-            case '/files':
-                if (request.method === 'GET') {
+            case "/files":
+                if (request.method === "GET") {
                     return await handleListFiles(corsHeaders);
                 }
                 break;
 
-            case '/upload':
-                if (request.method === 'POST') {
+            case "/upload":
+                if (request.method === "POST") {
                     return await handleUpload(request, corsHeaders);
                 }
                 break;
         }
 
-        return new Response(JSON.stringify({ error: 'Not found' }), {
+        return new Response(JSON.stringify({ error: "Not found" }), {
             status: 404,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
     } catch (error: any) {
-        console.error('Request error:', error);
+        console.error("Request error:", error);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
     }
 }
 
 async function handleListFiles(corsHeaders: Record<string, string>): Promise<Response> {
     try {
-        const uploadsDir = './uploads';
+        const uploadsDir = "./uploads";
 
         // Check if uploads directory exists
         try {
             await Deno.stat(uploadsDir);
         } catch {
             return new Response(JSON.stringify({ files: [] }), {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
             });
         }
 
@@ -90,12 +90,12 @@ async function handleListFiles(corsHeaders: Record<string, string>): Promise<Res
         }
 
         return new Response(JSON.stringify({ files }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
     } catch (error: any) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
     }
 }
@@ -103,15 +103,15 @@ async function handleListFiles(corsHeaders: Record<string, string>): Promise<Res
 async function handleUpload(request: Request, corsHeaders: Record<string, string>): Promise<Response> {
     try {
         // Use the fetch multipart handler
-        const { fetchMultipartHandler } = await import('npm:@visulima/upload/fetch');
+        const { fetchMultipartHandler } = await import("npm:@visulima/upload/fetch");
 
         const handler = fetchMultipartHandler({ storage });
         return await handler(request);
     } catch (error: any) {
-        console.error('Upload error:', error);
+        console.error("Upload error:", error);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
     }
 }

@@ -32,6 +32,6 @@ const minio = (parameters?: CreateMinioClientParameters) => {
         forcePathStyle: true,
         region,
     });
-}
+};
 
 export default minio;
