@@ -1,5 +1,4 @@
-
-import type { BlobItem , ContainerClient} from "@azure/storage-blob";
+import type { BlobItem, ContainerClient } from "@azure/storage-blob";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 
@@ -55,24 +54,24 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
         this.containerClient = this.client.getContainerClient(metaConfig.containerName);
     }
 
-    public async get(id: string): Promise<T> {
+    public override async get(id: string): Promise<T> {
         const blobClient = this.containerClient.getBlobClient(this.getMetaName(id));
         const buffer = await blobClient.downloadToBuffer();
 
         return JSON.parse(buffer.toString());
     }
 
-    public async touch(id: string, file: T): Promise<T> {
+    public override async touch(id: string, file: T): Promise<T> {
         return this.save(id, file);
     }
 
-    public async delete(id: string): Promise<void> {
+    public override async delete(id: string): Promise<void> {
         const blobClient = this.containerClient.getBlockBlobClient(this.getMetaName(id));
 
         await blobClient.deleteIfExists();
     }
 
-    public async save(id: string, file: T): Promise<T> {
+    public override async save(id: string, file: T): Promise<T> {
         const blobClient = this.containerClient.getBlockBlobClient(this.getMetaName(id));
         const buffer = Buffer.from(JSON.stringify(file));
 
@@ -87,7 +86,6 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
             prefix: this.prefix,
         });
 
-        // eslint-disable-next-line no-restricted-syntax
         for await (const blob of iterator) {
             blobs.push(blob);
         }

@@ -5,7 +5,7 @@ import { metafile } from "../__helpers__/config";
 
 const notImplementedMessage = "Not implemented";
 
-describe("MetaStorage", () => {
+describe(MetaStorage, () => {
     const metaStorage = new MetaStorage();
 
     it("has props", () => {
@@ -18,10 +18,10 @@ describe("MetaStorage", () => {
     });
 
     it("get", async () => {
-        await expect(metaStorage.get(metafile.id)).rejects.toThrowError(notImplementedMessage);
+        await expect(metaStorage.get(metafile.id)).rejects.toThrow(notImplementedMessage);
     });
 
     it("delete", async () => {
-        await expect(metaStorage.delete(metafile.id)).rejects.toThrowError(notImplementedMessage);
+        await expect(metaStorage.delete(metafile.id)).rejects.toThrow(notImplementedMessage);
     });
 });

@@ -59,17 +59,17 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                     operationId: `${pathHash}MultipartCancel`,
                     parameters: [
                         {
-                            // eslint-disable-next-line radar/no-duplicate-string
+                            
                             $ref: "#/components/parameters/UploadIDinPath",
                         },
                     ],
                     responses: {
                         204: {
-                            // eslint-disable-next-line radar/no-duplicate-string
+                            
                             description: "No Content",
                         },
                     },
-                    // eslint-disable-next-line radar/no-duplicate-string
+                    
                     summary: "Cancel upload",
                     tags,
                 },
@@ -92,7 +92,7 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                                         },
                                         metadata: {
                                             description: "JSON stringifies metadata",
-                                            example: '{ "name": "video.mp4", "mimeType": "video/mp4", "size": 741, "lastModified": 1631750105530 }',
+                                            example: "{ \"name\": \"video.mp4\", \"mimeType\": \"video/mp4\", \"size\": 741, \"lastModified\": 1631750105530 }",
                                             type: "string",
                                         },
                                     },
@@ -108,16 +108,16 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                             description: "The file already exists, send a resume request",
                             headers: {
                                 ETag: {
-                                    // eslint-disable-next-line radar/no-duplicate-string
+                                    
                                     description: "Upload ETag",
                                     schema: {
-                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        
                                         example: "d41d8cd98f00b204e9800998ecf8427e",
                                         type: "string",
                                     },
                                 },
                                 Location: {
-                                    // eslint-disable-next-line radar/no-duplicate-string
+                                    
                                     description: "Resumable URI",
                                     schema: {
                                         // eslint-disable-next-line no-secrets/no-secrets
@@ -127,10 +127,10 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                                     },
                                 },
                                 "X-Upload-Expires": {
-                                    // eslint-disable-next-line radar/no-duplicate-string
+                                    
                                     description: "Upload expiration date",
                                     schema: {
-                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        
                                         example: "2021-08-25T11:12:26.635Z",
                                         format: "date-time",
                                         type: "string",
@@ -142,10 +142,10 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                             description: "Upload accepted, send the file contents",
                             headers: {
                                 ETag: {
-                                    // eslint-disable-next-line radar/no-duplicate-string
+                                    
                                     description: "Upload ETag",
                                     schema: {
-                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        
                                         example: "d41d8cd98f00b204e9800998ecf8427e",
                                         type: "string",
                                     },
@@ -171,7 +171,7 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                         },
                         400: {
                             content: {
-                                // eslint-disable-next-line radar/no-duplicate-string
+                                
                                 "application/json": {
                                     example: {
                                         error: {
@@ -181,7 +181,7 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                                         },
                                     },
                                     schema: {
-                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        
                                         $ref: "#/components/schemas/Error",
                                     },
                                 },
@@ -265,7 +265,7 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                             description: "Error",
                         },
                     },
-                    // eslint-disable-next-line radar/no-duplicate-string
+                    
                     summary: "Create upload",
                     tags,
                 },

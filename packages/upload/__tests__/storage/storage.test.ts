@@ -1,13 +1,11 @@
-import {
-    describe, expect, it, vi,
-} from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { Logger } from "../../src/utils";
 import { metafile } from "../__helpers__/config";
 import MockLogger from "../__helpers__/mock-logger";
 import TestStorage from "../__helpers__/storage/test-storage";
 
-describe("BaseStorage", () => {
+describe("baseStorage", () => {
     let storage;
 
     it("should set maxUploadSize", () => {
@@ -16,15 +14,16 @@ describe("BaseStorage", () => {
         expect(storage.maxUploadSize).toBe(5_497_558_138_880);
     });
 
-    it("should validate", () => {
+    it("should validate", async () => {
         storage = new TestStorage();
 
-        return expect(storage.validate(metafile)).resolves.toBeUndefined();
+        await expect(storage.validate(metafile)).resolves.toBeUndefined();
     });
 
-    it("should validate error", () => {
+    it("should validate error", async () => {
         storage = new TestStorage();
-        return expect(storage.validate({ ...metafile, name: "../file.ext" })).rejects.toHaveProperty("statusCode");
+
+        await expect(storage.validate({ ...metafile, name: "../file.ext" })).rejects.toHaveProperty("statusCode");
     });
 
     it("should check if expired", async () => {
@@ -42,6 +41,7 @@ describe("BaseStorage", () => {
 
         storage = new TestStorage({ logger });
 
+        expect(consoleDebugMock).toHaveBeenCalledTimes(1);
         expect(consoleDebugMock).toHaveBeenCalledWith("TestStorage config: { logger: [class MockLogger] }");
 
         consoleDebugMock.mockRestore();
@@ -55,6 +55,7 @@ describe("BaseStorage", () => {
         storage = new TestStorage({ logger: console });
         (storage.logger as Logger).debug("some", "value");
 
+        expect(consoleDebugMock).toHaveBeenCalledTimes(2);
         expect(consoleDebugMock).toHaveBeenCalledWith("some", "value");
 
         consoleDebugMock.mockRestore();

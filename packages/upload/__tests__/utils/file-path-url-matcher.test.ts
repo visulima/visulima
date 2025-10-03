@@ -33,8 +33,8 @@ describe("utils", () => {
         });
 
         it("should not match", () => {
-            expect(matcher("/files")).toBeFalsy();
-            expect(matcher("/files/")).toBeFalsy();
+            expect(matcher("/files")).toBe(false);
+            expect(matcher("/files/")).toBe(false);
         });
     });
 });

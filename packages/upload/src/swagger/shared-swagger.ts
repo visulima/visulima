@@ -35,7 +35,7 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
         responses: {
             200: {
                 content: {
-                    // eslint-disable-next-line radar/no-duplicate-string
+                    
                     "application/json": {
                         examples: {
                             Default: {
@@ -46,7 +46,7 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                             },
                         },
                         schema: {
-                            // eslint-disable-next-line radar/no-duplicate-string
+                            
                             $ref: "#/components/schemas/FileMeta",
                         },
                     },
@@ -57,7 +57,7 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                 content: {
                     "application/json": {
                         schema: {
-                            // eslint-disable-next-line radar/no-duplicate-string
+                            
                             $ref: "#/components/schemas/Error",
                         },
                     },
@@ -65,7 +65,7 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                 description: "Error",
             },
         },
-        // eslint-disable-next-line radar/no-duplicate-string
+        
         summary: "List upload",
         tags,
     };
@@ -90,29 +90,29 @@ export const sharedGet = (operationId: string, tags: string[] | undefined): Open
                 description: "OK",
                 headers: {
                     ETag: {
-                        // eslint-disable-next-line radar/no-duplicate-string
+                        
                         description: "Upload ETag",
                         schema: {
-                            // eslint-disable-next-line radar/no-duplicate-string
+                            
                             example: "d41d8cd98f00b204e9800998ecf8427e",
                             type: "string",
                         },
                     },
                     "Last-Modified": {
-                        // eslint-disable-next-line radar/no-duplicate-string
+                        
                         description: "Upload last modified date",
                         schema: {
-                            // eslint-disable-next-line radar/no-duplicate-string
+                            
                             example: "2021-08-25T11:12:26.635Z",
                             format: "date-time",
                             type: "string",
                         },
                     },
                     "X-Upload-Expires": {
-                        // eslint-disable-next-line radar/no-duplicate-string
+                        
                         description: "Upload expiration date",
                         schema: {
-                            // eslint-disable-next-line radar/no-duplicate-string
+                            
                             example: "2021-08-25T11:12:26.635Z",
                             format: "date-time",
                             type: "string",

@@ -1,47 +1,41 @@
 import { rm } from "node:fs/promises";
-import {
-    afterAll, beforeAll, describe, expect, it,
-} from "vitest";
 import { join } from "node:path";
-import supertest from "supertest";
 
-import Tus, {
-    parseMetadata, serializeMetadata, TUS_RESUMABLE, TUS_VERSION,
-} from "../../../src/handler/tus";
+import supertest from "supertest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+
+import Tus, { serializeMetadata, TUS_RESUMABLE, TUS_VERSION } from "../../../src/handler/tus";
 import DiskStorage from "../../../src/storage/local/disk-storage";
-import {
-    metadata, metafile, storageOptions, testfile, testRoot,
-} from "../../__helpers__/config";
+import { metadata, metafile, storageOptions, testfile, testRoot } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
 
-jest.mock("fs/promises", () => {
-    // eslint-disable-next-line unicorn/prefer-module
+vi.mock("fs/promises", () => {
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
     return fs.promises;
 });
 
-jest.mock("fs", () => {
-    // eslint-disable-next-line unicorn/prefer-module
+vi.mock("fs", () => {
     const process = require("node:process");
+
     process.chdir("/");
 
-    // eslint-disable-next-line unicorn/prefer-module
     const { fs } = require("memfs");
 
     return fs;
 });
 
-const exposedHeaders = (response: supertest.Response): string[] => response
-    .get("Access-Control-Expose-Headers")
-    .split(",")
-    .map((s) => s.toLowerCase());
+const exposedHeaders = (response: supertest.Response): string[] =>
+    response
+        .get("Access-Control-Expose-Headers")
+        .split(",")
+        .map((s) => s.toLowerCase());
 
-describe("HTTP Tus", () => {
+describe("hTTP Tus", () => {
     let response: supertest.Response;
     let uri = "";
 
@@ -50,27 +44,26 @@ describe("HTTP Tus", () => {
     const options = { ...storageOptions, directory };
     const tus = new Tus({ storage: new DiskStorage(options) });
 
-    app.use(basePath, async (req, res) => {
+    app.use(basePath, async (request, res) => {
         const handler = await import("../../../src/http/tus");
         const httpTusHandler = handler.default;
 
         const tusHandler = httpTusHandler({ storage: new DiskStorage(options) });
-        await tusHandler(req, res);
+
+        await tusHandler(request, res);
     });
 
     function create(): supertest.Test {
-        return (
-            supertest(app)
-                .post(basePath)
-                .set("Upload-Metadata", serializeMetadata(metadata))
-                .set("Upload-Length", metadata.size.toString())
-                .set("Tus-Resumable", TUS_RESUMABLE)
-        );
+        return supertest(app)
+            .post(basePath)
+            .set("Upload-Metadata", serializeMetadata(metadata))
+            .set("Upload-Length", metadata.size.toString())
+            .set("Tus-Resumable", TUS_RESUMABLE);
     }
 
     beforeAll(async () => {
         try {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -78,7 +71,7 @@ describe("HTTP Tus", () => {
 
     afterAll(async () => {
         try {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { force: true, recursive: true });
         } catch {
             // ignore if directory doesn't exist
         }
@@ -90,7 +83,7 @@ describe("HTTP Tus", () => {
         });
     });
 
-    describe("POST", () => {
+    describe("pOST", () => {
         it("should 201", async () => {
             response = await create().expect("tus-resumable", TUS_RESUMABLE);
 
@@ -101,7 +94,7 @@ describe("HTTP Tus", () => {
         });
     });
 
-    describe("PATCH", () => {
+    describe("pATCH", () => {
         it("should 204 and Upload-Offset", async () => {
             const test = await create();
 
@@ -142,7 +135,7 @@ describe("HTTP Tus", () => {
         });
     });
 
-    describe("HEAD", () => {
+    describe("hEAD", () => {
         it("should 200", async () => {
             const test = await create();
 
@@ -171,7 +164,7 @@ describe("HTTP Tus", () => {
         });
     });
 
-    describe("OPTIONS", () => {
+    describe("oPTIONS", () => {
         it("should 204", async () => {
             response = await supertest(app).options(basePath).set("Tus-Resumable", TUS_RESUMABLE);
 
@@ -189,7 +182,7 @@ describe("HTTP Tus", () => {
         });
     });
 
-    describe("DELETE", () => {
+    describe("dELETE", () => {
         it("should 204", async () => {
             const test = await create();
 
@@ -209,7 +202,7 @@ describe("HTTP Tus", () => {
         });
     });
 
-    describe("POST (creation-with-upload)", () => {
+    describe("pOST (creation-with-upload)", () => {
         it("should return upload-offset", async () => {
             response = await supertest(app)
                 .post(basePath)

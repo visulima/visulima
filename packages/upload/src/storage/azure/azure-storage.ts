@@ -1,10 +1,9 @@
-
 import type { IncomingMessage } from "node:http";
 
-import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse, BlobItem , ContainerClient} from "@azure/storage-blob";
+import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse, BlobItem, ContainerClient } from "@azure/storage-blob";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
-import normalize from "normalize-path";
+import { normalize } from "@visulima/path";
 
 import { ERRORS, throwErrorCode } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
@@ -26,7 +25,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     protected meta: MetaStorage<AzureFile>;
 
     // eslint-disable-next-line radar/cognitive-complexity
-    constructor(public config: AzureStorageOptions) {
+    constructor(public override config: AzureStorageOptions) {
         super(config);
 
         // Container name is required
@@ -54,6 +53,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
             }
 
             const signedCredentials = new StorageSharedKeyCredential(accountName as string, accountKey as string);
+
             this.client = new BlobServiceClient(config.endpoint ?? `https://${accountName}.blob.core.windows.net`, signedCredentials);
         }
 
@@ -217,9 +217,9 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
         const { contentLength, contentType, etag, expiresOn, lastModified, metadata } = response;
 
         return {
-            ETag: etag,
             content: await blobClient.downloadToBuffer(),
             contentType: contentType as string,
+            ETag: etag,
             expiredAt: expiresOn,
             id,
             metadata: (metadata as Record<string, string>) || {},
@@ -235,10 +235,11 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
         const target = this.containerClient.getBlockBlobClient(this.getFullPath(destination));
 
         const poller = await target.beginCopyFromURL(source.url);
+
         return poller.pollUntilDone();
     }
 
-    public async list(limit = 1000): Promise<AzureFile[]> {
+    public override async list(limit = 1000): Promise<AzureFile[]> {
         const files: AzureFile[] = [];
 
         // Declare truncated as a flag that the while loop is based on.

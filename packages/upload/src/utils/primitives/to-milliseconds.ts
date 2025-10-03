@@ -12,7 +12,13 @@ const toMilliseconds = (value: number | string | undefined): number | null => {
         return null;
     }
 
-    return parseDuration(value as string, "ms");
+    const parsed = parseDuration(value as string);
+
+    if (parsed === undefined) {
+        return null;
+    }
+
+    return parsed;
 };
 
 export default toMilliseconds;

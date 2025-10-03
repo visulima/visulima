@@ -1,23 +1,22 @@
 import MetaStorage from "../../../src/storage/meta-storage";
 import BaseStorage from "../../../src/storage/storage";
-import type { BaseStorageOptions } from "../../../src/storage/types.d";
-import type { FileInit, FilePart, FileQuery } from "../../../src/storage/utils/file";
-import { File } from "../../../src/storage/utils/file";
+import type { BaseStorageOptions } from "../../../src/storage/types";
+import type { File, FileInit, FilePart, FileQuery } from "../../../src/storage/utils/file";
 
 class TestStorage<TFile extends File = File> extends BaseStorage<TFile> {
     path = "/files";
 
-    isReady = true;
+    override isReady = true;
 
     meta = new MetaStorage<TFile>();
 
-    constructor(config = {} as BaseStorageOptions<TFile> & { directory: string}) {
+    constructor(config = {} as BaseStorageOptions<TFile> & { directory: string }) {
         super(config);
     }
 
     // eslint-disable-next-line class-methods-use-this
-    public async get({ id }: FileQuery): Promise<TFile> {
-        return { id, content: Buffer.from([]), contentType: "application/json" } as TFile;
+    public override async get({ id }: FileQuery): Promise<TFile> {
+        return { content: Buffer.from([]), contentType: "application/json", id } as TFile;
     }
 
     // eslint-disable-next-line class-methods-use-this

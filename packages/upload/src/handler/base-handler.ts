@@ -8,27 +8,15 @@ import mime from "mime";
 
 import type BaseStorage from "../storage/storage";
 import type { UploadFile } from "../storage/utils/file";
-import type { ErrorResponses, HttpError, IncomingMessageWithBody, Logger, ResponseBodyType,     UploadError,UploadResponse } from "../utils";
-import {
-    ErrorMap,
-    ERRORS,
-    filePathUrlMatcher,
-    getBaseUrl,
-    getRealPath,
-    isUploadError,
-    isValidationError,
-    pick,
-    setHeaders,
-    uuidRegex,
-} from "../utils";
+import type { ErrorResponses, HttpError, IncomingMessageWithBody, Logger, ResponseBodyType, UploadError, UploadResponse } from "../utils";
+import { ErrorMap, ERRORS, filePathUrlMatcher, getBaseUrl, getRealPath, isUploadError, isValidationError, pick, setHeaders, uuidRegex } from "../utils";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "./types";
 
 const CONTENT_TYPE = "Content-Type";
 
 abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMessage = IncomingMessage, Response extends ServerResponse = ServerResponse>
     extends EventEmitter
-    implements MethodHandler<Request, Response>
-{
+    implements MethodHandler<Request, Response> {
     /**
      * Limiting enabled http method handler
      * @example
@@ -43,7 +31,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
 
     public storage: BaseStorage<TFile>;
 
-    protected registeredHandlers = new Map<string, AsyncHandler>();
+    protected registeredHandlers = new Map<string, AsyncHandler<Request, Response>>();
 
     protected logger?: Logger;
 
@@ -88,7 +76,6 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
     };
 
     protected assembleErrors = (customErrors = {}): void => {
-
         this.internalErrorResponses = {
             ...ErrorMap,
 
@@ -138,7 +125,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
                     if ((file as ResponseFile<TFile>).content !== undefined) {
                         body = (file as ResponseFile<TFile>).content as Buffer;
                     } else if (typeof file === "object" && "data" in file) {
-                        body = (file).data;
+                        body = file.data;
                     }
 
                     if (typeof next === "function") {
@@ -184,9 +171,9 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
                         this.send(response, {
                             headers: {
                                 ...headers,
-                                ...((file as TFile).hash === undefined
+                                ...(file as TFile).hash === undefined
                                     ? {}
-                                    : { [`X-Range-${(file as TFile).hash?.algorithm.toUpperCase()}`]: (file as TFile).hash?.value }),
+                                    : { [`X-Range-${(file as TFile).hash?.algorithm.toUpperCase()}`]: (file as TFile).hash?.value },
                             } as Record<string, string>,
                             statusCode,
                         });
@@ -227,9 +214,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
     /**
      * @param {Request} request
      * @param {Response}response
-     *
      * @throws {UploadError}
-     *
      * @returns {Promise<ResponseFile<TFile> | PaginationResult<TFile> | TFile[]>}
      */
     public async get(request: Request, response: Response): Promise<ResponseFile<TFile> | ResponseList<TFile>>;
@@ -256,9 +241,9 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
                     headers: {
                         "Content-Length": String(size),
                         "Content-Type": contentType,
-                        ...(expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() }),
-                        ...(modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() }),
-                        ...(ETag === undefined ? {} : { ETag }),
+                        ...expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() },
+                        ...modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() },
+                        ...ETag === undefined ? {} : { ETag },
                     } as Record<string, string>,
                     statusCode: 200,
                     ...file,

@@ -3,8 +3,8 @@ import { pipeline } from "node:stream";
 
 import { ensureFile, ERRORS, RangeHasher, removeFile, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
 import { fsp } from "../../utils/fs";
-import type { DiskStorageWithChecksumOptions } from "../types.d";
-import type { File,FilePart, FileQuery } from "../utils/file";
+import type { DiskStorageWithChecksumOptions } from "../types";
+import type { File, FilePart, FileQuery } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import DiskStorage from "./disk-storage";
 
@@ -31,7 +31,6 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
             await this.deleteMeta(id);
 
             return { ...file, status: "deleted" };
-
         } catch (error) {
             this.logger?.error("[error]: Could not delete file: %O", error);
         }
@@ -59,7 +58,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
         const path = this.getFilePath(file.name);
 
         try {
-            file.bytesWritten = (part as FilePart).start || (await ensureFile(path));
+            file.bytesWritten = (part as FilePart).start || await ensureFile(path);
 
             await this.hashes.init(path);
 

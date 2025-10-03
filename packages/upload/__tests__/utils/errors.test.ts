@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import {
-    ErrorMap, ERRORS, isUploadError, throwErrorCode, UploadError,
-} from "../../src/utils/errors";
+import { ErrorMap, ERRORS, isUploadError, throwErrorCode, UploadError } from "../../src/utils/errors";
 
 describe("utils", () => {
     describe("errors", () => {
-        it("ErrorMap", () => {
-            expect(Object.keys(ERRORS).length).toEqual(Object.keys(ErrorMap).length);
+        it("errorMap", () => {
+            expect(Object.keys(ERRORS)).toHaveLength(Object.keys(ErrorMap).length);
         });
 
         it("isUploadError", () => {
@@ -17,7 +15,7 @@ describe("utils", () => {
         });
 
         it("throwErrorCode", () => {
-            expect(() => throwErrorCode("BadRequest")).toThrowError(UploadError);
+            expect(() => throwErrorCode("BadRequest")).toThrow(UploadError);
         });
     });
 });

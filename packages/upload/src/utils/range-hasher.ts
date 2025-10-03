@@ -4,15 +4,16 @@ import { createReadStream } from "node:fs";
 import { LRUCache as Cache } from "lru-cache";
 
 import RangeChecksum from "./range-checksum";
-import type { RangeChecksum as IRangeChecksum } from "./types.d";
+import type { RangeChecksum as IRangeChecksum, RangeHasher as IRangeHasher } from "./types";
 
-class RangeHasher extends Cache<string, Hash> {
+class RangeHasher extends Cache<string, Hash, number> {
     public constructor(
         public algorithm: "md5" | "sha1" = "sha1",
-        options?: Cache.Options<string, Hash>,
+        options?: Cache.Options<string, Hash, number>,
     ) {
         super({
             ttl: 1000,
+            ttlAutopurge: true,
             ...options,
         });
     }
@@ -30,10 +31,9 @@ class RangeHasher extends Cache<string, Hash> {
     }
 
     digester(path: string): IRangeChecksum {
-        return new RangeChecksum(this, path);
+        return new RangeChecksum(this as IRangeHasher, path);
     }
 
-    // eslint-disable-next-line default-param-last
     public async updateFromFs(path: string, start = 0, initial?: Hash): Promise<Hash> {
         const hash = await this.fromFs(path, start, initial);
 
@@ -42,7 +42,6 @@ class RangeHasher extends Cache<string, Hash> {
         return hash;
     }
 
-    // eslint-disable-next-line default-param-last
     private fromFs(path: string, start = 0, initial?: Hash): Promise<Hash> {
         // eslint-disable-next-line compat/compat
         return new Promise((resolve, reject) => {

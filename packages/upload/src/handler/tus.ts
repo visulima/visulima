@@ -1,5 +1,6 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+
 import createHttpError from "http-errors";
-import { IncomingMessage, ServerResponse } from "node:http";
 import typeis from "type-is";
 
 import type { Checksum, FileInit, UploadFile } from "../storage/utils/file";
@@ -7,7 +8,7 @@ import { Metadata } from "../storage/utils/file";
 import type { Headers, UploadResponse } from "../utils";
 import { getHeader, getIdFromRequest } from "../utils";
 import BaseHandler from "./base-handler";
-import type { Handlers, ResponseFile } from "./types.d";
+import type { Handlers, ResponseFile } from "./types";
 
 const TUS_RESUMABLE_VERSION = "1.0.0";
 const TUS_VERSION_VERSION = "1.0.0";
@@ -58,18 +59,18 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
      */
     public override async options(): Promise<ResponseFile<TFile>> {
         const headers = {
-            "Tus-Version": TUS_VERSION_VERSION,
+            "Access-Control-Allow-Headers":
+
+                "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
+            "Access-Control-Allow-Methods": Tus.methods.map((method) => method.toUpperCase()).join(", "),
+            "Access-Control-Max-Age": 86_400,
+            "Tus-Checksum-Algorithm": this.storage.checksumTypes.toString(),
             "Tus-Extension": this.storage.tusExtension.toString(),
             "Tus-Max-Size": this.storage.maxUploadSize,
-            "Tus-Checksum-Algorithm": this.storage.checksumTypes.toString(),
-            "Access-Control-Allow-Methods": Tus.methods.map((method) => method.toUpperCase()).join(", "),
-            "Access-Control-Allow-Headers":
-                // eslint-disable-next-line max-len
-                "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
-            "Access-Control-Max-Age": 86_400,
+            "Tus-Version": TUS_VERSION_VERSION,
         };
 
-        return { statusCode: 204, headers: headers as Record<string, string | number> } as ResponseFile<TFile>;
+        return { headers: headers as Record<string, string | number>, statusCode: 204 } as ResponseFile<TFile>;
     }
 
     /**
@@ -83,8 +84,8 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
         const uploadDeferLength = request.headers["upload-defer-length"] as string | undefined;
 
         if (
-            uploadDeferLength !== undefined && // Throw error if extension is not supported
-            !this.storage.tusExtension.includes("creation-defer-length")
+            uploadDeferLength !== undefined // Throw error if extension is not supported
+            && !this.storage.tusExtension.includes("creation-defer-length")
         ) {
             throw createHttpError(501, "creation-defer-length extension is not (yet) supported.");
         }
@@ -110,9 +111,9 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
 
             file = await this.storage.write({
                 ...file,
-                start: 0,
                 body: request,
                 contentLength,
+                start: 0,
             });
         }
 
@@ -121,9 +122,9 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
         // The Upload-Expires response header indicates the time after which the unfinished upload expires.
         // If expiration is known at creation time, Upload-Expires header MUST be included in the response
         if (
-            this.storage.tusExtension.includes("expiration") &&
-            typeof file.expiredAt === "number" &&
-            file.bytesWritten !== Number.parseInt(uploadLength as string, 10)
+            this.storage.tusExtension.includes("expiration")
+            && typeof file.expiredAt === "number"
+            && file.bytesWritten !== Number.parseInt(uploadLength as string, 10)
         ) {
             headers = { "Upload-Expires": new Date(file.expiredAt).toUTCString() };
         }
@@ -131,13 +132,12 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
         headers = { ...headers, ...this.buildHeaders(file, { Location: this.buildFileUrl(request, file) }) };
 
         if (file.bytesWritten > 0) {
-            // eslint-disable-next-line no-param-reassign
             headers["Upload-Offset"] = file.bytesWritten;
         }
 
         const statusCode = file.bytesWritten > 0 ? 200 : 201;
 
-        return { ...file, statusCode, headers: headers as Record<string, string | number> };
+        return { ...file, headers: headers as Record<string, string | number>, statusCode };
     }
 
     /**
@@ -153,7 +153,7 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
             const metadata = metadataHeader && parseMetadata(metadataHeader);
 
             if (metadata) {
-                await this.storage.update({ id }, { metadata, id });
+                await this.storage.update({ id }, { id, metadata });
             }
 
             // The request MUST include a Upload-Offset header
@@ -168,15 +168,15 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
 
             const start = Number.parseInt(getHeader(request, "upload-offset"), 10);
             const contentLength = Number(getHeader(request, "content-length"));
-            const { checksumAlgorithm, checksum } = this.extractChecksum(request);
+            const { checksum, checksumAlgorithm } = this.extractChecksum(request);
 
             let file = await this.storage.write({
-                start,
-                id,
                 body: request,
-                contentLength,
-                checksumAlgorithm,
                 checksum,
+                checksumAlgorithm,
+                contentLength,
+                id,
+                start,
             });
 
             // The request MUST validate upload-length related headers
@@ -187,6 +187,7 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
                 if (!this.storage.tusExtension.includes("creation-defer-length")) {
                     throw createHttpError(501, "creation-defer-length extension is not (yet) supported.");
                 }
+
                 // Throw error if upload-length is already set.
                 if (file.size !== undefined) {
                     throw createHttpError(412, "Upload-Length or Upload-Defer-Length header required");
@@ -203,11 +204,11 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
 
             return {
                 ...file,
-                statusCode: file.status === "completed" ? 200 : 204,
                 headers: this.buildHeaders(file, {
                     "Upload-Offset": file.bytesWritten,
-                    // eslint-disable-next-line radar/no-duplicate-string
+                    
                 }) as Record<string, string | number>,
+                statusCode: file.status === "completed" ? 200 : 204,
             };
         } catch (error: any) {
             this.checkForUndefinedIdOrPath(error);
@@ -226,27 +227,27 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
             const file = await this.storage.getMeta(id);
 
             const headers = {
-                ...(typeof file.size === "number" && !Number.isNaN(file.size)
+                ...typeof file.size === "number" && !Number.isNaN(file.size)
                     ? {
-                          // If the size of the upload is known, the Server MUST include
-                          // the Upload-Length header in the response.
-                          "Upload-Length": file.size,
-                      }
+                        // If the size of the upload is known, the Server MUST include
+                        // the Upload-Length header in the response.
+                        "Upload-Length": file.size,
+                    }
                     : {
-                          // As long as the length of the upload is not known, the Server
-                          // MUST set Upload-Defer-Length: 1 in all responses to HEAD requests.
-                          "Upload-Defer-Length": "1",
-                      }),
+                        // As long as the length of the upload is not known, the Server
+                        // MUST set Upload-Defer-Length: 1 in all responses to HEAD requests.
+                        "Upload-Defer-Length": "1",
+                    },
                 ...this.buildHeaders(file, {
+                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                    "Upload-Metadata": serializeMetadata(file.metadata),
                     // The Server MUST always include the Upload-Offset header in
                     // the response for a HEAD request, even if the offset is 0
                     "Upload-Offset": file.bytesWritten,
-                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                    "Upload-Metadata": serializeMetadata(file.metadata),
                 }),
             };
 
-            return { statusCode: 200, headers: headers as Record<string, string> } as ResponseFile<TFile>;
+            return { headers: headers as Record<string, string>, statusCode: 200 } as ResponseFile<TFile>;
         } catch (error: any) {
             this.checkForUndefinedIdOrPath(error);
 
@@ -264,14 +265,14 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
             const file = await this.storage.delete({ id });
 
             if (file.status === undefined) {
-                // eslint-disable-next-line radar/no-duplicate-string
+                
                 throw createHttpError(404, "File not found");
             }
 
             return {
                 ...file,
-                statusCode: 204,
                 headers: {} as Record<string, string>,
+                statusCode: 204,
             } as ResponseFile<TFile>;
         } catch (error: any) {
             this.checkForUndefinedIdOrPath(error);
@@ -284,14 +285,14 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
         }
     }
 
-    public override send(response: Response, { statusCode = 200, headers = {}, body = "" }: UploadResponse): void {
+    public override send(response: Response, { body = "", headers = {}, statusCode = 200 }: UploadResponse): void {
         super.send(response, {
-            statusCode,
+            body,
             headers: {
                 ...headers,
                 "Tus-Resumable": TUS_RESUMABLE_VERSION,
             },
-            body,
+            statusCode,
         });
     }
 
@@ -299,10 +300,9 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
     private extractChecksum(request: Request): Checksum {
         const [checksumAlgorithm, checksum] = getHeader(request, "upload-checksum").split(/\s+/).filter(Boolean);
 
-        return { checksumAlgorithm, checksum };
+        return { checksum, checksumAlgorithm };
     }
 
-    // eslint-disable-next-line class-methods-use-this
     private buildHeaders(file: UploadFile, headers: Headers = {}): Headers {
         if (this.storage.tusExtension.includes("expiration") && file.expiredAt !== undefined) {
             // eslint-disable-next-line no-param-reassign
@@ -314,7 +314,7 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
 
     // eslint-disable-next-line class-methods-use-this
     private checkForUndefinedIdOrPath(error: any): void {
-        if (["Path is undefined", "Id is undefined"].includes(error.message)) {
+        if (["Id is undefined", "Path is undefined"].includes(error.message)) {
             throw createHttpError(404, "File not found");
         }
     }
@@ -323,17 +323,15 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
 export const TUS_RESUMABLE = TUS_RESUMABLE_VERSION;
 export const TUS_VERSION = TUS_VERSION_VERSION;
 
-export const serializeMetadata = (object: Metadata): string => {
-    return Object.entries(object)
-        .map(([key, value]) => {
-            if (value === undefined) {
-                return key;
-            }
+export const serializeMetadata = (object: Metadata): string => Object.entries(object)
+    .map(([key, value]) => {
+        if (value === undefined) {
+            return key;
+        }
 
-            return `${key} ${Buffer.from(String(value)).toString("base64")}`;
-        })
-        .toString();
-}
+        return `${key} ${Buffer.from(String(value)).toString("base64")}`;
+    })
+    .toString();
 
 export const parseMetadata = (encoded = ""): Metadata => {
     const kvPairs = encoded.split(",").map((kv) => kv.split(" "));
@@ -346,6 +344,6 @@ export const parseMetadata = (encoded = ""): Metadata => {
     });
 
     return metadata;
-}
+};
 
 export default Tus;

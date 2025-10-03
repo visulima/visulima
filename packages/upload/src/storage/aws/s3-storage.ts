@@ -1,4 +1,3 @@
-
 import type { IncomingMessage } from "node:http";
 import { resolve } from "node:path";
 
@@ -30,7 +29,7 @@ import { fromIni } from "@aws-sdk/credential-providers";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { HttpHandlerOptions, SdkStream } from "@aws-sdk/types";
-import { parse } from "bytes";
+import { parseBytes } from "@visulima/humanizer";
 
 import type { HttpError } from "../../utils";
 import { ERRORS, mapValues, throwErrorCode, toSeconds } from "../../utils";
@@ -41,7 +40,7 @@ import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, isExpired, partMatch, updateSize } from "../utils/file";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
-import type { AwsError, S3StorageOptions } from "./types.d";
+import type { AwsError, S3StorageOptions } from "./types";
 
 const MIN_PART_SIZE = 5 * 1024 * 1024;
 const PART_SIZE = 16 * 1024 * 1024;
@@ -74,11 +73,11 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
     protected meta: MetaStorage<S3File>;
 
-    public checksumTypes = ["md5"];
+    public override checksumTypes = ["md5"];
 
     private readonly partSize = PART_SIZE;
 
-    constructor(public config: S3StorageOptions) {
+    public constructor(public override config: S3StorageOptions) {
         super(config);
 
         const { bucket = process.env.S3_BUCKET, region = process.env.S3_REGION } = config;
@@ -103,7 +102,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             config.credentials = fromIni({ configFilepath: keyFile });
         }
 
-        this.partSize = parse(this.config.partSize || PART_SIZE);
+        this.partSize = typeof this.config.partSize === "string" ? parseBytes(this.config.partSize) : this.config.partSize || PART_SIZE;
 
         if (this.partSize < MIN_PART_SIZE) {
             throw new Error("Minimum allowed partSize value is 5MB");
@@ -140,7 +139,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         });
     }
 
-    public normalizeError(error: AwsError): HttpError {
+    public override normalizeError(error: AwsError): HttpError {
         if (error.$metadata) {
             return {
                 code: error.Code || error.name,
@@ -301,7 +300,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         return { id } as S3File;
     }
 
-    public async update({ id }: FileQuery, metadata: Partial<S3File>): Promise<S3File> {
+    public override async update({ id }: FileQuery, metadata: Partial<S3File>): Promise<S3File> {
         if (this.config.clientDirectUpload) {
             const file = await this.getMeta(id);
 
@@ -331,7 +330,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
     }
 
     // eslint-disable-next-line radar/cognitive-complexity
-    public async list(limit = 1000): Promise<S3File[]> {
+    public override async list(limit = 1000): Promise<S3File[]> {
         let parameters: ListObjectsV2CommandInput = {
             Bucket: this.bucket,
             MaxKeys: limit,
@@ -346,7 +345,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
                 // eslint-disable-next-line no-await-in-loop
                 const response = await this.client.send(new ListObjectsV2Command(parameters));
 
-                // eslint-disable-next-line no-restricted-syntax,no-await-in-loop
+                // eslint-disable-next-line no-await-in-loop
                 for await (const { Key, LastModified } of response?.Contents || []) {
                     if (Key !== undefined) {
                         const { Expires } = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key }));
@@ -356,7 +355,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
                         } else {
                             items.push({
                                 id: Key,
-                                ...(LastModified && { createdAt: LastModified }),
+                                ...LastModified && { createdAt: LastModified },
                             } as S3File);
                         }
                     }
@@ -389,7 +388,6 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
         const chunks = [];
 
-        // eslint-disable-next-line no-restricted-syntax
         for await (const chunk of Body as SdkStream<any>) {
             chunks.push(chunk);
         }
@@ -397,9 +395,9 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         const { originalName, ...meta } = Metadata || {};
 
         return {
-            ETag,
             content: Buffer.concat(chunks),
             contentType: ContentType as string,
+            ETag,
             expiredAt: Expires,
             id,
             metadata: meta,
@@ -505,7 +503,6 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             this.logger?.error("abortMultipartUploadError: ", error);
         }
     }
-
 
     private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> =>
         Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);

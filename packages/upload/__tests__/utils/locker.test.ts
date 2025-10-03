@@ -24,7 +24,7 @@ describe("utils", () => {
 
             locker.lock("key");
 
-            expect(() => locker.lock("key")).toThrowError("key is locked");
+            expect(() => locker.lock("key")).toThrow("key is locked");
         });
     });
 });

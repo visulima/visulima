@@ -10,4 +10,11 @@ export default defineConfig({
         },
     },
     transformer,
+    validation: {
+        dependencies: {
+            unused: {
+                exclude: ["@aws-sdk/signature-v4-crt", "aws-crt", "express", "node-fetch"],
+            },
+        },
+    },
 }) as BuildConfig;

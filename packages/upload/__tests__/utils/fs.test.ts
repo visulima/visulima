@@ -1,12 +1,11 @@
 import { existsSync, readdirSync } from "node:fs";
+import { rm } from "node:fs/promises";
 import { join } from "node:path";
-import {
-    afterEach, beforeEach, describe, expect, it,
-} from "vitest";
+
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { ensureFile, removeFile } from "../../src/utils/fs";
 import { testRoot as uploadRoot } from "../__helpers__/config";
-import { rm } from "node:fs/promises";
 
 describe("utils", () => {
     describe("fs", () => {
@@ -16,7 +15,7 @@ describe("utils", () => {
 
         beforeEach(async () => {
             try {
-                await rm(testRoot, { recursive: true, force: true });
+                await rm(testRoot, { force: true, recursive: true });
             } catch {
                 // ignore if directory doesn't exist
             }
@@ -24,7 +23,7 @@ describe("utils", () => {
 
         afterEach(async () => {
             try {
-                await rm(testRoot, { recursive: true, force: true });
+                await rm(testRoot, { force: true, recursive: true });
             } catch {
                 // ignore if directory doesn't exist
             }
@@ -48,6 +47,7 @@ describe("utils", () => {
         it("removeFile(path)", async () => {
             await ensureFile(filepath);
             await removeFile(filepath);
+
             expect(readdirSync(direction, { withFileTypes: true }).filter((dirent) => dirent.isFile())).toHaveLength(0);
         });
     });
