@@ -1,7 +1,9 @@
 import { mkdir, readFile, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { remove } from "@visulima/fs";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { join, normalize } from "@visulima/path";
 
 import MetaStorage from "../meta-storage";
@@ -12,15 +14,15 @@ import type { File } from "../utils/file";
  * Stores upload metafiles on local disk
  */
 class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
-    readonly directory: string;
+    public readonly directory: string;
 
-    constructor(config?: LocalMetaStorageOptions) {
+    public constructor(config?: LocalMetaStorageOptions) {
         super(config);
 
         this.directory = (config?.directory || join(tmpdir(), "Upload_meta")).replaceAll("\\", "/");
 
         this.accessCheck().catch((error) => {
-            this.logger?.error("[error]: Could not write to directory: %O", error);
+            this.logger?.error("Metadata storage access check failed: %O", error);
         });
     }
 

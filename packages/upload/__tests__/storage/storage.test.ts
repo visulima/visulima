@@ -42,7 +42,7 @@ describe("baseStorage", () => {
         storage = new TestStorage({ logger });
 
         expect(consoleDebugMock).toHaveBeenCalledTimes(1);
-        expect(consoleDebugMock).toHaveBeenCalledWith("TestStorage config: { logger: [class MockLogger] }");
+        expect(consoleDebugMock).toHaveBeenCalledWithExactlyOnceWith("TestStorage config: { logger: [class MockLogger] }");
 
         consoleDebugMock.mockRestore();
 
@@ -56,7 +56,7 @@ describe("baseStorage", () => {
         (storage.logger as Logger).debug("some", "value");
 
         expect(consoleDebugMock).toHaveBeenCalledTimes(2);
-        expect(consoleDebugMock).toHaveBeenCalledWith("some", "value");
+        expect(consoleDebugMock).toHaveBeenCalledWithExactlyOnceWith("some", "value");
 
         consoleDebugMock.mockRestore();
     });
