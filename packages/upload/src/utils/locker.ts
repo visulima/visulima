@@ -1,9 +1,10 @@
 import { LRUCache as Cache } from "lru-cache";
 
-class Locker<K extends string = string, V extends string = string> extends Cache<K, V> {
-    public constructor(options?: Cache.Options<K, V>) {
+class Locker<K extends string = string, V extends string = string> extends Cache<K, V, number> {
+    public constructor(options?: Cache.Options<K, V, number>) {
         super({
             ttl: 1000,
+            ttlAutopurge: true,
             ...options,
         });
     }

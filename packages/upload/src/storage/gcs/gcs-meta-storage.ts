@@ -1,10 +1,8 @@
-
-
 import { randomUUID } from "node:crypto";
 
 import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import gaxios from "gaxios";
+import { request } from "gaxios";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { GoogleAuth } from "google-auth-library";
 
@@ -45,7 +43,6 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
                 throw new Error("Sorry, we cannot connect to Cloud Services without a project ID.");
             }
 
-
             metaConfig.scopes ||= GCSConfig.authScopes;
 
             this.authClient = new GoogleAuth(metaConfig);
@@ -77,7 +74,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         }
     }
 
-    public async save(id: string, file: T): Promise<T> {
+    public override async save(id: string, file: T): Promise<T> {
         // TODO: use JSON API multipart POST?
         await this.makeRequest({
             body: JSON.stringify(file),
@@ -86,16 +83,17 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
             params: { name: encodeURIComponent(this.getMetaName(id)), uploadType: "media" },
             url: this.uploadBaseURI,
         });
+
         return file;
     }
 
-    public async delete(id: string): Promise<void> {
+    public override async delete(id: string): Promise<void> {
         const url = this.getMetaPath(id);
 
         await this.makeRequest({ method: "DELETE", url });
     }
 
-    public async get(id: string): Promise<T> {
+    public override async get(id: string): Promise<T> {
         const url = this.getMetaPath(id);
         const { data } = await this.makeRequest<T>({ params: { alt: "media" }, url });
 
@@ -108,7 +106,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     /**
      * Returns metafile url
-     * @param id - upload id
+     * @param id upload id
      */
     private getMetaPath(id: string): string {
         return `${this.storageBaseURI}/${this.getMetaName(id)}`;
@@ -121,7 +119,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
                 // Some URIs have colon separators.
                 // Bad: https://.../projects/:list
                 // Good: https://.../projects:list
-                .replaceAll('/:', ":");
+                .replaceAll("/:", ":");
         }
 
         // eslint-disable-next-line no-param-reassign
@@ -132,7 +130,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
             },
             params: {
-                ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
+                ...this.userProject === undefined ? {} : { userProject: this.userProject },
             },
             retry: true,
             retryConfig: this.retryOptions,
@@ -140,7 +138,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         };
 
         if (this.isCustomEndpoint && !this.useAuthWithCustomEndpoint) {
-            return gaxios.request(data);
+            return request(data);
         }
 
         return this.authClient.request(data);

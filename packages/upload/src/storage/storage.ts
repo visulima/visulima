@@ -2,16 +2,16 @@ import type { IncomingMessage } from "node:http";
 import { setInterval } from "node:timers";
 import { inspect } from "node:util";
 
-import { parse } from "bytes";
-import { LRUCache as Cache } from "lru-cache";
+import { parseBytes } from "@visulima/humanizer";
 import { normalize } from "@visulima/path";
+import { LRUCache as Cache } from "lru-cache";
 import typeis from "type-is";
 
 import type { ErrorResponses, HttpError, Logger, UploadResponse, ValidatorConfig } from "../utils";
 import { ErrorMap, ERRORS, isEqual, Locker, normalizeHookResponse, normalizeOnErrorResponse, throwErrorCode, toMilliseconds, Validator } from "../utils";
 import type MetaStorage from "./meta-storage";
 import type { BaseStorageOptions, PurgeList } from "./types";
-import type { File,FileInit, FilePart, FileQuery } from "./utils/file";
+import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { FileName, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
 
@@ -75,8 +75,8 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         this.onDelete = normalizeHookResponse(options.onDelete);
         this.onError = normalizeOnErrorResponse(options.onError);
         this.namingFunction = options.filename;
-        this.maxUploadSize = parse(options.maxUploadSize);
-        this.maxMetadataSize = parse(options.maxMetadataSize);
+        this.maxUploadSize = typeof options.maxUploadSize === "string" ? parseBytes(options.maxUploadSize) : options.maxUploadSize;
+        this.maxMetadataSize = typeof options.maxMetadataSize === "string" ? parseBytes(options.maxMetadataSize) : options.maxMetadataSize;
 
         if (options.assetFolder !== undefined) {
             this.assetFolder = normalize(options.assetFolder);
@@ -209,14 +209,12 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             return throwErrorCode(ERRORS.GONE);
         }
 
-
         return file;
     }
 
     /**
      * Searches for and purges expired upload
-     *
-     * @param maxAge - remove upload older than a specified age
+     * @param maxAge remove upload older than a specified age
      */
     public async purge(maxAge?: number | string): Promise<PurgeList> {
         const maxAgeMs = toMilliseconds(maxAge || this.config.expiration?.maxAge);
@@ -229,11 +227,10 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
                 (item) => Number(new Date((this.config.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as number | string)) < before,
             );
 
-            // eslint-disable-next-line no-restricted-syntax
             for await (const { id, ...rest } of expired) {
                 const deleted = await this.delete({ id });
 
-                purged.items.push({ ...(deleted), ...rest });
+                purged.items.push({ ...deleted, ...rest });
             }
 
             if (purged.items.length > 0) {
@@ -246,7 +243,6 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     /**
      * Get uploaded file.
-     *
      * @param {FileQuery} id
      */
     public abstract get({ id }: FileQuery): Promise<TFileReturn>;
@@ -284,7 +280,6 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             return throwErrorCode(ERRORS.FILE_LOCKED, error.message);
         }
     }
-
 
     protected async unlock(key: string): Promise<void> {
         this.locker.unlock(key);
@@ -336,7 +331,6 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     /**
      * Copy an upload file to a new location.
-     *
      * @param {string} name
      * @param {string} destination
      */
@@ -344,7 +338,6 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     /**
      * Move an upload file to a new location.
-     *
      * @param {string} name
      * @param {string} destination
      */

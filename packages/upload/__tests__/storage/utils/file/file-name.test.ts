@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import FileName from "../../../../src/storage/utils/file/file-name";
 
-describe("File", () => {
-    describe("FileName", () => {
+describe("file", () => {
+    describe(FileName, () => {
         it.each([
             ["", false],
             ["..", false],
-            ["c:\\abs", false],
+            [String.raw`c:\abs`, false],
             ["12", false],
             ["filename?.ext", false],
             ["../filename.ext", false],

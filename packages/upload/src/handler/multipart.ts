@@ -1,28 +1,20 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { Readable } from "node:stream";
 
+import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@mjackson/multipart-parser/node";
 import createHttpError from "http-errors";
-import multiparty from "multiparty";
 
 import type { FileInit, UploadFile } from "../storage/utils/file";
 import { getIdFromRequest } from "../utils";
 import BaseHandler from "./base-handler";
-import type { Handlers, ResponseFile } from "./types.d";
+import type { Handlers, ResponseFile } from "./types";
 
 const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
-
-interface MultipartyPart extends multiparty.Part {
-    headers: {
-        [key: string]: any;
-        // eslint-disable-next-line radar/no-duplicate-string
-        "content-type": string;
-    };
-}
 
 /**
  * Express wrapper
  *
  * - express ***should*** respond to the client when the upload complete and handle errors and GET requests
- *
  * @example
  * ```ts
  * const multipart = new Multipart({ storage });
@@ -63,81 +55,80 @@ class Multipart<
             throw createHttpError(400, "Invalid content-type");
         }
 
-        // eslint-disable-next-line compat/compat
-        return new Promise((resolve, reject) => {
-            const form = new multiparty.Form();
-
+        try {
             const config: FileInit = { metadata: {}, size: 0 };
 
-            form.on("field", (key, value) => {
+            for await (const part of parseMultipartRequest(request)) {
+                if (part.isFile) {
+                    // Handle file upload
+                    config.size = part.size;
+                    config.originalName = part.filename;
+                    config.contentType = part.mediaType;
+
+                    const file = await this.storage.create(request, config);
+
+                    // Create a Readable stream from the Uint8Array
+                    const stream = Readable.from(part.bytes);
+
+                    await this.storage.write({
+                        body: stream,
+                        contentLength: part.size,
+                        id: file.id,
+                        start: 0,
+                    });
+
+                    // Wait for the file to be completed
+                    const completedFile = await this.storage.write({
+                        body: Readable.from(new Uint8Array(0)), // Empty buffer to signal completion
+                        contentLength: 0,
+                        id: file.id,
+                        start: part.size,
+                    });
+
+                    if (completedFile.status === "completed") {
+                        return {
+                            ...completedFile,
+                            headers: {
+                                Location: this.buildFileUrl(request, completedFile),
+                                ...completedFile.expiredAt === undefined ? {} : { "X-Upload-Expires": completedFile.expiredAt.toString() },
+                                ...completedFile.ETag === undefined ? {} : { ETag: completedFile.ETag },
+                            },
+                            statusCode: 200,
+                        };
+                    }
+
+                    return { ...completedFile, headers: {}, statusCode: 201 };
+                }
+
+                // Handle form field
                 let data = {};
 
-                if (key === "metadata" && typeof value === "string") {
+                if (part.name === "metadata" && part.text) {
                     try {
-                        data = JSON.parse(value);
+                        data = JSON.parse(part.text);
                     } catch {
                         // ignore
                     }
-                } else {
-                    data = { [key]: value };
+                } else if (part.name) {
+                    data = { [part.name]: part.text };
                 }
 
                 Object.assign(config.metadata, data);
-            });
+            }
 
-            form.on("error", async (error) => {
-                if (typeof error !== "object") {
-                    return;
-                }
+            // If we reach here without processing a file, something went wrong
+            throw createHttpError(400, "No file found in multipart request");
+        } catch (error) {
+            if (error instanceof MaxFileSizeExceededError) {
+                throw createHttpError(413, "File size limit exceeded");
+            }
 
-                try {
-                    const file = await this.storage.create(request, config);
+            if (error instanceof MultipartParseError) {
+                throw createHttpError(400, "Invalid multipart request");
+            }
 
-                    await this.storage.delete({ id: file.id });
-                } catch (storageError: any) {
-                    reject(storageError);
-                }
-
-                reject(error);
-            });
-
-            form.on("part", (part: MultipartyPart) => {
-                config.size = part.byteCount;
-                config.originalName = part.filename;
-                config.contentType = part.headers["content-type"];
-
-                part.on("error", () => null);
-
-                this.storage
-                    .create(request, config)
-                    .then(({ id }) =>
-                        this.storage.write({
-                            body: part,
-                            contentLength: part.byteCount,
-                            id,
-                            start: 0,
-                        }),
-                    )
-                    .then((file) => {
-                        if (file.status === "completed") {
-                            return resolve({
-                                ...file,
-                                headers: {
-                                    Location: this.buildFileUrl(request, file),
-                                    ...(file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
-                                    ...(file.ETag === undefined ? {} : { ETag: file.ETag }),
-                                },
-                                statusCode: 200,
-                            });
-                        }
-
-                        return resolve({ ...file, headers: {}, statusCode: 201 });
-                    })
-                    .catch((error) => reject(error));
-            });
-
-            form.parse(request);
-        });
+            throw error;
+        }
     }
 
     /**
@@ -150,7 +141,7 @@ class Multipart<
             const file = await this.storage.delete({ id });
 
             if (file.status === undefined) {
-                // eslint-disable-next-line radar/no-duplicate-string
+                
                 throw createHttpError(404, "File not found");
             }
 

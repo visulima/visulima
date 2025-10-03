@@ -1,5 +1,6 @@
 import {
-    CompleteMultipartUploadCommand, CopyObjectCommand,
+    CompleteMultipartUploadCommand,
+    CopyObjectCommand,
     CreateMultipartUploadCommand,
     DeleteObjectCommand,
     HeadObjectCommand,
@@ -10,20 +11,18 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { mockClient } from "aws-sdk-client-mock";
 import { createRequest } from "node-mocks-http";
-import {
-    beforeEach, describe, expect, it, vi,
-} from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import S3Storage from "../../../src/storage/aws/s3-storage";
-import type { AwsError, S3StorageOptions } from "../../../src/storage/aws/types.d";
+import type { AwsError, S3StorageOptions } from "../../../src/storage/aws/types";
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
 
-vi.mock("aws-crt");
-vi.mock("@aws-sdk/s3-request-presigner");
+vi.mock(import("aws-crt"));
+vi.mock(import("@aws-sdk/s3-request-presigner"));
 
 const s3Mock = mockClient(S3Client);
 
-describe("S3Storage", () => {
+describe(S3Storage, () => {
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
     const options = { ...(storageOptions as S3StorageOptions), bucket: "bucket", region: "us-east-1" };
@@ -37,8 +36,8 @@ describe("S3Storage", () => {
             metadata: encodeURIComponent(
                 JSON.stringify({
                     ...metafile,
-                    createdAt: new Date().toISOString(),
                     bytesWritten: 0,
+                    createdAt: new Date().toISOString(),
                     status: "created",
                     UploadId: "987654321",
                 }),
@@ -103,11 +102,11 @@ describe("S3Storage", () => {
             s3Mock.on(CompleteMultipartUploadCommand).resolves({ Location: "/1234" });
 
             const part = {
+                body: testfile.asReadable,
+                contentLength: metafile.size,
                 id: metafile.id,
                 name: metafile.name,
-                body: testfile.asReadable,
                 start: 0,
-                contentLength: metafile.size,
             };
             const s3file = await storage.write(part);
 
@@ -119,9 +118,9 @@ describe("S3Storage", () => {
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
             const part = {
+                contentLength: 0,
                 id: metafile.id,
                 name: metafile.name,
-                contentLength: 0,
             };
             const s3file = await storage.write(part);
 
@@ -180,9 +179,9 @@ describe("S3Storage", () => {
         it("s3 error", () => {
             const error = {
                 $metadata: { httpStatusCode: 400 },
+                Code: "SomeServiceException",
                 message: "SomeServiceException",
                 name: "SomeError",
-                Code: "SomeServiceException",
             };
 
             expect(storage.normalizeError(error)).toMatchSnapshot();
@@ -194,13 +193,16 @@ describe("S3Storage", () => {
     });
 });
 
-describe("S3PresignedStorage", () => {
+describe("s3PresignedStorage", () => {
     const getSignedUrlMock = getSignedUrl as any;
 
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
     const options = {
-        ...(storageOptions as S3StorageOptions), clientDirectUpload: true, bucket: "bucket", region: "us-east-1",
+        ...(storageOptions as S3StorageOptions),
+        bucket: "bucket",
+        clientDirectUpload: true,
+        region: "us-east-1",
     };
 
     const request = createRequest();
@@ -212,8 +214,8 @@ describe("S3PresignedStorage", () => {
             metadata: encodeURIComponent(
                 JSON.stringify({
                     ...metafile,
-                    createdAt: new Date().toISOString(),
                     bytesWritten: 0,
+                    createdAt: new Date().toISOString(),
                     status: "created",
                     UploadId: "987654321",
                 }),
@@ -258,10 +260,10 @@ describe("S3PresignedStorage", () => {
 
             const preCompleted = {
                 ...metafile,
-                Parts: [{ PartNumber: 1, Size: 64, ETag: "123456789" }],
-                UploadId: "123456789",
+                Parts: [{ ETag: "123456789", PartNumber: 1, Size: 64 }],
                 partSize: 16_777_216,
                 partsUrls: ["https://api.s3.example.com?signed"],
+                UploadId: "123456789",
             };
 
             s3Mock.on(CompleteMultipartUploadCommand).resolves({ Location: "/1234" });
@@ -273,7 +275,7 @@ describe("S3PresignedStorage", () => {
 
         it("should complete (empty payload)", async () => {
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
-            s3Mock.on(ListPartsCommand).resolves({ Parts: [{ PartNumber: 1, Size: 64, ETag: "123456789" }] });
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [{ ETag: "123456789", PartNumber: 1, Size: 64 }] });
             s3Mock.on(CompleteMultipartUploadCommand).resolves({ Location: "/1234" });
 
             const s3file = await storage.update({ id: metafile.id }, {});
