@@ -1,4 +1,4 @@
-import { DiskFile, DiskStorage, httpMultipartHandler } from "@visulima/upload";
+import { File as DiskFile, DiskStorage, httpMultipartHandler } from "@visulima/upload";
 import { copyFile } from "copy-file";
 import express from "express";
 import fs from "node:fs";
