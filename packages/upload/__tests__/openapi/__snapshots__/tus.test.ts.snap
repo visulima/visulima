@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`swagger:tus > should match snapshot 1`] = `
+exports[`openapi:tus > should match snapshot 1`] = `
 {
   "components": {
     "examples": {
@@ -1019,7 +1019,7 @@ exports[`swagger:tus > should match snapshot 1`] = `
 }
 `;
 
-exports[`swagger:tus > should match snapshot with custom options 1`] = `
+exports[`openapi:tus > should match snapshot with custom options 1`] = `
 {
   "components": {
     "examples": {
