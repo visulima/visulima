@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
 import type { OpenAPIV3 } from "openapi-types";
 
-import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList } from "./shared-swagger";
+import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList } from "./shared";
 
 const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["Multipart"]): Partial<OpenAPIV3.Document> => {
     const pathHash = createHash("sha256").update(path).digest("base64");
