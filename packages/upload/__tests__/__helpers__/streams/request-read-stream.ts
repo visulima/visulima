@@ -1,6 +1,6 @@
 import { PassThrough } from "node:stream";
 
-import FileWriteStream from "./file-write-stream";
+import type FileWriteStream from "./file-write-stream";
 
 /* eslint-disable no-underscore-dangle */
 class RequestReadStream extends PassThrough {

@@ -1,7 +1,7 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 // import Cors from "cors";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import express, { Express } from "express";
+
+import type { Express } from "express";
+import express from "express";
 
 type Authorized<T> = T & { user?: any };
 

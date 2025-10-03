@@ -4,7 +4,7 @@ import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, wai
 import { fromIni } from "@aws-sdk/credential-providers";
 
 import MetaStorage from "../meta-storage";
-import type { File} from "../utils/file";
+import type { File } from "../utils/file";
 import { isExpired } from "../utils/file";
 import type { S3MetaStorageOptions } from "./types";
 
@@ -24,11 +24,9 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
                 throw new Error("S3 bucket is not defined");
             }
 
-
             const keyFile = metaConfig.keyFile || process.env.S3_KEYFILE;
 
             if (keyFile) {
-
                 metaConfig.credentials = fromIni({ configFilepath: keyFile });
             }
 
@@ -48,7 +46,7 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         return waitUntilBucketExists({ client: this.client, maxWaitTime }, { Bucket: bucket });
     }
 
-    public async get(id: string): Promise<T> {
+    public override async get(id: string): Promise<T> {
         const Key = this.getMetaName(id);
         const parameters = { Bucket: this.bucket, Key };
         const { Expires, Metadata } = await this.client.send(new HeadObjectCommand(parameters));
@@ -66,17 +64,17 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         throw new Error(`Metafile ${id} not found`);
     }
 
-    public async touch(id: string, file: T): Promise<T> {
+    public override async touch(id: string, file: T): Promise<T> {
         return this.save(id, file);
     }
 
-    public async delete(id: string): Promise<void> {
+    public override async delete(id: string): Promise<void> {
         const parameters = { Bucket: this.bucket, Key: this.getMetaName(id) };
 
         await this.client.send(new DeleteObjectCommand(parameters));
     }
 
-    public async save(id: string, file: T): Promise<T> {
+    public override async save(id: string, file: T): Promise<T> {
         const metadata = encodeURIComponent(JSON.stringify(file));
         const parameters = {
             Bucket: this.bucket,

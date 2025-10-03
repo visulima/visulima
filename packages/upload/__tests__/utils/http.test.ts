@@ -1,4 +1,5 @@
 import type { IncomingMessage } from "node:http";
+
 import httpMocks, { createRequest } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
@@ -22,8 +23,8 @@ describe("utils", () => {
     describe("http", () => {
         const mime = "application/vnd+json";
         const request = httpMocks.createRequest({
-            method: "GET",
             headers: { "content-type": mime },
+            method: "GET",
         });
         const response = httpMocks.createResponse({});
 
@@ -33,6 +34,7 @@ describe("utils", () => {
 
         it("getHeader(single)", () => {
             request.headers = { head: "value" };
+
             expect(getHeader(request, "head")).toBe("value");
         });
 
@@ -49,16 +51,19 @@ describe("utils", () => {
 
         it("getBaseUrl(no-proto)", () => {
             request.headers = { "x-forwarded-host": "example" };
+
             expect(getBaseUrl(request)).toBe("//example");
         });
 
         it("getBaseUrl(absolute)", () => {
             request.headers = { ...request.headers, "x-forwarded-proto": "http" };
+
             expect(getBaseUrl(request)).toBe("http://example");
         });
 
         it("getBaseUrl(forwarded)", () => {
             request.headers = { ...request.headers, forwarded: "by=by;for=for;host=example;proto=https" };
+
             expect(getBaseUrl(request)).toBe("https://example");
         });
 
@@ -143,7 +148,7 @@ describe("utils", () => {
                 throw new Error("error");
             });
 
-            expect(() => function2(response)).toThrowError("error");
+            expect(() => function2(response)).toThrow("error");
         });
 
         it("getMetadata with content-type json", async () => {
@@ -181,9 +186,9 @@ describe("utils", () => {
         });
 
         it.each([
-            // eslint-disable-next-line no-secrets/no-secrets,radar/no-duplicate-string
+            // eslint-disable-next-line radar/no-duplicate-string
             ["/1/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
-            // eslint-disable-next-line no-secrets/no-secrets
+
             ["/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
             // eslint-disable-next-line no-secrets/no-secrets,radar/no-duplicate-string
             ["/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3.png", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
@@ -192,13 +197,13 @@ describe("utils", () => {
         });
 
         it.each([
-            // eslint-disable-next-line no-secrets/no-secrets
+
             ["/files/1/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
-            // eslint-disable-next-line no-secrets/no-secrets
+
             ["/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
-            // eslint-disable-next-line no-secrets/no-secrets
+
             ["/1/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
-            // eslint-disable-next-line no-secrets/no-secrets
+
             ["/3/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
             // eslint-disable-next-line no-secrets/no-secrets
             ["/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3.png", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
@@ -207,7 +212,7 @@ describe("utils", () => {
         });
 
         it.each([["/"], ["/files"], ["/3"], ["/files/files"]])("express: getIdFromRequest(%p) === %p", (url) => {
-            expect(() => getIdFromRequest(createRequest({ url }))).toThrowError();
+            expect(() => getIdFromRequest(createRequest({ url }))).toThrow();
         });
 
         it("should return the real path", () => {
@@ -230,15 +235,15 @@ describe("utils", () => {
         it("should throw a error if real path cant be found", () => {
             let testRequest = createRequest({ url: "" });
 
-            expect(() => getRealPath(testRequest)).toThrowError();
+            expect(() => getRealPath(testRequest)).toThrow();
 
             testRequest = createRequest({});
 
-            expect(() => getRealPath(testRequest)).toThrowError();
+            expect(() => getRealPath(testRequest)).toThrow();
 
             testRequest = createRequest({ originalUrl: "" });
 
-            expect(() => getRealPath(testRequest)).toThrowError();
+            expect(() => getRealPath(testRequest)).toThrow();
         });
 
         it("readBody returns correct body string", async () => {
@@ -249,29 +254,29 @@ describe("utils", () => {
 
             const body = await readBody(httpRequest);
 
-            expect(body).toEqual("Hello world!");
+            expect(body).toBe("Hello world!");
         });
 
         it("readBody handles different encodings", async () => {
             let httpRequest = httpCreateRequest({ body: "Hello world!", encoding: "ascii" });
             let body = await readBody(httpRequest, "ascii");
 
-            expect(body).toEqual("Hello world!");
+            expect(body).toBe("Hello world!");
 
             httpRequest = httpCreateRequest({ body: "Hello world!", encoding: "utf8" });
             body = await readBody(httpRequest, "utf8");
 
-            expect(body).toEqual("Hello world!");
+            expect(body).toBe("Hello world!");
 
             httpRequest = httpCreateRequest({ body: "Hello world!", encoding: "latin1" });
             body = await readBody(httpRequest, "latin1");
 
-            expect(body).toEqual("Hello world!");
+            expect(body).toBe("Hello world!");
 
             httpRequest = httpCreateRequest({ body: "Hello world!", encoding: "hex" });
             body = await readBody(httpRequest, "hex");
 
-            expect(body).toEqual("Hello world!");
+            expect(body).toBe("Hello world!");
         });
     });
 
@@ -285,6 +290,6 @@ describe("utils", () => {
         const request = httpCreateRequest({ body: "Hello world!", encoding: "utf8" });
         const body = await readBody(request);
 
-        expect(body).toEqual("Hello world!");
+        expect(body).toBe("Hello world!");
     });
 });

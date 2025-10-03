@@ -1,11 +1,10 @@
-
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import { resolve } from "node:url";
 
 import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import gaxios from "gaxios";
+import { request } from "gaxios";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { GoogleAuth } from "google-auth-library";
 
@@ -21,7 +20,7 @@ import FetchError from "./fetch-error";
 import GCSConfig from "./gcs-config";
 import GCSFile from "./gcs-file";
 import GCSMetaStorage from "./gcs-meta-storage";
-import type { ClientError, GCStorageOptions } from "./types.d";
+import type { ClientError, GCStorageOptions } from "./types";
 import { buildContentRange, getRangeEnd, retryOptions as baseRetryOptions } from "./utils";
 
 const validateStatus = (code: number): boolean => (code >= 200 && code < 300) || code === 308 || code === 499;
@@ -60,7 +59,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
     private readonly userProject: string | undefined;
 
-    constructor(public config: GCStorageOptions) {
+    constructor(public override config: GCStorageOptions) {
         super(config);
 
         const bucketName = config.bucket || process.env.GCS_BUCKET;
@@ -121,7 +120,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         });
     }
 
-    public normalizeError(error: ClientError): HttpError {
+    public override normalizeError(error: ClientError): HttpError {
         const statusCode = +error.code || 500;
 
         if (error.config) {
@@ -133,6 +132,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 statusCode,
             };
         }
+
         return super.normalizeError(error);
     }
 
@@ -181,13 +181,13 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
             throw new Error("Expected 200 response from GCS");
         }
 
-        const hdr = response.headers["X-Goog-Upload-Status"] || response.headers["x-goog-upload-status"];
+        const hdr = response.headers.get("X-Goog-Upload-Status") || response.headers.get("x-goog-upload-status");
 
         if (hdr !== "active") {
             throw new Error(`X-Goog-Upload-Status response header expected 'active' got: ${hdr}`);
         }
 
-        file.uri = response.headers.location as string;
+        file.uri = response.headers.get("location") as string;
 
         if (this.config.clientDirectUpload) {
             file.GCSUploadURI = file.uri;
@@ -224,13 +224,11 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         await this.lock(part.id);
 
         try {
-
             file.bytesWritten = await this.internalWrite({ ...file, ...part });
 
             file.status = getFileStatus(file);
 
             if (file.status === "completed") {
-
                 file.uri = `${this.storageBaseURI}/${file.name}`;
 
                 await this.internalOnComplete(file);
@@ -246,7 +244,6 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         const file = await this.getMeta(id).catch(() => null);
 
         if (file?.uri) {
-
             file.status = "deleted";
 
             await Promise.all([this.makeRequest({ method: "DELETE", url: file.uri, validateStatus }), this.deleteMeta(file.id)]);
@@ -301,8 +298,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
     /**
      * Get uploaded file.
-     *
-     * @param {FileQuery} id
+     * @param id
      */
     public async get({ id }: FileQuery): Promise<FileReturn> {
         const { data } = await this.makeRequest({ params: { alt: "json" }, url: `${this.storageBaseURI}/${id}` });
@@ -317,7 +313,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         };
     }
 
-    public async list(limit = 1000): Promise<GCSFile[]> {
+    public override async list(limit = 1000): Promise<GCSFile[]> {
         const items: GCSFile[] = [];
 
         // Declare truncated as a flag that the while loop is based on.
@@ -372,7 +368,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         options.headers = {
             Accept: "application/json",
             "Content-Range": contentRange,
-            ...(size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {}),
+            ...size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {},
         };
 
         try {
@@ -407,7 +403,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 // Some URIs have colon separators.
                 // Bad: https://.../projects/:list
                 // Good: https://.../projects:list
-                .replaceAll('/:', ":");
+                .replaceAll("/:", ":");
         }
 
         // eslint-disable-next-line no-param-reassign
@@ -418,7 +414,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
             },
             params: {
-                ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
+                ...this.userProject === undefined ? {} : { userProject: this.userProject },
             },
             retry: true,
             retryConfig: this.retryOptions,
@@ -426,7 +422,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         };
 
         if (this.isCustomEndpoint && !this.useAuthWithCustomEndpoint) {
-            return gaxios.request(data);
+            return request(data);
         }
 
         return this.authClient.request(data);

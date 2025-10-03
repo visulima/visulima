@@ -8,7 +8,7 @@ class StreamLength extends Transform {
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    _transform(chunk: Buffer, _encoding: string, callback: (error?: Error) => void): void {
+    override _transform(chunk: Buffer, _encoding: string, callback: (error?: Error) => void): void {
         const expected = this.length + chunk.length;
 
         if (this.limit >= expected) {

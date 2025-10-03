@@ -1,8 +1,7 @@
-import type { HttpError, HttpErrorBody, Validation } from "../utils";
+import type { HttpError, HttpErrorBody, Logger, Validation } from "../utils";
 import type { LocalMetaStorageOptions } from "./local/local-meta-storage";
 import type MetaStorage from "./meta-storage";
-import type { UploadFile } from "./utils/file";
-import type { File } from "./utils/file";
+import type { File, UploadFile } from "./utils/file";
 
 export interface MetaStorageOptions {
     logger?: Logger;
@@ -20,17 +19,22 @@ export type OnDelete<TFile extends File = File, TBody = any> = (file: TFile) => 
 
 export type OnError<TBody = HttpErrorBody> = (error: HttpError<TBody>) => any;
 
-export interface PurgeList { items: UploadFile[]; maxAgeMs: number }
+export interface PurgeList {
+    items: UploadFile[];
+    maxAgeMs: number;
+}
 
 export interface ExpirationOptions {
     /**
      * Age of the upload, after which it is considered expired and can be deleted
      */
     maxAge: number | string;
+
     /**
      * Auto purging interval for expired upload
      */
     purgeInterval?: number | string;
+
     /**
      * Auto prolong expiring upload
      */
@@ -42,9 +46,9 @@ export interface BaseStorageOptions<T extends File = File> {
     allowMIME?: string[];
     /** The full path of the folder where the uploaded asset will be stored. */
     assetFolder?: string;
+
     /**
      * Automatic cleaning of abandoned and completed upload
-     *
      * @example
      * ```ts
      * app.use(

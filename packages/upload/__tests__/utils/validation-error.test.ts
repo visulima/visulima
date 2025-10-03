@@ -6,14 +6,14 @@ describe("utils", () => {
     describe("validation-error", () => {
         it("should be a Error", () => {
             const body = {
-                message: "test",
                 code: "test",
+                message: "test",
             };
             const error = new ValidationError("test", 200, body, {});
 
             expect(() => {
                 throw error;
-            }).toThrowError("test");
+            }).toThrow("test");
 
             expect(error).toBeInstanceOf(Error);
             expect(error).toBeInstanceOf(ValidationError);

@@ -10,9 +10,9 @@ export interface FileInit {
 }
 
 export interface FileReturn extends Required<FileInit> {
-    ETag?: string;
-
     content: Buffer;
+
+    ETag?: string;
 
     expiredAt?: Date | number | string;
 
