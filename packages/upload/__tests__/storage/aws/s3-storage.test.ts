@@ -17,8 +17,8 @@ import S3Storage from "../../../src/storage/aws/s3-storage";
 import type { AwsError, S3StorageOptions } from "../../../src/storage/aws/types";
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
 
-vi.mock("aws-crt");
-vi.mock("@aws-sdk/s3-request-presigner");
+vi.mock(import("aws-crt"));
+vi.mock(import("@aws-sdk/s3-request-presigner"));
 
 const s3Mock = mockClient(S3Client);
 

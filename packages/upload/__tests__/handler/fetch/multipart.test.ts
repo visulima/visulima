@@ -6,7 +6,7 @@ import Multipart from "../../../src/handler/multipart";
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import { storageOptions, testfile, testRoot } from "../../__helpers__/config";
 
-vi.mock("node:fs/promises", () => {
+vi.mock(import("node:fs/promises"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -16,7 +16,7 @@ vi.mock("node:fs/promises", () => {
     return fs.promises;
 });
 
-vi.mock("node:fs", () => {
+vi.mock(import("node:fs"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -27,10 +27,9 @@ vi.mock("node:fs", () => {
 });
 
 describe("fetch Multipart", () => {
-    const basePath = "/multipart";
+    const basePath = "http://localhost/multipart/";
     const directory = `${testRoot}/fetch-multipart`;
     const options = { ...storageOptions, directory };
-    const multipart = new Multipart({ storage: new DiskStorage(options) });
 
     function create(): Request {
         const formData = new FormData();
@@ -69,6 +68,7 @@ describe("fetch Multipart", () => {
     describe("pOST", () => {
         it("should support custom fields", async () => {
             const request = create();
+
             const handler = await import("../../../src/fetch/multipart");
             const fetchMultipartHandler = handler.default;
 

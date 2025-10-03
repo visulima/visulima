@@ -6,7 +6,7 @@ import Tus from "../../../src/handler/tus";
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import { metadata, storageOptions, testRoot } from "../../__helpers__/config";
 
-vi.mock("node:fs/promises", () => {
+vi.mock(import("node:fs/promises"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -16,7 +16,7 @@ vi.mock("node:fs/promises", () => {
     return fs.promises;
 });
 
-vi.mock("node:fs", () => {
+vi.mock(import("node:fs"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -33,7 +33,7 @@ const exposedHeaders = (response: Response): string[] =>
         .map((s) => s.toLowerCase()) || [];
 
 describe("fetch Tus", () => {
-    const basePath = "/tus";
+    const basePath = "http://localhost/tus/";
     const directory = `${testRoot}/fetch-tus`;
     const options = { ...storageOptions, directory };
     const tus = new Tus({ storage: new DiskStorage(options) });

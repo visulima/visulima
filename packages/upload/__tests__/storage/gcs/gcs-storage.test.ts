@@ -14,15 +14,15 @@ import { deepClone } from "../../__helpers__/utils";
 
 const { mockFetch } = vi.hoisted(() => {
     return {
-        mockFetch: vi.fn()
-    }
+        mockFetch: vi.fn(),
+    };
 });
 
-vi.mock("node-fetch");
+vi.mock(import("node-fetch"));
 
 const mockAuthRequest = vi.fn();
 
-vi.mock("google-auth-library", () => {
+vi.mock(import("google-auth-library"), () => {
     return {
         GoogleAuth: vi.fn(() => {
             return { request: mockAuthRequest };
@@ -120,6 +120,7 @@ describe(GCStorage, async () => {
                 start: 0,
             });
 
+            expect(mockFetch).toHaveBeenCalledTimes(1);
             expect(mockFetch).toHaveBeenCalledWith(uri, {
                 body,
                 headers: expect.objectContaining({ "Content-Range": "bytes 0-63/64" }),
@@ -183,10 +184,12 @@ describe(GCStorage, async () => {
             await storage.copy(testfile, "files/новое имя.txt");
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
+            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledWith({
                 url: "https://storage.googleapis.com/storage/v1/b/test-bucket",
             });
 
+            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledWith({
                 body: "",
@@ -202,6 +205,7 @@ describe(GCStorage, async () => {
 
             await storage.copy(testfile, "/new/name.txt");
 
+            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledWith({
                 body: "",

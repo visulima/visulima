@@ -30,6 +30,6 @@ const digitalOcean = (parameters?: CreateDigitalOceanClientParameters) => {
         forcePathStyle: false,
         region: "us-east-1",
     });
-}
+};
 
 export default digitalOcean;

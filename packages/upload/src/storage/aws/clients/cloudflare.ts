@@ -31,6 +31,6 @@ export const cloudflare = (parameters?: CreateCloudflareClientParameters) => {
         endpoint: `https://${accountId}.${jurisdiction ? `${jurisdiction}.` : ""}r2.cloudflarestorage.com`,
         region: "auto",
     });
-}
+};
 
 export default cloudflare;

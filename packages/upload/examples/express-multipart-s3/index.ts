@@ -17,7 +17,7 @@ const storage = new S3Storage({
     onComplete: (file: UploadFile) => console.log("File upload complete: ", file),
 });
 
-const multipart = new Multipart({ storage })
+const multipart = new Multipart({ storage });
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options

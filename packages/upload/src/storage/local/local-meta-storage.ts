@@ -1,8 +1,9 @@
-import { tmpdir } from "node:os";
 import { mkdir, readFile, utimes, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 
-import { join, normalize } from "@visulima/path";
 import { remove } from "@visulima/fs";
+import { join, normalize } from "@visulima/path";
+
 import MetaStorage from "../meta-storage";
 import type { MetaStorageOptions } from "../types";
 import type { File } from "../utils/file";

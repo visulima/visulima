@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { Readable } from "node:stream";
 
 import Multipart from "../handler/multipart";
 import type { UploadOptions } from "../handler/types";
@@ -29,10 +30,10 @@ const fetchMultipartHandler = <TFile extends UploadFile>(
             }
 
             // Convert Request to Node.js IncomingMessage-like object
-            const nodeRequest = {
-                // Store the original request for body access
-                _originalRequest: request,
-                // Add required IncomingMessage properties
+            const bodyBuffer = request.body ? new Uint8Array(await request.arrayBuffer()) : new Uint8Array();
+            const nodeRequest = Readable.from(bodyBuffer);
+
+            Object.assign(nodeRequest, {
                 aborted: false,
                 destroy: () => {},
                 headers: headersToObject(request.headers),
@@ -40,25 +41,29 @@ const fetchMultipartHandler = <TFile extends UploadFile>(
                 httpVersionMajor: 1,
                 httpVersionMinor: 1,
                 method: request.method,
-                on: () => {},
-                once: () => {},
-                // For fetch requests, we need to handle the body differently
-                // The handlers will need to be adapted to work with fetch streams
-                pipe: () => {},
-                removeListener: () => {},
+                on: nodeRequest.on.bind(nodeRequest),
+                once: nodeRequest.once.bind(nodeRequest),
+                removeListener: nodeRequest.removeListener.bind(nodeRequest),
                 setEncoding: () => {},
                 url: request.url,
-            } as any as IncomingMessage;
+            }) as any as IncomingMessage;
 
             // Create a Response wrapper that mimics ServerResponse
             let responseStatus = 200;
             let responseHeaders: Record<string, string | string[]> = {};
             let responseBody: any = null;
 
+            let resolveResponse: () => void;
+            const responsePromise = new Promise<void>((resolve) => {
+                resolveResponse = resolve;
+            });
+
             const nodeResponse = {
                 end: (data?: any) => {
                     if (data !== undefined)
                         responseBody = data;
+
+                    resolveResponse();
                 },
                 flushHeaders: () => {
                     (this as any).headersSent = true;
@@ -88,12 +93,14 @@ const fetchMultipartHandler = <TFile extends UploadFile>(
 
             await multipart.handle(nodeRequest, nodeResponse);
 
+            await responsePromise;
+
             // Convert headers to a format suitable for Response
             const responseInit: ResponseInit = {
                 headers: Object.fromEntries(
                     Object.entries(responseHeaders).map(([key, value]) => [key, Array.isArray(value) ? value.join(", ") : String(value ?? "")]),
                 ),
-                status: responseStatus,
+                status: nodeResponse.statusCode,
             };
 
             return new Response(responseBody, responseInit);

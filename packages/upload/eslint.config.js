@@ -14,15 +14,8 @@ export default createConfig(
             "packem.config.ts",
             ".secretlintrc.cjs",
             "package.json",
+            ".prettierrc.cjs",
             "README.md",
         ],
-    },
-    {
-        files: ["./__tests__/e2e/**"],
-        rules: {
-            "vitest/consistent-test-filename": "off",
-            "vitest/prefer-importing-vitest-globals": "off",
-            "vitest/require-hook": "off",
-        },
     },
 );

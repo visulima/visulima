@@ -1,14 +1,13 @@
 import { join } from "node:path";
 import { Readable } from "node:stream";
 
-import { describe, expect, it, jest } from "@jest/globals";
 import { createRequest } from "node-mocks-http";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import DiskStorageWithChecksum from "../../../src/storage/local/disk-storage-with-checksum";
 import { metafile, storageOptions, testRoot } from "../../__helpers__/config";
 
-jest.mock("fs/promises", () => {
+vi.mock(import("node:fs/promises"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -18,7 +17,7 @@ jest.mock("fs/promises", () => {
     return fs.promises;
 });
 
-jest.mock("fs", () => {
+vi.mock(import("node:fs"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -29,7 +28,7 @@ jest.mock("fs", () => {
 });
 
 // eslint-disable-next-line radar/no-identical-functions
-jest.mock("node:fs", () => {
+vi.mock(import("node:fs"), () => {
     const process = require("node:process");
 
     process.chdir("/");
@@ -45,7 +44,7 @@ jest.mock("node:fs", () => {
 const directory = join(testRoot, "disk-storage", "checksum");
 
 describe(DiskStorageWithChecksum, () => {
-    jest.useFakeTimers({ doNotFake: ["setTimeout"] }).setSystemTime(new Date("2022-02-02"));
+    vi.useFakeTimers({ doNotFake: ["setTimeout"] }).setSystemTime(new Date("2022-02-02"));
 
     const options = { ...storageOptions, checksum: "sha1" as const, directory };
     const request = createRequest();

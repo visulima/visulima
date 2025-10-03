@@ -19,6 +19,8 @@ describe("baseHandler", () => {
     });
 
     it("baseHandler.compose registers correct HTTP methods as handlers", () => {
+        expect.assertions(2);
+
         const logger = new MockLogger();
 
         uploader = new TestUploader({ storage: new TestStorage({ directory: "/files", logger }) });
@@ -28,22 +30,22 @@ describe("baseHandler", () => {
     });
 
     it("baseHandler.errorResponses setter updates internalErrorResponses correctly", () => {
-        // eslint-disable-next-line radar/no-duplicate-string
+        expect.assertions(1);
+
         uploader.errorResponses = { FileNotFound: { message: "Not Found!", statusCode: 404 } };
 
-        // @ts-expect-error
         expect(uploader.internalErrorResponses.FileNotFound).toEqual({ message: "Not Found!", statusCode: 404 });
     });
 
     it("baseHandler.assembleErrors merges default and custom error responses correctly", () => {
+        expect.assertions(2);
+
+
         const errorObject = { message: "Not Found!", statusCode: 404 };
 
-        // @ts-expect-error
         uploader.assembleErrors({ FileNotFound: errorObject });
 
-        // @ts-expect-error
         expect(uploader.internalErrorResponses.FileNotFound).toEqual(errorObject);
-        // @ts-expect-error
         expect(uploader.internalErrorResponses.InvalidRange).toEqual({
             code: "InvalidRange",
             message: "Invalid or missing content-range header",
@@ -55,7 +57,6 @@ describe("baseHandler", () => {
         // eslint-disable-next-line compat/compat
         const getHandler = vi.fn(() => Promise.resolve({}));
 
-        // @ts-expect-error
         uploader.registeredHandlers.set("GET", getHandler);
 
         const request = createRequest({ method: "GET" });
