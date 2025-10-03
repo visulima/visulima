@@ -1,17 +1,15 @@
 import { Hash } from "node:crypto";
-import { rm } from "node:fs/promises";
+import { rm, mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-
-import { fsp } from "../../src/utils/fs";
 import RangeChecksum from "../../src/utils/range-checksum";
 import RangeHasher from "../../src/utils/range-hasher";
 import { testRoot as rootPath } from "../__helpers__/config";
 
 const createTestFile = async (testRoot: string, filepath: string) => {
-    await fsp.mkdir(testRoot, { recursive: true });
-    await fsp.writeFile(filepath, "test", "utf8");
+    await mkdir(testRoot, { recursive: true });
+    await writeFile(filepath, "test", "utf8");
 };
 
 describe("utils", async () => {

@@ -197,7 +197,6 @@ describe("utils", () => {
         });
 
         it.each([
-
             ["/files/1/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
 
             ["/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],

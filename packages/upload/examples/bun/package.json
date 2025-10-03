@@ -1,0 +1,11 @@
+{
+    "name": "upload_example_bun",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "bun run index.ts"
+    },
+    "dependencies": {
+        "@visulima/upload": "workspace:*"
+    }
+}
