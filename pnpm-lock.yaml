@@ -9955,21 +9955,6 @@ importers:
 
   packages/upload/examples/express:
     dependencies:
-      '@aws-sdk/abort-controller':
-        specifier: ^3.374.0
-        version: 3.374.0
-      '@aws-sdk/client-s3':
-        specifier: ^3.901.0
-        version: 3.901.0(aws-crt@1.27.3)
-      '@aws-sdk/credential-providers':
-        specifier: ^3.901.0
-        version: 3.901.0(aws-crt@1.27.3)
-      '@aws-sdk/s3-request-presigner':
-        specifier: ^3.901.0
-        version: 3.901.0
-      '@aws-sdk/types':
-        specifier: ^3.901.0
-        version: 3.901.0
       '@visulima/upload':
         specifier: workspace:*
         version: link:../..
@@ -9985,12 +9970,6 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.1.0
-      google-auth-library:
-        specifier: ^10.4.0
-        version: 10.4.0
-      winston:
-        specifier: ^3.18.3
-        version: 3.18.3
     devDependencies:
       '@types/cors':
         specifier: ^2.8.19
@@ -9998,9 +9977,9 @@ importers:
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
-      ts-node-dev:
-        specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
+      tsx:
+        specifier: 4.20.6
+        version: 4.20.6
 
   packages/upload/examples/express-multipart-azure:
     dependencies:
@@ -10010,21 +9989,12 @@ importers:
       '@visulima/upload':
         specifier: workspace:*
         version: link:../..
-      copy-file:
-        specifier: ^11.1.0
-        version: 11.1.0
       cors:
         specifier: 2.8.5
         version: 2.8.5
-      dotenv:
-        specifier: ^17.2.3
-        version: 17.2.3
       express:
         specifier: ^5.1.0
         version: 5.1.0
-      winston:
-        specifier: ^3.18.3
-        version: 3.18.3
     devDependencies:
       '@types/cors':
         specifier: ^2.8.19
@@ -10032,33 +10002,24 @@ importers:
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
-      ts-node-dev:
-        specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
+      tsx:
+        specifier: 4.20.6
+        version: 4.20.6
 
   packages/upload/examples/express-multipart-gcs:
     dependencies:
       '@visulima/upload':
         specifier: workspace:*
         version: link:../..
-      copy-file:
-        specifier: ^11.1.0
-        version: 11.1.0
       cors:
         specifier: 2.8.5
         version: 2.8.5
-      dotenv:
-        specifier: ^17.2.3
-        version: 17.2.3
       express:
         specifier: ^5.1.0
         version: 5.1.0
       google-auth-library:
         specifier: ^10.4.0
         version: 10.4.0
-      winston:
-        specifier: ^3.18.3
-        version: 3.18.3
     devDependencies:
       '@types/cors':
         specifier: ^2.8.19
@@ -10066,9 +10027,9 @@ importers:
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
-      ts-node-dev:
-        specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
+      tsx:
+        specifier: 4.20.6
+        version: 4.20.6
 
   packages/upload/examples/express-multipart-local:
     dependencies:
@@ -10094,9 +10055,9 @@ importers:
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
-      ts-node-dev:
-        specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
+      tsx:
+        specifier: 4.20.6
+        version: 4.20.6
 
   packages/upload/examples/express-multipart-s3:
     dependencies:
@@ -10143,9 +10104,9 @@ importers:
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
-      ts-node-dev:
-        specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
+      tsx:
+        specifier: 4.20.6
+        version: 4.20.6
 
   packages/upload/examples/express-tus-azure:
     dependencies:
@@ -10177,9 +10138,9 @@ importers:
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
-      ts-node-dev:
-        specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
+      tsx:
+        specifier: 4.20.6
+        version: 4.20.6
 
   packages/upload/examples/express-tus-gcs:
     dependencies:
@@ -10211,9 +10172,9 @@ importers:
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
-      ts-node-dev:
-        specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
+      tsx:
+        specifier: 4.20.6
+        version: 4.20.6
 
   packages/upload/examples/express-tus-local:
     dependencies:
@@ -10242,9 +10203,9 @@ importers:
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
-      ts-node-dev:
-        specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
+      tsx:
+        specifier: 4.20.6
+        version: 4.20.6
 
   packages/upload/examples/express-tus-s3:
     dependencies:
@@ -32587,6 +32548,7 @@ packages:
     peerDependencies:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
@@ -32594,6 +32556,9 @@ packages:
 =======
       vite: '>=5.4.20'
 >>>>>>> c0a5469f3 (refactor(upload): update dependencies and clean up configuration)
+=======
+      vite: '>=7.1.5'
+>>>>>>> da40c7bd5 (refactor(upload): update example applications and dependencies)
     peerDependenciesMeta:
       vite:
         optional: true

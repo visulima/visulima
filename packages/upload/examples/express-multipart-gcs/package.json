@@ -3,20 +3,17 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "dev": "tsnd -r dotenv/config index"
+        "dev": "tsx index.ts"
     },
     "dependencies": {
         "@visulima/upload": "workspace:*",
         "cors": "2.8.5",
-        "copy-file": "^11.1.0",
-        "dotenv": "^17.2.3",
         "express": "^5.1.0",
-        "google-auth-library": "^10.4.0",
-        "winston": "^3.18.3"
+        "google-auth-library": "^10.4.0"
     },
     "devDependencies": {
         "@types/cors": "^2.8.19",
         "@types/express": "^5.0.3",
-        "ts-node-dev": "^2.0.0"
+        "tsx": "4.20.6"
     }
 }
