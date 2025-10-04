@@ -6,7 +6,7 @@ import type { UploadOptions } from "../handler/types";
 import type { UploadFile } from "../storage/utils/file";
 
 // Convert Web API Headers to plain object
-function headersToObject(headers: Headers): Record<string, string> {
+const headersToObject = (headers: Headers): Record<string, string> => {
     const result: Record<string, string> = {};
 
     headers.forEach((value, key) => {
@@ -74,7 +74,7 @@ const fetchMultipartHandler = <TFile extends UploadFile>(
                 setHeader: (name: string, value: string | string[]) => {
                     responseHeaders[name] = value;
                 },
-                statusCode: 200,
+                statusCode: responseStatus,
                 write: (data: any) => {
                     responseBody = data;
                 },
