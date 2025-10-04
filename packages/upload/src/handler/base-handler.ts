@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { format, parse } from "node:url";
+import { format } from "node:url";
 
 import { paginate } from "@visulima/pagination";
 import createHttpError, { isHttpError } from "http-errors";
@@ -15,6 +15,7 @@ import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList,
 const CONTENT_TYPE = "Content-Type";
 
 abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMessage = IncomingMessage, Response extends ServerResponse = ServerResponse>
+    // eslint-disable-next-line unicorn/prefer-event-target
     extends EventEmitter
     implements MethodHandler<Request, Response> {
     /**
@@ -25,9 +26,9 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
      * app.use('/upload', Upload(opts));
      * ```
      */
-    public static methods: Handlers[] = ["delete", "get", "head", "options", "patch", "post", "put"];
+    public static readonly methods: Handlers[] = ["delete", "get", "head", "options", "patch", "post", "put"];
 
-    responseType: ResponseBodyType = "json";
+    public responseType: ResponseBodyType = "json";
 
     public storage: BaseStorage<TFile>;
 
@@ -61,33 +62,51 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
         this.assembleErrors(value);
     }
 
-    protected compose = (): void => {
-        const child = this.constructor as typeof BaseHandler;
-
-        (child.methods || BaseHandler.methods).forEach((method) => {
-            const handler = (this as MethodHandler<Request, Response>)[method];
-
-            if (handler) {
-                this.registeredHandlers.set(method.toUpperCase(), handler);
-            }
-        });
-
-        this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
-    };
-
-    protected assembleErrors = (customErrors = {}): void => {
-        this.internalErrorResponses = {
-            ...ErrorMap,
-
-            ...this.internalErrorResponses,
-            ...this.storage.errorResponses,
-            ...customErrors,
-        };
-    };
-
     public handle = (request: Request, response: Response): void => this.upload(request, response);
 
-    // eslint-disable-next-line radar/cognitive-complexity
+    /**
+     * Handle Web API Fetch requests (for Hono, Cloudflare Workers, etc.)
+     */
+    public fetch = async (request: Request): Promise<Response> => {
+        this.logger?.debug("[fetch request]: %s %s", request.method, request.url);
+
+        const handler = this.registeredHandlers.get(request.method);
+
+        if (!handler) {
+            return this.createErrorResponse({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED } as UploadError);
+        }
+
+        if (!this.storage.isReady) {
+            return this.createErrorResponse({ UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
+        }
+
+        try {
+            const nodeRequest = await this.convertRequestToNode(request);
+            const mockResponse = this.createMockResponse();
+            const file = await handler.call(this, nodeRequest as any, mockResponse);
+
+            return this.handleFetchResponse(request, file);
+        } catch (error: any) {
+            const uError = pick(error, ["name", ...(Object.getOwnPropertyNames(error) as (keyof Error)[])]) as UploadError;
+            const errorEvent = {
+                ...uError,
+                request: {
+                    headers: Object.fromEntries(request.headers.entries()),
+                    method: request.method,
+                    url: request.url,
+                },
+            };
+
+            if (this.listenerCount("error") > 0) {
+                this.emit("error", errorEvent);
+            }
+
+            this.logger?.error("[fetch error]: %O", errorEvent);
+
+            return this.createErrorResponse(error);
+        }
+    };
+
     public upload = (request: Request, response: Response, next?: () => void): void => {
         request.on("error", (error) => this.logger?.error("[request error]: %O", error));
 
@@ -219,7 +238,6 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
      */
     public async get(request: Request, response: Response): Promise<ResponseFile<TFile> | ResponseList<TFile>>;
 
-    // eslint-disable-next-line radar/cognitive-complexity
     public async get(request: Request & { originalUrl?: string }, _response: Response): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
         const pathMatch = filePathUrlMatcher(getRealPath(request));
 
@@ -266,7 +284,9 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public async list(request: Request, _response: Response): Promise<ResponseList<TFile>> {
-        const { limit, page } = parse(request.url || "", true).query as Record<string, string>;
+        const url = new URL(request.url || "", "http://localhost");
+        const limit = url.searchParams.get("limit");
+        const page = url.searchParams.get("page");
 
         const list = await this.storage.list(Number(limit || 1000));
 
@@ -348,8 +368,10 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
      * Build file url from request
      */
     protected buildFileUrl(request: Request & { originalUrl?: string }, file: TFile): string {
-        const { pathname = "", query } = parse(request.originalUrl || (request.url as string), true);
-        const relative = format({ pathname: `${pathname as string}/${file.id}`, query });
+        const url = new URL(request.originalUrl || (request.url as string), "http://localhost");
+        const { pathname } = url;
+        const query = Object.fromEntries(url.searchParams.entries());
+        const relative = format({ pathname: `${pathname}/${file.id}`, query });
 
         return `${this.storage.config.useRelativeLocation ? relative : getBaseUrl(request) + relative}.${mime.getExtension(file.contentType)}`;
     }
@@ -374,6 +396,229 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
             headers,
             statusCode,
         });
+    }
+
+    protected compose = (): void => {
+        const child = this.constructor as typeof BaseHandler;
+
+        (child.methods || BaseHandler.methods).forEach((method) => {
+            const handler = (this as MethodHandler<Request, Response>)[method];
+
+            if (handler) {
+                this.registeredHandlers.set(method.toUpperCase(), handler);
+            }
+        });
+
+        this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
+    };
+
+    protected assembleErrors = (customErrors = {}): void => {
+        this.internalErrorResponses = {
+            ...ErrorMap,
+
+            ...this.internalErrorResponses,
+            ...this.storage.errorResponses,
+            ...customErrors,
+        };
+    };
+
+    /**
+     * Convert Web API Request to Node.js IncomingMessage for handler compatibility
+     */
+    protected async convertRequestToNode(request: Request): Promise<IncomingMessage> {
+        const url = new URL(request.url);
+        let bodyBuffer = new Uint8Array();
+
+        // Check if request has body and arrayBuffer method (Web API Request)
+        if (request.body && typeof request.arrayBuffer === "function") {
+            try {
+                bodyBuffer = new Uint8Array(await request.arrayBuffer());
+            } catch {
+                // Ignore errors, bodyBuffer remains empty
+            }
+        }
+
+        const nodeRequest = {
+            aborted: false,
+            destroy: () => {},
+            headers: Object.fromEntries(request.headers.entries()),
+            httpVersion: "1.1",
+            httpVersionMajor: 1,
+            httpVersionMinor: 1,
+            method: request.method,
+            on: () => {},
+            once: () => {},
+            pipe: () => {},
+            removeListener: () => {},
+            setEncoding: () => {},
+            url: url.pathname + url.search,
+        } as any as IncomingMessage;
+
+        // Add body data if present
+        if (bodyBuffer.length > 0) {
+            (nodeRequest as IncomingMessageWithBody).body = bodyBuffer;
+        }
+
+        return nodeRequest;
+    }
+
+    /**
+     * Handle the response from handlers for fetch requests
+     */
+    protected async handleFetchResponse(request: Request, file: ResponseFile<TFile> | ResponseList<TFile>): Promise<Response> {
+        // Handle different response types
+        if (request.method === "HEAD" || request.method === "OPTIONS") {
+            const { headers, statusCode } = file as ResponseFile<TFile>;
+
+            return new Response(undefined, {
+                headers: this.convertHeaders(headers),
+                status: statusCode,
+            });
+        }
+
+        if (request.method === "GET") {
+            const { headers, statusCode } = file as ResponseFile<TFile>;
+            let body: BodyInit = "";
+
+            if ((file as ResponseFile<TFile>).content !== undefined) {
+                body = (file as ResponseFile<TFile>).content as Buffer;
+            } else if (typeof file === "object" && "data" in file) {
+                body = JSON.stringify((file as ResponseList<TFile>).data);
+            }
+
+            return new Response(body, {
+                headers: this.convertHeaders(headers),
+                status: statusCode,
+            });
+        }
+
+        // POST/PUT/PATCH/DELETE responses
+        const { headers, statusCode, ...basicFile } = file as ResponseFile<TFile>;
+
+        // Emit events if listeners exist
+        if (basicFile.status !== undefined && this.listenerCount(basicFile.status) > 0) {
+            this.emit(basicFile.status, {
+                ...basicFile,
+                request: {
+                    headers: Object.fromEntries(request.headers.entries()),
+                    method: request.method,
+                    url: request.url,
+                },
+            });
+        }
+
+        if (basicFile.status === "completed") {
+            const completed = await this.storage.onComplete(file as TFile);
+
+            if (completed.headers === undefined) {
+                throw new TypeError("onComplete must return the key headers");
+            }
+
+            if (completed.statusCode === undefined) {
+                throw new TypeError("onComplete must return the key statusCode");
+            }
+
+            return this.createResponse(completed);
+        }
+
+        return new Response(undefined, {
+            headers: this.convertHeaders({
+                ...headers,
+                ...basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value },
+            }),
+            status: statusCode,
+        });
+    }
+
+    /**
+     * Create a mock ServerResponse for handlers to write to
+     */
+    protected createMockResponse(): ServerResponse {
+        let responseStatus = 200;
+        let responseHeaders: Record<string, string | string[]> = {};
+
+        return {
+            end: () => {},
+            flushHeaders: () => {},
+            getHeader: (name: string) => responseHeaders[name],
+            headersSent: false,
+            removeHeader: (name: string) => delete responseHeaders[name],
+            setHeader: (name: string, value: string | string[]) => {
+                responseHeaders[name] = value;
+            },
+            statusCode: responseStatus,
+            write: (data: any) => {
+                responseBody = data;
+            },
+            writeContinue: () => {},
+            writeEarlyHints: () => {},
+            writeHead: (status: number, headers?: Record<string, string | string[]>) => {
+                responseStatus = status;
+
+                if (headers) {
+                    responseHeaders = { ...responseHeaders, ...headers };
+                }
+            },
+            writeProcessing: () => {},
+        } as any as ServerResponse;
+    }
+
+    /**
+     * Convert headers to Web API Headers format
+     */
+    protected convertHeaders(headers: Record<string, number | string>): Record<string, string> {
+        const result: Record<string, string> = {};
+
+        for (const [key, value] of Object.entries(headers)) {
+            result[key] = String(value);
+        }
+
+        return result;
+    }
+
+    /**
+     * Create Response from UploadResponse
+     */
+    protected createResponse(uploadResponse: UploadResponse): Response {
+        const { body, headers = {}, statusCode } = uploadResponse;
+
+        let responseBody: BodyInit = "";
+
+        if (typeof body === "string") {
+            responseBody = body;
+        } else if (body instanceof Buffer) {
+            responseBody = body;
+        } else if (body && typeof body === "object") {
+            responseBody = JSON.stringify(body);
+
+            if (!headers["Content-Type"]) {
+                headers["Content-Type"] = "application/json;charset=utf-8";
+            }
+        }
+
+        return new Response(responseBody, {
+            headers: this.convertHeaders(headers),
+            status: statusCode,
+        });
+    }
+
+    /**
+     * Create error Response
+     */
+    protected createErrorResponse(error: Error): Response {
+        let httpError: HttpError;
+
+        if (isUploadError(error)) {
+            httpError = this.internalErrorResponses[error.UploadErrorCode] as HttpError;
+        } else if (!isValidationError(error) && !isHttpError(error)) {
+            httpError = this.storage.normalizeError(error);
+        } else {
+            httpError = error;
+        }
+
+        const errorResponse = this.storage.onError(httpError);
+
+        return this.createResponse(errorResponse);
     }
 }
 

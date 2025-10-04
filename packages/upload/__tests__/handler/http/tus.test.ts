@@ -42,15 +42,11 @@ describe("hTTP Tus", () => {
     const basePath = "/http-tus";
     const directory = join(testRoot, "http-tus");
     const options = { ...storageOptions, directory };
-    const tus = new Tus({ storage: new DiskStorage(options) });
 
     app.use(basePath, async (request, res) => {
-        const handler = await import("../../../src/http/tus");
-        const httpTusHandler = handler.default;
+        const tus = new Tus({ storage: new DiskStorage(options) });
 
-        const tusHandler = httpTusHandler({ storage: new DiskStorage(options) });
-
-        await tusHandler(request, res);
+        await tus.handle(request, res);
     });
 
     function create(): supertest.Test {

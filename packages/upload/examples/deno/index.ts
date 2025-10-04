@@ -8,115 +8,75 @@ const storage = new DiskStorage({
     maxUploadSize: "100MB",
 });
 
-// Multipart handler
+// Multipart handler - single instance for all requests
 const multipart = new Multipart({ storage });
+
+// CORS configuration
+const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Max-Age": "86400",
+};
+
+function createCORSResponse(): Response {
+    return new Response(null, { headers: corsHeaders });
+}
+
+function createJSONResponse(data: any, status = 200): Response {
+    return new Response(JSON.stringify(data), {
+        status,
+        headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+        },
+    });
+}
+
+function createErrorResponse(error: string, status = 500): Response {
+    console.error("Request error:", error);
+    return createJSONResponse({ error }, status);
+}
 
 async function handleRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
-
-    // Enable CORS
-    const corsHeaders = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-    };
+    const method = request.method;
 
     // Handle preflight requests
-    if (request.method === "OPTIONS") {
-        return new Response(null, { headers: corsHeaders });
+    if (method === "OPTIONS") {
+        return createCORSResponse();
     }
 
     try {
-        switch (url.pathname) {
-            case "/health":
-                if (request.method === "GET") {
-                    return new Response(JSON.stringify({ status: "OK", runtime: "deno" }), {
-                        headers: { ...corsHeaders, "Content-Type": "application/json" },
-                    });
-                }
-                break;
-
-            case "/files":
-                if (request.method === "GET") {
-                    return await handleListFiles(corsHeaders);
-                }
-                break;
-
-            case "/upload":
-                if (request.method === "POST") {
-                    return await handleUpload(request, corsHeaders);
-                }
-                break;
-        }
-
-        return new Response(JSON.stringify({ error: "Not found" }), {
-            status: 404,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-    } catch (error: any) {
-        console.error("Request error:", error);
-        return new Response(JSON.stringify({ error: error.message }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-    }
-}
-
-async function handleListFiles(corsHeaders: Record<string, string>): Promise<Response> {
-    try {
-        const uploadsDir = "./uploads";
-
-        // Check if uploads directory exists
-        try {
-            await Deno.stat(uploadsDir);
-        } catch {
-            return new Response(JSON.stringify({ files: [] }), {
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
+        // Route handling
+        if (url.pathname === "/health" && method === "GET") {
+            return createJSONResponse({
+                status: "OK",
+                runtime: "deno",
+                method: "fetch",
+                timestamp: new Date().toISOString(),
+                version: "1.0.0",
             });
         }
 
-        // Read directory contents
-        const files: any[] = [];
-        for await (const entry of Deno.readDir(uploadsDir)) {
-            if (entry.isFile) {
-                const filePath = `${uploadsDir}/${entry.name}`;
-                const stats = await Deno.stat(filePath);
-                files.push({
-                    name: entry.name,
-                    size: stats.size,
-                    modified: stats.mtime,
-                });
-            }
+        if ((url.pathname === "/files" || url.pathname === "/upload") && (method === "GET" || method === "POST")) {
+            // Use the fetch method for file listing
+            return await multipart.fetch(request);
         }
 
-        return new Response(JSON.stringify({ files }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        // 404 for unknown routes
+        return createJSONResponse({ error: "Not found" }, 404);
     } catch (error: any) {
-        return new Response(JSON.stringify({ error: error.message }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return createErrorResponse(error.message || "Internal server error");
     }
 }
 
-async function handleUpload(request: Request, corsHeaders: Record<string, string>): Promise<Response> {
-    try {
-        // Use the fetch multipart handler
-        const { fetchMultipartHandler } = await import("npm:@visulima/upload/fetch");
-
-        const handler = fetchMultipartHandler({ storage });
-        return await handler(request);
-    } catch (error: any) {
-        console.error("Upload error:", error);
-        return new Response(JSON.stringify({ error: error.message }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-    }
-}
-
+// Startup logging
 console.log(`🚀 Deno upload server running on http://localhost:${PORT}`);
 console.log(`📁 Upload directory: ${Deno.cwd()}/uploads`);
+console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+console.log(`📤 Upload endpoint: http://localhost:${PORT}/upload`);
+console.log(`📋 File listing: http://localhost:${PORT}/files`);
 
+// Start the server
 Deno.serve({ port: PORT }, handleRequest);

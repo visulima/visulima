@@ -9,7 +9,6 @@ import type {
     ListObjectsV2CommandInput,
     Part,
 } from "@aws-sdk/client-s3";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import {
     AbortMultipartUploadCommand,
     CompleteMultipartUploadCommand,
@@ -24,9 +23,7 @@ import {
     UploadPartCommand,
     waitUntilBucketExists,
 } from "@aws-sdk/client-s3";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { fromIni } from "@aws-sdk/credential-providers";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { HttpHandlerOptions, SdkStream } from "@aws-sdk/types";
 import { parseBytes } from "@visulima/humanizer";

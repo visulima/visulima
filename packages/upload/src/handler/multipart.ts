@@ -47,9 +47,9 @@ class Multipart<
      * app.use('/upload', new Multipart(opts).handle);
      * ```
      */
-    public static override methods: Handlers[] = ["delete", "get", "options", "post"];
+    public static override readonly methods: Handlers[] = ["delete", "get", "options", "post"];
 
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public async post(request: Request): Promise<ResponseFile<TFile>> {
         if (!RE_MIME.test(request.headers["content-type"]?.split(";")[0] ?? "")) {
             throw createHttpError(400, "Invalid content-type");
