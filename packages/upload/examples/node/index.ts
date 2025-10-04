@@ -1,7 +1,6 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { parse } from "url";
 import { Multipart, DiskStorage } from "@visulima/upload";
-import { promises as fs } from "fs";
 import path from "path";
 
 const PORT = process.env.PORT || 3002;
@@ -12,14 +11,36 @@ const storage = new DiskStorage({
     maxUploadSize: "100MB",
 });
 
-// Multipart handler
+// Multipart handler - single instance for all requests
 const multipart = new Multipart({ storage });
 
+// CORS configuration
+const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Max-Age": "86400",
+};
+
+function setCORSHeaders(res: ServerResponse): void {
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+        res.setHeader(key, value);
+    });
+}
+
+function sendJSONResponse(res: ServerResponse, data: any, status = 200): void {
+    setCORSHeaders(res);
+    res.writeHead(status, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(data));
+}
+
+function sendErrorResponse(res: ServerResponse, error: string, status = 500): void {
+    console.error("Request error:", error);
+    sendJSONResponse(res, { error }, status);
+}
+
 const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    // Enable CORS
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    setCORSHeaders(res);
 
     // Handle preflight requests
     if (req.method === "OPTIONS") {
@@ -29,90 +50,45 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
     }
 
     const { pathname } = parse(req.url || "/");
+    const method = req.method;
 
     try {
-        switch (pathname) {
-            case "/health":
-                if (req.method === "GET") {
-                    res.writeHead(200, { "Content-Type": "application/json" });
-                    res.end(JSON.stringify({ status: "OK", runtime: "node" }));
-                } else {
-                    res.writeHead(405);
-                    res.end("Method not allowed");
-                }
-                break;
-
-            case "/files":
-                if (req.method === "GET") {
-                    await handleListFiles(req, res);
-                } else {
-                    res.writeHead(405);
-                    res.end("Method not allowed");
-                }
-                break;
-
-            case "/upload":
-                if (req.method === "POST") {
-                    await multipart.handle(req, res);
-                } else {
-                    res.writeHead(405);
-                    res.end("Method not allowed");
-                }
-                break;
-
-            default:
-                res.writeHead(404, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ error: "Not found" }));
-        }
-    } catch (error: any) {
-        console.error("Server error:", error);
-        res.writeHead(500, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: error.message }));
-    }
-});
-
-async function handleListFiles(req: IncomingMessage, res: ServerResponse) {
-    try {
-        const uploadsDir = path.join(process.cwd(), "uploads");
-
-        // Check if uploads directory exists
-        try {
-            await fs.access(uploadsDir);
-        } catch {
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ files: [] }));
+        // Route handling
+        if (pathname === "/health" && method === "GET") {
+            sendJSONResponse(res, {
+                status: "OK",
+                runtime: "node",
+                method: "handle",
+                timestamp: new Date().toISOString(),
+                version: "1.0.0",
+            });
             return;
         }
 
-        // Read directory contents
-        const files = await fs.readdir(uploadsDir);
-        const fileStats = await Promise.all(
-            files.map(async (file) => {
-                const filePath = path.join(uploadsDir, file);
-                const stats = await fs.stat(filePath);
+        if (pathname === "/files" && method === "GET") {
+            // Use the handle method directly for file listing
+            await multipart.handle(req, res);
+            return;
+        }
 
-                if (stats.isFile()) {
-                    return {
-                        name: file,
-                        size: stats.size,
-                        modified: stats.mtime,
-                    };
-                }
-                return null;
-            }),
-        );
+        if (pathname === "/upload" && method === "POST") {
+            // Use the handle method directly for uploads
+            await multipart.handle(req, res);
+            return;
+        }
 
-        const validFiles = fileStats.filter(Boolean);
-
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ files: validFiles }));
+        // 404 for unknown routes
+        sendJSONResponse(res, { error: "Not found" }, 404);
     } catch (error: any) {
-        res.writeHead(500, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: error.message }));
+        sendErrorResponse(res, error.message || "Internal server error");
     }
-}
+});
 
+// Startup logging
 server.listen(PORT, () => {
     console.log(`🚀 Node.js upload server running on http://localhost:${PORT}`);
     console.log(`📁 Upload directory: ${path.join(process.cwd(), "uploads")}`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+    console.log(`📤 Upload endpoint: http://localhost:${PORT}/upload`);
+    console.log(`📋 File listing: http://localhost:${PORT}/files`);
 });

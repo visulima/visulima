@@ -2,10 +2,7 @@
 
 ## Overview
 
-Amazon S3 is a web service interface that you can use to store and retrieve any amount of data, at any time, from anywhere on the web.
-You can use Amazon S3 to store and retrieve any amount of data at any time, from anywhere on the web.
-You can accomplish these tasks using the simple web services interface that Amazon S3 provides.
-Amazon S3 is designed to make web-scale computing easier for developers.
+Amazon S3 is a web service interface that you can use to store and retrieve any amount of data, at any time, from anywhere on the web. You can accomplish these tasks using the simple web services interface that Amazon S3 provides. Amazon S3 is designed to make web-scale computing easier for developers and works seamlessly with Visulima upload's image transformation features.
 
 ## Installation
 
@@ -24,7 +21,7 @@ pnpm add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-pr
 ## Usage
 
 ```ts
-import { S3Storage } from "@visulima/upload/aws";
+import { S3Storage, ImageTransformer } from "@visulima/upload";
 
 const storage = new S3Storage({
     bucket: "upload",
@@ -35,6 +32,52 @@ const storage = new S3Storage({
     },
     expiration: { maxAge: "1h", purgeInterval: "15min" },
     logger: console,
+});
+
+// Initialize image transformer for on-demand transformations
+const imageTransformer = new ImageTransformer(storage, {
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+    enableCache: true,
+    cacheTtl: 3600, // 1 hour
+});
+
+// Upload a file
+const file = await storage.put(fileBuffer, { filename: "image.jpg" });
+
+// Transform the uploaded image
+const thumbnail = await imageTransformer.resize(file.id, {
+    width: 300,
+    height: 200,
+    fit: "cover",
+    quality: 80,
+});
+```
+
+## Image Transformations
+
+Amazon S3 integrates seamlessly with Visulima upload's image transformation capabilities:
+
+```ts
+// Resize images on-demand
+const resized = await imageTransformer.resize("file-id", {
+    width: 800,
+    height: 600,
+    fit: "cover",
+});
+
+// Convert formats for better compression
+const webp = await imageTransformer.transform("file-id", {
+    format: "webp",
+    quality: 85,
+    lossless: false,
+});
+
+// Crop images
+const cropped = await imageTransformer.crop("file-id", {
+    width: 400,
+    height: 300,
+    left: 100,
+    top: 50,
 });
 ```
 
@@ -47,3 +90,37 @@ const storage = new S3Storage({
 | credentials | object | The credentials to use to access the bucket. |         |
 | expiration  | object | The expiration configuration.                |         |
 | logger      | Logger | The logger to use                            |         |
+
+## Performance Considerations
+
+1. **CloudFront Integration**: Use Amazon CloudFront as a CDN for faster global delivery
+2. **Caching**: Enable transformation caching to reduce processing costs
+3. **Storage Classes**: Use appropriate S3 storage classes for transformed images
+4. **Presigned URLs**: Generate presigned URLs for secure temporary access
+
+## CloudFront Integration
+
+For optimal performance, integrate with Amazon CloudFront:
+
+```ts
+// Use CloudFront distribution for transformed images
+const cloudFrontUrl = `https://your-distribution.cloudfront.net/files/${fileId}?width=500&height=500&fit=cover&quality=80`;
+
+// Or generate presigned URLs for private buckets
+const presignedUrl = await storage.getPresignedUrl(fileId, {
+    expires: Date.now() + 3600000, // 1 hour
+    transform: {
+        width: 500,
+        height: 500,
+        fit: "cover",
+        format: "webp",
+    },
+});
+```
+
+## Cost Optimization
+
+1. **Intelligent Tiering**: Use S3 Intelligent Tiering for automatic cost optimization
+2. **Lifecycle Policies**: Automatically move old transformations to cheaper storage
+3. **Request Optimization**: Cache transformations to reduce compute costs
+4. **Compression**: Use efficient formats like WebP/AVIF to reduce storage costs

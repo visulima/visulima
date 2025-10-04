@@ -1,5 +1,4 @@
 import type { BlobItem, ContainerClient } from "@azure/storage-blob";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 
 import MetaStorage from "../meta-storage";
