@@ -30,3 +30,7 @@ yarn-error.log*
 # uploads
 /uploads
 *.lock
+
+# Deno
+deno.lock
+node_modules/

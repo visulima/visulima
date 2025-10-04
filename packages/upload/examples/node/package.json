@@ -1,9 +1,11 @@
 {
     "name": "upload_example_node",
     "version": "1.0.0",
+    "description": "Node.js example showcasing Visulima Upload with handle() method for optimal Node.js performance",
     "private": true,
     "scripts": {
-        "dev": "tsx index.ts"
+        "dev": "tsx index.ts",
+        "start": "tsx index.ts"
     },
     "dependencies": {
         "@visulima/upload": "workspace:*"

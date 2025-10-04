@@ -13,7 +13,7 @@ export default defineConfig({
     validation: {
         dependencies: {
             unused: {
-                exclude: ["@aws-sdk/signature-v4-crt", "aws-crt", "express", "node-fetch"],
+                exclude: ["@aws-sdk/signature-v4-crt", "aws-crt"],
             },
         },
     },

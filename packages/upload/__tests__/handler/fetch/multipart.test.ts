@@ -69,11 +69,25 @@ describe("fetch Multipart", () => {
         it("should support custom fields", async () => {
             const request = create();
 
-            const handler = await import("../../../src/fetch/multipart");
-            const fetchMultipartHandler = handler.default;
+            const { default: Multipart } = await import("../../../src/handler/multipart");
 
-            const multipartHandler = fetchMultipartHandler({ storage: new DiskStorage(options) });
-            const response = await multipartHandler(request);
+            const storage = new DiskStorage(options);
+            const multipartHandler = new Multipart({ storage });
+
+            // Wait for storage to be ready
+            await new Promise((resolve) => {
+                const checkReady = () => {
+                    if (storage.isReady) {
+                        resolve(undefined);
+                    } else {
+                        setTimeout(checkReady, 10);
+                    }
+                };
+
+                checkReady();
+            });
+
+            const response = await multipartHandler.fetch(request);
 
             expect(response.status).toBe(200);
             expect(response.headers.get("location")).toBeDefined();
@@ -88,11 +102,25 @@ describe("fetch Multipart", () => {
                 method: "POST",
             });
 
-            const handler = await import("../../../src/fetch/multipart");
-            const fetchMultipartHandler = handler.default;
+            const { default: Multipart } = await import("../../../src/handler/multipart");
 
-            const multipartHandler = fetchMultipartHandler({ storage: new DiskStorage(options) });
-            const response = await multipartHandler(request);
+            const storage = new DiskStorage(options);
+            const multipartHandler = new Multipart({ storage });
+
+            // Wait for storage to be ready
+            await new Promise((resolve) => {
+                const checkReady = () => {
+                    if (storage.isReady) {
+                        resolve(undefined);
+                    } else {
+                        setTimeout(checkReady, 10);
+                    }
+                };
+
+                checkReady();
+            });
+
+            const response = await multipartHandler.fetch(request);
 
             expect(response.status).toBe(400);
 
@@ -108,11 +136,25 @@ describe("fetch Multipart", () => {
                 method: "OPTIONS",
             });
 
-            const handler = await import("../../../src/fetch/multipart");
-            const fetchMultipartHandler = handler.default;
+            const { default: Multipart } = await import("../../../src/handler/multipart");
 
-            const multipartHandler = fetchMultipartHandler({ storage: new DiskStorage(options) });
-            const response = await multipartHandler(request);
+            const storage = new DiskStorage(options);
+            const multipartHandler = new Multipart({ storage });
+
+            // Wait for storage to be ready
+            await new Promise((resolve) => {
+                const checkReady = () => {
+                    if (storage.isReady) {
+                        resolve(undefined);
+                    } else {
+                        setTimeout(checkReady, 10);
+                    }
+                };
+
+                checkReady();
+            });
+
+            const response = await multipartHandler.fetch(request);
 
             expect(response.status).toBe(204);
             expect(response.headers.get("access-control-allow-methods")).toBe("DELETE, GET, OPTIONS, POST");

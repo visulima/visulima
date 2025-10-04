@@ -30,3 +30,6 @@ yarn-error.log*
 # uploads
 /uploads
 *.lock
+
+# Bun
+bun.lockb
