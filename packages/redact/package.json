@@ -110,7 +110,7 @@
         "@babel/core": "^7.27.1",
         "@rushstack/eslint-plugin-security": "^0.10.0",
         "@secretlint/secretlint-rule-preset-recommend": "^9.3.2",
-        "@types/node": "18.19.71",
+        "@types/node": "18.19.129",
         "@visulima/packem": "1.19.1",
         "@vitest/coverage-v8": "^3.1.4",
         "@vitest/ui": "^3.1.4",
