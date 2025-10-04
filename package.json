@@ -273,7 +273,7 @@
         "cross-env": "^10.0.0",
         "husky": "^9.1.7",
         "is-ci": "^4.1.0",
-        "lint-staged": "^16.1.6",
+        "lint-staged": "^16.2.3",
         "nx": "^21.5.2",
         "pkg-pr-new": "^0.0.59",
         "plop": "^4.0.2",
@@ -283,13 +283,13 @@
         "secretlint": "11.2.4",
         "semantic-release": "^24.2.8",
         "sort-package-json": "^3.4.0",
-        "taze": "^19.6.0",
+        "taze": "^19.7.0",
         "textlint": "^15.2.2",
         "tsup": "^8.5.0",
         "typescript": "5.9.2",
         "vitest": "^3.2.4"
     },
-    "packageManager": "pnpm@10.15.1",
+    "packageManager": "pnpm@10.17.1",
     "engines": {
         "node": ">=20.19 <=24.*"
     }

@@ -89,7 +89,7 @@
         "@anolilab/semantic-release-preset": "^10.0.5",
         "@arethetypeswrong/cli": "^0.18.1",
         "@babel/core": "^7.27.1",
-        "@rushstack/eslint-plugin-security": "^0.10.0",
+        "@rushstack/eslint-plugin-security": "^0.11.0",
         "@secretlint/secretlint-rule-preset-recommend": "^9.3.2",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.71",
