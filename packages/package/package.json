@@ -109,12 +109,12 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "yaml": "^2.8.1",
         "@antfu/install-pkg": "^1.1.0",
         "@inquirer/confirm": "^5.1.18",
         "@visulima/fs": "3.1.9",
         "@visulima/path": "1.4.0",
-        "normalize-package-data": "^8.0.0"
+        "normalize-package-data": "^8.0.0",
+        "yaml": "^2.8.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.3.0",
