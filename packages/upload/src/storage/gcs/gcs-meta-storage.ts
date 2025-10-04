@@ -1,9 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { request } from "gaxios";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { GoogleAuth } from "google-auth-library";
 
 import package_ from "../../../package.json";

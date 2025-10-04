@@ -4,5 +4,8 @@
     },
     "nextjs": {
         "title": "Next.js"
+    },
+    "modern": {
+        "title": "Modern Frameworks (Fetch API)"
     }
 }

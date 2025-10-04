@@ -7,6 +7,10 @@ import type BaseStorage from "../storage/storage";
 import type { UploadEventType, UploadFile } from "../storage/utils/file";
 import type { UploadError } from "../utils";
 
+// Web API types for fetch method
+type WebRequest = globalThis.Request;
+type WebResponse = globalThis.Response;
+
 interface BaseResponse {
     headers: Record<string, number | string>;
     statusCode: number;
@@ -34,6 +38,8 @@ export type ResponseList<TFile extends UploadFile> = BaseResponse & { data: Pagi
 
 export interface BaseHandler<TFile extends UploadFile> extends EventEmitter {
     emit: ((event: "error", error: UploadErrorEvent) => boolean) & ((event: UploadEventType, payload: UploadEvent<TFile>) => boolean);
+
+    fetch: (request: WebRequest) => Promise<WebResponse>;
 
     off: ((event: "error", listener: (error: UploadErrorEvent) => void) => this)
         & ((event: UploadEventType, listener: (payload: UploadEvent<TFile>) => void) => this);

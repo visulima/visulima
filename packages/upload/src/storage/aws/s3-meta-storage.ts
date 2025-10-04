@@ -1,6 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, waitUntilBucketExists } from "@aws-sdk/client-s3";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { fromIni } from "@aws-sdk/credential-providers";
 
 import MetaStorage from "../meta-storage";

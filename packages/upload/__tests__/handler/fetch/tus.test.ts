@@ -74,11 +74,25 @@ describe("fetch Tus", () => {
     describe("pOST", () => {
         it("should 201", async () => {
             const request = create();
-            const handler = await import("../../../src/fetch/tus");
-            const fetchTusHandler = handler.default;
+            const { default: Tus } = await import("../../../src/handler/tus");
 
-            const tusHandler = fetchTusHandler({ storage: new DiskStorage(options) });
-            const response = await tusHandler(request);
+            const storage = new DiskStorage(options);
+            const tusHandler = new Tus({ storage });
+
+            // Wait for storage to be ready
+            await new Promise((resolve) => {
+                const checkReady = () => {
+                    if (storage.isReady) {
+                        resolve(undefined);
+                    } else {
+                        setTimeout(checkReady, 10);
+                    }
+                };
+
+                checkReady();
+            });
+
+            const response = await tusHandler.fetch(request);
 
             expect(response.status).toBe(201);
             expect(response.headers.get("location")).toBeDefined();
@@ -94,11 +108,25 @@ describe("fetch Tus", () => {
                 method: "POST",
             });
 
-            const handler = await import("../../../src/fetch/tus");
-            const fetchTusHandler = handler.default;
+            const { default: Tus } = await import("../../../src/handler/tus");
 
-            const tusHandler = fetchTusHandler({ storage: new DiskStorage(options) });
-            const response = await tusHandler(request);
+            const storage = new DiskStorage(options);
+            const tusHandler = new Tus({ storage });
+
+            // Wait for storage to be ready
+            await new Promise((resolve) => {
+                const checkReady = () => {
+                    if (storage.isReady) {
+                        resolve(undefined);
+                    } else {
+                        setTimeout(checkReady, 10);
+                    }
+                };
+
+                checkReady();
+            });
+
+            const response = await tusHandler.fetch(request);
 
             expect(response.status).toBe(400);
 
@@ -117,11 +145,25 @@ describe("fetch Tus", () => {
                 method: "OPTIONS",
             });
 
-            const handler = await import("../../../src/fetch/tus");
-            const fetchTusHandler = handler.default;
+            const { default: Tus } = await import("../../../src/handler/tus");
 
-            const tusHandler = fetchTusHandler({ storage: new DiskStorage(options) });
-            const response = await tusHandler(request);
+            const storage = new DiskStorage(options);
+            const tusHandler = new Tus({ storage });
+
+            // Wait for storage to be ready
+            await new Promise((resolve) => {
+                const checkReady = () => {
+                    if (storage.isReady) {
+                        resolve(undefined);
+                    } else {
+                        setTimeout(checkReady, 10);
+                    }
+                };
+
+                checkReady();
+            });
+
+            const response = await tusHandler.fetch(request);
 
             expect(response.status).toBe(204);
             expect(response.headers.get("tus-version")).toBe("1.0.0");
