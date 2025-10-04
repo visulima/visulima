@@ -1,0 +1,14 @@
+{
+    "amazon-s3": {
+        "title": "Amazon S3"
+    },
+    "digital-ocean-spaces": {
+        "title": "Digital Ocean Spaces"
+    },
+    "google-cloud-storage": {
+        "title": "Google Cloud Storage"
+    },
+    "minio": {
+        "title": "MinIO"
+    }
+}
