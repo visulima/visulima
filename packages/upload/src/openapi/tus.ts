@@ -78,7 +78,7 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<
             },
         },
         paths: {
-            [`${path.trimEnd()}/{id}`]: {
+            [`${path.replace(/\/$/, "")}/{id}`]: {
                 delete: {
                     description:
                         "When receiving a DELETE request for an existing upload the Server SHOULD free associated resources and MUST respond with the 204 No Content status confirming that the upload was terminated. For all future requests to this URL, the Server SHOULD respond with the 404 Not Found or 410 Gone status.",

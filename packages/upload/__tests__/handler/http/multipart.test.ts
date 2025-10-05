@@ -10,26 +10,18 @@ import { metadata, storageOptions, testfile, testRoot } from "../../__helpers__/
 import app from "../../__helpers__/express-app";
 
 vi.mock(import("node:fs/promises"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
     const { fs } = require("memfs");
 
     return fs.promises;
 });
 
 vi.mock(import("node:fs"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
     const { fs } = require("memfs");
 
     return fs;
 });
 
-describe("HTTP Multipart", () => {
+describe("http Multipart", () => {
     let response: supertest.Response;
     let uri = "";
 
@@ -38,13 +30,9 @@ describe("HTTP Multipart", () => {
     const options = { ...storageOptions, directory };
     const multipart = new Multipart({ storage: new DiskStorage(options) });
 
-    app.use(basePath, async (request, res) => {
-        multipart.handle(request, res);
-    });
+app.use(basePath, multipart.handle);
 
-    function create(): supertest.Test {
-        return supertest(app).post(basePath).attach("file", testfile.asBuffer, testfile.name);
-    }
+    const create = (): supertest.Test => supertest(app).post(basePath).attach("file", testfile.asBuffer, testfile.name);
 
     beforeAll(async () => {
         try {
@@ -70,7 +58,7 @@ describe("HTTP Multipart", () => {
         });
     });
 
-    describe("POST", () => {
+    describe("post", () => {
         it("should support custom fields in multipart upload", async () => {
             expect.assertions(3);
 
@@ -113,7 +101,7 @@ describe("HTTP Multipart", () => {
         });
     });
 
-    describe("OPTIONS", () => {
+    describe("options", () => {
         it("should return 204 for OPTIONS request", async () => {
             expect.assertions(1);
 
@@ -123,15 +111,16 @@ describe("HTTP Multipart", () => {
         });
     });
 
-    describe("DELETE", () => {
+    describe("delete", () => {
         it("should successfully delete uploaded file", async () => {
             expect.assertions(1);
 
             const test = await create();
 
-            uri ||= test.header.location;
+            const location = test.header.location;
+            const fileUri = location.replace(/^\/\/[^/]+\//, '/'); // Remove //host:port/ and keep /path/
 
-            response = await supertest(app).delete(uri);
+            response = await supertest(app).delete(fileUri);
 
             expect(response.status).toBe(204);
         });

@@ -7,20 +7,12 @@ import DiskStorage from "../../../src/storage/local/disk-storage";
 import { storageOptions, testfile, testRoot } from "../../__helpers__/config";
 
 vi.mock(import("node:fs/promises"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
     const { fs } = require("memfs");
 
     return fs.promises;
 });
 
 vi.mock(import("node:fs"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
     const { fs } = require("memfs");
 
     return fs;
@@ -67,7 +59,7 @@ describe("fetch Multipart", () => {
         });
     });
 
-    describe("POST", () => {
+    describe("post", () => {
         it("should support custom fields in multipart upload", async () => {
             expect.assertions(2);
 
@@ -132,7 +124,7 @@ describe("fetch Multipart", () => {
         });
     });
 
-    describe("OPTIONS", () => {
+    describe("options", () => {
         it("should return 204 with proper CORS headers for OPTIONS request", async () => {
             expect.assertions(2);
 

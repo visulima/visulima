@@ -53,7 +53,7 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
             },
         },
         paths: {
-            [`${path.trimEnd()}/{id}`]: {
+            [`${path.replace(/\/$/, "")}/{id}`]: {
                 delete: {
                     description: "Cancel upload",
                     operationId: `${pathHash}MultipartCancel`,

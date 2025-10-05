@@ -5109,13 +5109,26 @@ importers:
 =======
         specifier: ^1.19.3
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 1.19.5(hono@4.9.10)
 =======
         version: 1.19.3(hono@4.9.9)
 >>>>>>> ae146758 (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 9a17e9a8f (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 7d95dc37d (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 9da088c2f (feat(upload): add new examples and update dependencies)
+=======
+=======
+=======
+=======
+        version: 1.19.5(hono@4.9.10)
+>>>>>>> 41e4ea9f (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> 330680d71 (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> d75108b40 (feat(upload): update dependencies and enhance upload functionality)
       '@visulima/error-handler':
         specifier: workspace:*
         version: link:../..
@@ -5134,13 +5147,26 @@ importers:
 =======
         specifier: ^4.9.8
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 4.9.10
 =======
         version: 4.9.9
 >>>>>>> ae146758 (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 9a17e9a8f (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 7d95dc37d (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 9da088c2f (feat(upload): add new examples and update dependencies)
+=======
+=======
+=======
+=======
+        version: 4.9.10
+>>>>>>> 41e4ea9f (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> 330680d71 (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> d75108b40 (feat(upload): update dependencies and enhance upload functionality)
 
   packages/error-handler/examples/node:
     dependencies:
@@ -7363,11 +7389,24 @@ importers:
         version: 1.19.5(hono@4.9.10)
 =======
         specifier: ^1.19.3
+<<<<<<< HEAD
         version: 1.19.3(hono@4.9.9)
 >>>>>>> ae146758 (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 9a17e9a8f (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 7d95dc37d (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 9da088c2f (feat(upload): add new examples and update dependencies)
+=======
+=======
+=======
+=======
+        version: 1.19.5(hono@4.9.10)
+>>>>>>> 41e4ea9f (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> 330680d71 (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> d75108b40 (feat(upload): update dependencies and enhance upload functionality)
       '@visulima/ono':
         specifier: workspace:*
         version: link:../..
@@ -7389,11 +7428,24 @@ importers:
         version: 4.9.10
 =======
         specifier: ^4.9.8
+<<<<<<< HEAD
         version: 4.9.9
 >>>>>>> ae146758 (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 9a17e9a8f (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 7d95dc37d (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 9da088c2f (feat(upload): add new examples and update dependencies)
+=======
+=======
+=======
+=======
+        version: 4.9.10
+>>>>>>> 41e4ea9f (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> 330680d71 (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> d75108b40 (feat(upload): update dependencies and enhance upload functionality)
 
   packages/ono/examples/node:
     dependencies:
@@ -9847,21 +9899,12 @@ importers:
       '@types/http-errors':
         specifier: ^2.0.5
         version: 2.0.5
-      '@types/mime':
-        specifier: ^4.0.0
-        version: 4.0.0
       '@types/node':
         specifier: ^24.6.2
         version: 24.6.2
       '@types/normalize-path':
         specifier: ^3.0.2
         version: 3.0.2
-      '@types/rimraf':
-        specifier: ^4.0.5
-        version: 4.0.5
-      '@types/sharp':
-        specifier: ^0.31.1
-        version: 0.31.1
       '@types/supertest':
         specifier: ^6.0.3
         version: 6.0.3
@@ -9932,8 +9975,8 @@ importers:
         specifier: ^24.2.9
         version: 24.2.9(typescript@5.9.3)
       sharp:
-        specifier: ^0.33.5
-        version: 0.33.5
+        specifier: ^0.34.4
+        version: 0.34.4
       supertest:
         specifier: ^7.1.4
         version: 7.1.4
@@ -10257,12 +10300,21 @@ importers:
 
   packages/upload/examples/hono:
     dependencies:
+      '@hono/node-server':
+        specifier: ^1.19.5
+        version: 1.19.5(hono@4.9.10)
+      '@hono/swagger-ui':
+        specifier: ^0.5.2
+        version: 0.5.2(hono@4.9.10)
+      '@hono/zod-openapi':
+        specifier: ^1.1.3
+        version: 1.1.3(hono@4.9.10)(zod@3.25.76)
       '@visulima/upload':
         specifier: workspace:*
         version: link:../..
       hono:
-        specifier: ^4.9.9
-        version: 4.9.9
+        specifier: ^4.9.10
+        version: 4.9.10
     devDependencies:
       '@types/node':
         specifier: ^24.6.2
@@ -11913,6 +11965,11 @@ packages:
 
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
+
+  '@asteasolutions/zod-to-openapi@8.1.0':
+    resolution: {integrity: sha512-tQFxVs05J/6QXXqIzj6rTRk3nj1HFs4pe+uThwE95jL5II2JfpVXkK+CqkO7aT0Do5AYqO6LDrKpleLUFXgY+g==}
+    peerDependencies:
+      zod: ^4.0.0
 
   '@aws-crypto/crc32@5.2.0':
     resolution: {integrity: sha512-nLbCWqQNgUiwwtFsen1AdzAtvuLRsQS8rYgMuxCrdKf9kOssamGLuPwyTY9wyYblNr9+1XM8v6zoDTPPSIeANg==}
@@ -13604,6 +13661,24 @@ packages:
       hono: '>=4.9.6'
 >>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
 
+  '@hono/swagger-ui@0.5.2':
+    resolution: {integrity: sha512-7wxLKdb8h7JTdZ+K8DJNE3KXQMIpJejkBTQjrYlUWF28Z1PGOKw6kUykARe5NTfueIN37jbyG/sBYsbzXzG53A==}
+    peerDependencies:
+      hono: '>=4.9.6'
+
+  '@hono/zod-openapi@1.1.3':
+    resolution: {integrity: sha512-ikA8p0Jt7yplxOqbYwdh8rCQWaGN4bu8zK1HbCWqfWT9clo87L32D0eAQ/r0tJodtZbTV5d1vPB75FCkUt1Jdg==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      hono: '>=4.9.6'
+      zod: ^4.0.0
+
+  '@hono/zod-validator@0.7.3':
+    resolution: {integrity: sha512-uYGdgVib3RlGD698WR5dVM0zB3UuPY5vHKXffGUbUh7r4xY+mFIhF3/v4AcQVLrU5CQdBso8BJr4wuVoCrjTuQ==}
+    peerDependencies:
+      hono: '>=4.9.6'
+      zod: ^3.25.0 || ^4.0.0
+
   '@html-eslint/eslint-plugin@0.20.0':
     resolution: {integrity: sha512-P5DeuqL5TmIGIiWjeezGDZPM3rXzL715MEU0QR9xOOmqNTshG3yLsk7fkfLsLiDjm0x6r4e13/5mUCbEQTek7Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
@@ -13676,19 +13751,26 @@ packages:
     engines: {node: '>=18.18'}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   '@img/colour@1.0.0':
     resolution: {integrity: sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw==}
     engines: {node: '>=18'}
 
   '@img/sharp-darwin-arm64@0.34.4':
     resolution: {integrity: sha512-sitdlPzDVyvmINUdJle3TNHl+AG9QcwiAMsXmccqsCOMZNIdW2/7S26w0LyU8euiLVzFBL3dXPwVCq/ODnf2vA==}
+<<<<<<< HEAD
 =======
   '@img/sharp-darwin-arm64@0.33.5':
     resolution: {integrity: sha512-UT4p+iz/2H4twwAoLCqfA9UH5pI6DggwKEGuaPy7nCVQ8ZsiY5PIcrRvD1DzuY3qYL07NtIQcWnBSY/heikIFQ==}
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [arm64]
     os: [darwin]
 
+<<<<<<< HEAD
   '@img/sharp-darwin-arm64@0.34.3':
     resolution: {integrity: sha512-ryFMfvxxpQRsgZJqBd4wsttYQbCxsJksrv9Lw/v798JcQ8+w84mBWuXwl+TT0WJ/WrYOLaYpwQXi3sA9nTIaIg==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
@@ -13702,10 +13784,15 @@ packages:
 =======
   '@img/sharp-darwin-x64@0.33.5':
     resolution: {integrity: sha512-fyHac4jIc1ANYGRDxtiqelIbdWkIuQaI84Mv45KvGRRxSAa7o7d1ZKAOBaYbnepLC1WqxfpimdeWfvqqSGwR2Q==}
+=======
+  '@img/sharp-darwin-x64@0.34.4':
+    resolution: {integrity: sha512-rZheupWIoa3+SOdF/IcUe1ah4ZDpKBGWcsPX6MT0lYniH9micvIU7HQkYTfrx5Xi8u+YqwLtxC/3vl8TQN6rMg==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [darwin]
 
+<<<<<<< HEAD
   '@img/sharp-darwin-x64@0.34.3':
     resolution: {integrity: sha512-yHpJYynROAj12TA6qil58hmPmAwxKKC7reUqtGLzsOHfP7/rniNGTL8tjWX6L3CTV4+5P4ypcS7Pp+7OB+8ihA==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
@@ -13734,50 +13821,43 @@ packages:
 =======
   '@img/sharp-libvips-darwin-arm64@1.0.4':
     resolution: {integrity: sha512-XblONe153h0O2zuFfTAbQYAX2JhYmDHeWikp1LM9Hul9gVPjFY427k6dFEcOL72O01QxQsWi761svJ/ev9xEDg==}
+=======
+  '@img/sharp-libvips-darwin-arm64@1.2.3':
+    resolution: {integrity: sha512-QzWAKo7kpHxbuHqUC28DZ9pIKpSi2ts2OJnoIGI26+HMgq92ZZ4vk8iJd4XsxN+tYfNJxzH6W62X5eTcsBymHw==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     cpu: [arm64]
     os: [darwin]
 
-  '@img/sharp-libvips-darwin-arm64@1.2.0':
-    resolution: {integrity: sha512-sBZmpwmxqwlqG9ueWFXtockhsxefaV6O84BMOrhtg/YqbTaRdqDE7hxraVE3y6gVM4eExmfzW4a8el9ArLeEiQ==}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@img/sharp-libvips-darwin-x64@1.0.4':
-    resolution: {integrity: sha512-xnGR8YuZYfJGmWPvmlunFaWJsb9T/AO2ykoP3Fz/0X5XV2aoYBPkX6xqCQvUTKKiLddarLaxpzNe+b1hjeWHAQ==}
+  '@img/sharp-libvips-darwin-x64@1.2.3':
+    resolution: {integrity: sha512-Ju+g2xn1E2AKO6YBhxjj+ACcsPQRHT0bhpglxcEf+3uyPY+/gL8veniKoo96335ZaPo03bdDXMv0t+BBFAbmRA==}
     cpu: [x64]
     os: [darwin]
 
-  '@img/sharp-libvips-darwin-x64@1.2.0':
-    resolution: {integrity: sha512-M64XVuL94OgiNHa5/m2YvEQI5q2cl9d/wk0qFTDVXcYzi43lxuiFTftMR1tOnFQovVXNZJ5TURSDK2pNe9Yzqg==}
-    cpu: [x64]
-    os: [darwin]
-
-  '@img/sharp-libvips-linux-arm64@1.0.4':
-    resolution: {integrity: sha512-9B+taZ8DlyyqzZQnoeIvDVR/2F4EbMepXMc/NdVbkzsJbzkUjhXv/70GQJ7tdLA4YJgNP25zukcxpX2/SueNrA==}
+  '@img/sharp-libvips-linux-arm64@1.2.3':
+    resolution: {integrity: sha512-I4RxkXU90cpufazhGPyVujYwfIm9Nk1QDEmiIsaPwdnm013F7RIceaCc87kAH+oUB1ezqEvC6ga4m7MSlqsJvQ==}
     cpu: [arm64]
     os: [linux]
 
-  '@img/sharp-libvips-linux-arm64@1.2.0':
-    resolution: {integrity: sha512-RXwd0CgG+uPRX5YYrkzKyalt2OJYRiJQ8ED/fi1tq9WQW2jsQIn0tqrlR5l5dr/rjqq6AHAxURhj2DVjyQWSOA==}
-    cpu: [arm64]
-    os: [linux]
-
-  '@img/sharp-libvips-linux-arm@1.0.5':
-    resolution: {integrity: sha512-gvcC4ACAOPRNATg/ov8/MnbxFDJqf/pDePbBnuBDcjsI8PssmjoKMAz4LtLaVi+OnSb5FK/yIOamqDwGmXW32g==}
+  '@img/sharp-libvips-linux-arm@1.2.3':
+    resolution: {integrity: sha512-x1uE93lyP6wEwGvgAIV0gP6zmaL/a0tGzJs/BIDDG0zeBhMnuUPm7ptxGhUbcGs4okDJrk4nxgrmxpib9g6HpA==}
     cpu: [arm]
     os: [linux]
 
+<<<<<<< HEAD
   '@img/sharp-libvips-linux-arm@1.2.0':
     resolution: {integrity: sha512-mWd2uWvDtL/nvIzThLq3fr2nnGfyr/XMXlq8ZJ9WMR6PXijHlC3ksp0IpuhK6bougvQrchUAfzRLnbsen0Cqvw==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
     cpu: [arm]
     os: [linux]
 
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   '@img/sharp-libvips-linux-ppc64@1.2.3':
     resolution: {integrity: sha512-Y2T7IsQvJLMCBM+pmPbM3bKT/yYJvVtLJGfCs4Sp95SjvnFIjynbjzsa7dY1fRJX45FTSfDksbTp6AGWudiyCg==}
     cpu: [ppc64]
     os: [linux]
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   '@img/sharp-libvips-linux-s390x@1.2.3':
     resolution: {integrity: sha512-RgWrs/gVU7f+K7P+KeHFaBAJlNkD1nIZuVXdQv6S+fNA6syCcoboNjsV2Pou7zNlVdNQoQUpQTk8SWDHUA3y/w==}
@@ -13804,50 +13884,35 @@ packages:
 =======
   '@img/sharp-libvips-linux-s390x@1.0.4':
     resolution: {integrity: sha512-u7Wz6ntiSSgGSGcjZ55im6uvTrOxSIS8/dgoVMoiGE9I6JAfU50yH5BoDlYA1tcuGS7g/QNtetJnxA6QEsCVTA==}
+=======
+  '@img/sharp-libvips-linux-s390x@1.2.3':
+    resolution: {integrity: sha512-RgWrs/gVU7f+K7P+KeHFaBAJlNkD1nIZuVXdQv6S+fNA6syCcoboNjsV2Pou7zNlVdNQoQUpQTk8SWDHUA3y/w==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     cpu: [s390x]
     os: [linux]
 
-  '@img/sharp-libvips-linux-s390x@1.2.0':
-    resolution: {integrity: sha512-eMKfzDxLGT8mnmPJTNMcjfO33fLiTDsrMlUVcp6b96ETbnJmd4uvZxVJSKPQfS+odwfVaGifhsB07J1LynFehw==}
-    cpu: [s390x]
-    os: [linux]
-
-  '@img/sharp-libvips-linux-x64@1.0.4':
-    resolution: {integrity: sha512-MmWmQ3iPFZr0Iev+BAgVMb3ZyC4KeFc3jFxnNbEPas60e1cIfevbtuyf9nDGIzOaW9PdnDciJm+wFFaTlj5xYw==}
+  '@img/sharp-libvips-linux-x64@1.2.3':
+    resolution: {integrity: sha512-3JU7LmR85K6bBiRzSUc/Ff9JBVIFVvq6bomKE0e63UXGeRw2HPVEjoJke1Yx+iU4rL7/7kUjES4dZ/81Qjhyxg==}
     cpu: [x64]
     os: [linux]
 
-  '@img/sharp-libvips-linux-x64@1.2.0':
-    resolution: {integrity: sha512-ZW3FPWIc7K1sH9E3nxIGB3y3dZkpJlMnkk7z5tu1nSkBoCgw2nSRTFHI5pB/3CQaJM0pdzMF3paf9ckKMSE9Tg==}
-    cpu: [x64]
-    os: [linux]
-
-  '@img/sharp-libvips-linuxmusl-arm64@1.0.4':
-    resolution: {integrity: sha512-9Ti+BbTYDcsbp4wfYib8Ctm1ilkugkA/uscUn6UXK1ldpC1JjiXbLfFZtRlBhjPZ5o1NCLiDbg8fhUPKStHoTA==}
+  '@img/sharp-libvips-linuxmusl-arm64@1.2.3':
+    resolution: {integrity: sha512-F9q83RZ8yaCwENw1GieztSfj5msz7GGykG/BA+MOUefvER69K/ubgFHNeSyUu64amHIYKGDs4sRCMzXVj8sEyw==}
     cpu: [arm64]
     os: [linux]
 
-  '@img/sharp-libvips-linuxmusl-arm64@1.2.0':
-    resolution: {integrity: sha512-UG+LqQJbf5VJ8NWJ5Z3tdIe/HXjuIdo4JeVNADXBFuG7z9zjoegpzzGIyV5zQKi4zaJjnAd2+g2nna8TZvuW9Q==}
-    cpu: [arm64]
-    os: [linux]
-
-  '@img/sharp-libvips-linuxmusl-x64@1.0.4':
-    resolution: {integrity: sha512-viYN1KX9m+/hGkJtvYYp+CCLgnJXwiQB39damAO7WMdKWlIhmYTfHjwSbQeUK/20vY154mwezd9HflVFM1wVSw==}
+  '@img/sharp-libvips-linuxmusl-x64@1.2.3':
+    resolution: {integrity: sha512-U5PUY5jbc45ANM6tSJpsgqmBF/VsL6LnxJmIf11kB7J5DctHgqm0SkuXzVWtIY90GnJxKnC/JT251TDnk1fu/g==}
     cpu: [x64]
     os: [linux]
 
-  '@img/sharp-libvips-linuxmusl-x64@1.2.0':
-    resolution: {integrity: sha512-SRYOLR7CXPgNze8akZwjoGBoN1ThNZoqpOgfnOxmWsklTGVfJiGJoC/Lod7aNMGA1jSsKWM1+HRX43OP6p9+6Q==}
-    cpu: [x64]
-    os: [linux]
-
-  '@img/sharp-linux-arm64@0.33.5':
-    resolution: {integrity: sha512-JMVv+AMRyGOHtO1RFBiJy/MBsgz0x4AWrT6QoEVVTyh1E39TrCUpTRI7mx9VksGX4awWASxqCYLCV4wBZHAYxA==}
+  '@img/sharp-linux-arm64@0.34.4':
+    resolution: {integrity: sha512-YXU1F/mN/Wu786tl72CyJjP/Ngl8mGHN1hST4BGl+hiW5jhCnV2uRVTNOcaYPs73NeT/H8Upm3y9582JVuZHrQ==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [arm64]
     os: [linux]
 
+<<<<<<< HEAD
   '@img/sharp-linux-arm64@0.34.3':
     resolution: {integrity: sha512-QdrKe3EvQrqwkDrtuTIjI0bu6YEJHTgEeqdzI3uWJOH6G1O8Nl1iEeVYRGdj1h5I21CqxSvQp1Yv7xeU3ZewbA==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
@@ -13861,10 +13926,15 @@ packages:
 =======
   '@img/sharp-linux-arm@0.33.5':
     resolution: {integrity: sha512-JTS1eldqZbJxjvKaAkxhZmBqPRGmxgu+qFKSInv8moZ2AmT5Yib3EQ1c6gp493HvrvV8QgdOXdyaIBrhvFhBMQ==}
+=======
+  '@img/sharp-linux-arm@0.34.4':
+    resolution: {integrity: sha512-Xyam4mlqM0KkTHYVSuc6wXRmM7LGN0P12li03jAnZ3EJWZqj83+hi8Y9UxZUbxsgsK1qOEwg7O0Bc0LjqQVtxA==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [arm]
     os: [linux]
 
+<<<<<<< HEAD
   '@img/sharp-linux-arm@0.34.3':
     resolution: {integrity: sha512-oBK9l+h6KBN0i3dC8rYntLiVfW8D8wH+NPNT3O/WBHeW0OQWCjfWksLUaPidsrDKpJgXp3G3/hkmhptAW0I3+A==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
@@ -13872,6 +13942,8 @@ packages:
     cpu: [arm]
     os: [linux]
 
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   '@img/sharp-linux-ppc64@0.34.4':
     resolution: {integrity: sha512-F4PDtF4Cy8L8hXA2p3TO6s4aDt93v+LKmpcYFLAVdkkD3hSxZzee0rh6/+94FpAynsuMpLX5h+LRsSG3rIciUQ==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
@@ -13879,15 +13951,21 @@ packages:
     os: [linux]
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@img/sharp-linux-s390x@0.34.4':
     resolution: {integrity: sha512-qVrZKE9Bsnzy+myf7lFKvng6bQzhNUAYcVORq2P7bDlvmF6u2sCmK2KyEQEBdYk+u3T01pVsPrkj943T1aJAsw==}
 =======
   '@img/sharp-linux-s390x@0.33.5':
     resolution: {integrity: sha512-y/5PCd+mP4CA/sPDKl2961b+C9d+vPAveS33s6Z3zfASk2j5upL6fXVPZi7ztePZ5CuH+1kW8JtvxgbuXHRa4Q==}
+=======
+  '@img/sharp-linux-s390x@0.34.4':
+    resolution: {integrity: sha512-qVrZKE9Bsnzy+myf7lFKvng6bQzhNUAYcVORq2P7bDlvmF6u2sCmK2KyEQEBdYk+u3T01pVsPrkj943T1aJAsw==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [s390x]
     os: [linux]
 
+<<<<<<< HEAD
   '@img/sharp-linux-s390x@0.34.3':
     resolution: {integrity: sha512-3gahT+A6c4cdc2edhsLHmIOXMb17ltffJlxR0aC2VPZfwKoTGZec6u5GrFgdR7ciJSsHT27BD3TIuGcuRT0KmQ==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
@@ -13901,10 +13979,15 @@ packages:
 =======
   '@img/sharp-linux-x64@0.33.5':
     resolution: {integrity: sha512-opC+Ok5pRNAzuvq1AG0ar+1owsu842/Ab+4qvU879ippJBHvyY5n2mxF1izXqkPYlGuP/M556uh53jRLJmzTWA==}
+=======
+  '@img/sharp-linux-x64@0.34.4':
+    resolution: {integrity: sha512-ZfGtcp2xS51iG79c6Vhw9CWqQC8l2Ot8dygxoDoIQPTat/Ov3qAa8qpxSrtAEAJW+UjTXc4yxCjNfxm4h6Xm2A==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [linux]
 
+<<<<<<< HEAD
   '@img/sharp-linux-x64@0.34.3':
     resolution: {integrity: sha512-8kYso8d806ypnSq3/Ly0QEw90V5ZoHh10yH0HnrzOCr6DKAPI6QVHvwleqMkVQ0m+fc7EH8ah0BB0QPuWY6zJQ==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
@@ -13918,10 +14001,15 @@ packages:
 =======
   '@img/sharp-linuxmusl-arm64@0.33.5':
     resolution: {integrity: sha512-XrHMZwGQGvJg2V/oRSUfSAfjfPxO+4DkiRh6p2AFjLQztWUuY/o8Mq0eMQVIY7HJ1CDQUJlxGGZRw1a5bqmd1g==}
+=======
+  '@img/sharp-linuxmusl-arm64@0.34.4':
+    resolution: {integrity: sha512-8hDVvW9eu4yHWnjaOOR8kHVrew1iIX+MUgwxSuH2XyYeNRtLUe4VNioSqbNkB7ZYQJj9rUTT4PyRscyk2PXFKA==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [arm64]
     os: [linux]
 
+<<<<<<< HEAD
   '@img/sharp-linuxmusl-arm64@0.34.3':
     resolution: {integrity: sha512-vAjbHDlr4izEiXM1OTggpCcPg9tn4YriK5vAjowJsHwdBIdx0fYRsURkxLG2RLm9gyBq66gwtWI8Gx0/ov+JKQ==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
@@ -13935,10 +14023,15 @@ packages:
 =======
   '@img/sharp-linuxmusl-x64@0.33.5':
     resolution: {integrity: sha512-WT+d/cgqKkkKySYmqoZ8y3pxx7lx9vVejxW/W4DOFMYVSkErR+w7mf2u8m/y4+xHe7yY9DAXQMWQhpnMuFfScw==}
+=======
+  '@img/sharp-linuxmusl-x64@0.34.4':
+    resolution: {integrity: sha512-lU0aA5L8QTlfKjpDCEFOZsTYGn3AEiO6db8W5aQDxj0nQkVrZWmN3ZP9sYKWJdtq3PWPhUNlqehWyXpYDcI9Sg==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [linux]
 
+<<<<<<< HEAD
   '@img/sharp-linuxmusl-x64@0.34.3':
     resolution: {integrity: sha512-gCWUn9547K5bwvOn9l5XGAEjVTTRji4aPTqLzGXHvIr6bIDZKNTA34seMPgM0WmSf+RYBH411VavCejp3PkOeQ==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
@@ -13961,6 +14054,13 @@ packages:
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [wasm32]
 
+=======
+  '@img/sharp-wasm32@0.34.4':
+    resolution: {integrity: sha512-33QL6ZO/qpRyG7woB/HUALz28WnTMI2W1jgX3Nu2bypqLIKx/QKMILLJzJjI+SIbvXdG9fUnmrxR7vbi1sTBeA==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [wasm32]
+
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   '@img/sharp-win32-arm64@0.34.4':
     resolution: {integrity: sha512-2Q250do/5WXTwxW3zjsEuMSv5sUU4Tq9VThWKlU2EYLm4MB7ZeMwF+SFJutldYODXF6jzc6YEOC+VfX0SZQPqA==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
@@ -13968,15 +14068,21 @@ packages:
     os: [win32]
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@img/sharp-win32-ia32@0.34.4':
     resolution: {integrity: sha512-3ZeLue5V82dT92CNL6rsal6I2weKw1cYu+rGKm8fOCCtJTR2gYeUfY3FqUnIJsMUPIH68oS5jmZ0NiJ508YpEw==}
 =======
   '@img/sharp-win32-ia32@0.33.5':
     resolution: {integrity: sha512-T36PblLaTwuVJ/zw/LaH0PdZkRz5rd3SmMHX8GSmR7vtNSP5Z6bQkExdSK7xGWyxLw4sUknBuugTelgw2faBbQ==}
+=======
+  '@img/sharp-win32-ia32@0.34.4':
+    resolution: {integrity: sha512-3ZeLue5V82dT92CNL6rsal6I2weKw1cYu+rGKm8fOCCtJTR2gYeUfY3FqUnIJsMUPIH68oS5jmZ0NiJ508YpEw==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [ia32]
     os: [win32]
 
+<<<<<<< HEAD
   '@img/sharp-win32-ia32@0.34.3':
     resolution: {integrity: sha512-xuCdhH44WxuXgOM714hn4amodJMZl3OEvf0GVTm0BEyMeA2to+8HEdRPShH0SLYptJY1uBw+SCFP9WVQi1Q/cw==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
@@ -13997,6 +14103,10 @@ packages:
   '@img/sharp-win32-x64@0.34.3':
     resolution: {integrity: sha512-OWwz05d++TxzLEv4VnsTz5CmZ6mI6S05sfQGEMrNrQcOEERbX46332IvE7pO/EUiw7jUrrS40z/M7kPyjfl04g==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
+=======
+  '@img/sharp-win32-x64@0.34.4':
+    resolution: {integrity: sha512-xIyj4wpYs8J18sVN3mSQjwrw7fKUqRw+Z5rnHNCy5fYTxigBz81u5mOMPmFumwjcn8+ld1ppptMBCLic1nz6ig==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [win32]
@@ -18937,10 +19047,6 @@ packages:
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
 
-  '@types/mime@4.0.0':
-    resolution: {integrity: sha512-5eEkJZ/BLvTE3vXGKkWlyTSUVZuzj23Wj8PoyOq2lt5I3CYbiLBOPb3XmCW6QcuOibIUE6emHXHt9E/F/rCa6w==}
-    deprecated: This is a stub types definition. mime provides its own type definitions, so you do not need this installed.
-
   '@types/minimist@1.2.5':
     resolution: {integrity: sha512-hov8bUuiLiyFPGyFPE1lwWhmzYbirOXQNNo40+y3zow8aFVTeyn3VWL0VFFfdNddA8S4Vf0Tc062rzyNr7Paag==}
 
@@ -19064,10 +19170,6 @@ packages:
   '@types/resolve@1.20.6':
     resolution: {integrity: sha512-A4STmOXPhMUtHH+S6ymgE2GiBSMqf4oTvcQZMcHzokuTLVYzXTB8ttjcgxOVaAp2lGwEdzZ0J+cRbbeevQj1UQ==}
 
-  '@types/rimraf@4.0.5':
-    resolution: {integrity: sha512-DTCZoIQotB2SUJnYgrEx43cQIUYOlNZz0AZPbKU4PSLYTUdML5Gox0++z4F9kQocxStrCmRNhi4x5x/UlwtKUA==}
-    deprecated: This is a stub types definition. rimraf provides its own type definitions, so you do not need this installed.
-
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
 
@@ -19076,9 +19178,6 @@ packages:
 
   '@types/serve-static@1.15.7':
     resolution: {integrity: sha512-W8Ym+h8nhuRwaKPaDw34QUkwsGi6Rc4yYqvKFo5rm2FUEhCFbzVWrxXUxuKK8TASjWsysJY0nsmNCGhCOIsrOw==}
-
-  '@types/sharp@0.31.1':
-    resolution: {integrity: sha512-5nWwamN9ZFHXaYEincMSuza8nNfOof8nmO+mcI+Agx1uMUk4/pQnNIcix+9rLPXzKrm1pS34+6WRDbDV0Jn7ag==}
 
   '@types/sinon@17.0.4':
     resolution: {integrity: sha512-RHnIrhfPO3+tJT0s7cFaXGZvsL4bbR3/k7z3P312qMS4JaS2Tk+KiwiLx1S0rQ56ERj00u1/BtdyVd0FY+Pdew==}
@@ -22369,6 +22468,7 @@ packages:
     resolution: {integrity: sha512-SbtvAMWvASO5TE2QP07jHBMXKafgdZz8Vrsrn96fiL+O92/FN/PLARzUW5sKt013fjAprK2d2iCn2hk2Xb5oow==}
     engines: {node: '>=12.20'}
 
+<<<<<<< HEAD
   color-string@2.1.2:
     resolution: {integrity: sha512-RxmjYxbWemV9gKu4zPgiZagUxbH3RQpEIO77XoSSX0ivgABDZ+h8Zuash/EMFLTI4N9QgFPOJ6JQpPZKFxa+dA==}
     engines: {node: '>=18'}
@@ -22378,15 +22478,20 @@ packages:
     resolution: {integrity: sha512-e2hz5BzbUPcYlIRHo8ieAhYgoajrJr+hWoceg6E345TPsATMUKqDgzt8fSXZJJbxfpiPzkWyphz8yn8At7q3fA==}
     engines: {node: '>=18'}
 =======
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   color-string@2.1.2:
     resolution: {integrity: sha512-RxmjYxbWemV9gKu4zPgiZagUxbH3RQpEIO77XoSSX0ivgABDZ+h8Zuash/EMFLTI4N9QgFPOJ6JQpPZKFxa+dA==}
     engines: {node: '>=18'}
 
+<<<<<<< HEAD
   color@4.2.3:
     resolution: {integrity: sha512-1rXeuUUiGGrykh+CeBdu5Ie7OJwinCgQY0bc7GCRxy5xVHy+moaqkpL/jqQq0MtQOeYcrqEz4abc5f0KtU7W4A==}
     engines: {node: '>=12.5.0'}
 >>>>>>> 9a17e9a8f (feat(upload): add new examples and update dependencies)
 
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   color@5.0.2:
     resolution: {integrity: sha512-e2hz5BzbUPcYlIRHo8ieAhYgoajrJr+hWoceg6E345TPsATMUKqDgzt8fSXZJJbxfpiPzkWyphz8yn8At7q3fA==}
     engines: {node: '>=18'}
@@ -25388,17 +25493,24 @@ packages:
     engines: {node: '>=0.10.0'}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   hono@4.10.5:
     resolution: {integrity: sha512-h/MXuTkoAK8NG1EfDp0jI1YLf6yGdDnfkebRO2pwEh5+hE3RAJFXkCsnD0vamSiARK4ZrB6MY+o3E/hCnOyHrQ==}
 =======
+=======
+>>>>>>> d75108b40 (feat(upload): update dependencies and enhance upload functionality)
 <<<<<<< HEAD
   hono@4.10.4:
     resolution: {integrity: sha512-YG/fo7zlU3KwrBL5vDpWKisLYiM+nVstBQqfr7gCPbSYURnNEP9BDxEMz8KfsDR9JX0lJWDRNc6nXX31v7ZEyg==}
 =======
+=======
+>>>>>>> 330680d71 (feat(upload): update dependencies and enhance upload functionality)
 <<<<<<< HEAD
   hono@4.10.3:
     resolution: {integrity: sha512-2LOYWUbnhdxdL8MNbNg9XZig6k+cZXm5IjHn2Aviv7honhBMOHb+jxrKIeJRZJRmn+htUCKhaicxwXuUDlchRA==}
 =======
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
 <<<<<<< HEAD
   hono@4.9.10:
     resolution: {integrity: sha512-AlI15ijFyKTXR7eHo7QK7OR4RoKIedZvBuRjO8iy4zrxvlY5oFCdiRG/V/lFJHCNXJ0k72ATgnyzx8Yqa5arug==}
@@ -25406,9 +25518,22 @@ packages:
   hono@4.9.9:
     resolution: {integrity: sha512-Hxw4wT6zjJGZJdkJzAx9PyBdf7ZpxaTSA0NfxqjLghwMrLBX8p33hJBzoETRakF3UJu6OdNQBZAlNSkGqKFukw==}
 >>>>>>> ae146758 (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 9a17e9a8f (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 7d95dc37d (feat(upload): add new examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 9da088c2f (feat(upload): add new examples and update dependencies)
+=======
+=======
+=======
+=======
+  hono@4.9.10:
+    resolution: {integrity: sha512-AlI15ijFyKTXR7eHo7QK7OR4RoKIedZvBuRjO8iy4zrxvlY5oFCdiRG/V/lFJHCNXJ0k72ATgnyzx8Yqa5arug==}
+>>>>>>> 41e4ea9f (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> 330680d71 (feat(upload): update dependencies and enhance upload functionality)
+>>>>>>> d75108b40 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: '>=16.9.0'}
 
   hook-std@4.0.0:
@@ -28689,6 +28814,9 @@ packages:
   openapi-types@12.1.3:
     resolution: {integrity: sha512-N4YtSYJqghVu4iek2ZUvcN/0aqH1kRDuNqzcycDxhOUpg7GdvLa2F3DgS6yBNhInhv2r/6I0Flkn7CqL8+nIcw==}
 
+  openapi3-ts@4.5.0:
+    resolution: {integrity: sha512-jaL+HgTq2Gj5jRcfdutgRGLosCy/hT8sQf6VOy+P+g36cZOjI1iukdPnijC+4CmeRzg/jEllJUboEic2FhxhtQ==}
+
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
@@ -30736,6 +30864,7 @@ packages:
     resolution: {integrity: sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   sharp@0.34.4:
     resolution: {integrity: sha512-FUH39xp3SBPnxWvd5iib1X8XY7J0K0X7d93sie9CJg2PO8/7gmg89Nve6OjItK53/MlAushNNxteBYfM6DEuoA==}
 =======
@@ -30746,6 +30875,10 @@ packages:
   sharp@0.34.3:
     resolution: {integrity: sha512-eX2IQ6nFohW4DbvHIOLRB3MHFpYqaqvXd3Tp5e/T/dSH83fxaNJQRvDMhASmkNTsNTVF2/OOopzRCt7xokgPfg==}
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
+=======
+  sharp@0.34.4:
+    resolution: {integrity: sha512-FUH39xp3SBPnxWvd5iib1X8XY7J0K0X7d93sie9CJg2PO8/7gmg89Nve6OjItK53/MlAushNNxteBYfM6DEuoA==}
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
 
   shebang-command@1.2.0:
@@ -30827,6 +30960,7 @@ packages:
     resolution: {integrity: sha512-MB4pQmETUBlNs62BBeRjIFGeuy/x6gGKh7+eRUemn1rCFhqo7K+4slPqsyizCbcbYLnaYqaoZ2FWsZ/jN06D8w==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   simple-swizzle@0.2.2:
     resolution: {integrity: sha512-JA//kQgZtbuY83m+xT+tXJkmJncGMTFT+C+g2h2R9uxkYIrE2yy9sgmcLhCnw57/WSD+Eh3J97FPEDFnbXnDUg==}
@@ -30835,6 +30969,8 @@ packages:
 <<<<<<< HEAD
 >>>>>>> 6a89dec1d (fix(upload): update code)
 =======
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   sinon@18.0.1:
     resolution: {integrity: sha512-a2N2TDY1uGviajJ6r4D1CyRAkzE9NNVlYOV1wX5xQDuAk0ONgzgRl0EjCQuRCPxOwp13ghsMwt9Gdldujs39qw==}
 
@@ -36051,6 +36187,11 @@ snapshots:
 
   '@asamuzakjp/nwsapi@2.3.9': {}
 
+  '@asteasolutions/zod-to-openapi@8.1.0(zod@3.25.76)':
+    dependencies:
+      openapi3-ts: 4.5.0
+      zod: 3.25.76
+
   '@aws-crypto/crc32@5.2.0':
     dependencies:
       '@aws-crypto/util': 5.2.0
@@ -38988,11 +39129,16 @@ snapshots:
       hono: 4.10.5
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@html-eslint/eslint-plugin@0.47.0(eslint@9.39.1(jiti@2.6.1))(jiti@2.6.1)':
 =======
+=======
+>>>>>>> 330680d71 (feat(upload): update dependencies and enhance upload functionality)
 <<<<<<< HEAD
   '@html-eslint/eslint-plugin@0.47.0(eslint@9.38.0(jiti@2.6.1))(jiti@2.6.1)':
 =======
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
 <<<<<<< HEAD
   '@hono/node-server@1.19.5(hono@4.9.10)':
     dependencies:
@@ -39002,6 +39148,28 @@ snapshots:
     dependencies:
       hono: 4.9.9
 >>>>>>> ae146758 (feat(upload): add new examples and update dependencies)
+=======
+  '@hono/node-server@1.19.5(hono@4.9.10)':
+    dependencies:
+      hono: 4.9.10
+
+  '@hono/swagger-ui@0.5.2(hono@4.9.10)':
+    dependencies:
+      hono: 4.9.10
+
+  '@hono/zod-openapi@1.1.3(hono@4.9.10)(zod@3.25.76)':
+    dependencies:
+      '@asteasolutions/zod-to-openapi': 8.1.0(zod@3.25.76)
+      '@hono/zod-validator': 0.7.3(hono@4.9.10)(zod@3.25.76)
+      hono: 4.9.10
+      openapi3-ts: 4.5.0
+      zod: 3.25.76
+
+  '@hono/zod-validator@0.7.3(hono@4.9.10)(zod@3.25.76)':
+    dependencies:
+      hono: 4.9.10
+      zod: 3.25.76
+>>>>>>> 41e4ea9f (feat(upload): update dependencies and enhance upload functionality)
 
   '@html-eslint/eslint-plugin@0.20.0': {}
 
@@ -39220,16 +39388,23 @@ snapshots:
   '@humanwhocodes/retry@0.4.2': {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@img/colour@1.0.0':
     optional: true
 
   '@img/sharp-darwin-arm64@0.34.4':
 =======
   '@img/sharp-darwin-arm64@0.33.5':
+=======
+  '@img/colour@1.0.0': {}
+
+  '@img/sharp-darwin-arm64@0.34.4':
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     optionalDependencies:
-      '@img/sharp-libvips-darwin-arm64': 1.0.4
+      '@img/sharp-libvips-darwin-arm64': 1.2.3
     optional: true
 
+<<<<<<< HEAD
   '@img/sharp-darwin-arm64@0.34.3':
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
     optionalDependencies:
@@ -39240,10 +39415,46 @@ snapshots:
   '@img/sharp-darwin-x64@0.34.4':
 =======
   '@img/sharp-darwin-x64@0.33.5':
+=======
+  '@img/sharp-darwin-x64@0.34.4':
     optionalDependencies:
-      '@img/sharp-libvips-darwin-x64': 1.0.4
+      '@img/sharp-libvips-darwin-x64': 1.2.3
     optional: true
 
+  '@img/sharp-libvips-darwin-arm64@1.2.3':
+    optional: true
+
+  '@img/sharp-libvips-darwin-x64@1.2.3':
+    optional: true
+
+  '@img/sharp-libvips-linux-arm64@1.2.3':
+    optional: true
+
+  '@img/sharp-libvips-linux-arm@1.2.3':
+    optional: true
+
+  '@img/sharp-libvips-linux-ppc64@1.2.3':
+    optional: true
+
+  '@img/sharp-libvips-linux-s390x@1.2.3':
+    optional: true
+
+  '@img/sharp-libvips-linux-x64@1.2.3':
+    optional: true
+
+  '@img/sharp-libvips-linuxmusl-arm64@1.2.3':
+    optional: true
+
+  '@img/sharp-libvips-linuxmusl-x64@1.2.3':
+    optional: true
+
+  '@img/sharp-linux-arm64@0.34.4':
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
+    optionalDependencies:
+      '@img/sharp-libvips-linux-arm64': 1.2.3
+    optional: true
+
+<<<<<<< HEAD
   '@img/sharp-darwin-x64@0.34.3':
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
     optionalDependencies:
@@ -39330,10 +39541,19 @@ snapshots:
     optional: true
 
   '@img/sharp-linux-arm64@0.33.5':
+=======
+  '@img/sharp-linux-arm@0.34.4':
     optionalDependencies:
-      '@img/sharp-libvips-linux-arm64': 1.0.4
+      '@img/sharp-libvips-linux-arm': 1.2.3
     optional: true
 
+  '@img/sharp-linux-ppc64@0.34.4':
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
+    optionalDependencies:
+      '@img/sharp-libvips-linux-ppc64': 1.2.3
+    optional: true
+
+<<<<<<< HEAD
   '@img/sharp-linux-arm64@0.34.3':
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
     optionalDependencies:
@@ -39344,10 +39564,19 @@ snapshots:
   '@img/sharp-linux-arm@0.34.4':
 =======
   '@img/sharp-linux-arm@0.33.5':
+=======
+  '@img/sharp-linux-s390x@0.34.4':
     optionalDependencies:
-      '@img/sharp-libvips-linux-arm': 1.0.5
+      '@img/sharp-libvips-linux-s390x': 1.2.3
     optional: true
 
+  '@img/sharp-linux-x64@0.34.4':
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
+    optionalDependencies:
+      '@img/sharp-libvips-linux-x64': 1.2.3
+    optional: true
+
+<<<<<<< HEAD
   '@img/sharp-linux-arm@0.34.3':
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
     optionalDependencies:
@@ -39419,10 +39648,24 @@ snapshots:
   '@img/sharp-wasm32@0.34.4':
 =======
   '@img/sharp-wasm32@0.33.5':
+=======
+  '@img/sharp-linuxmusl-arm64@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-linuxmusl-arm64': 1.2.3
+    optional: true
+
+  '@img/sharp-linuxmusl-x64@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-linuxmusl-x64': 1.2.3
+    optional: true
+
+  '@img/sharp-wasm32@0.34.4':
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     dependencies:
       '@emnapi/runtime': 1.5.0
     optional: true
 
+<<<<<<< HEAD
   '@img/sharp-wasm32@0.34.3':
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
     dependencies:
@@ -39449,6 +39692,15 @@ snapshots:
 
   '@img/sharp-win32-x64@0.34.3':
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
+=======
+  '@img/sharp-win32-arm64@0.34.4':
+    optional: true
+
+  '@img/sharp-win32-ia32@0.34.4':
+    optional: true
+
+  '@img/sharp-win32-x64@0.34.4':
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     optional: true
 
   '@inquirer/ansi@1.0.2': {}
@@ -47596,9 +47848,43 @@ snapshots:
   '@tailwindcss/oxide-win32-arm64-msvc@4.1.17':
     optional: true
 
+<<<<<<< HEAD
   '@tailwindcss/oxide-win32-x64-msvc@4.1.17':
     optional: true
 
+=======
+  '@tailwindcss/oxide-win32-x64-msvc@4.1.16':
+    optional: true
+
+<<<<<<< HEAD
+  '@tailwindcss/oxide-win32-x64-msvc@4.1.17':
+    optional: true
+
+=======
+<<<<<<< HEAD
+>>>>>>> 330680d71 (feat(upload): update dependencies and enhance upload functionality)
+  '@tailwindcss/oxide@4.1.16':
+=======
+  '@tailwindcss/oxide@4.1.14':
+    dependencies:
+      detect-libc: 2.1.2
+      tar: 7.5.1
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
+    optionalDependencies:
+      '@tailwindcss/oxide-android-arm64': 4.1.16
+      '@tailwindcss/oxide-darwin-arm64': 4.1.16
+      '@tailwindcss/oxide-darwin-x64': 4.1.16
+      '@tailwindcss/oxide-freebsd-x64': 4.1.16
+      '@tailwindcss/oxide-linux-arm-gnueabihf': 4.1.16
+      '@tailwindcss/oxide-linux-arm64-gnu': 4.1.16
+      '@tailwindcss/oxide-linux-arm64-musl': 4.1.16
+      '@tailwindcss/oxide-linux-x64-gnu': 4.1.16
+      '@tailwindcss/oxide-linux-x64-musl': 4.1.16
+      '@tailwindcss/oxide-wasm32-wasi': 4.1.16
+      '@tailwindcss/oxide-win32-arm64-msvc': 4.1.16
+      '@tailwindcss/oxide-win32-x64-msvc': 4.1.16
+
+>>>>>>> d75108b40 (feat(upload): update dependencies and enhance upload functionality)
   '@tailwindcss/oxide@4.1.17':
     optionalDependencies:
       '@tailwindcss/oxide-android-arm64': 4.1.17
@@ -49331,10 +49617,6 @@ snapshots:
 
   '@types/mime@1.3.5': {}
 
-  '@types/mime@4.0.0':
-    dependencies:
-      mime: 4.1.0
-
   '@types/minimist@1.2.5': {}
 
   '@types/ms@2.1.0': {}
@@ -49468,10 +49750,6 @@ snapshots:
 
   '@types/resolve@1.20.6': {}
 
-  '@types/rimraf@4.0.5':
-    dependencies:
-      rimraf: 6.0.1
-
   '@types/semver@7.5.8': {}
 
   '@types/send@0.17.4':
@@ -49484,10 +49762,6 @@ snapshots:
       '@types/http-errors': 2.0.5
       '@types/node': 24.10.0
       '@types/send': 0.17.4
-
-  '@types/sharp@0.31.1':
-    dependencies:
-      '@types/node': 24.6.2
 
   '@types/sinon@17.0.4':
     dependencies:
@@ -57360,6 +57634,7 @@ snapshots:
 
   color-name@2.0.0: {}
 
+<<<<<<< HEAD
   color-string@2.1.2:
     dependencies:
 <<<<<<< HEAD
@@ -57373,10 +57648,13 @@ snapshots:
       color-name: 1.1.4
       simple-swizzle: 0.2.2
 
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   color-string@2.1.2:
     dependencies:
       color-name: 2.0.0
 
+<<<<<<< HEAD
   color@4.2.3:
     dependencies:
       color-convert: 2.0.1
@@ -57387,6 +57665,8 @@ snapshots:
 =======
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
 
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   color@5.0.2:
     dependencies:
       color-convert: 3.1.0
@@ -64361,19 +64641,29 @@ snapshots:
       parse-passwd: 1.0.0
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   hono@4.10.5: {}
 =======
+=======
+>>>>>>> d75108b40 (feat(upload): update dependencies and enhance upload functionality)
 <<<<<<< HEAD
   hono@4.10.4: {}
 =======
+=======
+>>>>>>> 330680d71 (feat(upload): update dependencies and enhance upload functionality)
 <<<<<<< HEAD
   hono@4.10.3: {}
 =======
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
 <<<<<<< HEAD
   hono@4.9.10: {}
 =======
   hono@4.9.9: {}
 >>>>>>> ae146758 (feat(upload): add new examples and update dependencies)
+=======
+  hono@4.9.10: {}
+>>>>>>> 41e4ea9f (feat(upload): update dependencies and enhance upload functionality)
 
   hook-std@3.0.0: {}
 >>>>>>> 9a17e9a8f (feat(upload): add new examples and update dependencies)
@@ -64685,6 +64975,7 @@ snapshots:
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   is-arrayish@0.3.2:
     optional: true
@@ -64693,6 +64984,8 @@ snapshots:
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
 
 >>>>>>> 9a17e9a8f (feat(upload): add new examples and update dependencies)
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   is-async-function@2.0.0:
     dependencies:
       has-tostringtag: 1.0.2
@@ -66654,6 +66947,24 @@ snapshots:
   lightningcss-win32-x64-msvc@1.30.2:
     optional: true
 
+<<<<<<< HEAD
+=======
+  lightningcss@1.30.1:
+    dependencies:
+      detect-libc: 2.1.2
+    optionalDependencies:
+      lightningcss-darwin-arm64: 1.30.1
+      lightningcss-darwin-x64: 1.30.1
+      lightningcss-freebsd-x64: 1.30.1
+      lightningcss-linux-arm-gnueabihf: 1.30.1
+      lightningcss-linux-arm64-gnu: 1.30.1
+      lightningcss-linux-arm64-musl: 1.30.1
+      lightningcss-linux-x64-gnu: 1.30.1
+      lightningcss-linux-x64-musl: 1.30.1
+      lightningcss-win32-arm64-msvc: 1.30.1
+      lightningcss-win32-x64-msvc: 1.30.1
+
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   lightningcss@1.30.2:
     dependencies:
       detect-libc: 2.1.2
@@ -68553,6 +68864,7 @@ snapshots:
       '@next/swc-win32-ia32-msvc': 13.5.9
       '@next/swc-win32-x64-msvc': 13.5.9
       '@opentelemetry/api': 1.9.0
+<<<<<<< HEAD
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
@@ -68611,6 +68923,9 @@ snapshots:
       '@next/swc-win32-x64-msvc': 16.0.1
       '@opentelemetry/api': 1.9.0
       '@playwright/test': 1.56.1
+=======
+      '@playwright/test': 1.55.1
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
       sharp: 0.34.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -69259,6 +69574,10 @@ snapshots:
       apg-lite: 1.0.4
 
   openapi-types@12.1.3: {}
+
+  openapi3-ts@4.5.0:
+    dependencies:
+      yaml: 2.8.1
 
   optionator@0.9.4:
     dependencies:
@@ -72334,14 +72653,19 @@ snapshots:
   shallowequal@1.1.0: {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   sharp@0.34.4:
 =======
   sharp@0.33.5:
+=======
+  sharp@0.34.4:
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
     dependencies:
-      color: 4.2.3
-      detect-libc: 2.0.4
+      '@img/colour': 1.0.0
+      detect-libc: 2.1.2
       semver: 7.7.2
     optionalDependencies:
+<<<<<<< HEAD
       '@img/sharp-darwin-arm64': 0.33.5
       '@img/sharp-darwin-x64': 0.33.5
       '@img/sharp-libvips-darwin-arm64': 1.0.4
@@ -72369,6 +72693,8 @@ snapshots:
       detect-libc: 2.1.2
       semver: 7.7.3
     optionalDependencies:
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
       '@img/sharp-darwin-arm64': 0.34.4
       '@img/sharp-darwin-x64': 0.34.4
       '@img/sharp-libvips-darwin-arm64': 1.2.3
@@ -72391,7 +72717,10 @@ snapshots:
       '@img/sharp-win32-arm64': 0.34.4
       '@img/sharp-win32-ia32': 0.34.4
       '@img/sharp-win32-x64': 0.34.4
+<<<<<<< HEAD
     optional: true
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
 
   shebang-command@1.2.0:
     dependencies:
@@ -72491,6 +72820,7 @@ snapshots:
       kolorist: 1.8.0
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   simple-swizzle@0.2.2:
     dependencies:
@@ -72503,6 +72833,8 @@ snapshots:
 =======
   sinon@16.1.3:
 =======
+=======
+>>>>>>> c234cd0f3 (feat(upload): update dependencies and enhance upload functionality)
   sinon@18.0.1:
 >>>>>>> 8a50cdd26 (chore(upload): remove deprecated package.json and update configuration)
     dependencies:

@@ -7,20 +7,12 @@ import DiskStorage from "../../../src/storage/local/disk-storage";
 import { metadata, storageOptions, testRoot } from "../../__helpers__/config";
 
 vi.mock(import("node:fs/promises"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
     const { fs } = require("memfs");
 
     return fs.promises;
 });
 
 vi.mock(import("node:fs"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
     const { fs } = require("memfs");
 
     return fs;
@@ -73,7 +65,7 @@ describe("fetch Tus", () => {
         });
     });
 
-    describe("POST", () => {
+    describe("post", () => {
         it("should create upload resource and return 201 with location header", async () => {
             expect.assertions(3);
 
@@ -100,7 +92,7 @@ describe("fetch Tus", () => {
 
             expect(response.status).toBe(201);
             expect(response.headers.get("location")).toBeDefined();
-            expect(exposedHeaders(response)).toEqual(expect.arrayContaining(["location", "upload-expires"]));
+            expect(exposedHeaders(response)).toStrictEqual(expect.arrayContaining(["location", "upload-expires"]));
         });
 
         it("should handle invalid upload length with error response", async () => {
@@ -142,7 +134,7 @@ describe("fetch Tus", () => {
         });
     });
 
-    describe("OPTIONS", () => {
+    describe("options", () => {
         it("should return 204 with Tus protocol headers for OPTIONS request", async () => {
             expect.assertions(5);
 

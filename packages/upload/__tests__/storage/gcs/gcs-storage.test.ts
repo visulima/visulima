@@ -18,7 +18,11 @@ const { mockFetch } = vi.hoisted(() => {
     };
 });
 
-vi.mock(import("node-fetch"));
+vi.mock(import("node-fetch"), () => {
+    return {
+        default: mockFetch,
+    };
+});
 
 const mockAuthRequest = vi.fn();
 

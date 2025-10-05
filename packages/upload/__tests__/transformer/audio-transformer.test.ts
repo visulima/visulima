@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import type { AudioTransformerConfig } from "../../src/transform";
-import AudioTransformer from "../../src/transform/audio-transformer";
+import type { AudioTransformerConfig } from "../../src/transformer";
+import AudioTransformer from "../../src/transformer/audio-transformer";
 
 // Mock storage
 const mockStorage = {

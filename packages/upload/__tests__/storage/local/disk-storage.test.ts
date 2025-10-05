@@ -267,7 +267,7 @@ describe(DiskStorage, () => {
         beforeEach(createFile);
 
         it("should delete expired files based on age threshold", async () => {
-            expect.assertions(1);
+            expect.assertions(3);
 
             vi.useFakeTimers();
             vi.advanceTimersByTime(500);
