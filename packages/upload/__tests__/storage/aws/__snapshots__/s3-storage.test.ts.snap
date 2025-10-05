@@ -31,7 +31,7 @@ S3File {
   "content": undefined,
   "contentType": "video/mp4",
   "createdAt": "2022-02-02T00:00:00.000Z",
-  "expiredAt": "2022-02-02T01:00:00.000Z",
+  "expiredAt": undefined,
   "hash": undefined,
   "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
   "metadata": {
@@ -104,13 +104,134 @@ exports[`S3Storage > .write() > should request api and set status and bytesWritt
 
 exports[`S3Storage > normalizeError > not s3 error 1`] = `
 {
-  "code": "GenericUploadError",
-  "message": "Generic Upload Error",
+  "code": "Error",
+  "message": "[S3Storage] unknown",
+  "name": "Error",
   "statusCode": 500,
 }
 `;
 
 exports[`S3Storage > normalizeError > s3 error 1`] = `
+{
+  "code": "SomeServiceException",
+  "message": "SomeServiceException",
+  "name": "SomeError",
+  "statusCode": 400,
+}
+`;
+
+exports[`s3 > .create() > should handle existing 1`] = `
+{
+  "UploadId": "987654321",
+  "bytesWritten": 0,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "created",
+}
+`;
+
+exports[`s3 > .create() > should request api and set status and UploadId 1`] = `
+S3File {
+  "ETag": undefined,
+  "Parts": undefined,
+  "UploadId": "123456789",
+  "bytesWritten": 0,
+  "content": undefined,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "expiredAt": undefined,
+  "hash": undefined,
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "modifiedAt": undefined,
+  "name": "anonymous/testfile.mp4",
+  "originalName": "testfile.mp4",
+  "partSize": undefined,
+  "partsUrls": undefined,
+  "size": 64,
+  "status": "created",
+  "uri": undefined,
+}
+`;
+
+exports[`s3 > .create() > should send error on invalid s3 response 1`] = `[UploadError: s3 create upload error]`;
+
+exports[`s3 > .write() > should request api and set status and bytesWritten 1`] = `
+{
+  "ETag": undefined,
+  "UploadId": "987654321",
+  "bytesWritten": 64,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "completed",
+  "uri": "/1234",
+}
+`;
+
+exports[`s3 > .write() > should request api and set status and bytesWritten on resume 1`] = `
+{
+  "Parts": [],
+  "UploadId": "987654321",
+  "bytesWritten": 0,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "part",
+}
+`;
+
+exports[`s3 > normalizeError > not s3 error 1`] = `
+{
+  "code": "Error",
+  "message": "[s3] unknown",
+  "name": "Error",
+  "statusCode": 500,
+}
+`;
+
+exports[`s3 > normalizeError > s3 error 1`] = `
 {
   "code": "SomeServiceException",
   "message": "SomeServiceException",

@@ -94,13 +94,17 @@ describe("express Tus", () => {
     });
 
     describe("default options", () => {
-        it("should be defined", () => {
+        it("should create Tus handler instance", () => {
+            expect.assertions(1);
+
             expect(new Tus({ storage: new DiskStorage({ directory: "files" }) })).toBeInstanceOf(Tus);
         });
     });
 
-    describe("pOST", () => {
-        it("should 201", async () => {
+    describe("POST", () => {
+        it("should create upload resource and return 201 with location header", async () => {
+            expect.assertions(2);
+
             // eslint-disable-next-line radar/no-duplicate-string
             const response = await create().expect("tus-resumable", TUS_RESUMABLE);
 
@@ -112,8 +116,10 @@ describe("express Tus", () => {
         });
     });
 
-    describe("pATCH", () => {
-        it("should 204 and Upload-Offset", async () => {
+    describe("PATCH", () => {
+        it("should resume upload and return 204 with upload offset", async () => {
+            expect.assertions(5);
+
             const test = await create();
 
             uri ||= test.header.location;
@@ -134,7 +140,9 @@ describe("express Tus", () => {
             expect(exposedHeaders(response)).toEqual(expect.arrayContaining(["upload-offset", "upload-expires", "tus-resumable"]));
         });
 
-        it("should 200", async () => {
+        it("should complete upload with checksum and return 200", async () => {
+            expect.assertions(4);
+
             const test = await create();
 
             uri ||= test.header.location;
@@ -155,7 +163,7 @@ describe("express Tus", () => {
         });
     });
 
-    describe("hEAD", () => {
+    describe("HEAD", () => {
         // eslint-disable-next-line radar/no-duplicate-string
         it("should 204", async () => {
             const test = await create();
@@ -209,7 +217,7 @@ describe("express Tus", () => {
         });
     });
 
-    describe("oPTIONS", () => {
+    describe("OPTIONS", () => {
         it("should 204", async () => {
             const response = await supertest(app).options(basePath).set("Tus-Resumable", TUS_RESUMABLE);
 
@@ -227,7 +235,7 @@ describe("express Tus", () => {
         });
     });
 
-    describe("dELETE", () => {
+    describe("DELETE", () => {
         it("should 204", async () => {
             const test = await create();
 
@@ -247,7 +255,7 @@ describe("express Tus", () => {
         });
     });
 
-    describe("pOST (creation-with-upload)", () => {
+    describe("POST (creation-with-upload)", () => {
         it("should return upload-offset", async () => {
             const response = await supertest(app)
                 .post(basePath)

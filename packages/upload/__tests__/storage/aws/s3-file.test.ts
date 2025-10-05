@@ -4,6 +4,8 @@ import S3File from "../../../src/storage/aws/s3-file";
 
 describe(S3File, () => {
     it("should have extra params", () => {
+        expect.assertions(1);
+
         const file = new S3File({ metadata: { foo: "bar" } });
 
         file.uri = "uri";

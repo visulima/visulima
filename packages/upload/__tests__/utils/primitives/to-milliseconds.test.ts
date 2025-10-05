@@ -4,16 +4,22 @@ import toMilliseconds from "../../../src/utils/primitives/to-milliseconds";
 
 describe("utils", () => {
     describe("primitives", () => {
-        describe("to-milliseconds", () => {
-            it("should return milliseconds", () => {
+        describe(toMilliseconds, () => {
+            it("should convert duration string to milliseconds", () => {
+                expect.assertions(1);
+
                 expect(toMilliseconds("1m")).toBe(60_000);
             });
 
-            it("should return given number", () => {
+            it("should return the number as-is when given a number", () => {
+                expect.assertions(1);
+
                 expect(toMilliseconds(1)).toBe(1);
             });
 
-            it("should return null", () => {
+            it("should return null for undefined input", () => {
+                expect.assertions(1);
+
                 expect(toMilliseconds()).toBeNull();
             });
         });

@@ -5,7 +5,7 @@ import type { HttpError, ValidatorConfig } from "../../src/utils/types";
 import Validator from "../../src/utils/validator";
 
 describe("utils", () => {
-    describe("validator", () => {
+    describe(Validator, () => {
         const validator = new Validator();
 
         const size: Required<ValidatorConfig<any>> = {
@@ -16,7 +16,9 @@ describe("utils", () => {
             value: 100,
         };
 
-        it("should be able to add and verify", async () => {
+        it("should validate files and throw error for files exceeding size limit", async () => {
+            expect.assertions(1);
+
             validator.add({ size });
 
             await expect(

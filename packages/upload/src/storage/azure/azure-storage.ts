@@ -4,7 +4,7 @@ import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse, BlobItem
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import { normalize } from "@visulima/path";
 
-import { ERRORS, throwErrorCode } from "../../utils";
+import { ERRORS, throwErrorCode, toMilliseconds } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
@@ -15,6 +15,10 @@ import AzureMetaStorage from "./azure-meta-storage";
 import type { AzureStorageOptions } from "./types";
 
 class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
+    public static override readonly name = "azure";
+
+    public override checksumTypes = ["md5"];
+
     private client: BlobServiceClient;
 
     private readonly containerClient: ContainerClient;
@@ -23,8 +27,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
     protected meta: MetaStorage<AzureFile>;
 
-    // eslint-disable-next-line radar/cognitive-complexity
-    constructor(public override config: AzureStorageOptions) {
+    public constructor(config: AzureStorageOptions) {
         super(config);
 
         // Container name is required
@@ -89,7 +92,18 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     }
 
     public async create(request: IncomingMessage, config: FileInit): Promise<AzureFile> {
-        const file = new AzureFile(config);
+        // Handle TTL option
+        const processedConfig = { ...config };
+
+        if (config.ttl) {
+            const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
+
+            if (ttlMs !== null) {
+                processedConfig.expiredAt = Date.now() + ttlMs;
+            }
+        }
+
+        const file = new AzureFile(processedConfig);
 
         file.name = this.namingFunction(file, request);
 

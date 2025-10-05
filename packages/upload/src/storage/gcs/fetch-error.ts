@@ -1,5 +1,5 @@
 class FetchError extends Error {
-    public name = "FetchError";
+    public override name = "FetchError";
 
     constructor(
         message: string,

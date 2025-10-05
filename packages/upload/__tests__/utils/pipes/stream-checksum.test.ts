@@ -34,8 +34,10 @@ describe("utils", () => {
             }
         });
 
-        describe("stream-checksum", () => {
-            it("should return a stream checksum", async () => {
+        describe(StreamChecksum, () => {
+            it("should create StreamChecksum instance with correct properties and validate checksum mismatch", async () => {
+                expect.assertions(5);
+
                 await createTestFile(directory, file);
 
                 const transformer = new StreamChecksum("098f6bcd4621d373cade4e832627b4f6", "md5");
@@ -56,8 +58,10 @@ describe("utils", () => {
             });
         });
 
-        describe(createReadStream, () => {
-            it("should return a pass through stream", async () => {
+        describe(streamChecksum, () => {
+            it("should return a PassThrough stream when no checksum provided", async () => {
+                expect.assertions(2);
+
                 await createTestFile(directory, file);
 
                 const stream = createReadStream(file);
@@ -69,7 +73,9 @@ describe("utils", () => {
                 expect(writeableStream).toBeInstanceOf(PassThrough);
             });
 
-            it("should return a stream checksum", async () => {
+            it("should return a StreamChecksum instance with correct properties when checksum provided", async () => {
+                expect.assertions(5);
+
                 await createTestFile(directory, file);
 
                 // eslint-disable-next-line no-secrets/no-secrets
