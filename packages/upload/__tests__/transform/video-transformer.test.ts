@@ -35,13 +35,17 @@ describe(VideoTransformer, () => {
     });
 
     describe("constructor", () => {
-        it("should create transformer with default config", () => {
+        it("should create transformer with default configuration", () => {
+            expect.assertions(1);
+
             const transformer = new VideoTransformer(mockStorage as any);
 
             expect(transformer).toBeInstanceOf(VideoTransformer);
         });
 
-        it("should create transformer with custom config", () => {
+        it("should create transformer with custom configuration", () => {
+            expect.assertions(1);
+
             const config: VideoTransformerConfig = {
                 cacheTtl: 7200,
                 enableCache: true,
@@ -56,6 +60,8 @@ describe(VideoTransformer, () => {
 
     describe("cache management", () => {
         it("should clear cache for specific file", () => {
+            expect.assertions(0);
+
             const transformer = new VideoTransformer(mockStorage as any, {
                 enableCache: true,
             });
@@ -65,6 +71,8 @@ describe(VideoTransformer, () => {
         });
 
         it("should clear entire cache", () => {
+            expect.assertions(0);
+
             const transformer = new VideoTransformer(mockStorage as any, {
                 enableCache: true,
             });
@@ -74,6 +82,8 @@ describe(VideoTransformer, () => {
         });
 
         it("should return cache stats when cache is enabled", () => {
+            expect.assertions(1);
+
             const transformer = new VideoTransformer(mockStorage as any, {
                 enableCache: true,
             });
@@ -87,6 +97,8 @@ describe(VideoTransformer, () => {
         });
 
         it("should return undefined cache stats when cache is disabled", () => {
+            expect.assertions(1);
+
             const transformer = new VideoTransformer(mockStorage as any, {
                 enableCache: false,
             });
@@ -98,31 +110,40 @@ describe(VideoTransformer, () => {
     });
 
     describe("transformation methods", () => {
-        it("should have resize method", () => {
+        it("should have resize method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.resize).toBeFunction();
         });
 
-        it("should have crop method", () => {
+        it("should have crop method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.crop).toBeFunction();
         });
 
-        it("should have rotate method", () => {
+        it("should have rotate method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.rotate).toBeFunction();
         });
 
-        it("should have convertFormat method", () => {
+        it("should have convertFormat method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.convertFormat).toBeFunction();
         });
 
-        it("should have transcode method", () => {
+        it("should have transcode method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.transcode).toBeFunction();
         });
 
-        it("should have transform method", () => {
+        it("should have transform method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.transform).toBeFunction();
         });
     });
-
-    // Note: More comprehensive tests would require mocking the entire Mediabunny library
-    // and creating test video files, which is complex for this initial implementation
 });

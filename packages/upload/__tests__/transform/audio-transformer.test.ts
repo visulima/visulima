@@ -35,13 +35,17 @@ describe(AudioTransformer, () => {
     });
 
     describe("constructor", () => {
-        it("should create transformer with default config", () => {
+        it("should create transformer with default configuration", () => {
+            expect.assertions(1);
+
             const transformer = new AudioTransformer(mockStorage as any);
 
             expect(transformer).toBeInstanceOf(AudioTransformer);
         });
 
-        it("should create transformer with custom config", () => {
+        it("should create transformer with custom configuration", () => {
+            expect.assertions(1);
+
             const config: AudioTransformerConfig = {
                 cacheTtl: 7200,
                 enableCache: true,
@@ -56,6 +60,8 @@ describe(AudioTransformer, () => {
 
     describe("cache management", () => {
         it("should clear cache for specific file", () => {
+            expect.assertions(0);
+
             const transformer = new AudioTransformer(mockStorage as any, {
                 enableCache: true,
             });
@@ -65,6 +71,8 @@ describe(AudioTransformer, () => {
         });
 
         it("should clear entire cache", () => {
+            expect.assertions(0);
+
             const transformer = new AudioTransformer(mockStorage as any, {
                 enableCache: true,
             });
@@ -74,6 +82,8 @@ describe(AudioTransformer, () => {
         });
 
         it("should return cache stats when cache is enabled", () => {
+            expect.assertions(1);
+
             const transformer = new AudioTransformer(mockStorage as any, {
                 enableCache: true,
             });
@@ -87,6 +97,8 @@ describe(AudioTransformer, () => {
         });
 
         it("should return undefined cache stats when cache is disabled", () => {
+            expect.assertions(1);
+
             const transformer = new AudioTransformer(mockStorage as any, {
                 enableCache: false,
             });
@@ -98,27 +110,34 @@ describe(AudioTransformer, () => {
     });
 
     describe("transformation methods", () => {
-        it("should have resample method", () => {
+        it("should have resample method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.resample).toBeFunction();
         });
 
-        it("should have mixChannels method", () => {
+        it("should have mixChannels method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.mixChannels).toBeFunction();
         });
 
-        it("should have convertFormat method", () => {
+        it("should have convertFormat method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.convertFormat).toBeFunction();
         });
 
-        it("should have transcode method", () => {
+        it("should have transcode method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.transcode).toBeFunction();
         });
 
-        it("should have transform method", () => {
+        it("should have transform method available", () => {
+            expect.assertions(0);
+
             expectTypeOf(transformer.transform).toBeFunction();
         });
     });
-
-    // Note: More comprehensive tests would require mocking the entire Mediabunny library
-    // and creating test audio files, which is complex for this initial implementation
 });

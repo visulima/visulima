@@ -27,7 +27,36 @@
         "aws",
         "gcs",
         "google",
-        "storage"
+        "storage",
+        "file-upload",
+        "aws",
+        "cloudflare-r2",
+        "digitalocean-spaces",
+        "google-cloud-storage",
+        "minio",
+        "presigned-urls",
+        "nextjs",
+        "remix",
+        "sveltekit",
+        "nuxt",
+        "astro",
+        "react",
+        "aws-s3",
+        "typescript",
+        "express",
+        "hono",
+        "fastify",
+        "elysia",
+        "framework-agnostic",
+        "edge-runtime",
+        "cloudflare-workers",
+        "vercel-edge",
+        "serverless",
+        "universal",
+        "enterprise-security",
+        "multipart-upload",
+        "chunked-upload",
+        "upload-library"
     ],
     "homepage": "https://visulima.com/packages/uploads",
     "repository": {
@@ -73,9 +102,25 @@
             "types": "./dist/storage/gcs/index.d.ts",
             "import": "./dist/storage/gcs/index.js"
         },
+        "./vercel": {
+            "types": "./dist/storage/vercel-blob/index.d.ts",
+            "import": "./dist/storage/vercel-blob/index.js"
+        },
         "./openapi": {
             "types": "./dist/openapi/index.d.ts",
             "import": "./dist/openapi/index.js"
+        },
+        "./transformers/audio": {
+            "types": "./dist/transformer/audio-transformer.d.ts",
+            "import": "./dist/transformer/audio-transformer.js"
+        },
+        "./transformers/video": {
+            "types": "./dist/transformer/video-transformer.d.ts",
+            "import": "./dist/transformer/video-transformer.js"
+        },
+        "./transformers/image": {
+            "types": "./dist/transformer/image-transformer.d.ts",
+            "import": "./dist/transformer/image-transformer.js"
         },
         "./package.json": "./package.json"
     },
@@ -105,25 +150,21 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "overrides": {
-        "@aws-sdk/types": "^3.901.0",
-        "node-fetch": "^4.0.0-beta.4"
-    },
     "dependencies": {
         "@mjackson/multipart-parser": "^0.10.1",
         "@sindresorhus/fnv1a": "3.1.0",
         "@visulima/pagination": "workspace:*",
         "etag": "^1.8.1",
         "http-errors": "^2.0.0",
-        "lodash.merge": "^4.6.2",
         "lru-cache": "^11.2.2",
-        "mediabunny": "^0.1.0",
         "memoize": "10.1.0",
         "mime": "^4.1.0",
         "nanoid": "5.1.6",
         "path-to-regexp": "8.3.0"
     },
     "devDependencies": {
+        "@vercel/blob": "^2.0.0",
+        "mediabunny": "^1.23.0",
         "@anolilab/eslint-config": "^16.3.3",
         "sharp": "^0.33.5",
         "@anolilab/prettier-config": "^6.0.6",
@@ -141,7 +182,6 @@
         "@types/express": "^5.0.3",
         "@types/fs-extra": "^11.0.4",
         "@types/http-errors": "^2.0.5",
-        "@types/lodash.merge": "^4.6.9",
         "@types/mime": "^4.0.0",
         "@types/node": "^24.6.2",
         "@types/sharp": "^0.31.1",
@@ -175,17 +215,52 @@
     },
     "peerDependencies": {
         "sharp": "^0.33.5",
+        "mediabunny": "^1.23.0",
         "@aws-sdk/client-s3": "^3.901.0",
         "@aws-sdk/credential-providers": "^3.901.0",
         "@aws-sdk/s3-request-presigner": "^3.901.0",
         "@aws-sdk/signature-v4-crt": "^3.901.0",
         "@azure/storage-blob": "^12.28.0",
         "aws-crt": "^1.27.3",
-        "express": "^5.1.0",
         "gaxios": "^7.1.2",
+        "@vercel/blob": "^2.0.0",
         "google-auth-library": "^10.4.0"
     },
-    "peerDependenciesMeta": {},
+    "peerDependenciesMeta": {
+        "@vercel/blob": {
+            "optional": true
+        },
+        "sharp": {
+            "optional": true
+        },
+        "mediabunny": {
+            "optional": true
+        },
+        "@aws-sdk/client-s3": {
+            "optional": true
+        },
+        "@aws-sdk/credential-providers": {
+            "optional": true
+        },
+        "@aws-sdk/s3-request-presigner": {
+            "optional": true
+        },
+        "@aws-sdk/signature-v4-crt": {
+            "optional": true
+        },
+        "@azure/storage-blob": {
+            "optional": true
+        },
+        "aws-crt": {
+            "optional": true
+        },
+        "gaxios": {
+            "optional": true
+        },
+        "google-auth-library": {
+            "optional": true
+        }
+    },
     "engines": {
         "node": ">=20.19 <=24.x"
     },

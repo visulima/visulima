@@ -1093,7 +1093,7 @@ class MediaTransformer {
 
         const parts = contentType.split("/");
 
-        return parts.length > 1 ? parts[1].split(";")[0] : "";
+        return parts.length > 1 ? parts[1]?.split(";")[0] || "" : "";
     }
 
     /**

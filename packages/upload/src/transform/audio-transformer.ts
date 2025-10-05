@@ -188,7 +188,7 @@ class AudioTransformer {
 
         await conversion.execute();
 
-        return output.target.buffer as Buffer;
+        return Buffer.from(output.target.buffer as ArrayBuffer);
     }
 
     /**

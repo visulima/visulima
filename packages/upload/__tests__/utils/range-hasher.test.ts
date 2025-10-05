@@ -33,8 +33,10 @@ describe("utils", async () => {
         }
     });
 
-    describe("range-hasher", async () => {
-        it("hex", async () => {
+    describe(RangeHasher, async () => {
+        it("should generate correct hex hash after updating from filesystem", async () => {
+            expect.assertions(2);
+
             await createTestFile(testRoot, filepath);
 
             const rangeHasher = new RangeHasher();
@@ -46,7 +48,9 @@ describe("utils", async () => {
             expect(rangeHasher.hex(filepath)).toBe("a94a8fe5ccb19ba61c4c0873d391e987982fbbd3");
         });
 
-        it("base64", async () => {
+        it("should generate correct base64 hash after updating from filesystem", async () => {
+            expect.assertions(2);
+
             await createTestFile(testRoot, filepath);
 
             const rangeHasher = new RangeHasher();
@@ -59,13 +63,17 @@ describe("utils", async () => {
             expect(rangeHasher.base64(filepath)).toBe("qUqP5cyxm6YcTAhz05Hph5gvu9M=");
         });
 
-        it("digester", () => {
+        it("should return RangeChecksum instance from digester method", () => {
+            expect.assertions(1);
+
             const rangeHasher = new RangeHasher();
 
             expect(rangeHasher.digester(filepath)).toBeInstanceOf(RangeChecksum);
         });
 
-        it("updateFromFs", async () => {
+        it("should update from filesystem and return hash instances", async () => {
+            expect.assertions(3);
+
             await createTestFile(testRoot, filepath);
 
             const rangeHasher = new RangeHasher();

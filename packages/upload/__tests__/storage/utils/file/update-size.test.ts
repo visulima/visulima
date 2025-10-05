@@ -5,14 +5,18 @@ import { metafile } from "../../../__helpers__/config";
 
 describe("file", () => {
     describe(updateSize, () => {
-        it("updateSize updates size when new size is smaller", () => {
+        it("should update file size when new size is smaller than current size", () => {
+            expect.assertions(1);
+
             const file = { ...metafile, id: "123" };
             const updatedFile = updateSize(file, 50);
 
             expect(updatedFile).toEqual({ ...file, size: 50 });
         });
 
-        it("updateSize does not update size when new size is larger", () => {
+        it("should not update file size when new size is larger than current size", () => {
+            expect.assertions(1);
+
             const file = {
                 ...metafile,
                 id: "123",
@@ -24,7 +28,9 @@ describe("file", () => {
             expect(updatedFile).toEqual(file);
         });
 
-        it("updateSize does not update size when new size is equal", () => {
+        it("should not update file size when new size equals current size", () => {
+            expect.assertions(1);
+
             const file = {
                 ...metafile,
                 id: "123",
@@ -36,7 +42,9 @@ describe("file", () => {
             expect(updatedFile).toEqual(file);
         });
 
-        it("updateSize handles negative sizes", () => {
+        it("should handle negative size values", () => {
+            expect.assertions(1);
+
             const file = {
                 ...metafile,
                 id: "123",
@@ -48,7 +56,9 @@ describe("file", () => {
             expect(updatedFile).toEqual({ ...file, size: -50 });
         });
 
-        it("updateSize handles zero size", () => {
+        it("should handle zero size values", () => {
+            expect.assertions(1);
+
             const file = {
                 ...metafile,
                 id: "123",

@@ -2,15 +2,18 @@ import type { IncomingMessage } from "node:http";
 import { setInterval } from "node:timers";
 import { inspect } from "node:util";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { normalize } from "@visulima/path";
 import { LRUCache as Cache } from "lru-cache";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import typeis from "type-is";
 
 import type { ErrorResponses, HttpError, Logger, UploadResponse, ValidatorConfig } from "../utils";
 import { ErrorMap, ERRORS, isEqual, Locker, normalizeHookResponse, normalizeOnErrorResponse, throwErrorCode, toMilliseconds, Validator } from "../utils";
 import type MetaStorage from "./meta-storage";
-import type { BaseStorageOptions, PurgeList } from "./types";
+import type { BaseStorageOptions, GenericStorageConfig, PurgeList, StorageOptimizations } from "./types";
 import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { FileName, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
@@ -42,19 +45,23 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     public onError: (error: HttpError) => UploadResponse;
 
-    public maxUploadSize: number;
-
-    public maxMetadataSize: number;
-
     public isReady = true;
-
-    public checksumTypes: string[] = [];
 
     public errorResponses = {} as ErrorResponses;
 
     public cache: Cache<string, TFile>;
 
     public readonly logger?: Logger;
+
+    public readonly genericConfig: GenericStorageConfig;
+
+    public maxMetadataSize: number;
+
+    public checksumTypes: string[] = [];
+
+    public maxUploadSize: number;
+
+    protected readonly optimizations: StorageOptimizations;
 
     protected locker: Locker;
 
@@ -66,7 +73,12 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     protected assetFolder: string | undefined = undefined;
 
-    protected constructor(public config: BaseStorageOptions<TFile>) {
+    /**
+     * Limits the number of concurrent upload requests
+     */
+    protected concurrency?: number;
+
+    protected constructor(config: BaseStorageOptions<TFile> & { genericConfig?: GenericStorageConfig }) {
         const options = { ...defaults, ...config } as Required<BaseStorageOptions<TFile>>;
 
         this.onCreate = normalizeHookResponse(options.onCreate);
@@ -77,6 +89,17 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         this.namingFunction = options.filename;
         this.maxUploadSize = typeof options.maxUploadSize === "string" ? parseBytes(options.maxUploadSize) : options.maxUploadSize;
         this.maxMetadataSize = typeof options.maxMetadataSize === "string" ? parseBytes(options.maxMetadataSize) : options.maxMetadataSize;
+
+        // Initialize generic configuration
+        this.genericConfig = config.genericConfig || {};
+        this.optimizations = {
+            bulkBatchSize: 100,
+            enableCDNHeaders: false,
+            enableCompression: false,
+            usePrefixes: false,
+            useServerSideCopy: true,
+            ...this.genericConfig.optimizations,
+        };
 
         if (options.assetFolder !== undefined) {
             this.assetFolder = normalize(options.assetFolder);
@@ -145,13 +168,43 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         return this.validation.verify(file);
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
-    normalizeError(_error: Error): HttpError {
-        return {
-            code: "GenericUploadError",
-            message: "Generic Upload Error",
+    /**
+     * Check if file exists
+     */
+    public async exists(query: FileQuery): Promise<boolean> {
+        try {
+            await this.getMeta(query.id);
+
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Enhanced error normalization with storage context
+     */
+    public normalizeError(error: Error): HttpError {
+        // Create base error structure
+        const baseError: HttpError = {
+            code: error.name,
+            message: error.message,
+            name: error.name,
             statusCode: 500,
         };
+
+        // Add storage class context to errors
+        return {
+            ...baseError,
+            message: `[${this.constructor.name}] ${baseError.message}`,
+        };
+    }
+
+    /**
+     * Get configuration
+     */
+    public get config(): GenericStorageConfig {
+        return this.genericConfig;
     }
 
     /**
@@ -262,7 +315,21 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     public async update({ id }: FileQuery, metadata: Partial<File>): Promise<TFile> {
         const file = await this.getMeta(id);
 
-        updateMetadata(file as File, metadata);
+        // Handle TTL option in metadata
+        const processedMetadata = { ...metadata };
+
+        if ("ttl" in processedMetadata && processedMetadata.ttl !== undefined) {
+            const ttlValue = processedMetadata.ttl;
+            const ttlMs = typeof ttlValue === "string" ? toMilliseconds(ttlValue) : ttlValue;
+
+            if (ttlMs !== null) {
+                processedMetadata.expiredAt = Date.now() + (ttlMs as number);
+            }
+
+            delete (processedMetadata as any).ttl;
+        }
+
+        updateMetadata(file as File, processedMetadata);
 
         await this.saveMeta(file);
 
@@ -270,15 +337,132 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     }
 
     /**
+     * Apply storage optimizations to file operations
+     */
+    protected applyOptimizations(operation: string, ...arguments_: any[]): any[] {
+        switch (operation) {
+            case "copy": {
+                return this.optimizeCopy(arguments_[0], arguments_[1]);
+            }
+            case "create": {
+                return this.optimizeCreate(arguments_[0], arguments_[1]);
+            }
+            case "get": {
+                return this.optimizeGet(arguments_[0]);
+            }
+            default: {
+                return arguments_;
+            }
+        }
+    }
+
+    /**
+     * Optimize file creation with storage-specific settings
+     */
+    protected optimizeCreate(request: IncomingMessage, config: FileInit): [IncomingMessage, FileInit] {
+        const { optimizations } = this;
+
+        // Add optimization metadata
+        if (optimizations.metadataTags) {
+            config.metadata = {
+                ...config.metadata,
+                ...optimizations.metadataTags,
+            };
+        }
+
+        // Apply prefix if enabled
+        if (optimizations.usePrefixes && optimizations.prefixTemplate) {
+            // This would be implemented by subclasses
+        }
+
+        return [request, config];
+    }
+
+    /**
+     * Optimize copy operations
+     */
+    protected optimizeCopy(source: string, destination: string): [string, string] {
+        const { optimizations } = this;
+
+        // Apply prefix to destination if enabled
+        if (optimizations.usePrefixes && optimizations.prefixTemplate) {
+            const prefix = this.resolvePrefix(source);
+
+            return [source, `${prefix}${destination}`];
+        }
+
+        return [source, destination];
+    }
+
+    /**
+     * Optimize get operations
+     */
+    protected optimizeGet(query: FileQuery): [FileQuery] {
+        const { optimizations } = this;
+
+        // Apply prefix if enabled
+        if (optimizations.usePrefixes && optimizations.prefixTemplate) {
+            return [{ ...query, id: this.applyPrefix(query.id) }];
+        }
+
+        return [query];
+    }
+
+    /**
+     * Resolve prefix for a file based on optimizations
+     */
+    protected resolvePrefix(fileId: string): string {
+        const { prefixTemplate } = this.optimizations;
+
+        if (!prefixTemplate)
+            return "";
+
+        // Simple template resolution - subclasses can override for complex logic
+        return prefixTemplate.replace("{fileId}", fileId);
+    }
+
+    /**
+     * Apply prefix to file ID
+     */
+    protected applyPrefix(fileId: string): string {
+        const prefix = this.resolvePrefix(fileId);
+
+        return prefix ? `${prefix}${fileId}` : fileId;
+    }
+
+    /**
+     * Remove prefix from file ID
+     */
+    protected removePrefix(prefixedId: string): string {
+        const { prefixTemplate } = this.optimizations;
+
+        if (!prefixTemplate)
+            return prefixedId;
+
+        // Simple prefix removal - subclasses can override
+        const prefix = this.resolvePrefix("");
+
+        return prefixedId.startsWith(prefix) ? prefixedId.slice(prefix.length) : prefixedId;
+    }
+
+    /**
      * Prevent upload from being accessed by multiple requests
      */
 
     protected async lock(key: string): Promise<string> {
-        try {
-            return this.locker.lock(key);
-        } catch (error: any) {
-            return throwErrorCode(ERRORS.FILE_LOCKED, error.message);
+        const activeUploads = [...this.locker.keys()];
+
+        if (activeUploads.includes(key)) {
+            return throwErrorCode(ERRORS.FILE_LOCKED);
         }
+
+        if (this.config.concurrency && this.config.concurrency < activeUploads.length) {
+            return throwErrorCode(ERRORS.STORAGE_BUSY);
+        }
+
+        this.locker.set(key, key);
+
+        return key;
     }
 
     protected async unlock(key: string): Promise<void> {
@@ -334,7 +518,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      * @param {string} name
      * @param {string} destination
      */
-    public abstract copy(name: string, destination: string): Promise<any>;
+    public abstract copy(name: string, destination: string, options?: { storageClass?: string }): Promise<any>;
 
     /**
      * Move an upload file to a new location.

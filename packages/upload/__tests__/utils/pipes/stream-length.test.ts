@@ -33,10 +33,12 @@ describe("utils", () => {
             }
         });
 
-        describe("stream-length", () => {
+        describe(StreamLength, () => {
             const file = join(directory, "test.txt");
 
-            it("should return a stream length", async () => {
+            it("should create StreamLength instance and track stream length correctly", async () => {
+                expect.assertions(3);
+
                 await createTestFile(directory, file);
 
                 const transformer = new StreamLength();

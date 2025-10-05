@@ -13,8 +13,10 @@ describe("file", () => {
             ["../filename.ext", false],
             ["/filename.ext", false],
             ["filename.ext", true],
-        ])("isValid(%s) === %s", (string_, expected) => {
-            expect(FileName.isValid(string_)).toBe(expected);
+        ])("isValid should validate filename %s correctly", (filename, expected) => {
+            expect.assertions(1);
+
+            expect(FileName.isValid(filename)).toBe(expected);
         });
     });
 });

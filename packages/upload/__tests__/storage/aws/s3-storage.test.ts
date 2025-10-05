@@ -11,7 +11,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { mockClient } from "aws-sdk-client-mock";
 import { createRequest } from "node-mocks-http";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import S3Storage from "../../../src/storage/aws/s3-storage";
 import type { AwsError, S3StorageOptions } from "../../../src/storage/aws/types";
@@ -74,6 +74,23 @@ describe(S3Storage, () => {
 
             await expect(storage.create(request, metafile)).rejects.toMatchSnapshot();
         });
+
+        it("should handle TTL option", async () => {
+            s3Mock.on(HeadObjectCommand).rejects();
+            s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
+
+            const s3file = await storage.create(request, { ...metafile, ttl: "30d" });
+
+            expect(s3file.expiredAt).toBeDefined();
+
+            expectTypeOf(s3file.expiredAt).toBeNumber();
+
+            // TTL should be converted to expiredAt timestamp
+            const expectedExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+
+            expect(s3file.expiredAt).toBeGreaterThan(expectedExpiry - 1000); // Allow 1s tolerance
+            expect(s3file.expiredAt).toBeLessThan(expectedExpiry + 1000);
+        });
     });
 
     describe(".update()", () => {
@@ -91,6 +108,22 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             await expect(storage.update(metafile, { metadata: { name: "newname.mp4" } })).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
+        });
+
+        it("should handle TTL option in update", async () => {
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+
+            const s3file = await storage.update(metafile, { ttl: "1h" });
+
+            expect(s3file.expiredAt).toBeDefined();
+
+            expectTypeOf(s3file.expiredAt).toBeNumber();
+
+            // TTL should be converted to expiredAt timestamp
+            const expectedExpiry = Date.now() + 60 * 60 * 1000; // 1 hour in ms
+
+            expect(s3file.expiredAt).toBeGreaterThan(expectedExpiry - 1000); // Allow 1s tolerance
+            expect(s3file.expiredAt).toBeLessThan(expectedExpiry + 1000);
         });
     });
 
@@ -171,6 +204,20 @@ describe(S3Storage, () => {
                 Bucket: "otherBucket",
                 CopySource: "bucket/name",
                 Key: "new name",
+            });
+        });
+
+        it("with storage class", async () => {
+            s3Mock.resetHistory();
+            s3Mock.on(CopyObjectCommand).resolves({});
+
+            await storage.copy("name", "new name", { storageClass: "GLACIER" });
+
+            expect(s3Mock.call(0).args[0].input).toStrictEqual({
+                Bucket: "bucket",
+                CopySource: "bucket/name",
+                Key: "new name",
+                StorageClass: "GLACIER",
             });
         });
     });
@@ -270,7 +317,7 @@ describe("s3PresignedStorage", () => {
 
             const s3file = await storage.update({ id: metafile.id }, preCompleted);
 
-            expect(s3file.status).toBe("completed");
+            expect(s3file.status).toBe("updated");
         });
 
         it("should complete (empty payload)", async () => {
@@ -280,7 +327,7 @@ describe("s3PresignedStorage", () => {
 
             const s3file = await storage.update({ id: metafile.id }, {});
 
-            expect(s3file.status).toBe("completed");
+            expect(s3file.status).toBe("updated");
         });
     });
 });

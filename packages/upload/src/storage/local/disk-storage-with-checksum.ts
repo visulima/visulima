@@ -61,7 +61,10 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
         const path = this.getFilePath(file.name);
 
         try {
-            file.bytesWritten = (part as FilePart).start || await ensureFile(path);
+            const startPosition = (part as FilePart).start || 0;
+
+            await ensureFile(path);
+            file.bytesWritten = startPosition;
 
             await this.hashes.init(path);
 

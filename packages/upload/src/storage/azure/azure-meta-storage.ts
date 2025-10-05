@@ -10,7 +10,6 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     private containerClient: ContainerClient;
 
-    // eslint-disable-next-line radar/cognitive-complexity
     constructor(public config: AzureMetaStorageOptions) {
         super(config);
 

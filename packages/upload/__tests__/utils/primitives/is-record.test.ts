@@ -4,12 +4,16 @@ import isRecord from "../../../src/utils/primitives/is-record";
 
 describe("utils", () => {
     describe("primitives", () => {
-        describe("is-record", () => {
-            it("should be a record", () => {
+        describe(isRecord, () => {
+            it("should return true for plain objects", () => {
+                expect.assertions(1);
+
                 expect(isRecord({})).toBe(true);
             });
 
-            it("should not be a record", () => {
+            it("should return false for arrays", () => {
+                expect.assertions(1);
+
                 expect(isRecord([])).toBe(false);
             });
         });

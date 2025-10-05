@@ -35,7 +35,7 @@ const exposedHeaders = (response: supertest.Response): string[] =>
         .split(",")
         .map((s) => s.toLowerCase());
 
-describe("hTTP Tus", () => {
+describe("HTTP Tus", () => {
     let response: supertest.Response;
     let uri = "";
 
@@ -74,13 +74,17 @@ describe("hTTP Tus", () => {
     });
 
     describe("default options", () => {
-        it("should be defined", () => {
+        it("should create Tus handler instance", () => {
+            expect.assertions(1);
+
             expect(new Tus({ storage: new DiskStorage({ directory: "files" }) })).toBeInstanceOf(Tus);
         });
     });
 
-    describe("pOST", () => {
-        it("should 201", async () => {
+    describe("POST", () => {
+        it("should create upload resource and return 201 with location header", async () => {
+            expect.assertions(2);
+
             response = await create().expect("tus-resumable", TUS_RESUMABLE);
 
             uri = response.header.location as string;
@@ -90,8 +94,10 @@ describe("hTTP Tus", () => {
         });
     });
 
-    describe("pATCH", () => {
-        it("should 204 and Upload-Offset", async () => {
+    describe("PATCH", () => {
+        it("should resume upload and return 204 with upload offset", async () => {
+            expect.assertions(5);
+
             const test = await create();
 
             uri ||= test.header.location;
@@ -110,7 +116,9 @@ describe("hTTP Tus", () => {
             expect(exposedHeaders(response)).toEqual(expect.arrayContaining(["upload-offset", "upload-expires", "tus-resumable"]));
         });
 
-        it("should 200", async () => {
+        it("should complete upload with checksum and return 200", async () => {
+            expect.assertions(4);
+
             const test = await create();
 
             uri ||= test.header.location;
@@ -131,8 +139,10 @@ describe("hTTP Tus", () => {
         });
     });
 
-    describe("hEAD", () => {
-        it("should 200", async () => {
+    describe("HEAD", () => {
+        it("should return upload status and metadata for valid upload", async () => {
+            expect.assertions(8);
+
             const test = await create();
 
             uri ||= test.header.location;
@@ -152,7 +162,9 @@ describe("hTTP Tus", () => {
             );
         });
 
-        it("should 404", async () => {
+        it("should return 404 for non-existent upload", async () => {
+            expect.assertions(2);
+
             response = await supertest(app).head(`${basePath}/89das8d9-4das5d4as8d78-4d8sad8a`).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(404);
@@ -160,8 +172,10 @@ describe("hTTP Tus", () => {
         });
     });
 
-    describe("oPTIONS", () => {
-        it("should 204", async () => {
+    describe("OPTIONS", () => {
+        it("should return 204 with Tus protocol configuration headers", async () => {
+            expect.assertions(9);
+
             response = await supertest(app).options(basePath).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(204);
@@ -178,8 +192,10 @@ describe("hTTP Tus", () => {
         });
     });
 
-    describe("dELETE", () => {
-        it("should 204", async () => {
+    describe("DELETE", () => {
+        it("should successfully delete upload resource", async () => {
+            expect.assertions(2);
+
             const test = await create();
 
             uri ||= test.header.location;
@@ -190,7 +206,9 @@ describe("hTTP Tus", () => {
             expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
         });
 
-        it("should 404", async () => {
+        it("should return 404 for non-existent upload resource", async () => {
+            expect.assertions(2);
+
             response = await supertest(app).delete(`${basePath}/${metafile.id}`).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(404);
@@ -198,8 +216,10 @@ describe("hTTP Tus", () => {
         });
     });
 
-    describe("pOST (creation-with-upload)", () => {
-        it("should return upload-offset", async () => {
+    describe("POST (creation-with-upload)", () => {
+        it("should create upload with initial data and return upload offset", async () => {
+            expect.assertions(5);
+
             response = await supertest(app)
                 .post(basePath)
                 .set("Content-Type", "application/offset+octet-stream")

@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import ValidationError from "../../src/utils/validation-error";
 
 describe("utils", () => {
-    describe("validation-error", () => {
-        it("should be a Error", () => {
+    describe(ValidationError, () => {
+        it("should create a properly configured error instance", () => {
+            expect.assertions(8);
+
             const body = {
                 code: "test",
                 message: "test",

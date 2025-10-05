@@ -52,7 +52,9 @@ describe("baseHandler", () => {
         });
     });
 
-    it("baseHandler.handle calls correct handler based on request method", async () => {
+    it("should call correct handler based on HTTP request method", async () => {
+        expect.assertions(2);
+
         // eslint-disable-next-line compat/compat
         const getHandler = vi.fn(() => Promise.resolve({}));
 
@@ -67,7 +69,9 @@ describe("baseHandler", () => {
         expect(getHandler).toHaveBeenCalledWithExactlyOnceWith(request, response);
     });
 
-    it("baseHandler.get returns list of uploaded files", async () => {
+    it("should return list of uploaded files via GET request", async () => {
+        expect.assertions(4);
+
         vi.spyOn(uploader, "list").mockImplementation().mockResolvedValue([]);
 
         const request = createRequest({ method: "GET", url: "/uploads" });
@@ -83,7 +87,9 @@ describe("baseHandler", () => {
         expect(response._getHeaders()).toEqual({});
     });
 
-    it("should implement options()", async () => {
+    it("should implement OPTIONS method with correct CORS headers", async () => {
+        expect.assertions(2);
+
         const response = createResponse();
         const request = createRequest({ url: "/files" });
 
@@ -93,7 +99,9 @@ describe("baseHandler", () => {
         expect(file.headers).toEqual({ "Access-Control-Allow-Methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT" });
     });
 
-    it("should check if storage not ready", () => {
+    it("should return 503 when storage is not ready", () => {
+        expect.assertions(1);
+
         uploader.storage.isReady = false;
 
         const response = createResponse();
@@ -105,7 +113,9 @@ describe("baseHandler", () => {
         uploader.storage.isReady = true;
     });
 
-    it("should check http method", () => {
+    it("should return 405 for unsupported HTTP methods", () => {
+        expect.assertions(1);
+
         const response = createResponse();
 
         uploader.handle(createRequest({ method: "PATCH" }), response);
@@ -113,7 +123,9 @@ describe("baseHandler", () => {
         expect(response.statusCode).toBe(405);
     });
 
-    it("should check if get list request", () => {
+    it("should handle GET requests for file listings", () => {
+        expect.assertions(1);
+
         const request = createRequest({ method: "GET", url: "/files" });
         const response = createResponse();
 
@@ -122,7 +134,9 @@ describe("baseHandler", () => {
         expect(response.statusCode).toBe(200);
     });
 
-    it("should check if get id request", () => {
+    it("should handle GET requests for specific file IDs", () => {
+        expect.assertions(2);
+
         const request = createRequest({ method: "GET", url: "/files/111" });
         let response = createResponse();
 
@@ -137,7 +151,9 @@ describe("baseHandler", () => {
         expect(response.statusCode).toBe(200);
     });
 
-    it("should check if get id request with query", () => {
+    it("should handle GET requests with query parameters", () => {
+        expect.assertions(1);
+
         const request = createRequest({ method: "GET", url: "/files/111?name=foo" });
         const response = createResponse();
 
@@ -146,7 +162,9 @@ describe("baseHandler", () => {
         expect(response.statusCode).toBe(200);
     });
 
-    it("should check if get id request with query and no name", () => {
+    it("should handle GET requests with empty query parameters", () => {
+        expect.assertions(1);
+
         const request = createRequest({ method: "GET", url: "/files/111?name=" });
         const response = createResponse();
 
@@ -155,7 +173,9 @@ describe("baseHandler", () => {
         expect(response.statusCode).toBe(200);
     });
 
-    it("should send Error", () => {
+    it("should send error responses in JSON format", () => {
+        expect.assertions(1);
+
         uploader.responseType = "json";
 
         const response = createResponse();

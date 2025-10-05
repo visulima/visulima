@@ -8,31 +8,41 @@ import TestStorage from "../__helpers__/storage/test-storage";
 describe("baseStorage", () => {
     let storage;
 
-    it("should set maxUploadSize", () => {
+    it("should set correct default max upload size", () => {
+        expect.assertions(1);
+
         storage = new TestStorage();
 
         expect(storage.maxUploadSize).toBe(5_497_558_138_880);
     });
 
-    it("should validate", async () => {
+    it("should successfully validate valid files", async () => {
+        expect.assertions(1);
+
         storage = new TestStorage();
 
         await expect(storage.validate(metafile)).resolves.toBeUndefined();
     });
 
-    it("should validate error", async () => {
+    it("should reject files with invalid names during validation", async () => {
+        expect.assertions(1);
+
         storage = new TestStorage();
 
         await expect(storage.validate({ ...metafile, name: "../file.ext" })).rejects.toHaveProperty("statusCode");
     });
 
-    it("should check if expired", async () => {
+    it("should throw error for expired files", async () => {
+        expect.assertions(1);
+
         storage = new TestStorage();
 
         await expect(storage.checkIfExpired({ ...metafile, expiredAt: Date.now() - 100 })).rejects.toHaveProperty("UploadErrorCode", "Gone");
     });
 
-    it("should support logger", () => {
+    it("should initialize with logger and log configuration", () => {
+        expect.assertions(2);
+
         vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
         const logger = new MockLogger();
@@ -49,7 +59,9 @@ describe("baseStorage", () => {
         vi.useRealTimers();
     });
 
-    it("should support custom logger", () => {
+    it("should support custom logger implementations", () => {
+        expect.assertions(3);
+
         const consoleDebugMock = vi.spyOn(console, "debug").mockImplementation(() => {});
 
         storage = new TestStorage({ logger: console });

@@ -83,7 +83,9 @@ describe(DiskStorage, () => {
     });
 
     describe("initialization", () => {
-        it("should set directory", () => {
+        it("should set directory path correctly", () => {
+            expect.assertions(1);
+
             storage = new DiskStorage(options);
 
             expect(storage.directory).toBe(directory);
@@ -95,13 +97,17 @@ describe(DiskStorage, () => {
             storage = new DiskStorage(options);
         });
 
-        it("should set status and bytesWritten", async () => {
+        it("should create disk file with correct status and bytesWritten", async () => {
+            expect.assertions(1);
+
             const diskFile = await storage.create(request, metafile);
 
             expect(diskFile).toMatchSnapshot();
         });
 
-        it("should reject on limits", async () => {
+        it("should reject creation when file size exceeds limits", async () => {
+            expect.assertions(1);
+
             await expect(storage.create(request, { ...metafile, size: 6e10 })).rejects.toMatchSnapshot();
         });
     });
@@ -109,7 +115,9 @@ describe(DiskStorage, () => {
     describe(".update()", () => {
         beforeEach(createFile);
 
-        it("should update metadata", async () => {
+        it("should update file metadata correctly", async () => {
+            expect.assertions(2);
+
             const file = await storage.update(metafile, { metadata: { name: "newname.mp4" } });
 
             expect(file.metadata.name).toBe("newname.mp4");
@@ -126,7 +134,9 @@ describe(DiskStorage, () => {
             return createFile();
         });
 
-        it("should set status and bytesWritten", async () => {
+        it("should write data and update file status and bytesWritten", async () => {
+            expect.assertions(2);
+
             // eslint-disable-next-line no-underscore-dangle
             readStream.__mockSend();
 
@@ -136,13 +146,17 @@ describe(DiskStorage, () => {
             expect(file.bytesWritten).toBe(5);
         });
 
-        it("should return bytesWritten (resume)", async () => {
+        it("should return bytesWritten when resuming write operation", async () => {
+            expect.assertions(1);
+
             const file = await storage.write({ ...metafile });
 
             expect(file.bytesWritten).toBe(0);
         });
 
-        it("should reject if file not found", async () => {
+        it("should reject write operation when file is not found", async () => {
+            expect.assertions(1);
+
             storage.cache.delete(metafile.id);
 
             const mockReadFile = vi.spyOn(fsp, "readFile");
@@ -154,7 +168,9 @@ describe(DiskStorage, () => {
             await expect(write).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
         });
 
-        it("should reject on fs errors", async () => {
+        it("should reject write operation when filesystem errors occur", async () => {
+            expect.assertions(1);
+
             const fileWriteStream = new FileWriteStream();
 
             vi.spyOn(fs, "createWriteStream").mockImplementationOnce(() => fileWriteStream as unknown as fs.WriteStream);
@@ -167,7 +183,9 @@ describe(DiskStorage, () => {
             await expect(write).rejects.toHaveProperty("UploadErrorCode", "FileError");
         });
 
-        it("should close file and reset bytesWritten on abort", async () => {
+        it("should close file and reset bytesWritten when write is aborted", async () => {
+            expect.assertions(2);
+
             const fileWriteStream = new FileWriteStream();
 
             vi.spyOn(fs, "createWriteStream").mockImplementationOnce(() => fileWriteStream as unknown as fs.WriteStream);
@@ -183,14 +201,18 @@ describe(DiskStorage, () => {
             expect(close).toHaveBeenCalledOnceExactlyOnceWith();
         });
 
-        it("should reject on invalid range", async () => {
+        it("should reject write operation when range is invalid", async () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line no-underscore-dangle
             readStream.__mockSend();
 
             await expect(() => storage.write({ ...metafile, body: readStream, start: (metafile.size as number) - 2 })).rejects.toThrow("File conflict");
         });
 
-        it("should support lock", async () => {
+        it("should support file locking to prevent concurrent writes", async () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line no-underscore-dangle
             readStream.__mockSend();
 
@@ -205,7 +227,9 @@ describe(DiskStorage, () => {
     describe(".list()", () => {
         beforeEach(createFile);
 
-        it("should return all user files", async () => {
+        it("should return all user files in storage", async () => {
+            expect.assertions(2);
+
             const items = await storage.list();
 
             expect(items).toHaveLength(1);
@@ -216,14 +240,18 @@ describe(DiskStorage, () => {
     describe(".delete()", () => {
         beforeEach(createFile);
 
-        it("should set status", async () => {
+        it("should mark file as deleted and return file data", async () => {
+            expect.assertions(2);
+
             const deleted = await storage.delete(metafile);
 
             expect(deleted.id).toBe(metafile.id);
             expect(deleted.status).toBe("deleted");
         });
 
-        it("should ignore not found", async () => {
+        it("should handle deletion of non-existent files gracefully", async () => {
+            expect.assertions(2);
+
             const mockReadFile = vi.spyOn(fsp, "readFile");
 
             mockReadFile.mockRejectedValueOnce("notfound");
@@ -238,7 +266,9 @@ describe(DiskStorage, () => {
     describe(".purge()", () => {
         beforeEach(createFile);
 
-        it("should delete file", async () => {
+        it("should delete expired files based on age threshold", async () => {
+            expect.assertions(1);
+
             vi.useFakeTimers();
             vi.advanceTimersByTime(500);
 
@@ -253,7 +283,9 @@ describe(DiskStorage, () => {
     describe(".copy()", () => {
         beforeEach(createFile);
 
-        it("should copy file", async () => {
+        it("should copy file to new location", async () => {
+            expect.assertions(1);
+
             await storage.copy(`${metafile.id}.META`, `${directory}/newname1.META`);
 
             const list = await storage.list();
@@ -265,7 +297,9 @@ describe(DiskStorage, () => {
     describe(".move()", () => {
         beforeEach(createFile);
 
-        it("should move file", async () => {
+        it("should move file to new location", async () => {
+            expect.assertions(1);
+
             await storage.move(`${metafile.id}.META`, `${directory}/newname2.META`);
 
             const list = await storage.list();

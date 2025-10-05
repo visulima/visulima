@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import matcher from "../../src/utils/file-path-url-matcher";
 
 describe("utils", () => {
-    describe("file-path-url-matcher", () => {
-        it("should match", () => {
+    describe("filePathUrlMatcher", () => {
+        it("should correctly match valid file paths and extract parameters", () => {
+            expect.assertions(3);
+
             expect(matcher("/files/123")).toEqual({
                 index: 0,
                 params: {
@@ -32,7 +34,9 @@ describe("utils", () => {
             });
         });
 
-        it("should not match", () => {
+        it("should return false for invalid file paths", () => {
+            expect.assertions(2);
+
             expect(matcher("/files")).toBe(false);
             expect(matcher("/files/")).toBe(false);
         });

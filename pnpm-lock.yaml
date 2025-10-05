@@ -9783,9 +9783,6 @@ importers:
       http-errors:
         specifier: ^2.0.0
         version: 2.0.0
-      lodash.merge:
-        specifier: ^4.6.2
-        version: 4.6.2
       lru-cache:
         specifier: ^11.2.2
         version: 11.2.2
@@ -9850,9 +9847,6 @@ importers:
       '@types/http-errors':
         specifier: ^2.0.5
         version: 2.0.5
-      '@types/lodash.merge':
-        specifier: ^4.6.9
-        version: 4.6.9
       '@types/mime':
         specifier: ^4.0.0
         version: 4.0.0
@@ -9874,6 +9868,9 @@ importers:
       '@types/type-is':
         specifier: ^1.6.7
         version: 1.6.7
+      '@vercel/blob':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@visulima/fs':
         specifier: workspace:*
         version: link:../fs
@@ -9910,6 +9907,9 @@ importers:
       google-auth-library:
         specifier: ^10.4.0
         version: 10.4.0
+      mediabunny:
+        specifier: ^1.23.0
+        version: 1.23.0
       memfs:
         specifier: ^4.48.1
         version: 4.48.1
@@ -10253,23 +10253,7 @@ importers:
         version: 5.0.3
       ts-node-dev:
         specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.6.2)(typescript@5.9.3)
-
-  packages/upload/examples/fetch:
-    dependencies:
-      '@visulima/upload':
-        specifier: workspace:*
-        version: link:../..
-      hono:
-        specifier: ^4.9.9
-        version: 4.9.9
-    devDependencies:
-      '@types/node':
-        specifier: ^24.6.2
-        version: 24.6.2
-      tsx:
-        specifier: ^4.20.6
-        version: 4.20.6
+        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
 
   packages/upload/examples/hono:
     dependencies:
@@ -13612,9 +13596,13 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
 <<<<<<< HEAD
+<<<<<<< HEAD
       hono: '>=4.10.2'
 =======
       hono: '>=4.9.7'
+=======
+      hono: '>=4.9.6'
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
 
   '@html-eslint/eslint-plugin@0.20.0':
     resolution: {integrity: sha512-P5DeuqL5TmIGIiWjeezGDZPM3rXzL715MEU0QR9xOOmqNTshG3yLsk7fkfLsLiDjm0x6r4e13/5mUCbEQTek7Q==}
@@ -18770,6 +18758,12 @@ packages:
   '@types/doctrine@0.0.9':
     resolution: {integrity: sha512-eOIHzCUSH7SMfonMG1LsC2f8vxBFtho6NGBznK41R84YzPuvSBzrhEps33IsQiOW9+VL6NQ9DbjQJznk/S4uRA==}
 
+  '@types/dom-mediacapture-transform@0.1.11':
+    resolution: {integrity: sha512-Y2p+nGf1bF2XMttBnsVPHUWzRRZzqUoJAKmiP10b5umnO6DDrWI0BrGDJy1pOHoOULVmGSfFNkQrAlC5dcj6nQ==}
+
+  '@types/dom-webcodecs@0.1.13':
+    resolution: {integrity: sha512-O5hkiFIcjjszPIYyUSyvScyvrBoV3NOEEZx/pMlsu44TKzWNkLVBBxnxJz42in5n3QIolYOcBYFCPZZ0h8SkwQ==}
+
   '@types/eslint-scope@3.7.7':
     resolution: {integrity: sha512-MzMFlSLBqNF2gcHWO0G1vP/YQyfvrxZ0bF+u7mzUdZ1/xK4A4sru+nraZz5i3iEIk1l1uyicaDVTB4QbbEkAYg==}
 
@@ -19644,6 +19638,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@vercel/oidc@3.0.3':
     resolution: {integrity: sha512-yNEQvPcVrK9sIe637+I0jD6leluPxzwJKx/Haw6F4H77CdDsszUn5V3o96LPziXkSNE2B83+Z3mjqGKBK/R6Gg==}
     engines: {node: '>= 20'}
@@ -19818,6 +19813,12 @@ packages:
 >>>>>>> 8a50cdd26 (chore(upload): remove deprecated package.json and update configuration)
 =======
 >>>>>>> e2cb20999 (fix(upload): update dependencies and improve package configuration)
+=======
+  '@vercel/blob@2.0.0':
+    resolution: {integrity: sha512-oAj7Pdy83YKSwIaMFoM7zFeLYWRc+qUpW3PiDSblxQMnGFb43qs4bmfq7dr/+JIfwhs6PTwe1o2YBwKhyjWxXw==}
+    engines: {node: '>=20.0.0'}
+
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
   '@visulima/boxen@1.0.29':
     resolution: {integrity: sha512-z+JkZVhUTKfAdM1vjILnWwAd75NFFZH0/4Y2ByYnXNroZq5fB9Qv316lyA4LI9DZgoFhxgwf9Z+HWw8tagLvWw==}
     engines: {node: '>=18.0.0 <=23.x'}
@@ -20677,10 +20678,14 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
+=======
+      vite: '>=5.4.20'
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
 
   '@vitejs/plugin-vue@6.0.1':
     resolution: {integrity: sha512-+MaE752hU0wfPFJEUAIxqw18+20euHHdxVtMvbFcOEpjEyfqXH/5DCoTHiVJ0J29EhTJdoTkjEv5YBKU9dnoTw==}
@@ -20759,6 +20764,7 @@ packages:
       msw: ^2.4.9
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
     peerDependenciesMeta:
       msw:
@@ -20790,6 +20796,9 @@ packages:
 =======
       vite: '>=7.1.5'
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
+=======
+      vite: '>=5.4.20'
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
     peerDependenciesMeta:
       msw:
         optional: true
@@ -21558,8 +21567,16 @@ packages:
     resolution: {integrity: sha512-ISvCdHdlTDlH5IpxQJIex7BWBywFWgjJSVdwst+/iQCoEYnyOaQ95+X1JGshuBjGp6nxKUy1jMgE3zPqN7fQdg==}
     hasBin: true
 
+<<<<<<< HEAD
   async@3.2.6:
     resolution: {integrity: sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==}
+=======
+  async-retry@1.3.3:
+    resolution: {integrity: sha512-wfr/jstw9xNi/0teMHrRW7dsz3Lt5ARhYNZ2ewpadnhaIp5mbALhOAP+EAdsC7t4Z6wqsDVv9+W6gm1Dk9mEyw==}
+
+  async@3.2.5:
+    resolution: {integrity: sha512-baNZyqaaLhyLVKm/DlvdW051MSgO6b8eVfIezl9E5PqWxFgzLm/wQntEW4zOytVburDEr0JlALEpdOFwvErLsg==}
+>>>>>>> ffdbb5886 (refactor(upload): streamline storage system and enhance test coverage)
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
@@ -27455,6 +27472,9 @@ packages:
     resolution: {integrity: sha512-aisnrDP4GNe06UcKFnV5bfMNPBUw4jsLGaWwWfnH3v02GnBuXX2MCVn5RbrWo0j3pczUilYblq7fQ7Nw2t5XKw==}
     engines: {node: '>= 0.8'}
 
+  mediabunny@1.23.0:
+    resolution: {integrity: sha512-mWdhhdRquePfTgZ+18DLCFWmqwO6oGP/YudmRU8Puh+whMUJ3VSb9KMAHPl2utim66ixKdZw+DbmdqBfBxRp0A==}
+
   memfs@4.48.1:
     resolution: {integrity: sha512-vWO+1ROkhOALF1UnT9aNOOflq5oFDlqwTXaPg6duo07fBLxSH0+bcF0TY1lbA1zTNKyGgDxgaDdKx5MaewLX5A==}
 
@@ -30229,6 +30249,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   rettime@0.7.0:
     resolution: {integrity: sha512-LPRKoHnLKd/r3dVxcwO7vhCW+orkOGj9ViueosEBK6ie89CijnfRlhaDhHq/3Hxu4CkWQtxwlBG0mzTQY6uQjw==}
 
@@ -30241,10 +30262,13 @@ packages:
     resolution: {integrity: sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==}
     engines: {node: '>= 4'}
 
+=======
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
   retry@0.13.1:
     resolution: {integrity: sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==}
     engines: {node: '>= 4'}
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> fa8a370a (fix(upload): update code)
 >>>>>>> 6a89dec1d (fix(upload): update code)
@@ -30252,6 +30276,8 @@ packages:
 >>>>>>> 8a50cdd26 (chore(upload): remove deprecated package.json and update configuration)
 =======
 >>>>>>> e2cb20999 (fix(upload): update dependencies and improve package configuration)
+=======
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
   reusify@1.0.4:
     resolution: {integrity: sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
@@ -31683,6 +31709,10 @@ packages:
   thread-stream@3.1.0:
     resolution: {integrity: sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A==}
 
+  throttleit@2.1.0:
+    resolution: {integrity: sha512-nt6AMGKW1p/70DF/hGBdJB57B8Tspmbp5gfJ8ilhLnt7kkr2ye7hzD6NVG8GGErk2HWF34igrL2CXmNIkzKqKw==}
+    engines: {node: '>=18'}
+
   through2@0.4.2:
     resolution: {integrity: sha512-45Llu+EwHKtAZYTPPVn3XZHBgakWMN3rokhEv5hu596XP+cNgplMg+Gj+1nmAvj+L0K7+N49zBKx5rah5u0QIQ==}
 
@@ -32625,9 +32655,13 @@ packages:
     resolution: {integrity: sha512-7SpgZmU7R+dDnSmvXE1mfDtnHLHQSisdySVR7lO8ceAXvM0otZeuQQ6C8LrS5d/aYyP/QZ0hI0L+dIPrm4YlFQ==}
     peerDependencies:
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
+=======
+      vite: '>=5.4.20'
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
 
   vite-node@1.6.1:
     resolution: {integrity: sha512-YAXkfvGtuTzwWbDSACdJSg4A4DZiAqckWe90Zapc/sEX3XvHcw1NdurM/6od8J207tSDqNbSsgdCacBgvJKFuA==}
@@ -32685,10 +32719,14 @@ packages:
     resolution: {integrity: sha512-cYj0LRuLV2c2sMqhqhGpaO3LretdtMn/BVX4cPLanIZuwwrkVl+lK84E/miEXkCHWXuq65rhNN4rXsBcOB3S4w==}
     peerDependencies:
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
+=======
+      vite: '>=5.4.20'
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
     peerDependenciesMeta:
       vite:
         optional: true
@@ -32824,6 +32862,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
@@ -32834,6 +32873,9 @@ packages:
 =======
       vite: '>=7.1.5'
 >>>>>>> da40c7bd5 (refactor(upload): update example applications and dependencies)
+=======
+      vite: '>=5.4.20'
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
     peerDependenciesMeta:
       vite:
         optional: true
@@ -48997,6 +49039,12 @@ snapshots:
 
   '@types/doctrine@0.0.9': {}
 
+  '@types/dom-mediacapture-transform@0.1.11':
+    dependencies:
+      '@types/dom-webcodecs': 0.1.13
+
+  '@types/dom-webcodecs@0.1.13': {}
+
   '@types/eslint-scope@3.7.7':
     dependencies:
       '@types/eslint': 9.6.1
@@ -51008,6 +51056,7 @@ snapshots:
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@vercel/oidc@3.0.3': {}
 =======
   '@uppy/audio@2.2.2(@uppy/core@4.5.3)':
@@ -51255,6 +51304,16 @@ snapshots:
 
 =======
 >>>>>>> e2cb20999 (fix(upload): update dependencies and improve package configuration)
+=======
+  '@vercel/blob@2.0.0':
+    dependencies:
+      async-retry: 1.3.3
+      is-buffer: 2.0.5
+      is-node-process: 1.2.0
+      throttleit: 2.1.0
+      undici: 5.29.0
+
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
   '@visulima/boxen@1.0.29': {}
 
   '@visulima/boxen@1.0.30': {}
@@ -56278,7 +56337,15 @@ snapshots:
 
   astring@1.8.6: {}
 
+<<<<<<< HEAD
   async@3.2.6: {}
+=======
+  async-retry@1.3.3:
+    dependencies:
+      retry: 0.13.1
+
+  async@3.2.5: {}
+>>>>>>> ffdbb5886 (refactor(upload): streamline storage system and enhance test coverage)
 
   asynckit@0.4.0: {}
 
@@ -67409,6 +67476,11 @@ snapshots:
 
   media-typer@1.1.0: {}
 
+  mediabunny@1.23.0:
+    dependencies:
+      '@types/dom-mediacapture-transform': 0.1.11
+      '@types/dom-webcodecs': 0.1.13
+
   memfs@4.48.1:
     dependencies:
       '@jsonjoy.com/json-pack': 1.14.0(tslib@2.8.1)
@@ -71077,6 +71149,7 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   rettime@0.7.0: {}
 
 =======
@@ -71095,6 +71168,10 @@ snapshots:
 >>>>>>> 8a50cdd26 (chore(upload): remove deprecated package.json and update configuration)
 =======
 >>>>>>> e2cb20999 (fix(upload): update dependencies and improve package configuration)
+=======
+  retry@0.13.1: {}
+
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
   reusify@1.0.4: {}
 
   rfdc@1.4.1: {}
@@ -73820,6 +73897,8 @@ snapshots:
     dependencies:
       real-require: 0.2.0
 
+  throttleit@2.1.0: {}
+
   through2@0.4.2:
     dependencies:
       readable-stream: 1.0.34
@@ -74035,6 +74114,7 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ts-pattern@5.9.0: {}
 =======
   ts-node-dev@2.0.0(@swc/core@1.6.7)(@types/node@22.5.4)(typescript@5.6.2):
@@ -74044,6 +74124,9 @@ snapshots:
 =======
   ts-node-dev@2.0.0(@swc/core@1.13.5)(@types/node@24.6.2)(typescript@5.9.3):
 >>>>>>> 99858e639 (feat(upload): enhance upload package with new transformers and update dependencies)
+=======
+  ts-node-dev@2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2):
+>>>>>>> 42b41ab05 (refactor(upload): streamline storage system and enhance test coverage)
     dependencies:
       chokidar: 3.6.0
       dynamic-dedupe: 0.3.0
@@ -74053,9 +74136,9 @@ snapshots:
       rimraf: 2.7.1
       source-map-support: 0.5.21
       tree-kill: 1.2.2
-      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@24.6.2)(typescript@5.9.3)
+      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
       tsconfig: 7.0.0
-      typescript: 5.9.3
+      typescript: 5.9.2
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -74076,27 +74159,6 @@ snapshots:
       diff: 4.0.2
       make-error: 1.3.6
       typescript: 5.9.2
-      v8-compile-cache-lib: 3.0.1
-      yn: 3.1.1
-    optionalDependencies:
-      '@swc/core': 1.13.5
-    optional: true
-
-  ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.6.2)(typescript@5.9.3):
-    dependencies:
-      '@cspotcode/source-map-support': 0.8.1
-      '@tsconfig/node10': 1.0.11
-      '@tsconfig/node12': 1.0.11
-      '@tsconfig/node14': 1.0.3
-      '@tsconfig/node16': 1.0.4
-      '@types/node': 24.6.2
-      acorn: 8.15.0
-      acorn-walk: 8.3.4
-      arg: 4.1.3
-      create-require: 1.1.1
-      diff: 4.0.2
-      make-error: 1.3.6
-      typescript: 5.9.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     optionalDependencies:

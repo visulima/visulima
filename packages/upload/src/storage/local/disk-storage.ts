@@ -1,15 +1,15 @@
 import { createWriteStream } from "node:fs";
-import { copyFile, mkdir, rename, stat, truncate, unlink } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rename, stat, truncate, unlink } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
 import { join } from "node:path";
 import { pipeline } from "node:stream";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ensureFile, readFile, remove, walk } from "@visulima/fs";
+import { ensureFile, remove, walk } from "@visulima/fs";
 import etag from "etag";
 
 import type { HttpError } from "../../utils";
-import { ERRORS, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
+import { ERRORS, streamChecksum, StreamLength, throwErrorCode, toMilliseconds } from "../../utils";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { DiskStorageOptions } from "../types";
@@ -22,13 +22,15 @@ import LocalMetaStorage from "./local-meta-storage";
  * Local Disk Storage
  */
 class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileReturn> {
+    public static override readonly name = "disk";
+
     public override checksumTypes = ["md5", "sha1"];
 
     public directory: string;
 
     public meta: MetaStorage<TFile>;
 
-    public constructor(public override config: DiskStorageOptions<TFile>) {
+    public constructor(config: DiskStorageOptions<TFile>) {
         super(config);
 
         this.directory = config.directory;
@@ -56,7 +58,18 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     public async create(request: IncomingMessage, fileInit: FileInit): Promise<TFile> {
-        const file = new File(fileInit);
+        // Handle TTL option
+        const processedConfig = { ...fileInit };
+
+        if (fileInit.ttl) {
+            const ttlMs = typeof fileInit.ttl === "string" ? toMilliseconds(fileInit.ttl) : fileInit.ttl;
+
+            if (ttlMs !== null) {
+                processedConfig.expiredAt = Date.now() + ttlMs;
+            }
+        }
+
+        const file = new File(processedConfig);
 
         try {
             const existing = await this.getMeta(file.id);
@@ -76,7 +89,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         const path = this.getFilePath(file.name);
 
         try {
-            file.bytesWritten = await ensureFile(path);
+            await ensureFile(path);
+            file.bytesWritten = 0;
         } catch (error: any) {
             throwErrorCode(ERRORS.FILE_ERROR, error.message);
         }
@@ -110,7 +124,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         await this.lock(path);
 
         try {
-            file.bytesWritten = (part as FilePart).start || await ensureFile(path);
+            const startPosition = (part as FilePart).start || 0;
+
+            await ensureFile(path);
+            file.bytesWritten = startPosition;
 
             if (hasContent(part)) {
                 if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
@@ -130,7 +147,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
                 await this.saveMeta(file);
             } else {
-                file.bytesWritten = await ensureFile(path);
+                await ensureFile(path);
+                file.bytesWritten = 0;
             }
 
             return file;
@@ -148,7 +166,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     public async get({ id }: FileQuery): Promise<FileReturn> {
         const file = await this.checkIfExpired(await this.meta.get(id));
         const { bytesWritten, contentType, expiredAt, metadata, modifiedAt, name, originalName, size } = file;
-        const content = await readFile(this.getFilePath(name));
+        const content = await readFile(this.getFilePath(name), null);
 
         return {
             content,
@@ -168,7 +186,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         try {
             const file = await this.getMeta(id);
 
-            await remove(this.getFilePath(file.name), { force: true });
+            await remove(this.getFilePath(file.name));
             await this.deleteMeta(id);
 
             return { ...file, status: "deleted" };
