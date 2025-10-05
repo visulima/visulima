@@ -1,4 +1,59 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DiskStorageWithChecksum > should support checksum resume from filesystem 1`] = `
+File {
+  "ETag": undefined,
+  "bytesWritten": 0,
+  "content": undefined,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "expiredAt": undefined,
+  "hash": undefined,
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "modifiedAt": undefined,
+  "name": "anonymous/testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "created",
+}
+`;
+
+exports[`DiskStorageWithChecksum > should support checksum resume from filesystem 2`] = `
+{
+  "ETag": undefined,
+  "bytesWritten": 5,
+  "content": undefined,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "expiredAt": undefined,
+  "hash": {
+    "algorithm": "sha1",
+    "value": "11904a4e8b77f6242e2d288705023adad00a9310",
+  },
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "modifiedAt": undefined,
+  "name": "anonymous/testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "part",
+}
+`;
 
 exports[`DiskStorageWithChecksum should support checksum resume from fs 1`] = `
 File {

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import type { MediaTransformerConfig } from "../../src/transform";
-import MediaTransformer from "../../src/transform/media-transformer";
+import type { MediaTransformerConfig } from "../../src/transformer";
+import MediaTransformer from "../../src/transformer/media-transformer";
 
 // Mock storage
 const mockStorage = {
@@ -10,7 +10,7 @@ const mockStorage = {
 };
 
 // Mock individual transformers
-vi.mock(import("../../src/transform/image-transformer"), () => {
+vi.mock(import("../../src/transformer/image-transformer"), () => {
     return {
         default: vi.fn().mockImplementation(() => {
             return {
@@ -22,7 +22,7 @@ vi.mock(import("../../src/transform/image-transformer"), () => {
     };
 });
 
-vi.mock(import("../../src/transform/video-transformer"), () => {
+vi.mock(import("../../src/transformer/video-transformer"), () => {
     return {
         default: vi.fn().mockImplementation(() => {
             return {
@@ -34,7 +34,7 @@ vi.mock(import("../../src/transform/video-transformer"), () => {
     };
 });
 
-vi.mock(import("../../src/transform/audio-transformer"), () => {
+vi.mock(import("../../src/transformer/audio-transformer"), () => {
     return {
         default: vi.fn().mockImplementation(() => {
             return {
