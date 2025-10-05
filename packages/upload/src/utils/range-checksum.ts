@@ -31,7 +31,7 @@ class RangeChecksum extends Transform implements IRangeChecksum {
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    _transform(chunk: Buffer, _encoding: string, done: () => void): void {
+    public override _transform(chunk: Buffer, _encoding: string, done: () => void): void {
         this.push(chunk);
         this.hash.update(chunk);
 
@@ -39,7 +39,7 @@ class RangeChecksum extends Transform implements IRangeChecksum {
     }
 
     // eslint-disable-next-line class-methods-use-this,no-underscore-dangle
-    _flush(callback: (error?: Error) => void): void {
+    public override _flush(callback: (error?: Error) => void): void {
         callback();
     }
 }

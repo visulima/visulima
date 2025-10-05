@@ -60,16 +60,18 @@ describe("fetch Multipart", () => {
     });
 
     describe("default options", () => {
-        it("should be defined", () => {
+        it("should create Multipart handler instance", () => {
+            expect.assertions(1);
+
             expect(new Multipart({ storage: new DiskStorage({ directory: "/files" }) })).toBeInstanceOf(Multipart);
         });
     });
 
-    describe("pOST", () => {
-        it("should support custom fields", async () => {
-            const request = create();
+    describe("POST", () => {
+        it("should support custom fields in multipart upload", async () => {
+            expect.assertions(2);
 
-            const { default: Multipart } = await import("../../../src/handler/multipart");
+            const request = create();
 
             const storage = new DiskStorage(options);
             const multipartHandler = new Multipart({ storage });
@@ -93,7 +95,9 @@ describe("fetch Multipart", () => {
             expect(response.headers.get("location")).toBeDefined();
         });
 
-        it("should handle errors", async () => {
+        it("should handle invalid request data with error response", async () => {
+            expect.assertions(2);
+
             const request = new Request(`${basePath}`, {
                 body: JSON.stringify({ invalid: "data" }),
                 headers: {
@@ -101,8 +105,6 @@ describe("fetch Multipart", () => {
                 },
                 method: "POST",
             });
-
-            const { default: Multipart } = await import("../../../src/handler/multipart");
 
             const storage = new DiskStorage(options);
             const multipartHandler = new Multipart({ storage });
@@ -130,13 +132,13 @@ describe("fetch Multipart", () => {
         });
     });
 
-    describe("oPTIONS", () => {
-        it("should 204", async () => {
+    describe("OPTIONS", () => {
+        it("should return 204 with proper CORS headers for OPTIONS request", async () => {
+            expect.assertions(2);
+
             const request = new Request(`${basePath}`, {
                 method: "OPTIONS",
             });
-
-            const { default: Multipart } = await import("../../../src/handler/multipart");
 
             const storage = new DiskStorage(options);
             const multipartHandler = new Multipart({ storage });

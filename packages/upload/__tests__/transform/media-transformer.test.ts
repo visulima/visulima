@@ -57,13 +57,17 @@ describe(MediaTransformer, () => {
     });
 
     describe("constructor", () => {
-        it("should create transformer with default config", () => {
+        it("should create transformer with default configuration", () => {
+            expect.assertions(1);
+
             const transformer = new MediaTransformer(mockStorage as any);
 
             expect(transformer).toBeInstanceOf(MediaTransformer);
         });
 
-        it("should create transformer with custom config", () => {
+        it("should create transformer with custom configuration", () => {
+            expect.assertions(1);
+
             const config: MediaTransformerConfig = {
                 cacheTtl: 7200,
                 enableCache: true,
@@ -80,6 +84,8 @@ describe(MediaTransformer, () => {
 
     describe("cache management", () => {
         it("should clear cache for specific file", () => {
+            expect.assertions(0);
+
             const transformer = new MediaTransformer(mockStorage as any, {
                 enableCache: true,
             });
@@ -89,6 +95,8 @@ describe(MediaTransformer, () => {
         });
 
         it("should clear entire cache", () => {
+            expect.assertions(0);
+
             const transformer = new MediaTransformer(mockStorage as any, {
                 enableCache: true,
             });
@@ -97,7 +105,9 @@ describe(MediaTransformer, () => {
             transformer.clearCache();
         });
 
-        it("should return cache stats", () => {
+        it("should return cache stats when caching is enabled", () => {
+            expect.assertions(1);
+
             const transformer = new MediaTransformer(mockStorage as any, {
                 enableCache: true,
             });
@@ -114,7 +124,9 @@ describe(MediaTransformer, () => {
     });
 
     describe("query parsing", () => {
-        it("should parse object query", () => {
+        it("should accept object query parameters", () => {
+            expect.assertions(0);
+
             const query = {
                 format: "webp",
                 height: 600,
@@ -127,7 +139,9 @@ describe(MediaTransformer, () => {
             expectTypeOf(query).toBeObject();
         });
 
-        it("should parse URLSearchParams", () => {
+        it("should accept URLSearchParams as query parameters", () => {
+            expect.assertions(1);
+
             const parameters = new URLSearchParams("width=800&height=600&format=webp&quality=80");
 
             // Test that handle method can process URLSearchParams
@@ -135,7 +149,9 @@ describe(MediaTransformer, () => {
             expect(parameters instanceof URLSearchParams).toBe(true);
         });
 
-        it("should parse query string", () => {
+        it("should accept query string parameters", () => {
+            expect.assertions(0);
+
             const queryString = "width=800&height=600&format=webp&quality=80";
 
             // Test that fetch method accepts query strings
@@ -145,24 +161,32 @@ describe(MediaTransformer, () => {
     });
 
     describe("mIME type detection", () => {
-        it("should detect image MIME types", () => {
+        it("should recognize image MIME types correctly", () => {
+            expect.assertions(2);
+
             // Test the private method indirectly through expected behavior
             // This would be tested in integration with actual handle method
             expect("image/jpeg".startsWith("image/")).toBe(true);
             expect("image/png".startsWith("image/")).toBe(true);
         });
 
-        it("should detect video MIME types", () => {
+        it("should recognize video MIME types correctly", () => {
+            expect.assertions(2);
+
             expect("video/mp4".startsWith("video/")).toBe(true);
             expect("video/webm".startsWith("video/")).toBe(true);
         });
 
-        it("should detect audio MIME types", () => {
+        it("should recognize audio MIME types correctly", () => {
+            expect.assertions(2);
+
             expect("audio/mp3".startsWith("audio/")).toBe(true);
             expect("audio/wav".startsWith("audio/")).toBe(true);
         });
 
         it("should reject unsupported MIME types", () => {
+            expect.assertions(3);
+
             expect("application/json".startsWith("image/")).toBe(false);
             expect("application/json".startsWith("video/")).toBe(false);
             expect("application/json".startsWith("audio/")).toBe(false);
@@ -179,7 +203,9 @@ describe(MediaTransformer, () => {
         });
 
         describe("image parameter validation", () => {
-            it("should accept valid image parameters", () => {
+            it("should accept valid image transformation parameters", () => {
+                expect.assertions(1);
+
                 const query = {
                     fit: "cover" as const,
                     format: "webp" as const,
@@ -194,7 +220,9 @@ describe(MediaTransformer, () => {
                 }).not.toThrow();
             });
 
-            it("should reject video/audio parameters for images", () => {
+            it("should reject video/audio parameters when transforming images", () => {
+                expect.assertions(1);
+
                 const query = {
                     codec: "avc", // Video-only parameter
                     sampleRate: 44_100, // Audio-only parameter
@@ -210,7 +238,9 @@ describe(MediaTransformer, () => {
                 );
             });
 
-            it("should reject invalid fit values", () => {
+            it("should reject invalid fit parameter values", () => {
+                expect.assertions(1);
+
                 const query = {
                     fit: "invalid" as any,
                 };
@@ -220,7 +250,9 @@ describe(MediaTransformer, () => {
                 }).toThrow("Invalid fit value: \"invalid\". Supported values: \"cover\", \"contain\", \"fill\", \"inside\", \"outside\"");
             });
 
-            it("should reject invalid angle values", () => {
+            it("should reject invalid angle parameter values", () => {
+                expect.assertions(1);
+
                 const query = {
                     angle: 45,
                 };
@@ -230,7 +262,9 @@ describe(MediaTransformer, () => {
                 }).toThrow("Invalid angle value: 45. Supported values: 90, 180, 270");
             });
 
-            it("should reject incomplete crop parameters", () => {
+            it("should reject incomplete crop parameter sets", () => {
+                expect.assertions(1);
+
                 const query = {
                     left: 10,
                     top: 20,
@@ -244,7 +278,9 @@ describe(MediaTransformer, () => {
         });
 
         describe("video parameter validation", () => {
-            it("should accept valid video parameters", () => {
+            it("should accept valid video transformation parameters", () => {
+                expect.assertions(1);
+
                 const query = {
                     bitrate: 2_000_000,
                     codec: "avc" as const,
@@ -259,7 +295,9 @@ describe(MediaTransformer, () => {
                 }).not.toThrow();
             });
 
-            it("should reject audio-only parameters for videos", () => {
+            it("should reject audio-only parameters when transforming videos", () => {
+                expect.assertions(1);
+
                 const query = {
                     numberOfChannels: 2, // Audio-only parameter
                     sampleRate: 44_100, // Audio-only parameter
@@ -275,7 +313,9 @@ describe(MediaTransformer, () => {
                 );
             });
 
-            it("should reject invalid codec for video", () => {
+            it("should reject invalid codec parameter values for video", () => {
+                expect.assertions(1);
+
                 const query = {
                     codec: "invalid",
                 };
@@ -285,7 +325,9 @@ describe(MediaTransformer, () => {
                 }).toThrow("Invalid codec for video: \"invalid\". Supported codecs: avc, hevc, vp8, vp9, av1");
             });
 
-            it("should reject invalid format for video", () => {
+            it("should reject invalid format parameter values for video", () => {
+                expect.assertions(1);
+
                 const query = {
                     format: "jpg",
                 };
@@ -295,7 +337,9 @@ describe(MediaTransformer, () => {
                 }).toThrow("Invalid format for video: \"jpg\". Supported formats: mp4, webm, mkv, ogg");
             });
 
-            it("should reject negative width", () => {
+            it("should reject negative width parameter values", () => {
+                expect.assertions(1);
+
                 const query = {
                     width: -100,
                 };
@@ -305,7 +349,9 @@ describe(MediaTransformer, () => {
                 }).toThrow("Invalid width: -100. Must be a positive number.");
             });
 
-            it("should reject zero bitrate", () => {
+            it("should reject zero bitrate parameter values", () => {
+                expect.assertions(1);
+
                 const query = {
                     bitrate: 0,
                 };
@@ -317,7 +363,9 @@ describe(MediaTransformer, () => {
         });
 
         describe("audio parameter validation", () => {
-            it("should accept valid audio parameters", () => {
+            it("should accept valid audio transformation parameters", () => {
+                expect.assertions(1);
+
                 const query = {
                     bitrate: 128_000,
                     codec: "aac" as const,
@@ -332,7 +380,9 @@ describe(MediaTransformer, () => {
                 }).not.toThrow();
             });
 
-            it("should reject video-only parameters for audio", () => {
+            it("should reject video-only parameters when transforming audio", () => {
+                expect.assertions(1);
+
                 const query = {
                     angle: 90, // Video-only parameter
                     codec: "aac",
@@ -349,7 +399,9 @@ describe(MediaTransformer, () => {
                 );
             });
 
-            it("should reject invalid codec for audio", () => {
+            it("should reject invalid codec parameter values for audio", () => {
+                expect.assertions(1);
+
                 const query = {
                     codec: "invalid",
                 };
@@ -359,7 +411,9 @@ describe(MediaTransformer, () => {
                 }).toThrow("Invalid codec for audio: \"invalid\". Supported codecs: aac, opus, mp3, vorbis, flac");
             });
 
-            it("should reject invalid format for audio", () => {
+            it("should reject invalid format parameter values for audio", () => {
+                expect.assertions(1);
+
                 const query = {
                     format: "mp4",
                 };
@@ -369,7 +423,9 @@ describe(MediaTransformer, () => {
                 }).toThrow("Invalid format for audio: \"mp4\". Supported formats: mp3, wav, ogg, aac, flac");
             });
 
-            it("should reject invalid sample rate", () => {
+            it("should reject invalid sample rate parameter values", () => {
+                expect.assertions(1);
+
                 const query = {
                     sampleRate: 12_345,
                 };
@@ -379,7 +435,9 @@ describe(MediaTransformer, () => {
                 }).toThrow("Invalid sampleRate: 12345. Supported sample rates: 8000, 11025, 16000, 22050, 32000, 44100, 48000, 88200, 96000, 192000");
             });
 
-            it("should reject invalid number of channels", () => {
+            it("should reject invalid number of channels parameter values", () => {
+                expect.assertions(1);
+
                 const query = {
                     numberOfChannels: 10,
                 };

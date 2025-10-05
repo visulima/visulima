@@ -67,23 +67,23 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
     /**
      * Handle Web API Fetch requests (for Hono, Cloudflare Workers, etc.)
      */
-    public fetch = async (request: Request): Promise<Response> => {
+    public fetch = async (request: Request): Promise<globalThis.Response> => {
         this.logger?.debug("[fetch request]: %s %s", request.method, request.url);
 
-        const handler = this.registeredHandlers.get(request.method);
+        const handler = this.registeredHandlers.get(request.method || "GET");
 
         if (!handler) {
-            return this.createErrorResponse({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED } as UploadError);
+            return this.createErrorResponse({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED } as UploadError) as any;
         }
 
         if (!this.storage.isReady) {
-            return this.createErrorResponse({ UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
+            return this.createErrorResponse({ UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError) as any;
         }
 
         try {
             const nodeRequest = await this.convertRequestToNode(request);
             const mockResponse = this.createMockResponse();
-            const file = await handler.call(this, nodeRequest as any, mockResponse);
+            const file = await handler.call(this, nodeRequest as any, mockResponse as any);
 
             return this.handleFetchResponse(request, file);
         } catch (error: any) {
@@ -91,7 +91,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
             const errorEvent = {
                 ...uError,
                 request: {
-                    headers: Object.fromEntries(request.headers.entries()),
+                    headers: Object.fromEntries((request.headers as any)?.entries?.() || []),
                     method: request.method,
                     url: request.url,
                 },
@@ -103,7 +103,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
 
             this.logger?.error("[fetch error]: %O", errorEvent);
 
-            return this.createErrorResponse(error);
+            return this.createErrorResponse(error) as any;
         }
     };
 
@@ -426,13 +426,13 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
      * Convert Web API Request to Node.js IncomingMessage for handler compatibility
      */
     protected async convertRequestToNode(request: Request): Promise<IncomingMessage> {
-        const url = new URL(request.url);
+        const url = new URL(request.url || "/");
         let bodyBuffer = new Uint8Array();
 
         // Check if request has body and arrayBuffer method (Web API Request)
-        if (request.body && typeof request.arrayBuffer === "function") {
+        if ("body" in request && "arrayBuffer" in request && typeof (request as any).arrayBuffer === "function") {
             try {
-                bodyBuffer = new Uint8Array(await request.arrayBuffer());
+                bodyBuffer = new Uint8Array(await (request as any).arrayBuffer());
             } catch {
                 // Ignore errors, bodyBuffer remains empty
             }
@@ -441,7 +441,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
         const nodeRequest = {
             aborted: false,
             destroy: () => {},
-            headers: Object.fromEntries(request.headers.entries()),
+            headers: Object.fromEntries((request.headers as any)?.entries?.() || []),
             httpVersion: "1.1",
             httpVersionMajor: 1,
             httpVersionMinor: 1,
@@ -465,7 +465,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
     /**
      * Handle the response from handlers for fetch requests
      */
-    protected async handleFetchResponse(request: Request, file: ResponseFile<TFile> | ResponseList<TFile>): Promise<Response> {
+    protected async handleFetchResponse(request: Request, file: ResponseFile<TFile> | ResponseList<TFile>): Promise<globalThis.Response> {
         // Handle different response types
         if (request.method === "HEAD" || request.method === "OPTIONS") {
             const { headers, statusCode } = file as ResponseFile<TFile>;
@@ -481,7 +481,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
             let body: BodyInit = "";
 
             if ((file as ResponseFile<TFile>).content !== undefined) {
-                body = (file as ResponseFile<TFile>).content as Buffer;
+                body = new Uint8Array((file as ResponseFile<TFile>).content as Buffer);
             } else if (typeof file === "object" && "data" in file) {
                 body = JSON.stringify((file as ResponseList<TFile>).data);
             }
@@ -500,7 +500,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
             this.emit(basicFile.status, {
                 ...basicFile,
                 request: {
-                    headers: Object.fromEntries(request.headers.entries()),
+                    headers: Object.fromEntries((request.headers as any)?.entries?.() || []),
                     method: request.method,
                     url: request.url,
                 },
@@ -547,8 +547,8 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
                 responseHeaders[name] = value;
             },
             statusCode: responseStatus,
-            write: (data: any) => {
-                responseBody = data;
+            write: (_data: any) => {
+                // Mock implementation
             },
             writeContinue: () => {},
             writeEarlyHints: () => {},
@@ -566,11 +566,11 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
     /**
      * Convert headers to Web API Headers format
      */
-    protected convertHeaders(headers: Record<string, number | string>): Record<string, string> {
+    protected convertHeaders(headers: Record<string, number | string | string[]>): Record<string, string> {
         const result: Record<string, string> = {};
 
         for (const [key, value] of Object.entries(headers)) {
-            result[key] = String(value);
+            result[key] = Array.isArray(value) ? value.join(", ") : String(value);
         }
 
         return result;
@@ -579,7 +579,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
     /**
      * Create Response from UploadResponse
      */
-    protected createResponse(uploadResponse: UploadResponse): Response {
+    protected createResponse(uploadResponse: UploadResponse): globalThis.Response {
         const { body, headers = {}, statusCode } = uploadResponse;
 
         let responseBody: BodyInit = "";
@@ -605,7 +605,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
     /**
      * Create error Response
      */
-    protected createErrorResponse(error: Error): Response {
+    protected createErrorResponse(error: Error): globalThis.Response {
         let httpError: HttpError;
 
         if (isUploadError(error)) {
