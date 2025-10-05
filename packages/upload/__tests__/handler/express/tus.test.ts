@@ -10,10 +10,6 @@ import { metadata, metafile, storageOptions, testfile, testRoot } from "../../__
 import app from "../../__helpers__/express-app";
 
 vi.mock(import("node:fs/promises"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
     const { fs } = require("memfs");
 
     return {
@@ -23,24 +19,6 @@ vi.mock(import("node:fs/promises"), () => {
 });
 
 vi.mock(import("node:fs"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
-    const { fs } = require("memfs");
-
-    return {
-        __esModule: true,
-        ...fs,
-    };
-});
-
-// eslint-disable-next-line radar/no-identical-functions
-vi.mock(import("node:fs"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
     const { fs } = require("memfs");
 
     return {
@@ -101,7 +79,7 @@ describe("express Tus", () => {
         });
     });
 
-    describe("POST", () => {
+    describe("post", () => {
         it("should create upload resource and return 201 with location header", async () => {
             expect.assertions(2);
 
@@ -110,13 +88,13 @@ describe("express Tus", () => {
 
             uri = response.header.location as string;
 
-            expect(uri).toEqual(expect.stringContaining("/tus"));
+            expect(uri).toStrictEqual(expect.stringContaining("/tus"));
             // eslint-disable-next-line radar/no-duplicate-string
-            expect(exposedHeaders(response)).toEqual(expect.arrayContaining(["location", "upload-expires", "tus-resumable"]));
+            expect(exposedHeaders(response)).toStrictEqual(expect.arrayContaining(["location", "upload-expires", "tus-resumable"]));
         });
     });
 
-    describe("PATCH", () => {
+    describe("patch", () => {
         it("should resume upload and return 204 with upload offset", async () => {
             expect.assertions(5);
 
@@ -135,9 +113,9 @@ describe("express Tus", () => {
             // eslint-disable-next-line radar/no-duplicate-string
             expect(response.header["upload-offset"]).toBe("0");
             expect(response.header["tus-resumable"]).toBe(TUS_RESUMABLE);
-            expect(response.header["upload-expires"]).toEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
 
-            expect(exposedHeaders(response)).toEqual(expect.arrayContaining(["upload-offset", "upload-expires", "tus-resumable"]));
+            expect(exposedHeaders(response)).toStrictEqual(expect.arrayContaining(["upload-offset", "upload-expires", "tus-resumable"]));
         });
 
         it("should complete upload with checksum and return 200", async () => {
@@ -157,15 +135,17 @@ describe("express Tus", () => {
                 .send(testfile.asBuffer);
 
             expect(response.status).toBe(200);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
-            expect(response.header["upload-expires"]).toEqual(expect.stringMatching(/.*\S.*/));
-            expect(response.header["upload-offset"]).toEqual(metadata.size.toString());
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
+            expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header["upload-offset"]).toStrictEqual(metadata.size.toString());
         });
     });
 
-    describe("HEAD", () => {
+    describe("head", () => {
         // eslint-disable-next-line radar/no-duplicate-string
         it("should 204", async () => {
+            expect.assertions(8);
+
             const test = await create();
 
             uri ||= test.header.location;
@@ -173,29 +153,33 @@ describe("express Tus", () => {
             const response = await supertest(app).head(uri).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(200);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
-            expect(response.header["upload-offset"]).toEqual(metadata.size.toString());
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
+            expect(response.header["upload-offset"]).toStrictEqual(metadata.size.toString());
             // eslint-disable-next-line radar/no-duplicate-string
-            expect(response.header["upload-expires"]).toEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
             // eslint-disable-next-line radar/no-duplicate-string
-            expect(response.header["upload-metadata"]).toEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header["upload-metadata"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
             // eslint-disable-next-line radar/no-duplicate-string
-            expect(response.header["upload-length"]).toEqual(expect.stringMatching(/\d*/));
+            expect(response.header["upload-length"]).toStrictEqual(expect.stringMatching(/\d*/));
             expect(response.header["cache-control"]).toBe("no-store");
 
-            expect(exposedHeaders(response)).toEqual(
+            expect(exposedHeaders(response)).toStrictEqual(
                 expect.arrayContaining(["upload-offset", "upload-length", "upload-metadata", "upload-expires", "tus-resumable"]),
             );
         });
 
         it("should 404", async () => {
+            expect.assertions(2);
+
             const response = await supertest(app).head(`${basePath}/89das8d9-4das5d4as8d78-4d8sad8a`).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(404);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
         });
 
         it("should resolve with upload-defer-length", async () => {
+            expect.assertions(8);
+
             const test = await create();
 
             uri ||= test.header.location;
@@ -207,26 +191,28 @@ describe("express Tus", () => {
             const response = await supertest(app).head(uri).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(200);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
             expect(response.header["upload-offset"]).toBe("64");
-            expect(response.header["upload-expires"]).toEqual(expect.stringMatching(/.*\S.*/));
-            expect(response.header["upload-metadata"]).toEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header["upload-metadata"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
             expect(response.header["upload-length"]).toBeUndefined();
             expect(response.header["cache-control"]).toBe("no-store");
             expect(response.header["upload-defer-length"]).toBe("1");
         });
     });
 
-    describe("OPTIONS", () => {
+    describe("options", () => {
         it("should 204", async () => {
+            expect.assertions(9);
+
             const response = await supertest(app).options(basePath).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(204);
-            expect(response.header["tus-version"]).toEqual(TUS_VERSION);
+            expect(response.header["tus-version"]).toStrictEqual(TUS_VERSION);
             expect(response.header["tus-extension"]).toBe("creation,creation-with-upload,termination,checksum,creation-defer-length,expiration");
             expect(response.header["tus-max-size"]).toBe("6442450944");
             expect(response.header["tus-checksum-algorithm"]).toBe("md5,sha1");
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
             expect(response.header["access-control-allow-methods"]).toBe("DELETE, GET, HEAD, OPTIONS, PATCH, POST");
             expect(response.header["access-control-allow-headers"]).toBe(
                 "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
@@ -235,8 +221,10 @@ describe("express Tus", () => {
         });
     });
 
-    describe("DELETE", () => {
+    describe("delete", () => {
         it("should 204", async () => {
+            expect.assertions(2);
+
             const test = await create();
 
             uri ||= test.header.location;
@@ -244,19 +232,23 @@ describe("express Tus", () => {
             const response = await supertest(app).delete(uri).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(204);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
         });
 
         it("should 404", async () => {
+            expect.assertions(2);
+
             const response = await supertest(app).delete(`${basePath}/${metafile.id}`).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(404);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
         });
     });
 
-    describe("POST (creation-with-upload)", () => {
+    describe("post (creation-with-upload)", () => {
         it("should return upload-offset", async () => {
+            expect.assertions(5);
+
             const response = await supertest(app)
                 .post(basePath)
                 .set("Content-Type", "application/offset+octet-stream")
@@ -267,36 +259,44 @@ describe("express Tus", () => {
 
             expect(response.status).toBe(200);
             expect(response.header["upload-offset"]).toBe("5");
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
-            expect(response.header["upload-expires"]).toEqual(expect.stringMatching(/.*\S.*/));
-            expect(response.header.location).toEqual(expect.stringContaining("/tus"));
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
+            expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header.location).toStrictEqual(expect.stringContaining("/tus"));
         });
     });
 
     describe("metadata parser", () => {
         it("should return empty object", () => {
+            expect.assertions(1);
+
             const sample = "";
 
-            expect(parseMetadata(sample)).toEqual({});
+            expect(parseMetadata(sample)).toStrictEqual({});
         });
 
         it("should parse single key/value", () => {
+            expect.assertions(1);
+
             const sample = "name dGl0bGUubXA0";
 
-            expect(parseMetadata(sample)).toEqual({ name: "title.mp4" });
+            expect(parseMetadata(sample)).toStrictEqual({ name: "title.mp4" });
         });
 
         it("should parse empty value", () => {
+            expect.assertions(1);
+
             const sample = "is_ok";
 
-            expect(parseMetadata(sample)).toEqual({ is_ok: "" });
+            expect(parseMetadata(sample)).toStrictEqual({ is_ok: "" });
         });
 
         it("should parse multiple keys", () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line no-secrets/no-secrets
             const sample = "name dGl0bGUubXA0,mimeType dmlkZW8vbXA0,size ODM4NjkyNTM=,lastModified MTQzNzM5MDEzODIzMQ==,is_ok";
 
-            expect(parseMetadata(sample)).toEqual({
+            expect(parseMetadata(sample)).toStrictEqual({
                 is_ok: "",
                 lastModified: "1437390138231",
                 mimeType: "video/mp4",

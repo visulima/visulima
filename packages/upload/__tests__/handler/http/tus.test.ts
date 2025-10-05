@@ -9,22 +9,14 @@ import DiskStorage from "../../../src/storage/local/disk-storage";
 import { metadata, metafile, storageOptions, testfile, testRoot } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
 
-vi.mock(import("node:fs/promises"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
-    const { fs } = require("memfs");
+vi.mock(import("node:fs/promises"), async () => {
+    const { fs } = await import("memfs");
 
     return fs.promises;
 });
 
-vi.mock(import("node:fs"), () => {
-    const process = require("node:process");
-
-    process.chdir("/");
-
-    const { fs } = require("memfs");
+vi.mock(import("node:fs"), async () => {
+    const { fs } = await import("memfs");
 
     return fs;
 });
@@ -35,7 +27,7 @@ const exposedHeaders = (response: supertest.Response): string[] =>
         .split(",")
         .map((s) => s.toLowerCase());
 
-describe("HTTP Tus", () => {
+describe("http Tus", () => {
     let response: supertest.Response;
     let uri = "";
 
@@ -81,7 +73,7 @@ describe("HTTP Tus", () => {
         });
     });
 
-    describe("POST", () => {
+    describe("post", () => {
         it("should create upload resource and return 201 with location header", async () => {
             expect.assertions(2);
 
@@ -89,12 +81,12 @@ describe("HTTP Tus", () => {
 
             uri = response.header.location as string;
 
-            expect(uri).toEqual(expect.stringContaining(basePath));
-            expect(exposedHeaders(response)).toEqual(expect.arrayContaining(["location", "upload-expires", "tus-resumable"]));
+            expect(uri).toStrictEqual(expect.stringContaining(basePath));
+            expect(exposedHeaders(response)).toStrictEqual(expect.arrayContaining(["location", "upload-expires", "tus-resumable"]));
         });
     });
 
-    describe("PATCH", () => {
+    describe("patch", () => {
         it("should resume upload and return 204 with upload offset", async () => {
             expect.assertions(5);
 
@@ -111,9 +103,9 @@ describe("HTTP Tus", () => {
             expect(response.status).toBe(204);
             expect(response.header["upload-offset"]).toBe("0");
             expect(response.header["tus-resumable"]).toBe(TUS_RESUMABLE);
-            expect(response.header["upload-expires"]).toEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
 
-            expect(exposedHeaders(response)).toEqual(expect.arrayContaining(["upload-offset", "upload-expires", "tus-resumable"]));
+            expect(exposedHeaders(response)).toStrictEqual(expect.arrayContaining(["upload-offset", "upload-expires", "tus-resumable"]));
         });
 
         it("should complete upload with checksum and return 200", async () => {
@@ -133,13 +125,13 @@ describe("HTTP Tus", () => {
                 .send(testfile.asBuffer);
 
             expect(response.status).toBe(200);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
-            expect(response.header["upload-expires"]).toEqual(expect.stringMatching(/.*\S.*/));
-            expect(response.header["upload-offset"]).toEqual(metadata.size.toString());
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
+            expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header["upload-offset"]).toStrictEqual(metadata.size.toString());
         });
     });
 
-    describe("HEAD", () => {
+    describe("head", () => {
         it("should return upload status and metadata for valid upload", async () => {
             expect.assertions(8);
 
@@ -150,14 +142,14 @@ describe("HTTP Tus", () => {
             response = await supertest(app).head(uri).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(200);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
-            expect(response.header["upload-offset"]).toEqual(metadata.size.toString());
-            expect(response.header["upload-expires"]).toEqual(expect.stringMatching(/.*\S.*/));
-            expect(response.header["upload-metadata"]).toEqual(expect.stringMatching(/.*\S.*/));
-            expect(response.header["upload-length"]).toEqual(expect.stringMatching(/\d*/));
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
+            expect(response.header["upload-offset"]).toStrictEqual(metadata.size.toString());
+            expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header["upload-metadata"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header["upload-length"]).toStrictEqual(expect.stringMatching(/\d*/));
             expect(response.header["cache-control"]).toBe("no-store");
 
-            expect(exposedHeaders(response)).toEqual(
+            expect(exposedHeaders(response)).toStrictEqual(
                 expect.arrayContaining(["upload-offset", "upload-length", "upload-metadata", "upload-expires", "tus-resumable"]),
             );
         });
@@ -168,22 +160,22 @@ describe("HTTP Tus", () => {
             response = await supertest(app).head(`${basePath}/89das8d9-4das5d4as8d78-4d8sad8a`).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(404);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
         });
     });
 
-    describe("OPTIONS", () => {
+    describe("options", () => {
         it("should return 204 with Tus protocol configuration headers", async () => {
             expect.assertions(9);
 
             response = await supertest(app).options(basePath).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(204);
-            expect(response.header["tus-version"]).toEqual(TUS_VERSION);
+            expect(response.header["tus-version"]).toStrictEqual(TUS_VERSION);
             expect(response.header["tus-extension"]).toBe("creation,creation-with-upload,termination,checksum,creation-defer-length,expiration");
             expect(response.header["tus-max-size"]).toBe("6442450944");
             expect(response.header["tus-checksum-algorithm"]).toBe("md5,sha1");
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
             expect(response.header["access-control-allow-methods"]).toBe("DELETE, GET, HEAD, OPTIONS, PATCH, POST");
             expect(response.header["access-control-allow-headers"]).toBe(
                 "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
@@ -192,7 +184,7 @@ describe("HTTP Tus", () => {
         });
     });
 
-    describe("DELETE", () => {
+    describe("delete", () => {
         it("should successfully delete upload resource", async () => {
             expect.assertions(2);
 
@@ -203,7 +195,7 @@ describe("HTTP Tus", () => {
             response = await supertest(app).delete(uri).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(204);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
         });
 
         it("should return 404 for non-existent upload resource", async () => {
@@ -212,11 +204,11 @@ describe("HTTP Tus", () => {
             response = await supertest(app).delete(`${basePath}/${metafile.id}`).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(404);
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
         });
     });
 
-    describe("POST (creation-with-upload)", () => {
+    describe("pOST (creation-with-upload)", () => {
         it("should create upload with initial data and return upload offset", async () => {
             expect.assertions(5);
 
@@ -230,9 +222,9 @@ describe("HTTP Tus", () => {
 
             expect(response.status).toBe(200);
             expect(response.header["upload-offset"]).toBe("5");
-            expect(response.header["tus-resumable"]).toEqual(TUS_RESUMABLE);
-            expect(response.header["upload-expires"]).toEqual(expect.stringMatching(/.*\S.*/));
-            expect(response.header.location).toEqual(expect.stringContaining(basePath));
+            expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
+            expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
+            expect(response.header.location).toStrictEqual(expect.stringContaining(basePath));
         });
     });
 });
