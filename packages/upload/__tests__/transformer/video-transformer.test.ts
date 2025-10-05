@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import type { VideoTransformerConfig } from "../../src/transform";
-import VideoTransformer from "../../src/transform/video-transformer";
+import type { VideoTransformerConfig } from "../../src/transformer";
+import VideoTransformer from "../../src/transformer/video-transformer";
 
 // Mock storage
 const mockStorage = {
