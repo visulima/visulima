@@ -49,7 +49,9 @@ describe(DiskStorageWithChecksum, () => {
     const options = { ...storageOptions, checksum: "sha1" as const, directory };
     const request = createRequest();
 
-    it("should support checksum resume from fs", async () => {
+    it("should support checksum resume from filesystem", async () => {
+        expect.assertions(2);
+
         const storage = new DiskStorageWithChecksum(options);
         const diskFile = await storage.create(request, { ...metafile });
 
@@ -60,7 +62,9 @@ describe(DiskStorageWithChecksum, () => {
         expect(file).toMatchSnapshot();
     });
 
-    it("diskStorageWithChecksum.delete deletes file and metadata", async () => {
+    it("should delete file and metadata successfully", async () => {
+        expect.assertions(2);
+
         const storage = new DiskStorageWithChecksum(options);
         const diskFile = await storage.create(request, { ...metafile });
 

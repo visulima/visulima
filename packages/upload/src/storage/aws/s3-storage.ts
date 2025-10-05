@@ -1,5 +1,4 @@
 import type { IncomingMessage } from "node:http";
-import { resolve } from "node:path";
 
 import type {
     CompleteMultipartUploadOutput,
@@ -26,10 +25,11 @@ import {
 import { fromIni } from "@aws-sdk/credential-providers";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { HttpHandlerOptions, SdkStream } from "@aws-sdk/types";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
 
 import type { HttpError } from "../../utils";
-import { ERRORS, mapValues, throwErrorCode, toSeconds } from "../../utils";
+import { ERRORS, mapValues, throwErrorCode, toMilliseconds, toSeconds } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
@@ -59,7 +59,9 @@ const PART_SIZE = 16 * 1024 * 1024;
  * ```
  */
 class S3Storage extends BaseStorage<S3File, FileReturn> {
-    public override checksumTypes = ["md5"];
+    public static override readonly name = "s3";
+
+    public override checksumTypes = ["md5", "crc32", "crc32c", "sha1", "sha256"];
 
     protected bucket: string;
 
@@ -74,7 +76,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
     private readonly partSize = PART_SIZE;
 
-    public constructor(public override config: S3StorageOptions) {
+    public constructor(config: S3StorageOptions) {
         super(config);
 
         const { bucket = process.env.S3_BUCKET, region = process.env.S3_REGION } = config;
@@ -151,7 +153,18 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
     }
 
     public async create(request: IncomingMessage, config: FileInit): Promise<S3File> {
-        const file = new S3File(config);
+        // Handle TTL option
+        const processedConfig = { ...config };
+
+        if (config.ttl) {
+            const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
+
+            if (ttlMs !== null) {
+                processedConfig.expiredAt = Date.now() + ttlMs;
+            }
+        }
+
+        const file = new S3File(processedConfig);
 
         file.name = this.namingFunction(file, request);
 
@@ -200,7 +213,6 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         return file;
     }
 
-    // eslint-disable-next-line radar/cognitive-complexity
     public async write(part: FilePart | FileQuery): Promise<S3File> {
         const file = await this.getMeta(part.id);
 
@@ -307,12 +319,27 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         return super.update({ id }, metadata);
     }
 
-    public async copy(name: string, destination: string): Promise<CopyObjectCommandOutput> {
+    public async copy(name: string, destination: string, options?: { storageClass?: string }): Promise<CopyObjectCommandOutput> {
         const CopySource = `${this.bucket}/${name}`;
-        const newPath = decodeURI(resolve(`/${CopySource}`, destination));
-        const [, Bucket, ...pathSegments] = newPath.split("/");
-        const Key = pathSegments.join("/");
-        const parameters: CopyObjectCommandInput = { Bucket, CopySource, Key };
+
+        // Handle absolute vs relative destination paths
+        let Bucket = this.bucket;
+        let Key = destination;
+
+        if (destination.startsWith("/")) {
+            // Absolute path: /otherBucket/new name -> copy to otherBucket
+            const [, bucketName, ...pathSegments] = destination.split("/");
+
+            Bucket = bucketName || this.bucket;
+            Key = pathSegments.join("/");
+        }
+
+        const parameters: CopyObjectCommandInput = {
+            Bucket,
+            CopySource,
+            Key,
+            ...options?.storageClass && { StorageClass: options.storageClass as any },
+        };
 
         return this.client.send(new CopyObjectCommand(parameters));
     }
@@ -326,7 +353,6 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         return copyOut;
     }
 
-    // eslint-disable-next-line radar/cognitive-complexity
     public override async list(limit = 1000): Promise<S3File[]> {
         let parameters: ListObjectsV2CommandInput = {
             Bucket: this.bucket,
@@ -461,7 +487,6 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             promises.push(getSignedUrl(this.client, new UploadPartCommand(partCommandInput), { expiresIn }));
         }
 
-        // eslint-disable-next-line compat/compat
         return Promise.all(promises);
     }
 

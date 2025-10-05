@@ -4,8 +4,10 @@ import mapValues from "../../../src/utils/primitives/map-values";
 
 describe("utils", () => {
     describe("primitives", () => {
-        describe("map-values", () => {
-            it("should map values", () => {
+        describe(mapValues, () => {
+            it("should transform object values using a mapper function", () => {
+                expect.assertions(1);
+
                 expect(mapValues({ a: "test" }, (value) => `${value}2`)).toEqual({ a: "test2" });
             });
         });

@@ -81,13 +81,17 @@ describe("express Multipart", () => {
     });
 
     describe("default options", () => {
-        it("should be defined", () => {
+        it("should create Multipart handler instance", () => {
+            expect.assertions(1);
+
             expect(new Multipart({ storage: new DiskStorage({ directory: "/files" }) })).toBeInstanceOf(Multipart);
         });
     });
 
-    describe("pOST", () => {
-        it("should support custom fields", async () => {
+    describe("POST", () => {
+        it("should support custom fields in multipart upload", async () => {
+            expect.assertions(3);
+
             response = await supertest(app).post(basePath).field("custom", "customField").attach("file", testfile.asBuffer, {
                 contentType: testfile.contentType,
                 filename: testfile.filename,
@@ -98,7 +102,9 @@ describe("express Multipart", () => {
             expect(response.header.location).toBeDefined();
         });
 
-        it("should support json metadata", async () => {
+        it("should support JSON metadata in multipart upload", async () => {
+            expect.assertions(3);
+
             response = await supertest(app).post(basePath).field("metadata", JSON.stringify(metadata)).attach("file", testfile.asBuffer, testfile.name);
 
             expect(response.status).toBe(200);
@@ -106,14 +112,18 @@ describe("express Multipart", () => {
             expect(response.header.location).toBeDefined();
         });
 
-        it("should 415 (unsupported filetype)", async () => {
+        it("should return 415 for unsupported file types", async () => {
+            expect.assertions(2);
+
             response = await supertest(app).post(basePath).attach("file", testfile.asBuffer, "testfile.txt");
 
             expect(response.status).toBe(415);
             expect(response.body.error).toBeDefined();
         });
 
-        it("should 400 (missing file)", async () => {
+        it("should return 400 when no file is provided", async () => {
+            expect.assertions(2);
+
             response = await supertest(app).post(basePath);
 
             expect(response.status).toBe(400);
@@ -121,16 +131,20 @@ describe("express Multipart", () => {
         });
     });
 
-    describe("oPTIONS", () => {
-        it("should 204", async () => {
+    describe("OPTIONS", () => {
+        it("should return 204 for OPTIONS request", async () => {
+            expect.assertions(1);
+
             response = await supertest(app).options(basePath);
 
             expect(response.status).toBe(204);
         });
     });
 
-    describe("dELETE", () => {
-        it("should 204", async () => {
+    describe("DELETE", () => {
+        it("should successfully delete uploaded file", async () => {
+            expect.assertions(1);
+
             const test = await create();
 
             uri ||= test.header.location;
@@ -140,7 +154,9 @@ describe("express Multipart", () => {
             expect(response.status).toBe(204);
         });
 
-        it("should 404", async () => {
+        it("should return 404 for non-existent file deletion", async () => {
+            expect.assertions(1);
+
             response = await supertest(app).delete(`${basePath}/1d2a1da2s-1d5as45d5a-4d5asd`);
 
             expect(response.status).toBe(404);

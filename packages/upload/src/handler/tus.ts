@@ -63,7 +63,7 @@ class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMe
                 "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
             "Access-Control-Allow-Methods": Tus.methods.map((method) => method.toUpperCase()).join(", "),
             "Access-Control-Max-Age": 86_400,
-            "Tus-Checksum-Algorithm": this.storage.checksumTypes.toString(),
+            "Tus-Checksum-Algorithm": this.storage.checksumTypes.join(","),
             "Tus-Extension": this.storage.tusExtension.toString(),
             "Tus-Max-Size": this.storage.maxUploadSize,
             "Tus-Version": TUS_VERSION_VERSION,

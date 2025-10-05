@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage } from "node:http";
-import { resolve } from "node:url";
 
 import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
 import { request } from "gaxios";
@@ -8,7 +7,7 @@ import { GoogleAuth } from "google-auth-library";
 
 import package_ from "../../../package.json";
 import type { HttpError } from "../../utils";
-import { ERRORS, getHeader, throwErrorCode } from "../../utils";
+import { ERRORS, getHeader, throwErrorCode, toMilliseconds } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
@@ -39,6 +38,10 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
  * ```
  */
 class GCStorage extends BaseStorage<GCSFile, FileReturn> {
+    public static override readonly name = "gcs";
+
+    public override checksumTypes = ["md5", "crc32c"];
+
     protected meta: MetaStorage<GCSFile>;
 
     private readonly bucket: string;
@@ -57,7 +60,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
     private readonly userProject: string | undefined;
 
-    public constructor(public override config: GCStorageOptions) {
+    public constructor(config: GCStorageOptions) {
         super(config);
 
         const bucketName = config.bucket || process.env.GCS_BUCKET;
@@ -140,7 +143,18 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     }
 
     public async create(request: IncomingMessage, config: FileInit): Promise<GCSFile> {
-        const file = new GCSFile(config);
+        // Handle TTL option
+        const processedConfig = { ...config };
+
+        if (config.ttl) {
+            const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
+
+            if (ttlMs !== null) {
+                processedConfig.expiredAt = Date.now() + ttlMs;
+            }
+        }
+
+        const file = new GCSFile(processedConfig);
 
         file.name = this.namingFunction(file, request);
 
@@ -263,14 +277,16 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
             totalBytesRewritten: number;
         }
 
-        const newPath = resolve(`/${this.bucket}/${name}`, encodeURI(destination));
+        const baseUrl = new URL(`/${this.bucket}/${name}`, "file://");
+        const resolvedUrl = new URL(encodeURI(destination), baseUrl);
+        const newPath = resolvedUrl.pathname;
         const [, bucket, ...pathSegments] = newPath.split("/");
         const filename = pathSegments.join("/");
         const url = `${this.storageBaseURI}/${name}/rewriteTo/b/${bucket}/o/${filename}`;
 
         let progress = {} as CopyProgress;
 
-        const options = {
+        const requestOptions = {
             body: "",
             headers: { "Content-Type": "application/json" },
             method: "POST" as const,
@@ -278,9 +294,9 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         };
 
         do {
-            options.body = progress.rewriteToken ? JSON.stringify({ rewriteToken: progress.rewriteToken }) : "";
+            requestOptions.body = progress.rewriteToken ? JSON.stringify({ rewriteToken: progress.rewriteToken }) : "";
             // eslint-disable-next-line no-await-in-loop,unicorn/no-await-expression-member
-            progress = (await this.makeRequest<CopyProgress>(options)).data;
+            progress = (await this.makeRequest<CopyProgress>(requestOptions)).data;
         } while (progress.rewriteToken);
 
         return progress.resource;

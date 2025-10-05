@@ -66,13 +66,17 @@ describe("fetch Tus", () => {
     });
 
     describe("default options", () => {
-        it("should be defined", () => {
+        it("should create Tus handler instance", () => {
+            expect.assertions(1);
+
             expect(new Tus({ storage: new DiskStorage({ directory: "/files" }) })).toBeInstanceOf(Tus);
         });
     });
 
-    describe("pOST", () => {
-        it("should 201", async () => {
+    describe("POST", () => {
+        it("should create upload resource and return 201 with location header", async () => {
+            expect.assertions(3);
+
             const request = create();
             const { default: Tus } = await import("../../../src/handler/tus");
 
@@ -99,7 +103,9 @@ describe("fetch Tus", () => {
             expect(exposedHeaders(response)).toEqual(expect.arrayContaining(["location", "upload-expires"]));
         });
 
-        it("should handle errors", async () => {
+        it("should handle invalid upload length with error response", async () => {
+            expect.assertions(2);
+
             const request = new Request(`${basePath}`, {
                 headers: {
                     "Tus-Resumable": "1.0.0",
@@ -136,8 +142,10 @@ describe("fetch Tus", () => {
         });
     });
 
-    describe("oPTIONS", () => {
-        it("should 204", async () => {
+    describe("OPTIONS", () => {
+        it("should return 204 with Tus protocol headers for OPTIONS request", async () => {
+            expect.assertions(5);
+
             const request = new Request(`${basePath}`, {
                 headers: {
                     "Tus-Resumable": "1.0.0",

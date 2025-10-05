@@ -8,20 +8,28 @@ const notImplementedMessage = "Not implemented";
 describe(MetaStorage, () => {
     const metaStorage = new MetaStorage();
 
-    it("has props", () => {
+    it("should have correct default properties", () => {
+        expect.assertions(2);
+
         expect(metaStorage).toHaveProperty("prefix", "");
         expect(metaStorage).toHaveProperty("suffix", ".META");
     });
 
-    it("save", async () => {
+    it("should save metadata successfully", async () => {
+        expect.assertions(1);
+
         await expect(metaStorage.save(metafile.id, metafile)).resolves.toBe(metafile);
     });
 
-    it("get", async () => {
+    it("should throw error when getting metadata (not implemented)", async () => {
+        expect.assertions(1);
+
         await expect(metaStorage.get(metafile.id)).rejects.toThrow(notImplementedMessage);
     });
 
-    it("delete", async () => {
+    it("should throw error when deleting metadata (not implemented)", async () => {
+        expect.assertions(1);
+
         await expect(metaStorage.delete(metafile.id)).rejects.toThrow(notImplementedMessage);
     });
 });

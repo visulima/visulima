@@ -26,7 +26,9 @@ describe(LocalMetaStorage, () => {
         }
     });
 
-    it("defaults", () => {
+    it("should use default prefix and suffix for metadata file paths", () => {
+        expect.assertions(2);
+
         const meta = new LocalMetaStorage({ directory: testRoot });
         const metaPath = meta.getMetaPath(metafile.id);
 
@@ -34,7 +36,9 @@ describe(LocalMetaStorage, () => {
         expect(meta.getIdFromPath(metaPath)).toBe(metafile.id);
     });
 
-    it("custom", () => {
+    it("should use custom prefix and suffix for metadata file paths", () => {
+        expect.assertions(2);
+
         const meta = new LocalMetaStorage({
             directory: join(tmpdir(), "meta"),
             prefix: ".",

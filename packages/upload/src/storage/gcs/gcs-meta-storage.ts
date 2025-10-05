@@ -26,7 +26,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     private readonly userProject: string | undefined;
 
-    constructor(readonly config: GCSMetaStorageOptions) {
+    public constructor(public readonly config: GCSMetaStorageOptions) {
         super(config);
 
         const { authClient, ...metaConfig } = config;

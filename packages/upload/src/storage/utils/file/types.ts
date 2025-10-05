@@ -4,12 +4,15 @@ import type { Metadata } from "./metadata";
 
 export interface FileInit {
     contentType?: string;
+    expiredAt?: Date | number | string;
     metadata: Metadata;
     originalName?: string;
     size?: number | string;
+    storageClass?: string;
+    ttl?: number | string;
 }
 
-export interface FileReturn extends Required<FileInit> {
+export interface FileReturn extends Omit<Required<FileInit>, "storageClass" | "ttl" | "expiredAt"> {
     content: Buffer;
 
     ETag?: string;
@@ -21,6 +24,8 @@ export interface FileReturn extends Required<FileInit> {
     modifiedAt?: Date | number | string;
 
     name: string;
+
+    storageClass?: string;
 }
 
 export type UploadEventType = "completed" | "created" | "deleted" | "part" | "updated";

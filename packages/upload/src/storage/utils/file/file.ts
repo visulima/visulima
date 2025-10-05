@@ -49,10 +49,11 @@ class File implements FileInit {
 
     ETag?: string;
 
-    constructor({ contentType, metadata = {}, originalName, size }: FileInit) {
+    constructor({ contentType, expiredAt, metadata = {}, originalName, size }: FileInit) {
         this.metadata = metadata;
         this.originalName = originalName || extractOriginalName(metadata) || (this.id = nanoid());
         this.contentType = contentType || extractMimeType(metadata) || "application/octet-stream";
+        this.expiredAt = expiredAt;
 
         if (typeof size === "string" || typeof size === "number") {
             this.size = Number(size);

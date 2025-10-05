@@ -68,7 +68,7 @@ class Multipart<
                     const file = await this.storage.create(request, config);
 
                     // Create a Readable stream from the Uint8Array
-                    const stream = Readable.from(part.bytes);
+                    const stream = Readable.from(Buffer.from(part.bytes));
 
                     await this.storage.write({
                         body: stream,
