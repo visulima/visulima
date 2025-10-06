@@ -1,10 +1,9 @@
-import { LRUCache as Cache } from "lru-cache";
 import type { Sharp } from "sharp";
 import sharp from "sharp";
 
 import type BaseStorage from "../storage/storage";
-import type { FileQuery, FileReturn } from "../storage/utils/file";
-import type { Logger } from "../utils/types";
+import type { File, FileQuery, FileReturn } from "../storage/utils/file";
+import BaseTransformer from "./base-transformer";
 import type { CropOptions, ImageTransformerConfig, ResizeOptions, RotateOptions, TransformationStep, TransformOptions, TransformResult } from "./types";
 
 /**
@@ -43,79 +42,70 @@ import type { CropOptions, ImageTransformerConfig, ResizeOptions, RotateOptions,
  * - `loop`: GIF animation iterations, 0 for infinite (Number)
  * - `delay`: GIF delay between frames in milliseconds (Number)
  */
-class ImageTransformer {
-    private readonly cache?: Cache<string, Buffer>;
+class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn = FileReturn> extends BaseTransformer<
+    ImageTransformerConfig,
+    TransformResult<TFileReturn>,
+    TFile,
+    TFileReturn
+> {
+    public constructor(storage: BaseStorage<TFile, TFileReturn>, config: ImageTransformerConfig = {}) {
+        const logger = config.logger || storage.logger;
 
-    private readonly config: Required<ImageTransformerConfig>;
-
-    private readonly logger: Logger;
-
-    public constructor(
-        private readonly storage: BaseStorage<any, FileReturn>,
-        config: ImageTransformerConfig = {},
-    ) {
-        this.logger = config.logger || this.storage.logger || console;
-
-        this.config = {
+        const transformerConfig = {
             cacheTtl: 3600, // 1 hour
             enableCache: false,
-            logger: this.logger,
+            maxCacheSize: 100, // Max 100 transformed images in cache
             maxImageSize: 50 * 1024 * 1024, // 50MB
             supportedFormats: ["jpeg", "png", "webp", "avif", "tiff", "gif", "svg"],
             ...config,
-        };
+        } satisfies ImageTransformerConfig;
 
-        if (this.config.enableCache) {
-            this.cache = new Cache({
-                max: 100, // Max 100 transformed images in cache
-                ttl: this.config.cacheTtl * 1000, // Convert to milliseconds
-            });
-        }
+        super(storage, transformerConfig, logger);
     }
 
     /**
      * Resize an image
      */
-    public async resize(fileId: string, options: ResizeOptions): Promise<TransformResult> {
+    public async resize(fileId: string, options: ResizeOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "resize" }]);
     }
 
     /**
      * Crop an image
      */
-    public async crop(fileId: string, options: CropOptions): Promise<TransformResult> {
+    public async crop(fileId: string, options: CropOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "crop" }]);
     }
 
     /**
      * Rotate an image
      */
-    public async rotate(fileId: string, options: RotateOptions): Promise<TransformResult> {
+    public async rotate(fileId: string, options: RotateOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "rotate" }]);
     }
 
     /**
      * Convert image format
      */
-    public async convertFormat(fileId: string, format: string, options: TransformOptions = {}): Promise<TransformResult> {
+    public async convertFormat(fileId: string, format: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options: { ...options, format: format as any }, type: "format" }]);
     }
 
     /**
      * Apply a custom transformation pipeline
      */
-    public async transform(fileId: string, steps: TransformationStep[]): Promise<TransformResult> {
+    public async transform(fileId: string, steps: TransformationStep[]): Promise<TransformResult<TFileReturn>> {
         const fileQuery: FileQuery = { id: fileId };
         const cacheKey = this.generateCacheKey(fileId, steps);
 
         // Check cache first
-        if (this.cache && this.config.enableCache) {
+        if (this.cache && (this.config as ImageTransformerConfig).enableCache) {
             const cached = this.cache.get(cacheKey);
 
             if (cached) {
                 this.logger?.debug("Returning cached transformed image for %s", fileId);
 
-                return this.createTransformResult(cached, fileQuery);
+                return cached;
             }
         }
 
@@ -128,12 +118,53 @@ class ImageTransformer {
         // Apply transformations
         const transformedBuffer = await this.applyTransformations(originalFile.content, steps);
 
+        const result = await this.createTransformResult(transformedBuffer, originalFile);
+
         // Cache the result
-        if (this.cache && this.config.enableCache) {
-            this.cache.set(cacheKey, transformedBuffer);
+        if (this.cache && (this.config as ImageTransformerConfig).enableCache) {
+            this.cache.set(cacheKey, result);
         }
 
-        return this.createTransformResult(transformedBuffer, fileQuery);
+        return result;
+    }
+
+    /**
+     * Clear cache for a specific file
+     */
+    public override clearCache(fileId?: string): void {
+        if (!this.cache) {
+            return;
+        }
+
+        if (fileId) {
+            // Clear all cache entries for this file
+            const keysToDelete: string[] = [];
+
+            for (const key of this.cache.keys()) {
+                if (key.startsWith(`${fileId}:`)) {
+                    keysToDelete.push(key);
+                }
+            }
+
+            keysToDelete.forEach((key) => this.cache!.delete(key));
+        } else {
+            // Clear entire cache
+            this.cache.clear();
+        }
+    }
+
+    /**
+     * Get cache statistics
+     */
+    public override getCacheStats(): { maxSize: number; size: number } | undefined {
+        if (!this.cache) {
+            return undefined;
+        }
+
+        return {
+            maxSize: this.cache.max,
+            size: this.cache.size,
+        };
     }
 
     /**
@@ -296,11 +327,11 @@ class ImageTransformer {
     /**
      * Validate that the file is a supported image
      */
-    private async validateImage(file: FileReturn): Promise<void> {
+    private async validateImage(file: TFileReturn): Promise<void> {
         // Check file size
         const fileSize = typeof file.size === "string" ? Number.parseInt(file.size, 10) : file.size;
 
-        if (fileSize > this.config.maxImageSize) {
+        if (this.config?.maxImageSize && fileSize > this.config.maxImageSize) {
             throw new Error(`Image size ${fileSize} exceeds maximum allowed size ${this.config.maxImageSize}`);
         }
 
@@ -312,7 +343,7 @@ class ImageTransformer {
         // Check format support
         const format = file.contentType.split("/")[1];
 
-        if (format && !this.config.supportedFormats.includes(format)) {
+        if (this.config?.supportedFormats && format && !this.config.supportedFormats.includes(format)) {
             throw new Error(`Unsupported image format: ${format}`);
         }
 
@@ -331,7 +362,7 @@ class ImageTransformer {
     /**
      * Create transformation result
      */
-    private async createTransformResult(buffer: Buffer, originalFile: FileQuery): Promise<TransformResult> {
+    private async createTransformResult(buffer: Buffer, originalFile: TFileReturn): Promise<TransformResult<TFileReturn>> {
         const metadata = await sharp(buffer).metadata();
 
         return {
@@ -351,45 +382,6 @@ class ImageTransformer {
         const stepsKey = steps.map((step) => `${step.type}:${JSON.stringify(step.options)}`).join("|");
 
         return `${fileId}:${stepsKey}`;
-    }
-
-    /**
-     * Clear cache for a specific file
-     */
-    public clearCache(fileId?: string): void {
-        if (!this.cache) {
-            return;
-        }
-
-        if (fileId) {
-            // Clear all cache entries for this file
-            const keysToDelete: string[] = [];
-
-            for (const key of this.cache.keys()) {
-                if (key.startsWith(`${fileId}:`)) {
-                    keysToDelete.push(key);
-                }
-            }
-
-            keysToDelete.forEach((key) => this.cache!.delete(key));
-        } else {
-            // Clear entire cache
-            this.cache.clear();
-        }
-    }
-
-    /**
-     * Get cache statistics
-     */
-    public getCacheStats(): { maxSize: number; size: number } | undefined {
-        if (!this.cache) {
-            return undefined;
-        }
-
-        return {
-            maxSize: this.cache.max,
-            size: this.cache.size,
-        };
     }
 }
 

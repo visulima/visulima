@@ -5,9 +5,14 @@ import type { OpenAPIV3 } from "openapi-types";
 
 import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList, sharedGetMeta } from "./shared";
 
-const swaggerSpec = (path = "/", tags: string[] | undefined = ["Tus"]): Partial<OpenAPIV3.Document> => {
+const swaggerSpec = (
+    path: string,
+    options: { tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" },
+): Partial<OpenAPIV3.Document> => {
+    const { tags, transformer } = { tags: ["Tus"], transformer: false, ...options };
+
     const pathHash = createHash("sha256").update(path).digest("base64");
-    const getSchemaObject: OpenAPIV3.OperationObject = sharedGet(`${pathHash}TusGetFile`, tags);
+    const getSchemaObject: OpenAPIV3.OperationObject = sharedGet(`${pathHash}TusGetFile`, tags, transformer);
 
     return {
         components: {

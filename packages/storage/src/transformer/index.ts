@@ -1,6 +1,5 @@
-export { default as AudioTransformer } from "./audio-transformer";
-export { default as ImageTransformer } from "./image-transformer";
-export { default as MediaTransformer, ValidationError } from "./media-transformer";
+export { default as BaseTransformer } from "./base-transformer";
+export { default as MediaTransformer } from "./media-transformer";
 export type {
     AudioChannelMixOptions,
     AudioResampleOptions,
@@ -32,4 +31,4 @@ export type {
     VideoTransformOptions,
     VideoTransformResult,
 } from "./types";
-export { default as VideoTransformer } from "./video-transformer";
+export { default as ValidationError } from "./validation-error";
