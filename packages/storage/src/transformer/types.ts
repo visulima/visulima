@@ -1,4 +1,7 @@
-import type { FileQuery } from "../storage/utils/file";
+import type BaseStorage from "../storage/storage";
+import type { File, FileReturn } from "../storage/utils/file";
+import type { Logger } from "../utils/types";
+import type BaseTransformer from "./base-transformer";
 
 /**
  * Image transformation options
@@ -93,24 +96,6 @@ export interface MediaTransformationStep {
         | AudioChannelMixOptions
         | AudioResampleOptions;
     type: "resize" | "crop" | "rotate" | "format" | "quality" | "codec" | "bitrate" | "frameRate" | "resample" | "channels";
-}
-
-/**
- * Image transformation result
- */
-export interface TransformResult {
-    /** Transformed image buffer */
-    buffer: Buffer;
-    /** Image format */
-    format: string;
-    /** Image height in pixels */
-    height: number;
-    /** Original file information */
-    originalFile: FileQuery;
-    /** Image size in bytes */
-    size: number;
-    /** Image width in pixels */
-    width: number;
 }
 
 /**
@@ -216,107 +201,71 @@ export interface AudioTransformationStep {
 }
 
 /**
- * Video transformation result
+ * Image transformation result
  */
-export interface VideoTransformResult {
-    /** Video bitrate */
-    bitrate?: number;
-    /** Transformed video buffer */
+export interface TransformResult<TFileReturn extends FileReturn = FileReturn> {
+    /** Transformed image buffer */
     buffer: Buffer;
-    /** Video duration in seconds */
-    duration: number;
-    /** Video format */
+    /** Image format */
     format: string;
-    /** Video height in pixels */
+    /** Image height in pixels */
     height: number;
     /** Original file information */
-    originalFile: FileQuery;
-    /** Video size in bytes */
+    originalFile: TFileReturn;
+    /** Image size in bytes */
     size: number;
-    /** Video width in pixels */
+    /** Image width in pixels */
     width: number;
+}
+
+/**
+ * Video transformation result
+ */
+export interface VideoTransformResult<TFileReturn extends FileReturn = FileReturn> extends TransformResult<TFileReturn> {
+    /** Video bitrate */
+    bitrate?: number;
+    /** Video duration in seconds */
+    duration: number;
 }
 
 /**
  * Audio transformation result
  */
-export interface AudioTransformResult {
+export interface AudioTransformResult<TFileReturn extends FileReturn = FileReturn> extends Omit<TransformResult<TFileReturn>, "width" | "height"> {
     /** Audio bitrate */
     bitrate?: number;
-    /** Transformed audio buffer */
-    buffer: Buffer;
     /** Audio duration in seconds */
     duration: number;
-    /** Audio format */
-    format: string;
     /** Number of channels */
     numberOfChannels: number;
-    /** Original file information */
-    originalFile: FileQuery;
     /** Sample rate in Hz */
     sampleRate: number;
-    /** Audio size in bytes */
-    size: number;
-}
-
-/**
- * Video transformer configuration
- */
-export interface VideoTransformerConfig {
-    /** Cache TTL in seconds */
-    cacheTtl?: number;
-    /** Default video bitrate */
-    defaultBitrate?: number;
-    /** Default video codec */
-    defaultCodec?: "avc" | "hevc" | "vp8" | "vp9" | "av1";
-    /** Cache transformed videos */
-    enableCache?: boolean;
-    /** Logger instance */
-    logger?: import("../utils/types").Logger;
-    /** Maximum video size to process (in bytes) */
-    maxVideoSize?: number;
-    /** Supported input formats */
-    supportedFormats?: string[];
-}
-
-/**
- * Audio transformer configuration
- */
-export interface AudioTransformerConfig {
-    /** Cache TTL in seconds */
-    cacheTtl?: number;
-    /** Default audio bitrate */
-    defaultBitrate?: number;
-    /** Default audio codec */
-    defaultCodec?: "aac" | "opus" | "mp3" | "vorbis" | "flac";
-    /** Cache transformed audio */
-    enableCache?: boolean;
-    /** Logger instance */
-    logger?: import("../utils/types").Logger;
-    /** Maximum audio size to process (in bytes) */
-    maxAudioSize?: number;
-    /** Supported input formats */
-    supportedFormats?: string[];
 }
 
 /**
  * Media transformer configuration (unified config for all transformers)
  */
-export interface MediaTransformerConfig {
+export interface MediaTransformerConfig<TFile extends File = File, TFileReturn extends FileReturn = FileReturn> {
+    /** Default audio bitrate */
+    audioBitrate?: number;
+    /** Default audio codec */
+    audioCodec?: "aac" | "opus" | "mp3" | "vorbis" | "flac";
+    /** Audio transformer class (optional, enables audio transformations) */
+    AudioTransformer?: new (
+        storage: BaseStorage<TFile, TFileReturn>,
+        config: AudioTransformerConfig,
+    ) => BaseTransformer<AudioTransformerConfig, AudioTransformResult<TFileReturn>, TFile, TFileReturn>;
     /** Cache TTL in seconds */
     cacheTtl?: number;
-    /** Default audio bitrate */
-    defaultAudioBitrate?: number;
-    /** Default audio codec */
-    defaultAudioCodec?: "aac" | "opus" | "mp3" | "vorbis" | "flac";
-    /** Default video bitrate */
-    defaultVideoBitrate?: number;
-    /** Default video codec */
-    defaultVideoCodec?: "avc" | "hevc" | "vp8" | "vp9" | "av1";
     /** Cache transformed media */
     enableCache?: boolean;
+    /** Image transformer class (optional, enables image transformations) */
+    ImageTransformer?: new (
+        storage: BaseStorage<TFile, TFileReturn>,
+        config: ImageTransformerConfig,
+    ) => BaseTransformer<ImageTransformerConfig, TransformResult<TFileReturn>, TFile, TFileReturn>;
     /** Logger instance */
-    logger?: import("../utils/types").Logger;
+    logger?: Logger;
     /** Maximum audio size to process (in bytes) */
     maxAudioSize?: number;
     /** Maximum image size to process (in bytes) */
@@ -331,12 +280,21 @@ export interface MediaTransformerConfig {
     supportedImageFormats?: string[];
     /** Supported video input formats */
     supportedVideoFormats?: string[];
+    /** Default video bitrate */
+    videoBitrate?: number;
+    /** Default video codec */
+    videoCodec?: "avc" | "hevc" | "vp8" | "vp9" | "av1";
+    /** Video transformer class (optional, enables video transformations) */
+    VideoTransformer?: new (
+        storage: BaseStorage<TFile, TFileReturn>,
+        config: VideoTransformerConfig,
+    ) => BaseTransformer<VideoTransformerConfig, VideoTransformResult<TFileReturn>, TFile, TFileReturn>;
 }
 
 /**
  * Unified media transformation result
  */
-export interface MediaTransformResult {
+export interface MediaTransformResult<TFileReturn extends FileReturn = FileReturn> {
     /** Video-specific properties */
     bitrate?: number;
     /** Transformed media buffer */
@@ -352,7 +310,7 @@ export interface MediaTransformResult {
     /** Audio-specific properties */
     numberOfChannels?: number;
     /** Original file information */
-    originalFile: FileQuery;
+    originalFile: TFileReturn;
     /** Audio-specific properties */
     sampleRate?: number;
     /** Media size in bytes */
@@ -415,17 +373,49 @@ export interface MediaTransformQuery {
 }
 
 /**
- * Image transformer configuration
+ * Base transformer configuration with common properties
  */
-export interface ImageTransformerConfig {
+export interface BaseTransformerConfig {
     /** Cache TTL in seconds */
     cacheTtl?: number;
-    /** Cache transformed images */
+    /** Cache transformed files */
     enableCache?: boolean;
     /** Logger instance */
-    logger?: import("../utils/types").Logger;
-    /** Maximum image size to process (in bytes) */
-    maxImageSize?: number;
+    logger?: Logger;
+    /** Maximum number of cached items */
+    maxCacheSize?: number;
     /** Supported input formats */
     supportedFormats?: string[];
+}
+
+/**
+ * Image transformer configuration
+ */
+export interface ImageTransformerConfig extends BaseTransformerConfig {
+    /** Maximum image size to process (in bytes) */
+    maxImageSize?: number;
+}
+
+/**
+ * Video transformer configuration
+ */
+export interface VideoTransformerConfig extends BaseTransformerConfig {
+    /** Default video bitrate */
+    defaultBitrate?: number;
+    /** Default video codec */
+    defaultCodec?: "avc" | "hevc" | "vp8" | "vp9" | "av1";
+    /** Maximum video size to process (in bytes) */
+    maxVideoSize?: number;
+}
+
+/**
+ * Audio transformer configuration
+ */
+export interface AudioTransformerConfig extends BaseTransformerConfig {
+    /** Default audio bitrate */
+    defaultBitrate?: number;
+    /** Default audio codec */
+    defaultCodec?: "aac" | "opus" | "mp3" | "vorbis" | "flac";
+    /** Maximum audio size to process (in bytes) */
+    maxAudioSize?: number;
 }

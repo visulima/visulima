@@ -6,7 +6,7 @@ describe("openapi:xhr", () => {
     it("should match snapshot", () => {
         expect.assertions(1);
 
-        expect(xhrSwagger("http://localhost")).toMatchSnapshot();
+        expect(xhrSwagger("http://localhost", "/files")).toMatchSnapshot();
     });
 
     it("should match snapshot with custom options", () => {

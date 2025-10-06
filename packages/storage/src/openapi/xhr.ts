@@ -5,7 +5,13 @@ import type { OpenAPIV3 } from "openapi-types";
 
 import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList, sharedGetMeta } from "./shared";
 
-const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["Multipart"]): Partial<OpenAPIV3.Document> => {
+const swaggerSpec = (
+    origin: string,
+    path: string,
+    options: { tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" },
+): Partial<OpenAPIV3.Document> => {
+    const { tags, transformer } = { tags: ["Multipart"], transformer: false, ...options };
+
     const pathHash = createHash("sha256").update(path).digest("base64");
 
     return {
@@ -74,7 +80,7 @@ const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["
                     summary: "Cancel upload",
                     tags,
                 },
-                get: sharedGet(`${pathHash}TusGetFile`, tags),
+                get: sharedGet(`${pathHash}TusGetFile`, tags, transformer),
             },
             [path.trimEnd()]: {
                 get: sharedGetList(`${pathHash}MultipartGetList`, tags),

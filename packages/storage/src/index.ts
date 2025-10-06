@@ -33,7 +33,6 @@ export {
     updateSize,
 } from "./storage/utils/file";
 export type { CropOptions, ImageTransformerConfig, ResizeOptions, RotateOptions, TransformationStep, TransformOptions, TransformResult } from "./transformer";
-export { ImageTransformer } from "./transformer";
 export { ErrorMap, ERRORS, isUploadError, throwErrorCode, UploadError } from "./utils/errors";
 export { appendHeader, getBaseUrl, getHeader, getMetadata, readBody, setHeaders } from "./utils/http";
 export type {

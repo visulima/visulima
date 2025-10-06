@@ -9,6 +9,7 @@ import mime from "mime";
 
 import type BaseStorage from "../storage/storage";
 import type { UploadFile } from "../storage/utils/file";
+import type MediaTransformer from "../transformer/media-transformer";
 import type { ErrorResponses, HttpError, IncomingMessageWithBody, Logger, ResponseBodyType, UploadError, UploadResponse } from "../utils";
 import { ErrorMap, ERRORS, filePathUrlMatcher, getBaseUrl, getRealPath, isUploadError, isValidationError, pick, setHeaders, uuidRegex } from "../utils";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "./types";
@@ -37,16 +38,19 @@ abstract class BaseHandler<
 
     public storage: BaseStorage<TFile>;
 
+    public mediaTransformer?: MediaTransformer;
+
     protected registeredHandlers = new Map<string, AsyncHandler<NodeRequest, NodeResponse>>();
 
     protected logger?: Logger;
 
     protected internalErrorResponses = {} as ErrorResponses;
 
-    public constructor({ storage }: UploadOptions<TFile>) {
+    public constructor({ mediaTransformer, storage }: UploadOptions<TFile>) {
         super();
 
         this.storage = storage;
+        this.mediaTransformer = mediaTransformer;
         this.logger = this.storage?.logger;
 
         this.assembleErrors();
@@ -275,6 +279,46 @@ abstract class BaseHandler<
 
             // Handle regular file requests
             try {
+                // Check if transformation parameters are present and media transformer is available
+                const url = new URL(request.url || "", "http://localhost");
+                const queryParameters = Object.fromEntries(url.searchParams.entries());
+                const hasTransformationParameters = Object.keys(queryParameters).length > 0 && this.mediaTransformer;
+
+                if (hasTransformationParameters && this.mediaTransformer) {
+                    // Use media transformer for transformation
+                    try {
+                        const transformedResult = await this.mediaTransformer.handle(uuid, queryParameters);
+
+                        return {
+                            content: transformedResult.buffer,
+                            headers: {
+                                "Content-Length": String(transformedResult.size),
+                                "Content-Type": this.getContentTypeForFormat(transformedResult.format),
+                                "X-Media-Type": transformedResult.mediaType,
+                                "X-Original-Format": transformedResult.originalFile?.contentType?.split("/")[1] || "",
+                                "X-Transformed-Format": transformedResult.format,
+                                ...transformedResult.originalFile?.expiredAt === undefined
+                                    ? {}
+                                    : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() },
+                                ...transformedResult.originalFile?.modifiedAt === undefined
+                                    ? {}
+                                    : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() },
+                                ...transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag },
+                            } as Record<string, string>,
+                            statusCode: 200,
+                        } as ResponseFile<TFile>;
+                    } catch (transformError: any) {
+                        // If transformation fails, check if it's a validation error
+                        if (transformError.name === "ValidationError") {
+                            throw createHttpError(400, transformError.message);
+                        }
+
+                        // For other transformation errors, fall back to serving original file
+                        this.logger?.warn(`Media transformation failed: ${transformError.message}`);
+                    }
+                }
+
+                // Serve original file (fallback or no transformation requested)
                 const file = await this.storage.get({ id: uuid });
 
                 let { contentType } = file;
@@ -645,6 +689,40 @@ abstract class BaseHandler<
     /**
      * Create error Response
      */
+
+    /**
+     * Get appropriate content type for a format
+     */
+    protected getContentTypeForFormat(format: string): string {
+        const contentTypes: Record<string, string> = {
+            aac: "audio/aac",
+            aiff: "audio/aiff",
+            avi: "video/x-msvideo",
+            avif: "image/avif",
+            flac: "audio/flac",
+            flv: "video/x-flv",
+            gif: "image/gif",
+            jpeg: "image/jpeg",
+            jpg: "image/jpeg",
+            m4a: "audio/mp4",
+            mkv: "video/x-matroska",
+            mov: "video/quicktime",
+            mp3: "audio/mpeg",
+            mp4: "video/mp4",
+            ogg: "audio/ogg",
+            png: "image/png",
+            svg: "image/svg+xml",
+            tiff: "image/tiff",
+            wav: "audio/wav",
+            webm: "video/webm",
+            webp: "image/webp",
+            wma: "audio/x-ms-wma",
+            wmv: "video/x-ms-wmv",
+        };
+
+        return contentTypes[format.toLowerCase()] || "application/octet-stream";
+    }
+
     protected createErrorResponse(error: Error): globalThis.Response {
         let httpError: HttpError;
 
