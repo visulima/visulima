@@ -4,7 +4,7 @@ import { logger } from "hono/logger";
 import { swaggerUI } from "@hono/swagger-ui";
 import type { Context } from "hono";
 import { Multipart, DiskStorage } from "@visulima/upload";
-import { xhrOpenApiSepc } from "@visulima/upload/openapi";
+import { xhrOpenApiSpec } from "@visulima/upload/openapi";
 import { serve } from "@hono/node-server";
 
 const app = new Hono();
@@ -95,7 +95,9 @@ app.get("/openapi.json", (c: Context) =>
                 description: "Development server",
             },
         ],
-        ...xhrOpenApiSepc("http://localhost:3000", "/files", ["Upload"]),
+        ...xhrOpenApiSpec("http://localhost:3000", "/files", {
+            transformer: true,
+        }),
     }),
 );
 
