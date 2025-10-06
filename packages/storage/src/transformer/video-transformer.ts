@@ -1,4 +1,3 @@
-import { LRUCache as Cache } from "lru-cache";
 import {
     ALL_FORMATS,
     BufferSource,
@@ -13,8 +12,8 @@ import {
 } from "mediabunny";
 
 import type BaseStorage from "../storage/storage";
-import type { FileQuery, FileReturn } from "../storage/utils/file";
-import type { Logger } from "../utils/types";
+import type { File, FileQuery, FileReturn } from "../storage/utils/file";
+import BaseTransformer from "./base-transformer";
 import type {
     VideoCropOptions,
     VideoResizeOptions,
@@ -58,63 +57,54 @@ import type {
  * - `frameRate`: Frame rate in Hz (Number)
  * - `format`: Output format - mp4/webm/mkv/ogg
  */
-class VideoTransformer {
-    private readonly cache?: Cache<string, Buffer>;
+class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn = FileReturn> extends BaseTransformer<
+    VideoTransformerConfig,
+    VideoTransformResult<TFileReturn>,
+    TFile,
+    TFileReturn
+> {
+    public constructor(storage: BaseStorage<TFile, TFileReturn>, config: VideoTransformerConfig = {}) {
+        const logger = config.logger || storage.logger;
 
-    private readonly config: Required<VideoTransformerConfig>;
-
-    private readonly logger: Logger;
-
-    public constructor(
-        private readonly storage: BaseStorage<any, FileReturn>,
-        config: VideoTransformerConfig = {},
-    ) {
-        this.logger = config.logger || this.storage.logger || console;
-
-        this.config = {
+        const transformerConfig = {
             cacheTtl: 3600, // 1 hour
             defaultBitrate: 2_000_000, // 2 Mbps
-            defaultCodec: "avc",
+            defaultCodec: "avc" as const,
             enableCache: false,
-            logger: this.logger,
+            maxCacheSize: 50, // Max 50 transformed videos in cache
             maxVideoSize: 500 * 1024 * 1024, // 500MB
             supportedFormats: ["mp4", "webm", "mkv", "avi", "mov", "flv", "wmv"],
             ...config,
-        };
+        } satisfies VideoTransformerConfig;
 
-        if (this.config.enableCache) {
-            this.cache = new Cache({
-                max: 50, // Max 50 transformed videos in cache
-                ttl: this.config.cacheTtl * 1000, // Convert to milliseconds
-            });
-        }
+        super(storage, transformerConfig, logger);
     }
 
     /**
      * Resize a video
      */
-    public async resize(fileId: string, options: VideoResizeOptions): Promise<VideoTransformResult> {
+    public async resize(fileId: string, options: VideoResizeOptions): Promise<VideoTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "resize" }]);
     }
 
     /**
      * Crop a video
      */
-    public async crop(fileId: string, options: VideoCropOptions): Promise<VideoTransformResult> {
+    public async crop(fileId: string, options: VideoCropOptions): Promise<VideoTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "crop" }]);
     }
 
     /**
      * Rotate a video
      */
-    public async rotate(fileId: string, options: VideoRotateOptions): Promise<VideoTransformResult> {
+    public async rotate(fileId: string, options: VideoRotateOptions): Promise<VideoTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "rotate" }]);
     }
 
     /**
      * Convert video format or codec
      */
-    public async convertFormat(fileId: string, format: string, options: VideoTransformOptions = {}): Promise<VideoTransformResult> {
+    public async convertFormat(fileId: string, format: string, options: VideoTransformOptions = {}): Promise<VideoTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options: { ...options, format: format as any }, type: "format" }]);
     }
 
@@ -125,14 +115,14 @@ class VideoTransformer {
         fileId: string,
         codec: VideoTransformOptions["codec"],
         options: Omit<VideoTransformOptions, "codec"> = {},
-    ): Promise<VideoTransformResult> {
+    ): Promise<VideoTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options: { ...options, codec }, type: "codec" }]);
     }
 
     /**
      * Apply a custom transformation pipeline
      */
-    public async transform(fileId: string, steps: VideoTransformationStep[]): Promise<VideoTransformResult> {
+    public async transform(fileId: string, steps: VideoTransformationStep[]): Promise<VideoTransformResult<TFileReturn>> {
         const fileQuery: FileQuery = { id: fileId };
         const cacheKey = this.generateCacheKey(fileId, steps);
 
@@ -143,7 +133,7 @@ class VideoTransformer {
             if (cached) {
                 this.logger?.debug("Returning cached transformed video for %s", fileId);
 
-                return this.createTransformResult(cached, fileQuery);
+                return cached;
             }
         }
 
@@ -156,12 +146,55 @@ class VideoTransformer {
         // Apply transformations using Mediabunny
         const transformedBuffer = await this.applyTransformations(originalFile.content, steps);
 
+        const result = await this.createTransformResult(transformedBuffer, originalFile);
+
         // Cache the result
         if (this.cache && this.config.enableCache) {
-            this.cache.set(cacheKey, transformedBuffer);
+            this.cache.set(cacheKey, result);
         }
 
-        return this.createTransformResult(transformedBuffer, fileQuery);
+        return result;
+    }
+
+    /**
+     * Clear cache for a specific file
+     */
+    public override clearCache(fileId?: string): void {
+        if (!this.cache) {
+            return;
+        }
+
+        const { cache } = this;
+
+        if (fileId) {
+            // Clear all cache entries for this file
+            const keysToDelete: string[] = [];
+
+            for (const key of cache.keys()) {
+                if (key.startsWith(`${fileId}:`)) {
+                    keysToDelete.push(key);
+                }
+            }
+
+            keysToDelete.forEach((key) => cache.delete(key));
+        } else {
+            // Clear entire cache
+            cache.clear();
+        }
+    }
+
+    /**
+     * Get cache statistics
+     */
+    public override getCacheStats(): { maxSize: number; size: number } | undefined {
+        if (!this.cache) {
+            return undefined;
+        }
+
+        return {
+            maxSize: this.cache.max,
+            size: this.cache.size,
+        };
     }
 
     /**
@@ -323,11 +356,11 @@ class VideoTransformer {
     /**
      * Validate that the file is a supported video
      */
-    private async validateVideo(file: FileReturn): Promise<void> {
+    private async validateVideo(file: TFileReturn): Promise<void> {
         // Check file size
         const fileSize = typeof file.size === "string" ? Number.parseInt(file.size, 10) : file.size;
 
-        if (fileSize > this.config.maxVideoSize) {
+        if (this.config?.maxVideoSize && fileSize > this.config.maxVideoSize) {
             throw new Error(`Video size ${fileSize} exceeds maximum allowed size ${this.config.maxVideoSize}`);
         }
 
@@ -339,7 +372,7 @@ class VideoTransformer {
         // Check format support
         const format = file.contentType.split("/")[1];
 
-        if (format && !this.config.supportedFormats.includes(format)) {
+        if (this.config?.supportedFormats && format && !this.config.supportedFormats.includes(format)) {
             throw new Error(`Unsupported video format: ${format}`);
         }
 
@@ -363,7 +396,7 @@ class VideoTransformer {
     /**
      * Create transformation result
      */
-    private async createTransformResult(buffer: Buffer, originalFile: FileQuery): Promise<VideoTransformResult> {
+    private async createTransformResult(buffer: Buffer, originalFile: TFileReturn): Promise<VideoTransformResult<TFileReturn>> {
         // For now, return basic metadata. In a real implementation,
         // you might want to parse the transformed video to get accurate metadata
         const input = new Input({
@@ -393,45 +426,6 @@ class VideoTransformer {
         const stepsKey = steps.map((step) => `${step.type}:${JSON.stringify(step.options)}`).join("|");
 
         return `${fileId}:${stepsKey}`;
-    }
-
-    /**
-     * Clear cache for a specific file
-     */
-    public clearCache(fileId?: string): void {
-        if (!this.cache) {
-            return;
-        }
-
-        if (fileId) {
-            // Clear all cache entries for this file
-            const keysToDelete: string[] = [];
-
-            for (const key of this.cache.keys()) {
-                if (key.startsWith(`${fileId}:`)) {
-                    keysToDelete.push(key);
-                }
-            }
-
-            keysToDelete.forEach((key) => this.cache!.delete(key));
-        } else {
-            // Clear entire cache
-            this.cache.clear();
-        }
-    }
-
-    /**
-     * Get cache statistics
-     */
-    public getCacheStats(): { maxSize: number; size: number } | undefined {
-        if (!this.cache) {
-            return undefined;
-        }
-
-        return {
-            maxSize: this.cache.max,
-            size: this.cache.size,
-        };
     }
 }
 

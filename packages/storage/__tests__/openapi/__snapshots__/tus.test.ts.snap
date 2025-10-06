@@ -32,7 +32,7 @@ exports[`openapi:tus > should match snapshot 1`] = `
             "nextPageUrl": "/?page=2",
             "page": 1,
             "perPage": 1,
-            "previousPageUrl": null,
+            "previousPageUrl": undefined,
             "total": 1,
           },
         },
@@ -224,6 +224,86 @@ exports[`openapi:tus > should match snapshot 1`] = `
       "Upload-Offset": {
         "description": "The Upload-Offset request and response header indicates a byte offset within a resource. The value MUST be a non-negative integer.",
         "type": "integer",
+      },
+      "ValidationError": {
+        "description": "Validation error response",
+        "properties": {
+          "code": {
+            "enum": [
+              "INVALID_PARAMS_FOR_IMAGE",
+              "INVALID_PARAMS_FOR_VIDEO",
+              "INVALID_PARAMS_FOR_AUDIO",
+              "INVALID_FIT_VALUE",
+              "INVALID_ANGLE_VALUE",
+              "INVALID_FORMAT",
+              "INCOMPLETE_CROP_PARAMS",
+              "INVALID_VIDEO_CODEC",
+              "INVALID_VIDEO_FORMAT",
+              "INVALID_WIDTH",
+              "INVALID_HEIGHT",
+              "INVALID_BITRATE",
+              "INVALID_FRAME_RATE",
+              "INVALID_KEY_FRAME_INTERVAL",
+              "INVALID_AUDIO_CODEC",
+              "INVALID_AUDIO_FORMAT",
+              "INVALID_CHANNEL_COUNT",
+              "INVALID_SAMPLE_RATE",
+            ],
+            "type": "string",
+          },
+          "details": {
+            "properties": {
+              "invalidParams": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "mediaType": {
+                "enum": [
+                  "image",
+                  "video",
+                  "audio",
+                ],
+                "type": "string",
+              },
+              "suggestions": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "validParams": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "invalidParams",
+              "validParams",
+              "mediaType",
+            ],
+            "type": "object",
+          },
+          "message": {
+            "type": "string",
+          },
+          "name": {
+            "enum": [
+              "ValidationError",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "code",
+          "details",
+          "message",
+          "name",
+        ],
+        "type": "object",
       },
     },
   },
@@ -592,7 +672,7 @@ exports[`openapi:tus > should match snapshot 1`] = `
         ],
       },
       "get": {
-        "description": "Get the uploaded file",
+        "description": "Get the uploaded file with optional media transformation support",
         "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
         "parameters": [
           {
@@ -615,8 +695,23 @@ exports[`openapi:tus > should match snapshot 1`] = `
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "File content",
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "File retrieved successfully",
             "headers": {
+              "Content-Type": {
+                "description": "MIME type of the file",
+                "schema": {
+                  "type": "string",
+                },
+              },
               "ETag": {
                 "description": "Upload ETag",
                 "schema": {
@@ -1010,6 +1105,91 @@ exports[`openapi:tus > should match snapshot 1`] = `
           },
         },
         "summary": "Used to resume the upload",
+        "tags": [
+          "Tus",
+        ],
+      },
+    },
+    "/files/{id}/metadata": {
+      "get": {
+        "description": "Get the uploaded file metadata",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFileMeta",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "Version of the protocol supported by the client",
+            "in": "header",
+            "name": "Tus-Resumable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Tus-Resumable",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMeta",
+                },
+              },
+            },
+            "description": "OK",
+            "headers": {
+              "Last-Modified": {
+                "description": "Upload last modified date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+              "X-Upload-Expires": {
+                "description": "Upload expiration date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+            },
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FileNotFound",
+                    "message": "File metadata not found",
+                  },
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error",
+                },
+              },
+            },
+            "description": "Not Found",
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error",
+                },
+              },
+            },
+            "description": "Error",
+          },
+        },
+        "summary": "Get the uploaded file metadata",
         "tags": [
           "Tus",
         ],
@@ -1051,7 +1231,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
             "nextPageUrl": "/?page=2",
             "page": 1,
             "perPage": 1,
-            "previousPageUrl": null,
+            "previousPageUrl": undefined,
             "total": 1,
           },
         },
@@ -1244,6 +1424,86 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         "description": "The Upload-Offset request and response header indicates a byte offset within a resource. The value MUST be a non-negative integer.",
         "type": "integer",
       },
+      "ValidationError": {
+        "description": "Validation error response",
+        "properties": {
+          "code": {
+            "enum": [
+              "INVALID_PARAMS_FOR_IMAGE",
+              "INVALID_PARAMS_FOR_VIDEO",
+              "INVALID_PARAMS_FOR_AUDIO",
+              "INVALID_FIT_VALUE",
+              "INVALID_ANGLE_VALUE",
+              "INVALID_FORMAT",
+              "INCOMPLETE_CROP_PARAMS",
+              "INVALID_VIDEO_CODEC",
+              "INVALID_VIDEO_FORMAT",
+              "INVALID_WIDTH",
+              "INVALID_HEIGHT",
+              "INVALID_BITRATE",
+              "INVALID_FRAME_RATE",
+              "INVALID_KEY_FRAME_INTERVAL",
+              "INVALID_AUDIO_CODEC",
+              "INVALID_AUDIO_FORMAT",
+              "INVALID_CHANNEL_COUNT",
+              "INVALID_SAMPLE_RATE",
+            ],
+            "type": "string",
+          },
+          "details": {
+            "properties": {
+              "invalidParams": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "mediaType": {
+                "enum": [
+                  "image",
+                  "video",
+                  "audio",
+                ],
+                "type": "string",
+              },
+              "suggestions": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "validParams": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "invalidParams",
+              "validParams",
+              "mediaType",
+            ],
+            "type": "object",
+          },
+          "message": {
+            "type": "string",
+          },
+          "name": {
+            "enum": [
+              "ValidationError",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "code",
+          "details",
+          "message",
+          "name",
+        ],
+        "type": "object",
+      },
     },
   },
   "paths": {
@@ -1303,7 +1563,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "List upload",
         "tags": [
-          "test",
+          "Tus",
         ],
       },
       "options": {
@@ -1342,7 +1602,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "Request to gather information about the Server's current configuration",
         "tags": [
-          "test",
+          "Tus",
         ],
       },
       "post": {
@@ -1545,7 +1805,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "An empty POST request is used to create a new upload resource. The Upload-Length header indicates the size of the entire upload in bytes. If the Creation With Upload extension is available, the Client MAY include parts of the upload in the initial Creation request",
         "tags": [
-          "test",
+          "Tus",
         ],
       },
     },
@@ -1607,11 +1867,11 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "Added by the Termination extension.",
         "tags": [
-          "test",
+          "Tus",
         ],
       },
       "get": {
-        "description": "Get the uploaded file",
+        "description": "Get the uploaded file with optional media transformation support",
         "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
         "parameters": [
           {
@@ -1634,8 +1894,23 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "File content",
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "File retrieved successfully",
             "headers": {
+              "Content-Type": {
+                "description": "MIME type of the file",
+                "schema": {
+                  "type": "string",
+                },
+              },
               "ETag": {
                 "description": "Upload ETag",
                 "schema": {
@@ -1690,7 +1965,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "Get the uploaded file",
         "tags": [
-          "test",
+          "Tus",
         ],
       },
       "head": {
@@ -1805,7 +2080,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "Used to determine the offset at which the upload should be continued.",
         "tags": [
-          "test",
+          "Tus",
         ],
       },
       "patch": {
@@ -2030,7 +2305,92 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "Used to resume the upload",
         "tags": [
-          "test",
+          "Tus",
+        ],
+      },
+    },
+    "/files/{id}/metadata": {
+      "get": {
+        "description": "Get the uploaded file metadata",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFileMeta",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "Version of the protocol supported by the client",
+            "in": "header",
+            "name": "Tus-Resumable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Tus-Resumable",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMeta",
+                },
+              },
+            },
+            "description": "OK",
+            "headers": {
+              "Last-Modified": {
+                "description": "Upload last modified date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+              "X-Upload-Expires": {
+                "description": "Upload expiration date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+            },
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FileNotFound",
+                    "message": "File metadata not found",
+                  },
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error",
+                },
+              },
+            },
+            "description": "Not Found",
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error",
+                },
+              },
+            },
+            "description": "Error",
+          },
+        },
+        "summary": "Get the uploaded file metadata",
+        "tags": [
+          "Tus",
         ],
       },
     },

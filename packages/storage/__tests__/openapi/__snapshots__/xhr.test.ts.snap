@@ -32,7 +32,7 @@ exports[`openapi:xhr > should match snapshot 1`] = `
             "nextPageUrl": "/?page=2",
             "page": 1,
             "perPage": 1,
-            "previousPageUrl": null,
+            "previousPageUrl": undefined,
             "total": 1,
           },
         },
@@ -206,13 +206,93 @@ exports[`openapi:xhr > should match snapshot 1`] = `
           "name": "PaginationMeta",
         },
       },
+      "ValidationError": {
+        "description": "Validation error response",
+        "properties": {
+          "code": {
+            "enum": [
+              "INVALID_PARAMS_FOR_IMAGE",
+              "INVALID_PARAMS_FOR_VIDEO",
+              "INVALID_PARAMS_FOR_AUDIO",
+              "INVALID_FIT_VALUE",
+              "INVALID_ANGLE_VALUE",
+              "INVALID_FORMAT",
+              "INCOMPLETE_CROP_PARAMS",
+              "INVALID_VIDEO_CODEC",
+              "INVALID_VIDEO_FORMAT",
+              "INVALID_WIDTH",
+              "INVALID_HEIGHT",
+              "INVALID_BITRATE",
+              "INVALID_FRAME_RATE",
+              "INVALID_KEY_FRAME_INTERVAL",
+              "INVALID_AUDIO_CODEC",
+              "INVALID_AUDIO_FORMAT",
+              "INVALID_CHANNEL_COUNT",
+              "INVALID_SAMPLE_RATE",
+            ],
+            "type": "string",
+          },
+          "details": {
+            "properties": {
+              "invalidParams": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "mediaType": {
+                "enum": [
+                  "image",
+                  "video",
+                  "audio",
+                ],
+                "type": "string",
+              },
+              "suggestions": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "validParams": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "invalidParams",
+              "validParams",
+              "mediaType",
+            ],
+            "type": "object",
+          },
+          "message": {
+            "type": "string",
+          },
+          "name": {
+            "enum": [
+              "ValidationError",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "code",
+          "details",
+          "message",
+          "name",
+        ],
+        "type": "object",
+      },
     },
   },
   "paths": {
-    "/": {
+    "/files": {
       "get": {
         "description": "List upload",
-        "operationId": "il7asoJjJEMhngUeSt4tHVu8Zxx4EFG/FDeJfL3+oPE=MultipartGetList",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartGetList",
         "parameters": [
           {
             "description": "Maximum number of elements to retrieve.",
@@ -270,7 +350,7 @@ exports[`openapi:xhr > should match snapshot 1`] = `
       },
       "post": {
         "description": "Create upload",
-        "operationId": "il7asoJjJEMhngUeSt4tHVu8Zxx4EFG/FDeJfL3+oPE=MultipartCreate",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartCreate",
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -451,10 +531,10 @@ exports[`openapi:xhr > should match snapshot 1`] = `
         ],
       },
     },
-    "//{id}": {
+    "/files/{id}": {
       "delete": {
         "description": "Cancel upload",
-        "operationId": "il7asoJjJEMhngUeSt4tHVu8Zxx4EFG/FDeJfL3+oPE=MultipartCancel",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartCancel",
         "parameters": [
           {
             "$ref": "#/components/parameters/UploadIDinPath",
@@ -471,8 +551,8 @@ exports[`openapi:xhr > should match snapshot 1`] = `
         ],
       },
       "get": {
-        "description": "Get the uploaded file",
-        "operationId": "il7asoJjJEMhngUeSt4tHVu8Zxx4EFG/FDeJfL3+oPE=TusGetFile",
+        "description": "Get the uploaded file with optional media transformation support",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
         "parameters": [
           {
             "in": "path",
@@ -485,8 +565,23 @@ exports[`openapi:xhr > should match snapshot 1`] = `
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "File content",
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "File retrieved successfully",
             "headers": {
+              "Content-Type": {
+                "description": "MIME type of the file",
+                "schema": {
+                  "type": "string",
+                },
+              },
               "ETag": {
                 "description": "Upload ETag",
                 "schema": {
@@ -540,6 +635,82 @@ exports[`openapi:xhr > should match snapshot 1`] = `
           },
         },
         "summary": "Get the uploaded file",
+        "tags": [
+          "Multipart",
+        ],
+      },
+    },
+    "/files/{id}/metadata": {
+      "get": {
+        "description": "Get the uploaded file metadata",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartGetFileMeta",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMeta",
+                },
+              },
+            },
+            "description": "OK",
+            "headers": {
+              "Last-Modified": {
+                "description": "Upload last modified date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+              "X-Upload-Expires": {
+                "description": "Upload expiration date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+            },
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FileNotFound",
+                    "message": "File metadata not found",
+                  },
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error",
+                },
+              },
+            },
+            "description": "Not Found",
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error",
+                },
+              },
+            },
+            "description": "Error",
+          },
+        },
+        "summary": "Get the uploaded file metadata",
         "tags": [
           "Multipart",
         ],
@@ -581,7 +752,7 @@ exports[`openapi:xhr > should match snapshot with custom options 1`] = `
             "nextPageUrl": "/?page=2",
             "page": 1,
             "perPage": 1,
-            "previousPageUrl": null,
+            "previousPageUrl": undefined,
             "total": 1,
           },
         },
@@ -754,6 +925,86 @@ exports[`openapi:xhr > should match snapshot with custom options 1`] = `
         "xml": {
           "name": "PaginationMeta",
         },
+      },
+      "ValidationError": {
+        "description": "Validation error response",
+        "properties": {
+          "code": {
+            "enum": [
+              "INVALID_PARAMS_FOR_IMAGE",
+              "INVALID_PARAMS_FOR_VIDEO",
+              "INVALID_PARAMS_FOR_AUDIO",
+              "INVALID_FIT_VALUE",
+              "INVALID_ANGLE_VALUE",
+              "INVALID_FORMAT",
+              "INCOMPLETE_CROP_PARAMS",
+              "INVALID_VIDEO_CODEC",
+              "INVALID_VIDEO_FORMAT",
+              "INVALID_WIDTH",
+              "INVALID_HEIGHT",
+              "INVALID_BITRATE",
+              "INVALID_FRAME_RATE",
+              "INVALID_KEY_FRAME_INTERVAL",
+              "INVALID_AUDIO_CODEC",
+              "INVALID_AUDIO_FORMAT",
+              "INVALID_CHANNEL_COUNT",
+              "INVALID_SAMPLE_RATE",
+            ],
+            "type": "string",
+          },
+          "details": {
+            "properties": {
+              "invalidParams": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "mediaType": {
+                "enum": [
+                  "image",
+                  "video",
+                  "audio",
+                ],
+                "type": "string",
+              },
+              "suggestions": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "validParams": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "invalidParams",
+              "validParams",
+              "mediaType",
+            ],
+            "type": "object",
+          },
+          "message": {
+            "type": "string",
+          },
+          "name": {
+            "enum": [
+              "ValidationError",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "code",
+          "details",
+          "message",
+          "name",
+        ],
+        "type": "object",
       },
     },
   },
@@ -1020,7 +1271,7 @@ exports[`openapi:xhr > should match snapshot with custom options 1`] = `
         ],
       },
       "get": {
-        "description": "Get the uploaded file",
+        "description": "Get the uploaded file with optional media transformation support",
         "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
         "parameters": [
           {
@@ -1034,8 +1285,23 @@ exports[`openapi:xhr > should match snapshot with custom options 1`] = `
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "File content",
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "File retrieved successfully",
             "headers": {
+              "Content-Type": {
+                "description": "MIME type of the file",
+                "schema": {
+                  "type": "string",
+                },
+              },
               "ETag": {
                 "description": "Upload ETag",
                 "schema": {
@@ -1089,6 +1355,82 @@ exports[`openapi:xhr > should match snapshot with custom options 1`] = `
           },
         },
         "summary": "Get the uploaded file",
+        "tags": [
+          "Multipart",
+        ],
+      },
+    },
+    "/files/{id}/metadata": {
+      "get": {
+        "description": "Get the uploaded file metadata",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartGetFileMeta",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMeta",
+                },
+              },
+            },
+            "description": "OK",
+            "headers": {
+              "Last-Modified": {
+                "description": "Upload last modified date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+              "X-Upload-Expires": {
+                "description": "Upload expiration date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+            },
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FileNotFound",
+                    "message": "File metadata not found",
+                  },
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error",
+                },
+              },
+            },
+            "description": "Not Found",
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error",
+                },
+              },
+            },
+            "description": "Error",
+          },
+        },
+        "summary": "Get the uploaded file metadata",
         "tags": [
           "Multipart",
         ],
@@ -1130,7 +1472,7 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
             "nextPageUrl": "/?page=2",
             "page": 1,
             "perPage": 1,
-            "previousPageUrl": null,
+            "previousPageUrl": undefined,
             "total": 1,
           },
         },
@@ -1304,6 +1646,86 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
           "name": "PaginationMeta",
         },
       },
+      "ValidationError": {
+        "description": "Validation error response",
+        "properties": {
+          "code": {
+            "enum": [
+              "INVALID_PARAMS_FOR_IMAGE",
+              "INVALID_PARAMS_FOR_VIDEO",
+              "INVALID_PARAMS_FOR_AUDIO",
+              "INVALID_FIT_VALUE",
+              "INVALID_ANGLE_VALUE",
+              "INVALID_FORMAT",
+              "INCOMPLETE_CROP_PARAMS",
+              "INVALID_VIDEO_CODEC",
+              "INVALID_VIDEO_FORMAT",
+              "INVALID_WIDTH",
+              "INVALID_HEIGHT",
+              "INVALID_BITRATE",
+              "INVALID_FRAME_RATE",
+              "INVALID_KEY_FRAME_INTERVAL",
+              "INVALID_AUDIO_CODEC",
+              "INVALID_AUDIO_FORMAT",
+              "INVALID_CHANNEL_COUNT",
+              "INVALID_SAMPLE_RATE",
+            ],
+            "type": "string",
+          },
+          "details": {
+            "properties": {
+              "invalidParams": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "mediaType": {
+                "enum": [
+                  "image",
+                  "video",
+                  "audio",
+                ],
+                "type": "string",
+              },
+              "suggestions": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "validParams": {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "invalidParams",
+              "validParams",
+              "mediaType",
+            ],
+            "type": "object",
+          },
+          "message": {
+            "type": "string",
+          },
+          "name": {
+            "enum": [
+              "ValidationError",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "code",
+          "details",
+          "message",
+          "name",
+        ],
+        "type": "object",
+      },
     },
   },
   "paths": {
@@ -1363,7 +1785,7 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
         },
         "summary": "List upload",
         "tags": [
-          "test",
+          "Multipart",
         ],
       },
       "post": {
@@ -1545,7 +1967,7 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
         },
         "summary": "Create upload",
         "tags": [
-          "test",
+          "Multipart",
         ],
       },
     },
@@ -1565,11 +1987,11 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
         },
         "summary": "Cancel upload",
         "tags": [
-          "test",
+          "Multipart",
         ],
       },
       "get": {
-        "description": "Get the uploaded file",
+        "description": "Get the uploaded file with optional media transformation support",
         "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
         "parameters": [
           {
@@ -1583,8 +2005,23 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "File content",
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "File retrieved successfully",
             "headers": {
+              "Content-Type": {
+                "description": "MIME type of the file",
+                "schema": {
+                  "type": "string",
+                },
+              },
               "ETag": {
                 "description": "Upload ETag",
                 "schema": {
@@ -1639,7 +2076,83 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
         },
         "summary": "Get the uploaded file",
         "tags": [
-          "test",
+          "Multipart",
+        ],
+      },
+    },
+    "/files/{id}/metadata": {
+      "get": {
+        "description": "Get the uploaded file metadata",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartGetFileMeta",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMeta",
+                },
+              },
+            },
+            "description": "OK",
+            "headers": {
+              "Last-Modified": {
+                "description": "Upload last modified date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+              "X-Upload-Expires": {
+                "description": "Upload expiration date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+            },
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FileNotFound",
+                    "message": "File metadata not found",
+                  },
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error",
+                },
+              },
+            },
+            "description": "Not Found",
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error",
+                },
+              },
+            },
+            "description": "Error",
+          },
+        },
+        "summary": "Get the uploaded file metadata",
+        "tags": [
+          "Multipart",
         ],
       },
     },

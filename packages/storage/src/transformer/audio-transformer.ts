@@ -1,4 +1,3 @@
-import { LRUCache as Cache } from "lru-cache";
 import {
     AdtsOutputFormat,
     ALL_FORMATS,
@@ -14,8 +13,8 @@ import {
 } from "mediabunny";
 
 import type BaseStorage from "../storage/storage";
-import type { FileQuery, FileReturn } from "../storage/utils/file";
-import type { Logger } from "../utils/types";
+import type { File, FileQuery, FileReturn } from "../storage/utils/file";
+import BaseTransformer from "./base-transformer";
 import type {
     AudioChannelMixOptions,
     AudioResampleOptions,
@@ -54,56 +53,47 @@ import type {
  * - `bitrate`: Audio bitrate in bits per second (Number)
  * - `format`: Output format - mp3/wav/ogg/aac/flac
  */
-class AudioTransformer {
-    private readonly cache?: Cache<string, Buffer>;
+class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn = FileReturn> extends BaseTransformer<
+    AudioTransformerConfig,
+    AudioTransformResult<TFileReturn>,
+    TFile,
+    TFileReturn
+> {
+    public constructor(storage: BaseStorage<TFile, TFileReturn>, config: AudioTransformerConfig = {}) {
+        const logger = config.logger || storage.logger;
 
-    private readonly config: Required<AudioTransformerConfig>;
-
-    private readonly logger: Logger;
-
-    public constructor(
-        private readonly storage: BaseStorage<any, FileReturn>,
-        config: AudioTransformerConfig = {},
-    ) {
-        this.logger = config.logger || this.storage.logger || console;
-
-        this.config = {
+        const transformerConfig = {
             cacheTtl: 3600, // 1 hour
             defaultBitrate: 128_000, // 128 kbps
-            defaultCodec: "aac",
+            defaultCodec: "aac" as const,
             enableCache: false,
-            logger: this.logger,
             maxAudioSize: 100 * 1024 * 1024, // 100MB
+            maxCacheSize: 100, // Max 100 transformed audio files in cache
             supportedFormats: ["mp3", "wav", "ogg", "aac", "flac", "m4a", "wma", "aiff"],
             ...config,
-        };
+        } satisfies AudioTransformerConfig;
 
-        if (this.config.enableCache) {
-            this.cache = new Cache({
-                max: 100, // Max 100 transformed audio files in cache
-                ttl: this.config.cacheTtl * 1000, // Convert to milliseconds
-            });
-        }
+        super(storage, transformerConfig, logger);
     }
 
     /**
      * Resample audio to different sample rate
      */
-    public async resample(fileId: string, options: AudioResampleOptions): Promise<AudioTransformResult> {
+    public async resample(fileId: string, options: AudioResampleOptions): Promise<AudioTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "resample" }]);
     }
 
     /**
      * Change number of channels (up/downmixing)
      */
-    public async mixChannels(fileId: string, options: AudioChannelMixOptions): Promise<AudioTransformResult> {
+    public async mixChannels(fileId: string, options: AudioChannelMixOptions): Promise<AudioTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "channels" }]);
     }
 
     /**
      * Convert audio format or codec
      */
-    public async convertFormat(fileId: string, format: string, options: AudioTransformOptions = {}): Promise<AudioTransformResult> {
+    public async convertFormat(fileId: string, format: string, options: AudioTransformOptions = {}): Promise<AudioTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options: { ...options, format: format as any }, type: "format" }]);
     }
 
@@ -114,14 +104,14 @@ class AudioTransformer {
         fileId: string,
         codec: AudioTransformOptions["codec"],
         options: Omit<AudioTransformOptions, "codec"> = {},
-    ): Promise<AudioTransformResult> {
+    ): Promise<AudioTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options: { ...options, codec }, type: "codec" }]);
     }
 
     /**
      * Apply a custom transformation pipeline
      */
-    public async transform(fileId: string, steps: AudioTransformationStep[]): Promise<AudioTransformResult> {
+    public async transform(fileId: string, steps: AudioTransformationStep[]): Promise<AudioTransformResult<TFileReturn>> {
         const fileQuery: FileQuery = { id: fileId };
         const cacheKey = this.generateCacheKey(fileId, steps);
 
@@ -132,7 +122,7 @@ class AudioTransformer {
             if (cached) {
                 this.logger?.debug("Returning cached transformed audio for %s", fileId);
 
-                return this.createTransformResult(cached, fileQuery);
+                return cached;
             }
         }
 
@@ -145,12 +135,14 @@ class AudioTransformer {
         // Apply transformations using Mediabunny
         const transformedBuffer = await this.applyTransformations(originalFile.content, steps);
 
+        const result = await this.createTransformResult(transformedBuffer, originalFile);
+
         // Cache the result
         if (this.cache && this.config.enableCache) {
-            this.cache.set(cacheKey, transformedBuffer);
+            this.cache.set(cacheKey, result);
         }
 
-        return this.createTransformResult(transformedBuffer, fileQuery);
+        return result;
     }
 
     /**
@@ -289,11 +281,11 @@ class AudioTransformer {
     /**
      * Validate that the file is a supported audio file
      */
-    private async validateAudio(file: FileReturn): Promise<void> {
+    private async validateAudio(file: TFileReturn): Promise<void> {
         // Check file size
         const fileSize = typeof file.size === "string" ? Number.parseInt(file.size, 10) : file.size;
 
-        if (fileSize > this.config.maxAudioSize) {
+        if (this.config?.maxAudioSize && fileSize > this.config.maxAudioSize) {
             throw new Error(`Audio size ${fileSize} exceeds maximum allowed size ${this.config.maxAudioSize}`);
         }
 
@@ -305,7 +297,7 @@ class AudioTransformer {
         // Check format support
         const format = file.contentType.split("/")[1];
 
-        if (format && !this.config.supportedFormats.includes(format)) {
+        if (this.config?.supportedFormats && format && !this.config.supportedFormats.includes(format)) {
             throw new Error(`Unsupported audio format: ${format}`);
         }
 
@@ -329,7 +321,7 @@ class AudioTransformer {
     /**
      * Create transformation result
      */
-    private async createTransformResult(buffer: Buffer, originalFile: FileQuery): Promise<AudioTransformResult> {
+    private async createTransformResult(buffer: Buffer, originalFile: TFileReturn): Promise<AudioTransformResult<TFileReturn>> {
         // For now, return basic metadata. In a real implementation,
         // you might want to parse the transformed audio to get accurate metadata
         const input = new Input({
@@ -364,7 +356,7 @@ class AudioTransformer {
     /**
      * Clear cache for a specific file
      */
-    public clearCache(fileId?: string): void {
+    public override clearCache(fileId?: string): void {
         if (!this.cache) {
             return;
         }
@@ -389,7 +381,7 @@ class AudioTransformer {
     /**
      * Get cache statistics
      */
-    public getCacheStats(): { maxSize: number; size: number } | undefined {
+    public override getCacheStats(): { maxSize: number; size: number } | undefined {
         if (!this.cache) {
             return undefined;
         }
