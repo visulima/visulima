@@ -3892,6 +3892,9 @@ importers:
       supertest:
         specifier: ^7.1.4
         version: 7.1.4
+      tempy:
+        specifier: ^3.1.0
+        version: 3.1.0
       type-is:
         specifier: ^2.0.1
         version: 2.0.1
@@ -25784,7 +25787,7 @@ packages:
   vite-hot-client@2.1.0:
     resolution: {integrity: sha512-7SpgZmU7R+dDnSmvXE1mfDtnHLHQSisdySVR7lO8ceAXvM0otZeuQQ6C8LrS5d/aYyP/QZ0hI0L+dIPrm4YlFQ==}
     peerDependencies:
-      vite: '>=7.1.5'
+      vite: '>=5.4.20'
 
   vite-node@1.6.1:
     resolution: {integrity: sha512-YAXkfvGtuTzwWbDSACdJSg4A4DZiAqckWe90Zapc/sEX3XvHcw1NdurM/6od8J207tSDqNbSsgdCacBgvJKFuA==}

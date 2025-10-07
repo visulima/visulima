@@ -2,18 +2,18 @@ import { rm } from "node:fs/promises";
 
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import Tus from "../../../src/handler/tus";
+import { Tus } from "../../../src/handler/tus";
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import { metadata, storageOptions, testRoot } from "../../__helpers__/config";
 
-vi.mock(import("node:fs/promises"), () => {
-    const { fs } = require("memfs");
+vi.mock(import("node:fs/promises"), async () => {
+    const { fs } = await import("memfs");
 
     return fs.promises;
 });
 
-vi.mock(import("node:fs"), () => {
-    const { fs } = require("memfs");
+vi.mock(import("node:fs"), async () => {
+    const { fs } = await import("memfs");
 
     return fs;
 });
@@ -28,18 +28,15 @@ describe("fetch Tus", () => {
     const basePath = "http://localhost/tus/";
     const directory = `${testRoot}/fetch-tus`;
     const options = { ...storageOptions, directory };
-    const tus = new Tus({ storage: new DiskStorage(options) });
 
-    function create(): Request {
-        return new Request(`${basePath}`, {
-            headers: {
-                "Tus-Resumable": "1.0.0",
-                "Upload-Length": metadata.size.toString(),
-                "Upload-Metadata": `name ${Buffer.from(metadata.name).toString("base64")},size ${Buffer.from(metadata.size.toString()).toString("base64")},mimeType ${Buffer.from(metadata.mimeType).toString("base64")}`,
-            },
-            method: "POST",
-        });
-    }
+    const create = (): Request => new Request(`${basePath}`, {
+        headers: {
+            "Tus-Resumable": "1.0.0",
+            "Upload-Length": metadata.size.toString(),
+            "Upload-Metadata": `name ${Buffer.from(metadata.name).toString("base64")},size ${Buffer.from(metadata.size.toString()).toString("base64")},mimeType ${Buffer.from(metadata.mimeType).toString("base64")}`,
+        },
+        method: "POST",
+    });
 
     beforeAll(async () => {
         try {
@@ -70,7 +67,6 @@ describe("fetch Tus", () => {
             expect.assertions(3);
 
             const request = create();
-            const { default: Tus } = await import("../../../src/handler/tus");
 
             const storage = new DiskStorage(options);
             const tusHandler = new Tus({ storage });
@@ -105,8 +101,6 @@ describe("fetch Tus", () => {
                 },
                 method: "POST",
             });
-
-            const { default: Tus } = await import("../../../src/handler/tus");
 
             const storage = new DiskStorage(options);
             const tusHandler = new Tus({ storage });
@@ -144,8 +138,6 @@ describe("fetch Tus", () => {
                 },
                 method: "OPTIONS",
             });
-
-            const { default: Tus } = await import("../../../src/handler/tus");
 
             const storage = new DiskStorage(options);
             const tusHandler = new Tus({ storage });

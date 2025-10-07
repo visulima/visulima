@@ -148,19 +148,42 @@ abstract class BaseHandler<
 
                     const { headers, statusCode } = file as ResponseFile<TFile>;
 
-                    let body: Buffer | ResponseList<TFile>["data"] | string = "";
+                    // Check if this is a streaming response
+                    const streamingFile = file as ResponseFile<TFile> & { size?: number; stream?: Readable };
 
-                    if ((file as ResponseFile<TFile>).content !== undefined) {
-                        body = (file as ResponseFile<TFile>).content as Buffer;
-                    } else if (typeof file === "object" && "data" in file) {
-                        body = file.data;
-                    }
+                    if (streamingFile.stream) {
+                        // Handle streaming response
+                        if (typeof next === "function") {
+                            // eslint-disable-next-line promise/no-callback-in-promise
+                            next();
+                        } else {
+                            // Parse range header for partial content requests
+                            const range = this.parseRangeHeader(request.headers.range, streamingFile.size || 0);
 
-                    if (typeof next === "function") {
-                        // eslint-disable-next-line promise/no-callback-in-promise
-                        next();
+                            // Stream the response directly
+                            this.sendStream(response, streamingFile.stream, {
+                                headers,
+                                range: range || undefined,
+                                size: streamingFile.size,
+                                statusCode,
+                            });
+                        }
                     } else {
-                        this.send(response, { body, headers, statusCode });
+                        // Handle regular buffer-based response
+                        let body: Buffer | ResponseList<TFile>["data"] | string = "";
+
+                        if ((file as ResponseFile<TFile>).content !== undefined) {
+                            body = (file as ResponseFile<TFile>).content as Buffer;
+                        } else if (typeof file === "object" && "data" in file) {
+                            body = file.data;
+                        }
+
+                        if (typeof next === "function") {
+                            // eslint-disable-next-line promise/no-callback-in-promise
+                            next();
+                        } else {
+                            this.send(response, { body, headers, statusCode });
+                        }
                     }
                 } else {
                     const { headers, statusCode, ...basicFile } = file as ResponseFile<TFile>;
@@ -318,6 +341,40 @@ abstract class BaseHandler<
                     }
                 }
 
+                // Get file metadata first to determine if we should stream
+                const fileMeta = await this.storage.getMeta(uuid);
+
+                // Check if we should use streaming for large files
+                const useStreaming = request.headers.range || (fileMeta.size && fileMeta.size > 1024 * 1024); // Stream files > 1MB
+
+                if (useStreaming && this.storage.getStream) {
+                    // Use streaming for better memory efficiency
+                    try {
+                        const streamResult = await this.storage.getStream({ id: uuid });
+                        let contentType = streamResult.headers?.["Content-Type"] || fileMeta.contentType;
+
+                        if (contentType.includes("image") && typeof ext === "string") {
+                            contentType = mime.getType(ext) || contentType;
+                        }
+
+                        return {
+                            headers: {
+                                ...streamResult.headers,
+                                "Accept-Ranges": "bytes", // Indicate we support range requests
+                                "Content-Type": contentType,
+                            } as Record<string, string>,
+                            size: streamResult.size,
+                            statusCode: 200,
+                            stream: streamResult.stream,
+                            ...fileMeta,
+                            contentType,
+                        } as ResponseFile<TFile>;
+                    } catch (streamError) {
+                        // Fall back to regular file serving if streaming fails
+                        this.logger?.warn(`Streaming failed, falling back to buffer: ${streamError}`);
+                    }
+                }
+
                 // Serve original file (fallback or no transformation requested)
                 const file = await this.storage.get({ id: uuid });
 
@@ -331,6 +388,7 @@ abstract class BaseHandler<
 
                 return {
                     headers: {
+                        "Accept-Ranges": "bytes", // Indicate we support range requests
                         "Content-Length": String(size),
                         "Content-Type": contentType,
                         ...expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() },
@@ -387,6 +445,61 @@ abstract class BaseHandler<
         };
     }
 
+    /**
+     * Stream download a file with resumable support
+     */
+    public async download(request: NodeRequest & { originalUrl?: string }, response: NodeResponse): Promise<void> {
+        const pathMatch = filePathUrlMatcher(getRealPath(request));
+
+        if (!pathMatch || !pathMatch.params.uuid || !uuidRegex.test(pathMatch.params.uuid)) {
+            throw createHttpError(404, "File not found");
+        }
+
+        const { ext, uuid } = pathMatch.params;
+
+        try {
+            // Get file metadata first
+            const fileMeta = await this.storage.getMeta(uuid);
+
+            // Check if streaming is available
+            if (!this.storage.getStream) {
+                throw createHttpError(501, "Streaming download not supported");
+            }
+
+            // Use streaming for better performance
+            const streamResult = await this.storage.getStream({ id: uuid });
+            let contentType = streamResult.headers?.["Content-Type"] || fileMeta.contentType;
+
+            if (contentType.includes("image") && typeof ext === "string") {
+                contentType = mime.getType(ext) || contentType;
+            }
+
+            // Parse range header for resumable downloads
+            const range = this.parseRangeHeader(request.headers.range, streamResult.size || 0);
+
+            // Stream the file directly to response
+            const headers = {
+                ...streamResult.headers,
+                "Accept-Ranges": "bytes",
+                "Content-Disposition": `attachment; filename="${fileMeta.originalName || uuid}"`,
+                "Content-Type": contentType,
+            };
+
+            this.sendStream(response, streamResult.stream, {
+                headers,
+                range: range || undefined,
+                size: streamResult.size,
+                statusCode: range ? 206 : 200,
+            });
+        } catch (error: any) {
+            if (error.UploadErrorCode === ERRORS.FILE_NOT_FOUND || error.UploadErrorCode === ERRORS.GONE) {
+                throw createHttpError(404, "File not found");
+            }
+
+            throw error;
+        }
+    }
+
     // eslint-disable-next-line class-methods-use-this
     public send(response: NodeResponse, { body = "", headers = {}, statusCode = 200 }: UploadResponse): void {
         let data: Buffer | string;
@@ -439,6 +552,218 @@ abstract class BaseHandler<
     }
 
     /**
+     * Parse HTTP Range header and return start/end positions
+     */
+    protected parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | null {
+        if (!rangeHeader || !rangeHeader.startsWith("bytes=")) {
+            return null;
+        }
+
+        const ranges = rangeHeader.slice(6).split(",");
+
+        if (ranges.length !== 1) {
+            // Multiple ranges not supported
+            return null;
+        }
+
+        const range = ranges[0].trim();
+        const parts = range.split("-");
+
+        if (parts.length !== 2) {
+            return null;
+        }
+
+        const [startString, endString] = parts;
+        let start: number;
+        let end: number;
+
+        if (startString && endString) {
+            // bytes=start-end
+            start = Number.parseInt(startString, 10);
+            end = Number.parseInt(endString, 10);
+        } else if (startString && !endString) {
+            // bytes=start-
+            start = Number.parseInt(startString, 10);
+            end = fileSize - 1;
+        } else if (!startString && endString) {
+            // bytes=-end (suffix range)
+            start = fileSize - Number.parseInt(endString, 10);
+            end = fileSize - 1;
+        } else {
+            return null; // Invalid range
+        }
+
+        // Validate range
+        if (Number.isNaN(start) || Number.isNaN(end) || start >= fileSize || end >= fileSize || start > end) {
+            return null;
+        }
+
+        return { end, start };
+    }
+
+    /**
+     * Send streaming response to client with proper backpressure handling
+     */
+    public sendStream(
+        response: NodeResponse,
+        stream: Readable,
+        {
+            headers = {},
+            range,
+            size,
+            statusCode = 200,
+        }: { headers?: Record<string, string | number>; range?: { end: number; start: number }; size?: number; statusCode?: number },
+    ): void {
+        // Set headers
+        setHeaders(response, headers);
+
+        // Set status code
+        response.statusCode = statusCode;
+
+        let finalStream = stream;
+
+        // Handle range requests for partial content
+        if (range && size) {
+            response.statusCode = 206; // Partial Content
+            response.setHeader("Content-Range", `bytes ${range.start}-${range.end}/${size}`);
+            response.setHeader("Content-Length", range.end - range.start + 1);
+
+            // Create a range-limited stream
+            finalStream = this.createRangeLimitedStream(stream, range.start, range.end);
+        } else {
+            // Set content length for full content
+            if (size) {
+                response.setHeader("Content-Length", size);
+            }
+        }
+
+        // Handle stream errors
+        finalStream.on("error", (error) => {
+            this.logger?.error("[stream error]: %O", error);
+
+            if (!response.headersSent) {
+                this.sendError(response, error);
+            }
+        });
+
+        // Handle backpressure-aware piping
+        this.pipeWithBackpressure(finalStream, response);
+    }
+
+    /**
+     * Create a range-limited stream that properly handles backpressure
+     */
+    private createRangeLimitedStream(sourceStream: Readable, start: number, end: number): Readable {
+        let bytesRead = 0;
+        let bytesSent = 0;
+        const contentLength = end - start + 1;
+
+        return new PassThrough({
+            // Use appropriate high water mark for better backpressure handling
+            highWaterMark: Math.min(64 * 1024, contentLength), // 64KB or content length, whichever is smaller
+            transform(chunk: Buffer, encoding, callback) {
+                const chunkSize = chunk.length;
+                const currentPos = bytesRead;
+                const endPos = currentPos + chunkSize - 1;
+
+                bytesRead += chunkSize;
+
+                // Check if this chunk contains data we need
+                if (endPos < start) {
+                    // Chunk is entirely before the range we want
+                    callback();
+
+                    return;
+                }
+
+                if (currentPos > end) {
+                    // Chunk is entirely after the range we want
+                    this.end();
+                    callback();
+
+                    return;
+                }
+
+                // Calculate which part of this chunk to send
+                const chunkStart = Math.max(0, start - currentPos);
+                const chunkEnd = Math.min(chunkSize, end - currentPos + 1);
+
+                if (chunkStart < chunkEnd) {
+                    const dataToSend = chunk.subarray(chunkStart, chunkEnd);
+
+                    bytesSent += dataToSend.length;
+
+                    // Push the data and handle backpressure
+                    const canContinue = this.push(dataToSend);
+
+                    if (!canContinue) {
+                        // Backpressure: pause the source stream
+                        sourceStream.pause();
+                    }
+                }
+
+                // Check if we've sent all the requested data
+                if (bytesSent >= contentLength) {
+                    this.end();
+                    sourceStream.destroy();
+                }
+
+                callback();
+            },
+        });
+    }
+
+    /**
+     * Pipe streams with proper backpressure handling
+     */
+    private pipeWithBackpressure(source: Readable, destination: NodeResponse): void {
+        let isDestroyed = false;
+
+        const cleanup = () => {
+            if (isDestroyed)
+                return;
+
+            isDestroyed = true;
+            source.destroy();
+        };
+
+        // Handle destination backpressure
+        destination.on("drain", () => {
+            source.resume();
+        });
+
+        destination.on("close", cleanup);
+        destination.on("finish", cleanup);
+        destination.on("error", cleanup);
+
+        // Handle source stream
+        source.on("end", () => {
+            destination.end();
+        });
+
+        source.on("error", (error) => {
+            if (!isDestroyed) {
+                this.sendError(destination as any, error);
+                cleanup();
+            }
+        });
+
+        source.on("data", (chunk) => {
+            const canContinue = destination.write(chunk);
+
+            if (!canContinue) {
+                // Backpressure: pause the source stream
+                source.pause();
+            }
+        });
+
+        // Handle response abortion (client disconnect)
+        if (typeof destination.listeners === "function" && destination.listeners("aborted").length === 0) {
+            destination.on("aborted", cleanup);
+        }
+    }
+
+    /**
      * Build file url from request
      */
     protected buildFileUrl(request: NodeRequest & { originalUrl?: string }, file: TFile): string {
@@ -475,7 +800,11 @@ abstract class BaseHandler<
     protected compose = (): void => {
         const child = this.constructor as typeof BaseHandler;
 
-        (child.methods || BaseHandler.methods).forEach((method) => {
+        // Add download method to available methods if not already included
+        const methods = child.methods || BaseHandler.methods;
+        const extendedMethods = methods.includes("download" as any) ? methods : [...methods, "download"];
+
+        extendedMethods.forEach((method) => {
             const handler = (this as MethodHandler<NodeRequest, NodeResponse>)[method];
 
             if (handler) {

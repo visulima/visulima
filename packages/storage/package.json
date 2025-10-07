@@ -165,6 +165,7 @@
         "path-to-regexp": "8.3.0"
     },
     "devDependencies": {
+        "tempy": "^3.1.0",
         "@anolilab/eslint-config": "^16.3.3",
         "@anolilab/prettier-config": "^6.0.6",
         "@anolilab/semantic-release-pnpm": "2.0.4",

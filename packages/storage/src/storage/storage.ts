@@ -1,4 +1,5 @@
 import type { IncomingMessage } from "node:http";
+import { Readable } from "node:stream";
 import { setInterval } from "node:timers";
 import { inspect } from "node:util";
 
@@ -299,6 +300,28 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      * @param {FileQuery} id
      */
     public abstract get({ id }: FileQuery): Promise<TFileReturn>;
+
+    /**
+     * Get uploaded file as a stream for efficient large file handling.
+     * @param query
+     */
+    public async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+        // Default implementation falls back to get() and creates a stream from the buffer
+        // Storage implementations can override this for better streaming performance
+        const file = await this.get({ id });
+        const stream = Readable.from(file.content);
+
+        return {
+            headers: {
+                "Content-Length": String(file.size),
+                "Content-Type": file.contentType,
+                ...file.ETag && { ETag: file.ETag },
+                ...file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() },
+            },
+            size: file.size,
+            stream,
+        };
+    }
 
     /**
      * Retrieves a list of upload.
