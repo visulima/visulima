@@ -443,6 +443,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     // This would need additional work
                     break;
                 }
+                case "affine": {
+                    sharpInstance = this.applyAffine(sharpInstance, step.options as AffineOptions);
+                    break;
+                }
                 case "autoOrient": {
                     sharpInstance = sharpInstance.rotate();
                     break;
@@ -480,9 +484,21 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     sharpInstance = sharpInstance.dilate();
                     break;
                 }
+                case "dilate": {
+                    sharpInstance = this.applyDilate(sharpInstance, step.options as DilateOptions);
+                    break;
+                }
+                case "ensureAlpha": {
+                    sharpInstance = this.applyEnsureAlpha(sharpInstance, step.options as EnsureAlphaOptions);
+                    break;
+                }
                 case "erode": {
                     // Note: erode requires options we don't have yet
                     sharpInstance = sharpInstance.erode();
+                    break;
+                }
+                case "erode": {
+                    sharpInstance = this.applyErode(sharpInstance, step.options as ErodeOptions);
                     break;
                 }
                 case "extractChannel": {
@@ -539,8 +555,16 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     sharpInstance = sharpInstance.normalise();
                     break;
                 }
+                case "pipelineColourspace": {
+                    sharpInstance = this.applyPipelineColourspace(sharpInstance, step.options as PipelineColourspaceOptions);
+                    break;
+                }
                 case "recombine": {
                     sharpInstance = this.applyRecombine(sharpInstance, step.options as RecombineOptions);
+                    break;
+                }
+                case "removeAlpha": {
+                    sharpInstance = this.applyRemoveAlpha(sharpInstance, step.options as RemoveAlphaOptions);
                     break;
                 }
                 case "resize": {
@@ -563,36 +587,12 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     sharpInstance = this.applyTint(sharpInstance, step.options as TintOptions);
                     break;
                 }
-                case "unflatten": {
-                    sharpInstance = sharpInstance.unflatten();
-                    break;
-                }
-                case "affine": {
-                    sharpInstance = this.applyAffine(sharpInstance, step.options as AffineOptions);
-                    break;
-                }
-                case "dilate": {
-                    sharpInstance = this.applyDilate(sharpInstance, step.options as DilateOptions);
-                    break;
-                }
-                case "erode": {
-                    sharpInstance = this.applyErode(sharpInstance, step.options as ErodeOptions);
-                    break;
-                }
-                case "pipelineColourspace": {
-                    sharpInstance = this.applyPipelineColourspace(sharpInstance, step.options as PipelineColourspaceOptions);
-                    break;
-                }
                 case "toColourspace": {
                     sharpInstance = this.applyToColourspace(sharpInstance, step.options as ToColourspaceOptions);
                     break;
                 }
-                case "removeAlpha": {
-                    sharpInstance = this.applyRemoveAlpha(sharpInstance, step.options as RemoveAlphaOptions);
-                    break;
-                }
-                case "ensureAlpha": {
-                    sharpInstance = this.applyEnsureAlpha(sharpInstance, step.options as EnsureAlphaOptions);
+                case "unflatten": {
+                    sharpInstance = sharpInstance.unflatten();
                     break;
                 }
                 default: {
@@ -925,7 +925,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     private applyTint(sharpInstance: Sharp, options: TintOptions): Sharp {
         const { rgb, ...formatOptions } = options;
 
-        let tintInstance = sharpInstance.tint(Array.isArray(rgb) ? rgb : rgb as any);
+        let tintInstance = sharpInstance.tint(Array.isArray(rgb) ? rgb : (rgb as any));
 
         // Apply format and quality options
         if (Object.keys(formatOptions).length > 0) {
@@ -1043,7 +1043,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @private
      */
     private applyAffine(sharpInstance: Sharp, options: AffineOptions): Sharp {
-        const { matrix, background, interpolation, ...formatOptions } = options;
+        const { background, interpolation, matrix, ...formatOptions } = options;
 
         let affineInstance = sharpInstance.affine(matrix as any, {
             background: background || "transparent",

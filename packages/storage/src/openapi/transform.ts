@@ -12,6 +12,14 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Transform"]): Pa
         components: {
             examples: sharedFileMetaExampleObject,
             parameters: {
+                Affine: {
+                    description: "Apply affine transformation",
+                    in: "query",
+                    name: "affine",
+                    schema: {
+                        type: "boolean",
+                    },
+                },
                 Angle: {
                     description: "Rotation angle in degrees. Note: angles other than 90°, 180°, and 270° require interpolation and may affect quality",
                     in: "query",
@@ -96,6 +104,30 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Transform"]): Pa
                     schema: {
                         minimum: 1,
                         type: "integer",
+                    },
+                },
+                Dilate: {
+                    description: "Apply dilation",
+                    in: "query",
+                    name: "dilate",
+                    schema: {
+                        type: "boolean",
+                    },
+                },
+                EnsureAlpha: {
+                    description: "Ensure alpha channel",
+                    in: "query",
+                    name: "ensureAlpha",
+                    schema: {
+                        type: "boolean",
+                    },
+                },
+                Erode: {
+                    description: "Apply erosion",
+                    in: "query",
+                    name: "erode",
+                    schema: {
+                        type: "boolean",
                     },
                 },
                 FastShrinkOnLoad: {
@@ -278,6 +310,14 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Transform"]): Pa
                         type: "integer",
                     },
                 },
+                PipelineColourspace: {
+                    description: "Set pipeline colourspace",
+                    in: "query",
+                    name: "pipelineColourspace",
+                    schema: {
+                        type: "boolean",
+                    },
+                },
                 Position: {
                     description: "Position for cover/contain fits",
                     in: "query",
@@ -303,6 +343,14 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Transform"]): Pa
                         maximum: 100,
                         minimum: 1,
                         type: "integer",
+                    },
+                },
+                RemoveAlpha: {
+                    description: "Remove alpha channel",
+                    in: "query",
+                    name: "removeAlpha",
+                    schema: {
+                        type: "boolean",
                     },
                 },
                 SampleRate: {
@@ -348,6 +396,14 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Transform"]): Pa
                         type: "boolean",
                     },
                 },
+                ToColourspace: {
+                    description: "Convert to colourspace",
+                    in: "query",
+                    name: "toColourspace",
+                    schema: {
+                        type: "boolean",
+                    },
+                },
                 Top: {
                     description: "Crop area top offset",
                     in: "query",
@@ -361,62 +417,6 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Transform"]): Pa
                     description: "Unflatten alpha channel",
                     in: "query",
                     name: "unflatten",
-                    schema: {
-                        type: "boolean",
-                    },
-                },
-                Affine: {
-                    description: "Apply affine transformation",
-                    in: "query",
-                    name: "affine",
-                    schema: {
-                        type: "boolean",
-                    },
-                },
-                Dilate: {
-                    description: "Apply dilation",
-                    in: "query",
-                    name: "dilate",
-                    schema: {
-                        type: "boolean",
-                    },
-                },
-                Erode: {
-                    description: "Apply erosion",
-                    in: "query",
-                    name: "erode",
-                    schema: {
-                        type: "boolean",
-                    },
-                },
-                PipelineColourspace: {
-                    description: "Set pipeline colourspace",
-                    in: "query",
-                    name: "pipelineColourspace",
-                    schema: {
-                        type: "boolean",
-                    },
-                },
-                ToColourspace: {
-                    description: "Convert to colourspace",
-                    in: "query",
-                    name: "toColourspace",
-                    schema: {
-                        type: "boolean",
-                    },
-                },
-                RemoveAlpha: {
-                    description: "Remove alpha channel",
-                    in: "query",
-                    name: "removeAlpha",
-                    schema: {
-                        type: "boolean",
-                    },
-                },
-                EnsureAlpha: {
-                    description: "Ensure alpha channel",
-                    in: "query",
-                    name: "ensureAlpha",
                     schema: {
                         type: "boolean",
                     },

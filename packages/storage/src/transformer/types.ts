@@ -213,12 +213,12 @@ export interface BandboolOptions extends TransformOptions {
  * Affine transformation options
  */
 export interface AffineOptions extends TransformOptions {
-    /** 2x3 transformation matrix */
-    matrix: [number, number, number, number, number, number];
     /** Background color for areas outside the transformed image */
     background?: string;
     /** Interpolation method */
     interpolation?: "nearest" | "bilinear" | "bicubic" | "nohalo" | "lbb" | "vsqbs";
+    /** 2x3 transformation matrix */
+    matrix: [number, number, number, number, number, number];
 }
 
 /**
@@ -687,6 +687,8 @@ export interface MediaTransformResult<TFileReturn extends FileReturn = FileRetur
  * Query parameters for media transformation
  */
 export interface MediaTransformQuery {
+    /** Apply affine transformation */
+    affine?: boolean;
     /** Rotation angle in degrees. Note: angles other than 90°, 180°, and 270° require interpolation and may affect media quality */
     angle?: number;
     /** Background color for rotation */
@@ -706,6 +708,12 @@ export interface MediaTransformQuery {
     cropHeight?: number;
     /** Crop area width */
     cropWidth?: number;
+    /** Apply dilation */
+    dilate?: boolean;
+    /** Ensure alpha channel */
+    ensureAlpha?: boolean;
+    /** Apply erosion */
+    erode?: boolean;
     /** Fast shrink on load */
     fastShrinkOnLoad?: boolean;
     /** Resize fit mode */
@@ -727,6 +735,7 @@ export interface MediaTransformQuery {
     greyscale?: boolean;
     /** Height in pixels */
     height?: number;
+
     /** Hue rotation in degrees for modulation */
     hue?: number;
     /** Resize kernel */
@@ -735,27 +744,12 @@ export interface MediaTransformQuery {
     keyFrameInterval?: number;
     /** Crop area left offset */
     left?: number;
-
     /** Lightness adjustment for modulation */
     lightness?: number;
     /** Apply median filter with specified size */
     median?: number;
     /** Apply modulation effects */
     modulate?: boolean;
-    /** Apply affine transformation */
-    affine?: boolean;
-    /** Apply dilation */
-    dilate?: boolean;
-    /** Apply erosion */
-    erode?: boolean;
-    /** Set pipeline colourspace */
-    pipelineColourspace?: boolean;
-    /** Convert to colourspace */
-    toColourspace?: boolean;
-    /** Remove alpha channel */
-    removeAlpha?: boolean;
-    /** Ensure alpha channel */
-    ensureAlpha?: boolean;
     /** Negate (invert) the image */
     negate?: boolean;
     /** Normalise the image */
@@ -763,10 +757,14 @@ export interface MediaTransformQuery {
     // Audio-specific parameters
     /** Number of channels */
     numberOfChannels?: number;
+    /** Set pipeline colourspace */
+    pipelineColourspace?: boolean;
     /** Position for cover/contain fits */
     position?: string | number;
     /** Quality (0-100 for images, bitrate for video/audio) */
     quality?: number;
+    /** Remove alpha channel */
+    removeAlpha?: boolean;
     /** Sample rate in Hz */
     sampleRate?: number;
     /** Saturation multiplier for modulation */
@@ -775,9 +773,11 @@ export interface MediaTransformQuery {
     sharpen?: boolean;
     /** Apply thresholding with specified value */
     threshold?: number;
-
     /** Apply tinting */
     tint?: boolean;
+
+    /** Convert to colourspace */
+    toColourspace?: boolean;
     /** Crop area top offset */
     top?: number;
     /** Unflatten alpha channel */
