@@ -141,12 +141,11 @@ const getTransformationParameters = (
             },
         },
         {
-            description: "Rotation angle in degrees",
+            description: "Rotation angle in degrees. Note: angles other than 90°, 180°, and 270° require interpolation and may affect quality",
             in: "query",
             name: "angle",
             schema: {
-                enum: [90, 180, 270],
-                type: "integer",
+                type: "number",
             },
         },
         {
@@ -155,6 +154,244 @@ const getTransformationParameters = (
             name: "background",
             schema: {
                 type: "string",
+            },
+        },
+        {
+            description: "Resize kernel algorithm",
+            in: "query",
+            name: "kernel",
+            schema: {
+                enum: ["nearest", "cubic", "mitchell", "lanczos2", "lanczos3"],
+                type: "string",
+            },
+        },
+        {
+            description: "Fast shrink on load for large images",
+            in: "query",
+            name: "fastShrinkOnLoad",
+            schema: {
+                type: "boolean",
+            },
+        },
+        // Image operations
+        {
+            description: "Apply blur effect",
+            in: "query",
+            name: "blur",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Apply sharpening",
+            in: "query",
+            name: "sharpen",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Apply median filter with specified size",
+            in: "query",
+            name: "median",
+            schema: {
+                minimum: 1,
+                type: "integer",
+            },
+        },
+        {
+            description: "Apply CLAHE (Contrast Limited Adaptive Histogram Equalization)",
+            in: "query",
+            name: "clahe",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Apply thresholding with specified value (0-255)",
+            in: "query",
+            name: "threshold",
+            schema: {
+                maximum: 255,
+                minimum: 0,
+                type: "integer",
+            },
+        },
+        {
+            description: "Apply gamma correction",
+            in: "query",
+            name: "gamma",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Negate (invert) the image",
+            in: "query",
+            name: "negate",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Normalise the image",
+            in: "query",
+            name: "normalise",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Flatten alpha channel",
+            in: "query",
+            name: "flatten",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Unflatten alpha channel",
+            in: "query",
+            name: "unflatten",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Flip image vertically",
+            in: "query",
+            name: "flip",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Flop image horizontally",
+            in: "query",
+            name: "flop",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Convert to greyscale",
+            in: "query",
+            name: "greyscale",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Apply modulation effects",
+            in: "query",
+            name: "modulate",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Brightness multiplier for modulation",
+            in: "query",
+            name: "brightness",
+            schema: {
+                type: "number",
+            },
+        },
+        {
+            description: "Saturation multiplier for modulation",
+            in: "query",
+            name: "saturation",
+            schema: {
+                type: "number",
+            },
+        },
+        {
+            description: "Hue rotation in degrees for modulation",
+            in: "query",
+            name: "hue",
+            schema: {
+                type: "integer",
+            },
+        },
+        {
+            description: "Lightness adjustment for modulation",
+            in: "query",
+            name: "lightness",
+            schema: {
+                type: "integer",
+            },
+        },
+        {
+            description: "Apply tinting",
+            in: "query",
+            name: "tint",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Convert colourspace",
+            in: "query",
+            name: "colourspace",
+            schema: {
+                enum: ["srgb", "rgb", "cmyk", "lab", "b-w"],
+                type: "string",
+            },
+        },
+        {
+            description: "Apply affine transformation",
+            in: "query",
+            name: "affine",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Apply dilation",
+            in: "query",
+            name: "dilate",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Apply erosion",
+            in: "query",
+            name: "erode",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Set pipeline colourspace",
+            in: "query",
+            name: "pipelineColourspace",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Convert to colourspace",
+            in: "query",
+            name: "toColourspace",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Remove alpha channel",
+            in: "query",
+            name: "removeAlpha",
+            schema: {
+                type: "boolean",
+            },
+        },
+        {
+            description: "Ensure alpha channel",
+            in: "query",
+            name: "ensureAlpha",
+            schema: {
+                type: "boolean",
             },
         },
     ];
@@ -316,16 +553,45 @@ const getTransformationErrorResponses = (transform?: TransformType): Record<stri
                                             "position",
                                             "withoutEnlargement",
                                             "withoutReduction",
+                                            "kernel",
+                                            "fastShrinkOnLoad",
                                             "left",
                                             "top",
                                             "cropWidth",
                                             "cropHeight",
                                             "angle",
                                             "background",
+                                            "blur",
+                                            "sharpen",
+                                            "median",
+                                            "clahe",
+                                            "threshold",
+                                            "gamma",
+                                            "negate",
+                                            "normalise",
+                                            "flatten",
+                                            "unflatten",
+                                            "flip",
+                                            "flop",
+                                            "greyscale",
+                                            "modulate",
+                                            "brightness",
+                                            "saturation",
+                                            "hue",
+                                            "lightness",
+                                            "tint",
+                                            "colourspace",
+                                            "affine",
+                                            "dilate",
+                                            "erode",
+                                            "pipelineColourspace",
+                                            "toColourspace",
+                                            "removeAlpha",
+                                            "ensureAlpha",
                                         ],
                                     },
                                     message:
-                                        "Invalid query parameters for image transformation: codec, bitrate. Images support: format, quality, width, height, fit, position, withoutEnlargement, withoutReduction, left, top, cropWidth, cropHeight, angle, background. Video/audio parameters (codec, bitrate) are not supported for images.",
+                                        "Invalid query parameters for image transformation: codec, bitrate. Images support: format, quality, width, height, fit, position, withoutEnlargement, withoutReduction, kernel, fastShrinkOnLoad, left, top, cropWidth, cropHeight, angle, background, blur, sharpen, median, clahe, threshold, gamma, negate, normalise, flatten, unflatten, flip, flop, greyscale, modulate, brightness, saturation, hue, lightness, tint, colourspace, affine, dilate, erode, pipelineColourspace, toColourspace, removeAlpha, ensureAlpha. Video/audio parameters (codec, bitrate) are not supported for images.",
                                     name: "ValidationError",
                                 },
                             },
