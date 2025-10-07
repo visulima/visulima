@@ -19,14 +19,14 @@ export interface StreamingOptions {
 /**
  * Create a streaming response handler that automatically handles backpressure
  */
-export function createStreamingResponse(
+export const createStreamingResponse = (
     stream: Readable,
     options: StreamingOptions & {
         onData?: (chunk: Buffer) => void;
         onEnd?: () => void;
         onError?: (error: Error) => void;
     } = {},
-): Readable {
+): Readable => {
     const { handleBackpressure = true, onData, onEnd, onError } = options;
 
     if (handleBackpressure) {
@@ -53,12 +53,12 @@ export function createStreamingResponse(
     }
 
     return stream;
-}
+};
 
 /**
  * Create a range-limited stream from a source stream
  */
-export function createRangeStream(sourceStream: Readable, start: number, end?: number): Readable {
+export const createRangeStream = (sourceStream: Readable, start: number, end?: number): Readable => {
     let position = 0;
     const targetEnd = end ?? Number.POSITIVE_INFINITY;
 
@@ -96,19 +96,17 @@ export function createRangeStream(sourceStream: Readable, start: number, end?: n
             }
         },
     });
-}
+};
 
 /**
  * Check if a file size warrants streaming treatment
  */
-export function shouldUseStreaming(fileSize: number, threshold: number = 1024 * 1024): boolean {
-    return fileSize > threshold;
-}
+export const shouldUseStreaming = (fileSize: number, threshold: number = 1024 * 1024): boolean => fileSize > threshold;
 
 /**
  * Calculate optimal chunk size for streaming based on file size
  */
-export function getOptimalChunkSize(fileSize: number): number {
+export const getOptimalChunkSize = (fileSize: number): number => {
     // Smaller files: use 64KB chunks
     // Medium files: use 256KB chunks
     // Large files: use 1MB chunks
@@ -123,12 +121,12 @@ export function getOptimalChunkSize(fileSize: number): number {
     }
 
     return 1024 * 1024; // 1MB
-}
+};
 
 /**
  * Create a timeout wrapper for streaming operations
  */
-export function withTimeout<T extends Readable>(stream: T, timeoutMs: number, errorMessage = "Stream operation timed out"): T {
+export const withTimeout = <T extends Readable>(stream: T, timeoutMs: number, errorMessage = "Stream operation timed out"): T => {
     const timeout = setTimeout(() => {
         stream.destroy(new Error(errorMessage));
     }, timeoutMs);
@@ -137,12 +135,12 @@ export function withTimeout<T extends Readable>(stream: T, timeoutMs: number, er
     stream.on("error", () => clearTimeout(timeout));
 
     return stream;
-}
+};
 
 /**
  * Monitor stream performance and log metrics
  */
-export function monitorStreamPerformance(stream: Readable, label: string, logger?: { debug: (message: string, ...arguments_: any[]) => void }): Readable {
+export const monitorStreamPerformance = (stream: Readable, label: string, logger?: { debug: (message: string, ...arguments_: any[]) => void }): Readable => {
     const startTime = Date.now();
     let totalBytes = 0;
     let chunkCount = 0;
@@ -166,12 +164,12 @@ export function monitorStreamPerformance(stream: Readable, label: string, logger
     });
 
     return stream;
-}
+};
 
 /**
  * Create a stream that limits bandwidth
  */
-export function createBandwidthLimitedStream(sourceStream: Readable, bytesPerSecond: number): Readable {
+export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSecond: number): Readable => {
     let lastChunkTime = Date.now();
     const bufferedChunks: Buffer[] = [];
     let isProcessing = false;
@@ -184,7 +182,7 @@ export function createBandwidthLimitedStream(sourceStream: Readable, bytesPerSec
         },
     });
 
-    function processNextChunk() {
+    const processNextChunk = () => {
         if (bufferedChunks.length === 0 || isProcessing) {
             return;
         }
@@ -210,7 +208,7 @@ export function createBandwidthLimitedStream(sourceStream: Readable, bytesPerSec
             isProcessing = false;
             processNextChunk();
         }
-    }
+    };
 
     sourceStream.on("data", (chunk: Buffer) => {
         bufferedChunks.push(chunk);
@@ -232,4 +230,4 @@ export function createBandwidthLimitedStream(sourceStream: Readable, bytesPerSec
     });
 
     return targetStream;
-}
+};
