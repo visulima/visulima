@@ -8,9 +8,9 @@ import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSch
 const swaggerSpec = (
     origin: string,
     path: string,
-    options: { tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" },
+    options: { supportedTransformerFormat?: string[]; tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" },
 ): Partial<OpenAPIV3.Document> => {
-    const { tags, transformer } = { tags: ["Multipart"], transformer: false, ...options };
+    const { supportedTransformerFormat, tags, transformer } = { tags: ["Multipart"], transformer: false, ...options };
 
     const pathHash = createHash("sha256").update(path).digest("base64");
 
@@ -80,7 +80,7 @@ const swaggerSpec = (
                     summary: "Cancel upload",
                     tags,
                 },
-                get: sharedGet(`${pathHash}TusGetFile`, tags, transformer),
+                get: sharedGet(`${pathHash}TusGetFile`, tags, transformer, supportedTransformerFormat),
             },
             [path.trimEnd()]: {
                 get: sharedGetList(`${pathHash}MultipartGetList`, tags),

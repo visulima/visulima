@@ -23,6 +23,13 @@ abstract class BaseTransformer<
 
     protected cache?: Cache<string, CacheValue>;
 
+    /**
+     * Creates a new BaseTransformer instance with common functionality
+     * @param storage The storage backend for retrieving and storing files
+     * @param config Configuration options for the transformer
+     * @param logger Optional logger instance for logging operations
+     * @protected
+     */
     protected constructor(
         protected readonly storage: BaseStorage<TFile, TFileReturn>,
         config: Config,

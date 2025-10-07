@@ -28,15 +28,261 @@ export interface TransformOptions {
 }
 
 /**
+ * Sharpen transformation options
+ */
+export interface SharpenOptions extends TransformOptions {
+    /** M1 for sharpen formula */
+    m1?: number;
+    /** M2 for sharpen formula */
+    m2?: number;
+    /** Sigma for Gaussian blur */
+    sigma?: number;
+    /** X1 for sharpen formula */
+    x1?: number;
+    /** Y2 for sharpen formula */
+    y2?: number;
+    /** Y3 for sharpen formula */
+    y3?: number;
+}
+
+/**
+ * Blur transformation options
+ */
+export interface BlurOptions extends TransformOptions {
+    /** M1 for blur formula */
+    m1?: number;
+    /** M2 for blur formula */
+    m2?: number;
+    /** Sigma for Gaussian blur */
+    sigma?: number;
+    /** X1 for blur formula */
+    x1?: number;
+    /** Y2 for blur formula */
+    y2?: number;
+    /** Y3 for blur formula */
+    y3?: number;
+}
+
+/**
+ * Median transformation options
+ */
+export interface MedianOptions extends TransformOptions {
+    /** Size of the median filter */
+    size?: number;
+}
+
+/**
+ * CLAHE (Contrast Limited Adaptive Histogram Equalization) options
+ */
+export interface CLAHEOptions extends TransformOptions {
+    /** Height of the tile grid */
+    height?: number;
+    /** Maximum slope value for contrast limiting */
+    maxSlope?: number;
+    /** Width of the tile grid */
+    width?: number;
+}
+
+/**
+ * Convolve transformation options
+ */
+export interface ConvolveOptions extends TransformOptions {
+    /** Height of the kernel in pixels */
+    height?: number;
+    /** Kernel values as flat array */
+    kernel?: number[];
+    /** Offset value */
+    offset?: number;
+    /** Scale factor */
+    scale?: number;
+    /** Width of the kernel in pixels */
+    width?: number;
+}
+
+/**
+ * Threshold transformation options
+ */
+export interface ThresholdOptions extends TransformOptions {
+    /** Alternative spelling for greyscale */
+    grayscale?: boolean;
+    /** Convert to greyscale */
+    greyscale?: boolean;
+    /** Threshold value (0-255) */
+    threshold?: number;
+}
+
+/**
+ * Boolean operation options
+ */
+export interface BooleanOptions extends TransformOptions {
+    /** Operand image buffer or path */
+    operand: Buffer | string;
+    /** Boolean operation: and, or, eor */
+    operator: "and" | "or" | "eor";
+    /** Raw operand options */
+    raw?: {
+        channels: number;
+        height: number;
+        width: number;
+    };
+}
+
+/**
+ * Linear transformation options
+ */
+export interface LinearOptions extends TransformOptions {
+    /** Multiplier values (per channel or single value) */
+    a?: number | number[];
+    /** Offset values (per channel or single value) */
+    b?: number | number[];
+}
+
+/**
+ * Recombine transformation options
+ */
+export interface RecombineOptions extends TransformOptions {
+    /** 3x3 or 4x4 recombination matrix */
+    matrix: number[][];
+}
+
+/**
+ * Modulate transformation options
+ */
+export interface ModulateOptions extends TransformOptions {
+    /** Brightness multiplier */
+    brightness?: number;
+    /** Hue rotation in degrees */
+    hue?: number;
+    /** Lightness adjustment */
+    lightness?: number;
+    /** Saturation multiplier */
+    saturation?: number;
+}
+
+/**
+ * Tint transformation options
+ */
+export interface TintOptions extends TransformOptions {
+    /** RGB tint values */
+    rgb: [number, number, number] | string;
+}
+
+/**
+ * Greyscale transformation options
+ */
+export interface GreyscaleOptions extends TransformOptions {
+    /** Alternative spelling */
+    grayscale?: boolean;
+    /** Convert to greyscale */
+    greyscale?: boolean;
+}
+
+/**
+ * Colourspace transformation options
+ */
+export interface ColourspaceOptions extends TransformOptions {
+    /** Target colourspace */
+    colourspace: "srgb" | "rgb" | "cmyk" | "lab" | "b-w";
+}
+
+/**
+ * Channel extraction options
+ */
+export interface ExtractChannelOptions extends TransformOptions {
+    /** Channel to extract (0-3 for RGBA) */
+    channel: number;
+}
+
+/**
+ * Channel join options
+ */
+export interface JoinChannelOptions extends TransformOptions {
+    /** Images to join as channels */
+    images: (Buffer | string)[];
+}
+
+/**
+ * Band boolean options
+ */
+export interface BandboolOptions extends TransformOptions {
+    /** Boolean operation: and, or, eor */
+    operator: "and" | "or" | "eor";
+}
+
+/**
+ * Affine transformation options
+ */
+export interface AffineOptions extends TransformOptions {
+    /** 2x3 transformation matrix */
+    matrix: [number, number, number, number, number, number];
+    /** Background color for areas outside the transformed image */
+    background?: string;
+    /** Interpolation method */
+    interpolation?: "nearest" | "bilinear" | "bicubic" | "nohalo" | "lbb" | "vsqbs";
+}
+
+/**
+ * Dilate options
+ */
+export interface DilateOptions extends TransformOptions {
+    /** Kernel size for dilation */
+    kernelSize?: number;
+}
+
+/**
+ * Erode options
+ */
+export interface ErodeOptions extends TransformOptions {
+    /** Kernel size for erosion */
+    kernelSize?: number;
+}
+
+/**
+ * Pipeline colourspace options
+ */
+export interface PipelineColourspaceOptions extends TransformOptions {
+    /** Colourspace for internal operations */
+    colourspace: "rgb" | "srgb" | "cmyk" | "lab" | "b-w";
+}
+
+/**
+ * To colourspace options
+ */
+export interface ToColourspaceOptions extends TransformOptions {
+    /** Target colourspace */
+    colourspace: "srgb" | "rgb" | "cmyk" | "lab" | "b-w";
+}
+
+/**
+ * Remove alpha channel options
+ */
+export interface RemoveAlphaOptions extends TransformOptions {
+    /** Background color to composite over alpha channel */
+    background?: string;
+}
+
+/**
+ * Ensure alpha channel options
+ */
+export interface EnsureAlphaOptions extends TransformOptions {
+    /** Alpha channel value to add */
+    alpha?: number;
+}
+
+/**
  * Resize transformation options
  */
 export interface ResizeOptions extends TransformOptions {
     /** Background color for fill fit */
     background?: string;
+    /** Whether to skip enlargement during initial load */
+    fastShrinkOnLoad?: boolean;
     /** Resize fit mode */
     fit?: "cover" | "contain" | "fill" | "inside" | "outside";
     /** Height in pixels */
     height?: number;
+    /** Resize kernel */
+    kernel?: "nearest" | "cubic" | "mitchell" | "lanczos2" | "lanczos3";
     /** Position for cover/contain fits */
     position?: string | number;
     /** Width in pixels */
@@ -65,8 +311,8 @@ export interface CropOptions extends TransformOptions {
  * Rotate transformation options
  */
 export interface RotateOptions extends TransformOptions {
-    /** Rotation angle in degrees (90, 180, 270) */
-    angle: 90 | 180 | 270;
+    /** Rotation angle in degrees. Note: angles other than 90°, 180°, and 270° require interpolation and may affect image quality */
+    angle: number;
     /** Background color for rotation */
     background?: string;
 }
@@ -75,8 +321,72 @@ export interface RotateOptions extends TransformOptions {
  * Transformation pipeline step
  */
 export interface TransformationStep {
-    options: TransformOptions | ResizeOptions | CropOptions | RotateOptions;
-    type: "resize" | "crop" | "rotate" | "format" | "quality";
+    options:
+        | TransformOptions
+        | ResizeOptions
+        | CropOptions
+        | RotateOptions
+        | SharpenOptions
+        | BlurOptions
+        | MedianOptions
+        | CLAHEOptions
+        | ConvolveOptions
+        | ThresholdOptions
+        | BooleanOptions
+        | LinearOptions
+        | RecombineOptions
+        | ModulateOptions
+        | TintOptions
+        | GreyscaleOptions
+        | ColourspaceOptions
+        | ExtractChannelOptions
+        | JoinChannelOptions
+        | BandboolOptions
+        | AffineOptions
+        | DilateOptions
+        | ErodeOptions
+        | PipelineColourspaceOptions
+        | ToColourspaceOptions
+        | RemoveAlphaOptions
+        | EnsureAlphaOptions;
+    type:
+        | "resize"
+        | "crop"
+        | "rotate"
+        | "format"
+        | "quality"
+        | "sharpen"
+        | "blur"
+        | "median"
+        | "clahe"
+        | "convolve"
+        | "threshold"
+        | "boolean"
+        | "linear"
+        | "recombine"
+        | "modulate"
+        | "tint"
+        | "greyscale"
+        | "colourspace"
+        | "extractChannel"
+        | "joinChannel"
+        | "bandbool"
+        | "autoOrient"
+        | "flip"
+        | "flop"
+        | "affine"
+        | "dilate"
+        | "erode"
+        | "pipelineColourspace"
+        | "toColourspace"
+        | "removeAlpha"
+        | "ensureAlpha"
+        | "flatten"
+        | "unflatten"
+        | "gamma"
+        | "negate"
+        | "normalise"
+        | "normalize";
 }
 
 /**
@@ -88,6 +398,22 @@ export interface MediaTransformationStep {
         | ResizeOptions
         | CropOptions
         | RotateOptions
+        | SharpenOptions
+        | BlurOptions
+        | MedianOptions
+        | CLAHEOptions
+        | ConvolveOptions
+        | ThresholdOptions
+        | BooleanOptions
+        | LinearOptions
+        | RecombineOptions
+        | ModulateOptions
+        | TintOptions
+        | GreyscaleOptions
+        | ColourspaceOptions
+        | ExtractChannelOptions
+        | JoinChannelOptions
+        | BandboolOptions
         | VideoTransformOptions
         | VideoResizeOptions
         | VideoCropOptions
@@ -95,7 +421,45 @@ export interface MediaTransformationStep {
         | AudioTransformOptions
         | AudioChannelMixOptions
         | AudioResampleOptions;
-    type: "resize" | "crop" | "rotate" | "format" | "quality" | "codec" | "bitrate" | "frameRate" | "resample" | "channels";
+    type:
+        | "resize"
+        | "crop"
+        | "rotate"
+        | "format"
+        | "quality"
+        | "sharpen"
+        | "blur"
+        | "median"
+        | "clahe"
+        | "convolve"
+        | "threshold"
+        | "boolean"
+        | "linear"
+        | "recombine"
+        | "modulate"
+        | "tint"
+        | "greyscale"
+        | "colourspace"
+        | "extractChannel"
+        | "joinChannel"
+        | "bandbool"
+        | "autoOrient"
+        | "flip"
+        | "flop"
+        | "affine"
+        | "dilate"
+        | "erode"
+        | "flatten"
+        | "unflatten"
+        | "gamma"
+        | "negate"
+        | "normalise"
+        | "normalize"
+        | "codec"
+        | "bitrate"
+        | "frameRate"
+        | "resample"
+        | "channels";
 }
 
 /**
@@ -162,8 +526,8 @@ export interface VideoCropOptions extends VideoTransformOptions {
  * Video rotate transformation options
  */
 export interface VideoRotateOptions extends VideoTransformOptions {
-    /** Rotation angle in degrees (90, 180, 270) */
-    angle: 90 | 180 | 270;
+    /** Rotation angle in degrees. Note: angles other than 90°, 180°, and 270° require interpolation and may affect video quality */
+    angle: number;
     /** Background color for rotation */
     background?: string;
 }
@@ -323,13 +687,18 @@ export interface MediaTransformResult<TFileReturn extends FileReturn = FileRetur
  * Query parameters for media transformation
  */
 export interface MediaTransformQuery {
-    /** Rotation angle in degrees */
-    angle?: 90 | 180 | 270;
+    /** Rotation angle in degrees. Note: angles other than 90°, 180°, and 270° require interpolation and may affect media quality */
+    angle?: number;
     /** Background color for rotation */
     background?: string;
-
     /** Video bitrate in bits per second */
     bitrate?: number;
+    /** Apply blur effect */
+    blur?: boolean;
+    /** Brightness multiplier for modulation */
+    brightness?: number;
+    /** Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) */
+    clahe?: boolean;
     // Video-specific parameters
     /** Video codec */
     codec?: "avc" | "hevc" | "vp8" | "vp9" | "av1" | "aac" | "opus" | "mp3" | "vorbis" | "flac";
@@ -337,31 +706,82 @@ export interface MediaTransformQuery {
     cropHeight?: number;
     /** Crop area width */
     cropWidth?: number;
+    /** Fast shrink on load */
+    fastShrinkOnLoad?: boolean;
     /** Resize fit mode */
     fit?: "cover" | "contain" | "fill" | "inside" | "outside";
+    /** Flatten alpha channel */
+    flatten?: boolean;
+    /** Flip image vertically */
+    flip?: boolean;
+    /** Flop image horizontally */
+    flop?: boolean;
     // Common parameters
     /** Output format */
     format?: string;
     /** Frame rate in Hz */
     frameRate?: number;
+    /** Apply gamma correction */
+    gamma?: boolean;
+    /** Convert to greyscale */
+    greyscale?: boolean;
     /** Height in pixels */
     height?: number;
+    /** Hue rotation in degrees for modulation */
+    hue?: number;
+    /** Resize kernel */
+    kernel?: string;
     /** Key frame interval in seconds */
     keyFrameInterval?: number;
     /** Crop area left offset */
     left?: number;
+
+    /** Lightness adjustment for modulation */
+    lightness?: number;
+    /** Apply median filter with specified size */
+    median?: number;
+    /** Apply modulation effects */
+    modulate?: boolean;
+    /** Apply affine transformation */
+    affine?: boolean;
+    /** Apply dilation */
+    dilate?: boolean;
+    /** Apply erosion */
+    erode?: boolean;
+    /** Set pipeline colourspace */
+    pipelineColourspace?: boolean;
+    /** Convert to colourspace */
+    toColourspace?: boolean;
+    /** Remove alpha channel */
+    removeAlpha?: boolean;
+    /** Ensure alpha channel */
+    ensureAlpha?: boolean;
+    /** Negate (invert) the image */
+    negate?: boolean;
+    /** Normalise the image */
+    normalise?: boolean;
     // Audio-specific parameters
     /** Number of channels */
     numberOfChannels?: number;
     /** Position for cover/contain fits */
     position?: string | number;
-
     /** Quality (0-100 for images, bitrate for video/audio) */
     quality?: number;
     /** Sample rate in Hz */
     sampleRate?: number;
+    /** Saturation multiplier for modulation */
+    saturation?: number;
+    /** Apply sharpening */
+    sharpen?: boolean;
+    /** Apply thresholding with specified value */
+    threshold?: number;
+
+    /** Apply tinting */
+    tint?: boolean;
     /** Crop area top offset */
     top?: number;
+    /** Unflatten alpha channel */
+    unflatten?: boolean;
     // Image-specific parameters
     /** Width in pixels */
     width?: number;
@@ -385,7 +805,7 @@ export interface BaseTransformerConfig {
     /** Maximum number of cached items */
     maxCacheSize?: number;
     /** Supported input formats */
-    supportedFormats?: string[];
+    supportedFormats?: string[] | undefined;
 }
 
 /**
