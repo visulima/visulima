@@ -120,6 +120,10 @@
             "types": "./dist/transformer/image-transformer.d.ts",
             "import": "./dist/transformer/image-transformer.js"
         },
+        "./transformer": {
+            "types": "./dist/transformer/index.d.ts",
+            "import": "./dist/transformer/index.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [

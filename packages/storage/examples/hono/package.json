@@ -8,6 +8,7 @@
     },
     "dependencies": {
         "@visulima/upload": "workspace:*",
+        "sharp": "^0.34.4",
         "@hono/node-server": "^1.19.5",
         "hono": "^4.9.10",
         "@hono/swagger-ui": "^0.5.2",

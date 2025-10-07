@@ -59,6 +59,11 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
     TFile,
     TFileReturn
 > {
+    /**
+     * Creates a new AudioTransformer instance
+     * @param storage The storage backend for retrieving and storing audio files
+     * @param config Configuration options for audio transformation including cache settings, codec defaults, and size limits
+     */
     public constructor(storage: BaseStorage<TFile, TFileReturn>, config: AudioTransformerConfig = {}) {
         const logger = config.logger || storage.logger;
 
@@ -185,6 +190,9 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Convert transformation steps to Mediabunny audio options
+     * @param steps Array of audio transformation steps to convert
+     * @returns Mediabunny audio options object for conversion
+     * @private
      */
     private stepsToAudioOptions(steps: AudioTransformationStep[]): any {
         const options: any = {};
@@ -239,6 +247,9 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Determine output format based on transformation steps
+     * @param steps Array of audio transformation steps
+     * @returns Mediabunny output format instance (defaults to MP3)
+     * @private
      */
     private determineOutputFormat(steps: AudioTransformationStep[]): any {
         // Check if any step specifies a format
@@ -254,6 +265,9 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Convert format string to Mediabunny output format
+     * @param format Audio format string (aac, flac, mp3, ogg, wav)
+     * @returns Mediabunny output format instance
+     * @private
      */
     private formatStringToOutputFormat(format: string): any {
         switch (format.toLowerCase()) {
@@ -280,6 +294,10 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Validate that the file is a supported audio file
+     * @param file The file to validate
+     * @returns Promise that resolves if validation passes
+     * @throws Error if file size exceeds limits, wrong content type, unsupported format, or invalid audio
+     * @private
      */
     private async validateAudio(file: TFileReturn): Promise<void> {
         // Check file size
@@ -319,7 +337,11 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Create transformation result
+     * Create transformation result with metadata
+     * @param buffer The transformed audio buffer
+     * @param originalFile The original file information
+     * @returns Audio transformation result with metadata
+     * @private
      */
     private async createTransformResult(buffer: Buffer, originalFile: TFileReturn): Promise<AudioTransformResult<TFileReturn>> {
         // For now, return basic metadata. In a real implementation,
@@ -346,6 +368,10 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Generate cache key for transformation
+     * @param fileId The file identifier
+     * @param steps Array of transformation steps
+     * @returns Unique cache key string
+     * @private
      */
     private generateCacheKey(fileId: string, steps: AudioTransformationStep[]): string {
         const stepsKey = steps.map((step) => `${step.type}:${JSON.stringify(step.options)}`).join("|");
@@ -354,7 +380,9 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Clear cache for a specific file
+     * Clear cache for a specific file or all files
+     * @param fileId Optional file identifier. If provided, clears cache only for this file. If omitted, clears entire cache.
+     * @override
      */
     public override clearCache(fileId?: string): void {
         if (!this.cache) {
@@ -380,6 +408,8 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Get cache statistics
+     * @returns Cache statistics with maxSize and current size, or undefined if caching is disabled
+     * @override
      */
     public override getCacheStats(): { maxSize: number; size: number } | undefined {
         if (!this.cache) {

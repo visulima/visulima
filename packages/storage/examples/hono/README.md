@@ -7,6 +7,7 @@ This example demonstrates how to use the Visulima Upload package with modern fra
 - Native Web API Request/Response support using the `fetch()` method
 - Multipart file uploads
 - File listing endpoint
+- **Image transformation support** - Resize, crop, convert formats with caching
 - CORS support
 - Local disk storage
 - **Swagger/OpenAPI documentation** - Interactive API documentation
@@ -31,9 +32,28 @@ The server will start on `http://localhost:3002`.
 
 - `GET /health` - Health check
 - `GET /files` - List uploaded files
-- `POST /upload` - Upload files (multipart/form-data)
+- `POST /files` - Upload files (multipart/form-data)
+- `GET /files/:id` - Download file (supports image transformations via query parameters)
+- `DELETE /files/:id` - Delete file
 - `GET /swagger` - Interactive Swagger UI documentation
 - `GET /openapi.json` - OpenAPI JSON specification
+
+## Image Transformations
+
+The API supports image transformations through query parameters on file download endpoints:
+
+- `?format=jpeg|png|webp|avif` - Convert to different format
+- `?width=300&height=200` - Resize image
+- `?crop=100,100,200,200` - Crop image (x,y,width,height)
+- `?quality=80` - Set JPEG/WebP quality (0-100)
+
+Example:
+
+```
+GET /files/your-file-id?format=webp&width=800&height=600&quality=90
+```
+
+Transformations are cached for performance, and only image formats are supported in this configuration.
 
 ## Example Usage
 

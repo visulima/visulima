@@ -5,6 +5,8 @@ import { swaggerUI } from "@hono/swagger-ui";
 import type { Context } from "hono";
 import { Multipart, DiskStorage } from "@visulima/upload";
 import { xhrOpenApiSpec } from "@visulima/upload/openapi";
+import { MediaTransformer } from "@visulima/upload/transformer";
+import ImageTransformer from "@visulima/upload/transformers/image";
 import { serve } from "@hono/node-server";
 
 const app = new Hono();
@@ -26,8 +28,18 @@ const storage = new DiskStorage({
     logger: console,
 });
 
+// Media transformer with only image support
+const mediaTransformer = new MediaTransformer(storage, {
+    ImageTransformer, // Only enable image transformations
+    enableCache: true,
+    maxImageSize: 10 * 1024 * 1024, // 10MB for images
+});
+
 // Multipart handler
-const multipart = new Multipart({ storage });
+const multipart = new Multipart({
+    storage,
+    mediaTransformer,
+});
 
 // Health check route (custom - not using OpenAPI utilities)
 app.get("/health", (c: Context) => c.json({ status: "OK", runtime: "hono", method: "fetch" }));
@@ -96,7 +108,8 @@ app.get("/openapi.json", (c: Context) =>
             },
         ],
         ...xhrOpenApiSpec("http://localhost:3000", "/files", {
-            transformer: true,
+            transformer: "image",
+            supportedTransformerFormat: mediaTransformer.supportedFormats(),
         }),
     }),
 );

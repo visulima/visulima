@@ -67,9 +67,31 @@ import ValidationError from "./validation-error";
  * - `position`: Position for cover/contain fits
  * - `withoutEnlargement`: Avoid enlarging smaller images (boolean)
  * - `withoutReduction`: Avoid reducing larger images (boolean)
+ * - `kernel`: Resize kernel - nearest/cubic/mitchell/lanczos2/lanczos3
+ * - `fastShrinkOnLoad`: Fast shrink on load (boolean)
  * - `left/top/cropWidth/cropHeight`: Crop parameters
- * - `angle`: Rotation angle (90/180/270)
+ * - `angle`: Rotation angle in degrees (any number, but angles other than 90°/180°/270° use interpolation and may affect quality)
  * - `background`: Background color for rotation
+ * - `blur`: Apply blur effect (boolean)
+ * - `sharpen`: Apply sharpening (boolean)
+ * - `median`: Apply median filter with size (number)
+ * - `clahe`: Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) (boolean)
+ * - `threshold`: Apply thresholding with value (0-255)
+ * - `gamma`: Apply gamma correction (boolean)
+ * - `negate`: Negate (invert) the image (boolean)
+ * - `normalise/normalize`: Normalise the image (boolean)
+ * - `flatten`: Flatten alpha channel (boolean)
+ * - `unflatten`: Unflatten alpha channel (boolean)
+ * - `flip`: Flip image vertically (boolean)
+ * - `flop`: Flop image horizontally (boolean)
+ * - `greyscale/grayscale`: Convert to greyscale (boolean)
+ * - `modulate`: Apply modulation effects (boolean)
+ * - `brightness`: Brightness multiplier for modulation (number)
+ * - `saturation`: Saturation multiplier for modulation (number)
+ * - `hue`: Hue rotation in degrees for modulation (number)
+ * - `lightness`: Lightness adjustment for modulation (number)
+ * - `tint`: Apply tinting (boolean)
+ * - `colourspace`: Convert colourspace - srgb/rgb/cmyk/lab/b-w
  *
  * ### Video Parameters
  * - `width/height/fit`: Same as images
@@ -77,6 +99,8 @@ import ValidationError from "./validation-error";
  * - `bitrate`: Video bitrate in bits per second
  * - `frameRate`: Frame rate in Hz
  * - `keyFrameInterval`: Key frame interval in seconds
+ * - `angle`: Rotation angle in degrees (any number, but angles other than 90°/180°/270° use interpolation and may affect quality)
+ * - `background`: Background color for rotation
  *
  * ### Audio Parameters
  * - `sampleRate`: Sample rate in Hz
@@ -104,6 +128,12 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     private readonly logger: Logger | undefined;
 
+    /**
+     * Creates a new MediaTransformer instance
+     * @param storage The storage backend for retrieving and storing media files
+     * @param config Configuration options for the media transformer including transformer classes and settings
+     * @throws Error if no transformer classes are provided in the configuration
+     */
     public constructor(
         private readonly storage: BaseStorage<TFile, TFileReturn>,
         config: MediaTransformerConfig<TFile, TFileReturn> = {},
@@ -119,15 +149,19 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             maxImageSize: 10 * 1024 * 1024, // 10MB
             maxVideoSize: 500 * 1024 * 1024, // 500MB
             saveTransformedFiles: false, // Save transformed files to storage
-            supportedAudioFormats: ["mp3", "wav", "ogg", "aac", "flac", "m4a", "wma", "aiff"],
-            supportedImageFormats: ["jpeg", "png", "webp", "avif", "tiff", "gif", "svg"],
-            supportedVideoFormats: ["mp4", "webm", "mkv", "avi", "mov", "flv", "wmv"],
+            supportedAudioFormats: [],
+            supportedImageFormats: [],
+            supportedVideoFormats: [],
             videoBitrate: 2_000_000, // 2 Mbps
             videoCodec: "avc",
             ...config,
         };
 
         if (config.ImageTransformer) {
+            if (!Array.isArray(this.config.supportedImageFormats) || this.config.supportedImageFormats.length === 0) {
+                this.config.supportedImageFormats = ["jpeg", "png", "webp", "avif", "tiff", "gif", "svg"];
+            }
+
             this.imageTransformer = new config.ImageTransformer(this.storage, {
                 cacheTtl: this.config.cacheTtl,
                 enableCache: this.config.enableCache,
@@ -138,6 +172,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
 
         if (config.VideoTransformer) {
+            if (!Array.isArray(this.config.supportedVideoFormats) || this.config.supportedVideoFormats.length === 0) {
+                this.config.supportedVideoFormats = ["mp4", "webm", "mkv", "avi", "mov", "flv", "wmv"];
+            }
+
             this.videoTransformer = new config.VideoTransformer(this.storage, {
                 cacheTtl: this.config.cacheTtl,
                 defaultBitrate: this.config.videoBitrate,
@@ -150,6 +188,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
 
         if (config.AudioTransformer) {
+            if (!Array.isArray(this.config.supportedAudioFormats) || this.config.supportedAudioFormats.length === 0) {
+                this.config.supportedAudioFormats = ["mp3", "wav", "ogg", "aac", "flac", "m4a", "wma", "aiff"];
+            }
+
             this.audioTransformer = new config.AudioTransformer(this.storage, {
                 cacheTtl: this.config.cacheTtl,
                 defaultBitrate: this.config.audioBitrate,
@@ -169,13 +211,17 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
     }
 
+    public supportedFormats(): string[] {
+        return [...this.config.supportedAudioFormats, ...this.config.supportedImageFormats, ...this.config.supportedVideoFormats];
+    }
+
     /**
      * Handle media transformation based on query parameters
      * @param fileId File identifier
      * @param query Query parameters for transformation
      * @returns Unified transformation result
      */
-    public async handle(fileId: string, query: MediaTransformQuery | URLSearchParams | string): Promise<MediaTransformResult> {
+    public async handle(fileId: string, query: Record<string, string | undefined> | URLSearchParams | string): Promise<MediaTransformResult> {
         // Parse query parameters
         const parsedQuery = this.parseQuery(query);
 
@@ -373,17 +419,58 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      */
     private validateImageQueryParameters(query: MediaTransformQuery): void {
         const allowedParameters = new Set([
+            "alphaQuality",
             "angle",
             "background",
+            "bandbool",
+            "blur",
+            "boolean",
+            "brightness",
+            "channel",
+            "clahe",
+            "colourspace",
+            "compressionLevel",
+            "convolve",
             "cropHeight",
             "cropWidth",
+            "delay",
+            "dilate",
+            "effort",
+            "erode",
+            "extractChannel",
+            "fastShrinkOnLoad",
             "fit",
+            "flatten",
+            "flip",
+            "flop",
             "format",
+            "frameRate",
+            "gamma",
+            "grayscale",
+            "greyscale",
             "height",
+            "hue",
+            "joinChannel",
+            "kernel",
             "left",
+            "lightness",
+            "linear",
+            "loop",
+            "maxSlope",
+            "median",
+            "modulate",
+            "negate",
+            "normalise",
+            "normalize",
             "position",
             "quality",
+            "recombine",
+            "saturation",
+            "sharpen",
+            "threshold",
+            "tint",
             "top",
+            "unflatten",
             "width",
             "withoutEnlargement",
             "withoutReduction",
@@ -422,16 +509,6 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
                 "image",
                 ["fit"],
                 ["cover", "contain", "fill", "inside", "outside"],
-            );
-        }
-
-        if (query.angle && ![90, 180, 270].includes(query.angle)) {
-            throw new ValidationError(
-                `Invalid angle value: ${query.angle}. Supported values: 90, 180, 270`,
-                "INVALID_ANGLE_VALUE",
-                "image",
-                ["angle"],
-                ["90", "180", "270"],
             );
         }
 
@@ -532,16 +609,6 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             );
         }
 
-        if (query.angle && ![90, 180, 270].includes(query.angle)) {
-            throw new ValidationError(
-                `Invalid angle value: ${query.angle}. Supported values: 90, 180, 270`,
-                "INVALID_ANGLE_VALUE",
-                "video",
-                ["angle"],
-                ["90", "180", "270"],
-            );
-        }
-
         if (query.codec && !["av1", "avc", "hevc", "vp8", "vp9"].includes(query.codec)) {
             throw new ValidationError(
                 `Invalid codec for video: "${query.codec}". Supported codecs: avc, hevc, vp8, vp9, av1`,
@@ -606,6 +673,11 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Generate a unique ID for transformed files based on original file and transformations
+     * @param originalFileId The original file identifier
+     * @param query The transformation query parameters
+     * @param mediaType The media type (image, video, audio)
+     * @returns Unique deterministic identifier for the transformed file
+     * @private
      */
     private generateTransformedFileId(originalFileId: string, query: MediaTransformQuery, mediaType: string): string {
         // Create a deterministic hash of the transformation parameters
@@ -623,6 +695,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Check if the query contains any transformations
+     * @param query The transformation query parameters
+     * @returns True if any transformations are requested
+     * @private
      */
     private hasTransformations(query: MediaTransformQuery): boolean {
         return this.hasImageTransformations(query) || this.hasVideoTransformations(query) || this.hasAudioTransformations(query);
@@ -630,6 +705,11 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Create a MediaTransformResult from a stored transformed file
+     * @param storedFile The stored transformed file
+     * @param mediaType The media type (image, video, audio)
+     * @param originalFile The original file information
+     * @returns Media transformation result with metadata
+     * @private
      */
     private createMediaTransformResult(storedFile: TFileReturn, mediaType: string, originalFile: TFileReturn): MediaTransformResult {
         const baseResult = {
@@ -678,6 +758,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Extract format from content type
+     * @param contentType MIME content type string
+     * @returns Format string extracted from content type
+     * @private
      */
     private getFormatFromContentType(contentType: string): string {
         if (!contentType)
@@ -690,6 +773,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Get appropriate content type for a format
+     * @param format Media format string
+     * @returns MIME content type for the format
+     * @private
      */
     private getContentTypeForFormat(format: string): string {
         const contentTypes: Record<string, string> = {
@@ -726,6 +812,12 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Save transformed file to storage
+     * @param result The transformation result to save
+     * @param originalFileId The original file identifier
+     * @param query The transformation query parameters
+     * @param mediaType The media type (image, video, audio)
+     * @returns Promise that resolves when file is saved
+     * @private
      */
     private async saveTransformedFile(result: MediaTransformResult, originalFileId: string, query: MediaTransformQuery, mediaType: string): Promise<void> {
         try {
@@ -887,6 +979,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Handle image transformation
+     * @param fileId The file identifier
+     * @param query The transformation query parameters
+     * @returns Promise resolving to media transformation result
+     * @private
      */
     private async handleImageTransformation(fileId: string, query: MediaTransformQuery): Promise<MediaTransformResult> {
         const steps: any[] = [];
@@ -957,6 +1053,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Handle video transformation
+     * @param fileId The file identifier
+     * @param query The transformation query parameters
+     * @returns Promise resolving to media transformation result
+     * @private
      */
     private async handleVideoTransformation(fileId: string, query: MediaTransformQuery): Promise<MediaTransformResult> {
         const steps: any[] = [];
@@ -981,7 +1081,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             if (query.left !== undefined && query.top !== undefined && query.cropWidth && query.cropHeight) {
                 steps.push({
                     options: {
-                        height: query.cropHeight,
+                        height: Number(query.cropHeight),
                         left: query.left,
                         top: query.top,
                         width: query.cropWidth,
@@ -1031,6 +1131,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Handle audio transformation
+     * @param fileId The file identifier
+     * @param query The transformation query parameters
+     * @returns Promise resolving to media transformation result
+     * @private
      */
     private async handleAudioTransformation(fileId: string, query: MediaTransformQuery): Promise<MediaTransformResult> {
         const steps: any[] = [];
@@ -1085,103 +1189,326 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Parse query parameters from various input formats
+     * @param query Query parameters in various formats
+     * @returns Normalized MediaTransformQuery object
+     * @private
      */
-    private parseQuery(query: MediaTransformQuery | URLSearchParams | string): MediaTransformQuery {
+    private parseQuery(query: Record<string, string | undefined> | URLSearchParams | string): MediaTransformQuery {
         if (typeof query === "string") {
-            // Parse as URL query string
-            const parameters = new URLSearchParams(query);
-
-            return this.parseURLSearchParams(parameters);
+            return this.parseURLSearchParams(new URLSearchParams(query));
         }
 
         if (query instanceof URLSearchParams) {
             return this.parseURLSearchParams(query);
         }
 
-        // Already parsed object
-        return query;
+        const transformQuery: MediaTransformQuery = query;
+
+        if (query.left) {
+            transformQuery.left = Number.parseInt(query.left, 10);
+        }
+
+        if (query.top) {
+            transformQuery.top = Number.parseInt(query.top, 10);
+        }
+
+        if (query.cropWidth) {
+            transformQuery.cropWidth = Number.parseInt(query.cropWidth, 10);
+        }
+
+        if (query.cropHeight) {
+            transformQuery.cropHeight = Number.parseInt(query.cropHeight, 10);
+        }
+
+        if (query.angle) {
+            transformQuery.angle = Number.parseInt(query.angle, 10);
+        }
+
+        if (query.quality) {
+            transformQuery.quality = Number.parseInt(query.quality, 10);
+        }
+
+        // Parse image/video parameters
+        if (query.width) {
+            transformQuery.width = Number.parseInt(query.width, 10);
+        }
+
+        if (query.height) {
+            transformQuery.height = Number.parseInt(query.height, 10);
+        }
+
+        if (query.bitrate) {
+            transformQuery.bitrate = Number.parseInt(query.bitrate, 10);
+        }
+
+        if (query.frameRate) {
+            transformQuery.frameRate = Number.parseInt(query.frameRate, 10);
+        }
+
+        if (query.keyFrameInterval) {
+            transformQuery.keyFrameInterval = Number.parseInt(query.keyFrameInterval, 10);
+        }
+
+        // Parse audio parameters
+        if (query.numberOfChannels) {
+            transformQuery.numberOfChannels = Number.parseInt(query.numberOfChannels, 10);
+        }
+
+        if (query.sampleRate) {
+            transformQuery.sampleRate = Number.parseInt(query.sampleRate, 10);
+        }
+
+        return transformQuery;
+    }
+
+    /**
+     * Parse boolean parameter from string
+     * @param value String value to parse
+     * @returns Boolean value or undefined
+     * @private
+     */
+    private parseBooleanParameter(value: string | null): boolean | undefined {
+        if (value === null)
+            return undefined;
+
+        return value === "true" || value === "1";
     }
 
     /**
      * Parse URLSearchParams into MediaTransformQuery
+     * @param parameters URL search parameters object
+     * @returns MediaTransformQuery object with parsed parameters
+     * @private
      */
     private parseURLSearchParams(parameters: URLSearchParams): MediaTransformQuery {
         const query: MediaTransformQuery = {};
 
         // Parse common parameters
-        if (parameters.has("format"))
-            query.format = parameters.get("format")!;
-
-        if (parameters.has("quality"))
-            query.quality = Number.parseInt(parameters.get("quality")!, 10);
-
-        // Parse image/video parameters
-        if (parameters.has("width"))
-            query.width = Number.parseInt(parameters.get("width")!, 10);
-
-        if (parameters.has("height"))
-            query.height = Number.parseInt(parameters.get("height")!, 10);
-
-        if (parameters.has("fit"))
-            query.fit = parameters.get("fit") as any;
-
-        if (parameters.has("position")) {
-            const position = parameters.get("position")!;
-
-            query.position = isNaN(Number(position)) ? position : Number.parseInt(position, 10);
+        if (parameters.has("format")) {
+            query.format = parameters.get("format") ?? undefined;
         }
 
-        if (parameters.has("withoutEnlargement"))
-            query.withoutEnlargement = parameters.get("withoutEnlargement") === "true";
+        if (parameters.has("quality")) {
+            query.quality = parameters.get("quality") ? Number.parseInt(parameters.get("quality") as string, 10) : undefined;
+        }
 
-        if (parameters.has("withoutReduction"))
-            query.withoutReduction = parameters.get("withoutReduction") === "true";
+        // Parse image/video parameters
+        if (parameters.has("width")) {
+            query.width = parameters.get("width") ? Number.parseInt(parameters.get("width") as string, 10) : undefined;
+        }
+
+        if (parameters.has("height")) {
+            query.height = parameters.get("height") ? Number.parseInt(parameters.get("height") as string, 10) : undefined;
+        }
+
+        if (parameters.has("fit")) {
+            const fitValue = parameters.get("fit");
+
+            if (fitValue && ["contain", "cover", "fill", "inside", "outside"].includes(fitValue)) {
+                query.fit = fitValue as "cover" | "contain" | "fill" | "inside" | "outside";
+            }
+        }
+
+        if (parameters.has("position")) {
+            query.position = parameters.get("position") ?? undefined;
+        }
+
+        if (parameters.has("withoutEnlargement")) {
+            const value = parameters.get("withoutEnlargement");
+
+            query.withoutEnlargement = value === "true" ? true : undefined;
+        }
+
+        if (parameters.has("withoutReduction")) {
+            const value = parameters.get("withoutReduction");
+
+            query.withoutReduction = value === "true" ? true : undefined;
+        }
 
         // Parse crop parameters
-        if (parameters.has("left"))
-            query.left = Number.parseInt(parameters.get("left")!, 10);
+        if (parameters.has("left")) {
+            query.left = parameters.get("left") ? Number.parseInt(parameters.get("left") as string, 10) : undefined;
+        }
 
-        if (parameters.has("top"))
-            query.top = Number.parseInt(parameters.get("top")!, 10);
+        if (parameters.has("top")) {
+            query.top = parameters.get("top") ? Number.parseInt(parameters.get("top") as string, 10) : undefined;
+        }
 
-        if (parameters.has("cropWidth"))
-            query.cropWidth = Number.parseInt(parameters.get("cropWidth")!, 10);
+        if (parameters.has("cropWidth")) {
+            query.cropWidth = parameters.get("cropWidth") ? Number.parseInt(parameters.get("cropWidth") as string, 10) : undefined;
+        }
 
-        if (parameters.has("cropHeight"))
-            query.cropHeight = Number.parseInt(parameters.get("cropHeight")!, 10);
+        if (parameters.has("cropHeight")) {
+            query.cropHeight = parameters.get("cropHeight") ? Number.parseInt(parameters.get("cropHeight") as string, 10) : undefined;
+        }
 
-        // Parse rotation parameters
-        if (parameters.has("angle"))
-            query.angle = Number.parseInt(parameters.get("angle")!, 10) as any;
+        // Parse transformation parameters
+        if (parameters.has("angle")) {
+            const angleValue = parameters.get("angle") ? Number.parseInt(parameters.get("angle") as string, 10) : undefined;
 
-        if (parameters.has("background"))
-            query.background = parameters.get("background")!;
+            if (angleValue !== undefined) {
+                query.angle = angleValue;
+            }
+        }
+
+        if (parameters.has("background")) {
+            query.background = parameters.get("background") ?? undefined;
+        }
+
+        // Parse image operation parameters
+        if (parameters.has("blur")) {
+            query.blur = this.parseBooleanParameter(parameters.get("blur"));
+        }
+
+        if (parameters.has("sharpen")) {
+            query.sharpen = this.parseBooleanParameter(parameters.get("sharpen"));
+        }
+
+        if (parameters.has("median")) {
+            query.median = parameters.get("median") ? Number.parseInt(parameters.get("median") as string, 10) : undefined;
+        }
+
+        if (parameters.has("clahe")) {
+            query.clahe = this.parseBooleanParameter(parameters.get("clahe"));
+        }
+
+        if (parameters.has("threshold")) {
+            query.threshold = parameters.get("threshold") ? Number.parseInt(parameters.get("threshold") as string, 10) : undefined;
+        }
+
+        if (parameters.has("gamma")) {
+            query.gamma = this.parseBooleanParameter(parameters.get("gamma"));
+        }
+
+        if (parameters.has("negate")) {
+            query.negate = this.parseBooleanParameter(parameters.get("negate"));
+        }
+
+        if (parameters.has("normalise") || parameters.has("normalize")) {
+            query.normalise = this.parseBooleanParameter(parameters.get("normalise")) || this.parseBooleanParameter(parameters.get("normalize"));
+        }
+
+        if (parameters.has("flatten")) {
+            query.flatten = this.parseBooleanParameter(parameters.get("flatten"));
+        }
+
+        if (parameters.has("unflatten")) {
+            query.unflatten = this.parseBooleanParameter(parameters.get("unflatten"));
+        }
+
+        if (parameters.has("flip")) {
+            query.flip = this.parseBooleanParameter(parameters.get("flip"));
+        }
+
+        if (parameters.has("flop")) {
+            query.flop = this.parseBooleanParameter(parameters.get("flop"));
+        }
+
+        if (parameters.has("affine")) {
+            query.affine = this.parseBooleanParameter(parameters.get("affine"));
+        }
+
+        if (parameters.has("dilate")) {
+            query.dilate = this.parseBooleanParameter(parameters.get("dilate"));
+        }
+
+        if (parameters.has("erode")) {
+            query.erode = this.parseBooleanParameter(parameters.get("erode"));
+        }
+
+        if (parameters.has("pipelineColourspace")) {
+            query.pipelineColourspace = this.parseBooleanParameter(parameters.get("pipelineColourspace"));
+        }
+
+        if (parameters.has("toColourspace")) {
+            query.toColourspace = this.parseBooleanParameter(parameters.get("toColourspace"));
+        }
+
+        if (parameters.has("removeAlpha")) {
+            query.removeAlpha = this.parseBooleanParameter(parameters.get("removeAlpha"));
+        }
+
+        if (parameters.has("ensureAlpha")) {
+            query.ensureAlpha = this.parseBooleanParameter(parameters.get("ensureAlpha"));
+        }
+
+        if (parameters.has("greyscale") || parameters.has("grayscale")) {
+            query.greyscale = this.parseBooleanParameter(parameters.get("greyscale")) || this.parseBooleanParameter(parameters.get("grayscale"));
+        }
+
+        if (parameters.has("modulate")) {
+            query.modulate = this.parseBooleanParameter(parameters.get("modulate"));
+        }
+
+        if (parameters.has("tint")) {
+            query.tint = this.parseBooleanParameter(parameters.get("tint"));
+        }
+
+        // Parse advanced parameters
+        if (parameters.has("brightness")) {
+            query.brightness = parameters.get("brightness") ? Number.parseFloat(parameters.get("brightness") as string) : undefined;
+        }
+
+        if (parameters.has("saturation")) {
+            query.saturation = parameters.get("saturation") ? Number.parseFloat(parameters.get("saturation") as string) : undefined;
+        }
+
+        if (parameters.has("hue")) {
+            query.hue = parameters.get("hue") ? Number.parseInt(parameters.get("hue") as string, 10) : undefined;
+        }
+
+        if (parameters.has("lightness")) {
+            query.lightness = parameters.get("lightness") ? Number.parseInt(parameters.get("lightness") as string, 10) : undefined;
+        }
+
+        if (parameters.has("kernel")) {
+            query.kernel = parameters.get("kernel") ?? undefined;
+        }
+
+        if (parameters.has("fastShrinkOnLoad")) {
+            query.fastShrinkOnLoad = parameters.get("fastShrinkOnLoad") === "true";
+        }
 
         // Parse video parameters
-        if (parameters.has("codec"))
-            query.codec = parameters.get("codec") as any;
+        if (parameters.has("codec")) {
+            const codecValue = parameters.get("codec");
+            const validCodecs = ["avc", "hevc", "vp8", "vp9", "av1", "aac", "opus", "mp3", "vorbis", "flac"];
 
-        if (parameters.has("bitrate"))
-            query.bitrate = Number.parseInt(parameters.get("bitrate")!, 10);
+            if (codecValue && validCodecs.includes(codecValue)) {
+                query.codec = codecValue as "avc" | "hevc" | "vp8" | "vp9" | "av1" | "aac" | "opus" | "mp3" | "vorbis" | "flac";
+            }
+        }
 
-        if (parameters.has("frameRate"))
-            query.frameRate = Number.parseInt(parameters.get("frameRate")!, 10);
+        if (parameters.has("bitrate")) {
+            query.bitrate = parameters.get("bitrate") ? Number.parseInt(parameters.get("bitrate") as string, 10) : undefined;
+        }
 
-        if (parameters.has("keyFrameInterval"))
-            query.keyFrameInterval = Number.parseInt(parameters.get("keyFrameInterval")!, 10);
+        if (parameters.has("frameRate")) {
+            query.frameRate = parameters.get("frameRate") ? Number.parseInt(parameters.get("frameRate") as string, 10) : undefined;
+        }
+
+        if (parameters.has("keyFrameInterval")) {
+            query.keyFrameInterval = parameters.get("keyFrameInterval") ? Number.parseInt(parameters.get("keyFrameInterval") as string, 10) : undefined;
+        }
 
         // Parse audio parameters
-        if (parameters.has("numberOfChannels"))
-            query.numberOfChannels = Number.parseInt(parameters.get("numberOfChannels")!, 10);
+        if (parameters.has("numberOfChannels")) {
+            query.numberOfChannels = parameters.get("numberOfChannels") ? Number.parseInt(parameters.get("numberOfChannels") as string, 10) : undefined;
+        }
 
-        if (parameters.has("sampleRate"))
-            query.sampleRate = Number.parseInt(parameters.get("sampleRate")!, 10);
+        if (parameters.has("sampleRate")) {
+            query.sampleRate = parameters.get("sampleRate") ? Number.parseInt(parameters.get("sampleRate") as string, 10) : undefined;
+        }
 
         return query;
     }
 
     /**
      * Detect media type from MIME type
+     * @param contentType MIME content type string
+     * @returns Detected media type
+     * @throws Error if content type is missing or unsupported
+     * @private
      */
     private detectMediaType(contentType: string | undefined): "image" | "video" | "audio" {
         if (!contentType) {
@@ -1205,6 +1532,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Check if query has image transformations
+     * @param query The transformation query parameters
+     * @returns True if image transformations are requested
+     * @private
      */
     private hasImageTransformations(query: MediaTransformQuery): boolean {
         return !!(
@@ -1218,8 +1548,36 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             || query.top !== undefined
             || query.cropWidth
             || query.cropHeight
-            || query.angle
+            || query.angle !== undefined
             || query.background
+            || query.blur
+            || query.sharpen
+            || query.median
+            || query.clahe
+            || query.threshold !== undefined
+            || query.gamma
+            || query.negate
+            || query.normalise
+            || query.flatten
+            || query.unflatten
+            || query.flip
+            || query.flop
+            || query.greyscale
+            || query.modulate
+            || query.tint
+            || query.brightness !== undefined
+            || query.saturation !== undefined
+            || query.hue !== undefined
+            || query.lightness !== undefined
+            || query.kernel
+            || query.fastShrinkOnLoad
+            || query.affine
+            || query.dilate
+            || query.erode
+            || query.pipelineColourspace
+            || query.toColourspace
+            || query.removeAlpha
+            || query.ensureAlpha
             || query.format
             || query.quality
         );
@@ -1227,6 +1585,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Check if query has video transformations
+     * @param query The transformation query parameters
+     * @returns True if video transformations are requested
+     * @private
      */
     private hasVideoTransformations(query: MediaTransformQuery): boolean {
         return !!(
@@ -1253,6 +1614,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Check if query has audio transformations
+     * @param query The transformation query parameters
+     * @returns True if audio transformations are requested
+     * @private
      */
     private hasAudioTransformations(query: MediaTransformQuery): boolean {
         return !!(query.sampleRate || query.numberOfChannels || query.codec || query.bitrate || query.format || query.quality);
@@ -1260,6 +1624,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Convert ImageTransformer result to unified format
+     * @param result The image transformation result
+     * @returns Unified media transformation result
+     * @private
      */
     private convertImageResult(result: TransformResult): MediaTransformResult {
         return {
@@ -1275,6 +1642,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Convert VideoTransformer result to unified format
+     * @param result The video transformation result
+     * @returns Unified media transformation result
+     * @private
      */
     private convertVideoResult(result: VideoTransformResult): MediaTransformResult {
         return {
@@ -1292,6 +1662,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Convert AudioTransformer result to unified format
+     * @param result The audio transformation result
+     * @returns Unified media transformation result
+     * @private
      */
     private convertAudioResult(result: AudioTransformResult): MediaTransformResult {
         return {

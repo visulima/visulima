@@ -7,12 +7,12 @@ import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSch
 
 const swaggerSpec = (
     path: string,
-    options: { tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" },
+    options: { supportedTransformerFormat?: string[]; tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" },
 ): Partial<OpenAPIV3.Document> => {
-    const { tags, transformer } = { tags: ["Tus"], transformer: false, ...options };
+    const { supportedTransformerFormat, tags, transformer } = { tags: ["Tus"], transformer: false, ...options };
 
     const pathHash = createHash("sha256").update(path).digest("base64");
-    const getSchemaObject: OpenAPIV3.OperationObject = sharedGet(`${pathHash}TusGetFile`, tags, transformer);
+    const getSchemaObject: OpenAPIV3.OperationObject = sharedGet(`${pathHash}TusGetFile`, tags, transformer, supportedTransformerFormat);
 
     return {
         components: {
