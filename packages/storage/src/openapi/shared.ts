@@ -1,5 +1,7 @@
 import type { OpenAPIV3 } from "openapi-types";
 
+type TransformType = boolean | "audio" | "video" | "image";
+
 const FileMetaExample: OpenAPIV3.ExampleObject = {
     value: {
         createdAt: "2022-12-16T10:35:17.466Z",
@@ -8,68 +10,11 @@ const FileMetaExample: OpenAPIV3.ExampleObject = {
     },
 };
 
-export const sharedGetList = (operationId: string, tags: string[] | undefined): OpenAPIV3.OperationObject => {
-    return {
-        description: "List upload",
-        operationId,
-        parameters: [
-            {
-                description: "Maximum number of elements to retrieve.",
-                in: "query",
-                name: "limit",
-                schema: {
-                    nullable: true,
-                    type: "integer",
-                },
-            },
-            {
-                description: "Page number. Use only for pagination.",
-                in: "query",
-                name: "page",
-                schema: {
-                    nullable: true,
-                    type: "integer",
-                },
-            },
-        ],
-        responses: {
-            200: {
-                content: {
-                    "application/json": {
-                        examples: {
-                            Default: {
-                                $ref: "#/components/examples/FileMeta",
-                            },
-                            Pagination: {
-                                $ref: "#/components/examples/FileMetaPagination",
-                            },
-                        },
-                        schema: {
-                            $ref: "#/components/schemas/FileMeta",
-                        },
-                    },
-                },
-                description: "OK",
-            },
-            default: {
-                content: {
-                    "application/json": {
-                        schema: {
-                            $ref: "#/components/schemas/Error",
-                        },
-                    },
-                },
-                description: "Error",
-            },
-        },
-
-        summary: "List upload",
-        tags,
-    };
-};
-
 // Helper function to get transformation parameters based on transform type
-const getTransformationParameters = (transform?: boolean | "audio" | "video" | "image"): OpenAPIV3.ParameterObject[] => {
+const getTransformationParameters = (
+    transform?: TransformType,
+    format: string[] = ["jpeg", "png", "webp", "avif", "tiff", "gif", "mp4", "webm", "mkv", "ogg", "mp3", "wav", "aac", "flac"],
+): OpenAPIV3.ParameterObject[] => {
     if (!transform)
         return [];
 
@@ -80,7 +25,7 @@ const getTransformationParameters = (transform?: boolean | "audio" | "video" | "
             in: "query",
             name: "format",
             schema: {
-                enum: ["jpeg", "png", "webp", "avif", "tiff", "gif", "mp4", "webm", "mkv", "ogg", "mp3", "wav", "aac", "flac"],
+                enum: format,
                 type: "string",
             },
         },
@@ -316,7 +261,7 @@ const getTransformationParameters = (transform?: boolean | "audio" | "video" | "
 };
 
 // Helper function to get transformation response headers
-const getTransformationHeaders = (transform?: boolean | "audio" | "video" | "image"): Record<string, OpenAPIV3.HeaderObject> => {
+const getTransformationHeaders = (transform?: TransformType): Record<string, OpenAPIV3.HeaderObject> => {
     if (!transform)
         return {};
 
@@ -346,7 +291,7 @@ const getTransformationHeaders = (transform?: boolean | "audio" | "video" | "ima
 };
 
 // Helper function to get transformation error responses
-const getTransformationErrorResponses = (transform?: boolean | "audio" | "video" | "image"): Record<string, OpenAPIV3.ResponseObject> => {
+const getTransformationErrorResponses = (transform?: TransformType): Record<string, OpenAPIV3.ResponseObject> => {
     if (!transform)
         return {};
 
@@ -416,7 +361,12 @@ const getTransformationErrorResponses = (transform?: boolean | "audio" | "video"
     };
 };
 
-export const sharedGet = (operationId: string, tags: string[] | undefined, transform?: boolean | "audio" | "video" | "image"): OpenAPIV3.OperationObject => {
+export const sharedGet = (
+    operationId: string,
+    tags: string[] | undefined,
+    transform?: TransformType,
+    transformerFormat?: string[],
+): OpenAPIV3.OperationObject => {
     return {
         description: "Get the uploaded file with optional media transformation support",
         operationId,
@@ -429,7 +379,7 @@ export const sharedGet = (operationId: string, tags: string[] | undefined, trans
                     type: "string",
                 },
             },
-            ...getTransformationParameters(transform),
+            ...getTransformationParameters(transform, transformerFormat),
         ],
         responses: {
             200: {
@@ -736,4 +686,64 @@ export const sharedFileMetaExampleObject: Record<string, OpenAPIV3.ExampleObject
             },
         },
     },
+};
+
+export const sharedGetList = (operationId: string, tags: string[] | undefined): OpenAPIV3.OperationObject => {
+    return {
+        description: "List upload",
+        operationId,
+        parameters: [
+            {
+                description: "Maximum number of elements to retrieve.",
+                in: "query",
+                name: "limit",
+                schema: {
+                    nullable: true,
+                    type: "integer",
+                },
+            },
+            {
+                description: "Page number. Use only for pagination.",
+                in: "query",
+                name: "page",
+                schema: {
+                    nullable: true,
+                    type: "integer",
+                },
+            },
+        ],
+        responses: {
+            200: {
+                content: {
+                    "application/json": {
+                        examples: {
+                            Default: {
+                                $ref: "#/components/examples/FileMeta",
+                            },
+                            Pagination: {
+                                $ref: "#/components/examples/FileMetaPagination",
+                            },
+                        },
+                        schema: {
+                            $ref: "#/components/schemas/FileMeta",
+                        },
+                    },
+                },
+                description: "OK",
+            },
+            default: {
+                content: {
+                    "application/json": {
+                        schema: {
+                            $ref: "#/components/schemas/Error",
+                        },
+                    },
+                },
+                description: "Error",
+            },
+        },
+
+        summary: "List upload",
+        tags,
+    };
 };

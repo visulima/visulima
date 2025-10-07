@@ -63,6 +63,11 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     TFile,
     TFileReturn
 > {
+    /**
+     * Creates a new VideoTransformer instance
+     * @param storage The storage backend for retrieving and storing video files
+     * @param config Configuration options for video transformation including cache settings, codec defaults, and size limits
+     */
     public constructor(storage: BaseStorage<TFile, TFileReturn>, config: VideoTransformerConfig = {}) {
         const logger = config.logger || storage.logger;
 
@@ -157,7 +162,9 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Clear cache for a specific file
+     * Clear cache for a specific file or all files
+     * @param fileId Optional file identifier. If provided, clears cache only for this file. If omitted, clears entire cache.
+     * @override
      */
     public override clearCache(fileId?: string): void {
         if (!this.cache) {
@@ -185,6 +192,8 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Get cache statistics
+     * @returns Cache statistics with maxSize and current size, or undefined if caching is disabled
+     * @override
      */
     public override getCacheStats(): { maxSize: number; size: number } | undefined {
         if (!this.cache) {
@@ -199,6 +208,10 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Apply multiple transformations in sequence using Mediabunny
+     * @param buffer The original video buffer
+     * @param steps Array of video transformation steps to apply
+     * @returns Promise resolving to transformed video buffer
+     * @private
      */
     private async applyTransformations(buffer: Buffer, steps: VideoTransformationStep[]): Promise<Buffer> {
         // Create Mediabunny input from buffer
@@ -237,6 +250,9 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Convert transformation steps to Mediabunny video options
+     * @param steps Array of video transformation steps to convert
+     * @returns Mediabunny video options object for conversion
+     * @private
      */
     private stepsToVideoOptions(steps: VideoTransformationStep[]): any {
         const options: any = {};
@@ -317,6 +333,9 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Determine output format based on transformation steps
+     * @param steps Array of video transformation steps
+     * @returns Mediabunny output format instance (defaults to MP4)
+     * @private
      */
     private determineOutputFormat(steps: VideoTransformationStep[]): any {
         // Check if any step specifies a format
@@ -332,6 +351,9 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Convert format string to Mediabunny output format
+     * @param format Video format string (mp4, webm, mkv, ogg)
+     * @returns Mediabunny output format instance
+     * @private
      */
     private formatStringToOutputFormat(format: string): any {
         switch (format.toLowerCase()) {
@@ -355,6 +377,10 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Validate that the file is a supported video
+     * @param file The file to validate
+     * @returns Promise that resolves if validation passes
+     * @throws Error if file size exceeds limits, wrong content type, unsupported format, or invalid video
+     * @private
      */
     private async validateVideo(file: TFileReturn): Promise<void> {
         // Check file size
@@ -394,7 +420,11 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Create transformation result
+     * Create transformation result with metadata
+     * @param buffer The transformed video buffer
+     * @param originalFile The original file information
+     * @returns Video transformation result with metadata
+     * @private
      */
     private async createTransformResult(buffer: Buffer, originalFile: TFileReturn): Promise<VideoTransformResult<TFileReturn>> {
         // For now, return basic metadata. In a real implementation,
@@ -421,6 +451,10 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Generate cache key for transformation
+     * @param fileId The file identifier
+     * @param steps Array of transformation steps
+     * @returns Unique cache key string
+     * @private
      */
     private generateCacheKey(fileId: string, steps: VideoTransformationStep[]): string {
         const stepsKey = steps.map((step) => `${step.type}:${JSON.stringify(step.options)}`).join("|");
