@@ -14,12 +14,12 @@ const toResponse = <T extends ResponseBody>(response: ResponseTuple<T> | UploadR
     return { body, headers, statusCode };
 };
 
-class Validator<T> {
+export class Validator<T> {
     private validators: Record<string, Required<ValidatorConfig<T>>> = {};
 
-    constructor(private prefix = "ValidationError") {}
+    public constructor(private prefix = "ValidationError") {}
 
-    add(config: Validation<T>): void {
+    public add(config: Validation<T>): void {
         Object.entries(config).forEach(([key, validator]) => {
             const code = `${this.prefix}${capitalize(key)}`;
 
@@ -31,7 +31,7 @@ class Validator<T> {
         });
     }
 
-    async verify(t: T): Promise<never | void> {
+    public async verify(t: T): Promise<never | void> {
         for await (const [code, validator] of Object.entries(this.validators)) {
             const isValid = await validator.isValid(t);
 
@@ -44,8 +44,4 @@ class Validator<T> {
     }
 }
 
-export function isValidationError(error: unknown): error is ValidationError {
-    return (error as ValidationError).name === "ValidationError";
-}
-
-export default Validator;
+export const isValidationError = (error: unknown): error is ValidationError => (error as ValidationError).name === "ValidationError";

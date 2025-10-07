@@ -1,9 +1,9 @@
 import type { Headers, HttpErrorBody, ValidationError as IValidationError } from "./types";
 
 class ValidationError extends Error implements IValidationError {
-    override name: "ValidationError" = "ValidationError";
+    public override name: string = "ValidationError";
 
-    constructor(
+    public constructor(
         public code: string,
         public statusCode: number,
         public body: HttpErrorBody,
