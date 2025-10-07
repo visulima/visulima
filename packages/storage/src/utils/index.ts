@@ -48,4 +48,4 @@ export type {
     ValidationError,
     ValidatorConfig,
 } from "./types";
-export { isValidationError, default as Validator } from "./validator";
+export { isValidationError, Validator } from "./validator";

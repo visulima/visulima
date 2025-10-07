@@ -52,7 +52,7 @@ export class Tus<
      * app.use('/upload', new Tus(opts).handle);
      * ```
      */
-    public static override readonly methods: Handlers[] = ["delete", "get", "head", "options", "patch", "post"];
+    public static override readonly methods: Handlers[] = ["delete", "download", "get", "head", "options", "patch", "post"];
 
     /**
      *  A successful response indicated by the 204 No Content status MUST contain

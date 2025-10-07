@@ -1,3 +1,5 @@
+import { Readable } from "node:stream";
+
 import type { Sharp } from "sharp";
 import sharp from "sharp";
 
@@ -379,6 +381,52 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
 
         return result;
+    }
+
+    /**
+     * Stream transform a file (for large files, falls back to regular transform)
+     */
+    public override async transformStream(
+        fileId: string,
+        steps: TransformationStep[],
+    ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+        // For image transformations, we need the full image data, so we fall back to regular transform
+        // and then stream the result. True streaming would require a different approach.
+        const result = await this.transform(fileId, steps);
+
+        return {
+            headers: {
+                "Content-Length": result.buffer.length.toString(),
+                "Content-Type": this.getContentTypeFromResult(result),
+                "X-Image-Height": result.height?.toString(),
+                "X-Image-Width": result.width?.toString(),
+            },
+            size: result.buffer.length,
+            stream: Readable.from(result.buffer),
+        };
+    }
+
+    /**
+     * Get content type from transformation result
+     */
+    protected override getContentTypeFromResult(result: TransformResult<TFileReturn>): string {
+        // Determine content type based on format
+        if (result.format) {
+            const formatMap: Record<string, string> = {
+                avif: "image/avif",
+                gif: "image/gif",
+                jpeg: "image/jpeg",
+                jpg: "image/jpeg",
+                png: "image/png",
+                svg: "image/svg+xml",
+                tiff: "image/tiff",
+                webp: "image/webp",
+            };
+
+            return formatMap[result.format.toLowerCase()] || "application/octet-stream";
+        }
+
+        return "application/octet-stream";
     }
 
     /**

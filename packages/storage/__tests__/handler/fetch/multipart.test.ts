@@ -6,14 +6,14 @@ import Multipart from "../../../src/handler/multipart";
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import { storageOptions, testfile, testRoot } from "../../__helpers__/config";
 
-vi.mock(import("node:fs/promises"), () => {
-    const { fs } = require("memfs");
+vi.mock(import("node:fs/promises"), async () => {
+    const { fs } = await import("memfs");
 
     return fs.promises;
 });
 
-vi.mock(import("node:fs"), () => {
-    const { fs } = require("memfs");
+vi.mock(import("node:fs"), async () => {
+    const { fs } = await import("memfs");
 
     return fs;
 });
@@ -151,7 +151,7 @@ describe("fetch Multipart", () => {
             const response = await multipartHandler.fetch(request);
 
             expect(response.status).toBe(204);
-            expect(response.headers.get("access-control-allow-methods")).toBe("DELETE, GET, OPTIONS, POST");
+            expect(response.headers.get("access-control-allow-methods")).toBe("DELETE, DOWNLOAD, GET, OPTIONS, POST");
         });
     });
 });

@@ -1,4 +1,5 @@
 import type { IncomingMessage } from "node:http";
+import type { Readable } from "node:stream";
 
 import type { HttpError, HttpErrorBody, Logger, Validation } from "../utils";
 import type { LocalMetaStorageOptions } from "./local/local-meta-storage";
@@ -184,6 +185,9 @@ export interface GenericStorageOperations<T extends File = File, TReturn extends
 
     /** Get file data */
     get: (query: FileQuery) => Promise<TReturn>;
+
+    /** Get file as a readable stream */
+    getStream?: (query: FileQuery) => Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }>;
 
     /** Get signed URL for upload (if supported) */
     getUploadUrl?: (query: FileQuery, expiresIn?: number) => Promise<string>;

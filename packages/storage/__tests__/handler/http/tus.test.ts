@@ -4,7 +4,7 @@ import { join } from "node:path";
 import supertest from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import Tus, { serializeMetadata, TUS_RESUMABLE, TUS_VERSION } from "../../../src/handler/tus";
+import { serializeMetadata, Tus, TUS_RESUMABLE, TUS_VERSION } from "../../../src/handler/tus";
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import { metadata, metafile, storageOptions, testfile, testRoot } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
@@ -34,11 +34,28 @@ describe("http Tus", () => {
     const basePath = "/http-tus";
     const directory = join(testRoot, "http-tus");
     const options = { ...storageOptions, directory };
+    let storage: DiskStorage;
+    let tus: Tus;
 
-    app.use(basePath, async (request, res) => {
-        const tus = new Tus({ storage: new DiskStorage(options) });
+    beforeAll(async () => {
+        storage = new DiskStorage(options);
 
-        await tus.handle(request, res);
+        // Wait for storage to be ready
+        await new Promise((resolve) => {
+            const checkReady = () => {
+                if (storage.isReady) {
+                    resolve(undefined);
+                } else {
+                    setTimeout(checkReady, 10);
+                }
+            };
+
+            checkReady();
+        });
+
+        tus = new Tus({ storage });
+
+        app.use(basePath, tus.handle.bind(tus));
     });
 
     function create(): supertest.Test {

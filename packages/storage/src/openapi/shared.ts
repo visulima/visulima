@@ -11,14 +11,15 @@ const FileMetaExample: OpenAPIV3.ExampleObject = {
 };
 
 // Helper function to create parameter groups with tags
-const createParameterGroup = (parameters: OpenAPIV3.ParameterObject[], groupName: string): OpenAPIV3.ParameterObject[] => parameters.map((parameter) => {
-    return {
-        ...parameter,
-        description: `[${groupName}] ${parameter.description}`,
-        // Add extension for better tooling support
-        "x-group": groupName,
-    };
-});
+const createParameterGroup = (parameters: OpenAPIV3.ParameterObject[], groupName: string): OpenAPIV3.ParameterObject[] =>
+    parameters.map((parameter) => {
+        return {
+            ...parameter,
+            description: `[${groupName}] ${parameter.description}`,
+            // Add extension for better tooling support
+            "x-group": groupName,
+        };
+    });
 // Helper function to get transformation parameters based on transform type
 const getTransformationParameters = (
     transform?: TransformType,

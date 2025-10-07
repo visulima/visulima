@@ -1,4 +1,5 @@
 import type { IncomingMessage } from "node:http";
+import { Readable } from "node:stream";
 
 import type {
     CompleteMultipartUploadOutput,
@@ -428,6 +429,47 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             name: id,
             originalName: originalName || id,
             size: Number(ContentLength),
+        };
+    }
+
+    public override async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+        const parameters = {
+            Bucket: this.bucket,
+            Key: id,
+        };
+
+        const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.client.send(new GetObjectCommand(parameters));
+
+        await this.checkIfExpired({ expiredAt: Expires } as S3File);
+
+        const { originalName, ...meta } = Metadata || {};
+
+        // Convert S3 stream to Node.js Readable stream
+        const stream = Body as SdkStream<any>;
+        const readableStream = new Readable({
+            read() {
+                stream.on("data", (chunk) => {
+                    this.push(chunk);
+                });
+                stream.on("end", () => {
+                    this.push(null);
+                });
+                stream.on("error", (error) => {
+                    this.destroy(error);
+                });
+            },
+        });
+
+        return {
+            headers: {
+                "Content-Length": ContentLength?.toString(),
+                "Content-Type": ContentType as string,
+                ...ETag && { ETag },
+                ...Expires && { "X-Upload-Expires": Expires.toString() },
+                ...LastModified && { "Last-Modified": LastModified.toString() },
+            },
+            size: Number(ContentLength),
+            stream: readableStream,
         };
     }
 

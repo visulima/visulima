@@ -1,3 +1,5 @@
+import { Readable } from "node:stream";
+
 import { LRUCache as Cache } from "lru-cache";
 
 import type BaseStorage from "../storage/storage";
@@ -60,6 +62,38 @@ abstract class BaseTransformer<
      * Transform a file with the given steps
      */
     public abstract transform(fileId: string, steps: any[]): Promise<any>;
+
+    /**
+     * Stream transform a file with the given steps (for large files)
+     */
+    public async transformStream?(fileId: string, steps: any[]): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+        // Default implementation falls back to regular transform
+        const result = await this.transform(fileId, steps);
+
+        // If result has a buffer, create a stream from it
+        if (result && "buffer" in result) {
+            const { buffer } = result;
+
+            return {
+                headers: {
+                    "Content-Length": buffer.length.toString(),
+                    "Content-Type": this.getContentTypeFromResult(result),
+                },
+                size: buffer.length,
+                stream: Readable.from(buffer),
+            };
+        }
+
+        throw new Error("Streaming transformation not supported for this transformer");
+    }
+
+    /**
+     * Get content type from transformation result
+     */
+    protected getContentTypeFromResult(_result: any): string {
+        // Default implementation - should be overridden by subclasses
+        return "application/octet-stream";
+    }
 }
 
 export default BaseTransformer;

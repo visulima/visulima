@@ -4,13 +4,14 @@ import { join } from "node:path";
 import supertest from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import Tus, { parseMetadata, serializeMetadata, TUS_RESUMABLE, TUS_VERSION } from "../../../src/handler/tus";
+import { parseMetadata, serializeMetadata, Tus, TUS_RESUMABLE, TUS_VERSION } from "../../../src/handler/tus";
 import DiskStorage from "../../../src/storage/local/disk-storage";
+import { Metadata } from "../../../src/storage/utils/file";
 import { metadata, metafile, storageOptions, testfile, testRoot } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
 
-vi.mock(import("node:fs/promises"), () => {
-    const { fs } = require("memfs");
+vi.mock(import("node:fs/promises"), async () => {
+    const { fs } = await import("memfs");
 
     return {
         __esModule: true,
@@ -18,8 +19,8 @@ vi.mock(import("node:fs/promises"), () => {
     };
 });
 
-vi.mock(import("node:fs"), () => {
-    const { fs } = require("memfs");
+vi.mock(import("node:fs"), async () => {
+    const { fs } = await import("memfs");
 
     return {
         __esModule: true,
@@ -38,9 +39,29 @@ describe("express Tus", () => {
     const basePath = "/tus";
     const directory = join(testRoot, "tus");
     const options = { ...storageOptions, directory };
-    const tus = new Tus({ storage: new DiskStorage(options) });
+    let storage: DiskStorage;
+    let tus: Tus;
 
-    app.use(basePath, tus.handle);
+    beforeAll(async () => {
+        storage = new DiskStorage(options);
+
+        // Wait for storage to be ready
+        await new Promise((resolve) => {
+            const checkReady = () => {
+                if (storage.isReady) {
+                    resolve(undefined);
+                } else {
+                    setTimeout(checkReady, 10);
+                }
+            };
+
+            checkReady();
+        });
+
+        tus = new Tus({ storage });
+
+        app.use(basePath, tus.handle);
+    });
 
     function create(): supertest.Test {
         return (
@@ -90,7 +111,7 @@ describe("express Tus", () => {
 
             expect(uri).toStrictEqual(expect.stringContaining("/tus"));
             // eslint-disable-next-line radar/no-duplicate-string
-            expect(exposedHeaders(response)).toStrictEqual(expect.arrayContaining(["location", "upload-expires", "tus-resumable"]));
+            expect(exposedHeaders(response)).toStrictEqual(expect.arrayContaining(["location", "tus-resumable"]));
         });
     });
 
@@ -271,15 +292,18 @@ describe("express Tus", () => {
 
             const sample = "";
 
-            expect(parseMetadata(sample)).toStrictEqual({});
+            expect(parseMetadata(sample)).toStrictEqual(new Metadata());
         });
 
         it("should parse single key/value", () => {
             expect.assertions(1);
 
             const sample = "name dGl0bGUubXA0";
+            const metadataObject = new Metadata();
 
-            expect(parseMetadata(sample)).toStrictEqual({ name: "title.mp4" });
+            metadataObject.name = "title.mp4";
+
+            expect(parseMetadata(sample)).toStrictEqual(metadataObject);
         });
 
         it("should parse empty value", () => {

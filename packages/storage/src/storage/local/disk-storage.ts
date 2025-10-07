@@ -1,6 +1,7 @@
-import { createWriteStream } from "node:fs";
+import { createReadStream, createWriteStream } from "node:fs";
 import { copyFile, mkdir, rename, stat, truncate, unlink } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
+import type { Readable } from "node:stream";
 import { pipeline } from "node:stream";
 
 import { readFile } from "@visulima/fs";
@@ -192,6 +193,35 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             originalName,
             size: size || bytesWritten,
         };
+    }
+
+    public override async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+        const file = await this.checkIfExpired(await this.meta.get(id));
+        const { bytesWritten, contentType, expiredAt, modifiedAt, name, size } = file;
+
+        try {
+            // Create a readable stream directly from the file
+            const stream = createReadStream(this.getFilePath(name));
+
+            return {
+                headers: {
+                    "Content-Length": String(size || bytesWritten),
+                    "Content-Type": contentType,
+                    ...expiredAt && { "X-Upload-Expires": expiredAt.toString() },
+                    ...modifiedAt && { "Last-Modified": modifiedAt.toString() },
+                    // Note: ETag requires reading the file content, so we don't include it for streaming
+                    // Clients can use HEAD requests to get ETag if needed
+                },
+                size: size || bytesWritten,
+                stream,
+            };
+        } catch (error: any) {
+            if (error.code === "ENOENT") {
+                throw throwErrorCode(ERRORS.FILE_NOT_FOUND, error.message);
+            }
+
+            throw error;
+        }
     }
 
     public async delete({ id }: FileQuery): Promise<TFile> {
