@@ -47,7 +47,7 @@ class Multipart<
      * app.use('/upload', new Multipart(opts).handle);
      * ```
      */
-    public static override readonly methods: Handlers[] = ["delete", "get", "options", "post"];
+    public static override readonly methods: Handlers[] = ["delete", "download", "get", "options", "post"];
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public async post(request: NodeRequest): Promise<ResponseFile<TFile>> {

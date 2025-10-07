@@ -307,4 +307,99 @@ describe(DiskStorage, () => {
             expect(list).toHaveLength(1);
         });
     });
+
+    describe("streaming functionality", () => {
+        describe(".getStream()", () => {
+            beforeEach(createFile);
+
+            it("should return streaming file data for existing files", async () => {
+                expect.assertions(5);
+
+                const result = await storage.getStream({ id: metafile.id });
+
+                expect(result.stream).toBeDefined();
+                expect(result.stream.readable).toBe(true);
+                expect(result.size).toBeDefined();
+                expect(result.headers).toBeDefined();
+                expect(result.headers!["content-type"]).toBe(metafile.contentType);
+            });
+
+            it("should return proper headers for streaming", async () => {
+                expect.assertions(4);
+
+                const result = await storage.getStream({ id: metafile.id });
+
+                expect(result.headers!["content-type"]).toBe(metafile.contentType);
+                expect(result.headers!["content-length"]).toBe(metafile.size.toString());
+                expect(result.headers!["x-upload-expires"]).toBeUndefined(); // No expiry set
+                expect(result.headers!["last-modified"]).toBeDefined();
+            });
+
+            it("should handle files with expiry dates", async () => {
+                expect.assertions(1);
+
+                // Update file metadata to include expiry
+                const expiredFile = { ...metafile, expiredAt: new Date(Date.now() + 86_400_000) };
+
+                await storage.meta.save(metafile.id, expiredFile);
+
+                const result = await storage.getStream({ id: metafile.id });
+
+                expect(result.headers!["x-upload-expires"]).toBe(expiredFile.expiredAt.toISOString());
+            });
+
+            it("should throw FileNotFound error for non-existent files", async () => {
+                expect.assertions(1);
+
+                await expect(storage.getStream({ id: "nonexistent" })).rejects.toThrow("Not found");
+            });
+
+            it("should stream large files efficiently", async () => {
+                expect.assertions(2);
+
+                // Create a larger file for testing
+                const largeContent = Buffer.alloc(1024 * 1024); // 1MB
+
+                vol.writeFileSync(join(directory, `${metafile.id}.bin`), largeContent);
+
+                const largeFile = {
+                    ...metafile,
+                    name: `${metafile.id}.bin`,
+                    size: largeContent.length,
+                };
+
+                await storage.meta.save(largeFile.id, largeFile);
+
+                const result = await storage.getStream({ id: largeFile.id });
+
+                expect(result.size).toBe(largeContent.length);
+                expect(result.stream).toBeDefined();
+            });
+        });
+
+        describe("integration with get()", () => {
+            beforeEach(createFile);
+
+            it("should return same data via get() and getStream()", async () => {
+                expect.assertions(3);
+
+                const bufferResult = await storage.get({ id: metafile.id });
+                const streamResult = await storage.getStream({ id: metafile.id });
+
+                expect(streamResult.size).toBe(bufferResult.size);
+                expect(streamResult.headers!["content-type"]).toBe(bufferResult.contentType);
+
+                // Read stream data
+                const chunks: Buffer[] = [];
+
+                for await (const chunk of streamResult.stream) {
+                    chunks.push(chunk);
+                }
+
+                const streamData = Buffer.concat(chunks);
+
+                expect(streamData.equals(bufferResult.content)).toBe(true);
+            });
+        });
+    });
 });
