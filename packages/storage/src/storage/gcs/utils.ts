@@ -4,13 +4,13 @@ import type { FilePart } from "../utils/file";
 import { hasContent } from "../utils/file";
 import type GCSFile from "./gcs-file";
 
-export function getRangeEnd(range: string): number {
+export const getRangeEnd = (range: string): number => {
     const end = +(range.split(/0-/)[1] as string);
 
     return end > 0 ? end + 1 : 0;
-}
+};
 
-export function buildContentRange(part: GCSFile & Partial<FilePart>): string {
+export const buildContentRange = (part: GCSFile & Partial<FilePart>): string => {
     if (hasContent(part)) {
         const end = part.contentLength ? part.start + part.contentLength - 1 : "*";
 
@@ -18,9 +18,9 @@ export function buildContentRange(part: GCSFile & Partial<FilePart>): string {
     }
 
     return `bytes */${part.size ?? "*"}`;
-}
+};
 
-export function shouldRetry(error: GaxiosError) {
+export const shouldRetry = (error: GaxiosError): boolean => {
     if (error.response !== undefined) {
         const { response } = error;
 
@@ -40,7 +40,7 @@ export function shouldRetry(error: GaxiosError) {
     }
 
     return false;
-}
+};
 
 export const retryOptions: RetryConfig = {
     retry: 3,
