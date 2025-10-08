@@ -8,37 +8,44 @@ describe("utils", () => {
             expect.assertions(3);
 
             expect(matcher("/files/123")).toEqual({
-                index: 0,
                 params: {
-                    0: "files",
+                    path: ["files"],
                     uuid: "123",
                 },
                 path: "/files/123",
             });
 
             expect(matcher("/files/123/")).toEqual({
-                index: 0,
                 params: {
-                    0: "files",
+                    path: ["files"],
                     uuid: "123",
                 },
                 path: "/files/123/",
             });
             expect(matcher("/files/123/456")).toEqual({
-                index: 0,
                 params: {
-                    0: "files/123",
+                    path: ["files", "123"],
                     uuid: "456",
                 },
                 path: "/files/123/456",
             });
         });
 
-        it("should return false for invalid file paths", () => {
+        it("should match paths that look like UUIDs", () => {
             expect.assertions(2);
 
-            expect(matcher("/files")).toBe(false);
-            expect(matcher("/files/")).toBe(false);
+            expect(matcher("/files")).toEqual({
+                params: {
+                    uuid: "files",
+                },
+                path: "/files",
+            });
+            expect(matcher("/files/")).toEqual({
+                params: {
+                    uuid: "files",
+                },
+                path: "/files/",
+            });
         });
     });
 });

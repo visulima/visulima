@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { ErrorMap } from "../../src/utils/errors";
 import type { HttpError, ValidatorConfig } from "../../src/utils/types";
-import Validator from "../../src/utils/validator";
+import { Validator } from "../../src/utils/validator";
 
 describe("utils", () => {
     describe(Validator, () => {
