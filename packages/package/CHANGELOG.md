@@ -1,3 +1,16 @@
+## @visulima/package [4.1.0](https://github.com/visulima/visulima/compare/@visulima/package@4.0.2...@visulima/package@4.1.0) (2025-10-08)
+
+### Features
+
+* **package:** add support for package.yaml and package.json5 files ([#3519](https://github.com/visulima/visulima/issues/3519))
+  - Added `enablePackageYaml` and `enablePackageJson5` options to control format support
+  - File search priority: package.json > package.yaml > package.json5
+  - Automatic format detection based on file extension
+  - Support for YAML format with comments and readable syntax
+  - Support for JSON5 format with comments, trailing commas, and unquoted keys
+  - Updated `findPackageJson` and `parsePackageJson` functions to handle all formats
+  - Added comprehensive test coverage for new functionality
+
 ## @visulima/package [4.0.2](https://github.com/visulima/visulima/compare/@visulima/package@4.0.1...@visulima/package@4.0.2) (2025-10-02)
 
 ### Bug Fixes

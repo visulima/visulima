@@ -1014,4 +1014,349 @@ packages:
             expect(mockInstallPackage).not.toHaveBeenCalled();
         });
     });
+
+    describe("package.yaml and package.json5 support", () => {
+        let distribution: string;
+
+        beforeEach(() => {
+            distribution = temporaryDirectory();
+        });
+
+        afterEach(async () => {
+            await rm(distribution, { recursive: true });
+        });
+
+        describe("findPackageJson with package.yaml", () => {
+            it("should find and parse package.yaml file", async () => {
+                expect.assertions(3);
+
+                const yamlContent = `name: test-package
+version: 1.0.0
+dependencies:
+  react: ^18.0.0
+  typescript: ^5.0.0`;
+
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+
+                const result = await findPackageJson(distribution, { enablePackageYaml: true });
+
+                expect(result.packageJson.name).toBe("test-package");
+                expect(result.packageJson.version).toBe("1.0.0");
+                expect(result.path).toBe(join(distribution, "package.yaml"));
+            });
+
+            it("should find and parse package.yaml file synchronously", () => {
+                expect.assertions(3);
+
+                const yamlContent = `name: test-package
+version: 1.0.0
+dependencies:
+  react: ^18.0.0
+  typescript: ^5.0.0`;
+
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+
+                const result = findPackageJsonSync(distribution, { enablePackageYaml: true });
+
+                expect(result.packageJson.name).toBe("test-package");
+                expect(result.packageJson.version).toBe("1.0.0");
+                expect(result.path).toBe(join(distribution, "package.yaml"));
+            });
+
+            it("should prefer package.json over package.yaml when both exist", async () => {
+                expect.assertions(2);
+
+                const jsonContent = { name: "json-package", version: "2.0.0" };
+                const yamlContent = `name: yaml-package
+version: 1.0.0`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+
+                const result = await findPackageJson(distribution, { enablePackageYaml: true });
+
+                expect(result.packageJson.name).toBe("json-package");
+                expect(result.path).toBe(join(distribution, "package.json"));
+            });
+
+            it("should not find package.yaml when enablePackageYaml is false", async () => {
+                expect.assertions(1);
+
+                const yamlContent = `name: test-package
+version: 1.0.0`;
+
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+
+                await expect(findPackageJson(distribution, { enablePackageYaml: false })).rejects.toThrow(
+                    "No such file or directory, for package.json, package.yaml, or package.json5 found.",
+                );
+            });
+        });
+
+        describe("findPackageJson with package.json5", () => {
+            it("should find and parse package.json5 file", async () => {
+                expect.assertions(3);
+
+                const json5Content = `{
+  name: 'test-package',
+  version: '1.0.0',
+  dependencies: {
+    react: '^18.0.0',
+    typescript: '^5.0.0'
+  }
+}`;
+
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution, { enablePackageJson5: true });
+
+                expect(result.packageJson.name).toBe("test-package");
+                expect(result.packageJson.version).toBe("1.0.0");
+                expect(result.path).toBe(join(distribution, "package.json5"));
+            });
+
+            it("should find and parse package.json5 file synchronously", () => {
+                expect.assertions(3);
+
+                const json5Content = `{
+  name: 'test-package',
+  version: '1.0.0',
+  dependencies: {
+    react: '^18.0.0',
+    typescript: '^5.0.0'
+  }
+}`;
+
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = findPackageJsonSync(distribution, { enablePackageJson5: true });
+
+                expect(result.packageJson.name).toBe("test-package");
+                expect(result.packageJson.version).toBe("1.0.0");
+                expect(result.path).toBe(join(distribution, "package.json5"));
+            });
+
+            it("should prefer package.json over package.json5 when both exist", async () => {
+                expect.assertions(2);
+
+                const jsonContent = { name: "json-package", version: "2.0.0" };
+                const json5Content = `{
+  name: 'json5-package',
+  version: '1.0.0'
+}`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution, { enablePackageJson5: true });
+
+                expect(result.packageJson.name).toBe("json-package");
+                expect(result.path).toBe(join(distribution, "package.json"));
+            });
+
+            it("should not find package.json5 when enablePackageJson5 is false", async () => {
+                expect.assertions(1);
+
+                const json5Content = `{
+  name: 'test-package',
+  version: '1.0.0'
+}`;
+
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                await expect(findPackageJson(distribution, { enablePackageJson5: false })).rejects.toThrow(
+                    "No such file or directory, for package.json, package.yaml, or package.json5 found.",
+                );
+            });
+        });
+
+        describe("parsePackageJson with package.yaml", () => {
+            it("should parse package.yaml file path", async () => {
+                expect.assertions(1);
+
+                const yamlContent = `name: test-package
+version: 1.0.0
+dependencies:
+  react: ^18.0.0`;
+
+                const yamlPath = join(distribution, "package.yaml");
+                writeFileSync(yamlPath, yamlContent);
+
+                const result = await parsePackageJson(yamlPath, { enablePackageYaml: true });
+
+                expect(result).toStrictEqual({
+                    _id: "test-package@1.0.0",
+                    dependencies: {
+                        react: "^18.0.0",
+                    },
+                    name: "test-package",
+                    readme: "ERROR: No README data found!",
+                    version: "1.0.0",
+                });
+            });
+
+            it("should parse package.yaml file path synchronously", () => {
+                expect.assertions(1);
+
+                const yamlContent = `name: test-package
+version: 1.0.0
+dependencies:
+  react: ^18.0.0`;
+
+                const yamlPath = join(distribution, "package.yaml");
+                writeFileSync(yamlPath, yamlContent);
+
+                const result = parsePackageJsonSync(yamlPath, { enablePackageYaml: true });
+
+                expect(result).toStrictEqual({
+                    _id: "test-package@1.0.0",
+                    dependencies: {
+                        react: "^18.0.0",
+                    },
+                    name: "test-package",
+                    readme: "ERROR: No README data found!",
+                    version: "1.0.0",
+                });
+            });
+
+            it("should not parse package.yaml when enablePackageYaml is false", async () => {
+                expect.assertions(1);
+
+                const yamlContent = `name: test-package
+version: 1.0.0`;
+
+                const yamlPath = join(distribution, "package.yaml");
+                writeFileSync(yamlPath, yamlContent);
+
+                // Should fall back to regular JSON parsing and fail
+                await expect(parsePackageJson(yamlPath, { enablePackageYaml: false })).rejects.toThrow();
+            });
+        });
+
+        describe("parsePackageJson with package.json5", () => {
+            it("should parse package.json5 file path", async () => {
+                expect.assertions(1);
+
+                const json5Content = `{
+  name: 'test-package',
+  version: '1.0.0',
+  dependencies: {
+    react: '^18.0.0'
+  }
+}`;
+
+                const json5Path = join(distribution, "package.json5");
+                writeFileSync(json5Path, json5Content);
+
+                const result = await parsePackageJson(json5Path, { enablePackageJson5: true });
+
+                expect(result).toStrictEqual({
+                    _id: "test-package@1.0.0",
+                    dependencies: {
+                        react: "^18.0.0",
+                    },
+                    name: "test-package",
+                    readme: "ERROR: No README data found!",
+                    version: "1.0.0",
+                });
+            });
+
+            it("should parse package.json5 file path synchronously", () => {
+                expect.assertions(1);
+
+                const json5Content = `{
+  name: 'test-package',
+  version: '1.0.0',
+  dependencies: {
+    react: '^18.0.0'
+  }
+}`;
+
+                const json5Path = join(distribution, "package.json5");
+                writeFileSync(json5Path, json5Content);
+
+                const result = parsePackageJsonSync(json5Path, { enablePackageJson5: true });
+
+                expect(result).toStrictEqual({
+                    _id: "test-package@1.0.0",
+                    dependencies: {
+                        react: "^18.0.0",
+                    },
+                    name: "test-package",
+                    readme: "ERROR: No README data found!",
+                    version: "1.0.0",
+                });
+            });
+
+            it("should not parse package.json5 when enablePackageJson5 is false", async () => {
+                expect.assertions(1);
+
+                const json5Content = `{
+  name: 'test-package',
+  version: '1.0.0'
+}`;
+
+                const json5Path = join(distribution, "package.json5");
+                writeFileSync(json5Path, json5Content);
+
+                // Should fall back to regular JSON parsing and fail
+                await expect(parsePackageJson(json5Path, { enablePackageJson5: false })).rejects.toThrow();
+            });
+        });
+
+        describe("file search priority", () => {
+            it("should search files in correct priority order: package.json > package.yaml > package.json5", async () => {
+                expect.assertions(1);
+
+                const jsonContent = { name: "json-package", version: "1.0.0" };
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution);
+
+                expect(result.packageJson.name).toBe("json-package");
+            });
+
+            it("should find package.yaml when package.json doesn't exist", async () => {
+                expect.assertions(1);
+
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution);
+
+                expect(result.packageJson.name).toBe("yaml-package");
+            });
+
+            it("should find package.json5 when package.json and package.yaml don't exist", async () => {
+                expect.assertions(1);
+
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution);
+
+                expect(result.packageJson.name).toBe("json5-package");
+            });
+        });
+    });
 });

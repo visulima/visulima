@@ -85,14 +85,31 @@ const result = await findPackageRoot();
 
 #### findPackageJson
 
-Finds and parses a package.json file, searching parent directories if needed.
+Finds and parses a package.json, package.yaml, or package.json5 file, searching parent directories if needed.
 
 ```typescript
 import { findPackageJson } from "@visulima/package";
 
+// Basic usage - searches for package.json, package.yaml, and package.json5
 const result = await findPackageJson();
 // => { packageJson: { name: 'my-package', ... }, path: '/path/to/package.json' }
+
+// With options to enable/disable specific formats
+const result = await findPackageJson("/path/to/project", {
+    enablePackageYaml: true,    // Enable package.yaml support (default: true)
+    enablePackageJson5: true,   // Enable package.json5 support (default: true)
+});
 ```
+
+**File Search Priority**: The function searches for files in the following order:
+1. `package.json` (highest priority)
+2. `package.yaml` 
+3. `package.json5` (lowest priority)
+
+**Supported Formats**:
+- **package.json**: Standard JSON format
+- **package.yaml**: YAML format (introduced in pnpm/pnpm#1799)
+- **package.json5**: JSON5 format with comments and trailing commas support
 
 ### Package Manager Detection
 
@@ -133,16 +150,25 @@ const version = await getPackageManagerVersion("pnpm");
 
 #### parsePackageJson
 
-Parses and normalizes package.json data with optional catalog resolution support.
+Parses and normalizes package.json, package.yaml, or package.json5 data with optional catalog resolution support.
 
 ```typescript
 import { parsePackageJson } from "@visulima/package";
 
-// Basic parsing
+// Basic parsing - automatically detects format by file extension
 const packageJson = await parsePackageJson("./package.json");
+const packageYaml = await parsePackageJson("./package.yaml");
+const packageJson5 = await parsePackageJson("./package.json5");
 
 // With catalog resolution (pnpm workspaces only)
 const packageJson = await parsePackageJson("./package.json", {
+    resolveCatalogs: true,
+});
+
+// With format control options
+const packageJson = await parsePackageJson("./package.yaml", {
+    enablePackageYaml: true,    // Enable package.yaml support (default: true)
+    enablePackageJson5: false,  // Disable package.json5 support (default: true)
     resolveCatalogs: true,
 });
 
@@ -152,6 +178,46 @@ import { parsePackageJsonSync } from "@visulima/package";
 const packageJson = parsePackageJsonSync("./package.json", {
     resolveCatalogs: true,
 });
+```
+
+**Supported File Formats**:
+- **package.json**: Standard JSON format
+- **package.yaml**: YAML format with support for comments and more readable syntax
+- **package.json5**: JSON5 format with support for comments, trailing commas, and unquoted keys
+
+**Format Detection**: The function automatically detects the file format based on the file extension:
+- `.json` → JSON parsing
+- `.yaml` or `.yml` → YAML parsing  
+- `.json5` → JSON5 parsing
+
+**Example File Formats**:
+
+```yaml
+# package.yaml
+name: my-package
+version: 1.0.0
+dependencies:
+  react: ^18.0.0
+  typescript: ^5.0.0
+scripts:
+  build: "tsc"
+  test: "vitest"
+```
+
+```json5
+// package.json5
+{
+  name: 'my-package',
+  version: '1.0.0',
+  dependencies: {
+    react: '^18.0.0',
+    typescript: '^5.0.0',
+  },
+  scripts: {
+    build: 'tsc',
+    test: 'vitest',
+  },
+}
 ```
 
 **Catalog Resolution**: When `resolveCatalogs: true` is set, the function will:
