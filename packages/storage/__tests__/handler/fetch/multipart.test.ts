@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import Multipart from "../../../src/handler/multipart";
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import { storageOptions, testfile } from "../../__helpers__/config";
+import { waitForStorageReady } from "../../__helpers__/utils";
 
 describe("fetch Multipart", () => {
     const basePath = "http://localhost/multipart/";
@@ -49,21 +50,10 @@ describe("fetch Multipart", () => {
 
             const request = create();
 
-            const storage = new DiskStorage({ ...storageOptions, directory });
+            const storage = new DiskStorage({ ...storageOptions, directory, allowMIME: ["video/mp4", "image/*"] });
             const multipartHandler = new Multipart({ storage });
 
-            // Wait for storage to be ready
-            await new Promise((resolve) => {
-                const checkReady = () => {
-                    if (storage.isReady) {
-                        resolve(undefined);
-                    } else {
-                        setTimeout(checkReady, 10);
-                    }
-                };
-
-                checkReady();
-            });
+            await waitForStorageReady(storage);
 
             const response = await multipartHandler.fetch(request);
 
@@ -85,18 +75,7 @@ describe("fetch Multipart", () => {
             const storage = new DiskStorage({ ...storageOptions, directory });
             const multipartHandler = new Multipart({ storage });
 
-            // Wait for storage to be ready
-            await new Promise((resolve) => {
-                const checkReady = () => {
-                    if (storage.isReady) {
-                        resolve(undefined);
-                    } else {
-                        setTimeout(checkReady, 10);
-                    }
-                };
-
-                checkReady();
-            });
+            await waitForStorageReady(storage);
 
             const response = await multipartHandler.fetch(request);
 
@@ -119,18 +98,7 @@ describe("fetch Multipart", () => {
             const storage = new DiskStorage({ ...storageOptions, directory });
             const multipartHandler = new Multipart({ storage });
 
-            // Wait for storage to be ready
-            await new Promise((resolve) => {
-                const checkReady = () => {
-                    if (storage.isReady) {
-                        resolve(undefined);
-                    } else {
-                        setTimeout(checkReady, 10);
-                    }
-                };
-
-                checkReady();
-            });
+            await waitForStorageReady(storage);
 
             const response = await multipartHandler.fetch(request);
 

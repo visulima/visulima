@@ -146,7 +146,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
                 return !!typeis.is(file.contentType, this.value as string[]);
             },
             // @TODO: add better error handling for mime types
-            response: ErrorMap.UnsupportedMediaType as HttpError,
+            response: ErrorMap.UnsupportedMediaType,
             value: options.allowMIME,
         };
 
