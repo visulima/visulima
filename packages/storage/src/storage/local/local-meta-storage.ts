@@ -20,7 +20,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     public constructor(config?: LocalMetaStorageOptions) {
         super(config);
 
-        this.directory = (config?.directory || join(tmpdir(), "Upload_meta")).replaceAll("\\", "/");
+        this.directory = normalize(config?.directory || join(tmpdir(), "Upload_meta"));
 
         this.accessCheck().catch((error) => {
             this.logger?.error("Metadata storage access check failed: %O", error);
@@ -31,7 +31,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
      * Returns metafile path
      * @param id upload id
      */
-    public getMetaPath = (id: string): string => normalize(`${this.directory}/${this.prefix + id + this.suffix}`);
+    public getMetaPath = (id: string): string => normalize(`${this.directory}/${this.prefix}${id}${this.suffix}`);
 
     /**
      * Returns upload id from metafile path
@@ -40,6 +40,8 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     public getIdFromPath = (metaFilePath: string): string => metaFilePath.slice(`${this.directory}/${this.prefix}`.length, -this.suffix.length);
 
     public override async save(id: string, file: T): Promise<T> {
+        await this.accessCheck();
+
         const transformedMetadata = file as unknown as Omit<T, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {

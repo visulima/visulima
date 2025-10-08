@@ -1,22 +1,11 @@
 import { rm } from "node:fs/promises";
 
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { temporaryDirectory } from "tempy";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { Tus } from "../../../src/handler/tus";
 import DiskStorage from "../../../src/storage/local/disk-storage";
-import { metadata, storageOptions, testRoot } from "../../__helpers__/config";
-
-vi.mock(import("node:fs/promises"), async () => {
-    const { fs } = await import("memfs");
-
-    return fs.promises;
-});
-
-vi.mock(import("node:fs"), async () => {
-    const { fs } = await import("memfs");
-
-    return fs;
-});
+import { metadata, storageOptions } from "../../__helpers__/config";
 
 const exposedHeaders = (response: Response): string[] =>
     response.headers
@@ -26,24 +15,20 @@ const exposedHeaders = (response: Response): string[] =>
 
 describe("fetch Tus", () => {
     const basePath = "http://localhost/tus/";
-    const directory = `${testRoot}/fetch-tus`;
-    const options = { ...storageOptions, directory };
+    let directory: string;
 
-    const create = (): Request => new Request(`${basePath}`, {
-        headers: {
-            "Tus-Resumable": "1.0.0",
-            "Upload-Length": metadata.size.toString(),
-            "Upload-Metadata": `name ${Buffer.from(metadata.name).toString("base64")},size ${Buffer.from(metadata.size.toString()).toString("base64")},mimeType ${Buffer.from(metadata.mimeType).toString("base64")}`,
-        },
-        method: "POST",
-    });
+    const create = (): Request =>
+        new Request(`${basePath}`, {
+            headers: {
+                "Tus-Resumable": "1.0.0",
+                "Upload-Length": metadata.size.toString(),
+                "Upload-Metadata": `name ${Buffer.from(metadata.name).toString("base64")},size ${Buffer.from(metadata.size.toString()).toString("base64")},mimeType ${Buffer.from(metadata.mimeType).toString("base64")}`,
+            },
+            method: "POST",
+        });
 
     beforeAll(async () => {
-        try {
-            await rm(directory, { force: true, recursive: true });
-        } catch {
-            // ignore if directory doesn't exist
-        }
+        directory = temporaryDirectory();
     });
 
     afterAll(async () => {
@@ -68,7 +53,7 @@ describe("fetch Tus", () => {
 
             const request = create();
 
-            const storage = new DiskStorage(options);
+            const storage = new DiskStorage({ ...storageOptions, directory });
             const tusHandler = new Tus({ storage });
 
             // Wait for storage to be ready
@@ -102,7 +87,7 @@ describe("fetch Tus", () => {
                 method: "POST",
             });
 
-            const storage = new DiskStorage(options);
+            const storage = new DiskStorage({ ...storageOptions, directory });
             const tusHandler = new Tus({ storage });
 
             // Wait for storage to be ready
@@ -139,7 +124,7 @@ describe("fetch Tus", () => {
                 method: "OPTIONS",
             });
 
-            const storage = new DiskStorage(options);
+            const storage = new DiskStorage({ ...storageOptions, directory });
             const tusHandler = new Tus({ storage });
 
             // Wait for storage to be ready
