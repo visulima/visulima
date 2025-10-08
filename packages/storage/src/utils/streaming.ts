@@ -173,6 +173,7 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
     let lastChunkTime = Date.now();
     const bufferedChunks: Buffer[] = [];
     let isProcessing = false;
+    const pendingTimeouts: NodeJS.Timeout[] = [];
 
     const targetStream = new Readable({
         read() {
@@ -184,6 +185,10 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
 
     const processNextChunk = () => {
         if (bufferedChunks.length === 0 || isProcessing) {
+            // Check if we should end the stream
+            if (bufferedChunks.length === 0 && !isProcessing && pendingTimeouts.length === 0 && sourceStream.readableEnded) {
+                targetStream.push(null);
+            }
             return;
         }
 
@@ -196,17 +201,30 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
         if (timeSinceLastChunk < targetDelay) {
             const delay = targetDelay - timeSinceLastChunk;
 
-            setTimeout(() => {
-                targetStream.push(chunk);
-                lastChunkTime = Date.now();
-                isProcessing = false;
-                processNextChunk();
+            const timeout = setTimeout(() => {
+                try {
+                    if (!targetStream.destroyed) {
+                        targetStream.push(chunk);
+                        lastChunkTime = Date.now();
+                        isProcessing = false;
+                        processNextChunk();
+                    }
+                } catch {
+                    // Stream has ended, ignore
+                }
             }, delay);
+            pendingTimeouts.push(timeout);
         } else {
-            targetStream.push(chunk);
-            lastChunkTime = now;
-            isProcessing = false;
-            processNextChunk();
+            try {
+                if (!targetStream.destroyed) {
+                    targetStream.push(chunk);
+                    lastChunkTime = now;
+                    isProcessing = false;
+                    processNextChunk();
+                }
+            } catch {
+                // Stream has ended, ignore
+            }
         }
     };
 
@@ -219,10 +237,33 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
     });
 
     sourceStream.on("end", () => {
-        // Process remaining chunks
-        if (bufferedChunks.length === 0) {
-            targetStream.push(null);
+        // Process remaining chunks, then end the stream when done
+        const checkEnd = () => {
+            if (bufferedChunks.length === 0 && !isProcessing && pendingTimeouts.length === 0) {
+                targetStream.push(null);
+            }
+        };
+
+        // Process any remaining chunks
+        if (!isProcessing) {
+            processNextChunk();
         }
+
+        // Check immediately and also after a short delay to allow async operations to complete
+        checkEnd();
+        setTimeout(checkEnd, 1);
+    });
+
+    targetStream.on("end", () => {
+        // Clear all pending timeouts
+        pendingTimeouts.forEach(clearTimeout);
+        pendingTimeouts.length = 0;
+    });
+
+    targetStream.on("close", () => {
+        // Clear all pending timeouts
+        pendingTimeouts.forEach(clearTimeout);
+        pendingTimeouts.length = 0;
     });
 
     sourceStream.on("error", (error) => {

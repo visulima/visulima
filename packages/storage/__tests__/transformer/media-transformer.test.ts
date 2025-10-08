@@ -9,42 +9,37 @@ const mockStorage = {
     logger: console,
 };
 
+// Mock transformer classes
+const MockImageTransformer = vi.fn().mockImplementation(() => ({
+    clearCache: vi.fn(),
+    getCacheStats: vi.fn(),
+    transform: vi.fn(),
+}));
+
+const MockVideoTransformer = vi.fn().mockImplementation(() => ({
+    clearCache: vi.fn(),
+    getCacheStats: vi.fn(),
+    transform: vi.fn(),
+}));
+
+const MockAudioTransformer = vi.fn().mockImplementation(() => ({
+    clearCache: vi.fn(),
+    getCacheStats: vi.fn(),
+    transform: vi.fn(),
+}));
+
 // Mock individual transformers
-vi.mock(import("../../src/transformer/image-transformer"), () => {
-    return {
-        default: vi.fn().mockImplementation(() => {
-            return {
-                clearCache: vi.fn(),
-                getCacheStats: vi.fn(),
-                transform: vi.fn(),
-            };
-        }),
-    };
-});
+vi.mock(import("../../src/transformer/image-transformer"), () => ({
+    default: MockImageTransformer,
+}));
 
-vi.mock(import("../../src/transformer/video-transformer"), () => {
-    return {
-        default: vi.fn().mockImplementation(() => {
-            return {
-                clearCache: vi.fn(),
-                getCacheStats: vi.fn(),
-                transform: vi.fn(),
-            };
-        }),
-    };
-});
+vi.mock(import("../../src/transformer/video-transformer"), () => ({
+    default: MockVideoTransformer,
+}));
 
-vi.mock(import("../../src/transformer/audio-transformer"), () => {
-    return {
-        default: vi.fn().mockImplementation(() => {
-            return {
-                clearCache: vi.fn(),
-                getCacheStats: vi.fn(),
-                transform: vi.fn(),
-            };
-        }),
-    };
-});
+vi.mock(import("../../src/transformer/audio-transformer"), () => ({
+    default: MockAudioTransformer,
+}));
 
 describe(MediaTransformer, () => {
     let transformer: MediaTransformer;
@@ -53,6 +48,7 @@ describe(MediaTransformer, () => {
         vi.clearAllMocks();
         transformer = new MediaTransformer(mockStorage as any, {
             enableCache: false,
+            ImageTransformer: MockImageTransformer,
         });
     });
 
@@ -60,7 +56,9 @@ describe(MediaTransformer, () => {
         it("should create transformer with default configuration", () => {
             expect.assertions(1);
 
-            const transformer = new MediaTransformer(mockStorage as any);
+            const transformer = new MediaTransformer(mockStorage as any, {
+                ImageTransformer: MockImageTransformer,
+            });
 
             expect(transformer).toBeInstanceOf(MediaTransformer);
         });
@@ -71,6 +69,7 @@ describe(MediaTransformer, () => {
             const config: MediaTransformerConfig = {
                 cacheTtl: 7200,
                 enableCache: true,
+                ImageTransformer: MockImageTransformer,
                 maxAudioSize: 50 * 1024 * 1024,
                 maxImageSize: 5 * 1024 * 1024,
                 maxVideoSize: 200 * 1024 * 1024,
@@ -88,6 +87,7 @@ describe(MediaTransformer, () => {
 
             const transformer = new MediaTransformer(mockStorage as any, {
                 enableCache: true,
+                ImageTransformer: MockImageTransformer,
             });
 
             // Should not throw
@@ -99,6 +99,7 @@ describe(MediaTransformer, () => {
 
             const transformer = new MediaTransformer(mockStorage as any, {
                 enableCache: true,
+                ImageTransformer: MockImageTransformer,
             });
 
             // Should not throw
@@ -110,6 +111,7 @@ describe(MediaTransformer, () => {
 
             const transformer = new MediaTransformer(mockStorage as any, {
                 enableCache: true,
+                ImageTransformer: MockImageTransformer,
             });
 
             const stats = transformer.getCacheStats();
@@ -199,6 +201,7 @@ describe(MediaTransformer, () => {
         beforeEach(() => {
             transformer = new MediaTransformer(mockStorage as any, {
                 enableCache: false,
+                ImageTransformer: MockImageTransformer,
             });
         });
 
@@ -233,7 +236,7 @@ describe(MediaTransformer, () => {
                     (transformer as any).validateImageQueryParameters(query);
                 }).toThrow(
                     "Invalid query parameters for image transformation: codec, sampleRate. "
-                    + "Images support: angle, background, cropHeight, cropWidth, fit, format, height, left, position, quality, top, width, withoutEnlargement, withoutReduction. "
+                    + "Images support: alphaQuality, angle, background, bandbool, blur, boolean, brightness, channel, clahe, colourspace, compressionLevel, convolve, cropHeight, cropWidth, delay, dilate, effort, erode, extractChannel, fastShrinkOnLoad, fit, flatten, flip, flop, format, frameRate, gamma, grayscale, greyscale, height, hue, joinChannel, kernel, left, lightness, linear, loop, maxSlope, median, modulate, negate, normalise, normalize, position, quality, recombine, saturation, sharpen, threshold, tint, top, unflatten, width, withoutEnlargement, withoutReduction. "
                     + "Video/audio parameters (codec, sampleRate) are not supported for images.",
                 );
             });
@@ -250,16 +253,17 @@ describe(MediaTransformer, () => {
                 }).toThrow("Invalid fit value: \"invalid\". Supported values: \"cover\", \"contain\", \"fill\", \"inside\", \"outside\"");
             });
 
-            it("should reject invalid angle parameter values", () => {
+            it("should accept angle parameter values", () => {
                 expect.assertions(1);
 
                 const query = {
                     angle: 45,
                 };
 
+                // Angle validation was removed, so any angle should be accepted
                 expect(() => {
                     (transformer as any).validateImageQueryParameters(query);
-                }).toThrow("Invalid angle value: 45. Supported values: 90, 180, 270");
+                }).not.toThrow();
             });
 
             it("should reject incomplete crop parameter sets", () => {
