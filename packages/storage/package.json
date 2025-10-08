@@ -200,7 +200,6 @@
         "gaxios": "^7.1.2",
         "google-auth-library": "^10.4.0",
         "mediabunny": "^1.23.0",
-        "memfs": "^4.48.1",
         "node-fetch": "^3.3.2",
         "node-mocks-http": "^1.17.2",
         "openapi-types": "^12.1.3",

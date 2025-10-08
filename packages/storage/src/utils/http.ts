@@ -139,7 +139,7 @@ export const setHeaders = (response: ServerResponse, headers: Headers = {}): voi
  */
 export const extractHost = (request: IncomingMessage & { host?: string; hostname?: string }): string =>
     getHeader(request, "host") || getHeader(request, "x-forwarded-host");
-    // return req.host || req.hostname || getHeader(req, 'host'); // for express v5 / fastify
+// return req.host || req.hostname || getHeader(req, 'host'); // for express v5 / fastify
 
 /**
  * Extracts protocol from a http or https request.
@@ -162,17 +162,19 @@ export const getBaseUrl = (request: IncomingMessage): string => {
     return proto ? `${proto}://${host}` : `//${host}`;
 };
 
-export const normalizeHookResponse = <T>(callback: (file: T) => Promise<UploadResponse>) => async (file: T) => {
-    const response = await callback(file);
+export const normalizeHookResponse
+    = <T>(callback: (file: T) => Promise<UploadResponse>) =>
+        async (file: T) => {
+            const response = await callback(file);
 
-    if (isRecord(response)) {
-        const { body, headers, statusCode, ...rest } = response;
+            if (isRecord(response)) {
+                const { body, headers, statusCode, ...rest } = response;
 
-        return { body: body ?? rest, headers, statusCode };
-    }
+                return { body: body ?? rest, headers, statusCode };
+            }
 
-    return { body: response ?? "" };
-};
+            return { body: response ?? "" };
+        };
 
 /**
  * @internal

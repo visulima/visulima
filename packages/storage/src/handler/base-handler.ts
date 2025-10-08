@@ -40,17 +40,32 @@ abstract class BaseHandler<
 
     public mediaTransformer?: MediaTransformer;
 
+    public disableTerminationForFinishedUploads?: boolean;
+
     protected registeredHandlers = new Map<string, AsyncHandler<NodeRequest, NodeResponse>>();
+
+    public get handlers(): Map<string, AsyncHandler<NodeRequest, NodeResponse>> {
+        return this.registeredHandlers;
+    }
 
     protected logger?: Logger;
 
+    public get loggerInstance(): Logger | undefined {
+        return this.logger;
+    }
+
     protected internalErrorResponses = {} as ErrorResponses;
 
-    public constructor({ mediaTransformer, storage }: UploadOptions<TFile>) {
+    public get errorResponses(): ErrorResponses {
+        return this.internalErrorResponses;
+    }
+
+    public constructor({ mediaTransformer, storage, disableTerminationForFinishedUploads }: UploadOptions<TFile>) {
         super();
 
         this.storage = storage;
         this.mediaTransformer = mediaTransformer;
+        this.disableTerminationForFinishedUploads = disableTerminationForFinishedUploads;
         this.logger = this.storage?.logger;
 
         this.assembleErrors();
@@ -116,7 +131,7 @@ abstract class BaseHandler<
         }
     };
 
-    public upload = (request: NodeRequest, response: NodeResponse, next?: () => void): void => {
+    public upload = async (request: NodeRequest, response: NodeResponse, next?: () => void): Promise<void> => {
         request.on("error", (error) => this.logger?.error("[request error]: %O", error));
 
         this.logger?.debug("[request]: %s %s", request.method, request.url);
@@ -135,119 +150,113 @@ abstract class BaseHandler<
             return;
         }
 
-        handler
-            .call(this, request, response)
-            .then(async (file: ResponseFile<TFile> | ResponseList<TFile>): Promise<void> => {
-                // eslint-disable-next-line promise/always-return
-                if (["HEAD", "OPTIONS"].includes(request.method as string)) {
-                    const { headers, statusCode } = file as ResponseFile<TFile>;
+        try {
+            const file = await handler.call(this, request, response);
 
-                    this.send(response, { headers, statusCode });
-                } else if (request.method === "GET") {
-                    (request as IncomingMessageWithBody).body = (file as ResponseList<TFile>)?.data === undefined ? file : (file as ResponseList<TFile>).data;
+            if (["HEAD", "OPTIONS"].includes(request.method as string)) {
+                const { headers, statusCode } = file as ResponseFile<TFile>;
 
-                    const { headers, statusCode } = file as ResponseFile<TFile>;
+                this.send(response, { headers, statusCode });
+            } else if (request.method === "GET") {
+                (request as IncomingMessageWithBody).body = (file as ResponseList<TFile>)?.data === undefined ? file : (file as ResponseList<TFile>).data;
 
-                    // Check if this is a streaming response
-                    const streamingFile = file as ResponseFile<TFile> & { size?: number; stream?: Readable };
+                const { headers, statusCode } = file as ResponseFile<TFile>;
 
-                    if (streamingFile.stream) {
-                        // Handle streaming response
-                        if (typeof next === "function") {
-                            // eslint-disable-next-line promise/no-callback-in-promise
-                            next();
-                        } else {
-                            // Parse range header for partial content requests
-                            const range = this.parseRangeHeader(request.headers.range, streamingFile.size || 0);
+                // Check if this is a streaming response
+                const streamingFile = file as ResponseFile<TFile> & { size?: number; stream?: Readable };
 
-                            // Stream the response directly
-                            this.sendStream(response, streamingFile.stream, {
-                                headers,
-                                range: range || undefined,
-                                size: streamingFile.size,
-                                statusCode,
-                            });
-                        }
+                if (streamingFile.stream) {
+                    // Handle streaming response
+                    if (typeof next === "function") {
+                        next();
                     } else {
-                        // Handle regular buffer-based response
-                        let body: Buffer | ResponseList<TFile>["data"] | string = "";
+                        // Parse range header for partial content requests
+                        const range = this.parseRangeHeader(request.headers.range, streamingFile.size || 0);
 
-                        if ((file as ResponseFile<TFile>).content !== undefined) {
-                            body = (file as ResponseFile<TFile>).content as Buffer;
-                        } else if (typeof file === "object" && "data" in file) {
-                            body = file.data;
-                        }
-
-                        if (typeof next === "function") {
-                            // eslint-disable-next-line promise/no-callback-in-promise
-                            next();
-                        } else {
-                            this.send(response, { body, headers, statusCode });
-                        }
-                    }
-                } else {
-                    const { headers, statusCode, ...basicFile } = file as ResponseFile<TFile>;
-
-                    this.logger?.debug("[%s]: %s: %d/%d", basicFile.status, basicFile.name, basicFile.bytesWritten, basicFile.size);
-
-                    if (basicFile.status !== undefined && this.listenerCount(basicFile.status) > 0) {
-                        this.emit(basicFile.status, {
-                            ...basicFile,
-                            request: pick(request, ["headers", "method", "url"]),
-                        });
-                    }
-
-                    if (basicFile.status === "completed") {
-                        if (typeof next === "function") {
-                            // eslint-disable-next-line no-underscore-dangle
-                            (request as IncomingMessageWithBody)._body = true;
-                            (request as IncomingMessageWithBody).body = basicFile;
-
-                            // eslint-disable-next-line promise/no-callback-in-promise
-                            next();
-                        } else {
-                            const completed = await this.storage.onComplete(file as TFile);
-
-                            if (completed.headers === undefined) {
-                                throw new TypeError("onComplete must return the key headers");
-                            }
-
-                            if (completed.statusCode === undefined) {
-                                throw new TypeError("onComplete must return the key statusCode");
-                            }
-
-                            this.finish(request, response, completed);
-                        }
-                    } else {
-                        this.send(response, {
-                            headers: {
-                                ...headers,
-                                ...(file as TFile).hash === undefined
-                                    ? {}
-                                    : { [`X-Range-${(file as TFile).hash?.algorithm.toUpperCase()}`]: (file as TFile).hash?.value },
-                            } as Record<string, string>,
+                        // Stream the response directly
+                        this.sendStream(response, streamingFile.stream, {
+                            headers,
+                            range: range || undefined,
+                            size: streamingFile.size,
                             statusCode,
                         });
                     }
+                } else {
+                    // Handle regular buffer-based response
+                    let body: Buffer | ResponseList<TFile>["data"] | string = "";
+
+                    if ((file as ResponseFile<TFile>).content !== undefined) {
+                        body = (file as ResponseFile<TFile>).content as Buffer;
+                    } else if (typeof file === "object" && "data" in file) {
+                        body = file.data;
+                    }
+
+                    if (typeof next === "function") {
+                        next();
+                    } else {
+                        this.send(response, { body, headers, statusCode });
+                    }
                 }
-            })
-            .catch((error: Error) => {
-                const uError = pick(error, ["name", ...(Object.getOwnPropertyNames(error) as (keyof Error)[])]) as UploadError;
-                const errorEvent = { ...uError, request: pick(request, ["headers", "method", "url"]) };
+            } else {
+                const { headers, statusCode, ...basicFile } = file as ResponseFile<TFile>;
 
-                if (this.listenerCount("error") > 0) {
-                    this.emit("error", errorEvent);
+                this.logger?.debug("[%s]: %s: %d/%d", basicFile.status, basicFile.name, basicFile.bytesWritten, basicFile.size);
+
+                if (basicFile.status !== undefined && this.listenerCount(basicFile.status) > 0) {
+                    this.emit(basicFile.status, {
+                        ...basicFile,
+                        request: pick(request, ["headers", "method", "url"]),
+                    });
                 }
 
-                this.logger?.error("[error]: %O", errorEvent);
+                if (basicFile.status === "completed") {
+                    if (typeof next === "function") {
+                        // eslint-disable-next-line no-underscore-dangle
+                        (request as IncomingMessageWithBody)._body = true;
+                        (request as IncomingMessageWithBody).body = basicFile;
 
-                if (request.aborted !== undefined && request.aborted) {
-                    return;
+                        next();
+                    } else {
+                        const completed = await this.storage.onComplete(file as TFile);
+
+                        if (completed.headers === undefined) {
+                            throw new TypeError("onComplete must return the key headers");
+                        }
+
+                        if (completed.statusCode === undefined) {
+                            throw new TypeError("onComplete must return the key statusCode");
+                        }
+
+                        this.finish(request, response, completed);
+                    }
+                } else {
+                    this.send(response, {
+                        headers: {
+                            ...headers,
+                            ...(file as TFile).hash === undefined
+                                ? {}
+                                : { [`X-Range-${(file as TFile).hash?.algorithm.toUpperCase()}`]: (file as TFile).hash?.value },
+                        } as Record<string, string>,
+                        statusCode,
+                    });
                 }
+            }
+        } catch (error: any) {
+            const uError = pick(error, ["name", ...(Object.getOwnPropertyNames(error) as (keyof Error)[])]) as UploadError;
+            const errorEvent = { ...uError, request: pick(request, ["headers", "method", "url"]) };
 
-                // eslint-disable-next-line consistent-return
-                return this.sendError(response, error);
-            });
+            if (this.listenerCount("error") > 0) {
+                this.emit("error", errorEvent);
+            }
+
+            this.logger?.error("[error]: %O", errorEvent);
+
+            if (request.destroyed) {
+                return;
+            }
+
+            this.sendError(response, error);
+        }
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -274,16 +283,18 @@ abstract class BaseHandler<
     public async get(request: NodeRequest & { originalUrl?: string }, _response: NodeResponse): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
         const pathMatch = filePathUrlMatcher(getRealPath(request));
 
-        if (pathMatch && pathMatch.params.uuid && uuidRegex.test(pathMatch.params.uuid)) {
-            const { ext, metadata, uuid } = pathMatch.params;
+        if (pathMatch && pathMatch.params.uuid) {
+            const { ext, metadata, uuid: rawUuid } = pathMatch.params;
+            // If ext is present, uuid includes the extension, so strip it
+            const uuid = ext ? rawUuid.replace(new RegExp(`\\.${ext}$`), "") : rawUuid;
 
-            // Handle metadata requests
+            // Handle metadata requests (check this before UUID validation)
             if (metadata === "metadata") {
                 try {
                     const file = await this.storage.getMeta(uuid);
 
                     return {
-                        content: Buffer.from(JSON.stringify(file)),
+                        content: JSON.stringify(file),
                         headers: {
                             "Content-Type": "application/json;charset=utf-8",
                             ...file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() },
@@ -298,6 +309,12 @@ abstract class BaseHandler<
 
                     throw error;
                 }
+            }
+
+            // For non-metadata requests, validate UUID format
+            if (!uuidRegex.test(uuid)) {
+                // Invalid UUID format - treat as list request
+                return this.list(request, _response);
             }
 
             // Handle regular file requests
@@ -463,7 +480,9 @@ abstract class BaseHandler<
 
             // Check if streaming is available
             if (!this.storage.getStream) {
-                throw createHttpError(501, "Streaming download not supported");
+                this.sendError(response, createHttpError(501, "Streaming download not supported"));
+
+                return;
             }
 
             // Use streaming for better performance
@@ -493,10 +512,12 @@ abstract class BaseHandler<
             });
         } catch (error: any) {
             if (error.UploadErrorCode === ERRORS.FILE_NOT_FOUND || error.UploadErrorCode === ERRORS.GONE) {
-                throw createHttpError(404, "File not found");
+                this.sendError(response, createHttpError(404, "File not found"));
+
+                return;
             }
 
-            throw error;
+            this.sendError(response, error);
         }
     }
 
@@ -554,7 +575,7 @@ abstract class BaseHandler<
     /**
      * Parse HTTP Range header and return start/end positions
      */
-    protected parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | null {
+    public parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | null {
         if (!rangeHeader || !rangeHeader.startsWith("bytes=")) {
             return null;
         }
@@ -627,6 +648,7 @@ abstract class BaseHandler<
             response.statusCode = 206; // Partial Content
             response.setHeader("Content-Range", `bytes ${range.start}-${range.end}/${size}`);
             response.setHeader("Content-Length", range.end - range.start + 1);
+            response.setHeader("Accept-Ranges", "bytes");
 
             // Create a range-limited stream
             finalStream = this.createRangeLimitedStream(stream, range.start, range.end);
@@ -635,18 +657,12 @@ abstract class BaseHandler<
             if (size) {
                 response.setHeader("Content-Length", size);
             }
+
+            // Advertise that we accept range requests
+            response.setHeader("Accept-Ranges", "bytes");
         }
 
-        // Handle stream errors
-        finalStream.on("error", (error) => {
-            this.logger?.error("[stream error]: %O", error);
-
-            if (!response.headersSent) {
-                this.sendError(response, error);
-            }
-        });
-
-        // Handle backpressure-aware piping
+        // Handle backpressure-aware piping (includes error handling)
         this.pipeWithBackpressure(finalStream, response);
     }
 
@@ -758,8 +774,8 @@ abstract class BaseHandler<
         });
 
         // Handle response abortion (client disconnect)
-        if (typeof destination.listeners === "function" && destination.listeners("aborted").length === 0) {
-            destination.on("aborted", cleanup);
+        if (typeof destination.listeners === "function" && destination.listeners("close")?.length === 0) {
+            destination.on("close", cleanup);
         }
     }
 
@@ -815,7 +831,7 @@ abstract class BaseHandler<
         this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
     };
 
-    protected assembleErrors = (customErrors = {}): void => {
+    public assembleErrors = (customErrors = {}): void => {
         this.internalErrorResponses = {
             ...ErrorMap,
 
@@ -857,8 +873,8 @@ abstract class BaseHandler<
         const headers = Object.fromEntries((request.headers as any)?.entries?.() || []);
 
         const nodeRequest = Object.assign(readableStream, {
-            aborted: false,
             destroy: () => {},
+            destroyed: false,
             headers,
             httpVersion: "1.1",
             httpVersionMajor: 1,
@@ -884,7 +900,11 @@ abstract class BaseHandler<
             const { headers, statusCode } = file as ResponseFile<TFile>;
 
             return new Response(undefined, {
-                headers: this.convertHeaders(headers),
+                headers: this.convertHeaders({
+                    ...headers,
+                    "Access-Control-Expose-Headers":
+                        "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
+                }),
                 status: statusCode,
             });
         }
@@ -900,7 +920,11 @@ abstract class BaseHandler<
             }
 
             return new Response(body, {
-                headers: this.convertHeaders(headers),
+                headers: this.convertHeaders({
+                    ...headers,
+                    "Access-Control-Expose-Headers":
+                        "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
+                }),
                 status: statusCode,
             });
         }
@@ -937,6 +961,8 @@ abstract class BaseHandler<
         return new Response(undefined, {
             headers: this.convertHeaders({
                 ...headers,
+                "Access-Control-Expose-Headers":
+                    "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
                 ...basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value },
             }),
             status: statusCode,
