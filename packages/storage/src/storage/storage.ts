@@ -62,6 +62,8 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     public maxUploadSize: number;
 
+    protected expiration?: { maxAge?: string | number; purgeInterval?: string | number; rolling?: boolean };
+
     protected readonly optimizations: StorageOptimizations;
 
     protected locker: Locker;
@@ -90,9 +92,13 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         this.namingFunction = options.filename;
         this.maxUploadSize = typeof options.maxUploadSize === "string" ? parseBytes(options.maxUploadSize) : options.maxUploadSize;
         this.maxMetadataSize = typeof options.maxMetadataSize === "string" ? parseBytes(options.maxMetadataSize) : options.maxMetadataSize;
+        this.expiration = options.expiration;
 
         // Initialize generic configuration
-        this.genericConfig = config.genericConfig || {};
+        this.genericConfig = {
+            ...config.genericConfig,
+            useRelativeLocation: config.useRelativeLocation,
+        };
         this.optimizations = {
             bulkBatchSize: 100,
             enableCDNHeaders: false,
@@ -158,7 +164,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     public get tusExtension(): string[] {
         const extensions = ["creation", "creation-with-upload", "termination", "checksum", "creation-defer-length"];
 
-        if (this.config.expiration) {
+        if (this.expiration) {
             extensions.push("expiration");
         }
 
@@ -271,14 +277,14 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      * @param maxAge remove upload older than a specified age
      */
     public async purge(maxAge?: number | string): Promise<PurgeList> {
-        const maxAgeMs = toMilliseconds(maxAge || this.config.expiration?.maxAge);
+        const maxAgeMs = toMilliseconds(maxAge || this.expiration?.maxAge);
         const purged = { items: [], maxAgeMs } as PurgeList;
 
         if (maxAgeMs) {
             const before = Date.now() - maxAgeMs;
             const list = await this.list();
             const expired = list.filter(
-                (item) => Number(new Date((this.config.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as number | string)) < before,
+                (item) => Number(new Date((this.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as number | string)) < before,
             );
 
             for await (const { id, ...rest } of expired) {
@@ -509,11 +515,11 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         // eslint-disable-next-line no-param-reassign
         file.createdAt ??= new Date().toISOString();
 
-        const maxAgeMs = toMilliseconds(this.config.expiration?.maxAge);
+        const maxAgeMs = toMilliseconds(this.expiration?.maxAge);
 
         if (maxAgeMs) {
             // eslint-disable-next-line no-param-reassign
-            file.expiredAt = this.config.expiration?.rolling
+            file.expiredAt = this.expiration?.rolling
                 ? new Date(Date.now() + maxAgeMs).toISOString()
                 : new Date(+new Date(file.createdAt) + maxAgeMs).toISOString();
         }

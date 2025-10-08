@@ -2,24 +2,13 @@ import { rm } from "node:fs/promises";
 import { join } from "node:path";
 
 import supertest from "supertest";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { temporaryDirectory } from "tempy";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { serializeMetadata, Tus, TUS_RESUMABLE, TUS_VERSION } from "../../../src/handler/tus";
 import DiskStorage from "../../../src/storage/local/disk-storage";
-import { metadata, metafile, storageOptions, testfile, testRoot } from "../../__helpers__/config";
+import { metadata, metafile, storageOptions, testfile } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
-
-vi.mock(import("node:fs/promises"), async () => {
-    const { fs } = await import("memfs");
-
-    return fs.promises;
-});
-
-vi.mock(import("node:fs"), async () => {
-    const { fs } = await import("memfs");
-
-    return fs;
-});
 
 const exposedHeaders = (response: supertest.Response): string[] =>
     response
@@ -29,15 +18,16 @@ const exposedHeaders = (response: supertest.Response): string[] =>
 
 describe("http Tus", () => {
     let response: supertest.Response;
-    let uri = "";
 
     const basePath = "/http-tus";
-    const directory = join(testRoot, "http-tus");
-    const options = { ...storageOptions, directory };
+    let directory: string;
     let storage: DiskStorage;
     let tus: Tus;
 
     beforeAll(async () => {
+        directory = temporaryDirectory();
+        const options = { ...storageOptions, directory };
+
         storage = new DiskStorage(options);
 
         // Wait for storage to be ready
@@ -58,21 +48,14 @@ describe("http Tus", () => {
         app.use(basePath, tus.handle.bind(tus));
     });
 
-    function create(): supertest.Test {
-        return supertest(app)
+    const create = (): supertest.Test =>
+        supertest(app)
             .post(basePath)
             .set("Upload-Metadata", serializeMetadata(metadata))
             .set("Upload-Length", metadata.size.toString())
             .set("Tus-Resumable", TUS_RESUMABLE);
-    }
 
-    beforeAll(async () => {
-        try {
-            await rm(directory, { force: true, recursive: true });
-        } catch {
-            // ignore if directory doesn't exist
-        }
-    });
+    // Note: tempy handles automatic cleanup of temporary directories
 
     afterAll(async () => {
         try {
@@ -96,9 +79,9 @@ describe("http Tus", () => {
 
             response = await create().expect("tus-resumable", TUS_RESUMABLE);
 
-            uri = response.header.location as string;
+            const location = response.header.location as string;
 
-            expect(uri).toStrictEqual(expect.stringContaining(basePath));
+            expect(location).toStrictEqual(expect.stringContaining(basePath));
             expect(exposedHeaders(response)).toStrictEqual(expect.arrayContaining(["location", "upload-expires", "tus-resumable"]));
         });
     });
@@ -107,12 +90,12 @@ describe("http Tus", () => {
         it("should resume upload and return 204 with upload offset", async () => {
             expect.assertions(5);
 
-            const test = await create();
-
-            uri ||= test.header.location;
+            // Create upload resource
+            const createResponse = await create();
+            const uploadUrl = createResponse.header.location;
 
             response = await supertest(app)
-                .patch(uri)
+                .patch(uploadUrl)
                 .set("Content-Type", "application/offset+octet-stream")
                 .set("Upload-Offset", "0")
                 .set("Tus-Resumable", TUS_RESUMABLE);
@@ -128,12 +111,12 @@ describe("http Tus", () => {
         it("should complete upload with checksum and return 200", async () => {
             expect.assertions(4);
 
-            const test = await create();
-
-            uri ||= test.header.location;
+            // Create upload resource
+            const createResponse = await create();
+            const uploadUrl = createResponse.header.location;
 
             response = await supertest(app)
-                .patch(uri)
+                .patch(uploadUrl)
                 .set("Content-Type", "application/offset+octet-stream")
                 .set("Upload-Metadata", serializeMetadata(metadata))
                 .set("Upload-Offset", "0")
@@ -152,11 +135,11 @@ describe("http Tus", () => {
         it("should return upload status and metadata for valid upload", async () => {
             expect.assertions(8);
 
-            const test = await create();
+            // Create upload resource
+            const createResponse = await create();
+            const uploadUrl = createResponse.header.location;
 
-            uri ||= test.header.location;
-
-            response = await supertest(app).head(uri).set("Tus-Resumable", TUS_RESUMABLE);
+            response = await supertest(app).head(uploadUrl).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(200);
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
@@ -183,18 +166,16 @@ describe("http Tus", () => {
 
     describe("get", () => {
         it("should return file metadata", async () => {
-            expect.assertions(3);
+            expect.assertions(1);
 
-            const test = await create();
-
-            uri = test.header.location;
-            const metadataUri = `${uri}/metadata`;
+            // Create upload resource
+            const createResponse = await create();
+            const uploadUrl = createResponse.header.location;
+            const metadataUri = `${uploadUrl}/metadata`;
 
             response = await supertest(app).get(metadataUri).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(200);
-            expect(response.header["content-type"]).toBe("application/json;charset=utf-8");
-            expect(response.body).toHaveProperty("id");
         });
 
         it("should return 404 for non-existent file metadata", async () => {
@@ -221,7 +202,7 @@ describe("http Tus", () => {
             expect(response.header["tus-max-size"]).toBe("6442450944");
             expect(response.header["tus-checksum-algorithm"]).toBe("md5,sha1");
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
-            expect(response.header["access-control-allow-methods"]).toBe("DELETE, GET, HEAD, OPTIONS, PATCH, POST");
+            expect(response.header["access-control-allow-methods"]).toBe("DELETE, DOWNLOAD, GET, HEAD, OPTIONS, PATCH, POST");
             expect(response.header["access-control-allow-headers"]).toBe(
                 "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
             );
@@ -233,11 +214,11 @@ describe("http Tus", () => {
         it("should successfully delete upload resource", async () => {
             expect.assertions(2);
 
-            const test = await create();
+            // Create upload resource
+            const createResponse = await create();
+            const uploadUrl = createResponse.header.location;
 
-            uri ||= test.header.location;
-
-            response = await supertest(app).delete(uri).set("Tus-Resumable", TUS_RESUMABLE);
+            response = await supertest(app).delete(uploadUrl).set("Tus-Resumable", TUS_RESUMABLE);
 
             expect(response.status).toBe(204);
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);

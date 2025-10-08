@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { format } from "node:url";
 
 import createHttpError from "http-errors";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -7,7 +8,7 @@ import typeis from "type-is";
 import type { Checksum, FileInit, UploadFile } from "../storage/utils/file";
 import { Metadata } from "../storage/utils/file";
 import type { Headers, UploadResponse } from "../utils";
-import { getHeader, getIdFromRequest, getRequestStream } from "../utils";
+import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream } from "../utils";
 import BaseHandler from "./base-handler";
 import type { Handlers, ResponseFile } from "./types";
 
@@ -96,6 +97,10 @@ export class Tus<
             throw createHttpError(400, "Either upload-length or upload-defer-length must be specified.");
         }
 
+        if (uploadLength !== undefined && Number.isNaN(Number(uploadLength))) {
+            throw createHttpError(400, "Invalid upload-length");
+        }
+
         const metadataHeader = getHeader(request, "upload-metadata", true);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         const metadata = parseMetadata(metadataHeader);
@@ -152,7 +157,36 @@ export class Tus<
             const metadata = metadataHeader && parseMetadata(metadataHeader);
 
             if (metadata) {
-                await this.storage.update({ id }, { id, metadata });
+                try {
+                    await this.storage.update({ id }, { id, metadata });
+                } catch (error: any) {
+                    // Handle file not found errors as potential expiration
+                    if (error.UploadErrorCode === "FILE_NOT_FOUND") {
+                        throw createHttpError(410, "Upload expired");
+                    }
+
+                    throw error;
+                }
+            }
+
+            // Check if file is expired before processing
+            let currentFile;
+
+            try {
+                currentFile = await this.storage.getMeta(id);
+                await this.storage.checkIfExpired(currentFile);
+            } catch (error: any) {
+                // Handle expiration errors
+                if (error.UploadErrorCode === "GONE") {
+                    throw createHttpError(410, "Upload expired");
+                }
+
+                // Handle file not found errors as potential expiration
+                if (error.UploadErrorCode === "FILE_NOT_FOUND") {
+                    throw createHttpError(410, "Upload expired");
+                }
+
+                throw error;
             }
 
             // The request MUST include a Upload-Offset header
@@ -163,6 +197,11 @@ export class Tus<
             // The request MUST include a Content-Type header
             if (request.headers["content-type"] === undefined) {
                 throw createHttpError(412, "Content-Type header required");
+            }
+
+            // The Content-Type must be application/offset+octet-stream for PATCH requests
+            if (request.headers["content-type"] !== "application/offset+octet-stream") {
+                throw createHttpError(412, "Invalid Content-Type for PATCH request");
             }
 
             const start = Number.parseInt(getHeader(request, "upload-offset"), 10);
@@ -211,6 +250,45 @@ export class Tus<
         } catch (error: any) {
             this.checkForUndefinedIdOrPath(error);
 
+            // Handle expiration errors (but not "Id is undefined" which should be 404)
+            if (error.UploadErrorCode === "GONE" || error.UploadErrorCode === "FILE_NOT_FOUND") {
+                throw createHttpError(410, "Upload expired");
+            }
+
+            // Handle "Id is undefined" as 404
+            if (error.message === "Id is undefined") {
+                throw createHttpError(404, "File not found");
+            }
+
+            throw error;
+        }
+    }
+
+    /**
+     * Get file metadata
+     */
+    public override async get(request: NodeRequest): Promise<ResponseFile<TFile>> {
+        try {
+            const id = getIdFromRequest(request);
+
+            const file = await this.storage.getMeta(id);
+
+            return {
+                ...file,
+                body: file, // Return file metadata as JSON
+                headers: this.buildHeaders(file, {
+                    "Content-Type": "application/json",
+                }) as Record<string, string | number>,
+                statusCode: 200,
+            };
+        } catch (error: any) {
+            this.checkForUndefinedIdOrPath(error);
+
+            // Handle expiration errors
+            if (error.UploadErrorCode === "GONE") {
+                throw createHttpError(410, "Upload expired");
+            }
+
             throw error;
         }
     }
@@ -223,6 +301,8 @@ export class Tus<
             const id = getIdFromRequest(request);
 
             const file = await this.storage.getMeta(id);
+
+            await this.storage.checkIfExpired(file);
 
             const headers = {
                 ...typeof file.size === "number" && !Number.isNaN(file.size)
@@ -237,7 +317,8 @@ export class Tus<
                         "Upload-Defer-Length": "1",
                     },
                 ...this.buildHeaders(file, {
-                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+
+                    "Cache-Control": "no-store",
                     "Upload-Metadata": serializeMetadata(file.metadata),
                     // The Server MUST always include the Upload-Offset header in
                     // the response for a HEAD request, even if the offset is 0
@@ -248,6 +329,16 @@ export class Tus<
             return { headers: headers as Record<string, string>, statusCode: 200 } as ResponseFile<TFile>;
         } catch (error: any) {
             this.checkForUndefinedIdOrPath(error);
+
+            // Handle expiration errors (but not "Id is undefined" which should be 404)
+            if (error.UploadErrorCode === "GONE" || error.UploadErrorCode === "FILE_NOT_FOUND") {
+                throw createHttpError(410, "Upload expired");
+            }
+
+            // Handle "Id is undefined" as 404
+            if (error.message === "Id is undefined") {
+                throw createHttpError(404, "File not found");
+            }
 
             throw error;
         }
@@ -260,6 +351,14 @@ export class Tus<
         try {
             const id = getIdFromRequest(request);
 
+            // Check if termination is disabled for finished uploads
+            if (this.disableTerminationForFinishedUploads) {
+                const file = await this.storage.getMeta(id);
+                if (file.status === "completed") {
+                    throw createHttpError(400, "Termination of finished uploads is disabled");
+                }
+            }
+
             const file = await this.storage.delete({ id });
 
             if (file.status === undefined) {
@@ -268,7 +367,7 @@ export class Tus<
 
             return {
                 ...file,
-                headers: {} as Record<string, string>,
+                headers: this.buildHeaders(file) as Record<string, string>,
                 statusCode: 204,
             } as ResponseFile<TFile>;
         } catch (error: any) {
@@ -287,6 +386,8 @@ export class Tus<
             body,
             headers: {
                 ...headers,
+                "Access-Control-Expose-Headers":
+                    "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
                 "Tus-Resumable": TUS_RESUMABLE_VERSION,
             },
             statusCode,
@@ -301,12 +402,24 @@ export class Tus<
     }
 
     private buildHeaders(file: UploadFile, headers: Headers = {}): Headers {
+        // All TUS responses must include Tus-Resumable header
+        headers["Tus-Resumable"] = TUS_RESUMABLE_VERSION;
+
         if (this.storage.tusExtension.includes("expiration") && file.expiredAt !== undefined) {
             // eslint-disable-next-line no-param-reassign
             headers["Upload-Expires"] = new Date(file.expiredAt).toUTCString();
         }
 
         return headers;
+    }
+
+    protected override buildFileUrl(request: NodeRequest & { originalUrl?: string }, file: TFile): string {
+        const url = new URL(request.originalUrl || (request.url as string), "http://localhost");
+        const { pathname } = url;
+        const query = Object.fromEntries(url.searchParams.entries());
+        const relative = format({ pathname: `${pathname}/${file.id}`, query });
+
+        return `${this.storage.config.useRelativeLocation ? relative : getBaseUrl(request) + relative}`;
     }
 
     // eslint-disable-next-line class-methods-use-this

@@ -3,8 +3,8 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { swaggerUI } from "@hono/swagger-ui";
 import type { Context } from "hono";
-import { Multipart, DiskStorage } from "@visulima/upload";
-import { xhrOpenApiSpec } from "@visulima/upload/openapi";
+import { Multipart, DiskStorage, Tus } from "@visulima/upload";
+import { xhrOpenApiSpec, tusOpenApiSpec } from "@visulima/upload/openapi";
 import { MediaTransformer } from "@visulima/upload/transformer";
 import ImageTransformer from "@visulima/upload/transformers/image";
 import { serve } from "@hono/node-server";
@@ -16,7 +16,7 @@ app.use(
     "*",
     cors({
         origin: ["http://localhost:3000"],
-        allowMethods: ["POST", "GET", "OPTIONS"],
+        allowMethods: ["GET", "HEAD", "POST", "PATCH", "DELETE", "OPTIONS"],
     }),
 );
 app.use("*", logger());
@@ -37,6 +37,12 @@ const mediaTransformer = new MediaTransformer(storage, {
 
 // Multipart handler
 const multipart = new Multipart({
+    storage,
+    mediaTransformer,
+});
+
+// TUS handler for resumable uploads
+const tus = new Tus({
     storage,
     mediaTransformer,
 });
@@ -80,6 +86,29 @@ app.delete("/files/:id", async (c: Context) => {
     }
 });
 
+// TUS resumable upload routes
+app.all("/files-tus", async (c: Context) => {
+    const request = c.req.raw;
+
+    try {
+        return await tus.fetch(request);
+    } catch (error: any) {
+        console.error("TUS upload error:", error);
+        return c.json({ error: error.message || "TUS upload failed" }, 500);
+    }
+});
+
+app.all("/files-tus/:id", async (c: Context) => {
+    const request = c.req.raw;
+
+    try {
+        return await tus.fetch(request);
+    } catch (error: any) {
+        console.error("TUS upload error:", error);
+        return c.json({ error: error.message || "TUS upload failed" }, 500);
+    }
+});
+
 // Swagger UI route
 app.get(
     "/",
@@ -88,14 +117,23 @@ app.get(
     }),
 );
 
-// OpenAPI JSON route - uses the xhrOpenApiSepc from @visulima/upload
-app.get("/openapi.json", (c: Context) =>
-    c.json({
+// OpenAPI JSON route - combines xhrOpenApiSpec and tusOpenApiSpec from @visulima/upload
+app.get("/openapi.json", (c: Context) => {
+    const xhrSpec = xhrOpenApiSpec("http://localhost:3000", "/files", {
+        transformer: "image",
+        supportedTransformerFormat: mediaTransformer.supportedFormats(),
+    });
+    const tusSpec = tusOpenApiSpec("/files-tus", {
+        transformer: "image",
+        supportedTransformerFormat: mediaTransformer.supportedFormats(),
+    });
+
+    return c.json({
         openapi: "3.0.0",
         info: {
             title: "Visulima Upload API",
             version: "1.0.0",
-            description: "File upload API built with Hono and Visulima Upload",
+            description: "File upload API built with Hono and Visulima Upload (Multipart & TUS)",
             contact: {
                 name: "Visulima",
                 url: "https://github.com/visulima/visulima",
@@ -107,12 +145,30 @@ app.get("/openapi.json", (c: Context) =>
                 description: "Development server",
             },
         ],
-        ...xhrOpenApiSpec("http://localhost:3000", "/files", {
-            transformer: "image",
-            supportedTransformerFormat: mediaTransformer.supportedFormats(),
-        }),
-    }),
-);
+        components: {
+            schemas: {
+                ...xhrSpec.components?.schemas,
+                ...tusSpec.components?.schemas,
+            },
+            examples: {
+                ...xhrSpec.components?.examples,
+                ...tusSpec.components?.examples,
+            },
+            responses: {
+                ...xhrSpec.components?.responses,
+                ...tusSpec.components?.responses,
+            },
+            parameters: {
+                ...xhrSpec.components?.parameters,
+                ...tusSpec.components?.parameters,
+            },
+        },
+        paths: {
+            ...xhrSpec.paths,
+            ...tusSpec.paths,
+        },
+    });
+});
 
 serve(
     {
