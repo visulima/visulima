@@ -61,7 +61,7 @@ export const stringifyMetadata = (metadata: NonNullable<Metadata>): string =>
                 return key;
             }
 
-            const encodedValue = Buffer.from(value, "utf8").toString("base64");
+            const encodedValue = Buffer.from(String(value), "utf8").toString("base64");
 
             return `${key} ${encodedValue}`;
         })

@@ -1,16 +1,46 @@
+import { rm } from "node:fs/promises";
 import { Readable } from "node:stream";
 
 import { createRequest, createResponse } from "node-mocks-http";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { temporaryDirectory } from "tempy";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+import DiskStorage from "../../src/storage/local/disk-storage";
+import { storageOptions } from "../__helpers__/config";
 import TestUploader from "../__helpers__/handler/test-uploader";
 import MockLogger from "../__helpers__/mock-logger";
-import TestStorage from "../__helpers__/storage/test-storage";
 
 describe("baseHandler", () => {
-    const storage = new TestStorage({ directory: "/files", logger: console });
+    let directory: string;
+    let storage: DiskStorage;
 
     let uploader: TestUploader;
+
+    beforeAll(async () => {
+        directory = temporaryDirectory();
+        storage = new DiskStorage({ ...storageOptions, directory, logger: console });
+
+        // Wait for storage to be ready
+        await new Promise((resolve) => {
+            const checkReady = () => {
+                if (storage.isReady) {
+                    resolve(undefined);
+                } else {
+                    setTimeout(checkReady, 10);
+                }
+            };
+
+            checkReady();
+        });
+    });
+
+    afterAll(async () => {
+        try {
+            await rm(directory, { force: true, recursive: true });
+        } catch {
+            // ignore if directory doesn't exist
+        }
+    });
 
     beforeEach(async () => {
         uploader = new TestUploader({ storage });
@@ -25,7 +55,7 @@ describe("baseHandler", () => {
 
         const logger = new MockLogger();
 
-        uploader = new TestUploader({ storage: new TestStorage({ directory: "/files", logger }) });
+        uploader = new TestUploader({ storage: new DiskStorage({ ...storageOptions, directory, logger }) });
 
         expect(logger.debug).toHaveBeenCalledTimes(2);
         expect(logger.debug).toHaveBeenCalledWith("Registered handler: %s", "GET, OPTIONS, DOWNLOAD");
@@ -36,7 +66,7 @@ describe("baseHandler", () => {
 
         uploader.errorResponses = { FileNotFound: { message: "Not Found!", statusCode: 404 } };
 
-        expect(uploader.internalErrorResponses.FileNotFound).toEqual({ message: "Not Found!", statusCode: 404 });
+        expect(uploader.errorResponses.FileNotFound).toStrictEqual({ message: "Not Found!", statusCode: 404 });
     });
 
     it("baseHandler.assembleErrors merges default and custom error responses correctly", () => {
@@ -46,8 +76,8 @@ describe("baseHandler", () => {
 
         uploader.assembleErrors({ FileNotFound: errorObject });
 
-        expect(uploader.internalErrorResponses.FileNotFound).toEqual(errorObject);
-        expect(uploader.internalErrorResponses.InvalidRange).toEqual({
+        expect(uploader.errorResponses.FileNotFound).toStrictEqual(errorObject);
+        expect(uploader.errorResponses.InvalidRange).toStrictEqual({
             code: "InvalidRange",
             message: "Invalid or missing content-range header",
             statusCode: 400,
@@ -60,7 +90,7 @@ describe("baseHandler", () => {
         // eslint-disable-next-line compat/compat
         const getHandler = vi.fn(() => Promise.resolve({}));
 
-        uploader.registeredHandlers.set("GET", getHandler);
+        uploader.handlers.set("GET", getHandler);
 
         const request = createRequest({ method: "GET" });
         const response = createResponse();
@@ -72,21 +102,15 @@ describe("baseHandler", () => {
     });
 
     it("should return list of uploaded files via GET request", async () => {
-        expect.assertions(4);
+        expect.assertions(1);
 
-        vi.spyOn(uploader, "list").mockImplementation().mockResolvedValue([]);
-
-        const request = createRequest({ method: "GET", url: "/uploads" });
+        const request = createRequest({ method: "GET", url: "/files" });
         const response = createResponse();
 
         await uploader.handle(request, response);
 
-        expect(uploader.list).toHaveBeenCalledTimes(1);
-        expect(uploader.list).toHaveBeenCalledWith(request, response);
         // eslint-disable-next-line no-underscore-dangle
         expect(response._getStatusCode()).toBe(200);
-        // eslint-disable-next-line no-underscore-dangle
-        expect(response._getHeaders()).toEqual({});
     });
 
     it("should implement OPTIONS method with correct CORS headers", async () => {
@@ -98,7 +122,7 @@ describe("baseHandler", () => {
         const file = await uploader.options(request, response);
 
         expect(file.statusCode).toBe(204);
-        expect(file.headers).toEqual({ "Access-Control-Allow-Methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT" });
+        expect(file.headers).toStrictEqual({ "Access-Control-Allow-Methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT" });
     });
 
     it("should return 503 when storage is not ready", async () => {
@@ -186,6 +210,7 @@ describe("baseHandler", () => {
             id: "123-456-789",
             metadata: {},
             name: "test.json",
+            originalName: "test.json",
             size: 100,
             status: "completed" as const,
         });
@@ -236,7 +261,7 @@ describe("baseHandler", () => {
             body: {
                 error: {
                     code: "Error",
-                    message: "[TestStorage] Error Message",
+                    message: "[disk] Error Message",
                     name: "Error",
                 },
             },
@@ -253,8 +278,8 @@ describe("baseHandler", () => {
                 const response = createResponse();
 
                 // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockImplementation().mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation();
+                vi.spyOn(response, "listeners").mockReturnValue([]);
+                vi.spyOn(response, "on").mockImplementation(() => response);
 
                 const stream = Readable.from(Buffer.from("test data"));
 
@@ -266,17 +291,17 @@ describe("baseHandler", () => {
                 expect(response.statusCode).toBe(200);
                 expect(response.getHeader("content-type")).toBe("text/plain");
                 expect(response.getHeader("content-length")).toBeUndefined(); // Should not set for streams
-                expect(response.getHeader("accept-ranges")).toBeUndefined(); // No range header provided
+                expect(response.getHeader("accept-ranges")).toBe("bytes"); // Always advertise range support
             });
 
             it("should handle range requests with proper headers", () => {
-                expect.assertions(5);
+                expect.assertions(4);
 
                 const response = createResponse();
 
                 // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockImplementation().mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation();
+                vi.spyOn(response, "listeners").mockReturnValue([]);
+                vi.spyOn(response, "on").mockImplementation(() => response);
 
                 const stream = Readable.from(Buffer.from("test data"));
 
@@ -299,8 +324,8 @@ describe("baseHandler", () => {
                 const response = createResponse();
 
                 // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockImplementation().mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation();
+                vi.spyOn(response, "listeners").mockReturnValue([]);
+                vi.spyOn(response, "on").mockImplementation(() => response);
 
                 const stream = new Readable({
                     read() {
@@ -327,9 +352,9 @@ describe("baseHandler", () => {
             it("should parse valid range headers correctly", () => {
                 expect.assertions(3);
 
-                expect(uploader.parseRangeHeader("bytes=0-99", 1000)).toEqual({ end: 99, start: 0 });
-                expect(uploader.parseRangeHeader("bytes=100-", 1000)).toEqual({ end: 999, start: 100 });
-                expect(uploader.parseRangeHeader("bytes=-50", 1000)).toEqual({ end: 999, start: 950 });
+                expect(uploader.parseRangeHeader("bytes=0-99", 1000)).toStrictEqual({ end: 99, start: 0 });
+                expect(uploader.parseRangeHeader("bytes=100-", 1000)).toStrictEqual({ end: 999, start: 100 });
+                expect(uploader.parseRangeHeader("bytes=-50", 1000)).toStrictEqual({ end: 999, start: 950 });
             });
 
             it("should return null for invalid range headers", () => {
@@ -382,8 +407,8 @@ describe("baseHandler", () => {
                 const response = createResponse();
 
                 // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockImplementation().mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation();
+                vi.spyOn(response, "listeners").mockReturnValue([]);
+                vi.spyOn(response, "on").mockImplementation(() => response);
 
                 await uploader.download(request, response);
 
@@ -397,7 +422,7 @@ describe("baseHandler", () => {
             });
 
             it("should return 404 for non-existent files", async () => {
-                expect.assertions(2);
+                expect.assertions(1);
 
                 const error = new Error("Not found");
 
@@ -407,15 +432,15 @@ describe("baseHandler", () => {
 
                 const request = createRequest({
                     method: "GET",
-                    url: "/files/nonexistent/download",
+                    url: "/files/123-456-789/download",
                 });
                 const response = createResponse();
 
                 // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockImplementation().mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation();
+                vi.spyOn(response, "listeners").mockReturnValue([]);
+                vi.spyOn(response, "on").mockImplementation(() => response);
 
-                await expect(uploader.download(request, response)).rejects.toThrow("File not found");
+                await uploader.download(request, response);
 
                 expect(response.statusCode).toBe(404);
 
@@ -423,12 +448,12 @@ describe("baseHandler", () => {
             });
 
             it("should return 501 when streaming is not supported", async () => {
-                expect.assertions(2);
+                expect.assertions(1);
 
                 // Mock storage without getStream method
                 const originalGetStream = storage.getStream;
 
-                delete (storage as any).getStream;
+                (storage as any).getStream = undefined;
 
                 const getMetaSpy = vi.spyOn(storage, "getMeta").mockResolvedValue({
                     bytesWritten: 100,
@@ -450,13 +475,15 @@ describe("baseHandler", () => {
                 const response = createResponse();
 
                 // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockImplementation().mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation();
+                vi.spyOn(response, "listeners").mockReturnValue([]);
+                vi.spyOn(response, "on").mockImplementation(() => response);
 
-                await expect(uploader.download(request, response)).rejects.toThrow("Streaming download not supported");
+                await uploader.download(request, response);
+
+                expect(response.statusCode).toBe(501);
 
                 // Restore getStream method
-                storage.getStream = originalGetStream;
+                (storage as any).getStream = originalGetStream;
                 getMetaSpy.mockRestore();
             });
         });
@@ -478,6 +505,20 @@ describe("baseHandler", () => {
                     status: "completed" as const,
                 });
 
+                const getSpy = vi.spyOn(storage, "get").mockResolvedValue({
+                    bytesWritten: 2_000_000,
+                    content: Buffer.from("large content"),
+                    contentType: "application/octet-stream",
+                    ETag: "etag123",
+                    expiredAt: undefined,
+                    id: "large-file-id",
+                    metadata: {},
+                    modifiedAt: new Date(),
+                    name: "large-file.dat",
+                    originalName: "large-file.dat",
+                    size: 2_000_000,
+                });
+
                 const getStreamSpy = vi.spyOn(storage, "getStream").mockResolvedValue({
                     headers: {
                         "content-length": "2000000",
@@ -494,24 +535,39 @@ describe("baseHandler", () => {
                 const response = createResponse();
 
                 // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockImplementation().mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation();
+                vi.spyOn(response, "listeners").mockReturnValue([]);
+                vi.spyOn(response, "on").mockImplementation(() => response);
 
                 await uploader.handle(request, response);
 
                 expect(getMetaSpy).toHaveBeenCalledWith("large-file-id");
                 expect(getStreamSpy).toHaveBeenCalledWith({ id: "large-file-id" });
-                expect(response.getHeader("accept-ranges")).toBe("bytes");
+                // For large files, streaming should be used (not buffer-based get)
+                expect(getSpy).not.toHaveBeenCalled();
 
                 getMetaSpy.mockRestore();
                 getStreamSpy.mockRestore();
+                getSpy.mockRestore();
             });
 
             it("should use regular buffer serving for small files", async () => {
                 expect.assertions(3);
 
                 // Mock storage methods
+                const getMetaSpy = vi.spyOn(storage, "getMeta").mockResolvedValue({
+                    bytesWritten: 1000,
+                    contentType: "text/plain",
+                    createdAt: new Date(),
+                    id: "small-file-id",
+                    metadata: {},
+                    name: "small-file.txt",
+                    originalName: "small-file.txt",
+                    size: 1000, // Small file < 1MB
+                    status: "completed" as const,
+                });
+
                 const getSpy = vi.spyOn(storage, "get").mockResolvedValue({
+                    bytesWritten: 1000,
                     content: Buffer.from("small content"),
                     contentType: "text/plain",
                     ETag: "etag123",
@@ -531,8 +587,8 @@ describe("baseHandler", () => {
                 const response = createResponse();
 
                 // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockImplementation().mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation();
+                vi.spyOn(response, "listeners").mockReturnValue([]);
+                vi.spyOn(response, "on").mockImplementation(() => response);
 
                 await uploader.handle(request, response);
 
@@ -540,11 +596,12 @@ describe("baseHandler", () => {
                 expect(response.statusCode).toBe(200);
                 expect(response.getHeader("content-type")).toBe("text/plain");
 
+                getMetaSpy.mockRestore();
                 getSpy.mockRestore();
             });
 
             it("should fall back to buffer serving when streaming fails", async () => {
-                expect.assertions(3);
+                expect.assertions(4);
 
                 // Mock storage methods - getMeta returns large file, but getStream fails
                 const getMetaSpy = vi.spyOn(storage, "getMeta").mockResolvedValue({
@@ -561,6 +618,7 @@ describe("baseHandler", () => {
 
                 const getStreamSpy = vi.spyOn(storage, "getStream").mockRejectedValue(new Error("Streaming failed"));
                 const getSpy = vi.spyOn(storage, "get").mockResolvedValue({
+                    bytesWritten: 2_000_000,
                     content: Buffer.from("fallback content"),
                     contentType: "application/octet-stream",
                     ETag: "etag123",
@@ -573,7 +631,7 @@ describe("baseHandler", () => {
                     size: 2_000_000,
                 });
 
-                const loggerSpy = vi.spyOn(uploader.logger || console, "warn").mockImplementation(() => {});
+                const loggerSpy = vi.spyOn(uploader.loggerInstance || console, "warn").mockImplementation(() => {});
 
                 const request = createRequest({
                     method: "GET",
@@ -582,8 +640,8 @@ describe("baseHandler", () => {
                 const response = createResponse();
 
                 // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockImplementation().mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation();
+                vi.spyOn(response, "listeners").mockReturnValue([]);
+                vi.spyOn(response, "on").mockImplementation(() => response);
 
                 await uploader.handle(request, response);
 

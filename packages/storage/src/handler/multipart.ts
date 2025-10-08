@@ -3,9 +3,11 @@ import { Readable } from "node:stream";
 
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@mjackson/multipart-parser/node";
 import createHttpError from "http-errors";
+import typeis from "type-is";
 
 import type { FileInit, UploadFile } from "../storage/utils/file";
 import { getIdFromRequest } from "../utils";
+import { isValidationError } from "../utils/validation-error";
 import BaseHandler from "./base-handler";
 import type { Handlers, ResponseFile } from "./types";
 
@@ -57,78 +59,86 @@ class Multipart<
 
         try {
             const config: FileInit = { metadata: {}, size: 0 };
+            const parts: any[] = [];
 
+            // First, collect all parts
             for await (const part of parseMultipartRequest(request)) {
-                if (part.isFile) {
-                    // Handle file upload
-                    config.size = part.size;
-                    config.originalName = part.filename;
-                    config.contentType = part.mediaType;
-
-                    const file = await this.storage.create(request, config);
-
-                    // Create a Readable stream from the bytes data
-                    let stream: Readable;
-
-                    if (part.bytes instanceof Uint8Array || Buffer.isBuffer(part.bytes)) {
-                        // Ensure we create a stream that emits Buffer objects for compatibility
-                        stream = Readable.from(Buffer.from(part.bytes));
-                    } else if (typeof part.bytes === "number") {
-                        // If part.bytes is a number, it might be the size - create empty buffer
-                        stream = Readable.from(Buffer.alloc(0));
-                    } else {
-                        // Fallback for other types
-                        stream = Readable.from(Buffer.from(String(part.bytes)));
-                    }
-
-                    await this.storage.write({
-                        body: stream,
-                        contentLength: part.size,
-                        id: file.id,
-                        start: 0,
-                    });
-
-                    // Wait for the file to be completed
-                    const completedFile = await this.storage.write({
-                        body: Readable.from(new Uint8Array(0)), // Empty buffer to signal completion
-                        contentLength: 0,
-                        id: file.id,
-                        start: part.size,
-                    });
-
-                    if (completedFile.status === "completed") {
-                        return {
-                            ...completedFile,
-                            headers: {
-                                Location: this.buildFileUrl(request, completedFile),
-                                ...completedFile.expiredAt === undefined ? {} : { "X-Upload-Expires": completedFile.expiredAt.toString() },
-                                ...completedFile.ETag === undefined ? {} : { ETag: completedFile.ETag },
-                            },
-                            statusCode: 200,
-                        };
-                    }
-
-                    return { ...completedFile, headers: {}, statusCode: 201 };
-                }
-
-                // Handle form field
-                let data = {};
-
-                if (part.name === "metadata" && part.text) {
-                    try {
-                        data = JSON.parse(part.text);
-                    } catch {
-                        // ignore
-                    }
-                } else if (part.name) {
-                    data = { [part.name]: part.text };
-                }
-
-                Object.assign(config.metadata, data);
+                parts.push(part);
             }
 
-            // If we reach here without processing a file, something went wrong
-            throw createHttpError(400, "No file found in multipart request");
+            // Find the file part and validate it
+            const filePart = parts.find((part) => part.isFile);
+
+            if (!filePart) {
+                throw createHttpError(400, "No file found in multipart request");
+            }
+
+            // Handle file upload
+            config.size = filePart.size;
+            config.originalName = filePart.filename;
+            config.contentType = filePart.mediaType;
+
+            const file = await this.storage.create(request, config);
+
+            // Create a Readable stream from the bytes data
+            let stream: Readable;
+
+            if (filePart.bytes instanceof Uint8Array || Buffer.isBuffer(filePart.bytes)) {
+                // Ensure we create a stream that emits Buffer objects for compatibility
+                stream = Readable.from(Buffer.from(filePart.bytes));
+            } else if (typeof filePart.bytes === "number") {
+                // If part.bytes is a number, it might be the size - create empty buffer
+                stream = Readable.from(Buffer.alloc(0));
+            } else {
+                // Fallback for other types
+                stream = Readable.from(Buffer.from(String(filePart.bytes)));
+            }
+
+            await this.storage.write({
+                body: stream,
+                contentLength: filePart.size,
+                id: file.id,
+                start: 0,
+            });
+
+            // Wait for the file to be completed
+            const completedFile = await this.storage.write({
+                body: Readable.from(new Uint8Array(0)), // Empty buffer to signal completion
+                contentLength: 0,
+                id: file.id,
+                start: filePart.size,
+            });
+
+            if (completedFile.status === "completed") {
+                return {
+                    ...completedFile,
+                    headers: {
+                        Location: this.buildFileUrl(request, completedFile),
+                        ...completedFile.expiredAt === undefined ? {} : { "X-Upload-Expires": completedFile.expiredAt.toString() },
+                        ...completedFile.ETag === undefined ? {} : { ETag: completedFile.ETag },
+                    },
+                    statusCode: 200,
+                };
+            }
+
+            // Process metadata parts
+            for (const part of parts) {
+                if (!part.isFile && part.name) {
+                    let data = {};
+
+                    if (part.name === "metadata" && part.text) {
+                        try {
+                            data = JSON.parse(part.text);
+                        } catch {
+                            // ignore
+                        }
+                    } else if (part.name) {
+                        data = { [part.name]: part.text };
+                    }
+
+                    Object.assign(config.metadata, data);
+                }
+            }
         } catch (error) {
             if (error instanceof MaxFileSizeExceededError) {
                 throw createHttpError(413, "File size limit exceeded");
