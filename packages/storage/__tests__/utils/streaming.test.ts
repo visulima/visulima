@@ -39,7 +39,7 @@ describe("streaming utilities", () => {
 
     describe(createStreamingResponse, () => {
         it("should create streaming response with proper event handlers", () => {
-            expect.assertions(5);
+            expect.assertions(4);
 
             const stream = Readable.from(Buffer.from("test data"));
             const onError = vi.fn();
@@ -112,7 +112,7 @@ describe("streaming utilities", () => {
             stream.emit("data", Buffer.from("chunk2"));
             stream.emit("end");
 
-            expect(logger.debug).toHaveBeenCalledWith();
+            expect(logger.debug).toHaveBeenCalledWith("[%s] Stream completed: %d bytes in %d chunks, %.2f MB/s", "test-stream", 12, 2, expect.any(Number));
         });
 
         it("should handle stream errors", () => {
@@ -130,7 +130,7 @@ describe("streaming utilities", () => {
 
             stream.emit("error", error);
 
-            expect(logger.debug).toHaveBeenCalledWith("test-stream", expect.any(Number), expect.stringContaining("Stream failed"));
+            expect(logger.debug).toHaveBeenCalledWith("[%s] Stream failed after %dms: %s", "test-stream", expect.any(Number), "Stream failed");
         });
     });
 
@@ -144,18 +144,16 @@ describe("streaming utilities", () => {
             expect(timeoutStream).toBe(stream);
         });
 
-        it("should destroy stream on timeout", () => {
-            expect.assertions(1);
-
+        it("should destroy stream on timeout", async () => {
             const stream = Readable.from(Buffer.from("test data"));
             const destroySpy = vi.spyOn(stream, "destroy");
 
             withTimeout(stream, 1); // Very short timeout
 
             // Wait for timeout
-            setTimeout(() => {
-                expect(destroySpy).toHaveBeenCalledWith(expect.any(Error));
-            }, 10);
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            expect(destroySpy).toHaveBeenCalledWith(expect.any(Error));
         });
     });
 
