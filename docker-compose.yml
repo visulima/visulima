@@ -4,9 +4,16 @@ services:
     db:
         image: "postgres:16.3-alpine@sha256:36ed71227ae36305d26382657c0b96cbaf298427b3f1eaeb10d77a6dea3eec41"
         volumes:
-            - "data:/var/lib/postgresql/data"
+            - "./data/postgresql:/var/lib/postgresql/data"
+        environment:
+            POSTGRES_USER: "visulima"
+            POSTGRES_PASSWORD: "root"
+            POSTGRES_DB: "visulima"
+            PGDATA: "/var/lib/postgresql/data"
+        healthcheck:
+            test: ["CMD", "pg_isready", "-U", "ckan"]
         ports:
-            - "5432:5432"
+            - "5433:5432"
 
     redis:
         image: "redis:8.0.0-alpine@sha256:0779069b3c24a47a2f681855c1c01d046793e7c5f7d2b079c2aa0652c42eaf0e"
@@ -19,11 +26,39 @@ services:
             - "1025:1025"
             - "8025:8025"
         volumes:
-            - "data:/data"
-        env_file: "./visulima/.env.local"
+            - "./data/mailhog:/data"
         depends_on:
             - "db"
-        restart: "always"
+
+    localstack:
+        image: "localstack/localstack:1.3"
+        environment:
+            - "AWS_DEFAULT_REGION=us-east-1"
+            - "EDGE_PORT=4566"
+            - "SERVICES=lambda,s3"
+            - "PERSISTANCE=1"
+        ports:
+            - "4566-4583:4566-4583"
+        volumes:
+            - "./data/localstack:/var/lib/localstack/state"
+            - "/var/run/docker.sock:/var/run/docker.sock"
+
+    gcs:
+        image: "fsouza/fake-gcs-server:1.43.0"
+        ports:
+            - "4443:4443"
+        command: ["-scheme", "http", "-port", "4443"]
+        volumes:
+            - "./data/fake-gcs:/data"
+
+    azure:
+        image: "mcr.microsoft.com/azure-storage/azurite:latest"
+        ports:
+            - "10000:10000" # blob
+            - "10001:10001" # queue
+            - "10002:10002" # table
+        volumes:
+            - "./data/azure:/data"
 
 volumes:
     data: # yamllint disable-line rule:empty-values

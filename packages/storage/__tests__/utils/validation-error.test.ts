@@ -1,0 +1,29 @@
+import { describe, expect, it } from "vitest";
+
+import ValidationError from "../../src/utils/validation-error";
+
+describe("utils", () => {
+    describe(ValidationError, () => {
+        it("should create a properly configured error instance", () => {
+            expect.assertions(8);
+
+            const body = {
+                code: "test",
+                message: "test",
+            };
+            const error = new ValidationError("test", 200, body, {});
+
+            expect(() => {
+                throw error;
+            }).toThrow("test");
+
+            expect(error).toBeInstanceOf(Error);
+            expect(error).toBeInstanceOf(ValidationError);
+            expect(error.message).toBe("test");
+            expect(error.code).toBe("test");
+            expect(error.statusCode).toBe(200);
+            expect(error.body).toStrictEqual(body);
+            expect(error.headers).toStrictEqual({});
+        });
+    });
+});
