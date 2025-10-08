@@ -13,12 +13,8 @@ export default defineConfig({
             minifier: cssnanoMinifier,
         },
     },
-    // TODO: remove this after packem bug fix
     validation: {
         dependencies: {
-            unused: {
-                exclude: ["@shikijs/langs", "@shikijs/themes", "isomorphic-dompurify", "shiki", "@visulima/error"],
-            },
             hoisted: {
                 exclude: ["@visulima/boxen"],
             },
