@@ -8,6 +8,7 @@ import Multipart from "../../../src/handler/multipart";
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import { metadata, storageOptions, testfile } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
+import { waitForStorageReady } from "../../__helpers__/utils";
 
 describe("http Multipart", () => {
     let response: supertest.Response;
@@ -23,20 +24,9 @@ describe("http Multipart", () => {
     beforeAll(async () => {
         directory = temporaryDirectory();
         const options = { ...storageOptions, directory };
-        const storage = new DiskStorage(options);
+        const storage = new DiskStorage({ ...options, allowMIME: ["video/mp4", "image/*"] });
 
-        // Wait for storage to be ready
-        await new Promise((resolve) => {
-            const checkReady = () => {
-                if (storage.isReady) {
-                    resolve(undefined);
-                } else {
-                    setTimeout(checkReady, 10);
-                }
-            };
-
-            checkReady();
-        });
+        await waitForStorageReady(storage);
 
         multipart = new Multipart({ storage });
 

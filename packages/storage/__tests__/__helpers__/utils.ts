@@ -19,6 +19,24 @@ export function deepClone<T>(object: T): T {
     return JSON.parse(JSON.stringify(object)) as T;
 }
 
+export async function waitForStorageReady(storage: { isReady: boolean } | { storage: { isReady: boolean } }, timeoutMs = 5000): Promise<void> {
+    const startTime = Date.now();
+    const storageObj = 'isReady' in storage ? storage : storage.storage;
+
+    return new Promise((resolve, reject) => {
+        const checkReady = () => {
+            if (storageObj.isReady) {
+                resolve();
+            } else if (Date.now() - startTime > timeoutMs) {
+                reject(new Error('Storage readiness timeout'));
+            } else {
+                setTimeout(checkReady, 10);
+            }
+        };
+        checkReady();
+    });
+}
+
 export function createRequest(options: { body: string; encoding?: BufferEncoding }): IncomingMessage {
     const { body, encoding = "utf8" } = options;
 

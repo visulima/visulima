@@ -7,7 +7,7 @@ import typeis from "type-is";
 
 import type { FileInit, UploadFile } from "../storage/utils/file";
 import { getIdFromRequest } from "../utils";
-import { isValidationError } from "../utils/validation-error";
+import ValidationError, { isValidationError } from "../utils/validation-error";
 import BaseHandler from "./base-handler";
 import type { Handlers, ResponseFile } from "./types";
 
@@ -146,6 +146,10 @@ class Multipart<
 
             if (error instanceof MultipartParseError) {
                 throw createHttpError(400, "Invalid multipart request");
+            }
+
+            if (error instanceof ValidationError) {
+                throw createHttpError(error.statusCode || 400, error.message || error.body || "Validation failed");
             }
 
             throw error;
