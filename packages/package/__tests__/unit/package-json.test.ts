@@ -1038,7 +1038,7 @@ dependencies:
 
                 writeFileSync(join(distribution, "package.yaml"), yamlContent);
 
-                const result = await findPackageJson(distribution, { enablePackageYaml: true });
+                const result = await findPackageJson(distribution, { yaml: true });
 
                 expect(result.packageJson.name).toBe("test-package");
                 expect(result.packageJson.version).toBe("1.0.0");
@@ -1056,7 +1056,7 @@ dependencies:
 
                 writeFileSync(join(distribution, "package.yaml"), yamlContent);
 
-                const result = findPackageJsonSync(distribution, { enablePackageYaml: true });
+                const result = findPackageJsonSync(distribution, { yaml: true });
 
                 expect(result.packageJson.name).toBe("test-package");
                 expect(result.packageJson.version).toBe("1.0.0");
@@ -1073,13 +1073,13 @@ version: 1.0.0`;
                 writeJsonSync(join(distribution, "package.json"), jsonContent);
                 writeFileSync(join(distribution, "package.yaml"), yamlContent);
 
-                const result = await findPackageJson(distribution, { enablePackageYaml: true });
+                const result = await findPackageJson(distribution, { yaml: true });
 
                 expect(result.packageJson.name).toBe("json-package");
                 expect(result.path).toBe(join(distribution, "package.json"));
             });
 
-            it("should not find package.yaml when enablePackageYaml is false", async () => {
+            it("should not find package.yaml when yaml is false", async () => {
                 expect.assertions(1);
 
                 const yamlContent = `name: test-package
@@ -1087,7 +1087,7 @@ version: 1.0.0`;
 
                 writeFileSync(join(distribution, "package.yaml"), yamlContent);
 
-                await expect(findPackageJson(distribution, { enablePackageYaml: false })).rejects.toThrow(
+                await expect(findPackageJson(distribution, { yaml: false })).rejects.toThrow(
                     "No such file or directory, for package.json, package.yaml, or package.json5 found.",
                 );
             });
@@ -1108,7 +1108,7 @@ version: 1.0.0`;
 
                 writeFileSync(join(distribution, "package.json5"), json5Content);
 
-                const result = await findPackageJson(distribution, { enablePackageJson5: true });
+                const result = await findPackageJson(distribution, { json5: true });
 
                 expect(result.packageJson.name).toBe("test-package");
                 expect(result.packageJson.version).toBe("1.0.0");
@@ -1129,7 +1129,7 @@ version: 1.0.0`;
 
                 writeFileSync(join(distribution, "package.json5"), json5Content);
 
-                const result = findPackageJsonSync(distribution, { enablePackageJson5: true });
+                const result = findPackageJsonSync(distribution, { json5: true });
 
                 expect(result.packageJson.name).toBe("test-package");
                 expect(result.packageJson.version).toBe("1.0.0");
@@ -1148,13 +1148,13 @@ version: 1.0.0`;
                 writeJsonSync(join(distribution, "package.json"), jsonContent);
                 writeFileSync(join(distribution, "package.json5"), json5Content);
 
-                const result = await findPackageJson(distribution, { enablePackageJson5: true });
+                const result = await findPackageJson(distribution, { json5: true });
 
                 expect(result.packageJson.name).toBe("json-package");
                 expect(result.path).toBe(join(distribution, "package.json"));
             });
 
-            it("should not find package.json5 when enablePackageJson5 is false", async () => {
+            it("should not find package.json5 when json5 is false", async () => {
                 expect.assertions(1);
 
                 const json5Content = `{
@@ -1164,7 +1164,7 @@ version: 1.0.0`;
 
                 writeFileSync(join(distribution, "package.json5"), json5Content);
 
-                await expect(findPackageJson(distribution, { enablePackageJson5: false })).rejects.toThrow(
+                await expect(findPackageJson(distribution, { json5: false })).rejects.toThrow(
                     "No such file or directory, for package.json, package.yaml, or package.json5 found.",
                 );
             });
@@ -1182,7 +1182,7 @@ dependencies:
                 const yamlPath = join(distribution, "package.yaml");
                 writeFileSync(yamlPath, yamlContent);
 
-                const result = await parsePackageJson(yamlPath, { enablePackageYaml: true });
+                const result = await parsePackageJson(yamlPath, { yaml: true });
 
                 expect(result).toStrictEqual({
                     _id: "test-package@1.0.0",
@@ -1206,7 +1206,7 @@ dependencies:
                 const yamlPath = join(distribution, "package.yaml");
                 writeFileSync(yamlPath, yamlContent);
 
-                const result = parsePackageJsonSync(yamlPath, { enablePackageYaml: true });
+                const result = parsePackageJsonSync(yamlPath, { yaml: true });
 
                 expect(result).toStrictEqual({
                     _id: "test-package@1.0.0",
@@ -1219,7 +1219,7 @@ dependencies:
                 });
             });
 
-            it("should not parse package.yaml when enablePackageYaml is false", async () => {
+            it("should not parse package.yaml when yaml is false", async () => {
                 expect.assertions(1);
 
                 const yamlContent = `name: test-package
@@ -1229,7 +1229,7 @@ version: 1.0.0`;
                 writeFileSync(yamlPath, yamlContent);
 
                 // Should fall back to regular JSON parsing and fail
-                await expect(parsePackageJson(yamlPath, { enablePackageYaml: false })).rejects.toThrow();
+                await expect(parsePackageJson(yamlPath, { yaml: false })).rejects.toThrow();
             });
         });
 
@@ -1248,7 +1248,7 @@ version: 1.0.0`;
                 const json5Path = join(distribution, "package.json5");
                 writeFileSync(json5Path, json5Content);
 
-                const result = await parsePackageJson(json5Path, { enablePackageJson5: true });
+                const result = await parsePackageJson(json5Path, { json5: true });
 
                 expect(result).toStrictEqual({
                     _id: "test-package@1.0.0",
@@ -1275,7 +1275,7 @@ version: 1.0.0`;
                 const json5Path = join(distribution, "package.json5");
                 writeFileSync(json5Path, json5Content);
 
-                const result = parsePackageJsonSync(json5Path, { enablePackageJson5: true });
+                const result = parsePackageJsonSync(json5Path, { json5: true });
 
                 expect(result).toStrictEqual({
                     _id: "test-package@1.0.0",
@@ -1288,7 +1288,7 @@ version: 1.0.0`;
                 });
             });
 
-            it("should not parse package.json5 when enablePackageJson5 is false", async () => {
+            it("should not parse package.json5 when json5 is false", async () => {
                 expect.assertions(1);
 
                 const json5Content = `{
@@ -1300,7 +1300,7 @@ version: 1.0.0`;
                 writeFileSync(json5Path, json5Content);
 
                 // Should fall back to regular JSON parsing and fail
-                await expect(parsePackageJson(json5Path, { enablePackageJson5: false })).rejects.toThrow();
+                await expect(parsePackageJson(json5Path, { json5: false })).rejects.toThrow();
             });
         });
 

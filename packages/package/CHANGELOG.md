@@ -3,7 +3,7 @@
 ### Features
 
 * **package:** add support for package.yaml and package.json5 files ([#3519](https://github.com/visulima/visulima/issues/3519))
-  - Added `enablePackageYaml` and `enablePackageJson5` options to control format support
+  - Added `yaml` and `json5` options to control format support
   - File search priority: package.json > package.yaml > package.json5
   - Automatic format detection based on file extension
   - Support for YAML format with comments and readable syntax

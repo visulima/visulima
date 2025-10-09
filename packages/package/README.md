@@ -96,8 +96,8 @@ const result = await findPackageJson();
 
 // With options to enable/disable specific formats
 const result = await findPackageJson("/path/to/project", {
-    enablePackageYaml: true,    // Enable package.yaml support (default: true)
-    enablePackageJson5: true,   // Enable package.json5 support (default: true)
+    yaml: true,    // Enable package.yaml support (default: true)
+    json5: true,   // Enable package.json5 support (default: true)
 });
 ```
 
@@ -167,8 +167,8 @@ const packageJson = await parsePackageJson("./package.json", {
 
 // With format control options
 const packageJson = await parsePackageJson("./package.yaml", {
-    enablePackageYaml: true,    // Enable package.yaml support (default: true)
-    enablePackageJson5: false,  // Disable package.json5 support (default: true)
+    yaml: true,    // Enable package.yaml support (default: true)
+    json5: false,  // Disable package.json5 support (default: true)
     resolveCatalogs: true,
 });
 

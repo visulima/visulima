@@ -23,8 +23,8 @@ type ReadOptions = {
     cache?: FindPackageJsonCache | boolean;
     ignoreWarnings?: (RegExp | string)[];
     strict?: boolean;
-    enablePackageYaml?: boolean;
-    enablePackageJson5?: boolean;
+    yaml?: boolean;
+    json5?: boolean;
 };
 
 const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
@@ -125,7 +125,7 @@ export type NormalizedReadResult = {
 /**
  * An asynchronous function to find the package.json, package.yaml, or package.json5 file in the specified directory or its parent directories.
  * @param cwd The current working directory.
- * @param options Configuration options including enablePackageYaml and enablePackageJson5 flags.
+ * @param options Configuration options including yaml and json5 flags.
  * @returns A `Promise` that resolves to an object containing the parsed package data and the file path.
  * The type of the returned promise is `Promise&lt;NormalizedReadResult>`.
  * @throws {Error} If no package file can be found or if strict mode is enabled and normalize warnings are thrown.
@@ -142,11 +142,11 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     // Define the search patterns based on enabled options
     const searchPatterns = ["package.json"];
     
-    if (options.enablePackageYaml !== false) {
+    if (options.yaml !== false) {
         searchPatterns.push("package.yaml");
     }
     
-    if (options.enablePackageJson5 !== false) {
+    if (options.json5 !== false) {
         searchPatterns.push("package.json5");
     }
 
@@ -204,11 +204,11 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     // Define the search patterns based on enabled options
     const searchPatterns = ["package.json"];
     
-    if (options.enablePackageYaml !== false) {
+    if (options.yaml !== false) {
         searchPatterns.push("package.yaml");
     }
     
-    if (options.enablePackageJson5 !== false) {
+    if (options.json5 !== false) {
         searchPatterns.push("package.json5");
     }
 
@@ -284,8 +284,8 @@ export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJso
  * @param options.ignoreWarnings List of warning messages or patterns to skip in strict mode
  * @param options.resolveCatalogs Whether to resolve pnpm catalog references
  * @param options.strict Whether to throw errors on normalization warnings
- * @param options.enablePackageYaml Whether to enable package.yaml parsing (default: true)
- * @param options.enablePackageJson5 Whether to enable package.json5 parsing (default: true)
+ * @param options.yaml Whether to enable package.yaml parsing (default: true)
+ * @param options.json5 Whether to enable package.json5 parsing (default: true)
  * @returns
  * @throws {Error} If the packageFile parameter is not an object or a string or if strict mode is enabled and normalize warnings are thrown.
  */
@@ -295,8 +295,8 @@ export const parsePackageJsonSync = (
         ignoreWarnings?: (RegExp | string)[];
         resolveCatalogs?: boolean;
         strict?: boolean;
-        enablePackageYaml?: boolean;
-        enablePackageJson5?: boolean;
+        yaml?: boolean;
+        json5?: boolean;
     },
 ): NormalizedPackageJson => {
     const isObject = packageFile !== null && typeof packageFile === "object" && !Array.isArray(packageFile);
@@ -315,9 +315,9 @@ export const parsePackageJsonSync = (
         const filePath = packageFile as string;
         
         // Parse the file based on its extension
-        if ((options?.enablePackageYaml !== false) && (filePath.endsWith(".yaml") || filePath.endsWith(".yml"))) {
+        if ((options?.yaml !== false) && (filePath.endsWith(".yaml") || filePath.endsWith(".yml"))) {
             json = parseYamlFileSync(filePath);
-        } else if ((options?.enablePackageJson5 !== false) && filePath.endsWith(".json5")) {
+        } else if ((options?.json5 !== false) && filePath.endsWith(".json5")) {
             json = parseJson5FileSync(filePath);
         } else {
             json = readJsonSync(filePath);
@@ -352,8 +352,8 @@ export const parsePackageJsonSync = (
  * @param options.ignoreWarnings List of warning messages or patterns to skip in strict mode
  * @param options.strict Whether to throw errors on normalization warnings
  * @param options.resolveCatalogs Whether to resolve pnpm catalog references
- * @param options.enablePackageYaml Whether to enable package.yaml parsing (default: true)
- * @param options.enablePackageJson5 Whether to enable package.json5 parsing (default: true)
+ * @param options.yaml Whether to enable package.yaml parsing (default: true)
+ * @param options.json5 Whether to enable package.json5 parsing (default: true)
  * @returns
  * @throws {Error} If the packageFile parameter is not an object or a string or if strict mode is enabled and normalize warnings are thrown.
  */
@@ -363,8 +363,8 @@ export const parsePackageJson = async (
         ignoreWarnings?: (RegExp | string)[];
         resolveCatalogs?: boolean;
         strict?: boolean;
-        enablePackageYaml?: boolean;
-        enablePackageJson5?: boolean;
+        yaml?: boolean;
+        json5?: boolean;
     },
 ): Promise<NormalizedPackageJson> => {
     const isObject = packageFile !== null && typeof packageFile === "object" && !Array.isArray(packageFile);
@@ -383,9 +383,9 @@ export const parsePackageJson = async (
         const filePath = packageFile as string;
         
         // Parse the file based on its extension
-        if ((options?.enablePackageYaml !== false) && (filePath.endsWith(".yaml") || filePath.endsWith(".yml"))) {
+        if ((options?.yaml !== false) && (filePath.endsWith(".yaml") || filePath.endsWith(".yml"))) {
             json = await parseYamlFile(filePath);
-        } else if ((options?.enablePackageJson5 !== false) && filePath.endsWith(".json5")) {
+        } else if ((options?.json5 !== false) && filePath.endsWith(".json5")) {
             json = await parseJson5File(filePath);
         } else {
             json = await readJson(filePath);
