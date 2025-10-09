@@ -203,15 +203,19 @@ const packageJson = parsePackageJsonSync("./package.json", {
 - `.yaml` or `.yml` → YAML parsing
 - `.json5` → JSON5 parsing
 
-**Caching**: When `cache: true` is set, the function caches parsed results for file-based inputs only (not for object or JSON string inputs). This can improve performance when parsing the same file multiple times.
+**Caching**: When `cache: true` is set, the function uses a global cache to store parsed results for file-based inputs only (not for object or JSON string inputs). This can improve performance when parsing the same file multiple times.
 
 ```typescript
-// File-based caching example
+// File-based caching with global cache
 const result1 = await parsePackageJson("./package.json", { cache: true }); // Parses and caches
 const result2 = await parsePackageJson("./package.json", { cache: true }); // Returns cached result
 
+// Custom cache instance
+const myCache = new Map();
+const result3 = await parsePackageJson("./package.json", { cache: myCache }); // Uses custom cache
+
 // Objects and strings are never cached
-const result3 = await parsePackageJson({ name: "test" }, { cache: true }); // Always parsed fresh
+const result4 = await parsePackageJson({ name: "test" }, { cache: true }); // Always parsed fresh
 ```
 
 **Example File Formats**:

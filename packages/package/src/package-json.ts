@@ -192,7 +192,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     const searchPatterns = ["package.json"];
 
     if (options.yaml !== false) {
-        searchPatterns.push("package.yaml");
+        searchPatterns.push("package.yaml", "package.yml");
     }
 
     if (options.json5 !== false) {
@@ -264,7 +264,7 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     const searchPatterns = ["package.json"];
 
     if (options.yaml !== false) {
-        searchPatterns.push("package.yaml");
+        searchPatterns.push("package.yaml", "package.yml");
     }
 
     if (options.json5 !== false) {
