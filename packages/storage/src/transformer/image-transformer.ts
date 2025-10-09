@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ * Image transformation utilities built on Sharp. Supports resize, crop,
+ * format/quality, color operations, and streaming output with caching.
+ */
+/**
+ * @packageDocumentation
+ * Image transformer backed by Sharp with a declarative step API and
+ * optional caching. Supports resize, crop, rotate, format, and more.
+ */
 import { Readable } from "node:stream";
 
 import type { Sharp } from "sharp";
