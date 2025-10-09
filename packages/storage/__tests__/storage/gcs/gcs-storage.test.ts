@@ -41,7 +41,7 @@ describe(GCStorage, async () => {
 
     let storage: GCStorage;
 
-    // eslint-disable-next-line no-secrets/no-secrets,radar/no-duplicate-string
+    // eslint-disable-next-line sonarjs/no-clear-text-protocols
     const uri = "http://api.com?upload_id=123456789";
     const request = createRequest({ headers: { origin: "http://api.com" } });
     const metafileResponse = (): { data: GCSFile; status: number } =>
@@ -68,7 +68,7 @@ describe(GCStorage, async () => {
 
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
             mockAuthRequest.mockResolvedValueOnce({
-                headers: { get: (name: string) => name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined },
+                headers: { get: (name: string) => (name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined) },
                 status: 200,
             }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
@@ -103,7 +103,7 @@ describe(GCStorage, async () => {
         it("should handle TTL option and set expiration timestamp", async () => {
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
             mockAuthRequest.mockResolvedValueOnce({
-                headers: { get: (name: string) => name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined },
+                headers: { get: (name: string) => (name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined) },
                 status: 200,
             }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta

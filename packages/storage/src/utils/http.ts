@@ -47,7 +47,6 @@ export const readBody = (
     encoding: BufferEncoding = "utf8",
     limit: number | undefined,
 ): Promise<string> =>
-    // eslint-disable-next-line compat/compat
     new Promise((resolve, reject) => {
         let body = "";
 

@@ -6,7 +6,6 @@ import { Socket } from "node:net";
 import { rimraf } from "rimraf";
 
 export function cleanup(directory: string): Promise<any> {
-    // eslint-disable-next-line compat/compat
     return new Promise((resolve) => {
         rimraf(directory, resolve);
     });
