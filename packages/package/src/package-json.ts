@@ -239,7 +239,9 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
         path: filePath,
     };
 
-    cache.set(filePath, output);
+    if (options.cache) {
+        cache.set(filePath, output);
+    }
 
     return output;
 };
@@ -311,7 +313,9 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
         path: filePath,
     };
 
-    cache.set(filePath, output);
+    if (options.cache) {
+        cache.set(filePath, output);
+    }
 
     return output;
 };
