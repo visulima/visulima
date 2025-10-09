@@ -50,7 +50,7 @@ describe("fetch Multipart", () => {
 
             const request = create();
 
-            const storage = new DiskStorage({ ...storageOptions, directory, allowMIME: ["video/mp4", "image/*"] });
+            const storage = new DiskStorage({ ...storageOptions, allowMIME: ["video/mp4", "image/*"], directory });
             const multipartHandler = new Multipart({ storage });
 
             await waitForStorageReady(storage);

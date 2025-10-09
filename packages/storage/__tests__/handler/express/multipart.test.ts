@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import Multipart from "../../../src/handler/multipart";
 import DiskStorage from "../../../src/storage/local/disk-storage";
-import { metadata, storageOptions, testfile } from "../../__helpers__/config";
+import { storageOptions, testfile } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
 import { waitForStorageReady } from "../../__helpers__/utils";
 
@@ -21,7 +21,7 @@ describe("express Multipart", () => {
 
     beforeAll(async () => {
         directory = temporaryDirectory();
-        const storage = new DiskStorage({ ...storageOptions, directory, allowMIME: ["video/mp4", "image/*"] });
+        const storage = new DiskStorage({ ...storageOptions, allowMIME: ["video/mp4", "image/*"], directory });
 
         multipart = new Multipart({ storage });
 
