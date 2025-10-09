@@ -189,6 +189,7 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
             if (bufferedChunks.length === 0 && !isProcessing && pendingTimeouts.length === 0 && sourceStream.readableEnded) {
                 targetStream.push(null);
             }
+
             return;
         }
 
@@ -213,6 +214,7 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
                     // Stream has ended, ignore
                 }
             }, delay);
+
             pendingTimeouts.push(timeout);
         } else {
             try {
