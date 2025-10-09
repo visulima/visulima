@@ -1,7 +1,7 @@
 <div align="center">
   <h3>Visulima package</h3>
   <p>
-  A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json files with advanced features like catalog resolution.
+  A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution and caching.
 
 Built on top of
 
@@ -85,14 +85,40 @@ const result = await findPackageRoot();
 
 #### findPackageJson
 
-Finds and parses a package.json file, searching parent directories if needed.
+Finds and parses a package.json, package.yaml, or package.json5 file, searching parent directories if needed.
 
 ```typescript
 import { findPackageJson } from "@visulima/package";
 
+// Basic usage - searches for package.json, package.yaml, and package.json5
 const result = await findPackageJson();
 // => { packageJson: { name: 'my-package', ... }, path: '/path/to/package.json' }
+
+// With options to enable/disable specific formats and features
+const result = await findPackageJson("/path/to/project", {
+    yaml: true, // Enable package.yaml support (default: true)
+    json5: true, // Enable package.json5 support (default: true)
+    resolveCatalogs: true, // Resolve pnpm catalog references (default: false)
+    cache: true, // Enable caching of parsed results (default: false)
+});
 ```
+
+**File Search Priority**: The function searches for files in the following order:
+
+1. `package.json` (highest priority)
+2. `package.yaml`
+3. `package.json5` (lowest priority)
+
+**Supported Formats**:
+
+- **package.json**: Standard JSON format
+- **package.yaml**: YAML format (introduced in pnpm/pnpm#1799)
+- **package.json5**: JSON5 format with comments and trailing commas support
+
+**Additional Options**:
+
+- **resolveCatalogs**: Resolve pnpm catalog references to actual versions (requires pnpm workspace)
+- **cache**: Cache parsed results to improve performance on repeated calls
 
 ### Package Manager Detection
 
@@ -133,17 +159,27 @@ const version = await getPackageManagerVersion("pnpm");
 
 #### parsePackageJson
 
-Parses and normalizes package.json data with optional catalog resolution support.
+Parses and normalizes package.json, package.yaml, or package.json5 data with optional catalog resolution support.
 
 ```typescript
 import { parsePackageJson } from "@visulima/package";
 
-// Basic parsing
+// Basic parsing - automatically detects format by file extension
 const packageJson = await parsePackageJson("./package.json");
+const packageYaml = await parsePackageJson("./package.yaml");
+const packageJson5 = await parsePackageJson("./package.json5");
 
 // With catalog resolution (pnpm workspaces only)
 const packageJson = await parsePackageJson("./package.json", {
     resolveCatalogs: true,
+});
+
+// With format control and caching options
+const packageJson = await parsePackageJson("./package.yaml", {
+    yaml: true, // Enable package.yaml support (default: true)
+    json5: false, // Disable package.json5 support (default: true)
+    resolveCatalogs: true, // Resolve pnpm catalog references (default: false)
+    cache: true, // Enable caching for file-based parsing (default: false)
 });
 
 // Synchronous version
@@ -151,7 +187,65 @@ import { parsePackageJsonSync } from "@visulima/package";
 
 const packageJson = parsePackageJsonSync("./package.json", {
     resolveCatalogs: true,
+    cache: true, // Enable caching for file-based parsing (default: false)
 });
+```
+
+**Supported File Formats**:
+
+- **package.json**: Standard JSON format
+- **package.yaml**: YAML format with support for comments and more readable syntax
+- **package.json5**: JSON5 format with support for comments, trailing commas, and unquoted keys
+
+**Format Detection**: The function automatically detects the file format based on the file extension:
+
+- `.json` → JSON parsing
+- `.yaml` or `.yml` → YAML parsing
+- `.json5` → JSON5 parsing
+
+**Caching**: When `cache: true` is set, the function uses a global cache to store parsed results for file-based inputs only (not for object or JSON string inputs). This can improve performance when parsing the same file multiple times.
+
+```typescript
+// File-based caching with global cache
+const result1 = await parsePackageJson("./package.json", { cache: true }); // Parses and caches
+const result2 = await parsePackageJson("./package.json", { cache: true }); // Returns cached result
+
+// Custom cache instance
+const myCache = new Map();
+const result3 = await parsePackageJson("./package.json", { cache: myCache }); // Uses custom cache
+
+// Objects and strings are never cached
+const result4 = await parsePackageJson({ name: "test" }, { cache: true }); // Always parsed fresh
+```
+
+**Example File Formats**:
+
+```yaml
+# package.yaml
+name: my-package
+version: 1.0.0
+dependencies:
+    react: ^18.0.0
+    typescript: ^5.0.0
+scripts:
+    build: "tsc"
+    test: "vitest"
+```
+
+```json5
+// package.json5
+{
+    name: "my-package",
+    version: "1.0.0",
+    dependencies: {
+        react: "^18.0.0",
+        typescript: "^5.0.0",
+    },
+    scripts: {
+        build: "tsc",
+        test: "vitest",
+    },
+}
 ```
 
 **Catalog Resolution**: When `resolveCatalogs: true` is set, the function will:
