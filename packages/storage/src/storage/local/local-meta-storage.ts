@@ -42,7 +42,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     public override async save(id: string, file: T): Promise<T> {
         await this.accessCheck();
 
-        const transformedMetadata = file as unknown as Omit<T, "metadata"> & { metadata?: string };
+        const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {
             transformedMetadata.metadata = stringifyMetadata(file.metadata);

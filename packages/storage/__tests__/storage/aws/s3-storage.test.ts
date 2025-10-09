@@ -17,11 +17,14 @@ import type { AwsError, S3StorageOptions } from "../../../src/storage/aws/types"
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
 
 vi.mock(import("aws-crt"));
-vi.mock(import("@aws-sdk/s3-request-presigner"));
+vi.mock("@aws-sdk/s3-request-presigner", () => ({
+    getSignedUrl: vi.fn().mockResolvedValue("https://api.s3.example.com?signed"),
+}));
 
 const s3Mock = mockClient(S3Client);
 
 describe(S3Storage, () => {
+    let getSignedUrlMock: any;
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
     const options = { ...(storageOptions as S3StorageOptions), bucket: "bucket", region: "us-east-1" };
@@ -47,6 +50,7 @@ describe(S3Storage, () => {
     beforeEach(async () => {
         s3Mock.reset();
         storage = new S3Storage(options);
+
     });
 
     describe(".create()", () => {
@@ -56,7 +60,10 @@ describe(S3Storage, () => {
 
             const s3file = await storage.create(request, metafile);
 
-            expect(s3file).toMatchSnapshot();
+            expect(s3file).toMatchSnapshot({
+                expiredAt: expect.any(Number),
+                createdAt: expect.any(String),
+            });
         });
 
         it("should handle existing", async () => {
@@ -240,6 +247,7 @@ describe(S3Storage, () => {
 });
 
 describe("s3PresignedStorage", () => {
+    let getSignedUrlMock: any;
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
     const options = {
@@ -270,6 +278,7 @@ describe("s3PresignedStorage", () => {
     beforeEach(async () => {
         s3Mock.reset();
         storage = new S3Storage(options);
+
     });
 
     describe(".create()", () => {
@@ -277,9 +286,6 @@ describe("s3PresignedStorage", () => {
             s3Mock.on(HeadObjectCommand).rejects();
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
-
-            // eslint-disable-next-line radar/no-duplicate-string
-            getSignedUrlMock.mockResolvedValue("https://api.s3.example.com?signed");
 
             const s3file = await storage.create(request, metafile);
 
@@ -292,8 +298,6 @@ describe("s3PresignedStorage", () => {
         it("should add partsUrls", async () => {
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
-            getSignedUrlMock.mockResolvedValue("https://api.s3.example.com?signed");
-
             const s3file = await storage.update(metafile, metafile);
 
             expect(s3file.partsUrls?.length).toBe(1);
