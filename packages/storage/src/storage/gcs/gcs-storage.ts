@@ -123,9 +123,9 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     }
 
     public override normalizeError(error: ClientError): HttpError {
-        const statusCode = +error.code || 500;
-
+        // Check if it's a client error with config
         if (error.config) {
+            const statusCode = +error.code || 500;
             return {
                 code: `GCS${statusCode}`,
                 message: error.message,
@@ -135,7 +135,13 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
             };
         }
 
-        return super.normalizeError(error);
+        // For non-client errors, return generic upload error
+        return {
+            code: "GenericUploadError",
+            message: `[${this.constructor.name}] ${error.message}`,
+            name: error.name,
+            statusCode: 500,
+        };
     }
 
     public async create(request: IncomingMessage, config: FileInit): Promise<GCSFile> {

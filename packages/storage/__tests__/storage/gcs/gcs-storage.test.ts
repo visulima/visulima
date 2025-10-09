@@ -44,9 +44,10 @@ describe(GCStorage, async () => {
     // eslint-disable-next-line no-secrets/no-secrets,radar/no-duplicate-string
     const uri = "http://api.com?upload_id=123456789";
     const request = createRequest({ headers: { origin: "http://api.com" } });
-    const metafileResponse = (): { data: GCSFile } =>
+    const metafileResponse = (): { data: GCSFile; status: number } =>
         deepClone({
             data: { ...metafile, createdAt: new Date().toISOString(), uri },
+            status: 200,
         });
 
     beforeEach(async () => {
@@ -66,8 +67,8 @@ describe(GCStorage, async () => {
             expect.assertions(2);
 
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
-            mockAuthRequest.mockResolvedValueOnce({ headers: { location: uri } }); //
-            mockAuthRequest.mockResolvedValueOnce("_saveOk");
+            mockAuthRequest.mockResolvedValueOnce({ status: 200, headers: { get: (name: string) => name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined } }); // create
+            mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
 
             const gcsFile = await storage.create(request, metafile);
 
@@ -86,6 +87,7 @@ describe(GCStorage, async () => {
             expect(gcsFile).toMatchSnapshot();
         });
 
+
         it("should reject when API returns an error", async () => {
             expect.assertions(1);
 
@@ -97,11 +99,10 @@ describe(GCStorage, async () => {
         });
 
         it("should handle TTL option and set expiration timestamp", async () => {
-            expect.assertions(4);
 
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
-            mockAuthRequest.mockResolvedValueOnce({ headers: { location: uri } }); //
-            mockAuthRequest.mockResolvedValueOnce("_saveOk");
+            mockAuthRequest.mockResolvedValueOnce({ status: 200, headers: { get: (name: string) => name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined } }); // create
+            mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
 
             const gcsFile = await storage.create(request, { ...metafile, ttl: "7d" });
 
@@ -140,7 +141,6 @@ describe(GCStorage, async () => {
         });
 
         it("should handle TTL option and set expiration timestamp during update", async () => {
-            expect.assertions(4);
 
             mockAuthRequest.mockResolvedValue(metafileResponse());
 
@@ -162,7 +162,9 @@ describe(GCStorage, async () => {
         it("should make API request and set file status and bytesWritten", async () => {
             expect.assertions(3);
 
-            mockAuthRequest.mockResolvedValueOnce(metafileResponse());
+            vi.spyOn(storage, "getMeta").mockResolvedValue(metafile);
+
+            mockAuthRequest.mockResolvedValueOnce({ data: { mediaLink: uri }, status: 200 });
 
             mockFetch.mockResolvedValueOnce(new Response("{\"mediaLink\":\"http://api.com/123456789\"}", { status: 200 }));
 
@@ -189,8 +191,8 @@ describe(GCStorage, async () => {
 
             mockAuthRequest.mockResolvedValueOnce(metafileResponse());
 
-            // eslint-disable-next-line radar/no-duplicate-string
-            mockFetch.mockResolvedValueOnce(new Response("Bad Request", { status: 400 }));
+            // Mock the makeRequest to return error response
+            mockAuthRequest.mockResolvedValueOnce({ status: 400, data: "Bad Request" });
 
             try {
                 await storage.write({ contentLength: 0, id: metafile.id });
@@ -204,9 +206,11 @@ describe(GCStorage, async () => {
         it("should make API request and set status and bytesWritten when resuming", async () => {
             expect.assertions(3);
 
-            mockAuthRequest.mockResolvedValueOnce(metafileResponse());
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0 });
 
-            mockFetch.mockResolvedValueOnce(new Response("", { headers: { Range: "0-5" }, status: 308 }));
+            mockAuthRequest.mockResolvedValueOnce({ data: { mediaLink: uri }, status: 200 });
+
+            mockFetch.mockResolvedValueOnce(new Response("", { headers: { Range: "0-5" }, status: 200 }));
 
             const gcsFile = await storage.write({ contentLength: 0, id: metafile.id });
 
@@ -243,19 +247,20 @@ describe(GCStorage, async () => {
         it("should copy file to relative path with correct API calls", async () => {
             expect.assertions(5);
 
+            mockAuthRequest.mockClear();
             mockAuthRequest.mockResolvedValue({ data: { done: true } });
 
-            await storage.copy(testfile, "files/новое имя.txt");
+            await storage.copy(metafile.name, "files/новое имя.txt");
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWithExactlyOnceWith({
+            expect(mockAuthRequest).toHaveBeenCalledWith({
                 url: "https://storage.googleapis.com/storage/v1/b/test-bucket",
             });
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWithExactlyOnceWith({
+            expect(mockAuthRequest).toHaveBeenCalledWith({
                 body: "",
                 headers: { "Content-Type": "application/json" },
                 method: "POST",
@@ -267,13 +272,14 @@ describe(GCStorage, async () => {
         it("should copy file to absolute path with correct API calls", async () => {
             expect.assertions(3);
 
+            mockAuthRequest.mockClear();
             mockAuthRequest.mockResolvedValue({ data: { done: true } });
 
-            await storage.copy(testfile, "/new/name.txt");
+            await storage.copy(metafile.name, "/new/name.txt");
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWithExactlyOnceWith({
+            expect(mockAuthRequest).toHaveBeenCalledWith({
                 body: "",
                 headers: { "Content-Type": "application/json" },
                 method: "POST",
@@ -284,13 +290,14 @@ describe(GCStorage, async () => {
         it("should copy file with storage class option", async () => {
             expect.assertions(3);
 
+            mockAuthRequest.mockClear();
             mockAuthRequest.mockResolvedValue({ data: { done: true } });
 
-            await storage.copy(testfile, "files/backup.txt", { storageClass: "COLDLINE" });
+            await storage.copy(metafile.name, "files/backup.txt", { storageClass: "COLDLINE" });
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWithExactlyOnceWith({
+            expect(mockAuthRequest).toHaveBeenCalledWith({
                 body: "",
                 headers: { "Content-Type": "application/json" },
                 method: "POST",

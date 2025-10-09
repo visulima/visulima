@@ -4,7 +4,7 @@ import { fromIni } from "@aws-sdk/credential-providers";
 import MetaStorage from "../meta-storage";
 import type { File } from "../utils/file";
 import { isExpired } from "../utils/file";
-import { stringifyMetadata } from "../utils/file/metadata";
+import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 import type { S3MetaStorageOptions } from "./types";
 
 class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
@@ -53,7 +53,13 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         }
 
         if (Metadata?.metadata !== undefined) {
-            return JSON.parse(decodeURIComponent(Metadata.metadata)) as T;
+            const file = JSON.parse(decodeURIComponent(Metadata.metadata)) as T;
+
+            if (file.metadata && typeof file.metadata === "string") {
+                file.metadata = parseMetadata(file.metadata);
+            }
+
+            return file;
         }
 
         throw new Error(`Metafile ${id} not found`);
@@ -70,7 +76,7 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async save(id: string, file: T): Promise<T> {
-        const transformedMetadata = file as unknown as Omit<T, "metadata"> & { metadata?: string };
+        const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {
             transformedMetadata.metadata = stringifyMetadata(file.metadata);

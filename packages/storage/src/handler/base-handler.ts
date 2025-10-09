@@ -86,7 +86,7 @@ abstract class BaseHandler<
         this.assembleErrors(value);
     }
 
-    public handle = (request: NodeRequest, response: NodeResponse): void => this.upload(request, response);
+    public handle = async (request: NodeRequest, response: NodeResponse): Promise<void> => this.upload(request, response);
 
     /**
      * Handle Web API Fetch requests (for Hono, Cloudflare Workers, etc.)

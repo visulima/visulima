@@ -517,11 +517,11 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
         const maxAgeMs = toMilliseconds(this.expiration?.maxAge);
 
-        if (maxAgeMs) {
+        if (maxAgeMs && !file.expiredAt) {
             // eslint-disable-next-line no-param-reassign
             file.expiredAt = this.expiration?.rolling
-                ? new Date(Date.now() + maxAgeMs).toISOString()
-                : new Date(+new Date(file.createdAt) + maxAgeMs).toISOString();
+                ? Date.now() + maxAgeMs
+                : +new Date(file.createdAt) + maxAgeMs;
         }
 
         return file;
