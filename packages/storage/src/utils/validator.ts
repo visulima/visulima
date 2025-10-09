@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * Declarative validation utilities used by storage handlers. Define validators
- * that produce consistent HTTP responses on failure.
- */
 import { ErrorMap } from "./errors";
 import type { Headers, HttpErrorBody, ResponseBody, ResponseTuple, UploadResponse, Validation, ValidatorConfig } from "./types";
 import ValidationError from "./validation-error";
@@ -19,10 +14,6 @@ const toResponse = <T extends ResponseBody>(response: ResponseTuple<T> | UploadR
     return { body, headers, statusCode };
 };
 
-/**
- * Composable validator that aggregates named checks and throws
- * {@link ValidationError} with a stable error code when a check fails.
- */
 export class Validator<T> {
     private validators: Record<string, Required<ValidatorConfig<T>>> = {};
 

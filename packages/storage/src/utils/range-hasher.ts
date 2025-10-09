@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * Range hasher with LRU caching for incremental file checksum computation.
- * Provides helpers for hex/base64 digests and resuming from offsets.
- */
 import type { Hash } from "node:crypto";
 import { createReadStream } from "node:fs";
 
@@ -11,10 +6,6 @@ import { LRUCache as Cache } from "lru-cache";
 import RangeChecksum from "./range-checksum";
 import type { RangeChecksum as IRangeChecksum, RangeHasher as IRangeHasher } from "./types";
 
-/**
- * Maintains rolling hashers per file path with TTL‑based eviction. Useful for
- * computing checksums over large files in chunks or resuming after restarts.
- */
 class RangeHasher extends Cache<string, Hash, number> {
     public constructor(
         public algorithm: "md5" | "sha1" = "sha1",

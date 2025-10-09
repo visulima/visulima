@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * Node.js HTTP helpers used by the upload handlers. Includes body/metadata
- * parsing, header utilities, base URL extraction, request stream conversion,
- * and response normalization helpers.
- */
 import type { IncomingMessage, OutgoingHttpHeader, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 
