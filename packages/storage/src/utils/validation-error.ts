@@ -9,7 +9,7 @@ class ValidationError extends Error implements IValidationError {
         public body: HttpErrorBody,
         public headers: Headers,
     ) {
-        super(typeof body === 'string' ? body : body?.message);
+        super(typeof body === "string" ? body : body?.message);
     }
 }
 

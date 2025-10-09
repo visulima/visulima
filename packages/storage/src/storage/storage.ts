@@ -96,6 +96,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
         // Initialize generic configuration
         this.genericConfig = {
+            ...config,
             ...config.genericConfig,
             useRelativeLocation: config.useRelativeLocation,
         };
@@ -519,9 +520,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
         if (maxAgeMs && !file.expiredAt) {
             // eslint-disable-next-line no-param-reassign
-            file.expiredAt = this.expiration?.rolling
-                ? Date.now() + maxAgeMs
-                : +new Date(file.createdAt) + maxAgeMs;
+            file.expiredAt = this.expiration?.rolling ? Date.now() + maxAgeMs : +new Date(file.createdAt) + maxAgeMs;
         }
 
         return file;

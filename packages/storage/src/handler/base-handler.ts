@@ -60,7 +60,7 @@ abstract class BaseHandler<
         return this.internalErrorResponses;
     }
 
-    public constructor({ mediaTransformer, storage, disableTerminationForFinishedUploads }: UploadOptions<TFile>) {
+    public constructor({ disableTerminationForFinishedUploads, mediaTransformer, storage }: UploadOptions<TFile>) {
         super();
 
         this.storage = storage;
@@ -289,7 +289,7 @@ abstract class BaseHandler<
             const uuid = ext ? rawUuid.replace(new RegExp(`\\.${ext}$`), "") : rawUuid;
 
             // Handle metadata requests (check this before UUID validation)
-            if (metadata === "metadata") {
+            if (metadata === "metadata" && getRealPath(request).endsWith("/metadata")) {
                 try {
                     const file = await this.storage.getMeta(uuid);
 

@@ -21,18 +21,19 @@ export function deepClone<T>(object: T): T {
 
 export async function waitForStorageReady(storage: { isReady: boolean } | { storage: { isReady: boolean } }, timeoutMs = 5000): Promise<void> {
     const startTime = Date.now();
-    const storageObj = 'isReady' in storage ? storage : storage.storage;
+    const storageObject = "isReady" in storage ? storage : storage.storage;
 
     return new Promise((resolve, reject) => {
         const checkReady = () => {
-            if (storageObj.isReady) {
+            if (storageObject.isReady) {
                 resolve();
             } else if (Date.now() - startTime > timeoutMs) {
-                reject(new Error('Storage readiness timeout'));
+                reject(new Error("Storage readiness timeout"));
             } else {
                 setTimeout(checkReady, 10);
             }
         };
+
         checkReady();
     });
 }
