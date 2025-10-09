@@ -3,12 +3,12 @@ import { Transform } from "node:stream";
 class StreamLength extends Transform {
     public length = 0;
 
-    constructor(readonly limit: number = Number.POSITIVE_INFINITY) {
+    public constructor(public readonly limit: number = Number.POSITIVE_INFINITY) {
         super();
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    override _transform(chunk: Buffer, _encoding: string, callback: (error?: Error) => void): void {
+    public override _transform(chunk: Buffer, _encoding: string, callback: (error?: Error) => void): void {
         const expected = this.length + chunk.length;
 
         if (this.limit >= expected) {

@@ -1,9 +1,9 @@
 import { File } from "../utils/file";
 
 class GCSFile extends File {
-    GCSUploadURI?: string;
+    public GCSUploadURI?: string;
 
-    uri?: string;
+    public uri?: string;
 }
 
 export default GCSFile;

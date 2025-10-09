@@ -5,15 +5,15 @@ import { Transform } from "node:stream";
 import type { RangeChecksum as IRangeChecksum, RangeHasher as IRangeHasher } from "./types";
 
 class RangeChecksum extends Transform implements IRangeChecksum {
-    hash: Hash;
+    public hash: Hash;
 
     private readonly hashCopy: Hash;
 
     private hashes: IRangeHasher;
 
-    constructor(
+    public constructor(
         hashes: IRangeHasher,
-        readonly path: string,
+        public readonly path: string,
     ) {
         super();
 
@@ -22,11 +22,11 @@ class RangeChecksum extends Transform implements IRangeChecksum {
         this.hashCopy = this.hash.copy();
     }
 
-    reset(): void {
+    public reset(): void {
         this.hashes.set(this.path, this.hashCopy);
     }
 
-    digest(encoding: BinaryToTextEncoding = "hex"): string {
+    public digest(encoding: BinaryToTextEncoding = "hex"): string {
         return this.hash.copy().digest(encoding);
     }
 

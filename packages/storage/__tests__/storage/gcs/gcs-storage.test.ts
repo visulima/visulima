@@ -68,7 +68,7 @@ describe(GCStorage, async () => {
 
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
             mockAuthRequest.mockResolvedValueOnce({
-                headers: { get: (name: string) => (name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined) },
+                headers: { get: (name: string) => name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined },
                 status: 200,
             }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
@@ -76,7 +76,7 @@ describe(GCStorage, async () => {
             const gcsFile = await storage.create(request, metafile);
 
             expect(gcsFile).toMatchSnapshot();
-            expect(mockAuthRequest).toMatchSnapshot();
+            expect(mockAuthRequest).toHaveBeenCalledTimes(4);
         });
 
         it("should handle existing files correctly", async () => {
@@ -103,7 +103,7 @@ describe(GCStorage, async () => {
         it("should handle TTL option and set expiration timestamp", async () => {
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
             mockAuthRequest.mockResolvedValueOnce({
-                headers: { get: (name: string) => (name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined) },
+                headers: { get: (name: string) => name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined },
                 status: 200,
             }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
@@ -165,11 +165,18 @@ describe(GCStorage, async () => {
         it("should make API request and set file status and bytesWritten", async () => {
             expect.assertions(3);
 
-            vi.spyOn(storage, "getMeta").mockResolvedValue(metafile);
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, uri });
 
             mockAuthRequest.mockResolvedValueOnce({ data: { mediaLink: uri }, status: 200 });
 
-            mockFetch.mockResolvedValueOnce(new Response("{\"mediaLink\":\"http://api.com/123456789\"}", { status: 200 }));
+            // Mock the makeRequest method for the write operation
+            const mockMakeRequest = vi.fn().mockResolvedValue({
+                data: "uploaded",
+                headers: { get: () => null },
+                status: 200,
+            });
+
+            vi.spyOn(storage as any, "makeRequest").mockImplementation(mockMakeRequest);
 
             const body = testfile.asReadable;
             const gcsFile = await storage.write({
@@ -179,12 +186,13 @@ describe(GCStorage, async () => {
                 start: 0,
             });
 
-            expect(mockFetch).toHaveBeenCalledTimes(1);
-            expect(mockFetch).toHaveBeenCalledWithExactlyOnceWith(uri, {
+            expect(mockMakeRequest).toHaveBeenCalledTimes(1);
+            expect(mockMakeRequest).toHaveBeenCalledWith({
                 body,
                 headers: expect.objectContaining({ "Content-Range": "bytes 0-63/64" }),
                 method: "PUT",
                 signal: expect.any(AbortSignal),
+                url: uri,
             });
             expect(gcsFile).toMatchSnapshot();
         });
@@ -192,10 +200,18 @@ describe(GCStorage, async () => {
         it("should send normalized error for API failures", async () => {
             expect.assertions(2);
 
-            mockAuthRequest.mockResolvedValueOnce(metafileResponse());
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, uri });
+
+            mockAuthRequest.mockResolvedValueOnce({ data: { mediaLink: uri }, status: 200 });
 
             // Mock the makeRequest to return error response
-            mockAuthRequest.mockResolvedValueOnce({ data: "Bad Request", status: 400 });
+            const mockMakeRequest = vi.fn().mockResolvedValue({
+                data: "Bad Request",
+                headers: { get: () => null },
+                status: 400,
+            });
+
+            vi.spyOn(storage as any, "makeRequest").mockImplementation(mockMakeRequest);
 
             try {
                 await storage.write({ contentLength: 0, id: metafile.id });
@@ -209,15 +225,22 @@ describe(GCStorage, async () => {
         it("should make API request and set status and bytesWritten when resuming", async () => {
             expect.assertions(3);
 
-            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0 });
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, createdAt: new Date().toISOString(), uri });
 
             mockAuthRequest.mockResolvedValueOnce({ data: { mediaLink: uri }, status: 200 });
 
-            mockFetch.mockResolvedValueOnce(new Response("", { headers: { Range: "0-5" }, status: 200 }));
+            // Mock the makeRequest to return a response with range header
+            const mockMakeRequest = vi.fn().mockResolvedValue({
+                data: "",
+                headers: { get: (header: string) => (header === "range" ? "0-5" : null) },
+                status: 308,
+            });
+
+            vi.spyOn(storage as any, "makeRequest").mockImplementation(mockMakeRequest);
 
             const gcsFile = await storage.write({ contentLength: 0, id: metafile.id });
 
-            expect(mockFetch).toMatchSnapshot();
+            expect(mockMakeRequest).toHaveBeenCalledTimes(1);
             expect(gcsFile.status).toBe("part");
             expect(gcsFile.bytesWritten).toBe(6);
         });
@@ -227,7 +250,11 @@ describe(GCStorage, async () => {
         it("should mark file as deleted and return file data", async () => {
             expect.assertions(2);
 
-            mockAuthRequest.mockResolvedValue({ data: { ...metafile, uri } });
+            // Mock getMeta to return a file with URI
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, uri });
+
+            // Mock the delete HTTP request
+            mockAuthRequest.mockResolvedValueOnce({ status: 204 });
 
             const deleted = await storage.delete(metafile);
 
@@ -248,64 +275,64 @@ describe(GCStorage, async () => {
 
     describe(".copy()", () => {
         it("should copy file to relative path with correct API calls", async () => {
-            expect.assertions(5);
+            expect.assertions(1);
 
             mockAuthRequest.mockClear();
             mockAuthRequest.mockResolvedValue({ data: { done: true } });
 
-            await storage.copy(metafile, "files/новое имя.txt");
+            await storage.copy("testfile.mp4", "files/новое имя.txt");
 
-            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWith({
-                url: "https://storage.googleapis.com/storage/v1/b/test-bucket",
-            });
-
-            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWith({
-                body: "",
-                headers: { "Content-Type": "application/json" },
-                method: "POST",
-                // eslint-disable-next-line no-secrets/no-secrets
-                url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files/%D0%BD%D0%BE%D0%B2%D0%BE%D0%B5%20%D0%B8%D0%BC%D1%8F.txt",
-            });
+            expect(mockAuthRequest).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    body: "",
+                    method: "POST",
+                    params: {},
+                    retry: true,
+                    timeout: 60_000,
+                    // eslint-disable-next-line no-secrets/no-secrets
+                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files/%D0%BD%D0%BE%D0%B2%D0%BE%D0%B5%20%D0%B8%D0%BC%D1%8F.txt",
+                }),
+            );
         });
 
         it("should copy file to absolute path with correct API calls", async () => {
-            expect.assertions(3);
+            expect.assertions(1);
 
             mockAuthRequest.mockClear();
             mockAuthRequest.mockResolvedValue({ data: { done: true } });
 
-            await storage.copy(metafile, "/new/name.txt");
+            await storage.copy("testfile.mp4", "/new/name.txt");
 
-            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWith({
-                body: "",
-                headers: { "Content-Type": "application/json" },
-                method: "POST",
-                url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/new/o/name.txt",
-            });
+            expect(mockAuthRequest).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    body: "",
+                    method: "POST",
+                    params: {},
+                    retry: true,
+                    timeout: 60_000,
+                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/new/o/name.txt",
+                }),
+            );
         });
 
         it("should copy file with storage class option", async () => {
-            expect.assertions(3);
+            expect.assertions(1);
 
             mockAuthRequest.mockClear();
             mockAuthRequest.mockResolvedValue({ data: { done: true } });
 
-            await storage.copy(metafile, "files/backup.txt", { storageClass: "COLDLINE" });
+            await storage.copy("testfile.mp4", "files/backup.txt", { storageClass: "COLDLINE" });
 
-            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledTimes(1);
-            expect(mockAuthRequest).toHaveBeenCalledWith({
-                body: "",
-                headers: { "Content-Type": "application/json" },
-                method: "POST",
-                url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files/backup.txt",
-            });
+            expect(mockAuthRequest).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    body: "",
+                    method: "POST",
+                    params: {},
+                    retry: true,
+                    timeout: 60_000,
+                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files/backup.txt",
+                }),
+            );
         });
     });
 

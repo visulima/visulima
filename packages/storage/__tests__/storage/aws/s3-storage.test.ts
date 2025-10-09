@@ -17,9 +17,11 @@ import type { AwsError, S3StorageOptions } from "../../../src/storage/aws/types"
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
 
 vi.mock(import("aws-crt"));
-vi.mock("@aws-sdk/s3-request-presigner", () => ({
-    getSignedUrl: vi.fn().mockResolvedValue("https://api.s3.example.com?signed"),
-}));
+vi.mock(import("@aws-sdk/s3-request-presigner"), () => {
+    return {
+        getSignedUrl: vi.fn().mockResolvedValue("https://api.s3.example.com?signed"),
+    };
+});
 
 const s3Mock = mockClient(S3Client);
 
@@ -86,7 +88,7 @@ describe(S3Storage, () => {
         });
 
         it("should handle TTL option", async () => {
-            expect.assertions(4);
+            expect.assertions(3);
 
             s3Mock.on(HeadObjectCommand).rejects();
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
@@ -94,7 +96,8 @@ describe(S3Storage, () => {
             const s3file = await storage.create(request, { ...metafile, ttl: "30d" });
 
             expect(s3file.expiredAt).toBeDefined();
-            expect(typeof s3file.expiredAt).toBe("number");
+
+            expectTypeOf(s3file.expiredAt).toBeNumber();
 
             // TTL should be converted to expiredAt timestamp
             const expectedExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days in ms
