@@ -43,7 +43,6 @@ class RangeHasher extends Cache<string, Hash, number> {
     }
 
     private fromFs(path: string, start = 0, initial?: Hash): Promise<Hash> {
-        // eslint-disable-next-line compat/compat
         return new Promise((resolve, reject) => {
             const digester = this.digester(path);
 

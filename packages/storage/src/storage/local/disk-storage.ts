@@ -261,6 +261,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             followSymlinks: false,
             includeDirs: false,
             includeFiles: true,
+            skip: ["*.META$"],
         };
         const uploads: TFile[] = [];
 

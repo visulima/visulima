@@ -1,8 +1,8 @@
-import { mkdir, readFile, utimes, writeFile } from "node:fs/promises";
+import { utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { remove } from "@visulima/fs";
+import { ensureDir, readFile, remove, writeFile } from "@visulima/fs";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { join, normalize } from "@visulima/path";
 
@@ -62,7 +62,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async get(id: string): Promise<T> {
-        const json = await readFile(this.getMetaPath(id), { encoding: "utf8" });
+        const json = await readFile(this.getMetaPath(id));
 
         if (json === undefined) {
             throw new TypeError("Invalid metafile");
@@ -82,7 +82,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     private async accessCheck(): Promise<void> {
-        await mkdir(this.directory, { recursive: true });
+        await ensureDir(this.directory);
     }
 }
 

@@ -87,7 +87,6 @@ describe("baseHandler", () => {
     it("should call correct handler based on HTTP request method", async () => {
         expect.assertions(2);
 
-        // eslint-disable-next-line compat/compat
         const getHandler = vi.fn(() => Promise.resolve({}));
 
         uploader.handlers.set("GET", getHandler);
