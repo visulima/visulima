@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * Streaming helpers for file uploads: backpressure handling, range streams,
+ * timeouts, performance monitoring, and bandwidth limiting utilities.
+ */
 import { Readable } from "node:stream";
 
 /**
