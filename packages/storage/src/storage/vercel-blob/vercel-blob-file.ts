@@ -4,17 +4,17 @@ class VercelBlobFile extends File {
     /**
      * The blob's public URL
      */
-    url?: string;
+    public url?: string;
 
     /**
      * The blob's download URL (may be different from url for private blobs)
      */
-    downloadUrl?: string;
+    public downloadUrl?: string;
 
     /**
      * The blob's pathname within the store
      */
-    pathname?: string;
+    public pathname?: string;
 }
 
 export default VercelBlobFile;

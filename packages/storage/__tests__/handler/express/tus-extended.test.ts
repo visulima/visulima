@@ -228,6 +228,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 maxUploadSize: "1MB", // 1MB limit for testing
             });
 
+            // Wait for storage to be ready
+            while (!maxSizeStorage.isReady) {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+
             maxSizeServer = new Tus<File>({ storage: maxSizeStorage });
             app.use(`${STORE_PATH}-maxsize`, maxSizeServer.handle);
 
@@ -322,6 +327,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 },
             });
 
+            // Wait for storage to be ready
+            while (!deferredExpiredStorage.isReady) {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+
             deferredExpiredServer = new Tus<File>({ storage: deferredExpiredStorage });
             app.use(`${STORE_PATH}-deferred-expired`, deferredExpiredServer.handle);
 
@@ -398,6 +408,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 ...storageOptions,
                 directory: terminationDirectory,
             });
+
+            // Wait for storage to be ready
+            while (!terminationStorage.isReady) {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+            }
 
             // Create server with termination disabled for finished uploads
             terminationServer = new Tus<File>({ disableTerminationForFinishedUploads: true, storage: terminationStorage });

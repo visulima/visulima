@@ -9,7 +9,7 @@ class Locker<K extends string = string, V extends string = string> extends Cache
         });
     }
 
-    lock(key: K): string {
+    public lock(key: K): string {
         const locked = this.get(key);
 
         if (locked) {
@@ -21,7 +21,7 @@ class Locker<K extends string = string, V extends string = string> extends Cache
         return key;
     }
 
-    unlock(key: K): void {
+    public unlock(key: K): void {
         this.delete(key);
     }
 }

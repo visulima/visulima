@@ -9,7 +9,7 @@ export class StreamChecksum extends Transform {
 
     private hash: Hash;
 
-    constructor(
+    public constructor(
         public readonly checksum: string,
         public readonly algorithm: string,
         private readonly encoding: BinaryToTextEncoding = "base64",
@@ -19,7 +19,7 @@ export class StreamChecksum extends Transform {
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    override _transform(chunk: Buffer, _encoding: string, done: () => void): void {
+    public override _transform(chunk: Buffer, _encoding: string, done: () => void): void {
         this.push(chunk);
         this.hash.update(chunk);
         this.length += chunk.length;
@@ -28,7 +28,7 @@ export class StreamChecksum extends Transform {
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    override _flush(callback: (error?: Error) => void): void {
+    public override _flush(callback: (error?: Error) => void): void {
         this.digest = this.hash.digest(this.encoding);
 
         if (this.checksum && this.checksum !== this.digest) {
