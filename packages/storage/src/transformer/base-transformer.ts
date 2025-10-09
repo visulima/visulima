@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ * Abstract base for media transformers providing caching, streaming fallback,
+ * and shared helper methods used by image, audio, and video transformers.
+ */
+/**
+ * @packageDocumentation
+ * Base class for media transformers providing cache, logging, and stream
+ * helpers used by image, video, and audio transformers.
+ */
 import { Readable } from "node:stream";
 
 import { LRUCache as Cache } from "lru-cache";
