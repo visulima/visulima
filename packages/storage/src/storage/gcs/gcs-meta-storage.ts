@@ -74,7 +74,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async save(id: string, file: T): Promise<T> {
-        const transformedMetadata = file as unknown as Omit<T, "metadata"> & { metadata?: string };
+        const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {
             transformedMetadata.metadata = stringifyMetadata(file.metadata);
@@ -108,6 +108,11 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         }
 
         return data;
+    }
+
+    public override async touch(id: string, file: T): Promise<T> {
+        // For GCS, touching means updating the metadata
+        return this.save(id, file);
     }
 
     private async accessCheck(): Promise<any> {

@@ -47,5 +47,18 @@ describe("utils", () => {
                 path: "/files/",
             });
         });
+
+        it("should match metadata requests correctly", () => {
+            expect.assertions(1);
+
+            expect(matcher("/files/123-456-789/metadata")).toEqual({
+                params: {
+                    path: ["files"],
+                    uuid: "123-456-789",
+                    metadata: "metadata",
+                },
+                path: "/files/123-456-789/metadata",
+            });
+        });
     });
 });
