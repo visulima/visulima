@@ -3004,11 +3004,7 @@ importers:
         specifier: 9.1.0
         version: 9.1.0
       dot-prop:
-<<<<<<< HEAD
-        specifier: ^10.0.0
-=======
         specifier: ^10.1.0
->>>>>>> 982fae4c (fix: update dependencies and enhance package JSON parsing)
         version: 10.1.0
       esbuild:
         specifier: 0.25.10
@@ -36434,20 +36430,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
       - yaml
-<<<<<<< HEAD
-
-  '@visulima/package@4.0.0(@types/node@24.6.1)':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@inquirer/confirm': 5.1.18(@types/node@24.6.1)
-      '@visulima/fs': 3.1.9(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      normalize-package-data: 8.0.0
-      yaml: 2.8.1
-    transitivePeerDependencies:
-      - '@types/node'
-=======
->>>>>>> 982fae4c (fix: update dependencies and enhance package JSON parsing)
 
   '@visulima/package@4.0.0(@types/node@24.7.0)':
     dependencies:
@@ -36688,7 +36670,6 @@ snapshots:
       - rolldown
       - yaml
 
-<<<<<<< HEAD
   '@visulima/packem-rollup@1.0.0-alpha.17(@swc/core@1.13.5)(@types/node@24.7.0)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.42)(rollup@4.52.4)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
     dependencies:
       '@babel/parser': 7.28.4
@@ -36733,54 +36714,6 @@ snapshots:
       - rolldown
       - yaml
 
-  '@visulima/packem-rollup@1.0.0-alpha.21(@swc/core@1.13.5)(@types/node@24.6.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.42)(rollup@4.52.4)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
-    dependencies:
-      '@babel/parser': 7.28.4
-      '@rollup/plugin-alias': 5.1.1(rollup@4.52.4)
-      '@rollup/plugin-commonjs': 28.0.6(rollup@4.52.4)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.52.4)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.52.4)
-      '@rollup/plugin-json': 6.1.0(rollup@4.52.4)
-      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.52.4)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.52.4)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.52.4)
-      '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
-      '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 4.0.0(@types/node@24.6.1)
-      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.6.1)(rollup@4.52.4)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      '@visulima/source-map': 1.0.20
-      cjs-module-lexer: 2.1.0
-      clean-css: 5.3.3
-      glob-parent: 6.0.2
-      html-minifier-next: 2.1.6
-      magic-string: 0.30.19
-      mlly: 1.8.0
-      oxc-parser: 0.93.0
-      oxc-resolver: 11.8.2
-      rollup: 4.52.4
-      rollup-plugin-dts: 6.2.3(rollup@4.52.4)(typescript@5.9.3)
-      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.52.4)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.52.4)
-      rollup-plugin-pure: 0.4.0(rollup@4.52.4)
-      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.42)(rollup@4.52.4)
-      rs-module-lexer: 2.6.0
-      semver: 7.7.2
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@swc/core': 1.13.5
-      esbuild: 0.25.10
-      sucrase: 3.35.0
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@types/node'
-      - picomatch
-      - rolldown
-      - yaml
-
-=======
->>>>>>> 982fae4c (fix: update dependencies and enhance package JSON parsing)
   '@visulima/packem-rollup@1.0.0-alpha.21(@swc/core@1.13.5)(@types/node@24.7.0)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.42)(rollup@4.52.4)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
     dependencies:
       '@babel/parser': 7.28.4
@@ -36849,7 +36782,6 @@ snapshots:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
   '@visulima/packem-share@1.0.0-alpha.12(@types/node@24.7.0)(rollup@4.52.4)(yaml@2.8.1)':
     dependencies:
       '@visulima/colorize': 1.4.23
@@ -36861,19 +36793,6 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/packem-share@1.0.0-alpha.13(@types/node@24.6.1)(rollup@4.52.4)(yaml@2.8.1)':
-    dependencies:
-      '@visulima/colorize': 1.4.23
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 4.0.0(@types/node@24.6.1)
-      '@visulima/path': 1.4.0
-      rollup: 4.52.4
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
-=======
->>>>>>> 982fae4c (fix: update dependencies and enhance package JSON parsing)
   '@visulima/packem-share@1.0.0-alpha.13(@types/node@24.7.0)(rollup@4.52.4)(yaml@2.8.1)':
     dependencies:
       '@visulima/colorize': 1.4.23
@@ -38227,7 +38146,6 @@ snapshots:
       - '@types/node'
       - yaml
 
-<<<<<<< HEAD
   '@visulima/rollup-plugin-css@1.0.0-alpha.6(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@tailwindcss/node@4.1.14)(@tailwindcss/oxide@4.1.14)(@types/node@24.7.0)(cssnano@7.1.1(postcss@8.5.6))(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.4)(yaml@2.8.1)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
@@ -38260,47 +38178,6 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.14)(@tailwindcss/oxide@4.1.14)(@types/node@24.6.1)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.4)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.13(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.13(typescript@5.9.3)))(typedoc@0.28.13(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
-    dependencies:
-      '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
-      '@csstools/css-tokenizer': 3.0.4
-      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.5.6)
-      '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 4.0.0(@types/node@24.6.1)
-      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.6.1)(rollup@4.52.4)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      mlly: 1.8.0
-      oxc-resolver: 11.8.2
-      p-queue: 9.0.0
-      rollup: 4.52.4
-      source-map-js: 1.2.1
-    optionalDependencies:
-      '@swc/core': 1.13.5
-      '@tailwindcss/node': 4.1.14
-      '@tailwindcss/oxide': 4.1.14
-      cssnano: 7.1.1(postcss@8.5.6)
-      esbuild: 0.25.10
-      icss-utils: 5.1.0(postcss@8.5.6)
-      lightningcss: 1.30.2
-      postcss: 8.5.6
-      postcss-load-config: 6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
-      postcss-modules-scope: 3.2.1(postcss@8.5.6)
-      postcss-modules-values: 4.0.0(postcss@8.5.6)
-      postcss-value-parser: 4.2.0
-      sucrase: 3.35.0
-      typedoc: 0.28.13(typescript@5.9.3)
-      typedoc-plugin-markdown: 4.9.0(typedoc@0.28.13(typescript@5.9.3))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.13(typescript@5.9.3))
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
-=======
->>>>>>> 982fae4c (fix: update dependencies and enhance package JSON parsing)
   '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.14)(@tailwindcss/oxide@4.1.14)(@types/node@24.7.0)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.5)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.4)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.13(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.13(typescript@5.9.3)))(typedoc@0.28.13(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
     dependencies:
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
