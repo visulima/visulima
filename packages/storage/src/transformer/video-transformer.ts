@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ * Video transformation utilities using Mediabunny. Support resize/crop,
+ * rotation, codec/format conversion, bitrate/framerate tuning, and caching.
+ */
+/**
+ * @packageDocumentation
+ * Video transformer built on Mediabunny supporting resize, crop, rotate,
+ * codec/format conversion, frame rate/bitrate settings, and caching.
+ */
 import {
     ALL_FORMATS,
     BufferSource,
