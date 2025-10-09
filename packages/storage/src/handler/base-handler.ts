@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * Base upload handler with shared HTTP, fetch, streaming, and error handling
+ * utilities used by protocol-specific handlers (multipart and TUS).
+ */
 import { EventEmitter } from "node:events";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { PassThrough, Readable } from "node:stream";
@@ -16,6 +21,9 @@ import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList,
 
 const CONTENT_TYPE = "Content-Type";
 
+/**
+ * Abstract base class implementing shared request handling for uploads.
+ */
 abstract class BaseHandler<
     TFile extends UploadFile,
     NodeRequest extends IncomingMessage = IncomingMessage,
