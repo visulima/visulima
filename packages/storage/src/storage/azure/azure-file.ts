@@ -1,9 +1,9 @@
 import { File } from "../utils/file";
 
 class AzureFile extends File {
-    requestId?: string;
+    public requestId?: string;
 
-    uri?: string;
+    public uri?: string;
 }
 
 export default AzureFile;

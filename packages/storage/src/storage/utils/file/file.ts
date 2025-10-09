@@ -18,38 +18,38 @@ const generateFileId = (file: File): string => {
 };
 
 class File implements FileInit {
-    bytesWritten: number = Number.NaN;
+    public bytesWritten: number = Number.NaN;
 
-    contentType: string;
+    public contentType: string;
 
-    originalName: string;
+    public originalName: string;
 
-    id: string;
+    public id: string;
 
-    metadata: Metadata;
+    public metadata: Metadata;
 
-    name = "";
+    public name = "";
 
-    size?: number;
+    public size?: number;
 
-    status?: UploadEventType;
+    public status?: UploadEventType;
 
-    expiredAt?: Date | number | string;
+    public expiredAt?: Date | number | string;
 
-    createdAt?: Date | number | string;
+    public createdAt?: Date | number | string;
 
-    modifiedAt?: Date | number | string;
+    public modifiedAt?: Date | number | string;
 
-    hash?: {
+    public hash?: {
         algorithm: string;
         value: string;
     };
 
-    content?: Buffer;
+    public content?: Buffer;
 
-    ETag?: string;
+    public ETag?: string;
 
-    constructor({ contentType, expiredAt, metadata = {}, originalName, size }: FileInit) {
+    public constructor({ contentType, expiredAt, metadata = {}, originalName, size }: FileInit) {
         this.metadata = metadata;
         this.originalName = originalName || extractOriginalName(metadata) || (this.id = nanoid());
         this.contentType = contentType || extractMimeType(metadata) || "application/octet-stream";

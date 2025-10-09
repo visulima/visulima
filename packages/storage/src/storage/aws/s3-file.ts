@@ -3,15 +3,15 @@ import type { Part } from "@aws-sdk/client-s3";
 import { File } from "../utils/file";
 
 class S3File extends File {
-    Parts?: Part[];
+    public Parts?: Part[];
 
-    UploadId?: string;
+    public UploadId?: string;
 
-    uri?: string;
+    public uri?: string;
 
-    partsUrls?: string[];
+    public partsUrls?: string[];
 
-    partSize?: number;
+    public partSize?: number;
 }
 
 export default S3File;

@@ -18,19 +18,19 @@ class RangeHasher extends Cache<string, Hash, number> {
         });
     }
 
-    hex(path: string): string {
+    public hex(path: string): string {
         return this.get(path)?.copy().digest("hex") || "";
     }
 
-    base64(path: string): string {
+    public base64(path: string): string {
         return this.get(path)?.copy().digest("base64") || "";
     }
 
-    async init(path: string, start = 0): Promise<Hash> {
+    public async init(path: string, start = 0): Promise<Hash> {
         return this.get(path)?.copy() || this.updateFromFs(path, start);
     }
 
-    digester(path: string): IRangeChecksum {
+    public digester(path: string): IRangeChecksum {
         return new RangeChecksum(this as IRangeHasher, path);
     }
 

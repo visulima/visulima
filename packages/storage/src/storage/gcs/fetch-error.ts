@@ -1,7 +1,7 @@
 class FetchError extends Error {
     public override name = "FetchError";
 
-    constructor(
+    public constructor(
         message: string,
         public code: string,
         public config: { uri: string },

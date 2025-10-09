@@ -49,181 +49,25 @@ GCSFile {
 }
 `;
 
-exports[`gcs > .create() > should make API request and set file status and URI 2`] = `
-[MockFunction spy] {
-  "calls": [
-    [
-      {
-        "headers": {
-          "User-Agent": "@visulima/upload/0.0.0",
-          "x-goog-api-client": "gl-node/24.9.0 gccl/0.0.0 gccl-invocation-id/0d798c61-8e37-4407-b100-174afb52750d",
-        },
-        "params": {},
-        "retry": true,
-        "retryConfig": {
-          "retry": 3,
-          "shouldRetry": [Function],
-          "statusCodesToRetry": [
-            [
-              408,
-              429,
-              500,
-              502,
-              503,
-              504,
-            ],
-            [
-              100,
-              199,
-            ],
-            [
-              429,
-            ],
-            [
-              500,
-              599,
-            ],
-          ],
-        },
-        "timeout": 60000,
-        "url": "https://storage.googleapis.com/storage/v1/b/test-bucket",
-      },
-    ],
-    [
-      {
-        "headers": {
-          "User-Agent": "@visulima/upload/0.0.0",
-          "x-goog-api-client": "gl-node/24.9.0 gccl/0.0.0 gccl-invocation-id/2a886d76-1d86-41d4-8539-5f1cb3c33646",
-        },
-        "params": {},
-        "retry": true,
-        "retryConfig": {
-          "retry": 3,
-          "shouldRetry": [Function],
-          "statusCodesToRetry": [
-            [
-              408,
-              429,
-              500,
-              502,
-              503,
-              504,
-            ],
-            [
-              100,
-              199,
-            ],
-            [
-              429,
-            ],
-            [
-              500,
-              599,
-            ],
-          ],
-        },
-        "timeout": 60000,
-        "url": "https://storage.googleapis.com/storage/v1/b/test-bucket/o/e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78.META",
-      },
-    ],
-    [
-      {
-        "body": "{"metadata":{"custom":"","lastModified":1635398061454,"mimeType":"video/mp4","name":"testfile.mp4","sha1":"ZAPAntzKARqtb+j3B529GAOf3kI=","size":64}}",
-        "headers": {
-          "User-Agent": "@visulima/upload/0.0.0",
-          "x-goog-api-client": "gl-node/24.9.0 gccl/0.0.0 gccl-invocation-id/d4e7a56b-18bb-4c2a-981d-ddc71e61334d",
-        },
-        "method": "POST",
-        "params": {},
-        "retry": true,
-        "retryConfig": {
-          "retry": 3,
-          "shouldRetry": [Function],
-          "statusCodesToRetry": [
-            [
-              408,
-              429,
-              500,
-              502,
-              503,
-              504,
-            ],
-            [
-              100,
-              199,
-            ],
-            [
-              429,
-            ],
-            [
-              500,
-              599,
-            ],
-          ],
-        },
-        "timeout": 60000,
-        "url": "https://storage.googleapis.com/upload/storage/v1/b/test-bucket/o",
-      },
-    ],
-    [
-      {
-        "body": "{"bytesWritten":0,"contentType":"video/mp4","originalName":"testfile.mp4","id":"e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78","metadata":"custom ,lastModified MTYzNTM5ODA2MTQ1NA==,mimeType dmlkZW8vbXA0,name dGVzdGZpbGUubXA0,sha1 WkFQQW50ektBUnF0YitqM0I1MjlHQU9mM2tJPQ==,size NjQ=","name":"anonymous/testfile.mp4","size":64,"expiredAt":1643763600000,"createdAt":"2022-02-02T00:00:00.000Z","uri":"http://api.com?upload_id=123456789"}",
-        "headers": {
-          "User-Agent": "@visulima/upload/0.0.0",
-          "x-goog-api-client": "gl-node/24.9.0 gccl/0.0.0 gccl-invocation-id/3a0f4d6c-f618-425b-bddb-fe7b20c536dc",
-        },
-        "method": "POST",
-        "params": {},
-        "retry": true,
-        "retryConfig": {
-          "retry": 3,
-          "shouldRetry": [Function],
-          "statusCodesToRetry": [
-            [
-              408,
-              429,
-              500,
-              502,
-              503,
-              504,
-            ],
-            [
-              100,
-              199,
-            ],
-            [
-              429,
-            ],
-            [
-              500,
-              599,
-            ],
-          ],
-        },
-        "timeout": 60000,
-        "url": "https://storage.googleapis.com/upload/storage/v1/b/test-bucket/o",
-      },
-    ],
-  ],
-  "results": [
-    {
-      "type": "return",
-      "value": Promise {},
-    },
-    {
-      "type": "return",
-      "value": Promise {},
-    },
-    {
-      "type": "return",
-      "value": Promise {},
-    },
-    {
-      "type": "return",
-      "value": Promise {},
-    },
-  ],
+exports[`gcs > .write() > should make API request and set file status and bytesWritten 1`] = `
+{
+  "bytesWritten": 64,
+  "contentType": "video/mp4",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "completed",
+  "uri": "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4",
 }
 `;
 
-exports[`gcs > .write() > should make API request and set status and bytesWritten when resuming 1`] = `[MockFunction spy]`;
+exports[`gcs > .write() > should send normalized error for API failures 1`] = `[FetchError: Bad Request]`;
