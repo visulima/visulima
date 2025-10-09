@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * TUS resumable upload handler implementing creation, chunked PATCH, HEAD,
+ * GET metadata, and DELETE with protocol headers and checksum support.
+ */
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { format } from "node:url";
 
