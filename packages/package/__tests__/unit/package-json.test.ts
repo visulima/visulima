@@ -33,13 +33,13 @@ const { mockConfirm, mockInstallPackage } = vi.hoisted(() => {
     };
 });
 
-vi.mock("@inquirer/confirm", () => {
+vi.mock(import("@inquirer/confirm"), () => {
     return {
         default: mockConfirm,
     };
 });
 
-vi.mock("@antfu/install-pkg", () => {
+vi.mock(import("@antfu/install-pkg"), () => {
     return { installPackage: mockInstallPackage };
 });
 
@@ -905,13 +905,13 @@ packages:
 
             await ensurePackages(packageJson, ["package1", "package2"]);
 
-            expect(mockConfirm).toHaveBeenCalledWith(
+            expect(mockConfirm).toHaveBeenCalledExactlyOnceWith(
                 expect.objectContaining({
                     message: "Packages are required for this config: package1, package2. Do you want to install them?",
                 }),
             );
 
-            expect(mockInstallPackage).toHaveBeenCalledWith(["package1", "package2"], expect.any(Object));
+            expect(mockInstallPackage).toHaveBeenCalledExactlyOnceWith(["package1", "package2"], expect.any(Object));
         });
 
         it("should install packages when user confirms and packages are missing with custom message function", async () => {
@@ -936,13 +936,13 @@ packages:
                 },
             });
 
-            expect(mockConfirm).toHaveBeenCalledWith(
+            expect(mockConfirm).toHaveBeenCalledExactlyOnceWith(
                 expect.objectContaining({
                     message: "Custom Packages are required for this config: package1, package2. Do you want to install them?",
                 }),
             );
 
-            expect(mockInstallPackage).toHaveBeenCalledWith(["package1", "package2"], expect.any(Object));
+            expect(mockInstallPackage).toHaveBeenCalledExactlyOnceWith(["package1", "package2"], expect.any(Object));
         });
 
         it("should not install packages when the packages are already installed", async () => {
@@ -1180,6 +1180,7 @@ dependencies:
   react: ^18.0.0`;
 
                 const yamlPath = join(distribution, "package.yaml");
+
                 writeFileSync(yamlPath, yamlContent);
 
                 const result = await parsePackageJson(yamlPath, { yaml: true });
@@ -1204,6 +1205,7 @@ dependencies:
   react: ^18.0.0`;
 
                 const yamlPath = join(distribution, "package.yaml");
+
                 writeFileSync(yamlPath, yamlContent);
 
                 const result = parsePackageJsonSync(yamlPath, { yaml: true });
@@ -1226,10 +1228,11 @@ dependencies:
 version: 1.0.0`;
 
                 const yamlPath = join(distribution, "package.yaml");
+
                 writeFileSync(yamlPath, yamlContent);
 
                 // Should fall back to regular JSON parsing and fail
-                await expect(parsePackageJson(yamlPath, { yaml: false })).rejects.toThrow();
+                await expect(parsePackageJson(yamlPath, { yaml: false })).rejects.toThrow(Error);
             });
         });
 
@@ -1246,6 +1249,7 @@ version: 1.0.0`;
 }`;
 
                 const json5Path = join(distribution, "package.json5");
+
                 writeFileSync(json5Path, json5Content);
 
                 const result = await parsePackageJson(json5Path, { json5: true });
@@ -1273,6 +1277,7 @@ version: 1.0.0`;
 }`;
 
                 const json5Path = join(distribution, "package.json5");
+
                 writeFileSync(json5Path, json5Content);
 
                 const result = parsePackageJsonSync(json5Path, { json5: true });
@@ -1297,10 +1302,11 @@ version: 1.0.0`;
 }`;
 
                 const json5Path = join(distribution, "package.json5");
+
                 writeFileSync(json5Path, json5Content);
 
                 // Should fall back to regular JSON parsing and fail
-                await expect(parsePackageJson(json5Path, { json5: false })).rejects.toThrow();
+                await expect(parsePackageJson(json5Path, { json5: false })).rejects.toThrow(Error);
             });
         });
 
@@ -1356,6 +1362,356 @@ version: 2.0.0`;
                 const result = await findPackageJson(distribution);
 
                 expect(result.packageJson.name).toBe("json5-package");
+            });
+        });
+    });
+
+    describe("catalog resolution support", () => {
+        let distribution: string;
+
+        beforeEach(() => {
+            distribution = temporaryDirectory();
+        });
+
+        afterEach(async () => {
+            await rm(distribution, { recursive: true });
+        });
+
+        describe("findPackageJson with resolveCatalogs", () => {
+            it("should resolve catalog references when resolveCatalogs is enabled", async () => {
+                expect.assertions(1);
+
+                const packageJson = {
+                    dependencies: {
+                        react: "catalog:",
+                        typescript: "catalog:",
+                    },
+                    name: "test-package",
+                    version: "1.0.0",
+                };
+
+                const workspaceContent = {
+                    catalog: {
+                        react: "^18.0.0",
+                        typescript: "^5.0.0",
+                    },
+                    packages: ["."],
+                };
+
+                writeJsonSync(join(distribution, "package.json"), packageJson);
+                // eslint-disable-next-line unicorn/no-null
+                writeFileSync(join(distribution, "pnpm-workspace.yaml"), JSON.stringify(workspaceContent, null, 2));
+
+                const result = await findPackageJson(distribution, { resolveCatalogs: true });
+
+                expect(result.packageJson).toStrictEqual({
+                    _id: "test-package@1.0.0",
+                    dependencies: {
+                        react: "^18.0.0",
+                        typescript: "^5.0.0",
+                    },
+                    name: "test-package",
+                    readme: "ERROR: No README data found!",
+                    version: "1.0.0",
+                });
+            });
+
+            it("should resolve catalog references synchronously when resolveCatalogs is enabled", () => {
+                expect.assertions(1);
+
+                const packageJson = {
+                    dependencies: {
+                        react: "catalog:",
+                        typescript: "catalog:",
+                    },
+                    name: "test-package",
+                    version: "1.0.0",
+                };
+
+                const workspaceContent = {
+                    catalog: {
+                        react: "^18.0.0",
+                        typescript: "^5.0.0",
+                    },
+                    packages: ["."],
+                };
+
+                writeJsonSync(join(distribution, "package.json"), packageJson);
+                // eslint-disable-next-line unicorn/no-null
+                writeFileSync(join(distribution, "pnpm-workspace.yaml"), JSON.stringify(workspaceContent, null, 2));
+
+                const result = findPackageJsonSync(distribution, { resolveCatalogs: true });
+
+                expect(result.packageJson).toStrictEqual({
+                    _id: "test-package@1.0.0",
+                    dependencies: {
+                        react: "^18.0.0",
+                        typescript: "^5.0.0",
+                    },
+                    name: "test-package",
+                    readme: "ERROR: No README data found!",
+                    version: "1.0.0",
+                });
+            });
+
+            it("should not resolve catalog references when resolveCatalogs is false or undefined", async () => {
+                expect.assertions(1);
+
+                const packageJson = {
+                    dependencies: {
+                        react: "catalog:",
+                        typescript: "catalog:",
+                    },
+                    name: "test-package",
+                    version: "1.0.0",
+                };
+
+                const workspaceContent = {
+                    catalog: {
+                        react: "^18.0.0",
+                        typescript: "^5.0.0",
+                    },
+                    packages: ["."],
+                };
+
+                writeJsonSync(join(distribution, "package.json"), packageJson);
+                // eslint-disable-next-line unicorn/no-null
+                writeFileSync(join(distribution, "pnpm-workspace.yaml"), JSON.stringify(workspaceContent, null, 2));
+
+                const result = await findPackageJson(distribution, { resolveCatalogs: false });
+
+                expect(result.packageJson).toStrictEqual({
+                    _id: "test-package@1.0.0",
+                    dependencies: {
+                        react: "catalog:",
+                        typescript: "catalog:",
+                    },
+                    name: "test-package",
+                    readme: "ERROR: No README data found!",
+                    version: "1.0.0",
+                });
+            });
+
+            it("should resolve named catalog references when resolveCatalogs is enabled", async () => {
+                expect.assertions(1);
+
+                const packageJson = {
+                    dependencies: {
+                        next: "catalog:next",
+                        react: "catalog:next",
+                    },
+                    name: "test-package",
+                    version: "1.0.0",
+                };
+
+                const workspaceContent = {
+                    catalogs: {
+                        next: {
+                            next: "^15.0.0",
+                            react: "^19.0.0",
+                        },
+                    },
+                    packages: ["."],
+                };
+
+                writeJsonSync(join(distribution, "package.json"), packageJson);
+                // eslint-disable-next-line unicorn/no-null
+                writeFileSync(join(distribution, "pnpm-workspace.yaml"), JSON.stringify(workspaceContent, null, 2));
+
+                const result = await findPackageJson(distribution, { resolveCatalogs: true });
+
+                expect(result.packageJson).toStrictEqual({
+                    _id: "test-package@1.0.0",
+                    dependencies: {
+                        next: "^15.0.0",
+                        react: "^19.0.0",
+                    },
+                    name: "test-package",
+                    readme: "ERROR: No README data found!",
+                    version: "1.0.0",
+                });
+            });
+
+            it("should handle catalog references in all dependency fields", async () => {
+                expect.assertions(1);
+
+                const packageJson = {
+                    dependencies: {
+                        react: "catalog:",
+                    },
+                    devDependencies: {
+                        typescript: "catalog:",
+                    },
+                    name: "test-package",
+                    optionalDependencies: {
+                        eslint: "catalog:",
+                    },
+                    peerDependencies: {
+                        node: "catalog:",
+                    },
+                    version: "1.0.0",
+                };
+
+                const workspaceContent = {
+                    catalog: {
+                        eslint: "^8.0.0",
+                        node: "^20.0.0",
+                        react: "^18.0.0",
+                        typescript: "^5.0.0",
+                    },
+                    packages: ["."],
+                };
+
+                writeJsonSync(join(distribution, "package.json"), packageJson);
+                // eslint-disable-next-line unicorn/no-null
+                writeFileSync(join(distribution, "pnpm-workspace.yaml"), JSON.stringify(workspaceContent, null, 2));
+
+                const result = await findPackageJson(distribution, { resolveCatalogs: true });
+
+                expect(result.packageJson).toStrictEqual({
+                    _id: "test-package@1.0.0",
+                    dependencies: {
+                        eslint: "^8.0.0",
+                        react: "^18.0.0",
+                    },
+                    devDependencies: {
+                        typescript: "^5.0.0",
+                    },
+                    name: "test-package",
+                    optionalDependencies: {
+                        eslint: "^8.0.0",
+                    },
+                    peerDependencies: {
+                        node: "^20.0.0",
+                    },
+                    readme: "ERROR: No README data found!",
+                    version: "1.0.0",
+                });
+            });
+        });
+    });
+
+    describe("caching support", () => {
+        let distribution: string;
+
+        beforeEach(() => {
+            distribution = temporaryDirectory();
+        });
+
+        afterEach(async () => {
+            await rm(distribution, { recursive: true });
+        });
+
+        describe("parsePackageJson with cache", () => {
+            it("should cache parsed results for file paths", async () => {
+                expect.assertions(2);
+
+                const packageJson = {
+                    name: "test-package",
+                    version: "1.0.0",
+                };
+
+                const packagePath = join(distribution, "package.json");
+
+                writeJsonSync(packagePath, packageJson);
+
+                const cache = new Map<string, NormalizedPackageJson>();
+
+                // First parse - should populate cache
+                const result1 = await parsePackageJson(packagePath, { cache });
+
+                expect(result1.name).toBe("test-package");
+
+                // Modify the file on disk
+                const modifiedPackageJson = {
+                    name: "modified-package",
+                    version: "2.0.0",
+                };
+
+                writeJsonSync(packagePath, modifiedPackageJson);
+
+                // Second parse - should return cached result
+                const result2 = await parsePackageJson(packagePath, { cache });
+
+                expect(result2.name).toBe("test-package"); // Should be cached value, not modified value
+            });
+
+            it("should cache parsed results synchronously for file paths", () => {
+                expect.assertions(2);
+
+                const packageJson = {
+                    name: "test-package",
+                    version: "1.0.0",
+                };
+
+                const packagePath = join(distribution, "package.json");
+
+                writeJsonSync(packagePath, packageJson);
+
+                const cache = new Map<string, NormalizedPackageJson>();
+
+                // First parse - should populate cache
+                const result1 = parsePackageJsonSync(packagePath, { cache });
+
+                expect(result1.name).toBe("test-package");
+
+                // Modify the file on disk
+                const modifiedPackageJson = {
+                    name: "modified-package",
+                    version: "2.0.0",
+                };
+
+                writeJsonSync(packagePath, modifiedPackageJson);
+
+                // Second parse - should return cached result
+                const result2 = parsePackageJsonSync(packagePath, { cache });
+
+                expect(result2.name).toBe("test-package"); // Should be cached value, not modified value
+            });
+
+            it("should not cache object inputs", async () => {
+                expect.assertions(3);
+
+                const packageJson = {
+                    name: "test-package",
+                    version: "1.0.0",
+                };
+
+                const cache = new Map<string, NormalizedPackageJson>();
+
+                // Parse object - should not be cached
+                const result1 = await parsePackageJson(packageJson, { cache });
+
+                expect(result1.name).toBe("test-package");
+
+                // Parse same object again - should work but not use cache
+                const result2 = await parsePackageJson(packageJson, { cache });
+
+                expect(result2.name).toBe("test-package");
+
+                // Cache should still be empty for non-file inputs
+                expect(cache.size).toBe(0);
+            });
+
+            it("should not cache JSON string inputs", async () => {
+                expect.assertions(3);
+
+                const packageJsonString = "{\"name\": \"test-package\", \"version\": \"1.0.0\"}";
+
+                const cache = new Map<string, NormalizedPackageJson>();
+
+                // Parse JSON string - should not be cached
+                const result1 = await parsePackageJson(packageJsonString, { cache });
+
+                expect(result1.name).toBe("test-package");
+
+                // Parse same string again - should work but not use cache
+                const result2 = await parsePackageJson(packageJsonString, { cache });
+
+                expect(result2.name).toBe("test-package");
+
+                // Cache should still be empty for non-file inputs
+                expect(cache.size).toBe(0);
             });
         });
     });

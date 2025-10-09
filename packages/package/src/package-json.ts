@@ -19,10 +19,13 @@ import { readPnpmCatalogs, readPnpmCatalogsSync, resolveCatalogReferences } from
 import type { Cache, EnsurePackagesOptions, NormalizedPackageJson, PackageJson } from "./types";
 import isNode from "./utils/is-node";
 
+const PackageJsonParseCache = new Map<string, NormalizedPackageJson>();
+
 type ReadOptions = {
     cache?: FindPackageJsonCache | boolean;
     ignoreWarnings?: (RegExp | string)[];
     json5?: boolean;
+    resolveCatalogs?: boolean;
     strict?: boolean;
     yaml?: boolean;
 };
@@ -123,15 +126,17 @@ const parseJson5FileSync = (filePath: string): JsonObject => {
  * Parses a package file based on its extension and options.
  * @param filePath The path to the package file
  * @param options Parsing options
+ * @param options.json5 Whether to enable package.json5 parsing (default: true)
+ * @param options.yaml Whether to enable package.yaml parsing (default: true)
  * @returns The parsed package data as a JSON object
  */
 const parsePackageFile = async (filePath: string, options?: { json5?: boolean; yaml?: boolean }): Promise<JsonObject> => {
     // Parse the file based on its extension
-    if ((options?.yaml !== false) && (filePath.endsWith(".yaml") || filePath.endsWith(".yml"))) {
+    if (options?.yaml !== false && (filePath.endsWith(".yaml") || filePath.endsWith(".yml"))) {
         return parseYamlFile(filePath);
     }
 
-    if ((options?.json5 !== false) && filePath.endsWith(".json5")) {
+    if (options?.json5 !== false && filePath.endsWith(".json5")) {
         return parseJson5File(filePath);
     }
 
@@ -142,15 +147,17 @@ const parsePackageFile = async (filePath: string, options?: { json5?: boolean; y
  * Parses a package file synchronously based on its extension and options.
  * @param filePath The path to the package file
  * @param options Parsing options
+ * @param options.json5 Whether to enable package.json5 parsing (default: true)
+ * @param options.yaml Whether to enable package.yaml parsing (default: true)
  * @returns The parsed package data as a JSON object
  */
 const parsePackageFileSync = (filePath: string, options?: { json5?: boolean; yaml?: boolean }): JsonObject => {
     // Parse the file based on its extension
-    if ((options?.yaml !== false) && (filePath.endsWith(".yaml") || filePath.endsWith(".yml"))) {
+    if (options?.yaml !== false && (filePath.endsWith(".yaml") || filePath.endsWith(".yml"))) {
         return parseYamlFileSync(filePath);
     }
 
-    if ((options?.json5 !== false) && filePath.endsWith(".json5")) {
+    if (options?.json5 !== false && filePath.endsWith(".json5")) {
         return parseJson5FileSync(filePath);
     }
 
@@ -167,7 +174,7 @@ export type NormalizedReadResult = {
 /**
  * An asynchronous function to find the package.json, package.yaml, or package.json5 file in the specified directory or its parent directories.
  * @param cwd The current working directory.
- * @param options Configuration options including yaml and json5 flags.
+ * @param options Configuration options including yaml, json5, and resolveCatalogs flags.
  * @returns A `Promise` that resolves to an object containing the parsed package data and the file path.
  * The type of the returned promise is `Promise&lt;NormalizedReadResult>`.
  * @throws {Error} If no package file can be found or if strict mode is enabled and normalize warnings are thrown.
@@ -216,6 +223,15 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     // Parse the file based on its extension
     const packageJson = await parsePackageFile(filePath, options);
 
+    // Resolve catalog references if enabled
+    if (options.resolveCatalogs) {
+        const catalogs = await readPnpmCatalogs(filePath);
+
+        if (catalogs) {
+            resolveCatalogReferences(packageJson as JsonObject, catalogs);
+        }
+    }
+
     normalizeInput(packageJson as Input, options.strict ?? false, options.ignoreWarnings);
 
     const output = {
@@ -228,6 +244,13 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     return output;
 };
 
+/**
+ * A synchronous function to find the package.json, package.yaml, or package.json5 file in the specified directory or its parent directories.
+ * @param cwd The current working directory.
+ * @param options Configuration options including yaml, json5, and resolveCatalogs flags.
+ * @returns An object containing the parsed package data and the file path.
+ * @throws {Error} If no package file can be found or if strict mode is enabled and normalize warnings are thrown.
+ */
 export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {}): NormalizedReadResult => {
     const findUpConfig: FindUpOptions = {
         type: "file",
@@ -272,6 +295,15 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     // Parse the file based on its extension
     const packageJson = parsePackageFileSync(filePath, options);
 
+    // Resolve catalog references if enabled
+    if (options.resolveCatalogs) {
+        const catalogs = readPnpmCatalogsSync(filePath);
+
+        if (catalogs) {
+            resolveCatalogReferences(packageJson as JsonObject, catalogs);
+        }
+    }
+
     normalizeInput(packageJson as Input, options.strict ?? false, options.ignoreWarnings);
 
     const output = {
@@ -311,6 +343,7 @@ export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJso
  * A synchronous function to parse the package.json, package.yaml, or package.json5 file/object/string and return normalize the data.
  * @param packageFile
  * @param options
+ * @param options.cache Cache for parsed results (only applies to file paths)
  * @param options.ignoreWarnings List of warning messages or patterns to skip in strict mode
  * @param options.resolveCatalogs Whether to resolve pnpm catalog references
  * @param options.strict Whether to throw errors on normalization warnings
@@ -322,13 +355,14 @@ export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJso
 export const parsePackageJsonSync = (
     packageFile: JsonObject | string,
     options?: {
+        cache?: Cache<NormalizedPackageJson> | boolean;
         ignoreWarnings?: (RegExp | string)[];
         json5?: boolean;
         resolveCatalogs?: boolean;
         strict?: boolean;
         yaml?: boolean;
     },
-
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ): NormalizedPackageJson => {
     const isObject = packageFile !== null && typeof packageFile === "object" && !Array.isArray(packageFile);
     const isString = typeof packageFile === "string";
@@ -339,11 +373,19 @@ export const parsePackageJsonSync = (
 
     let json;
     let isFile = false;
+    let filePath: string | undefined;
 
     if (isObject) {
         json = structuredClone(packageFile);
     } else if (existsSync(packageFile as string)) {
-        const filePath = packageFile as string;
+        filePath = packageFile as string;
+
+        // Check cache for file-based parsing
+        const cache = options?.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonParseCache;
+
+        if (options?.cache && cache.has(filePath)) {
+            return cache.get(filePath) as NormalizedPackageJson;
+        }
 
         // Parse the file based on its extension
         json = parsePackageFileSync(filePath, options);
@@ -368,13 +410,23 @@ export const parsePackageJsonSync = (
 
     normalizeInput(json as Input, options?.strict ?? false, options?.ignoreWarnings);
 
-    return json as NormalizedPackageJson;
+    const result = json as NormalizedPackageJson;
+
+    // Cache the result for file-based parsing
+    if (isFile && filePath && options?.cache) {
+        const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonParseCache;
+
+        cache.set(filePath, result);
+    }
+
+    return result;
 };
 
 /**
  * An asynchronous function to parse the package.json, package.yaml, or package.json5 file/object/string and return normalize the data.
  * @param packageFile
  * @param options
+ * @param options.cache Cache for parsed results (only applies to file paths)
  * @param options.ignoreWarnings List of warning messages or patterns to skip in strict mode
  * @param options.strict Whether to throw errors on normalization warnings
  * @param options.resolveCatalogs Whether to resolve pnpm catalog references
@@ -386,12 +438,14 @@ export const parsePackageJsonSync = (
 export const parsePackageJson = async (
     packageFile: JsonObject | string,
     options?: {
+        cache?: Cache<NormalizedPackageJson> | boolean;
         ignoreWarnings?: (RegExp | string)[];
         json5?: boolean;
         resolveCatalogs?: boolean;
         strict?: boolean;
         yaml?: boolean;
     },
+// eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<NormalizedPackageJson> => {
     const isObject = packageFile !== null && typeof packageFile === "object" && !Array.isArray(packageFile);
     const isString = typeof packageFile === "string";
@@ -402,11 +456,19 @@ export const parsePackageJson = async (
 
     let json;
     let isFile = false;
+    let filePath: string | undefined;
 
     if (isObject) {
         json = structuredClone(packageFile);
     } else if (existsSync(packageFile as string)) {
-        const filePath = packageFile as string;
+        filePath = packageFile as string;
+
+        // Check cache for file-based parsing
+        const cache = options?.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonParseCache;
+
+        if (options?.cache && cache.has(filePath)) {
+            return cache.get(filePath) as NormalizedPackageJson;
+        }
 
         // Parse the file based on its extension
         json = await parsePackageFile(filePath, options);
@@ -431,7 +493,16 @@ export const parsePackageJson = async (
 
     normalizeInput(json as Input, options?.strict ?? false, options?.ignoreWarnings);
 
-    return json as NormalizedPackageJson;
+    const result = json as NormalizedPackageJson;
+
+    // Cache the result for file-based parsing
+    if (isFile && filePath && options?.cache) {
+        const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonParseCache;
+
+        cache.set(filePath, result);
+    }
+
+    return result;
 };
 
 /**
