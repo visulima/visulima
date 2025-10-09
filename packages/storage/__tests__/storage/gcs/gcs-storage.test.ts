@@ -67,7 +67,10 @@ describe(GCStorage, async () => {
             expect.assertions(2);
 
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
-            mockAuthRequest.mockResolvedValueOnce({ status: 200, headers: { get: (name: string) => name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined } }); // create
+            mockAuthRequest.mockResolvedValueOnce({
+                headers: { get: (name: string) => (name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined) },
+                status: 200,
+            }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
 
             const gcsFile = await storage.create(request, metafile);
@@ -87,7 +90,6 @@ describe(GCStorage, async () => {
             expect(gcsFile).toMatchSnapshot();
         });
 
-
         it("should reject when API returns an error", async () => {
             expect.assertions(1);
 
@@ -99,9 +101,11 @@ describe(GCStorage, async () => {
         });
 
         it("should handle TTL option and set expiration timestamp", async () => {
-
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
-            mockAuthRequest.mockResolvedValueOnce({ status: 200, headers: { get: (name: string) => name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined } }); // create
+            mockAuthRequest.mockResolvedValueOnce({
+                headers: { get: (name: string) => (name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined) },
+                status: 200,
+            }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
 
             const gcsFile = await storage.create(request, { ...metafile, ttl: "7d" });
@@ -141,7 +145,6 @@ describe(GCStorage, async () => {
         });
 
         it("should handle TTL option and set expiration timestamp during update", async () => {
-
             mockAuthRequest.mockResolvedValue(metafileResponse());
 
             const gcsFile = await storage.update(metafile, { ttl: "2h" });
@@ -192,7 +195,7 @@ describe(GCStorage, async () => {
             mockAuthRequest.mockResolvedValueOnce(metafileResponse());
 
             // Mock the makeRequest to return error response
-            mockAuthRequest.mockResolvedValueOnce({ status: 400, data: "Bad Request" });
+            mockAuthRequest.mockResolvedValueOnce({ data: "Bad Request", status: 400 });
 
             try {
                 await storage.write({ contentLength: 0, id: metafile.id });
@@ -250,7 +253,7 @@ describe(GCStorage, async () => {
             mockAuthRequest.mockClear();
             mockAuthRequest.mockResolvedValue({ data: { done: true } });
 
-            await storage.copy(metafile.name, "files/новое имя.txt");
+            await storage.copy(metafile, "files/новое имя.txt");
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
@@ -275,7 +278,7 @@ describe(GCStorage, async () => {
             mockAuthRequest.mockClear();
             mockAuthRequest.mockResolvedValue({ data: { done: true } });
 
-            await storage.copy(metafile.name, "/new/name.txt");
+            await storage.copy(metafile, "/new/name.txt");
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
@@ -293,7 +296,7 @@ describe(GCStorage, async () => {
             mockAuthRequest.mockClear();
             mockAuthRequest.mockResolvedValue({ data: { done: true } });
 
-            await storage.copy(metafile.name, "files/backup.txt", { storageClass: "COLDLINE" });
+            await storage.copy(metafile, "files/backup.txt", { storageClass: "COLDLINE" });
 
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);
             expect(mockAuthRequest).toHaveBeenCalledTimes(1);

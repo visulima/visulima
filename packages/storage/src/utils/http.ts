@@ -212,10 +212,19 @@ export const uuidRegex = /(?:[\dA-Z]+-){2}[\dA-Z]+/i;
  * @internal
  */
 export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => {
-    const pathMatch = filePathUrlMatcher(getRealPath(request));
+    const realPath = getRealPath(request);
 
-    if (pathMatch && pathMatch.params.uuid && uuidRegex.test(pathMatch.params.uuid)) {
-        return pathMatch.params.uuid;
+    // Extract UUID from the path by finding the last UUID-like segment
+    const segments = realPath.split("/").filter(Boolean);
+
+    for (let index = segments.length - 1; index >= 0; index--) {
+        const segment = segments[index];
+        // Remove file extension if present
+        const cleanSegment = segment.replace(/\.[^/.]+$/, "");
+
+        if (uuidRegex.test(cleanSegment)) {
+            return cleanSegment;
+        }
     }
 
     throw new Error("Id is undefined");
