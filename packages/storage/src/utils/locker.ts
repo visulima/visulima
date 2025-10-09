@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * Lightweight lock registry built on an LRU cache to guard concurrent
- * operations using short‑lived string locks.
- */
 import { LRUCache as Cache } from "lru-cache";
 
 /**
