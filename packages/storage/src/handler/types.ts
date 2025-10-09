@@ -62,7 +62,7 @@ export interface BaseHandler<TFile extends UploadFile> extends EventEmitter {
 }
 
 export interface UploadOptions<TFile extends UploadFile> {
+    disableTerminationForFinishedUploads?: boolean;
     mediaTransformer?: MediaTransformer;
     storage: BaseStorage<TFile>;
-    disableTerminationForFinishedUploads?: boolean;
 }

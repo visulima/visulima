@@ -317,7 +317,6 @@ export class Tus<
                         "Upload-Defer-Length": "1",
                     },
                 ...this.buildHeaders(file, {
-
                     "Cache-Control": "no-store",
                     "Upload-Metadata": serializeMetadata(file.metadata),
                     // The Server MUST always include the Upload-Offset header in
@@ -354,6 +353,7 @@ export class Tus<
             // Check if termination is disabled for finished uploads
             if (this.disableTerminationForFinishedUploads) {
                 const file = await this.storage.getMeta(id);
+
                 if (file.status === "completed") {
                     throw createHttpError(400, "Termination of finished uploads is disabled");
                 }

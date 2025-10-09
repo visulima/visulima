@@ -1,6 +1,6 @@
 import { match } from "path-to-regexp";
 
-const filePathUrlMatcher = match<PathMatch>(["/:uuid", "/*path/:uuid.:ext/:metadata", "/*path/:uuid.:ext", "/*path/:uuid/:metadata", "/*path/:uuid"], {
+const filePathUrlMatcher = match<PathMatch>(["/:uuid", "/*path/:uuid.:ext/:metadata", "/*path/:uuid/:metadata", "/*path/:uuid.:ext", "/*path/:uuid"], {
     decode: decodeURIComponent,
 });
 

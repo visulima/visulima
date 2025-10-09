@@ -37,7 +37,7 @@ export class Validator<T> {
 
             if (!isValid) {
                 const response = toResponse(validator.response || ErrorMap[code]);
-                const { body, headers, statusCode, message } = response as any;
+                const { body, headers, message, statusCode } = response as any;
 
                 throw new ValidationError(code, statusCode as number, (body || message) as HttpErrorBody, headers as Headers);
             }

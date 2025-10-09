@@ -24,7 +24,6 @@ vi.mock("@aws-sdk/s3-request-presigner", () => ({
 const s3Mock = mockClient(S3Client);
 
 describe(S3Storage, () => {
-    let getSignedUrlMock: any;
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
     const options = { ...(storageOptions as S3StorageOptions), bucket: "bucket", region: "us-east-1" };
@@ -50,23 +49,26 @@ describe(S3Storage, () => {
     beforeEach(async () => {
         s3Mock.reset();
         storage = new S3Storage(options);
-
     });
 
     describe(".create()", () => {
         it("should request api and set status and UploadId", async () => {
+            expect.assertions(1);
+
             s3Mock.on(HeadObjectCommand).rejects();
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
 
             const s3file = await storage.create(request, metafile);
 
             expect(s3file).toMatchSnapshot({
-                expiredAt: expect.any(Number),
                 createdAt: expect.any(String),
+                expiredAt: expect.any(Number),
             });
         });
 
         it("should handle existing", async () => {
+            expect.assertions(1);
+
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
 
             const s3file = await storage.create(request, metafile);
@@ -75,6 +77,8 @@ describe(S3Storage, () => {
         });
 
         it("should send error on invalid s3 response", async () => {
+            expect.assertions(1);
+
             s3Mock.on(HeadObjectCommand).rejects();
             s3Mock.on(CreateMultipartUploadCommand).resolves({});
 
@@ -82,14 +86,15 @@ describe(S3Storage, () => {
         });
 
         it("should handle TTL option", async () => {
+            expect.assertions(4);
+
             s3Mock.on(HeadObjectCommand).rejects();
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
 
             const s3file = await storage.create(request, { ...metafile, ttl: "30d" });
 
             expect(s3file.expiredAt).toBeDefined();
-
-            expectTypeOf(s3file.expiredAt).toBeNumber();
+            expect(typeof s3file.expiredAt).toBe("number");
 
             // TTL should be converted to expiredAt timestamp
             const expectedExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days in ms
@@ -101,9 +106,10 @@ describe(S3Storage, () => {
 
     describe(".update()", () => {
         it("should update changed metadata keys", async () => {
+            expect.assertions(2);
+
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
 
-            // eslint-disable-next-line radar/no-duplicate-string
             const s3file = await storage.update(metafile, { metadata: { name: "newname.mp4" } });
 
             expect(s3file.metadata.name).toBe("newname.mp4");
@@ -117,6 +123,8 @@ describe(S3Storage, () => {
         });
 
         it("should handle TTL option in update", async () => {
+            expect.assertions(3);
+
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
 
             const s3file = await storage.update(metafile, { ttl: "1h" });
@@ -135,6 +143,8 @@ describe(S3Storage, () => {
 
     describe(".write()", () => {
         it("should request api and set status and bytesWritten", async () => {
+            expect.assertions(1);
+
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
             s3Mock.on(UploadPartCommand).resolves({ ETag: "1234" });
@@ -153,6 +163,8 @@ describe(S3Storage, () => {
         });
 
         it("should request api and set status and bytesWritten on resume", async () => {
+            expect.assertions(1);
+
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
@@ -169,6 +181,8 @@ describe(S3Storage, () => {
 
     describe("delete()", () => {
         it("should set status", async () => {
+            expect.assertions(1);
+
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
             s3Mock.on(DeleteObjectCommand).resolves({});
 
@@ -178,6 +192,8 @@ describe(S3Storage, () => {
         });
 
         it("should ignore if not exist", async () => {
+            expect.assertions(1);
+
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
 
             const deleted = await storage.delete(metafile);
@@ -188,6 +204,8 @@ describe(S3Storage, () => {
 
     describe("copy()", () => {
         it("relative", async () => {
+            expect.assertions(1);
+
             s3Mock.resetHistory();
             s3Mock.on(CopyObjectCommand).resolves({});
 
@@ -201,6 +219,8 @@ describe(S3Storage, () => {
         });
 
         it("absolute", async () => {
+            expect.assertions(1);
+
             s3Mock.resetHistory();
             s3Mock.on(CopyObjectCommand).resolves({});
 
@@ -214,6 +234,8 @@ describe(S3Storage, () => {
         });
 
         it("with storage class", async () => {
+            expect.assertions(1);
+
             s3Mock.resetHistory();
             s3Mock.on(CopyObjectCommand).resolves({});
 
@@ -230,6 +252,8 @@ describe(S3Storage, () => {
 
     describe("normalizeError", () => {
         it("s3 error", () => {
+            expect.assertions(1);
+
             const error = {
                 $metadata: { httpStatusCode: 400 },
                 Code: "SomeServiceException",
@@ -241,13 +265,14 @@ describe(S3Storage, () => {
         });
 
         it("not s3 error", () => {
+            expect.assertions(1);
+
             expect(storage.normalizeError(new Error("unknown") as AwsError)).toMatchSnapshot();
         });
     });
 });
 
 describe("s3PresignedStorage", () => {
-    let getSignedUrlMock: any;
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
     const options = {
@@ -278,11 +303,12 @@ describe("s3PresignedStorage", () => {
     beforeEach(async () => {
         s3Mock.reset();
         storage = new S3Storage(options);
-
     });
 
     describe(".create()", () => {
         it("should request api and set status and UploadId", async () => {
+            expect.assertions(2);
+
             s3Mock.on(HeadObjectCommand).rejects();
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
@@ -296,14 +322,19 @@ describe("s3PresignedStorage", () => {
 
     describe("update", () => {
         it("should add partsUrls", async () => {
+            expect.assertions(1);
+
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
+
             const s3file = await storage.update(metafile, metafile);
 
             expect(s3file.partsUrls?.length).toBe(1);
         });
 
         it("should complete", async () => {
+            expect.assertions(1);
+
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
 
             const preCompleted = {
@@ -318,17 +349,19 @@ describe("s3PresignedStorage", () => {
 
             const s3file = await storage.update({ id: metafile.id }, preCompleted);
 
-            expect(s3file.status).toBe("updated");
+            expect(s3file.status).toBe("completed");
         });
 
         it("should complete (empty payload)", async () => {
+            expect.assertions(1);
+
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [{ ETag: "123456789", PartNumber: 1, Size: 64 }] });
             s3Mock.on(CompleteMultipartUploadCommand).resolves({ Location: "/1234" });
 
             const s3file = await storage.update({ id: metafile.id }, {});
 
-            expect(s3file.status).toBe("updated");
+            expect(s3file.status).toBe("completed");
         });
     });
 });

@@ -151,7 +151,7 @@ describe("streaming utilities", () => {
             withTimeout(stream, 1); // Very short timeout
 
             // Wait for timeout
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             expect(destroySpy).toHaveBeenCalledWith(expect.any(Error));
         });

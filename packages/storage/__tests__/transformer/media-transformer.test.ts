@@ -10,36 +10,48 @@ const mockStorage = {
 };
 
 // Mock transformer classes
-const MockImageTransformer = vi.fn().mockImplementation(() => ({
-    clearCache: vi.fn(),
-    getCacheStats: vi.fn(),
-    transform: vi.fn(),
-}));
+const MockImageTransformer = vi.fn().mockImplementation(() => {
+    return {
+        clearCache: vi.fn(),
+        getCacheStats: vi.fn(),
+        transform: vi.fn(),
+    };
+});
 
-const MockVideoTransformer = vi.fn().mockImplementation(() => ({
-    clearCache: vi.fn(),
-    getCacheStats: vi.fn(),
-    transform: vi.fn(),
-}));
+const MockVideoTransformer = vi.fn().mockImplementation(() => {
+    return {
+        clearCache: vi.fn(),
+        getCacheStats: vi.fn(),
+        transform: vi.fn(),
+    };
+});
 
-const MockAudioTransformer = vi.fn().mockImplementation(() => ({
-    clearCache: vi.fn(),
-    getCacheStats: vi.fn(),
-    transform: vi.fn(),
-}));
+const MockAudioTransformer = vi.fn().mockImplementation(() => {
+    return {
+        clearCache: vi.fn(),
+        getCacheStats: vi.fn(),
+        transform: vi.fn(),
+    };
+});
 
 // Mock individual transformers
-vi.mock(import("../../src/transformer/image-transformer"), () => ({
-    default: MockImageTransformer,
-}));
+vi.mock(import("../../src/transformer/image-transformer"), () => {
+    return {
+        default: MockImageTransformer,
+    };
+});
 
-vi.mock(import("../../src/transformer/video-transformer"), () => ({
-    default: MockVideoTransformer,
-}));
+vi.mock(import("../../src/transformer/video-transformer"), () => {
+    return {
+        default: MockVideoTransformer,
+    };
+});
 
-vi.mock(import("../../src/transformer/audio-transformer"), () => ({
-    default: MockAudioTransformer,
-}));
+vi.mock(import("../../src/transformer/audio-transformer"), () => {
+    return {
+        default: MockAudioTransformer,
+    };
+});
 
 describe(MediaTransformer, () => {
     let transformer: MediaTransformer;

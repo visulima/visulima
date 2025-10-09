@@ -126,6 +126,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         // Check if it's a client error with config
         if (error.config) {
             const statusCode = +error.code || 500;
+
             return {
                 code: `GCS${statusCode}`,
                 message: error.message,

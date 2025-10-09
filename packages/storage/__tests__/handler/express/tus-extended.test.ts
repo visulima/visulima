@@ -111,6 +111,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
     describe("fileStore with expiration", () => {
         let expiredServer: Tus;
         let expiredListener: ReturnType<typeof createServer>;
+        let expiredAgent: supertest.SuperAgentTest;
 
         beforeAll(async () => {
             const expiredDirectory = temporaryDirectory();
@@ -129,14 +130,15 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             expiredListener = createServer(app);
             expiredListener.listen();
 
+            expiredAgent = supertest.agent(expiredListener);
+
             // Create a test file for all expiration tests
-            const response = await agent
+            const response = await expiredAgent
                 .post(`${STORE_PATH}-expired`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "1000")
                 .set("Upload-Metadata", serializeMetadata(metadata))
                 .expect(201);
-
         });
 
         afterAll(async () => {
@@ -152,14 +154,14 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         it("should respond with expiration in Tus-Extension header", async () => {
             expect.assertions(1);
 
-            const response = await agent.options(`${STORE_PATH}-expired`).set("Tus-Resumable", TUS_RESUMABLE).expect(204);
+            const response = await expiredAgent.options(`${STORE_PATH}-expired`).set("Tus-Resumable", TUS_RESUMABLE).expect(204);
 
             expect(response.headers["tus-extension"]).toContain("expiration");
         });
 
         it("should return 410 Gone for expired upload", async () => {
             // Create a separate file for this test
-            const response = await agent
+            const response = await expiredAgent
                 .post(`${STORE_PATH}-expired`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "1000")
@@ -171,12 +173,12 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             // Wait for the file to expire (50ms + buffer)
             await new Promise((resolve) => setTimeout(resolve, 100));
 
-            await agent.head(`${STORE_PATH}-expired/${testFileId}`).set("Tus-Resumable", TUS_RESUMABLE).expect(410);
+            await expiredAgent.head(`${STORE_PATH}-expired/${testFileId}`).set("Tus-Resumable", TUS_RESUMABLE).expect(410);
         });
 
         it("should return 410 Gone for PATCH on expired upload", async () => {
             // Create a separate file for this test
-            const response = await agent
+            const response = await expiredAgent
                 .post(`${STORE_PATH}-expired`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "1000")
@@ -188,7 +190,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             // Wait for the file to expire (50ms + buffer)
             await new Promise((resolve) => setTimeout(resolve, 100));
 
-            await agent
+            await expiredAgent
                 .patch(`${STORE_PATH}-expired/${testFileId}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
@@ -216,6 +218,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
     describe("fileStore with MaxFileSize", () => {
         let maxSizeServer: Tus;
         let maxSizeListener: ReturnType<typeof createServer>;
+        let maxSizeAgent: supertest.SuperAgentTest;
 
         beforeAll(async () => {
             const maxSizeDirectory = temporaryDirectory();
@@ -230,6 +233,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
             maxSizeListener = createServer(app);
             maxSizeListener.listen();
+
+            maxSizeAgent = supertest.agent(maxSizeListener);
         });
 
         afterAll(async () => {
@@ -243,7 +248,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should not allow creating upload that exceeds max file size", async () => {
-            await agent
+            await maxSizeAgent
                 .post(`${STORE_PATH}-maxsize`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", (2 * 1024 * 1024).toString()) // 2MB > 1MB limit
@@ -254,7 +259,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         it("should allow creating upload within max file size", async () => {
             expect.assertions(1);
 
-            const response = await agent
+            const response = await maxSizeAgent
                 .post(`${STORE_PATH}-maxsize`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", (500 * 1024).toString()) // 500KB < 1MB limit
@@ -268,7 +273,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             expect.assertions(1);
 
             // Create an upload within the limit
-            const response = await agent
+            const response = await maxSizeAgent
                 .post(`${STORE_PATH}-maxsize`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", (500 * 1024).toString()) // 500KB < 1MB limit
@@ -279,7 +284,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             const chunkSize = 300 * 1024; // 300KB chunks
 
             // Upload first chunk successfully
-            await agent
+            await maxSizeAgent
                 .patch(`${STORE_PATH}-maxsize/${uploadId}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
@@ -289,7 +294,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
             // Try to upload second chunk that would exceed the limit
             // This should fail because we're pretending the total size is 2MB but limit is 1MB
-            const oversizedResponse = await agent
+            const oversizedResponse = await maxSizeAgent
                 .post(`${STORE_PATH}-maxsize`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", (2 * 1024 * 1024).toString()) // 2MB > 1MB limit
@@ -303,6 +308,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
     describe("fileStore with deferred length and expiration", () => {
         let deferredExpiredServer: Tus;
         let deferredExpiredListener: ReturnType<typeof createServer>;
+        let deferredAgent: supertest.SuperAgentTest;
         let deferred_file_id: string;
 
         beforeAll(async () => {
@@ -321,6 +327,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
             deferredExpiredListener = createServer(app);
             deferredExpiredListener.listen();
+
+            deferredAgent = supertest.agent(deferredExpiredListener);
         });
 
         afterAll(async () => {
@@ -336,7 +344,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         it("should create deferred length upload with expiration", async () => {
             expect.assertions(2);
 
-            const response = await agent
+            const response = await deferredAgent
                 .post(`${STORE_PATH}-deferred-expired`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Defer-Length", "1")
@@ -352,7 +360,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         it("should handle PATCH with deferred length and expiration", async () => {
             expect.assertions(2);
 
-            const response = await agent
+            const response = await deferredAgent
                 .patch(`${STORE_PATH}-deferred-expired/${deferred_file_id}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
@@ -368,7 +376,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             // Wait for expiration
             await new Promise((resolve) => setTimeout(resolve, 100));
 
-            await agent
+            await deferredAgent
                 .patch(`${STORE_PATH}-deferred-expired/${deferred_file_id}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "9")
@@ -381,6 +389,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
     describe("upload termination behavior", () => {
         let terminationServer: Tus;
         let terminationListener: ReturnType<typeof createServer>;
+        let terminationAgent: supertest.SuperAgentTest;
         let completed_upload_id: string;
 
         beforeAll(async () => {
@@ -391,11 +400,13 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             });
 
             // Create server with termination disabled for finished uploads
-            terminationServer = new Tus<File>({ storage: terminationStorage, disableTerminationForFinishedUploads: true });
+            terminationServer = new Tus<File>({ disableTerminationForFinishedUploads: true, storage: terminationStorage });
             app.use(`${STORE_PATH}-termination`, terminationServer.handle);
 
             terminationListener = createServer(app);
             terminationListener.listen();
+
+            terminationAgent = supertest.agent(terminationListener);
         });
 
         afterAll(async () => {
@@ -410,7 +421,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
         it("should allow terminating unfinished uploads", async () => {
             // Create an upload but don't complete it
-            const response = await agent
+            const response = await terminationAgent
                 .post(`${STORE_PATH}-termination`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "100")
@@ -420,7 +431,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             const uploadId = response.headers.location.split("/").pop();
 
             // Terminate the unfinished upload
-            await agent.delete(`${STORE_PATH}-termination/${uploadId}`).set("Tus-Resumable", TUS_RESUMABLE).expect(204);
+            await terminationAgent.delete(`${STORE_PATH}-termination/${uploadId}`).set("Tus-Resumable", TUS_RESUMABLE).expect(204);
         });
 
         it("should disallow terminating finished uploads when disabled", async () => {
@@ -428,7 +439,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             // Skipping until disableTerminationForFinishedUploads option is added
 
             // Create and complete an upload
-            const response = await agent
+            const response = await terminationAgent
                 .post(`${STORE_PATH}-termination`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "100")
@@ -438,7 +449,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             completed_upload_id = response.headers.location.split("/").pop();
 
             // Complete the upload
-            await agent
+            await terminationAgent
                 .patch(`${STORE_PATH}-termination/${completed_upload_id}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
@@ -447,13 +458,14 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 .expect(200);
 
             // Try to terminate the completed upload - should fail
-            await agent.delete(`${STORE_PATH}-termination/${completed_upload_id}`).set("Tus-Resumable", TUS_RESUMABLE).expect(400);
+            await terminationAgent.delete(`${STORE_PATH}-termination/${completed_upload_id}`).set("Tus-Resumable", TUS_RESUMABLE).expect(400);
         });
     });
 
     describe("concurrent uploads and locking", () => {
         let lockingServer: Tus;
         let lockingListener: ReturnType<typeof createServer>;
+        let lockingAgent: supertest.SuperAgentTest;
 
         beforeAll(async () => {
             const lockingDirectory = temporaryDirectory();
@@ -467,6 +479,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
             lockingListener = createServer(app);
             lockingListener.listen();
+
+            lockingAgent = supertest.agent(lockingListener);
         });
 
         afterAll(async () => {
@@ -484,7 +498,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
             // Create multiple uploads simultaneously
             const uploadPromises = Array.from({ length: 3 }, (_, index) =>
-                agent
+                lockingAgent
                     .post(`${STORE_PATH}-locking`)
                     .set("Tus-Resumable", TUS_RESUMABLE)
                     .set("Upload-Length", "100")
@@ -501,7 +515,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             // Upload to each file simultaneously
             const uploadIds = responses.map((r) => r.headers.location.split("/").pop());
             const patchPromises = uploadIds.map((id) =>
-                agent
+                lockingAgent
                     .patch(`${STORE_PATH}-locking/${id}`)
                     .set("Tus-Resumable", TUS_RESUMABLE)
                     .set("Upload-Offset", "0")

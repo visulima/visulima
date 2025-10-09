@@ -488,22 +488,21 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         // eslint-disable-next-line no-param-reassign
         file.status = getFileStatus(file);
 
+        // Generate presigned URLs for client uploads, even for completed files
+        if (!file.partsUrls?.length) {
+            // eslint-disable-next-line no-param-reassign
+            file.partsUrls = await this.getPartsPresignedUrls(file);
+        }
+
         if (file.status === "completed") {
             const [completed] = await this.internalOnComplete(file);
 
             // eslint-disable-next-line no-param-reassign
             delete file.Parts;
             // eslint-disable-next-line no-param-reassign
-            delete file.partsUrls;
-            // eslint-disable-next-line no-param-reassign
             file.uri = completed.Location;
 
             return file;
-        }
-
-        if (!file.partsUrls?.length) {
-            // eslint-disable-next-line no-param-reassign
-            file.partsUrls = await this.getPartsPresignedUrls(file);
         }
 
         return file;

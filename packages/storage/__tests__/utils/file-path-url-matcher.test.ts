@@ -24,8 +24,9 @@ describe("utils", () => {
             });
             expect(matcher("/files/123/456")).toEqual({
                 params: {
-                    path: ["files", "123"],
-                    uuid: "456",
+                    metadata: "456",
+                    path: ["files"],
+                    uuid: "123",
                 },
                 path: "/files/123/456",
             });
@@ -53,9 +54,9 @@ describe("utils", () => {
 
             expect(matcher("/files/123-456-789/metadata")).toEqual({
                 params: {
+                    metadata: "metadata",
                     path: ["files"],
                     uuid: "123-456-789",
-                    metadata: "metadata",
                 },
                 path: "/files/123-456-789/metadata",
             });
