@@ -1,13 +1,3 @@
-/**
- * @packageDocumentation
- * Unified media transformer that routes to image, video, and audio
- * transformers based on content type and query parameters.
- */
-/**
- * @packageDocumentation
- * Unified media transformer that routes image/video/audio requests to the
- * appropriate transformer and optionally persists transformed files.
- */
 import { createHash } from "node:crypto";
 
 import type BaseStorage from "../storage/storage";

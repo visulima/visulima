@@ -41,6 +41,7 @@ const extractForwarded = (request: IncomingMessage): { host: string; proto: stri
  * @param encoding encoding to use
  * @param limit optional limit on the size of the body
  */
+/** Read and concatenate a request body up to an optional size limit. */
 export const readBody = (
     request: IncomingMessage,
     // eslint-disable-next-line default-param-last
@@ -68,6 +69,9 @@ export const readBody = (
  * @param name name of the header
  * @param all if true, returns  all values of the header, comma-separated, otherwise returns the last value.
  */
+/**
+ * Get a header value. If `all` is true, returns the comma-joined value.
+ */
 export const getHeader = (request: IncomingMessage, name: string, all = false): string => {
     const raw = request.headers?.[name.toLowerCase()];
 
@@ -83,6 +87,7 @@ export const getHeader = (request: IncomingMessage, name: string, all = false): 
  * @param request incoming metadata request
  * @param limit optional limit on the size of the body
  */
+/** Parse JSON metadata body from a request when content-type is json. */
 export const getMetadata = async (request: IncomingMessageWithBody<Record<any, any>>, limit = 16_777_216): Promise<Record<any, any>> => {
     if (!typeis(request, ["json"])) {
         return {};
@@ -108,6 +113,7 @@ export const getMetadata = async (request: IncomingMessageWithBody<Record<any, a
 /**
  * Appends value to the end of the multi-value header
  */
+/** Append a value to a multi-valued response header. */
 export const appendHeader = (response: ServerResponse, name: string, value: OutgoingHttpHeader): void => {
     const s = [response.getHeader(name), value].flat().filter(Boolean).toString();
 
@@ -117,6 +123,7 @@ export const appendHeader = (response: ServerResponse, name: string, value: Outg
 /**
  * Sets the value of a specific header of an HTTP response.
  */
+/** Set multiple response headers and expose them for CORS. */
 export const setHeaders = (response: ServerResponse, headers: Headers = {}): void => {
     const keys = Object.keys(headers);
 
@@ -136,6 +143,7 @@ export const setHeaders = (response: ServerResponse, headers: Headers = {}): voi
 /**
  * Extracts host with port from a http or https request.
  */
+/** Extract host value from request, preferring x-forwarded-host. */
 export const extractHost = (request: IncomingMessage & { host?: string; hostname?: string }): string =>
     getHeader(request, "host") || getHeader(request, "x-forwarded-host");
 // return req.host || req.hostname || getHeader(req, 'host'); // for express v5 / fastify
@@ -143,11 +151,13 @@ export const extractHost = (request: IncomingMessage & { host?: string; hostname
 /**
  * Extracts protocol from a http or https request.
  */
+/** Extract protocol from request, preferring x-forwarded-proto. */
 export const extractProto = (request: IncomingMessage): string => getHeader(request, "x-forwarded-proto").toLowerCase();
 
 /**
  * Try build a protocol:hostname:port string from a request object.
  */
+/** Build protocol://host from an IncomingMessage using forwarded headers. */
 export const getBaseUrl = (request: IncomingMessage): string => {
     let { host, proto } = extractForwarded(request);
 
@@ -232,6 +242,9 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
 /**
  * Converts a request to a Node.js Readable stream.
  * Handles both Node.js IncomingMessage and Web API Request objects.
+ */
+/**
+ * Normalize Node IncomingMessage or Web Request to a Node Readable stream.
  */
 export const getRequestStream = (request: IncomingMessage | Request): Readable => {
     // Check if it's a Web API Request with ReadableStream body
