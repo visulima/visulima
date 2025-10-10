@@ -1,6 +1,6 @@
 # Express Integration
 
-Use Visulima upload with Express.js for file uploads and on-demand image transformations. For modern frameworks like Hono or Cloudflare Workers, see the [fetch method documentation](#fetch-method).
+Use Visulima upload with Express.js for file uploads and on-demand image transformations. For modern frameworks like Hono, Deno, or Bun, see the Modern (Fetch API) guide.
 
 ## Installation
 
@@ -18,7 +18,7 @@ pnpm add @visulima/upload express
 
 ## Basic File Upload
 
-````ts
+```ts
 import express from "express";
 import { DiskStorage, Multipart } from "@visulima/upload";
 
@@ -32,17 +32,9 @@ const uploadDirectory = "./uploads";
 const storage = new DiskStorage({ directory: uploadDirectory });
 const multipart = new Multipart({ storage });
 
-app.use("/files", multipart.upload, (req, res) => {
-  if (req.file) {
-    res.json({
-      id: req.file.id,
-      filename: req.file.filename,
-      size: req.file.size,
-      url: `/files/${req.file.id}`
-    });
-  } else {
-    res.status(400).json({ error: "No file uploaded" });
-  }
+app.use("/files", multipart.handle, (req, res) => {
+  const file = req.body;
+  res.json(file);
 });
 
 app.listen(PORT, () => {
@@ -91,9 +83,9 @@ app.use("/upload", express.raw({ type: "multipart/form-data" }), async (req, res
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-````
+```
 
-**Note**: For Express applications, the traditional `upload()` middleware is recommended for simplicity. The `fetch` method is primarily designed for Web API frameworks like Hono, Cloudflare Workers, and Deno.
+Note: The `handle` middleware attaches the completed `UploadFile` to `req.body` for POST/PUT uploads and streams/serves files for GET.
 
 ## Image Transformations
 
@@ -101,7 +93,8 @@ Add on-demand image transformations with URL query parameters:
 
 ```ts
 import express from "express";
-import { DiskStorage, ImageTransformer, Multipart } from "@visulima/upload";
+import { DiskStorage, Multipart } from "@visulima/upload";
+import { ImageTransformer } from "@visulima/upload/transformers/image";
 
 const app = express();
 const PORT = 3000;
@@ -122,17 +115,9 @@ const imageTransformer = new ImageTransformer(storage, {
 const multipart = new Multipart({ storage });
 
 // File upload endpoint
-app.use("/files", multipart.upload, (req, res) => {
-    if (req.file) {
-        res.json({
-            id: req.file.id,
-            filename: req.file.filename,
-            size: req.file.size,
-            url: `/files/${req.file.id}`,
-        });
-    } else {
-        res.status(400).json({ error: "No file uploaded" });
-    }
+app.use("/files", multipart.handle, (req, res) => {
+    const file = req.body;
+    res.json(file);
 });
 
 // Image transformation endpoint with query parameters
@@ -150,25 +135,8 @@ app.get("/files/:id", async (req, res) => {
 
         if (!hasTransformParams) {
             // No transformation requested, serve original file
-            try {
-                const file = await storage.get({ id });
-
-                res.set({
-                    "Content-Type": file.contentType,
-                    "Content-Length": file.size,
-                    ETag: file.ETag,
-                    ...(file.expiredAt && { "X-Upload-Expires": file.expiredAt.toString() }),
-                    ...(file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() }),
-                    "Cache-Control": "public, max-age=31536000", // Cache for 1 year
-                });
-
-                res.send(file.content);
-                return;
-            } catch (error) {
-                console.error("Error serving original file:", error);
-                res.status(404).json({ error: "File not found" });
-                return;
-            }
+            // Delegate GET to handler to stream efficiently (incl. range)
+            return multipart.upload(req as any, res as any);
         }
 
         // Parse transformation options
@@ -186,7 +154,8 @@ app.get("/files/:id", async (req, res) => {
         if (delay) transformOptions.delay = Number(delay);
 
         // Apply transformation
-        const result = await imageTransformer.transform(id, transformOptions);
+        // Use high-level convenience methods when possible
+        const result = await imageTransformer.resize(id, transformOptions);
 
         // Set appropriate headers
         res.set({
