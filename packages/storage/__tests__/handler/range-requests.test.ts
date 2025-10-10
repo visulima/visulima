@@ -61,12 +61,12 @@ describe("range request functionality", () => {
         it("should return null for invalid range headers", () => {
             expect.assertions(6);
 
-            expect(uploader.parseRangeHeader("bytes=200-100", 1000)).toBeNull(); // Start > End
-            expect(uploader.parseRangeHeader("bytes=1000-1100", 1000)).toBeNull(); // Start >= fileSize
-            expect(uploader.parseRangeHeader("bytes=500-1500", 1000)).toBeNull(); // End >= fileSize
-            expect(uploader.parseRangeHeader("invalid", 1000)).toBeNull(); // Invalid format
-            expect(uploader.parseRangeHeader("bytes=0-99,100-199", 1000)).toBeNull(); // Multiple ranges
-            expect(uploader.parseRangeHeader("range=0-99", 1000)).toBeNull(); // Wrong prefix
+            expect(uploader.parseRangeHeader("bytes=200-100", 1000)).toBeUndefined(); // Start > End
+            expect(uploader.parseRangeHeader("bytes=1000-1100", 1000)).toBeUndefined(); // Start >= fileSize
+            expect(uploader.parseRangeHeader("bytes=500-1500", 1000)).toBeUndefined(); // End >= fileSize
+            expect(uploader.parseRangeHeader("invalid", 1000)).toBeUndefined(); // Invalid format
+            expect(uploader.parseRangeHeader("bytes=0-99,100-199", 1000)).toBeUndefined(); // Multiple ranges
+            expect(uploader.parseRangeHeader("range=0-99", 1000)).toBeUndefined(); // Wrong prefix
         });
 
         it("should handle edge cases", () => {
@@ -269,7 +269,7 @@ describe("range request functionality", () => {
             await uploader.download(request, response);
 
             expect(response.statusCode).toBe(206); // Partial content for range requests
-            expect(response.getHeader("content-disposition")).toBe("attachment; filename=\"download-range-test.dat\"");
+            expect(response.getHeader("content-disposition")).toBe("attachment; filename=download-range-test.dat");
             expect(response.getHeader("accept-ranges")).toBe("bytes");
 
             getMetaSpy.mockRestore();

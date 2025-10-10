@@ -14,6 +14,7 @@ import type { Checksum, FileInit, UploadFile } from "../storage/utils/file";
 import { Metadata } from "../storage/utils/file";
 import type { Headers, UploadResponse } from "../utils";
 import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream } from "../utils";
+import { HeaderUtilities } from "../utils/headers";
 import BaseHandler from "./base-handler";
 import type { Handlers, ResponseFile } from "./types";
 
@@ -282,7 +283,9 @@ export class Tus<
                 ...file,
                 body: file, // Return file metadata as JSON
                 headers: this.buildHeaders(file, {
-                    "Content-Type": "application/json",
+                    "Content-Type": HeaderUtilities.createContentType({
+                        mediaType: "application/json",
+                    }),
                 }) as Record<string, string | number>,
                 statusCode: 200,
             };
@@ -322,7 +325,7 @@ export class Tus<
                         "Upload-Defer-Length": "1",
                     },
                 ...this.buildHeaders(file, {
-                    "Cache-Control": "no-store",
+                    "Cache-Control": HeaderUtilities.createCacheControlPreset("no-store"),
                     "Upload-Metadata": serializeMetadata(file.metadata),
                     // The Server MUST always include the Upload-Offset header in
                     // the response for a HEAD request, even if the offset is 0

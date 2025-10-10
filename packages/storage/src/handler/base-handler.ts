@@ -17,6 +17,7 @@ import type { UploadFile } from "../storage/utils/file";
 import type MediaTransformer from "../transformer/media-transformer";
 import type { ErrorResponses, HttpError, IncomingMessageWithBody, Logger, ResponseBodyType, UploadError, UploadResponse } from "../utils";
 import { ErrorMap, ERRORS, filePathUrlMatcher, getBaseUrl, getRealPath, isUploadError, isValidationError, pick, setHeaders, uuidRegex } from "../utils";
+import { HeaderUtilities } from "../utils/headers";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "./types";
 
 const CONTENT_TYPE = "Content-Type";
@@ -304,7 +305,10 @@ abstract class BaseHandler<
                     return {
                         content: JSON.stringify(file),
                         headers: {
-                            "Content-Type": "application/json;charset=utf-8",
+                            "Content-Type": HeaderUtilities.createContentType({
+                                charset: "utf8",
+                                mediaType: "application/json",
+                            }),
                             ...file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() },
                             ...file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() },
                         } as Record<string, string>,
@@ -508,7 +512,10 @@ abstract class BaseHandler<
             const headers = {
                 ...streamResult.headers,
                 "Accept-Ranges": "bytes",
-                "Content-Disposition": `attachment; filename="${fileMeta.originalName || uuid}"`,
+                "Content-Disposition": HeaderUtilities.createContentDisposition({
+                    filename: fileMeta.originalName || uuid,
+                    type: "attachment",
+                }),
                 "Content-Type": contentType,
             };
 
@@ -532,31 +539,37 @@ abstract class BaseHandler<
     // eslint-disable-next-line class-methods-use-this
     public send(response: NodeResponse, { body = "", headers = {}, statusCode = 200 }: UploadResponse): void {
         let data: Buffer | string;
+        const finalHeaders = { ...headers };
 
         if (typeof body === "string") {
             data = body;
 
-            if (headers[CONTENT_TYPE] === undefined) {
-                // eslint-disable-next-line no-param-reassign
-                headers[CONTENT_TYPE] = "text/plain";
+            if (finalHeaders[CONTENT_TYPE] === undefined) {
+                finalHeaders[CONTENT_TYPE] = HeaderUtilities.createContentType({ mediaType: "text/plain" });
+            } else {
+                // Ensure charset is present for text content
+                const contentTypeValue = Array.isArray(finalHeaders[CONTENT_TYPE]) ? finalHeaders[CONTENT_TYPE].join(", ") : String(finalHeaders[CONTENT_TYPE]);
+
+                finalHeaders[CONTENT_TYPE] = HeaderUtilities.ensureCharset(contentTypeValue);
             }
 
-            if (headers["Content-Length"] === undefined) {
-                // eslint-disable-next-line no-param-reassign
-                headers["Content-Length"] = Buffer.byteLength(body);
+            if (finalHeaders["Content-Length"] === undefined) {
+                finalHeaders["Content-Length"] = Buffer.byteLength(body);
             }
         } else if (body instanceof Buffer) {
             data = body;
         } else {
             data = JSON.stringify(body);
 
-            if (!headers[CONTENT_TYPE]) {
-                // eslint-disable-next-line no-param-reassign
-                headers[CONTENT_TYPE] = "application/json;charset=utf-8";
+            if (!finalHeaders[CONTENT_TYPE]) {
+                finalHeaders[CONTENT_TYPE] = HeaderUtilities.createContentType({
+                    charset: "utf8",
+                    mediaType: "application/json",
+                });
             }
         }
 
-        setHeaders(response, headers);
+        setHeaders(response, finalHeaders);
 
         response.statusCode = statusCode;
 
@@ -581,25 +594,52 @@ abstract class BaseHandler<
     }
 
     /**
+     * Negotiate content type based on Accept header and supported formats
+     */
+    public negotiateContentType(request: NodeRequest, supportedTypes: string[]): string | undefined {
+        const acceptHeader = request.headers.accept;
+
+        if (!acceptHeader) {
+            return undefined;
+        }
+
+        return HeaderUtilities.getPreferredMediaType(acceptHeader, supportedTypes);
+    }
+
+    /**
+     * Create cache control header for file responses
+     */
+    public createCacheControl(options: import("../utils/headers").CacheControlOptions): string {
+        return HeaderUtilities.createCacheControl(options);
+    }
+
+    /**
+     * Create cache control header using common presets
+     */
+    public createCacheControlPreset(preset: "no-cache" | "no-store" | "public" | "private" | "immutable"): string {
+        return HeaderUtilities.createCacheControlPreset(preset);
+    }
+
+    /**
      * Parse HTTP Range header and return start/end positions
      */
-    public parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | null {
+    public parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | undefined {
         if (!rangeHeader || !rangeHeader.startsWith("bytes=")) {
-            return null;
+            return undefined;
         }
 
         const ranges = rangeHeader.slice(6).split(",");
 
         if (ranges.length !== 1) {
             // Multiple ranges not supported
-            return null;
+            return undefined;
         }
 
         const range = ranges[0].trim();
         const parts = range.split("-");
 
         if (parts.length !== 2) {
-            return null;
+            return undefined;
         }
 
         const [startString, endString] = parts;
@@ -619,12 +659,12 @@ abstract class BaseHandler<
             start = fileSize - Number.parseInt(endString, 10);
             end = fileSize - 1;
         } else {
-            return null; // Invalid range
+            return undefined; // Invalid range
         }
 
         // Validate range
         if (Number.isNaN(start) || Number.isNaN(end) || start >= fileSize || end >= fileSize || start > end) {
-            return null;
+            return undefined;
         }
 
         return { end, start };
@@ -1039,7 +1079,10 @@ abstract class BaseHandler<
             responseBody = JSON.stringify(body);
 
             if (!headers["Content-Type"]) {
-                headers["Content-Type"] = "application/json;charset=utf-8";
+                headers["Content-Type"] = HeaderUtilities.createContentType({
+                    charset: "utf8",
+                    mediaType: "application/json",
+                });
             }
         }
 

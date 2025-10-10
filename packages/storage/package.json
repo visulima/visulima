@@ -168,7 +168,7 @@
         "path-to-regexp": "8.3.0"
     },
     "devDependencies": {
-        "etag": "^1.8.1",
+        "@remix-run/headers": "0.13.0",
         "@anolilab/eslint-config": "^16.3.3",
         "@anolilab/prettier-config": "^6.0.6",
         "@anolilab/semantic-release-pnpm": "2.0.4",
@@ -199,6 +199,7 @@
         "cross-fetch": "^4.1.0",
         "esbuild": "0.25.10",
         "eslint": "^9.37.0",
+        "etag": "^1.8.1",
         "express": "^5.1.0",
         "gaxios": "^7.1.2",
         "google-auth-library": "^10.4.0",

@@ -3330,6 +3330,7 @@ importers:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 1.6.1(@types/node@24.7.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1)
 =======
         version: 1.6.1(@types/node@24.6.2)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.31.1)(tsx@4.20.6)(yaml@2.8.1)
@@ -3362,8 +3363,17 @@ importers:
 =======
         version: 1.6.1(@types/node@24.7.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+<<<<<<< HEAD
 >>>>>>> ad8622128 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+<<<<<<< HEAD
 >>>>>>> 2ae4da330 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+=======
+=======
+=======
+        version: 1.6.1(@types/node@24.7.0)(@vitest/ui@3.2.4(vitest@3.2.4))(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 31cc02272 (refactor: Enhance header handling in storage package with new utilities and update range header parsing logic. Adjust tests for consistency and improve content type handling in responses.)
+>>>>>>> 23ddd60d1 (refactor: Enhance header handling in storage package with new utilities and update range header parsing logic. Adjust tests for consistency and improve content type handling in responses.)
+>>>>>>> bff26cf4b (refactor: Enhance header handling in storage package with new utilities and update range header parsing logic. Adjust tests for consistency and improve content type handling in responses.)
 
   packages/boxen/__fixtures__/package/cjs:
     dependencies:
@@ -9828,6 +9838,9 @@ importers:
 
   packages/storage:
     dependencies:
+      '@remix-run/headers':
+        specifier: 0.13.0
+        version: 0.13.0
       '@remix-run/multipart-parser':
         specifier: ^0.11.0
         version: 0.11.0
@@ -10355,7 +10368,7 @@ importers:
         version: 5.0.3
       ts-node-dev:
         specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.7.0)(typescript@5.9.3)
+        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
 
   packages/storage/examples/hono:
     dependencies:
@@ -17361,6 +17374,9 @@ packages:
   '@remix-run/headers@0.12.0':
     resolution: {integrity: sha512-eqVSL5UOIyqVx0NTqgtNKMKVokE9jPchkZHl/N13KKPQYw/leS8VCoX5zRhkB1UvcLyfj113LX0OvEcuNbc5Hg==}
 
+  '@remix-run/headers@0.13.0':
+    resolution: {integrity: sha512-OHHFHozdXSjcyrYws8h0FfcgQ/i24iMsSExE1xqJFAyOAE3yvb5YoDVTf7Jz/4XuVVYnoc93ODCJc9jt6ZvsBw==}
+
   '@remix-run/multipart-parser@0.11.0':
     resolution: {integrity: sha512-AE/H+ok0fWOZb84sJ8vREOJiSwYoEoGL0rpHZSAiPmCkBKbnsmHCbiUtg5+wELem4Q0HAEY6vjVK83u9cIlAhw==}
 
@@ -22024,6 +22040,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
@@ -22040,6 +22057,9 @@ packages:
 =======
       vite: '>=7.1.5'
 >>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+=======
+      vite: '>=5.4.20'
+>>>>>>> 31cc02272 (refactor: Enhance header handling in storage package with new utilities and update range header parsing logic. Adjust tests for consistency and improve content type handling in responses.)
 
   '@vitejs/plugin-vue@6.0.1':
     resolution: {integrity: sha512-+MaE752hU0wfPFJEUAIxqw18+20euHHdxVtMvbFcOEpjEyfqXH/5DCoTHiVJ0J29EhTJdoTkjEv5YBKU9dnoTw==}
@@ -22124,6 +22144,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
     peerDependenciesMeta:
       msw:
@@ -22167,6 +22188,9 @@ packages:
 =======
       vite: '>=7.1.5'
 >>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+=======
+      vite: '>=5.4.20'
+>>>>>>> 31cc02272 (refactor: Enhance header handling in storage package with new utilities and update range header parsing logic. Adjust tests for consistency and improve content type handling in responses.)
     peerDependenciesMeta:
       msw:
         optional: true
@@ -34203,6 +34227,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
@@ -34218,6 +34243,9 @@ packages:
 =======
       vite: '>=7.1.5'
 >>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+=======
+      vite: '>=5.4.20'
+>>>>>>> 31cc02272 (refactor: Enhance header handling in storage package with new utilities and update range header parsing logic. Adjust tests for consistency and improve content type handling in responses.)
 
   vite-node@1.6.1:
     resolution: {integrity: sha512-YAXkfvGtuTzwWbDSACdJSg4A4DZiAqckWe90Zapc/sEX3XvHcw1NdurM/6od8J207tSDqNbSsgdCacBgvJKFuA==}
@@ -34279,6 +34307,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
@@ -34295,6 +34324,9 @@ packages:
 =======
       vite: '>=7.1.5'
 >>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+=======
+      vite: '>=5.4.20'
+>>>>>>> 31cc02272 (refactor: Enhance header handling in storage package with new utilities and update range header parsing logic. Adjust tests for consistency and improve content type handling in responses.)
     peerDependenciesMeta:
       vite:
         optional: true
@@ -34434,6 +34466,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
@@ -34456,6 +34489,9 @@ packages:
 =======
       vite: '>=7.1.5'
 >>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+=======
+      vite: '>=5.4.20'
+>>>>>>> 31cc02272 (refactor: Enhance header handling in storage package with new utilities and update range header parsing logic. Adjust tests for consistency and improve content type handling in responses.)
     peerDependenciesMeta:
       vite:
         optional: true
@@ -43091,6 +43127,8 @@ snapshots:
   '@rolldown/binding-android-arm64@1.0.0-beta.45':
 =======
   '@remix-run/headers@0.12.0': {}
+
+  '@remix-run/headers@0.13.0': {}
 
   '@remix-run/multipart-parser@0.11.0':
     dependencies:
@@ -56496,7 +56534,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.3.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.7.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.8.4(@types/node@24.7.0)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   '@vitest/utils@1.6.1':
     dependencies:
@@ -74822,6 +74860,7 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ts-pattern@5.9.0: {}
 =======
   ts-node-dev@2.0.0(@swc/core@1.6.7)(@types/node@22.5.4)(typescript@5.6.2):
@@ -74843,6 +74882,9 @@ snapshots:
 =======
   ts-node-dev@2.0.0(@swc/core@1.13.5)(@types/node@24.7.0)(typescript@5.9.3):
 >>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+=======
+  ts-node-dev@2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2):
+>>>>>>> 31cc02272 (refactor: Enhance header handling in storage package with new utilities and update range header parsing logic. Adjust tests for consistency and improve content type handling in responses.)
     dependencies:
       chokidar: 3.6.0
       dynamic-dedupe: 0.3.0
@@ -74852,9 +74894,9 @@ snapshots:
       rimraf: 2.7.1
       source-map-support: 0.5.21
       tree-kill: 1.2.2
-      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@24.7.0)(typescript@5.9.3)
+      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
       tsconfig: 7.0.0
-      typescript: 5.9.3
+      typescript: 5.9.2
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -74875,27 +74917,6 @@ snapshots:
       diff: 4.0.2
       make-error: 1.3.6
       typescript: 5.9.2
-      v8-compile-cache-lib: 3.0.1
-      yn: 3.1.1
-    optionalDependencies:
-      '@swc/core': 1.13.5
-    optional: true
-
-  ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.7.0)(typescript@5.9.3):
-    dependencies:
-      '@cspotcode/source-map-support': 0.8.1
-      '@tsconfig/node10': 1.0.11
-      '@tsconfig/node12': 1.0.11
-      '@tsconfig/node14': 1.0.3
-      '@tsconfig/node16': 1.0.4
-      '@types/node': 24.7.0
-      acorn: 8.15.0
-      acorn-walk: 8.3.4
-      arg: 4.1.3
-      create-require: 1.1.1
-      diff: 4.0.2
-      make-error: 1.3.6
-      typescript: 5.9.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     optionalDependencies:
@@ -76926,7 +76947,7 @@ snapshots:
     optionalDependencies:
       vite: 7.1.8(@types/node@24.7.0)(jiti@2.6.0)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  vitest@1.6.1(@types/node@24.7.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+  vitest@1.6.1(@types/node@24.7.0)(@vitest/ui@3.2.4(vitest@3.2.4))(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1

@@ -23,14 +23,40 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/upload artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+## @remix-run/headers
+License: MIT
+By: Michael Jackson
+Repository: git+https://github.com/remix-run/remix.git
+
+> MIT License
+>
+> Copyright (c) 2024 Michael Jackson
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all
+> copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+> SOFTWARE.
+
+---------------------------------------
 
 ## @visulima/fs
-
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -56,6 +82,8 @@ Repository: git+https://github.com/visulima/visulima.git
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
+>
+>
 >
 > # Licenses of bundled dependencies
 >
@@ -132,6 +160,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+>
+>
+>
+>
 >
 > # Licenses of bundled types
 >
@@ -266,10 +298,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > party to this document and has no duty or obligation with respect to
 > > this CC0 or use of the Work.
 
----
+---------------------------------------
 
 ## @visulima/humanizer
-
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -336,10 +367,9 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 > SPDX-License-Identifier: MIT or UNLICENSE
 
----
+---------------------------------------
 
 ## @visulima/path
-
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -439,6 +469,8 @@ Repository: git+https://github.com/visulima/visulima.git
 > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
 >
+>
+>
 > # Licenses of bundled dependencies
 >
 > The published @visulima/path artifact additionally contains code with the following licenses:
@@ -463,10 +495,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## content-type
-
 License: MIT
 By: Douglas Christopher Wilson
 Repository: jshttp/content-type
@@ -494,10 +525,9 @@ Repository: jshttp/content-type
 > TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 > SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## etag
-
 License: MIT
 By: Douglas Christopher Wilson, David Björklund
 Repository: jshttp/etag
@@ -525,10 +555,9 @@ Repository: jshttp/etag
 > TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 > SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## media-typer
-
 License: MIT
 By: Douglas Christopher Wilson
 Repository: jshttp/media-typer
@@ -556,10 +585,9 @@ Repository: jshttp/media-typer
 > TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 > SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## mime-db
-
 License: MIT
 By: Douglas Christopher Wilson, Jonathan Ong, Robert Kieffer
 Repository: jshttp/mime-db
@@ -588,10 +616,9 @@ Repository: jshttp/mime-db
 > TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 > SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## mime-types
-
 License: MIT
 By: Douglas Christopher Wilson, Jeremiah Senkpiel, Jonathan Ong
 Repository: jshttp/mime-types
@@ -620,10 +647,9 @@ Repository: jshttp/mime-types
 > TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 > SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## type-is
-
 License: MIT
 By: Douglas Christopher Wilson, Jonathan Ong
 Repository: jshttp/type-is

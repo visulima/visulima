@@ -5,8 +5,6 @@ import type { Headers, HttpErrorBody, ValidationError as IValidationError } from
  * Implements the ValidationError interface for consistent error handling.
  */
 class ValidationError extends Error implements IValidationError {
-    public override name: string = "ValidationError";
-
     /**
      * Creates a new ValidationError instance.
      * @param code Machine-readable error code
@@ -21,6 +19,8 @@ class ValidationError extends Error implements IValidationError {
         public headers: Headers,
     ) {
         super(typeof body === "string" ? body : body?.message);
+
+        this.name = "ValidationError" as const;
     }
 }
 
