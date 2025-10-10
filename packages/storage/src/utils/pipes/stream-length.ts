@@ -1,5 +1,10 @@
 import { Transform } from "node:stream";
 
+/**
+ * Transform that tracks the number of bytes passing through and enforces an
+ * optional upper limit. Emits an error if the limit is exceeded.
+ */
+
 class StreamLength extends Transform {
     public length = 0;
 
