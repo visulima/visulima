@@ -218,6 +218,7 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
     // If it's an absolute URL, extract the pathname
     if (realPath.startsWith("http")) {
         const url = new URL(realPath);
+
         realPath = url.pathname;
     }
 

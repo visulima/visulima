@@ -3,6 +3,7 @@ import type File from "./file";
 
 /**
  * Simple deep merge function that recursively merges objects.
+ * Non-object values are replaced, objects are merged recursively.
  */
 const deepMerge = (target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> => {
     const result = { ...target };
@@ -23,6 +24,13 @@ const deepMerge = (target: Record<string, unknown>, source: Record<string, unkno
     return result;
 };
 
+/**
+ * Updates a file object with new metadata using deep merge.
+ * Also updates the originalName based on the merged metadata.
+ * @param file File object to update
+ * @param metadata Partial metadata to merge into the file
+ * @template T - File type extending base File class
+ */
 const updateMetadata = <T extends File>(file: T, metadata: Partial<T>): void => {
     // Deep merge metadata into file object
     const merged = deepMerge(file as Record<string, unknown>, metadata as Record<string, unknown>);

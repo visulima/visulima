@@ -1,6 +1,5 @@
 import type { Headers, HttpErrorBody, ValidationError as IValidationError } from "./types";
 
-
 /**
  * Error class for validation failures with detailed error information.
  * Implements the ValidationError interface for consistent error handling.
