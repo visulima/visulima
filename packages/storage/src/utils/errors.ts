@@ -2,6 +2,9 @@ import mem from "memoize";
 
 import type { HttpError } from "./types";
 
+/**
+ * Canonical error codes used across handlers and storage adapters.
+ */
 export enum ERRORS {
     BAD_REQUEST = "BadRequest",
     CHECKSUM_MISMATCH = "ChecksumMismatch",
@@ -29,10 +32,14 @@ export enum ERRORS {
     UNSUPPORTED_MEDIA_TYPE = "UnsupportedMediaType",
 }
 
+/** Map of error code -> normalized HttpError response. */
 export type ErrorResponses<T extends string = string> = {
     [K in T]: HttpError;
 };
 
+/**
+ * Lazily materialized mapping of {@link ERRORS} -> HttpError shape.
+ */
 export const ErrorMap = mem((): ErrorResponses => {
     const errors: Record<string, [number, string]> = {
         BadRequest: [400, "Bad request"],
@@ -71,6 +78,9 @@ export const ErrorMap = mem((): ErrorResponses => {
     return errorMap;
 })();
 
+/**
+ * Error subclass carrying a stable {@link ERRORS} code and optional detail.
+ */
 export class UploadError extends Error {
     public override name = "UploadError";
 
@@ -89,8 +99,10 @@ export class UploadError extends Error {
     }
 }
 
+/** Type guard for {@link UploadError}. */
 export const isUploadError = (error: unknown): error is UploadError => !!(error as UploadError).UploadErrorCode;
 
+/** Convenience to throw an {@link UploadError} from a string code. */
 export const throwErrorCode = (UploadErrorCode: string, detail?: string): never => {
     const error = new UploadError(detail || (ErrorMap[UploadErrorCode] as HttpError).message);
 
