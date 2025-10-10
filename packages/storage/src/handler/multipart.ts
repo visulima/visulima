@@ -156,8 +156,8 @@ class Multipart<
                 throw createHttpError(400, "Invalid multipart request");
             }
 
-            if (error instanceof ValidationError) {
-                throw createHttpError(error.statusCode || 400, error.message || error.body || "Validation failed");
+            if (error instanceof ValidationError && error.statusCode) {
+                throw createHttpError(error.statusCode, error.message || error.body || "Validation failed");
             }
 
             throw error;

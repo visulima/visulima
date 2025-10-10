@@ -227,10 +227,6 @@ abstract class BaseHandler<
 
             this.logger?.error("[error]: %O", errorEvent);
 
-            if (request.destroyed) {
-                return;
-            }
-
             this.sendError(response, error);
         }
     };
