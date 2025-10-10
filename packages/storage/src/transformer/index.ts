@@ -41,4 +41,5 @@ export type {
     VideoTransformOptions,
     VideoTransformResult,
 } from "./types";
+export { getFormatFromContentType, isKnownContentType, isValidMediaType, validateMediaFile } from "./utils";
 export { default as ValidationError } from "./validation-error";

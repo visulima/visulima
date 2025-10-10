@@ -23,6 +23,7 @@ import type {
     VideoTransformOptions,
     VideoTransformResult,
 } from "./types";
+import { getFormatFromContentType, isValidMediaType } from "./utils";
 
 /**
  * Video transformer that uses storage backends and Mediabunny to retrieve and transform videos
@@ -391,12 +392,12 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
 
         // Check if it's a video
-        if (!file.contentType?.startsWith("video/")) {
+        if (!isValidMediaType(file.contentType, "video")) {
             throw new Error(`File is not a video: ${file.contentType}`);
         }
 
         // Check format support
-        const format = file.contentType.split("/")[1];
+        const format = getFormatFromContentType(file.contentType);
 
         if (this.config?.supportedFormats && format && !this.config.supportedFormats.includes(format)) {
             throw new Error(`Unsupported video format: ${format}`);
