@@ -93,7 +93,7 @@
         "@arethetypeswrong/cli": "^0.18.1",
         "@types/node": "22.15.29",
         "@visulima/colorize": "1.4.23",
-        "@visulima/packem": "1.19.4",
+        "@visulima/packem": "1.28.3",
         "@visulima/path": "1.4.0",
         "@visulima/string": "1.5.2",
         "@vitest/coverage-v8": "^3.2.0",
