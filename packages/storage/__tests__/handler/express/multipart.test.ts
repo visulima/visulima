@@ -78,9 +78,9 @@ describe("express Multipart", () => {
         it("should return 415 for unsupported file types", async () => {
             expect.assertions(2);
 
-            response = await supertest(app).post(basePath).attach("file", Buffer.from("test content"), {
-                contentType: "text/plain",
-                filename: "testfile.txt",
+            response = await supertest(app).post(basePath).attach("file", Buffer.from("test\u0000binary\u0000data"), {
+                contentType: "application/json",
+                filename: "testfile.json",
             });
 
             expect(response.status).toBe(415);
