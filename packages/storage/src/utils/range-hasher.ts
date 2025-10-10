@@ -6,6 +6,7 @@ import { LRUCache as Cache } from "lru-cache";
 import RangeChecksum from "./range-checksum";
 import type { RangeChecksum as IRangeChecksum, RangeHasher as IRangeHasher } from "./types";
 
+/** LRU-backed cache for incremental file hashing utilities. */
 class RangeHasher extends Cache<string, Hash, number> {
     public constructor(
         public algorithm: "md5" | "sha1" = "sha1",
@@ -18,18 +19,24 @@ class RangeHasher extends Cache<string, Hash, number> {
         });
     }
 
+    /** Return hex digest for a previously initialized path. */
     public hex(path: string): string {
         return this.get(path)?.copy().digest("hex") || "";
     }
 
+    /** Return base64 digest for a previously initialized path. */
     public base64(path: string): string {
         return this.get(path)?.copy().digest("base64") || "";
     }
 
+    /**
+     * Initialize or continue a hasher for a file from an offset.
+     */
     public async init(path: string, start = 0): Promise<Hash> {
         return this.get(path)?.copy() || this.updateFromFs(path, start);
     }
 
+    /** Create a Transform that updates the rolling hash for a path. */
     public digester(path: string): IRangeChecksum {
         return new RangeChecksum(this as IRangeHasher, path);
     }
