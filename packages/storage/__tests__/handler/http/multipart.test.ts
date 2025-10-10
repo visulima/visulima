@@ -83,7 +83,7 @@ describe("http Multipart", () => {
             }
         });
 
-        it.skip("should return 415 for unsupported file types", async () => {
+        it("should return 415 for unsupported file types", async () => {
             expect.assertions(2);
 
             response = await supertest(app).post(basePath).attach("file", Buffer.from("test content"), {

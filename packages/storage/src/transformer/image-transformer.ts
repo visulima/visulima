@@ -487,11 +487,6 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
         for (const step of steps) {
             switch (step.type) {
                 case "affine": {
-                    // Note: affine requires matrix parameter, but we don't have it in our options yet
-                    // This would need additional work
-                    break;
-                }
-                case "affine": {
                     sharpInstance = this.applyAffine(sharpInstance, step.options as AffineOptions);
                     break;
                 }
@@ -528,21 +523,11 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "dilate": {
-                    // Note: dilate requires options we don't have yet
-                    sharpInstance = sharpInstance.dilate();
-                    break;
-                }
-                case "dilate": {
                     sharpInstance = this.applyDilate(sharpInstance, step.options as DilateOptions);
                     break;
                 }
                 case "ensureAlpha": {
                     sharpInstance = this.applyEnsureAlpha(sharpInstance, step.options as EnsureAlphaOptions);
-                    break;
-                }
-                case "erode": {
-                    // Note: erode requires options we don't have yet
-                    sharpInstance = sharpInstance.erode();
                     break;
                 }
                 case "erode": {

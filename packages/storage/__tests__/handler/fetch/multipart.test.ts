@@ -45,7 +45,7 @@ describe("fetch Multipart", () => {
     });
 
     describe("post", () => {
-        it.skip("should support custom fields in multipart upload", async () => {
+        it("should support custom fields in multipart upload", async () => {
             expect.assertions(2);
 
             const request = create();

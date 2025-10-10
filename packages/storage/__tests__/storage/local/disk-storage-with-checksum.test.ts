@@ -10,8 +10,8 @@ import { metafile, storageOptions } from "../../__helpers__/config";
 
 let directory: string;
 
-describe.skip(DiskStorageWithChecksum, () => {
-    vi.useFakeTimers({ doNotFake: ["setTimeout"] }).setSystemTime(new Date("2022-02-02"));
+describe(DiskStorageWithChecksum, () => {
+    vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
     let options: typeof storageOptions & { checksum: "sha1" };
     const request = createRequest();
@@ -35,11 +35,11 @@ describe.skip(DiskStorageWithChecksum, () => {
         const storage = new DiskStorageWithChecksum(options);
         const diskFile = await storage.create(request, { ...metafile });
 
-        expect(diskFile).toMatchSnapshot();
+        expect(diskFile).toMatchSnapshot("file");
 
         const file = await storage.write({ ...diskFile, body: Readable.from("01234"), start: 0 });
 
-        expect(file).toMatchSnapshot();
+        expect(file).toMatchSnapshot("file_readable");
     });
 
     it("should delete file and metadata successfully", async () => {
@@ -52,8 +52,9 @@ describe.skip(DiskStorageWithChecksum, () => {
 
         const deletedFiles = await storage.delete({ id: diskFile.id });
 
-        expect(deletedFiles).toEqual({
+        expect(deletedFiles).toStrictEqual({
             ...diskFile,
+            bytesWritten: 5,
             hash: {
                 algorithm: "sha1",
                 value: "897988093208097ce65f78fd43e99208926103ea",

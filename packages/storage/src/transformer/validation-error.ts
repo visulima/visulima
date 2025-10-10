@@ -2,11 +2,13 @@
  * @packageDocumentation
  * Custom error class for validation failures in transformer inputs.
  */
+
 /**
  * @packageDocumentation
  * Error subtype for invalid transformer parameters with structured details
  * for better client error messages and troubleshooting.
  */
+
 /**
  * Custom error class for validation failures
  */

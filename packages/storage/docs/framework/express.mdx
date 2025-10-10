@@ -18,7 +18,7 @@ pnpm add @visulima/upload express
 
 ## Basic File Upload
 
-```ts
+````ts
 import express from "express";
 import { DiskStorage, Multipart } from "@visulima/upload";
 
@@ -83,7 +83,7 @@ app.use("/upload", express.raw({ type: "multipart/form-data" }), async (req, res
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-```
+````
 
 Note: The `handle` middleware attaches the completed `UploadFile` to `req.body` for POST/PUT uploads and streams/serves files for GET.
 

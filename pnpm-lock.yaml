@@ -3329,6 +3329,7 @@ importers:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 1.6.1(@types/node@24.7.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1)
 =======
         version: 1.6.1(@types/node@24.6.2)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.31.1)(tsx@4.20.6)(yaml@2.8.1)
@@ -3352,8 +3353,17 @@ importers:
 =======
         version: 1.6.1(@types/node@24.7.0)(@vitest/ui@3.2.4(vitest@3.2.4))(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> df214d77e (feat: more work)
+<<<<<<< HEAD
 >>>>>>> d22f5ed7b (feat: more work)
+<<<<<<< HEAD
 >>>>>>> c73fdf469 (feat: more work)
+=======
+=======
+=======
+        version: 1.6.1(@types/node@24.7.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+>>>>>>> ad8622128 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+>>>>>>> 2ae4da330 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
 
   packages/boxen/__fixtures__/package/cjs:
     dependencies:
@@ -9818,18 +9828,15 @@ importers:
 
   packages/storage:
     dependencies:
-      '@mjackson/multipart-parser':
-        specifier: ^0.10.1
-        version: 0.10.1
+      '@remix-run/multipart-parser':
+        specifier: ^0.11.0
+        version: 0.11.0
       '@sindresorhus/fnv1a':
         specifier: 3.1.0
         version: 3.1.0
       '@visulima/pagination':
         specifier: workspace:*
         version: link:../pagination
-      etag:
-        specifier: ^1.8.1
-        version: 1.8.1
       http-errors:
         specifier: ^2.0.0
         version: 2.0.0
@@ -9939,6 +9946,9 @@ importers:
       eslint:
         specifier: ^9.37.0
         version: 9.37.0(jiti@2.6.0)
+      etag:
+        specifier: ^1.8.1
+        version: 1.8.1
       express:
         specifier: ^5.1.0
         version: 5.1.0
@@ -10345,7 +10355,7 @@ importers:
         version: 5.0.3
       ts-node-dev:
         specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
+        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.7.0)(typescript@5.9.3)
 
   packages/storage/examples/hono:
     dependencies:
@@ -15606,12 +15616,6 @@ packages:
   '@microsoft/tsdoc@0.15.1':
     resolution: {integrity: sha512-4aErSrCR/On/e5G2hDP0wjooqDdauzEbIq8hIkIe5pXV0rtWJZvdCEKL0ykZxex+IxIwBp0eGeV48hQN07dXtw==}
 
-  '@mjackson/headers@0.11.1':
-    resolution: {integrity: sha512-uXXhd4rtDdDwkqAuGef1nuafkCa1NlTmEc1Jzc0NL4YiA1yON1NFXuqJ3hOuKvNKQwkiDwdD+JJlKVyz4dunFA==}
-
-  '@mjackson/multipart-parser@0.10.1':
-    resolution: {integrity: sha512-cHMD6+ErH/DrEfC0N6Ru/+1eAdavxdV0C35PzSb5/SD7z3XoaDMc16xPJcb8CahWjSpqHY+Too9sAb6/UNuq7A==}
-
   '@modelcontextprotocol/sdk@1.18.0':
     resolution: {integrity: sha512-JvKyB6YwS3quM+88JPR0axeRgvdDu3Pv6mdZUy+w4qVkCzGgumb9bXG/TmtDRQv+671yaofVfXSQmFLlWU5qPQ==}
 <<<<<<< HEAD
@@ -17342,8 +17346,29 @@ packages:
     resolution: {integrity: sha512-XoNIuksnOGAzAcfpyJkHrMxwurXaQfglnovNE7/pTx4OEjik3OT91+tKAyRCkklVCdMtAA3YokGMZzdhjViUWA==}
     engines: {node: '>=14.19.0', npm: '>=7.0.0'}
 
+<<<<<<< HEAD
   '@rolldown/binding-android-arm64@1.0.0-beta.50':
     resolution: {integrity: sha512-XlEkrOIHLyGT3avOgzfTFSjG+f+dZMw+/qd+Y3HLN86wlndrB/gSimrJCk4gOhr1XtRtEKfszpadI3Md4Z4/Ag==}
+=======
+<<<<<<< HEAD
+  '@rolldown/binding-android-arm64@1.0.0-beta.47':
+    resolution: {integrity: sha512-vPP9/MZzESh9QtmvQYojXP/midjgkkc1E4AdnPPAzQXo668ncHJcVLKjJKzoBdsQmaIvNjrMdsCwES8vTQHRQw==}
+=======
+<<<<<<< HEAD
+  '@rolldown/binding-android-arm64@1.0.0-beta.45':
+    resolution: {integrity: sha512-bfgKYhFiXJALeA/riil908+2vlyWGdwa7Ju5S+JgWZYdR4jtiPOGdM6WLfso1dojCh+4ZWeiTwPeV9IKQEX+4g==}
+=======
+  '@remix-run/headers@0.12.0':
+    resolution: {integrity: sha512-eqVSL5UOIyqVx0NTqgtNKMKVokE9jPchkZHl/N13KKPQYw/leS8VCoX5zRhkB1UvcLyfj113LX0OvEcuNbc5Hg==}
+
+  '@remix-run/multipart-parser@0.11.0':
+    resolution: {integrity: sha512-AE/H+ok0fWOZb84sJ8vREOJiSwYoEoGL0rpHZSAiPmCkBKbnsmHCbiUtg5+wELem4Q0HAEY6vjVK83u9cIlAhw==}
+
+  '@rolldown/binding-android-arm64@1.0.0-beta.42':
+    resolution: {integrity: sha512-W5ZKF3TP3bOWuBfotAGp+UGjxOkGV7jRmIRbBA7NFjggx7Oi6vOmGDqpHEIX7kDCiry1cnIsWQaxNvWbMdkvzQ==}
+>>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+>>>>>>> ad8622128 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+>>>>>>> 2ae4da330 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [android]
@@ -21998,6 +22023,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
@@ -22011,6 +22037,9 @@ packages:
 =======
       vite: '>=5.4.20'
 >>>>>>> 221b31d24 (fix(pnpm): resolve merge conflicts and update dependency versions)
+=======
+      vite: '>=7.1.5'
+>>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
 
   '@vitejs/plugin-vue@6.0.1':
     resolution: {integrity: sha512-+MaE752hU0wfPFJEUAIxqw18+20euHHdxVtMvbFcOEpjEyfqXH/5DCoTHiVJ0J29EhTJdoTkjEv5YBKU9dnoTw==}
@@ -22094,6 +22123,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
     peerDependenciesMeta:
       msw:
@@ -22134,6 +22164,9 @@ packages:
 =======
       vite: '>=5.4.20'
 >>>>>>> 221b31d24 (fix(pnpm): resolve merge conflicts and update dependency versions)
+=======
+      vite: '>=7.1.5'
+>>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
     peerDependenciesMeta:
       msw:
         optional: true
@@ -34169,6 +34202,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
@@ -34181,6 +34215,9 @@ packages:
 =======
       vite: '>=5.4.20'
 >>>>>>> 5976da4b4 (feat(storage): implement streaming support for file handling and enhance test coverage)
+=======
+      vite: '>=7.1.5'
+>>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
 
   vite-node@1.6.1:
     resolution: {integrity: sha512-YAXkfvGtuTzwWbDSACdJSg4A4DZiAqckWe90Zapc/sEX3XvHcw1NdurM/6od8J207tSDqNbSsgdCacBgvJKFuA==}
@@ -34241,6 +34278,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
@@ -34254,6 +34292,9 @@ packages:
 =======
       vite: '>=5.4.20'
 >>>>>>> 221b31d24 (fix(pnpm): resolve merge conflicts and update dependency versions)
+=======
+      vite: '>=7.1.5'
+>>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
     peerDependenciesMeta:
       vite:
         optional: true
@@ -34392,6 +34433,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: '>=7.1.11'
 =======
       vite: '>=7.1.5'
@@ -34411,6 +34453,9 @@ packages:
 =======
       vite: '>=5.4.20'
 >>>>>>> 221b31d24 (fix(pnpm): resolve merge conflicts and update dependency versions)
+=======
+      vite: '>=7.1.5'
+>>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
     peerDependenciesMeta:
       vite:
         optional: true
@@ -41260,12 +41305,6 @@ snapshots:
 
   '@microsoft/tsdoc@0.15.1': {}
 
-  '@mjackson/headers@0.11.1': {}
-
-  '@mjackson/multipart-parser@0.10.1':
-    dependencies:
-      '@mjackson/headers': 0.11.1
-
   '@modelcontextprotocol/sdk@1.18.0':
 >>>>>>> 74465f639 (fix(upload): more work)
 >>>>>>> 73ff291ba (fix(upload): more work)
@@ -43042,7 +43081,25 @@ snapshots:
       - encoding
       - supports-color
 
+<<<<<<< HEAD
   '@rolldown/binding-android-arm64@1.0.0-beta.50':
+=======
+<<<<<<< HEAD
+  '@rolldown/binding-android-arm64@1.0.0-beta.47':
+=======
+<<<<<<< HEAD
+  '@rolldown/binding-android-arm64@1.0.0-beta.45':
+=======
+  '@remix-run/headers@0.12.0': {}
+
+  '@remix-run/multipart-parser@0.11.0':
+    dependencies:
+      '@remix-run/headers': 0.12.0
+
+  '@rolldown/binding-android-arm64@1.0.0-beta.42':
+>>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+>>>>>>> ad8622128 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
+>>>>>>> 2ae4da330 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
     optional: true
 
   '@rolldown/binding-darwin-arm64@1.0.0-beta.50':
@@ -56439,7 +56496,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.7.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.8.4(@types/node@24.7.0)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.3.1)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.8.4(@types/node@24.3.1)(typescript@5.9.2))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   '@vitest/utils@1.6.1':
     dependencies:
@@ -74764,6 +74821,7 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ts-pattern@5.9.0: {}
 =======
   ts-node-dev@2.0.0(@swc/core@1.6.7)(@types/node@22.5.4)(typescript@5.6.2):
@@ -74782,6 +74840,9 @@ snapshots:
 =======
   ts-node-dev@2.0.0(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2):
 >>>>>>> 221b31d24 (fix(pnpm): resolve merge conflicts and update dependency versions)
+=======
+  ts-node-dev@2.0.0(@swc/core@1.13.5)(@types/node@24.7.0)(typescript@5.9.3):
+>>>>>>> b592fdfb2 (fix: Update dependencies in pnpm-lock.yaml, add etag license to LICENSE.md, and refactor tests for multipart handling. Enhance documentation in express.mdx and improve error handling in transformers. Additionally, clean up test cases and snapshots for better clarity and consistency.)
     dependencies:
       chokidar: 3.6.0
       dynamic-dedupe: 0.3.0
@@ -74791,9 +74852,9 @@ snapshots:
       rimraf: 2.7.1
       source-map-support: 0.5.21
       tree-kill: 1.2.2
-      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@24.3.1)(typescript@5.9.2)
+      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@24.7.0)(typescript@5.9.3)
       tsconfig: 7.0.0
-      typescript: 5.9.2
+      typescript: 5.9.3
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -74814,6 +74875,27 @@ snapshots:
       diff: 4.0.2
       make-error: 1.3.6
       typescript: 5.9.2
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    optionalDependencies:
+      '@swc/core': 1.13.5
+    optional: true
+
+  ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.7.0)(typescript@5.9.3):
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.11
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 24.7.0
+      acorn: 8.15.0
+      acorn-walk: 8.3.4
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.9.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     optionalDependencies:
@@ -76844,7 +76926,7 @@ snapshots:
     optionalDependencies:
       vite: 7.1.8(@types/node@24.7.0)(jiti@2.6.0)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  vitest@1.6.1(@types/node@24.7.0)(@vitest/ui@3.2.4(vitest@3.2.4))(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+  vitest@1.6.1(@types/node@24.7.0)(@vitest/ui@3.2.4)(jiti@2.6.0)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
