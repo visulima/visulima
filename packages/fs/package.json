@@ -225,7 +225,7 @@
         "semantic-release": "24.2.4",
         "tempy": "^3.1.0",
         "type-fest": "^4.41.0",
-        "typedoc": "0.28.4",
+        "typedoc": "0.28.13",
         "typedoc-plugin-markdown": "4.6.3",
         "typedoc-plugin-rename-defaults": "0.7.3",
         "typescript": "5.8.3",
