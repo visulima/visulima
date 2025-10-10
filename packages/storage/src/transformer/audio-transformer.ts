@@ -1,13 +1,3 @@
-/**
- * @packageDocumentation
- * Audio transformation utilities using Mediabunny. Enable resampling,
- * channel mixing, codec/format conversion, and caching.
- */
-/**
- * @packageDocumentation
- * Audio transformer built on Mediabunny supporting resample, channel mix,
- * codec/format conversion, and bitrate adjustments with optional caching.
- */
 import {
     AdtsOutputFormat,
     ALL_FORMATS,
