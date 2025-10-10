@@ -8,9 +8,9 @@
     },
     "dependencies": {
         "@aws-sdk/abort-controller": "^3.374.0",
-        "@aws-sdk/client-s3": "^3.901.0",
-        "@aws-sdk/credential-providers": "^3.901.0",
-        "@aws-sdk/s3-request-presigner": "^3.901.0",
+        "@aws-sdk/client-s3": "^3.908.0",
+        "@aws-sdk/credential-providers": "^3.908.0",
+        "@aws-sdk/s3-request-presigner": "^3.908.0",
         "@aws-sdk/types": "^3.901.0",
         "@visulima/upload": "workspace:*",
         "aws-crt": "^1.27.3",

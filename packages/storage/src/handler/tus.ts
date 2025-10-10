@@ -63,8 +63,9 @@ export class Tus<
     public static override readonly methods: Handlers[] = ["delete", "download", "get", "head", "options", "patch", "post"];
 
     /**
-     *  A successful response indicated by the 204 No Content status MUST contain
-     *  the Tus-Version header. It MAY include the Tus-Extension and Tus-Max-Size headers.
+     * Handle OPTIONS requests with TUS protocol capabilities.
+     * Returns supported extensions, max size, and checksum algorithms.
+     * @returns Promise resolving to ResponseFile with TUS headers
      */
     public override async options(): Promise<ResponseFile<TFile>> {
         const headers = {
@@ -82,7 +83,9 @@ export class Tus<
     }
 
     /**
-     * Create a file and send url to client
+     * Create a new TUS upload and optionally start uploading data.
+     * @param request Node.js IncomingMessage with TUS headers
+     * @returns Promise resolving to ResponseFile with upload location and offset
      */
     public async post(request: NodeRequest): Promise<ResponseFile<TFile>> {
         if ("upload-concat" in request.headers && !this.storage.tusExtension.includes("concatentation")) {
@@ -153,7 +156,9 @@ export class Tus<
     }
 
     /**
-     * Write a chunk to file
+     * Write a chunk of data to an existing TUS upload.
+     * @param request Node.js IncomingMessage with chunk data and TUS headers
+     * @returns Promise resolving to ResponseFile with updated offset
      */
     public async patch(request: NodeRequest): Promise<ResponseFile<TFile>> {
         try {
@@ -272,7 +277,9 @@ export class Tus<
     }
 
     /**
-     * Get file metadata
+     * Get TUS upload metadata and current status.
+     * @param request Node.js IncomingMessage with upload ID
+     * @returns Promise resolving to ResponseFile with file metadata as JSON
      */
     public override async get(request: NodeRequest): Promise<ResponseFile<TFile>> {
         try {
@@ -303,7 +310,9 @@ export class Tus<
     }
 
     /**
-     * Return chunk offset
+     * Get current upload offset and metadata for TUS resumable uploads.
+     * @param request Node.js IncomingMessage with upload ID
+     * @returns Promise resolving to ResponseFile with upload-offset and metadata headers
      */
     public async head(request: NodeRequest): Promise<ResponseFile<TFile>> {
         try {
@@ -353,7 +362,9 @@ export class Tus<
     }
 
     /**
-     * Delete upload
+     * Delete a TUS upload and its associated data.
+     * @param request Node.js IncomingMessage with upload ID
+     * @returns Promise resolving to ResponseFile with deletion confirmation
      */
     public async delete(request: NodeRequest): Promise<ResponseFile<TFile>> {
         try {
@@ -391,7 +402,9 @@ export class Tus<
     }
 
     /**
-     * Handle Web API Fetch requests (for Hono, Cloudflare Workers, etc.)
+     * Handle Web API Fetch requests for TUS protocol (for Hono, Cloudflare Workers, etc.).
+     * @param request Web API Request object
+     * @returns Promise resolving to Web API Response
      */
     public override fetch = async (request: Request): Promise<globalThis.Response> => {
         this.logger?.debug("[fetch request]: %s %s", request.method, request.url);
@@ -433,6 +446,11 @@ export class Tus<
         }
     };
 
+    /**
+     * Send TUS protocol response with required headers.
+     * @param response Node.js ServerResponse
+     * @param uploadResponse Response data with body, headers, and status code
+     */
     public override send(response: NodeResponse, { body = "", headers = {}, statusCode = 200 }: UploadResponse): void {
         super.send(response, {
             body,
@@ -446,6 +464,11 @@ export class Tus<
         });
     }
 
+    /**
+     * Extract checksum algorithm and value from Upload-Checksum header.
+     * @param request Node.js IncomingMessage with checksum header
+     * @returns Object containing checksum algorithm and value
+     */
     // eslint-disable-next-line class-methods-use-this
     private extractChecksum(request: NodeRequest): Checksum {
         const [checksumAlgorithm, checksum] = getHeader(request, "upload-checksum").split(/\s+/).filter(Boolean);
@@ -453,6 +476,12 @@ export class Tus<
         return { checksum, checksumAlgorithm };
     }
 
+    /**
+     * Build TUS protocol headers including required Tus-Resumable and optional Upload-Expires.
+     * @param file Upload file object with metadata
+     * @param headers Additional headers to include
+     * @returns Headers object with TUS protocol headers
+     */
     private buildHeaders(file: UploadFile, headers: Headers = {}): Headers {
         // All TUS responses must include Tus-Resumable header
         headers["Tus-Resumable"] = TUS_RESUMABLE_VERSION;
@@ -465,6 +494,12 @@ export class Tus<
         return headers;
     }
 
+    /**
+     * Build file URL for TUS uploads (without file extension).
+     * @param request HTTP request with optional originalUrl
+     * @param file File object containing ID
+     * @returns Constructed file URL for TUS protocol
+     */
     protected override buildFileUrl(request: NodeRequest & { originalUrl?: string }, file: TFile): string {
         const url = new URL(request.originalUrl || (request.url as string), "http://localhost");
         const { pathname } = url;
@@ -474,6 +509,10 @@ export class Tus<
         return `${this.storage.config.useRelativeLocation ? relative : getBaseUrl(request) + relative}`;
     }
 
+    /**
+     * Check if error is related to undefined ID or path and throw appropriate HTTP error.
+     * @param error Error object to check
+     */
     // eslint-disable-next-line class-methods-use-this
     private checkForUndefinedIdOrPath(error: any): void {
         if (["Id is undefined", "Path is undefined"].includes(error.message)) {
@@ -485,6 +524,11 @@ export class Tus<
 export const TUS_RESUMABLE = TUS_RESUMABLE_VERSION;
 export const TUS_VERSION = TUS_VERSION_VERSION;
 
+/**
+ * Serialize metadata object to TUS protocol format.
+ * @param object Metadata object to serialize
+ * @returns Base64-encoded metadata string in TUS format
+ */
 export const serializeMetadata = (object: Metadata): string =>
     Object.entries(object)
         .map(([key, value]) => {
@@ -496,6 +540,11 @@ export const serializeMetadata = (object: Metadata): string =>
         })
         .toString();
 
+/**
+ * Parse TUS protocol metadata string into object.
+ * @param encoded Base64-encoded metadata string (optional, defaults to empty string)
+ * @returns Parsed metadata object with decoded values
+ */
 export const parseMetadata = (encoded = ""): Metadata => {
     const kvPairs = encoded.split(",").map((kv) => kv.split(" "));
     const metadata = Object.create(Metadata.prototype) as Record<string, string>;
