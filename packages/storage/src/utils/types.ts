@@ -99,7 +99,6 @@ export type Validation<T> = Record<string, ValidatorConfig<T>>;
 /** Narrowed error response shape for validation failures. */
 export interface ValidationError extends HttpError {
     code: string;
-    name: "ValidationError";
 }
 
 /** Minimal logger interface used by the library. */

@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
 
+import mime from "mime/lite";
+
 import type BaseStorage from "../storage/storage";
 import type { File, FileQuery, FileReturn } from "../storage/utils/file";
 import type { Logger } from "../utils/types";
@@ -15,6 +17,7 @@ import type {
     VideoTransformerConfig,
     VideoTransformResult,
 } from "./types";
+import { isKnownContentType } from "./utils";
 import ValidationError from "./validation-error";
 
 /**
@@ -762,52 +765,16 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Format string extracted from content type
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private getFormatFromContentType(contentType: string): string {
-        if (!contentType)
+        if (!contentType) {
             return "";
+        }
 
-        const parts = contentType.split("/");
+        // Use mime package to get extension from content type
+        const extension = mime.getExtension(contentType);
 
-        return parts.length > 1 ? parts[1]?.split(";")[0] || "" : "";
-    }
-
-    /**
-     * Get appropriate content type for a format
-     * @param format Media format string
-     * @returns MIME content type for the format
-     * @private
-     */
-    private getContentTypeForFormat(format: string): string {
-        const contentTypes: Record<string, string> = {
-            aac: "audio/aac",
-            aiff: "audio/aiff",
-            avi: "video/x-msvideo",
-            avif: "image/avif",
-            flac: "audio/flac",
-            flv: "video/x-flv",
-            gif: "image/gif",
-            // Images
-            jpeg: "image/jpeg",
-            jpg: "image/jpeg",
-            m4a: "audio/mp4",
-            mkv: "video/x-matroska",
-            mov: "video/quicktime",
-            // Audio
-            mp3: "audio/mpeg",
-            // Videos
-            mp4: "video/mp4",
-            ogg: "audio/ogg",
-            png: "image/png",
-            svg: "image/svg+xml",
-            tiff: "image/tiff",
-            wav: "audio/wav",
-            webm: "video/webm",
-            webp: "image/webp",
-            wma: "audio/x-ms-wma",
-            wmv: "video/x-ms-wmv",
-        };
-
-        return contentTypes[format.toLowerCase()] || "application/octet-stream";
+        return extension || "application/octet-stream";
     }
 
     /**
@@ -853,13 +820,13 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             const mockRequest = {
                 body: result.buffer,
                 headers: {
-                    "content-type": this.getContentTypeForFormat(result.format),
+                    "content-type": mime.getType(result.format),
                 },
             } as any;
 
             // Save to storage
             await this.storage.create(mockRequest, {
-                contentType: this.getContentTypeForFormat(result.format),
+                contentType: mime.getType(result.format) ?? undefined,
                 metadata,
                 originalName: `${transformedFileId}.${result.format}`,
                 size: result.size,
@@ -1515,6 +1482,12 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             throw new Error("Cannot detect media type: no content type provided");
         }
 
+        // First check with mime package to validate the content type is known
+        if (!isKnownContentType(contentType)) {
+            throw new Error(`Unknown or invalid content type: ${contentType}`);
+        }
+
+        // Then determine media type from content type prefix
         if (contentType.startsWith("image/")) {
             return "image";
         }
@@ -1527,7 +1500,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             return "audio";
         }
 
-        throw new Error(`Unsupported content type: ${contentType}`);
+        throw new Error(`Unsupported media type for content type: ${contentType}`);
     }
 
     /**
@@ -1536,6 +1509,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns True if image transformations are requested
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private hasImageTransformations(query: MediaTransformQuery): boolean {
         return !!(
             query.width

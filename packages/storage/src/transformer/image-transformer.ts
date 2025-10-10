@@ -38,6 +38,7 @@ import type {
     TransformOptions,
     TransformResult,
 } from "./types";
+import { getFormatFromContentType, isValidMediaType } from "./utils";
 
 /**
  * Image transformer that uses storage backends to retrieve and transform images
@@ -1294,12 +1295,12 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
 
         // Check if it's an image
-        if (!file.contentType?.startsWith("image/")) {
+        if (!isValidMediaType(file.contentType, "image")) {
             throw new Error(`File is not an image: ${file.contentType}`);
         }
 
         // Check format support
-        const format = file.contentType.split("/")[1];
+        const format = getFormatFromContentType(file.contentType);
 
         if (this.config?.supportedFormats && format && !this.config.supportedFormats.includes(format)) {
             throw new Error(`Unsupported image format: ${format}`);

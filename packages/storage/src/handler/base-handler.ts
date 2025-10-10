@@ -53,11 +53,11 @@ abstract class BaseHandler<
 
     protected registeredHandlers = new Map<string, AsyncHandler<NodeRequest, NodeResponse>>();
 
+    protected logger?: Logger;
+
     public get handlers(): Map<string, AsyncHandler<NodeRequest, NodeResponse>> {
         return this.registeredHandlers;
     }
-
-    protected logger?: Logger;
 
     public get loggerInstance(): Logger | undefined {
         return this.logger;
@@ -100,45 +100,7 @@ abstract class BaseHandler<
     /**
      * Handle Web API Fetch requests (for Hono, Cloudflare Workers, etc.)
      */
-    public fetch = async (request: Request): Promise<globalThis.Response> => {
-        this.logger?.debug("[fetch request]: %s %s", request.method, request.url);
-
-        const handler = this.registeredHandlers.get(request.method || "GET");
-
-        if (!handler) {
-            return this.createErrorResponse({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED } as UploadError);
-        }
-
-        if (!this.storage.isReady) {
-            return this.createErrorResponse({ UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
-        }
-
-        try {
-            const nodeRequest = await this.convertRequestToNode(request);
-            const mockResponse = this.createMockResponse();
-            const file = await handler.call(this, nodeRequest as NodeRequest, mockResponse as NodeResponse);
-
-            return this.handleFetchResponse(request, file);
-        } catch (error: any) {
-            const uError = pick(error, ["name", ...(Object.getOwnPropertyNames(error) as (keyof Error)[])]) as UploadError;
-            const errorEvent = {
-                ...uError,
-                request: {
-                    headers: Object.fromEntries((request.headers as any)?.entries?.() || []),
-                    method: request.method,
-                    url: request.url,
-                },
-            };
-
-            if (this.listenerCount("error") > 0) {
-                this.emit("error", errorEvent);
-            }
-
-            this.logger?.error("[fetch error]: %O", errorEvent);
-
-            return this.createErrorResponse(error) as any;
-        }
-    };
+    public abstract fetch(request: Request): Promise<globalThis.Response>;
 
     public upload = async (request: NodeRequest, response: NodeResponse, next?: () => void): Promise<void> => {
         request.on("error", (error) => this.logger?.error("[request error]: %O", error));
@@ -345,7 +307,7 @@ abstract class BaseHandler<
                             content: transformedResult.buffer,
                             headers: {
                                 "Content-Length": String(transformedResult.size),
-                                "Content-Type": this.getContentTypeForFormat(transformedResult.format),
+                                "Content-Type": `${transformedResult.mediaType}/${transformedResult.format}`,
                                 "X-Media-Type": transformedResult.mediaType,
                                 "X-Original-Format": transformedResult.originalFile?.contentType?.split("/")[1] || "",
                                 "X-Transformed-Format": transformedResult.format,
@@ -607,20 +569,6 @@ abstract class BaseHandler<
     }
 
     /**
-     * Create cache control header for file responses
-     */
-    public createCacheControl(options: import("../utils/headers").CacheControlOptions): string {
-        return HeaderUtilities.createCacheControl(options);
-    }
-
-    /**
-     * Create cache control header using common presets
-     */
-    public createCacheControlPreset(preset: "no-cache" | "no-store" | "public" | "private" | "immutable"): string {
-        return HeaderUtilities.createCacheControlPreset(preset);
-    }
-
-    /**
      * Parse HTTP Range header and return start/end positions
      */
     public parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | undefined {
@@ -714,118 +662,15 @@ abstract class BaseHandler<
         this.pipeWithBackpressure(finalStream, response);
     }
 
-    /**
-     * Create a range-limited stream that properly handles backpressure
-     */
-    private createRangeLimitedStream(sourceStream: Readable, start: number, end: number): Readable {
-        let bytesRead = 0;
-        let bytesSent = 0;
-        const contentLength = end - start + 1;
+    public assembleErrors = (customErrors = {}): void => {
+        this.internalErrorResponses = {
+            ...ErrorMap,
 
-        return new PassThrough({
-            // Use appropriate high water mark for better backpressure handling
-            highWaterMark: Math.min(64 * 1024, contentLength), // 64KB or content length, whichever is smaller
-            transform(chunk: Buffer, encoding, callback) {
-                const chunkSize = chunk.length;
-                const currentPos = bytesRead;
-                const endPos = currentPos + chunkSize - 1;
-
-                bytesRead += chunkSize;
-
-                // Check if this chunk contains data we need
-                if (endPos < start) {
-                    // Chunk is entirely before the range we want
-                    callback();
-
-                    return;
-                }
-
-                if (currentPos > end) {
-                    // Chunk is entirely after the range we want
-                    this.end();
-                    callback();
-
-                    return;
-                }
-
-                // Calculate which part of this chunk to send
-                const chunkStart = Math.max(0, start - currentPos);
-                const chunkEnd = Math.min(chunkSize, end - currentPos + 1);
-
-                if (chunkStart < chunkEnd) {
-                    const dataToSend = chunk.subarray(chunkStart, chunkEnd);
-
-                    bytesSent += dataToSend.length;
-
-                    // Push the data and handle backpressure
-                    const canContinue = this.push(dataToSend);
-
-                    if (!canContinue) {
-                        // Backpressure: pause the source stream
-                        sourceStream.pause();
-                    }
-                }
-
-                // Check if we've sent all the requested data
-                if (bytesSent >= contentLength) {
-                    this.end();
-                    sourceStream.destroy();
-                }
-
-                callback();
-            },
-        });
-    }
-
-    /**
-     * Pipe streams with proper backpressure handling
-     */
-    private pipeWithBackpressure(source: Readable, destination: NodeResponse): void {
-        let isDestroyed = false;
-
-        const cleanup = () => {
-            if (isDestroyed)
-                return;
-
-            isDestroyed = true;
-            source.destroy();
+            ...this.internalErrorResponses,
+            ...this.storage.errorResponses,
+            ...customErrors,
         };
-
-        // Handle destination backpressure
-        destination.on("drain", () => {
-            source.resume();
-        });
-
-        destination.on("close", cleanup);
-        destination.on("finish", cleanup);
-        destination.on("error", cleanup);
-
-        // Handle source stream
-        source.on("end", () => {
-            destination.end();
-        });
-
-        source.on("error", (error) => {
-            if (!isDestroyed) {
-                this.sendError(destination as any, error);
-                cleanup();
-            }
-        });
-
-        source.on("data", (chunk) => {
-            const canContinue = destination.write(chunk);
-
-            if (!canContinue) {
-                // Backpressure: pause the source stream
-                source.pause();
-            }
-        });
-
-        // Handle response abortion (client disconnect)
-        if (typeof destination.listeners === "function" && destination.listeners("close")?.length === 0) {
-            destination.on("close", cleanup);
-        }
-    }
+    };
 
     /**
      * Build file url from request
@@ -879,16 +724,6 @@ abstract class BaseHandler<
         this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
     };
 
-    public assembleErrors = (customErrors = {}): void => {
-        this.internalErrorResponses = {
-            ...ErrorMap,
-
-            ...this.internalErrorResponses,
-            ...this.storage.errorResponses,
-            ...customErrors,
-        };
-    };
-
     /**
      * Convert Web API Request to Node.js IncomingMessage for handler compatibility
      */
@@ -908,13 +743,11 @@ abstract class BaseHandler<
         let readableStream: Readable;
 
         if (bodyBuffer.length > 0) {
-            // Create a PassThrough stream and write the buffer to it
-            // This ensures the stream behaves like a real HTTP request stream
-            readableStream = new PassThrough();
-            (readableStream as PassThrough).write(bodyBuffer);
-            (readableStream as PassThrough).end();
+            // Create a Readable stream from the buffer data
+            // This ensures proper streaming behavior for multipart parsing
+            readableStream = Readable.from(Buffer.from(bodyBuffer));
         } else {
-            readableStream = Readable.from(new Uint8Array(0));
+            readableStream = Readable.from(Buffer.alloc(0));
         }
 
         // Copy headers and ensure content-type is preserved for multipart data
@@ -1095,40 +928,6 @@ abstract class BaseHandler<
     /**
      * Create error Response
      */
-
-    /**
-     * Get appropriate content type for a format
-     */
-    protected getContentTypeForFormat(format: string): string {
-        const contentTypes: Record<string, string> = {
-            aac: "audio/aac",
-            aiff: "audio/aiff",
-            avi: "video/x-msvideo",
-            avif: "image/avif",
-            flac: "audio/flac",
-            flv: "video/x-flv",
-            gif: "image/gif",
-            jpeg: "image/jpeg",
-            jpg: "image/jpeg",
-            m4a: "audio/mp4",
-            mkv: "video/x-matroska",
-            mov: "video/quicktime",
-            mp3: "audio/mpeg",
-            mp4: "video/mp4",
-            ogg: "audio/ogg",
-            png: "image/png",
-            svg: "image/svg+xml",
-            tiff: "image/tiff",
-            wav: "audio/wav",
-            webm: "video/webm",
-            webp: "image/webp",
-            wma: "audio/x-ms-wma",
-            wmv: "video/x-ms-wmv",
-        };
-
-        return contentTypes[format.toLowerCase()] || "application/octet-stream";
-    }
-
     protected createErrorResponse(error: Error): globalThis.Response {
         let httpError: HttpError;
 
@@ -1143,6 +942,119 @@ abstract class BaseHandler<
         const errorResponse = this.storage.onError(httpError);
 
         return this.createResponse(errorResponse);
+    }
+
+    /**
+     * Create a range-limited stream that properly handles backpressure
+     */
+    private createRangeLimitedStream(sourceStream: Readable, start: number, end: number): Readable {
+        let bytesRead = 0;
+        let bytesSent = 0;
+        const contentLength = end - start + 1;
+
+        return new PassThrough({
+            // Use appropriate high water mark for better backpressure handling
+            highWaterMark: Math.min(64 * 1024, contentLength), // 64KB or content length, whichever is smaller
+            transform(chunk: Buffer, _, callback) {
+                const chunkSize = chunk.length;
+                const currentPos = bytesRead;
+                const endPos = currentPos + chunkSize - 1;
+
+                bytesRead += chunkSize;
+
+                // Check if this chunk contains data we need
+                if (endPos < start) {
+                    // Chunk is entirely before the range we want
+                    callback();
+
+                    return;
+                }
+
+                if (currentPos > end) {
+                    // Chunk is entirely after the range we want
+                    this.end();
+                    callback();
+
+                    return;
+                }
+
+                // Calculate which part of this chunk to send
+                const chunkStart = Math.max(0, start - currentPos);
+                const chunkEnd = Math.min(chunkSize, end - currentPos + 1);
+
+                if (chunkStart < chunkEnd) {
+                    const dataToSend = chunk.subarray(chunkStart, chunkEnd);
+
+                    bytesSent += dataToSend.length;
+
+                    // Push the data and handle backpressure
+                    const canContinue = this.push(dataToSend);
+
+                    if (!canContinue) {
+                        // Backpressure: pause the source stream
+                        sourceStream.pause();
+                    }
+                }
+
+                // Check if we've sent all the requested data
+                if (bytesSent >= contentLength) {
+                    this.end();
+                    sourceStream.destroy();
+                }
+
+                callback();
+            },
+        });
+    }
+
+    /**
+     * Pipe streams with proper backpressure handling
+     */
+    private pipeWithBackpressure(source: Readable, destination: NodeResponse): void {
+        let isDestroyed = false;
+
+        const cleanup = () => {
+            if (isDestroyed)
+                return;
+
+            isDestroyed = true;
+            source.destroy();
+        };
+
+        // Handle destination backpressure
+        destination.on("drain", () => {
+            source.resume();
+        });
+
+        destination.on("close", cleanup);
+        destination.on("finish", cleanup);
+        destination.on("error", cleanup);
+
+        // Handle source stream
+        source.on("end", () => {
+            destination.end();
+        });
+
+        source.on("error", (error) => {
+            if (!isDestroyed) {
+                this.sendError(destination as any, error);
+                cleanup();
+            }
+        });
+
+        source.on("data", (chunk) => {
+            const canContinue = destination.write(chunk);
+
+            if (!canContinue) {
+                // Backpressure: pause the source stream
+                source.pause();
+            }
+        });
+
+        // Handle response abortion (client disconnect)
+        if (typeof destination.listeners === "function" && destination.listeners("close")?.length === 0) {
+            destination.on("close", cleanup);
+        }
     }
 }
 
