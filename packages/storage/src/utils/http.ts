@@ -36,12 +36,12 @@ const extractForwarded = (request: IncomingMessage): { host: string; proto: stri
 };
 
 /**
- * Reads the body from the request.
- * @param request request object
- * @param encoding encoding to use
- * @param limit optional limit on the size of the body
+ * Reads the body of an HTTP request as a string with optional size limit.
+ * @param request HTTP request object to read body from
+ * @param encoding Text encoding to use (defaults to 'utf8')
+ * @param limit Maximum body size in characters (throws error if exceeded)
+ * @returns Promise resolving to the request body as a string
  */
-/** Read and concatenate a request body up to an optional size limit. */
 export const readBody = (
     request: IncomingMessage,
     // eslint-disable-next-line default-param-last
@@ -69,6 +69,7 @@ export const readBody = (
  * @param name name of the header
  * @param all if true, returns  all values of the header, comma-separated, otherwise returns the last value.
  */
+
 /**
  * Get a header value. If `all` is true, returns the comma-joined value.
  */
@@ -83,11 +84,12 @@ export const getHeader = (request: IncomingMessage, name: string, all = false): 
 };
 
 /**
- * Reads the body of the incoming metadata request and parses it as JSON.
- * @param request incoming metadata request
- * @param limit optional limit on the size of the body
+ * Extracts JSON metadata from an HTTP request body.
+ * Parses the request body as JSON if the content type is 'application/json'.
+ * @param request HTTP request with potential body data
+ * @param limit Maximum body size limit in bytes (default: 16MB)
+ * @returns Parsed metadata object, or empty object if not JSON
  */
-/** Parse JSON metadata body from a request when content-type is json. */
 export const getMetadata = async (request: IncomingMessageWithBody<Record<any, any>>, limit = 16_777_216): Promise<Record<any, any>> => {
     if (!typeis(request, ["json"])) {
         return {};
@@ -141,17 +143,20 @@ export const setHeaders = (response: ServerResponse, headers: Headers = {}): voi
 };
 
 /**
- * Extracts host with port from a http or https request.
+ * Extracts host with port from a HTTP or HTTPS request.
+ * Prefers x-forwarded-host header for proxy compatibility.
+ * @param request HTTP request object
+ * @returns Host string with port (e.g., "example.com:8080")
  */
-/** Extract host value from request, preferring x-forwarded-host. */
 export const extractHost = (request: IncomingMessage & { host?: string; hostname?: string }): string =>
     getHeader(request, "host") || getHeader(request, "x-forwarded-host");
-// return req.host || req.hostname || getHeader(req, 'host'); // for express v5 / fastify
 
 /**
- * Extracts protocol from a http or https request.
+ * Extracts protocol from a HTTP or HTTPS request.
+ * Prefers x-forwarded-proto header for proxy compatibility.
+ * @param request HTTP request object
+ * @returns Protocol string ('http' or 'https')
  */
-/** Extract protocol from request, preferring x-forwarded-proto. */
 export const extractProto = (request: IncomingMessage): string => getHeader(request, "x-forwarded-proto").toLowerCase();
 
 /**
@@ -199,11 +204,22 @@ export const normalizeOnErrorResponse = (callback: (error: HttpError) => UploadR
 };
 
 /**
+ * Extracts the real path from a request URL, excluding query parameters.
+ * Prefers originalUrl for Express compatibility.
  * @internal
+ * @param request HTTP request object
+ * @returns The path component of the URL without query parameters
+ * @throws TypeError if path is undefined
  */
 export const getRealPath = (request: IncomingMessage & { originalUrl?: string }): string => {
     // Exclude the query params from the path
-    const realPath = ((request.originalUrl || request.url) as string).split("?")[0];
+    let realPath = ((request.originalUrl || request.url) as string).split("?")[0];
+
+    // If it's an absolute URL, extract the pathname
+    if (realPath.startsWith("http")) {
+        const url = new URL(realPath);
+        realPath = url.pathname;
+    }
 
     if (!realPath) {
         throw new TypeError("Path is undefined");
@@ -218,7 +234,12 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
 export const uuidRegex = /(?:[\dA-Z]+-){2}[\dA-Z]+/i;
 
 /**
+ * Extracts a UUID identifier from the request URL path.
+ * Uses regex pattern to match UUID-like strings in the URL.
  * @internal
+ * @param request HTTP request object
+ * @returns The extracted UUID identifier
+ * @throws TypeError if no valid ID is found in the path
  */
 export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => {
     const realPath = getRealPath(request);
@@ -242,9 +263,6 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
 /**
  * Converts a request to a Node.js Readable stream.
  * Handles both Node.js IncomingMessage and Web API Request objects.
- */
-/**
- * Normalize Node IncomingMessage or Web Request to a Node Readable stream.
  */
 export const getRequestStream = (request: IncomingMessage | Request): Readable => {
     // Check if it's a Web API Request with ReadableStream body

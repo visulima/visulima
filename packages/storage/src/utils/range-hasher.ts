@@ -6,8 +6,16 @@ import { LRUCache as Cache } from "lru-cache";
 import RangeChecksum from "./range-checksum";
 import type { RangeChecksum as IRangeChecksum, RangeHasher as IRangeHasher } from "./types";
 
-/** LRU-backed cache for incremental file hashing utilities. */
+/**
+ * LRU cache-based range hasher for incremental file integrity verification.
+ * Manages multiple file hash calculations with automatic cleanup and persistence.
+ */
 class RangeHasher extends Cache<string, Hash, number> {
+    /**
+     * Creates a new RangeHasher instance.
+     * @param algorithm Hash algorithm to use (default: 'sha1')
+     * @param options LRU cache configuration options
+     */
     public constructor(
         public algorithm: "md5" | "sha1" = "sha1",
         options?: Cache.Options<string, Hash, number>,
@@ -19,24 +27,41 @@ class RangeHasher extends Cache<string, Hash, number> {
         });
     }
 
-    /** Return hex digest for a previously initialized path. */
+    /**
+     * Returns the hex-encoded digest for a previously initialized path.
+     * @param path File path identifier
+     * @returns Hex-encoded hash digest, or empty string if not found
+     */
     public hex(path: string): string {
         return this.get(path)?.copy().digest("hex") || "";
     }
 
-    /** Return base64 digest for a previously initialized path. */
+    /**
+     * Returns the base64-encoded digest for a previously initialized path.
+     * @param path File path identifier
+     * @returns Base64-encoded hash digest, or empty string if not found
+     */
     public base64(path: string): string {
         return this.get(path)?.copy().digest("base64") || "";
     }
 
     /**
-     * Initialize or continue a hasher for a file from an offset.
+     * Initializes or continues a hasher for a file from the specified offset.
+     * Returns cached hash if available, otherwise calculates from filesystem.
+     * @param path File path to hash
+     * @param start Starting offset in bytes (default: 0)
+     * @returns Promise resolving to the hash instance
      */
     public async init(path: string, start = 0): Promise<Hash> {
         return this.get(path)?.copy() || this.updateFromFs(path, start);
     }
 
-    /** Create a Transform that updates the rolling hash for a path. */
+    /**
+     * Creates a transform stream that updates the rolling hash for a file path.
+     * Useful for incremental hashing during streaming operations.
+     * @param path File path identifier for hash tracking
+     * @returns RangeChecksum transform stream instance
+     */
     public digester(path: string): IRangeChecksum {
         return new RangeChecksum(this as IRangeHasher, path);
     }
