@@ -3,6 +3,7 @@
  * Shared types for image, video, and audio transformers and the unified media
  * transformer. Includes options, steps, results, and configuration contracts.
  */
+
 /**
  * @packageDocumentation
  * Shared type definitions for media transformers, including options,

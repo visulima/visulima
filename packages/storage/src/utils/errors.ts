@@ -4,6 +4,7 @@ import type { HttpError } from "./types";
 
 /**
  * Canonical error codes used across handlers and storage adapters.
+ * These codes map to standardized HTTP status codes and error messages.
  */
 export enum ERRORS {
     BAD_REQUEST = "BadRequest",
@@ -32,13 +33,18 @@ export enum ERRORS {
     UNSUPPORTED_MEDIA_TYPE = "UnsupportedMediaType",
 }
 
-/** Map of error code -> normalized HttpError response. */
+/**
+ * Type mapping of error codes to standardized HTTP error responses.
+ * @template T - The error code type (defaults to string)
+ */
 export type ErrorResponses<T extends string = string> = {
     [K in T]: HttpError;
 };
 
 /**
- * Lazily materialized mapping of {@link ERRORS} -> HttpError shape.
+ * Lazily materialized mapping of error codes to HttpError response objects.
+ * Uses memoization to avoid recomputing the error map on each access.
+ * @returns Map of error codes to standardized HTTP error responses
  */
 export const ErrorMap = mem((): ErrorResponses => {
     const errors: Record<string, [number, string]> = {
@@ -51,7 +57,7 @@ export const ErrorMap = mem((): ErrorResponses => {
         FileNotFound: [404, "Not found"],
         Forbidden: [403, "Authenticated user is not allowed access"],
         Gone: [410, "The file for this url no longer exists"],
-        InvalidContentType: [400, "Invalid or missing \"content-type\" header"],
+        Invalidtype: [400, "Invalid or missing \"content-type\" header"],
         InvalidFileName: [400, "Invalid file name or it cannot be retrieved"],
         InvalidFileSize: [400, "File size cannot be retrieved"],
         InvalidRange: [400, "Invalid or missing content-range header"],
@@ -79,15 +85,24 @@ export const ErrorMap = mem((): ErrorResponses => {
 })();
 
 /**
- * Error subclass carrying a stable {@link ERRORS} code and optional detail.
+ * Error subclass carrying a stable error code and optional detail.
+ * Provides structured error information for upload operations.
  */
 export class UploadError extends Error {
     public override name = "UploadError";
 
+    /** The standardized error code from the ERRORS enum */
     public UploadErrorCode: ERRORS = ERRORS.UNKNOWN_ERROR;
 
+    /** Optional additional error details */
     public detail?: unknown;
 
+    /**
+     * Creates a new UploadError instance.
+     * @param code Standardized error code (defaults to UNKNOWN_ERROR)
+     * @param message Human-readable error message (defaults to the code)
+     * @param detail Optional additional error details
+     */
     public constructor(code: ERRORS = ERRORS.UNKNOWN_ERROR, message?: string, detail?: unknown) {
         super(message || code);
         this.name = "UploadError";
@@ -99,10 +114,20 @@ export class UploadError extends Error {
     }
 }
 
-/** Type guard for {@link UploadError}. */
+/**
+ * Type guard to check if an error is an UploadError instance.
+ * @param error Error to check
+ * @returns True if the error is an UploadError with a valid error code
+ */
 export const isUploadError = (error: unknown): error is UploadError => !!(error as UploadError).UploadErrorCode;
 
-/** Convenience to throw an {@link UploadError} from a string code. */
+/**
+ * Convenience function to throw an UploadError from a string error code.
+ * Looks up the appropriate error message from ErrorMap.
+ * @param UploadErrorCode String error code to convert to UploadError
+ * @param detail Optional additional error details
+ * @throws UploadError with the specified code and message
+ */
 export const throwErrorCode = (UploadErrorCode: string, detail?: string): never => {
     const error = new UploadError(detail || (ErrorMap[UploadErrorCode] as HttpError).message);
 

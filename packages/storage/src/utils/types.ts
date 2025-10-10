@@ -69,6 +69,7 @@ export type Headers = Record<string, Header>;
 
 export type ResponseBody = Record<string, any> | string;
 export type ResponseBodyType = "json" | "text";
+
 /**
  * Tuple form for quick response definitions: [status, body, headers].
  */

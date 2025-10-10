@@ -17,7 +17,11 @@ export interface StreamingOptions {
 }
 
 /**
- * Create a streaming response handler that automatically handles backpressure
+ * Creates a streaming response with optional event handlers and backpressure management.
+ * Sets up event listeners for data, end, and error events on the stream.
+ * @param stream The source readable stream
+ * @param options Streaming options including event handlers and backpressure settings
+ * @returns The configured readable stream
  */
 export const createStreamingResponse = (
     stream: Readable,
@@ -99,7 +103,11 @@ export const createRangeStream = (sourceStream: Readable, start: number, end?: n
 };
 
 /**
- * Check if a file size warrants streaming treatment
+ * Determines if streaming should be used based on file size.
+ * Files larger than the threshold benefit from streaming to reduce memory usage.
+ * @param fileSize Size of the file in bytes
+ * @param threshold Size threshold in bytes (default: 1MB)
+ * @returns True if streaming should be used
  */
 export const shouldUseStreaming = (fileSize: number, threshold: number = 1024 * 1024): boolean => fileSize > threshold;
 
@@ -167,7 +175,11 @@ export const monitorStreamPerformance = (stream: Readable, label: string, logger
 };
 
 /**
- * Create a stream that limits bandwidth
+ * Creates a bandwidth-limited stream that throttles data throughput.
+ * Useful for controlling download/upload speeds and preventing network congestion.
+ * @param sourceStream The source readable stream to throttle
+ * @param bytesPerSecond Maximum throughput in bytes per second
+ * @returns A new readable stream with bandwidth limiting applied
  */
 export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSecond: number): Readable => {
     let lastChunkTime = Date.now();
