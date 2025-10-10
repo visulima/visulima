@@ -151,7 +151,7 @@
         "conventional-changelog-conventionalcommits": "9.0.0",
         "deep-copy": "^1.4.2",
         "esbuild": "0.25.4",
-        "eslint": "8.57.0",
+        "eslint": "9.37.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
