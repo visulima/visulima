@@ -11,8 +11,14 @@ import { LRUCache as Cache } from "lru-cache";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import typeis from "type-is";
 
-import type { ErrorResponses, HttpError, Logger, UploadResponse, ValidatorConfig } from "../utils";
-import { ErrorMap, ERRORS, isEqual, Locker, normalizeHookResponse, normalizeOnErrorResponse, throwErrorCode, toMilliseconds, Validator } from "../utils";
+import type { ErrorResponses } from "../utils/errors";
+import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
+import { normalizeHookResponse, normalizeOnErrorResponse } from "../utils/http";
+import Locker from "../utils/locker";
+import isEqual from "../utils/primitives/is-equal";
+import toMilliseconds from "../utils/primitives/to-milliseconds";
+import type { HttpError, Logger, UploadResponse, ValidatorConfig } from "../utils/types";
+import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
 import type { BaseStorageOptions, GenericStorageConfig, PurgeList, StorageOptimizations } from "./types";
 import type { File, FileInit, FilePart, FileQuery } from "./utils/file";

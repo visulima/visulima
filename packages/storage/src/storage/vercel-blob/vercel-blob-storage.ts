@@ -3,7 +3,7 @@ import type { Readable } from "node:stream";
 
 import { copy, del, list, put } from "@vercel/blob";
 
-import { toMilliseconds } from "../../utils";
+import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";

@@ -5,7 +5,10 @@ import { pipeline } from "node:stream";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureFile, remove } from "@visulima/fs";
 
-import { ERRORS, RangeHasher, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { streamChecksum } from "../../utils/pipes/stream-checksum";
+import StreamLength from "../../utils/pipes/stream-length";
+import RangeHasher from "../../utils/range-hasher";
 import type { DiskStorageWithChecksumOptions } from "../types";
 import type { File, FilePart, FileQuery } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";

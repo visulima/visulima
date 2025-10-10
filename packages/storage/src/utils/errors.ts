@@ -1,5 +1,3 @@
-import mem from "memoize";
-
 import type { HttpError } from "./types";
 
 /**
@@ -42,11 +40,10 @@ export type ErrorResponses<T extends string = string> = {
 };
 
 /**
- * Lazily materialized mapping of error codes to HttpError response objects.
- * Uses memoization to avoid recomputing the error map on each access.
+ * Mapping of error codes to HttpError response objects.
  * @returns Map of error codes to standardized HTTP error responses
  */
-export const ErrorMap = mem((): ErrorResponses => {
+export const ErrorMap = (() => {
     const errors: Record<string, [number, string]> = {
         BadRequest: [400, "Bad request"],
         ChecksumMismatch: [460, "Checksum mismatch"],
