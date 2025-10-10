@@ -1,4 +1,4 @@
-import type { Logger } from "../utils";
+import type { Logger } from "../utils/types";
 import type { MetaStorageOptions } from "./types";
 import type { File } from "./utils/file";
 import { FileName } from "./utils/file";

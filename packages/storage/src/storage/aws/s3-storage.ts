@@ -29,8 +29,11 @@ import type { HttpHandlerOptions, SdkStream } from "@aws-sdk/types";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
 
-import type { HttpError } from "../../utils";
-import { ERRORS, mapValues, throwErrorCode, toMilliseconds, toSeconds } from "../../utils";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
+import mapValues from "../../utils/primitives/map-values";
+import toMilliseconds from "../../utils/primitives/to-milliseconds";
+import toSeconds from "../../utils/primitives/to-seconds";
+import type { HttpError } from "../../utils/types";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";

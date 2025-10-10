@@ -1,10 +1,12 @@
+import fnv1a from "@sindresorhus/fnv1a";
 import { nanoid } from "nanoid";
 
-import { hash } from "../../../utils";
 import extractMimeType from "./extract-mime-type";
 import extractOriginalName from "./extract-original-name";
 import type { Metadata } from "./metadata";
 import type { FileInit, UploadEventType } from "./types";
+
+const hash = (value: string) => fnv1a(value, { size: 64 }).toString(16);
 
 const generateFileId = (file: File): string => {
     const { metadata, originalName, size } = file;

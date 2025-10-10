@@ -245,7 +245,7 @@ interface FileHash {
 ### File Operation Errors
 
 ```typescript
-import { ERRORS } from "../utils";
+import { ERRORS } from "../utils/errors";
 
 // Common error codes
 ERRORS.FILE_ERROR; // General file operation error

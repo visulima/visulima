@@ -11,9 +11,10 @@ import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } 
 import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../storage/utils/file";
-import { getIdFromRequest, pick } from "../utils";
 import type { UploadError } from "../utils/errors";
 import { ERRORS } from "../utils/errors";
+import { getIdFromRequest } from "../utils/http";
+import pick from "../utils/primitives/pick";
 import ValidationError from "../utils/validation-error";
 import BaseHandler from "./base-handler";
 import type { Handlers, ResponseFile } from "./types";
