@@ -67,6 +67,10 @@ export interface BaseHandler<TFile extends UploadFile> extends EventEmitter {
 
 export interface UploadOptions<TFile extends UploadFile> {
     disableTerminationForFinishedUploads?: boolean;
+    /** Maximum file size for multipart parser (default: min(storage.maxUploadSize, 1GB)) */
+    maxFileSize?: number;
+    /** Maximum header size for multipart parser (default: 64KB) */
+    maxHeaderSize?: number;
     mediaTransformer?: MediaTransformer;
     storage: BaseStorage<TFile>;
 }

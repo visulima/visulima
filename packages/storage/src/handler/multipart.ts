@@ -6,6 +6,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 
+import type { MultipartPart } from "@remix-run/multipart-parser";
 import { parseMultipartRequest as parseMultipartRequestWeb } from "@remix-run/multipart-parser";
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser/node";
 import createHttpError from "http-errors";
@@ -17,7 +18,7 @@ import { getIdFromRequest } from "../utils/http";
 import pick from "../utils/primitives/pick";
 import ValidationError from "../utils/validation-error";
 import BaseHandler from "./base-handler";
-import type { Handlers, ResponseFile } from "./types";
+import type { Handlers, ResponseFile, UploadOptions } from "./types";
 
 const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
 
@@ -27,7 +28,11 @@ const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
  * - express ***should*** respond to the client when the upload complete and handle errors and GET requests
  * @example
  * ```ts
- * const multipart = new Multipart({ storage });
+ * const multipart = new Multipart({
+ *   storage,
+ *   maxFileSize: 100 * 1024 * 1024, // 100MB
+ *   maxHeaderSize: 32 * 1024 // 32KB
+ * });
  *
  * app.use('/files', multipart.upload, (req, response, next) => {
  *   if (req.method === 'GET') return response.sendStatus(404);
@@ -39,7 +44,11 @@ const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
  * Basic express wrapper
  * @example
  * ```ts
- * const multipart = new Multipart({directory: '/tmp', maxUploadSize: '250GB'});
+ * const multipart = new Multipart({
+ *   storage,
+ *   maxFileSize: 500 * 1024 * 1024, // 500MB
+ *   maxHeaderSize: 128 * 1024 // 128KB
+ * });
  *
  * app.use('/files', multipart.handle);
  * ```
@@ -59,6 +68,29 @@ class Multipart<
      */
     public static override readonly methods: Handlers[] = ["delete", "download", "get", "options", "post"];
 
+    /**
+     * Maximum file size allowed for multipart uploads
+     */
+    private maxFileSize: number;
+
+    /**
+     * Maximum header size allowed for multipart parser
+     */
+    private maxHeaderSize: number;
+
+    public constructor(options: UploadOptions<TFile>) {
+        super(options);
+
+        // Set multipart parser options with defaults
+        this.maxFileSize = options.maxFileSize ?? Math.min(this.storage.maxUploadSize, 1024 * 1024 * 1024);
+        this.maxHeaderSize = options.maxHeaderSize ?? 64 * 1024; // 64KB default
+    }
+
+    /**
+     * Handle multipart/form-data POST requests for file uploads.
+     * @param request Node.js IncomingMessage containing multipart data
+     * @returns Promise resolving to ResponseFile with upload result
+     */
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public async post(request: NodeRequest): Promise<ResponseFile<TFile>> {
         if (!RE_MIME.test(request.headers["content-type"]?.split(";")[0] ?? "")) {
@@ -67,10 +99,13 @@ class Multipart<
 
         try {
             const config: FileInit = { metadata: {}, size: 0 };
-            const parts: any[] = [];
+            const parts: MultipartPart[] = [];
 
-            // First, collect all parts
-            for await (const part of parseMultipartRequest(request)) {
+            // First, collect all parts with size limits
+            for await (const part of parseMultipartRequest(request, {
+                maxFileSize: this.maxFileSize,
+                maxHeaderSize: this.maxHeaderSize,
+            })) {
                 parts.push(part);
             }
 
@@ -165,7 +200,9 @@ class Multipart<
     }
 
     /**
-     * Delete upload
+     * Delete an uploaded file.
+     * @param request Node.js IncomingMessage with file ID
+     * @returns Promise resolving to ResponseFile with deletion result
      */
     public async delete(request: NodeRequest): Promise<ResponseFile<TFile>> {
         try {
@@ -190,7 +227,9 @@ class Multipart<
     }
 
     /**
-     * Handle Web API Fetch requests (for Hono, Cloudflare Workers, etc.)
+     * Handle Web API Fetch requests for multipart uploads (for Hono, Cloudflare Workers, etc.).
+     * @param request Web API Request object
+     * @returns Promise resolving to Web API Response
      */
     public override fetch = async (request: Request): Promise<globalThis.Response> => {
         this.logger?.debug("[fetch request]: %s %s", request.method, request.url);
@@ -240,7 +279,9 @@ class Multipart<
     };
 
     /**
-     * Handle multipart POST requests using web API (for fetch handler)
+     * Handle multipart POST requests using Web API parser (for fetch handler).
+     * @param request Web API Request containing multipart data
+     * @returns Promise resolving to ResponseFile with upload result
      */
     private async postFetch(request: Request): Promise<ResponseFile<TFile>> {
         // Validate content type
@@ -250,10 +291,13 @@ class Multipart<
 
         try {
             const config: FileInit = { metadata: {}, size: 0 };
-            const parts: any[] = [];
+            const parts: MultipartPart[] = [];
 
-            // Parse multipart using web API
-            for await (const part of parseMultipartRequestWeb(request)) {
+            // Parse multipart using web API with size limits
+            for await (const part of parseMultipartRequestWeb(request, {
+                maxFileSize: this.maxFileSize,
+                maxHeaderSize: this.maxHeaderSize,
+            })) {
                 parts.push(part);
             }
 
@@ -347,6 +391,10 @@ class Multipart<
         }
     }
 
+    /**
+     * Check if error is related to undefined ID or path and throw appropriate HTTP error.
+     * @param error Error object to check
+     */
     // eslint-disable-next-line class-methods-use-this
     private checkForUndefinedIdOrPath(error: any): void {
         if (["Id is undefined", "Path is undefined"].includes(error.message)) {

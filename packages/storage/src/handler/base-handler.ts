@@ -48,28 +48,58 @@ abstract class BaseHandler<
      */
     public static readonly methods: Handlers[] = ["delete", "get", "head", "options", "patch", "post", "put"];
 
+    /**
+     * Response body type for the handler
+     */
     public responseType: ResponseBodyType = "json";
 
+    /**
+     * Storage instance for file operations
+     */
     public storage: BaseStorage<TFile>;
 
+    /**
+     * Optional media transformer for image/video processing
+     */
     public mediaTransformer?: MediaTransformer;
 
+    /**
+     * Whether to disable termination for finished uploads
+     */
     public disableTerminationForFinishedUploads?: boolean;
 
+    /**
+     * Map of registered HTTP method handlers
+     */
     protected registeredHandlers = new Map<string, AsyncHandler<NodeRequest, NodeResponse>>();
 
+    /**
+     * Logger instance for debugging and error reporting
+     */
     protected logger?: Logger;
 
+    /**
+     * Get the registered handlers map
+     */
     public get handlers(): Map<string, AsyncHandler<NodeRequest, NodeResponse>> {
         return this.registeredHandlers;
     }
 
+    /**
+     * Get the logger instance
+     */
     public get loggerInstance(): Logger | undefined {
         return this.logger;
     }
 
+    /**
+     * Internal error responses configuration
+     */
     protected internalErrorResponses = {} as ErrorResponses;
 
+    /**
+     * Get the error responses configuration
+     */
     public get errorResponses(): ErrorResponses {
         return this.internalErrorResponses;
     }
@@ -87,26 +117,41 @@ abstract class BaseHandler<
     }
 
     /**
-     *  Override error responses
-     *  @example
+     * Set custom error responses
+     * @param value - Partial error responses to override defaults
+     * @example
      * ```ts
-     *  const Upload = new Upload({ storage });
-     *  Upload.errorResponses = {
-     *    FileNotFound: { message: 'Not Found!', statusCode: 404 },
-     *  }
+     * const Upload = new Upload({ storage });
+     * Upload.errorResponses = {
+     *   FileNotFound: { message: 'Not Found!', statusCode: 404 },
+     * }
      * ```
      */
     public set errorResponses(value: Partial<ErrorResponses>) {
         this.assembleErrors(value);
     }
 
+    /**
+     * Handle HTTP request (alias for upload method)
+     * @param request - Node.js IncomingMessage
+     * @param response - Node.js ServerResponse
+     */
     public handle = async (request: NodeRequest, response: NodeResponse): Promise<void> => this.upload(request, response);
 
     /**
      * Handle Web API Fetch requests (for Hono, Cloudflare Workers, etc.)
+     * @param request - Web API Request object
+     * @returns Promise resolving to Web API Response
      */
     public abstract fetch(request: Request): Promise<globalThis.Response>;
 
+    /**
+     * Main upload handler that processes HTTP requests and routes them to appropriate method handlers
+     * @param request - Node.js IncomingMessage
+     * @param response - Node.js ServerResponse
+     * @param next - Optional Express-style next function for middleware compatibility
+     * @throws {UploadError} When storage is not ready or method is not allowed
+     */
     public upload = async (request: NodeRequest, response: NodeResponse, next?: () => void): Promise<void> => {
         request.on("error", (error) => this.logger?.error("[request error]: %O", error));
 
@@ -558,6 +603,9 @@ abstract class BaseHandler<
 
     /**
      * Negotiate content type based on Accept header and supported formats
+     * @param request - HTTP request object
+     * @param supportedTypes - Array of supported MIME types
+     * @returns Best matching content type or undefined if no match
      */
     public negotiateContentType(request: NodeRequest, supportedTypes: string[]): string | undefined {
         const acceptHeader = request.headers.accept;
@@ -663,6 +711,10 @@ abstract class BaseHandler<
         this.pipeWithBackpressure(finalStream, response);
     }
 
+    /**
+     * Assemble error responses by merging defaults with custom overrides
+     * @param customErrors - Custom error responses to override defaults
+     */
     public assembleErrors = (customErrors = {}): void => {
         this.internalErrorResponses = {
             ...ErrorMap,
@@ -674,7 +726,10 @@ abstract class BaseHandler<
     };
 
     /**
-     * Build file url from request
+     * Build file URL from request and file data
+     * @param request - HTTP request with optional originalUrl
+     * @param file - File object containing ID and content type
+     * @returns Constructed file URL
      */
     protected buildFileUrl(request: NodeRequest & { originalUrl?: string }, file: TFile): string {
         const url = new URL(request.originalUrl || (request.url as string), "http://localhost");
@@ -685,6 +740,12 @@ abstract class BaseHandler<
         return `${this.storage.config.useRelativeLocation ? relative : getBaseUrl(request) + relative}.${mime.getExtension(file.contentType)}`;
     }
 
+    /**
+     * Finish upload by sending final response to client
+     * @param _request - HTTP request (unused parameter)
+     * @param response - HTTP response object
+     * @param uploadResponse - Final upload response data
+     */
     protected finish(_request: NodeRequest, response: NodeResponse, uploadResponse: UploadResponse): void {
         const { statusCode } = uploadResponse;
 
@@ -707,6 +768,10 @@ abstract class BaseHandler<
         });
     }
 
+    /**
+     * Compose and register HTTP method handlers
+     * Registers all available handler methods (GET, POST, PUT, DELETE, etc.) with the handler map
+     */
     protected compose = (): void => {
         const child = this.constructor as typeof BaseHandler;
 
@@ -947,6 +1012,10 @@ abstract class BaseHandler<
 
     /**
      * Create a range-limited stream that properly handles backpressure
+     * @param sourceStream - Source readable stream
+     * @param start - Start byte position (inclusive)
+     * @param end - End byte position (inclusive)
+     * @returns New readable stream limited to the specified byte range
      */
     private createRangeLimitedStream(sourceStream: Readable, start: number, end: number): Readable {
         let bytesRead = 0;
@@ -1010,6 +1079,8 @@ abstract class BaseHandler<
 
     /**
      * Pipe streams with proper backpressure handling
+     * @param source - Source readable stream
+     * @param destination - Destination response stream
      */
     private pipeWithBackpressure(source: Readable, destination: NodeResponse): void {
         let isDestroyed = false;
