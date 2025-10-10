@@ -131,14 +131,6 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             expiredListener.listen();
 
             expiredAgent = supertest.agent(expiredListener);
-
-            // Create a test file for all expiration tests
-            const response = await expiredAgent
-                .post(`${STORE_PATH}-expired`)
-                .set("Tus-Resumable", TUS_RESUMABLE)
-                .set("Upload-Length", "1000")
-                .set("Upload-Metadata", serializeMetadata(metadata))
-                .expect(201);
         });
 
         afterAll(async () => {
@@ -314,7 +306,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         let deferredExpiredServer: Tus;
         let deferredExpiredListener: ReturnType<typeof createServer>;
         let deferredAgent: supertest.SuperAgentTest;
-        let deferred_file_id: string;
+        let deferredFileId: string;
 
         beforeAll(async () => {
             const deferredExpiredDirectory = temporaryDirectory();
@@ -364,14 +356,14 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             expect(response.headers["upload-expires"]).toBeDefined();
             expect(response.headers.location).toBeDefined();
 
-            deferred_file_id = response.headers.location.split("/").pop();
+            deferredFileId = response.headers.location.split("/").pop();
         });
 
         it("should handle PATCH with deferred length and expiration", async () => {
             expect.assertions(2);
 
             const response = await deferredAgent
-                .patch(`${STORE_PATH}-deferred-expired/${deferred_file_id}`)
+                .patch(`${STORE_PATH}-deferred-expired/${deferredFileId}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
                 .set("Content-Type", "application/offset+octet-stream")
@@ -387,7 +379,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             await new Promise((resolve) => setTimeout(resolve, 100));
 
             await deferredAgent
-                .patch(`${STORE_PATH}-deferred-expired/${deferred_file_id}`)
+                .patch(`${STORE_PATH}-deferred-expired/${deferredFileId}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "9")
                 .set("Content-Type", "application/offset+octet-stream")
@@ -400,7 +392,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         let terminationServer: Tus;
         let terminationListener: ReturnType<typeof createServer>;
         let terminationAgent: supertest.SuperAgentTest;
-        let completed_upload_id: string;
+        let completedUploadId: string;
 
         beforeAll(async () => {
             const terminationDirectory = temporaryDirectory();
@@ -450,9 +442,6 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should disallow terminating finished uploads when disabled", async () => {
-            // This feature is not yet implemented in the current TUS handler
-            // Skipping until disableTerminationForFinishedUploads option is added
-
             // Create and complete an upload
             const response = await terminationAgent
                 .post(`${STORE_PATH}-termination`)
@@ -461,11 +450,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 .set("Upload-Metadata", serializeMetadata(metadata))
                 .expect(201);
 
-            completed_upload_id = response.headers.location.split("/").pop();
+            completedUploadId = response.headers.location.split("/").pop();
 
             // Complete the upload
             await terminationAgent
-                .patch(`${STORE_PATH}-termination/${completed_upload_id}`)
+                .patch(`${STORE_PATH}-termination/${completedUploadId}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
                 .set("Content-Type", "application/offset+octet-stream")
@@ -473,7 +462,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 .expect(200);
 
             // Try to terminate the completed upload - should fail
-            await terminationAgent.delete(`${STORE_PATH}-termination/${completed_upload_id}`).set("Tus-Resumable", TUS_RESUMABLE).expect(400);
+            await terminationAgent.delete(`${STORE_PATH}-termination/${completedUploadId}`).set("Tus-Resumable", TUS_RESUMABLE).expect(400);
         });
     });
 

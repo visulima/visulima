@@ -73,7 +73,7 @@ describe(DiskStorage, () => {
 
         await (createDummyFile ? fs.promises.writeFile(filePath, "") : fs.promises.rm(filePath));
 
-        storage.create(request, deepClone(metafile));
+        await storage.create(request, deepClone(metafile));
     };
 
     beforeAll(async () => {
@@ -109,7 +109,7 @@ describe(DiskStorage, () => {
         });
 
         it("should create disk file with correct status and bytesWritten", async () => {
-            expect.assertions(5);
+            expect.assertions(4);
 
             const diskFile = await storage.create(request, metafile);
 
@@ -305,10 +305,10 @@ describe(DiskStorage, () => {
     });
 
     describe(".copy()", () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             storage = new DiskStorage(options);
 
-            storage.create(request, deepClone(metafile));
+            await storage.create(request, deepClone(metafile));
         });
 
         it("should copy file to new location", async () => {
@@ -325,10 +325,10 @@ describe(DiskStorage, () => {
     });
 
     describe(".move()", () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             storage = new DiskStorage(options);
 
-            storage.create(request, deepClone(metafile));
+            await storage.create(request, deepClone(metafile));
         });
 
         it("should move file to new location", async () => {
