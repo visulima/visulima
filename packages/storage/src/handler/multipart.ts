@@ -6,7 +6,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 
-import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@mjackson/multipart-parser/node";
+import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser/node";
 import createHttpError from "http-errors";
 import typeis from "type-is";
 
