@@ -10,8 +10,11 @@ import { ensureFile, remove, walk } from "@visulima/fs";
 import { join } from "@visulima/path";
 import etag from "etag";
 
-import type { HttpError } from "../../utils";
-import { ERRORS, streamChecksum, StreamLength, throwErrorCode, toMilliseconds } from "../../utils";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { streamChecksum } from "../../utils/pipes/stream-checksum";
+import StreamLength from "../../utils/pipes/stream-length";
+import toMilliseconds from "../../utils/primitives/to-milliseconds";
+import type { HttpError } from "../../utils/types";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { DiskStorageOptions } from "../types";

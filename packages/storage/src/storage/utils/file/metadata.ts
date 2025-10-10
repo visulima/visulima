@@ -1,4 +1,4 @@
-import { isRecord } from "../../../utils";
+import isRecord from "../../../utils/primitives/is-record";
 
 const ASCII_SPACE = " ".codePointAt(0);
 const ASCII_COMMA = ",".codePointAt(0);

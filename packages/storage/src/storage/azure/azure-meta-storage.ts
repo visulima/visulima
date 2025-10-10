@@ -1,7 +1,7 @@
 import type { BlobGetPropertiesResponse, BlobItem, ContainerClient, Metadata } from "@azure/storage-blob";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 
-import { ERRORS, throwErrorCode } from "../../utils";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 import MetaStorage from "../meta-storage";
 import type { File } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";

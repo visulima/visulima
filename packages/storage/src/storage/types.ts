@@ -1,7 +1,7 @@
 import type { IncomingMessage } from "node:http";
 import type { Readable } from "node:stream";
 
-import type { HttpError, HttpErrorBody, Logger, Validation } from "../utils";
+import type { HttpError, HttpErrorBody, Logger, Validation } from "../utils/types";
 import type { LocalMetaStorageOptions } from "./local/local-meta-storage";
 import type MetaStorage from "./meta-storage";
 import type { File, FileInit, FilePart, FileQuery, FileReturn, UploadFile } from "./utils/file";

@@ -5,7 +5,8 @@ import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-bl
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { normalize } from "@visulima/path";
 
-import { ERRORS, throwErrorCode, toMilliseconds } from "../../utils";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
+import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";

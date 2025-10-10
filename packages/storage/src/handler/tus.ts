@@ -12,9 +12,10 @@ import typeis from "type-is";
 
 import type { Checksum, FileInit, UploadFile } from "../storage/utils/file";
 import { Metadata } from "../storage/utils/file";
-import type { Headers, UploadResponse } from "../utils";
-import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream, pick } from "../utils";
 import { HeaderUtilities } from "../utils/headers";
+import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream } from "../utils/http";
+import pick from "../utils/primitives/pick";
+import type { Headers, UploadResponse } from "../utils/types";
 import BaseHandler from "./base-handler";
 import type { Handlers, ResponseFile } from "./types";
 

@@ -6,8 +6,10 @@ import { request } from "gaxios";
 import { GoogleAuth } from "google-auth-library";
 
 import package_ from "../../../package.json";
-import type { HttpError } from "../../utils";
-import { ERRORS, getHeader, throwErrorCode, toMilliseconds } from "../../utils";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { getHeader } from "../../utils/http";
+import toMilliseconds from "../../utils/primitives/to-milliseconds";
+import type { HttpError } from "../../utils/types";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
