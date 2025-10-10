@@ -23,6 +23,7 @@ import type {
     AudioTransformOptions,
     AudioTransformResult,
 } from "./types";
+import { getFormatFromContentType, isValidMediaType } from "./utils";
 
 /**
  * Audio transformer that uses storage backends and Mediabunny to retrieve and transform audio files
@@ -308,12 +309,12 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
 
         // Check if it's audio
-        if (!file.contentType?.startsWith("audio/")) {
+        if (!isValidMediaType(file.contentType, "audio")) {
             throw new Error(`File is not audio: ${file.contentType}`);
         }
 
         // Check format support
-        const format = file.contentType.split("/")[1];
+        const format = getFormatFromContentType(file.contentType);
 
         if (this.config?.supportedFormats && format && !this.config.supportedFormats.includes(format)) {
             throw new Error(`Unsupported audio format: ${format}`);

@@ -13,7 +13,7 @@ import typeis from "type-is";
 import type { Checksum, FileInit, UploadFile } from "../storage/utils/file";
 import { Metadata } from "../storage/utils/file";
 import type { Headers, UploadResponse } from "../utils";
-import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream } from "../utils";
+import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream, pick } from "../utils";
 import { HeaderUtilities } from "../utils/headers";
 import BaseHandler from "./base-handler";
 import type { Handlers, ResponseFile } from "./types";
@@ -388,6 +388,49 @@ export class Tus<
             throw error;
         }
     }
+
+    /**
+     * Handle Web API Fetch requests (for Hono, Cloudflare Workers, etc.)
+     */
+    public override fetch = async (request: Request): Promise<globalThis.Response> => {
+        this.logger?.debug("[fetch request]: %s %s", request.method, request.url);
+
+        const handler = this.registeredHandlers.get(request.method || "GET");
+
+        if (!handler) {
+            return this.createErrorResponse({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED } as UploadError);
+        }
+
+        if (!this.storage.isReady) {
+            return this.createErrorResponse({ UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
+        }
+
+        try {
+            const nodeRequest = await this.convertRequestToNode(request);
+            const mockResponse = this.createMockResponse();
+            const file = await handler.call(this, nodeRequest as NodeRequest, mockResponse as NodeResponse);
+
+            return this.handleFetchResponse(request, file);
+        } catch (error: any) {
+            const uError = pick(error, ["name", ...(Object.getOwnPropertyNames(error) as (keyof Error)[])]) as UploadError;
+            const errorEvent = {
+                ...uError,
+                request: {
+                    headers: Object.fromEntries((request.headers as any)?.entries?.() || []),
+                    method: request.method,
+                    url: request.url,
+                },
+            };
+
+            if (this.listenerCount("error") > 0) {
+                this.emit("error", errorEvent);
+            }
+
+            this.logger?.error("[fetch error]: %O", errorEvent);
+
+            return this.createErrorResponse(error) as any;
+        }
+    };
 
     public override send(response: NodeResponse, { body = "", headers = {}, statusCode = 200 }: UploadResponse): void {
         super.send(response, {
