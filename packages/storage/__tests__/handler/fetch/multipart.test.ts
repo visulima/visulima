@@ -15,7 +15,7 @@ describe("fetch Multipart", () => {
     function create(): Request {
         const formData = new FormData();
 
-        formData.append("file", new Blob([testfile.asBuffer]), testfile.name);
+        formData.append("file", new Blob([testfile.asBuffer], { type: testfile.contentType }), testfile.name);
         formData.append("custom", "customField");
 
         return new Request(`${basePath}`, {

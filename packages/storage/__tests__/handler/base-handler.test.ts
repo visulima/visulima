@@ -359,16 +359,16 @@ describe("baseHandler", () => {
             it("should return null for invalid range headers", () => {
                 expect.assertions(4);
 
-                expect(uploader.parseRangeHeader("bytes=100-50", 1000)).toBeNull(); // Start > End
-                expect(uploader.parseRangeHeader("bytes=1000-1100", 1000)).toBeNull(); // Start >= fileSize
-                expect(uploader.parseRangeHeader("invalid", 1000)).toBeNull(); // Invalid format
-                expect(uploader.parseRangeHeader("bytes=0-99,100-199", 1000)).toBeNull(); // Multiple ranges
+                expect(uploader.parseRangeHeader("bytes=100-50", 1000)).toBeUndefined(); // Start > End
+                expect(uploader.parseRangeHeader("bytes=1000-1100", 1000)).toBeUndefined(); // Start >= fileSize
+                expect(uploader.parseRangeHeader("invalid", 1000)).toBeUndefined(); // Invalid format
+                expect(uploader.parseRangeHeader("bytes=0-99,100-199", 1000)).toBeUndefined(); // Multiple ranges
             });
 
             it("should return null when no range header provided", () => {
                 expect.assertions(1);
 
-                expect(uploader.parseRangeHeader(undefined, 1000)).toBeNull();
+                expect(uploader.parseRangeHeader(undefined, 1000)).toBeUndefined();
             });
         });
 
