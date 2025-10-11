@@ -178,10 +178,18 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
         return this.copy(name, destination).then(() => this.containerClient.getBlockBlobClient(source).deleteIfExists());
     }
 
-    public async write(part: FilePart | FileQuery): Promise<AzureFile> {
-        const file = await this.getMeta(part.id);
+    public async write(part: FilePart | FileQuery | AzureFile): Promise<AzureFile> {
+        let file: AzureFile;
 
-        await this.checkIfExpired(file);
+        if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+            // part is a full file object (not a FilePart)
+            file = part as AzureFile;
+        } else {
+            // part is FilePart or FileQuery
+            file = await this.getMeta(part.id);
+
+            await this.checkIfExpired(file);
+        }
 
         if (file.status === "completed") {
             return file;

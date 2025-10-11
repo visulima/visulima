@@ -226,10 +226,18 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         return file;
     }
 
-    public async write(part: FilePart | FileQuery): Promise<GCSFile> {
-        const file = await this.getMeta(part.id);
+    public async write(part: FilePart | FileQuery | GCSFile): Promise<GCSFile> {
+        let file: GCSFile;
 
-        await this.checkIfExpired(file);
+        if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+            // part is a full file object (not a FilePart)
+            file = part as GCSFile;
+        } else {
+            // part is FilePart or FileQuery
+            file = await this.getMeta(part.id);
+
+            await this.checkIfExpired(file);
+        }
 
         if (file.status === "completed") {
             return file;
