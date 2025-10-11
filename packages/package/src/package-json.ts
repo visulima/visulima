@@ -41,36 +41,39 @@ const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
 const buildSearchPatterns = (options: ReadOptions = {}): string[] => {
     const { yaml = true, json5 = true, fileOrder } = options;
     
+    // Format to file patterns mapping
+    const formatMap = {
+        yaml: ["package.yaml", "package.yml"],
+        json5: ["package.json5"],
+        json: ["package.json"]
+    } as const;
+    
     // If custom file order is provided, use it (filtering out disabled formats)
     if (fileOrder) {
         return fileOrder
             .filter(format => {
-                if (format === "yaml") return yaml !== false;
-                if (format === "json5") return json5 !== false;
-                if (format === "json") return true; // json is always enabled
-                return false;
+                switch (format) {
+                    case "yaml": return yaml !== false;
+                    case "json5": return json5 !== false;
+                    case "json": return true; // json is always enabled
+                    default: return false;
+                }
             })
-            .map(format => {
-                if (format === "yaml") return ["package.yaml", "package.yml"];
-                if (format === "json5") return "package.json5";
-                if (format === "json") return "package.json";
-                return [];
-            })
-            .flat();
+            .flatMap(format => formatMap[format] || []);
     }
     
     // Default order: yaml → json5 → json
-    const patterns = [];
+    const patterns: string[] = [];
     
     if (yaml !== false) {
-        patterns.push("package.yaml", "package.yml");
+        patterns.push(...formatMap.yaml);
     }
     
     if (json5 !== false) {
-        patterns.push("package.json5");
+        patterns.push(...formatMap.json5);
     }
     
-    patterns.push("package.json");
+    patterns.push(...formatMap.json);
     
     return patterns;
 };
