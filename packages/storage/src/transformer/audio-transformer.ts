@@ -120,7 +120,6 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
         const fileQuery: FileQuery = { id: fileId };
         const cacheKey = this.generateCacheKey(fileId, steps);
 
-
         // Check cache first
         if (this.cache) {
             const cached = this.cache.get(cacheKey);

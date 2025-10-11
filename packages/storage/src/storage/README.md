@@ -2,14 +2,6 @@
 
 The storage system provides a unified interface for file upload, storage, and retrieval across multiple cloud providers and local storage. It supports AWS S3, Google Cloud Storage, Azure Blob Storage, and local disk storage.
 
-## Architecture
-
-### Core Classes
-
-- **`BaseStorage`**: Abstract base class that provides common functionality for all storage backends
-- **`GenericStorage`**: Interface defining the standard storage operations
-- **`StorageOptimizations`**: Configuration for storage-specific optimizations
-
 ### File Structure
 
 ```

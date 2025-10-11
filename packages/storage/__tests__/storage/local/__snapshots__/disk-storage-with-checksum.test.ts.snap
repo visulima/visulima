@@ -28,9 +28,7 @@ File {
 
 exports[`DiskStorageWithChecksum > should support checksum resume from filesystem > file_readable 1`] = `
 {
-  "ETag": undefined,
   "bytesWritten": 5,
-  "content": undefined,
   "contentType": "video/mp4",
   "createdAt": "2022-02-02T00:00:00.000Z",
   "expiredAt": 1643763600000,
@@ -47,7 +45,6 @@ exports[`DiskStorageWithChecksum > should support checksum resume from filesyste
     "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
     "size": 64,
   },
-  "modifiedAt": undefined,
   "name": "anonymous/testfile.mp4",
   "originalName": "testfile.mp4",
   "size": 64,
