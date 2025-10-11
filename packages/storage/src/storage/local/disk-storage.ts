@@ -4,10 +4,11 @@ import type { IncomingMessage } from "node:http";
 import type { Readable } from "node:stream";
 import { pipeline } from "node:stream";
 
-import { readFile } from "@visulima/fs";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ensureFile, remove, walk } from "@visulima/fs";
+import { ensureFile, remove, walk, readFile } from "@visulima/fs";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { join } from "@visulima/path";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import etag from "etag";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
@@ -107,10 +108,18 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         return file as TFile;
     }
 
-    public async write(part: FilePart | FileQuery): Promise<TFile> {
-        const file = await this.getMeta(part.id);
+    public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
+        let file: TFile;
 
-        await this.checkIfExpired(file);
+        if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+            // part is a full file object (not a FilePart)
+            file = part as TFile;
+        } else {
+            // part is FilePart or FileQuery
+            file = await this.getMeta(part.id);
+
+            await this.checkIfExpired(file);
+        }
 
         if (file.status === "completed") {
             return file;
@@ -235,7 +244,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             await this.deleteMeta(id);
 
             return { ...file, status: "deleted" };
-        } catch (error) {
+        } catch (error: any) {
             this.logger?.error("[error]: Could not delete file: %O", error);
         }
 

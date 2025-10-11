@@ -16,12 +16,11 @@ import type { ErrorResponses } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
 import { normalizeHookResponse, normalizeOnErrorResponse } from "../utils/http";
 import Locker from "../utils/locker";
-import isEqual from "../utils/primitives/is-equal";
 import toMilliseconds from "../utils/primitives/to-milliseconds";
 import type { HttpError, Logger, UploadResponse, ValidatorConfig } from "../utils/types";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
-import type { BaseStorageOptions, GenericStorageConfig, PurgeList, StorageOptimizations } from "./types";
+import type { BaseStorageOptions, PurgeList, StorageOptimizations } from "./types";
 import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { FileName, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
@@ -61,7 +60,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     public readonly logger?: Logger;
 
-    public readonly genericConfig: GenericStorageConfig;
+    public readonly genericConfig: BaseStorageOptions<TFile>;
 
     public maxMetadataSize: number;
 
@@ -88,7 +87,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      */
     protected concurrency?: number;
 
-    protected constructor(config: BaseStorageOptions<TFile> & { genericConfig?: GenericStorageConfig }) {
+    protected constructor(config: BaseStorageOptions<TFile>) {
         const options = { ...defaults, ...config } as Required<BaseStorageOptions<TFile>>;
 
         this.onCreate = normalizeHookResponse(options.onCreate);
@@ -102,18 +101,14 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         this.expiration = options.expiration;
 
         // Initialize generic configuration
-        this.genericConfig = {
-            ...config,
-            ...config.genericConfig,
-            useRelativeLocation: config.useRelativeLocation,
-        };
+        this.genericConfig = options;
         this.optimizations = {
             bulkBatchSize: 100,
             enableCDNHeaders: false,
             enableCompression: false,
             usePrefixes: false,
             useServerSideCopy: true,
-            ...this.genericConfig.optimizations,
+            ...this.optimizations,
         };
 
         if (options.assetFolder !== undefined) {
@@ -214,7 +209,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     /**
      * Get configuration
      */
-    public get config(): GenericStorageConfig {
+    public get config(): BaseStorageOptions<TFile> {
         return this.genericConfig;
     }
 
@@ -224,13 +219,11 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     public async saveMeta(file: TFile): Promise<TFile> {
         this.updateTimestamps(file);
 
-        const previous = { ...this.cache.get(file.id) };
-
         this.cache.set(file.id, file, {
             size: Object.keys(file).length,
         });
 
-        return isEqual(previous, file, "bytesWritten", "expiredAt", "hash") ? this.meta.touch(file.id, file) : this.meta.save(file.id, file);
+        return this.meta.save(file.id, file);
     }
 
     /**
@@ -246,21 +239,17 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      * Retrieves upload metadata
      */
     public async getMeta(id: string): Promise<TFile> {
-        let file = this.cache.get(id);
+        try {
+            const file = await this.meta.get(id);
 
-        if (!file) {
-            try {
-                file = await this.meta.get(id);
+            this.cache.set(file.id, file, {
+                size: Object.keys(file).length,
+            });
 
-                this.cache.set(file.id, file, {
-                    size: Object.keys(file).length,
-                });
-            } catch {
-                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
-            }
+            return { ...file };
+        } catch {
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND);
         }
-
-        return { ...file };
     }
 
     public async checkIfExpired(file: TFile): Promise<TFile> {
@@ -539,7 +528,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     /**
      *  Write part and/or return status of an upload
      */
-    public abstract write(part: FilePart | FileQuery): Promise<TFile>;
+    public abstract write(part: FilePart | FileQuery | TFile): Promise<TFile>;
 
     /**
      * Deletes an upload and its metadata

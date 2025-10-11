@@ -190,7 +190,7 @@
         "@vitest/ui": "^3.2.4",
         "@visulima/fs": "workspace:*",
         "@visulima/humanizer": "workspace:*",
-        "@visulima/packem": "2.0.0-alpha.23",
+        "@visulima/packem": "2.0.0-alpha.28",
         "@visulima/path": "workspace:*",
         "aws-crt": "^1.27.3",
         "aws-sdk-client-mock": "^4.1.0",

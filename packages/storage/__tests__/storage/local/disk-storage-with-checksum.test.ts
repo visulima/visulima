@@ -14,10 +14,12 @@ describe(DiskStorageWithChecksum, () => {
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
     let options: typeof storageOptions & { checksum: "sha1" };
+
     const request = createRequest();
 
     beforeAll(async () => {
         directory = temporaryDirectory();
+
         options = { ...storageOptions, checksum: "sha1" as const, directory };
     });
 
@@ -39,6 +41,12 @@ describe(DiskStorageWithChecksum, () => {
 
         const file = await storage.write({ ...diskFile, body: Readable.from("01234"), start: 0 });
 
+        // not in the meta
+        delete diskFile.ETag;
+        delete diskFile.content;
+        delete diskFile.hash;
+        delete diskFile.modifiedAt;
+
         expect(file).toMatchSnapshot("file_readable");
     });
 
@@ -51,6 +59,12 @@ describe(DiskStorageWithChecksum, () => {
         await storage.write({ ...diskFile, body: Readable.from("01234"), start: 0 });
 
         const deletedFiles = await storage.delete({ id: diskFile.id });
+
+        // not in the meta
+        delete diskFile.ETag;
+        delete diskFile.content;
+        delete diskFile.hash;
+        delete diskFile.modifiedAt;
 
         expect(deletedFiles).toStrictEqual({
             ...diskFile,

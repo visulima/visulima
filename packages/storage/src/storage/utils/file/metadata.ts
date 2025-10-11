@@ -4,6 +4,8 @@ const ASCII_SPACE = " ".codePointAt(0);
 const ASCII_COMMA = ",".codePointAt(0);
 const BASE64_REGEX = /^[\d+/A-Z]*={0,2}$/i;
 
+const isNumeric = (input: unknown) => typeof input !== "string" ? false : !Number.isNaN(input) && !Number.isNaN(parseFloat(input)) && isFinite(input);
+
 export class Metadata {
     [key: string]: any;
 
@@ -78,10 +80,10 @@ export const parseMetadata = (string_?: string): Metadata => {
         const tokens = pair.split(" ");
         const [key, value] = tokens;
 
-        if ((tokens.length === 1 || tokens.length === 2) && validateKey(key as string) && validateValue(value as string) && !((key as string) in meta)) {
-            const decodedValue = value ? Buffer.from(value, "base64").toString("utf8") : null;
+        if ((tokens.length === 1 || tokens.length === 2) && validateKey(key as string) && (tokens.length === 1 || validateValue(value as string)) && !((key as string) in meta)) {
+            const decodedValue = tokens.length === 1 ? null : (value ? Buffer.from(value, "base64").toString("utf8") : "");
 
-            meta[key as string] = decodedValue;
+            meta[key as string] = !isNumeric(decodedValue) ? decodedValue : Number(decodedValue);
         } else {
             throw new Error("Metadata string is not valid");
         }
@@ -89,3 +91,4 @@ export const parseMetadata = (string_?: string): Metadata => {
 
     return meta;
 };
+

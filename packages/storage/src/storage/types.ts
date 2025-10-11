@@ -45,7 +45,7 @@ export interface ExpirationOptions {
     rolling?: boolean;
 }
 
-export interface BaseStorageOptions<T extends File = File> {
+export interface BaseStorageOptions<T extends File = File> extends GenericStorageConfig {
     /** Allowed MIME types */
     allowMIME?: string[];
     /** The full path of the folder where the uploaded asset will be stored. */
@@ -71,8 +71,6 @@ export interface BaseStorageOptions<T extends File = File> {
     expiration?: ExpirationOptions;
     /** File naming function */
     filename?: (file: T, request: any) => string;
-    /** Generic storage configuration */
-    genericConfig?: GenericStorageConfig;
     /** Logger injection */
     logger?: Logger;
     /** Limiting the size of custom metadata */
@@ -209,42 +207,4 @@ export interface GenericStorageOperations<T extends File = File, TReturn extends
 
     /** Write data to a file */
     write: (part: FilePart | FileQuery) => Promise<T>;
-}
-
-/**
- * Advanced storage features
- */
-
-/**
- * Generic Storage Interface
- */
-export interface GenericStorage<T extends File = File, TReturn extends FileReturn = FileReturn> extends GenericStorageOperations<T, TReturn> {
-    /** Cleanup resources */
-    cleanup: () => Promise<void>;
-
-    /** Storage configuration */
-    readonly config: GenericStorageConfig;
-
-    /** Initialize storage */
-    initialize: () => Promise<void>;
-
-    /** Is storage ready for operations */
-    readonly isReady: boolean;
-}
-
-/**
- * Unified storage configuration that works across all storage backends
- */
-export interface UnifiedStorageConfig<T extends File = File> extends GenericStorageConfig {
-    /** Legacy compatibility - existing BaseStorageOptions */
-    legacy?: BaseStorageOptions<T>;
-
-    /** Storage-specific optimizations */
-    optimizations?: StorageOptimizations;
-
-    /** Provider-specific configuration */
-    providerConfig?: Record<string, any>;
-
-    /** Storage provider type */
-    type: string;
 }

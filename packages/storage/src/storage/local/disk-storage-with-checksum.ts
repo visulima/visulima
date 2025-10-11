@@ -45,9 +45,17 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
     }
 
     public override async write(part: FilePart | FileQuery): Promise<TFile> {
-        const file = await this.getMeta(part.id);
+        let file: TFile;
 
-        await this.checkIfExpired(file);
+        if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+            // part is a full file object (not a FilePart)
+            file = part as TFile;
+        } else {
+            // part is FilePart or FileQuery
+            file = await this.getMeta(part.id);
+
+            await this.checkIfExpired(file);
+        }
 
         if (file.status === "completed") {
             return file;
@@ -84,7 +92,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
                     return throwErrorCode(errorCode);
                 }
 
-                if (!bytesWritten) {
+                if (typeof bytesWritten !== "number") {
                     await this.hashes.updateFromFs(path, file.bytesWritten);
                 }
 

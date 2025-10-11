@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { Readable } from "node:stream";
 
 import { fs, vol } from "memfs";
 import { createRequest } from "node-mocks-http";
@@ -180,7 +181,7 @@ describe(DiskStorage, () => {
             mockMetaGet.mockRejectedValueOnce(new Error("File not found"));
 
             try {
-                await storage.write({ ...metafile });
+                await storage.write({ id: metafile.id });
 
                 expect.fail("Expected write to reject");
             } catch (error: any) {
@@ -284,6 +285,30 @@ describe(DiskStorage, () => {
 
             expect(deleted.id).toBe("notfound");
             expect(deleted.status).toBeUndefined();
+        });
+
+        it("should delete file and metadata successfully", async () => {
+            expect.assertions(2);
+
+            const diskFile = await storage.create(request, { ...metafile });
+
+            await storage.write({ ...diskFile, body: Readable.from("01234"), start: 0 });
+
+            const deletedFiles = await storage.delete({ id: diskFile.id });
+
+            // not in the meta
+            delete diskFile.ETag;
+            delete diskFile.content;
+            delete diskFile.hash;
+            delete diskFile.modifiedAt;
+
+            expect(deletedFiles).toStrictEqual({
+                ...diskFile,
+                bytesWritten: 5,
+
+                status: "deleted",
+            });
+            await expect(() => storage.getMeta(diskFile.id)).rejects.toThrow("Not found");
         });
     });
 

@@ -8175,6 +8175,7 @@ importers:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.27(c1a3a32513d125e95ab0d1b12cbc34df)
 =======
         version: 2.0.0-alpha.23(ba6b87e705d993a4c3e4cb1527b0da11)
@@ -8207,9 +8208,21 @@ importers:
 =======
         version: 2.0.0-alpha.27(a05d3906de511a3bfa99cb4deb90361b)
 >>>>>>> 221b31d24 (fix(pnpm): resolve merge conflicts and update dependency versions)
+<<<<<<< HEAD
 >>>>>>> b9791e1e8 (fix(pnpm): resolve merge conflicts and update dependency versions)
+<<<<<<< HEAD
 >>>>>>> b6e6790af (fix(pnpm): resolve merge conflicts and update dependency versions)
+<<<<<<< HEAD
 >>>>>>> c79c733d7 (fix(pnpm): resolve merge conflicts and update dependency versions)
+=======
+=======
+=======
+=======
+        version: 2.0.0-alpha.28(a05d3906de511a3bfa99cb4deb90361b)
+>>>>>>> 7ce7ea056 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
+>>>>>>> d5259997e (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
+>>>>>>> c2c521714 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
+>>>>>>> 128e2ac36 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
       '@vitest/coverage-v8':
         specifier: ^4.0.8
         version: 4.0.8(@vitest/browser@4.0.8(msw@2.12.1(@types/node@24.10.0)(typescript@5.9.3))(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.8))(vitest@4.0.8)
@@ -9970,8 +9983,8 @@ importers:
         specifier: workspace:*
         version: link:../humanizer
       '@visulima/packem':
-        specifier: 2.0.0-alpha.23
-        version: 2.0.0-alpha.23(be91b735bc1766765c8a2110f7b3529a)
+        specifier: 2.0.0-alpha.28
+        version: 2.0.0-alpha.28(be91b735bc1766765c8a2110f7b3529a)
       '@visulima/path':
         specifier: workspace:*
         version: link:../path
@@ -21812,6 +21825,31 @@ packages:
       typescript:
         optional: true
 
+  '@visulima/packem-rollup@1.0.0-alpha.22':
+    resolution: {integrity: sha512-Kfywcz1k/c7PCa3YMkUSfGbTES2DUBZXoPQTB2WKCuD6CnRAtsdIhHN+m4wFHRr1rZ9pZ+S8ZhZs1UEyoV9W/g==}
+    engines: {node: '>=18.* <=24.*'}
+    peerDependencies:
+      '@swc/core': '*'
+      esbuild: '>=0.25.0'
+      oxc-transform: '*'
+      p-queue: '*'
+      rollup: '>=4'
+      sucrase: '*'
+      typescript: '*'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      esbuild:
+        optional: true
+      oxc-transform:
+        optional: true
+      p-queue:
+        optional: true
+      sucrase:
+        optional: true
+      typescript:
+        optional: true
+
   '@visulima/packem-share@1.0.0-alpha.11':
     resolution: {integrity: sha512-1XS23xWjhBFBKBI3gNqnWn/8THp0qLsYuNDDxnZzp5OTnP582cFGelP/DL6Bzo1UoTSlbBRAAI7lW7iTmi8cvw==}
     engines: {node: '>=20.* <=24.*'}
@@ -22041,6 +22079,95 @@ packages:
 
   '@visulima/packem@2.0.0-alpha.27':
     resolution: {integrity: sha512-L+Smj6O4rjcd4wWq8TR9O69hswJXl+CZLugzDsUvZuwk/wuGr9XgFUHgQ4m0GE73mXz6LrqnvCx3kX4jbkPrDg==}
+    engines: {node: '>=20.* <=24.*'}
+    hasBin: true
+    peerDependencies:
+      '@arethetypeswrong/core': '>=0.18.2'
+      '@ckeditor/typedoc-plugins': '*'
+      '@swc/core': '>=1.11.29'
+      '@tailwindcss/node': ^4.1.14
+      '@tailwindcss/oxide': ^4.1.14
+      cssnano: '>=7.0.6'
+      esbuild: '>=0.25.0'
+      icss-utils: '>=5.1.0'
+      less: '>=4.2.0'
+      lightningcss: '>=1.27.0'
+      oxc-transform: '>=0.20.0'
+      package-manager-detector: ^1.4.0
+      postcss: '>=8.4.47'
+      postcss-load-config: '>=6.0.1'
+      postcss-modules-extract-imports: '>=3.1.0'
+      postcss-modules-local-by-default: '>=4.0.5'
+      postcss-modules-scope: '>=3.2.0'
+      postcss-modules-values: '>=4.0.0'
+      postcss-value-parser: '>=4.2.0'
+      sass: '>=1.43.4'
+      sass-embedded: '>=1.79.4'
+      stylus: '>=0.63.0'
+      sucrase: '>=3.35.0'
+      typedoc: '>=0.26.0'
+      typedoc-plugin-markdown: '>=4.2.0'
+      typedoc-plugin-rename-defaults: '>=0.7.0'
+      typescript: '>=4.5 || >=5.0'
+      which-pm-runs: '*'
+    peerDependenciesMeta:
+      '@arethetypeswrong/core':
+        optional: true
+      '@ckeditor/typedoc-plugins':
+        optional: true
+      '@swc/core':
+        optional: true
+      '@tailwindcss/node':
+        optional: true
+      '@tailwindcss/oxide':
+        optional: true
+      cssnano:
+        optional: true
+      esbuild:
+        optional: true
+      icss-utils:
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      oxc-transform:
+        optional: true
+      postcss:
+        optional: true
+      postcss-load-config:
+        optional: true
+      postcss-modules-extract-imports:
+        optional: true
+      postcss-modules-local-by-default:
+        optional: true
+      postcss-modules-scope:
+        optional: true
+      postcss-modules-values:
+        optional: true
+      postcss-value-parser:
+        optional: true
+      sass:
+        optional: true
+      sass-embedded:
+        optional: true
+      stylus:
+        optional: true
+      sucrase:
+        optional: true
+      typedoc:
+        optional: true
+      typedoc-plugin-markdown:
+        optional: true
+      typedoc-plugin-rename-defaults:
+        optional: true
+      typescript:
+        optional: true
+      which-pm-runs:
+        optional: true
+
+  '@visulima/packem@2.0.0-alpha.28':
+    resolution: {integrity: sha512-OWp0gvz3RoClN6TMW/5kGfSR1XHGOce9reYm8CmNUINVMvYREJBabw0yXahpcDMjzhgWPKNpHqfreZLnoNwHbA==}
     engines: {node: '>=20.* <=24.*'}
     hasBin: true
     peerDependencies:
@@ -27238,8 +27365,18 @@ packages:
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
 
+<<<<<<< HEAD
   html-minifier-next@4.1.1:
     resolution: {integrity: sha512-Oc49HBmUYFO/1Vcr8m+mZLINV9d4XBQ1WSubGmy9+AYjO28p8BNrMDBTdVF6W1fVc/pQZqGpaufoOKKApPUn4g==}
+=======
+<<<<<<< HEAD
+  html-minifier-next@3.1.0:
+    resolution: {integrity: sha512-rRcCxYeZx1HfFoH66X7ypBVxfvz9k6GmKhtrhcUWJu/SrUQfaBMtTTqLoJJ44KvgwKEmE/DRCyobDlKQmGCGew==}
+=======
+  html-minifier-next@2.1.7:
+    resolution: {integrity: sha512-ORX2kXeGlfLHhkmS2Bol8m0j6/NOjH2gnLqYXN4jjkdwt8HWvNzSIkqitAxoL7ST8W+ZISW6fC4OWYmXLU/gXg==}
+>>>>>>> 7ce7ea056 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
+>>>>>>> c2c521714 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
     hasBin: true
 
   html-void-elements@3.0.0:
@@ -54570,7 +54707,7 @@ snapshots:
       - rolldown
       - yaml
 
-  '@visulima/packem-rollup@1.0.0-alpha.21(@swc/core@1.13.5)(@types/node@24.6.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.42)(rollup@4.52.4)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
+  '@visulima/packem-rollup@1.0.0-alpha.21(@swc/core@1.13.5)(@types/node@24.7.0)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.42)(rollup@4.52.4)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
     dependencies:
       '@babel/parser': 7.28.4
       '@rollup/plugin-alias': 5.1.1(rollup@4.52.4)
@@ -54584,17 +54721,36 @@ snapshots:
       '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
       '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
       '@visulima/fs': 3.1.8(yaml@2.8.1)
+<<<<<<< HEAD
       '@visulima/package': 4.0.0(@types/node@24.6.1)
       '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.6.1)(rollup@4.52.4)(yaml@2.8.1)
 >>>>>>> e2cb20999 (fix(upload): update dependencies and improve package configuration)
+<<<<<<< HEAD
 >>>>>>> f4dae60b9 (fix(upload): update dependencies and improve package configuration)
+<<<<<<< HEAD
 >>>>>>> 2c6609e41 (fix(upload): update dependencies and improve package configuration)
+=======
+=======
+=======
+      '@visulima/package': 4.0.0(@types/node@24.7.0)
+      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.7.0)(rollup@4.52.4)(yaml@2.8.1)
+>>>>>>> 7ce7ea056 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
+>>>>>>> d5259997e (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
+>>>>>>> c2c521714 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
       '@visulima/path': 1.4.0
       '@visulima/source-map': 1.0.20
       cjs-module-lexer: 2.1.1
       clean-css: 5.3.3
       glob-parent: 6.0.2
+<<<<<<< HEAD
       html-minifier-next: 4.1.1
+=======
+<<<<<<< HEAD
+      html-minifier-next: 3.1.0
+=======
+      html-minifier-next: 2.1.7
+>>>>>>> 7ce7ea056 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
+>>>>>>> c2c521714 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
       magic-string: 0.30.19
       mlly: 1.8.0
       oxc-parser: 0.93.0
@@ -54619,7 +54775,122 @@ snapshots:
       - rolldown
       - yaml
 
+<<<<<<< HEAD
   '@visulima/packem-share@1.0.0-alpha.13(@types/node@24.10.0)(rollup@4.53.2)(yaml@2.8.1)':
+=======
+<<<<<<< HEAD
+  '@visulima/packem-share@1.0.0-alpha.13(@types/node@24.10.0)(rollup@4.52.5)(yaml@2.8.1)':
+=======
+<<<<<<< HEAD
+  '@visulima/packem-share@1.0.0-alpha.13(@types/node@24.9.2)(rollup@4.52.5)(yaml@2.8.1)':
+=======
+  '@visulima/packem-rollup@1.0.0-alpha.22(@swc/core@1.13.5)(@types/node@24.6.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.42)(rollup@4.52.4)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
+    dependencies:
+      '@babel/parser': 7.28.4
+      '@rollup/plugin-alias': 5.1.1(rollup@4.52.4)
+      '@rollup/plugin-commonjs': 28.0.6(rollup@4.52.4)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.52.4)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.52.4)
+      '@rollup/plugin-json': 6.1.0(rollup@4.52.4)
+      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.52.4)
+      '@rollup/plugin-replace': 6.0.2(rollup@4.52.4)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.52.4)
+      '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
+      '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
+      '@visulima/package': 4.0.0(@types/node@24.6.1)
+      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.6.1)(rollup@4.52.4)(yaml@2.8.1)
+      '@visulima/path': 1.4.0
+      '@visulima/source-map': 1.0.20
+      cjs-module-lexer: 2.1.0
+      clean-css: 5.3.3
+      glob-parent: 6.0.2
+      html-minifier-next: 2.1.7
+      magic-string: 0.30.19
+      mlly: 1.8.0
+      oxc-parser: 0.93.0
+      oxc-resolver: 11.8.2
+      rollup: 4.52.4
+      rollup-plugin-dts: 6.2.3(rollup@4.52.4)(typescript@5.9.3)
+      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.52.4)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.52.4)
+      rollup-plugin-pure: 0.4.0(rollup@4.52.4)
+      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.42)(rollup@4.52.4)
+      rs-module-lexer: 2.6.0
+      semver: 7.7.2
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@swc/core': 1.13.5
+      esbuild: 0.25.10
+      sucrase: 3.35.0
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@types/node'
+      - picomatch
+      - rolldown
+      - yaml
+
+  '@visulima/packem-rollup@1.0.0-alpha.22(@swc/core@1.13.5)(@types/node@24.7.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.42)(rollup@4.52.4)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
+    dependencies:
+      '@babel/parser': 7.28.4
+      '@rollup/plugin-alias': 5.1.1(rollup@4.52.4)
+      '@rollup/plugin-commonjs': 28.0.6(rollup@4.52.4)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.52.4)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.52.4)
+      '@rollup/plugin-json': 6.1.0(rollup@4.52.4)
+      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.52.4)
+      '@rollup/plugin-replace': 6.0.2(rollup@4.52.4)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.52.4)
+      '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
+      '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
+      '@visulima/package': 4.0.0(@types/node@24.7.1)
+      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.7.1)(rollup@4.52.4)(yaml@2.8.1)
+      '@visulima/path': 1.4.0
+      '@visulima/source-map': 1.0.20
+      cjs-module-lexer: 2.1.0
+      clean-css: 5.3.3
+      glob-parent: 6.0.2
+      html-minifier-next: 2.1.7
+      magic-string: 0.30.19
+      mlly: 1.8.0
+      oxc-parser: 0.93.0
+      oxc-resolver: 11.8.2
+      rollup: 4.52.4
+      rollup-plugin-dts: 6.2.3(rollup@4.52.4)(typescript@5.9.3)
+      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.52.4)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.52.4)
+      rollup-plugin-pure: 0.4.0(rollup@4.52.4)
+      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.42)(rollup@4.52.4)
+      rs-module-lexer: 2.6.0
+      semver: 7.7.2
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@swc/core': 1.13.5
+      esbuild: 0.25.10
+      sucrase: 3.35.0
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@types/node'
+      - picomatch
+      - rolldown
+      - yaml
+
+  '@visulima/packem-share@1.0.0-alpha.11(@types/node@24.5.2)(rollup@4.50.2)(yaml@2.8.1)':
+    dependencies:
+      '@visulima/colorize': 1.4.23
+      '@visulima/fs': 3.1.7(yaml@2.8.1)
+      '@visulima/package': 3.5.10(@types/node@24.5.2)(yaml@2.8.1)
+      '@visulima/path': 1.4.0
+      rollup: 4.50.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - yaml
+
+  '@visulima/packem-share@1.0.0-alpha.12(@types/node@24.6.2)(rollup@4.52.4)(yaml@2.8.1)':
+>>>>>>> 7ce7ea056 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
+>>>>>>> d5259997e (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
+>>>>>>> c2c521714 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
     dependencies:
       '@visulima/colorize': 1.4.23
       '@visulima/fs': 3.1.8(yaml@2.8.1)
@@ -54684,6 +54955,17 @@ snapshots:
       '@visulima/colorize': 1.4.23
       '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/package': 4.0.0(@types/node@24.7.0)
+      '@visulima/path': 1.4.0
+      rollup: 4.52.4
+    transitivePeerDependencies:
+      - '@types/node'
+      - yaml
+
+  '@visulima/packem-share@1.0.0-alpha.13(@types/node@24.7.1)(rollup@4.52.4)(yaml@2.8.1)':
+    dependencies:
+      '@visulima/colorize': 1.4.23
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
+      '@visulima/package': 4.0.0(@types/node@24.7.1)
       '@visulima/path': 1.4.0
       rollup: 4.52.4
     transitivePeerDependencies:
@@ -56090,7 +56372,7 @@ snapshots:
       defu: 6.1.4
       fastest-levenshtein: 1.0.16
       hookable: 5.5.3
-      html-minifier-next: 2.1.6
+      html-minifier-next: 2.1.7
       jiti: 2.6.0
       magic-string: 0.30.19
       mlly: 1.8.0
@@ -56135,7 +56417,7 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/packem@2.0.0-alpha.27(a05d3906de511a3bfa99cb4deb90361b)':
+  '@visulima/packem@2.0.0-alpha.28(a05d3906de511a3bfa99cb4deb90361b)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -56146,7 +56428,7 @@ snapshots:
       '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/humanizer': 1.2.2
       '@visulima/package': 4.0.0(@types/node@24.6.1)
-      '@visulima/packem-rollup': 1.0.0-alpha.21(@swc/core@1.13.5)(@types/node@24.6.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.42)(rollup@4.52.4)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+      '@visulima/packem-rollup': 1.0.0-alpha.22(@swc/core@1.13.5)(@types/node@24.6.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.42)(rollup@4.52.4)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
       '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.6.1)(rollup@4.52.4)(yaml@2.8.1)
       '@visulima/pail': 2.1.28(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
       '@visulima/path': 1.4.0
@@ -56160,7 +56442,77 @@ snapshots:
       defu: 6.1.4
       fastest-levenshtein: 1.0.16
       hookable: 5.5.3
-      html-minifier-next: 2.1.6
+      html-minifier-next: 2.1.7
+      jiti: 2.6.0
+      magic-string: 0.30.19
+      mlly: 1.8.0
+      package-manager-detector: 1.3.0
+      picomatch: 4.0.3
+      rollup: 4.52.4
+      semver: 7.7.2
+      tinyexec: 1.0.1
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@arethetypeswrong/core': 0.18.2
+      '@swc/core': 1.13.5
+      '@tailwindcss/node': 4.1.14
+      '@tailwindcss/oxide': 4.1.14
+      cssnano: 7.1.1(postcss@8.5.6)
+      esbuild: 0.25.10
+      icss-utils: 5.1.0(postcss@8.5.6)
+      lightningcss: 1.30.2
+      postcss: 8.5.6
+      postcss-load-config: 6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1)
+      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
+      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
+      postcss-modules-scope: 3.2.1(postcss@8.5.6)
+      postcss-modules-values: 4.0.0(postcss@8.5.6)
+      postcss-value-parser: 4.2.0
+      sucrase: 3.35.0
+      typedoc: 0.28.13(typescript@5.9.3)
+      typedoc-plugin-markdown: 4.9.0(typedoc@0.28.13(typescript@5.9.3))
+      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.13(typescript@5.9.3))
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@75lb/nature'
+      - '@csstools/css-parser-algorithms'
+      - '@csstools/css-tokenizer'
+      - '@csstools/postcss-slow-plugins'
+      - '@types/node'
+      - '@visulima/css-style-inject'
+      - '@visulima/redact'
+      - ai
+      - p-queue
+      - rolldown
+      - rotating-file-stream
+      - yaml
+
+  '@visulima/packem@2.0.0-alpha.28(be91b735bc1766765c8a2110f7b3529a)':
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@clack/prompts': 0.11.0
+      '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
+      '@visulima/cerebro': 1.1.50(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)(yaml@2.8.1)
+      '@visulima/colorize': 1.4.23
+      '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
+      '@visulima/humanizer': 1.2.2
+      '@visulima/package': 4.0.0(@types/node@24.7.1)
+      '@visulima/packem-rollup': 1.0.0-alpha.22(@swc/core@1.13.5)(@types/node@24.7.1)(esbuild@0.25.10)(picomatch@4.0.3)(rolldown@1.0.0-beta.42)(rollup@4.52.4)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.7.1)(rollup@4.52.4)(yaml@2.8.1)
+      '@visulima/pail': 2.1.28(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)
+      '@visulima/path': 1.4.0
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.14)(@tailwindcss/oxide@4.1.14)(@types/node@24.7.1)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.4)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.13(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.13(typescript@5.9.3)))(typedoc@0.28.13(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
+      '@visulima/source-map': 1.0.20
+      '@visulima/tabular': 1.0.11
+      '@visulima/tsconfig': 1.1.22(yaml@2.8.1)
+      browserslist: 4.26.2
+      cjs-module-lexer: 2.1.0
+      clean-css: 5.3.3
+      defu: 6.1.4
+      fastest-levenshtein: 1.0.16
+      hookable: 5.5.3
+      html-minifier-next: 2.1.7
       jiti: 2.6.0
       magic-string: 0.30.19
       mlly: 1.8.0
@@ -56531,6 +56883,45 @@ snapshots:
       '@visulima/fs': 3.1.8(yaml@2.8.1)
       '@visulima/package': 4.0.0(@types/node@24.7.0)
       '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.7.0)(rollup@4.52.4)(yaml@2.8.1)
+      '@visulima/path': 1.4.0
+      mlly: 1.8.0
+      oxc-resolver: 11.8.2
+      p-queue: 9.0.0
+      rollup: 4.52.4
+      source-map-js: 1.2.1
+    optionalDependencies:
+      '@swc/core': 1.13.5
+      '@tailwindcss/node': 4.1.14
+      '@tailwindcss/oxide': 4.1.14
+      cssnano: 7.1.1(postcss@8.5.6)
+      esbuild: 0.25.10
+      icss-utils: 5.1.0(postcss@8.5.6)
+      lightningcss: 1.30.2
+      postcss: 8.5.6
+      postcss-load-config: 6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1)
+      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
+      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
+      postcss-modules-scope: 3.2.1(postcss@8.5.6)
+      postcss-modules-values: 4.0.0(postcss@8.5.6)
+      postcss-value-parser: 4.2.0
+      sucrase: 3.35.0
+      typedoc: 0.28.13(typescript@5.9.3)
+      typedoc-plugin-markdown: 4.9.0(typedoc@0.28.13(typescript@5.9.3))
+      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.13(typescript@5.9.3))
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@types/node'
+      - yaml
+
+  '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.14)(@tailwindcss/oxide@4.1.14)(@types/node@24.7.1)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.10)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.0)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.4)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.13(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.13(typescript@5.9.3)))(typedoc@0.28.13(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
+    dependencies:
+      '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-tokenizer': 3.0.4
+      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.5.6)
+      '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
+      '@visulima/fs': 3.1.8(yaml@2.8.1)
+      '@visulima/package': 4.0.0(@types/node@24.7.1)
+      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.7.1)(rollup@4.52.4)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       mlly: 1.8.0
       oxc-resolver: 11.8.2
@@ -66357,7 +66748,15 @@ snapshots:
 
   html-escaper@2.0.2: {}
 
+<<<<<<< HEAD
   html-minifier-next@4.1.1:
+=======
+<<<<<<< HEAD
+  html-minifier-next@3.1.0:
+=======
+  html-minifier-next@2.1.7:
+>>>>>>> 7ce7ea056 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
+>>>>>>> c2c521714 (feat: Add .cursorignore file and update pnpm-lock.yaml for @visulima/packem to version 2.0.0-alpha.28. Enhance storage package with new metadata handling and improve test coverage for disk storage operations. Update VSCode settings for TypeScript SDK path and refine LICENSE.md with additional licenses.)
     dependencies:
       '@types/relateurl': 0.2.33
       change-case: 4.1.2
