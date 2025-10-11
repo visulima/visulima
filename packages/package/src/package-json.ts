@@ -216,11 +216,40 @@ export type NormalizedReadResult = {
 
 /**
  * An asynchronous function to find the package.json, package.yaml, or package.json5 file in the specified directory or its parent directories.
+ * 
+ * **File Discovery Order:**
+ * - Default: `package.yaml` → `package.json5` → `package.json`
+ * - Custom: Use `fileOrder` option to specify custom search priority
+ * 
  * @param cwd The current working directory.
- * @param options Configuration options including yaml, json5, and resolveCatalogs flags.
+ * @param options Configuration options including file format preferences and custom search order.
+ * @param options.yaml Whether to enable package.yaml parsing (default: true)
+ * @param options.json5 Whether to enable package.json5 parsing (default: true)
+ * @param options.fileOrder Custom file search order array. Valid values: "json", "yaml", "json5"
+ * @param options.resolveCatalogs Whether to resolve pnpm catalog references
+ * @param options.strict Whether to throw errors on normalization warnings
+ * @param options.cache Cache for parsed results
+ * @param options.ignoreWarnings List of warning messages or patterns to skip in strict mode
  * @returns A `Promise` that resolves to an object containing the parsed package data and the file path.
  * The type of the returned promise is `Promise&lt;NormalizedReadResult>`.
  * @throws {Error} If no package file can be found or if strict mode is enabled and normalize warnings are thrown.
+ * 
+ * @example
+ * ```typescript
+ * // Default order: yaml → json5 → json
+ * const result = await findPackageJson('/path/to/project');
+ * 
+ * // Custom order: json5 → yaml → json
+ * const result = await findPackageJson('/path/to/project', {
+ *   fileOrder: ['json5', 'yaml', 'json']
+ * });
+ * 
+ * // Disable yaml, use json5 → json order
+ * const result = await findPackageJson('/path/to/project', {
+ *   yaml: false,
+ *   fileOrder: ['json5', 'json']
+ * });
+ * ```
  */
 export const findPackageJson = async (cwd?: URL | string, options: ReadOptions = {}): Promise<NormalizedReadResult> => {
     const findUpConfig: FindUpOptions = {
@@ -283,10 +312,33 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
 
 /**
  * A synchronous function to find the package.json, package.yaml, or package.json5 file in the specified directory or its parent directories.
+ * 
+ * **File Discovery Order:**
+ * - Default: `package.yaml` → `package.json5` → `package.json`
+ * - Custom: Use `fileOrder` option to specify custom search priority
+ * 
  * @param cwd The current working directory.
- * @param options Configuration options including yaml, json5, and resolveCatalogs flags.
+ * @param options Configuration options including file format preferences and custom search order.
+ * @param options.yaml Whether to enable package.yaml parsing (default: true)
+ * @param options.json5 Whether to enable package.json5 parsing (default: true)
+ * @param options.fileOrder Custom file search order array. Valid values: "json", "yaml", "json5"
+ * @param options.resolveCatalogs Whether to resolve pnpm catalog references
+ * @param options.strict Whether to throw errors on normalization warnings
+ * @param options.cache Cache for parsed results
+ * @param options.ignoreWarnings List of warning messages or patterns to skip in strict mode
  * @returns An object containing the parsed package data and the file path.
  * @throws {Error} If no package file can be found or if strict mode is enabled and normalize warnings are thrown.
+ * 
+ * @example
+ * ```typescript
+ * // Default order: yaml → json5 → json
+ * const result = findPackageJsonSync('/path/to/project');
+ * 
+ * // Custom order: json → yaml → json5
+ * const result = findPackageJsonSync('/path/to/project', {
+ *   fileOrder: ['json', 'yaml', 'json5']
+ * });
+ * ```
  */
 export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {}): NormalizedReadResult => {
     const findUpConfig: FindUpOptions = {
@@ -372,16 +424,36 @@ export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJso
 
 /**
  * A synchronous function to parse the package.json, package.yaml, or package.json5 file/object/string and return normalize the data.
- * @param packageFile
- * @param options
+ * 
+ * **File Discovery Order (for file paths):**
+ * - Default: `package.yaml` → `package.json5` → `package.json`
+ * - Custom: Use `fileOrder` option to specify custom search priority
+ * 
+ * @param packageFile The package file path, object, or JSON string to parse
+ * @param options Configuration options for parsing behavior
  * @param options.cache Cache for parsed results (only applies to file paths)
  * @param options.ignoreWarnings List of warning messages or patterns to skip in strict mode
  * @param options.resolveCatalogs Whether to resolve pnpm catalog references
  * @param options.strict Whether to throw errors on normalization warnings
  * @param options.yaml Whether to enable package.yaml parsing (default: true)
  * @param options.json5 Whether to enable package.json5 parsing (default: true)
- * @returns
+ * @param options.fileOrder Custom file search order array. Valid values: "json", "yaml", "json5"
+ * @returns The normalized package.json data
  * @throws {Error} If the packageFile parameter is not an object or a string or if strict mode is enabled and normalize warnings are thrown.
+ * 
+ * @example
+ * ```typescript
+ * // Parse file with default order
+ * const result = parsePackageJsonSync('/path/to/package.yaml');
+ * 
+ * // Parse file with custom order
+ * const result = parsePackageJsonSync('/path/to/project', {
+ *   fileOrder: ['json5', 'yaml', 'json']
+ * });
+ * 
+ * // Parse object directly
+ * const result = parsePackageJsonSync({ name: 'my-package', version: '1.0.0' });
+ * ```
  */
 export const parsePackageJsonSync = (
     packageFile: JsonObject | string,
@@ -456,16 +528,36 @@ export const parsePackageJsonSync = (
 
 /**
  * An asynchronous function to parse the package.json, package.yaml, or package.json5 file/object/string and return normalize the data.
- * @param packageFile
- * @param options
+ * 
+ * **File Discovery Order (for file paths):**
+ * - Default: `package.yaml` → `package.json5` → `package.json`
+ * - Custom: Use `fileOrder` option to specify custom search priority
+ * 
+ * @param packageFile The package file path, object, or JSON string to parse
+ * @param options Configuration options for parsing behavior
  * @param options.cache Cache for parsed results (only applies to file paths)
  * @param options.ignoreWarnings List of warning messages or patterns to skip in strict mode
  * @param options.strict Whether to throw errors on normalization warnings
  * @param options.resolveCatalogs Whether to resolve pnpm catalog references
  * @param options.yaml Whether to enable package.yaml parsing (default: true)
  * @param options.json5 Whether to enable package.json5 parsing (default: true)
- * @returns
+ * @param options.fileOrder Custom file search order array. Valid values: "json", "yaml", "json5"
+ * @returns A Promise that resolves to the normalized package.json data
  * @throws {Error} If the packageFile parameter is not an object or a string or if strict mode is enabled and normalize warnings are thrown.
+ * 
+ * @example
+ * ```typescript
+ * // Parse file with default order
+ * const result = await parsePackageJson('/path/to/package.yaml');
+ * 
+ * // Parse file with custom order
+ * const result = await parsePackageJson('/path/to/project', {
+ *   fileOrder: ['json5', 'yaml', 'json']
+ * });
+ * 
+ * // Parse object directly
+ * const result = await parsePackageJson({ name: 'my-package', version: '1.0.0' });
+ * ```
  */
 export const parsePackageJson = async (
     packageFile: JsonObject | string,

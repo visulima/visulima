@@ -1,7 +1,7 @@
 <div align="center">
   <h3>Visulima package</h3>
   <p>
-  A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution and caching.
+  A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution, customizable file discovery order, and caching.
 
 Built on top of
 
@@ -103,11 +103,26 @@ const result = await findPackageJson("/path/to/project", {
 });
 ```
 
-**File Search Priority**: The function searches for files in the following order:
+**File Search Priority**: The function searches for files in the following order by default:
 
-1. `package.json` (highest priority)
-2. `package.yaml`
-3. `package.json5` (lowest priority)
+1. `package.yaml` (highest priority)
+2. `package.json5`
+3. `package.json` (lowest priority)
+
+You can customize the search order using the `fileOrder` option:
+
+```typescript
+// Custom order: json5 → yaml → json
+const result = await findPackageJson("/path/to/project", {
+    fileOrder: ["json5", "yaml", "json"]
+});
+
+// Disable yaml, use json5 → json order
+const result = await findPackageJson("/path/to/project", {
+    yaml: false,
+    fileOrder: ["json5", "json"]
+});
+```
 
 **Supported Formats**:
 
@@ -174,10 +189,11 @@ const packageJson = await parsePackageJson("./package.json", {
     resolveCatalogs: true,
 });
 
-// With format control and caching options
+// With format control, custom file order, and caching options
 const packageJson = await parsePackageJson("./package.yaml", {
     yaml: true, // Enable package.yaml support (default: true)
     json5: false, // Disable package.json5 support (default: true)
+    fileOrder: ["json5", "yaml", "json"], // Custom file search order
     resolveCatalogs: true, // Resolve pnpm catalog references (default: false)
     cache: true, // Enable caching for file-based parsing (default: false)
 });
@@ -202,6 +218,27 @@ const packageJson = parsePackageJsonSync("./package.json", {
 - `.json` → JSON parsing
 - `.yaml` or `.yml` → YAML parsing
 - `.json5` → JSON5 parsing
+
+**File Discovery Order**: When searching for package files (not when parsing a specific file), the default order is:
+
+1. `package.yaml` (highest priority)
+2. `package.json5`
+3. `package.json` (lowest priority)
+
+You can customize this order using the `fileOrder` option:
+
+```typescript
+// Custom search order: json → yaml → json5
+const result = await parsePackageJson("/path/to/project", {
+    fileOrder: ["json", "yaml", "json5"]
+});
+
+// Disable yaml, search json5 → json only
+const result = await parsePackageJson("/path/to/project", {
+    yaml: false,
+    fileOrder: ["json5", "json"]
+});
+```
 
 **Caching**: When `cache: true` is set, the function uses a global cache to store parsed results for file-based inputs only (not for object or JSON string inputs). This can improve performance when parsing the same file multiple times.
 
