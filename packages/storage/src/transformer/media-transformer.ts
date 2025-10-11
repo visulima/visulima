@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
 
-import mime from "mime/lite";
+import mime from "mime";
 
 import type BaseStorage from "../storage/storage";
 import type { File, FileQuery, FileReturn } from "../storage/utils/file";
+import { NoOpCache } from "../utils/cache";
 import type { Logger } from "../utils/types";
 import type BaseTransformer from "./base-transformer";
 import type {
@@ -30,7 +31,7 @@ import ValidationError from "./validation-error";
  *   maxImageSize: 10 * 1024 * 1024, // 10MB
  *   maxVideoSize: 100 * 1024 * 1024, // 100MB
  *   maxAudioSize: 50 * 1024 * 1024, // 50MB
- *   enableCache: true, // In-memory caching
+ *   cache: new MapCache(), // In-memory caching
  *   saveTransformedFiles: true // Persist transformed files to storage
  * });
  *
@@ -53,7 +54,7 @@ import ValidationError from "./validation-error";
  * ## Configuration Options
  *
  * - `saveTransformedFiles`: Persist transformed files to storage for reuse (default: false)
- * - `enableCache`: Enable in-memory caching (default: false)
+ * - `cache`: Cache instance for in-memory caching (optional)
  * - `maxImageSize/maxVideoSize/maxAudioSize`: Size limits for processing
  * - `cacheTtl`: Cache time-to-live in seconds
  *
@@ -146,8 +147,8 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         this.config = {
             audioBitrate: 128_000, // 128 kbps
             audioCodec: "aac",
+            cache: config.cache ?? new NoOpCache(),
             cacheTtl: 3600, // 1 hour
-            enableCache: false,
             maxAudioSize: 100 * 1024 * 1024, // 100MB
             maxImageSize: 10 * 1024 * 1024, // 10MB
             maxVideoSize: 500 * 1024 * 1024, // 500MB
@@ -166,8 +167,8 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             }
 
             this.imageTransformer = new config.ImageTransformer(this.storage, {
+                cache: this.config.cache,
                 cacheTtl: this.config.cacheTtl,
-                enableCache: this.config.enableCache,
                 logger: this.logger,
                 maxImageSize: this.config.maxImageSize,
                 supportedFormats: this.config.supportedImageFormats,
@@ -180,10 +181,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             }
 
             this.videoTransformer = new config.VideoTransformer(this.storage, {
+                cache: this.config.cache,
                 cacheTtl: this.config.cacheTtl,
                 defaultBitrate: this.config.videoBitrate,
                 defaultCodec: this.config.videoCodec,
-                enableCache: this.config.enableCache,
                 logger: this.logger,
                 maxVideoSize: this.config.maxVideoSize,
                 supportedFormats: this.config.supportedVideoFormats,
@@ -196,10 +197,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             }
 
             this.audioTransformer = new config.AudioTransformer(this.storage, {
+                cache: this.config.cache,
                 cacheTtl: this.config.cacheTtl,
                 defaultBitrate: this.config.audioBitrate,
                 defaultCodec: this.config.audioCodec,
-                enableCache: this.config.enableCache,
                 logger: this.logger,
                 maxAudioSize: this.config.maxAudioSize,
                 supportedFormats: this.config.supportedAudioFormats,

@@ -21,6 +21,7 @@ pnpm add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-pr
 ## Usage
 
 ```ts
+import { LRUCache } from "lru-cache";
 import { S3Storage, ImageTransformer } from "@visulima/upload";
 
 const storage = new S3Storage({
@@ -34,10 +35,16 @@ const storage = new S3Storage({
     logger: console,
 });
 
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
 // Initialize image transformer for on-demand transformations
 const imageTransformer = new ImageTransformer(storage, {
+    cache,
     maxImageSize: 10 * 1024 * 1024, // 10MB
-    enableCache: true,
     cacheTtl: 3600, // 1 hour
 });
 

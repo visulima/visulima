@@ -59,7 +59,6 @@ describe(MediaTransformer, () => {
     beforeEach(() => {
         vi.clearAllMocks();
         transformer = new MediaTransformer(mockStorage as any, {
-            enableCache: false,
             ImageTransformer: MockImageTransformer,
         });
     });
@@ -79,8 +78,8 @@ describe(MediaTransformer, () => {
             expect.assertions(1);
 
             const config: MediaTransformerConfig = {
+                cache: new Map(),
                 cacheTtl: 7200,
-                enableCache: true,
                 ImageTransformer: MockImageTransformer,
                 maxAudioSize: 50 * 1024 * 1024,
                 maxImageSize: 5 * 1024 * 1024,
@@ -90,50 +89,6 @@ describe(MediaTransformer, () => {
             const transformer = new MediaTransformer(mockStorage as any, config);
 
             expect(transformer).toBeInstanceOf(MediaTransformer);
-        });
-    });
-
-    describe("cache management", () => {
-        it("should clear cache for specific file", () => {
-            expect.assertions(0);
-
-            const transformer = new MediaTransformer(mockStorage as any, {
-                enableCache: true,
-                ImageTransformer: MockImageTransformer,
-            });
-
-            // Should not throw
-            transformer.clearCache("test-file-id");
-        });
-
-        it("should clear entire cache", () => {
-            expect.assertions(0);
-
-            const transformer = new MediaTransformer(mockStorage as any, {
-                enableCache: true,
-                ImageTransformer: MockImageTransformer,
-            });
-
-            // Should not throw
-            transformer.clearCache();
-        });
-
-        it("should return cache stats when caching is enabled", () => {
-            expect.assertions(1);
-
-            const transformer = new MediaTransformer(mockStorage as any, {
-                enableCache: true,
-                ImageTransformer: MockImageTransformer,
-            });
-
-            const stats = transformer.getCacheStats();
-
-            expect(stats).toBeDefined();
-
-            // When caching is enabled, cache stats should be available
-            expectTypeOf(stats.image).toBeObject();
-            expectTypeOf(stats.video).toBeObject();
-            expectTypeOf(stats.audio).toBeObject();
         });
     });
 
@@ -212,7 +167,6 @@ describe(MediaTransformer, () => {
 
         beforeEach(() => {
             transformer = new MediaTransformer(mockStorage as any, {
-                enableCache: false,
                 ImageTransformer: MockImageTransformer,
             });
         });

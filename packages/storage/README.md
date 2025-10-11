@@ -91,6 +91,139 @@ yarn add @google-cloud/storage node-fetch gaxios
 pnpm add @google-cloud/storage node-fetch gaxios
 ```
 
+## Caching
+
+The storage package supports caching to improve performance and reduce API calls. You provide your own cache implementation that follows the simple `Cache` interface.
+
+### LRU Cache
+
+Use the built-in LRU cache for simple in-memory caching:
+
+```typescript
+import { LRUCache } from "lru-cache";
+import { DiskStorage } from "@visulima/storage";
+
+const cache = new LRUCache({
+    max: 1000, // Maximum number of items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
+const storage = new DiskStorage({
+    directory: "/uploads",
+    cache,
+});
+```
+
+### Custom Cache Implementation
+
+Implement the `Cache` interface for any cache provider:
+
+```typescript
+import { DiskStorage, type Cache } from "@visulima/storage";
+import { Redis } from "ioredis";
+
+// Custom Redis cache implementation
+class RedisCache implements Cache<string, any> {
+    constructor(private redis: Redis) {}
+
+    async get(key: string): Promise<any | undefined> {
+        const value = await this.redis.get(key);
+        return value ? JSON.parse(value) : undefined;
+    }
+
+    async set(key: string, value: any): Promise<boolean> {
+        await this.redis.set(key, JSON.stringify(value));
+        return true;
+    }
+
+    async delete(key: string): Promise<boolean> {
+        await this.redis.del(key);
+        return true;
+    }
+
+    async clear(): Promise<void> {
+        await this.redis.flushall();
+    }
+
+    async has(key: string): Promise<boolean> {
+        const exists = await this.redis.exists(key);
+        return exists === 1;
+    }
+}
+
+const redis = new Redis();
+const cache = new RedisCache(redis);
+
+const storage = new DiskStorage({
+    directory: "/uploads",
+    cache,
+});
+```
+
+### BentoCache Integration
+
+For advanced multi-tier caching, use BentoCache with the adapter:
+
+```typescript
+import { BentoCache, bentostore } from "bentocache";
+import { memoryDriver } from "bentocache/drivers/memory";
+import { redisDriver } from "bentocache/drivers/redis";
+import { BentoCacheAdapter } from "@visulima/storage/utils/cache";
+
+const bento = new BentoCache({
+    default: "storage",
+    stores: {
+        storage: bentostore()
+            .useL1Layer(memoryDriver({ maxSize: "10mb" }))
+            .useL2Layer(
+                redisDriver({
+                    connection: { host: "127.0.0.1", port: 6379 },
+                }),
+            ),
+    },
+});
+
+const cache = new BentoCacheAdapter({
+    bento,
+    namespace: "storage",
+    defaultTtl: 3600000, // 1 hour
+});
+
+const storage = new DiskStorage({
+    directory: "/uploads",
+    cache,
+});
+```
+
+### Transformer Caching
+
+```typescript
+import { MediaTransformer } from "@visulima/upload";
+import { LRUCache } from "lru-cache";
+
+const transformer = new MediaTransformer(storage, {
+    cache: new LRUCache({ max: 100, ttl: 3600000 }),
+    ImageTransformer: ImageTransformer,
+    VideoTransformer: VideoTransformer,
+});
+```
+
+### Cache Interface
+
+Any cache implementation must implement this interface:
+
+```typescript
+interface Cache<K = string, V = any> {
+    get(key: K): V | undefined | Promise<V | undefined>;
+    set(key: K, value: V, options?: { ttl?: number }): boolean | Promise<boolean>;
+    delete(key: K): boolean | Promise<boolean>;
+    clear(): void | Promise<void>;
+    has(key: K): boolean | Promise<boolean>;
+}
+```
+
+For more information, see the [BentoCache documentation](https://bentocache.dev/docs/introduction).
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track

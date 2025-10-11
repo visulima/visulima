@@ -89,6 +89,7 @@ This approach eliminates the need for manual parsing and response creation, maki
 
 ```ts
 // app/api/files/[id]/route.ts
+import { LRUCache } from "lru-cache";
 import { DiskStorage, ImageTransformer } from "@visulima/upload";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -97,10 +98,16 @@ const uploadDirectory = "./uploads";
 // Initialize storage
 const storage = new DiskStorage({ directory: uploadDirectory });
 
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
 // Initialize image transformer
 const imageTransformer = new ImageTransformer(storage, {
+    cache,
     maxImageSize: 10 * 1024 * 1024, // 10MB
-    enableCache: true,
     cacheTtl: 3600, // 1 hour
 });
 
@@ -304,13 +311,21 @@ Create server-side transformations for pre-processing:
 
 ```ts
 // app/api/transform/route.ts
+import { LRUCache } from "lru-cache";
 import { DiskStorage, ImageTransformer } from "@visulima/upload";
 import { NextRequest, NextResponse } from "next/server";
 
 const storage = new DiskStorage({ directory: "./uploads" });
+
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
 const imageTransformer = new ImageTransformer(storage, {
+    cache,
     maxImageSize: 10 * 1024 * 1024,
-    enableCache: true,
 });
 
 export async function POST(request: NextRequest) {
@@ -359,7 +374,6 @@ export const storage = new DiskStorage({
 
 export const imageTransformer = new ImageTransformer(storage, {
     maxImageSize: parseInt(process.env.MAX_IMAGE_SIZE || "10485760"),
-    enableCache: true,
     cacheTtl: parseInt(process.env.CACHE_TTL || "3600"),
     logger: console,
 });

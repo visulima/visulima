@@ -33,7 +33,7 @@ import { getFormatFromContentType, isValidMediaType } from "./utils";
  * ```ts
  * const transformer = new AudioTransformer(storage, {
  *   maxAudioSize: 50 * 1024 * 1024, // 50MB
- *   enableCache: true
+ *   cache: new Map()
  * });
  *
  * // Programmatic usage - resample audio
@@ -72,7 +72,6 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
             cacheTtl: 3600, // 1 hour
             defaultBitrate: 128_000, // 128 kbps
             defaultCodec: "aac" as const,
-            enableCache: false,
             maxAudioSize: 100 * 1024 * 1024, // 100MB
             maxCacheSize: 100, // Max 100 transformed audio files in cache
             supportedFormats: ["mp3", "wav", "ogg", "aac", "flac", "m4a", "wma", "aiff"],
@@ -121,8 +120,9 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
         const fileQuery: FileQuery = { id: fileId };
         const cacheKey = this.generateCacheKey(fileId, steps);
 
+
         // Check cache first
-        if (this.cache && this.config.enableCache) {
+        if (this.cache) {
             const cached = this.cache.get(cacheKey);
 
             if (cached) {
@@ -144,7 +144,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
         const result = await this.createTransformResult(transformedBuffer, originalFile);
 
         // Cache the result
-        if (this.cache && this.config.enableCache) {
+        if (this.cache) {
             this.cache.set(cacheKey, result);
         }
 
@@ -374,53 +374,11 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Unique cache key string
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private generateCacheKey(fileId: string, steps: AudioTransformationStep[]): string {
         const stepsKey = steps.map((step) => `${step.type}:${JSON.stringify(step.options)}`).join("|");
 
         return `${fileId}:${stepsKey}`;
-    }
-
-    /**
-     * Clear cache for a specific file or all files
-     * @param fileId Optional file identifier. If provided, clears cache only for this file. If omitted, clears entire cache.
-     * @override
-     */
-    public override clearCache(fileId?: string): void {
-        if (!this.cache) {
-            return;
-        }
-
-        if (fileId) {
-            // Clear all cache entries for this file
-            const keysToDelete: string[] = [];
-
-            for (const key of this.cache.keys()) {
-                if (key.startsWith(`${fileId}:`)) {
-                    keysToDelete.push(key);
-                }
-            }
-
-            keysToDelete.forEach((key) => this.cache!.delete(key));
-        } else {
-            // Clear entire cache
-            this.cache.clear();
-        }
-    }
-
-    /**
-     * Get cache statistics
-     * @returns Cache statistics with maxSize and current size, or undefined if caching is disabled
-     * @override
-     */
-    public override getCacheStats(): { maxSize: number; size: number } | undefined {
-        if (!this.cache) {
-            return undefined;
-        }
-
-        return {
-            maxSize: this.cache.max,
-            size: this.cache.size,
-        };
     }
 }
 

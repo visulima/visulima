@@ -29,9 +29,7 @@ describe(VideoTransformer, () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        transformer = new VideoTransformer(mockStorage as any, {
-            enableCache: false,
-        });
+        transformer = new VideoTransformer(mockStorage as any, {});
     });
 
     describe("constructor", () => {
@@ -47,65 +45,14 @@ describe(VideoTransformer, () => {
             expect.assertions(1);
 
             const config: VideoTransformerConfig = {
+                cache: new Map(),
                 cacheTtl: 7200,
-                enableCache: true,
                 maxVideoSize: 100 * 1024 * 1024,
             };
 
             const transformer = new VideoTransformer(mockStorage as any, config);
 
             expect(transformer).toBeInstanceOf(VideoTransformer);
-        });
-    });
-
-    describe("cache management", () => {
-        it("should clear cache for specific file", () => {
-            expect.assertions(0);
-
-            const transformer = new VideoTransformer(mockStorage as any, {
-                enableCache: true,
-            });
-
-            // Should not throw
-            transformer.clearCache("test-file-id");
-        });
-
-        it("should clear entire cache", () => {
-            expect.assertions(0);
-
-            const transformer = new VideoTransformer(mockStorage as any, {
-                enableCache: true,
-            });
-
-            // Should not throw
-            transformer.clearCache();
-        });
-
-        it("should return cache stats when cache is enabled", () => {
-            expect.assertions(1);
-
-            const transformer = new VideoTransformer(mockStorage as any, {
-                enableCache: true,
-            });
-
-            const stats = transformer.getCacheStats();
-
-            expect(stats).toBeDefined();
-
-            expectTypeOf(stats?.maxSize).toBeNumber();
-            expectTypeOf(stats?.size).toBeNumber();
-        });
-
-        it("should return undefined cache stats when cache is disabled", () => {
-            expect.assertions(1);
-
-            const transformer = new VideoTransformer(mockStorage as any, {
-                enableCache: false,
-            });
-
-            const stats = transformer.getCacheStats();
-
-            expect(stats).toBeUndefined();
         });
     });
 

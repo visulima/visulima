@@ -1,9 +1,11 @@
 import { Readable } from "node:stream";
 
-import { LRUCache as Cache } from "lru-cache";
+import mime from "mime";
 
 import type BaseStorage from "../storage/storage";
 import type { File, FileReturn } from "../storage/utils/file";
+import type { Cache } from "../utils/cache";
+import { NoOpCache } from "../utils/cache";
 import type { Logger } from "../utils/types";
 import type { BaseTransformerConfig } from "./types";
 
@@ -40,23 +42,8 @@ abstract class BaseTransformer<
         this.config = config;
         this.logger = logger;
 
-        if (config.enableCache) {
-            this.cache = new Cache({
-                max: config.maxCacheSize || 100, // Default cache size
-                ttl: (config.cacheTtl || 3600) * 1000, // Convert to milliseconds, default 1 hour
-            });
-        }
+        this.cache = config.cache ?? new NoOpCache();
     }
-
-    /**
-     * Clear cache for a specific file or all files
-     */
-    public abstract clearCache(fileId?: string): void;
-
-    /**
-     * Get cache statistics
-     */
-    public abstract getCacheStats(): { maxSize: number; size: number } | undefined;
 
     /**
      * Transform a file with the given steps
@@ -90,8 +77,17 @@ abstract class BaseTransformer<
     /**
      * Get content type from transformation result
      */
-    protected getContentTypeFromResult(_result: any): string {
-        // Default implementation - should be overridden by subclasses
+    // eslint-disable-next-line class-methods-use-this
+    protected getContentTypeFromResult(result: any): string {
+        // If result has a format, try to get content type from mime
+        if (result?.format) {
+            const contentType = mime.getType(result.format);
+
+            if (contentType) {
+                return contentType;
+            }
+        }
+
         return "application/octet-stream";
     }
 }

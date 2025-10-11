@@ -149,13 +149,21 @@ GET /files/animation.gif?width=400&height=300&loop=0&delay=100
 Use the ImageTransformer class for programmatic image processing:
 
 ```ts
+import { LRUCache } from "lru-cache";
 import { DiskStorage, ImageTransformer } from "@visulima/upload";
 
 const storage = new DiskStorage({ directory: "./uploads" });
+
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
 const transformer = new ImageTransformer(storage, {
-    maxImageSize: 10 * 1024 * 1024, // 10MB
-    enableCache: true,
+    cache,
     cacheTtl: 3600, // 1 hour
+    maxImageSize: 10 * 1024 * 1024, // 10MB
 });
 
 // Resize an image
