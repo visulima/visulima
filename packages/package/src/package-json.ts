@@ -28,9 +28,52 @@ type ReadOptions = {
     resolveCatalogs?: boolean;
     strict?: boolean;
     yaml?: boolean;
+    fileOrder?: ("json" | "yaml" | "json5")[];
 };
 
 const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
+
+/**
+ * Builds the search patterns array based on options and file order preference.
+ * @param options The read options containing file format preferences and custom order
+ * @returns Array of file patterns to search for in order
+ */
+const buildSearchPatterns = (options: ReadOptions = {}): string[] => {
+    const { yaml = true, json5 = true, fileOrder } = options;
+    
+    // If custom file order is provided, use it (filtering out disabled formats)
+    if (fileOrder) {
+        return fileOrder
+            .filter(format => {
+                if (format === "yaml") return yaml !== false;
+                if (format === "json5") return json5 !== false;
+                if (format === "json") return true; // json is always enabled
+                return false;
+            })
+            .map(format => {
+                if (format === "yaml") return ["package.yaml", "package.yml"];
+                if (format === "json5") return "package.json5";
+                if (format === "json") return "package.json";
+                return [];
+            })
+            .flat();
+    }
+    
+    // Default order: yaml → json5 → json
+    const patterns = [];
+    
+    if (yaml !== false) {
+        patterns.push("package.yaml", "package.yml");
+    }
+    
+    if (json5 !== false) {
+        patterns.push("package.json5");
+    }
+    
+    patterns.push("package.json");
+    
+    return patterns;
+};
 
 class PackageJsonValidationError extends Error {
     public constructor(warnings: string[]) {
@@ -188,16 +231,8 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
         findUpConfig.cwd = cwd;
     }
 
-    // Define the search patterns based on enabled options
-    const searchPatterns = ["package.json"];
-
-    if (options.yaml !== false) {
-        searchPatterns.push("package.yaml", "package.yml");
-    }
-
-    if (options.json5 !== false) {
-        searchPatterns.push("package.json5");
-    }
+    // Build search patterns based on options and file order preference
+    const searchPatterns = buildSearchPatterns(options);
 
     let filePath: string | undefined;
 
@@ -262,16 +297,8 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
         findUpConfig.cwd = cwd;
     }
 
-    // Define the search patterns based on enabled options
-    const searchPatterns = ["package.json"];
-
-    if (options.yaml !== false) {
-        searchPatterns.push("package.yaml", "package.yml");
-    }
-
-    if (options.json5 !== false) {
-        searchPatterns.push("package.json5");
-    }
+    // Build search patterns based on options and file order preference
+    const searchPatterns = buildSearchPatterns(options);
 
     let filePath: string | undefined;
 
@@ -365,6 +392,7 @@ export const parsePackageJsonSync = (
         resolveCatalogs?: boolean;
         strict?: boolean;
         yaml?: boolean;
+        fileOrder?: ("json" | "yaml" | "json5")[];
     },
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): NormalizedPackageJson => {
@@ -448,6 +476,7 @@ export const parsePackageJson = async (
         resolveCatalogs?: boolean;
         strict?: boolean;
         yaml?: boolean;
+        fileOrder?: ("json" | "yaml" | "json5")[];
     },
 // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<NormalizedPackageJson> => {
