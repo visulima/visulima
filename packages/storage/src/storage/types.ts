@@ -1,6 +1,7 @@
 import type { IncomingMessage } from "node:http";
 import type { Readable } from "node:stream";
 
+import type { Cache } from "../utils/cache";
 import type { HttpError, HttpErrorBody, Logger, Validation } from "../utils/types";
 import type { LocalMetaStorageOptions } from "./local/local-meta-storage";
 import type MetaStorage from "./meta-storage";
@@ -50,6 +51,9 @@ export interface BaseStorageOptions<T extends File = File> {
     /** The full path of the folder where the uploaded asset will be stored. */
     assetFolder?: string;
 
+    /** Cache instance to use for caching */
+    cache?: Cache;
+
     /**
      * Automatic cleaning of abandoned and completed upload
      * @example
@@ -77,9 +81,9 @@ export interface BaseStorageOptions<T extends File = File> {
     maxUploadSize?: number | string;
     /** Provide custom meta storage  */
     metaStorage?: MetaStorage<T>;
+
     /** Callback function that is called when an upload is completed */
     onComplete?: OnComplete<T>;
-
     /** Callback function that is called when a new upload is created */
     onCreate?: OnCreate<T>;
     /** Callback function that is called when an upload is cancelled */
@@ -88,6 +92,7 @@ export interface BaseStorageOptions<T extends File = File> {
     onError?: OnError;
     /** Callback function that is called when an upload is updated */
     onUpdate?: OnUpdate<T>;
+
     /** Force relative URI in Location header */
     useRelativeLocation?: boolean;
 
@@ -157,8 +162,6 @@ export interface GenericStorageConfig {
     cacheTTL?: number;
     /** Supported checksum algorithms */
     checksumTypes?: string[];
-    /** Enable caching */
-    enableCache?: boolean;
     /** Logger instance */
     logger?: Logger;
     /** Maximum file size */

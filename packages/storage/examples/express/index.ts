@@ -104,7 +104,6 @@ const storage = new DiskStorage({ directory: uploadDirectory });
 
 const imageTransformer = new ImageTransformer(storage, {
     maxImageSize: 10 * 1024 * 1024, // 10MB
-    enableCache: true,
     cacheTtl: 3600, // 1 hour
 });
 

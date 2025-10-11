@@ -93,6 +93,7 @@ Add on-demand image transformations with URL query parameters:
 
 ```ts
 import express from "express";
+import { LRUCache } from "lru-cache";
 import { DiskStorage, Multipart } from "@visulima/upload";
 import { ImageTransformer } from "@visulima/upload/transformers/image";
 
@@ -104,10 +105,16 @@ const uploadDirectory = "./uploads";
 // Initialize storage
 const storage = new DiskStorage({ directory: uploadDirectory });
 
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
 // Initialize image transformer
 const imageTransformer = new ImageTransformer(storage, {
+    cache,
     maxImageSize: 10 * 1024 * 1024, // 10MB
-    enableCache: true,
     cacheTtl: 3600, // 1 hour
 });
 
@@ -212,7 +219,6 @@ app.listen(PORT, () => {
 ```ts
 const imageTransformer = new ImageTransformer(storage, {
     maxImageSize: 10 * 1024 * 1024, // Maximum image size in bytes (default: 50MB)
-    enableCache: true, // Enable caching of transformed images (default: false)
     cacheTtl: 3600, // Cache TTL in seconds (default: 3600)
     supportedFormats: ["jpeg", "png"], // Supported input formats (default: all)
     logger: console, // Logger instance (default: console)
@@ -258,7 +264,7 @@ app.get("/files/:id", async (req, res) => {
 
 ## Performance Tips
 
-1. **Enable Caching**: Set `enableCache: true` to cache transformed images
+1. **Enable Caching**: Provide a proper cache instance (e.g., LRUCache) to cache transformed images
 2. **Use Appropriate Quality**: Lower quality values reduce file size but may affect visual quality
 3. **Choose Efficient Formats**: WebP and AVIF often provide better compression than JPEG
 4. **Set Reasonable Limits**: Configure `maxImageSize` to prevent memory issues

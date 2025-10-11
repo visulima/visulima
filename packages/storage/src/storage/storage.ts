@@ -7,10 +7,11 @@ import { inspect } from "node:util";
 import { parseBytes } from "@visulima/humanizer";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { normalize } from "@visulima/path";
-import { LRUCache as Cache } from "lru-cache";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import typeis from "type-is";
 
+import type { Cache } from "../utils/cache";
+import { NoOpCache } from "../utils/cache";
 import type { ErrorResponses } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
 import { normalizeHookResponse, normalizeOnErrorResponse } from "../utils/http";
@@ -124,12 +125,8 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             ttl: 30_000,
             ttlAutopurge: true,
         });
-        this.cache = new Cache({
-            max: 1000,
-            maxEntrySize: this.maxMetadataSize,
-            ttl: 60 * 5 * 1000,
-            ttlAutopurge: true,
-        });
+
+        this.cache = options.cache ?? new NoOpCache();
 
         this.logger = options.logger;
         this.logger?.debug(`${this.constructor.name} config: ${inspect({ ...config, logger: this.logger.constructor })}`);
@@ -450,8 +447,9 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     protected resolvePrefix(fileId: string): string {
         const { prefixTemplate } = this.optimizations;
 
-        if (!prefixTemplate)
+        if (!prefixTemplate) {
             return "";
+        }
 
         // Simple template resolution - subclasses can override for complex logic
         return prefixTemplate.replace("{fileId}", fileId);
@@ -472,8 +470,9 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     protected removePrefix(prefixedId: string): string {
         const { prefixTemplate } = this.optimizations;
 
-        if (!prefixTemplate)
+        if (!prefixTemplate) {
             return prefixedId;
+        }
 
         // Simple prefix removal - subclasses can override
         const prefix = this.resolvePrefix("");

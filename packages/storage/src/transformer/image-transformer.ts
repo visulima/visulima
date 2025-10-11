@@ -48,7 +48,7 @@ import { getFormatFromContentType, isValidMediaType } from "./utils";
  * ```ts
  * const transformer = new ImageTransformer(storage, {
  *   maxImageSize: 10 * 1024 * 1024, // 10MB
- *   enableCache: true
+ *   cache: new Map()
  * });
  *
  * // Programmatic usage - resize an image
@@ -92,7 +92,6 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         const transformerConfig = {
             cacheTtl: 3600, // 1 hour
-            enableCache: false,
             maxCacheSize: 100, // Max 100 transformed images in cache
             maxImageSize: 50 * 1024 * 1024, // 50MB
             supportedFormats: ["jpeg", "png", "webp", "avif", "tiff", "gif", "svg"],
@@ -354,15 +353,12 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
         const fileQuery: FileQuery = { id: fileId };
         const cacheKey = this.generateCacheKey(fileId, steps);
 
-        // Check cache first
-        if (this.cache && (this.config as ImageTransformerConfig).enableCache) {
-            const cached = this.cache.get(cacheKey);
+        const cached = this.cache.get(cacheKey);
 
-            if (cached) {
-                this.logger?.debug("Returning cached transformed image for %s", fileId);
+        if (cached) {
+            this.logger?.debug("Returning cached transformed image for %s", fileId);
 
-                return cached;
-            }
+            return cached;
         }
 
         // Get original image from storage
@@ -377,7 +373,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
         const result = await this.createTransformResult(transformedBuffer, originalFile);
 
         // Cache the result
-        if (this.cache && (this.config as ImageTransformerConfig).enableCache) {
+        if (this.cache) {
             this.cache.set(cacheKey, result);
         }
 
@@ -404,74 +400,6 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
             },
             size: result.buffer.length,
             stream: Readable.from(result.buffer),
-        };
-    }
-
-    /**
-     * Get content type from transformation result
-     */
-    protected override getContentTypeFromResult(result: TransformResult<TFileReturn>): string {
-        // Determine content type based on format
-        if (result.format) {
-            const formatMap: Record<string, string> = {
-                avif: "image/avif",
-                gif: "image/gif",
-                jpeg: "image/jpeg",
-                jpg: "image/jpeg",
-                png: "image/png",
-                svg: "image/svg+xml",
-                tiff: "image/tiff",
-                webp: "image/webp",
-            };
-
-            return formatMap[result.format.toLowerCase()] || "application/octet-stream";
-        }
-
-        return "application/octet-stream";
-    }
-
-    /**
-     * Clear cache for a specific file or all files
-     * @param fileId Optional file identifier. If provided, clears cache only for this file. If omitted, clears entire cache.
-     * @override
-     */
-    public override clearCache(fileId?: string): void {
-        if (!this.cache) {
-            return;
-        }
-
-        const { cache } = this;
-
-        if (fileId) {
-            // Clear all cache entries for this file
-            const keysToDelete: string[] = [];
-
-            for (const key of cache.keys()) {
-                if (key.startsWith(`${fileId}:`)) {
-                    keysToDelete.push(key);
-                }
-            }
-
-            keysToDelete.forEach((key) => cache.delete(key));
-        } else {
-            // Clear entire cache
-            cache.clear();
-        }
-    }
-
-    /**
-     * Get cache statistics
-     * @returns Cache statistics with maxSize and current size, or undefined if caching is disabled
-     * @override
-     */
-    public override getCacheStats(): { maxSize: number; size: number } | undefined {
-        if (!this.cache) {
-            return undefined;
-        }
-
-        return {
-            maxSize: this.cache.max,
-            size: this.cache.size,
         };
     }
 
