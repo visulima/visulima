@@ -31,7 +31,6 @@ const storage = new DiskStorage({
 // Media transformer with only image support
 const mediaTransformer = new MediaTransformer(storage, {
     ImageTransformer, // Only enable image transformations
-    enableCache: true,
     maxImageSize: 10 * 1024 * 1024, // 10MB for images
 });
 

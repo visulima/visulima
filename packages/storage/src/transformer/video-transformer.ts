@@ -33,7 +33,7 @@ import { getFormatFromContentType, isValidMediaType } from "./utils";
  * ```ts
  * const transformer = new VideoTransformer(storage, {
  *   maxVideoSize: 100 * 1024 * 1024, // 100MB
- *   enableCache: true
+ *   cache: new Map()
  * });
  *
  * // Programmatic usage - resize a video
@@ -76,7 +76,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
             cacheTtl: 3600, // 1 hour
             defaultBitrate: 2_000_000, // 2 Mbps
             defaultCodec: "avc" as const,
-            enableCache: false,
+            // No cache provided - no caching
             maxCacheSize: 50, // Max 50 transformed videos in cache
             maxVideoSize: 500 * 1024 * 1024, // 500MB
             supportedFormats: ["mp4", "webm", "mkv", "avi", "mov", "flv", "wmv"],
@@ -133,7 +133,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
         const cacheKey = this.generateCacheKey(fileId, steps);
 
         // Check cache first
-        if (this.cache && this.config.enableCache) {
+        if (this.cache) {
             const cached = this.cache.get(cacheKey);
 
             if (cached) {
@@ -155,56 +155,11 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
         const result = await this.createTransformResult(transformedBuffer, originalFile);
 
         // Cache the result
-        if (this.cache && this.config.enableCache) {
+        if (this.cache) {
             this.cache.set(cacheKey, result);
         }
 
         return result;
-    }
-
-    /**
-     * Clear cache for a specific file or all files
-     * @param fileId Optional file identifier. If provided, clears cache only for this file. If omitted, clears entire cache.
-     * @override
-     */
-    public override clearCache(fileId?: string): void {
-        if (!this.cache) {
-            return;
-        }
-
-        const { cache } = this;
-
-        if (fileId) {
-            // Clear all cache entries for this file
-            const keysToDelete: string[] = [];
-
-            for (const key of cache.keys()) {
-                if (key.startsWith(`${fileId}:`)) {
-                    keysToDelete.push(key);
-                }
-            }
-
-            keysToDelete.forEach((key) => cache.delete(key));
-        } else {
-            // Clear entire cache
-            cache.clear();
-        }
-    }
-
-    /**
-     * Get cache statistics
-     * @returns Cache statistics with maxSize and current size, or undefined if caching is disabled
-     * @override
-     */
-    public override getCacheStats(): { maxSize: number; size: number } | undefined {
-        if (!this.cache) {
-            return undefined;
-        }
-
-        return {
-            maxSize: this.cache.max,
-            size: this.cache.size,
-        };
     }
 
     /**

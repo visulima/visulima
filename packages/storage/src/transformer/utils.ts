@@ -1,4 +1,4 @@
-import mime from "mime/lite";
+import mime from "mime";
 
 import type { FileReturn } from "../storage/utils/file";
 

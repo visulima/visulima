@@ -11,6 +11,7 @@
  */
 import type BaseStorage from "../storage/storage";
 import type { File, FileReturn } from "../storage/utils/file";
+import type { Cache } from "../utils/cache";
 import type { Logger } from "../utils/types";
 import type BaseTransformer from "./base-transformer";
 
@@ -630,10 +631,10 @@ export interface MediaTransformerConfig<TFile extends File = File, TFileReturn e
         storage: BaseStorage<TFile, TFileReturn>,
         config: AudioTransformerConfig,
     ) => BaseTransformer<AudioTransformerConfig, AudioTransformResult<TFileReturn>, TFile, TFileReturn>;
+    /** Cache instance to use for caching */
+    cache?: Cache;
     /** Cache TTL in seconds */
     cacheTtl?: number;
-    /** Cache transformed media */
-    enableCache?: boolean;
     /** Image transformer class (optional, enables image transformations) */
     ImageTransformer?: new (
         storage: BaseStorage<TFile, TFileReturn>,
@@ -807,10 +808,10 @@ export interface MediaTransformQuery {
  * Base transformer configuration with common properties
  */
 export interface BaseTransformerConfig {
+    /** Cache instance to use for caching */
+    cache?: Cache;
     /** Cache TTL in seconds */
     cacheTtl?: number;
-    /** Cache transformed files */
-    enableCache?: boolean;
     /** Logger instance */
     logger?: Logger;
     /** Maximum number of cached items */

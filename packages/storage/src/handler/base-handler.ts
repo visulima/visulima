@@ -118,7 +118,7 @@ abstract class BaseHandler<
 
     /**
      * Set custom error responses
-     * @param value - Partial error responses to override defaults
+     * @param value Partial error responses to override defaults
      * @example
      * ```ts
      * const Upload = new Upload({ storage });
@@ -133,23 +133,23 @@ abstract class BaseHandler<
 
     /**
      * Handle HTTP request (alias for upload method)
-     * @param request - Node.js IncomingMessage
-     * @param response - Node.js ServerResponse
+     * @param request Node.js IncomingMessage
+     * @param response Node.js ServerResponse
      */
     public handle = async (request: NodeRequest, response: NodeResponse): Promise<void> => this.upload(request, response);
 
     /**
      * Handle Web API Fetch requests (for Hono, Cloudflare Workers, etc.)
-     * @param request - Web API Request object
+     * @param request Web API Request object
      * @returns Promise resolving to Web API Response
      */
     public abstract fetch(request: Request): Promise<globalThis.Response>;
 
     /**
      * Main upload handler that processes HTTP requests and routes them to appropriate method handlers
-     * @param request - Node.js IncomingMessage
-     * @param response - Node.js ServerResponse
-     * @param next - Optional Express-style next function for middleware compatibility
+     * @param request Node.js IncomingMessage
+     * @param response Node.js ServerResponse
+     * @param next Optional Express-style next function for middleware compatibility
      * @throws {UploadError} When storage is not ready or method is not allowed
      */
     public upload = async (request: NodeRequest, response: NodeResponse, next?: () => void): Promise<void> => {
@@ -603,8 +603,8 @@ abstract class BaseHandler<
 
     /**
      * Negotiate content type based on Accept header and supported formats
-     * @param request - HTTP request object
-     * @param supportedTypes - Array of supported MIME types
+     * @param request HTTP request object
+     * @param supportedTypes Array of supported MIME types
      * @returns Best matching content type or undefined if no match
      */
     public negotiateContentType(request: NodeRequest, supportedTypes: string[]): string | undefined {
@@ -713,7 +713,7 @@ abstract class BaseHandler<
 
     /**
      * Assemble error responses by merging defaults with custom overrides
-     * @param customErrors - Custom error responses to override defaults
+     * @param customErrors Custom error responses to override defaults
      */
     public assembleErrors = (customErrors = {}): void => {
         this.internalErrorResponses = {
@@ -727,8 +727,8 @@ abstract class BaseHandler<
 
     /**
      * Build file URL from request and file data
-     * @param request - HTTP request with optional originalUrl
-     * @param file - File object containing ID and content type
+     * @param request HTTP request with optional originalUrl
+     * @param file File object containing ID and content type
      * @returns Constructed file URL
      */
     protected buildFileUrl(request: NodeRequest & { originalUrl?: string }, file: TFile): string {
@@ -742,9 +742,9 @@ abstract class BaseHandler<
 
     /**
      * Finish upload by sending final response to client
-     * @param _request - HTTP request (unused parameter)
-     * @param response - HTTP response object
-     * @param uploadResponse - Final upload response data
+     * @param _request HTTP request (unused parameter)
+     * @param response HTTP response object
+     * @param uploadResponse Final upload response data
      */
     protected finish(_request: NodeRequest, response: NodeResponse, uploadResponse: UploadResponse): void {
         const { statusCode } = uploadResponse;
@@ -1012,11 +1012,12 @@ abstract class BaseHandler<
 
     /**
      * Create a range-limited stream that properly handles backpressure
-     * @param sourceStream - Source readable stream
-     * @param start - Start byte position (inclusive)
-     * @param end - End byte position (inclusive)
+     * @param sourceStream Source readable stream
+     * @param start Start byte position (inclusive)
+     * @param end End byte position (inclusive)
      * @returns New readable stream limited to the specified byte range
      */
+    // eslint-disable-next-line class-methods-use-this
     private createRangeLimitedStream(sourceStream: Readable, start: number, end: number): Readable {
         let bytesRead = 0;
         let bytesSent = 0;
@@ -1079,8 +1080,8 @@ abstract class BaseHandler<
 
     /**
      * Pipe streams with proper backpressure handling
-     * @param source - Source readable stream
-     * @param destination - Destination response stream
+     * @param source Source readable stream
+     * @param destination Destination response stream
      */
     private pipeWithBackpressure(source: Readable, destination: NodeResponse): void {
         let isDestroyed = false;
