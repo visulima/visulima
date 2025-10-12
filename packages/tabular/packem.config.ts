@@ -7,15 +7,13 @@ export default defineConfig({
     builder: {
         typedoc: typedocBuilder,
     },
-    cjsInterop: true,
     rollup: {
         license: {
             path: "./LICENSE.md",
         },
-        node10Compatibility: {
-            typeScriptVersion: ">=5.0",
-            writeToPackageJson: true,
-        },
+        requireCJS: {
+            builtinNodeModules: true
+        }
     },
     transformer,
     typedoc: {
