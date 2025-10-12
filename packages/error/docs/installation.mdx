@@ -1,28 +1,38 @@
-# Installation Guide
+---
+title: Installation
+description: How to install and set up @visulima/error in your project
+---
 
-This guide covers how to install and set up `@visulima/error` in your project.
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
 
 ## Package Manager Installation
 
 Choose your preferred package manager:
 
-### npm
-
-```bash
-npm install @visulima/error
-```
-
-### pnpm (Recommended)
-
-```bash
-pnpm add @visulima/error
-```
-
-### yarn
-
-```bash
-yarn add @visulima/error
-```
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/error
+    ```
+  </Tab>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/error
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/error
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @visulima/error
+    ```
+  </Tab>
+</Tabs>
 
 ## Optional Dependencies
 
@@ -30,36 +40,48 @@ yarn add @visulima/error
 
 If you want to use AI-powered error solution generation, install the optional `ai` peer dependency:
 
-```bash
-# pnpm
-pnpm add ai
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add ai
+    ```
+  </Tab>
+  <Tab value="npm">
+    ```bash
+    npm install ai
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add ai
+    ```
+  </Tab>
+</Tabs>
 
-# npm
-npm install ai
-
-# yarn
-yarn add ai
-```
-
+<Callout type="info">
 The AI integration requires an API key from a supported provider (OpenAI, Anthropic, etc.).
+</Callout>
 
 ## Verifying Installation
 
 After installation, verify that the package is installed correctly:
 
-```typescript
-import { VisulimaError } from "@visulima/error";
+<Tabs items={['ESM', 'CommonJS']}>
+  <Tab value="ESM">
+    ```typescript
+    import { VisulimaError } from "@visulima/error";
 
-console.log(VisulimaError.name); // Should output: "VisulimaError"
-```
+    console.log(VisulimaError.name); // Should output: "VisulimaError"
+    ```
+  </Tab>
+  <Tab value="CommonJS">
+    ```javascript
+    const { VisulimaError } = require("@visulima/error");
 
-Or with CommonJS:
-
-```javascript
-const { VisulimaError } = require("@visulima/error");
-
-console.log(VisulimaError.name); // Should output: "VisulimaError"
-```
+    console.log(VisulimaError.name); // Should output: "VisulimaError"
+    ```
+  </Tab>
+</Tabs>
 
 ## Module System Support
 
@@ -105,7 +127,7 @@ import { aiPrompt, aiSolutionResponse } from "@visulima/error/solution/ai";
 
 For TypeScript projects, ensure your `tsconfig.json` has the following settings:
 
-```json
+```json title="tsconfig.json"
 {
   "compilerOptions": {
     "moduleResolution": "bundler", // or "node16", "nodenext"
@@ -119,9 +141,9 @@ For TypeScript projects, ensure your `tsconfig.json` has the following settings:
 
 ### Node.js Versions
 
-- Minimum: Node.js 18.0.0
-- Maximum: Node.js 24.x
-- Recommended: Node.js 20.x LTS or later
+- **Minimum**: Node.js 18.0.0
+- **Maximum**: Node.js 24.x
+- **Recommended**: Node.js 20.x LTS or later
 
 ### Supported Operating Systems
 
@@ -139,28 +161,41 @@ For stack trace parsing in browsers:
 - Edge (latest)
 - Opera Chromium-based (latest)
 
-Note: Browsers older than 6 years are not supported.
+<Callout type="warn">
+Browsers older than 6 years are not supported.
+</Callout>
 
 ## Development Setup
 
 If you're contributing to the package or running it from source:
 
-```bash
-# Clone the repository
-git clone https://github.com/visulima/visulima.git
-
-# Navigate to the error package
-cd visulima/packages/error
-
-# Install dependencies
-pnpm install
-
-# Build the package
-pnpm run build
-
-# Run tests
-pnpm test
-```
+<Steps>
+  <Step>
+    Clone the repository
+    ```bash
+    git clone https://github.com/visulima/visulima.git
+    cd visulima/packages/error
+    ```
+  </Step>
+  <Step>
+    Install dependencies
+    ```bash
+    pnpm install
+    ```
+  </Step>
+  <Step>
+    Build the package
+    ```bash
+    pnpm run build
+    ```
+  </Step>
+  <Step>
+    Run tests
+    ```bash
+    pnpm test
+    ```
+  </Step>
+</Steps>
 
 ## Troubleshooting
 
@@ -168,23 +203,28 @@ pnpm test
 
 If you encounter "Cannot find module" errors:
 
-1. Clear your package manager cache:
-```bash
-# npm
-npm cache clean --force
+<Steps>
+  <Step>
+    Clear your package manager cache:
+    ```bash
+    # npm
+    npm cache clean --force
 
-# pnpm
-pnpm store prune
+    # pnpm
+    pnpm store prune
 
-# yarn
-yarn cache clean
-```
-
-2. Delete `node_modules` and reinstall:
-```bash
-rm -rf node_modules
-pnpm install
-```
+    # yarn
+    yarn cache clean
+    ```
+  </Step>
+  <Step>
+    Delete `node_modules` and reinstall:
+    ```bash
+    rm -rf node_modules
+    pnpm install
+    ```
+  </Step>
+</Steps>
 
 ### TypeScript Type Errors
 
@@ -204,6 +244,6 @@ If AI features aren't working:
 
 ## Next Steps
 
-- [Quick Start Guide](./quick-start.md) - Learn the basics
-- [API Reference](./api-reference.md) - Explore all available features
-- [Examples](./examples.md) - See practical examples
+- [Quick Start Guide](/docs/error/quick-start) - Learn the basics
+- [API Reference](/docs/error/api-reference) - Explore all available features
+- [Examples](/docs/error/examples) - See practical examples

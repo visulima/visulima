@@ -1,4 +1,10 @@
-# VisulimaError Class
+---
+title: VisulimaError Class
+description: Enhanced error class with additional properties and functionality
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
 The `VisulimaError` class is an enhanced error class that extends the native JavaScript `Error` with additional properties and functionality.
 
@@ -16,7 +22,7 @@ The `VisulimaError` class is an enhanced error class that extends the native Jav
 
 ### Creating a VisulimaError
 
-```typescript
+```typescript title="Basic VisulimaError"
 import { VisulimaError } from "@visulima/error";
 
 const error = new VisulimaError({
@@ -29,7 +35,7 @@ throw error;
 
 ### With All Properties
 
-```typescript
+```typescript title="VisulimaError with all properties"
 const error = new VisulimaError({
     name: "DatabaseError",
     message: "Failed to connect to database",

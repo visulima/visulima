@@ -1,4 +1,10 @@
-# Error Rendering
+---
+title: Error Rendering
+description: Pretty print errors with formatting, colors, and context
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
 Learn how to render errors with pretty formatting, colors, and context using `@visulima/error`.
 
@@ -76,7 +82,7 @@ at connectDatabase file:///app/database.ts:25
 
 ### Using @visulima/colorize
 
-```typescript
+```typescript title="Rendering with colors"
 import { renderError } from "@visulima/error";
 import { red, cyan, yellow, dim } from "@visulima/colorize";
 

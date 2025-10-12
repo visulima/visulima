@@ -1,4 +1,11 @@
-# AI Integration
+---
+title: AI Integration
+description: Use AI-powered error analysis and solution generation
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
 
 Learn how to use AI-powered error analysis and solution generation with `@visulima/error`.
 
@@ -15,16 +22,27 @@ The AI integration feature allows you to leverage large language models (LLMs) t
 
 The AI integration requires the optional `ai` peer dependency:
 
-```bash
-# pnpm
-pnpm add ai
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add ai
+    ```
+  </Tab>
+  <Tab value="npm">
+    ```bash
+    npm install ai
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add ai
+    ```
+  </Tab>
+</Tabs>
 
-# npm
-npm install ai
-
-# yarn
-yarn add ai
-```
+<Callout type="info">
+You'll need an API key from a supported AI provider (OpenAI, Anthropic, Google, Mistral, etc.).
+</Callout>
 
 You'll also need an API key from a supported AI provider:
 
@@ -38,7 +56,7 @@ You'll also need an API key from a supported AI provider:
 
 ### Using AI Finder
 
-```typescript
+```typescript title="Using AI to analyze errors"
 import { aiFinder } from "@visulima/error/solution/ai";
 import { createOpenAI } from "@ai-sdk/openai";
 

@@ -1,4 +1,10 @@
-# Quick Start Guide
+---
+title: Quick Start
+description: Get started with @visulima/error in minutes
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
 
 Get started with `@visulima/error` in minutes. This guide covers the most common use cases and basic features.
 
@@ -53,7 +59,9 @@ error.hint = "Check your .env file and ensure DATABASE_URL is set correctly";
 throw error;
 ```
 
-Multiple hints can be provided as an array:
+<Callout>
+Multiple hints can be provided as an array for more detailed guidance.
+</Callout>
 
 ```typescript
 error.hint = [
@@ -94,7 +102,7 @@ try {
 }
 ```
 
-Output:
+**Output:**
 ```
 Error: Something went wrong
 
@@ -167,10 +175,14 @@ const frame = codeFrame(sourceCode, {
 });
 
 console.log(frame);
-//   1 | const x = 10;
-// > 2 | const error = x.y;
-//     |                ^
-//   3 | console.log(error);
+```
+
+**Output:**
+```
+  1 | const x = 10;
+> 2 | const error = x.y;
+    |                ^
+  3 | console.log(error);
 ```
 
 ### Highlighting Ranges
@@ -319,7 +331,7 @@ async function fetchData() {
 
 ## Next Steps
 
-- [VisulimaError Class Documentation](./visulima-error.md)
-- [Complete API Reference](./api-reference.md)
-- [Advanced Usage Examples](./examples.md)
-- [Solution Finders Guide](./solution-finders.md)
+- [VisulimaError Class Documentation](/docs/error/visulima-error)
+- [Complete API Reference](/docs/error/api-reference)
+- [Advanced Usage Examples](/docs/error/examples)
+- [Solution Finders Guide](/docs/error/solution-finders)

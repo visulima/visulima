@@ -1,4 +1,10 @@
-# Error Serialization
+---
+title: Error Serialization
+description: Serialize and deserialize errors for storage and transmission
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
 Learn how to serialize and deserialize errors for storage, transmission, and logging.
 
@@ -23,6 +29,10 @@ error.customProperty = "important data";
 console.log(JSON.stringify(error));
 // {} - Empty object! Information is lost
 ```
+
+<Callout type="error">
+Standard `JSON.stringify()` on errors returns an empty object, losing all error information!
+</Callout>
 
 With `@visulima/error`:
 

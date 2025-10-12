@@ -1,4 +1,10 @@
-# Code Frames
+---
+title: Code Frames
+description: Generate and display code frames with error highlighting
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
 Learn how to generate and display code frames that highlight error locations in source code.
 
@@ -10,6 +16,10 @@ Code frames provide visual context for errors by displaying source code snippets
 - Displaying runtime errors in context
 - Developer tools and error messages
 - Test failure reports
+
+<Callout>
+Tabs in source code are automatically converted to spaces (default: 4 spaces). Set `tabWidth: false` to preserve tabs.
+</Callout>
 
 ## Basic Usage
 
