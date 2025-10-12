@@ -1,0 +1,78 @@
+---
+title: Introduction
+description: A modern, delightful error overlay and inspector for Node.js servers and dev tooling
+---
+
+# Ono (Oh No!)
+
+A modern, delightful error overlay and inspector for Node.js servers and dev tooling that provides beautiful error pages for both web browsers and terminal environments.
+
+## Overview
+
+Ono is an error-parsing library that pretty prints JavaScript errors on web pages or in the terminal with rich context, syntax highlighting, and actionable solutions. It transforms cryptic error messages into comprehensive debugging experiences.
+
+## Key Features
+
+- **Beautiful Error Pages**: Theme-aware (dark/light/auto) error pages with sticky headers and intuitive navigation
+- **Rich Stack Traces**: Syntax-highlighted stack traces with frame grouping (application/node_modules/internal)
+- **Request Context**: Comprehensive HTTP request debugging with cURL commands, headers, body, and session data
+- **Solution Finders**: Built-in intelligent error solutions with support for custom solution finders
+- **Editor Integration**: One-click "Open in editor" functionality for 30+ editors
+- **Terminal Support**: ANSI-formatted error output with solution suggestions for CLI applications
+- **Error Causes**: Nested error cause visualization
+- **Accessibility**: Full keyboard navigation and ARIA-compliant components
+
+## Quick Example
+
+```typescript
+import { Ono } from "@visulima/ono";
+
+const ono = new Ono();
+
+try {
+  throw new Error("Something went wrong!");
+} catch (error) {
+  // For web servers - generate HTML error page
+  const html = await ono.toHTML(error, {
+    theme: "dark",
+    cspNonce: "your-nonce",
+  });
+
+  // For CLI applications - generate ANSI output
+  const { errorAnsi, solutionBox } = await ono.toANSI(error);
+  console.log(errorAnsi);
+}
+```
+
+## Use Cases
+
+- **Development Servers**: Replace default error pages with rich debugging interfaces
+- **CLI Tools**: Provide helpful error messages with actionable solutions
+- **Express/Hono/Fastify Apps**: Middleware for better error handling
+- **Build Tools**: Show detailed error information during builds
+- **Dev Tools**: Create better debugging experiences
+
+## Browser Support
+
+Modern browsers with ES2020+ support. The generated HTML is self-contained with inline CSS and minimal JavaScript.
+
+## Node.js Support
+
+Node.js 20.19 or higher (follows Node.js release schedule).
+
+## Next Steps
+
+<Cards>
+  <Card title="Getting Started" href="/docs/ono/getting-started">
+    Install and set up Ono in your project
+  </Card>
+  <Card title="API Reference" href="/docs/ono/api-reference">
+    Complete API documentation
+  </Card>
+  <Card title="Examples" href="/docs/ono/examples">
+    Practical usage examples
+  </Card>
+  <Card title="Features" href="/docs/ono/features">
+    Explore all features in detail
+  </Card>
+</Cards>
