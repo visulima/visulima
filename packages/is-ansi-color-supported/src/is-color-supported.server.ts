@@ -131,12 +131,12 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     }
 
     if ("CI" in environment) {
-        if ("GITHUB_ACTIONS" in environment || "GITHUB_WORKFLOW" in environment || "GITEA_ACTIONS" in environment) {
+        if (["GITEA_ACTIONS", "CIRCLECI", "GITHUB_WORKFLOW", "GITHUB_ACTIONS"].some((sign) => sign in environment)) {
             return SPACE_TRUE_COLORS;
         }
 
         if (
-            ["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE", "GITLAB_CI"].some((sign) => sign in environment) ||
+            ["TRAVIS", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE"].some((sign) => sign in environment) ||
             environment.CI_NAME === "codeship"
         ) {
             return SPACE_16_COLORS;
@@ -164,6 +164,14 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     if (environment.TERM === "xterm-kitty") {
         return SPACE_TRUE_COLORS;
     }
+
+    if (environment.TERM === 'xterm-ghostty') {
+		return SPACE_TRUE_COLORS;
+	}
+
+    if (environment.TERM === 'wezterm') {
+		return SPACE_TRUE_COLORS;
+	}
 
     if ("TERM_PROGRAM" in environment) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
