@@ -1,0 +1,269 @@
+---
+title: API Reference
+description: Complete API documentation for @visulima/fs
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { FileTextIcon, FolderIcon, BracesIcon, FileJsonIcon, SearchIcon, PackageIcon, AlignLeftIcon, TerminalIcon, AlertTriangleIcon } from 'lucide-react';
+
+# API Reference
+
+Complete API documentation for @visulima/fs.
+
+## Core Modules
+
+<Cards>
+  <Card
+    title="File Operations"
+    description="Read, write, move, and remove files"
+    href="/docs/package/fs/api-reference/file-operations"
+    icon={<FileTextIcon />}
+  />
+  <Card
+    title="Directory Operations"
+    description="Create, ensure, and manage directories"
+    href="/docs/package/fs/api-reference/directory-operations"
+    icon={<FolderIcon />}
+  />
+  <Card
+    title="JSON Operations"
+    description="Read and write JSON files with validation"
+    href="/docs/package/fs/api-reference/json-operations"
+    icon={<FileJsonIcon />}
+  />
+  <Card
+    title="YAML Operations"
+    description="Read and write YAML files"
+    href="/docs/package/fs/api-reference/yaml-operations"
+    icon={<BracesIcon />}
+  />
+  <Card
+    title="File Discovery"
+    description="Walk directories and find files"
+    href="/docs/package/fs/api-reference/file-discovery"
+    icon={<SearchIcon />}
+  />
+  <Card
+    title="Size Utilities"
+    description="Calculate file sizes with compression"
+    href="/docs/package/fs/api-reference/size-utilities"
+    icon={<PackageIcon />}
+  />
+  <Card
+    title="EOL Utilities"
+    description="Detect and format line endings"
+    href="/docs/package/fs/api-reference/eol-utilities"
+    icon={<AlignLeftIcon />}
+  />
+  <Card
+    title="Utility Functions"
+    description="Helper functions and utilities"
+    href="/docs/package/fs/api-reference/utility-functions"
+    icon={<TerminalIcon />}
+  />
+  <Card
+    title="Error Types"
+    description="Custom error classes for better handling"
+    href="/docs/package/fs/api-reference/error-types"
+    icon={<AlertTriangleIcon />}
+  />
+</Cards>
+
+## Function Overview
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout>
+All functions come in both asynchronous and synchronous versions (where applicable).
+</Callout>
+
+### File Operations
+
+| Function | Description | Type |
+|----------|-------------|------|
+| `readFile` | Read file contents | Async |
+| `readFileSync` | Read file contents | Sync |
+| `writeFile` | Write content to a file | Async |
+| `writeFileSync` | Write content to a file | Sync |
+| `move` / `rename` | Move or rename a file | Async |
+| `moveSync` / `renameSync` | Move or rename a file | Sync |
+| `remove` | Remove files or directories | Async |
+| `removeSync` | Remove files or directories | Sync |
+| `isAccessible` | Check if a path is accessible | Async |
+| `isAccessibleSync` | Check if a path is accessible | Sync |
+
+### Directory Operations
+
+| Function | Description | Type |
+|----------|-------------|------|
+| `ensureDir` | Ensure a directory exists | Async |
+| `ensureDirSync` | Ensure a directory exists | Sync |
+| `ensureFile` | Ensure a file exists | Async |
+| `ensureFileSync` | Ensure a file exists | Sync |
+| `ensureLink` | Ensure a hard link exists | Async |
+| `ensureLinkSync` | Ensure a hard link exists | Sync |
+| `ensureSymlink` | Ensure a symbolic link exists | Async |
+| `ensureSymlinkSync` | Ensure a symbolic link exists | Sync |
+| `emptyDir` | Empty a directory | Async |
+| `emptyDirSync` | Empty a directory | Sync |
+
+### JSON & YAML
+
+| Function | Description | Type |
+|----------|-------------|------|
+| `readJson` | Read and parse a JSON file | Async |
+| `readJsonSync` | Read and parse a JSON file | Sync |
+| `writeJson` | Stringify and write a JSON file | Async |
+| `writeJsonSync` | Stringify and write a JSON file | Sync |
+| `readYaml` | Read and parse a YAML file | Async |
+| `readYamlSync` | Read and parse a YAML file | Sync |
+| `writeYaml` | Stringify and write a YAML file | Async |
+| `writeYamlSync` | Stringify and write a YAML file | Sync |
+| `parseJson` | Parse JSON with better errors | Function |
+| `stripJsonComments` | Remove comments from JSON | Function |
+
+### File Discovery
+
+| Function | Description | Type |
+|----------|-------------|------|
+| `walk` | Walk a directory tree | Async Generator |
+| `walkSync` | Walk a directory tree | Generator |
+| `collect` | Collect all entries from a directory | Async |
+| `collectSync` | Collect all entries | Sync |
+| `findUp` | Find a file walking up the tree | Async |
+| `findUpSync` | Find a file walking up | Sync |
+
+### Size & EOL
+
+| Function | Description | Type |
+|----------|-------------|------|
+| `gzipSize` | Calculate gzipped size | Async |
+| `gzipSizeSync` | Calculate gzipped size | Sync |
+| `brotliSize` | Calculate brotli size | Async |
+| `brotliSizeSync` | Calculate brotli size | Sync |
+| `rawSize` | Calculate raw size | Async |
+| `rawSizeSync` | Calculate raw size | Sync |
+| `detect` | Detect line ending | Function |
+| `format` | Format line ending | Function |
+
+## Constants
+
+### File Access
+
+```ts
+import { F_OK, R_OK, W_OK, X_OK } from "@visulima/fs";
+```
+
+- **`F_OK`** - File is visible (exists)
+- **`R_OK`** - File is readable
+- **`W_OK`** - File is writable
+- **`X_OK`** - File is executable
+
+### Find Up
+
+```ts
+import { FIND_UP_STOP } from "@visulima/fs";
+```
+
+- **`FIND_UP_STOP`** - Symbol to stop the `findUp` search
+
+### Line Endings
+
+```ts
+import { LF, CRLF, EOL } from "@visulima/fs/eol";
+```
+
+- **`LF`** - POSIX line ending (`\n`)
+- **`CRLF`** - Windows line ending (`\r\n`)
+- **`EOL`** - Platform-specific line ending
+
+## Usage Patterns
+
+### Importing Functions
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+<Tabs items={['Main', 'Submodules', 'Types']}>
+  <Tab value="Main">
+    ```ts
+    // Import from main module
+    import { readFile, writeFile, ensureDir } from "@visulima/fs";
+    ```
+  </Tab>
+  <Tab value="Submodules">
+    ```ts
+    // Import from submodules
+    import { readYaml, writeYaml } from "@visulima/fs/yaml";
+    import { gzipSize, brotliSize } from "@visulima/fs/size";
+    import { detect, format, LF } from "@visulima/fs/eol";
+    import { parseJson } from "@visulima/fs/utils";
+    import { JSONError } from "@visulima/fs/error";
+    ```
+  </Tab>
+  <Tab value="Types">
+    ```ts
+    // Import types
+    import type {
+        WalkOptions,
+        WalkEntry,
+        ReadFileOptions,
+        WriteFileOptions,
+        ReadJsonOptions,
+        WriteJsonOptions,
+    } from "@visulima/fs";
+    ```
+  </Tab>
+</Tabs>
+
+### Error Handling
+
+<Callout type="warn">
+All asynchronous functions can throw errors. Wrap them in try-catch blocks.
+</Callout>
+
+```ts title="error-handling.ts"
+import { readFile } from "@visulima/fs";
+import { NotFoundError } from "@visulima/fs/error";
+
+try {
+    const content = await readFile("./file.txt");
+} catch (error) {
+    if (error instanceof NotFoundError) {
+        console.error("File not found");
+    } else {
+        console.error("Unexpected error:", error);
+    }
+}
+```
+
+### Type Safety
+
+```ts title="type-safe.ts"
+import { readFile, type ReadFileOptions } from "@visulima/fs";
+
+// Type inference
+const text: string = await readFile("./file.txt");
+const buffer: Buffer = await readFile("./file.txt", { buffer: true });
+
+// Explicit types
+const options: ReadFileOptions<"gzip"> = {
+    encoding: "utf8",
+    compression: "gzip",
+};
+const content = await readFile("./file.txt.gz", options);
+```
+
+## Next Steps
+
+<Cards>
+  <Card
+    title="Examples"
+    description="Practical usage examples"
+    href="/docs/package/fs/examples"
+  />
+  <Card
+    title="Advanced Guides"
+    description="Best practices and patterns"
+    href="/docs/package/fs/advanced"
+  />
+</Cards>
