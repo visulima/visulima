@@ -5,7 +5,7 @@ import type { Readable } from "node:stream";
 import { pipeline } from "node:stream";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ensureFile, remove, walk, readFile } from "@visulima/fs";
+import { ensureFile, readFile, remove, walk } from "@visulima/fs";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { join } from "@visulima/path";
 // eslint-disable-next-line import/no-extraneous-dependencies
