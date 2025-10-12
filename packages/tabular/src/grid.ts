@@ -1124,13 +1124,13 @@ export class Grid {
             // cellAbove starts here (isStartCol is true)
             // = cellAbove;
 
-            const colSpan = definingCell.colSpan ?? 1;
+            const colSpan = definingCell?.colSpan ?? 1;
             const isVerticalSpan = borderType === "middle" && cellBelow && cellAbove === cellBelow;
 
             // Determine segment: content, spaces, or dashes
-            if (borderType === "middle" && isVerticalSpan) {
+            if (borderType === "middle" && isVerticalSpan && definingCell) {
                 // CASE: Cell spans vertically across this MIDDLE border
-                const isMiddleAligned = definingCell.vAlign === "middle";
+                const isMiddleAligned = definingCell?.vAlign === "middle";
                 // Use cached vertical position
                 const { firstRow, lastRow } = this.getCachedCellVerticalPosition(gridLayout, rowIndex, col, definingCell);
                 const rowSpanCount = lastRow - firstRow + 1;
