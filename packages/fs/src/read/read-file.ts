@@ -80,7 +80,7 @@ const readFile = async <O extends ReadFileOptions<keyof typeof decompressionMeth
             async (content) =>
                 // eslint-disable-next-line compat/compat
                 await new Promise<ContentType<O> | undefined>((resolve, reject) => {
-                    decompressionMethods[compression ?? "none"](content, (error, result) => {
+                    decompressionMethods[compression ?? "none"](content as Buffer, (error, result) => {
                         if (error) {
                             reject(error);
                         } else {
