@@ -64,104 +64,34 @@
     "type": "module",
     "exports": {
         ".": {
-            "import": {
-                "types": "./dist/index.d.mts",
-                "default": "./dist/index.mjs"
-            },
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            }
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
         },
         "./code-frame": {
-            "import": {
-                "types": "./dist/code-frame/index.d.mts",
-                "default": "./dist/code-frame/index.mjs"
-            },
-            "require": {
-                "types": "./dist/code-frame/index.d.cts",
-                "default": "./dist/code-frame/index.cjs"
-            }
+            "types": "./dist/code-frame/index.d.ts",
+            "default": "./dist/code-frame/index.js"
         },
         "./error": {
-            "import": {
-                "types": "./dist/error/index.d.mts",
-                "default": "./dist/error/index.mjs"
-            },
-            "require": {
-                "types": "./dist/error/index.d.cts",
-                "default": "./dist/error/index.cjs"
-            }
+            "types": "./dist/error/index.d.ts",
+            "default": "./dist/error/index.js"
         },
         "./stacktrace": {
-            "import": {
-                "types": "./dist/stacktrace/index.d.mts",
-                "default": "./dist/stacktrace/index.mjs"
-            },
-            "require": {
-                "types": "./dist/stacktrace/index.d.cts",
-                "default": "./dist/stacktrace/index.cjs"
-            }
+            "types": "./dist/stacktrace/index.d.ts",
+            "default": "./dist/stacktrace/index.js"
         },
         "./solution": {
-            "import": {
-                "types": "./dist/solution/index.d.mts",
-                "default": "./dist/solution/index.mjs"
-            },
-            "require": {
-                "types": "./dist/solution/index.d.cts",
-                "default": "./dist/solution/index.cjs"
-            }
+            "types": "./dist/solution/index.d.ts",
+            "default": "./dist/solution/index.js"
         },
         "./solution/ai": {
-            "import": {
-                "types": "./dist/solution/ai/index.d.mts",
-                "default": "./dist/solution/ai/index.mjs"
-            },
-            "require": {
-                "types": "./dist/solution/ai/index.d.cts",
-                "default": "./dist/solution/ai/index.cjs"
-            }
+            "types": "./dist/solution/ai/index.d.ts",
+            "default": "./dist/solution/ai/index.js"
         },
         "./solution/ai/prompt": {
-            "import": {
-                "types": "./dist/solution/ai/ai-prompt.d.mts",
-                "default": "./dist/solution/ai/ai-prompt.mjs"
-            },
-            "require": {
-                "types": "./dist/solution/ai/ai-prompt.d.cts",
-                "default": "./dist/solution/ai/ai-prompt.cjs"
-            }
+            "types": "./dist/solution/ai/ai-prompt.d.ts",
+            "default": "./dist/solution/ai/ai-prompt.js"
         },
         "./package.json": "./package.json"
-    },
-    "main": "dist/index.cjs",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.ts",
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/index.d.ts"
-            ],
-            "code-frame": [
-                "./dist/code-frame/index.d.ts"
-            ],
-            "error": [
-                "./dist/error/index.d.ts"
-            ],
-            "stacktrace": [
-                "./dist/stacktrace/index.d.ts"
-            ],
-            "solution": [
-                "./dist/solution/index.d.ts"
-            ],
-            "solution/ai": [
-                "./dist/solution/ai/index.d.ts"
-            ],
-            "solution/ai/prompt": [
-                "./dist/solution/ai/ai-prompt.d.ts"
-            ]
-        }
     },
     "files": [
         "dist",
@@ -195,7 +125,7 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/command-line-args": "^5.2.3",
         "@types/node": "24.3.1",
-        "@visulima/packem": "2.0.0-alpha.18",
+        "@visulima/packem": "2.0.0-alpha.29",
         "@visulima/path": "1.4.0",
         "@vitest/coverage-v8": "^3.2.4",
         "@vitest/ui": "^3.2.4",
@@ -220,7 +150,7 @@
         }
     },
     "engines": {
-        "node": ">=18.0.0 <=24.x"
+        "node": ">=20.19 <=24.x"
     },
     "os": [
         "darwin",
@@ -230,18 +160,5 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
-    },
-    "anolilab": {
-        "eslint-config": {
-            "plugin": {
-                "tsdoc": false,
-                "etc": false
-            },
-            "warn_on_unsupported_typescript_version": false,
-            "info_on_disabling_jsx_react_rule": false,
-            "info_on_disabling_prettier_conflict_rule": false,
-            "info_on_disabling_jsonc_sort_keys_rule": false,
-            "info_on_disabling_etc_no_deprecated": false
-        }
     }
 }
