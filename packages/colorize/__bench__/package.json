@@ -8,9 +8,9 @@
     "dependencies": {
         "@visulima/colorize": "workspace:*",
         "ansi-colors": "^4.1.3",
-        "ansis": "^4.1.0",
-        "chalk": "^5.6.0",
-        "chalk-template": "^1.1.0",
+        "ansis": "^4.2.0",
+        "chalk": "^5.6.2",
+        "chalk-template": "^1.1.2",
         "cli-color": "^2.0.4",
         "colorette": "^2.0.20",
         "colors": "^1.4.0",
@@ -21,6 +21,6 @@
     },
     "devDependencies": {
         "benchmark": "2.1.4",
-        "typescript": "5.9.2"
+        "typescript": "5.9.3"
     }
 }
