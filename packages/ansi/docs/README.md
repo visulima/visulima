@@ -1,18 +1,20 @@
-# @visulima/ansi Documentation
+---
+title: Introduction
+description: Comprehensive ANSI escape codes library for terminal control
+---
 
-Welcome to the comprehensive documentation for `@visulima/ansi`, a powerful library for controlling terminal output using ANSI escape codes.
+import { Card, Cards } from 'fumadocs-ui/components/card';
 
-## Table of Contents
-
-- [Installation](./installation.md)
-- [Getting Started](./getting-started.md)
-- [Examples](./examples.md)
-- [API Reference](./api-reference.md)
-- [Advanced Usage](./advanced.md)
-
-## What is @visulima/ansi?
+## Overview
 
 `@visulima/ansi` is a comprehensive library that provides ANSI escape codes for terminal manipulation. It enables you to control cursor positioning, screen clearing, text formatting, hyperlinks, images, and much more in your terminal applications.
+
+<Cards>
+  <Card title="Installation" href="/installation" />
+  <Card title="Getting Started" href="/getting-started" />
+  <Card title="Examples" href="/examples" />
+  <Card title="API Reference" href="/api-reference" />
+</Cards>
 
 ## Key Features
 
@@ -26,9 +28,9 @@ Welcome to the comprehensive documentation for `@visulima/ansi`, a powerful libr
 - **Hyperlinks**: Create clickable terminal hyperlinks
 - **Utility Functions**: Strip ANSI codes, passthrough sequences for tmux
 
-## Quick Example
+## Quick Start
 
-```typescript
+```typescript title="example.ts"
 import { cursorUp, cursorLeft, eraseLine } from "@visulima/ansi";
 
 // Move cursor up 2 lines and to the left
@@ -38,26 +40,32 @@ process.stdout.write(cursorUp(2) + cursorLeft);
 process.stdout.write(eraseLine);
 ```
 
-## Browser Support
+## Platform Support
 
-This library is designed for Node.js terminal applications. For browser-based applications, ANSI escape codes are not applicable as they are terminal-specific.
+<Callout type="info">
+This library is designed for Node.js terminal applications. ANSI escape codes are not applicable in browser environments.
+</Callout>
 
-## Terminal Compatibility
+<Callout type="warn">
+Some advanced features (like iTerm2 image display or specific xterm extensions) may only work in their respective terminal emulators.
+</Callout>
 
-Most modern terminal emulators support the ANSI escape codes provided by this library. Some advanced features (like iTerm2 image display or specific xterm extensions) may only work in their respective terminal emulators.
+## Related Packages
 
-## Need Help?
-
-- Check the [Examples](./examples.md) for common use cases
-- Refer to the [API Reference](./api-reference.md) for detailed function documentation
-- See [Advanced Usage](./advanced.md) for complex scenarios
-
-## Related Libraries
-
-- [@visulima/colorize](https://github.com/visulima/visulima/tree/main/packages/colorize) - Terminal color styling
-- [@visulima/pail](https://github.com/visulima/visulima/tree/main/packages/pail) - Beautiful logging for Node.js
-- [@visulima/boxen](https://github.com/visulima/visulima/tree/main/packages/boxen) - Create boxes in the terminal
-
-## License
-
-MIT License - See LICENSE.md for details
+<Cards>
+  <Card 
+    title="@visulima/colorize" 
+    href="https://github.com/visulima/visulima/tree/main/packages/colorize"
+    description="Terminal color styling"
+  />
+  <Card 
+    title="@visulima/pail" 
+    href="https://github.com/visulima/visulima/tree/main/packages/pail"
+    description="Beautiful logging for Node.js"
+  />
+  <Card 
+    title="@visulima/boxen" 
+    href="https://github.com/visulima/visulima/tree/main/packages/boxen"
+    description="Create boxes in the terminal"
+  />
+</Cards>

@@ -1,28 +1,17 @@
-# Advanced Usage
-
-This guide covers advanced techniques and patterns for using `@visulima/ansi` in complex scenarios.
-
-## Table of Contents
-
-- [Performance Optimization](#performance-optimization)
-- [Terminal Detection](#terminal-detection)
-- [Alternative Screen Buffer](#alternative-screen-buffer)
-- [Mouse Tracking](#mouse-tracking)
-- [Complex TUI Components](#complex-tui-components)
-- [Tmux and Screen Integration](#tmux-and-screen-integration)
-- [Error Handling](#error-handling)
-- [Memory Management](#memory-management)
-- [Testing Terminal Applications](#testing-terminal-applications)
-
+---
+title: Advanced Usage
+description: Advanced techniques and patterns for complex terminal applications
 ---
 
 ## Performance Optimization
 
 ### Batching Output
 
-Instead of multiple `write()` calls, batch ANSI sequences together:
+<Callout type="info">
+Batch multiple ANSI sequences into a single write for better performance.
+</Callout>
 
-```typescript
+```typescript title="batching.ts"
 import { cursorTo, eraseLine, cursorHide } from "@visulima/ansi";
 
 // Less efficient
@@ -36,9 +25,7 @@ process.stdout.write(cursorHide + cursorTo(0, 0) + eraseLine);
 
 ### Buffered Rendering
 
-Use a buffer to collect all changes before writing:
-
-```typescript
+```typescript title="buffered-renderer.ts"
 import { cursorTo, eraseLine } from "@visulima/ansi/cursor";
 
 class BufferedRenderer {
@@ -74,9 +61,11 @@ renderer.flush(); // Single write operation
 
 ### Minimizing Redraws
 
-Only redraw changed portions:
+<Callout>
+Only update changed lines to minimize flickering and improve performance.
+</Callout>
 
-```typescript
+```typescript title="diff-renderer.ts"
 import { cursorTo, eraseLine } from "@visulima/ansi/cursor";
 
 class DiffRenderer {
@@ -100,13 +89,11 @@ renderer.render(["Line 1", "Line 2", "Line 3"]);
 renderer.render(["Line 1", "Changed!", "Line 3"]);
 ```
 
----
-
 ## Terminal Detection
 
 ### Detecting Terminal Capabilities
 
-```typescript
+```typescript title="detect-capabilities.ts"
 import { env, stdout } from "process";
 
 interface TerminalCapabilities {
@@ -147,7 +134,7 @@ if (caps.hyperlinks) {
 
 ### Handling Different Terminal Types
 
-```typescript
+```typescript title="terminal-types.ts"
 import { env } from "process";
 
 function getTerminalType(): "iterm" | "vscode" | "windows-terminal" | "generic" {
@@ -168,13 +155,13 @@ if (termType === "iterm") {
 }
 ```
 
----
-
 ## Alternative Screen Buffer
 
-The alternative screen buffer is useful for full-screen applications:
+<Callout type="info">
+Use the alternative screen buffer for full-screen applications. It preserves the user's terminal content.
+</Callout>
 
-```typescript
+```typescript title="full-screen-app.ts"
 import { 
     alternativeScreenOn, 
     alternativeScreenOff 
@@ -227,13 +214,15 @@ app.start();
 setTimeout(() => app.stop(), 5000);
 ```
 
----
-
 ## Mouse Tracking
 
 ### Basic Mouse Tracking
 
-```typescript
+<Callout type="warn">
+Mouse tracking requires raw mode and proper cleanup. Always disable tracking before exit.
+</Callout>
+
+```typescript title="mouse-tracker.ts"
 import { 
     enableNormalMouse, 
     disableNormalMouse,
@@ -309,7 +298,7 @@ process.on("exit", () => tracker.disable());
 
 ### Button Event Tracking
 
-```typescript
+```typescript title="button-events.ts"
 import { enableButtonEventMouse, disableButtonEventMouse } from "@visulima/ansi/mouse";
 
 // Enable button event tracking (tracks button presses and releases)
@@ -321,13 +310,11 @@ process.stdout.write(enableButtonEventMouse());
 process.stdout.write(disableButtonEventMouse());
 ```
 
----
-
 ## Complex TUI Components
 
 ### Resizable Component System
 
-```typescript
+```typescript title="components.ts"
 import { cursorTo, eraseLine } from "@visulima/ansi/cursor";
 import { clearScreen } from "@visulima/ansi/clear";
 
@@ -431,7 +418,7 @@ process.stdout.on("resize", () => layout.handleResize());
 
 ### Tabbed Interface
 
-```typescript
+```typescript title="tabbed-interface.ts"
 import { cursorTo, cursorHide, cursorShow } from "@visulima/ansi/cursor";
 import { eraseLine } from "@visulima/ansi/erase";
 import { clearScreen } from "@visulima/ansi/clear";
@@ -494,13 +481,11 @@ tabs.addTab("Help", () => {
 tabs.render();
 ```
 
----
-
 ## Tmux and Screen Integration
 
 ### Detecting Tmux/Screen
 
-```typescript
+```typescript title="detect-multiplexer.ts"
 function isInTmux(): boolean {
     return process.env.TMUX !== undefined;
 }
@@ -512,7 +497,11 @@ function isInScreen(): boolean {
 
 ### Using Passthrough Sequences
 
-```typescript
+<Callout>
+Passthrough sequences allow ANSI codes to work correctly inside tmux or screen.
+</Callout>
+
+```typescript title="passthrough.ts"
 import { tmuxPassthrough, screenPassthrough } from "@visulima/ansi/passthrough";
 import { cursorTo } from "@visulima/ansi/cursor";
 
@@ -530,13 +519,15 @@ function sendSequence(sequence: string) {
 sendSequence(cursorTo(0, 0));
 ```
 
----
-
 ## Error Handling
 
 ### Graceful Degradation
 
-```typescript
+<Callout type="info">
+Always handle errors gracefully and restore terminal state in cleanup handlers.
+</Callout>
+
+```typescript title="safe-renderer.ts"
 import { cursorHide, cursorShow } from "@visulima/ansi/cursor";
 
 class SafeRenderer {
@@ -583,7 +574,7 @@ class SafeRenderer {
 
 ### Signal Handling
 
-```typescript
+```typescript title="cleanup-manager.ts"
 import { cursorShow } from "@visulima/ansi/cursor";
 import { alternativeScreenOff } from "@visulima/ansi/alternative-screen";
 
@@ -641,13 +632,15 @@ cleanup.addCleanup(() => {
 });
 ```
 
----
-
 ## Memory Management
 
 ### Cleaning Up Event Listeners
 
-```typescript
+<Callout type="warn">
+Always remove event listeners to prevent memory leaks.
+</Callout>
+
+```typescript title="managed-renderer.ts"
 class ManagedRenderer {
     private listeners: Array<() => void> = [];
     
@@ -673,7 +666,7 @@ class ManagedRenderer {
 
 ### Throttling Updates
 
-```typescript
+```typescript title="throttled-renderer.ts"
 class ThrottledRenderer {
     private updateScheduled = false;
     private lastUpdate = 0;
@@ -703,13 +696,11 @@ class ThrottledRenderer {
 }
 ```
 
----
-
 ## Testing Terminal Applications
 
 ### Mocking stdout
 
-```typescript
+```typescript title="mock-stdout.ts"
 import { Writable } from "stream";
 
 class MockStdout extends Writable {
@@ -752,7 +743,7 @@ describe("Terminal renderer", () => {
 
 ### Testing with TTY Simulation
 
-```typescript
+```typescript title="tty-simulator.ts"
 class TTYSimulator {
     public columns: number = 80;
     public rows: number = 24;
@@ -815,24 +806,23 @@ describe("Responsive renderer", () => {
 });
 ```
 
----
-
 ## Best Practices Summary
 
-1. **Batch operations** for better performance
-2. **Always clean up** terminal state on exit
-3. **Detect capabilities** before using advanced features
-4. **Handle errors gracefully** with fallbacks
-5. **Test in multiple terminals** for compatibility
-6. **Use alternative screen** for full-screen apps
-7. **Throttle updates** to avoid flickering
-8. **Manage memory** by cleaning up event listeners
-9. **Mock for testing** to ensure reliability
+<Callout type="info">
+Follow these advanced patterns for robust terminal applications.
+</Callout>
 
----
+1. **Batch operations** - Better performance
+2. **Always clean up** - Restore terminal state on exit
+3. **Detect capabilities** - Check before using advanced features
+4. **Handle errors gracefully** - Provide fallbacks
+5. **Test in multiple terminals** - Ensure compatibility
+6. **Use alternative screen** - For full-screen apps
+7. **Throttle updates** - Avoid flickering
+8. **Manage memory** - Clean up event listeners
+9. **Mock for testing** - Ensure reliability
 
-## Next Steps
-
-- Review the [API Reference](./api-reference.md) for all available functions
-- Check [Examples](./examples.md) for practical implementations
-- Explore the source code for implementation details
+<Cards>
+  <Card title="API Reference" href="/api-reference" description="Complete API documentation" />
+  <Card title="Examples" href="/examples" description="Practical implementations" />
+</Cards>

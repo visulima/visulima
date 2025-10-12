@@ -1,24 +1,24 @@
-# Getting Started
-
-This guide will help you understand the basics of using `@visulima/ansi` to control your terminal.
+---
+title: Getting Started
+description: Learn the basics of using @visulima/ansi for terminal control
+---
 
 ## Basic Concepts
 
-ANSI escape codes are special sequences of characters that control terminal behavior. Instead of displaying these characters, terminals interpret them as commands to:
+<Callout type="info">
+ANSI escape codes are special character sequences that control terminal behavior. The `@visulima/ansi` library provides JavaScript functions that generate these sequences for you.
+</Callout>
 
+**What ANSI codes can do:**
 - Move the cursor
-- Change text color (when combined with color libraries)
 - Clear parts of the screen
 - Control terminal modes
-- And much more
-
-The `@visulima/ansi` library provides JavaScript functions that generate these ANSI sequences for you.
+- Handle mouse events
+- Create hyperlinks
 
 ## Your First Example
 
-Let's start with a simple example that demonstrates cursor movement:
-
-```typescript
+```typescript title="first-example.ts"
 import { cursorUp, cursorLeft, eraseLine } from "@visulima/ansi";
 
 console.log("First line");
@@ -30,18 +30,26 @@ process.stdout.write(cursorUp(2) + eraseLine);
 console.log("This replaces the second line!");
 ```
 
-**What's happening here:**
+<Steps>
 
-1. We print three lines normally
-2. We move the cursor up 2 lines (to the second line)
-3. We erase that line
-4. We print new text, which appears on the second line
+### Print three lines
+We output three lines normally using `console.log()`
 
-## Understanding Output Methods
+### Move cursor up
+We move the cursor up 2 lines (to the second line)
 
-When using ANSI codes, it's important to understand the difference between `console.log()` and `process.stdout.write()`:
+### Erase and replace
+We erase that line and print new text in its place
 
-```typescript
+</Steps>
+
+## Output Methods
+
+<Callout type="warn">
+Understanding the difference between `console.log()` and `process.stdout.write()` is crucial.
+</Callout>
+
+```typescript title="output-methods.ts"
 // console.log() adds a newline at the end
 console.log("Hello"); // Prints "Hello\n"
 
@@ -49,9 +57,9 @@ console.log("Hello"); // Prints "Hello\n"
 process.stdout.write("Hello"); // Prints "Hello"
 ```
 
-ANSI sequences don't produce visible output, so we typically use `process.stdout.write()`:
+**For ANSI sequences:**
 
-```typescript
+```typescript title="ansi-output.ts"
 import { cursorTo, eraseLine } from "@visulima/ansi";
 
 // Move cursor and erase (no visible output yet)
@@ -96,9 +104,7 @@ process.stdout.write(eraseDown);
 
 ### Creating a Progress Indicator
 
-Here's a practical example of a simple progress indicator:
-
-```typescript
+```typescript title="progress.ts"
 import { cursorTo, eraseLine, cursorHide, cursorShow } from "@visulima/ansi";
 
 async function showProgress() {
@@ -164,9 +170,11 @@ console.log("Doing something...");
 process.stdout.write(cursorShow);
 ```
 
-**Important:** Always restore cursor visibility before your program exits, especially if it might exit unexpectedly. Use a cleanup handler:
+<Callout type="warn">
+Always restore cursor visibility before your program exits!
+</Callout>
 
-```typescript
+```typescript title="cleanup.ts"
 import { cursorShow } from "@visulima/ansi";
 import { restoreCursor } from "@visulima/ansi/cursor";
 
@@ -232,25 +240,24 @@ console.log(green("Success:"), bold("Operation completed!"));
 
 ## Best Practices
 
-1. **Always restore terminal state**: Hide cursor? Show it before exit. Change modes? Reset them.
+<Callout type="info">
+Follow these guidelines for reliable terminal applications.
+</Callout>
 
-2. **Use appropriate output methods**: 
-   - `process.stdout.write()` for ANSI sequences
-   - `console.log()` for content you want on a new line
+1. **Always restore terminal state** - Reset cursor visibility and modes before exit
+2. **Use appropriate output methods** - `process.stdout.write()` for ANSI, `console.log()` for content
+3. **Test in different terminals** - Not all terminals support all features
+4. **Handle errors gracefully** - Terminal operations can fail
+5. **Combine operations** - Chain sequences for efficiency
 
-3. **Test in different terminals**: Not all terminals support all features
+```typescript title="best-practice.ts"
+// Good - single write
+process.stdout.write(cursorTo(0, 0) + eraseLine);
 
-4. **Handle errors gracefully**: Terminal operations can fail
-
-5. **Combine operations**: Chain multiple ANSI sequences for efficiency
-   ```typescript
-   // Good - single write
-   process.stdout.write(cursorTo(0, 0) + eraseLine);
-   
-   // Less efficient - multiple writes
-   process.stdout.write(cursorTo(0, 0));
-   process.stdout.write(eraseLine);
-   ```
+// Less efficient - multiple writes
+process.stdout.write(cursorTo(0, 0));
+process.stdout.write(eraseLine);
+```
 
 ## Next Steps
 
@@ -260,10 +267,18 @@ console.log(green("Success:"), bold("Operation completed!"));
 
 ## Troubleshooting
 
-**Nothing appears to happen**: Make sure you're using `process.stdout.write()` for ANSI sequences
+<Accordion title="Nothing appears to happen">
+Make sure you're using `process.stdout.write()` for ANSI sequences.
+</Accordion>
 
-**Cursor stays hidden**: Always show the cursor before your program exits
+<Accordion title="Cursor stays hidden">
+Always show the cursor before your program exits using `cursorShow` or `restoreCursor()`.
+</Accordion>
 
-**Content in wrong position**: Remember that `cursorTo(x, y)` uses 0-indexed coordinates
+<Accordion title="Content in wrong position">
+Remember that `cursorTo(x, y)` uses 0-indexed coordinates.
+</Accordion>
 
-**Works in one terminal but not another**: Some features are terminal-specific (like iTerm2 images)
+<Accordion title="Works in one terminal but not another">
+Some features are terminal-specific (like iTerm2 images). Always test across different terminals.
+</Accordion>

@@ -1,23 +1,15 @@
-# Examples
+---
+title: Examples
+description: Practical examples and real-world use cases for @visulima/ansi
+---
 
-This guide provides practical, real-world examples of using `@visulima/ansi` in your applications.
-
-## Table of Contents
-
-- [Loading Spinner](#loading-spinner)
-- [Progress Bar](#progress-bar)
-- [Interactive Menu](#interactive-menu)
-- [Terminal Dashboard](#terminal-dashboard)
-- [Log Stream with Updates](#log-stream-with-updates)
-- [Table Display](#table-display)
-- [Countdown Timer](#countdown-timer)
-- [Status Messages](#status-messages)
+Practical, real-world examples of using `@visulima/ansi` in your applications.
 
 ## Loading Spinner
 
 Create an animated loading spinner:
 
-```typescript
+```typescript title="spinner.ts"
 import { cursorHide, cursorShow } from "@visulima/ansi/cursor";
 import { eraseLine, cursorLeft } from "@visulima/ansi";
 
@@ -49,7 +41,7 @@ console.log("Done!");
 
 Display a progress bar with percentage:
 
-```typescript
+```typescript title="progress-bar.ts"
 import { cursorHide, cursorShow, cursorTo } from "@visulima/ansi/cursor";
 import { eraseLine } from "@visulima/ansi/erase";
 
@@ -107,7 +99,11 @@ await processItems(new Array(50).fill(null));
 
 Create a keyboard-navigable menu:
 
-```typescript
+<Callout type="info">
+This example requires user input handling with the `readline` module.
+</Callout>
+
+```typescript title="menu.ts"
 import { cursorUp, cursorTo, cursorHide, cursorShow } from "@visulima/ansi/cursor";
 import { eraseLine } from "@visulima/ansi/erase";
 import readline from "readline";
@@ -186,7 +182,7 @@ console.log(`\nYou selected: ${selected}`);
 
 Create a live-updating dashboard:
 
-```typescript
+```typescript title="dashboard.ts"
 import { cursorTo, cursorHide, cursorShow } from "@visulima/ansi/cursor";
 import { clearScreen } from "@visulima/ansi/clear";
 
@@ -264,7 +260,7 @@ setTimeout(() => dashboard.stop(), 10000);
 
 Display a log stream that updates in place:
 
-```typescript
+```typescript title="log-stream.ts"
 import { cursorUp, cursorTo } from "@visulima/ansi/cursor";
 import { eraseLine } from "@visulima/ansi/erase";
 
@@ -317,7 +313,7 @@ logger.add("Received first request");
 
 Display and update a table:
 
-```typescript
+```typescript title="table.ts"
 import { cursorTo, cursorUp } from "@visulima/ansi/cursor";
 import { eraseLine } from "@visulima/ansi/erase";
 
@@ -397,7 +393,7 @@ table.updateRow(2, { status: "Complete" });
 
 Create a countdown timer:
 
-```typescript
+```typescript title="countdown.ts"
 import { cursorLeft } from "@visulima/ansi/cursor";
 import { eraseLine } from "@visulima/ansi/erase";
 
@@ -419,7 +415,7 @@ await countdown(10, "Starting in");
 
 Display status messages with icons:
 
-```typescript
+```typescript title="status.ts"
 import { cursorTo } from "@visulima/ansi/cursor";
 import { eraseLine } from "@visulima/ansi/erase";
 
@@ -461,7 +457,11 @@ console.log("\nAll tasks completed!");
 
 Display clickable links in supported terminals:
 
-```typescript
+<Callout type="warn">
+Hyperlink support varies by terminal. Test in your target environment.
+</Callout>
+
+```typescript title="hyperlinks.ts"
 import hyperlink from "@visulima/ansi/hyperlink";
 
 // Simple link
@@ -484,7 +484,7 @@ links.forEach(link => {
 
 Remove ANSI codes for logging or length calculation:
 
-```typescript
+```typescript title="strip-ansi.ts"
 import strip from "@visulima/ansi/strip";
 import { cursorUp } from "@visulima/ansi/cursor";
 

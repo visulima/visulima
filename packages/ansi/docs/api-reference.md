@@ -1,50 +1,30 @@
-# API Reference
-
-Complete reference for all functions and constants in `@visulima/ansi`.
-
-## Table of Contents
-
-- [Cursor Control](#cursor-control)
-- [Erase Functions](#erase-functions)
-- [Clear Functions](#clear-functions)
-- [Screen Manipulation](#screen-manipulation)
-- [Scroll Functions](#scroll-functions)
-- [Hyperlinks](#hyperlinks)
-- [Images](#images)
-- [Strip ANSI Codes](#strip-ansi-codes)
-- [Title Functions](#title-functions)
-- [Mouse Functions](#mouse-functions)
-- [Mode Functions](#mode-functions)
-- [Status Functions](#status-functions)
-- [Window Operations](#window-operations)
-- [Alternative Screen](#alternative-screen)
-- [Passthrough Sequences](#passthrough-sequences)
-- [Reset Functions](#reset-functions)
-
+---
+title: API Reference
+description: Complete reference for all functions and constants in @visulima/ansi
 ---
 
 ## Cursor Control
 
+<Callout type="info">
 Module: `@visulima/ansi/cursor`
+</Callout>
 
-### Functions
+### cursorTo()
 
-#### cursorTo(x, y?)
+<TypeTable 
+  type={{
+    x: { type: 'number', description: 'Column position (0-indexed)' },
+    y: { type: 'number | undefined', description: 'Row position (0-indexed, optional)' }
+  }}
+/>
 
 Moves the cursor to specific coordinates (0-indexed).
 
-```typescript
+```typescript title="signature"
 cursorTo(x: number, y?: number): string
 ```
 
-**Parameters:**
-- `x` - Column position (0 = leftmost)
-- `y` - Row position (0 = topmost, optional)
-
-**Returns:** ANSI escape sequence
-
-**Example:**
-```typescript
+```typescript title="example.ts"
 // Move to top-left corner
 process.stdout.write(cursorTo(0, 0));
 
@@ -52,61 +32,44 @@ process.stdout.write(cursorTo(0, 0));
 process.stdout.write(cursorTo(10));
 ```
 
----
-
-#### cursorMove(x, y)
+### cursorMove()
 
 Moves the cursor relative to its current position.
 
-```typescript
+```typescript title="signature"
 cursorMove(x: number, y: number): string
 ```
 
-**Parameters:**
-- `x` - Columns to move (positive = right, negative = left)
-- `y` - Rows to move (positive = down, negative = up)
-
-**Returns:** ANSI escape sequence
-
-**Example:**
-```typescript
+```typescript title="example.ts"
 // Move 5 columns right and 2 rows up
 process.stdout.write(cursorMove(5, -2));
 ```
 
----
+<Callout>
+Positive `x` moves right, negative left. Positive `y` moves down, negative up.
+</Callout>
 
-#### cursorUp(count?)
+### cursorUp()
 
 Moves the cursor up by the specified number of rows.
 
-```typescript
+```typescript title="signature"
 cursorUp(count?: number): string
 ```
 
-**Parameters:**
-- `count` - Number of rows to move up (default: 1)
-
-**Returns:** ANSI escape sequence
-
-**Example:**
-```typescript
+```typescript title="example.ts"
 process.stdout.write(cursorUp(3));
 ```
 
----
-
-#### cursorDown(count?)
+### cursorDown()
 
 Moves the cursor down by the specified number of rows.
 
-```typescript
+```typescript title="signature"
 cursorDown(count?: number): string
 ```
 
----
-
-#### cursorForward(count?)
+### cursorForward()
 
 Moves the cursor forward (right) by the specified number of columns.
 
@@ -597,69 +560,58 @@ scrollDown(count?: number): string
 - `SCROLL_UP_1` - Scroll up 1 line
 - `SCROLL_DOWN_1` - Scroll down 1 line
 
----
-
 ## Hyperlinks
 
+<Callout type="info">
 Module: `@visulima/ansi/hyperlink`
+</Callout>
 
-### Functions
-
-#### hyperlink(text, url)
+### hyperlink()
 
 Creates a clickable hyperlink in the terminal.
 
-```typescript
+```typescript title="signature"
 hyperlink(text: string, url: string): string
 ```
 
-**Parameters:**
-- `text` - Visible link text
-- `url` - Target URL
+<Callout type="warn">
+Terminal support varies. Not all terminals support clickable hyperlinks.
+</Callout>
 
-**Returns:** ANSI escape sequence for hyperlink
-
-**Example:**
-```typescript
+```typescript title="example.ts"
 import hyperlink from "@visulima/ansi/hyperlink";
 
 const link = hyperlink("Visulima", "https://visulima.com");
 console.log(`Visit ${link} for more info`);
 ```
 
-**Note:** Terminal support varies. Check terminal compatibility before using.
-
----
-
 ## Images
 
+<Callout type="info">
 Module: `@visulima/ansi/image`
+</Callout>
 
-### Functions
-
-#### image(data, options?)
+### image()
 
 Displays an inline image (iTerm2 only).
 
-```typescript
+```typescript title="signature"
 image(data: Uint8Array, options?: ImageOptions): string
 ```
 
-**Parameters:**
-- `data` - Raw image data as `Uint8Array`
-- `options` - Display options
-
 **ImageOptions:**
-```typescript
-interface ImageOptions {
-    width?: number | string | "auto";
-    height?: number | string | "auto";
-    preserveAspectRatio?: boolean;
-}
-```
 
-**Example:**
-```typescript
+| Property | Type | Description |
+|----------|------|-------------|
+| `width` | `number \| string \| "auto"` | Display width |
+| `height` | `number \| string \| "auto"` | Display height |
+| `preserveAspectRatio` | `boolean` | Preserve aspect ratio (default: true) |
+
+<Callout type="warn">
+This feature is specific to iTerm2 and will not work in other terminals.
+</Callout>
+
+```typescript title="example.ts"
 import { image } from "@visulima/ansi/image";
 import { readFileSync } from "fs";
 
@@ -673,39 +625,31 @@ const sequence = image(new Uint8Array(imageData), {
 process.stdout.write(sequence);
 ```
 
-**Note:** This feature is specific to iTerm2.
-
----
-
 ## Strip ANSI Codes
 
+<Callout type="info">
 Module: `@visulima/ansi/strip`
+</Callout>
 
-### Functions
-
-#### strip(input)
+### strip()
 
 Removes all ANSI escape codes from a string.
 
-```typescript
+```typescript title="signature"
 strip(input: string): string
 ```
 
-**Parameters:**
-- `input` - String containing ANSI codes
-
-**Returns:** String with ANSI codes removed
-
-**Example:**
-```typescript
+```typescript title="example.ts"
 import strip from "@visulima/ansi/strip";
 
 const styled = "\x1b[32mHello\x1b[0m";
 const plain = strip(styled);
 console.log(plain); // "Hello"
-```
 
----
+// Useful for calculating actual string length
+const styledText = "\x1b[32mHello\x1b[0m \x1b[1mWorld\x1b[0m";
+const actualLength = strip(styledText).length; // 11
+```
 
 ## Title Functions
 
@@ -1188,20 +1132,24 @@ import { beep } from "@visulima/ansi";
 process.stdout.write(beep);
 ```
 
----
-
 ## Best Practices
 
-1. **Always restore state**: If you hide the cursor, show it before exit
-2. **Use constants when available**: They're optimized and pre-calculated
-3. **Combine sequences**: More efficient than multiple writes
-4. **Test terminal compatibility**: Not all terminals support all features
-5. **Handle errors**: Terminal operations can fail in some environments
+<Callout type="info">
+Follow these guidelines for reliable terminal applications.
+</Callout>
 
----
+1. **Always restore state** - Show cursor before exit if hidden
+2. **Use constants** - They're optimized and pre-calculated
+3. **Combine sequences** - More efficient than multiple writes
+4. **Test compatibility** - Not all terminals support all features
+5. **Handle errors** - Terminal operations can fail
 
-## Next Steps
+```typescript title="good-practice.ts"
+// Good - combined sequences
+process.stdout.write(cursorHide + cursorTo(0, 0) + eraseLine);
 
-- See [Examples](./examples.md) for practical usage patterns
-- Read [Advanced Usage](./advanced.md) for complex scenarios
-- Check the TypeScript definitions for detailed parameter types
+// Less efficient - multiple writes
+process.stdout.write(cursorHide);
+process.stdout.write(cursorTo(0, 0));
+process.stdout.write(eraseLine);
+```

@@ -1,59 +1,64 @@
-# Installation
+---
+title: Installation
+description: How to install and set up @visulima/ansi in your project
+---
 
 ## Requirements
 
+<Callout type="info">
 - **Node.js**: Version 20.18 or higher (up to 24.x)
 - **Package Manager**: npm, yarn, or pnpm
+</Callout>
 
-## Installation Methods
+## Installation
 
-### Using npm
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
-```bash
-npm install @visulima/ansi
-```
+<Tabs items={['npm', 'yarn', 'pnpm']}>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/ansi
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/ansi
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/ansi
+    ```
+  </Tab>
+</Tabs>
 
-### Using yarn
+## Importing
 
-```bash
-yarn add @visulima/ansi
-```
+`@visulima/ansi` supports both ESM and CommonJS.
 
-### Using pnpm
+### ES Modules
 
-```bash
-pnpm add @visulima/ansi
-```
-
-## Importing the Package
-
-`@visulima/ansi` is distributed as both ESM (ECMAScript Module) and CommonJS, supporting various import styles.
-
-### ES Modules (Recommended)
-
-Import everything from the main package:
-
-```typescript
-import { cursorUp, cursorLeft, eraseLine } from "@visulima/ansi";
-```
-
-Import from specific modules:
-
-```typescript
-import { cursorUp, cursorTo } from "@visulima/ansi/cursor";
-import { eraseLine, eraseScreen } from "@visulima/ansi/erase";
-import { hyperlink } from "@visulima/ansi/hyperlink";
-```
+<Tabs items={['Main Package', 'Specific Modules']}>
+  <Tab value="Main Package">
+    ```typescript title="index.ts"
+    import { cursorUp, cursorLeft, eraseLine } from "@visulima/ansi";
+    ```
+  </Tab>
+  <Tab value="Specific Modules">
+    ```typescript title="index.ts"
+    import { cursorUp, cursorTo } from "@visulima/ansi/cursor";
+    import { eraseLine, eraseScreen } from "@visulima/ansi/erase";
+    import { hyperlink } from "@visulima/ansi/hyperlink";
+    ```
+  </Tab>
+</Tabs>
 
 ### CommonJS
 
-```javascript
+```javascript title="index.js"
 const { cursorUp, cursorLeft, eraseLine } = require("@visulima/ansi");
-```
 
-Or with specific modules:
-
-```javascript
+// Or with specific modules
 const { cursorUp, cursorTo } = require("@visulima/ansi/cursor");
 const { eraseLine } = require("@visulima/ansi/erase");
 ```
@@ -84,21 +89,24 @@ The package provides the following sub-modules for more granular imports:
 
 ## TypeScript Support
 
-The package includes full TypeScript type definitions. No additional `@types` packages are needed.
+<Callout type="info">
+Full TypeScript type definitions are included. No additional `@types` packages needed.
+</Callout>
 
-```typescript
+```typescript title="example.ts"
 import { CursorStyle, setCursorStyle } from "@visulima/ansi/cursor";
 
-// TypeScript will provide full autocomplete and type checking
+// Full autocomplete and type checking
 process.stdout.write(setCursorStyle(CursorStyle.BlinkingUnderline));
 ```
 
-## Verifying Installation
+## Verify Installation
 
-Create a simple test file to verify the installation:
+<Steps>
 
-```javascript
-// test.js
+### Create test file
+
+```javascript title="test.js"
 import { cursorUp, eraseLine } from "@visulima/ansi";
 
 console.log("Testing @visulima/ansi...");
@@ -107,13 +115,17 @@ process.stdout.write(eraseLine);
 console.log("Installation successful!");
 ```
 
-Run it:
+### Run the test
 
 ```bash
 node test.js
 ```
 
-If the installation is successful, you should see "Installation successful!" appear on the line where "Testing @visulima/ansi..." was printed.
+### Expected output
+
+You should see "Installation successful!" appear on the line where "Testing @visulima/ansi..." was printed.
+
+</Steps>
 
 ## Next Steps
 
