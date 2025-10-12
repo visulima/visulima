@@ -12,6 +12,9 @@ export default defineConfig({
             writeToPackageJson: true,
             typeScriptVersion: ">=5.0",
         },
+        requireCJS: {
+            builtinNodeModules: true
+        }
     },
     transformer,
     cjsInterop: true,

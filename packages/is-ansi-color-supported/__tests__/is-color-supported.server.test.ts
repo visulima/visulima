@@ -39,7 +39,7 @@ describe("node.JS", () => {
         expect(received).toBe(0);
     });
 
-    it.each(["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE"])(`should return 1 if "%s" is in env`, (ci) => {
+    it.each(["TRAVIS", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE"])(`should return 1 if "%s" is in env`, (ci) => {
         expect.assertions(1);
 
         vi.stubGlobal("process", {
@@ -55,7 +55,7 @@ describe("node.JS", () => {
         expect(received).toBe(1);
     });
 
-    it.each(["GITHUB_ACTIONS", "GITHUB_WORKFLOW", "GITEA_ACTIONS"])(`should return 3 if "%s" is in env`, (ci) => {
+    it.each(["GITHUB_ACTIONS", "GITHUB_WORKFLOW", "GITEA_ACTIONS", "CIRCLECI"])(`should return 3 if "%s" is in env`, (ci) => {
         expect.assertions(1);
 
         vi.stubGlobal("process", {
