@@ -1,0 +1,200 @@
+---
+title: Installation
+description: Learn how to install and configure @visulima/string in your project.
+---
+
+# Installation
+
+## Package Manager
+
+Install @visulima/string using your preferred package manager:
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/string
+    ```
+  </Tab>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/string
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/string
+    ```
+  </Tab>
+</Tabs>
+
+## Requirements
+
+- Node.js >= 18.0.0 <= 23.x
+- TypeScript >= 5.0 (for TypeScript projects)
+
+## TypeScript Configuration
+
+### Basic Setup
+
+The library works out of the box with TypeScript. Import functions as needed:
+
+```typescript
+import { camelCase, slugify } from '@visulima/string';
+```
+
+### Enhanced Native String Types
+
+For enhanced type-safe native string operations, configure your `tsconfig.json`:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "types": ["@visulima/string/native-string-types"]
+  }
+}
+```
+
+Alternatively, add a triple-slash reference in your TypeScript files:
+
+```typescript
+/// <reference types="@visulima/string/native-string-types" />
+```
+
+This enables advanced type inference for native string methods:
+
+```typescript
+const str = "Hello, World!";
+
+// Type-safe operations with literal type inference
+str.charAt<typeof str, 0>(); // type: 'H'
+str.slice<typeof str, 0, 5>(); // type: 'Hello'
+str.split<typeof str, ", ">(); // type: ['Hello', 'World!']
+```
+
+## Module Imports
+
+### Full Import
+
+Import all functions from the main entry point:
+
+```typescript
+import { camelCase, slugify, truncate, wordWrap } from '@visulima/string';
+```
+
+### Subpath Imports
+
+Import specific modules for better tree-shaking:
+
+```typescript
+// Case conversion
+import { camelCase } from '@visulima/string/case/camel-case';
+import { pascalCase } from '@visulima/string/case/pascal-case';
+
+// String utilities
+import { slugify } from '@visulima/string/slugify';
+import { truncate } from '@visulima/string/truncate';
+import { wordWrap } from '@visulima/string/word-wrap';
+
+// String width
+import { getStringWidth } from '@visulima/string/get-string-width';
+
+// Text alignment
+import { alignText } from '@visulima/string/align-text';
+
+// Outdent
+import { outdent } from '@visulima/string/outdent';
+```
+
+### Case Conversion Bundle
+
+Import all case conversion functions:
+
+```typescript
+import {
+  camelCase,
+  pascalCase,
+  snakeCase,
+  kebabCase,
+  constantCase,
+  dotCase,
+  pathCase,
+  titleCase,
+  sentenceCase,
+  // ... and more
+} from '@visulima/string/case';
+```
+
+## ESM and CommonJS
+
+The package supports both ESM and CommonJS:
+
+### ESM (Recommended)
+
+```typescript
+import { camelCase } from '@visulima/string';
+```
+
+### CommonJS
+
+```javascript
+const { camelCase } = require('@visulima/string');
+```
+
+## Testing Utilities
+
+For Vitest integration, import the custom matchers:
+
+```typescript
+import { expect, describe, it } from 'vitest';
+import { toEqualAnsi } from '@visulima/string/test/vitest';
+import { formatAnsiString, compareAnsiStrings } from '@visulima/string/test/utils';
+
+// Extend Vitest with custom matchers
+expect.extend({ toEqualAnsi });
+
+describe('ANSI string tests', () => {
+  it('should match colored strings', () => {
+    expect(actual).toEqualAnsi(expected);
+  });
+});
+```
+
+## Bundle Size
+
+The library is designed for optimal bundle size:
+
+- Tree-shakeable exports
+- Minimal dependencies
+- Efficient implementations
+- Subpath imports for targeted usage
+
+Use subpath imports to include only what you need:
+
+```typescript
+// Only imports camelCase function and its dependencies
+import { camelCase } from '@visulima/string/case/camel-case';
+```
+
+## Browser Compatibility
+
+Works in all modern browsers that support:
+
+- ES2020 features
+- Unicode property escapes in regex
+- BigInt (for some advanced features)
+
+## Verification
+
+Verify the installation by running a simple test:
+
+```typescript
+import { camelCase } from '@visulima/string';
+
+console.log(camelCase('hello-world')); // Output: 'helloWorld'
+```
+
+## Next Steps
+
+- [Case Conversion](/docs/case-conversion) - Learn about case conversion functions
+- [String Manipulation](/docs/string-manipulation) - Explore string manipulation utilities
+- [API Reference](/docs/api) - Browse the complete API documentation

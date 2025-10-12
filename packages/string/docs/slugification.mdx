@@ -1,0 +1,468 @@
+---
+title: Slugification & Transliteration
+description: Create URL-friendly slugs and transliterate Unicode characters to ASCII.
+---
+
+# Slugification & Transliteration
+
+Convert strings into URL-friendly slugs and transliterate Unicode characters to ASCII with comprehensive language support.
+
+## Slugification
+
+The `slugify` function converts strings into URL-friendly slugs with automatic transliteration.
+
+### Basic Usage
+
+```typescript
+import { slugify } from '@visulima/string';
+
+slugify('Hello World!');            // 'hello-world'
+slugify('Crème Brûlée');           // 'creme-brulee'
+slugify('foo & bar * baz');        // 'foo-bar-baz'
+```
+
+### Chinese and CJK Support
+
+```typescript
+// Chinese with spacing (default)
+slugify('你好 World!');             // 'ni-hao-world'
+
+// Chinese without spacing
+slugify('你好World!', {
+  fixChineseSpacing: false
+});                                 // 'nihaoworld'
+
+// Japanese
+slugify('こんにちは世界');          // 'konnichiha-shi-jie'
+
+// Korean
+slugify('안녕하세요');              // 'annyeonghaseyo'
+```
+
+### Custom Separators
+
+```typescript
+slugify('foo bar baz', {
+  separator: '_'
+});                                 // 'foo_bar_baz'
+
+slugify('Hello World', {
+  separator: '.'
+});                                 // 'hello.world'
+
+// Empty separator
+slugify('hello world', {
+  separator: ''
+});                                 // 'helloworld'
+```
+
+### Case Control
+
+```typescript
+// Lowercase (default)
+slugify('FOO BAR');                 // 'foo-bar'
+
+// Uppercase
+slugify('foo bar', {
+  lowercase: false,
+  uppercase: true
+});                                 // 'FOO-BAR'
+
+// Preserve case
+slugify('FooBar', {
+  lowercase: false
+});                                 // 'foobar'
+```
+
+### Custom Allowed Characters
+
+```typescript
+// Default allows: a-zA-Z0-9-_.~
+slugify('foo@bar.com');             // 'foobar-com'
+
+// Custom allowed characters
+slugify('foo@bar.com', {
+  allowedChars: 'a-z@.'
+});                                 // 'foo@bar.com'
+
+// Keep special characters
+slugify('Keep !@#$', {
+  allowedChars: 'a-z!@$'
+});                                 // 'keep!@$'
+```
+
+### Custom Replacements
+
+```typescript
+// Replace before transliteration
+slugify('Keep C++', {
+  replaceBefore: { 'C++': 'cpp' }
+});                                 // 'keep-cpp'
+
+// Replace after transliteration
+slugify('foo bar', {
+  replaceAfter: { 'foo': 'baz' }
+});                                 // 'baz-bar'
+
+// Multiple replacements
+slugify('C# and C++', {
+  replaceBefore: {
+    'C#': 'csharp',
+    'C++': 'cpp'
+  }
+});                                 // 'csharp-and-cpp'
+```
+
+### Ignore Segments
+
+```typescript
+slugify('Keep THIS but change that', {
+  ignore: ['THIS']
+});                                 // 'keep-this-but-change-that'
+```
+
+### Without Transliteration
+
+```typescript
+// Skip transliteration entirely
+slugify('café', {
+  transliterate: false
+});                                 // 'caf'
+// (é is removed because it's not in allowedChars)
+```
+
+### Complete Options
+
+```typescript
+import type { SlugifyOptions } from '@visulima/string';
+
+interface SlugifyOptions {
+  // Allowed characters (default: 'a-zA-Z0-9-_.~')
+  allowedChars?: string;
+  
+  // Add space between Chinese characters (default: true)
+  fixChineseSpacing?: boolean;
+  
+  // Characters/strings to ignore during transliteration
+  ignore?: string[];
+  
+  // Convert to lowercase (default: true)
+  lowercase?: boolean;
+  
+  // Replacements after transliteration
+  replaceAfter?: OptionReplaceCombined;
+  
+  // Replacements before transliteration
+  replaceBefore?: OptionReplaceCombined;
+  
+  // Separator character (default: '-')
+  separator?: string;
+  
+  // Enable transliteration (default: true)
+  transliterate?: boolean;
+  
+  // Trim whitespace (default: false)
+  trim?: boolean;
+  
+  // Character for unknown characters (default: '')
+  unknown?: string;
+  
+  // Convert to uppercase (default: false)
+  uppercase?: boolean;
+}
+```
+
+## Transliteration
+
+The `transliterate` function converts Unicode characters to ASCII equivalents.
+
+### Basic Transliteration
+
+```typescript
+import { transliterate } from '@visulima/string';
+
+// European languages
+transliterate('Crème brûlée');      // 'Creme brulee'
+transliterate('Düsseldorf');        // 'Dusseldorf'
+transliterate('Zürich');            // 'Zurich'
+
+// Cyrillic
+transliterate('Москва');            // 'Moskva'
+transliterate('Привет');            // 'Privet'
+
+// Greek
+transliterate('Αθήνα');             // 'Athena'
+transliterate('Ελληνικά');          // 'Ellenika'
+```
+
+### Chinese Transliteration
+
+```typescript
+// With spacing (default)
+transliterate('你好世界');           // 'Ni Hao Shi Jie'
+
+// Without spacing
+transliterate('你好世界', {
+  fixChineseSpacing: false
+});                                  // 'NiHaoShiJie'
+
+// Mixed Chinese and English
+transliterate('你好World');          // 'Ni Hao World'
+```
+
+### Thai Romanization
+
+```typescript
+// Automatic Thai romanization
+transliterate('สวัสดี');            // 'sawatdi'
+transliterate('ประเทศไทย');         // 'prathet thai'
+```
+
+### Custom Replacements
+
+```typescript
+// Replace before transliteration
+transliterate('Replace C++ before map', {
+  replaceBefore: { 'C++': 'cpp' }
+});                                  // 'Replace cpp before map'
+
+// Replace after transliteration
+transliterate('café', {
+  replaceAfter: { 'e': 'E' }
+});                                  // 'cafE'
+
+// Array format
+transliterate('hello world', {
+  replaceAfter: [
+    ['hello', 'hi'],
+    ['world', 'earth']
+  ]
+});                                  // 'hi earth'
+
+// Regular expressions
+transliterate('test123', {
+  replaceAfter: [
+    [/\d+/g, 'NUM']
+  ]
+});                                  // 'testNUM'
+```
+
+### Ignore Segments
+
+```typescript
+// Keep specific strings unchanged
+transliterate("Don't change THIS, but change that", {
+  ignore: ['THIS']
+});                                  // "Dont change THIS, but change that"
+
+// Multiple ignore segments
+transliterate('Keep @username and #hashtag', {
+  ignore: ['@username', '#hashtag']
+});                                  // 'Keep @username and #hashtag'
+```
+
+### Unknown Characters
+
+```typescript
+// Default: remove unknown characters
+transliterate('Hello 🚀 World');    // 'Hello  World'
+
+// Custom replacement for unknown characters
+transliterate('a🚀b', {
+  unknown: '[?]'
+});                                  // 'a[?]b'
+
+transliterate('test�ing', {
+  unknown: ''
+});                                  // 'testing'
+```
+
+### Trim Output
+
+```typescript
+transliterate('  hello world  ', {
+  trim: true
+});                                  // 'hello world'
+
+transliterate('  你好  ', {
+  trim: true
+});                                  // 'Ni Hao'
+```
+
+### Complete Options
+
+```typescript
+import type { OptionsTransliterate } from '@visulima/string';
+
+interface OptionsTransliterate {
+  // Add space between Chinese Pinyin syllables (default: true)
+  fixChineseSpacing?: boolean;
+  
+  // Strings to ignore during transliteration (default: [])
+  ignore?: string[];
+  
+  // Replacements before character map (default: [])
+  replaceBefore?: OptionReplaceCombined;
+  
+  // Replacements after character map (default: [])
+  replaceAfter?: OptionReplaceCombined;
+  
+  // Trim whitespace from result (default: false)
+  trim?: boolean;
+  
+  // Character for unknown characters (default: '')
+  unknown?: string;
+}
+```
+
+## Language Support
+
+### European Languages
+
+```typescript
+// French
+transliterate('Français');          // 'Francais'
+transliterate('Côte d\'Azur');      // 'Cote d\'Azur'
+
+// German
+transliterate('Größe');             // 'Grosse'
+transliterate('Straße');            // 'Strasse'
+
+// Spanish
+transliterate('España');            // 'Espana'
+transliterate('Niño');              // 'Nino'
+
+// Italian
+transliterate('Città');             // 'Citta'
+transliterate('Perché');            // 'Perche'
+
+// Portuguese
+transliterate('Português');         // 'Portugues'
+transliterate('São Paulo');         // 'Sao Paulo'
+```
+
+### Slavic Languages
+
+```typescript
+// Russian
+transliterate('Россия');            // 'Rossiia'
+transliterate('Привет мир');        // 'Privet mir'
+
+// Polish
+transliterate('Łódź');              // 'Lodz'
+transliterate('Kraków');            // 'Krakow'
+
+// Czech
+transliterate('Česká republika');   // 'Ceska republika'
+
+// Croatian
+transliterate('Zagreb');            // 'Zagreb'
+```
+
+### Middle Eastern Languages
+
+```typescript
+// Arabic
+transliterate('مرحبا');             // 'mrhb'
+transliterate('العربية');          // 'l'rby'
+
+// Hebrew
+transliterate('שלום');              // 'shlwm'
+transliterate('ישראל');             // 'ysr'l'
+```
+
+### Asian Languages
+
+```typescript
+// Japanese (Hiragana)
+transliterate('ひらがな');           // 'hiragana'
+
+// Japanese (Katakana)
+transliterate('カタカナ');           // 'katakana'
+
+// Korean
+transliterate('한글');              // 'hangeul'
+transliterate('대한민국');          // 'daehanmingug'
+
+// Chinese (Simplified)
+transliterate('简体中文');          // 'Jian Ti Zhong Wen'
+
+// Chinese (Traditional)
+transliterate('繁體中文');          // 'Fan Ti Zhong Wen'
+
+// Thai
+transliterate('ภาษาไทย');          // 'phasa thai'
+```
+
+### Indic Scripts
+
+```typescript
+// Hindi (Devanagari)
+transliterate('नमस्ते');           // 'nmste'
+
+// Bengali
+transliterate('বাংলা');            // 'bamla'
+
+// Tamil
+transliterate('தமிழ்');            // 'tmil'
+```
+
+## Best Practices
+
+1. Use `slugify` for URL generation - it handles everything automatically
+2. Use `transliterate` when you need more control over the conversion
+3. Specify `fixChineseSpacing: false` for more compact Chinese output
+4. Use `ignore` option to preserve brand names or special terms
+5. Leverage `replaceBefore` for handling special cases before transliteration
+6. Use `replaceAfter` for post-processing the transliterated output
+
+## Common Use Cases
+
+### URL Slugs
+
+```typescript
+const title = 'My Blog Post - 2024!';
+const slug = slugify(title);
+// 'my-blog-post-2024'
+
+const url = `https://example.com/blog/${slug}`;
+```
+
+### Filename Sanitization
+
+```typescript
+const filename = 'My File (Final) v2.txt';
+const safe = slugify(filename, {
+  separator: '_',
+  allowedChars: 'a-zA-Z0-9_.'
+});
+// 'my_file_final_v2.txt'
+```
+
+### Search Indexing
+
+```typescript
+const searchTerm = 'Café Münchën';
+const normalized = transliterate(searchTerm).toLowerCase();
+// 'cafe munchen'
+```
+
+### Tag Generation
+
+```typescript
+const text = 'Node.js & JavaScript Development';
+const tag = slugify(text, {
+  separator: '-',
+  replaceBefore: {
+    'Node.js': 'nodejs',
+    'JavaScript': 'javascript'
+  }
+});
+// 'nodejs-javascript-development'
+```
+
+## Next Steps
+
+- [String Width](/docs/string-width) - Calculate visual string width
+- [Testing](/docs/testing) - Test utilities for ANSI strings
+- [API Reference](/docs/api/slugify) - Complete API documentation
