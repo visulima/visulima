@@ -1,0 +1,541 @@
+---
+title: Examples
+description: Practical examples of using Pail
+---
+
+# Examples
+
+Real-world examples of using Pail in different scenarios.
+
+## Express Server
+
+Complete logging setup for an Express application:
+
+```typescript
+import express from "express";
+import { createPail } from "@visulima/pail";
+import { PrettyReporter, FileReporter } from "@visulima/pail/server/reporter";
+import { MessageFormatterProcessor, CallerProcessor } from "@visulima/pail/processor";
+
+// Create main logger
+const logger = createPail({
+    scope: "server",
+    logLevel: process.env.NODE_ENV === "production" ? "info" : "debug",
+    reporters: [
+        new PrettyReporter(),
+        new FileReporter({
+            path: "./logs/app.log",
+            format: "json",
+        }),
+    ],
+    processors: [
+        new MessageFormatterProcessor(),
+        new CallerProcessor(),
+    ],
+});
+
+const app = express();
+
+// Request logging middleware
+app.use((req, res, next) => {
+    const requestLogger = logger.scope("request");
+    const start = Date.now();
+    
+    requestLogger.info({
+        prefix: req.method,
+        message: req.path,
+        context: [{ ip: req.ip }],
+    });
+    
+    res.on("finish", () => {
+        const duration = Date.now() - start;
+        const level = res.statusCode >= 400 ? "error" : "info";
+        
+        requestLogger[level]({
+            prefix: req.method,
+            message: req.path,
+            suffix: `${res.statusCode}`,
+            context: [{ duration: `${duration}ms` }],
+        });
+    });
+    
+    next();
+});
+
+// Routes
+app.get("/", (req, res) => {
+    logger.info("Handling root request");
+    res.send("Hello World");
+});
+
+app.get("/users/:id", async (req, res) => {
+    const routeLogger = logger.scope("users");
+    
+    try {
+        routeLogger.debug("Fetching user %s", req.params.id);
+        const user = await fetchUser(req.params.id);
+        res.json(user);
+    } catch (error) {
+        routeLogger.error("Failed to fetch user:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    logger.success("Server started on port %d", PORT);
+});
+```
+
+## CLI Application
+
+Build a command-line tool with interactive progress:
+
+```typescript
+#!/usr/bin/env node
+import { createPail } from "@visulima/pail";
+import { program } from "commander";
+
+const logger = createPail({
+    scope: "cli",
+    interactive: true,
+});
+
+program
+    .name("my-cli")
+    .description("CLI tool example")
+    .version("1.0.0");
+
+program
+    .command("build")
+    .description("Build the project")
+    .action(async () => {
+        logger.start("Building project...");
+        
+        // Clean
+        logger.pending("Cleaning dist directory...");
+        await clean();
+        logger.success("Cleaned");
+        
+        // Compile
+        logger.pending("Compiling TypeScript...");
+        await compile();
+        logger.success("Compiled");
+        
+        // Bundle
+        logger.pending("Bundling assets...");
+        await bundle();
+        logger.success("Bundled");
+        
+        logger.complete("Build complete!");
+    });
+
+program
+    .command("deploy <environment>")
+    .description("Deploy to environment")
+    .action(async (environment) => {
+        const deployLogger = logger.scope("deploy");
+        
+        deployLogger.info("Deploying to %s", environment);
+        
+        try {
+            deployLogger.pending("Running tests...");
+            await runTests();
+            deployLogger.success("Tests passed");
+            
+            deployLogger.pending("Building...");
+            await build();
+            deployLogger.success("Built");
+            
+            deployLogger.pending("Uploading...");
+            await upload(environment);
+            deployLogger.success("Uploaded");
+            
+            deployLogger.complete("Deployed to %s", environment);
+        } catch (error) {
+            deployLogger.error("Deployment failed:", error);
+            process.exit(1);
+        }
+    });
+
+program.parse();
+```
+
+## Microservice
+
+Structured logging for a microservice:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { JsonReporter, FileReporter } from "@visulima/pail/server/reporter";
+import {
+    MessageFormatterProcessor,
+    RedactProcessor,
+} from "@visulima/pail/processor";
+
+// Base logger with JSON output
+const baseLogger = createPail({
+    scope: "user-service",
+    logLevel: "info",
+    reporters: [
+        new JsonReporter(),
+        new FileReporter({
+            path: {
+                path: "./logs",
+                filename: "user-service.log",
+                size: "10M",
+                interval: "1d",
+                compress: "gzip",
+            },
+            format: "json",
+        }),
+    ],
+    processors: [
+        new MessageFormatterProcessor(),
+        new RedactProcessor({
+            secrets: [process.env.JWT_SECRET || ""],
+            paths: ["user.password", "user.ssn"],
+        }),
+    ],
+});
+
+// Service class
+class UserService {
+    private logger = baseLogger.scope("service");
+    
+    async createUser(data: CreateUserDto): Promise<User> {
+        const requestId = generateRequestId();
+        const logger = this.logger.scope(requestId);
+        
+        logger.info("Creating user", { email: data.email });
+        logger.time("createUser");
+        
+        try {
+            // Validate
+            logger.debug("Validating user data");
+            await this.validate(data);
+            
+            // Check if exists
+            logger.debug("Checking if user exists");
+            const existing = await this.findByEmail(data.email);
+            if (existing) {
+                throw new Error("User already exists");
+            }
+            
+            // Create
+            logger.debug("Saving user to database");
+            const user = await this.repository.save(data);
+            
+            // Send welcome email
+            logger.debug("Sending welcome email");
+            await this.emailService.sendWelcome(user);
+            
+            logger.timeEnd("createUser");
+            logger.success("User created", { userId: user.id });
+            
+            return user;
+        } catch (error) {
+            logger.timeEnd("createUser");
+            logger.error("Failed to create user:", error);
+            throw error;
+        }
+    }
+    
+    async findById(id: string): Promise<User | null> {
+        const logger = this.logger.scope("findById");
+        logger.debug("Finding user by id", { id });
+        
+        try {
+            const user = await this.repository.findById(id);
+            if (user) {
+                logger.debug("User found", { id });
+            } else {
+                logger.debug("User not found", { id });
+            }
+            return user;
+        } catch (error) {
+            logger.error("Database error:", error);
+            throw error;
+        }
+    }
+}
+
+// HTTP Handler
+app.post("/users", async (req, res) => {
+    const requestLogger = baseLogger.scope("http", req.id);
+    
+    requestLogger.info({
+        message: "POST /users",
+        context: [{ 
+            ip: req.ip,
+            userAgent: req.get("user-agent"),
+        }],
+    });
+    
+    try {
+        const user = await userService.createUser(req.body);
+        res.status(201).json(user);
+    } catch (error) {
+        requestLogger.error("Request failed:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+```
+
+## Background Jobs
+
+Logging for background job processing:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { Queue } from "bullmq";
+
+const logger = createPail({
+    scope: "jobs",
+    logLevel: "debug",
+});
+
+// Email job
+const emailQueue = new Queue("email");
+
+emailQueue.process(async (job) => {
+    const jobLogger = logger.scope("email", job.id);
+    
+    jobLogger.start("Processing email job");
+    jobLogger.debug("Job data", job.data);
+    jobLogger.time("email-job");
+    
+    try {
+        const { to, subject, body } = job.data;
+        
+        jobLogger.debug("Connecting to SMTP server");
+        await connectSMTP();
+        
+        jobLogger.debug("Sending email to %s", to);
+        await sendEmail({ to, subject, body });
+        
+        jobLogger.timeEnd("email-job");
+        jobLogger.complete("Email sent successfully");
+        
+        return { sent: true, to };
+    } catch (error) {
+        jobLogger.timeEnd("email-job");
+        jobLogger.error("Email job failed:", error);
+        throw error;
+    }
+});
+
+// Cleanup job
+const cleanupQueue = new Queue("cleanup");
+
+cleanupQueue.process(async (job) => {
+    const jobLogger = logger.scope("cleanup");
+    
+    jobLogger.start("Running cleanup job");
+    jobLogger.time("cleanup");
+    
+    try {
+        // Clean old logs
+        jobLogger.pending("Cleaning old logs...");
+        const deletedLogs = await cleanOldLogs();
+        jobLogger.info("Deleted %d old logs", deletedLogs);
+        
+        // Clean temp files
+        jobLogger.pending("Cleaning temp files...");
+        const deletedFiles = await cleanTempFiles();
+        jobLogger.info("Deleted %d temp files", deletedFiles);
+        
+        // Clean cache
+        jobLogger.pending("Cleaning cache...");
+        await cleanCache();
+        jobLogger.info("Cache cleaned");
+        
+        jobLogger.timeEnd("cleanup");
+        jobLogger.complete("Cleanup job finished");
+        
+        return {
+            deletedLogs,
+            deletedFiles,
+        };
+    } catch (error) {
+        jobLogger.timeEnd("cleanup");
+        jobLogger.error("Cleanup job failed:", error);
+        throw error;
+    }
+});
+```
+
+## Testing
+
+Use Pail in tests:
+
+```typescript
+import { describe, it, expect, beforeEach } from "vitest";
+import { createPail } from "@visulima/pail";
+
+describe("UserService", () => {
+    let logger: ReturnType<typeof createPail>;
+    let service: UserService;
+    
+    beforeEach(() => {
+        // Create test logger
+        logger = createPail({
+            scope: "test",
+            logLevel: "debug",
+            disabled: process.env.SILENT_TESTS === "true",
+        });
+        
+        service = new UserService(logger);
+    });
+    
+    it("creates a user", async () => {
+        logger.info("Running test: creates a user");
+        logger.time("test");
+        
+        const userData = {
+            email: "test@example.com",
+            name: "Test User",
+        };
+        
+        logger.debug("Creating user with data", userData);
+        const user = await service.createUser(userData);
+        
+        logger.debug("User created", { userId: user.id });
+        expect(user).toBeDefined();
+        expect(user.email).toBe(userData.email);
+        
+        logger.timeEnd("test");
+        logger.success("Test passed");
+    });
+    
+    it("handles errors gracefully", async () => {
+        logger.info("Running test: handles errors");
+        
+        try {
+            await service.createUser({ email: "invalid" });
+            logger.error("Test should have thrown an error");
+            expect.fail("Expected error");
+        } catch (error) {
+            logger.debug("Caught expected error:", error);
+            expect(error).toBeDefined();
+            logger.success("Test passed");
+        }
+    });
+});
+```
+
+## Docker Application
+
+Logging configuration for Dockerized applications:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { JsonReporter } from "@visulima/pail/server/reporter";
+
+// Use JSON logging in containers for easy parsing
+const logger = createPail({
+    scope: process.env.SERVICE_NAME || "app",
+    logLevel: process.env.LOG_LEVEL || "info",
+    reporters: [new JsonReporter()],
+    processors: [new MessageFormatterProcessor()],
+});
+
+// Add container metadata
+logger.info("Container starting", {
+    hostname: process.env.HOSTNAME,
+    serviceName: process.env.SERVICE_NAME,
+    version: process.env.VERSION,
+    environment: process.env.NODE_ENV,
+});
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+    logger.debug("Health check");
+    res.json({ status: "healthy" });
+});
+
+// Graceful shutdown
+process.on("SIGTERM", () => {
+    logger.info("SIGTERM received, shutting down gracefully");
+    
+    server.close(() => {
+        logger.info("Server closed");
+        process.exit(0);
+    });
+    
+    // Force shutdown after 10s
+    setTimeout(() => {
+        logger.error("Forced shutdown after timeout");
+        process.exit(1);
+    }, 10000);
+});
+```
+
+## Next.js Application
+
+Logging in a Next.js application:
+
+```typescript
+// lib/logger.ts
+import { createPail } from "@visulima/pail";
+
+export const logger = createPail({
+    scope: "nextjs",
+    logLevel: process.env.NODE_ENV === "development" ? "debug" : "info",
+});
+
+// pages/api/users.ts
+import type { NextApiRequest, NextApiResponse } from "next";
+import { logger } from "@/lib/logger";
+
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
+    const apiLogger = logger.scope("api", "users");
+    
+    apiLogger.info({
+        message: `${req.method} ${req.url}`,
+        context: [{ ip: req.socket.remoteAddress }],
+    });
+    
+    try {
+        if (req.method === "GET") {
+            const users = await fetchUsers();
+            apiLogger.debug("Fetched %d users", users.length);
+            res.status(200).json(users);
+        } else {
+            res.status(405).json({ error: "Method not allowed" });
+        }
+    } catch (error) {
+        apiLogger.error("API error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+// middleware.ts
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { logger } from "@/lib/logger";
+
+export function middleware(request: NextRequest) {
+    const middlewareLogger = logger.scope("middleware");
+    
+    middlewareLogger.debug({
+        message: "Request",
+        context: [{
+            path: request.nextUrl.pathname,
+            method: request.method,
+        }],
+    });
+    
+    return NextResponse.next();
+}
+```
+
+## Next Steps
+
+- [API Reference](./api) - Complete API documentation
+- [Configuration](./configuration) - Configuration options
+- [Usage Guides](./usage/basic) - Detailed usage guides

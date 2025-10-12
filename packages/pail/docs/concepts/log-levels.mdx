@@ -1,0 +1,207 @@
+---
+title: Log Levels
+description: Understanding log levels in Pail
+---
+
+# Log Levels
+
+Pail adheres to the log levels defined in [RFC 5424](https://datatracker.ietf.org/doc/html/rfc5424#page-36), extended with a `trace` level for more granular logging.
+
+## Standard Log Levels
+
+The following log levels are available, ordered from most to least verbose:
+
+### Trace
+
+**Level**: `trace` (lowest priority)
+
+Very detailed and fine-grained informational events. Useful for detailed debugging during development.
+
+```typescript
+pail.trace("Entering function calculateTotal()");
+pail.trace("Variable value: %d", userCount);
+```
+
+### Debug
+
+**Level**: `debug`
+
+Detailed debug information. Typically used during development to track application flow and state.
+
+```typescript
+pail.debug("User authentication successful", { userId: 123 });
+pail.debug("Database query executed in %dms", executionTime);
+```
+
+### Informational
+
+**Level**: `info` or `informational`
+
+Interesting events that highlight the progress of the application. Normal operational messages.
+
+```typescript
+pail.info("Server started on port 3000");
+pail.info("User logged in: %s", username);
+```
+
+### Notice
+
+**Level**: `notice`
+
+Normal but significant events. More important than informational but not concerning.
+
+```typescript
+pail.notice("Configuration reloaded successfully");
+pail.notice("Cache cleared for optimization");
+```
+
+### Warning
+
+**Level**: `warning` or `warn`
+
+Exceptional occurrences that are not errors. Potentially harmful situations that deserve attention.
+
+```typescript
+pail.warn("Deprecated API endpoint used");
+pail.warn("Memory usage at 85%");
+```
+
+### Error
+
+**Level**: `error`
+
+Runtime errors that do not require immediate action but should be logged and monitored.
+
+```typescript
+pail.error("Failed to send email notification");
+pail.error(new Error("Database connection failed"));
+```
+
+### Critical
+
+**Level**: `critical`
+
+Critical conditions. Application components may be unavailable or unexpected exceptions occurred.
+
+```typescript
+pail.critical("Primary database is unreachable");
+pail.critical(new Error("Payment processor is down"));
+```
+
+### Alert
+
+**Level**: `alert`
+
+Action must be taken immediately. Severe issues that require urgent attention.
+
+```typescript
+pail.alert("Disk space critically low - 99% full");
+pail.alert("Security breach detected");
+```
+
+### Emergency
+
+**Level**: `emergency`
+
+System is unusable. The highest priority level for catastrophic failures.
+
+```typescript
+pail.emergency("Complete system failure");
+pail.emergency("Data corruption detected");
+```
+
+## Default Log Types
+
+In addition to RFC 5424 levels, Pail provides convenient default log types:
+
+```typescript
+// Success messages
+pail.success("Operation completed successfully");
+
+// Pending/waiting states
+pail.pending("Processing request...");
+pail.await("Waiting for response...");
+pail.wait("Loading...");
+
+// Process lifecycle
+pail.start("Starting background job");
+pail.stop("Shutting down server");
+pail.complete("Task finished");
+
+// Monitoring
+pail.watch("Watching files for changes...");
+
+// Generic logging
+pail.log("Generic log message");
+```
+
+## Setting Log Level Threshold
+
+Control which messages are displayed by setting a minimum log level:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({
+    logLevel: "warning", // Only show warning and above
+});
+
+pail.debug("This won't be shown");
+pail.info("This won't be shown either");
+pail.warn("This will be shown");
+pail.error("This will be shown");
+```
+
+## Custom Log Level Priorities
+
+Customize the numeric priority of log levels:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({
+    logLevels: {
+        trace: 0,
+        debug: 1,
+        informational: 2,
+        notice: 3,
+        warning: 4,
+        error: 5,
+        critical: 6,
+        alert: 7,
+        emergency: 8,
+    },
+});
+```
+
+Lower numbers have lower priority and higher numbers have higher priority.
+
+## Log Level Mapping
+
+Each default log type is mapped to an RFC 5424 level:
+
+| Type | Log Level |
+|------|-----------|
+| `trace` | trace |
+| `debug` | debug |
+| `log`, `info`, `success`, `start`, `stop`, `complete`, `await`, `wait`, `pending`, `watch` | informational |
+| `notice` | notice |
+| `warn` | warning |
+| `error` | error |
+| `critical` | critical |
+| `alert` | alert |
+| `emergency` | emergency |
+
+## Best Practices
+
+1. **Use appropriate levels** - Choose log levels that match the severity of the event
+2. **Be consistent** - Use the same log level for similar types of events
+3. **Development vs Production** - Use verbose levels (trace, debug) in development and higher levels (warning+) in production
+4. **Don't over-log** - Too much logging can obscure important information
+5. **Include context** - Add relevant data to help with debugging
+
+## Next Steps
+
+- [Reporters](./reporters) - Learn about output formatting
+- [Processors](./processors) - Add metadata to logs
+- [Configuration](../configuration) - Configure log levels globally

@@ -1,0 +1,378 @@
+---
+title: Basic Usage
+description: Learn the fundamentals of using Pail
+---
+
+# Basic Usage
+
+Learn how to use Pail for logging in your applications.
+
+## Your First Log
+
+The simplest way to use Pail is with the default logger:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.info("Hello, World!");
+```
+
+## Log Types
+
+Pail provides many built-in log types:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+// Success messages
+pail.success("Operation completed successfully");
+
+// Information
+pail.info("Server started on port 3000");
+
+// Warnings
+pail.warn("API endpoint is deprecated");
+
+// Errors
+pail.error("Failed to connect to database");
+pail.error(new Error("Connection timeout"));
+
+// Debug
+pail.debug("Processing user request", { userId: 123 });
+
+// Notice
+pail.notice("Configuration reloaded");
+
+// Critical
+pail.critical("Database is unavailable");
+
+// Alert
+pail.alert("Disk space critically low");
+
+// Emergency
+pail.emergency("System failure");
+
+// Trace
+pail.trace("Entering calculateTotal function");
+```
+
+### Status Log Types
+
+```typescript
+// Process status
+pail.pending("Processing payment...");
+pail.await("Waiting for response...");
+pail.wait("Loading...");
+pail.watch("Watching for file changes...");
+
+// Lifecycle
+pail.start("Starting background job");
+pail.complete("Task finished");
+pail.stop("Shutting down server");
+
+// Generic
+pail.log("Generic log message");
+```
+
+## Logging Different Data Types
+
+### Strings
+
+```typescript
+pail.info("Simple string message");
+```
+
+### Multiple Arguments
+
+```typescript
+pail.info("User", "logged", "in");
+// Output: User logged in
+```
+
+### String Interpolation
+
+```typescript
+pail.info("User %s logged in at %d", "john", Date.now());
+// Output: User john logged in at 1697097600000
+
+pail.info("Progress: %d%%", 75);
+// Output: Progress: 75%
+```
+
+### Objects
+
+```typescript
+pail.info("User data:", { 
+    id: 123, 
+    name: "John Doe",
+    email: "john@example.com" 
+});
+```
+
+### Arrays
+
+```typescript
+pail.info("Items:", [1, 2, 3, 4, 5]);
+```
+
+### Errors
+
+```typescript
+try {
+    throw new Error("Something went wrong");
+} catch (error) {
+    pail.error(error);
+}
+```
+
+### Error with Context
+
+```typescript
+try {
+    await connectToDatabase();
+} catch (error) {
+    pail.error("Database connection failed:", error);
+}
+```
+
+## Message Format
+
+### Prefix and Suffix
+
+Add prefix and suffix to log messages:
+
+```typescript
+pail.info({
+    prefix: "[API]",
+    message: "Request processed",
+    suffix: "(200 OK)",
+});
+// Output: [API] Request processed (200 OK)
+```
+
+### With Context
+
+Add additional context data:
+
+```typescript
+pail.info({
+    message: "User action",
+    context: [
+        { userId: 123, action: "login" }
+    ],
+});
+```
+
+### Full Format
+
+```typescript
+pail.info({
+    prefix: "[APP]",
+    message: "Event occurred",
+    suffix: "(success)",
+    context: [{ timestamp: Date.now() }],
+});
+```
+
+## Logging Levels
+
+Control which logs are shown by setting a minimum log level:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+// Only show warnings and above
+const pail = createPail({
+    logLevel: "warning",
+});
+
+pail.debug("This won't be shown");
+pail.info("This won't be shown");
+pail.warn("This will be shown");
+pail.error("This will be shown");
+```
+
+## Creating Custom Loggers
+
+Create custom logger instances with different configurations:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const apiLogger = createPail({
+    scope: "api",
+    logLevel: "info",
+});
+
+const dbLogger = createPail({
+    scope: "database",
+    logLevel: "debug",
+});
+
+apiLogger.info("API request received");
+dbLogger.debug("Query executed");
+```
+
+## Disabling Logs
+
+Temporarily disable logging:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.disable();
+pail.info("This won't be shown");
+
+pail.enable();
+pail.info("This will be shown");
+```
+
+Check if logger is disabled:
+
+```typescript
+if (pail.isDisabled()) {
+    console.log("Logger is currently disabled");
+}
+```
+
+## Checking Log Levels
+
+Check if a log level would be shown:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({ logLevel: "warning" });
+
+if (pail.isLevelEnabled("debug")) {
+    // This won't execute since log level is "warning"
+    pail.debug("Debug information");
+}
+```
+
+## Common Patterns
+
+### Application Startup
+
+```typescript
+pail.start("Application starting...");
+pail.info("Environment: %s", process.env.NODE_ENV);
+pail.info("Port: %d", 3000);
+pail.success("Application started successfully");
+```
+
+### Error Handling
+
+```typescript
+try {
+    await riskyOperation();
+    pail.success("Operation completed");
+} catch (error) {
+    pail.error("Operation failed:", error);
+    throw error;
+}
+```
+
+### Progress Updates
+
+```typescript
+pail.pending("Processing items...");
+// ... do work ...
+pail.success("Processed 100 items");
+```
+
+### API Requests
+
+```typescript
+pail.info({
+    prefix: "[API]",
+    message: "Request received",
+    context: [{ 
+        method: "POST", 
+        path: "/api/users",
+        ip: "192.168.1.1" 
+    }],
+});
+```
+
+### Database Operations
+
+```typescript
+pail.debug("Executing query:", { query: "SELECT * FROM users" });
+// ... execute query ...
+pail.debug("Query completed in %dms", executionTime);
+```
+
+## Best Practices
+
+1. **Use appropriate log levels** - Don't use `error` for warnings
+2. **Include context** - Add relevant data to help debugging
+3. **Be consistent** - Use the same patterns across your codebase
+4. **Don't log sensitive data** - Use processors to redact secrets
+5. **Avoid logging in loops** - Can cause performance issues
+6. **Use structured logging** - Objects are better than concatenated strings
+
+## Examples
+
+### HTTP Server
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({ scope: "server" });
+
+pail.start("Starting HTTP server");
+pail.info("Listening on port %d", 3000);
+
+// On request
+pail.info({
+    message: "Request",
+    context: [{ method: "GET", path: "/api/users" }],
+});
+
+// On response
+pail.success({
+    message: "Response",
+    context: [{ status: 200, duration: "45ms" }],
+});
+```
+
+### CLI Application
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.info("Building project...");
+pail.pending("Compiling TypeScript...");
+pail.success("TypeScript compilation complete");
+pail.pending("Bundling assets...");
+pail.success("Assets bundled");
+pail.success("Build complete!");
+```
+
+### Background Job
+
+```typescript
+const jobLogger = createPail({ scope: "job:email" });
+
+jobLogger.start("Starting email job");
+jobLogger.info("Processing %d emails", emailCount);
+
+for (const email of emails) {
+    try {
+        await sendEmail(email);
+        jobLogger.debug("Email sent to %s", email.to);
+    } catch (error) {
+        jobLogger.error("Failed to send email:", error);
+    }
+}
+
+jobLogger.complete("Email job finished");
+```
+
+## Next Steps
+
+- [Scoped Loggers](./scoped) - Organize logs by scope
+- [Custom Types](./custom-types) - Create custom log types
+- [Timers](./timers) - Measure performance
+- [Configuration](../configuration) - Configure Pail globally

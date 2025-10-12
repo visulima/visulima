@@ -1,0 +1,534 @@
+---
+title: Custom Log Types
+description: Create custom log types with badges, colors, and labels
+---
+
+# Custom Log Types
+
+Pail allows you to create custom log types with custom badges, colors, labels, and log levels. This is perfect for domain-specific logging needs.
+
+## Creating Custom Types
+
+### Basic Custom Type
+
+Create a logger with a custom type:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({
+    types: {
+        deploy: {
+            badge: "🚀",
+            color: "blue",
+            label: "deploy",
+            logLevel: "informational",
+        },
+    },
+});
+
+pail.deploy("Application deployed successfully");
+// Output: 🚀 deploy Application deployed successfully
+```
+
+### Multiple Custom Types
+
+Define multiple custom types at once:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({
+    types: {
+        database: {
+            badge: "💾",
+            color: "cyan",
+            label: "database",
+            logLevel: "debug",
+        },
+        cache: {
+            badge: "⚡",
+            color: "yellow",
+            label: "cache",
+            logLevel: "debug",
+        },
+        api: {
+            badge: "🌐",
+            color: "green",
+            label: "api",
+            logLevel: "informational",
+        },
+    },
+});
+
+pail.database("Query executed in 45ms");
+pail.cache("Cache hit for key: user:123");
+pail.api("POST /api/users - 201 Created");
+```
+
+## Type Configuration
+
+### Required Properties
+
+Each custom type requires these properties:
+
+```typescript
+interface LoggerConfiguration {
+    // Visual badge/icon (can be emoji or text)
+    badge?: string;
+    
+    // Color for the label
+    color?: AnsiColors;
+    
+    // Text label for the log type
+    label: string;
+    
+    // RFC 5424 log level
+    logLevel: "trace" | "debug" | "informational" | "notice" | 
+              "warning" | "error" | "critical" | "alert" | "emergency";
+}
+```
+
+### Available Colors
+
+Use any of these color names:
+
+- `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`
+- `gray`, `grey`
+- `redBright`, `greenBright`, `yellowBright`, `blueBright`, `magentaBright`, `cyanBright`, `whiteBright`
+
+```typescript
+const pail = createPail({
+    types: {
+        custom: {
+            badge: "✨",
+            color: "magentaBright",
+            label: "custom",
+            logLevel: "informational",
+        },
+    },
+});
+```
+
+## Overriding Default Types
+
+You can override the default log types:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({
+    types: {
+        // Override default error type
+        error: {
+            badge: "!!",
+            color: "red",
+            label: "fatal error",
+            logLevel: "error",
+        },
+        // Override default success type
+        success: {
+            badge: "++",
+            color: "greenBright",
+            label: "huge success",
+            logLevel: "informational",
+        },
+    },
+});
+
+pail.error("This uses the custom error type");
+pail.success("This uses the custom success type");
+```
+
+## Type Examples
+
+### Domain-Specific Types
+
+```typescript
+// E-commerce application
+const pail = createPail({
+    types: {
+        order: {
+            badge: "📦",
+            color: "blue",
+            label: "order",
+            logLevel: "informational",
+        },
+        payment: {
+            badge: "💳",
+            color: "green",
+            label: "payment",
+            logLevel: "informational",
+        },
+        shipping: {
+            badge: "🚚",
+            color: "cyan",
+            label: "shipping",
+            logLevel: "informational",
+        },
+    },
+});
+
+pail.order("Order #12345 created");
+pail.payment("Payment processed: $99.99");
+pail.shipping("Package shipped to customer");
+```
+
+### Development Types
+
+```typescript
+// Development workflow
+const pail = createPail({
+    types: {
+        compile: {
+            badge: "⚙️",
+            color: "yellow",
+            label: "compile",
+            logLevel: "informational",
+        },
+        test: {
+            badge: "🧪",
+            color: "cyan",
+            label: "test",
+            logLevel: "informational",
+        },
+        lint: {
+            badge: "✨",
+            color: "magenta",
+            label: "lint",
+            logLevel: "informational",
+        },
+        build: {
+            badge: "🏗️",
+            color: "blue",
+            label: "build",
+            logLevel: "informational",
+        },
+    },
+});
+
+pail.compile("TypeScript compilation started");
+pail.test("Running test suite...");
+pail.lint("Linting files...");
+pail.build("Building production bundle");
+```
+
+### Security Types
+
+```typescript
+// Security monitoring
+const pail = createPail({
+    types: {
+        auth: {
+            badge: "🔐",
+            color: "blue",
+            label: "auth",
+            logLevel: "informational",
+        },
+        security: {
+            badge: "🛡️",
+            color: "yellow",
+            label: "security",
+            logLevel: "warning",
+        },
+        breach: {
+            badge: "🚨",
+            color: "red",
+            label: "breach",
+            logLevel: "alert",
+        },
+    },
+});
+
+pail.auth("User authenticated successfully");
+pail.security("Suspicious activity detected");
+pail.breach("Security breach attempted!");
+```
+
+## Advanced Usage
+
+### Conditional Types
+
+Create types based on environment:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const isDevelopment = process.env.NODE_ENV === "development";
+
+const pail = createPail({
+    types: {
+        perf: {
+            badge: isDevelopment ? "⚡" : "P",
+            color: "yellow",
+            label: isDevelopment ? "performance" : "perf",
+            logLevel: "debug",
+        },
+    },
+});
+```
+
+### Factory Function
+
+Create reusable type configurations:
+
+```typescript
+function createServiceType(serviceName: string, emoji: string) {
+    return {
+        badge: emoji,
+        color: "blue" as const,
+        label: serviceName,
+        logLevel: "informational" as const,
+    };
+}
+
+const pail = createPail({
+    types: {
+        userService: createServiceType("user-service", "👤"),
+        orderService: createServiceType("order-service", "📦"),
+        paymentService: createServiceType("payment-service", "💳"),
+    },
+});
+```
+
+### Type Composition
+
+Extend existing loggers with new types:
+
+```typescript
+// Base logger
+const base = createPail({
+    types: {
+        app: {
+            badge: "📱",
+            color: "blue",
+            label: "app",
+            logLevel: "informational",
+        },
+    },
+});
+
+// Extended logger with additional types
+const extended = createPail({
+    types: {
+        ...base,
+        feature: {
+            badge: "✨",
+            color: "magenta",
+            label: "feature",
+            logLevel: "informational",
+        },
+    },
+});
+```
+
+## Badge Options
+
+### Emoji Badges
+
+```typescript
+const pail = createPail({
+    types: {
+        rocket: { badge: "🚀", label: "rocket", logLevel: "informational" },
+        fire: { badge: "🔥", label: "fire", logLevel: "informational" },
+        star: { badge: "⭐", label: "star", logLevel: "informational" },
+        check: { badge: "✅", label: "check", logLevel: "informational" },
+        cross: { badge: "❌", label: "cross", logLevel: "error" },
+    },
+});
+```
+
+### Text Badges
+
+```typescript
+const pail = createPail({
+    types: {
+        ok: { badge: "[OK]", label: "ok", logLevel: "informational" },
+        err: { badge: "[ERR]", label: "error", logLevel: "error" },
+        wrn: { badge: "[WRN]", label: "warning", logLevel: "warning" },
+    },
+});
+```
+
+### Symbol Badges
+
+```typescript
+const pail = createPail({
+    types: {
+        plus: { badge: "+", label: "added", logLevel: "informational" },
+        minus: { badge: "-", label: "removed", logLevel: "informational" },
+        arrow: { badge: "→", label: "changed", logLevel: "informational" },
+        dot: { badge: "•", label: "info", logLevel: "informational" },
+    },
+});
+```
+
+## Type Patterns
+
+### Severity Levels
+
+```typescript
+const pail = createPail({
+    types: {
+        low: {
+            badge: "○",
+            color: "green",
+            label: "low",
+            logLevel: "informational",
+        },
+        medium: {
+            badge: "◐",
+            color: "yellow",
+            label: "medium",
+            logLevel: "warning",
+        },
+        high: {
+            badge: "●",
+            color: "red",
+            label: "high",
+            logLevel: "error",
+        },
+    },
+});
+```
+
+### Status Types
+
+```typescript
+const pail = createPail({
+    types: {
+        todo: {
+            badge: "☐",
+            color: "gray",
+            label: "todo",
+            logLevel: "informational",
+        },
+        doing: {
+            badge: "◷",
+            color: "yellow",
+            label: "doing",
+            logLevel: "informational",
+        },
+        done: {
+            badge: "☑",
+            color: "green",
+            label: "done",
+            logLevel: "informational",
+        },
+    },
+});
+```
+
+## TypeScript Support
+
+Custom types are fully typed:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({
+    types: {
+        custom: {
+            badge: "✨",
+            color: "blue",
+            label: "custom",
+            logLevel: "informational",
+        },
+    },
+});
+
+// TypeScript knows about 'custom' method
+pail.custom("This is type-safe");
+
+// This would be a TypeScript error
+// pail.nonexistent("This doesn't exist");
+```
+
+## Best Practices
+
+1. **Be meaningful** - Choose badges and labels that clearly represent the log type
+2. **Stay consistent** - Use similar patterns across your application
+3. **Consider accessibility** - Not all terminals display emojis well
+4. **Use appropriate levels** - Map custom types to correct log levels
+5. **Document types** - Keep a reference of custom types for your team
+6. **Avoid overuse** - Too many custom types can be confusing
+7. **Test rendering** - Verify badges display correctly in your terminal
+
+## Examples
+
+### CI/CD Pipeline
+
+```typescript
+const pail = createPail({
+    types: {
+        clone: {
+            badge: "📥",
+            color: "blue",
+            label: "clone",
+            logLevel: "informational",
+        },
+        install: {
+            badge: "📦",
+            color: "cyan",
+            label: "install",
+            logLevel: "informational",
+        },
+        test: {
+            badge: "🧪",
+            color: "magenta",
+            label: "test",
+            logLevel: "informational",
+        },
+        deploy: {
+            badge: "🚀",
+            color: "green",
+            label: "deploy",
+            logLevel: "informational",
+        },
+    },
+});
+
+pail.clone("Cloning repository...");
+pail.install("Installing dependencies...");
+pail.test("Running tests...");
+pail.deploy("Deploying to production...");
+```
+
+### Game Development
+
+```typescript
+const pail = createPail({
+    types: {
+        player: {
+            badge: "🎮",
+            color: "blue",
+            label: "player",
+            logLevel: "debug",
+        },
+        enemy: {
+            badge: "👾",
+            color: "red",
+            label: "enemy",
+            logLevel: "debug",
+        },
+        score: {
+            badge: "🏆",
+            color: "yellow",
+            label: "score",
+            logLevel: "informational",
+        },
+        level: {
+            badge: "🗺️",
+            color: "green",
+            label: "level",
+            logLevel: "informational",
+        },
+    },
+});
+```
+
+## Next Steps
+
+- [Scoped Loggers](./scoped) - Combine custom types with scopes
+- [Configuration](../configuration) - Configure custom types globally
+- [API Reference](../api) - Full API documentation

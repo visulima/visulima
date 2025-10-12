@@ -1,0 +1,363 @@
+---
+title: Processors
+description: Understanding processors in Pail
+---
+
+# Processors
+
+Processors are responsible for processing log messages before they're sent to reporters. They add metadata, format messages, redact sensitive information, and more.
+
+## Built-in Processors
+
+### MessageFormatterProcessor
+
+Formats log messages using printf-style string interpolation.
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { MessageFormatterProcessor } from "@visulima/pail/processor";
+
+const pail = createPail({
+    processors: [new MessageFormatterProcessor()],
+});
+
+pail.info("User %s logged in at %d", "john", Date.now());
+// Output: User john logged in at 1697097600000
+```
+
+**Format specifiers**:
+- `%s` - String
+- `%d` or `%i` - Integer
+- `%f` - Float
+- `%j` - JSON
+- `%o` - Object
+- `%%` - Literal percent sign
+
+### CallerProcessor
+
+Adds caller information (file, line, column) to log messages.
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { CallerProcessor } from "@visulima/pail/processor";
+
+const pail = createPail({
+    processors: [new CallerProcessor()],
+});
+
+pail.info("Debug message");
+// Meta object includes: { file: "app.ts", line: 42, column: 10 }
+```
+
+**Options**:
+
+```typescript
+interface CallerProcessorOptions {
+    // Number of stack frames to skip (default: 0)
+    stackIndex?: number;
+    
+    // Show full file path or just filename (default: false)
+    showFullPath?: boolean;
+}
+
+new CallerProcessor({ 
+    stackIndex: 1,
+    showFullPath: true,
+});
+```
+
+### RedactProcessor
+
+Redacts sensitive information from log messages.
+
+**Requires**: `@visulima/redact` package
+
+```bash npm2yarn
+npm install @visulima/redact
+```
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { RedactProcessor } from "@visulima/pail/processor";
+
+const pail = createPail({
+    processors: [
+        new RedactProcessor({
+            secrets: ["secret-key", "password123"],
+            paths: ["user.password", "apiKey"],
+        }),
+    ],
+});
+
+pail.info("API Key: secret-key");
+// Output: API Key: [REDACTED]
+
+pail.info({ user: { password: "password123", email: "user@example.com" } });
+// Output: { user: { password: "[REDACTED]", email: "user@example.com" } }
+```
+
+**Options**:
+
+```typescript
+interface RedactProcessorOptions {
+    // Array of literal strings to redact
+    secrets?: string[];
+    
+    // Object paths to redact (supports dot notation)
+    paths?: string[];
+    
+    // Custom replacement string (default: "[REDACTED]")
+    replacement?: string;
+    
+    // Case sensitive matching (default: false)
+    caseSensitive?: boolean;
+}
+```
+
+### ErrorProcessor
+
+Serializes error objects with causes and stack traces.
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { ErrorProcessor } from "@visulima/pail/processor";
+
+const pail = createPail({
+    processors: [new ErrorProcessor()],
+});
+
+const error = new Error("Connection failed");
+error.cause = new Error("Network timeout");
+
+pail.error(error);
+// Properly serializes error with cause chain
+```
+
+## Using Multiple Processors
+
+Chain multiple processors to transform logs in sequence:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import {
+    MessageFormatterProcessor,
+    CallerProcessor,
+    RedactProcessor,
+} from "@visulima/pail/processor";
+
+const pail = createPail({
+    processors: [
+        new MessageFormatterProcessor(),    // 1. Format message
+        new CallerProcessor(),              // 2. Add caller info
+        new RedactProcessor({               // 3. Redact secrets
+            secrets: ["secret-key"],
+        }),
+    ],
+});
+```
+
+Processors are executed in the order they're defined.
+
+## Custom Processors
+
+Create custom processors by implementing the `Processor` interface:
+
+```typescript
+import type { Processor, Meta } from "@visulima/pail";
+
+class TimestampProcessor implements Processor<string> {
+    process(meta: Meta<string>): Meta<string> {
+        // Add custom timestamp format
+        meta.context = meta.context || [];
+        meta.context.push({ 
+            timestamp: new Date().toISOString() 
+        });
+        
+        return meta;
+    }
+}
+
+const pail = createPail({
+    processors: [new TimestampProcessor()],
+});
+```
+
+### Advanced Custom Processor
+
+For processors that need custom JSON serialization:
+
+```typescript
+import type { StringifyAwareProcessor, Meta } from "@visulima/pail";
+
+class CustomProcessor implements StringifyAwareProcessor<string> {
+    private stringify: typeof JSON.stringify = JSON.stringify;
+
+    setStringify(stringify: typeof JSON.stringify): void {
+        this.stringify = stringify;
+    }
+
+    process(meta: Meta<string>): Meta<string> {
+        // Use custom stringify
+        const serialized = this.stringify(meta.context);
+        
+        // Transform meta
+        return meta;
+    }
+}
+```
+
+## Processor Interfaces
+
+### Base Processor
+
+```typescript
+interface Processor<L extends string> {
+    process: (meta: Meta<L>) => Meta<L>;
+}
+```
+
+### StringifyAwareProcessor
+
+For processors that need custom JSON serialization:
+
+```typescript
+interface StringifyAwareProcessor<L extends string> extends Processor<L> {
+    setStringify: (stringify: typeof JSON.stringify) => void;
+}
+```
+
+## Meta Object
+
+Processors work with the `Meta` object that contains all log information:
+
+```typescript
+interface Meta<L> {
+    // Log type badge (e.g., "✔", "✖", "ℹ")
+    badge: string | undefined;
+    
+    // Additional context data
+    context: any[] | undefined;
+    
+    // Log timestamp
+    date: Date | string;
+    
+    // Error object if present
+    error: Error | undefined;
+    
+    // Log groups
+    groups: string[];
+    
+    // Log type label (e.g., "success", "error", "info")
+    label: string | undefined;
+    
+    // Log message
+    message: Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
+    
+    // Message prefix
+    prefix: string | undefined;
+    
+    // Number of times repeated
+    repeated?: number | undefined;
+    
+    // Scope hierarchy
+    scope: string[] | undefined;
+    
+    // Message suffix
+    suffix: string | undefined;
+    
+    // Trace error for internal use
+    traceError: Error | undefined;
+    
+    // Type information
+    type: {
+        level: ExtendedRfc5424LogLevels | L;
+        name: string;
+    };
+}
+```
+
+## Processing Pipeline
+
+The processing pipeline follows this order:
+
+1. **Raw Reporter** (if configured) - Receives untransformed log
+2. **Processors** - Transform meta object in sequence
+3. **Reporters** - Output formatted log
+
+```typescript
+const pail = createPail({
+    rawReporter: new RawReporter(),           // Step 1
+    processors: [                              // Step 2
+        new MessageFormatterProcessor(),
+        new CallerProcessor(),
+    ],
+    reporters: [                               // Step 3
+        new PrettyReporter(),
+    ],
+});
+```
+
+## Best Practices
+
+1. **Order matters** - Place processors in the correct order (formatting before redaction)
+2. **Keep processors focused** - Each processor should do one thing well
+3. **Be careful with mutations** - Processors can modify the meta object
+4. **Use built-in processors** - They're optimized and well-tested
+5. **Test custom processors** - Ensure they handle edge cases
+6. **Performance** - Avoid expensive operations in processors
+
+## Examples
+
+### Add Environment Information
+
+```typescript
+class EnvironmentProcessor implements Processor<string> {
+    process(meta: Meta<string>): Meta<string> {
+        meta.context = meta.context || [];
+        meta.context.push({
+            env: process.env.NODE_ENV,
+            hostname: process.env.HOSTNAME,
+        });
+        return meta;
+    }
+}
+```
+
+### Add Request ID
+
+```typescript
+class RequestIdProcessor implements Processor<string> {
+    private requestId: string;
+
+    constructor(requestId: string) {
+        this.requestId = requestId;
+    }
+
+    process(meta: Meta<string>): Meta<string> {
+        meta.context = meta.context || [];
+        meta.context.push({ requestId: this.requestId });
+        return meta;
+    }
+}
+```
+
+### Filter Logs
+
+```typescript
+class FilterProcessor implements Processor<string> {
+    process(meta: Meta<string>): Meta<string> {
+        // Skip logs containing certain patterns
+        if (typeof meta.message === "string" && meta.message.includes("SKIP")) {
+            // Return empty meta to skip this log
+            meta.message = "";
+        }
+        return meta;
+    }
+}
+```
+
+## Next Steps
+
+- [Log Levels](./log-levels) - Understanding log severity
+- [Reporters](./reporters) - Output log messages
+- [Configuration](../configuration) - Configure processors globally

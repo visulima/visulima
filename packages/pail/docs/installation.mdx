@@ -1,0 +1,114 @@
+---
+title: Installation
+description: How to install and set up Pail in your project
+---
+
+# Installation
+
+Learn how to install Pail and get started with logging in your application.
+
+## Package Managers
+
+Install Pail using your preferred package manager:
+
+```bash npm2yarn
+npm install @visulima/pail
+```
+
+## Requirements
+
+Pail requires the following:
+
+- **Node.js**: Version 18.0.0 or higher (up to 23.x)
+- **Operating Systems**: macOS, Linux, Windows
+
+## Module Formats
+
+Pail supports multiple module formats:
+
+- **ES Modules (ESM)** - Recommended for modern projects
+- **CommonJS (CJS)** - For legacy Node.js projects
+- **Browser** - For web applications
+
+The package automatically provides the correct format based on your environment.
+
+## TypeScript Support
+
+Pail includes TypeScript type definitions out of the box. No additional `@types` packages are required.
+
+```typescript
+import { pail, createPail } from "@visulima/pail";
+import type { Meta, Reporter } from "@visulima/pail";
+```
+
+## Optional Dependencies
+
+Some features require additional packages to be installed:
+
+### Redact Processor
+
+To use the `RedactProcessor` for filtering sensitive information:
+
+```bash npm2yarn
+npm install @visulima/redact
+```
+
+### File Rotation
+
+To use rotating log files with `FileReporter`:
+
+```bash npm2yarn
+npm install rotating-file-stream
+```
+
+## Environments
+
+### Node.js
+
+For Node.js applications, use the default import:
+
+```typescript
+import { pail } from "@visulima/pail";
+```
+
+Or explicitly import the server version:
+
+```typescript
+import { pail } from "@visulima/pail/server";
+```
+
+### Browser
+
+For browser applications, import the browser-specific version:
+
+```typescript
+import { pail } from "@visulima/pail/browser";
+```
+
+### Edge Runtime
+
+Pail works in edge runtime environments like Vercel Edge Functions and Cloudflare Workers:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.info("Running on the edge");
+```
+
+## Verification
+
+Verify your installation by running a simple test:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.success("Pail is installed correctly!");
+```
+
+If you see a formatted success message in your console, you're ready to start logging!
+
+## Next Steps
+
+- [Basic Usage](./usage/basic) - Learn how to use Pail
+- [Configuration](./configuration) - Configure Pail for your needs
+- [Concepts](./concepts/log-levels) - Understand core concepts

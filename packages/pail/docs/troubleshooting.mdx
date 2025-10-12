@@ -1,0 +1,404 @@
+---
+title: Troubleshooting
+description: Common issues and solutions
+---
+
+# Troubleshooting
+
+Common issues and their solutions when using Pail.
+
+## Installation Issues
+
+### Module Not Found
+
+**Problem**: `Cannot find module '@visulima/pail'`
+
+**Solution**:
+1. Ensure Pail is installed:
+   ```bash
+   npm install @visulima/pail
+   ```
+2. Check your `node_modules` directory
+3. Clear npm cache and reinstall:
+   ```bash
+   npm cache clean --force
+   npm install
+   ```
+
+### TypeScript Errors
+
+**Problem**: TypeScript can't find type definitions
+
+**Solution**:
+1. Pail includes types out of the box
+2. Ensure you're using TypeScript 5.0 or later
+3. Check your `tsconfig.json` includes:
+   ```json
+   {
+     "compilerOptions": {
+       "moduleResolution": "node",
+       "esModuleInterop": true
+     }
+   }
+   ```
+
+## Runtime Issues
+
+### No Output in Console
+
+**Problem**: Logs don't appear in console
+
+**Solutions**:
+
+1. Check if logger is disabled:
+   ```typescript
+   if (pail.isDisabled()) {
+       pail.enable();
+   }
+   ```
+
+2. Check log level:
+   ```typescript
+   // This won't show debug logs
+   const pail = createPail({ logLevel: "warning" });
+   pail.debug("Won't be shown");
+   
+   // Solution: Lower log level
+   const pail = createPail({ logLevel: "debug" });
+   ```
+
+3. Check if reporters are configured:
+   ```typescript
+   // No reporters = no output
+   const pail = createPail({ reporters: [] });
+   
+   // Solution: Add reporters
+   const pail = createPail({
+       reporters: [new PrettyReporter()],
+   });
+   ```
+
+### Interactive Mode Not Working
+
+**Problem**: Interactive logs create new lines instead of updating
+
+**Solutions**:
+
+1. Check if running in TTY:
+   ```typescript
+   console.log(process.stdout.isTTY); // Should be true
+   ```
+
+2. Interactive mode only works in terminals, not in:
+   - CI/CD environments
+   - Redirected output
+   - Non-TTY streams
+   - Some terminal emulators
+
+3. Test in a real terminal:
+   ```bash
+   node your-script.js  # Not: node your-script.js > output.log
+   ```
+
+### Colors Not Showing
+
+**Problem**: ANSI colors don't appear in output
+
+**Solutions**:
+
+1. Check if terminal supports colors:
+   ```typescript
+   import { isColorSupported } from "@visulima/colorize";
+   console.log(isColorSupported);
+   ```
+
+2. Force color support (if terminal supports it):
+   ```bash
+   FORCE_COLOR=1 node your-script.js
+   ```
+
+3. Use SimpleReporter for plain text:
+   ```typescript
+   import { SimpleReporter } from "@visulima/pail/server/reporter";
+   const pail = createPail({
+       reporters: [new SimpleReporter()],
+   });
+   ```
+
+## File Logging Issues
+
+### Files Not Created
+
+**Problem**: Log files are not being created
+
+**Solutions**:
+
+1. Check file path permissions:
+   ```typescript
+   import * as fs from "fs";
+   import * as path from "path";
+   
+   const logDir = "./logs";
+   if (!fs.existsSync(logDir)) {
+       fs.mkdirSync(logDir, { recursive: true });
+   }
+   ```
+
+2. Verify FileReporter configuration:
+   ```typescript
+   const pail = createPail({
+       reporters: [
+           new FileReporter({
+               path: "./logs/app.log", // Relative to cwd
+           }),
+       ],
+   });
+   ```
+
+3. Check for errors:
+   ```typescript
+   try {
+       const pail = createPail({
+           reporters: [new FileReporter({ path: "/invalid/path/log.txt" })],
+       });
+   } catch (error) {
+       console.error("Failed to create logger:", error);
+   }
+   ```
+
+### Rotating Files Not Working
+
+**Problem**: Log rotation not occurring
+
+**Solutions**:
+
+1. Install required package:
+   ```bash
+   npm install rotating-file-stream
+   ```
+
+2. Check rotation configuration:
+   ```typescript
+   new FileReporter({
+       path: {
+           path: "./logs",
+           filename: "app.log",
+           size: "10M",      // Must be valid size string
+           interval: "1d",   // Must be valid interval
+       },
+   })
+   ```
+
+## Processor Issues
+
+### RedactProcessor Not Working
+
+**Problem**: Sensitive data not being redacted
+
+**Solutions**:
+
+1. Install required package:
+   ```bash
+   npm install @visulima/redact
+   ```
+
+2. Check processor order:
+   ```typescript
+   const pail = createPail({
+       processors: [
+           new MessageFormatterProcessor(), // Format first
+           new RedactProcessor({            // Then redact
+               secrets: ["secret-key"],
+           }),
+       ],
+   });
+   ```
+
+3. Verify secrets are configured:
+   ```typescript
+   new RedactProcessor({
+       secrets: ["password", "api-key"],
+       paths: ["user.password"],
+   })
+   ```
+
+### CallerProcessor Showing Wrong Location
+
+**Problem**: File/line information is incorrect
+
+**Solution**: Adjust stack index:
+```typescript
+new CallerProcessor({
+    stackIndex: 1, // Adjust to skip wrapper functions
+})
+```
+
+## Performance Issues
+
+### Logging is Slow
+
+**Problem**: Logging causes performance degradation
+
+**Solutions**:
+
+1. Reduce log level in production:
+   ```typescript
+   const pail = createPail({
+       logLevel: process.env.NODE_ENV === "production" ? "warning" : "debug",
+   });
+   ```
+
+2. Use throttling to prevent log spam:
+   ```typescript
+   const pail = createPail({
+       throttle: 1000,    // Throttle within 1 second
+       throttleMin: 5,    // After 5 occurrences
+   });
+   ```
+
+3. Avoid logging in tight loops:
+   ```typescript
+   // Bad
+   for (let i = 0; i < 10000; i++) {
+       pail.debug("Processing item", i);
+   }
+   
+   // Good
+   for (let i = 0; i < 10000; i++) {
+       if (i % 1000 === 0) {
+           pail.debug("Processing items", { progress: i });
+       }
+   }
+   ```
+
+4. Use JSON reporter in production:
+   ```typescript
+   const pail = createPail({
+       reporters: [new JsonReporter()], // Faster than PrettyReporter
+   });
+   ```
+
+### Memory Leaks
+
+**Problem**: Memory usage grows over time
+
+**Solutions**:
+
+1. Always end timers:
+   ```typescript
+   try {
+       pail.time("operation");
+       // ... do work ...
+   } finally {
+       pail.timeEnd("operation");
+   }
+   ```
+
+2. Don't create too many scoped loggers:
+   ```typescript
+   // Bad
+   for (let i = 0; i < 10000; i++) {
+       const logger = pail.scope(`item-${i}`);
+   }
+   
+   // Good
+   const itemLogger = pail.scope("items");
+   for (let i = 0; i < 10000; i++) {
+       itemLogger.debug("Processing item", { index: i });
+   }
+   ```
+
+3. Clear file handles properly:
+   ```typescript
+   // Ensure FileReporter is closed on shutdown
+   process.on("SIGTERM", () => {
+       // Cleanup
+       process.exit(0);
+   });
+   ```
+
+## Browser Issues
+
+### Module Not Found in Browser
+
+**Problem**: Import errors in browser environments
+
+**Solution**: Use browser-specific import:
+```typescript
+// Wrong
+import { pail } from "@visulima/pail/server";
+
+// Correct
+import { pail } from "@visulima/pail/browser";
+```
+
+### File Reporters in Browser
+
+**Problem**: FileReporter not working in browser
+
+**Solution**: FileReporter is Node.js only. Use alternative:
+```typescript
+import { JsonReporter } from "@visulima/pail/browser/reporter";
+
+const pail = createPail({
+    reporters: [new JsonReporter()],
+});
+```
+
+## Build Issues
+
+### Bundler Errors
+
+**Problem**: Build errors with webpack/vite/etc.
+
+**Solutions**:
+
+1. Ensure proper conditions are set:
+   ```javascript
+   // vite.config.js
+   export default {
+       resolve: {
+           conditions: ["browser", "import"],
+       },
+   };
+   ```
+
+2. Check for Node.js-specific imports:
+   ```typescript
+   // Use dynamic imports for Node.js-only code
+   if (typeof window === "undefined") {
+       const { FileReporter } = await import("@visulima/pail/server/reporter");
+   }
+   ```
+
+### Tree Shaking Not Working
+
+**Problem**: Bundle size larger than expected
+
+**Solution**: Ensure you're using ES modules:
+```typescript
+// Use named imports
+import { createPail } from "@visulima/pail";
+
+// Not
+import pail from "@visulima/pail";
+```
+
+## Getting Help
+
+If you can't find a solution here:
+
+1. Check the [GitHub Issues](https://github.com/visulima/visulima/issues)
+2. Search existing discussions
+3. Create a new issue with:
+   - Pail version
+   - Node.js version
+   - Operating system
+   - Minimal reproduction code
+   - Expected vs actual behavior
+
+## Next Steps
+
+- [Configuration](./configuration) - Proper configuration
+- [API Reference](./api) - Complete API documentation
+- [Examples](./examples) - Working examples

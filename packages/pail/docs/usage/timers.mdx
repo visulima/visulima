@@ -1,0 +1,491 @@
+---
+title: Timers
+description: Measure performance with built-in timers
+---
+
+# Timers
+
+Pail includes built-in timer functionality for measuring execution time and performance. Timers are perfect for profiling code and tracking operation duration.
+
+## Basic Timer Usage
+
+### Start and End a Timer
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.time("operation");
+// ... do work ...
+pail.timeEnd("operation");
+// Output: Timer operation: 145ms
+```
+
+### Auto-labeled Timers
+
+Create a timer without a label - it will be automatically labeled:
+
+```typescript
+pail.time();
+// ... do work ...
+pail.timeEnd();
+// Output: Timer default: 145ms
+```
+
+## Timer Methods
+
+### time()
+
+Start a new timer:
+
+```typescript
+pail.time("myTimer");
+pail.time("anotherTimer");
+```
+
+**Signature**:
+```typescript
+time(label?: string): void
+```
+
+### timeLog()
+
+Log the current elapsed time without stopping the timer:
+
+```typescript
+pail.time("process");
+
+// After some work
+pail.timeLog("process", "Step 1 complete");
+// Output: Timer process: 50ms Step 1 complete
+
+// After more work
+pail.timeLog("process", "Step 2 complete");
+// Output: Timer process: 120ms Step 2 complete
+
+pail.timeEnd("process");
+// Output: Timer process: 150ms
+```
+
+**Signature**:
+```typescript
+timeLog(label?: string, ...message: any[]): void
+```
+
+### timeEnd()
+
+Stop a timer and log the final duration:
+
+```typescript
+pail.time("download");
+// ... downloading ...
+pail.timeEnd("download");
+// Output: Timer download: 1250ms
+```
+
+**Signature**:
+```typescript
+timeEnd(label?: string): void
+```
+
+## Multiple Timers
+
+Run multiple timers simultaneously:
+
+```typescript
+pail.time("total");
+pail.time("database");
+
+// ... database operations ...
+pail.timeEnd("database");
+// Output: Timer database: 145ms
+
+pail.time("api");
+// ... api calls ...
+pail.timeEnd("api");
+// Output: Timer api: 320ms
+
+pail.timeEnd("total");
+// Output: Timer total: 465ms
+```
+
+## Nested Timers
+
+Track nested operations:
+
+```typescript
+pail.time("request");
+
+pail.time("authentication");
+// ... auth logic ...
+pail.timeEnd("authentication");
+// Output: Timer authentication: 50ms
+
+pail.time("database-query");
+// ... query ...
+pail.timeEnd("database-query");
+// Output: Timer database-query: 120ms
+
+pail.time("response-formatting");
+// ... formatting ...
+pail.timeEnd("response-formatting");
+// Output: Timer response-formatting: 30ms
+
+pail.timeEnd("request");
+// Output: Timer request: 200ms
+```
+
+## Timer with Messages
+
+Add context to timer logs:
+
+```typescript
+pail.time("build");
+
+pail.timeLog("build", "Compiling TypeScript...");
+// Output: Timer build: 1500ms Compiling TypeScript...
+
+pail.timeLog("build", "Bundling assets...");
+// Output: Timer build: 3200ms Bundling assets...
+
+pail.timeEnd("build", "Build complete!");
+// Output: Timer build: 4500ms Build complete!
+```
+
+## Custom Timer Messages
+
+Customize timer start and end messages:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({
+    messages: {
+        timerStart: "Starting timer:",
+        timerEnd: "Finished in:",
+    },
+});
+
+pail.time("task");
+// Output: Starting timer: task
+
+pail.timeEnd("task");
+// Output: Finished in: task: 145ms
+```
+
+## Scoped Timers
+
+Combine timers with scoped loggers:
+
+```typescript
+const dbLogger = pail.scope("database");
+const apiLogger = pail.scope("api");
+
+dbLogger.time("query");
+// ... query database ...
+dbLogger.timeEnd("query");
+// Output: [database] Timer query: 145ms
+
+apiLogger.time("request");
+// ... api request ...
+apiLogger.timeEnd("request");
+// Output: [api] Timer request: 320ms
+```
+
+## Performance Monitoring
+
+### Function Execution Time
+
+```typescript
+function measureExecution<T>(
+    label: string,
+    fn: () => T
+): T {
+    pail.time(label);
+    try {
+        return fn();
+    } finally {
+        pail.timeEnd(label);
+    }
+}
+
+const result = measureExecution("calculation", () => {
+    // ... expensive calculation ...
+    return 42;
+});
+```
+
+### Async Function Timing
+
+```typescript
+async function measureAsync<T>(
+    label: string,
+    fn: () => Promise<T>
+): Promise<T> {
+    pail.time(label);
+    try {
+        return await fn();
+    } finally {
+        pail.timeEnd(label);
+    }
+}
+
+await measureAsync("api-call", async () => {
+    const response = await fetch("https://api.example.com/data");
+    return response.json();
+});
+```
+
+### Decorator for Timing (TypeScript)
+
+```typescript
+function Timed(label?: string) {
+    return function (
+        target: any,
+        propertyKey: string,
+        descriptor: PropertyDescriptor
+    ) {
+        const originalMethod = descriptor.value;
+        const timerLabel = label || propertyKey;
+        
+        descriptor.value = async function (...args: any[]) {
+            pail.time(timerLabel);
+            try {
+                return await originalMethod.apply(this, args);
+            } finally {
+                pail.timeEnd(timerLabel);
+            }
+        };
+        
+        return descriptor;
+    };
+}
+
+class UserService {
+    @Timed("fetch-user")
+    async getUser(id: string) {
+        // ... fetch user ...
+    }
+}
+```
+
+## Use Cases
+
+### API Request Timing
+
+```typescript
+app.use((req, res, next) => {
+    const label = `${req.method} ${req.path}`;
+    pail.time(label);
+    
+    res.on("finish", () => {
+        pail.timeEnd(label);
+    });
+    
+    next();
+});
+```
+
+### Database Query Profiling
+
+```typescript
+const db = {
+    async query(sql: string) {
+        const queryId = `query-${Date.now()}`;
+        pail.time(queryId);
+        
+        try {
+            const result = await executeQuery(sql);
+            pail.timeEnd(queryId, sql);
+            return result;
+        } catch (error) {
+            pail.timeEnd(queryId, `Failed: ${sql}`);
+            throw error;
+        }
+    }
+};
+```
+
+### Build Process Timing
+
+```typescript
+async function build() {
+    pail.time("total-build");
+    
+    pail.time("clean");
+    await cleanDist();
+    pail.timeEnd("clean");
+    
+    pail.time("compile");
+    await compileTypeScript();
+    pail.timeEnd("compile");
+    
+    pail.time("bundle");
+    await bundleAssets();
+    pail.timeEnd("bundle");
+    
+    pail.timeEnd("total-build");
+}
+```
+
+### Test Suite Timing
+
+```typescript
+describe("User API", () => {
+    beforeEach(() => {
+        pail.time("test");
+    });
+    
+    afterEach(() => {
+        pail.timeEnd("test");
+    });
+    
+    it("creates a user", async () => {
+        pail.timeLog("test", "Creating user...");
+        // ... test code ...
+    });
+});
+```
+
+### Progress Tracking
+
+```typescript
+async function processItems(items: any[]) {
+    pail.time("processing");
+    
+    for (let i = 0; i < items.length; i++) {
+        await processItem(items[i]);
+        pail.timeLog("processing", `Processed ${i + 1}/${items.length} items`);
+    }
+    
+    pail.timeEnd("processing", "All items processed");
+}
+```
+
+## Timer Patterns
+
+### Checkpoint Timer
+
+```typescript
+class CheckpointTimer {
+    private label: string;
+    private checkpoints: Map<string, number> = new Map();
+    
+    constructor(label: string) {
+        this.label = label;
+        pail.time(label);
+    }
+    
+    checkpoint(name: string): void {
+        const now = Date.now();
+        this.checkpoints.set(name, now);
+        pail.timeLog(this.label, `Checkpoint: ${name}`);
+    }
+    
+    end(): void {
+        pail.timeEnd(this.label);
+    }
+}
+
+const timer = new CheckpointTimer("complex-operation");
+timer.checkpoint("step-1");
+// ... work ...
+timer.checkpoint("step-2");
+// ... work ...
+timer.checkpoint("step-3");
+timer.end();
+```
+
+### Average Timer
+
+```typescript
+class AverageTimer {
+    private times: number[] = [];
+    private currentStart?: number;
+    
+    start(): void {
+        this.currentStart = Date.now();
+    }
+    
+    end(): void {
+        if (this.currentStart) {
+            this.times.push(Date.now() - this.currentStart);
+            this.currentStart = undefined;
+        }
+    }
+    
+    getAverage(): number {
+        const sum = this.times.reduce((a, b) => a + b, 0);
+        return sum / this.times.length;
+    }
+    
+    log(label: string): void {
+        pail.info(`${label} average: ${this.getAverage().toFixed(2)}ms`);
+    }
+}
+```
+
+## Best Practices
+
+1. **Use descriptive labels** - Make timer labels clear and meaningful
+2. **Always end timers** - Unended timers consume memory
+3. **Use try/finally** - Ensure timers end even if errors occur
+4. **Avoid timer spam** - Don't create too many timers
+5. **Group related timers** - Use scopes to organize timers
+6. **Profile in development** - Use timers extensively during development
+7. **Be selective in production** - Only timer critical operations in production
+
+## Common Patterns
+
+### Request Processing
+
+```typescript
+async function handleRequest(req: Request) {
+    pail.time(`request-${req.id}`);
+    
+    try {
+        pail.timeLog(`request-${req.id}`, "Parsing body");
+        const data = await req.json();
+        
+        pail.timeLog(`request-${req.id}`, "Validating");
+        validate(data);
+        
+        pail.timeLog(`request-${req.id}`, "Processing");
+        const result = await process(data);
+        
+        pail.timeEnd(`request-${req.id}`, "Completed");
+        return result;
+    } catch (error) {
+        pail.timeEnd(`request-${req.id}`, "Failed");
+        throw error;
+    }
+}
+```
+
+### Batch Processing
+
+```typescript
+async function batchProcess(items: any[]) {
+    const batchLabel = `batch-${Date.now()}`;
+    pail.time(batchLabel);
+    
+    let processed = 0;
+    const total = items.length;
+    
+    for (const item of items) {
+        await processItem(item);
+        processed++;
+        
+        if (processed % 100 === 0) {
+            pail.timeLog(batchLabel, `${processed}/${total} processed`);
+        }
+    }
+    
+    pail.timeEnd(batchLabel, `Processed ${total} items`);
+}
+```
+
+## Next Steps
+
+- [Interactive Mode](./interactive) - Dynamic, updating logs
+- [Scoped Loggers](./scoped) - Organize timers by scope
+- [Configuration](../configuration) - Customize timer messages

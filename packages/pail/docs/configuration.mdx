@@ -1,0 +1,604 @@
+---
+title: Configuration
+description: Configure Pail for your needs
+---
+
+# Configuration
+
+Pail is highly configurable. Customize everything from log levels to reporters to fit your application's needs.
+
+## Constructor Options
+
+Configure a Pail instance using the constructor options:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({
+    // Log level threshold
+    logLevel: "info",
+    
+    // Custom log levels
+    logLevels: {},
+    
+    // Scope
+    scope: "app",
+    
+    // Custom types
+    types: {},
+    
+    // Reporters
+    reporters: [],
+    
+    // Raw reporter
+    rawReporter: undefined,
+    
+    // Processors
+    processors: [],
+    
+    // Throttling
+    throttle: 1000,
+    throttleMin: 5,
+    
+    // Interactive mode (Node.js only)
+    interactive: false,
+    
+    // Streams (Node.js only)
+    stdout: process.stdout,
+    stderr: process.stderr,
+    
+    // Disabled state
+    disabled: false,
+    
+    // Custom messages
+    messages: {
+        timerStart: "Timer",
+        timerEnd: "Timer",
+    },
+});
+```
+
+## Log Level Configuration
+
+### Setting Minimum Log Level
+
+Only show logs at or above a certain level:
+
+```typescript
+const pail = createPail({
+    logLevel: "warning", // Only warning, error, critical, alert, emergency
+});
+```
+
+### Custom Log Level Priorities
+
+Define custom priority values for log levels:
+
+```typescript
+const pail = createPail({
+    logLevels: {
+        trace: 0,
+        debug: 1,
+        informational: 2,
+        notice: 3,
+        warning: 4,
+        error: 5,
+        critical: 6,
+        alert: 7,
+        emergency: 8,
+    },
+});
+```
+
+### Environment-based Log Level
+
+```typescript
+const pail = createPail({
+    logLevel: process.env.NODE_ENV === "production" ? "warning" : "debug",
+});
+```
+
+## Reporter Configuration
+
+### Single Reporter
+
+```typescript
+import { PrettyReporter } from "@visulima/pail/reporter";
+
+const pail = createPail({
+    reporters: [new PrettyReporter()],
+});
+```
+
+### Multiple Reporters
+
+Output to console and file simultaneously:
+
+```typescript
+import { PrettyReporter, FileReporter } from "@visulima/pail/server/reporter";
+
+const pail = createPail({
+    reporters: [
+        new PrettyReporter(),
+        new FileReporter({ path: "./logs/app.log" }),
+    ],
+});
+```
+
+### Environment-based Reporters
+
+```typescript
+const isDevelopment = process.env.NODE_ENV === "development";
+
+const pail = createPail({
+    reporters: isDevelopment
+        ? [new PrettyReporter()]
+        : [new JsonReporter()],
+});
+```
+
+### Raw Reporter
+
+The raw reporter receives logs before processing:
+
+```typescript
+import { RawReporter } from "@visulima/pail/reporter";
+
+const pail = createPail({
+    rawReporter: new RawReporter(),
+    processors: [/* ... */],
+    reporters: [/* ... */],
+});
+```
+
+## Processor Configuration
+
+### Single Processor
+
+```typescript
+import { MessageFormatterProcessor } from "@visulima/pail/processor";
+
+const pail = createPail({
+    processors: [new MessageFormatterProcessor()],
+});
+```
+
+### Multiple Processors
+
+Processors run in order:
+
+```typescript
+import {
+    MessageFormatterProcessor,
+    CallerProcessor,
+    RedactProcessor,
+} from "@visulima/pail/processor";
+
+const pail = createPail({
+    processors: [
+        new MessageFormatterProcessor(), // 1. Format
+        new CallerProcessor(),           // 2. Add caller info
+        new RedactProcessor({            // 3. Redact secrets
+            secrets: ["secret-key"],
+        }),
+    ],
+});
+```
+
+### Conditional Processors
+
+```typescript
+const processors = [new MessageFormatterProcessor()];
+
+if (process.env.NODE_ENV === "development") {
+    processors.push(new CallerProcessor());
+}
+
+if (process.env.REDACT_SECRETS === "true") {
+    processors.push(new RedactProcessor({
+        secrets: process.env.SECRETS?.split(","),
+    }));
+}
+
+const pail = createPail({ processors });
+```
+
+## Custom Type Configuration
+
+### Adding Custom Types
+
+```typescript
+const pail = createPail({
+    types: {
+        deploy: {
+            badge: "🚀",
+            color: "blue",
+            label: "deploy",
+            logLevel: "informational",
+        },
+        database: {
+            badge: "💾",
+            color: "cyan",
+            label: "db",
+            logLevel: "debug",
+        },
+    },
+});
+```
+
+### Overriding Default Types
+
+```typescript
+const pail = createPail({
+    types: {
+        error: {
+            badge: "✖",
+            color: "redBright",
+            label: "fatal",
+            logLevel: "error",
+        },
+        success: {
+            badge: "✓",
+            color: "greenBright",
+            label: "ok",
+            logLevel: "informational",
+        },
+    },
+});
+```
+
+## Scope Configuration
+
+### Single Scope
+
+```typescript
+const pail = createPail({
+    scope: "api",
+});
+```
+
+### Multiple Scope Levels
+
+```typescript
+const pail = createPail({
+    scope: ["app", "api", "v1"],
+});
+```
+
+### Dynamic Scope
+
+```typescript
+const pail = createPail({
+    scope: `request-${requestId}`,
+});
+```
+
+## Throttling Configuration
+
+Prevent log spam by throttling repeated messages:
+
+### Basic Throttling
+
+```typescript
+const pail = createPail({
+    throttle: 1000, // Throttle logs within 1 second
+});
+
+// Only first log and summary shown
+for (let i = 0; i < 100; i++) {
+    pail.info("Repeated message");
+}
+// Output: 
+// Repeated message
+// Repeated message (repeated 99 times)
+```
+
+### Throttle Options
+
+```typescript
+const pail = createPail({
+    throttle: 5000,    // Time window in ms
+    throttleMin: 10,   // Minimum repetitions before throttling
+});
+```
+
+### Disable Throttling
+
+```typescript
+const pail = createPail({
+    throttle: 0, // Disable throttling
+});
+```
+
+## Interactive Mode Configuration
+
+**Node.js only**
+
+```typescript
+const pail = createPail({
+    interactive: true,
+});
+```
+
+Interactive mode automatically checks if the environment supports it.
+
+## Stream Configuration
+
+**Node.js only**
+
+### Custom Streams
+
+```typescript
+import * as fs from "fs";
+
+const logFile = fs.createWriteStream("./app.log");
+
+const pail = createPail({
+    stdout: logFile as any,
+    stderr: logFile as any,
+});
+```
+
+### Separate Streams
+
+```typescript
+const pail = createPail({
+    stdout: process.stdout,
+    stderr: fs.createWriteStream("./errors.log") as any,
+});
+```
+
+## Message Configuration
+
+Customize timer messages:
+
+```typescript
+const pail = createPail({
+    messages: {
+        timerStart: "Started timer",
+        timerEnd: "Completed in",
+    },
+});
+
+pail.time("task");
+// Output: Started timer task
+
+pail.timeEnd("task");
+// Output: Completed in task: 145ms
+```
+
+## Disabled State
+
+Start with logging disabled:
+
+```typescript
+const pail = createPail({
+    disabled: true,
+});
+
+pail.info("This won't be shown");
+
+pail.enable();
+pail.info("This will be shown");
+```
+
+## Environment Variables
+
+Create configuration from environment variables:
+
+```typescript
+const pail = createPail({
+    logLevel: (process.env.LOG_LEVEL || "info") as any,
+    disabled: process.env.DISABLE_LOGGING === "true",
+    throttle: parseInt(process.env.LOG_THROTTLE || "1000"),
+});
+```
+
+## Configuration Patterns
+
+### Development vs Production
+
+```typescript
+const isDev = process.env.NODE_ENV === "development";
+const isProd = process.env.NODE_ENV === "production";
+
+const pail = createPail({
+    logLevel: isDev ? "debug" : "warning",
+    interactive: isDev,
+    processors: [
+        new MessageFormatterProcessor(),
+        ...(isDev ? [new CallerProcessor()] : []),
+    ],
+    reporters: isDev
+        ? [new PrettyReporter()]
+        : [
+            new JsonReporter(),
+            new FileReporter({ path: "./logs/app.log" }),
+        ],
+});
+```
+
+### Feature Flags
+
+```typescript
+const features = {
+    callerInfo: process.env.FEATURE_CALLER_INFO === "true",
+    redactSecrets: process.env.FEATURE_REDACT === "true",
+    fileLogging: process.env.FEATURE_FILE_LOG === "true",
+};
+
+const processors = [new MessageFormatterProcessor()];
+if (features.callerInfo) {
+    processors.push(new CallerProcessor());
+}
+if (features.redactSecrets) {
+    processors.push(new RedactProcessor({ secrets: [] }));
+}
+
+const reporters = [new PrettyReporter()];
+if (features.fileLogging) {
+    reporters.push(new FileReporter({ path: "./logs/app.log" }));
+}
+
+const pail = createPail({ processors, reporters });
+```
+
+### Configuration Object
+
+```typescript
+interface PailConfig {
+    logLevel: string;
+    scope?: string;
+    interactive: boolean;
+    reporters: any[];
+    processors: any[];
+}
+
+const config: PailConfig = {
+    logLevel: "info",
+    scope: "app",
+    interactive: false,
+    reporters: [new PrettyReporter()],
+    processors: [new MessageFormatterProcessor()],
+};
+
+const pail = createPail(config);
+```
+
+### Configuration File
+
+```typescript
+// config/logger.ts
+export const loggerConfig = {
+    development: {
+        logLevel: "debug",
+        interactive: true,
+        reporters: [new PrettyReporter()],
+        processors: [
+            new MessageFormatterProcessor(),
+            new CallerProcessor(),
+        ],
+    },
+    production: {
+        logLevel: "warning",
+        interactive: false,
+        reporters: [
+            new JsonReporter(),
+            new FileReporter({ path: "./logs/app.log" }),
+        ],
+        processors: [new MessageFormatterProcessor()],
+    },
+};
+
+// app.ts
+import { loggerConfig } from "./config/logger";
+
+const env = process.env.NODE_ENV || "development";
+const pail = createPail(loggerConfig[env]);
+```
+
+## Best Practices
+
+1. **Environment-based config** - Different settings for dev/prod
+2. **Centralize configuration** - Keep logger config in one place
+3. **Use feature flags** - Easy enable/disable of features
+4. **Document settings** - Comment why certain options are chosen
+5. **Type safety** - Use TypeScript for configuration
+6. **Validate config** - Check configuration values at startup
+7. **Sensible defaults** - Provide good defaults for all options
+
+## Full Configuration Example
+
+```typescript
+import { createPail } from "@visulima/pail";
+import {
+    PrettyReporter,
+    JsonReporter,
+    FileReporter,
+} from "@visulima/pail/server/reporter";
+import {
+    MessageFormatterProcessor,
+    CallerProcessor,
+    RedactProcessor,
+} from "@visulima/pail/processor";
+
+const isDevelopment = process.env.NODE_ENV === "development";
+const isProduction = process.env.NODE_ENV === "production";
+
+const pail = createPail({
+    // Scope
+    scope: "app",
+    
+    // Log level
+    logLevel: isDevelopment ? "debug" : "warning",
+    
+    // Custom log levels (optional)
+    logLevels: {
+        trace: 0,
+        debug: 1,
+        informational: 2,
+        notice: 3,
+        warning: 4,
+        error: 5,
+        critical: 6,
+        alert: 7,
+        emergency: 8,
+    },
+    
+    // Processors
+    processors: [
+        new MessageFormatterProcessor(),
+        ...(isDevelopment ? [new CallerProcessor()] : []),
+        ...(isProduction ? [
+            new RedactProcessor({
+                secrets: process.env.SECRETS?.split(",") || [],
+            }),
+        ] : []),
+    ],
+    
+    // Reporters
+    reporters: isDevelopment
+        ? [new PrettyReporter()]
+        : [
+            new JsonReporter(),
+            new FileReporter({
+                path: "./logs/app.log",
+                format: "json",
+            }),
+        ],
+    
+    // Throttling
+    throttle: 1000,
+    throttleMin: 5,
+    
+    // Interactive mode
+    interactive: isDevelopment,
+    
+    // Custom types
+    types: {
+        deploy: {
+            badge: "🚀",
+            color: "blue",
+            label: "deploy",
+            logLevel: "informational",
+        },
+    },
+    
+    // Custom messages
+    messages: {
+        timerStart: "Timer started:",
+        timerEnd: "Timer completed:",
+    },
+    
+    // Disabled
+    disabled: process.env.DISABLE_LOGGING === "true",
+});
+
+export default pail;
+```
+
+## Next Steps
+
+- [API Reference](./api) - Complete API documentation
+- [Concepts](./concepts/log-levels) - Core concepts
+- [Usage](./usage/basic) - Learn how to use Pail

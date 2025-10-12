@@ -1,0 +1,750 @@
+---
+title: API Reference
+description: Complete API documentation for Pail
+---
+
+# API Reference
+
+Complete API documentation for all Pail methods and interfaces.
+
+## Core Functions
+
+### pail
+
+The default logger instance with all built-in log types.
+
+```typescript
+import { pail } from "@visulima/pail";
+```
+
+### createPail()
+
+Create a custom logger instance with configuration.
+
+```typescript
+function createPail<T extends string, L extends string>(
+    options?: ConstructorOptions<T, L>
+): Pail<T, L>
+```
+
+**Parameters**:
+- `options` - Configuration options (optional)
+
+**Returns**: New Pail instance
+
+**Example**:
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+    scope: "app",
+    logLevel: "info",
+});
+```
+
+## Logger Methods
+
+### Log Methods
+
+All RFC 5424 log levels plus additional types:
+
+```typescript
+// RFC 5424 levels
+pail.trace(message: any, ...args: any[]): void
+pail.debug(message: any, ...args: any[]): void
+pail.info(message: any, ...args: any[]): void
+pail.notice(message: any, ...args: any[]): void
+pail.warn(message: any, ...args: any[]): void
+pail.error(message: any, ...args: any[]): void
+pail.critical(message: any, ...args: any[]): void
+pail.alert(message: any, ...args: any[]): void
+pail.emergency(message: any, ...args: any[]): void
+
+// Additional types
+pail.log(message: any, ...args: any[]): void
+pail.success(message: any, ...args: any[]): void
+pail.pending(message: any, ...args: any[]): void
+pail.await(message: any, ...args: any[]): void
+pail.wait(message: any, ...args: any[]): void
+pail.watch(message: any, ...args: any[]): void
+pail.start(message: any, ...args: any[]): void
+pail.stop(message: any, ...args: any[]): void
+pail.complete(message: any, ...args: any[]): void
+```
+
+**Message Formats**:
+
+```typescript
+// String
+pail.info("Simple message");
+
+// Multiple arguments
+pail.info("User", "logged", "in");
+
+// String interpolation
+pail.info("User %s logged in at %d", username, timestamp);
+
+// Object with options
+pail.info({
+    prefix: "[API]",
+    message: "Request processed",
+    suffix: "(200 OK)",
+    context: [{ duration: "45ms" }],
+});
+```
+
+### scope()
+
+Create a scoped logger.
+
+```typescript
+scope(...scopes: string[]): Pail
+```
+
+**Parameters**:
+- `...scopes` - One or more scope names
+
+**Returns**: New scoped Pail instance
+
+**Example**:
+```typescript
+const apiLogger = pail.scope("api");
+const v1Logger = apiLogger.scope("v1");
+
+apiLogger.info("API message");
+// Output: [api] API message
+
+v1Logger.info("v1 message");
+// Output: [api › v1] v1 message
+```
+
+### Timer Methods
+
+#### time()
+
+Start a timer.
+
+```typescript
+time(label?: string): void
+```
+
+**Parameters**:
+- `label` - Timer label (optional, defaults to "default")
+
+**Example**:
+```typescript
+pail.time("operation");
+// ... do work ...
+pail.timeEnd("operation");
+```
+
+#### timeLog()
+
+Log current timer value without stopping it.
+
+```typescript
+timeLog(label?: string, ...message: any[]): void
+```
+
+**Parameters**:
+- `label` - Timer label (optional)
+- `...message` - Additional message arguments
+
+**Example**:
+```typescript
+pail.time("process");
+pail.timeLog("process", "Step 1 complete");
+pail.timeLog("process", "Step 2 complete");
+pail.timeEnd("process");
+```
+
+#### timeEnd()
+
+Stop a timer and log final duration.
+
+```typescript
+timeEnd(label?: string, ...message: any[]): void
+```
+
+**Parameters**:
+- `label` - Timer label (optional)
+- `...message` - Additional message arguments
+
+**Example**:
+```typescript
+pail.time("download");
+// ... downloading ...
+pail.timeEnd("download", "File downloaded");
+```
+
+### State Methods
+
+#### disable()
+
+Disable the logger.
+
+```typescript
+disable(): void
+```
+
+**Example**:
+```typescript
+pail.disable();
+pail.info("This won't be shown");
+```
+
+#### enable()
+
+Enable the logger.
+
+```typescript
+enable(): void
+```
+
+**Example**:
+```typescript
+pail.enable();
+pail.info("This will be shown");
+```
+
+#### isDisabled()
+
+Check if logger is disabled.
+
+```typescript
+isDisabled(): boolean
+```
+
+**Returns**: `true` if disabled, `false` otherwise
+
+**Example**:
+```typescript
+if (pail.isDisabled()) {
+    pail.enable();
+}
+```
+
+#### isLevelEnabled()
+
+Check if a log level would be displayed.
+
+```typescript
+isLevelEnabled(level: string): boolean
+```
+
+**Parameters**:
+- `level` - Log level to check
+
+**Returns**: `true` if level is enabled
+
+**Example**:
+```typescript
+if (pail.isLevelEnabled("debug")) {
+    pail.debug("Debug info");
+}
+```
+
+### Interactive Methods
+
+#### getInteractiveManager()
+
+Get the interactive manager for advanced control.
+
+**Node.js only**
+
+```typescript
+getInteractiveManager(): InteractiveManager
+```
+
+**Returns**: InteractiveManager instance
+
+**Example**:
+```typescript
+const manager = pail.getInteractiveManager();
+manager.hook();
+manager.update(["Line 1", "Line 2"]);
+manager.unhook(false);
+```
+
+## Types
+
+### ConstructorOptions
+
+Configuration options for creating a logger.
+
+```typescript
+interface ConstructorOptions<T extends string, L extends string> {
+    // Minimum log level to display
+    logLevel?: "trace" | "debug" | "informational" | "notice" | 
+               "warning" | "error" | "critical" | "alert" | "emergency" | L;
+    
+    // Custom log level priorities
+    logLevels?: Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
+    
+    // Logger scope
+    scope?: string | string[];
+    
+    // Custom log types
+    types?: LoggerTypesConfig<T, L>;
+    
+    // Reporters
+    reporters?: Reporter<L>[];
+    
+    // Raw reporter (receives logs before processing)
+    rawReporter?: Reporter<L>;
+    
+    // Processors
+    processors?: Processor<L>[];
+    
+    // Throttle time window (ms)
+    throttle?: number;
+    
+    // Minimum repetitions before throttling
+    throttleMin?: number;
+    
+    // Start disabled
+    disabled?: boolean;
+    
+    // Custom messages
+    messages?: {
+        timerStart?: string;
+        timerEnd?: string;
+    };
+}
+```
+
+### ServerConstructorOptions
+
+Additional options for Node.js environment.
+
+```typescript
+interface ServerConstructorOptions<T extends string, L extends string> 
+    extends ConstructorOptions<T, L> {
+    // Enable interactive mode
+    interactive?: boolean;
+    
+    // Standard output stream
+    stdout: NodeJS.WriteStream;
+    
+    // Standard error stream
+    stderr: NodeJS.WriteStream;
+}
+```
+
+### LoggerConfiguration
+
+Configuration for a log type.
+
+```typescript
+interface LoggerConfiguration<L extends string> {
+    // Visual badge (emoji or text)
+    badge?: string;
+    
+    // Label color
+    color?: AnsiColors;
+    
+    // Text label
+    label: string;
+    
+    // RFC 5424 log level
+    logLevel: "trace" | "debug" | "informational" | "notice" | 
+              "warning" | "error" | "critical" | "alert" | "emergency" | L;
+}
+```
+
+### LoggerTypesConfig
+
+Map of log type names to configurations.
+
+```typescript
+type LoggerTypesConfig<T extends string, L extends string> = 
+    Record<T, Partial<LoggerConfiguration<L>>>;
+```
+
+### Message
+
+Log message format with options.
+
+```typescript
+interface Message {
+    // Main log message
+    message: any;
+    
+    // Message prefix
+    prefix?: string;
+    
+    // Message suffix
+    suffix?: string;
+    
+    // Additional context
+    context?: any[];
+}
+```
+
+### Meta
+
+Complete log metadata passed to reporters.
+
+```typescript
+interface Meta<L> {
+    // Log type badge
+    badge: string | undefined;
+    
+    // Additional context data
+    context: any[] | undefined;
+    
+    // Log timestamp
+    date: Date | string;
+    
+    // Error object (if present)
+    error: Error | undefined;
+    
+    // Log groups
+    groups: string[];
+    
+    // Log type label
+    label: string | undefined;
+    
+    // Log message
+    message: Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
+    
+    // Message prefix
+    prefix: string | undefined;
+    
+    // Repetition count
+    repeated?: number | undefined;
+    
+    // Scope hierarchy
+    scope: string[] | undefined;
+    
+    // Message suffix
+    suffix: string | undefined;
+    
+    // Type information
+    type: {
+        level: ExtendedRfc5424LogLevels | L;
+        name: string;
+    };
+}
+```
+
+## Reporter Interface
+
+### Reporter
+
+Base reporter interface.
+
+```typescript
+interface Reporter<L extends string> {
+    log: (meta: ReadonlyMeta<L>) => void;
+}
+```
+
+### StreamAwareReporter
+
+Reporter with access to streams.
+
+```typescript
+interface StreamAwareReporter<L extends string> extends Reporter<L> {
+    setStderr: (stderr: NodeJS.WriteStream) => void;
+    setStdout: (stdout: NodeJS.WriteStream) => void;
+}
+```
+
+### LoggerTypesAwareReporter
+
+Reporter with access to logger types.
+
+```typescript
+interface LoggerTypesAwareReporter<T extends string, L extends string> 
+    extends Reporter<L> {
+    setLoggerTypes: (
+        types: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>
+    ) => void;
+}
+```
+
+### StringifyAwareReporter
+
+Reporter with custom JSON serialization.
+
+```typescript
+interface StringifyAwareReporter<L extends string> extends Reporter<L> {
+    setStringify: (stringify: typeof JSON.stringify) => void;
+}
+```
+
+### InteractiveStreamReporter
+
+Reporter with interactive mode support.
+
+```typescript
+interface InteractiveStreamReporter<L extends string> 
+    extends StreamAwareReporter<L> {
+    setInteractiveManager: (manager?: InteractiveManager) => void;
+    setIsInteractive: (interactive: boolean) => void;
+}
+```
+
+## Processor Interface
+
+### Processor
+
+Base processor interface.
+
+```typescript
+interface Processor<L extends string> {
+    process: (meta: Meta<L>) => Meta<L>;
+}
+```
+
+### StringifyAwareProcessor
+
+Processor with custom JSON serialization.
+
+```typescript
+interface StringifyAwareProcessor<L extends string> extends Processor<L> {
+    setStringify: (stringify: typeof JSON.stringify) => void;
+}
+```
+
+## InteractiveManager
+
+**Node.js only**
+
+### Methods
+
+#### hook()
+
+Start intercepting console output.
+
+```typescript
+hook(): void
+```
+
+#### unhook()
+
+Stop intercepting console output.
+
+```typescript
+unhook(clear?: boolean): void
+```
+
+**Parameters**:
+- `clear` - Clear interactive lines (default: `false`)
+
+#### update()
+
+Update displayed lines.
+
+```typescript
+update(lines: string[]): void
+```
+
+**Parameters**:
+- `lines` - Array of lines to display
+
+#### erase()
+
+Remove lines from bottom.
+
+```typescript
+erase(count: number): void
+```
+
+**Parameters**:
+- `count` - Number of lines to remove
+
+## Built-in Reporters
+
+### PrettyReporter
+
+Colorful, human-readable output.
+
+```typescript
+import { PrettyReporter } from "@visulima/pail/reporter";
+
+new PrettyReporter()
+```
+
+### JsonReporter
+
+Structured JSON output.
+
+```typescript
+import { JsonReporter } from "@visulima/pail/reporter";
+
+new JsonReporter()
+```
+
+### SimpleReporter
+
+**Node.js only**
+
+Minimal text output without colors.
+
+```typescript
+import { SimpleReporter } from "@visulima/pail/server/reporter";
+
+new SimpleReporter()
+```
+
+### FileReporter
+
+**Node.js only**
+
+Write logs to files.
+
+```typescript
+import { FileReporter } from "@visulima/pail/server/reporter";
+
+new FileReporter({
+    path: string | RotatingFileStreamOptions,
+    format?: "json" | "pretty",
+})
+```
+
+### RawReporter
+
+Captures logs before processing.
+
+```typescript
+import { RawReporter } from "@visulima/pail/reporter";
+
+new RawReporter()
+```
+
+## Built-in Processors
+
+### MessageFormatterProcessor
+
+Printf-style string formatting.
+
+```typescript
+import { MessageFormatterProcessor } from "@visulima/pail/processor";
+
+new MessageFormatterProcessor()
+```
+
+### CallerProcessor
+
+Add caller information to logs.
+
+```typescript
+import { CallerProcessor } from "@visulima/pail/processor";
+
+new CallerProcessor({
+    stackIndex?: number,
+    showFullPath?: boolean,
+})
+```
+
+### ErrorProcessor
+
+Serialize error objects.
+
+```typescript
+import { ErrorProcessor } from "@visulima/pail/processor";
+
+new ErrorProcessor()
+```
+
+### RedactProcessor
+
+Redact sensitive information.
+
+**Requires**: `@visulima/redact` package
+
+```typescript
+import { RedactProcessor } from "@visulima/pail/processor";
+
+new RedactProcessor({
+    secrets?: string[],
+    paths?: string[],
+    replacement?: string,
+    caseSensitive?: boolean,
+})
+```
+
+## Log Levels
+
+### ExtendedRfc5424LogLevels
+
+```typescript
+type ExtendedRfc5424LogLevels = 
+    | "trace"
+    | "debug"
+    | "informational"
+    | "notice"
+    | "warning"
+    | "error"
+    | "critical"
+    | "alert"
+    | "emergency";
+```
+
+### DefaultLogTypes
+
+```typescript
+type DefaultLogTypes =
+    | "trace"
+    | "debug"
+    | "log"
+    | "info"
+    | "notice"
+    | "warn"
+    | "error"
+    | "critical"
+    | "alert"
+    | "emergency"
+    | "success"
+    | "pending"
+    | "await"
+    | "wait"
+    | "watch"
+    | "start"
+    | "stop"
+    | "complete";
+```
+
+## Type Augmentation
+
+Extend Pail with custom metadata:
+
+```typescript
+declare global {
+    namespace VisulimaPail {
+        interface CustomMeta<L> {
+            // Add custom properties
+            requestId?: string;
+            userId?: string;
+        }
+    }
+}
+```
+
+## Constants
+
+### Log Level Priorities
+
+Default log level priorities:
+
+```typescript
+const LOG_LEVELS = {
+    trace: 0,
+    debug: 1,
+    informational: 2,
+    notice: 3,
+    warning: 4,
+    error: 5,
+    critical: 6,
+    alert: 7,
+    emergency: 8,
+};
+```
+
+## Next Steps
+
+- [Configuration](./configuration) - Configure Pail
+- [Usage](./usage/basic) - Learn how to use the API
+- [Concepts](./concepts/log-levels) - Understand core concepts
