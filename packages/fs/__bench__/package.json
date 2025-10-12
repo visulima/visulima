@@ -7,16 +7,16 @@
         "postinstall": "node ./scripts/create-fixtures.mjs"
     },
     "dependencies": {
-        "fs-extra": "11.3.0",
-        "empathic": "1.1.0",
+        "fs-extra": "11.3.2",
+        "empathic": "2.0.0",
         "@visulima/fs": "workspace:*",
-        "find-up": "7.0.0",
+        "find-up": "8.0.0",
         "find-up-simple": "1.0.1",
         "walk": "2.3.15"
     },
     "devDependencies": {
         "@types/fs-extra": "11.0.4",
-        "typescript": "5.8.3",
-        "vitest": "^3.1.4"
+        "typescript": "5.9.3",
+        "vitest": "^3.2.4"
     }
 }

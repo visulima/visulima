@@ -49,3 +49,4 @@ export { default as writeFile } from "./write/write-file";
 export { default as writeFileSync } from "./write/write-file-sync";
 export { default as writeJson } from "./write/write-json";
 export { default as writeJsonSync } from "./write/write-json-sync";
+export { isFsCaseSensitive } from "is-fs-case-sensitive";
