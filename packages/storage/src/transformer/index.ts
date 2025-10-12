@@ -1,13 +1,3 @@
-/**
- * @packageDocumentation
- * Public exports and types for media transformers.
- */
-
-/**
- * @packageDocumentation
- * Public exports for transformer utilities and types (image, video, audio,
- * and unified media transformer).
- */
 export { default as BaseTransformer } from "./base-transformer";
 export { default as MediaTransformer } from "./media-transformer";
 export type {

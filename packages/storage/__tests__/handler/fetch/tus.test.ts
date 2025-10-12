@@ -149,4 +149,105 @@ describe("fetch Tus", () => {
             expect(response.headers.get("tus-checksum-algorithm")).toBe("md5,sha1");
         });
     });
+
+    describe("Tus-Resumable header validation", () => {
+        it("should return 412 for POST request without Tus-Resumable header", async () => {
+            expect.assertions(2);
+
+            const request = new Request(`${basePath}`, {
+                headers: {
+                    "Upload-Length": metadata.size.toString(),
+                    "Upload-Metadata": `name ${Buffer.from(metadata.name).toString("base64")},size ${Buffer.from(metadata.size.toString()).toString("base64")},mimeType ${Buffer.from(metadata.mimeType).toString("base64")}`,
+                },
+                method: "POST",
+            });
+
+            const storage = new DiskStorage({ ...storageOptions, directory });
+            const tusHandler = new Tus({ storage });
+
+            // Wait for storage to be ready
+            await new Promise((resolve) => {
+                const checkReady = () => {
+                    if (storage.isReady) {
+                        resolve(undefined);
+                    } else {
+                        setTimeout(checkReady, 10);
+                    }
+                };
+
+                checkReady();
+            });
+
+            const response = await tusHandler.fetch(request);
+
+            expect(response.status).toBe(412);
+            const text = await response.text();
+            const body = JSON.parse(text);
+            expect(body.error).toBeDefined();
+        });
+
+        it("should return 412 for POST request with invalid Tus-Resumable version", async () => {
+            expect.assertions(2);
+
+            const request = new Request(`${basePath}`, {
+                headers: {
+                    "Tus-Resumable": "0.2.2",
+                    "Upload-Length": metadata.size.toString(),
+                    "Upload-Metadata": `name ${Buffer.from(metadata.name).toString("base64")},size ${Buffer.from(metadata.size.toString()).toString("base64")},mimeType ${Buffer.from(metadata.mimeType).toString("base64")}`,
+                },
+                method: "POST",
+            });
+
+            const storage = new DiskStorage({ ...storageOptions, directory });
+            const tusHandler = new Tus({ storage });
+
+            // Wait for storage to be ready
+            await new Promise((resolve) => {
+                const checkReady = () => {
+                    if (storage.isReady) {
+                        resolve(undefined);
+                    } else {
+                        setTimeout(checkReady, 10);
+                    }
+                };
+
+                checkReady();
+            });
+
+            const response = await tusHandler.fetch(request);
+
+            expect(response.status).toBe(412);
+            const text = await response.text();
+            const body = JSON.parse(text);
+            expect(body.error).toBeDefined();
+        });
+
+        it("should accept OPTIONS request without Tus-Resumable header", async () => {
+            expect.assertions(1);
+
+            const request = new Request(`${basePath}`, {
+                method: "OPTIONS",
+            });
+
+            const storage = new DiskStorage({ ...storageOptions, directory });
+            const tusHandler = new Tus({ storage });
+
+            // Wait for storage to be ready
+            await new Promise((resolve) => {
+                const checkReady = () => {
+                    if (storage.isReady) {
+                        resolve(undefined);
+                    } else {
+                        setTimeout(checkReady, 10);
+                    }
+                };
+
+                checkReady();
+            });
+
+            const response = await tusHandler.fetch(request);
+
+            expect(response.status).toBe(204);
+        });
+    });
 });

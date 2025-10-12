@@ -253,4 +253,114 @@ describe("http Tus", () => {
             expect(response.header.location).toStrictEqual(expect.stringContaining(basePath));
         });
     });
+
+    describe("Tus-Resumable header validation", () => {
+        it("should return 412 for POST request without Tus-Resumable header", async () => {
+            expect.assertions(2);
+
+            response = await supertest(app)
+                .post(basePath)
+                .set("Upload-Length", metadata.size.toString())
+                .set("Upload-Metadata", serializeMetadata(metadata));
+
+            expect(response.status).toBe(412);
+            expect(response.body.error).toBeDefined();
+        });
+
+        it("should return 412 for POST request with invalid Tus-Resumable version", async () => {
+            expect.assertions(2);
+
+            response = await supertest(app)
+                .post(basePath)
+                .set("Tus-Resumable", "0.2.2")
+                .set("Upload-Length", metadata.size.toString())
+                .set("Upload-Metadata", serializeMetadata(metadata));
+
+            expect(response.status).toBe(412);
+            expect(response.body.error).toBeDefined();
+        });
+
+        it("should return 412 for PATCH request without Tus-Resumable header", async () => {
+            expect.assertions(2);
+
+            // First create a valid upload
+            const createResponse = await create();
+            const uploadUrl = createResponse.header.location;
+
+            response = await supertest(app)
+                .patch(uploadUrl)
+                .set("Content-Type", "application/offset+octet-stream")
+                .set("Upload-Offset", "0")
+                .set("Content-Length", "5")
+                .send(testfile.asBuffer.slice(0, 5));
+
+            expect(response.status).toBe(412);
+            expect(response.body.error).toBeDefined();
+        });
+
+        it("should return 412 for PATCH request with invalid Tus-Resumable version", async () => {
+            expect.assertions(2);
+
+            // First create a valid upload
+            const createResponse = await create();
+            const uploadUrl = createResponse.header.location;
+
+            response = await supertest(app)
+                .patch(uploadUrl)
+                .set("Tus-Resumable", "0.2.2")
+                .set("Content-Type", "application/offset+octet-stream")
+                .set("Upload-Offset", "0")
+                .set("Content-Length", "5")
+                .send(testfile.asBuffer.slice(0, 5));
+
+            expect(response.status).toBe(412);
+            expect(response.body.error).toBeDefined();
+        });
+
+        it("should return 412 for HEAD request without Tus-Resumable header", async () => {
+            expect.assertions(1);
+
+            // First create a valid upload
+            const createResponse = await create();
+            const uploadUrl = createResponse.header.location;
+
+            response = await supertest(app).head(uploadUrl);
+
+            expect(response.status).toBe(412);
+        });
+
+        it("should return 412 for GET request without Tus-Resumable header", async () => {
+            expect.assertions(2);
+
+            // First create a valid upload
+            const createResponse = await create();
+            const uploadUrl = createResponse.header.location;
+
+            response = await supertest(app).get(uploadUrl);
+
+            expect(response.status).toBe(412);
+            expect(response.body.error).toBeDefined();
+        });
+
+        it("should return 412 for DELETE request without Tus-Resumable header", async () => {
+            expect.assertions(2);
+
+            // First create a valid upload
+            const createResponse = await create();
+            const uploadUrl = createResponse.header.location;
+
+            response = await supertest(app).delete(uploadUrl);
+
+            expect(response.status).toBe(412);
+            expect(response.body.error).toBeDefined();
+        });
+
+        it("should accept OPTIONS request without Tus-Resumable header", async () => {
+            expect.assertions(1);
+
+            response = await supertest(app).options(basePath);
+
+            expect(response.status).toBe(204);
+        });
+    });
 });

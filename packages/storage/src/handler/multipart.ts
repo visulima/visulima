@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * Multipart upload handler for standard HTML forms and XHR uploads. Provides
- * Express-compatible middleware and fetch handler.
- */
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 
