@@ -1,31 +1,27 @@
-# Installation
+import { Tab, Tabs, Callout } from "@visulima/nextra-theme-docs/components";
 
-This guide covers how to install and set up `@visulima/colorize` in your project.
+This guide covers how to install and set up Colorize in your project.
 
 ## Prerequisites
 
 - **Node.js** 18.x or higher
 - **Package Manager**: npm, yarn, or pnpm
 
-## Installation Methods
+## Installation
 
-### Using npm
+In your project directory, run the following command to install the dependency:
 
-```bash
-npm install @visulima/colorize
-```
-
-### Using yarn
-
-```bash
-yarn add @visulima/colorize
-```
-
-### Using pnpm
-
-```bash
+<Tabs>
+    <Tab title="pnpm">```bash
 pnpm add @visulima/colorize
-```
+```</Tab>
+    <Tab title="npm">```bash
+npm install @visulima/colorize
+```</Tab>
+    <Tab title="yarn">```bash
+yarn add @visulima/colorize
+```</Tab>
+</Tabs>
 
 ## Verification
 
@@ -134,19 +130,18 @@ import { convertHexToRgb } from '@visulima/colorize/utils';
 
 Colorize includes TypeScript definitions out of the box. No additional `@types` packages are needed.
 
-### tsconfig.json
-
+<Callout type="info">
 Ensure your `tsconfig.json` is configured for module resolution:
 
 ```json
 {
   "compilerOptions": {
     "moduleResolution": "node",
-    "esModuleInterop": true,
-    "skipLibCheck": false
+    "esModuleInterop": true
   }
 }
 ```
+</Callout>
 
 ## Deno Support
 
@@ -164,8 +159,7 @@ Colorize works seamlessly with Next.js applications:
 
 ### App Router (Next.js 13+)
 
-```typescript
-// app/page.tsx
+```typescript filename="app/page.tsx"
 import { red } from '@visulima/colorize';
 
 export default function Page() {
@@ -176,8 +170,7 @@ export default function Page() {
 
 ### API Routes
 
-```typescript
-// pages/api/hello.ts
+```typescript filename="pages/api/hello.ts"
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { green } from '@visulima/colorize';
 
@@ -198,42 +191,9 @@ import { red, green, blue } from '@visulima/colorize/browser';
 console.log(...red('Error in browser!'));
 ```
 
-See the [Browser Usage Guide](./browser.md) for detailed browser documentation.
-
-## Bundler Configuration
-
-### Webpack
-
-Colorize works out of the box with Webpack. No special configuration needed.
-
-### Vite
-
-Colorize is compatible with Vite. No additional configuration required.
-
-### Rollup
-
-For Rollup, ensure you have the appropriate plugins for CommonJS and Node.js modules:
-
-```javascript
-// rollup.config.js
-import { nodeResolve } from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-
-export default {
-  plugins: [
-    nodeResolve(),
-    commonjs()
-  ]
-};
-```
-
-### esbuild
-
-Works with esbuild without additional configuration:
-
-```bash
-esbuild app.js --bundle --platform=node
-```
+<Callout type="warning">
+The browser version requires using the spread operator. See the [Browser Usage](/docs/package/colorize/browser) guide for details.
+</Callout>
 
 ## Environment Variables
 
@@ -243,7 +203,7 @@ Colorize respects common color environment variables:
 - `FORCE_COLOR` - Forces color output
 - `TERM` - Terminal capabilities detection
 
-See [Environment Variables & CLI](./cli-environment.md) for more details.
+See [Environment Variables & CLI](/docs/package/colorize/cli-environment) for more details.
 
 ## Troubleshooting
 
@@ -270,15 +230,3 @@ If you get import errors:
 1. Verify the package is installed: `npm ls @visulima/colorize`
 2. Clear your package manager cache
 3. Try reinstalling: `rm -rf node_modules && npm install`
-
-## What's Next?
-
-- Read the [Getting Started Guide](./getting-started.md) for basic usage
-- Explore [Examples](./examples.md) for common use cases
-- Check the [API Reference](./api-reference.md) for complete documentation
-
-## Additional Resources
-
-- [Package on npm](https://www.npmjs.com/package/@visulima/colorize)
-- [GitHub Repository](https://github.com/visulima/visulima/tree/main/packages/colorize)
-- [Report Issues](https://github.com/visulima/visulima/issues)
