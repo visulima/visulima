@@ -1,0 +1,515 @@
+---
+title: Troubleshooting
+description: Common issues and solutions for @visulima/tsconfig
+---
+
+# Troubleshooting
+
+Common issues and their solutions when working with `@visulima/tsconfig`.
+
+## Configuration Not Found
+
+### Problem
+
+```
+Error: No such file or directory, for 'tsconfig.json' or 'jsconfig.json' found.
+```
+
+### Solutions
+
+1. **Verify the file exists**
+
+```bash
+ls -la tsconfig.json
+```
+
+2. **Check the search directory**
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+// Specify the directory explicitly
+const result = await findTsConfig("/path/to/your/project");
+```
+
+3. **Use a custom file name**
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+const result = await findTsConfig(undefined, {
+  configFileName: "tsconfig.build.json",
+});
+```
+
+4. **Create a default configuration**
+
+```typescript
+import { writeTsConfig } from "@visulima/tsconfig";
+
+await writeTsConfig({
+  compilerOptions: {
+    target: "ES2020",
+    module: "ESNext",
+  },
+});
+```
+
+## Parse Errors
+
+### Problem
+
+```
+Error: Failed to parse configuration file
+```
+
+### Solutions
+
+1. **Check for invalid JSON syntax**
+
+Make sure your tsconfig.json is valid JSON or JSONC:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020" // This is valid - trailing commas are supported
+  }
+}
+```
+
+2. **Validate with a JSON linter**
+
+```bash
+npx jsonlint tsconfig.json
+```
+
+3. **Check for unsupported comments**
+
+While JSONC comments are supported, ensure they're formatted correctly:
+
+```json
+{
+  // Single-line comment (valid)
+  /* Multi-line comment (valid) */
+  "compilerOptions": {
+    "target": "ES2020"
+  }
+}
+```
+
+## Circular Extends
+
+### Problem
+
+```
+Error: Circularity detected while resolving configuration
+```
+
+### Solutions
+
+1. **Check your extends chain**
+
+```json title="tsconfig.json"
+{
+  "extends": "./tsconfig.base.json"
+}
+```
+
+```json title="tsconfig.base.json"
+{
+  "extends": "./tsconfig.json" // This creates a circular reference
+}
+```
+
+2. **Restructure your configuration hierarchy**
+
+```
+tsconfig.base.json (no extends)
+  └── tsconfig.json (extends base)
+  └── tsconfig.build.json (extends base)
+```
+
+## Module Resolution Issues
+
+### Problem
+
+Path mappings or baseUrl are not resolved correctly.
+
+### Solutions
+
+1. **Check baseUrl and paths configuration**
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+2. **Verify relative paths are correct**
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+import { resolve } from "node:path";
+
+const config = readTsConfig(resolve(process.cwd(), "tsconfig.json"));
+console.log(config.compilerOptions?.baseUrl);
+```
+
+3. **Use absolute paths when needed**
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import { resolve } from "node:path";
+
+const result = await findTsConfig(resolve(process.cwd(), "src"));
+```
+
+## Cache Issues
+
+### Problem
+
+Changes to tsconfig.json are not reflected when using cache.
+
+### Solutions
+
+1. **Disable cache during development**
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+const result = await findTsConfig(undefined, {
+  cache: false, // Disable cache
+});
+```
+
+2. **Clear the cache manually**
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+const cache = new Map();
+
+// First read
+await findTsConfig(undefined, { cache });
+
+// Clear cache when config changes
+cache.clear();
+
+// Next read will be fresh
+await findTsConfig(undefined, { cache });
+```
+
+3. **Use cache invalidation**
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import { watch } from "node:fs";
+
+const cache = new Map();
+
+watch("tsconfig.json", () => {
+  cache.clear();
+  console.log("Cache cleared due to config change");
+});
+```
+
+## TypeScript Compatibility
+
+### Problem
+
+Configuration is not parsed as expected by TypeScript compiler.
+
+### Solutions
+
+1. **Use TypeScript compatible mode**
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+const config = readTsConfig("./tsconfig.json", {
+  tscCompatible: true,
+});
+```
+
+2. **Specify exact TypeScript version**
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+const config = readTsConfig("./tsconfig.json", {
+  tscCompatible: "5.6",
+});
+```
+
+3. **Check TypeScript version compatibility**
+
+```bash
+npm list typescript
+```
+
+## Permission Errors
+
+### Problem
+
+```
+Error: EACCES: permission denied
+```
+
+### Solutions
+
+1. **Check file permissions**
+
+```bash
+chmod 644 tsconfig.json
+```
+
+2. **Check directory permissions**
+
+```bash
+chmod 755 .
+```
+
+3. **Run with appropriate permissions**
+
+```bash
+sudo node your-script.js  # Use with caution
+```
+
+## Import Errors
+
+### Problem
+
+```
+Error: Cannot find module '@visulima/tsconfig'
+```
+
+### Solutions
+
+1. **Verify installation**
+
+```bash
+npm list @visulima/tsconfig
+```
+
+2. **Reinstall the package**
+
+```bash
+npm uninstall @visulima/tsconfig
+npm install @visulima/tsconfig
+```
+
+3. **Check Node.js version**
+
+```bash
+node --version  # Should be >= 18.0.0
+```
+
+4. **Clear Node.js cache**
+
+```bash
+npm cache clean --force
+rm -rf node_modules
+npm install
+```
+
+## Type Errors
+
+### Problem
+
+TypeScript shows type errors when using the package.
+
+### Solutions
+
+1. **Update TypeScript**
+
+```bash
+npm install -D typescript@latest
+```
+
+2. **Check tsconfig.json moduleResolution**
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler"
+  }
+}
+```
+
+3. **Verify type imports**
+
+```typescript
+import type { TsConfigJson } from "@visulima/tsconfig";
+```
+
+## Performance Issues
+
+### Problem
+
+Reading configuration is slow.
+
+### Solutions
+
+1. **Enable caching**
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+const result = await findTsConfig(undefined, {
+  cache: true,
+});
+```
+
+2. **Use synchronous methods when appropriate**
+
+```typescript
+import { findTsConfigSync } from "@visulima/tsconfig";
+
+const result = findTsConfigSync();
+```
+
+3. **Simplify extends chain**
+
+Reduce the number of extended configurations:
+
+```json
+{
+  "extends": [
+    "./base.json",
+    "./strict.json",
+    "./paths.json"
+  ]
+}
+```
+
+Consider merging these into fewer files.
+
+## Writing Configuration Fails
+
+### Problem
+
+```
+Error: Failed to write configuration file
+```
+
+### Solutions
+
+1. **Check write permissions**
+
+```bash
+ls -la | grep tsconfig.json
+```
+
+2. **Ensure directory exists**
+
+```typescript
+import { writeTsConfig } from "@visulima/tsconfig";
+import { mkdir } from "node:fs/promises";
+
+await mkdir("/path/to/dir", { recursive: true });
+await writeTsConfig(config, { cwd: "/path/to/dir" });
+```
+
+3. **Validate configuration object**
+
+```typescript
+import { writeTsConfig } from "@visulima/tsconfig";
+import type { TsConfigJson } from "@visulima/tsconfig";
+
+const config: TsConfigJson = {
+  compilerOptions: {
+    target: "ES2020",
+  },
+};
+
+await writeTsConfig(config);
+```
+
+## Getting Help
+
+If you're still experiencing issues:
+
+1. **Check the documentation**
+   - Review the [API Reference](/api-reference)
+   - Check [Examples](/examples) for similar use cases
+
+2. **Search existing issues**
+   - [GitHub Issues](https://github.com/visulima/visulima/issues)
+
+3. **Create a minimal reproduction**
+   - Isolate the problem
+   - Share relevant code and configuration
+   - Include error messages and stack traces
+
+4. **Report the issue**
+   - [Create a new issue](https://github.com/visulima/visulima/issues/new)
+   - Include your environment details (Node.js version, OS, package version)
+
+## Debug Mode
+
+Enable verbose logging to understand what's happening:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+try {
+  const result = await findTsConfig();
+  console.log("Success:", result);
+} catch (error) {
+  console.error("Error details:", {
+    name: error.name,
+    message: error.message,
+    stack: error.stack,
+  });
+}
+```
+
+## Common Mistakes
+
+### Mistake 1: Not handling errors
+
+```typescript
+// Bad
+const result = await findTsConfig();
+
+// Good
+try {
+  const result = await findTsConfig();
+} catch (error) {
+  console.error("Failed to find config:", error.message);
+}
+```
+
+### Mistake 2: Mutating returned config directly
+
+```typescript
+// Bad - mutates cached object
+const result = await findTsConfig(undefined, { cache: true });
+result.config.compilerOptions.target = "ES2022";
+
+// Good - create a new object
+const result = await findTsConfig(undefined, { cache: true });
+const newConfig = {
+  ...result.config,
+  compilerOptions: {
+    ...result.config.compilerOptions,
+    target: "ES2022",
+  },
+};
+```
+
+### Mistake 3: Using relative paths incorrectly
+
+```typescript
+// Bad
+const config = readTsConfig("tsconfig.json");
+
+// Good
+import { resolve } from "node:path";
+const config = readTsConfig(resolve(process.cwd(), "tsconfig.json"));
+```

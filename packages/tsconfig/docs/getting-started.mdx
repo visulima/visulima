@@ -1,0 +1,237 @@
+---
+title: Getting Started
+description: Quick guide to using @visulima/tsconfig
+---
+
+# Getting Started
+
+This guide will walk you through the most common use cases of `@visulima/tsconfig`.
+
+## Finding a TSConfig
+
+The `findTsConfig` function searches for a `tsconfig.json` file starting from a directory and moving up the directory tree.
+
+### Basic Usage
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+// Find tsconfig from current directory
+const result = await findTsConfig();
+
+console.log(result.path); // "/path/to/your/project/tsconfig.json"
+console.log(result.config); // { compilerOptions: { ... }, ... }
+```
+
+### With Custom Directory
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+// Find tsconfig from specific directory
+const result = await findTsConfig("/path/to/project");
+
+console.log(result.path);
+console.log(result.config);
+```
+
+### Synchronous Version
+
+```typescript
+import { findTsConfigSync } from "@visulima/tsconfig";
+
+const result = findTsConfigSync();
+console.log(result.path);
+```
+
+### Fallback to jsconfig.json
+
+If `tsconfig.json` is not found, the function automatically looks for `jsconfig.json`:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+// Will find jsconfig.json if tsconfig.json doesn't exist
+const result = await findTsConfig();
+```
+
+## Reading a TSConfig
+
+The `readTsConfig` function reads and parses a TypeScript configuration file, resolving all extends paths.
+
+### Basic Usage
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+const config = readTsConfig("/path/to/tsconfig.json");
+
+console.log(config.compilerOptions);
+console.log(config.include);
+console.log(config.exclude);
+```
+
+### TypeScript Compiler Compatible Mode
+
+Enable compatibility mode to parse the configuration exactly as the TypeScript compiler would:
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+// Compatible with TypeScript 5.6
+const config = readTsConfig("/path/to/tsconfig.json", {
+  tscCompatible: "5.6",
+});
+
+// Compatible with latest TypeScript version
+const config = readTsConfig("/path/to/tsconfig.json", {
+  tscCompatible: true,
+});
+```
+
+### Handling Extends
+
+The function automatically resolves and merges extended configurations:
+
+```json title="tsconfig.json"
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist"
+  }
+}
+```
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+// Returns merged configuration from base + current
+const config = readTsConfig("./tsconfig.json");
+```
+
+## Writing a TSConfig
+
+The `writeTsConfig` function writes a TypeScript configuration object to a file.
+
+### Basic Usage
+
+```typescript
+import { writeTsConfig } from "@visulima/tsconfig";
+
+await writeTsConfig({
+  compilerOptions: {
+    target: "ES2020",
+    module: "ESNext",
+    strict: true,
+    esModuleInterop: true,
+  },
+});
+```
+
+### Custom Location
+
+```typescript
+import { writeTsConfig } from "@visulima/tsconfig";
+
+await writeTsConfig(
+  {
+    compilerOptions: {
+      target: "ES2020",
+    },
+  },
+  {
+    cwd: "/path/to/project",
+  }
+);
+```
+
+### Synchronous Version
+
+```typescript
+import { writeTsConfigSync } from "@visulima/tsconfig";
+
+writeTsConfigSync({
+  compilerOptions: {
+    target: "ES2020",
+    module: "ESNext",
+  },
+});
+```
+
+### Formatting Options
+
+Control the output formatting:
+
+```typescript
+import { writeTsConfig } from "@visulima/tsconfig";
+
+await writeTsConfig(
+  {
+    compilerOptions: {
+      target: "ES2020",
+    },
+  },
+  {
+    spaces: 4, // Use 4 spaces for indentation
+  }
+);
+```
+
+## Complete Example
+
+Here's a complete example that demonstrates finding, reading, modifying, and writing a tsconfig:
+
+```typescript
+import { findTsConfig, writeTsConfig } from "@visulima/tsconfig";
+
+async function updateTsConfig() {
+  try {
+    // Find the tsconfig file
+    const result = await findTsConfig();
+    console.log(`Found tsconfig at: ${result.path}`);
+
+    // Get the current configuration
+    const config = result.config;
+
+    // Modify the configuration
+    config.compilerOptions = {
+      ...config.compilerOptions,
+      strict: true,
+      skipLibCheck: true,
+    };
+
+    // Write the updated configuration
+    await writeTsConfig(config);
+    console.log("Updated tsconfig successfully");
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+updateTsConfig();
+```
+
+## Error Handling
+
+All functions throw errors when operations fail. Always wrap calls in try-catch blocks:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+try {
+  const result = await findTsConfig();
+  console.log(result.config);
+} catch (error) {
+  if (error.message.includes("No such file")) {
+    console.error("tsconfig.json not found");
+  } else {
+    console.error("Error reading tsconfig:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Learn about [Advanced Usage](/advanced-usage) for caching, custom file names, and more
+- Check out the [API Reference](/api-reference) for complete API documentation
+- Browse [Examples](/examples) for common patterns and recipes

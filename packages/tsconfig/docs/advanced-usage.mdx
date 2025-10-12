@@ -1,0 +1,453 @@
+---
+title: Advanced Usage
+description: Advanced features and patterns for @visulima/tsconfig
+---
+
+# Advanced Usage
+
+Learn about advanced features and patterns for working with TypeScript configurations.
+
+## Caching
+
+Enable caching to improve performance when repeatedly reading the same configuration files.
+
+### Default Cache
+
+Use the built-in cache by passing `true`:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+// First call - reads from disk
+const result1 = await findTsConfig(undefined, { cache: true });
+
+// Second call - uses cached result
+const result2 = await findTsConfig(undefined, { cache: true });
+```
+
+### Custom Cache
+
+Provide your own Map instance for custom cache management:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import type { TsConfigJsonResolved } from "@visulima/tsconfig";
+
+const customCache = new Map<string, TsConfigJsonResolved>();
+
+const result = await findTsConfig(undefined, {
+  cache: customCache,
+});
+
+// Later, you can inspect or clear the cache
+console.log(customCache.size);
+customCache.clear();
+```
+
+### Cache Invalidation
+
+Since you control the cache Map, you can invalidate specific entries:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+const cache = new Map();
+
+const result1 = await findTsConfig(undefined, { cache });
+
+// Invalidate the cache entry
+cache.delete(result1.path);
+
+// Next call will read from disk again
+const result2 = await findTsConfig(undefined, { cache });
+```
+
+## Custom Configuration File Names
+
+Search for custom configuration file names instead of the default `tsconfig.json`:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+// Find a custom config file
+const result = await findTsConfig(undefined, {
+  configFileName: "tsconfig.build.json",
+});
+```
+
+### Multiple Configuration Files
+
+Handle projects with multiple configuration files:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+async function loadConfigs() {
+  const main = await findTsConfig(undefined, {
+    configFileName: "tsconfig.json",
+  });
+
+  const build = await findTsConfig(undefined, {
+    configFileName: "tsconfig.build.json",
+  });
+
+  const test = await findTsConfig(undefined, {
+    configFileName: "tsconfig.test.json",
+  });
+
+  return { main, build, test };
+}
+```
+
+## Working with Monorepos
+
+Handle multiple packages in a monorepo structure:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import { join } from "node:path";
+
+const packages = ["package-a", "package-b", "package-c"];
+
+const configs = await Promise.all(
+  packages.map((pkg) =>
+    findTsConfig(join(process.cwd(), "packages", pkg), {
+      cache: true,
+    })
+  )
+);
+
+configs.forEach((config, index) => {
+  console.log(`${packages[index]}: ${config.path}`);
+});
+```
+
+## TypeScript Version Compatibility
+
+Ensure compatibility with specific TypeScript compiler versions:
+
+### Specific Version
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+// Parse with TypeScript 5.6 compatibility
+const config = readTsConfig("./tsconfig.json", {
+  tscCompatible: "5.6",
+});
+```
+
+### Latest Version
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+// Parse with latest TypeScript version compatibility
+const config = readTsConfig("./tsconfig.json", {
+  tscCompatible: true,
+});
+```
+
+### Version-Specific Features
+
+Different TypeScript versions support different features. Use compatibility mode to ensure correct parsing:
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+// For TypeScript 5.3
+const config53 = readTsConfig("./tsconfig.json", {
+  tscCompatible: "5.3",
+});
+
+// For TypeScript 5.6 with new features
+const config56 = readTsConfig("./tsconfig.json", {
+  tscCompatible: "5.6",
+});
+```
+
+## Resolving Package Extends
+
+The package automatically resolves extends from npm packages:
+
+```json title="tsconfig.json"
+{
+  "extends": "@company/tsconfig-base",
+  "compilerOptions": {
+    "outDir": "./dist"
+  }
+}
+```
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+// Automatically resolves and merges from node_modules
+const config = readTsConfig("./tsconfig.json");
+```
+
+### Multiple Extends
+
+TypeScript 5.0+ supports multiple extends:
+
+```json title="tsconfig.json"
+{
+  "extends": [
+    "@company/tsconfig-base",
+    "@company/tsconfig-strict",
+    "./tsconfig.paths.json"
+  ]
+}
+```
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+// All extends are resolved and merged in order
+const config = readTsConfig("./tsconfig.json");
+```
+
+## Working with Compiler Options
+
+### Extracting Specific Options
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+const result = await findTsConfig();
+const { compilerOptions } = result.config;
+
+// Extract specific options
+const target = compilerOptions?.target;
+const moduleResolution = compilerOptions?.moduleResolution;
+const paths = compilerOptions?.paths;
+
+console.log({ target, moduleResolution, paths });
+```
+
+### Merging Compiler Options
+
+```typescript
+import { findTsConfig, writeTsConfig } from "@visulima/tsconfig";
+
+async function addStrictMode() {
+  const result = await findTsConfig();
+
+  const updatedConfig = {
+    ...result.config,
+    compilerOptions: {
+      ...result.config.compilerOptions,
+      strict: true,
+      noImplicitAny: true,
+      strictNullChecks: true,
+    },
+  };
+
+  await writeTsConfig(updatedConfig);
+}
+```
+
+## Path Mapping Resolution
+
+Access and work with path mappings:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+const result = await findTsConfig();
+const paths = result.config.compilerOptions?.paths;
+
+if (paths) {
+  Object.entries(paths).forEach(([alias, mappings]) => {
+    console.log(`${alias} -> ${mappings.join(", ")}`);
+  });
+}
+```
+
+## Configuration Migration
+
+Migrate configurations between TypeScript versions:
+
+```typescript
+import { findTsConfig, writeTsConfig } from "@visulima/tsconfig";
+
+async function migrateToLatest() {
+  // Read with old version compatibility
+  const result = await findTsConfig();
+
+  // Update to use new features
+  const migratedConfig = {
+    ...result.config,
+    compilerOptions: {
+      ...result.config.compilerOptions,
+      // Add new TypeScript 5.0+ features
+      module: "NodeNext",
+      moduleResolution: "NodeNext",
+    },
+  };
+
+  // Write updated config
+  await writeTsConfig(migratedConfig);
+}
+```
+
+## Validation and Linting
+
+Validate configuration against custom rules:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+async function validateConfig() {
+  const result = await findTsConfig();
+  const { compilerOptions } = result.config;
+
+  const issues = [];
+
+  // Check for recommended options
+  if (!compilerOptions?.strict) {
+    issues.push("strict mode is not enabled");
+  }
+
+  if (!compilerOptions?.skipLibCheck) {
+    issues.push("skipLibCheck is not enabled");
+  }
+
+  if (compilerOptions?.target !== "ES2020") {
+    issues.push(`target is ${compilerOptions?.target}, recommend ES2020`);
+  }
+
+  if (issues.length > 0) {
+    console.warn("Configuration issues:", issues);
+  } else {
+    console.log("Configuration looks good!");
+  }
+}
+```
+
+## Working with Project References
+
+Handle TypeScript project references:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+
+async function loadProjectReferences() {
+  const result = await findTsConfig();
+
+  if (!result.config.references) {
+    return [];
+  }
+
+  const baseDir = dirname(result.path);
+
+  return result.config.references.map((ref) => {
+    const refPath = join(baseDir, ref.path, "tsconfig.json");
+    return {
+      path: refPath,
+      config: JSON.parse(readFileSync(refPath, "utf-8")),
+    };
+  });
+}
+```
+
+## Error Recovery
+
+Implement robust error handling:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+async function safeLoadConfig(directory?: string) {
+  try {
+    return await findTsConfig(directory);
+  } catch (error) {
+    if (error.name === "NotFoundError") {
+      console.warn("No tsconfig found, using defaults");
+      return {
+        path: null,
+        config: {
+          compilerOptions: {
+            target: "ES2020",
+            module: "ESNext",
+          },
+        },
+      };
+    }
+    throw error;
+  }
+}
+```
+
+## Performance Optimization
+
+Optimize for performance in build tools:
+
+```typescript
+import { findTsConfigSync } from "@visulima/tsconfig";
+
+// Use sync version in synchronous contexts
+const cache = new Map();
+
+function getConfig(directory: string) {
+  if (cache.has(directory)) {
+    return cache.get(directory);
+  }
+
+  const result = findTsConfigSync(directory, {
+    cache: true,
+  });
+
+  cache.set(directory, result);
+  return result;
+}
+```
+
+## Integration with Build Tools
+
+### Vite Integration
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import { defineConfig } from "vite";
+
+export default defineConfig(async () => {
+  const tsconfig = await findTsConfig();
+
+  return {
+    resolve: {
+      alias: Object.entries(
+        tsconfig.config.compilerOptions?.paths || {}
+      ).reduce((acc, [key, [value]]) => {
+        acc[key] = value;
+        return acc;
+      }, {}),
+    },
+  };
+});
+```
+
+### Webpack Integration
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import type { Configuration } from "webpack";
+
+async function createWebpackConfig(): Promise<Configuration> {
+  const tsconfig = await findTsConfig();
+
+  return {
+    resolve: {
+      extensions: [".ts", ".tsx", ".js", ".jsx"],
+      alias: tsconfig.config.compilerOptions?.paths,
+    },
+  };
+}
+```
+
+## Next Steps
+
+- Check out [Examples](/examples) for more practical usage patterns
+- Review the [API Reference](/api-reference) for complete documentation
