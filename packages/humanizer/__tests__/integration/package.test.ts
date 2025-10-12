@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
-import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import { execScriptSync } from "../helpers";
