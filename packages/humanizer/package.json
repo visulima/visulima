@@ -122,7 +122,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.4",
         "@types/ms": "^2.1.0",
         "@types/node": "24.5.2",
-        "@visulima/packem": "2.0.0-alpha.20",
+        "@visulima/packem": "2.0.0-alpha.27",
         "@visulima/path": "1.4.0",
         "@vitest/coverage-v8": "^3.2.4",
         "@vitest/ui": "^3.2.4",
