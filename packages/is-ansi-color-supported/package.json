@@ -68,33 +68,33 @@
                 "types": "./dist/is-color-supported.browser.d.mts",
                 "default": "./dist/is-color-supported.browser.mjs"
             },
-            "require": {
-                "types": "./dist/is-color-supported.server.d.cts",
-                "default": "./dist/is-color-supported.server.cjs"
-            },
             "import": {
                 "types": "./dist/is-color-supported.server.d.mts",
                 "default": "./dist/is-color-supported.server.mjs"
+            },
+            "require": {
+                "types": "./dist/is-color-supported.server.d.cts",
+                "default": "./dist/is-color-supported.server.cjs"
             }
         },
         "./browser": {
-            "require": {
-                "types": "./dist/is-color-supported.browser.d.cts",
-                "default": "./dist/is-color-supported.browser.cjs"
-            },
             "import": {
                 "types": "./dist/is-color-supported.browser.d.mts",
                 "default": "./dist/is-color-supported.browser.mjs"
+            },
+            "require": {
+                "types": "./dist/is-color-supported.browser.d.cts",
+                "default": "./dist/is-color-supported.browser.cjs"
             }
         },
         "./edge-light": {
-            "require": {
-                "types": "./dist/is-color-supported.edge-light.d.cts",
-                "default": "./dist/is-color-supported.edge-light.cjs"
-            },
             "import": {
                 "types": "./dist/is-color-supported.edge-light.d.mts",
                 "default": "./dist/is-color-supported.edge-light.mjs"
+            },
+            "require": {
+                "types": "./dist/is-color-supported.edge-light.d.cts",
+                "default": "./dist/is-color-supported.edge-light.cjs"
             }
         },
         "./package.json": "./package.json"
