@@ -1,34 +1,42 @@
-# Utility Functions
+---
+title: Utility Functions
+description: Additional helper functions that extend the standard path module
+---
 
 This page documents additional utility functions available in `@visulima/path/utils`. These functions extend the standard path module with commonly needed operations.
 
 ## Importing Utilities
 
-```javascript
-// ESM
-import { 
-  filename, 
-  normalizeAliases,
-  resolveAlias,
-  reverseResolveAlias,
-  isRelative, 
-  isBinaryPath,
-  toPath,
-  isWindows
-} from '@visulima/path/utils';
-
-// CommonJS
-const { 
-  filename, 
-  normalizeAliases,
-  resolveAlias,
-  reverseResolveAlias,
-  isRelative, 
-  isBinaryPath,
-  toPath,
-  isWindows
-} = require('@visulima/path/utils');
-```
+<Tabs items={['ESM', 'CommonJS']}>
+  <Tab value="ESM">
+    ```typescript
+    import { 
+      filename, 
+      normalizeAliases,
+      resolveAlias,
+      reverseResolveAlias,
+      isRelative, 
+      isBinaryPath,
+      toPath,
+      isWindows
+    } from '@visulima/path/utils';
+    ```
+  </Tab>
+  <Tab value="CommonJS">
+    ```javascript
+    const { 
+      filename, 
+      normalizeAliases,
+      resolveAlias,
+      reverseResolveAlias,
+      isRelative, 
+      isBinaryPath,
+      toPath,
+      isWindows
+    } = require('@visulima/path/utils');
+    ```
+  </Tab>
+</Tabs>
 
 ---
 
@@ -71,10 +79,12 @@ filename('C:\\temp\\');
 // Returns: undefined
 ```
 
+<Callout>
 **Use Cases:**
 - Extracting module names from file paths
 - Generating identifiers from file paths
 - File processing where extension is not needed
+</Callout>
 
 ---
 
@@ -181,11 +191,13 @@ The function checks against a comprehensive list of known binary file extensions
 - Documents: `.pdf`, `.doc`, `.docx`, `.xls`, `.xlsx`
 - And many more...
 
+<Callout>
 **Use Cases:**
 - File upload validation
 - Build tool processing decisions
 - Git LFS configuration
 - Text editor file handling
+</Callout>
 
 ---
 
@@ -515,6 +527,14 @@ files.forEach(file => {
 
 ## See Also
 
-- [API Reference](./api-reference.md) - Core path module functions
-- [Examples](./examples.md) - Real-world usage examples
-- [Getting Started](./getting-started.md) - Basic usage guide
+<Cards>
+  <Card title="API Reference" href="./api-reference">
+    Core path module functions
+  </Card>
+  <Card title="Examples" href="./examples">
+    Real-world usage examples
+  </Card>
+  <Card title="Getting Started" href="./getting-started">
+    Basic usage guide and patterns
+  </Card>
+</Cards>

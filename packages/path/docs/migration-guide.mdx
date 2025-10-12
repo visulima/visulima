@@ -1,10 +1,13 @@
-# Migration Guide
+---
+title: Migration Guide
+description: Step-by-step guide to migrate from Node.js path module to @visulima/path
+---
 
 This guide helps you migrate from Node.js's native `path` module to `@visulima/path`.
 
-## Why Migrate?
-
+<Callout type="info">
 The native Node.js `path` module has platform-dependent behavior that can cause subtle bugs and inconsistencies across different operating systems. `@visulima/path` solves this by providing consistent cross-platform behavior while maintaining API compatibility.
+</Callout>
 
 ## Quick Migration
 
@@ -12,9 +15,28 @@ For most projects, migration is straightforward:
 
 ### Step 1: Install the Package
 
-```bash
-npm install @visulima/path
-```
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/path
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/path
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/path
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @visulima/path
+    ```
+  </Tab>
+</Tabs>
 
 ### Step 2: Update Your Imports
 
@@ -138,7 +160,9 @@ path.join('foo', 'bar');  // 'foo/bar'
 join('foo', 'bar');  // 'foo/bar'
 ```
 
+<Callout type="info">
 **Migration Impact:** Low - Modern Windows supports forward slashes
+</Callout>
 
 ---
 
@@ -160,7 +184,9 @@ normalize('C:\\Users\\John\\Documents');
 // Returns: 'C:/Users/John/Documents'
 ```
 
+<Callout type="info">
 **Migration Impact:** Low - Windows accepts both separators
+</Callout>
 
 ---
 
@@ -184,7 +210,9 @@ posix.join('foo', 'bar');  // 'foo/bar'
 win32.join('foo', 'bar');  // 'foo/bar' (same!)
 ```
 
+<Callout type="warn">
 **Migration Impact:** **BREAKING** if you explicitly need platform-specific behavior
+</Callout>
 
 **Workaround:** Keep Node.js path for explicit platform handling:
 
@@ -442,8 +470,8 @@ This allows you to keep the `@visulima/path` imports while using a different imp
 
 If you encounter migration issues:
 
-1. Check the [API Reference](./api-reference.md) for function compatibility
-2. Review [Examples](./examples.md) for common patterns
+1. Check the [API Reference](./api-reference) for function compatibility
+2. Review [Examples](./examples) for common patterns
 3. Search existing [GitHub Issues](https://github.com/visulima/visulima/issues)
 4. Open a new issue with:
    - Your use case
@@ -469,13 +497,21 @@ If you encounter migration issues:
 
 After successful migration:
 
-- Explore [Utility Functions](./utility-functions.md) for additional features
-- Review [Best Practices](./getting-started.md#best-practices)
+- Explore [Utility Functions](./utility-functions) for additional features
+- Review [Best Practices](./getting-started#best-practices)
 - Consider using path aliases with `normalizeAliases()` and `resolveAlias()`
 - Update documentation to reflect new dependency
 
 ## See Also
 
-- [API Reference](./api-reference.md) - Complete API documentation
-- [Getting Started](./getting-started.md) - Usage guide
-- [Examples](./examples.md) - Real-world code examples
+<Cards>
+  <Card title="API Reference" href="./api-reference">
+    Complete API documentation
+  </Card>
+  <Card title="Getting Started" href="./getting-started">
+    Usage guide and patterns
+  </Card>
+  <Card title="Examples" href="./examples">
+    Real-world code examples
+  </Card>
+</Cards>

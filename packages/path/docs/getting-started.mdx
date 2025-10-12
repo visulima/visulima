@@ -1,4 +1,7 @@
-# Getting Started
+---
+title: Getting Started
+description: Learn the basics of using @visulima/path in your projects
+---
 
 This guide will help you understand the basics of using `@visulima/path` in your projects.
 
@@ -8,23 +11,22 @@ This guide will help you understand the basics of using `@visulima/path` in your
 
 The simplest way to use `@visulima/path` is as a drop-in replacement for Node.js's path module:
 
-```javascript
-// ESM
-import path from '@visulima/path';
-
-// CommonJS
-const path = require('@visulima/path');
-```
-
-Or import individual functions:
-
-```javascript
-// ESM
-import { resolve, join, dirname, basename } from '@visulima/path';
-
-// CommonJS
-const { resolve, join, dirname, basename } = require('@visulima/path');
-```
+<Tabs items={['ESM', 'CommonJS']}>
+  <Tab value="ESM">
+    ```typescript
+    import path from '@visulima/path';
+    // or import individual functions
+    import { resolve, join, dirname, basename } from '@visulima/path';
+    ```
+  </Tab>
+  <Tab value="CommonJS">
+    ```javascript
+    const path = require('@visulima/path');
+    // or import individual functions
+    const { resolve, join, dirname, basename } = require('@visulima/path');
+    ```
+  </Tab>
+</Tabs>
 
 ### Your First Path Operations
 
@@ -136,15 +138,30 @@ console.log(formatted); // Output: /home/user/documents/report.pdf
 
 `@visulima/path` includes additional utilities not available in the standard path module. Import them from the `/utils` subpath:
 
-```javascript
-import { 
-  filename, 
-  isRelative, 
-  isBinaryPath,
-  normalizeAliases,
-  resolveAlias 
-} from '@visulima/path/utils';
-```
+<Tabs items={['ESM', 'CommonJS']}>
+  <Tab value="ESM">
+    ```typescript
+    import { 
+      filename, 
+      isRelative, 
+      isBinaryPath,
+      normalizeAliases,
+      resolveAlias 
+    } from '@visulima/path/utils';
+    ```
+  </Tab>
+  <Tab value="CommonJS">
+    ```javascript
+    const { 
+      filename, 
+      isRelative, 
+      isBinaryPath,
+      normalizeAliases,
+      resolveAlias 
+    } = require('@visulima/path/utils');
+    ```
+  </Tab>
+</Tabs>
 
 ### Extract Filename Without Extension
 
@@ -236,53 +253,75 @@ console.log(posixPath); // Output: C:/Users/John/Documents/file.txt
 
 ## Best Practices
 
-1. **Always use forward slashes in your code**: Let `@visulima/path` handle the normalization.
+<Callout type="info" title="Best Practices">
 
-   ```javascript
-   // Good
-   join('src', 'components', 'Button.tsx')
-   
-   // Avoid (but still works)
-   join('src\\components\\Button.tsx')
-   ```
+**1. Always use forward slashes in your code**
 
-2. **Use `resolve()` for absolute paths**: When you need an absolute path, use `resolve()` rather than manually concatenating with `process.cwd()`.
+Let `@visulima/path` handle the normalization.
 
-   ```javascript
-   // Good
-   const absolutePath = resolve('src', 'index.ts');
-   
-   // Avoid
-   const absolutePath = join(process.cwd(), 'src', 'index.ts');
-   ```
+```javascript
+// Good
+join('src', 'components', 'Button.tsx')
 
-3. **Prefer path operations over string manipulation**: Use path functions instead of string operations.
+// Avoid (but still works)
+join('src\\components\\Button.tsx')
+```
 
-   ```javascript
-   // Good
-   const dir = dirname(filePath);
-   const base = basename(filePath);
-   
-   // Avoid
-   const parts = filePath.split('/');
-   const base = parts[parts.length - 1];
-   ```
+**2. Use `resolve()` for absolute paths**
 
-4. **Use utilities for common tasks**: Take advantage of the utility functions.
+When you need an absolute path, use `resolve()` rather than manually concatenating with `process.cwd()`.
 
-   ```javascript
-   import { isRelative } from '@visulima/path/utils';
-   
-   // Good
-   if (isRelative(inputPath)) { /* ... */ }
-   
-   // Avoid
-   if (inputPath.startsWith('./') || inputPath.startsWith('../')) { /* ... */ }
-   ```
+```javascript
+// Good
+const absolutePath = resolve('src', 'index.ts');
+
+// Avoid
+const absolutePath = join(process.cwd(), 'src', 'index.ts');
+```
+
+**3. Prefer path operations over string manipulation**
+
+Use path functions instead of string operations.
+
+```javascript
+// Good
+const dir = dirname(filePath);
+const base = basename(filePath);
+
+// Avoid
+const parts = filePath.split('/');
+const base = parts[parts.length - 1];
+```
+
+**4. Use utilities for common tasks**
+
+Take advantage of the utility functions.
+
+```javascript
+import { isRelative } from '@visulima/path/utils';
+
+// Good
+if (isRelative(inputPath)) { /* ... */ }
+
+// Avoid
+if (inputPath.startsWith('./') || inputPath.startsWith('../')) { /* ... */ }
+```
+
+</Callout>
 
 ## Next Steps
 
-- Explore the complete [API Reference](./api-reference.md)
-- Learn about all [Utility Functions](./utility-functions.md)
-- See more [Examples](./examples.md)
-- Read the [Migration Guide](./migration-guide.md) if you're coming from Node.js path
+<Cards>
+  <Card title="API Reference" href="./api-reference">
+    Explore the complete API documentation
+  </Card>
+  <Card title="Utility Functions" href="./utility-functions">
+    Learn about additional helper functions
+  </Card>
+  <Card title="Examples" href="./examples">
+    See more real-world examples
+  </Card>
+  <Card title="Migration Guide" href="./migration-guide">
+    Migrate from Node.js path module
+  </Card>
+</Cards>
