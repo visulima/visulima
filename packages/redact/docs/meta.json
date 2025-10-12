@@ -1,0 +1,11 @@
+{
+  "title": "Visulima Redact Documentation",
+  "pages": [
+    "index",
+    "installation",
+    "getting-started",
+    "api",
+    "examples",
+    "advanced"
+  ]
+}

@@ -1,0 +1,100 @@
+---
+title: Installation
+description: Learn how to install and set up Visulima Redact in your project
+---
+
+# Installation
+
+Install Visulima Redact using your preferred package manager.
+
+## Package Managers
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/redact
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/redact
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/redact
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @visulima/redact
+    ```
+  </Tab>
+</Tabs>
+
+## Requirements
+
+Visulima Redact requires Node.js version 18.0.0 or higher.
+
+```json
+{
+  "engines": {
+    "node": ">=18.0.0 <=23.x"
+  }
+}
+```
+
+## TypeScript Support
+
+The package includes built-in TypeScript type definitions. No additional `@types` packages are needed.
+
+```typescript
+import { redact, stringAnonymize, standardRules } from '@visulima/redact';
+import type { Anonymize, RedactOptions, Rules } from '@visulima/redact';
+```
+
+## Module Formats
+
+Visulima Redact supports multiple module formats:
+
+- **ESM (ECMAScript Modules)**: For modern JavaScript projects
+- **CommonJS**: For traditional Node.js projects
+- **Browser**: Optimized for browser environments
+
+The package automatically selects the appropriate format based on your environment.
+
+### ESM Import
+
+```typescript
+import { redact } from '@visulima/redact';
+```
+
+### CommonJS Require
+
+```javascript
+const { redact } = require('@visulima/redact');
+```
+
+## Verify Installation
+
+After installation, verify that everything is working correctly:
+
+```typescript
+import { redact } from '@visulima/redact';
+
+const result = redact({ password: 'secret' }, ['password']);
+console.log(result); // { password: '<PASSWORD>' }
+```
+
+If you see the expected output, you're ready to start using Visulima Redact!
+
+## Next Steps
+
+<Cards>
+  <Card title="Getting Started" href="/docs/getting-started">
+    Learn the basics of using Visulima Redact
+  </Card>
+  <Card title="API Reference" href="/docs/api">
+    Explore the complete API documentation
+  </Card>
+</Cards>
