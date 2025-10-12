@@ -372,7 +372,7 @@
         "ansi-regex": "^6.1.0",
         "conventional-changelog-conventionalcommits": "9.0.0",
         "esbuild": "0.25.5",
-        "eslint": "9.28.0",
+        "eslint": "9.37.0",
         "jiti": "^2.4.2",
         "publint": "^0.3.12",
         "restore-cursor": "^5.1.0",
