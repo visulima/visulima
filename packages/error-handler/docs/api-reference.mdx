@@ -1,16 +1,13 @@
-# API Reference
+---
+title: API Reference
+description: Complete API documentation for all handlers, options, and types
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
 Complete API documentation for `@visulima/error-handler`.
-
-## Table of Contents
-
-- [Handlers](#handlers)
-  - [httpHandler](#httphandler)
-  - [fetchHandler](#fetchhandler)
-  - [cliHandler](#clihandler)
-- [Error Handlers](#error-handlers)
-- [Types](#types)
-- [Utilities](#utilities)
 
 ## Handlers
 
@@ -57,49 +54,78 @@ interface HttpHandlerOptions {
     // Custom error logging callback
     onError?: (error: Error, request: IncomingMessage, response: ServerResponse) => void | Promise<void>;
 }
-
-interface ErrorPageParams {
-    error: Error;
-    request: IncomingMessage;
-    response: ServerResponse;
-    reasonPhrase: string;
-    statusCode: number;
-}
-
-type ErrorHandlers = Array<{
-    regex: RegExp;
-    handler: ErrorHandler;
-}>;
-
-type ErrorHandler = (
-    error: Error,
-    request: IncomingMessage,
-    response: ServerResponse
-) => void | Promise<void>;
 ```
+
+<Accordions>
+  <Accordion title="ErrorPageParams">
+    ```typescript
+    interface ErrorPageParams {
+        error: Error;
+        request: IncomingMessage;
+        response: ServerResponse;
+        reasonPhrase: string; // e.g., "Internal Server Error"
+        statusCode: number;   // e.g., 500
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="ErrorHandlers">
+    ```typescript
+    type ErrorHandlers = Array<{
+        regex: RegExp;
+        handler: ErrorHandler;
+    }>;
+
+    type ErrorHandler = (
+        error: Error,
+        request: IncomingMessage,
+        response: ServerResponse
+    ) => void | Promise<void>;
+    ```
+  </Accordion>
+</Accordions>
 
 #### Example
 
-```typescript
-const handler = await httpHandler(error, {
-    showTrace: process.env.NODE_ENV !== "production",
-    cspNonce: "abc123",
-    onError: async (error, request, response) => {
-        console.error(`Error on ${request.url}:`, error.message);
-    },
-    extraHandlers: [
-        {
-            regex: /application\/yaml/,
-            handler: (error, req, res) => {
-                res.setHeader("Content-Type", "application/yaml");
-                res.end(`error: ${error.message}`);
-            },
-        },
-    ],
-});
+<Tabs items={['Basic', 'With Options', 'Custom Handlers']}>
+  <Tab value="Basic">
+    ```typescript title="basic-handler.ts"
+    const handler = await httpHandler(error, {
+        showTrace: process.env.NODE_ENV !== "production",
+    });
 
-await handler(req, res);
-```
+    await handler(req, res);
+    ```
+  </Tab>
+
+  <Tab value="With Options">
+    ```typescript title="with-options.ts"
+    const handler = await httpHandler(error, {
+        showTrace: process.env.NODE_ENV !== "production",
+        cspNonce: "abc123",
+        onError: async (error, request, response) => {
+            console.error(`Error on ${request.url}:`, error.message);
+        },
+    });
+    ```
+  </Tab>
+
+  <Tab value="Custom Handlers">
+    ```typescript title="custom-handlers.ts"
+    const handler = await httpHandler(error, {
+        extraHandlers: [
+            {
+                regex: /application\/yaml/,
+                handler: (error, req, res) => {
+                    res.setHeader("Content-Type", "application/yaml");
+                    res.end(`error: ${error.message}`);
+                },
+            },
+        ],
+    });
+    ```
+  </Tab>
+</Tabs>
 
 ### fetchHandler
 
@@ -144,28 +170,38 @@ interface FetchHandlerOptions {
     // Custom error logging callback
     onError?: (error: Error, request: Request, response: Response) => void | Promise<void>;
 }
-
-interface FetchErrorPageParams {
-    error: Error;
-    request: Request;
-    reasonPhrase: string;
-    statusCode: number;
-}
-
-type FetchErrorHandlers = Array<{
-    regex: RegExp;
-    handler: FetchErrorHandler;
-}>;
-
-type FetchErrorHandler = (
-    error: Error,
-    request: Request
-) => Response | Promise<Response>;
 ```
+
+<Accordions>
+  <Accordion title="FetchErrorPageParams">
+    ```typescript
+    interface FetchErrorPageParams {
+        error: Error;
+        request: Request;
+        reasonPhrase: string;
+        statusCode: number;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="FetchErrorHandlers">
+    ```typescript
+    type FetchErrorHandlers = Array<{
+        regex: RegExp;
+        handler: FetchErrorHandler;
+    }>;
+
+    type FetchErrorHandler = (
+        error: Error,
+        request: Request
+    ) => Response | Promise<Response>;
+    ```
+  </Accordion>
+</Accordions>
 
 #### Example
 
-```typescript
+```typescript title="fetch-handler.ts"
 const handler = await fetchHandler(error, {
     showTrace: false,
     onError: async (error, request) => {
@@ -234,10 +270,20 @@ interface CliHandlerOptions {
 
 #### Example
 
-```typescript
-try {
-    throw new Error("Configuration error");
-} catch (error) {
+<Tabs items={['Basic', 'With Colors', 'Short Paths']}>
+  <Tab value="Basic">
+    ```typescript title="cli-basic.ts"
+    try {
+        throw new Error("Configuration error");
+    } catch (error) {
+        await cliHandler(error as Error);
+        process.exit(1);
+    }
+    ```
+  </Tab>
+
+  <Tab value="With Colors">
+    ```typescript title="cli-colors.ts"
     await cliHandler(error as Error, {
         displayShortPath: true,
         frameContextLines: 3,
@@ -248,9 +294,18 @@ try {
             },
         },
     });
-    process.exit(1);
-}
-```
+    ```
+  </Tab>
+
+  <Tab value="Short Paths">
+    ```typescript title="cli-short-paths.ts"
+    await cliHandler(error as Error, {
+        displayShortPath: true,
+        frameContextLines: 5,
+    });
+    ```
+  </Tab>
+</Tabs>
 
 ### ansiHandler
 
@@ -273,7 +328,7 @@ function ansiHandler(
 
 #### Example
 
-```typescript
+```typescript title="ansi-handler.ts"
 const errorOutput = await ansiHandler(error, {
     displayShortPath: true,
 });
@@ -353,35 +408,6 @@ const handler = xmlErrorHandler(error, req, res, options);
 ```
 
 ## Types
-
-### ErrorHandlers
-
-```typescript
-type ErrorHandlers = Array<{
-    regex: RegExp;
-    handler: ErrorHandler;
-}>;
-
-type ErrorHandler = (
-    error: Error,
-    request: IncomingMessage,
-    response: ServerResponse
-) => void | Promise<void>;
-```
-
-### FetchErrorHandlers
-
-```typescript
-type FetchErrorHandlers = Array<{
-    regex: RegExp;
-    handler: FetchErrorHandler;
-}>;
-
-type FetchErrorHandler = (
-    error: Error,
-    request: Request
-) => Response | Promise<Response>;
-```
 
 ### HtmlErrorHandlerOptions
 
@@ -492,7 +518,7 @@ function createNegotiatedErrorHandler(
 
 #### Example
 
-```typescript
+```typescript title="negotiated-handler.ts"
 const negotiatedHandler = createNegotiatedErrorHandler(
     [
         {
@@ -519,24 +545,44 @@ app.use(async (err, req, res, next) => {
 
 For convenience, runtime-specific handlers can be imported:
 
-```typescript
-// Deno
-import fetchHandler from "@visulima/error-handler/handler/http/deno";
+<Tabs items={['Deno', 'Bun', 'Cloudflare', 'Edge', 'Hono', 'Node.js']}>
+  <Tab value="Deno">
+    ```typescript
+    import fetchHandler from "@visulima/error-handler/handler/http/deno";
+    ```
+  </Tab>
 
-// Bun
-import fetchHandler from "@visulima/error-handler/handler/http/bun";
+  <Tab value="Bun">
+    ```typescript
+    import fetchHandler from "@visulima/error-handler/handler/http/bun";
+    ```
+  </Tab>
 
-// Cloudflare Workers
-import fetchHandler from "@visulima/error-handler/handler/http/cloudflare";
+  <Tab value="Cloudflare">
+    ```typescript
+    import fetchHandler from "@visulima/error-handler/handler/http/cloudflare";
+    ```
+  </Tab>
 
-// Edge Runtime (Vercel, Netlify, etc.)
-import fetchHandler from "@visulima/error-handler/handler/http/edge";
+  <Tab value="Edge">
+    ```typescript
+    import fetchHandler from "@visulima/error-handler/handler/http/edge";
+    ```
+  </Tab>
 
-// Hono
-import fetchHandler from "@visulima/error-handler/handler/http/hono";
+  <Tab value="Hono">
+    ```typescript
+    import fetchHandler from "@visulima/error-handler/handler/http/hono";
+    ```
+  </Tab>
 
-// Node.js
-import httpHandler from "@visulima/error-handler/handler/http/node";
-```
+  <Tab value="Node.js">
+    ```typescript
+    import httpHandler from "@visulima/error-handler/handler/http/node";
+    ```
+  </Tab>
+</Tabs>
 
-All fetch-based handlers are identical internally and export the same handler.
+<Callout type="info">
+  All fetch-based handlers (Deno, Bun, Cloudflare, Edge, Hono) are identical internally and export the same handler.
+</Callout>

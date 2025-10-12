@@ -1,0 +1,161 @@
+---
+title: Error Handler
+description: Production-ready error handling with automatic content negotiation for Node.js and edge runtimes
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Overview
+
+`@visulima/error-handler` provides production-ready error handling with automatic content negotiation, beautiful error pages, and comprehensive debugging information. It works seamlessly with Express, Fastify, Hono, Cloudflare Workers, Deno, and any framework that uses Node.js HTTP or the Fetch API.
+
+## Key Features
+
+- **Automatic Content Negotiation** - Serves the right error format based on the `Accept` header
+- **Framework Agnostic** - Works with any Node.js HTTP server or Fetch-based runtime
+- **Beautiful Error Pages** - Developer-friendly HTML error pages with stack traces and code frames
+- **Multiple Output Formats** - HTML, JSON, Problem JSON (RFC 7807), JSON:API, XML, JSONP, and plain text
+- **Production Ready** - Configurable trace visibility and custom error pages
+- **TypeScript First** - Full type safety with comprehensive TypeScript definitions
+- **Extensible** - Add custom error handlers for any content type
+- **CSP Support** - Built-in Content Security Policy nonce support
+- **CLI Support** - Beautiful error output for command-line applications
+
+## Quick Navigation
+
+<Cards>
+  <Card title="Getting Started" href="/getting-started">
+    Learn how to install and set up error handling in your project
+  </Card>
+  <Card title="API Reference" href="/api-reference">
+    Complete API documentation for all handlers and options
+  </Card>
+  <Card title="Examples" href="/examples">
+    Real-world usage examples for various frameworks
+  </Card>
+  <Card title="Configuration" href="/configuration">
+    Detailed configuration options and best practices
+  </Card>
+  <Card title="Advanced Usage" href="/advanced-usage">
+    Advanced patterns and techniques
+  </Card>
+</Cards>
+
+## Quick Start
+
+<Tabs items={['Node.js', 'Express', 'Hono', 'Cloudflare']}>
+  <Tab value="Node.js">
+    ```typescript title="server.ts"
+    import { createServer } from "node:http";
+    import httpHandler from "@visulima/error-handler/handler/http/node";
+
+    const server = createServer(async (req, res) => {
+        try {
+            throw new Error("Something went wrong!");
+        } catch (error) {
+            const handler = await httpHandler(error as Error, {
+                showTrace: process.env.NODE_ENV !== "production",
+            });
+            return handler(req, res);
+        }
+    });
+
+    server.listen(3000);
+    ```
+  </Tab>
+
+  <Tab value="Express">
+    ```typescript title="app.ts"
+    import express from "express";
+    import httpHandler from "@visulima/error-handler/handler/http/node";
+
+    const app = express();
+
+    app.use(async (err, req, res, next) => {
+        const handler = await httpHandler(err, {
+            showTrace: process.env.NODE_ENV !== "production",
+        });
+        return handler(req, res);
+    });
+
+    app.listen(3000);
+    ```
+  </Tab>
+
+  <Tab value="Hono">
+    ```typescript title="app.ts"
+    import { Hono } from "hono";
+    import fetchHandler from "@visulima/error-handler/handler/fetch";
+
+    const app = new Hono();
+
+    app.onError(async (error, c) => {
+        const handler = await fetchHandler(error, {
+            showTrace: process.env.NODE_ENV !== "production",
+        });
+        return handler(c.req.raw);
+    });
+
+    serve({ fetch: app.fetch, port: 3000 });
+    ```
+  </Tab>
+
+  <Tab value="Cloudflare">
+    ```typescript title="worker.ts"
+    import fetchHandler from "@visulima/error-handler/handler/http/cloudflare";
+
+    export default {
+        async fetch(request: Request): Promise<Response> {
+            try {
+                throw new Error("Something went wrong!");
+            } catch (error) {
+                const handler = await fetchHandler(error as Error, {
+                    showTrace: false,
+                });
+                return handler(request);
+            }
+        },
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## Content Negotiation
+
+The error handler automatically detects the requested content type and serves the appropriate format:
+
+| Accept Header | Output Format | Description |
+|--------------|---------------|-------------|
+| `text/html` | HTML | Beautiful error page with stack traces |
+| `application/json` | JSON | Simple JSON error response |
+| `application/problem+json` | Problem JSON | RFC 7807 compliant error response |
+| `application/vnd.api+json` | JSON:API | JSON:API error format |
+| `text/plain` | Plain Text | Simple text error message |
+| `application/javascript` | JSONP | JavaScript callback with error |
+| `application/xml` | XML | XML formatted error |
+
+<Callout type="info">
+  The error handler uses content negotiation to automatically select the best format based on the client's `Accept` header.
+</Callout>
+
+## Supported Platforms
+
+- **Node.js** - v20.19 or higher
+- **Deno** - Latest stable
+- **Bun** - Latest stable
+- **Cloudflare Workers** - All versions
+- **Vercel Edge Functions** - All versions
+- **Any Fetch-based runtime**
+
+## Related Packages
+
+- [`@visulima/error`](https://github.com/visulima/visulima/tree/main/packages/error) - Error utilities and solution finders
+- [`@visulima/flare`](https://github.com/visulima/visulima/tree/main/packages/flare) - Full-featured error overlay with inspector
+
+## Getting Help
+
+- Browse the [examples](/examples) for common use cases
+- Check the [API reference](/api-reference) for detailed documentation
+- Visit the [GitHub repository](https://github.com/visulima/visulima/tree/main/packages/error-handler) to report issues
