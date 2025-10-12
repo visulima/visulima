@@ -1,612 +1,279 @@
 {
-    "name": "@visulima/string",
-    "version": "1.5.2",
-    "description": "Functions for manipulating strings.",
-    "keywords": [
-        "visulima",
-        "align",
-        "align-text",
-        "align-text-left",
-        "align-text-center",
-        "align-text-right",
-        "align-text-justify",
-        "align-text-start",
-        "string",
-        "string-manipulation",
-        "unicode",
-        "text-processing",
-        "i18n",
-        "internationalization",
-        "cjk",
-        "east-asian-width",
-        "grapheme-splitter",
-        "ansi-styles",
-        "text-slicing",
-        "text-truncation",
-        "case-conversion",
-        "camelcase",
-        "pascalcase",
-        "snakecase",
-        "kebabcase",
-        "dotcase",
-        "pathcase",
-        "titlecase",
-        "sentencecase",
-        "constantcase",
-        "flatcase",
-        "capitalcase",
-        "nocase",
-        "uppercase",
-        "lowercase",
-        "string-splitting",
-        "typescript",
-        "type-safe",
-        "thai",
-        "romanization",
-        "transliteration",
-        "thai-romanization",
-        "slug",
-        "slugify",
-        "utf8",
-        "utf-8"
-    ],
-    "homepage": "https://visulima.com/packages/string",
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/string"
-    },
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
+        "name": "@visulima/string",
+        "version": "1.5.2",
+        "description": "Functions for manipulating strings.",
+        "keywords": [
+                "visulima",
+                "align",
+                "align-text",
+                "align-text-left",
+                "align-text-center",
+                "align-text-right",
+                "align-text-justify",
+                "align-text-start",
+                "string",
+                "string-manipulation",
+                "unicode",
+                "text-processing",
+                "i18n",
+                "internationalization",
+                "cjk",
+                "east-asian-width",
+                "grapheme-splitter",
+                "ansi-styles",
+                "text-slicing",
+                "text-truncation",
+                "case-conversion",
+                "camelcase",
+                "pascalcase",
+                "snakecase",
+                "kebabcase",
+                "dotcase",
+                "pathcase",
+                "titlecase",
+                "sentencecase",
+                "constantcase",
+                "flatcase",
+                "capitalcase",
+                "nocase",
+                "uppercase",
+                "lowercase",
+                "string-splitting",
+                "typescript",
+                "type-safe",
+                "thai",
+                "romanization",
+                "transliteration",
+                "thai-romanization",
+                "slug",
+                "slugify",
+                "utf8",
+                "utf-8"
+        ],
+        "homepage": "https://visulima.com/packages/string",
+        "bugs": {
+                "url": "https://github.com/visulima/visulima/issues"
         },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
+        "repository": {
+                "type": "git",
+                "url": "git+https://github.com/visulima/visulima.git",
+                "directory": "packages/string"
+        },
+        "funding": [
+                {
+                        "type": "github",
+                        "url": "https://github.com/sponsors/prisis"
+                },
+                {
+                        "type": "consulting",
+                        "url": "https://anolilab.com/support"
+                }
+        ],
+        "license": "MIT",
+        "author": {
+                "name": "Daniel Bannert",
+                "email": "d.bannert@anolilab.de"
+        },
+        "sideEffects": false,
+        "type": "module",
+        "exports": {
+                "./native-string-types": {
+                        "types": "./dist/native-string-types.d.ts"
+                },
+                ".": {
+                        "types": "./dist/index.d.ts",
+                        "default": "./dist/index.js"
+                },
+                "./case": {
+                        "types": "./dist/case/index.d.ts",
+                        "default": "./dist/case/index.js"
+                },
+                "./case/camel-case": {
+                        "types": "./dist/case/camel-case.d.ts",
+                        "default": "./dist/case/camel-case.js"
+                },
+                "./case/capital-case": {
+                        "types": "./dist/case/capital-case.d.ts",
+                        "default": "./dist/case/capital-case.js"
+                },
+                "./case/constant-case": {
+                        "types": "./dist/case/constant-case.d.ts",
+                        "default": "./dist/case/constant-case.js"
+                },
+                "./case/dot-case": {
+                        "types": "./dist/case/dot-case.d.ts",
+                        "default": "./dist/case/dot-case.js"
+                },
+                "./case/flat-case": {
+                        "types": "./dist/case/flat-case.d.ts",
+                        "default": "./dist/case/flat-case.js"
+                },
+                "./case/flip-case": {
+                        "types": "./dist/case/flip-case.d.ts",
+                        "default": "./dist/case/flip-case.js"
+                },
+                "./case/identify-case": {
+                        "types": "./dist/case/identify-case.d.ts",
+                        "default": "./dist/case/identify-case.js"
+                },
+                "./case/kebab-case": {
+                        "types": "./dist/case/kebab-case.d.ts",
+                        "default": "./dist/case/kebab-case.js"
+                },
+                "./case/lower-first": {
+                        "types": "./dist/case/lower-first.d.ts",
+                        "default": "./dist/case/lower-first.js"
+                },
+                "./case/no-case": {
+                        "types": "./dist/case/no-case.d.ts",
+                        "default": "./dist/case/no-case.js"
+                },
+                "./case/pascal-case": {
+                        "types": "./dist/case/pascal-case.d.ts",
+                        "default": "./dist/case/pascal-case.js"
+                },
+                "./align-text": {
+                        "types": "./dist/align-text.d.ts",
+                        "default": "./dist/align-text.js"
+                },
+                "./word-wrap": {
+                        "types": "./dist/word-wrap.d.ts",
+                        "default": "./dist/word-wrap.js"
+                },
+                "./slice": {
+                        "types": "./dist/slice.d.ts",
+                        "default": "./dist/slice.js"
+                },
+                "./slugify": {
+                        "types": "./dist/slugify.d.ts",
+                        "default": "./dist/slugify.js"
+                },
+                "./truncate": {
+                        "types": "./dist/truncate.d.ts",
+                        "default": "./dist/truncate.js"
+                },
+                "./get-string-width": {
+                        "types": "./dist/get-string-width.d.ts",
+                        "default": "./dist/get-string-width.js"
+                },
+                "./get-string-truncated-width": {
+                        "types": "./dist/get-string-truncated-width.d.ts",
+                        "default": "./dist/get-string-truncated-width.js"
+                },
+                "./outdent": {
+                        "types": "./dist/outdent.d.ts",
+                        "default": "./dist/outdent.js"
+                },
+                "./case/pascal-snake-case": {
+                        "types": "./dist/case/pascal-snake-case.d.ts",
+                        "default": "./dist/case/pascal-snake-case.js"
+                },
+                "./case/path-case": {
+                        "types": "./dist/case/path-case.d.ts",
+                        "default": "./dist/case/path-case.js"
+                },
+                "./case/sentence-case": {
+                        "types": "./dist/case/sentence-case.d.ts",
+                        "default": "./dist/case/sentence-case.js"
+                },
+                "./case/snake-case": {
+                        "types": "./dist/case/snake-case.d.ts",
+                        "default": "./dist/case/snake-case.js"
+                },
+                "./case/split-by-case": {
+                        "types": "./dist/case/split-by-case.d.ts",
+                        "default": "./dist/case/split-by-case.js"
+                },
+                "./case/title-case": {
+                        "types": "./dist/case/title-case.d.ts",
+                        "default": "./dist/case/title-case.js"
+                },
+                "./case/train-case": {
+                        "types": "./dist/case/train-case.d.ts",
+                        "default": "./dist/case/train-case.js"
+                },
+                "./case/upper-first": {
+                        "types": "./dist/case/upper-first.d.ts",
+                        "default": "./dist/case/upper-first.js"
+                },
+                "./test/utils": {
+                        "types": "./dist/test/utils.d.ts",
+                        "default": "./dist/test/utils.js"
+                },
+                "./test/vitest": {
+                        "types": "./dist/test/vitest.d.ts",
+                        "default": "./dist/test/vitest.js"
+                },
+                "./utils": {
+                        "types": "./dist/utilities.d.ts",
+                        "default": "./dist/utilities.js"
+                },
+                "./closest-string": {
+                        "types": "./dist/closest-string.d.ts",
+                        "default": "./dist/closest-string.js"
+                },
+                "./compare-similarity": {
+                        "types": "./dist/compare-similarity.d.ts",
+                        "default": "./dist/compare-similarity.js"
+                },
+                "./word-similarity-sort": {
+                        "types": "./dist/word-similarity-sort.d.ts",
+                        "default": "./dist/word-similarity-sort.js"
+                },
+                "./package.json": "./package.json"
+        },
+        "files": [
+                "dist",
+                "README.md",
+                "CHANGELOG.md"
+        ],
+        "scripts": {
+                "build": "pnpm run generate:charmap && packem build --development",
+                "build:prod": "pnpm run generate:charmap && packem build --production",
+                "clean": "rimraf node_modules dist .eslintcache",
+                "dev": "pnpm run build --watch",
+                "generate:charmap": "node ./scripts/generate-charmap.mjs",
+                "lint:attw": "attw --pack",
+                "lint:eslint": "eslint ./",
+                "lint:eslint:fix": "eslint . --fix",
+                "lint:package-json": "publint --strict",
+                "lint:types": "tsc --noEmit",
+                "test": "pnpm run generate:charmap && vitest run --typecheck",
+                "test:coverage": "pnpm run generate:charmap && vitest run --coverage",
+                "test:ui": "pnpm run generate:charmap && vitest --ui --coverage.enabled=true",
+                "test:watch": "pnpm run generate:charmap && vitest"
+        },
+        "devDependencies": {
+                "@anolilab/eslint-config": "16.3.3",
+                "@anolilab/semantic-release-pnpm": "2.0.4",
+                "@anolilab/semantic-release-preset": "11.0.4",
+                "@arethetypeswrong/cli": "0.18.2",
+                "@secretlint/secretlint-rule-preset-recommend": "11.2.5",
+                "@total-typescript/ts-reset": "0.6.1",
+                "@types/node": "24.7.2",
+                "@visulima/colorize": "1.4.23",
+                "@visulima/packem": "2.0.0-alpha.29",
+                "@vitest/coverage-v8": "3.2.4",
+                "@vitest/ui": "3.2.4",
+                "conventional-changelog-conventionalcommits": "9.1.0",
+                "emoji-regex-xs": "2.0.1",
+                "esbuild": "0.25.10",
+                "eslint": "9.37.0",
+                "eslint-plugin-you-dont-need-lodash-underscore": "6.14.0",
+                "fastest-levenshtein": "1.0.16",
+                "get-east-asian-width": "1.4.0",
+                "publint": "^0.3.14",
+                "rimraf": "6.0.1",
+                "secretlint": "11.2.5",
+                "semantic-release": "24.2.9",
+                "typescript": "5.9.3",
+                "vitest": "3.2.4"
+        },
+        "engines": {
+                "node": ">=20.19 <=24.x"
+        },
+        "publishConfig": {
+                "access": "public",
+                "provenance": true
         }
-    ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "sideEffects": false,
-    "type": "module",
-    "exports": {
-        "./native-string-types": {
-            "require": {
-                "types": "./dist/native-string-types.d.cts"
-            },
-            "import": {
-                "types": "./dist/native-string-types.d.mts"
-            }
-        },
-        ".": {
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            },
-            "import": {
-                "types": "./dist/index.d.mts",
-                "default": "./dist/index.mjs"
-            }
-        },
-        "./case": {
-            "require": {
-                "types": "./dist/case/index.d.cts",
-                "default": "./dist/case/index.cjs"
-            },
-            "import": {
-                "types": "./dist/case/index.d.mts",
-                "default": "./dist/case/index.mjs"
-            }
-        },
-        "./case/camel-case": {
-            "require": {
-                "types": "./dist/case/camel-case.d.cts",
-                "default": "./dist/case/camel-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/camel-case.d.mts",
-                "default": "./dist/case/camel-case.mjs"
-            }
-        },
-        "./case/capital-case": {
-            "require": {
-                "types": "./dist/case/capital-case.d.cts",
-                "default": "./dist/case/capital-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/capital-case.d.mts",
-                "default": "./dist/case/capital-case.mjs"
-            }
-        },
-        "./case/constant-case": {
-            "require": {
-                "types": "./dist/case/constant-case.d.cts",
-                "default": "./dist/case/constant-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/constant-case.d.mts",
-                "default": "./dist/case/constant-case.mjs"
-            }
-        },
-        "./case/dot-case": {
-            "require": {
-                "types": "./dist/case/dot-case.d.cts",
-                "default": "./dist/case/dot-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/dot-case.d.mts",
-                "default": "./dist/case/dot-case.mjs"
-            }
-        },
-        "./case/flat-case": {
-            "require": {
-                "types": "./dist/case/flat-case.d.cts",
-                "default": "./dist/case/flat-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/flat-case.d.mts",
-                "default": "./dist/case/flat-case.mjs"
-            }
-        },
-        "./case/flip-case": {
-            "require": {
-                "types": "./dist/case/flip-case.d.cts",
-                "default": "./dist/case/flip-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/flip-case.d.mts",
-                "default": "./dist/case/flip-case.mjs"
-            }
-        },
-        "./case/identify-case": {
-            "require": {
-                "types": "./dist/case/identify-case.d.cts",
-                "default": "./dist/case/identify-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/identify-case.d.mts",
-                "default": "./dist/case/identify-case.mjs"
-            }
-        },
-        "./case/kebab-case": {
-            "require": {
-                "types": "./dist/case/kebab-case.d.cts",
-                "default": "./dist/case/kebab-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/kebab-case.d.mts",
-                "default": "./dist/case/kebab-case.mjs"
-            }
-        },
-        "./case/lower-first": {
-            "require": {
-                "types": "./dist/case/lower-first.d.cts",
-                "default": "./dist/case/lower-first.cjs"
-            },
-            "import": {
-                "types": "./dist/case/lower-first.d.mts",
-                "default": "./dist/case/lower-first.mjs"
-            }
-        },
-        "./case/no-case": {
-            "require": {
-                "types": "./dist/case/no-case.d.cts",
-                "default": "./dist/case/no-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/no-case.d.mts",
-                "default": "./dist/case/no-case.mjs"
-            }
-        },
-        "./case/pascal-case": {
-            "require": {
-                "types": "./dist/case/pascal-case.d.cts",
-                "default": "./dist/case/pascal-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/pascal-case.d.mts",
-                "default": "./dist/case/pascal-case.mjs"
-            }
-        },
-        "./align-text": {
-            "require": {
-                "types": "./dist/align-text.d.cts",
-                "default": "./dist/align-text.cjs"
-            },
-            "import": {
-                "types": "./dist/align-text.d.mts",
-                "default": "./dist/align-text.mjs"
-            }
-        },
-        "./word-wrap": {
-            "require": {
-                "types": "./dist/word-wrap.d.cts",
-                "default": "./dist/word-wrap.cjs"
-            },
-            "import": {
-                "types": "./dist/word-wrap.d.mts",
-                "default": "./dist/word-wrap.mjs"
-            }
-        },
-        "./slice": {
-            "require": {
-                "types": "./dist/slice.d.cts",
-                "default": "./dist/slice.cjs"
-            },
-            "import": {
-                "types": "./dist/slice.d.mts",
-                "default": "./dist/slice.mjs"
-            }
-        },
-        "./slugify": {
-            "require": {
-                "types": "./dist/slugify.d.cts",
-                "default": "./dist/slugify.cjs"
-            },
-            "import": {
-                "types": "./dist/slugify.d.mts",
-                "default": "./dist/slugify.mjs"
-            }
-        },
-        "./truncate": {
-            "require": {
-                "types": "./dist/truncate.d.cts",
-                "default": "./dist/truncate.cjs"
-            },
-            "import": {
-                "types": "./dist/truncate.d.mts",
-                "default": "./dist/truncate.mjs"
-            }
-        },
-        "./get-string-width": {
-            "require": {
-                "types": "./dist/get-string-width.d.cts",
-                "default": "./dist/get-string-width.cjs"
-            },
-            "import": {
-                "types": "./dist/get-string-width.d.mts",
-                "default": "./dist/get-string-width.mjs"
-            }
-        },
-        "./get-string-truncated-width": {
-            "require": {
-                "types": "./dist/get-string-truncated-width.d.cts",
-                "default": "./dist/get-string-truncated-width.cjs"
-            },
-            "import": {
-                "types": "./dist/get-string-truncated-width.d.mts",
-                "default": "./dist/get-string-truncated-width.mjs"
-            }
-        },
-        "./outdent": {
-            "require": {
-                "types": "./dist/outdent.d.cts",
-                "default": "./dist/outdent.cjs"
-            },
-            "import": {
-                "types": "./dist/outdent.d.mts",
-                "default": "./dist/outdent.mjs"
-            }
-        },
-        "./case/pascal-snake-case": {
-            "require": {
-                "types": "./dist/case/pascal-snake-case.d.cts",
-                "default": "./dist/case/pascal-snake-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/pascal-snake-case.d.mts",
-                "default": "./dist/case/pascal-snake-case.mjs"
-            }
-        },
-        "./case/path-case": {
-            "require": {
-                "types": "./dist/case/path-case.d.cts",
-                "default": "./dist/case/path-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/path-case.d.mts",
-                "default": "./dist/case/path-case.mjs"
-            }
-        },
-        "./case/sentence-case": {
-            "require": {
-                "types": "./dist/case/sentence-case.d.cts",
-                "default": "./dist/case/sentence-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/sentence-case.d.mts",
-                "default": "./dist/case/sentence-case.mjs"
-            }
-        },
-        "./case/snake-case": {
-            "require": {
-                "types": "./dist/case/snake-case.d.cts",
-                "default": "./dist/case/snake-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/snake-case.d.mts",
-                "default": "./dist/case/snake-case.mjs"
-            }
-        },
-        "./case/split-by-case": {
-            "require": {
-                "types": "./dist/case/split-by-case.d.cts",
-                "default": "./dist/case/split-by-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/split-by-case.d.mts",
-                "default": "./dist/case/split-by-case.mjs"
-            }
-        },
-        "./case/title-case": {
-            "require": {
-                "types": "./dist/case/title-case.d.cts",
-                "default": "./dist/case/title-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/title-case.d.mts",
-                "default": "./dist/case/title-case.mjs"
-            }
-        },
-        "./case/train-case": {
-            "require": {
-                "types": "./dist/case/train-case.d.cts",
-                "default": "./dist/case/train-case.cjs"
-            },
-            "import": {
-                "types": "./dist/case/train-case.d.mts",
-                "default": "./dist/case/train-case.mjs"
-            }
-        },
-        "./case/upper-first": {
-            "require": {
-                "types": "./dist/case/upper-first.d.cts",
-                "default": "./dist/case/upper-first.cjs"
-            },
-            "import": {
-                "types": "./dist/case/upper-first.d.mts",
-                "default": "./dist/case/upper-first.mjs"
-            }
-        },
-        "./test/utils": {
-            "require": {
-                "types": "./dist/test/utils.d.cts",
-                "default": "./dist/test/utils.cjs"
-            },
-            "import": {
-                "types": "./dist/test/utils.d.mts",
-                "default": "./dist/test/utils.mjs"
-            }
-        },
-        "./test/vitest": {
-            "require": {
-                "types": "./dist/test/vitest.d.cts",
-                "default": "./dist/test/vitest.cjs"
-            },
-            "import": {
-                "types": "./dist/test/vitest.d.mts",
-                "default": "./dist/test/vitest.mjs"
-            }
-        },
-        "./utils": {
-            "require": {
-                "types": "./dist/utilities.d.cts",
-                "default": "./dist/utilities.cjs"
-            },
-            "import": {
-                "types": "./dist/utilities.d.mts",
-                "default": "./dist/utilities.mjs"
-            }
-        },
-        "./closest-string": {
-            "require": {
-                "types": "./dist/closest-string.d.cts",
-                "default": "./dist/closest-string.cjs"
-            },
-            "import": {
-                "types": "./dist/closest-string.d.mts",
-                "default": "./dist/closest-string.mjs"
-            }
-        },
-        "./compare-similarity": {
-            "require": {
-                "types": "./dist/compare-similarity.d.cts",
-                "default": "./dist/compare-similarity.cjs"
-            },
-            "import": {
-                "types": "./dist/compare-similarity.d.mts",
-                "default": "./dist/compare-similarity.mjs"
-            }
-        },
-        "./word-similarity-sort": {
-            "require": {
-                "types": "./dist/word-similarity-sort.d.cts",
-                "default": "./dist/word-similarity-sort.cjs"
-            },
-            "import": {
-                "types": "./dist/word-similarity-sort.d.mts",
-                "default": "./dist/word-similarity-sort.mjs"
-            }
-        },
-        "./package.json": "./package.json"
-    },
-    "main": "dist/index.cjs",
-    "module": "dist/index.mjs",
-    "browser": "./dist/index.mjs",
-    "types": "dist/index.d.ts",
-    "typesVersions": {
-        ">=5.0": {
-            "native-string-types": [
-                "./dist/native-string-types.d.ts"
-            ],
-            ".": [
-                "./dist/index.d.ts"
-            ],
-            "case": [
-                "./dist/case/index.d.ts"
-            ],
-            "case/camel-case": [
-                "./dist/case/camel-case.d.ts"
-            ],
-            "case/capital-case": [
-                "./dist/case/capital-case.d.ts"
-            ],
-            "case/constant-case": [
-                "./dist/case/constant-case.d.ts"
-            ],
-            "case/dot-case": [
-                "./dist/case/dot-case.d.ts"
-            ],
-            "case/flat-case": [
-                "./dist/case/flat-case.d.ts"
-            ],
-            "case/flip-case": [
-                "./dist/case/flip-case.d.ts"
-            ],
-            "case/identify-case": [
-                "./dist/case/identify-case.d.ts"
-            ],
-            "case/kebab-case": [
-                "./dist/case/kebab-case.d.ts"
-            ],
-            "case/lower-first": [
-                "./dist/case/lower-first.d.ts"
-            ],
-            "case/no-case": [
-                "./dist/case/no-case.d.ts"
-            ],
-            "case/pascal-case": [
-                "./dist/case/pascal-case.d.ts"
-            ],
-            "align-text": [
-                "./dist/align-text.d.ts"
-            ],
-            "word-wrap": [
-                "./dist/word-wrap.d.ts"
-            ],
-            "slice": [
-                "./dist/slice.d.ts"
-            ],
-            "slugify": [
-                "./dist/slugify.d.ts"
-            ],
-            "truncate": [
-                "./dist/truncate.d.ts"
-            ],
-            "get-string-width": [
-                "./dist/get-string-width.d.ts"
-            ],
-            "get-string-truncated-width": [
-                "./dist/get-string-truncated-width.d.ts"
-            ],
-            "outdent": [
-                "./dist/outdent.d.ts"
-            ],
-            "case/pascal-snake-case": [
-                "./dist/case/pascal-snake-case.d.ts"
-            ],
-            "case/path-case": [
-                "./dist/case/path-case.d.ts"
-            ],
-            "case/sentence-case": [
-                "./dist/case/sentence-case.d.ts"
-            ],
-            "case/snake-case": [
-                "./dist/case/snake-case.d.ts"
-            ],
-            "case/split-by-case": [
-                "./dist/case/split-by-case.d.ts"
-            ],
-            "case/title-case": [
-                "./dist/case/title-case.d.ts"
-            ],
-            "case/train-case": [
-                "./dist/case/train-case.d.ts"
-            ],
-            "case/upper-first": [
-                "./dist/case/upper-first.d.ts"
-            ],
-            "test/utils": [
-                "./dist/test/utils.d.ts"
-            ],
-            "test/vitest": [
-                "./dist/test/vitest.d.ts"
-            ],
-            "utils": [
-                "./dist/utilities.d.ts"
-            ],
-            "closest-string": [
-                "./dist/closest-string.d.ts"
-            ],
-            "compare-similarity": [
-                "./dist/compare-similarity.d.ts"
-            ],
-            "word-similarity-sort": [
-                "./dist/word-similarity-sort.d.ts"
-            ]
-        }
-    },
-    "files": [
-        "dist",
-        "README.md",
-        "CHANGELOG.md"
-    ],
-    "scripts": {
-        "build": "pnpm run generate:charmap && packem build --development",
-        "build:prod": "pnpm run generate:charmap && packem build --production",
-        "clean": "rimraf node_modules dist .eslintcache",
-        "dev": "pnpm run build --watch",
-        "generate:charmap": "node ./scripts/generate-charmap.mjs",
-        "lint:attw": "attw --pack",
-        "lint:eslint": "eslint ./",
-        "lint:eslint:fix": "eslint . --fix",
-        "lint:package-json": "publint --strict",
-        "lint:types": "tsc --noEmit",
-        "test": "pnpm run generate:charmap && vitest run --typecheck",
-        "test:coverage": "pnpm run generate:charmap && vitest run --coverage",
-        "test:ui": "pnpm run generate:charmap && vitest --ui --coverage.enabled=true",
-        "test:watch": "pnpm run generate:charmap && vitest"
-    },
-    "devDependencies": {
-        "@anolilab/eslint-config": "16.2.10",
-        "@anolilab/semantic-release-pnpm": "1.1.11",
-        "@anolilab/semantic-release-preset": "10.0.5",
-        "@arethetypeswrong/cli": "0.18.1",
-        "@babel/core": "7.27.4",
-        "@secretlint/secretlint-rule-preset-recommend": "9.3.3",
-        "@total-typescript/ts-reset": "0.6.1",
-        "@types/lodash": "4.17.17",
-        "@types/node": "22.15.29",
-        "@visulima/colorize": "1.4.23",
-        "@visulima/packem": "1.19.4",
-        "@vitest/coverage-v8": "3.2.1",
-        "@vitest/ui": "3.2.1",
-        "conventional-changelog-conventionalcommits": "9.0.0",
-        "emoji-regex-xs": "2.0.1",
-        "esbuild": "0.25.5",
-        "eslint": "9.28.0",
-        "eslint-plugin-you-dont-need-lodash-underscore": "6.14.0",
-        "fastest-levenshtein": "1.0.16",
-        "get-east-asian-width": "1.3.0",
-        "publint": "^0.3.12",
-        "rimraf": "6.0.1",
-        "secretlint": "9.3.3",
-        "semantic-release": "24.2.5",
-        "typescript": "5.8.3",
-        "vitest": "3.2.1"
-    },
-    "engines": {
-        "node": ">=18.0.0 <=23.x"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    }
 }
