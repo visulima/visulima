@@ -5,7 +5,7 @@ description: How to install and set up @visulima/ansi in your project
 
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { Callout } from 'fumadocs-ui/components/callout';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
 
 ## Requirements
 
@@ -18,21 +18,21 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 ## Installation
 
 <Tabs items={['npm', 'yarn', 'pnpm']}>
-<Tab value="npm">
+  <Tab value="npm">
 ```bash
 npm install @visulima/ansi
 ```
-</Tab>
-<Tab value="yarn">
+  </Tab>
+  <Tab value="yarn">
 ```bash
 yarn add @visulima/ansi
 ```
-</Tab>
-<Tab value="pnpm">
+  </Tab>
+  <Tab value="pnpm">
 ```bash
 pnpm add @visulima/ansi
 ```
-</Tab>
+  </Tab>
 </Tabs>
 
 ## Importing
@@ -42,18 +42,18 @@ pnpm add @visulima/ansi
 ### ES Modules
 
 <Tabs items={['Main Package', 'Specific Modules']}>
-<Tab value="Main Package">
+  <Tab value="Main Package">
 ```typescript title="index.ts"
 import { cursorUp, cursorLeft, eraseLine } from "@visulima/ansi";
 ```
-</Tab>
-<Tab value="Specific Modules">
+  </Tab>
+  <Tab value="Specific Modules">
 ```typescript title="index.ts"
 import { cursorUp, cursorTo } from "@visulima/ansi/cursor";
 import { eraseLine, eraseScreen } from "@visulima/ansi/erase";
 import { hyperlink } from "@visulima/ansi/hyperlink";
 ```
-</Tab>
+  </Tab>
 </Tabs>
 
 ### CommonJS
@@ -107,8 +107,6 @@ process.stdout.write(setCursorStyle(CursorStyle.BlinkingUnderline));
 
 <Steps>
 
-<Step>
-
 ### Create test file
 
 ```javascript title="test.js"
@@ -120,25 +118,15 @@ process.stdout.write(eraseLine);
 console.log("Installation successful!");
 ```
 
-</Step>
-
-<Step>
-
 ### Run the test
 
 ```bash
 node test.js
 ```
 
-</Step>
-
-<Step>
-
 ### Expected output
 
 You should see "Installation successful!" appear on the line where "Testing @visulima/ansi..." was printed.
-
-</Step>
 
 </Steps>
 

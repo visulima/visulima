@@ -7,6 +7,14 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 Practical, real-world examples of using `@visulima/ansi` in your applications.
 
+## Quick Links
+
+- [Loading Spinner](#loading-spinner)
+- [Progress Bar](#progress-bar)
+- [Interactive Menu](#interactive-menu)
+- [Terminal Dashboard](#terminal-dashboard)
+- [Status Messages](#status-messages)
+
 ## Loading Spinner
 
 Create an animated loading spinner:

@@ -4,8 +4,8 @@ description: Learn the basics of using @visulima/ansi for terminal control
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
 
 ## Basic Concepts
 
@@ -272,21 +272,19 @@ process.stdout.write(eraseLine);
 ## Troubleshooting
 
 <Accordions>
-
-<Accordion title="Nothing appears to happen">
-Make sure you're using `process.stdout.write()` for ANSI sequences.
-</Accordion>
-
-<Accordion title="Cursor stays hidden">
-Always show the cursor before your program exits using `cursorShow` or `restoreCursor()`.
-</Accordion>
-
-<Accordion title="Content in wrong position">
-Remember that `cursorTo(x, y)` uses 0-indexed coordinates.
-</Accordion>
-
-<Accordion title="Works in one terminal but not another">
-Some features are terminal-specific (like iTerm2 images). Always test across different terminals.
-</Accordion>
-
+  <Accordion title="Nothing appears to happen">
+    Make sure you're using `process.stdout.write()` for ANSI sequences.
+  </Accordion>
+  
+  <Accordion title="Cursor stays hidden">
+    Always show the cursor before your program exits using `cursorShow` or `restoreCursor()`.
+  </Accordion>
+  
+  <Accordion title="Content in wrong position">
+    Remember that `cursorTo(x, y)` uses 0-indexed coordinates.
+  </Accordion>
+  
+  <Accordion title="Works in one terminal but not another">
+    Some features are terminal-specific (like iTerm2 images). Always test across different terminals.
+  </Accordion>
 </Accordions>
