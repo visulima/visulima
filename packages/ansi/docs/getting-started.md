@@ -3,9 +3,13 @@ title: Getting Started
 description: Learn the basics of using @visulima/ansi for terminal control
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
 ## Basic Concepts
 
-<Callout type="info">
+<Callout>
 ANSI escape codes are special character sequences that control terminal behavior. The `@visulima/ansi` library provides JavaScript functions that generate these sequences for you.
 </Callout>
 
@@ -240,7 +244,7 @@ console.log(green("Success:"), bold("Operation completed!"));
 
 ## Best Practices
 
-<Callout type="info">
+<Callout>
 Follow these guidelines for reliable terminal applications.
 </Callout>
 
@@ -267,6 +271,8 @@ process.stdout.write(eraseLine);
 
 ## Troubleshooting
 
+<Accordions>
+
 <Accordion title="Nothing appears to happen">
 Make sure you're using `process.stdout.write()` for ANSI sequences.
 </Accordion>
@@ -282,3 +288,5 @@ Remember that `cursorTo(x, y)` uses 0-indexed coordinates.
 <Accordion title="Works in one terminal but not another">
 Some features are terminal-specific (like iTerm2 images). Always test across different terminals.
 </Accordion>
+
+</Accordions>

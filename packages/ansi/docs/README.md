@@ -4,16 +4,17 @@ description: Comprehensive ANSI escape codes library for terminal control
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
 
 ## Overview
 
 `@visulima/ansi` is a comprehensive library that provides ANSI escape codes for terminal manipulation. It enables you to control cursor positioning, screen clearing, text formatting, hyperlinks, images, and much more in your terminal applications.
 
 <Cards>
-  <Card title="Installation" href="/installation" />
-  <Card title="Getting Started" href="/getting-started" />
-  <Card title="Examples" href="/examples" />
-  <Card title="API Reference" href="/api-reference" />
+<Card title="Installation" href="/installation" />
+<Card title="Getting Started" href="/getting-started" />
+<Card title="Examples" href="/examples" />
+<Card title="API Reference" href="/api-reference" />
 </Cards>
 
 ## Key Features
@@ -42,7 +43,7 @@ process.stdout.write(eraseLine);
 
 ## Platform Support
 
-<Callout type="info">
+<Callout>
 This library is designed for Node.js terminal applications. ANSI escape codes are not applicable in browser environments.
 </Callout>
 
@@ -53,19 +54,19 @@ Some advanced features (like iTerm2 image display or specific xterm extensions) 
 ## Related Packages
 
 <Cards>
-  <Card 
-    title="@visulima/colorize" 
-    href="https://github.com/visulima/visulima/tree/main/packages/colorize"
-    description="Terminal color styling"
-  />
-  <Card 
-    title="@visulima/pail" 
-    href="https://github.com/visulima/visulima/tree/main/packages/pail"
-    description="Beautiful logging for Node.js"
-  />
-  <Card 
-    title="@visulima/boxen" 
-    href="https://github.com/visulima/visulima/tree/main/packages/boxen"
-    description="Create boxes in the terminal"
-  />
+<Card 
+  title="@visulima/colorize" 
+  href="https://github.com/visulima/visulima/tree/main/packages/colorize"
+  description="Terminal color styling"
+/>
+<Card 
+  title="@visulima/pail" 
+  href="https://github.com/visulima/visulima/tree/main/packages/pail"
+  description="Beautiful logging for Node.js"
+/>
+<Card 
+  title="@visulima/boxen" 
+  href="https://github.com/visulima/visulima/tree/main/packages/boxen"
+  description="Create boxes in the terminal"
+/>
 </Cards>

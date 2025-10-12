@@ -3,6 +3,8 @@ title: Examples
 description: Practical examples and real-world use cases for @visulima/ansi
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 Practical, real-world examples of using `@visulima/ansi` in your applications.
 
 ## Loading Spinner
@@ -99,7 +101,7 @@ await processItems(new Array(50).fill(null));
 
 Create a keyboard-navigable menu:
 
-<Callout type="info">
+<Callout>
 This example requires user input handling with the `readline` module.
 </Callout>
 

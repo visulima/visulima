@@ -3,20 +3,15 @@ title: API Reference
 description: Complete reference for all functions and constants in @visulima/ansi
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 ## Cursor Control
 
-<Callout type="info">
+<Callout>
 Module: `@visulima/ansi/cursor`
 </Callout>
 
 ### cursorTo()
-
-<TypeTable 
-  type={{
-    x: { type: 'number', description: 'Column position (0-indexed)' },
-    y: { type: 'number | undefined', description: 'Row position (0-indexed, optional)' }
-  }}
-/>
 
 Moves the cursor to specific coordinates (0-indexed).
 
@@ -562,7 +557,7 @@ scrollDown(count?: number): string
 
 ## Hyperlinks
 
-<Callout type="info">
+<Callout>
 Module: `@visulima/ansi/hyperlink`
 </Callout>
 
@@ -587,7 +582,7 @@ console.log(`Visit ${link} for more info`);
 
 ## Images
 
-<Callout type="info">
+<Callout>
 Module: `@visulima/ansi/image`
 </Callout>
 
@@ -627,7 +622,7 @@ process.stdout.write(sequence);
 
 ## Strip ANSI Codes
 
-<Callout type="info">
+<Callout>
 Module: `@visulima/ansi/strip`
 </Callout>
 
@@ -1134,7 +1129,7 @@ process.stdout.write(beep);
 
 ## Best Practices
 
-<Callout type="info">
+<Callout>
 Follow these guidelines for reliable terminal applications.
 </Callout>
 

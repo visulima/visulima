@@ -3,11 +3,14 @@ title: Advanced Usage
 description: Advanced techniques and patterns for complex terminal applications
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
 ## Performance Optimization
 
 ### Batching Output
 
-<Callout type="info">
+<Callout>
 Batch multiple ANSI sequences into a single write for better performance.
 </Callout>
 
@@ -157,7 +160,7 @@ if (termType === "iterm") {
 
 ## Alternative Screen Buffer
 
-<Callout type="info">
+<Callout>
 Use the alternative screen buffer for full-screen applications. It preserves the user's terminal content.
 </Callout>
 
@@ -523,7 +526,7 @@ sendSequence(cursorTo(0, 0));
 
 ### Graceful Degradation
 
-<Callout type="info">
+<Callout>
 Always handle errors gracefully and restore terminal state in cleanup handlers.
 </Callout>
 
@@ -808,7 +811,7 @@ describe("Responsive renderer", () => {
 
 ## Best Practices Summary
 
-<Callout type="info">
+<Callout>
 Follow these advanced patterns for robust terminal applications.
 </Callout>
 
@@ -823,6 +826,6 @@ Follow these advanced patterns for robust terminal applications.
 9. **Mock for testing** - Ensure reliability
 
 <Cards>
-  <Card title="API Reference" href="/api-reference" description="Complete API documentation" />
-  <Card title="Examples" href="/examples" description="Practical implementations" />
+<Card title="API Reference" href="/api-reference" description="Complete API documentation" />
+<Card title="Examples" href="/examples" description="Practical implementations" />
 </Cards>

@@ -3,33 +3,36 @@ title: Installation
 description: How to install and set up @visulima/ansi in your project
 ---
 
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
 ## Requirements
 
-<Callout type="info">
-- **Node.js**: Version 20.18 or higher (up to 24.x)
-- **Package Manager**: npm, yarn, or pnpm
+<Callout>
+**Requirements:**
+- Node.js: Version 20.18 or higher (up to 24.x)
+- Package Manager: npm, yarn, or pnpm
 </Callout>
 
 ## Installation
 
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-
 <Tabs items={['npm', 'yarn', 'pnpm']}>
-  <Tab value="npm">
-    ```bash
-    npm install @visulima/ansi
-    ```
-  </Tab>
-  <Tab value="yarn">
-    ```bash
-    yarn add @visulima/ansi
-    ```
-  </Tab>
-  <Tab value="pnpm">
-    ```bash
-    pnpm add @visulima/ansi
-    ```
-  </Tab>
+<Tab value="npm">
+```bash
+npm install @visulima/ansi
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add @visulima/ansi
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add @visulima/ansi
+```
+</Tab>
 </Tabs>
 
 ## Importing
@@ -39,18 +42,18 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 ### ES Modules
 
 <Tabs items={['Main Package', 'Specific Modules']}>
-  <Tab value="Main Package">
-    ```typescript title="index.ts"
-    import { cursorUp, cursorLeft, eraseLine } from "@visulima/ansi";
-    ```
-  </Tab>
-  <Tab value="Specific Modules">
-    ```typescript title="index.ts"
-    import { cursorUp, cursorTo } from "@visulima/ansi/cursor";
-    import { eraseLine, eraseScreen } from "@visulima/ansi/erase";
-    import { hyperlink } from "@visulima/ansi/hyperlink";
-    ```
-  </Tab>
+<Tab value="Main Package">
+```typescript title="index.ts"
+import { cursorUp, cursorLeft, eraseLine } from "@visulima/ansi";
+```
+</Tab>
+<Tab value="Specific Modules">
+```typescript title="index.ts"
+import { cursorUp, cursorTo } from "@visulima/ansi/cursor";
+import { eraseLine, eraseScreen } from "@visulima/ansi/erase";
+import { hyperlink } from "@visulima/ansi/hyperlink";
+```
+</Tab>
 </Tabs>
 
 ### CommonJS
@@ -89,7 +92,7 @@ The package provides the following sub-modules for more granular imports:
 
 ## TypeScript Support
 
-<Callout type="info">
+<Callout>
 Full TypeScript type definitions are included. No additional `@types` packages needed.
 </Callout>
 
@@ -104,6 +107,8 @@ process.stdout.write(setCursorStyle(CursorStyle.BlinkingUnderline));
 
 <Steps>
 
+<Step>
+
 ### Create test file
 
 ```javascript title="test.js"
@@ -115,15 +120,25 @@ process.stdout.write(eraseLine);
 console.log("Installation successful!");
 ```
 
+</Step>
+
+<Step>
+
 ### Run the test
 
 ```bash
 node test.js
 ```
 
+</Step>
+
+<Step>
+
 ### Expected output
 
 You should see "Installation successful!" appear on the line where "Testing @visulima/ansi..." was printed.
+
+</Step>
 
 </Steps>
 
