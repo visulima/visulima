@@ -3,10 +3,6 @@ title: Error Handler
 description: Production-ready error handling with automatic content negotiation for Node.js and edge runtimes
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { Card, Cards } from 'fumadocs-ui/components/card';
-
 ## Overview
 
 `@visulima/error-handler` provides production-ready error handling with automatic content negotiation, beautiful error pages, and comprehensive debugging information. It works seamlessly with Express, Fastify, Hono, Cloudflare Workers, Deno, and any framework that uses Node.js HTTP or the Fetch API.
@@ -45,82 +41,72 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 ## Quick Start
 
-<Tabs items={['Node.js', 'Express', 'Hono', 'Cloudflare']}>
-  <Tab value="Node.js">
-    ```typescript title="server.ts"
-    import { createServer } from "node:http";
-    import httpHandler from "@visulima/error-handler/handler/http/node";
+```ts tab="Node.js" title="server.ts"
+import { createServer } from "node:http";
+import httpHandler from "@visulima/error-handler/handler/http/node";
 
-    const server = createServer(async (req, res) => {
-        try {
-            throw new Error("Something went wrong!");
-        } catch (error) {
-            const handler = await httpHandler(error as Error, {
-                showTrace: process.env.NODE_ENV !== "production",
-            });
-            return handler(req, res);
-        }
-    });
-
-    server.listen(3000);
-    ```
-  </Tab>
-
-  <Tab value="Express">
-    ```typescript title="app.ts"
-    import express from "express";
-    import httpHandler from "@visulima/error-handler/handler/http/node";
-
-    const app = express();
-
-    app.use(async (err, req, res, next) => {
-        const handler = await httpHandler(err, {
+const server = createServer(async (req, res) => {
+    try {
+        throw new Error("Something went wrong!");
+    } catch (error) {
+        const handler = await httpHandler(error as Error, {
             showTrace: process.env.NODE_ENV !== "production",
         });
         return handler(req, res);
+    }
+});
+
+server.listen(3000);
+```
+
+```ts tab="Express" title="app.ts"
+import express from "express";
+import httpHandler from "@visulima/error-handler/handler/http/node";
+
+const app = express();
+
+app.use(async (err, req, res, next) => {
+    const handler = await httpHandler(err, {
+        showTrace: process.env.NODE_ENV !== "production",
     });
+    return handler(req, res);
+});
 
-    app.listen(3000);
-    ```
-  </Tab>
+app.listen(3000);
+```
 
-  <Tab value="Hono">
-    ```typescript title="app.ts"
-    import { Hono } from "hono";
-    import fetchHandler from "@visulima/error-handler/handler/fetch";
+```ts tab="Hono" title="app.ts"
+import { Hono } from "hono";
+import fetchHandler from "@visulima/error-handler/handler/fetch";
 
-    const app = new Hono();
+const app = new Hono();
 
-    app.onError(async (error, c) => {
-        const handler = await fetchHandler(error, {
-            showTrace: process.env.NODE_ENV !== "production",
-        });
-        return handler(c.req.raw);
+app.onError(async (error, c) => {
+    const handler = await fetchHandler(error, {
+        showTrace: process.env.NODE_ENV !== "production",
     });
+    return handler(c.req.raw);
+});
 
-    serve({ fetch: app.fetch, port: 3000 });
-    ```
-  </Tab>
+serve({ fetch: app.fetch, port: 3000 });
+```
 
-  <Tab value="Cloudflare">
-    ```typescript title="worker.ts"
-    import fetchHandler from "@visulima/error-handler/handler/http/cloudflare";
+```ts tab="Cloudflare" title="worker.ts"
+import fetchHandler from "@visulima/error-handler/handler/http/cloudflare";
 
-    export default {
-        async fetch(request: Request): Promise<Response> {
-            try {
-                throw new Error("Something went wrong!");
-            } catch (error) {
-                const handler = await fetchHandler(error as Error, {
-                    showTrace: false,
-                });
-                return handler(request);
-            }
-        },
-    };
-    ```
-  </Tab>
-</Tabs>
+export default {
+    async fetch(request: Request): Promise<Response> {
+        try {
+            throw new Error("Something went wrong!");
+        } catch (error) {
+            const handler = await fetchHandler(error as Error, {
+                showTrace: false,
+            });
+            return handler(request);
+        }
+    },
+};
+```
 
 ## Content Negotiation
 
@@ -136,9 +122,7 @@ The error handler automatically detects the requested content type and serves th
 | `application/javascript` | JSONP | JavaScript callback with error |
 | `application/xml` | XML | XML formatted error |
 
-<Callout type="info">
-  The error handler uses content negotiation to automatically select the best format based on the client's `Accept` header.
-</Callout>
+> The error handler uses content negotiation to automatically select the best format based on the client's `Accept` header.
 
 ## Supported Platforms
 

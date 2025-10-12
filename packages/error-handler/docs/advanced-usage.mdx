@@ -3,10 +3,6 @@ title: Advanced Usage
 description: Advanced patterns and techniques for sophisticated error handling
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
-
 Advanced patterns and techniques for `@visulima/error-handler`.
 
 ## Custom Error Handlers
@@ -15,82 +11,74 @@ Create custom error handlers for specialized content types or business logic.
 
 ### Custom Format Handler
 
-<Tabs items={['Protocol Buffer', 'MessagePack', 'Custom Binary']}>
-  <Tab value="Protocol Buffer">
-    ```typescript title="protobuf-handler.ts"
-    import httpHandler from "@visulima/error-handler/handler/http/node";
+```ts tab="Protocol Buffer" title="protobuf-handler.ts"
+import httpHandler from "@visulima/error-handler/handler/http/node";
 
-    const handler = await httpHandler(error, {
-        extraHandlers: [
-            {
-                regex: /application\/x-protobuf/,
-                handler: async (error, req, res) => {
-                    const protoMessage = encodeErrorToProtobuf(error);
-                    
-                    res.setHeader("Content-Type", "application/x-protobuf");
-                    res.statusCode = 500;
-                    res.end(protoMessage);
-                },
+const handler = await httpHandler(error, {
+    extraHandlers: [
+        {
+            regex: /application\/x-protobuf/,
+            handler: async (error, req, res) => {
+                const protoMessage = encodeErrorToProtobuf(error);
+                
+                res.setHeader("Content-Type", "application/x-protobuf");
+                res.statusCode = 500;
+                res.end(protoMessage);
             },
-        ],
-    });
-    ```
-  </Tab>
+        },
+    ],
+});
+```
 
-  <Tab value="MessagePack">
-    ```typescript title="msgpack-handler.ts"
-    import httpHandler from "@visulima/error-handler/handler/http/node";
-    import msgpack from "msgpack";
+```ts tab="MessagePack" title="msgpack-handler.ts"
+import httpHandler from "@visulima/error-handler/handler/http/node";
+import msgpack from "msgpack";
 
-    const handler = await httpHandler(error, {
-        extraHandlers: [
-            {
-                regex: /application\/msgpack/,
-                handler: async (error, req, res) => {
-                    const packed = msgpack.encode({
-                        error: error.message,
-                        code: 500,
-                        timestamp: Date.now(),
-                    });
-                    
-                    res.setHeader("Content-Type", "application/msgpack");
-                    res.statusCode = 500;
-                    res.end(packed);
-                },
+const handler = await httpHandler(error, {
+    extraHandlers: [
+        {
+            regex: /application\/msgpack/,
+            handler: async (error, req, res) => {
+                const packed = msgpack.encode({
+                    error: error.message,
+                    code: 500,
+                    timestamp: Date.now(),
+                });
+                
+                res.setHeader("Content-Type", "application/msgpack");
+                res.statusCode = 500;
+                res.end(packed);
             },
-        ],
-    });
-    ```
-  </Tab>
+        },
+    ],
+});
+```
 
-  <Tab value="Custom Binary">
-    ```typescript title="binary-handler.ts"
-    import httpHandler from "@visulima/error-handler/handler/http/node";
+```ts tab="Custom Binary" title="binary-handler.ts"
+import httpHandler from "@visulima/error-handler/handler/http/node";
 
-    const handler = await httpHandler(error, {
-        extraHandlers: [
-            {
-                regex: /application\/octet-stream/,
-                handler: async (error, req, res) => {
-                    const buffer = Buffer.from(JSON.stringify({
-                        error: error.message,
-                        code: 500,
-                    }));
-                    
-                    res.setHeader("Content-Type", "application/octet-stream");
-                    res.statusCode = 500;
-                    res.end(buffer);
-                },
+const handler = await httpHandler(error, {
+    extraHandlers: [
+        {
+            regex: /application\/octet-stream/,
+            handler: async (error, req, res) => {
+                const buffer = Buffer.from(JSON.stringify({
+                    error: error.message,
+                    code: 500,
+                }));
+                
+                res.setHeader("Content-Type", "application/octet-stream");
+                res.statusCode = 500;
+                res.end(buffer);
             },
-        ],
-    });
-    ```
-  </Tab>
-</Tabs>
+        },
+    ],
+});
+```
 
 ### Conditional Error Responses
 
-```typescript title="conditional-responses.ts"
+```ts title="conditional-responses.ts"
 const handler = await httpHandler(error, {
     extraHandlers: [
         {
@@ -126,7 +114,7 @@ const handler = await httpHandler(error, {
 
 ### Handler Priority and Fallbacks
 
-```typescript title="handler-priority.ts"
+```ts title="handler-priority.ts"
 const handlers = [
     {
         // Most specific handler first
@@ -171,7 +159,7 @@ Advanced content negotiation patterns.
 
 ### Quality Factor (q-value) Support
 
-```typescript title="quality-factor.ts"
+```ts title="quality-factor.ts"
 import accepts from "@tinyhttp/accepts";
 
 const handler = await httpHandler(error, {
@@ -213,7 +201,7 @@ const handler = await httpHandler(error, {
 
 ### Language Negotiation
 
-```typescript title="language-negotiation.ts"
+```ts title="language-negotiation.ts"
 const handler = await httpHandler(error, {
     extraHandlers: [
         {
@@ -247,190 +235,180 @@ const handler = await httpHandler(error, {
 
 Add rich context and metadata to error responses.
 
-<Accordions>
-  <Accordion title="Request Context">
-    ```typescript title="request-context.ts"
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            // Attach request context to error
-            error.context = {
+<details>
+<summary>**Request Context**</summary>
+
+```ts title="request-context.ts"
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        // Attach request context to error
+        error.context = {
+            method: request.method,
+            url: request.url,
+            headers: request.headers,
+            userAgent: request.headers["user-agent"],
+            ip: request.socket.remoteAddress,
+            timestamp: new Date().toISOString(),
+        };
+        
+        // Add to response headers
+        response.setHeader("X-Request-ID", generateRequestId());
+        response.setHeader("X-Error-Timestamp", error.context.timestamp);
+    },
+});
+```
+</details>
+
+<details>
+<summary>**User Context**</summary>
+
+```ts title="user-context.ts"
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        // Extract user from session/token
+        const user = await getUserFromRequest(request);
+        
+        error.userContext = {
+            userId: user?.id,
+            email: user?.email,
+            role: user?.role,
+            tenant: user?.tenant,
+        };
+        
+        // Log with user context
+        await logger.error({
+            error: error.message,
+            user: error.userContext,
+            request: {
                 method: request.method,
                 url: request.url,
-                headers: request.headers,
-                userAgent: request.headers["user-agent"],
-                ip: request.socket.remoteAddress,
-                timestamp: new Date().toISOString(),
-            };
-            
-            // Add to response headers
-            response.setHeader("X-Request-ID", generateRequestId());
-            response.setHeader("X-Error-Timestamp", error.context.timestamp);
-        },
-    });
-    ```
-  </Accordion>
+            },
+        });
+    },
+});
+```
+</details>
 
-  <Accordion title="User Context">
-    ```typescript title="user-context.ts"
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            // Extract user from session/token
-            const user = await getUserFromRequest(request);
-            
-            error.userContext = {
-                userId: user?.id,
-                email: user?.email,
-                role: user?.role,
-                tenant: user?.tenant,
-            };
-            
-            // Log with user context
-            await logger.error({
-                error: error.message,
-                user: error.userContext,
-                request: {
-                    method: request.method,
-                    url: request.url,
-                },
-            });
-        },
-    });
-    ```
-  </Accordion>
+<details>
+<summary>**Application Context**</summary>
 
-  <Accordion title="Application Context">
-    ```typescript title="app-context.ts"
-    import os from "node:os";
+```ts title="app-context.ts"
+import os from "node:os";
 
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            error.appContext = {
-                environment: process.env.NODE_ENV,
-                version: process.env.APP_VERSION,
-                hostname: os.hostname(),
-                pid: process.pid,
-                memory: process.memoryUsage(),
-                uptime: process.uptime(),
-            };
-        },
-    });
-    ```
-  </Accordion>
-</Accordions>
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        error.appContext = {
+            environment: process.env.NODE_ENV,
+            version: process.env.APP_VERSION,
+            hostname: os.hostname(),
+            pid: process.pid,
+            memory: process.memoryUsage(),
+            uptime: process.uptime(),
+        };
+    },
+});
+```
+</details>
 
 ## Error Tracking Integration
 
 Integrate with error tracking services.
 
-<Tabs items={['Sentry', 'Custom Tracker', 'Aggregated']}>
-  <Tab value="Sentry">
-    ### Sentry Integration
+```ts tab="Sentry" title="sentry-integration.ts"
+import * as Sentry from "@sentry/node";
 
-    ```typescript title="sentry-integration.ts"
-    import * as Sentry from "@sentry/node";
-
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            const eventId = Sentry.captureException(error, {
-                contexts: {
-                    request: {
-                        method: request.method,
-                        url: request.url,
-                        headers: request.headers,
-                    },
-                },
-                tags: {
-                    endpoint: request.url,
-                    statusCode: response.statusCode,
-                },
-                user: {
-                    id: request.user?.id,
-                    email: request.user?.email,
-                },
-            });
-            
-            // Add Sentry event ID to response
-            response.setHeader("X-Sentry-Event-ID", eventId);
-        },
-    });
-    ```
-  </Tab>
-
-  <Tab value="Custom Tracker">
-    ### Custom Error Tracking
-
-    ```typescript title="custom-tracker.ts"
-    class ErrorTracker {
-        async track(error: Error, context: any): Promise<string> {
-            const errorId = generateUUID();
-            
-            await database.errors.insert({
-                id: errorId,
-                message: error.message,
-                stack: error.stack,
-                context,
-                timestamp: new Date(),
-            });
-            
-            return errorId;
-        }
-    }
-
-    const tracker = new ErrorTracker();
-
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            const errorId = await tracker.track(error, {
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        const eventId = Sentry.captureException(error, {
+            contexts: {
                 request: {
                     method: request.method,
                     url: request.url,
+                    headers: request.headers,
                 },
-            });
-            
-            response.setHeader("X-Error-ID", errorId);
-        },
-    });
-    ```
-  </Tab>
-
-  <Tab value="Aggregated">
-    ### Aggregated Error Reporting
-
-    ```typescript title="aggregated-reporting.ts"
-    class ErrorAggregator {
-        private errors: Map<string, number> = new Map();
+            },
+            tags: {
+                endpoint: request.url,
+                statusCode: response.statusCode,
+            },
+            user: {
+                id: request.user?.id,
+                email: request.user?.email,
+            },
+        });
         
-        track(error: Error) {
-            const key = `${error.name}:${error.message}`;
-            const count = this.errors.get(key) || 0;
-            this.errors.set(key, count + 1);
-        }
+        // Add Sentry event ID to response
+        response.setHeader("X-Sentry-Event-ID", eventId);
+    },
+});
+```
+
+```ts tab="Custom Tracker" title="custom-tracker.ts"
+class ErrorTracker {
+    async track(error: Error, context: any): Promise<string> {
+        const errorId = generateUUID();
         
-        async flush() {
-            const stats = Array.from(this.errors.entries()).map(([key, count]) => ({
-                error: key,
-                count,
-                timestamp: new Date(),
-            }));
-            
-            await monitoringService.sendBatch(stats);
-            this.errors.clear();
-        }
+        await database.errors.insert({
+            id: errorId,
+            message: error.message,
+            stack: error.stack,
+            context,
+            timestamp: new Date(),
+        });
+        
+        return errorId;
     }
+}
 
-    const aggregator = new ErrorAggregator();
+const tracker = new ErrorTracker();
 
-    // Flush every 60 seconds
-    setInterval(() => aggregator.flush(), 60000);
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        const errorId = await tracker.track(error, {
+            request: {
+                method: request.method,
+                url: request.url,
+            },
+        });
+        
+        response.setHeader("X-Error-ID", errorId);
+    },
+});
+```
 
-    const handler = await httpHandler(error, {
-        onError: async (error) => {
-            aggregator.track(error);
-        },
-    });
-    ```
-  </Tab>
-</Tabs>
+```ts tab="Aggregated" title="aggregated-reporting.ts"
+class ErrorAggregator {
+    private errors: Map<string, number> = new Map();
+    
+    track(error: Error) {
+        const key = `${error.name}:${error.message}`;
+        const count = this.errors.get(key) || 0;
+        this.errors.set(key, count + 1);
+    }
+    
+    async flush() {
+        const stats = Array.from(this.errors.entries()).map(([key, count]) => ({
+            error: key,
+            count,
+            timestamp: new Date(),
+        }));
+        
+        await monitoringService.sendBatch(stats);
+        this.errors.clear();
+    }
+}
+
+const aggregator = new ErrorAggregator();
+
+// Flush every 60 seconds
+setInterval(() => aggregator.flush(), 60000);
+
+const handler = await httpHandler(error, {
+    onError: async (error) => {
+        aggregator.track(error);
+    },
+});
+```
 
 ## Multi-Tenant Error Handling
 
@@ -438,7 +416,7 @@ Handle errors differently based on tenant context.
 
 ### Tenant-Specific Error Pages
 
-```typescript title="tenant-error-pages.ts"
+```ts title="tenant-error-pages.ts"
 const handler = await httpHandler(error, {
     errorPage: async ({ error, statusCode, request }) => {
         const tenant = await getTenantFromRequest(request);
@@ -457,7 +435,7 @@ const handler = await httpHandler(error, {
 
 ### Tenant-Specific Error Policies
 
-```typescript title="tenant-policies.ts"
+```ts title="tenant-policies.ts"
 const handler = await httpHandler(error, {
     onError: async (error, request, response) => {
         const tenant = await getTenantFromRequest(request);
@@ -482,7 +460,7 @@ const handler = await httpHandler(error, {
 
 Prevent error flooding and abuse.
 
-```typescript title="rate-limiter.ts"
+```ts title="rate-limiter.ts"
 class ErrorRateLimiter {
     private attempts: Map<string, number[]> = new Map();
     private readonly maxAttempts = 10;
@@ -532,302 +510,278 @@ const handler = await httpHandler(error, {
 
 Implement automatic recovery and retry mechanisms.
 
-<Tabs items={['Circuit Breaker', 'Retry with Backoff', 'Fallback']}>
-  <Tab value="Circuit Breaker">
-    ### Circuit Breaker Pattern
+```ts tab="Circuit Breaker" title="circuit-breaker.ts"
+class CircuitBreaker {
+    private failures = 0;
+    private readonly threshold = 5;
+    private readonly timeout = 60000; // 1 minute
+    private state: "closed" | "open" | "half-open" = "closed";
+    private nextAttempt = 0;
+    
+    async execute<T>(fn: () => Promise<T>): Promise<T> {
+        if (this.state === "open") {
+            if (Date.now() < this.nextAttempt) {
+                throw new Error("Circuit breaker is open");
+            }
+            this.state = "half-open";
+        }
+        
+        try {
+            const result = await fn();
+            this.onSuccess();
+            return result;
+        } catch (error) {
+            this.onFailure();
+            throw error;
+        }
+    }
+    
+    private onSuccess() {
+        this.failures = 0;
+        this.state = "closed";
+    }
+    
+    private onFailure() {
+        this.failures++;
+        
+        if (this.failures >= this.threshold) {
+            this.state = "open";
+            this.nextAttempt = Date.now() + this.timeout;
+        }
+    }
+}
 
-    ```typescript title="circuit-breaker.ts"
-    class CircuitBreaker {
-        private failures = 0;
-        private readonly threshold = 5;
-        private readonly timeout = 60000; // 1 minute
-        private state: "closed" | "open" | "half-open" = "closed";
-        private nextAttempt = 0;
-        
-        async execute<T>(fn: () => Promise<T>): Promise<T> {
-            if (this.state === "open") {
-                if (Date.now() < this.nextAttempt) {
-                    throw new Error("Circuit breaker is open");
-                }
-                this.state = "half-open";
-            }
-            
-            try {
-                const result = await fn();
-                this.onSuccess();
-                return result;
-            } catch (error) {
-                this.onFailure();
-                throw error;
-            }
+const breaker = new CircuitBreaker();
+
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        try {
+            await breaker.execute(async () => {
+                await logger.error({ error });
+            });
+        } catch (breakerError) {
+            console.warn("Circuit breaker open, skipping error logging");
         }
-        
-        private onSuccess() {
-            this.failures = 0;
-            this.state = "closed";
-        }
-        
-        private onFailure() {
-            this.failures++;
+    },
+});
+```
+
+```ts tab="Retry with Backoff" title="retry-backoff.ts"
+async function retryWithBackoff<T>(
+    fn: () => Promise<T>,
+    maxRetries = 3,
+    baseDelay = 1000
+): Promise<T> {
+    let lastError: Error;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (error) {
+            lastError = error as Error;
             
-            if (this.failures >= this.threshold) {
-                this.state = "open";
-                this.nextAttempt = Date.now() + this.timeout;
+            if (attempt < maxRetries - 1) {
+                const delay = baseDelay * Math.pow(2, attempt);
+                await new Promise((resolve) => setTimeout(resolve, delay));
             }
         }
     }
+    
+    throw lastError!;
+}
 
-    const breaker = new CircuitBreaker();
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        await retryWithBackoff(
+            async () => await logger.error({ error }),
+            3,
+            1000
+        );
+    },
+});
+```
 
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
+```ts tab="Fallback" title="fallback.ts"
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        try {
+            // Try primary logging service
+            await primaryLogger.error({ error });
+        } catch (primaryError) {
             try {
-                await breaker.execute(async () => {
-                    await logger.error({ error });
-                });
-            } catch (breakerError) {
-                console.warn("Circuit breaker open, skipping error logging");
-            }
-        },
-    });
-    ```
-  </Tab>
-
-  <Tab value="Retry with Backoff">
-    ### Retry with Exponential Backoff
-
-    ```typescript title="retry-backoff.ts"
-    async function retryWithBackoff<T>(
-        fn: () => Promise<T>,
-        maxRetries = 3,
-        baseDelay = 1000
-    ): Promise<T> {
-        let lastError: Error;
-        
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-            try {
-                return await fn();
-            } catch (error) {
-                lastError = error as Error;
-                
-                if (attempt < maxRetries - 1) {
-                    const delay = baseDelay * Math.pow(2, attempt);
-                    await new Promise((resolve) => setTimeout(resolve, delay));
-                }
+                // Fallback to secondary service
+                await secondaryLogger.error({ error });
+            } catch (secondaryError) {
+                // Last resort: console
+                console.error("All loggers failed:", error);
             }
         }
-        
-        throw lastError!;
-    }
-
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            await retryWithBackoff(
-                async () => await logger.error({ error }),
-                3,
-                1000
-            );
-        },
-    });
-    ```
-  </Tab>
-
-  <Tab value="Fallback">
-    ### Fallback Strategy
-
-    ```typescript title="fallback.ts"
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            try {
-                // Try primary logging service
-                await primaryLogger.error({ error });
-            } catch (primaryError) {
-                try {
-                    // Fallback to secondary service
-                    await secondaryLogger.error({ error });
-                } catch (secondaryError) {
-                    // Last resort: console
-                    console.error("All loggers failed:", error);
-                }
-            }
-        },
-    });
-    ```
-  </Tab>
-</Tabs>
+    },
+});
+```
 
 ## Testing Error Handlers
 
 Test your error handling implementation.
 
-<Tabs items={['Unit Tests', 'Integration Tests', 'E2E Tests']}>
-  <Tab value="Unit Tests">
-    ### Unit Testing
+```ts tab="Unit Tests" title="handler.test.ts"
+import { describe, it, expect } from "vitest";
+import httpMocks from "node-mocks-http";
+import httpHandler from "@visulima/error-handler/handler/http/node";
 
-    ```typescript title="handler.test.ts"
-    import { describe, it, expect } from "vitest";
-    import httpMocks from "node-mocks-http";
-    import httpHandler from "@visulima/error-handler/handler/http/node";
-
-    describe("Error Handler", () => {
-        it("should return 500 status code", async () => {
-            const req = httpMocks.createRequest();
-            const res = httpMocks.createResponse();
-            
-            const error = new Error("Test error");
-            const handler = await httpHandler(error, {
-                showTrace: false,
-            });
-            
-            await handler(req, res);
-            
-            expect(res.statusCode).toBe(500);
+describe("Error Handler", () => {
+    it("should return 500 status code", async () => {
+        const req = httpMocks.createRequest();
+        const res = httpMocks.createResponse();
+        
+        const error = new Error("Test error");
+        const handler = await httpHandler(error, {
+            showTrace: false,
         });
         
-        it("should return JSON for JSON accept header", async () => {
-            const req = httpMocks.createRequest({
-                headers: { accept: "application/json" },
-            });
-            const res = httpMocks.createResponse();
-            
-            const error = new Error("Test error");
-            const handler = await httpHandler(error);
-            
-            await handler(req, res);
-            
-            expect(res.getHeader("Content-Type")).toContain("application/json");
-            const data = JSON.parse(res._getData());
-            expect(data.message).toBe("Test error");
-        });
-    });
-    ```
-  </Tab>
-
-  <Tab value="Integration Tests">
-    ### Integration Testing
-
-    ```typescript title="integration.test.ts"
-    import request from "supertest";
-    import app from "./app";
-
-    describe("Error Handling Integration", () => {
-        it("should handle not found errors", async () => {
-            const response = await request(app)
-                .get("/nonexistent")
-                .set("Accept", "application/json");
-            
-            expect(response.status).toBe(404);
-            expect(response.body).toHaveProperty("message");
-        });
+        await handler(req, res);
         
-        it("should include error ID in response", async () => {
-            const response = await request(app)
-                .get("/error")
-                .set("Accept", "application/json");
-            
-            expect(response.status).toBe(500);
-            expect(response.headers).toHaveProperty("x-error-id");
+        expect(res.statusCode).toBe(500);
+    });
+    
+    it("should return JSON for JSON accept header", async () => {
+        const req = httpMocks.createRequest({
+            headers: { accept: "application/json" },
         });
-    });
-    ```
-  </Tab>
-
-  <Tab value="E2E Tests">
-    ### E2E Testing
-
-    ```typescript title="e2e.test.ts"
-    import { test, expect } from "@playwright/test";
-
-    test("should display error page", async ({ page }) => {
-        await page.goto("/error");
+        const res = httpMocks.createResponse();
         
-        await expect(page.locator("h1")).toContainText("Error");
-        await expect(page.locator(".error-message")).toBeVisible();
-    });
-
-    test("should not show stack trace in production", async ({ page }) => {
-        await page.goto("/error");
+        const error = new Error("Test error");
+        const handler = await httpHandler(error);
         
-        const stackTrace = page.locator(".stack-trace");
-        await expect(stackTrace).not.toBeVisible();
+        await handler(req, res);
+        
+        expect(res.getHeader("Content-Type")).toContain("application/json");
+        const data = JSON.parse(res._getData());
+        expect(data.message).toBe("Test error");
     });
-    ```
-  </Tab>
-</Tabs>
+});
+```
+
+```ts tab="Integration Tests" title="integration.test.ts"
+import request from "supertest";
+import app from "./app";
+
+describe("Error Handling Integration", () => {
+    it("should handle not found errors", async () => {
+        const response = await request(app)
+            .get("/nonexistent")
+            .set("Accept", "application/json");
+        
+        expect(response.status).toBe(404);
+        expect(response.body).toHaveProperty("message");
+    });
+    
+    it("should include error ID in response", async () => {
+        const response = await request(app)
+            .get("/error")
+            .set("Accept", "application/json");
+        
+        expect(response.status).toBe(500);
+        expect(response.headers).toHaveProperty("x-error-id");
+    });
+});
+```
+
+```ts tab="E2E Tests" title="e2e.test.ts"
+import { test, expect } from "@playwright/test";
+
+test("should display error page", async ({ page }) => {
+    await page.goto("/error");
+    
+    await expect(page.locator("h1")).toContainText("Error");
+    await expect(page.locator(".error-message")).toBeVisible();
+});
+
+test("should not show stack trace in production", async ({ page }) => {
+    await page.goto("/error");
+    
+    const stackTrace = page.locator(".stack-trace");
+    await expect(stackTrace).not.toBeVisible();
+});
+```
 
 ## Performance Optimization
 
 Optimize error handling for production.
 
-<Accordions>
-  <Accordion title="Lazy Loading Error Pages">
-    ```typescript title="lazy-loading.ts"
-    let errorTemplate: string | null = null;
+<details>
+<summary>**Lazy Loading Error Pages**</summary>
 
-    async function getErrorTemplate() {
-        if (!errorTemplate) {
-            errorTemplate = await fs.readFile("./error.html", "utf-8");
-        }
-        return errorTemplate;
+```ts title="lazy-loading.ts"
+let errorTemplate: string | null = null;
+
+async function getErrorTemplate() {
+    if (!errorTemplate) {
+        errorTemplate = await fs.readFile("./error.html", "utf-8");
     }
+    return errorTemplate;
+}
 
-    const handler = await httpHandler(error, {
-        errorPage: async ({ error, statusCode }) => {
-            const template = await getErrorTemplate();
-            return template
-                .replace("{{statusCode}}", String(statusCode))
-                .replace("{{message}}", error.message);
-        },
-    });
-    ```
-  </Accordion>
+const handler = await httpHandler(error, {
+    errorPage: async ({ error, statusCode }) => {
+        const template = await getErrorTemplate();
+        return template
+            .replace("{{statusCode}}", String(statusCode))
+            .replace("{{message}}", error.message);
+    },
+});
+```
+</details>
 
-  <Accordion title="Error Handler Caching">
-    ```typescript title="handler-caching.ts"
-    const handlerCache = new Map<string, any>();
+<details>
+<summary>**Error Handler Caching**</summary>
 
-    function getCachedHandler(options: any) {
-        const key = JSON.stringify(options);
-        
-        if (!handlerCache.has(key)) {
-            const handler = httpHandler(error, options);
-            handlerCache.set(key, handler);
-        }
-        
-        return handlerCache.get(key);
+```ts title="handler-caching.ts"
+const handlerCache = new Map<string, any>();
+
+function getCachedHandler(options: any) {
+    const key = JSON.stringify(options);
+    
+    if (!handlerCache.has(key)) {
+        const handler = httpHandler(error, options);
+        handlerCache.set(key, handler);
     }
-    ```
-  </Accordion>
+    
+    return handlerCache.get(key);
+}
+```
+</details>
 
-  <Accordion title="Async Error Logging">
-    ```typescript title="async-logging.ts"
-    // Don't wait for logging to complete
-    const handler = await httpHandler(error, {
-        onError: (error, request, response) => {
-            // Fire and forget
-            logger.error({ error }).catch(console.error);
-            
-            // Don't return promise
-        },
-    });
-    ```
-  </Accordion>
+<details>
+<summary>**Async Error Logging**</summary>
 
-  <Accordion title="Sampling">
-    ```typescript title="sampling.ts"
-    const SAMPLE_RATE = 0.1; // Log 10% of errors
+```ts title="async-logging.ts"
+// Don't wait for logging to complete
+const handler = await httpHandler(error, {
+    onError: (error, request, response) => {
+        // Fire and forget
+        logger.error({ error }).catch(console.error);
+        
+        // Don't return promise
+    },
+});
+```
+</details>
 
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            if (Math.random() < SAMPLE_RATE) {
-                await logger.error({ error });
-            }
-        },
-    });
-    ```
-  </Accordion>
-</Accordions>
+<details>
+<summary>**Sampling**</summary>
 
-<Callout type="tip">
-  For high-traffic applications, consider implementing error sampling and async logging to minimize performance impact.
-</Callout>
+```ts title="sampling.ts"
+const SAMPLE_RATE = 0.1; // Log 10% of errors
+
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        if (Math.random() < SAMPLE_RATE) {
+            await logger.error({ error });
+        }
+    },
+});
+```
+</details>
+
+> For high-traffic applications, consider implementing error sampling and async logging to minimize performance impact.

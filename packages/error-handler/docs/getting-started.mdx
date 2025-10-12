@@ -3,39 +3,25 @@ title: Getting Started
 description: Learn how to install and set up error handling in your project
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { Steps, Step } from 'fumadocs-ui/components/steps';
-
 This guide will help you get started with `@visulima/error-handler` in your project.
 
 ## Installation
 
-<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
-  <Tab value="npm">
-    ```bash
-    npm install @visulima/error-handler
-    ```
-  </Tab>
+```bash tab="npm"
+npm install @visulima/error-handler
+```
 
-  <Tab value="yarn">
-    ```bash
-    yarn add @visulima/error-handler
-    ```
-  </Tab>
+```bash tab="yarn"
+yarn add @visulima/error-handler
+```
 
-  <Tab value="pnpm">
-    ```bash
-    pnpm add @visulima/error-handler
-    ```
-  </Tab>
+```bash tab="pnpm"
+pnpm add @visulima/error-handler
+```
 
-  <Tab value="bun">
-    ```bash
-    bun add @visulima/error-handler
-    ```
-  </Tab>
-</Tabs>
+```bash tab="bun"
+bun add @visulima/error-handler
+```
 
 ## Requirements
 
@@ -52,206 +38,164 @@ The error handler provides different handlers based on your runtime environment:
 
 ## Your First Error Handler
 
-<Tabs items={['Node.js', 'Express', 'Fastify', 'Hono', 'Cloudflare', 'Deno']}>
-  <Tab value="Node.js">
-    ### Node.js HTTP Server
+```ts tab="Node.js" title="server.ts"
+import { createServer } from "node:http";
+import httpHandler from "@visulima/error-handler/handler/http/node";
 
-    Create a simple HTTP server with error handling:
-
-    ```typescript title="server.ts"
-    import { createServer } from "node:http";
-    import httpHandler from "@visulima/error-handler/handler/http/node";
-
-    const server = createServer(async (req, res) => {
-        try {
-            // Your application logic
-            if (req.url === "/error") {
-                throw new Error("This is a test error!");
-            }
-            
-            res.writeHead(200, { "Content-Type": "text/plain" });
-            res.end("Hello World!");
-        } catch (error) {
-            // Handle the error with automatic content negotiation
-            const handler = await httpHandler(error as Error, {
-                showTrace: process.env.NODE_ENV !== "production",
-            });
-            return handler(req, res);
+const server = createServer(async (req, res) => {
+    try {
+        // Your application logic
+        if (req.url === "/error") {
+            throw new Error("This is a test error!");
         }
-    });
-
-    server.listen(3000, () => {
-        console.log("Server running at http://localhost:3000");
-    });
-    ```
-  </Tab>
-
-  <Tab value="Express">
-    ### Express Application
-
-    Add error handling to an Express app:
-
-    ```typescript title="app.ts"
-    import express from "express";
-    import httpHandler from "@visulima/error-handler/handler/http/node";
-
-    const app = express();
-
-    // Your routes
-    app.get("/", (req, res) => {
-        res.send("Hello World!");
-    });
-
-    app.get("/error", (req, res) => {
-        throw new Error("This is a test error!");
-    });
-
-    // Error handling middleware (must be last)
-    app.use(async (err, req, res, next) => {
-        const handler = await httpHandler(err, {
+        
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("Hello World!");
+    } catch (error) {
+        // Handle the error with automatic content negotiation
+        const handler = await httpHandler(error as Error, {
             showTrace: process.env.NODE_ENV !== "production",
         });
         return handler(req, res);
+    }
+});
+
+server.listen(3000, () => {
+    console.log("Server running at http://localhost:3000");
+});
+```
+
+```ts tab="Express" title="app.ts"
+import express from "express";
+import httpHandler from "@visulima/error-handler/handler/http/node";
+
+const app = express();
+
+// Your routes
+app.get("/", (req, res) => {
+    res.send("Hello World!");
+});
+
+app.get("/error", (req, res) => {
+    throw new Error("This is a test error!");
+});
+
+// Error handling middleware (must be last)
+app.use(async (err, req, res, next) => {
+    const handler = await httpHandler(err, {
+        showTrace: process.env.NODE_ENV !== "production",
     });
+    return handler(req, res);
+});
 
-    app.listen(3000, () => {
-        console.log("Server running at http://localhost:3000");
+app.listen(3000, () => {
+    console.log("Server running at http://localhost:3000");
+});
+```
+
+```ts tab="Fastify" title="app.ts"
+import Fastify from "fastify";
+import httpHandler from "@visulima/error-handler/handler/http/node";
+
+const fastify = Fastify();
+
+// Your routes
+fastify.get("/", async (request, reply) => {
+    return { hello: "world" };
+});
+
+// Error handler
+fastify.setErrorHandler(async (error, request, reply) => {
+    const handler = await httpHandler(error, {
+        showTrace: process.env.NODE_ENV !== "production",
     });
-    ```
+    return handler(request.raw, reply.raw);
+});
 
-    <Callout type="warn">
-      Make sure to add the error handler middleware **after** all your routes.
-    </Callout>
-  </Tab>
+fastify.listen({ port: 3000 }, (err, address) => {
+    if (err) throw err;
+    console.log(`Server running at ${address}`);
+});
+```
 
-  <Tab value="Fastify">
-    ### Fastify Application
+```ts tab="Hono" title="app.ts"
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import fetchHandler from "@visulima/error-handler/handler/fetch";
 
-    Add error handling to a Fastify app:
+const app = new Hono();
 
-    ```typescript title="app.ts"
-    import Fastify from "fastify";
-    import httpHandler from "@visulima/error-handler/handler/http/node";
+// Your routes
+app.get("/", (c) => c.text("Hello Hono!"));
 
-    const fastify = Fastify();
+app.get("/error", () => {
+    throw new Error("This is a test error!");
+});
 
-    // Your routes
-    fastify.get("/", async (request, reply) => {
-        return { hello: "world" };
+// Error handler
+app.onError(async (error, c) => {
+    const handler = await fetchHandler(error, {
+        showTrace: process.env.NODE_ENV !== "production",
     });
+    return handler(c.req.raw);
+});
 
-    // Error handler
-    fastify.setErrorHandler(async (error, request, reply) => {
-        const handler = await httpHandler(error, {
-            showTrace: process.env.NODE_ENV !== "production",
-        });
-        return handler(request.raw, reply.raw);
-    });
+serve({ fetch: app.fetch, port: 3000 }, (info) => {
+    console.log(`Server running at http://localhost:${info.port}`);
+});
+```
 
-    fastify.listen({ port: 3000 }, (err, address) => {
-        if (err) throw err;
-        console.log(`Server running at ${address}`);
-    });
-    ```
-  </Tab>
+```ts tab="Cloudflare" title="worker.ts"
+import fetchHandler from "@visulima/error-handler/handler/http/cloudflare";
 
-  <Tab value="Hono">
-    ### Hono Application
-
-    Add error handling to a Hono app:
-
-    ```typescript title="app.ts"
-    import { serve } from "@hono/node-server";
-    import { Hono } from "hono";
-    import fetchHandler from "@visulima/error-handler/handler/fetch";
-
-    const app = new Hono();
-
-    // Your routes
-    app.get("/", (c) => c.text("Hello Hono!"));
-
-    app.get("/error", () => {
-        throw new Error("This is a test error!");
-    });
-
-    // Error handler
-    app.onError(async (error, c) => {
-        const handler = await fetchHandler(error, {
-            showTrace: process.env.NODE_ENV !== "production",
-        });
-        return handler(c.req.raw);
-    });
-
-    serve({ fetch: app.fetch, port: 3000 }, (info) => {
-        console.log(`Server running at http://localhost:${info.port}`);
-    });
-    ```
-  </Tab>
-
-  <Tab value="Cloudflare">
-    ### Cloudflare Workers
-
-    Add error handling to a Cloudflare Worker:
-
-    ```typescript title="worker.ts"
-    import fetchHandler from "@visulima/error-handler/handler/http/cloudflare";
-
-    export default {
-        async fetch(request: Request): Promise<Response> {
-            try {
-                // Your application logic
-                if (new URL(request.url).pathname === "/error") {
-                    throw new Error("This is a test error!");
-                }
-                
-                return new Response("Hello from Cloudflare Workers!");
-            } catch (error) {
-                const handler = await fetchHandler(error as Error, {
-                    showTrace: false, // Never show traces in production
-                });
-                return handler(request);
-            }
-        },
-    };
-    ```
-
-    <Callout type="warn">
-      Always set `showTrace: false` in production for Cloudflare Workers to avoid exposing sensitive information.
-    </Callout>
-  </Tab>
-
-  <Tab value="Deno">
-    ### Deno
-
-    Add error handling to a Deno application:
-
-    ```typescript title="server.ts"
-    import fetchHandler from "@visulima/error-handler/handler/http/deno";
-
-    Deno.serve(async (request: Request) => {
+export default {
+    async fetch(request: Request): Promise<Response> {
         try {
             // Your application logic
             if (new URL(request.url).pathname === "/error") {
                 throw new Error("This is a test error!");
             }
             
-            return new Response("Hello from Deno!");
+            return new Response("Hello from Cloudflare Workers!");
         } catch (error) {
             const handler = await fetchHandler(error as Error, {
-                showTrace: Deno.env.get("DENO_ENV") !== "production",
+                showTrace: false, // Never show traces in production
             });
             return handler(request);
         }
-    });
-    ```
-  </Tab>
-</Tabs>
+    },
+};
+```
+
+```ts tab="Deno" title="server.ts"
+import fetchHandler from "@visulima/error-handler/handler/http/deno";
+
+Deno.serve(async (request: Request) => {
+    try {
+        // Your application logic
+        if (new URL(request.url).pathname === "/error") {
+            throw new Error("This is a test error!");
+        }
+        
+        return new Response("Hello from Deno!");
+    } catch (error) {
+        const handler = await fetchHandler(error as Error, {
+            showTrace: Deno.env.get("DENO_ENV") !== "production",
+        });
+        return handler(request);
+    }
+});
+```
+
+> **Warning**: Make sure to add the error handler middleware **after** all your routes in Express.
+
+> **Warning**: Always set `showTrace: false` in production for Cloudflare Workers to avoid exposing sensitive information.
 
 ### Command-Line Application
 
 Add error handling to a CLI application:
 
-```typescript title="cli.ts"
+```ts title="cli.ts"
 import { cliHandler } from "@visulima/error-handler/handler/cli";
 
 async function main() {
@@ -286,31 +230,21 @@ The error handler automatically detects what format to return based on the `Acce
 
 You can test this with curl:
 
-<Tabs items={['HTML', 'JSON', 'Problem JSON', 'JSON:API']}>
-  <Tab value="HTML">
-    ```bash
-    curl http://localhost:3000/error -H "Accept: text/html"
-    ```
-  </Tab>
+```bash tab="HTML"
+curl http://localhost:3000/error -H "Accept: text/html"
+```
 
-  <Tab value="JSON">
-    ```bash
-    curl http://localhost:3000/error -H "Accept: application/json"
-    ```
-  </Tab>
+```bash tab="JSON"
+curl http://localhost:3000/error -H "Accept: application/json"
+```
 
-  <Tab value="Problem JSON">
-    ```bash
-    curl http://localhost:3000/error -H "Accept: application/problem+json"
-    ```
-  </Tab>
+```bash tab="Problem JSON"
+curl http://localhost:3000/error -H "Accept: application/problem+json"
+```
 
-  <Tab value="JSON:API">
-    ```bash
-    curl http://localhost:3000/error -H "Accept: application/vnd.api+json"
-    ```
-  </Tab>
-</Tabs>
+```bash tab="JSON:API"
+curl http://localhost:3000/error -H "Accept: application/vnd.api+json"
+```
 
 ## Development vs Production
 
@@ -323,27 +257,19 @@ const handler = await httpHandler(error, {
 });
 ```
 
-<Tabs items={['Development', 'Production']}>
-  <Tab value="Development">
-    **In development** (`showTrace: true`):
-    - Full stack traces
-    - Code frames showing the error location
-    - All error details
-    - Source maps support
-  </Tab>
+**In development** (`showTrace: true`):
+- Full stack traces
+- Code frames showing the error location
+- All error details
+- Source maps support
 
-  <Tab value="Production">
-    **In production** (`showTrace: false`):
-    - Generic error message
-    - Status code
-    - No stack traces
-    - No sensitive information
-  </Tab>
-</Tabs>
+**In production** (`showTrace: false`):
+- Generic error message
+- Status code
+- No stack traces
+- No sensitive information
 
-<Callout type="warn">
-  Never set `showTrace: true` in production environments as it can expose sensitive information about your application structure.
-</Callout>
+> **Warning**: Never set `showTrace: true` in production environments as it can expose sensitive information about your application structure.
 
 ## Next Steps
 

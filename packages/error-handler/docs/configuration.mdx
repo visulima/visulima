@@ -3,10 +3,6 @@ title: Configuration
 description: Comprehensive guide to configuring error-handler for your specific needs
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
-
 Comprehensive guide to configuring `@visulima/error-handler` for your specific needs.
 
 ## Common Options
@@ -23,41 +19,33 @@ Controls whether stack traces and detailed error information are displayed.
 }
 ```
 
-<Tabs items={['Development', 'Production']}>
-  <Tab value="Development">
-    **Development** (`showTrace: true`):
-    - Full stack traces with file paths and line numbers
-    - Code frames showing the error location
-    - All error properties
-    - Cause chain visualization
-    - Source map support
+**Development** (`showTrace: true`):
+- Full stack traces with file paths and line numbers
+- Code frames showing the error location
+- All error properties
+- Cause chain visualization
+- Source map support
 
-    ```typescript
-    const handler = await httpHandler(error, {
-        showTrace: true,
-    });
-    ```
-  </Tab>
+**Production** (`showTrace: false`):
+- Generic error messages
+- Status code only
+- No stack traces
+- No file paths
+- No sensitive information
 
-  <Tab value="Production">
-    **Production** (`showTrace: false`):
-    - Generic error messages
-    - Status code only
-    - No stack traces
-    - No file paths
-    - No sensitive information
+```ts tab="Development"
+const handler = await httpHandler(error, {
+    showTrace: true,
+});
+```
 
-    ```typescript
-    const handler = await httpHandler(error, {
-        showTrace: false,
-    });
-    ```
-  </Tab>
-</Tabs>
+```ts tab="Production"
+const handler = await httpHandler(error, {
+    showTrace: false,
+});
+```
 
-<Callout type="warn">
-  Never set `showTrace: true` in production as it can expose sensitive information about your application structure.
-</Callout>
+> **Warning**: Never set `showTrace: true` in production as it can expose sensitive information about your application structure.
 
 ### extraHandlers
 
@@ -72,64 +60,56 @@ Add custom error handlers for specific content types using regex matching on the
 }
 ```
 
-<Tabs items={['YAML', 'CSV', 'Multiple']}>
-  <Tab value="YAML">
-    ```typescript title="yaml-handler.ts"
-    const handler = await httpHandler(error, {
-        extraHandlers: [
-            {
-                regex: /application\/yaml/,
-                handler: (error, req, res) => {
-                    res.setHeader("Content-Type", "application/yaml");
-                    res.statusCode = 500;
-                    res.end(`error:\n  message: ${error.message}\n  code: 500`);
-                },
+```ts tab="YAML" title="yaml-handler.ts"
+const handler = await httpHandler(error, {
+    extraHandlers: [
+        {
+            regex: /application\/yaml/,
+            handler: (error, req, res) => {
+                res.setHeader("Content-Type", "application/yaml");
+                res.statusCode = 500;
+                res.end(`error:\n  message: ${error.message}\n  code: 500`);
             },
-        ],
-    });
-    ```
-  </Tab>
+        },
+    ],
+});
+```
 
-  <Tab value="CSV">
-    ```typescript title="csv-handler.ts"
-    const handler = await httpHandler(error, {
-        extraHandlers: [
-            {
-                regex: /text\/csv/,
-                handler: (error, req, res) => {
-                    res.setHeader("Content-Type", "text/csv");
-                    res.statusCode = 500;
-                    res.end(`"Error","Message"\n"500","${error.message}"`);
-                },
+```ts tab="CSV" title="csv-handler.ts"
+const handler = await httpHandler(error, {
+    extraHandlers: [
+        {
+            regex: /text\/csv/,
+            handler: (error, req, res) => {
+                res.setHeader("Content-Type", "text/csv");
+                res.statusCode = 500;
+                res.end(`"Error","Message"\n"500","${error.message}"`);
             },
-        ],
-    });
-    ```
-  </Tab>
+        },
+    ],
+});
+```
 
-  <Tab value="Multiple">
-    ```typescript title="multiple-handlers.ts"
-    const handler = await httpHandler(error, {
-        extraHandlers: [
-            {
-                regex: /application\/yaml/,
-                handler: (error, req, res) => {
-                    res.setHeader("Content-Type", "application/yaml");
-                    res.end(`error:\n  message: ${error.message}`);
-                },
+```ts tab="Multiple" title="multiple-handlers.ts"
+const handler = await httpHandler(error, {
+    extraHandlers: [
+        {
+            regex: /application\/yaml/,
+            handler: (error, req, res) => {
+                res.setHeader("Content-Type", "application/yaml");
+                res.end(`error:\n  message: ${error.message}`);
             },
-            {
-                regex: /text\/csv/,
-                handler: (error, req, res) => {
-                    res.setHeader("Content-Type", "text/csv");
-                    res.end(`"Error","Message"\n"500","${error.message}"`);
-                },
+        },
+        {
+            regex: /text\/csv/,
+            handler: (error, req, res) => {
+                res.setHeader("Content-Type", "text/csv");
+                res.end(`"Error","Message"\n"500","${error.message}"`);
             },
-        ],
-    });
-    ```
-  </Tab>
-</Tabs>
+        },
+    ],
+});
+```
 
 ### errorPage
 
@@ -143,77 +123,69 @@ Custom HTML error page as a string or function.
 }
 ```
 
-<Tabs items={['String', 'Function', 'Async Function']}>
-  <Tab value="String">
-    ```typescript title="error-page-string.ts"
-    const handler = await httpHandler(error, {
-        errorPage: `
-            <!DOCTYPE html>
-            <html>
-            <head><title>Error</title></head>
-            <body><h1>Something went wrong</h1></body>
-            </html>
-        `,
-    });
-    ```
-  </Tab>
+```ts tab="String" title="error-page-string.ts"
+const handler = await httpHandler(error, {
+    errorPage: `
+        <!DOCTYPE html>
+        <html>
+        <head><title>Error</title></head>
+        <body><h1>Something went wrong</h1></body>
+        </html>
+    `,
+});
+```
 
-  <Tab value="Function">
-    ```typescript title="error-page-function.ts"
-    const handler = await httpHandler(error, {
-        errorPage: ({ error, statusCode, reasonPhrase }) => `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Error ${statusCode}</title>
-                <style>
-                    body { font-family: sans-serif; padding: 40px; }
-                    .container { max-width: 600px; margin: 0 auto; }
-                    .error-code { font-size: 72px; color: #dc3545; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="error-code">${statusCode}</div>
-                    <h1>${reasonPhrase}</h1>
-                    <p>${error.message}</p>
-                </div>
-            </body>
-            </html>
-        `,
-    });
-    ```
-  </Tab>
+```ts tab="Function" title="error-page-function.ts"
+const handler = await httpHandler(error, {
+    errorPage: ({ error, statusCode, reasonPhrase }) => `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Error ${statusCode}</title>
+            <style>
+                body { font-family: sans-serif; padding: 40px; }
+                .container { max-width: 600px; margin: 0 auto; }
+                .error-code { font-size: 72px; color: #dc3545; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="error-code">${statusCode}</div>
+                <h1>${reasonPhrase}</h1>
+                <p>${error.message}</p>
+            </div>
+        </body>
+        </html>
+    `,
+});
+```
 
-  <Tab value="Async Function">
-    ```typescript title="error-page-async.ts"
-    const handler = await httpHandler(error, {
-        errorPage: async ({ error, statusCode, request }) => {
-            const template = await fs.readFile("./error-template.html", "utf-8");
-            
-            return template
-                .replace("{{statusCode}}", String(statusCode))
-                .replace("{{message}}", error.message)
-                .replace("{{url}}", request.url || "");
-        },
-    });
-    ```
-  </Tab>
-</Tabs>
+```ts tab="Async Function" title="error-page-async.ts"
+const handler = await httpHandler(error, {
+    errorPage: async ({ error, statusCode, request }) => {
+        const template = await fs.readFile("./error-template.html", "utf-8");
+        
+        return template
+            .replace("{{statusCode}}", String(statusCode))
+            .replace("{{message}}", error.message)
+            .replace("{{url}}", request.url || "");
+    },
+});
+```
 
-<Accordions>
-  <Accordion title="ErrorPageParams Interface">
-    ```typescript
-    interface ErrorPageParams {
-        error: Error;
-        request: IncomingMessage;
-        response: ServerResponse;
-        reasonPhrase: string; // e.g., "Internal Server Error"
-        statusCode: number;   // e.g., 500
-    }
-    ```
-  </Accordion>
-</Accordions>
+<details>
+<summary>**ErrorPageParams Interface**</summary>
+
+```typescript
+interface ErrorPageParams {
+    error: Error;
+    request: IncomingMessage;
+    response: ServerResponse;
+    reasonPhrase: string; // e.g., "Internal Server Error"
+    statusCode: number;   // e.g., 500
+}
+```
+</details>
 
 ### cspNonce
 
@@ -225,7 +197,7 @@ Content Security Policy nonce for inline styles in HTML error pages.
 }
 ```
 
-```typescript title="csp-nonce.ts"
+```ts title="csp-nonce.ts"
 import crypto from "node:crypto";
 
 // Generate nonce for each request
@@ -243,9 +215,7 @@ const handler = await httpHandler(error, {
 });
 ```
 
-<Callout type="info">
-  The nonce will be automatically added to all `<style>` tags in the HTML error page.
-</Callout>
+> The nonce will be automatically added to all `<style>` tags in the HTML error page.
 
 ### onError
 
@@ -257,52 +227,44 @@ Callback function for custom error logging or processing.
 }
 ```
 
-<Tabs items={['Logging', 'External Service', 'Custom Headers']}>
-  <Tab value="Logging">
-    ```typescript title="on-error-logging.ts"
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            console.error({
-                timestamp: new Date().toISOString(),
+```ts tab="Logging" title="on-error-logging.ts"
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        console.error({
+            timestamp: new Date().toISOString(),
+            method: request.method,
+            url: request.url,
+            error: error.message,
+            stack: error.stack,
+        });
+    },
+});
+```
+
+```ts tab="External Service" title="on-error-service.ts"
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        await logService.error({
+            error: error.message,
+            stack: error.stack,
+            request: {
                 method: request.method,
                 url: request.url,
-                error: error.message,
-                stack: error.stack,
-            });
-        },
-    });
-    ```
-  </Tab>
+                headers: request.headers,
+            },
+        });
+    },
+});
+```
 
-  <Tab value="External Service">
-    ```typescript title="on-error-service.ts"
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            await logService.error({
-                error: error.message,
-                stack: error.stack,
-                request: {
-                    method: request.method,
-                    url: request.url,
-                    headers: request.headers,
-                },
-            });
-        },
-    });
-    ```
-  </Tab>
-
-  <Tab value="Custom Headers">
-    ```typescript title="on-error-headers.ts"
-    const handler = await httpHandler(error, {
-        onError: async (error, request, response) => {
-            response.setHeader("X-Error-ID", generateErrorId());
-            response.setHeader("X-Error-Timestamp", new Date().toISOString());
-        },
-    });
-    ```
-  </Tab>
-</Tabs>
+```ts tab="Custom Headers" title="on-error-headers.ts"
+const handler = await httpHandler(error, {
+    onError: async (error, request, response) => {
+        response.setHeader("X-Error-ID", generateErrorId());
+        response.setHeader("X-Error-Timestamp", new Date().toISOString());
+    },
+});
+```
 
 ## HTTP Handler Options
 
@@ -353,7 +315,7 @@ interface FetchHandlerOptions {
 }
 ```
 
-```typescript title="fetch-handler-example.ts"
+```ts title="fetch-handler-example.ts"
 const handler = await fetchHandler(error, {
     showTrace: false,
     extraHandlers: [
@@ -403,39 +365,33 @@ interface CliHandlerOptions {
 
 Show relative paths instead of absolute paths in error output.
 
-<Tabs items={['Absolute Paths', 'Short Paths']}>
-  <Tab value="Absolute Paths">
-    ```typescript
-    await cliHandler(error, {
-        displayShortPath: false,
-    });
-    ```
+```ts tab="Absolute Paths"
+await cliHandler(error, {
+    displayShortPath: false,
+});
+```
 
-    **Output:**
-    ```
-    /home/user/projects/myapp/src/utils/config.ts:42:10
-    ```
-  </Tab>
+**Output:**
+```
+/home/user/projects/myapp/src/utils/config.ts:42:10
+```
 
-  <Tab value="Short Paths">
-    ```typescript
-    await cliHandler(error, {
-        displayShortPath: true,
-    });
-    ```
+```ts tab="Short Paths"
+await cliHandler(error, {
+    displayShortPath: true,
+});
+```
 
-    **Output:**
-    ```
-    src/utils/config.ts:42:10
-    ```
-  </Tab>
-</Tabs>
+**Output:**
+```
+src/utils/config.ts:42:10
+```
 
 ### frameContextLines
 
 Number of context lines to show before and after the error line.
 
-```typescript title="frame-context.ts"
+```ts title="frame-context.ts"
 await cliHandler(error, {
     frameContextLines: 3, // Show 3 lines before and after
 });
@@ -445,7 +401,7 @@ await cliHandler(error, {
 
 Custom color functions for the error output box.
 
-```typescript title="cli-colors.ts"
+```ts title="cli-colors.ts"
 await cliHandler(error, {
     color: {
         boxen: {
@@ -462,103 +418,109 @@ await cliHandler(error, {
 });
 ```
 
-<Accordions>
-  <Accordion title="ANSI Color Codes Reference">
-    ```typescript
-    const colors = {
-        reset: "\x1b[0m",
-        bold: "\x1b[1m",
-        red: "\x1b[31m",
-        green: "\x1b[32m",
-        yellow: "\x1b[33m",
-        blue: "\x1b[34m",
-        magenta: "\x1b[35m",
-        cyan: "\x1b[36m",
-    };
+<details>
+<summary>**ANSI Color Codes Reference**</summary>
 
-    // Example: Cyan border
-    borderColor: (text) => `${colors.cyan}${text}${colors.reset}`,
+```typescript
+const colors = {
+    reset: "\x1b[0m",
+    bold: "\x1b[1m",
+    red: "\x1b[31m",
+    green: "\x1b[32m",
+    yellow: "\x1b[33m",
+    blue: "\x1b[34m",
+    magenta: "\x1b[35m",
+    cyan: "\x1b[36m",
+};
 
-    // Example: Bold yellow header
-    headerTextColor: (text) => `${colors.bold}${colors.yellow}${text}${colors.reset}`,
-    ```
-  </Accordion>
-</Accordions>
+// Example: Cyan border
+borderColor: (text) => `${colors.cyan}${text}${colors.reset}`,
+
+// Example: Bold yellow header
+headerTextColor: (text) => `${colors.bold}${colors.yellow}${text}${colors.reset}`,
+```
+</details>
 
 ## Error Format Customization
 
 Individual error handlers can be customized with formatters.
 
-<Accordions>
-  <Accordion title="JSON Error Handler">
-    ```typescript title="json-formatter.ts"
-    import { jsonErrorHandler } from "@visulima/error-handler/error-handler/json";
+<details>
+<summary>**JSON Error Handler**</summary>
 
-    const handler = jsonErrorHandler(error, req, res, {
-        formatter: (error, statusCode) => ({
-            success: false,
-            error: {
-                message: error.message,
-                code: statusCode,
-                timestamp: new Date().toISOString(),
-            },
-        }),
-    });
-    ```
-  </Accordion>
+```ts title="json-formatter.ts"
+import { jsonErrorHandler } from "@visulima/error-handler/error-handler/json";
 
-  <Accordion title="JSONP Error Handler">
-    ```typescript title="jsonp-formatter.ts"
-    import { jsonpErrorHandler } from "@visulima/error-handler/error-handler/jsonp";
-
-    const handler = jsonpErrorHandler(error, req, res, {
-        callbackName: "callback", // default
-        formatter: (error, statusCode) => ({
-            error: error.message,
-            status: statusCode,
-        }),
-    });
-    ```
-  </Accordion>
-
-  <Accordion title="Text Error Handler">
-    ```typescript title="text-formatter.ts"
-    import { textErrorHandler } from "@visulima/error-handler/error-handler/text";
-
-    const handler = textErrorHandler(error, req, res, {
-        formatter: (error, statusCode, stackTrace) => {
-            return `ERROR ${statusCode}: ${error.message}\n\n${stackTrace || ""}`;
+const handler = jsonErrorHandler(error, req, res, {
+    formatter: (error, statusCode) => ({
+        success: false,
+        error: {
+            message: error.message,
+            code: statusCode,
+            timestamp: new Date().toISOString(),
         },
-    });
-    ```
-  </Accordion>
+    }),
+});
+```
+</details>
 
-  <Accordion title="XML Error Handler">
-    ```typescript title="xml-formatter.ts"
-    import { xmlErrorHandler } from "@visulima/error-handler/error-handler/xml";
+<details>
+<summary>**JSONP Error Handler**</summary>
 
-    const handler = xmlErrorHandler(error, req, res, {
-        formatter: (error, statusCode) => ({
-            error: {
-                code: statusCode,
-                message: error.message,
-                timestamp: new Date().toISOString(),
-            },
-        }),
-        xmlOptions: {
-            header: true,
-            indent: "  ",
+```ts title="jsonp-formatter.ts"
+import { jsonpErrorHandler } from "@visulima/error-handler/error-handler/jsonp";
+
+const handler = jsonpErrorHandler(error, req, res, {
+    callbackName: "callback", // default
+    formatter: (error, statusCode) => ({
+        error: error.message,
+        status: statusCode,
+    }),
+});
+```
+</details>
+
+<details>
+<summary>**Text Error Handler**</summary>
+
+```ts title="text-formatter.ts"
+import { textErrorHandler } from "@visulima/error-handler/error-handler/text";
+
+const handler = textErrorHandler(error, req, res, {
+    formatter: (error, statusCode, stackTrace) => {
+        return `ERROR ${statusCode}: ${error.message}\n\n${stackTrace || ""}`;
+    },
+});
+```
+</details>
+
+<details>
+<summary>**XML Error Handler**</summary>
+
+```ts title="xml-formatter.ts"
+import { xmlErrorHandler } from "@visulima/error-handler/error-handler/xml";
+
+const handler = xmlErrorHandler(error, req, res, {
+    formatter: (error, statusCode) => ({
+        error: {
+            code: statusCode,
+            message: error.message,
+            timestamp: new Date().toISOString(),
         },
-    });
-    ```
-  </Accordion>
-</Accordions>
+    }),
+    xmlOptions: {
+        header: true,
+        indent: "  ",
+    },
+});
+```
+</details>
 
 ## Environment-Based Configuration
 
 ### Basic Environment Detection
 
-```typescript title="env-config.ts"
+```ts title="env-config.ts"
 const isDevelopment = process.env.NODE_ENV === "development";
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -570,7 +532,7 @@ const handler = await httpHandler(error, {
 
 ### Advanced Environment Configuration
 
-```typescript title="env-advanced.ts"
+```ts title="env-advanced.ts"
 interface ErrorHandlerConfig {
     showTrace: boolean;
     logErrors: boolean;
@@ -609,7 +571,7 @@ const handler = await httpHandler(error, {
 
 Create a configuration file:
 
-```typescript title="error-handler.config.ts"
+```ts title="error-handler.config.ts"
 import type { HttpHandlerOptions } from "@visulima/error-handler";
 
 export const errorHandlerConfig: HttpHandlerOptions = {
@@ -626,7 +588,7 @@ export const errorHandlerConfig: HttpHandlerOptions = {
 
 Use in your application:
 
-```typescript title="app.ts"
+```ts title="app.ts"
 import httpHandler from "@visulima/error-handler/handler/http/node";
 import { errorHandlerConfig } from "./error-handler.config";
 
@@ -638,7 +600,7 @@ app.use(async (err, req, res, next) => {
 
 ### Per-Route Configuration
 
-```typescript title="per-route-config.ts"
+```ts title="per-route-config.ts"
 const routeConfigs = {
     api: {
         showTrace: false,
@@ -669,38 +631,26 @@ app.use(async (err, req, res, next) => {
 
 ## Best Practices
 
-<Callout type="warn">
-  **Security First**
-  
-  - Never show traces in production
-  - Always sanitize error messages
-  - Use CSP nonces for inline styles
-  - Validate and escape user input in error messages
-</Callout>
+> **Warning - Security First**
+> - Never show traces in production
+> - Always sanitize error messages
+> - Use CSP nonces for inline styles
+> - Validate and escape user input in error messages
 
-<Callout type="info">
-  **Logging**
-  
-  - Always log errors for debugging
-  - Include request context in logs
-  - Use structured logging
-  - Send errors to monitoring services
-</Callout>
+> **Logging**
+> - Always log errors for debugging
+> - Include request context in logs
+> - Use structured logging
+> - Send errors to monitoring services
 
-<Callout type="tip">
-  **Performance**
-  
-  - Cache error templates
-  - Use async logging (fire and forget)
-  - Avoid expensive operations in error handlers
-  - Consider rate limiting error responses
-</Callout>
+> **Performance**
+> - Cache error templates
+> - Use async logging (fire and forget)
+> - Avoid expensive operations in error handlers
+> - Consider rate limiting error responses
 
-<Callout type="info">
-  **User Experience**
-  
-  - Provide helpful error messages
-  - Use branded error pages in production
-  - Include support contact information
-  - Add error tracking IDs for support
-</Callout>
+> **User Experience**
+> - Provide helpful error messages
+> - Use branded error pages in production
+> - Include support contact information
+> - Add error tracking IDs for support
