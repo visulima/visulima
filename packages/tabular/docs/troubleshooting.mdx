@@ -11,6 +11,10 @@ This guide helps you resolve common issues when working with `@visulima/tabular`
 
 ### Borders Not Displaying Correctly
 
+<Callout type="warn">
+If border characters appear as question marks or boxes, your terminal may not support Unicode.
+</Callout>
+
 **Problem**: Border characters appear as question marks or boxes.
 
 **Solution**: Ensure your terminal supports Unicode:
@@ -34,6 +38,10 @@ export LC_ALL=en_US.UTF-8
 ```
 
 ### Colors Not Showing
+
+<Callout type="warn">
+Colors require terminal support for ANSI escape codes. Some terminals may not support colors.
+</Callout>
 
 **Problem**: ANSI colors are not displayed, showing escape codes instead.
 
@@ -406,8 +414,8 @@ const table = createTable({
 
 If your issue isn't covered here:
 
-1. **Check the Examples**: Review the [examples](/docs/examples) for similar use cases
-2. **Read the API Docs**: Consult the [API reference](/docs/api) for detailed information
+1. **Check the Examples**: Review the [examples](./examples) for similar use cases
+2. **Read the API Docs**: Consult the [Table API](./api/table) and [Grid API](./api/grid) for detailed information
 3. **Search Issues**: Look for similar issues on [GitHub](https://github.com/visulima/visulima/issues)
 4. **Create an Issue**: Report bugs with:
    - Minimal reproduction example
@@ -444,6 +452,7 @@ console.log({
 
 ## See Also
 
-- [Getting Started](/docs/getting-started) - Basic usage guide
-- [API Reference](/docs/api) - Complete API documentation
-- [Examples](/docs/examples) - Practical examples
+- [Getting Started](./getting-started) - Basic usage guide
+- [Table API](./api/table) - Table API documentation
+- [Grid API](./api/grid) - Grid API documentation
+- [Examples](./examples) - Practical examples

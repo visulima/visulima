@@ -1,0 +1,22 @@
+{
+  "title": "@visulima/tabular",
+  "pages": [
+    "index",
+    "installation",
+    "getting-started",
+    "---Guides---",
+    "styling",
+    "examples",
+    "advanced",
+    "---API Reference---",
+    {
+      "title": "API",
+      "pages": [
+        "api/table",
+        "api/grid"
+      ]
+    },
+    "---Help---",
+    "troubleshooting"
+  ]
+}
