@@ -1,0 +1,88 @@
+---
+title: Introduction
+description: A powerful and flexible CLI table and grid generator for Node.js
+---
+
+# @visulima/tabular
+
+A powerful and flexible CLI table and grid generator for Node.js, written in TypeScript. Create beautiful ASCII tables or grids with customizable borders, padding, and alignment. Supports Unicode, colors, and ANSI escape codes.
+
+## Features
+
+- **Type-safe**: Full TypeScript support with comprehensive type definitions
+- **Unicode Support**: Handles CJK characters (Chinese, Japanese, Korean) and emojis correctly
+- **ANSI Colors**: Works seamlessly with ANSI escape codes and colors
+- **Flexible Styling**: Customizable borders, padding, and alignment options
+- **Column Configuration**: Individual column width and alignment settings
+- **Header Support**: Optional headers with custom styling
+- **Border Styles**: Multiple pre-defined border styles and custom border options
+- **Cell Spanning**: Support for rowSpan and colSpan
+- **Word Wrapping**: Automatic or configurable word wrapping
+- **Truncation**: Smart content truncation with customizable options
+
+## Quick Example
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+
+table.setHeaders(["Name", "Age", "City"]);
+table.addRow(["John Doe", "30", "New York"]);
+table.addRow(["Jane Smith", "25", "Los Angeles"]);
+
+console.log(table.toString());
+```
+
+Output:
+
+```
+┌────────────┬─────┬─────────────┐
+│ Name       │ Age │ City        │
+├────────────┼─────┼─────────────┤
+│ John Doe   │ 30  │ New York    │
+├────────────┼─────┼─────────────┤
+│ Jane Smith │ 25  │ Los Angeles │
+└────────────┴─────┴─────────────┘
+```
+
+## Core Components
+
+The package provides two main classes for creating tables:
+
+### Table
+
+High-level API for creating tables with headers and rows. Perfect for displaying tabular data in a structured format.
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+```
+
+### Grid
+
+Low-level API for more complex layouts and custom grid structures. Ideal for creating custom layouts with precise control.
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+
+const grid = createGrid({ columns: 3 });
+```
+
+## Next Steps
+
+<Cards>
+  <Card title="Installation" href="/docs/installation">
+    Learn how to install and set up @visulima/tabular
+  </Card>
+  <Card title="Getting Started" href="/docs/getting-started">
+    Create your first table in minutes
+  </Card>
+  <Card title="API Reference" href="/docs/api">
+    Explore the complete API documentation
+  </Card>
+  <Card title="Examples" href="/docs/examples">
+    Browse practical examples and use cases
+  </Card>
+</Cards>

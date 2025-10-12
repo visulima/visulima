@@ -1,0 +1,461 @@
+---
+title: Grid API
+description: Complete API reference for the Grid class
+---
+
+# Grid API
+
+The `Grid` class provides a low-level API for creating complex grid layouts with precise control over cell positioning, spanning, and styling.
+
+## Creating a Grid
+
+### createGrid(options)
+
+Creates a new Grid instance.
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+
+const grid = createGrid(options);
+```
+
+#### Parameters
+
+##### options (required)
+
+Type: `GridOptions`
+
+Configuration options for the grid:
+
+```typescript
+interface GridOptions {
+  // Number of columns in the grid (required)
+  columns: number;
+  
+  // Number of rows in the grid (0 for auto)
+  rows?: number;
+  
+  // Maximum width for the entire grid
+  maxWidth?: number;
+  
+  // Terminal width (overrides detected width)
+  terminalWidth?: number;
+  
+  // Default terminal width if detection fails (default: 80)
+  defaultTerminalWidth?: number;
+  
+  // Gap between cells
+  gap?: number;
+  
+  // Direction of auto-flow when adding items
+  autoFlow?: "row" | "column";
+  
+  // Default number of columns for auto-generated cells
+  autoColumns?: number;
+  
+  // Default number of rows for auto-generated cells
+  autoRows?: number;
+  
+  // Fixed column widths
+  fixedColumnWidths?: number[];
+  
+  // Fixed row heights
+  fixedRowHeights?: number[];
+  
+  // Whether to show borders
+  showBorders?: boolean;
+  
+  // Global word wrap options/flag
+  wordWrap?: boolean | Omit<WordWrapOptions, "width">;
+  
+  // Global truncation options/flag
+  truncate?: boolean | TruncateOptions;
+  
+  // Border style configuration
+  border?: BorderStyle;
+  
+  // Border color
+  borderColor?: AnsiColorObject | AnsiColorFunction;
+  
+  // Background color
+  backgroundColor?: AnsiColorObject | AnsiColorFunction;
+  
+  // Foreground color
+  foregroundColor?: AnsiColorObject | AnsiColorFunction;
+  
+  // Left padding
+  paddingLeft?: number;
+  
+  // Right padding
+  paddingRight?: number;
+}
+```
+
+## Methods
+
+### addItem()
+
+Adds a single item to the grid.
+
+```typescript
+grid.addItem(cell: GridCell)
+```
+
+#### Parameters
+
+- `cell`: The cell to add (can be a simple value or a GridItem object)
+
+#### Returns
+
+The Grid instance for method chaining.
+
+#### Example
+
+```typescript
+grid.addItem("Simple text");
+grid.addItem({ content: "Centered", hAlign: "center" });
+grid.addItem({ colSpan: 2, content: "Spans 2 columns" });
+```
+
+### addItems()
+
+Adds multiple items to the grid.
+
+```typescript
+grid.addItems(items: GridCell[])
+```
+
+#### Parameters
+
+- `items`: Array of items to add
+
+#### Returns
+
+The Grid instance for method chaining.
+
+#### Example
+
+```typescript
+grid.addItems([
+  "Cell 1",
+  "Cell 2",
+  { colSpan: 2, content: "Spans 2 columns" },
+  "Cell 3"
+]);
+```
+
+### setColumns()
+
+Sets the number of columns in the grid.
+
+```typescript
+grid.setColumns(columns: number)
+```
+
+#### Parameters
+
+- `columns`: Number of columns
+
+#### Returns
+
+The Grid instance for method chaining.
+
+### setRows()
+
+Sets the number of rows in the grid.
+
+```typescript
+grid.setRows(rows: number)
+```
+
+#### Parameters
+
+- `rows`: Number of rows
+
+#### Returns
+
+The Grid instance for method chaining.
+
+### setBorder()
+
+Sets the border style for the grid.
+
+```typescript
+grid.setBorder(border: BorderStyle)
+```
+
+#### Parameters
+
+- `border`: Border style configuration
+
+#### Returns
+
+The Grid instance for method chaining.
+
+### setShowBorders()
+
+Sets whether borders should be shown.
+
+```typescript
+grid.setShowBorders(show: boolean)
+```
+
+#### Parameters
+
+- `show`: Whether to show borders
+
+#### Returns
+
+The Grid instance for method chaining.
+
+### setMaxWidth()
+
+Sets the maximum width for the grid.
+
+```typescript
+grid.setMaxWidth(width: number)
+```
+
+#### Parameters
+
+- `width`: Maximum width
+
+#### Returns
+
+The Grid instance for method chaining.
+
+### toString()
+
+Converts the grid to a string representation.
+
+```typescript
+grid.toString(): string
+```
+
+#### Returns
+
+A string containing the rendered grid.
+
+## Cell Options
+
+Each cell can be a simple value or an object with options:
+
+### GridCell Type
+
+```typescript
+type GridCell = Content | GridItem;
+
+type Content = string | number | boolean | bigint | null | undefined;
+
+interface GridItem {
+  // Cell content
+  content: Content;
+  
+  // Number of columns this cell spans
+  colSpan?: number;
+  
+  // Number of rows this cell spans
+  rowSpan?: number;
+  
+  // Horizontal alignment
+  hAlign?: "left" | "center" | "right";
+  
+  // Vertical alignment
+  vAlign?: "top" | "middle" | "bottom";
+  
+  // Maximum width before truncation
+  maxWidth?: number;
+  
+  // Truncation options
+  truncate?: boolean | TruncateOptions;
+  
+  // Word wrap options
+  wordWrap?: boolean | Omit<WordWrapOptions, "width">;
+  
+  // Background color
+  backgroundColor?: AnsiColorObject | AnsiColorFunction;
+  
+  // Foreground color
+  foregroundColor?: AnsiColorObject | AnsiColorFunction;
+}
+```
+
+## Usage Examples
+
+### Basic Grid
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+
+const grid = createGrid({ columns: 3 });
+
+grid.addItems([
+  "Cell 1", "Cell 2", "Cell 3",
+  "Cell 4", "Cell 5", "Cell 6",
+  "Cell 7", "Cell 8", "Cell 9"
+]);
+
+console.log(grid.toString());
+```
+
+### Grid with Cell Spanning
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+
+const grid = createGrid({ columns: 3 });
+
+grid.addItems([
+  { colSpan: 3, content: "Header", hAlign: "center" },
+  { rowSpan: 2, content: "Sidebar", vAlign: "middle" },
+  "Content 1",
+  "Content 2",
+  "Content 3",
+  "Content 4"
+]);
+
+console.log(grid.toString());
+```
+
+### Grid with Fixed Sizes
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+
+const grid = createGrid({
+  columns: 3,
+  fixedColumnWidths: [20, 30, 15],
+  fixedRowHeights: [2, 3, 2]
+});
+
+grid.addItems([
+  "Cell 1", "Cell 2", "Cell 3",
+  "Cell 4", "Cell 5", "Cell 6",
+  "Cell 7", "Cell 8", "Cell 9"
+]);
+
+console.log(grid.toString());
+```
+
+### Grid with Custom Layout
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+import { ROUNDED_BORDER } from "@visulima/tabular/style";
+
+const grid = createGrid({
+  columns: 4,
+  gap: 1,
+  border: ROUNDED_BORDER,
+  paddingLeft: 2,
+  paddingRight: 2
+});
+
+grid.addItems([
+  { colSpan: 4, content: "Title", hAlign: "center" },
+  { rowSpan: 3, content: "Menu", vAlign: "top" },
+  { colSpan: 3, content: "Content Area", hAlign: "center" },
+  "Item 1",
+  "Item 2",
+  "Item 3",
+  { colSpan: 3, content: "Footer", hAlign: "center" }
+]);
+
+console.log(grid.toString());
+```
+
+### Dashboard Layout
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+import { blue, green, red, yellow } from "@visulima/colorize";
+
+const grid = createGrid({
+  columns: 2,
+  gap: 1,
+  paddingLeft: 1,
+  paddingRight: 1
+});
+
+grid.addItems([
+  { colSpan: 2, content: blue("System Dashboard"), hAlign: "center" },
+  { content: green("CPU: 45%"), hAlign: "center" },
+  { content: yellow("Memory: 78%"), hAlign: "center" },
+  { content: green("Disk: 34%"), hAlign: "center" },
+  { content: red("Network: 92%"), hAlign: "center" }
+]);
+
+console.log(grid.toString());
+```
+
+### Grid with Alignment
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+
+const grid = createGrid({
+  columns: 3,
+  fixedRowHeights: [3, 3, 3]
+});
+
+grid.addItems([
+  { content: "Top\nLeft", hAlign: "left", vAlign: "top" },
+  { content: "Top\nCenter", hAlign: "center", vAlign: "top" },
+  { content: "Top\nRight", hAlign: "right", vAlign: "top" },
+  { content: "Middle\nLeft", hAlign: "left", vAlign: "middle" },
+  { content: "Middle\nCenter", hAlign: "center", vAlign: "middle" },
+  { content: "Middle\nRight", hAlign: "right", vAlign: "middle" },
+  { content: "Bottom\nLeft", hAlign: "left", vAlign: "bottom" },
+  { content: "Bottom\nCenter", hAlign: "center", vAlign: "bottom" },
+  { content: "Bottom\nRight", hAlign: "right", vAlign: "bottom" }
+]);
+
+console.log(grid.toString());
+```
+
+### Responsive Grid
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+
+const grid = createGrid({
+  columns: 3,
+  maxWidth: 80,
+  wordWrap: true
+});
+
+grid.addItems([
+  { content: "This is a very long text that will wrap automatically" },
+  { content: "Another long piece of text that needs to wrap" },
+  { content: "Short text" },
+  { content: "More content here that might need to wrap depending on the available space" }
+]);
+
+console.log(grid.toString());
+```
+
+### Grid with Colors
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+import { bgBlue, bgGreen, bgRed, white } from "@visulima/colorize";
+
+const grid = createGrid({
+  columns: 3,
+  gap: 0
+});
+
+grid.addItems([
+  { backgroundColor: bgRed, content: white("Error") },
+  { backgroundColor: bgGreen, content: white("Success") },
+  { backgroundColor: bgBlue, content: white("Info") }
+]);
+
+console.log(grid.toString());
+```
+
+## See Also
+
+- [Table API](/docs/api/table) - Higher-level API for tabular data
+- [Styling](/docs/styling) - Detailed styling options
+- [Examples](/docs/examples) - More practical examples

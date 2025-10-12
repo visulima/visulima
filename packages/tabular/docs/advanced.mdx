@@ -1,0 +1,543 @@
+---
+title: Advanced Usage
+description: Advanced features and techniques for @visulima/tabular
+---
+
+# Advanced Usage
+
+This guide covers advanced features and techniques for working with `@visulima/tabular`.
+
+## Complex Cell Spanning
+
+### Cross-Row and Column Spanning
+
+Create complex layouts with cells that span multiple rows and columns:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+
+table.setHeaders([
+  { colSpan: 2, content: "Personal Info", hAlign: "center" },
+  { rowSpan: 2, content: "Status", vAlign: "middle" }
+]);
+
+table.addRow([
+  "Name",
+  "Age",
+  "" // Placeholder for rowSpan cell
+]);
+
+table.addRows(
+  ["Alice", "28", "Active"],
+  ["Bob", "35", "Inactive"]
+);
+
+console.log(table.toString());
+```
+
+### Dynamic Spanning
+
+Calculate spans based on data:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+interface GroupedData {
+  group: string;
+  items: Array<{ name: string; value: string }>;
+}
+
+function createGroupedTable(data: GroupedData[]) {
+  const table = createTable();
+  
+  table.setHeaders(["Group", "Name", "Value"]);
+  
+  data.forEach(group => {
+    group.items.forEach((item, index) => {
+      if (index === 0) {
+        table.addRow([
+          { rowSpan: group.items.length, content: group.group, vAlign: "middle" },
+          item.name,
+          item.value
+        ]);
+      } else {
+        table.addRow(["", item.name, item.value]);
+      }
+    });
+  });
+  
+  return table;
+}
+
+const data = [
+  {
+    group: "Fruits",
+    items: [
+      { name: "Apple", value: "$1.50" },
+      { name: "Banana", value: "$0.75" }
+    ]
+  },
+  {
+    group: "Vegetables",
+    items: [
+      { name: "Carrot", value: "$1.20" },
+      { name: "Tomato", value: "$2.00" },
+      { name: "Lettuce", value: "$1.80" }
+    ]
+  }
+];
+
+const table = createGroupedTable(data);
+console.log(table.toString());
+```
+
+## Custom Rendering
+
+### Background Colors with Gradients
+
+Create visual effects using background colors:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+// Create a function that returns ANSI codes for different background intensities
+function bgIntensity(level: number): { open: string; close: string } {
+  const intensity = Math.round(level * 255);
+  return {
+    open: `\u001B[48;2;${intensity};${intensity};${intensity}m`,
+    close: "\u001B[49m"
+  };
+}
+
+const table = createTable();
+
+table.setHeaders(["Level", "Value"]);
+
+for (let i = 0; i <= 100; i += 20) {
+  table.addRow([
+    { backgroundColor: bgIntensity(i / 100), content: i.toString() },
+    "█".repeat(Math.floor(i / 5))
+  ]);
+}
+
+console.log(table.toString());
+```
+
+### Custom Cell Rendering
+
+Transform cell content before display:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD"
+  }).format(value);
+}
+
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }).format(date);
+}
+
+const table = createTable();
+
+table.setHeaders(["Date", "Description", "Amount"]);
+
+const transactions = [
+  { date: new Date("2024-01-15"), desc: "Salary", amount: 5000 },
+  { date: new Date("2024-01-18"), desc: "Groceries", amount: -120.50 },
+  { date: new Date("2024-01-20"), desc: "Utilities", amount: -85.00 }
+];
+
+transactions.forEach(t => {
+  table.addRow([
+    formatDate(t.date),
+    t.desc,
+    { 
+      content: formatCurrency(t.amount),
+      hAlign: "right"
+    }
+  ]);
+});
+
+console.log(table.toString());
+```
+
+## Performance Optimization
+
+### Lazy Rendering
+
+Defer rendering until needed:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+class LazyTable {
+  private table = createTable();
+  private rendered: string | null = null;
+  
+  addRow(row: any[]) {
+    this.rendered = null; // Invalidate cache
+    this.table.addRow(row);
+    return this;
+  }
+  
+  toString(): string {
+    if (this.rendered === null) {
+      this.rendered = this.table.toString();
+    }
+    return this.rendered;
+  }
+}
+
+const table = new LazyTable();
+table.addRow(["A", "B", "C"]);
+table.addRow(["1", "2", "3"]);
+
+// Renders only once
+console.log(table.toString());
+console.log(table.toString()); // Uses cached version
+```
+
+### Chunked Processing
+
+Process large datasets in chunks:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+function* processInChunks<T>(data: T[], chunkSize: number) {
+  for (let i = 0; i < data.length; i += chunkSize) {
+    yield data.slice(i, i + chunkSize);
+  }
+}
+
+async function displayLargeDataset(data: any[][]) {
+  const table = createTable();
+  table.setHeaders(["ID", "Name", "Value"]);
+  
+  for (const chunk of processInChunks(data, 100)) {
+    chunk.forEach(row => table.addRow(row));
+    
+    // Could write to stream or file here
+    await new Promise(resolve => setImmediate(resolve));
+  }
+  
+  return table.toString();
+}
+```
+
+## Streaming Output
+
+### Write to Streams
+
+Output tables to streams for large datasets:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { createWriteStream } from "fs";
+
+function streamTable(data: any[][], filePath: string) {
+  const stream = createWriteStream(filePath);
+  const table = createTable();
+  
+  table.setHeaders(Object.keys(data[0]));
+  
+  data.forEach(row => {
+    table.addRow(Object.values(row));
+  });
+  
+  stream.write(table.toString());
+  stream.end();
+}
+```
+
+### Progressive Display
+
+Show data as it becomes available:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+async function* fetchDataProgressively() {
+  // Simulate async data fetching
+  for (let i = 1; i <= 10; i++) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    yield { id: i, name: `Item ${i}`, status: "Complete" };
+  }
+}
+
+async function displayProgressively() {
+  const table = createTable();
+  table.setHeaders(["ID", "Name", "Status"]);
+  
+  for await (const item of fetchDataProgressively()) {
+    table.addRow([item.id.toString(), item.name, item.status]);
+    
+    // Clear and redraw
+    process.stdout.write("\u001B[2J\u001B[0;0f");
+    console.log(table.toString());
+  }
+}
+
+displayProgressively();
+```
+
+## Working with Large Tables
+
+### Pagination
+
+Implement table pagination:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+class PaginatedTable {
+  private data: any[][];
+  private pageSize: number;
+  
+  constructor(data: any[][], pageSize: number = 10) {
+    this.data = data;
+    this.pageSize = pageSize;
+  }
+  
+  getPage(page: number): string {
+    const start = page * this.pageSize;
+    const end = start + this.pageSize;
+    const pageData = this.data.slice(start, end);
+    
+    const table = createTable();
+    table.setHeaders(["ID", "Name", "Value"]);
+    
+    pageData.forEach(row => table.addRow(row));
+    
+    const totalPages = Math.ceil(this.data.length / this.pageSize);
+    table.addRow([
+      { colSpan: 3, content: `Page ${page + 1} of ${totalPages}`, hAlign: "center" }
+    ]);
+    
+    return table.toString();
+  }
+}
+
+const data = Array.from({ length: 100 }, (_, i) => [
+  i.toString(),
+  `Item ${i}`,
+  `Value ${i}`
+]);
+
+const paginatedTable = new PaginatedTable(data, 10);
+console.log(paginatedTable.getPage(0));
+```
+
+### Virtual Scrolling
+
+Display only visible rows:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+class VirtualTable {
+  private data: any[][];
+  private visibleRows: number;
+  private scrollPosition: number = 0;
+  
+  constructor(data: any[][], visibleRows: number = 20) {
+    this.data = data;
+    this.visibleRows = visibleRows;
+  }
+  
+  scroll(delta: number) {
+    this.scrollPosition = Math.max(
+      0,
+      Math.min(this.data.length - this.visibleRows, this.scrollPosition + delta)
+    );
+  }
+  
+  render(): string {
+    const table = createTable();
+    table.setHeaders(["Index", "Data"]);
+    
+    const visibleData = this.data.slice(
+      this.scrollPosition,
+      this.scrollPosition + this.visibleRows
+    );
+    
+    visibleData.forEach((row, i) => {
+      table.addRow([(this.scrollPosition + i).toString(), row[0]]);
+    });
+    
+    return table.toString();
+  }
+}
+```
+
+## Type Safety
+
+### Typed Table Builder
+
+Create type-safe table builders:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+interface TableRow {
+  id: number;
+  name: string;
+  email: string;
+  active: boolean;
+}
+
+class TypedTable<T extends Record<string, any>> {
+  private table = createTable();
+  private columns: (keyof T)[];
+  
+  constructor(columns: (keyof T)[]) {
+    this.columns = columns;
+    this.table.setHeaders(columns.map(c => String(c)));
+  }
+  
+  addRow(data: T) {
+    const row = this.columns.map(col => String(data[col]));
+    this.table.addRow(row);
+    return this;
+  }
+  
+  addRows(data: T[]) {
+    data.forEach(item => this.addRow(item));
+    return this;
+  }
+  
+  toString(): string {
+    return this.table.toString();
+  }
+}
+
+const table = new TypedTable<TableRow>(["id", "name", "email", "active"]);
+
+table.addRows([
+  { id: 1, name: "Alice", email: "alice@example.com", active: true },
+  { id: 2, name: "Bob", email: "bob@example.com", active: false }
+]);
+
+console.log(table.toString());
+```
+
+## Testing
+
+### Snapshot Testing
+
+Use tables in tests:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { test, expect } from "vitest";
+
+test("table renders correctly", () => {
+  const table = createTable();
+  table.setHeaders(["A", "B"]);
+  table.addRow(["1", "2"]);
+  
+  const output = table.toString();
+  expect(output).toMatchSnapshot();
+});
+
+test("table handles long content", () => {
+  const table = createTable({ maxWidth: 40 });
+  table.addRow([
+    { content: "Very long text that should wrap", wordWrap: true }
+  ]);
+  
+  const output = table.toString();
+  expect(output).toMatchSnapshot();
+});
+```
+
+### Assertion Helpers
+
+Create helpers for common assertions:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+function assertTableDimensions(
+  table: string,
+  expectedRows: number,
+  expectedColumns: number
+) {
+  const lines = table.split("\n").filter(l => l.includes("│"));
+  const dataLines = lines.filter(l => !l.includes("─"));
+  
+  expect(dataLines.length).toBe(expectedRows);
+  
+  if (dataLines.length > 0) {
+    const columns = dataLines[0].split("│").length - 1;
+    expect(columns).toBe(expectedColumns);
+  }
+}
+
+test("table has correct dimensions", () => {
+  const table = createTable();
+  table.setHeaders(["A", "B", "C"]);
+  table.addRow(["1", "2", "3"]);
+  
+  assertTableDimensions(table.toString(), 2, 3); // 1 header + 1 data row, 3 columns
+});
+```
+
+## Internationalization
+
+### Locale-Aware Formatting
+
+Format content based on locale:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+function createLocalizedTable(locale: string) {
+  const table = createTable();
+  
+  const dateFormatter = new Intl.DateTimeFormat(locale);
+  const numberFormatter = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: locale === "en-US" ? "USD" : "EUR"
+  });
+  
+  table.setHeaders(["Date", "Amount", "Description"]);
+  
+  return {
+    addTransaction(date: Date, amount: number, description: string) {
+      table.addRow([
+        dateFormatter.format(date),
+        numberFormatter.format(amount),
+        description
+      ]);
+    },
+    toString() {
+      return table.toString();
+    }
+  };
+}
+
+const usTable = createLocalizedTable("en-US");
+usTable.addTransaction(new Date(), 1234.56, "Payment");
+console.log(usTable.toString());
+
+const deTable = createLocalizedTable("de-DE");
+deTable.addTransaction(new Date(), 1234.56, "Zahlung");
+console.log(deTable.toString());
+```
+
+## See Also
+
+- [API Reference](/docs/api) - Complete API documentation
+- [Examples](/docs/examples) - More practical examples
+- [Styling](/docs/styling) - Detailed styling options

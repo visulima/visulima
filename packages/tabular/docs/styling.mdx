@@ -1,0 +1,585 @@
+---
+title: Styling and Customization
+description: Learn how to customize the appearance of tables and grids
+---
+
+# Styling and Customization
+
+This guide covers all the ways you can customize the appearance of your tables and grids.
+
+## Border Styles
+
+`@visulima/tabular` provides several pre-defined border styles that you can use out of the box.
+
+### Available Border Styles
+
+Import border styles from the `/style` export:
+
+```typescript
+import {
+  ASCII_BORDER,
+  BLOCK_BORDER,
+  DEFAULT_BORDER,
+  DOTS_BORDER,
+  DOUBLE_BORDER,
+  INNER_HALF_BLOCK_BORDER,
+  MARKDOWN_BORDER,
+  MINIMAL_BORDER,
+  NO_BORDER,
+  OUTER_HALF_BLOCK_BORDER,
+  ROUNDED_BORDER,
+  THICK_BORDER
+} from "@visulima/tabular/style";
+```
+
+### Border Style Examples
+
+#### DEFAULT_BORDER
+
+Standard box-drawing characters:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { DEFAULT_BORDER } from "@visulima/tabular/style";
+
+const table = createTable({
+  style: { border: DEFAULT_BORDER }
+});
+```
+
+```
+┌────┬────┐
+│ A  │ B  │
+├────┼────┤
+│ 1  │ 2  │
+└────┴────┘
+```
+
+#### ROUNDED_BORDER
+
+Rounded corners using Unicode characters:
+
+```
+╭────┬────╮
+│ A  │ B  │
+├────┼────┤
+│ 1  │ 2  │
+╰────┴────╯
+```
+
+#### DOUBLE_BORDER
+
+Double-line borders:
+
+```
+╔════╦════╗
+║ A  ║ B  ║
+╠════╬════╣
+║ 1  ║ 2  ║
+╚════╩════╝
+```
+
+#### MINIMAL_BORDER
+
+Only horizontal lines:
+
+```
+────────────
+ A  │ B  
+────────────
+ 1  │ 2  
+────────────
+```
+
+#### ASCII_BORDER
+
+ASCII characters only (for maximum compatibility):
+
+```
++----+----+
+| A  | B  |
++----+----+
+| 1  | 2  |
++----+----+
+```
+
+#### MARKDOWN_BORDER
+
+Markdown table syntax:
+
+```
+| A  | B  |
+|----|----| 
+| 1  | 2  |
+```
+
+#### DOTS_BORDER
+
+Dotted borders:
+
+```
+┌····┬····┐
+│ A  │ B  │
+├····┼····┤
+│ 1  │ 2  │
+└····┴····┘
+```
+
+#### NO_BORDER
+
+No borders at all:
+
+```
+ A   B  
+ 1   2  
+```
+
+#### BLOCK_BORDER
+
+Solid block borders:
+
+```
+█████████
+█ A █ B █
+█████████
+█ 1 █ 2 █
+█████████
+```
+
+#### THICK_BORDER
+
+Thick line borders:
+
+```
+┏━━━━┳━━━━┓
+┃ A  ┃ B  ┃
+┣━━━━╋━━━━┫
+┃ 1  ┃ 2  ┃
+┗━━━━┻━━━━┛
+```
+
+## Custom Border Styles
+
+You can create your own custom border styles:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const customBorder = {
+  topLeft: { char: "╔", width: 1 },
+  topBody: { char: "═", width: 1 },
+  topJoin: { char: "╤", width: 1 },
+  topRight: { char: "╗", width: 1 },
+  bottomLeft: { char: "╚", width: 1 },
+  bottomBody: { char: "═", width: 1 },
+  bottomJoin: { char: "╧", width: 1 },
+  bottomRight: { char: "╝", width: 1 },
+  bodyLeft: { char: "║", width: 1 },
+  bodyRight: { char: "║", width: 1 },
+  bodyJoin: { char: "│", width: 1 },
+  joinBody: { char: "─", width: 1 },
+  joinLeft: { char: "╟", width: 1 },
+  joinRight: { char: "╢", width: 1 },
+  joinJoin: { char: "┼", width: 1 }
+};
+
+const table = createTable({
+  style: { border: customBorder }
+});
+```
+
+## Colors
+
+### Using Color Libraries
+
+You can use any ANSI color library. We recommend `@visulima/colorize`:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { blue, green, red, yellow } from "@visulima/colorize";
+
+const table = createTable();
+
+table.setHeaders([
+  blue("Name"),
+  green("Status"),
+  yellow("Priority")
+]);
+
+table.addRow([
+  "Task 1",
+  green("Complete"),
+  yellow("High")
+]);
+
+table.addRow([
+  "Task 2",
+  red("Failed"),
+  red("Critical")
+]);
+```
+
+### Background Colors
+
+Apply background colors to cells:
+
+```typescript
+import { bgBlue, bgGreen, bgRed, white } from "@visulima/colorize";
+
+table.addRow([
+  { backgroundColor: bgGreen, content: white("Success") },
+  { backgroundColor: bgRed, content: white("Error") },
+  { backgroundColor: bgBlue, content: white("Info") }
+]);
+```
+
+### Border Colors
+
+Color the entire border:
+
+```typescript
+import { blue } from "@visulima/colorize";
+
+const table = createTable({
+  style: {
+    borderColor: blue
+  }
+});
+```
+
+### Cell-Specific Border Colors
+
+Override border color for specific cells:
+
+```typescript
+import { green, red } from "@visulima/colorize";
+
+table.addRow([
+  {
+    content: "Important",
+    style: {
+      borderColor: green
+    }
+  },
+  {
+    content: "Warning",
+    style: {
+      borderColor: red
+    }
+  }
+]);
+```
+
+### Custom Border Colors
+
+Color individual border components:
+
+```typescript
+import { blue, green, red, yellow } from "@visulima/colorize";
+
+const table = createTable({
+  style: {
+    border: {
+      topBody: { char: green("─"), width: 1 },
+      topLeft: { char: green("┌"), width: 1 },
+      topRight: { char: green("┐"), width: 1 },
+      topJoin: { char: green("┬"), width: 1 },
+      bottomBody: { char: red("─"), width: 1 },
+      bottomLeft: { char: red("└"), width: 1 },
+      bottomRight: { char: red("┘"), width: 1 },
+      bottomJoin: { char: red("┴"), width: 1 },
+      bodyLeft: { char: blue("│"), width: 1 },
+      bodyRight: { char: blue("│"), width: 1 },
+      bodyJoin: { char: blue("│"), width: 1 },
+      joinBody: { char: yellow("─"), width: 1 },
+      joinLeft: { char: yellow("├"), width: 1 },
+      joinRight: { char: yellow("┤"), width: 1 },
+      joinJoin: { char: yellow("┼"), width: 1 }
+    }
+  }
+});
+```
+
+## Padding
+
+### Global Padding
+
+Set padding for all cells:
+
+```typescript
+const table = createTable({
+  style: {
+    paddingLeft: 2,
+    paddingRight: 2
+  }
+});
+```
+
+### Asymmetric Padding
+
+Different left and right padding:
+
+```typescript
+const table = createTable({
+  style: {
+    paddingLeft: 3,
+    paddingRight: 1
+  }
+});
+```
+
+### No Padding
+
+Minimal space tables:
+
+```typescript
+const table = createTable({
+  style: {
+    paddingLeft: 0,
+    paddingRight: 0
+  }
+});
+```
+
+## Alignment
+
+### Horizontal Alignment
+
+Align content left, center, or right:
+
+```typescript
+table.setHeaders([
+  { content: "Left", hAlign: "left" },
+  { content: "Center", hAlign: "center" },
+  { content: "Right", hAlign: "right" }
+]);
+
+table.addRow([
+  { content: "Text", hAlign: "left" },
+  { content: "Text", hAlign: "center" },
+  { content: "Text", hAlign: "right" }
+]);
+```
+
+### Vertical Alignment
+
+For multi-line content:
+
+```typescript
+table.addRow([
+  { content: "Top\nAligned\nText", vAlign: "top" },
+  { content: "Middle\nAligned\nText", vAlign: "middle" },
+  { content: "Bottom\nAligned\nText", vAlign: "bottom" }
+]);
+```
+
+## Sizing
+
+### Maximum Width
+
+Limit the entire table width:
+
+```typescript
+const table = createTable({
+  maxWidth: 80
+});
+```
+
+### Fixed Column Widths
+
+Set specific widths for columns:
+
+```typescript
+// All columns same width
+const table1 = createTable({
+  columnWidths: 20
+});
+
+// Different widths per column
+const table2 = createTable({
+  columnWidths: [10, 30, 15]
+});
+```
+
+### Fixed Row Heights
+
+Set specific heights for rows:
+
+```typescript
+// All rows same height
+const table1 = createTable({
+  rowHeights: 3
+});
+
+// Different heights per row
+const table2 = createTable({
+  rowHeights: [2, 3, 2]
+});
+```
+
+### Cell Maximum Width
+
+Limit individual cell widths:
+
+```typescript
+table.addRow([
+  { content: "This will be limited", maxWidth: 15 }
+]);
+```
+
+## Content Formatting
+
+### Word Wrapping
+
+Enable automatic word wrapping:
+
+```typescript
+// Global word wrap
+const table = createTable({
+  wordWrap: true
+});
+
+// Cell-specific word wrap
+table.addRow([
+  {
+    content: "This long text will wrap automatically",
+    wordWrap: true
+  }
+]);
+
+// Word wrap with options
+table.addRow([
+  {
+    content: "Text with custom wrap",
+    wordWrap: {
+      trim: true,
+      newline: "\n"
+    }
+  }
+]);
+```
+
+### Truncation
+
+Truncate content that's too long:
+
+```typescript
+// Simple truncation
+table.addRow([
+  {
+    content: "This will be truncated if too long",
+    maxWidth: 15,
+    truncate: true
+  }
+]);
+
+// Truncation with custom options
+table.addRow([
+  {
+    content: "Custom truncation",
+    maxWidth: 15,
+    truncate: {
+      position: "middle",  // "start", "middle", or "end"
+      separator: "..."
+    }
+  }
+]);
+```
+
+### Handling Special Characters
+
+#### CJK Characters
+
+Full-width characters are automatically handled:
+
+```typescript
+table.addRow([
+  "English text",
+  "中文测试",      // Chinese
+  "日本語テスト",   // Japanese
+  "한국어테스트"    // Korean
+]);
+```
+
+#### Emojis
+
+Emojis are properly measured and displayed:
+
+```typescript
+table.addRow([
+  "Status: ✅",
+  "Progress: ⬆️",
+  "Warning: ⚠️"
+]);
+```
+
+#### ANSI Escape Codes
+
+Colors and styles are preserved:
+
+```typescript
+import { bold, italic, underline } from "@visulima/colorize";
+
+table.addRow([
+  bold("Bold text"),
+  italic("Italic text"),
+  underline("Underlined text")
+]);
+```
+
+## Complete Styling Example
+
+Here's a comprehensive example combining multiple styling options:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { ROUNDED_BORDER } from "@visulima/tabular/style";
+import { bgBlue, bgGreen, bgRed, blue, bold, green, red, white } from "@visulima/colorize";
+
+const table = createTable({
+  maxWidth: 100,
+  wordWrap: true,
+  style: {
+    border: ROUNDED_BORDER,
+    borderColor: blue,
+    paddingLeft: 2,
+    paddingRight: 2
+  }
+});
+
+table.setHeaders([
+  { content: bold("Server"), hAlign: "left" },
+  { content: bold("Status"), hAlign: "center" },
+  { content: bold("Load"), hAlign: "center" },
+  { content: bold("Uptime"), hAlign: "right" }
+]);
+
+table.addRows(
+  [
+    "API Server",
+    { backgroundColor: bgGreen, content: white("Online") },
+    { content: green("28%"), hAlign: "center" },
+    { content: "24d 12h", hAlign: "right" }
+  ],
+  [
+    "Database",
+    { backgroundColor: bgBlue, content: white("Healthy") },
+    { content: blue("45%"), hAlign: "center" },
+    { content: "15d 6h", hAlign: "right" }
+  ],
+  [
+    "Cache",
+    { backgroundColor: bgRed, content: white("Critical") },
+    { content: red("92%"), hAlign: "center" },
+    { content: "7d 3h", hAlign: "right" }
+  ]
+);
+
+console.log(table.toString());
+```
+
+## See Also
+
+- [Table API](/docs/api/table) - Complete Table API reference
+- [Grid API](/docs/api/grid) - Complete Grid API reference
+- [Examples](/docs/examples) - More practical examples

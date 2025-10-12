@@ -1,0 +1,553 @@
+---
+title: Examples
+description: Practical examples and use cases for @visulima/tabular
+---
+
+# Examples
+
+This page provides practical examples for common use cases with `@visulima/tabular`.
+
+## Basic Examples
+
+### Simple Data Table
+
+Display tabular data with headers and rows:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const users = [
+  { name: "Alice Johnson", email: "alice@example.com", role: "Admin" },
+  { name: "Bob Smith", email: "bob@example.com", role: "User" },
+  { name: "Charlie Brown", email: "charlie@example.com", role: "Editor" }
+];
+
+const table = createTable();
+table.setHeaders(["Name", "Email", "Role"]);
+
+users.forEach(user => {
+  table.addRow([user.name, user.email, user.role]);
+});
+
+console.log(table.toString());
+```
+
+### Comparison Table
+
+Compare different items side by side:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { DOUBLE_BORDER } from "@visulima/tabular/style";
+
+const table = createTable({
+  style: { border: DOUBLE_BORDER }
+});
+
+table.setHeaders([
+  { content: "Feature", hAlign: "left" },
+  { content: "Basic", hAlign: "center" },
+  { content: "Pro", hAlign: "center" },
+  { content: "Enterprise", hAlign: "center" }
+]);
+
+table.addRows(
+  ["Storage", "10 GB", "100 GB", "Unlimited"],
+  ["Users", "1", "10", "Unlimited"],
+  ["Support", "Email", "Priority", "24/7"],
+  ["Price", "$9/mo", "$29/mo", "$99/mo"]
+);
+
+console.log(table.toString());
+```
+
+## CLI Tool Examples
+
+### Server Status Dashboard
+
+Monitor server health:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { ROUNDED_BORDER } from "@visulima/tabular/style";
+import { bgGreen, bgRed, bgYellow, bold, green, red, white, yellow } from "@visulima/colorize";
+
+const table = createTable({
+  style: {
+    border: ROUNDED_BORDER,
+    paddingLeft: 2,
+    paddingRight: 2
+  }
+});
+
+table.setHeaders([
+  { content: bold("Server"), hAlign: "left" },
+  { content: bold("Status"), hAlign: "center" },
+  { content: bold("CPU"), hAlign: "center" },
+  { content: bold("Memory"), hAlign: "center" },
+  { content: bold("Uptime"), hAlign: "right" }
+]);
+
+table.addRows(
+  [
+    "api-server-01",
+    { backgroundColor: bgGreen, content: white("● Online") },
+    green("28%"),
+    green("45%"),
+    "24d 12h"
+  ],
+  [
+    "api-server-02",
+    { backgroundColor: bgYellow, content: white("⚠ Warning") },
+    yellow("78%"),
+    yellow("82%"),
+    "15d 6h"
+  ],
+  [
+    "cache-server",
+    { backgroundColor: bgRed, content: white("✖ Down") },
+    red("95%"),
+    red("98%"),
+    "7d 3h"
+  ]
+);
+
+console.log(table.toString());
+```
+
+### Build Results
+
+Display build or test results:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { green, red, yellow } from "@visulima/colorize";
+
+const table = createTable();
+
+table.setHeaders([
+  "Test Suite",
+  { content: "Status", hAlign: "center" },
+  { content: "Tests", hAlign: "right" },
+  { content: "Duration", hAlign: "right" }
+]);
+
+table.addRows(
+  ["Unit Tests", green("✓ Passed"), "142/142", "3.2s"],
+  ["Integration Tests", yellow("⚠ Skipped"), "0/28", "0s"],
+  ["E2E Tests", red("✖ Failed"), "8/12", "45.7s"]
+);
+
+table.addRow([
+  { colSpan: 2, content: "Total" },
+  { content: "150/182", hAlign: "right" },
+  { content: "48.9s", hAlign: "right" }
+]);
+
+console.log(table.toString());
+```
+
+### Package Information
+
+Display package dependencies or information:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { MINIMAL_BORDER } from "@visulima/tabular/style";
+
+const table = createTable({
+  style: {
+    border: MINIMAL_BORDER,
+    paddingLeft: 1,
+    paddingRight: 3
+  }
+});
+
+table.setHeaders(["Package", "Current", "Wanted", "Latest", "Type"]);
+
+table.addRows(
+  ["typescript", "5.0.4", "5.0.4", "5.3.2", "devDependencies"],
+  ["react", "18.2.0", "18.2.0", "18.2.0", "dependencies"],
+  ["eslint", "8.45.0", "8.52.0", "8.52.0", "devDependencies"],
+  ["jest", "29.5.0", "29.7.0", "29.7.0", "devDependencies"]
+);
+
+console.log(table.toString());
+```
+
+## Data Visualization
+
+### Progress Tracking
+
+Show progress bars in tables:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { green, yellow, red } from "@visulima/colorize";
+
+function progressBar(percent: number): string {
+  const width = 20;
+  const filled = Math.round(width * (percent / 100));
+  const bar = "█".repeat(filled) + "░".repeat(width - filled);
+  
+  let color = green;
+  if (percent < 50) color = red;
+  else if (percent < 80) color = yellow;
+  
+  return color(bar);
+}
+
+const table = createTable();
+
+table.setHeaders(["Task", "Progress", "Status"]);
+
+table.addRows(
+  ["Data Migration", progressBar(100), green("Complete")],
+  ["API Integration", progressBar(65), yellow("In Progress")],
+  ["Testing", progressBar(30), red("Blocked")]
+);
+
+console.log(table.toString());
+```
+
+### Financial Report
+
+Display financial data:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { bold, green, red } from "@visulima/colorize";
+
+const table = createTable();
+
+table.setHeaders([
+  { content: "Category", hAlign: "left" },
+  { content: "Q1", hAlign: "right" },
+  { content: "Q2", hAlign: "right" },
+  { content: "Q3", hAlign: "right" },
+  { content: "Q4", hAlign: "right" }
+]);
+
+table.addRows(
+  ["Revenue", "$125,000", "$138,000", "$142,000", "$155,000"],
+  ["Expenses", "$82,000", "$85,000", "$88,000", "$90,000"],
+  ["", "", "", "", ""]
+);
+
+table.addRow([
+  bold("Net Income"),
+  { content: green("$43,000"), hAlign: "right" },
+  { content: green("$53,000"), hAlign: "right" },
+  { content: green("$54,000"), hAlign: "right" },
+  { content: green("$65,000"), hAlign: "right" }
+]);
+
+console.log(table.toString());
+```
+
+## Advanced Layouts
+
+### Multi-Level Headers
+
+Create tables with multiple header rows:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+
+table.setHeaders([
+  [
+    { colSpan: 4, content: "Annual Report 2024", hAlign: "center" }
+  ],
+  [
+    { colSpan: 2, content: "H1", hAlign: "center" },
+    { colSpan: 2, content: "H2", hAlign: "center" }
+  ],
+  ["Q1", "Q2", "Q3", "Q4"]
+]);
+
+table.addRow(["$50K", "$60K", "$55K", "$65K"]);
+
+console.log(table.toString());
+```
+
+### Dashboard Layout with Grid
+
+Create a complex dashboard:
+
+```typescript
+import { createGrid } from "@visulima/tabular";
+import { ROUNDED_BORDER } from "@visulima/tabular/style";
+import { blue, bold, green, yellow } from "@visulima/colorize";
+
+const grid = createGrid({
+  columns: 2,
+  gap: 1,
+  border: ROUNDED_BORDER,
+  paddingLeft: 2,
+  paddingRight: 2
+});
+
+grid.addItems([
+  { colSpan: 2, content: bold(blue("System Dashboard")), hAlign: "center" },
+  { content: `${bold("CPU Usage")}\n${green("45%")}`, vAlign: "middle" },
+  { content: `${bold("Memory")}\n${yellow("78%")}`, vAlign: "middle" },
+  { content: `${bold("Disk I/O")}\n${green("12 MB/s")}`, vAlign: "middle" },
+  { content: `${bold("Network")}\n${green("350 KB/s")}`, vAlign: "middle" }
+]);
+
+console.log(grid.toString());
+```
+
+### Nested Information
+
+Display hierarchical data:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+
+table.setHeaders(["Component", "Status", "Details"]);
+
+table.addRows(
+  [
+    { rowSpan: 3, content: "API Service", vAlign: "top" },
+    "Health Check",
+    "Passing"
+  ],
+  ["Authentication", "Passing"],
+  ["Rate Limiting", "Active"]
+);
+
+table.addRows(
+  [
+    { rowSpan: 2, content: "Database", vAlign: "top" },
+    "Connection Pool",
+    "50/100"
+  ],
+  ["Query Time", "< 100ms"]
+);
+
+console.log(table.toString());
+```
+
+## Responsive Tables
+
+### Word Wrapping for Long Content
+
+Handle long text gracefully:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+  maxWidth: 80,
+  wordWrap: true
+});
+
+table.setHeaders(["Command", "Description"]);
+
+table.addRows(
+  [
+    "install",
+    "Installs all dependencies listed in package.json. Creates node_modules directory if it doesn't exist."
+  ],
+  [
+    "update",
+    "Updates all dependencies to their latest versions according to the version ranges specified in package.json."
+  ],
+  [
+    "build",
+    "Compiles TypeScript code to JavaScript and bundles all assets for production deployment."
+  ]
+);
+
+console.log(table.toString());
+```
+
+### Mixed Wrapping and Truncation
+
+Combine word wrapping with truncation:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+
+table.setHeaders(["Title", "Description", "Status"]);
+
+table.addRow([
+  { content: "Feature Implementation", maxWidth: 15, truncate: true },
+  { 
+    content: "Implement the new authentication system with OAuth2 support and multi-factor authentication",
+    wordWrap: true,
+    maxWidth: 40
+  },
+  "In Progress"
+]);
+
+console.log(table.toString());
+```
+
+## Special Use Cases
+
+### Configuration Display
+
+Show configuration values:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { NO_BORDER } from "@visulima/tabular/style";
+import { blue, bold } from "@visulima/colorize";
+
+const table = createTable({
+  style: {
+    border: NO_BORDER,
+    paddingLeft: 0,
+    paddingRight: 2
+  }
+});
+
+const config = {
+  "Server Port": "3000",
+  "Database URL": "postgresql://localhost:5432/mydb",
+  "API Key": "*********************",
+  "Log Level": "debug",
+  "Max Connections": "100"
+};
+
+Object.entries(config).forEach(([key, value]) => {
+  table.addRow([bold(blue(key)), value]);
+});
+
+console.log(table.toString());
+```
+
+### Diff Display
+
+Show differences between versions:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { green, red } from "@visulima/colorize";
+
+const table = createTable();
+
+table.setHeaders(["File", "Changes", "Lines"]);
+
+table.addRows(
+  ["src/api/auth.ts", `${green("+15")} ${red("-8")}`, "247"],
+  ["src/utils/helpers.ts", `${green("+3")} ${red("-1")}`, "89"],
+  ["tests/auth.test.ts", `${green("+42")} ${red("-0")}`, "156"]
+);
+
+console.log(table.toString());
+```
+
+### Log Viewer
+
+Display log entries:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { blue, green, red, yellow } from "@visulima/colorize";
+
+const table = createTable();
+
+table.setHeaders([
+  { content: "Time", hAlign: "left" },
+  { content: "Level", hAlign: "center" },
+  { content: "Message", hAlign: "left" }
+]);
+
+table.addRows(
+  ["12:34:56", blue("INFO"), "Server started on port 3000"],
+  ["12:35:12", green("SUCCESS"), "Database connection established"],
+  ["12:35:45", yellow("WARN"), "High memory usage detected"],
+  ["12:36:22", red("ERROR"), "Failed to connect to external API"]
+);
+
+console.log(table.toString());
+```
+
+## Integration Examples
+
+### Using with Inquirer
+
+Combine with CLI prompts:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import inquirer from "inquirer";
+
+const users = [
+  { id: 1, name: "Alice", role: "Admin" },
+  { id: 2, name: "Bob", role: "User" },
+  { id: 3, name: "Charlie", role: "Editor" }
+];
+
+// Display users
+const table = createTable();
+table.setHeaders(["ID", "Name", "Role"]);
+users.forEach(user => {
+  table.addRow([user.id.toString(), user.name, user.role]);
+});
+console.log(table.toString());
+
+// Prompt for selection
+const { userId } = await inquirer.prompt([
+  {
+    type: "input",
+    name: "userId",
+    message: "Select user ID:"
+  }
+]);
+```
+
+### Live Updates
+
+Update table content in real-time:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+function clearScreen() {
+  process.stdout.write("\u001B[2J\u001B[0;0f");
+}
+
+function displayMetrics(cpu: number, memory: number, requests: number) {
+  clearScreen();
+  
+  const table = createTable();
+  table.setHeaders(["Metric", "Value"]);
+  table.addRows(
+    ["CPU Usage", `${cpu}%`],
+    ["Memory Usage", `${memory}%`],
+    ["Requests/sec", requests.toString()]
+  );
+  
+  console.log(table.toString());
+}
+
+// Simulate live updates
+let cpu = 45, memory = 60, requests = 120;
+setInterval(() => {
+  cpu = Math.max(0, Math.min(100, cpu + Math.random() * 10 - 5));
+  memory = Math.max(0, Math.min(100, memory + Math.random() * 5 - 2.5));
+  requests = Math.max(0, requests + Math.floor(Math.random() * 20 - 10));
+  
+  displayMetrics(
+    Math.round(cpu),
+    Math.round(memory),
+    requests
+  );
+}, 1000);
+```
+
+## See Also
+
+- [Table API](/docs/api/table) - Complete Table API reference
+- [Grid API](/docs/api/grid) - Complete Grid API reference
+- [Styling](/docs/styling) - Detailed styling options

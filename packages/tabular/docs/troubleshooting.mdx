@@ -1,0 +1,449 @@
+---
+title: Troubleshooting
+description: Common issues and solutions for @visulima/tabular
+---
+
+# Troubleshooting
+
+This guide helps you resolve common issues when working with `@visulima/tabular`.
+
+## Display Issues
+
+### Borders Not Displaying Correctly
+
+**Problem**: Border characters appear as question marks or boxes.
+
+**Solution**: Ensure your terminal supports Unicode:
+
+```typescript
+// Use ASCII_BORDER for terminals without Unicode support
+import { createTable } from "@visulima/tabular";
+import { ASCII_BORDER } from "@visulima/tabular/style";
+
+const table = createTable({
+  style: { border: ASCII_BORDER }
+});
+```
+
+**Alternative**: Check your terminal encoding:
+
+```bash
+# Set encoding to UTF-8
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+```
+
+### Colors Not Showing
+
+**Problem**: ANSI colors are not displayed, showing escape codes instead.
+
+**Solution**: Check if colors are supported:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+// Detect color support
+const supportsColor = process.stdout.isTTY && process.env.TERM !== "dumb";
+
+const table = createTable();
+
+if (supportsColor) {
+  // Use colors
+  table.addRow(["\u001B[32mGreen\u001B[0m"]);
+} else {
+  // Plain text
+  table.addRow(["Green"]);
+}
+```
+
+### CJK Characters Misaligned
+
+**Problem**: Chinese, Japanese, or Korean characters are not aligned properly.
+
+**Solution**: The library automatically handles full-width characters. If issues persist, ensure you're using the latest version:
+
+```bash
+npm update @visulima/tabular
+```
+
+If problems continue, report with a minimal example:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+table.addRow(["English", "中文", "日本語", "한국어"]);
+console.log(table.toString());
+```
+
+## Performance Issues
+
+### Slow Rendering with Large Tables
+
+**Problem**: Tables with many rows render slowly.
+
+**Solution 1**: Use pagination:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+function displayPage(data: any[][], page: number, pageSize: number = 50) {
+  const start = page * pageSize;
+  const end = start + pageSize;
+  
+  const table = createTable();
+  table.setHeaders(["ID", "Data"]);
+  
+  data.slice(start, end).forEach(row => {
+    table.addRow(row);
+  });
+  
+  return table.toString();
+}
+```
+
+**Solution 2**: Disable word wrapping if not needed:
+
+```typescript
+const table = createTable({
+  wordWrap: false
+});
+```
+
+### High Memory Usage
+
+**Problem**: Creating many tables uses too much memory.
+
+**Solution**: Reuse table instances or use streaming:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { createWriteStream } from "fs";
+
+// Stream to file instead of keeping in memory
+const stream = createWriteStream("output.txt");
+
+function processDataInChunks(data: any[][], chunkSize: number = 1000) {
+  for (let i = 0; i < data.length; i += chunkSize) {
+    const table = createTable();
+    table.setHeaders(["A", "B", "C"]);
+    
+    const chunk = data.slice(i, i + chunkSize);
+    chunk.forEach(row => table.addRow(row));
+    
+    stream.write(table.toString() + "\n");
+  }
+  
+  stream.end();
+}
+```
+
+## Layout Issues
+
+### Columns Not Aligning
+
+**Problem**: Columns appear misaligned or have unexpected widths.
+
+**Solution**: Set explicit column widths:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+  columnWidths: [20, 30, 15] // Specify exact widths
+});
+
+table.setHeaders(["Name", "Description", "Status"]);
+table.addRow(["Item", "Long description here", "Active"]);
+```
+
+### Content Being Truncated Unexpectedly
+
+**Problem**: Content is cut off when you don't want it to be.
+
+**Solution**: Disable truncation or increase max width:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+// Option 1: Disable global truncation
+const table1 = createTable({
+  truncate: false,
+  wordWrap: true
+});
+
+// Option 2: Increase max width
+const table2 = createTable({
+  maxWidth: 150
+});
+
+// Option 3: Disable for specific cells
+table1.addRow([
+  { content: "Long text", truncate: false, wordWrap: true }
+]);
+```
+
+### Spanning Cells Not Working
+
+**Problem**: Cell spanning (colSpan/rowSpan) doesn't produce expected results.
+
+**Solution**: Ensure you account for spanned cells in subsequent rows:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+
+// Correct: First row spans 2 columns
+table.addRow([
+  { colSpan: 2, content: "Spans 2 columns" },
+  "Column 3"
+]);
+
+// Next row needs 3 cells total
+table.addRow(["Cell 1", "Cell 2", "Cell 3"]);
+```
+
+For row spans, leave placeholders:
+
+```typescript
+// Row span example
+table.addRow([
+  { rowSpan: 2, content: "Spans 2 rows" },
+  "Cell 2",
+  "Cell 3"
+]);
+
+// Next row - first cell is occupied by rowSpan
+table.addRow([
+  "", // Placeholder
+  "Cell 2",
+  "Cell 3"
+]);
+```
+
+## TypeScript Issues
+
+### Type Errors with Cell Content
+
+**Problem**: TypeScript complains about cell content types.
+
+**Solution**: Use proper types or type assertions:
+
+```typescript
+import { createTable, type TableCell } from "@visulima/tabular";
+
+const table = createTable();
+
+// Option 1: Type the array
+const row: TableCell[] = [
+  "String",
+  42,
+  { content: "Object", hAlign: "center" }
+];
+table.addRow(row);
+
+// Option 2: Use as const
+table.addRow(["A", "B"] as const);
+
+// Option 3: Explicit typing
+table.addRow([
+  { content: "Typed" } as TableCell
+]);
+```
+
+### Module Resolution Issues
+
+**Problem**: Cannot find module `@visulima/tabular` or its types.
+
+**Solution 1**: Check your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler", // or "node16", "nodenext"
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  }
+}
+```
+
+**Solution 2**: Ensure package is installed:
+
+```bash
+npm install @visulima/tabular
+# or
+pnpm install @visulima/tabular
+```
+
+**Solution 3**: Clear cache and reinstall:
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+## Runtime Errors
+
+### "Cannot read property of undefined"
+
+**Problem**: Error when accessing table properties.
+
+**Solution**: Check initialization and data:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+// Ensure table is created
+const table = createTable();
+
+// Ensure data is defined
+const data = someData ?? []; // Use fallback
+
+data.forEach(row => {
+  // Ensure row has expected structure
+  if (Array.isArray(row) && row.length > 0) {
+    table.addRow(row);
+  }
+});
+```
+
+### Terminal Width Detection Issues
+
+**Problem**: Table doesn't fit terminal width or is too narrow.
+
+**Solution**: Explicitly set terminal width:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+  terminalWidth: process.stdout.columns || 80,
+  maxWidth: 120
+});
+```
+
+## Integration Issues
+
+### Issues with Other CLI Libraries
+
+**Problem**: Table output conflicts with other CLI tools.
+
+**Solution**: Clear screen or add spacing:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+// Add spacing
+console.log("\n");
+console.log(table.toString());
+console.log("\n");
+
+// Or clear screen first
+process.stdout.write("\u001B[2J\u001B[0;0f");
+console.log(table.toString());
+```
+
+### Export Issues
+
+**Problem**: Cannot export table to file with proper formatting.
+
+**Solution**: Use proper encoding:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { writeFileSync } from "fs";
+
+const table = createTable();
+table.setHeaders(["A", "B", "C"]);
+table.addRow(["1", "2", "3"]);
+
+// Write with UTF-8 encoding
+writeFileSync("output.txt", table.toString(), { encoding: "utf8" });
+```
+
+## Testing Issues
+
+### Snapshot Tests Failing
+
+**Problem**: Table snapshots differ across environments.
+
+**Solution**: Normalize output:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+function normalizeTable(tableOutput: string): string {
+  // Remove ANSI codes for consistent snapshots
+  return tableOutput.replace(/\u001B\[[0-9;]*m/g, "");
+}
+
+test("table renders correctly", () => {
+  const table = createTable();
+  table.addRow(["A", "B"]);
+  
+  const output = normalizeTable(table.toString());
+  expect(output).toMatchSnapshot();
+});
+```
+
+### Different Output in CI
+
+**Problem**: Table renders differently in CI environment.
+
+**Solution**: Set consistent options:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+  terminalWidth: 80, // Fixed width
+  defaultTerminalWidth: 80
+});
+```
+
+## Getting Help
+
+If your issue isn't covered here:
+
+1. **Check the Examples**: Review the [examples](/docs/examples) for similar use cases
+2. **Read the API Docs**: Consult the [API reference](/docs/api) for detailed information
+3. **Search Issues**: Look for similar issues on [GitHub](https://github.com/visulima/visulima/issues)
+4. **Create an Issue**: Report bugs with:
+   - Minimal reproduction example
+   - Expected vs actual behavior
+   - Environment details (Node version, OS, terminal)
+   - Package version
+
+### Minimal Reproduction Template
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+// Describe what you're trying to do
+console.log("Creating a table with...");
+
+const table = createTable(/* your options */);
+
+// Add your data
+table.setHeaders([/* headers */]);
+table.addRow([/* row data */]);
+
+// Show the issue
+console.log(table.toString());
+
+// Include:
+// - Node version: process.version
+// - Package version: from package.json
+// - OS: process.platform
+console.log({
+  node: process.version,
+  platform: process.platform
+});
+```
+
+## See Also
+
+- [Getting Started](/docs/getting-started) - Basic usage guide
+- [API Reference](/docs/api) - Complete API documentation
+- [Examples](/docs/examples) - Practical examples

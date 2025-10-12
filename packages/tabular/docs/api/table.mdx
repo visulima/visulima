@@ -1,0 +1,404 @@
+---
+title: Table API
+description: Complete API reference for the Table class
+---
+
+# Table API
+
+The `Table` class provides a high-level API for creating tables with headers and rows. It's the most common way to create formatted tables.
+
+## Creating a Table
+
+### createTable(options?)
+
+Creates a new Table instance.
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable(options);
+```
+
+#### Parameters
+
+##### options (optional)
+
+Type: `TableOptions`
+
+Configuration options for the table:
+
+```typescript
+interface TableOptions {
+  // Maximum width for the entire table
+  maxWidth?: number;
+  
+  // Terminal width (overrides detected width)
+  terminalWidth?: number;
+  
+  // Default terminal width if detection fails (default: 80)
+  defaultTerminalWidth?: number;
+  
+  // Gap between cells
+  gap?: number;
+  
+  // Whether to show the header (default: true)
+  showHeader?: boolean;
+  
+  // Fixed column widths (single number for all columns or array for specific columns)
+  columnWidths?: number | number[];
+  
+  // Fixed row heights (single number for all rows or array for specific rows)
+  rowHeights?: number | number[];
+  
+  // Number of spaces for tab characters
+  transformTabToSpace?: number;
+  
+  // Global word wrap options/flag
+  wordWrap?: boolean | Omit<WordWrapOptions, "width">;
+  
+  // Global truncation options/flag
+  truncate?: boolean | TruncateOptions;
+  
+  // Global style options
+  style?: {
+    // Border style configuration
+    border?: BorderStyle;
+    
+    // Border color
+    borderColor?: AnsiColorObject | AnsiColorFunction;
+    
+    // Background color
+    backgroundColor?: AnsiColorObject | AnsiColorFunction;
+    
+    // Foreground color
+    foregroundColor?: AnsiColorObject | AnsiColorFunction;
+    
+    // Left padding
+    paddingLeft?: number;
+    
+    // Right padding
+    paddingRight?: number;
+  };
+}
+```
+
+## Methods
+
+### setHeaders()
+
+Sets the header rows for the table.
+
+```typescript
+table.setHeaders(headers: TableCell[] | TableCell[][])
+```
+
+#### Parameters
+
+- `headers`: Array of header cells or array of header rows
+
+#### Returns
+
+The Table instance for method chaining.
+
+#### Examples
+
+```typescript
+// Simple headers
+table.setHeaders(["Name", "Age", "City"]);
+
+// Headers with options
+table.setHeaders([
+  { content: "Name", hAlign: "left" },
+  { content: "Age", hAlign: "center" },
+  { content: "City", hAlign: "right" }
+]);
+
+// Multiple header rows
+table.setHeaders([
+  [{ colSpan: 3, content: "User Information", hAlign: "center" }],
+  ["Name", "Age", "City"]
+]);
+```
+
+### addRow()
+
+Adds a single row to the table body.
+
+```typescript
+table.addRow(row: TableCell[])
+```
+
+#### Parameters
+
+- `row`: Array of cells representing the row
+
+#### Returns
+
+The Table instance for method chaining.
+
+#### Example
+
+```typescript
+table.addRow(["John Doe", "30", "New York"]);
+
+// With cell options
+table.addRow([
+  { content: "Jane Smith", hAlign: "left" },
+  { content: "25", hAlign: "center" },
+  { content: "Los Angeles", hAlign: "right" }
+]);
+```
+
+### addRows()
+
+Adds multiple rows to the table body.
+
+```typescript
+table.addRows(...rows: TableCell[][])
+```
+
+#### Parameters
+
+- `...rows`: Variable number of row arrays
+
+#### Returns
+
+The Table instance for method chaining.
+
+#### Example
+
+```typescript
+table.addRows(
+  ["John Doe", "30", "New York"],
+  ["Jane Smith", "25", "Los Angeles"],
+  ["Bob Johnson", "35", "Chicago"]
+);
+```
+
+### toString()
+
+Renders the table to a string.
+
+```typescript
+table.toString(): string
+```
+
+#### Returns
+
+The string representation of the table.
+
+#### Example
+
+```typescript
+const output = table.toString();
+console.log(output);
+```
+
+## Cell Options
+
+Each cell can be a simple value or an object with options:
+
+### TableCell Type
+
+```typescript
+type TableCell = Content | TableItem;
+
+type Content = string | number | boolean | bigint | null | undefined;
+
+interface TableItem {
+  // Cell content
+  content: Content;
+  
+  // Number of columns this cell spans
+  colSpan?: number;
+  
+  // Number of rows this cell spans
+  rowSpan?: number;
+  
+  // Horizontal alignment
+  hAlign?: "left" | "center" | "right";
+  
+  // Vertical alignment
+  vAlign?: "top" | "middle" | "bottom";
+  
+  // Maximum width before truncation
+  maxWidth?: number;
+  
+  // Truncation options
+  truncate?: boolean | TruncateOptions;
+  
+  // Word wrap options
+  wordWrap?: boolean | Omit<WordWrapOptions, "width">;
+  
+  // Background color
+  backgroundColor?: AnsiColorObject | AnsiColorFunction;
+  
+  // Foreground color
+  foregroundColor?: AnsiColorObject | AnsiColorFunction;
+  
+  // Optional URL for hyperlinks
+  href?: string;
+}
+```
+
+## Usage Examples
+
+### Basic Table
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+
+table.setHeaders(["Product", "Price", "Stock"]);
+table.addRows(
+  ["Widget", "$10.00", "50"],
+  ["Gadget", "$15.99", "25"],
+  ["Doohickey", "$7.50", "100"]
+);
+
+console.log(table.toString());
+```
+
+### Table with Styling
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { ROUNDED_BORDER } from "@visulima/tabular/style";
+
+const table = createTable({
+  style: {
+    border: ROUNDED_BORDER,
+    paddingLeft: 2,
+    paddingRight: 2
+  }
+});
+
+table.setHeaders([
+  { content: "Name", hAlign: "left" },
+  { content: "Status", hAlign: "center" },
+  { content: "Progress", hAlign: "right" }
+]);
+
+table.addRow(["Task 1", "Complete", "100%"]);
+table.addRow(["Task 2", "In Progress", "65%"]);
+table.addRow(["Task 3", "Pending", "0%"]);
+
+console.log(table.toString());
+```
+
+### Table with Colors
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { green, red, yellow } from "@visulima/colorize";
+
+const table = createTable();
+
+table.setHeaders(["Service", "Status", "Response Time"]);
+table.addRows(
+  [green("API"), green("Online"), "45ms"],
+  [yellow("Database"), yellow("Warning"), "120ms"],
+  [red("Cache"), red("Down"), "timeout"]
+);
+
+console.log(table.toString());
+```
+
+### Table with Cell Spanning
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+
+table.setHeaders([
+  { colSpan: 3, content: "Monthly Report", hAlign: "center" }
+]);
+
+table.addRow([
+  { colSpan: 2, content: "Total Revenue" },
+  "$10,000"
+]);
+
+table.addRow(["Product Sales", "$7,000", ""]);
+table.addRow(["Service Revenue", "$3,000", ""]);
+
+console.log(table.toString());
+```
+
+### Table with Word Wrapping
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+  maxWidth: 80,
+  wordWrap: true
+});
+
+table.setHeaders(["Description", "Notes"]);
+table.addRow([
+  "This is a very long description that will be automatically wrapped to fit within the available width",
+  "Additional notes that are also quite long and will wrap to multiple lines as needed"
+]);
+
+console.log(table.toString());
+```
+
+### Table with Truncation
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+
+table.setHeaders(["Title", "Description", "Status"]);
+table.addRow([
+  { content: "Short", maxWidth: 10 },
+  { content: "This is a very long description that will be truncated", maxWidth: 20, truncate: true },
+  "Active"
+]);
+
+console.log(table.toString());
+```
+
+### Table without Headers
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+  showHeader: false
+});
+
+table.addRows(
+  ["Row 1, Col 1", "Row 1, Col 2"],
+  ["Row 2, Col 1", "Row 2, Col 2"],
+  ["Row 3, Col 1", "Row 3, Col 2"]
+);
+
+console.log(table.toString());
+```
+
+### Table with Fixed Column Widths
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+  columnWidths: [20, 30, 15]
+});
+
+table.setHeaders(["Name", "Description", "Status"]);
+table.addRow(["Item 1", "Short description", "Active"]);
+table.addRow(["Item 2", "A much longer description that will wrap or truncate based on settings", "Pending"]);
+
+console.log(table.toString());
+```
+
+## See Also
+
+- [Grid API](/docs/api/grid) - Lower-level API for complex layouts
+- [Styling](/docs/styling) - Detailed styling options
+- [Examples](/docs/examples) - More practical examples
