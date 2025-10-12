@@ -1,0 +1,482 @@
+# JSON Operations
+
+Functions for reading, writing, and parsing JSON files with enhanced error handling and formatting.
+
+## readJson
+
+Asynchronously reads and parses a JSON file.
+
+### Signature
+
+```typescript
+function readJson<T = unknown>(
+    path: URL | string,
+    options?: ReadJsonOptions
+): Promise<T>
+```
+
+### Parameters
+
+- `path` (`URL | string`) - Path to the JSON file
+- `options` (`ReadJsonOptions`) - Optional reading options
+  - `beforeParse` (`(source: string) => string`) - Transform function before parsing
+  - `color` (`CodeFrameOptions`) - Color options for error messages
+    - `gutter` (`ColorizeMethod`) - Color for line numbers
+    - `marker` (`ColorizeMethod`) - Color for error marker
+    - `message` (`ColorizeMethod`) - Color for error message
+
+### Returns
+
+`Promise<T>` - Parsed JSON data
+
+### Examples
+
+```typescript
+import { readJson } from "@visulima/fs";
+
+// Read JSON file
+const config = await readJson("./config.json");
+console.log(config);
+
+// With type annotation
+interface Config {
+    name: string;
+    version: string;
+}
+const typedConfig = await readJson<Config>("./config.json");
+
+// With beforeParse to strip comments
+const data = await readJson("./data.json", {
+    beforeParse: (source) => source.replace(/\/\/.*$/gm, ""),
+});
+```
+
+### Error Handling
+
+```typescript
+import { readJson } from "@visulima/fs";
+import { JSONError, NotFoundError } from "@visulima/fs/error";
+
+try {
+    const data = await readJson("./config.json");
+} catch (error) {
+    if (error instanceof JSONError) {
+        // Enhanced error message with code frame
+        console.error("Invalid JSON:", error.message);
+        console.error(error.codeFrame);
+    } else if (error instanceof NotFoundError) {
+        console.error("File not found");
+    }
+}
+```
+
+## readJsonSync
+
+Synchronously reads and parses a JSON file.
+
+### Signature
+
+```typescript
+function readJsonSync<T = unknown>(
+    path: URL | string,
+    options?: ReadJsonOptions
+): T
+```
+
+### Parameters
+
+Same as `readJson`.
+
+### Returns
+
+`T` - Parsed JSON data
+
+### Examples
+
+```typescript
+import { readJsonSync } from "@visulima/fs";
+
+const config = readJsonSync("./config.json");
+const typed = readJsonSync<{ name: string }>("./package.json");
+```
+
+## writeJson
+
+Asynchronously stringifies and writes a JSON file with automatic formatting and directory creation.
+
+### Signature
+
+```typescript
+function writeJson(
+    path: URL | string,
+    data: unknown,
+    options?: WriteJsonOptions
+): Promise<void>
+```
+
+### Parameters
+
+- `path` (`URL | string`) - Path to the JSON file
+- `data` (`unknown`) - Data to stringify and write
+- `options` (`WriteJsonOptions`) - Optional writing options
+  - `indent` (`number | string`) - Indentation for pretty-printing
+  - `replacer` (`JsonReplacer`) - JSON.stringify replacer function
+  - `detectIndent` (`boolean`) - Auto-detect indentation from existing file
+  - `stringify` (`Function`) - Custom stringify function
+  - Plus all `WriteFileOptions`: `encoding`, `mode`, `flag`, `recursive`, `overwrite`, `chown`
+
+### Returns
+
+`Promise<void>`
+
+### Examples
+
+```typescript
+import { writeJson } from "@visulima/fs";
+
+// Basic write
+await writeJson("./config.json", { name: "My App", version: "1.0.0" });
+
+// With formatting (2 spaces)
+await writeJson("./config.json", data, { indent: 2 });
+
+// With tabs
+await writeJson("./config.json", data, { indent: "\t" });
+
+// Without formatting (compact)
+await writeJson("./config.json", data, { indent: undefined });
+
+// Auto-detect existing indentation
+await writeJson("./config.json", data, { detectIndent: true });
+
+// With replacer function
+await writeJson("./config.json", data, {
+    indent: 2,
+    replacer: (key, value) => {
+        // Filter out private properties
+        if (key.startsWith("_")) {
+            return undefined;
+        }
+        return value;
+    },
+});
+
+// With whitelist replacer
+await writeJson("./config.json", data, {
+    indent: 2,
+    replacer: ["name", "version"], // Only include these keys
+});
+
+// With file options
+await writeJson("./config.json", data, {
+    indent: 2,
+    mode: 0o644,
+    overwrite: true,
+});
+```
+
+## writeJsonSync
+
+Synchronously stringifies and writes a JSON file.
+
+### Signature
+
+```typescript
+function writeJsonSync(
+    path: URL | string,
+    data: unknown,
+    options?: WriteJsonOptions
+): void
+```
+
+### Parameters
+
+Same as `writeJson`.
+
+### Returns
+
+`void`
+
+### Examples
+
+```typescript
+import { writeJsonSync } from "@visulima/fs";
+
+writeJsonSync("./config.json", { name: "App" }, { indent: 2 });
+```
+
+## parseJson
+
+Parses a JSON string with enhanced error messages including code frames.
+
+### Signature
+
+```typescript
+function parseJson<T = unknown>(
+    text: string,
+    options?: {
+        source?: string;
+        color?: CodeFrameOptions;
+    }
+): T
+```
+
+### Parameters
+
+- `text` (`string`) - JSON string to parse
+- `options` - Optional parsing options
+  - `source` (`string`) - Source identifier for error messages
+  - `color` (`CodeFrameOptions`) - Color options for error messages
+
+### Returns
+
+`T` - Parsed JSON data
+
+### Examples
+
+```typescript
+import { parseJson } from "@visulima/fs/utils";
+
+// Basic parsing
+const data = parseJson('{"name": "example"}');
+
+// With source for better error messages
+try {
+    const data = parseJson(jsonString, { source: "config.json" });
+} catch (error) {
+    console.error(error.message);
+    // Error: JSON parsing failed in config.json
+    // [code frame showing error location]
+}
+```
+
+### Error Messages
+
+`parseJson` provides enhanced error messages with code frames:
+
+```
+JSON parsing failed at line 3, column 5:
+
+  1 | {
+  2 |   "name": "example",
+  3 |   "invalid"
+    |           ^
+  4 | }
+
+Unexpected end of JSON input
+```
+
+## stripJsonComments
+
+Removes comments from JSON strings, supporting single-line and multi-line comments.
+
+### Signature
+
+```typescript
+function stripJsonComments(
+    text: string,
+    options?: {
+        whitespace?: boolean;
+    }
+): string
+```
+
+### Parameters
+
+- `text` (`string`) - JSON string with comments
+- `options` - Optional stripping options
+  - `whitespace` (`boolean`) - Replace comments with whitespace (default: `true`)
+
+### Returns
+
+`string` - JSON string without comments
+
+### Examples
+
+```typescript
+import { stripJsonComments } from "@visulima/fs/utils";
+
+const jsonWithComments = `
+{
+    // This is a comment
+    "name": "example",
+    /* Multi-line
+       comment */
+    "version": "1.0.0"
+}
+`;
+
+const cleaned = stripJsonComments(jsonWithComments);
+// Now valid JSON: {"name": "example", "version": "1.0.0"}
+
+const parsed = JSON.parse(cleaned);
+```
+
+## Common Patterns
+
+### Configuration Management
+
+```typescript
+import { readJson, writeJson } from "@visulima/fs";
+
+interface Config {
+    apiKey: string;
+    debug: boolean;
+}
+
+async function loadConfig(): Promise<Config> {
+    try {
+        return await readJson<Config>("./config.json");
+    } catch {
+        // Return default config if file doesn't exist
+        return { apiKey: "", debug: false };
+    }
+}
+
+async function saveConfig(config: Config): Promise<void> {
+    await writeJson("./config.json", config, {
+        indent: 2,
+        overwrite: true,
+    });
+}
+```
+
+### Package.json Management
+
+```typescript
+import { readJson, writeJson } from "@visulima/fs";
+
+interface PackageJson {
+    name: string;
+    version: string;
+    dependencies?: Record<string, string>;
+}
+
+async function addDependency(name: string, version: string) {
+    const pkg = await readJson<PackageJson>("./package.json");
+    
+    pkg.dependencies = pkg.dependencies || {};
+    pkg.dependencies[name] = version;
+    
+    // Preserve existing indentation
+    await writeJson("./package.json", pkg, {
+        detectIndent: true,
+        overwrite: true,
+    });
+}
+```
+
+### Handling JSON with Comments
+
+```typescript
+import { readFile, writeJson } from "@visulima/fs";
+import { stripJsonComments, parseJson } from "@visulima/fs/utils";
+
+async function readJsonWithComments(path: string) {
+    const content = await readFile(path);
+    const cleaned = stripJsonComments(content);
+    return parseJson(cleaned, { source: path });
+}
+
+// Or use readJson with beforeParse
+import { readJson } from "@visulima/fs";
+import { stripJsonComments } from "@visulima/fs/utils";
+
+const data = await readJson("./config.json", {
+    beforeParse: stripJsonComments,
+});
+```
+
+### Filtering Sensitive Data
+
+```typescript
+import { writeJson } from "@visulima/fs";
+
+interface User {
+    name: string;
+    email: string;
+    password: string;
+    _internal: string;
+}
+
+async function saveUserPublic(user: User) {
+    await writeJson("./user.json", user, {
+        indent: 2,
+        replacer: (key, value) => {
+            // Filter out sensitive fields
+            if (key === "password" || key.startsWith("_")) {
+                return undefined;
+            }
+            return value;
+        },
+    });
+}
+```
+
+## Types
+
+### ReadJsonOptions
+
+```typescript
+type ReadJsonOptions = CodeFrameOptions & {
+    beforeParse?: (source: string) => string;
+};
+
+type CodeFrameOptions = {
+    color?: {
+        gutter?: (value: string) => string;
+        marker?: (value: string) => string;
+        message?: (value: string) => string;
+    };
+};
+```
+
+### WriteJsonOptions
+
+```typescript
+type WriteJsonOptions = WriteFileOptions & {
+    detectIndent?: boolean;
+    indent?: number | string | undefined;
+    replacer?: JsonReplacer;
+    stringify?: (
+        data: unknown,
+        replacer: JsonReplacer,
+        space: number | string | undefined
+    ) => string;
+};
+
+type JsonReplacer = 
+    | (number | string)[]
+    | ((this: unknown, key: string, value: unknown) => unknown)
+    | null;
+```
+
+## Error Handling
+
+```typescript
+import { readJson, writeJson } from "@visulima/fs";
+import { JSONError, NotFoundError } from "@visulima/fs/error";
+
+async function safeJsonOperation() {
+    try {
+        const data = await readJson("./config.json");
+        await writeJson("./backup.json", data, { indent: 2 });
+    } catch (error) {
+        if (error instanceof JSONError) {
+            console.error("JSON error:", error.message);
+            console.error("Code frame:", error.codeFrame);
+        } else if (error instanceof NotFoundError) {
+            console.error("File not found:", error.path);
+        } else {
+            console.error("Unexpected error:", error);
+        }
+    }
+}
+```
+
+## Related
+
+- [File Operations](./file-operations.md)
+- [YAML Operations](./yaml-operations.md)
+- [Utility Functions](./utility-functions.md)
+- [Error Types](./error-types.md)

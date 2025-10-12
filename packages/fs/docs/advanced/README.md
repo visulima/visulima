@@ -1,0 +1,675 @@
+# Advanced Guides
+
+In-depth guides for advanced use cases and best practices with @visulima/fs.
+
+## Table of Contents
+
+1. [Performance Optimization](#performance-optimization)
+2. [Error Handling Strategies](#error-handling-strategies)
+3. [Testing Strategies](#testing-strategies)
+4. [Security Considerations](#security-considerations)
+5. [Cross-Platform Compatibility](#cross-platform-compatibility)
+6. [Memory Management](#memory-management)
+7. [Concurrent Operations](#concurrent-operations)
+
+## Performance Optimization
+
+### Choosing Between Async and Sync
+
+**Use Async (Recommended)**
+- Web servers and long-running processes
+- I/O-heavy operations
+- When processing multiple files
+- When responsiveness matters
+
+```typescript
+import { readFile, writeFile } from "@visulima/fs";
+
+// Async: Non-blocking
+async function processFiles(files: string[]) {
+    for (const file of files) {
+        const content = await readFile(file);
+        await writeFile(`processed-${file}`, content.toUpperCase());
+    }
+}
+```
+
+**Use Sync**
+- Build scripts and CLI tools
+- Simple sequential operations
+- When blocking is acceptable
+
+```typescript
+import { readFileSync, writeFileSync } from "@visulima/fs";
+
+// Sync: Blocking but simpler
+function processFilesSync(files: string[]) {
+    for (const file of files) {
+        const content = readFileSync(file);
+        writeFileSync(`processed-${file}`, content.toUpperCase());
+    }
+}
+```
+
+### Batch Operations
+
+Process multiple files in parallel for better performance:
+
+```typescript
+import { readFile, writeFile } from "@visulima/fs";
+
+// Sequential (slower)
+async function processSequential(files: string[]) {
+    for (const file of files) {
+        const content = await readFile(file);
+        await writeFile(`out-${file}`, content);
+    }
+}
+
+// Parallel (faster)
+async function processParallel(files: string[]) {
+    await Promise.all(
+        files.map(async (file) => {
+            const content = await readFile(file);
+            await writeFile(`out-${file}`, content);
+        })
+    );
+}
+
+// Controlled concurrency
+async function processWithLimit(files: string[], limit: number = 5) {
+    const chunks = [];
+    for (let i = 0; i < files.length; i += limit) {
+        chunks.push(files.slice(i, i + limit));
+    }
+    
+    for (const chunk of chunks) {
+        await Promise.all(
+            chunk.map(async (file) => {
+                const content = await readFile(file);
+                await writeFile(`out-${file}`, content);
+            })
+        );
+    }
+}
+```
+
+### Streaming for Large Files
+
+Use streaming for memory-efficient processing of large files:
+
+```typescript
+import { gzipSize } from "@visulima/fs/size";
+import { createReadStream } from "node:fs";
+
+// Memory-efficient for large files
+async function calculateSizeEfficiently(filePath: string) {
+    const stream = createReadStream(filePath);
+    return await gzipSize(stream);
+}
+
+// Less efficient (loads entire file)
+async function calculateSizeInMemory(filePath: string) {
+    return await gzipSize(filePath);
+}
+```
+
+### Walk Options for Better Performance
+
+```typescript
+import { walk, collect } from "@visulima/fs";
+
+// Use walk for streaming (memory-efficient)
+async function streamingWalk(dir: string) {
+    for await (const entry of walk(dir, {
+        maxDepth: 3, // Limit depth
+        skip: ["node_modules", ".git"], // Skip large dirs early
+        extensions: [".ts"], // Filter early
+    })) {
+        // Process entry immediately
+        processEntry(entry);
+    }
+}
+
+// Use collect only for small directories
+async function collectAll(dir: string) {
+    const entries = await collect(dir, {
+        maxDepth: 2,
+        skip: ["node_modules"],
+    });
+    
+    return entries;
+}
+```
+
+## Error Handling Strategies
+
+### Graceful Degradation
+
+```typescript
+import { readJson, writeJson } from "@visulima/fs";
+import { NotFoundError, JSONError } from "@visulima/fs/error";
+
+async function loadConfigSafely<T>(
+    path: string,
+    defaults: T
+): Promise<T> {
+    try {
+        return await readJson<T>(path);
+    } catch (error) {
+        if (error instanceof NotFoundError) {
+            console.warn(`Config not found, creating default: ${path}`);
+            await writeJson(path, defaults, { indent: 2 });
+            return defaults;
+        }
+        
+        if (error instanceof JSONError) {
+            console.error(`Invalid JSON in ${path}, using defaults`);
+            console.error(error.codeFrame);
+            return defaults;
+        }
+        
+        // Unexpected error, re-throw
+        throw error;
+    }
+}
+```
+
+### Retry Logic
+
+```typescript
+import { writeFile } from "@visulima/fs";
+
+async function writeWithRetry(
+    path: string,
+    content: string,
+    options: {
+        maxRetries?: number;
+        retryDelay?: number;
+    } = {}
+): Promise<void> {
+    const { maxRetries = 3, retryDelay = 1000 } = options;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            await writeFile(path, content);
+            return;
+        } catch (error) {
+            if (attempt === maxRetries) {
+                throw error;
+            }
+            
+            console.warn(`Write failed, retrying... (${attempt}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
+    }
+}
+```
+
+### Error Aggregation
+
+```typescript
+import { walk, readFile } from "@visulima/fs";
+
+interface FileError {
+    path: string;
+    error: Error;
+}
+
+async function processFilesWithErrorTracking(dir: string) {
+    const errors: FileError[] = [];
+    const results: string[] = [];
+    
+    for await (const entry of walk(dir)) {
+        if (!entry.isFile) continue;
+        
+        try {
+            const content = await readFile(entry.path);
+            results.push(content);
+        } catch (error) {
+            errors.push({
+                path: entry.path,
+                error: error as Error,
+            });
+            
+            // Continue processing other files
+            continue;
+        }
+    }
+    
+    if (errors.length > 0) {
+        console.warn(`Processed ${results.length} files with ${errors.length} errors`);
+        errors.forEach(({ path, error }) => {
+            console.error(`  ${path}: ${error.message}`);
+        });
+    }
+    
+    return { results, errors };
+}
+```
+
+## Testing Strategies
+
+### Test Fixtures
+
+```typescript
+import { ensureDir, writeFile, remove } from "@visulima/fs";
+import { join } from "node:path";
+
+class TestFixtures {
+    private readonly baseDir: string;
+    
+    constructor(testName: string) {
+        this.baseDir = join(process.cwd(), ".test-fixtures", testName);
+    }
+    
+    async setup() {
+        await ensureDir(this.baseDir);
+    }
+    
+    async teardown() {
+        await remove(this.baseDir);
+    }
+    
+    async createFile(path: string, content: string) {
+        const fullPath = join(this.baseDir, path);
+        await writeFile(fullPath, content);
+        return fullPath;
+    }
+    
+    async createJson<T>(path: string, data: T) {
+        const fullPath = join(this.baseDir, path);
+        await writeFile(fullPath, JSON.stringify(data, null, 2));
+        return fullPath;
+    }
+    
+    getPath(path: string = "") {
+        return join(this.baseDir, path);
+    }
+}
+
+// Usage in tests
+import { describe, it, beforeEach, afterEach } from "vitest";
+import { readFile } from "@visulima/fs";
+
+describe("File processor", () => {
+    const fixtures = new TestFixtures("file-processor");
+    
+    beforeEach(async () => {
+        await fixtures.setup();
+    });
+    
+    afterEach(async () => {
+        await fixtures.teardown();
+    });
+    
+    it("processes text files", async () => {
+        const inputPath = await fixtures.createFile("input.txt", "hello");
+        const outputPath = fixtures.getPath("output.txt");
+        
+        await processFile(inputPath, outputPath);
+        
+        const result = await readFile(outputPath);
+        expect(result).toBe("HELLO");
+    });
+});
+```
+
+### Mocking File System
+
+```typescript
+import { vi } from "vitest";
+
+// Mock specific functions
+vi.mock("@visulima/fs", async () => {
+    const actual = await vi.importActual("@visulima/fs");
+    return {
+        ...actual,
+        readFile: vi.fn().mockResolvedValue("mocked content"),
+    };
+});
+
+// Test with mock
+import { readFile } from "@visulima/fs";
+
+it("uses mocked file system", async () => {
+    const content = await readFile("any-path.txt");
+    expect(content).toBe("mocked content");
+    expect(readFile).toHaveBeenCalledWith("any-path.txt");
+});
+```
+
+## Security Considerations
+
+### Path Traversal Prevention
+
+```typescript
+import { join, normalize, relative } from "node:path";
+import { readFile, writeFile } from "@visulima/fs";
+
+class SafeFileAccess {
+    constructor(private readonly baseDir: string) {}
+    
+    private validatePath(path: string): string {
+        // Normalize and resolve path
+        const normalizedPath = normalize(join(this.baseDir, path));
+        
+        // Check if path is within base directory
+        const relativePath = relative(this.baseDir, normalizedPath);
+        
+        if (relativePath.startsWith("..") || relativePath.startsWith("/")) {
+            throw new Error("Path traversal attempt detected");
+        }
+        
+        return normalizedPath;
+    }
+    
+    async readFile(path: string): Promise<string> {
+        const safePath = this.validatePath(path);
+        return await readFile(safePath);
+    }
+    
+    async writeFile(path: string, content: string): Promise<void> {
+        const safePath = this.validatePath(path);
+        await writeFile(safePath, content);
+    }
+}
+
+// Usage
+const fileAccess = new SafeFileAccess("/safe/directory");
+
+// Safe
+await fileAccess.readFile("config.json");
+
+// Throws error (path traversal attempt)
+try {
+    await fileAccess.readFile("../../etc/passwd");
+} catch (error) {
+    console.error("Blocked malicious path");
+}
+```
+
+### Input Validation
+
+```typescript
+import { readJson } from "@visulima/fs";
+
+interface UserConfig {
+    username: string;
+    email: string;
+    age: number;
+}
+
+function validateUserConfig(data: unknown): data is UserConfig {
+    if (typeof data !== "object" || data === null) {
+        return false;
+    }
+    
+    const config = data as Record<string, unknown>;
+    
+    return (
+        typeof config.username === "string" &&
+        config.username.length > 0 &&
+        typeof config.email === "string" &&
+        config.email.includes("@") &&
+        typeof config.age === "number" &&
+        config.age >= 0 &&
+        config.age < 150
+    );
+}
+
+async function loadUserConfig(path: string): Promise<UserConfig> {
+    const data = await readJson(path);
+    
+    if (!validateUserConfig(data)) {
+        throw new Error("Invalid user configuration");
+    }
+    
+    return data;
+}
+```
+
+### Sanitizing File Names
+
+```typescript
+function sanitizeFilename(filename: string): string {
+    // Remove path separators and null bytes
+    return filename
+        .replace(/[/\\]/g, "")
+        .replace(/\0/g, "")
+        .replace(/[<>:"|?*]/g, "_")
+        .trim();
+}
+
+// Usage
+const userInput = "../../../etc/passwd";
+const safe = sanitizeFilename(userInput); // "..........etcpasswd"
+```
+
+## Cross-Platform Compatibility
+
+### Path Handling
+
+```typescript
+import { join, sep } from "node:path";
+
+// Always use join() for cross-platform paths
+const goodPath = join("src", "components", "Button.tsx");
+
+// Don't hardcode separators
+const badPath = "src/components/Button.tsx"; // Fails on Windows
+```
+
+### Line Endings
+
+```typescript
+import { format, EOL, LF } from "@visulima/fs/eol";
+import { readFile, writeFile } from "@visulima/fs";
+
+// Normalize to platform-specific
+async function normalizeFile(path: string) {
+    const content = await readFile(path);
+    const normalized = format(content, EOL);
+    await writeFile(path, normalized);
+}
+
+// Force Unix line endings (recommended for source control)
+async function forceUnixLineEndings(path: string) {
+    const content = await readFile(path);
+    const normalized = format(content, LF);
+    await writeFile(path, normalized);
+}
+```
+
+### Symbolic Links
+
+```typescript
+import { ensureSymlink } from "@visulima/fs";
+
+// Cross-platform symlink creation
+async function createLink(source: string, dest: string) {
+    try {
+        await ensureSymlink(source, dest);
+    } catch (error) {
+        console.warn("Symlink creation failed, copying instead");
+        // Fallback to copying
+        const content = await readFile(source);
+        await writeFile(dest, content);
+    }
+}
+```
+
+## Memory Management
+
+### Streaming vs Loading
+
+```typescript
+import { readFile } from "@visulima/fs";
+import { createReadStream } from "node:fs";
+import { gzipSize } from "@visulima/fs/size";
+
+// For small files: Simple and fast
+async function processSmallFile(path: string) {
+    const content = await readFile(path);
+    return content.length;
+}
+
+// For large files: Memory-efficient
+async function processLargeFile(path: string) {
+    const stream = createReadStream(path);
+    return await gzipSize(stream);
+}
+```
+
+### Chunked Processing
+
+```typescript
+import { walk } from "@visulima/fs";
+
+async function processInChunks<T>(
+    items: T[],
+    chunkSize: number,
+    processor: (item: T) => Promise<void>
+): Promise<void> {
+    for (let i = 0; i < items.length; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+        await Promise.all(chunk.map(processor));
+        
+        // Optional: Allow garbage collection between chunks
+        if (global.gc) {
+            global.gc();
+        }
+    }
+}
+
+// Usage
+const entries = await collect("./large-directory");
+await processInChunks(entries, 100, async (entry) => {
+    // Process each entry
+});
+```
+
+## Concurrent Operations
+
+### Limiting Concurrency
+
+```typescript
+class ConcurrencyLimiter {
+    private running = 0;
+    private queue: Array<() => void> = [];
+    
+    constructor(private limit: number) {}
+    
+    async run<T>(fn: () => Promise<T>): Promise<T> {
+        while (this.running >= this.limit) {
+            await new Promise<void>(resolve => this.queue.push(resolve));
+        }
+        
+        this.running++;
+        
+        try {
+            return await fn();
+        } finally {
+            this.running--;
+            const next = this.queue.shift();
+            if (next) {
+                next();
+            }
+        }
+    }
+}
+
+// Usage
+import { readFile, writeFile } from "@visulima/fs";
+
+const limiter = new ConcurrencyLimiter(5);
+
+const files = ["file1.txt", "file2.txt", /* ... */];
+
+await Promise.all(
+    files.map(file =>
+        limiter.run(async () => {
+            const content = await readFile(file);
+            await writeFile(`out-${file}`, content.toUpperCase());
+        })
+    )
+);
+```
+
+### Queue-Based Processing
+
+```typescript
+import { readFile, writeFile } from "@visulima/fs";
+
+class FileQueue {
+    private queue: string[] = [];
+    private processing = false;
+    
+    add(filePath: string) {
+        this.queue.push(filePath);
+        if (!this.processing) {
+            this.process();
+        }
+    }
+    
+    private async process() {
+        this.processing = true;
+        
+        while (this.queue.length > 0) {
+            const file = this.queue.shift()!;
+            
+            try {
+                const content = await readFile(file);
+                await writeFile(`processed-${file}`, content);
+                console.log(`Processed: ${file}`);
+            } catch (error) {
+                console.error(`Failed: ${file}`, error);
+            }
+        }
+        
+        this.processing = false;
+    }
+}
+
+// Usage
+const queue = new FileQueue();
+queue.add("file1.txt");
+queue.add("file2.txt");
+```
+
+## Best Practices Summary
+
+1. **Performance**
+   - Use async for I/O operations
+   - Process files in parallel when possible
+   - Use streaming for large files
+   - Limit concurrency to avoid overwhelming the system
+
+2. **Error Handling**
+   - Always handle specific error types
+   - Implement graceful degradation
+   - Use retry logic for transient failures
+   - Aggregate errors for batch operations
+
+3. **Testing**
+   - Use temporary directories for test fixtures
+   - Clean up after tests
+   - Mock file system when appropriate
+   - Test edge cases (empty files, permissions, etc.)
+
+4. **Security**
+   - Validate all file paths
+   - Sanitize user input
+   - Prevent path traversal attacks
+   - Validate file contents
+
+5. **Cross-Platform**
+   - Use `path.join()` for paths
+   - Handle line endings appropriately
+   - Test on multiple platforms
+   - Handle platform-specific features gracefully
+
+## Related
+
+- [API Reference](../api-reference/README.md)
+- [Examples](../examples/README.md)
