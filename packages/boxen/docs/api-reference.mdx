@@ -1,4 +1,10 @@
-# API Reference
+---
+title: API Reference
+description: Complete API documentation for all Boxen functions and types
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
 
 Complete reference documentation for all Boxen APIs and type definitions.
 
@@ -36,26 +42,29 @@ console.log(box);
 
 Defines the style of the box border.
 
-**Example:**
-
-```typescript
-// Predefined style
-boxen("text", { borderStyle: "double" });
-
-// Custom style
-boxen("text", {
-    borderStyle: {
-        topLeft: "╔",
-        topRight: "╗",
-        bottomLeft: "╚",
-        bottomRight: "╝",
-        top: "═",
-        bottom: "═",
-        left: "║",
-        right: "║"
-    }
-});
-```
+<Tabs items={['Predefined', 'Custom']}>
+  <Tab value="Predefined">
+    ```typescript
+    boxen("text", { borderStyle: "double" });
+    ```
+  </Tab>
+  <Tab value="Custom">
+    ```typescript
+    boxen("text", {
+        borderStyle: {
+            topLeft: "╔",
+            topRight: "╗",
+            bottomLeft: "╚",
+            bottomRight: "╝",
+            top: "═",
+            bottom: "═",
+            left: "║",
+            right: "║"
+        }
+    });
+    ```
+  </Tab>
+</Tabs>
 
 #### `borderColor`
 
@@ -74,7 +83,7 @@ Function to colorize border characters. Receives the border character, its posit
 - `"bottomLeft"` - Bottom-left corner
 - `"bottomRight"` - Bottom-right corner
 - `"horizontal"` - Any horizontal line
-- `"vertical"` - Any vertical line (if defined, overrides left/right)
+- `"vertical"` - Any vertical line
 
 **Example:**
 
@@ -95,32 +104,39 @@ boxen("text", {
 
 Space between the text and the box border.
 
+<Callout type="info">
 When using a number, the left/right padding is 3 times the top/bottom value for better visual proportion.
+</Callout>
 
-**Example:**
-
-```typescript
-// Uniform padding
-boxen("text", { padding: 1 });
-
-// Custom padding per side
-boxen("text", {
-    padding: {
-        top: 2,
-        right: 4,
-        bottom: 2,
-        left: 4
-    }
-});
-
-// Partial padding
-boxen("text", {
-    padding: {
-        top: 1,
-        bottom: 1
-    }
-});
-```
+<Tabs items={['Number', 'Object', 'Partial']}>
+  <Tab value="Number">
+    ```typescript
+    boxen("text", { padding: 1 });
+    ```
+  </Tab>
+  <Tab value="Object">
+    ```typescript
+    boxen("text", {
+        padding: {
+            top: 2,
+            right: 4,
+            bottom: 2,
+            left: 4
+        }
+    });
+    ```
+  </Tab>
+  <Tab value="Partial">
+    ```typescript
+    boxen("text", {
+        padding: {
+            top: 1,
+            bottom: 1
+        }
+    });
+    ```
+  </Tab>
+</Tabs>
 
 #### `margin`
 
@@ -131,13 +147,7 @@ Space around the box.
 
 When using a number, the left/right margin is 3 times the top/bottom value.
 
-**Example:**
-
 ```typescript
-// Uniform margin
-boxen("text", { margin: 1 });
-
-// Custom margin per side
 boxen("text", {
     margin: {
         top: 1,
@@ -155,9 +165,9 @@ boxen("text", {
 
 Fixed width for the box in characters.
 
-Note: This disables terminal overflow handling. The box may appear broken if the terminal is too narrow.
-
-**Example:**
+<Callout type="warn">
+This disables terminal overflow handling. The box may appear broken if the terminal is too narrow.
+</Callout>
 
 ```typescript
 boxen("text", { width: 50 });
@@ -170,9 +180,9 @@ boxen("text", { width: 50 });
 
 Fixed height for the box in lines.
 
-Note: Content may be cropped if it exceeds the specified height.
-
-**Example:**
+<Callout type="warn">
+Content may be cropped if it exceeds the specified height.
+</Callout>
 
 ```typescript
 boxen("text", { height: 10 });
@@ -185,20 +195,23 @@ boxen("text", { height: 10 });
 
 Whether to fill the available terminal space.
 
-**Example:**
-
-```typescript
-// Fill entire terminal
-boxen("text", { fullscreen: true });
-
-// Custom sizing based on terminal
-boxen("text", {
-    fullscreen: (width, height) => ({
-        columns: Math.floor(width * 0.8),
-        rows: Math.floor(height * 0.6)
-    })
-});
-```
+<Tabs items={['Boolean', 'Function']}>
+  <Tab value="Boolean">
+    ```typescript
+    boxen("text", { fullscreen: true });
+    ```
+  </Tab>
+  <Tab value="Function">
+    ```typescript
+    boxen("text", {
+        fullscreen: (width, height) => ({
+            columns: Math.floor(width * 0.8),
+            rows: Math.floor(height * 0.6)
+        })
+    });
+    ```
+  </Tab>
+</Tabs>
 
 #### `float`
 
@@ -206,8 +219,6 @@ boxen("text", {
 **Default:** `"left"`
 
 Position the box within the available terminal space.
-
-**Example:**
 
 ```typescript
 boxen("text", { float: "center" });
@@ -221,8 +232,6 @@ boxen("text", { float: "center" });
 **Default:** `undefined`
 
 Function to colorize the text content.
-
-**Example:**
 
 ```typescript
 import { bold, red } from "@visulima/colorize";
@@ -239,8 +248,6 @@ boxen("Error message", {
 
 Horizontal alignment of text within the box.
 
-**Example:**
-
 ```typescript
 boxen("Centered text", {
     textAlignment: "center",
@@ -255,19 +262,29 @@ boxen("Centered text", {
 
 Number of spaces to use for tab characters. Set to `false` to disable transformation.
 
-**Example:**
-
-```typescript
-// Use 2 spaces for tabs
-boxen("Line 1\n\tIndented", {
-    transformTabToSpace: 2
-});
-
-// Disable tab transformation
-boxen("Line 1\n\tIndented", {
-    transformTabToSpace: false
-});
-```
+<Tabs items={['2 Spaces', '4 Spaces', 'Disabled']}>
+  <Tab value="2 Spaces">
+    ```typescript
+    boxen("Line 1\n\tIndented", {
+        transformTabToSpace: 2
+    });
+    ```
+  </Tab>
+  <Tab value="4 Spaces">
+    ```typescript
+    boxen("Line 1\n\tIndented", {
+        transformTabToSpace: 4
+    });
+    ```
+  </Tab>
+  <Tab value="Disabled">
+    ```typescript
+    boxen("Line 1\n\tIndented", {
+        transformTabToSpace: false
+    });
+    ```
+  </Tab>
+</Tabs>
 
 ### Header Options
 
@@ -277,8 +294,6 @@ boxen("Line 1\n\tIndented", {
 **Default:** `undefined`
 
 Text to display in the top border of the box.
-
-**Example:**
 
 ```typescript
 boxen("Content", {
@@ -293,8 +308,6 @@ boxen("Content", {
 
 Alignment of the header text.
 
-**Example:**
-
 ```typescript
 boxen("Content", {
     headerText: "Centered Title",
@@ -308,8 +321,6 @@ boxen("Content", {
 **Default:** `undefined`
 
 Function to colorize the header text.
-
-**Example:**
 
 ```typescript
 import { bold, blue } from "@visulima/colorize";
@@ -329,8 +340,6 @@ boxen("Content", {
 
 Text to display in the bottom border of the box.
 
-**Example:**
-
 ```typescript
 boxen("Content", {
     footerText: "End"
@@ -343,8 +352,6 @@ boxen("Content", {
 **Default:** `"left"`
 
 Alignment of the footer text.
-
-**Example:**
 
 ```typescript
 boxen("Content", {
@@ -359,8 +366,6 @@ boxen("Content", {
 **Default:** `undefined`
 
 Function to colorize the footer text.
-
-**Example:**
 
 ```typescript
 import { dim } from "@visulima/colorize";
@@ -510,28 +515,33 @@ console.log(box);
 
 ## Migration from v1.x
 
-If you're upgrading from version 1.x, note these changes:
+<Callout type="warn">
+If you're upgrading from version 1.x, note these breaking changes:
+</Callout>
 
 - `headerColor` renamed to `headerTextColor`
 - `footerColor` renamed to `footerTextColor`
 - Color functions now receive the text/border string as first parameter
 - Border color function signature changed to include position and length
 
-**Old (v1.x):**
-```typescript
-boxen("text", {
-    headerColor: red,
-    borderColor: blue
-});
-```
-
-**New (v2.x):**
-```typescript
-boxen("text", {
-    headerTextColor: (text) => red(text),
-    borderColor: (border) => blue(border)
-});
-```
+<Tabs items={['v1.x (Old)', 'v2.x (New)']}>
+  <Tab value="v1.x (Old)">
+    ```typescript
+    boxen("text", {
+        headerColor: red,
+        borderColor: blue
+    });
+    ```
+  </Tab>
+  <Tab value="v2.x (New)">
+    ```typescript
+    boxen("text", {
+        headerTextColor: (text) => red(text),
+        borderColor: (border) => blue(border)
+    });
+    ```
+  </Tab>
+</Tabs>
 
 ## Browser and Environment Support
 

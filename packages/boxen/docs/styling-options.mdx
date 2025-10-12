@@ -1,10 +1,19 @@
-# Styling Options
+---
+title: Styling Options
+description: Colors, gradients, and custom borders for beautiful terminal boxes
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 Take your boxes to the next level with colors, gradients, and custom borders. This guide covers all the styling capabilities of Boxen.
 
 ## Adding Colors
 
-While Boxen doesn't include color utilities by default, it works seamlessly with color libraries. We recommend using `@visulima/colorize`:
+<Callout type="info">
+While Boxen doesn't include color utilities by default, it works seamlessly with color libraries. We recommend using `@visulima/colorize`.
+</Callout>
 
 ```bash
 npm install @visulima/colorize
@@ -119,39 +128,62 @@ console.log(
 
 Get creative with your border characters:
 
-```typescript
-// Stars border
-console.log(
-    boxen("Starry night", {
-        borderStyle: {
-            topLeft: "*",
-            topRight: "*",
-            bottomLeft: "*",
-            bottomRight: "*",
-            top: "*",
-            bottom: "*",
-            left: "*",
-            right: "*"
-        }
-    })
-);
-
-// Hash border
-console.log(
-    boxen("Hash it out", {
-        borderStyle: {
-            topLeft: "#",
-            topRight: "#",
-            bottomLeft: "#",
-            bottomRight: "#",
-            top: "#",
-            bottom: "#",
-            left: "#",
-            right: "#"
-        }
-    })
-);
-```
+<Tabs items={['Stars', 'Hash', 'Equals']}>
+  <Tab value="Stars">
+    ```typescript
+    console.log(
+        boxen("Starry night", {
+            borderStyle: {
+                topLeft: "*",
+                topRight: "*",
+                bottomLeft: "*",
+                bottomRight: "*",
+                top: "*",
+                bottom: "*",
+                left: "*",
+                right: "*"
+            }
+        })
+    );
+    ```
+  </Tab>
+  <Tab value="Hash">
+    ```typescript
+    console.log(
+        boxen("Hash it out", {
+            borderStyle: {
+                topLeft: "#",
+                topRight: "#",
+                bottomLeft: "#",
+                bottomRight: "#",
+                top: "#",
+                bottom: "#",
+                left: "#",
+                right: "#"
+            }
+        })
+    );
+    ```
+  </Tab>
+  <Tab value="Equals">
+    ```typescript
+    console.log(
+        boxen("Equals", {
+            borderStyle: {
+                topLeft: "=",
+                topRight: "=",
+                bottomLeft: "=",
+                bottomRight: "=",
+                top: "=",
+                bottom: "=",
+                left: "=",
+                right: "="
+            }
+        })
+    );
+    ```
+  </Tab>
+</Tabs>
 
 ## Border Position Reference
 
@@ -290,7 +322,9 @@ console.log(
 
 ### Color Contrast
 
-Ensure good readability:
+<Callout type="warn">
+Ensure good readability by using high contrast colors for text and borders.
+</Callout>
 
 ```typescript
 // Good - High contrast
@@ -298,19 +332,16 @@ boxen("Readable text", {
     textColor: (text) => bold(white(text)),
     borderColor: (border) => blue(border)
 });
-
-// Avoid - Low contrast
-// Don't use similar colors for text and border
 ```
 
 ### Terminal Compatibility
 
 Not all terminals support all colors. Test your output in different environments:
 
-- Basic terminals: Stick to basic colors (red, green, blue, etc.)
-- Modern terminals: Use RGB colors and gradients
-- Windows CMD: Use basic colors only
-- Windows Terminal: Full color support
+- **Basic terminals**: Stick to basic colors (red, green, blue, etc.)
+- **Modern terminals**: Use RGB colors and gradients
+- **Windows CMD**: Use basic colors only
+- **Windows Terminal**: Full color support
 
 ### Performance
 
@@ -336,38 +367,42 @@ boxes.forEach(content => {
 
 ### Professional
 
-```typescript
-// Dark theme
-const darkTheme = {
-    textColor: (text: string) => gray(text),
-    borderColor: (border: string) => dim(border)
-};
-
-// Light theme
-const lightTheme = {
-    textColor: (text: string) => black(text),
-    borderColor: (border: string) => gray(border)
-};
-```
+<Tabs items={['Dark', 'Light']}>
+  <Tab value="Dark">
+    ```typescript
+    const darkTheme = {
+        textColor: (text: string) => gray(text),
+        borderColor: (border: string) => dim(border)
+    };
+    ```
+  </Tab>
+  <Tab value="Light">
+    ```typescript
+    const lightTheme = {
+        textColor: (text: string) => black(text),
+        borderColor: (border: string) => gray(border)
+    };
+    ```
+  </Tab>
+</Tabs>
 
 ### Vibrant
 
-```typescript
-// Neon theme
-const neonTheme = {
-    textColor: (text: string) => bold(cyan(text)),
-    borderColor: (border: string) => magenta(border)
-};
-
-// Sunset theme
-const sunsetTheme = {
-    textColor: (text: string) => yellow(text),
-    borderColor: (border: string) => red(border)
-};
-```
-
-## Next Steps
-
-- **[Advanced Usage](./advanced-usage.md)** - Complex layouts and dynamic content
-- **[Examples](./examples.md)** - Real-world styling examples
-- **[API Reference](./api-reference.md)** - Complete styling API documentation
+<Tabs items={['Neon', 'Sunset']}>
+  <Tab value="Neon">
+    ```typescript
+    const neonTheme = {
+        textColor: (text: string) => bold(cyan(text)),
+        borderColor: (border: string) => magenta(border)
+    };
+    ```
+  </Tab>
+  <Tab value="Sunset">
+    ```typescript
+    const sunsetTheme = {
+        textColor: (text: string) => yellow(text),
+        borderColor: (border: string) => red(border)
+    };
+    ```
+  </Tab>
+</Tabs>

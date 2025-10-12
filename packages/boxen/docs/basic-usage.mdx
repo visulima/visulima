@@ -1,4 +1,11 @@
-# Basic Usage
+---
+title: Basic Usage
+description: Learn the fundamentals of creating boxes with Boxen
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 This guide covers the fundamental concepts of using Boxen. By the end, you'll be comfortable creating boxes with various styles and configurations.
 
@@ -36,22 +43,31 @@ Output:
 └─────────────┘
 ```
 
-The padding option accepts either a number or an object for fine-grained control:
+<Callout type="info">
+The padding option accepts either a number or an object for fine-grained control.
+</Callout>
 
-```typescript
-// Equal padding on all sides
-boxen("text", { padding: 2 });
-
-// Different padding per side
-boxen("text", { 
-    padding: { 
-        top: 1, 
-        right: 3, 
-        bottom: 1, 
-        left: 3 
-    } 
-});
-```
+<Tabs items={['Simple', 'Advanced']}>
+  <Tab value="Simple">
+    ```typescript
+    // Equal padding on all sides
+    boxen("text", { padding: 2 });
+    ```
+  </Tab>
+  <Tab value="Advanced">
+    ```typescript
+    // Different padding per side
+    boxen("text", { 
+        padding: { 
+            top: 1, 
+            right: 3, 
+            bottom: 1, 
+            left: 3 
+        } 
+    });
+    ```
+  </Tab>
+</Tabs>
 
 ## Adding Margin
 
@@ -73,10 +89,6 @@ Output:
 Like padding, margin can be a number or an object:
 
 ```typescript
-// Equal margin
-boxen("text", { margin: 2 });
-
-// Custom margin per side
 boxen("text", { 
     margin: { 
         top: 2, 
@@ -226,16 +238,32 @@ console.log(
 
 Control how text is aligned within the box:
 
-```typescript
-// Left aligned (default)
-console.log(boxen("Left", { textAlignment: "left", width: 20 }));
-
-// Center aligned
-console.log(boxen("Center", { textAlignment: "center", width: 20 }));
-
-// Right aligned
-console.log(boxen("Right", { textAlignment: "right", width: 20 }));
-```
+<Tabs items={['Left', 'Center', 'Right']}>
+  <Tab value="Left">
+    ```typescript
+    console.log(boxen("Left", { 
+        textAlignment: "left", 
+        width: 20 
+    }));
+    ```
+  </Tab>
+  <Tab value="Center">
+    ```typescript
+    console.log(boxen("Center", { 
+        textAlignment: "center", 
+        width: 20 
+    }));
+    ```
+  </Tab>
+  <Tab value="Right">
+    ```typescript
+    console.log(boxen("Right", { 
+        textAlignment: "right", 
+        width: 20 
+    }));
+    ```
+  </Tab>
+</Tabs>
 
 ## Multi-line Text
 
@@ -264,16 +292,30 @@ Output:
 
 Set specific width and height for your boxes:
 
-```typescript
-// Fixed width
-console.log(boxen("Fixed width", { width: 30 }));
+<Tabs items={['Width', 'Height', 'Both']}>
+  <Tab value="Width">
+    ```typescript
+    console.log(boxen("Fixed width", { width: 30 }));
+    ```
+  </Tab>
+  <Tab value="Height">
+    ```typescript
+    console.log(boxen("Fixed height", { height: 7 }));
+    ```
+  </Tab>
+  <Tab value="Both">
+    ```typescript
+    console.log(boxen("Fixed size", { 
+        width: 30, 
+        height: 7 
+    }));
+    ```
+  </Tab>
+</Tabs>
 
-// Fixed height (will add empty space)
-console.log(boxen("Fixed height", { height: 7 }));
-
-// Both
-console.log(boxen("Fixed size", { width: 30, height: 7 }));
-```
+<Callout type="warn">
+Setting a fixed width disables terminal overflow handling. The box may appear broken if the user's terminal is not wide enough.
+</Callout>
 
 ## Floating Boxes
 
@@ -337,8 +379,20 @@ Uptime: 5 days`, {
 
 ## Next Steps
 
-Now that you understand the basics, explore:
-
-- **[Styling Options](./styling-options.md)** - Learn about colors and custom borders
-- **[Advanced Usage](./advanced-usage.md)** - Master complex customizations
-- **[Examples](./examples.md)** - See real-world use cases
+<Cards>
+  <Card
+    title="Styling Options"
+    description="Learn about colors and custom borders"
+    href="/styling-options"
+  />
+  <Card
+    title="Advanced Usage"
+    description="Master complex customizations"
+    href="/advanced-usage"
+  />
+  <Card
+    title="Examples"
+    description="See real-world use cases"
+    href="/examples"
+  />
+</Cards>

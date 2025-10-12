@@ -1,4 +1,10 @@
-# Examples
+---
+title: Examples
+description: Real-world examples and use cases for Boxen
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
 
 Real-world examples and use cases for Boxen. These examples demonstrate practical applications you can adapt for your own projects.
 
@@ -176,7 +182,7 @@ displayServerStatus({
 
 ```typescript
 import { boxen } from "@visulima/boxen";
-import { blue, green, dim } from "@visulima/colorize";
+import { blue, green, dim, red } from "@visulima/colorize";
 
 interface BuildStep {
     name: string;
@@ -606,8 +612,6 @@ Use 'myapp --help' for more information.`, {
 program.parse();
 ```
 
-## Next Steps
-
-- **[API Reference](./api-reference.md)** - Detailed API documentation
-- **[Advanced Usage](./advanced-usage.md)** - Complex customizations
-- **[Styling Options](./styling-options.md)** - More styling techniques
+<Callout type="info">
+All examples can be found in the [examples folder](https://github.com/visulima/visulima/tree/main/packages/boxen/examples) of the repository.
+</Callout>

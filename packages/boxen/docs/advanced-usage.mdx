@@ -1,4 +1,11 @@
-# Advanced Usage
+---
+title: Advanced Usage
+description: Master complex layouts, dynamic content, and advanced features
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 Master the advanced features of Boxen to create sophisticated terminal interfaces and dynamic content displays.
 
@@ -54,33 +61,6 @@ console.log(
 ```
 
 ## Complex Layouts
-
-### Multi-Column Text
-
-Create side-by-side boxes:
-
-```typescript
-const leftBox = boxen("Left column\nContent here", {
-    width: 20,
-    padding: 1,
-    borderStyle: "single"
-});
-
-const rightBox = boxen("Right column\nMore content", {
-    width: 20,
-    padding: 1,
-    borderStyle: "single"
-});
-
-// Note: You'll need to handle the side-by-side layout manually
-// by splitting lines and concatenating them
-const leftLines = leftBox.split("\n");
-const rightLines = rightBox.split("\n");
-
-leftLines.forEach((line, index) => {
-    console.log(line + "  " + (rightLines[index] || ""));
-});
-```
 
 ### Nested Content
 
@@ -208,31 +188,41 @@ setTimeout(() => {
 
 Control how tabs are rendered:
 
-```typescript
-// Convert tabs to 4 spaces (default)
-console.log(
-    boxen("Line 1\n\tIndented line\n\t\tDouble indented", {
-        transformTabToSpace: 4,
-        padding: 1
-    })
-);
-
-// Convert tabs to 2 spaces
-console.log(
-    boxen("Line 1\n\tIndented line", {
-        transformTabToSpace: 2,
-        padding: 1
-    })
-);
-
-// Disable tab transformation
-console.log(
-    boxen("Line 1\n\tIndented line", {
-        transformTabToSpace: false,
-        padding: 1
-    })
-);
-```
+<Tabs items={['4 Spaces', '2 Spaces', 'Disabled']}>
+  <Tab value="4 Spaces">
+    ```typescript
+    // Convert tabs to 4 spaces (default)
+    console.log(
+        boxen("Line 1\n\tIndented line\n\t\tDouble indented", {
+            transformTabToSpace: 4,
+            padding: 1
+        })
+    );
+    ```
+  </Tab>
+  <Tab value="2 Spaces">
+    ```typescript
+    // Convert tabs to 2 spaces
+    console.log(
+        boxen("Line 1\n\tIndented line", {
+            transformTabToSpace: 2,
+            padding: 1
+        })
+    );
+    ```
+  </Tab>
+  <Tab value="Disabled">
+    ```typescript
+    // Disable tab transformation
+    console.log(
+        boxen("Line 1\n\tIndented line", {
+            transformTabToSpace: false,
+            padding: 1
+        })
+    );
+    ```
+  </Tab>
+</Tabs>
 
 ## Working with Long Text
 
@@ -269,6 +259,10 @@ console.log(
     })
 );
 ```
+
+<Callout type="warn">
+Setting a fixed height will crop overflowing content. Use with caution.
+</Callout>
 
 ## Conditional Styling
 
@@ -356,6 +350,10 @@ const boxes = messages.map(msg =>
 // Display all at once
 console.log(boxes.join("\n"));
 ```
+
+<Callout type="info">
+Building all boxes first and then displaying them at once is more efficient than rendering them one by one.
+</Callout>
 
 ## Interactive CLIs
 
@@ -456,13 +454,17 @@ try {
 
 Keep boxes accessible:
 
-- Use clear, high-contrast colors
-- Provide text alternatives for color-coded information
-- Test with screen readers when possible
-- Avoid overly complex layouts
-
-## Next Steps
-
-- **[Examples](./examples.md)** - See complete real-world examples
-- **[API Reference](./api-reference.md)** - Detailed API documentation
-- **[FAQ](./faq.md)** - Common questions and solutions
+<Steps>
+<Step>
+Use clear, high-contrast colors
+</Step>
+<Step>
+Provide text alternatives for color-coded information
+</Step>
+<Step>
+Test with screen readers when possible
+</Step>
+<Step>
+Avoid overly complex layouts
+</Step>
+</Steps>
