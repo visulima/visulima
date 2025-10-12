@@ -1,7 +1,3 @@
-/**
- * @packageDocumentation
- * Shared types for upload handlers, including response shapes and event types.
- */
 import type { EventEmitter } from "node:events";
 import type { IncomingMessage } from "node:http";
 import type { Readable } from "node:stream";

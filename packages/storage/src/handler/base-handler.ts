@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * Base upload handler with shared HTTP, fetch, streaming, and error handling
- * utilities used by protocol-specific handlers (multipart and TUS).
- */
 import { EventEmitter } from "node:events";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { PassThrough, Readable } from "node:stream";

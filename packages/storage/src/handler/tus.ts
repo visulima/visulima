@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * TUS resumable upload handler implementing creation, chunked PATCH, HEAD,
- * GET metadata, and DELETE with protocol headers and checksum support.
- */
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { format } from "node:url";
 
@@ -88,6 +83,8 @@ export class Tus<
      * @returns Promise resolving to ResponseFile with upload location and offset
      */
     public async post(request: NodeRequest): Promise<ResponseFile<TFile>> {
+        this.validateTusResumableHeader(request);
+
         if ("upload-concat" in request.headers && !this.storage.tusExtension.includes("concatentation")) {
             throw createHttpError(501, "Concatenation extension is not (yet) supported. Disable parallel upload in the tus client.");
         }
@@ -161,6 +158,8 @@ export class Tus<
      * @returns Promise resolving to ResponseFile with updated offset
      */
     public async patch(request: NodeRequest): Promise<ResponseFile<TFile>> {
+        this.validateTusResumableHeader(request);
+
         try {
             const id = getIdFromRequest(request);
 
@@ -282,6 +281,8 @@ export class Tus<
      * @returns Promise resolving to ResponseFile with file metadata as JSON
      */
     public override async get(request: NodeRequest): Promise<ResponseFile<TFile>> {
+        this.validateTusResumableHeader(request);
+
         try {
             const id = getIdFromRequest(request);
 
@@ -315,6 +316,8 @@ export class Tus<
      * @returns Promise resolving to ResponseFile with upload-offset and metadata headers
      */
     public async head(request: NodeRequest): Promise<ResponseFile<TFile>> {
+        this.validateTusResumableHeader(request);
+
         try {
             const id = getIdFromRequest(request);
 
@@ -367,6 +370,8 @@ export class Tus<
      * @returns Promise resolving to ResponseFile with deletion confirmation
      */
     public async delete(request: NodeRequest): Promise<ResponseFile<TFile>> {
+        this.validateTusResumableHeader(request);
+
         try {
             const id = getIdFromRequest(request);
 
@@ -474,6 +479,25 @@ export class Tus<
         const [checksumAlgorithm, checksum] = getHeader(request, "upload-checksum").split(/\s+/).filter(Boolean);
 
         return { checksum, checksumAlgorithm };
+    }
+
+    /**
+     * Validate Tus-Resumable header in client requests.
+     * According to TUS spec, clients MUST include Tus-Resumable in all requests except OPTIONS.
+     * @param request Node.js IncomingMessage
+     * @throws {Error} 412 if version doesn't match or header is missing
+     */
+    // eslint-disable-next-line class-methods-use-this
+    private validateTusResumableHeader(request: NodeRequest): void {
+        const tusResumable = getHeader(request, "tus-resumable");
+
+        if (!tusResumable) {
+            throw createHttpError(412, "Missing Tus-Resumable header");
+        }
+
+        if (tusResumable !== TUS_RESUMABLE_VERSION) {
+            throw createHttpError(412, `Unsupported TUS version: ${tusResumable}. Server supports: ${TUS_RESUMABLE_VERSION}`);
+        }
     }
 
     /**
