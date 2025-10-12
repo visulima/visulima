@@ -1,0 +1,404 @@
+---
+title: API Reference
+description: Complete API reference for the Vite error overlay plugin.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# API Reference
+
+Complete API documentation for `@visulima/vite-overlay`.
+
+## Plugin Function
+
+### errorOverlay()
+
+The main plugin function that creates the Vite error overlay plugin.
+
+```typescript
+function errorOverlay(options?: ErrorOverlayOptions): Plugin
+```
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `options` | `ErrorOverlayOptions` | No | Configuration options for the plugin |
+
+**Returns:** `Plugin` - A Vite plugin instance
+
+**Example:**
+
+```typescript
+import errorOverlay from "@visulima/vite-overlay";
+
+const plugin = errorOverlay({
+    logClientRuntimeError: true,
+});
+```
+
+## Types
+
+### ErrorOverlayOptions
+
+Configuration options for the error overlay plugin.
+
+```typescript
+interface ErrorOverlayOptions {
+    logClientRuntimeError?: boolean;
+    reactPluginName?: string;
+    vuePluginName?: string;
+    solutionFinders?: SolutionFinder[];
+    showBallonButton?: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `logClientRuntimeError` | `boolean` | `true` | Enable/disable client-side runtime error logging |
+| `reactPluginName` | `string` | `undefined` | Custom React plugin name for detection |
+| `vuePluginName` | `string` | `undefined` | Custom Vue plugin name for detection |
+| `solutionFinders` | `SolutionFinder[]` | `[]` | Array of custom solution finder functions |
+| `showBallonButton` | `boolean` | `true` | Show/hide balloon notification button |
+
+### SolutionFinder
+
+Interface for custom error solution providers.
+
+```typescript
+interface SolutionFinder {
+    name: string;
+    priority: number;
+    handle: (error: ErrorInfo, context: ErrorContext) => Promise<Solution | undefined>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Unique identifier for the solution finder |
+| `priority` | `number` | Execution priority (higher runs first) |
+| `handle` | `function` | Async function that returns a solution or undefined |
+
+**Example:**
+
+```typescript
+const finder: SolutionFinder = {
+    name: "my-finder",
+    priority: 50,
+    async handle(error, context) {
+        if (error.message.includes("specific pattern")) {
+            return {
+                header: "Solution Title",
+                body: "Solution description...",
+            };
+        }
+        return undefined;
+    },
+};
+```
+
+### ErrorInfo
+
+Information about the error being analyzed.
+
+```typescript
+interface ErrorInfo {
+    name: string;
+    message: string;
+    stack?: string;
+    hint?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Error name (e.g., "TypeError", "ReferenceError") |
+| `message` | `string` | Error message |
+| `stack` | `string` | Optional stack trace |
+| `hint` | `string` | Optional hint from the error object |
+
+### ErrorContext
+
+Context information about where the error occurred.
+
+```typescript
+interface ErrorContext {
+    file: string;
+    line: number;
+    language: string;
+    snippet: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `file` | `string` | File path where the error occurred |
+| `line` | `number` | Line number where the error occurred |
+| `language` | `string` | Programming language of the file |
+| `snippet` | `string` | Code snippet around the error location |
+
+### Solution
+
+The solution object returned by solution finders.
+
+```typescript
+interface Solution {
+    header: string;
+    body: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `header` | `string` | Solution title (supports Markdown) |
+| `body` | `string` | Solution description (supports Markdown) |
+
+**Example:**
+
+```typescript
+const solution: Solution = {
+    header: "**Fix:** Missing Import",
+    body: `
+Add the missing import at the top of your file:
+
+\`\`\`typescript
+import { functionName } from './module';
+\`\`\`
+    `.trim(),
+};
+```
+
+### VisulimaViteOverlayErrorPayload
+
+The complete error payload sent to the overlay.
+
+```typescript
+interface VisulimaViteOverlayErrorPayload {
+    readonly errors: ReadonlyArray<ExtendedError>;
+    readonly errorType: "client" | "server";
+    readonly rootPath: string;
+    readonly solution?: Solution;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `errors` | `ReadonlyArray<ExtendedError>` | Array of processed errors with metadata |
+| `errorType` | `"client" \| "server"` | Origin of the error |
+| `rootPath` | `string` | Project root path |
+| `solution` | `Solution` | Optional solution for the error |
+
+### ExtendedError
+
+Enhanced error information with source mapping and metadata.
+
+```typescript
+interface ExtendedError {
+    readonly name: string;
+    readonly message: string;
+    readonly stack: string;
+    readonly hint?: string;
+    readonly originalFilePath: string;
+    readonly originalFileLine: number;
+    readonly originalFileColumn: number;
+    readonly originalSnippet: string;
+    readonly originalCodeFrameContent?: string;
+    readonly compiledFilePath?: string;
+    readonly compiledLine?: number;
+    readonly compiledColumn?: number;
+    readonly compiledCodeFrameContent?: string;
+    readonly plugin?: string;
+}
+```
+
+## Constants
+
+### MESSAGE_TYPE
+
+The WebSocket message type used for error communication.
+
+```typescript
+const MESSAGE_TYPE = "visulima:vite-overlay:runtime-error";
+```
+
+### PLUGIN_NAME
+
+The official plugin name.
+
+```typescript
+const PLUGIN_NAME = "visulima:vite-overlay";
+```
+
+### RECENT_ERROR_TTL_MS
+
+Time-to-live for error deduplication (in milliseconds).
+
+```typescript
+const RECENT_ERROR_TTL_MS = 5000; // 5 seconds
+```
+
+## Utility Functions
+
+While these are internal, they're documented here for advanced use cases:
+
+### createErrorSignature()
+
+Creates a unique signature for error deduplication.
+
+```typescript
+function createErrorSignature(error: Error | RawErrorData): string
+```
+
+### cleanErrorStack()
+
+Cleans and formats error stack traces.
+
+```typescript
+function cleanErrorStack(stack: string): string
+```
+
+### absolutizeStackUrls()
+
+Converts relative paths in stack traces to absolute URLs.
+
+```typescript
+function absolutizeStackUrls(stack: string, rootPath: string): string
+```
+
+## Advanced Usage
+
+### Custom Solution Finder with Context
+
+```typescript
+import type { SolutionFinder } from "@visulima/error/solution";
+
+const advancedFinder: SolutionFinder = {
+    name: "advanced-finder",
+    priority: 100,
+    async handle(error, context) {
+        // Access error details
+        const { name, message, stack, hint } = error;
+        
+        // Access context
+        const { file, line, language, snippet } = context;
+        
+        // Perform analysis
+        if (language === "typescript" && message.includes("Property")) {
+            return {
+                header: `TypeScript Error in ${file}`,
+                body: `
+Error at line ${line}:
+
+\`\`\`${language}
+${snippet}
+\`\`\`
+
+**Suggestion:** Check the type definition or add optional chaining (?.)
+                `.trim(),
+            };
+        }
+        
+        return undefined;
+    },
+};
+```
+
+### Type Guards
+
+When working with error payloads, use type guards:
+
+```typescript
+function isExtendedError(error: unknown): error is ExtendedError {
+    return (
+        typeof error === "object" &&
+        error !== null &&
+        "name" in error &&
+        "message" in error &&
+        "originalFilePath" in error
+    );
+}
+```
+
+### Plugin Hooks
+
+The error overlay plugin implements these Vite plugin hooks:
+
+```typescript
+{
+    name: "visulima:vite-overlay",
+    enforce: "pre",
+    apply: "serve",
+    config(config, env) { /* ... */ },
+    configureServer(server) { /* ... */ },
+    transform(code, id, options) { /* ... */ },
+    transformIndexHtml() { /* ... */ },
+}
+```
+
+## Integration Points
+
+### Window API
+
+The plugin adds a global error sender function:
+
+```typescript
+declare global {
+    interface Window {
+        __flameSendError?: (error: Error, loc?: ErrorLocation) => Promise<void>;
+    }
+}
+```
+
+### Error Location
+
+```typescript
+interface ErrorLocation {
+    filename: string;
+    lineno: number;
+    colno: number;
+}
+```
+
+## TypeScript Support
+
+All types are exported and available:
+
+```typescript
+import type {
+    ErrorOverlayOptions,
+    SolutionFinder,
+    ErrorInfo,
+    ErrorContext,
+    Solution,
+    ExtendedError,
+    VisulimaViteOverlayErrorPayload,
+} from "@visulima/vite-overlay";
+```
+
+<Callout type="info">
+The package includes full TypeScript definitions with JSDoc comments for enhanced IDE support.
+</Callout>
+
+## Version Compatibility
+
+| Package Version | Vite Version | Node.js Version |
+|----------------|--------------|-----------------|
+| 1.x.x | 6.x - 7.x | 20.19+ to 24.x |
+
+## Next Steps
+
+- [Configuration](/docs/configuration) - Learn about all configuration options
+- [Examples](/docs/examples) - See real-world usage examples
+- [Troubleshooting](/docs/troubleshooting) - Common issues and solutions
