@@ -92,7 +92,6 @@
         "@anolilab/semantic-release-pnpm": "^2.0.4",
         "@anolilab/semantic-release-preset": "^11.0.4",
         "@arethetypeswrong/cli": "^0.18.2",
-        "@babel/core": "^7.28.4",
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@types/ms": "^2.1.0",
         "@types/node": "24.7.2",
