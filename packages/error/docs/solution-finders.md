@@ -1,0 +1,545 @@
+# Solution Finders
+
+Learn how to generate helpful hints and solutions for errors using solution finders.
+
+## Overview
+
+Solution finders analyze errors and provide actionable suggestions to help developers fix issues. `@visulima/error` includes multiple built-in finders:
+
+- **Rule-based finder**: Pattern matching for common errors
+- **Error hint finder**: Reads custom hints from errors
+- **AI finder**: Uses AI models to generate solutions (optional)
+
+## Built-in Finders
+
+### Error Hint Finder
+
+Reads hints directly from error objects:
+
+```typescript
+import { errorHintFinder, VisulimaError } from "@visulima/error";
+
+const error = new VisulimaError({
+    name: "ConfigurationError",
+    message: "Missing required configuration"
+});
+
+error.hint = [
+    "Add DATABASE_URL to your .env file",
+    "Ensure all environment variables are set"
+];
+
+const solution = await errorHintFinder.handle(error, {
+    file: "/app/config.ts",
+    line: 10
+});
+
+if (solution) {
+    console.log(solution.header); // Optional header
+    console.log(solution.body);   // Hint content
+}
+```
+
+### Rule-Based Finder
+
+Provides solutions for common error patterns:
+
+```typescript
+import { ruleBasedFinder, codeFrame } from "@visulima/error";
+
+const error = new Error("Cannot find module 'express'");
+
+const solution = await ruleBasedFinder.handle(error, {
+    file: "/app/server.ts",
+    line: 1,
+    language: "typescript",
+    snippet: codeFrame(sourceCode, { start: { line: 1, column: 1 } })
+});
+
+if (solution) {
+    console.log(solution.header); // "Module Not Found"
+    console.log(solution.body);   // "Install the missing module: npm install express"
+}
+```
+
+#### Supported Error Patterns
+
+The rule-based finder recognizes these common errors:
+
+- Module not found errors
+- ESM/CommonJS compatibility issues
+- Missing default exports
+- DNS resolution failures
+- Hydration mismatches (React/Next.js)
+- Network timeouts
+- Database connection errors
+- And many more...
+
+## Solution Types
+
+### Solution Interface
+
+```typescript
+interface Solution {
+    header?: string;  // Optional title/category
+    body: string;     // The actual solution text
+}
+```
+
+### File Context
+
+```typescript
+interface SolutionFinderFile {
+    file: string;        // File path
+    line: number;        // Line number
+    language?: string;   // Programming language
+    snippet?: string;    // Code snippet
+}
+```
+
+## Using Multiple Finders
+
+### Sequential Search
+
+Try finders in order until one returns a solution:
+
+```typescript
+import { errorHintFinder, ruleBasedFinder } from "@visulima/error";
+
+async function findSolution(error: Error, fileContext: SolutionFinderFile) {
+    // Try error hints first
+    let solution = await errorHintFinder.handle(error, fileContext);
+    if (solution) return solution;
+    
+    // Fall back to rule-based finder
+    solution = await ruleBasedFinder.handle(error, fileContext);
+    if (solution) return solution;
+    
+    return undefined;
+}
+```
+
+### Composite Finder
+
+Create a unified finder that tries multiple strategies:
+
+```typescript
+import type { SolutionFinder, SolutionFinderFile, Solution } from "@visulima/error";
+import { errorHintFinder, ruleBasedFinder } from "@visulima/error";
+
+class CompositeFinder implements SolutionFinder {
+    private finders: SolutionFinder[] = [
+        errorHintFinder,
+        ruleBasedFinder
+    ];
+    
+    async handle(
+        error: Error,
+        file: SolutionFinderFile
+    ): Promise<Solution | undefined> {
+        for (const finder of this.finders) {
+            const solution = await finder.handle(error, file);
+            if (solution) {
+                return solution;
+            }
+        }
+        return undefined;
+    }
+    
+    addFinder(finder: SolutionFinder) {
+        this.finders.push(finder);
+    }
+}
+
+// Usage
+const finder = new CompositeFinder();
+const solution = await finder.handle(error, fileContext);
+```
+
+## Custom Solution Finders
+
+### Basic Custom Finder
+
+```typescript
+import type { SolutionFinder, SolutionFinderFile, Solution } from "@visulima/error";
+
+class CustomFinder implements SolutionFinder {
+    async handle(
+        error: Error,
+        file: SolutionFinderFile
+    ): Promise<Solution | undefined> {
+        if (error.message.includes("timeout")) {
+            return {
+                header: "Timeout Error",
+                body: "The operation took too long. Try increasing the timeout value."
+            };
+        }
+        
+        return undefined;
+    }
+}
+
+const finder = new CustomFinder();
+```
+
+### Pattern-Based Finder
+
+```typescript
+class PatternFinder implements SolutionFinder {
+    private patterns: Array<{
+        test: RegExp;
+        solution: Solution | ((match: RegExpMatchArray) => Solution);
+    }> = [];
+    
+    addPattern(
+        pattern: RegExp,
+        solution: Solution | ((match: RegExpMatchArray) => Solution)
+    ) {
+        this.patterns.push({ test: pattern, solution });
+        return this;
+    }
+    
+    async handle(
+        error: Error,
+        file: SolutionFinderFile
+    ): Promise<Solution | undefined> {
+        for (const { test, solution } of this.patterns) {
+            const match = error.message.match(test);
+            if (match) {
+                return typeof solution === "function" 
+                    ? solution(match) 
+                    : solution;
+            }
+        }
+        return undefined;
+    }
+}
+
+// Usage
+const finder = new PatternFinder()
+    .addPattern(/ENOENT: no such file or directory, open '(.+)'/, (match) => ({
+        header: "File Not Found",
+        body: `The file "${match[1]}" does not exist. Check the file path.`
+    }))
+    .addPattern(/EACCES: permission denied/, {
+        header: "Permission Denied",
+        body: "You don't have permission to access this resource."
+    });
+```
+
+### Context-Aware Finder
+
+```typescript
+class ContextAwareFinder implements SolutionFinder {
+    async handle(
+        error: Error,
+        file: SolutionFinderFile
+    ): Promise<Solution | undefined> {
+        // Check file type
+        if (file.language === "typescript" && error.message.includes("type")) {
+            return {
+                header: "TypeScript Type Error",
+                body: "Check your type definitions and ensure all types are correct."
+            };
+        }
+        
+        // Check error location
+        if (file.file.includes("/config/")) {
+            return {
+                header: "Configuration Error",
+                body: "Review your configuration file for syntax errors or missing values."
+            };
+        }
+        
+        return undefined;
+    }
+}
+```
+
+## Practical Examples
+
+### Error Display with Solutions
+
+```typescript
+import { renderError, ruleBasedFinder } from "@visulima/error";
+import { red, cyan } from "@visulima/colorize";
+
+async function displayErrorWithSolution(error: Error) {
+    // Render the error
+    const errorDisplay = renderError(error, {
+        color: {
+            title: red,
+            message: red
+        }
+    });
+    
+    console.error(errorDisplay);
+    
+    // Try to find a solution
+    const solution = await ruleBasedFinder.handle(error, {
+        file: error.stack?.split("\n")[1] || "",
+        line: 0
+    });
+    
+    if (solution) {
+        console.log();
+        console.log(cyan("Suggested Solution:"));
+        if (solution.header) {
+            console.log(cyan(`${solution.header}:`));
+        }
+        console.log(solution.body);
+    }
+}
+```
+
+### CLI Error Handler
+
+```typescript
+import { ruleBasedFinder, errorHintFinder } from "@visulima/error";
+
+async function handleCliError(error: Error, command: string) {
+    console.error(`Error in command: ${command}`);
+    console.error(error.message);
+    console.error();
+    
+    // Try multiple finders
+    let solution = await errorHintFinder.handle(error, {
+        file: "cli",
+        line: 0
+    });
+    
+    if (!solution) {
+        solution = await ruleBasedFinder.handle(error, {
+            file: "cli",
+            line: 0
+        });
+    }
+    
+    if (solution) {
+        console.log("How to fix:");
+        console.log(solution.body);
+    } else {
+        console.log("Run with --verbose for more details");
+    }
+}
+```
+
+### Test Error Reporter
+
+```typescript
+import { ruleBasedFinder } from "@visulima/error";
+
+async function reportTestError(
+    testName: string,
+    error: Error,
+    sourceFile: string,
+    line: number
+) {
+    console.error(`FAIL: ${testName}`);
+    console.error(`  ${error.message}`);
+    console.error(`  at ${sourceFile}:${line}`);
+    
+    const solution = await ruleBasedFinder.handle(error, {
+        file: sourceFile,
+        line,
+        language: "typescript"
+    });
+    
+    if (solution) {
+        console.error();
+        console.error("  Hint:", solution.body);
+    }
+}
+```
+
+### API Error Response
+
+```typescript
+import express from "express";
+import { ruleBasedFinder, serializeError } from "@visulima/error";
+
+const app = express();
+
+app.use(async (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const solution = await ruleBasedFinder.handle(error, {
+        file: req.path,
+        line: 0
+    });
+    
+    res.status(500).json({
+        error: serializeError(error),
+        solution: solution ? {
+            title: solution.header,
+            suggestion: solution.body
+        } : undefined
+    });
+});
+```
+
+### Development Server Integration
+
+```typescript
+import { ruleBasedFinder, renderError } from "@visulima/error";
+
+async function displayDevError(error: Error, filePath: string, line: number) {
+    // Display the error
+    console.clear();
+    console.log(renderError(error));
+    
+    // Find and display solution
+    const solution = await ruleBasedFinder.handle(error, {
+        file: filePath,
+        line,
+        language: filePath.endsWith(".ts") ? "typescript" : "javascript"
+    });
+    
+    if (solution) {
+        console.log();
+        console.log("━".repeat(80));
+        console.log();
+        console.log("💡 Suggestion:");
+        console.log();
+        console.log(solution.body);
+    }
+}
+```
+
+## Best Practices
+
+### 1. Provide Specific Hints
+
+```typescript
+// Good - Actionable
+error.hint = "Run: npm install missing-package";
+
+// Bad - Vague
+error.hint = "Check your dependencies";
+```
+
+### 2. Chain Finders Appropriately
+
+```typescript
+// Good - Most specific first
+const finders = [
+    customDomainFinder,  // Your domain-specific errors
+    errorHintFinder,     // Explicit hints
+    ruleBasedFinder,     // Common patterns
+    aiFinder            // Fallback to AI
+];
+```
+
+### 3. Include Context
+
+```typescript
+// Good - Full context
+const solution = await finder.handle(error, {
+    file: "/path/to/file.ts",
+    line: 42,
+    language: "typescript",
+    snippet: codeFrame(source, { start: { line: 42, column: 10 } })
+});
+
+// Acceptable - Minimal context
+const solution = await finder.handle(error, {
+    file: "",
+    line: 0
+});
+```
+
+### 4. Handle Missing Solutions
+
+```typescript
+const solution = await finder.handle(error, fileContext);
+
+if (solution) {
+    console.log("Solution:", solution.body);
+} else {
+    console.log("No automated solution available");
+    console.log("Check the documentation or seek help");
+}
+```
+
+### 5. Format Solutions Consistently
+
+```typescript
+function formatSolution(solution: Solution): string {
+    const parts = [solution.body];
+    
+    if (solution.header) {
+        parts.unshift(`${solution.header}:`);
+        parts.unshift("");
+    }
+    
+    return parts.join("\n");
+}
+```
+
+## TypeScript Integration
+
+```typescript
+import type {
+    Solution,
+    SolutionError,
+    SolutionFinder,
+    SolutionFinderFile
+} from "@visulima/error";
+
+// Type-safe custom finder
+class MyFinder implements SolutionFinder {
+    async handle(
+        error: SolutionError,
+        file: SolutionFinderFile
+    ): Promise<Solution | undefined> {
+        // Implementation
+        return undefined;
+    }
+}
+
+// Type-safe solution
+const solution: Solution = {
+    header: "Error Type",
+    body: "Solution description"
+};
+```
+
+## Caching Solutions
+
+For performance-critical applications:
+
+```typescript
+class CachedFinder implements SolutionFinder {
+    private cache = new Map<string, Solution | undefined>();
+    
+    constructor(private delegate: SolutionFinder) {}
+    
+    private getCacheKey(error: Error, file: SolutionFinderFile): string {
+        return `${error.message}:${file.file}:${file.line}`;
+    }
+    
+    async handle(
+        error: Error,
+        file: SolutionFinderFile
+    ): Promise<Solution | undefined> {
+        const key = this.getCacheKey(error, file);
+        
+        if (this.cache.has(key)) {
+            return this.cache.get(key);
+        }
+        
+        const solution = await this.delegate.handle(error, file);
+        this.cache.set(key, solution);
+        
+        return solution;
+    }
+}
+
+// Usage
+const cachedFinder = new CachedFinder(ruleBasedFinder);
+```
+
+## See Also
+
+- [AI Integration](./ai-integration.md)
+- [Custom Error Classes](./custom-errors.md)
+- [Examples](./examples.md)
+- [API Reference](./api-reference.md)
