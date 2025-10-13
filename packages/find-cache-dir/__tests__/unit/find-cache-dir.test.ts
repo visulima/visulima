@@ -132,7 +132,6 @@ describe.each([
 
         ensureDirSync(testCachePath);
         // Make cacheNameDirectory not writeable
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         chmodSync(testCachePath, constants.O_RDONLY);
         writeJsonSync(join(distribution, "package", "package.json"), {
             name: "test",
@@ -150,7 +149,6 @@ describe.each([
         expect(result).toBeUndefined();
 
         // Make cacheNameDirectory writeable
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         chmodSync(testCachePath, constants.O_RDWR);
     });
 
@@ -161,7 +159,6 @@ describe.each([
 
         ensureDirSync(testCachePath);
         // Make cacheNameDirectory not writeable
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         chmodSync(testCachePath, constants.O_RDONLY);
 
         writeJsonSync(join(distribution, "package", "package.json"), {
@@ -180,7 +177,6 @@ describe.each([
         expect(result).toBeUndefined();
 
         // Make cacheNameDirectory writeable
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         chmodSync(testCachePath, constants.O_RDWR);
     });
 
@@ -191,7 +187,6 @@ describe.each([
 
         ensureDirSync(testCachePath);
         // Make cacheNameDirectory not writeable
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         chmodSync(testCachePath, constants.O_RDONLY);
 
         writeJsonSync(join(distribution, "package", "package.json"), {
@@ -210,7 +205,6 @@ describe.each([
         expect(result).toBeUndefined();
 
         // Make cacheNameDirectory writeable
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         chmodSync(testCachePath, constants.O_RDWR);
     });
 
