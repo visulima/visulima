@@ -1,8 +1,11 @@
 import { existsSync } from "node:fs";
 import { cwd, env } from "node:process";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureDirSync, findUp, findUpSync, isAccessible, isAccessibleSync, W_OK } from "@visulima/fs";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { NotFoundError } from "@visulima/fs/error";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { dirname, join } from "@visulima/path";
 
 type Options = {
@@ -44,18 +47,15 @@ const findCacheDirectory = async (name: string, options?: Options): Promise<stri
     // If node_modules/.cache/${name} exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
     // Otherwise, if node_modules/.cache exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
     // Otherwise: If node_modules is writeable, return node_modules/.cache/${name}, otherwise return undefined
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    if (existsSync(cacheNameDirectory) && !(await isAccessible(cacheNameDirectory, W_OK))) {
+    if (existsSync(cacheNameDirectory) && !await isAccessible(cacheNameDirectory, W_OK)) {
         return undefined;
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    if (existsSync(cacheDirectory) && !(await isAccessible(cacheDirectory, W_OK))) {
+    if (existsSync(cacheDirectory) && !await isAccessible(cacheDirectory, W_OK)) {
         return undefined;
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    if (existsSync(nodeModulesDirectory) && !(await isAccessible(nodeModulesDirectory, W_OK))) {
+    if (existsSync(nodeModulesDirectory) && !await isAccessible(nodeModulesDirectory, W_OK)) {
         return undefined;
     }
 
@@ -87,17 +87,14 @@ const findCacheDirectorySync = (name: string, options?: Options): string | undef
     // If node_modules/.cache/${name} exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
     // Otherwise, if node_modules/.cache exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
     // Otherwise: If node_modules is writeable, return node_modules/.cache/${name}, otherwise return undefined
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (existsSync(cacheNameDirectory) && !isAccessibleSync(cacheNameDirectory, W_OK)) {
         return undefined;
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (existsSync(cacheDirectory) && !isAccessibleSync(cacheDirectory, W_OK)) {
         return undefined;
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (existsSync(nodeModulesDirectory) && !isAccessibleSync(nodeModulesDirectory, W_OK)) {
         return undefined;
     }
