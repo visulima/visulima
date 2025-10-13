@@ -13,9 +13,9 @@ describe("paginator", () => {
         expect(paginator.currentPage).toBe(1);
         expect(paginator.lastPage).toBe(10);
         expect(paginator.firstPage).toBe(1);
-        expect(paginator.isEmpty).toBeFalsy();
-        expect(paginator.hasPages).toBeTruthy();
-        expect(paginator.hasTotal).toBeTruthy();
+        expect(paginator.isEmpty).toBe(false);
+        expect(paginator.hasPages).toBe(true);
+        expect(paginator.hasTotal).toBe(true);
     });
 
     it("should return the correct values for all method", () => {
@@ -172,13 +172,13 @@ describe("paginator", () => {
 
         const paginator = new Paginator(11, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
-        expect(paginator.hasMorePages).toBeTruthy();
+        expect(paginator.hasMorePages).toBe(true);
         expect(paginator.getNextPageUrl()).toBe("/?page=2");
 
         paginator.currentPage = 2;
 
         expect(paginator.getNextPageUrl()).toBeNull();
-        expect(paginator.hasMorePages).toBeFalsy();
+        expect(paginator.hasMorePages).toBe(false);
     });
 
     it("should return a paginator instance if paginate method is used", () => {
@@ -196,8 +196,8 @@ describe("paginator", () => {
         expect(paginator.currentPage).toBe(1);
         expect(paginator.lastPage).toBe(10);
         expect(paginator.firstPage).toBe(1);
-        expect(paginator.isEmpty).toBeFalsy();
-        expect(paginator.hasPages).toBeTruthy();
-        expect(paginator.hasTotal).toBeTruthy();
+        expect(paginator.isEmpty).toBe(false);
+        expect(paginator.hasPages).toBe(true);
+        expect(paginator.hasTotal).toBe(true);
     });
 });

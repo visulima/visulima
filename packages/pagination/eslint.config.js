@@ -20,11 +20,12 @@ export default createConfig(
         ],
     },
     {
-        files: ["./__tests__/e2e/**"],
+        files: ["**/*.test.ts"],
         rules: {
-            "vitest/consistent-test-filename": "off",
-            "vitest/prefer-importing-vitest-globals": "off",
-            "vitest/require-hook": "off",
+            "@typescript-eslint/no-explicit-any": "off",
+            "no-secrets/no-secrets": "off",
+            "sonarjs/no-nested-functions": "off",
+            "unicorn/no-null": "off",
         },
     },
 );
