@@ -5,7 +5,7 @@ const tryStringify = (o: any): string => {
     try {
         return JSON.stringify(o);
     } catch {
-        return '"[Circular]"';
+        return "\"[Circular]\"";
     }
 };
 
@@ -28,9 +28,7 @@ const CHAR_c = "c".codePointAt(0);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
 export const format = (fmt: Record<string, any> | string, arguments_: any[] = [], options: Options = {}): string => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if ((typeof fmt !== "string" && typeof fmt !== "object") || fmt === null) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         throw new TypeError(`fmt must be a string or object, got ${fmt === null ? "null" : typeof fmt}`);
     }
 
@@ -67,7 +65,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
     let usedStyle = false;
     let previousCss = null;
 
-    for (let index = 0; index < fmt.length; ) {
+    for (let index = 0; index < fmt.length;) {
         if (fmt.codePointAt(index) === CHAR_PERCENT && index + 1 < fmt.length) {
             lastPosition = lastPosition > -1 ? lastPosition : 0;
 
@@ -79,9 +77,34 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
             }
 
             switch (c) {
+                case CHAR_c: {
+                    // Inspired by Deno's handling of '%c'.
+                    // eslint-disable-next-line no-secrets/no-secrets
+                    // https://github.com/denoland/deno/blob/ece2a3de5b19588160634452638aa656218853c5/ext/console/01_console.js#L3115
+                    if (globalThis.window === undefined) {
+                        const css = parseCss(arguments_[a as keyof typeof arguments_]);
+
+                        if (lastPosition < index) {
+                            result += fmt.slice(lastPosition, index);
+                        }
+
+                        result += cssToAnsi(css, previousCss);
+
+                        if (result !== "") {
+                            usedStyle = true;
+                            previousCss = css;
+                        }
+                    }
+
+                    lastPosition = index + 2;
+
+                    index++;
+
+                    break;
+                }
                 case CHAR_d:
                 case CHAR_f: {
-                    if (a >= arguments_.length || arguments_[a as keyof typeof arguments_] == null) {
+                    if (a >= arguments_.length || arguments_[a as keyof typeof arguments_] == undefined) {
                         break;
                     }
 
@@ -96,7 +119,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     break;
                 }
                 case CHAR_i: {
-                    if (a >= arguments_.length || arguments_[a as keyof typeof arguments_] == null) {
+                    if (a >= arguments_.length || arguments_[a as keyof typeof arguments_] == undefined) {
                         break;
                     }
 
@@ -110,9 +133,9 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     index++;
                     break;
                 }
+                case CHAR_j:
                 case CHAR_O:
-                case CHAR_o:
-                case CHAR_j: {
+                case CHAR_o: {
                     if (a >= arguments_.length || arguments_[a as keyof typeof arguments_] === undefined) {
                         break;
                     }
@@ -121,7 +144,6 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                         result += fmt.slice(lastPosition, index);
                     }
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     const temporaryArgument = arguments_[a as keyof typeof arguments_];
                     const type = typeof temporaryArgument;
 
@@ -144,24 +166,6 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     index++;
                     break;
                 }
-                case CHAR_s: {
-                    if (a >= arguments_.length) {
-                        break;
-                    }
-
-                    if (lastPosition < index) {
-                        result += fmt.slice(lastPosition, index);
-                    }
-
-                    result +=
-                        typeof arguments_[a as keyof typeof arguments_] === "object"
-                            ? stringify(arguments_[a as keyof typeof arguments_])
-                            : String(arguments_[a as keyof typeof arguments_]);
-                    lastPosition = index + 2;
-
-                    index++;
-                    break;
-                }
                 case CHAR_PERCENT: {
                     if (lastPosition < index) {
                         result += fmt.slice(lastPosition, index);
@@ -174,30 +178,22 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     a--;
                     break;
                 }
-                case CHAR_c: {
-                    // Inspired by Deno's handling of '%c'.
-                    // eslint-disable-next-line no-secrets/no-secrets
-                    // https://github.com/denoland/deno/blob/ece2a3de5b19588160634452638aa656218853c5/ext/console/01_console.js#L3115
-                    if (typeof window === "undefined") {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                        const css = parseCss(arguments_[a as keyof typeof arguments_]);
-
-                        if (lastPosition < index) {
-                            result += fmt.slice(lastPosition, index);
-                        }
-
-                        result += cssToAnsi(css, previousCss);
-
-                        if (result !== "") {
-                            usedStyle = true;
-                            previousCss = css;
-                        }
+                case CHAR_s: {
+                    if (a >= arguments_.length) {
+                        break;
                     }
 
+                    if (lastPosition < index) {
+                        result += fmt.slice(lastPosition, index);
+                    }
+
+                    result
+                        += typeof arguments_[a as keyof typeof arguments_] === "object"
+                            ? stringify(arguments_[a as keyof typeof arguments_])
+                            : String(arguments_[a as keyof typeof arguments_]);
                     lastPosition = index + 2;
 
                     index++;
-
                     break;
                 }
                 default: {
@@ -241,7 +237,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
 export const build = (
     options: Options = {},
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): ((f: NonNullable<Record<string, any> | string>, arguments_?: any[], formatOptions?: Omit<Options, "formatters">) => string) => {
+): (f: NonNullable<Record<string, any> | string>, arguments_?: any[], formatOptions?: Omit<Options, "formatters">) => string => {
     const formatters: FormatterMap = {};
 
     if (typeof options.formatters === "object") {

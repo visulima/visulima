@@ -166,12 +166,12 @@ const colorKeywords: Map<string, string> = new Map<string, string>([
 const HASH_PATTERN = /^#([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})?$/i;
 // eslint-disable-next-line regexp/optimal-quantifier-concatenation,regexp/no-unused-capturing-group
 const SMALL_HASH_PATTERN = /^#([\dA-F])([\dA-F])([\dA-F])([\dA-F])?$/i;
-const RGB_PATTERN =
+const RGB_PATTERN
     // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
-    /^rgba?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
-const HSL_PATTERN =
+    = /^rgba?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
+const HSL_PATTERN
     // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
-    /^hsla?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
+    = /^hsla?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
 
 const getDefaultCss = (): CssObject => {
     return {
@@ -185,7 +185,6 @@ const getDefaultCss = (): CssObject => {
     };
 };
 
-// eslint-disable-next-line regexp/no-useless-flag
 const SPACE_PATTERN = /\s+/g;
 
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
@@ -228,9 +227,11 @@ const parseCssColor = (colorString: string): [number, number, number] | null => 
     if (hslMatch) {
         // https://www.rapidtables.com/convert/color/hsl-to-rgb.html
         let h = Number(hslMatch[1]) % 360;
+
         if (h < 0) {
             h += 360;
         }
+
         const s = Math.max(0, Math.min(100, Number(hslMatch[2]))) / 100;
         const l = Math.max(0, Math.min(100, Number(hslMatch[3]))) / 100;
         const c = (1 - Math.abs(2 * l - 1)) * s;
@@ -284,7 +285,6 @@ export const parseCss = (cssString: string): CssObject => {
     let parenthesesDepth = 0;
     let currentPart = "";
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const c of cssString) {
         if (c === "(") {
             parenthesesDepth++;
@@ -304,7 +304,6 @@ export const parseCss = (cssString: string): CssObject => {
                 currentPart = "";
                 inValue = false;
 
-                // eslint-disable-next-line no-continue
                 continue;
             }
         } else if (c === ":") {
@@ -312,9 +311,9 @@ export const parseCss = (cssString: string): CssObject => {
             currentPart = "";
             inValue = true;
 
-            // eslint-disable-next-line no-continue
             continue;
         }
+
         currentPart += c;
     }
 
@@ -329,26 +328,18 @@ export const parseCss = (cssString: string): CssObject => {
         currentPart = "";
     }
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const { 0: key, 1: value } of rawEntries) {
         switch (key) {
             case "background-color": {
-                if (value != null) {
+                if (value != undefined) {
                     css.backgroundColor = value;
                 }
 
                 break;
             }
             case "color": {
-                if (value != null) {
+                if (value != undefined) {
                     css.color = value;
-                }
-
-                break;
-            }
-            case "font-weight": {
-                if (value === "bold") {
-                    css.fontWeight = value;
                 }
 
                 break;
@@ -360,24 +351,9 @@ export const parseCss = (cssString: string): CssObject => {
 
                 break;
             }
-            case "text-decoration-line": {
-                css.textDecorationLine = [];
-                const lineTypes = (value as string).split(SPACE_PATTERN);
-
-                // eslint-disable-next-line no-restricted-syntax
-                for (const lineType of lineTypes) {
-                    if (["line-through", "overline", "underline"].includes(lineType)) {
-                        css.textDecorationLine.push(lineType);
-                    }
-                }
-
-                break;
-            }
-            case "text-decoration-color": {
-                const color = parseCssColor(value as string);
-
-                if (color != null) {
-                    css.textDecorationColor = color;
+            case "font-weight": {
+                if (value === "bold") {
+                    css.fontWeight = value;
                 }
 
                 break;
@@ -389,13 +365,34 @@ export const parseCss = (cssString: string): CssObject => {
                 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
                 const arguments_ = (value as string).split(SPACE_PATTERN);
 
-                // eslint-disable-next-line no-restricted-syntax
                 for (const argument of arguments_) {
                     const maybeColor = parseCssColor(argument);
-                    if (maybeColor != null) {
+
+                    if (maybeColor != undefined) {
                         css.textDecorationColor = maybeColor;
                     } else if (["line-through", "overline", "underline"].includes(argument)) {
                         css.textDecorationLine.push(argument);
+                    }
+                }
+
+                break;
+            }
+            case "text-decoration-color": {
+                const color = parseCssColor(value as string);
+
+                if (color != undefined) {
+                    css.textDecorationColor = color;
+                }
+
+                break;
+            }
+            case "text-decoration-line": {
+                css.textDecorationLine = [];
+                const lineTypes = (value as string).split(SPACE_PATTERN);
+
+                for (const lineType of lineTypes) {
+                    if (["line-through", "overline", "underline"].includes(lineType)) {
+                        css.textDecorationLine.push(lineType);
                     }
                 }
 
@@ -420,27 +417,12 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
     let ansi = "";
 
     if (!colorEquals(css.backgroundColor, previousCss.backgroundColor)) {
-        if (css.backgroundColor == null) {
+        if (css.backgroundColor == undefined) {
             ansi += "\u001B[49m";
-        } else
+        } else {
             switch (css.backgroundColor) {
                 case "black": {
                     ansi += "\u001B[40m";
-
-                    break;
-                }
-                case "red": {
-                    ansi += "\u001B[41m";
-
-                    break;
-                }
-                case "green": {
-                    ansi += "\u001B[42m";
-
-                    break;
-                }
-                case "yellow": {
-                    ansi += "\u001B[43m";
 
                     break;
                 }
@@ -449,18 +431,33 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
 
                     break;
                 }
-                case "magenta": {
-                    ansi += "\u001B[45m";
-
-                    break;
-                }
                 case "cyan": {
                     ansi += "\u001B[46m";
 
                     break;
                 }
+                case "green": {
+                    ansi += "\u001B[42m";
+
+                    break;
+                }
+                case "magenta": {
+                    ansi += "\u001B[45m";
+
+                    break;
+                }
+                case "red": {
+                    ansi += "\u001B[41m";
+
+                    break;
+                }
                 case "white": {
                     ansi += "\u001B[47m";
+
+                    break;
+                }
+                case "yellow": {
+                    ansi += "\u001B[43m";
 
                     break;
                 }
@@ -476,34 +473,22 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
                             ansi += "\u001B[49m";
                         } else {
                             const { 0: r, 1: g, 2: b } = parsed;
+
                             ansi += `\u001B[48;2;${r};${g};${b}m`;
                         }
                     }
                 }
             }
+        }
     }
+
     if (!colorEquals(css.color, previousCss.color)) {
-        if (css.color == null) {
+        if (css.color == undefined) {
             ansi += "\u001B[39m";
-        } else
+        } else {
             switch (css.color) {
                 case "black": {
                     ansi += "\u001B[30m";
-
-                    break;
-                }
-                case "red": {
-                    ansi += "\u001B[31m";
-
-                    break;
-                }
-                case "green": {
-                    ansi += "\u001B[32m";
-
-                    break;
-                }
-                case "yellow": {
-                    ansi += "\u001B[33m";
 
                     break;
                 }
@@ -512,13 +497,23 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
 
                     break;
                 }
+                case "cyan": {
+                    ansi += "\u001B[36m";
+
+                    break;
+                }
+                case "green": {
+                    ansi += "\u001B[32m";
+
+                    break;
+                }
                 case "magenta": {
                     ansi += "\u001B[35m";
 
                     break;
                 }
-                case "cyan": {
-                    ansi += "\u001B[36m";
+                case "red": {
+                    ansi += "\u001B[31m";
 
                     break;
                 }
@@ -527,9 +522,15 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
 
                     break;
                 }
+                case "yellow": {
+                    ansi += "\u001B[33m";
+
+                    break;
+                }
                 default: {
                     if (Array.isArray(css.color)) {
                         const { 0: r, 1: g, 2: b } = css.color;
+
                         ansi += `\u001B[38;2;${r};${g};${b}m`;
                     } else {
                         const parsed = parseCssColor(css.color);
@@ -538,11 +539,13 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
                             ansi += "\u001B[39m";
                         } else {
                             const { 0: r, 1: g, 2: b } = parsed;
+
                             ansi += `\u001B[38;2;${r};${g};${b}m`;
                         }
                     }
                 }
             }
+        }
     }
 
     if (css.fontWeight !== previousCss.fontWeight) {
@@ -554,10 +557,11 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
     }
 
     if (!colorEquals(css.textDecorationColor, previousCss.textDecorationColor)) {
-        if (css.textDecorationColor == null) {
+        if (css.textDecorationColor == undefined) {
             ansi += "\u001B[59m";
         } else {
             const { 0: r, 1: g, 2: b } = css.textDecorationColor;
+
             ansi += `\u001B[58;2;${r};${g};${b}m`;
         }
     }
