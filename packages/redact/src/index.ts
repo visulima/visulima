@@ -25,7 +25,6 @@ const recursivelyFilterAttributes = <V = Record<string, any>>(
     identifier?: string,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): void => {
-    // eslint-disable-next-line no-restricted-syntax
     for (const modifier of rules) {
         // fast direct match
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -61,7 +60,7 @@ const recursiveFilter = <V, R = V>(
     identifier?: string,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): R => {
-    if (input == null) {
+    if (input == undefined) {
         return input as unknown as R;
     }
 
@@ -69,8 +68,7 @@ const recursiveFilter = <V, R = V>(
     // eslint-disable-next-line security/detect-object-injection
     const id: number | undefined = input[circularReferenceKey];
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (id != null || id === 0) {
+    if (id != undefined || id === 0) {
         // eslint-disable-next-line security/detect-object-injection
         return examinedObjects[id]?.copy as R;
     }
@@ -93,8 +91,9 @@ const recursiveFilter = <V, R = V>(
                     writable: true,
                 },
             });
+
             // @ts-expect-error we handle specific errors that have codes
-            if (input.code != null) {
+            if (input.code != undefined) {
                 // @ts-expect-error we handle specific errors that have codes
                 copy.code = input.code;
             }
@@ -118,13 +117,12 @@ const recursiveFilter = <V, R = V>(
 
             let result = iterator.next();
 
-            while (result.done != null && !result.done) {
+            while (result.done != undefined && !result.done) {
                 const [key, value] = result.value;
 
                 if (typeof key === "string" || key instanceof String) {
                     let modifierFound = false;
 
-                    // eslint-disable-next-line no-restricted-syntax
                     for (const modifier of rules) {
                         const lowerCaseKey = (key as string).toLowerCase();
 
@@ -159,7 +157,7 @@ const recursiveFilter = <V, R = V>(
 
             let result = iterator.next();
 
-            while (result.done != null && !result.done) {
+            while (result.done != undefined && !result.done) {
                 copy.add(recursiveFilter(result.value, examinedObjects, saveCopy, rules, options, identifier));
 
                 result = iterator.next();
@@ -183,7 +181,7 @@ const recursiveFilter = <V, R = V>(
             try {
                 const parsed = JSON.parse(input as string);
 
-                if ((typeof parsed !== "object" && typeof parsed !== "string") || parsed == null) {
+                if ((typeof parsed !== "object" && typeof parsed !== "string") || parsed == undefined) {
                     return input as unknown as R;
                 }
 
@@ -202,9 +200,8 @@ const recursiveFilter = <V, R = V>(
 
             const filtered = [];
 
-            // eslint-disable-next-line no-restricted-syntax
             for (const { key, value } of parsedUrlParameters) {
-                if (key == null) {
+                if (key == undefined) {
                     const foundModifier = rules.find((modifier) => modifier.key === value.toLowerCase());
 
                     if (foundModifier) {
@@ -234,7 +231,6 @@ const recursiveFilter = <V, R = V>(
 
         saveCopy(input, copy);
 
-        // eslint-disable-next-line no-restricted-syntax
         for (const [index, item] of input.entries()) {
             const currentIdentifier = identifier ? `${identifier}.${index.toString()}`.toLowerCase() : index.toString().toLowerCase();
             const foundModifier = rules.find((modifier) => modifier.key === index.toString().toLowerCase() || modifier.key === currentIdentifier);
@@ -262,9 +258,9 @@ export function redact<V = unknown[], R = V>(input: V, rules: Rules, options?: R
 export function redact<V = Map<unknown, unknown>, R = V>(input: V, rules: Rules, options?: RedactOptions): R;
 export function redact<V = Set<unknown>, R = V>(input: V, rules: Rules, options?: RedactOptions): R;
 
-// eslint-disable-next-line func-style,sonarjs/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function redact<V, R>(input: V, rules: Rules, options?: RedactOptions): R {
-    if (input == null || typeof input === "number" || typeof input === "boolean") {
+    if (input == undefined || typeof input === "number" || typeof input === "boolean") {
         return input as unknown as R;
     }
 
@@ -285,22 +281,20 @@ export function redact<V, R>(input: V, rules: Rules, options?: RedactOptions): R
 
     const preparedModifiers: InternalAnonymize[] = [];
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const modifier of rules) {
         if (
-            options?.exclude &&
-            ((typeof modifier === "string" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "number" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "object" && options.exclude.includes(modifier.key)))
+            options?.exclude
+            && ((typeof modifier === "string" && options.exclude.includes(modifier))
+                || (typeof modifier === "number" && options.exclude.includes(modifier))
+                || (typeof modifier === "object" && options.exclude.includes(modifier.key)))
         ) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         if (typeof modifier === "string") {
             const hasWildcard = modifier.includes("*");
 
-            preparedModifiers.push({ deep: false, key: modifier.toLowerCase(), replacement: "<" + modifier.toUpperCase() + ">", wildcard: hasWildcard });
+            preparedModifiers.push({ deep: false, key: modifier.toLowerCase(), replacement: `<${modifier.toUpperCase()}>`, wildcard: hasWildcard });
         } else if (typeof modifier === "number") {
             preparedModifiers.push({ deep: false, key: modifier.toString(), replacement: "<REDACTED>" });
         } else {
@@ -311,7 +305,7 @@ export function redact<V, R>(input: V, rules: Rules, options?: RedactOptions): R
             }
 
             if (!modifier.replacement) {
-                (modifier as InternalAnonymize).replacement = "<" + modifier.key.toUpperCase() + ">";
+                (modifier as InternalAnonymize).replacement = `<${modifier.key.toUpperCase()}>`;
             }
 
             preparedModifiers.push(modifier);
@@ -320,7 +314,6 @@ export function redact<V, R>(input: V, rules: Rules, options?: RedactOptions): R
 
     const returnValue = recursiveFilter<V, R>(input, examinedObjects, saveCopy, preparedModifiers, options);
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const examinedObject of examinedObjects) {
         // @ts-expect-error temporarily modifying input objects to avoid infinite recursion
 
@@ -330,9 +323,6 @@ export function redact<V, R>(input: V, rules: Rules, options?: RedactOptions): R
     return returnValue;
 }
 
-// eslint-disable-next-line import/no-unused-modules
 export { default as standardRules } from "./rules";
-// eslint-disable-next-line import/no-unused-modules
 export { default as stringAnonymize } from "./string-anonymizer";
-// eslint-disable-next-line import/no-unused-modules
 export type { Anonymize, RedactOptions, Rules } from "./types";

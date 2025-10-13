@@ -1,8 +1,7 @@
 /**
  * Checks if string is a parseable JSON string.
- *
- * @param {string} value
- * @returns {boolean}
+ * @param value
+ * @returns
  */
 const isJson = (value: string): boolean => {
     try {

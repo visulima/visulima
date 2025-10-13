@@ -32,7 +32,6 @@ const maskText = (maskMaps: Record<string, Map<string, string>>, text: string, t
 const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTerm[], output: string): string => {
     const maskMaps: Record<string, Map<string, string>> = {};
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const type of typesToAnonymize) {
         // eslint-disable-next-line security/detect-object-injection
         maskMaps[type] = new Map<string, string>();
@@ -40,7 +39,6 @@ const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTe
 
     let outputResult = output;
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const term of documentTerms) {
         const { tag, text } = term;
         const mask = maskText(maskMaps, text, tag);
@@ -62,9 +60,11 @@ const createDocumentTermsFromTerms = (
     logger?: { debug: (...arguments_: any[]) => void },
 ): IDocumentTerm[] => {
     const reversedTags = term.tags.reverse();
+
     logger?.debug(`reversedTags: ${JSON.stringify(reversedTags)}`);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const foundTag = reversedTags.find((tag: string) => typesToAnonymize.includes(tag.toLowerCase() as any));
+
     logger?.debug(`foundTag: ${foundTag}`);
 
     if (foundTag) {
@@ -78,7 +78,7 @@ const createUniqueAndSortedTerms = (processedTerms: IDocumentTerm[]): IDocumentT
     // eslint-disable-next-line unicorn/no-array-reduce
     const uniqueProcessedTerms = [...processedTerms.reduce((map, term) => map.set(term.text + term.start + term.tag, term), new Map()).values()];
 
-    // eslint-disable-next-line etc/no-assign-mutated-array,@typescript-eslint/no-unsafe-return
+    // eslint-disable-next-line etc/no-assign-mutated-array
     return uniqueProcessedTerms.sort((a, b) => {
         const startDiff = a.start - b.start;
 
@@ -91,7 +91,6 @@ const createUniqueAndSortedTerms = (processedTerms: IDocumentTerm[]): IDocumentT
 };
 
 const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: string, processedTerms: IDocumentTerm[]): IDocumentTerm[] => {
-    // eslint-disable-next-line no-restricted-syntax
     for (const modifier of stringAnonymizeModifiers) {
         const { key, pattern } = modifier;
 
@@ -136,7 +135,6 @@ const processTerms = (
     processedDocument.forEach((documentObject) => {
         const { terms } = documentObject;
 
-        // eslint-disable-next-line no-restricted-syntax
         for (const term of terms) {
             // eslint-disable-next-line no-param-reassign
             processedTerms = createDocumentTermsFromTerms(typesToAnonymize, processedTerms, documentObject, term, logger);
@@ -165,15 +163,13 @@ const stringAnonymize = (input: string, modifiers: Rules, options?: RedactOption
     const patternModifiers: StringAnonymize[] = [];
     const typesToAnonymize: string[] = [];
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const modifier of modifiers) {
         if (
-            options?.exclude &&
-            ((typeof modifier === "string" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "number" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "object" && options.exclude.includes(modifier.key)))
+            options?.exclude
+            && ((typeof modifier === "string" && options.exclude.includes(modifier))
+                || (typeof modifier === "number" && options.exclude.includes(modifier))
+                || (typeof modifier === "object" && options.exclude.includes(modifier.key)))
         ) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -182,7 +178,7 @@ const stringAnonymize = (input: string, modifiers: Rules, options?: RedactOption
         }
 
         if (typeof modifier === "string" || typeof modifier === "number") {
-            typesToAnonymize.push(modifier + "");
+            typesToAnonymize.push(`${modifier}`);
         } else {
             typesToAnonymize.push(modifier.key);
         }
