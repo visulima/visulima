@@ -44,6 +44,7 @@ export class Table {
         this.#headers
             = headers.length > 0 && !Array.isArray(headers[0])
                 ? [headers as TableCell[]]
+                // eslint-disable-next-line @stylistic/no-extra-parens
                 : (headers as TableCell[][]).map((row) => (Array.isArray(row) ? row : [row]));
 
         this.#isDirty = true;

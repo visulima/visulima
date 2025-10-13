@@ -5,10 +5,10 @@
     },
     "devDependencies": {
         "@types/cli-table": "0.3.4",
-        "@types/node": "22.15.29",
+        "@types/node": "24.7.2",
         "cli-table": "^0.3.11",
         "cli-table3": "^0.6.5",
         "table": "^6.9.0",
-        "vitest": "^3.2.0"
+        "vitest": "^3.2.4"
     }
 }
