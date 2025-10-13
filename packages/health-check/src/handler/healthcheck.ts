@@ -26,7 +26,6 @@ export default (healthCheck: HealthCheck, sendHeader: boolean | undefined = true
             timestamp: new Date().toISOString(),
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
         response.statusCode = healthy ? StatusCodes.OK : StatusCodes.SERVICE_UNAVAILABLE;
 
         if (sendHeader) {

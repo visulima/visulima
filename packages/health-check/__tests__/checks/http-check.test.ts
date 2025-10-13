@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { server } from "../../__fixtures__/mock-server";
 import httpCheck from "../../src/checks/http-check";
 
-describe("httpCheck", () => {
+describe(httpCheck, () => {
     beforeAll(() => server.listen());
     afterEach(() => server.resetHandlers());
     afterAll(() => server.close());

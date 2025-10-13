@@ -6,7 +6,7 @@ import pingCheck from "../../src/checks/ping-check";
 
 const consoleMessage = "Skipping DNS check in CI environment, please validate this test localy.";
 
-describe("pingCheck", () => {
+describe(pingCheck, () => {
     it("should return healthy when the host is reachable", async () => {
         // eslint-disable-next-line vitest/prefer-expect-assertions
         expect.assertions(process.env.CI ? 0 : 1);
@@ -15,6 +15,7 @@ describe("pingCheck", () => {
         if (process.env.CI) {
             // eslint-disable-next-line no-console
             console.log(consoleMessage);
+
             return;
         }
 
@@ -41,6 +42,7 @@ describe("pingCheck", () => {
         if (process.env.CI) {
             // eslint-disable-next-line no-console
             console.log(consoleMessage);
+
             return;
         }
 

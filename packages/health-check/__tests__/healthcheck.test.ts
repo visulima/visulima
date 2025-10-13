@@ -153,7 +153,7 @@ describe("healthCheck", () => {
             };
         });
 
-        await expect(healthCheck.isLive()).resolves.toBeFalsy();
+        await expect(healthCheck.isLive()).resolves.toBe(false);
 
         const healthCheck2 = new HealthCheck();
 
@@ -161,6 +161,6 @@ describe("healthCheck", () => {
 
         healthCheck2.addChecker("event-loop", getEventChecker);
 
-        await expect(healthCheck2.isLive()).resolves.toBeTruthy();
+        await expect(healthCheck2.isLive()).resolves.toBe(true);
     });
 });
