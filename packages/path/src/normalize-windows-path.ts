@@ -2,7 +2,7 @@
  * A modified version from `https://github.com/unjs/pathe/blob/main/src/_internal.ts`
  *
  * MIT License
- * Copyright (c) Pooya Parsa <pooya@pi0.io> - Daniel Roe <daniel@roe.dev>
+ * Copyright (c) Pooya Parsa &lt;pooya@pi0.io> - Daniel Roe &lt;daniel@roe.dev>
  */
 const DRIVE_LETTER_START_RE = /^[A-Z]:\//i;
 

@@ -2,7 +2,7 @@
  * A modified version from `https://github.com/unjs/pathe/blob/main/src/utils.ts`
  *
  * MIT License
- * Copyright (c) Pooya Parsa <pooya@pi0.io> - Daniel Roe <daniel@roe.dev>
+ * Copyright (c) Pooya Parsa &lt;pooya@pi0.io> - Daniel Roe &lt;daniel@roe.dev>
  */
 import { fileURLToPath } from "node:url";
 
@@ -18,7 +18,7 @@ const pathSeparators = new Set(["/", "\\", undefined]);
 
 const normalizedAliasSymbol = Symbol.for("pathe:normalizedAlias");
 
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
+// eslint-disable-next-line regexp/no-unused-capturing-group
 const FILENAME_RE = /(^|[/\\])([^/\\]+?)(?=(?:\.[^.]+)?$)/;
 
 const compareAliases = (a: string, b: string) => b.split("/").length - a.split("/").length;
@@ -33,33 +33,29 @@ const hasTrailingSlash = (path = "/"): boolean => {
 /**
  * Normalises alias mappings, ensuring that more specific aliases are resolved before less specific ones.
  * This function also ensures that aliases do not resolve to themselves cyclically.
- *
- * @param _aliases - A set of alias mappings where each key is an alias and its value is the actual path it points to.
+ * @param _aliases A set of alias mappings where each key is an alias and its value is the actual path it points to.
  * @returns a set of normalised alias mappings.
  */
 export const normalizeAliases = (_aliases: Record<string, string>): Record<string, string> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((_aliases as any)[normalizedAliasSymbol]) {
         return _aliases;
     }
 
     // Sort aliases from specific to general (ie. fs/promises before fs)
-    const aliases = Object.fromEntries(Object.entries(_aliases).sort(([a], [b]) => compareAliases(a, b)));
+    const aliases = Object.fromEntries(Object.entries(_aliases).toSorted(([a], [b]) => compareAliases(a, b)));
 
     // Resolve alias values in relation to each other
-    // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line guard-for-in, no-restricted-syntax
     for (const key in aliases) {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-restricted-syntax
         for (const alias in aliases) {
             // don't resolve a more specific alias with regard to a less specific one
             if (alias === key || key.startsWith(alias)) {
-                // eslint-disable-next-line no-continue
                 continue;
             }
 
-            // eslint-disable-next-line security/detect-object-injection
             if ((aliases[key] as string).startsWith(alias) && pathSeparators.has((aliases[key] as string)[alias.length])) {
-                // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/restrict-plus-operands
                 aliases[key] = aliases[alias] + (aliases[key] as string).slice(alias.length);
             }
         }
@@ -76,9 +72,8 @@ export const normalizeAliases = (_aliases: Record<string, string>): Record<strin
 /**
  * Resolves a path string to its alias if applicable, otherwise returns the original path.
  * This function normalises the path, resolves the alias and then joins it to the alias target if necessary.
- *
- * @param path - The path string to resolve.
- * @param aliases - A set of alias mappings to use for resolution.
+ * @param path The path string to resolve.
+ * @param aliases A set of alias mappings to use for resolution.
  * @returns the resolved path as a string.
  */
 export const resolveAlias = (path: string, aliases: Record<string, string>): string => {
@@ -87,10 +82,8 @@ export const resolveAlias = (path: string, aliases: Record<string, string>): str
     // eslint-disable-next-line no-param-reassign
     aliases = normalizeAliases(aliases);
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const [alias, to] of Object.entries(aliases)) {
         if (!path.startsWith(alias)) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -107,18 +100,16 @@ export const resolveAlias = (path: string, aliases: Record<string, string>): str
 
 /**
  * Extracts the filename from a given path, excluding any directory paths and the file extension.
- *
- * @param {string} path - The full path of the file from which to extract the filename.
- * @returns {string} the filename without the extension, or `undefined` if the filename cannot be extracted.
+ * @param path The full path of the file from which to extract the filename.
+ * @returns the filename without the extension, or `undefined` if the filename cannot be extracted.
  */
 export const filename = (path: string): string => <string>FILENAME_RE.exec(path)?.[2];
 
 /**
  * Reverting the resolveAlias method.
- *
- * @param {string} path
- * @param {Record<string, string>} aliases
- * @returns {string}
+ * @param path
+ * @param aliases
+ * @returns
  */
 export const reverseResolveAlias = (path: string, aliases: Record<string, string>): string => {
     // eslint-disable-next-line no-param-reassign
@@ -126,10 +117,8 @@ export const reverseResolveAlias = (path: string, aliases: Record<string, string
     // eslint-disable-next-line no-param-reassign
     aliases = normalizeAliases(aliases);
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const [to, alias] of Object.entries(aliases).reverse()) {
+    for (const [to, alias] of Object.entries(aliases).toReversed()) {
         if (!path.startsWith(alias)) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -146,18 +135,16 @@ export const reverseResolveAlias = (path: string, aliases: Record<string, string
 
 /**
  * Determines whether a given path is relative.
- *
- * @param {string} path - The path to check.
- * @returns {boolean} `true` if the path is relative, otherwise `false`.
+ * @param path The path to check.
+ * @returns `true` if the path is relative, otherwise `false`.
  */
 export const isRelative = (path: string): boolean => /^(?:\.?\.[/\\]|\.\.\B)/.test(path) || path === "..";
 
 /**
  * Determines whether a given path is a binary file.
  * This function checks the file extension against a list of known binary file extensions.
- *
- * @param {string} path
- * @returns {boolean} `true` if the path is a binary file, otherwise `false`.
+ * @param path
+ * @returns `true` if the path is a binary file, otherwise `false`.
  */
 export const isBinaryPath = (path: string): boolean => extensions.has(extname(path).slice(1).toLowerCase());
 
@@ -169,20 +156,17 @@ export const toPath = (urlOrPath: URL | string): string => normalizeWindowsPath(
  * This used automatically in functions prefixed by `sys` to get system-dependent behavior.
  */
 export const isWindows = (): boolean => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!globalThis?.process) {
         return false;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (globalThis?.process?.platform === "win32" || globalThis?.process?.platform === "cygwin") {
         return true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const osType = globalThis?.process?.env.OSTYPE;
 
-    if (!(typeof osType === "string")) {
+    if (typeof osType !== "string") {
         return false;
     }
 
