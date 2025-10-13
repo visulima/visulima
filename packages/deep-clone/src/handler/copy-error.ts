@@ -18,17 +18,14 @@ const copyError = <Value extends EvalError | ExtendedError | RangeError | Refere
 
     // Node.js specific (system errors)...
     if ((object as ExtendedError).code) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         (error as ExtendedError).code = (object as ExtendedError).code;
     }
 
     if ((object as ExtendedError).errno) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         (error as ExtendedError).errno = (object as ExtendedError).errno;
     }
 
     if ((object as ExtendedError).syscall) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         (error as ExtendedError).syscall = (object as ExtendedError).syscall;
     }
 
