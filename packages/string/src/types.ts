@@ -27,8 +27,8 @@ type TupleOf<L extends number, T = unknown, Result extends any[] = []> = Result[
  * @template EndIndex - The ending index for the slice
  * @template Result - Internal accumulator for building the result string
  */
-type InternalSliceType<T extends string, StartIndex extends number, EndIndex extends number, Result extends string = ""> =
-    IsNumberLiteral<EndIndex | StartIndex> extends true
+type InternalSliceType<T extends string, StartIndex extends number, EndIndex extends number, Result extends string = "">
+    = IsNumberLiteral<EndIndex | StartIndex> extends true
         ? T extends `${infer Head}${infer Rest}`
             ? IsStringLiteral<Head> extends true
                 ? StartIndex extends 0
@@ -36,11 +36,11 @@ type InternalSliceType<T extends string, StartIndex extends number, EndIndex ext
                         ? Result
                         : InternalSliceType<Rest, 0, Math.Subtract<Math.GetPositiveIndex<T, EndIndex>, 1>, `${Result}${Head}`>
                     : InternalSliceType<
-                          Rest,
-                          Math.Subtract<Math.GetPositiveIndex<T, StartIndex>, 1>,
-                          Math.Subtract<Math.GetPositiveIndex<T, EndIndex>, 1>,
-                          Result
-                      >
+                        Rest,
+                        Math.Subtract<Math.GetPositiveIndex<T, StartIndex>, 1>,
+                        Math.Subtract<Math.GetPositiveIndex<T, EndIndex>, 1>,
+                        Result
+                    >
                 : EndIndex | StartIndex extends 0
                     ? Result
                     : string // Head is non-literal
@@ -58,8 +58,8 @@ type InternalSliceType<T extends string, StartIndex extends number, EndIndex ext
  * @template StartIndex - The starting index for the slice
  * @template Result - Internal accumulator for building the result string
  */
-type SliceStartType<T extends string, StartIndex extends number, Result extends string = ""> =
-    IsNumberLiteral<StartIndex> extends true
+type SliceStartType<T extends string, StartIndex extends number, Result extends string = "">
+    = IsNumberLiteral<StartIndex> extends true
         ? T extends `${infer Head}${infer Rest}`
             ? IsStringLiteral<Head> extends true
                 ? StartIndex extends 0
@@ -73,8 +73,8 @@ type SliceStartType<T extends string, StartIndex extends number, Result extends 
                     : string
         : string;
 
-type InternalEndsWithType<T extends string, S extends string, P extends number> =
-    All<[IsStringLiteral<S>, IsNumberLiteral<P>]> extends true
+type InternalEndsWithType<T extends string, S extends string, P extends number>
+    = All<[IsStringLiteral<S>, IsNumberLiteral<P>]> extends true
         ? Math.IsNegative<P> extends false
             ? P extends Length<T>
                 ? IsStringLiteral<T> extends true
@@ -190,8 +190,8 @@ export type Any<BoolArray extends boolean[]> = BoolArray extends [infer Head ext
  * type NotAllTrue = All<[true, false]> // type NotAllTrue = false
  */
 
-export type All<BoolArray extends boolean[]> =
-    IsBooleanLiteral<BoolArray[number]> extends true
+export type All<BoolArray extends boolean[]>
+    = IsBooleanLiteral<BoolArray[number]> extends true
         ? BoolArray extends [infer Head extends boolean, ...infer Rest extends boolean[]]
             ? Head extends true
                 ? Any<Rest>
@@ -284,8 +284,8 @@ export type Includes<T extends string, S extends string, P extends number = 0> =
  * @example
  * type Joined = Join<['a', 'b', 'c'], '.'> // type Joined = 'a.b.c'
  */
-export type Join<T extends ReadonlyArray<string>, Delimiter extends string = ""> =
-    All<[IsStringLiteralArray<T>, IsStringLiteral<Delimiter>]> extends true
+export type Join<T extends ReadonlyArray<string>, Delimiter extends string = "">
+    = All<[IsStringLiteralArray<T>, IsStringLiteral<Delimiter>]> extends true
         ? T extends readonly [infer First extends string, ...infer Rest extends string[]]
             ? Rest extends []
                 ? First
@@ -312,8 +312,8 @@ export type Length<T extends string> = IsStringLiteral<T> extends true ? Split<T
  * @example
  * type Padded = PadEnd<'hello', 2, '_'> // type Padded = 'hello__'
  */
-export type PadEnd<T extends string, Times extends number = 0, Pad extends string = " "> =
-    All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
+export type PadEnd<T extends string, Times extends number = 0, Pad extends string = " ">
+    = All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
         ? Math.IsNegative<Times> extends false
             ? Math.Subtract<Times, Length<T>> extends infer Missing extends number
                 ? `${T}${Slice<Repeat<Pad, Missing>, 0, Missing>}`
@@ -331,8 +331,8 @@ export type PadEnd<T extends string, Times extends number = 0, Pad extends strin
  * @example
  * type Padded = PadStart<'hello', 2, '_'> // type Padded = '__hello'
  */
-export type PadStart<T extends string, Times extends number = 0, Pad extends string = " "> =
-    All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
+export type PadStart<T extends string, Times extends number = 0, Pad extends string = " ">
+    = All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
         ? Math.IsNegative<Times> extends false
             ? Math.Subtract<Times, Length<T>> extends infer Missing extends number
                 ? `${Slice<Repeat<Pad, Missing>, 0, Missing>}${T}`
@@ -349,8 +349,8 @@ export type PadStart<T extends string, Times extends number = 0, Pad extends str
  * @example
  * type Repeated = Repeat<'abc', 2> // type Repeated = 'abcabc'
  */
-export type Repeat<T extends string, Times extends number = 0> =
-    All<[IsStringLiteral<T>, IsNumberLiteral<Times>]> extends true
+export type Repeat<T extends string, Times extends number = 0>
+    = All<[IsStringLiteral<T>, IsNumberLiteral<Times>]> extends true
         ? Times extends 0
             ? ""
             : Math.IsNegative<Times> extends false
@@ -418,8 +418,8 @@ export type Slice<T extends string, StartIndex extends number = 0, EndIndex exte
  * @example
  * type Parts = Split<'a,b,c', ','> // type Parts = ['a', 'b', 'c']
  */
-export type Split<T extends string, Delimiter extends string = ""> =
-    IsStringLiteral<Delimiter | T> extends true
+export type Split<T extends string, Delimiter extends string = "">
+    = IsStringLiteral<Delimiter | T> extends true
         ? T extends `${infer First}${Delimiter}${infer Rest}`
             ? [First, ...Split<Rest, Delimiter>]
             : T extends ""
@@ -438,8 +438,8 @@ export type Split<T extends string, Delimiter extends string = ""> =
  * type StartsWithHello = StartsWith<'hello world', 'hello'> // type StartsWithHello = true
  * type DoesNotStart = StartsWith<'hello world', 'world'> // type DoesNotStart = false
  */
-export type StartsWith<T extends string, S extends string, P extends number = 0> =
-    All<[IsStringLiteral<S>, IsNumberLiteral<P>]> extends true
+export type StartsWith<T extends string, S extends string, P extends number = 0>
+    = All<[IsStringLiteral<S>, IsNumberLiteral<P>]> extends true
         ? Math.IsNegative<P> extends false
             ? P extends 0
                 ? S extends `${infer SHead}${infer SRest}`
@@ -487,89 +487,89 @@ export type TrimStart<T extends string> = T extends ` ${infer Rest}` ? TrimStart
  */
 export type Trim<T extends string> = TrimEnd<TrimStart<T>>;
 
-export type NodeLocale =
+export type NodeLocale
 
-    | "af" // Afrikaans
-    | "am" // Amharic
-    | "ar" // Arabic
-    | "az" // Azerbaijani
-    | "be" // Belarusian
-    | "bg" // Bulgarian
-    | "bn" // Bengali
-    | "bs" // Bosnian
-    | "ca" // Catalan
-    | "cs" // Czech
-    | "cy" // Welsh
-    | "da" // Danish
-    | "de" // German
-    | "el" // Greek
-    | "en" // English
-    | "en-AU" // English (Australia)
-    | "en-CA" // English (Canada)
-    | "en-GB" // English (United Kingdom)
-    | "en-US" // English (United States)
-    | "es" // Spanish
-    | "es-ES" // Spanish (Spain)
-    | "et" // Estonian
-    | "fa" // Persian
-    | "fi" // Finnish
-    | "fil" // Filipino
-    | "fr" // French
-    | "ga" // Irish
-    | "gl" // Galician
-    | "gu" // Gujarati
-    | "he" // Hebrew
-    | "hi" // Hindi
-    | "hr" // Croatian
-    | "hu" // Hungarian
-    | "hy" // Armenian
-    | "id" // Indonesian
-    | "is" // Icelandic
-    | "it" // Italian
-    | "ja" // Japanese
-    | "ka" // Georgian
-    | "kk" // Kazakh
-    | "km" // Khmer
-    | "kn" // Kannada
-    | "ko" // Korean
-    | "ky" // Kyrgyz
-    | "lo" // Lao
-    | "lt" // Lithuanian
-    | "lv" // Latvian
-    | "mk" // Macedonian
-    | "ml" // Malayalam
-    | "mn" // Mongolian
-    | "mr" // Marathi
-    | "ms" // Malay
-    | "mt" // Maltese
-    | "ne" // Nepali
-    | "nl" // Dutch
-    | "no" // Norwegian
-    | "pa" // Punjabi
-    | "pl" // Polish
-    | "pt" // Portuguese
-    | "pt-BR" // Portuguese (Brazil)
-    | "pt-PT" // Portuguese (Portugal)
-    | "ro" // Romanian
-    | "ru" // Russian
-    | "si" // Sinhala
-    | "sk" // Slovak
-    | "sl" // Slovenian
-    | "sq" // Albanian
-    | "sr" // Serbian
-    | "sv" // Swedish
-    | "ta" // Tamil
-    | "te" // Telugu
-    | "th" // Thai
-    | "tr" // Turkish
-    | "uk" // Ukrainian
-    | "ur" // Urdu
-    | "uz" // Uzbek
-    | "vi" // Vietnamese
-    | "zh" // Chinese
-    | "zh-CN" // Chinese (Simplified)
-    | "zh-HK" // Chinese (Hong Kong)
-    | "zh-TW"; // Chinese (Traditional)
+    = | "af" // Afrikaans
+        | "am" // Amharic
+        | "ar" // Arabic
+        | "az" // Azerbaijani
+        | "be" // Belarusian
+        | "bg" // Bulgarian
+        | "bn" // Bengali
+        | "bs" // Bosnian
+        | "ca" // Catalan
+        | "cs" // Czech
+        | "cy" // Welsh
+        | "da" // Danish
+        | "de" // German
+        | "el" // Greek
+        | "en" // English
+        | "en-AU" // English (Australia)
+        | "en-CA" // English (Canada)
+        | "en-GB" // English (United Kingdom)
+        | "en-US" // English (United States)
+        | "es" // Spanish
+        | "es-ES" // Spanish (Spain)
+        | "et" // Estonian
+        | "fa" // Persian
+        | "fi" // Finnish
+        | "fil" // Filipino
+        | "fr" // French
+        | "ga" // Irish
+        | "gl" // Galician
+        | "gu" // Gujarati
+        | "he" // Hebrew
+        | "hi" // Hindi
+        | "hr" // Croatian
+        | "hu" // Hungarian
+        | "hy" // Armenian
+        | "id" // Indonesian
+        | "is" // Icelandic
+        | "it" // Italian
+        | "ja" // Japanese
+        | "ka" // Georgian
+        | "kk" // Kazakh
+        | "km" // Khmer
+        | "kn" // Kannada
+        | "ko" // Korean
+        | "ky" // Kyrgyz
+        | "lo" // Lao
+        | "lt" // Lithuanian
+        | "lv" // Latvian
+        | "mk" // Macedonian
+        | "ml" // Malayalam
+        | "mn" // Mongolian
+        | "mr" // Marathi
+        | "ms" // Malay
+        | "mt" // Maltese
+        | "ne" // Nepali
+        | "nl" // Dutch
+        | "no" // Norwegian
+        | "pa" // Punjabi
+        | "pl" // Polish
+        | "pt" // Portuguese
+        | "pt-BR" // Portuguese (Brazil)
+        | "pt-PT" // Portuguese (Portugal)
+        | "ro" // Romanian
+        | "ru" // Russian
+        | "si" // Sinhala
+        | "sk" // Slovak
+        | "sl" // Slovenian
+        | "sq" // Albanian
+        | "sr" // Serbian
+        | "sv" // Swedish
+        | "ta" // Tamil
+        | "te" // Telugu
+        | "th" // Thai
+        | "tr" // Turkish
+        | "uk" // Ukrainian
+        | "ur" // Urdu
+        | "uz" // Uzbek
+        | "vi" // Vietnamese
+        | "zh" // Chinese
+        | "zh-CN" // Chinese (Simplified)
+        | "zh-HK" // Chinese (Hong Kong)
+        | "zh-TW"; // Chinese (Traditional)
 
 /**
  * Type-level implementation of string.toLowerCase() functionality.
