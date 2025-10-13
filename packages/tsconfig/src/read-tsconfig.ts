@@ -214,8 +214,8 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
             delete config.files;
         }
     } else if (config.files) {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        config.files = config.files.map((file) => (file.startsWith(configDirectoryPlaceholder) ? file : normalizePath(file)));
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define, no-confusing-arrow
+        config.files = config.files.map((file) => file.startsWith(configDirectoryPlaceholder) ? file : normalizePath(file));
     }
 
     if (config.watchOptions) {

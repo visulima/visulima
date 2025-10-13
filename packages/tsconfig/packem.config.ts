@@ -10,8 +10,8 @@ export default defineConfig({
             path: "./LICENSE.md",
         },
         requireCJS: {
-            builtinNodeModules: true
-        }
+            builtinNodeModules: true,
+        },
     },
     transformer,
     builder: {
