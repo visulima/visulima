@@ -10,9 +10,9 @@
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.1.14",
-        "@tanstack/react-router": "^1.132.31",
-        "@tanstack/react-router-devtools": "^1.132.31",
-        "@tanstack/router-plugin": "^1.132.31",
+        "@tanstack/react-router": "^1.132.47",
+        "@tanstack/react-router-devtools": "^1.132.51",
+        "@tanstack/router-plugin": "^1.132.56",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
         "tailwindcss": "^4.1.14"
@@ -21,12 +21,12 @@
         "@visulima/vite-overlay": "workspace:*",
         "@testing-library/dom": "^10.4.1",
         "@testing-library/react": "^16.3.0",
-        "@types/react": "^19.2.0",
-        "@types/react-dom": "^19.2.0",
+        "@types/react": "^19.2.2",
+        "@types/react-dom": "^19.2.1",
         "@vitejs/plugin-react": "^5.0.4",
         "jsdom": "^27.0.0",
         "typescript": "^5.9.3",
-        "vite": "^7.1.8",
+        "vite": "^7.1.9",
         "vitest": "^3.2.4",
         "web-vitals": "^5.1.0"
     }

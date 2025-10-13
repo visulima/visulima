@@ -13,8 +13,8 @@ import retrieveSourceTexts from "../../../../src/utils/error-processing/retrieve
 import addQueryToUrl from "../../../../src/utils/error-processing/utils/add-query-to-url";
 import extractQueryFromHttpUrl from "../../../../src/utils/error-processing/utils/extract-query-from-http-url";
 
-vi.mock("node:fs/promises");
-vi.mock("@visulima/error", () => {
+vi.mock(import("node:fs/promises"));
+vi.mock(import("@visulima/error"), () => {
     return {
         codeFrame: vi.fn(() => ""),
         formatStacktrace: vi.fn((frames, options) => {
@@ -48,14 +48,14 @@ vi.mock("@visulima/error", () => {
         ]),
     };
 });
-vi.mock("@visulima/error/solution/ai/prompt");
-vi.mock("../../../../../shared/utils/find-language-based-on-extension");
-vi.mock("../../../../../shared/utils/get-highlighter");
-vi.mock("../../module-finder");
-vi.mock("../../normalize-id-candidates");
-vi.mock("../../position-aligner");
-vi.mock("../../source-map-resolver");
-vi.mock("../../stack-trace-utils", () => {
+vi.mock(import("@visulima/error/solution/ai/prompt"));
+vi.mock(import("../../../../../shared/utils/find-language-based-on-extension"));
+vi.mock(import("../../../../../shared/utils/get-highlighter"));
+vi.mock(import("../../module-finder"));
+vi.mock(import("../../normalize-id-candidates"));
+vi.mock(import("../../position-aligner"));
+vi.mock(import("../../source-map-resolver"));
+vi.mock(import("../../stack-trace-utils"), () => {
     return {
         cleanErrorMessage: vi.fn((error) => error?.message || ""),
         cleanErrorStack: vi.fn((stack) => stack || ""),
@@ -113,7 +113,7 @@ const mockExtractLocationFromViteError = vi.fn((message, server) => {
     return null;
 });
 
-vi.mock("../../vite-error-adapter", () => {
+vi.mock(import("../../vite-error-adapter"), () => {
     return {
         extractLocationFromViteError: mockExtractLocationFromViteError,
         extractViteErrorLocation: vi.fn(() => null),
@@ -3086,7 +3086,7 @@ Final line`);
 
                 const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
 
-                expect(mockServer.transformRequest).toHaveBeenCalledWith("/src/App.tsx");
+                expect(mockServer.transformRequest).toHaveBeenCalledExactlyOnceWith("/src/App.tsx");
                 expect(result.compiledSourceText).toBe("compiled code");
             });
 
@@ -3107,7 +3107,7 @@ Final line`);
 
                 const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
 
-                expect(mockServer.transformRequest).toHaveBeenCalledWith("/src/components/Button.tsx");
+                expect(mockServer.transformRequest).toHaveBeenCalledExactlyOnceWith("/src/components/Button.tsx");
                 expect(result.compiledSourceText).toBe("button compiled code");
             });
 
@@ -3126,7 +3126,7 @@ Final line`);
 
                 const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
 
-                expect(mockServer.transformRequest).toHaveBeenCalledWith("/src/utils/helpers.ts");
+                expect(mockServer.transformRequest).toHaveBeenCalledExactlyOnceWith("/src/utils/helpers.ts");
                 expect(result.compiledSourceText).toBe("helpers compiled code");
             });
 
@@ -3161,7 +3161,7 @@ Final line`);
 
                 const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
 
-                expect(mockReadFile).toHaveBeenCalledWith("/home/project/src/App.tsx", "utf8");
+                expect(mockReadFile).toHaveBeenCalledExactlyOnceWith("/home/project/src/App.tsx", "utf8");
                 expect(result.originalSourceText).toBe("file content from disk");
             });
 

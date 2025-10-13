@@ -3,7 +3,7 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { patchOverlay } from "../../../src/overlay/patch-overlay";
 
 // Mock the dependencies
-vi.mock("../../../../../shared/utils/editors", () => {
+vi.mock(import("../../../../../shared/utils/editors"), () => {
     return {
         default: {
             vscode: "Visual Studio Code",
@@ -12,13 +12,13 @@ vi.mock("../../../../../shared/utils/editors", () => {
     };
 });
 
-vi.mock("lucide-static/icons/moon-star.svg?data-uri&encoding=css", () => {
+vi.mock(import("lucide-static/icons/moon-star.svg?data-uri&encoding=css"), () => {
     return {
         default: "data:image/svg+xml;base64,mock-moon-icon",
     };
 });
 
-vi.mock("lucide-static/icons/sun.svg?data-uri&encoding=css", () => {
+vi.mock(import("lucide-static/icons/sun.svg?data-uri&encoding=css"), () => {
     return {
         default: "data:image/svg+xml;base64,mock-sun-icon",
     };

@@ -697,13 +697,15 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
  * @param options.showBallonButton Whether to show the balloon button (optional)
  * @returns The Vite plugin configuration
  */
-const errorOverlayPlugin = (options: {
-    logClientRuntimeError?: boolean;
-    reactPluginName?: string;
-    showBallonButton?: boolean;
-    solutionFinders?: SolutionFinder[];
-    vuePluginName?: string;
-} = {}): Plugin => {
+const errorOverlayPlugin = (
+    options: {
+        logClientRuntimeError?: boolean;
+        reactPluginName?: string;
+        showBallonButton?: boolean;
+        solutionFinders?: SolutionFinder[];
+        vuePluginName?: string;
+    } = {},
+): Plugin => {
     let mode: string;
     let isReactProject: boolean;
     let isVueProject: boolean;
