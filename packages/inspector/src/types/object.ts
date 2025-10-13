@@ -4,15 +4,15 @@ import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
 
 const gPO = (typeof Reflect === "function" ? Reflect.getPrototypeOf : Object.getPrototypeOf)
-    // @ts-expect-error - This is a fallback for older environments
-    // eslint-disable-next-line no-restricted-properties,no-proto
-        || ([].__proto__ === Array.prototype
-            // eslint-disable-next-line func-names
-            ? function (O) {
+// @ts-expect-error - This is a fallback for older environments
+// eslint-disable-next-line no-restricted-properties,no-proto
+    || ([].__proto__ === Array.prototype
+    // eslint-disable-next-line func-names
+        ? function (O) {
             // eslint-disable-next-line no-restricted-properties
-                return O.__proto__; // eslint-disable-line no-proto
-            }
-            : null);
+            return O.__proto__; // eslint-disable-line no-proto
+        }
+        : null);
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const inspectObject: InspectType<object> = (object: object, options: Options, inspect: InternalInspect, indent: Indent | undefined): string => {
