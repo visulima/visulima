@@ -6,9 +6,9 @@ import type { Preview, ReactRenderer, StoryContext } from "@storybook/react";
 
 const preview: Preview = {
     decorators: [
-        // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+        // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
         (storyFunction, context: StoryContext) => withConsole({})(storyFunction)(context),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
         withThemeByClassName<ReactRenderer>({
             defaultTheme: "light",
             themes: {
@@ -28,5 +28,4 @@ const preview: Preview = {
     },
 };
 
-// eslint-disable-next-line import/no-unused-modules
 export default preview;
