@@ -1,393 +1,205 @@
 {
-    "name": "@visulima/ansi",
-    "version": "2.0.1",
-    "description": "ANSI escape codes for some terminal swag.",
-    "keywords": [
-        "alternative-screen",
-        "ansi",
-        "clear",
-        "cli",
-        "code",
-        "codes",
-        "command-line",
-        "console",
-        "control",
-        "cursor",
-        "erase",
-        "escape",
-        "escapes",
-        "formatting",
-        "image",
-        "iterm",
-        "iterm2",
-        "link",
-        "hyperlink",
-        "log",
-        "logging",
-        "screen",
-        "scroll",
-        "scrollback",
-        "sequence",
-        "shell",
-        "string",
-        "strip",
-        "strip-ansi",
-        "terminal",
-        "text",
-        "tty",
-        "visulima",
-        "vt100",
-        "xterm"
-    ],
-    "homepage": "https://visulima.com/packages/ansi",
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/ansi"
-    },
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
+        "name": "@visulima/ansi",
+        "version": "2.0.1",
+        "description": "ANSI escape codes for some terminal swag.",
+        "keywords": [
+                "alternative-screen",
+                "ansi",
+                "clear",
+                "cli",
+                "code",
+                "codes",
+                "command-line",
+                "console",
+                "control",
+                "cursor",
+                "erase",
+                "escape",
+                "escapes",
+                "formatting",
+                "image",
+                "iterm",
+                "iterm2",
+                "link",
+                "hyperlink",
+                "log",
+                "logging",
+                "screen",
+                "scroll",
+                "scrollback",
+                "sequence",
+                "shell",
+                "string",
+                "strip",
+                "strip-ansi",
+                "terminal",
+                "text",
+                "tty",
+                "visulima",
+                "vt100",
+                "xterm"
+        ],
+        "homepage": "https://visulima.com/packages/ansi",
+        "bugs": {
+                "url": "https://github.com/visulima/visulima/issues"
         },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
+        "repository": {
+                "type": "git",
+                "url": "git+https://github.com/visulima/visulima.git",
+                "directory": "packages/ansi"
+        },
+        "funding": [
+                {
+                        "type": "github",
+                        "url": "https://github.com/sponsors/prisis"
+                },
+                {
+                        "type": "consulting",
+                        "url": "https://anolilab.com/support"
+                }
+        ],
+        "license": "MIT",
+        "author": {
+                "name": "Daniel Bannert",
+                "email": "d.bannert@anolilab.de"
+        },
+        "sideEffects": false,
+        "type": "module",
+        "exports": {
+                ".": {
+                        "types": "./dist/index.d.ts",
+                        "default": "./dist/index.js"
+                },
+                "./alternative-screen": {
+                        "types": "./dist/alternative-screen.d.ts",
+                        "default": "./dist/alternative-screen.js"
+                },
+                "./clear": {
+                        "types": "./dist/clear.d.ts",
+                        "default": "./dist/clear.js"
+                },
+                "./cursor": {
+                        "types": "./dist/cursor.d.ts",
+                        "default": "./dist/cursor.js"
+                },
+                "./erase": {
+                        "types": "./dist/erase.d.ts",
+                        "default": "./dist/erase.js"
+                },
+                "./image": {
+                        "types": "./dist/image.d.ts",
+                        "default": "./dist/image.js"
+                },
+                "./hyperlink": {
+                        "types": "./dist/hyperlink.d.ts",
+                        "default": "./dist/hyperlink.js"
+                },
+                "./scroll": {
+                        "types": "./dist/scroll.d.ts",
+                        "default": "./dist/scroll.js"
+                },
+                "./strip": {
+                        "types": "./dist/strip.d.ts",
+                        "default": "./dist/strip.js"
+                },
+                "./termcap": {
+                        "types": "./dist/termcap.d.ts",
+                        "default": "./dist/termcap.js"
+                },
+                "./title": {
+                        "types": "./dist/title.d.ts",
+                        "default": "./dist/title.js"
+                },
+                "./window-ops": {
+                        "types": "./dist/window-ops.d.ts",
+                        "default": "./dist/window-ops.js"
+                },
+                "./xterm": {
+                        "types": "./dist/xterm.d.ts",
+                        "default": "./dist/xterm.js"
+                },
+                "./iterm2": {
+                        "types": "./dist/iterm2.d.ts",
+                        "default": "./dist/iterm2.js"
+                },
+                "./mode": {
+                        "types": "./dist/mode.d.ts",
+                        "default": "./dist/mode.js"
+                },
+                "./mouse": {
+                        "types": "./dist/mouse.d.ts",
+                        "default": "./dist/mouse.js"
+                },
+                "./passthrough": {
+                        "types": "./dist/passthrough.d.ts",
+                        "default": "./dist/passthrough.js"
+                },
+                "./reset": {
+                        "types": "./dist/reset.d.ts",
+                        "default": "./dist/reset.js"
+                },
+                "./screen": {
+                        "types": "./dist/screen.d.ts",
+                        "default": "./dist/screen.js"
+                },
+                "./status": {
+                        "types": "./dist/status.d.ts",
+                        "default": "./dist/status.js"
+                },
+                "./package.json": "./package.json"
+        },
+        "files": [
+                "dist",
+                "README.md",
+                "CHANGELOG.md"
+        ],
+        "scripts": {
+                "build": "packem build --development",
+                "build:prod": "packem build --production",
+                "clean": "rimraf node_modules dist .eslintcache",
+                "dev": "pnpm run build --watch",
+                "lint:attw": "attw --pack",
+                "lint:eslint": "eslint . --cache --concurrency auto",
+                "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+                "lint:package-json": "publint --strict",
+                "lint:types": "tsc --noEmit",
+                "test": "vitest run",
+                "test:coverage": "vitest run --coverage",
+                "test:ui": "vitest --ui --coverage.enabled=true",
+                "test:watch": "vitest"
+        },
+        "devDependencies": {
+                "@anolilab/eslint-config": "16.3.3",
+                "@anolilab/semantic-release-pnpm": "2.0.4",
+                "@anolilab/semantic-release-preset": "^11.0.4",
+                "@arethetypeswrong/cli": "^0.18.2",
+                "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
+                "@total-typescript/ts-reset": "^0.6.1",
+                "@types/node": "24.7.2",
+                "@visulima/colorize": "1.4.23",
+                "@visulima/packem": "2.0.0-alpha.29",
+                "@visulima/path": "1.4.0",
+                "@vitest/coverage-v8": "^3.2.4",
+                "@vitest/ui": "^3.2.4",
+                "ansi-regex": "^6.2.2",
+                "conventional-changelog-conventionalcommits": "9.1.0",
+                "esbuild": "0.25.10",
+                "eslint": "9.37.0",
+                "jiti": "^2.6.1",
+                "publint": "^0.3.14",
+                "restore-cursor": "^5.1.0",
+                "rimraf": "6.0.1",
+                "secretlint": "11.2.5",
+                "semantic-release": "^24.2.9",
+                "type-fest": "^5.0.1",
+                "typescript": "5.9.3",
+                "vitest": "^3.2.4"
+        },
+        "engines": {
+                "node": ">=20.19 <=24.x"
+        },
+        "publishConfig": {
+                "access": "public",
+                "provenance": true
         }
-    ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "sideEffects": false,
-    "type": "module",
-    "exports": {
-        ".": {
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            },
-            "import": {
-                "types": "./dist/index.d.mts",
-                "default": "./dist/index.mjs"
-            }
-        },
-        "./alternative-screen": {
-            "require": {
-                "types": "./dist/alternative-screen.d.cts",
-                "default": "./dist/alternative-screen.cjs"
-            },
-            "import": {
-                "types": "./dist/alternative-screen.d.mts",
-                "default": "./dist/alternative-screen.mjs"
-            }
-        },
-        "./clear": {
-            "require": {
-                "types": "./dist/clear.d.cts",
-                "default": "./dist/clear.cjs"
-            },
-            "import": {
-                "types": "./dist/clear.d.mts",
-                "default": "./dist/clear.mjs"
-            }
-        },
-        "./cursor": {
-            "require": {
-                "types": "./dist/cursor.d.cts",
-                "default": "./dist/cursor.cjs"
-            },
-            "import": {
-                "types": "./dist/cursor.d.mts",
-                "default": "./dist/cursor.mjs"
-            }
-        },
-        "./erase": {
-            "require": {
-                "types": "./dist/erase.d.cts",
-                "default": "./dist/erase.cjs"
-            },
-            "import": {
-                "types": "./dist/erase.d.mts",
-                "default": "./dist/erase.mjs"
-            }
-        },
-        "./image": {
-            "require": {
-                "types": "./dist/image.d.cts",
-                "default": "./dist/image.cjs"
-            },
-            "import": {
-                "types": "./dist/image.d.mts",
-                "default": "./dist/image.mjs"
-            }
-        },
-        "./hyperlink": {
-            "require": {
-                "types": "./dist/hyperlink.d.cts",
-                "default": "./dist/hyperlink.cjs"
-            },
-            "import": {
-                "types": "./dist/hyperlink.d.mts",
-                "default": "./dist/hyperlink.mjs"
-            }
-        },
-        "./scroll": {
-            "require": {
-                "types": "./dist/scroll.d.cts",
-                "default": "./dist/scroll.cjs"
-            },
-            "import": {
-                "types": "./dist/scroll.d.mts",
-                "default": "./dist/scroll.mjs"
-            }
-        },
-        "./strip": {
-            "require": {
-                "types": "./dist/strip.d.cts",
-                "default": "./dist/strip.cjs"
-            },
-            "import": {
-                "types": "./dist/strip.d.mts",
-                "default": "./dist/strip.mjs"
-            }
-        },
-        "./termcap": {
-            "require": {
-                "types": "./dist/termcap.d.cts",
-                "default": "./dist/termcap.cjs"
-            },
-            "import": {
-                "types": "./dist/termcap.d.mts",
-                "default": "./dist/termcap.mjs"
-            }
-        },
-        "./title": {
-            "require": {
-                "types": "./dist/title.d.cts",
-                "default": "./dist/title.cjs"
-            },
-            "import": {
-                "types": "./dist/title.d.mts",
-                "default": "./dist/title.mjs"
-            }
-        },
-        "./window-ops": {
-            "require": {
-                "types": "./dist/window-ops.d.cts",
-                "default": "./dist/window-ops.cjs"
-            },
-            "import": {
-                "types": "./dist/window-ops.d.mts",
-                "default": "./dist/window-ops.mjs"
-            }
-        },
-        "./xterm": {
-            "require": {
-                "types": "./dist/xterm.d.cts",
-                "default": "./dist/xterm.cjs"
-            },
-            "import": {
-                "types": "./dist/xterm.d.mts",
-                "default": "./dist/xterm.mjs"
-            }
-        },
-        "./iterm2": {
-            "require": {
-                "types": "./dist/iterm2.d.cts",
-                "default": "./dist/iterm2.cjs"
-            },
-            "import": {
-                "types": "./dist/iterm2.d.mts",
-                "default": "./dist/iterm2.mjs"
-            }
-        },
-        "./mode": {
-            "require": {
-                "types": "./dist/mode.d.cts",
-                "default": "./dist/mode.cjs"
-            },
-            "import": {
-                "types": "./dist/mode.d.mts",
-                "default": "./dist/mode.mjs"
-            }
-        },
-        "./mouse": {
-            "require": {
-                "types": "./dist/mouse.d.cts",
-                "default": "./dist/mouse.cjs"
-            },
-            "import": {
-                "types": "./dist/mouse.d.mts",
-                "default": "./dist/mouse.mjs"
-            }
-        },
-        "./passthrough": {
-            "require": {
-                "types": "./dist/passthrough.d.cts",
-                "default": "./dist/passthrough.cjs"
-            },
-            "import": {
-                "types": "./dist/passthrough.d.mts",
-                "default": "./dist/passthrough.mjs"
-            }
-        },
-        "./reset": {
-            "require": {
-                "types": "./dist/reset.d.cts",
-                "default": "./dist/reset.cjs"
-            },
-            "import": {
-                "types": "./dist/reset.d.mts",
-                "default": "./dist/reset.mjs"
-            }
-        },
-        "./screen": {
-            "require": {
-                "types": "./dist/screen.d.cts",
-                "default": "./dist/screen.cjs"
-            },
-            "import": {
-                "types": "./dist/screen.d.mts",
-                "default": "./dist/screen.mjs"
-            }
-        },
-        "./status": {
-            "require": {
-                "types": "./dist/status.d.cts",
-                "default": "./dist/status.cjs"
-            },
-            "import": {
-                "types": "./dist/status.d.mts",
-                "default": "./dist/status.mjs"
-            }
-        },
-        "./package.json": "./package.json"
-    },
-    "main": "dist/index.cjs",
-    "module": "dist/index.mjs",
-    "browser": "./dist/index.mjs",
-    "types": "dist/index.d.ts",
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/index.d.ts"
-            ],
-            "alternative-screen": [
-                "./dist/alternative-screen.d.ts"
-            ],
-            "clear": [
-                "./dist/clear.d.ts"
-            ],
-            "cursor": [
-                "./dist/cursor.d.ts"
-            ],
-            "erase": [
-                "./dist/erase.d.ts"
-            ],
-            "image": [
-                "./dist/image.d.ts"
-            ],
-            "hyperlink": [
-                "./dist/hyperlink.d.ts"
-            ],
-            "scroll": [
-                "./dist/scroll.d.ts"
-            ],
-            "strip": [
-                "./dist/strip.d.ts"
-            ],
-            "termcap": [
-                "./dist/termcap.d.ts"
-            ],
-            "title": [
-                "./dist/title.d.ts"
-            ],
-            "window-ops": [
-                "./dist/window-ops.d.ts"
-            ],
-            "xterm": [
-                "./dist/xterm.d.ts"
-            ],
-            "iterm2": [
-                "./dist/iterm2.d.ts"
-            ],
-            "mode": [
-                "./dist/mode.d.ts"
-            ],
-            "mouse": [
-                "./dist/mouse.d.ts"
-            ],
-            "passthrough": [
-                "./dist/passthrough.d.ts"
-            ],
-            "reset": [
-                "./dist/reset.d.ts"
-            ],
-            "screen": [
-                "./dist/screen.d.ts"
-            ],
-            "status": [
-                "./dist/status.d.ts"
-            ]
-        }
-    },
-    "files": [
-        "dist",
-        "README.md",
-        "CHANGELOG.md"
-    ],
-    "scripts": {
-        "build": "packem build --development",
-        "build:prod": "packem build --production",
-        "clean": "rimraf node_modules dist .eslintcache",
-        "dev": "pnpm run build --watch",
-        "lint:attw": "attw --pack",
-        "lint:eslint": "eslint .",
-        "lint:eslint:fix": "eslint . --fix",
-        "lint:package-json": "publint --strict",
-        "lint:types": "tsc --noEmit",
-        "test": "vitest run",
-        "test:coverage": "vitest run --coverage",
-        "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
-    },
-    "devDependencies": {
-        "@anolilab/eslint-config": "16.2.10",
-        "@anolilab/semantic-release-pnpm": "1.1.11",
-        "@anolilab/semantic-release-preset": "^10.0.5",
-        "@arethetypeswrong/cli": "^0.18.1",
-        "@secretlint/secretlint-rule-preset-recommend": "^9.3.3",
-        "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "22.15.29",
-        "@visulima/colorize": "1.4.23",
-        "@visulima/packem": "1.19.4",
-        "@visulima/path": "1.4.0",
-        "@vitest/coverage-v8": "^3.2.0",
-        "@vitest/ui": "^3.2.0",
-        "ansi-regex": "^6.1.0",
-        "conventional-changelog-conventionalcommits": "9.0.0",
-        "esbuild": "0.25.5",
-        "eslint": "9.28.0",
-        "jiti": "^2.4.2",
-        "publint": "^0.3.12",
-        "restore-cursor": "^5.1.0",
-        "rimraf": "6.0.1",
-        "secretlint": "9.3.3",
-        "semantic-release": "^24.2.5",
-        "type-fest": "^4.41.0",
-        "typescript": "5.8.3",
-        "vitest": "^3.2.0"
-    },
-    "engines": {
-        "node": ">=20.18 <=24.x"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    }
 }
