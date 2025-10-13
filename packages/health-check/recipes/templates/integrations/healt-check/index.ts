@@ -1,4 +1,4 @@
-import { HealthCheck as HealthCheck, nodeEnvironmentCheck } from "@visulima/health-check";
+import { HealthCheck, nodeEnvironmentCheck } from "@visulima/health-check";
 
 const HealthCheckService = new HealthCheck();
 
