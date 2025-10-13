@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { pick } from "../src";
 
-describe("pick", () => {
+describe(pick, () => {
     it("should pick flat properties correctly when provided", () => {
         expect.assertions(1);
 
@@ -43,12 +43,12 @@ describe("pick", () => {
         expect.assertions(1);
 
         const input = {
-            omited: { "123": { no: false, yes: true } },
-            picks: { "123": { no: false, yes: true }, "456": { no: false, yes: true } },
+            omited: { 123: { no: false, yes: true } },
+            picks: { 123: { no: false, yes: true }, 456: { no: false, yes: true } },
         };
         const expected = pick(input, ["picks.*.yes"]);
 
-        expect(expected).toStrictEqual({ picks: { "123": { yes: true }, "456": { yes: true } } });
+        expect(expected).toStrictEqual({ picks: { 123: { yes: true }, 456: { yes: true } } });
     });
 
     it("should handle empty object input gracefully", () => {
@@ -176,22 +176,22 @@ describe("pick", () => {
 
         const input = {
             omited: {
-                "123": { no: false, yes: true },
+                123: { no: false, yes: true },
             },
             picks: {
-                "123": { no: false, yes: true },
-                "456": { no: false, yes: true },
+                123: { no: false, yes: true },
+                456: { no: false, yes: true },
             },
         };
 
-        type Result = { picks: { "123": { yes: boolean }; "456": { yes: boolean } } };
+        type Result = { picks: { 123: { yes: boolean }; 456: { yes: boolean } } };
 
         const expected: Result = pick(input, ["picks.*.yes"]);
 
         expect(expected).toStrictEqual({
             picks: {
-                "123": { yes: true },
-                "456": { yes: true },
+                123: { yes: true },
+                456: { yes: true },
             },
         });
     });

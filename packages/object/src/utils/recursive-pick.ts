@@ -25,6 +25,7 @@ const recursivePick = <T extends { [key in string]: unknown }, PickedKeys extend
         }
 
         path += key;
+
         // check pickedKeys up to this point
         if (pickedKeys.length > 0) {
             let passed = false;
@@ -41,20 +42,21 @@ const recursivePick = <T extends { [key in string]: unknown }, PickedKeys extend
             });
 
             // there's not one pickedKey that allows up to now
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
             if (!passed) {
                 return carry;
             }
         }
+
         // no further recursion needed
         if (!isPlainObject(value)) {
-            // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+            // eslint-disable-next-line no-param-reassign
             carry[key] = value;
 
             return carry;
         }
 
-        // eslint-disable-next-line no-param-reassign,security/detect-object-injection,@typescript-eslint/no-explicit-any
+        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any
         carry[key] = recursivePick<T, PickedKeys>(object[key] as any, pickedKeys, path);
 
         return carry;
