@@ -9,15 +9,15 @@ export default defineConfig({
             path: "./LICENSE.md",
         },
         requireCJS: {
-            builtinNodeModules: true
-        }
+            builtinNodeModules: true,
+        },
     },
     validation: {
         dependencies: {
             hoisted: {
-                exclude: ["@jsr/std__bytes"]
-            }
-        }
+                exclude: ["@jsr/std__bytes"],
+            },
+        },
     },
     transformer,
 }) as BuildConfig;
