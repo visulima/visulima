@@ -47,7 +47,6 @@ describe("load-source-map", () => {
         const path = join(FIXTURES_DIR, "missingSourcemap.js");
 
         expect(() => loadSourceMap(path)).toThrow(
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             `Error reading sourcemap for file "${toNamespacedPath(path)}":\nENOENT: no such file or directory, open '${toNamespacedPath(path.replace("missingSourcemap.js", "missing.js.map"))}'`,
         );
     });
@@ -57,7 +56,6 @@ describe("load-source-map", () => {
 
         const path = join(FIXTURES_DIR, "invalidSourcemap.js");
 
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         expect(() => loadSourceMap(path)).toThrow(`Error parsing sourcemap for file "${toNamespacedPath(path)}":\n`);
     });
 
@@ -66,7 +64,6 @@ describe("load-source-map", () => {
 
         const path = join(FIXTURES_DIR, "invalidInlineSourcemap.js");
 
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         expect(() => loadSourceMap(path)).toThrow(`Error parsing sourcemap for file "${toNamespacedPath(path)}":\n`);
     });
 
@@ -76,7 +73,6 @@ describe("load-source-map", () => {
         const path = join(FIXTURES_DIR, "nonExistant.js");
 
         expect(() => loadSourceMap(path)).toThrow(
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             `Error reading sourcemap for file "${toNamespacedPath(path)}":\nENOENT: no such file or directory, open '${toNamespacedPath(path)}'`,
         );
     });
