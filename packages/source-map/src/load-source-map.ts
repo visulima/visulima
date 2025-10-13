@@ -2,10 +2,11 @@ import { readFileSync } from "node:fs";
 
 import type { TraceMap } from "@jridgewell/trace-mapping";
 import { AnyMap } from "@jridgewell/trace-mapping";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { dirname, resolve, toNamespacedPath } from "@visulima/path";
 
 const INLINE_SOURCEMAP_REGEX = /^data:application\/json[^,]+base64,/;
-// eslint-disable-next-line regexp/no-unused-capturing-group,regexp/no-super-linear-backtracking
+// eslint-disable-next-line regexp/no-unused-capturing-group, regexp/no-super-linear-backtracking, sonarjs/regex-complexity, sonarjs/slow-regex
 const SOURCEMAP_REGEX = /\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+)[ \t]*$|\/\*[@#][ \t]+sourceMappingURL=([^*]+?)[ \t]*\*\/[ \t]*$/;
 
 const isInlineMap = (url: string): boolean => INLINE_SOURCEMAP_REGEX.test(url);
@@ -13,11 +14,10 @@ const isInlineMap = (url: string): boolean => INLINE_SOURCEMAP_REGEX.test(url);
 const resolveSourceMapUrl = (sourceFile: string, sourcePath: string): string | undefined => {
     const lines = sourceFile.split(/\r?\n/);
 
-    let sourceMapUrl = null;
+    let sourceMapUrl: string | undefined;
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    // eslint-disable-next-line no-plusplus
     for (let index = lines.length - 1; index >= 0 && !sourceMapUrl; index--) {
-        // eslint-disable-next-line security/detect-object-injection
         sourceMapUrl = SOURCEMAP_REGEX.exec(lines[index] as string);
     }
 
@@ -34,12 +34,10 @@ const decodeInlineMap = (data: string) => {
     return Buffer.from(rawData, "base64").toString();
 };
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 const loadSourceMap = (filename: string): TraceMap | undefined => {
     let sourceMapContent: string | undefined;
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         sourceMapContent = readFileSync(filename, { encoding: "utf8" });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -62,7 +60,6 @@ const loadSourceMap = (filename: string): TraceMap | undefined => {
     } else {
         try {
             // Load actual source map from given path
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             traceMapContent = readFileSync(sourceMapUrl, { encoding: "utf8" });
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
