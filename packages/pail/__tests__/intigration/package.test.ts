@@ -15,12 +15,13 @@ describe("usage `@visulima/pail` npm package", () => {
         if (name === "browser") {
             // eslint-disable-next-line no-console
             console.log("@TODO: colorize is missing a cjs export.");
+
             return;
         }
 
         expect.assertions(1);
 
-        const filename = join(__dirname, "../..", "__fixtures__/package/cjs/pail." + name + ".cjs");
+        const filename = join(__dirname, "../..", `__fixtures__/package/cjs/pail.${name}.cjs`);
         const received = await execScriptSync(filename);
 
         expect(JSON.parse(received)).toStrictEqual({
@@ -35,7 +36,7 @@ describe("usage `@visulima/pail` npm package", () => {
     it.each(["server", "browser"])(`should export correct and working ESM code for pail %s`, async (name: string) => {
         expect.assertions(1);
 
-        const filename = join(__dirname, "../..", "__fixtures__/package/mjs/pail." + name + ".mjs");
+        const filename = join(__dirname, "../..", `__fixtures__/package/mjs/pail.${name}.mjs`);
         const received = await execScriptSync(filename);
 
         expect(JSON.parse(esc(received))).toStrictEqual({

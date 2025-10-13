@@ -58,10 +58,10 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
             items.push(
                 ...context.map((value) => {
                     if (typeof value === "object") {
-                        return " " + inspect(value, this.#inspectOptions);
+                        return ` ${inspect(value, this.#inspectOptions)}`;
                     }
 
-                    return " " + value;
+                    return ` ${value}`;
                 }),
             );
         }

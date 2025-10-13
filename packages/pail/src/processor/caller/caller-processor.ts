@@ -8,10 +8,10 @@ declare global {
         interface CustomMeta<L> {
             file:
                 | {
-                      column: number | undefined;
-                      line: number | undefined;
-                      name: string | undefined;
-                  }
+                    column: number | undefined;
+                    line: number | undefined;
+                    name: string | undefined;
+                }
                 | undefined;
         }
     }

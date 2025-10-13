@@ -14,7 +14,6 @@ class InteractiveStreamHook {
     readonly #stream: NodeJS.WriteStream;
 
     public constructor(stream: NodeJS.WriteStream) {
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         this.#method = stream.write;
         this.#stream = stream;
     }
@@ -22,7 +21,6 @@ class InteractiveStreamHook {
     public active(): void {
         this.write(cursorHide as string);
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
         // @ts-ignore - We are modifying the write method
         this.#stream.write = (data: Uint8Array | string, ...arguments_: [((error?: Error) => void)?] | [(string | undefined)?, ((error?: Error) => void)?]) => {
             const callback = arguments_.at(-1);

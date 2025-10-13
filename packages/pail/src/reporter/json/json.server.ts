@@ -32,7 +32,7 @@ class JsonReporter<L extends string = string> extends AbstractJsonReporter<L> im
     protected override _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {
         const stream = ["error", "warn"].includes(logLevel as string) ? this.#stderr : this.#stdout;
 
-        writeStream(message + "\n", stream);
+        writeStream(`${message}\n`, stream);
     }
 }
 

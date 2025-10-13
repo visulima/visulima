@@ -4,9 +4,9 @@ import type { AbstractJsonReporterOptions } from "../json/abstract-json-reporter
 import { AbstractJsonReporter } from "../json/abstract-json-reporter";
 import RotatingFileStream from "./utils/rotating-file-stream";
 
-export type FileReporterOptions = AbstractJsonReporterOptions &
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    RfsOptions & {
+export type FileReporterOptions = AbstractJsonReporterOptions
+
+    & RfsOptions & {
         filePath: string;
         writeImmediately?: boolean;
     };
@@ -28,6 +28,6 @@ export class JsonFileReporter<L extends string = string> extends AbstractJsonRep
     }
 
     protected override _log(message: string): void {
-        this.stream.write(message + "\n");
+        this.stream.write(`${message}\n`);
     }
 }

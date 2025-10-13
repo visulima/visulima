@@ -125,10 +125,11 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         for (const type in this.types) {
             // Backup original value
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (!(console as any)["__" + type]) {
+            if (!(console as any)[`__${type}`]) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
-                (console as any)["__" + type] = (console as any)[type];
+                (console as any)[`__${type}`] = (console as any)[type];
             }
+
             // Override
             // @TODO: Fix typings
             // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
@@ -141,12 +142,12 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         for (const type in this.types) {
             // Restore if backup is available
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((console as any)["__" + type]) {
+            if ((console as any)[`__${type}`]) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
-                (console as any)[type] = (console as any)["__" + type];
+                (console as any)[type] = (console as any)[`__${type}`];
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-dynamic-delete
-                delete (console as any)["__" + type];
+                delete (console as any)[`__${type}`];
             }
         }
     }
@@ -204,7 +205,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     public time(label = "default"): void {
         if (this.seqTimers.has(label)) {
             this._logger("warn", false, {
-                message: "Timer '" + label + "' already exists",
+                message: `Timer '${label}' already exists`,
                 prefix: label,
             });
         } else {
@@ -230,7 +231,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
             this._logger("info", false, {
                 context: data,
-                message: span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s",
+                message: span < 1000 ? `${span} ms` : `${(span / 1000).toFixed(2)} s`,
                 prefix: label,
             });
         } else {
@@ -255,7 +256,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             this.timersMap.delete(label);
 
             this._logger("stop", false, {
-                message: this.endTimerMessage + " " + (span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s"),
+                message: `${this.endTimerMessage} ${span < 1000 ? `${span} ms` : `${(span / 1000).toFixed(2)} s`}`,
                 prefix: label,
             });
         } else {
@@ -267,7 +268,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     public group(label = "console.group"): void {
-        if (typeof window === "undefined") {
+        if (globalThis.window === undefined) {
             this.groups.push(label);
         } else {
             // eslint-disable-next-line no-console
@@ -276,7 +277,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     public groupEnd(): void {
-        if (typeof window === "undefined") {
+        if (globalThis.window === undefined) {
             this.groups.pop();
         } else {
             // eslint-disable-next-line no-console
@@ -290,7 +291,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         this.countMap.set(label, current + 1);
 
         this._logger("log", false, {
-            message: label + ": " + (current + 1),
+            message: `${label}: ${current + 1}`,
             prefix: label,
         });
     }
@@ -300,7 +301,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             this.countMap.delete(label);
         } else {
             this._logger("warn", false, {
-                message: "Count for " + label + " does not exist",
+                message: `Count for ${label} does not exist`,
                 prefix: label,
             });
         }
@@ -336,7 +337,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     protected registerReporters(reporters: Reporter<L>[]): void {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const reporter of reporters) {
             this.reporters.add(this.extendReporter(reporter));
         }
@@ -346,7 +347,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         if (raw) {
             this.rawReporter.log(Object.freeze(meta));
         } else {
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+            // eslint-disable-next-line no-loops/no-loops
             for (const reporter of this.reporters) {
                 reporter.log(Object.freeze(meta));
             }
@@ -354,7 +355,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     private registerProcessors(processors: Processor<L>[]): void {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const processor of processors) {
             if (typeof (processor as StringifyAwareProcessor<L>).setStringify === "function") {
                 (processor as StringifyAwareProcessor<L>).setStringify(this.stringify);
@@ -364,7 +365,6 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     private _normalizeLogLevel(level: LiteralUnion<ExtendedRfc5424LogLevels, L> | undefined): LiteralUnion<ExtendedRfc5424LogLevels, L> {
         // eslint-disable-next-line security/detect-object-injection
         return level && this.logLevels[level] ? level : "debug";
@@ -414,7 +414,6 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
                 meta.message = message;
             } else {
-                // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
                 meta.message = arguments_[0] as Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
             }
         } else if (arguments_.length > 1 && typeof arguments_[0] === "string") {
@@ -458,7 +457,6 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
              * @param newLog false if the throttle expired and we don't want to log a duplicate
              */
             const resolveLog = (newLog = false) => {
-                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                 const repeated = (this.lastLog.count || 0) - this.throttleMin;
 
                 if (this.lastLog.object && repeated > 0) {
@@ -475,7 +473,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
                 if (newLog) {
                     // Apply global processors
-                    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+                    // eslint-disable-next-line no-loops/no-loops
                     for (const processor of this.processors) {
                         meta = { ...processor.process(meta) };
                     }
@@ -500,7 +498,6 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
                     this.lastLog.serialized = serializedLog;
 
                     if (isSameLog) {
-                        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                         this.lastLog.count = (this.lastLog.count || 0) + 1;
 
                         if (this.lastLog.count > this.throttleMin) {
@@ -520,10 +517,10 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 }
 
-export type PailBrowserType<T extends string = string, L extends string = string> = PailBrowserImpl<T, L> &
-    Record<DefaultLogTypes, LoggerFunction> &
-    Record<T, LoggerFunction> &
-    (new<TC extends string = string, LC extends string = string>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
+export type PailBrowserType<T extends string = string, L extends string = string> = (new<TC extends string = string, LC extends string = string>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>)
+    & PailBrowserImpl<T, L>
+    & Record<DefaultLogTypes, LoggerFunction>
+    & Record<T, LoggerFunction>;
 
 export type PailConstructor<T extends string = string, L extends string = string> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
 

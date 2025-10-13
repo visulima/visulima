@@ -131,6 +131,7 @@ describe("messageFormatterProcessor", () => {
         const processor = new MessageFormatterProcessor();
 
         const object: any = { prop: "value" };
+
         object.circular = object;
 
         const meta: Meta<string> = {
@@ -154,7 +155,7 @@ describe("messageFormatterProcessor", () => {
 
         const processedMeta = processor.process(meta);
 
-        expect(processedMeta.message).toBe('Hello "[Circular]"');
+        expect(processedMeta.message).toBe("Hello \"[Circular]\"");
     });
 
     // Given a MessageFormatterProcessor instance with no options provided, when calling process() with a Meta object containing a message array with a string as the first element and an object as the second element, and the object contains a function, then the function should be ignored and the message property of the Meta object should be assigned a string representation of the object.
@@ -186,6 +187,6 @@ describe("messageFormatterProcessor", () => {
 
         const processedMeta = processor.process(meta);
 
-        expect(processedMeta.message).toBe('Hello {"prop":"value"}');
+        expect(processedMeta.message).toBe("Hello {\"prop\":\"value\"}");
     });
 });

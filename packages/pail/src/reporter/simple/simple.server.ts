@@ -101,7 +101,6 @@ export class SimpleReporter<T extends string = string, L extends string = string
             size = this._styles.messageLength;
         }
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
         // @ts-ignore - @TODO: check rollup-plugin-dts
         const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, traceError, type } = data;
 
@@ -113,11 +112,11 @@ export class SimpleReporter<T extends string = string, L extends string = string
         const items: string[] = [];
 
         if (groups.length > 0) {
-            items.push((groupSpaces + grey("[" + groups.at(-1) + "]") + " ") as string);
+            items.push((`${groupSpaces + grey(`[${groups.at(-1)}]`)} `) as string);
         }
 
         if (date) {
-            items.push(grey(this._styles.dateFormatter(typeof date === "string" ? new Date(date) : date)) + " ");
+            items.push(`${grey(this._styles.dateFormatter(typeof date === "string" ? new Date(date) : date))} `);
         }
 
         if (badge) {
@@ -133,21 +132,21 @@ export class SimpleReporter<T extends string = string, L extends string = string
         const longestLabel: string = getLongestLabel<L, T>(this._loggerTypes);
 
         if (label) {
-            items.push(bold(colorized(formatLabel(label as string, this._styles))) + " ", " ".repeat(longestLabel.length - stringLength(label as string)));
+            items.push(`${bold(colorized(formatLabel(label as string, this._styles)))} `, " ".repeat(longestLabel.length - stringLength(label as string)));
         } else {
             items.push(" ".repeat(longestLabel.length + 1));
         }
 
         if (repeated) {
-            items.push(bgGrey.white("[" + repeated + "x]") + " ");
+            items.push(`${bgGrey.white(`[${repeated}x]`)} `);
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-            items.push(grey("[" + scope.join(" > ") + "]") + " ");
+            items.push(`${grey(`[${scope.join(" > ")}]`)} `);
         }
 
         if (prefix) {
-            items.push(grey("[" + (this._styles.underline.prefix ? underline(prefix as string) : prefix) + "]") + " ");
+            items.push(`${grey(`[${this._styles.underline.prefix ? underline(prefix as string) : prefix}]`)} `);
         }
 
         const titleSize = stringLength(items.join(""));
@@ -156,12 +155,12 @@ export class SimpleReporter<T extends string = string, L extends string = string
             const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
-                groupSpaces +
-                    wrapAnsi(formattedMessage, size - 3, {
-                        hard: true,
-                        trim: false,
-                        wordWrap: true,
-                    }),
+                groupSpaces
+                + wrapAnsi(formattedMessage, size - 3, {
+                    hard: true,
+                    trim: false,
+                    wordWrap: true,
+                }),
             );
         }
 
@@ -174,17 +173,17 @@ export class SimpleReporter<T extends string = string, L extends string = string
                         hasError = true;
 
                         return (
-                            "\n\n" +
-                            renderError(value as Error, {
-                                ...this.#errorOptions,
-                                filterStacktrace: pailFileFilter,
-                                prefix: groupSpaces,
-                            })
+                            `\n\n${
+                                renderError(value as Error, {
+                                    ...this.#errorOptions,
+                                    filterStacktrace: pailFileFilter,
+                                    prefix: groupSpaces,
+                                })}`
                         );
                     }
 
                     if (typeof value === "object") {
-                        return " " + inspect(value, this.#inspectOptions);
+                        return ` ${inspect(value, this.#inspectOptions)}`;
                     }
 
                     const newValue = (hasError ? "\n\n" : " ") + value;
@@ -208,7 +207,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
 
         if (traceError) {
             items.push(
-                "\n\n" +
+                `\n\n${
                     renderError(traceError as Error, {
                         ...this.#errorOptions,
                         filterStacktrace: pailFileFilter,
@@ -217,16 +216,16 @@ export class SimpleReporter<T extends string = string, L extends string = string
                         hideErrorErrorsCodeView: true,
                         hideMessage: true,
                         prefix: groupSpaces,
-                    }),
+                    })}`,
             );
         }
 
         if (suffix) {
-            items.push(" " + groupSpaces + grey(this._styles.underline.suffix ? underline(suffix as string) : suffix));
+            items.push(` ${groupSpaces}${grey(this._styles.underline.suffix ? underline(suffix as string) : suffix)}`);
         }
 
         if (file) {
-            const fileMessage = file.name + (file.line ? ":" + file.line : "");
+            const fileMessage = file.name + (file.line ? `:${file.line}` : "");
 
             items.push("\n", grey("Caller: "), " ".repeat(titleSize - 8), fileMessage, "\n");
         }
@@ -241,7 +240,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
             this.#interactiveManager.update(streamType, message.split("\n"), 0);
         } else {
-            writeStream(message + "\n", stream);
+            writeStream(`${message}\n`, stream);
         }
     }
 }

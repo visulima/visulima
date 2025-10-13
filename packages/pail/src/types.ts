@@ -4,7 +4,7 @@ import type { LiteralUnion, Primitive } from "type-fest";
 import type InteractiveManager from "./interactive/interactive-manager";
 
 /**
- *  * This is a special exported interface for other packages/app to declare additional metadata for the logger.
+ *  This is a special exported interface for other packages/app to declare additional metadata for the logger.
  */
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -14,7 +14,6 @@ declare global {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
 // @ts-ignore -- wrong extend type
 export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     badge: string | undefined;
@@ -24,7 +23,7 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     error: Error | undefined;
     groups: string[];
     label: string | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     message: Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
     prefix: string | undefined;
     repeated?: number | undefined;
@@ -39,25 +38,25 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
 
 export type ExtendedRfc5424LogLevels = "alert" | "critical" | "debug" | "emergency" | "error" | "informational" | "notice" | "trace" | "warning";
 
-export type DefaultLogTypes =
-    | "alert"
-    | "await"
-    | "complete"
-    | "critical"
-    | "debug"
-    | "emergency"
-    | "error"
-    | "info"
-    | "log"
-    | "notice"
-    | "pending"
-    | "start"
-    | "stop"
-    | "success"
-    | "trace"
-    | "wait"
-    | "warn"
-    | "watch";
+export type DefaultLogTypes
+    = | "alert"
+        | "await"
+        | "complete"
+        | "critical"
+        | "debug"
+        | "emergency"
+        | "error"
+        | "info"
+        | "log"
+        | "notice"
+        | "pending"
+        | "start"
+        | "stop"
+        | "success"
+        | "trace"
+        | "wait"
+        | "warn"
+        | "watch";
 
 export interface LoggerFunction {
     (message: Message): void;
@@ -68,7 +67,7 @@ export interface LoggerFunction {
 // alias for backward-compatibility
 export interface LoggerConfiguration<L extends string> {
     badge?: string;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     color?: AnsiColors | undefined;
     label: string;
     logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>;

@@ -29,8 +29,7 @@ describe("jsonReporter server", () => {
 
         reporter.log({ ...baseMeta, message: "test message", type: { level: "informational", name: "informational" } });
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining("test message"));
+        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("test message"));
     });
 
     it("should log messages to stderr for error levels", () => {
@@ -42,8 +41,8 @@ describe("jsonReporter server", () => {
         reporter.setStderr(mockStderr);
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: "test error", type: { level: "error", name: "informational" } });
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockStderr.write).toHaveBeenCalledWith(expect.stringContaining("test error"));
+
+        expect(mockStderr.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("test error"));
     });
 
     it("should trim label property in log metadata", () => {
@@ -56,8 +55,7 @@ describe("jsonReporter server", () => {
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, label: "  label  ", message: "test message", type: { level: "informational", name: "informational" } });
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining('"label":"label"'));
+        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("\"label\":\"label\""));
     });
 
     it("should handle undefined or null values in log metadata gracefully", () => {
@@ -70,8 +68,7 @@ describe("jsonReporter server", () => {
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: null, type: { level: "informational", name: "informational" } });
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining("null"));
+        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("null"));
     });
 
     it("should handle empty string values in log metadata", () => {
@@ -84,11 +81,9 @@ describe("jsonReporter server", () => {
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: "", type: { level: "informational", name: "informational" } });
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining('""'));
+        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("\"\""));
     });
 
-    // eslint-disable-next-line no-secrets/no-secrets
     it("should handle log levels not in ExtendedRfc5424LogLevels", () => {
         expect.assertions(1);
 
@@ -99,8 +94,7 @@ describe("jsonReporter server", () => {
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: "custom level message", type: { level: "custom", name: "custom" } });
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining("custom level message"));
+        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("custom level message"));
     });
 
     it("should handle missing file property in log metadata", () => {
@@ -113,8 +107,7 @@ describe("jsonReporter server", () => {
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: "message without file", type: { level: "informational", name: "informational" } });
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining("message without file"));
+        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("message without file"));
     });
 
     it("should handle missing label property in log metadata", () => {
@@ -127,7 +120,6 @@ describe("jsonReporter server", () => {
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: "message without label", type: { level: "informational", name: "informational" } });
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining("message without label"));
+        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("message without label"));
     });
 });
