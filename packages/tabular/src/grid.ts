@@ -596,7 +596,7 @@ export class Grid {
                         remainder: (availableWidth * proportion) % 1,
                     };
                 })
-                .sort((a, b) => b.remainder - a.remainder);
+                .toSorted((a, b) => b.remainder - a.remainder);
 
             for (const { index } of indices) {
                 if (remainingWidth <= 0) {
@@ -1000,6 +1000,7 @@ export class Grid {
             processedLines = processedLines.map((line) => truncate(line, baseContentWidth, truncateOptions));
         } else {
             // Ensure lines fit even if truncate/wrap are off
+            // eslint-disable-next-line @stylistic/no-extra-parens
             processedLines = processedLines.map((line) => (getStringWidth(line) > baseContentWidth ? truncate(line, baseContentWidth, {}) : line));
         }
 
