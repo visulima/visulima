@@ -46,7 +46,7 @@ const emptyDir = async (dir: URL | string, options?: RetryOptions): Promise<void
         return;
     }
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,security/detect-non-literal-fs-filename
+    // eslint-disable-next-line no-loops/no-loops,security/detect-non-literal-fs-filename
     for await (const item of await readdir(dir)) {
         await rm(join(toPath(dir), item), { ...options, force: true, recursive: true });
     }

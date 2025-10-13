@@ -12,7 +12,7 @@ const fixture = resolve(fileURLToPath(import.meta.url), "../../../../__fixtures_
 const getEntries = async (root: string, options?: WalkOptions): Promise<WalkEntry[]> => {
     const entries: WalkEntry[] = [];
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line no-loops/no-loops
     for await (const entry of walk(root, options)) {
         entries.push(entry);
     }
@@ -32,29 +32,29 @@ const assertWalkPaths = async (rootPath: string, expectedPaths: string[], option
 
 const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
-describe("walk", () => {
+describe(walk, () => {
     it("should return a valid WalkEntry with correct properties and methods", async () => {
         expect.assertions(6);
 
         const root = resolve(fixture, "single_file");
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for await (const entry of await walk(root)) {
             if (entry.isFile()) {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(entry.isFile()).toBeTruthy();
+                expect(entry.isFile()).toBe(true);
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(entry.isDirectory()).toBeFalsy();
+                expect(entry.isDirectory()).toBe(false);
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(entry.isSymbolicLink()).toBeFalsy();
+                expect(entry.isSymbolicLink()).toBe(false);
             } else {
                 // Directory entry checks
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(entry.isFile()).toBeFalsy();
+                expect(entry.isFile()).toBe(false);
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(entry.isDirectory()).toBeTruthy();
+                expect(entry.isDirectory()).toBe(true);
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(entry.isSymbolicLink()).toBeFalsy();
+                expect(entry.isSymbolicLink()).toBe(false);
             }
         }
     });
@@ -64,6 +64,7 @@ describe("walk", () => {
 
         // eslint-disable-next-line unicorn/prevent-abbreviations
         const emptyDir = resolve(fixture, "empty_dir");
+
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         await mkdir(emptyDir);
 
@@ -126,7 +127,7 @@ describe("walk", () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", ["x", "y"], {
-            match: isWindows ? ["**\\x", "**\\y"] : ["**/x", "**/y"],
+            match: isWindows ? [String.raw`**\x`, String.raw`**\y`] : ["**/x", "**/y"],
         });
     });
 
@@ -142,7 +143,7 @@ describe("walk", () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", [".", "z"], {
-            skip: isWindows ? ["**\\x", "**\\y"] : ["**/x", "**/y"],
+            skip: isWindows ? [String.raw`**\x`, String.raw`**\y`] : ["**/x", "**/y"],
         });
     });
 
@@ -215,6 +216,7 @@ describe("walk", () => {
         const entries = await getEntries(root);
 
         expect(entries.length).toBeGreaterThan(0);
+
         entries.forEach((entry) => {
             expect(entry.path).not.toContain("\\");
         });
@@ -233,7 +235,7 @@ describe("walk", () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", ["x", "y"], {
-            match: isWindows ? ["**\\[xy]"] : ["**/[xy]"],
+            match: isWindows ? [String.raw`**\[xy]`] : ["**/[xy]"],
         });
     });
 
@@ -241,7 +243,7 @@ describe("walk", () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", [".", "z"], {
-            skip: isWindows ? ["**\\[xy]"] : ["**/[xy]"],
+            skip: isWindows ? [String.raw`**\[xy]`] : ["**/[xy]"],
         });
     });
 });

@@ -9,7 +9,7 @@ const globToRegExp = (glob: string): RegExp => {
         // eslint-disable-next-line unicorn/prefer-string-replace-all
         .replace(/\?/g, "[^/]") // Replace ? with [^/]
         // eslint-disable-next-line unicorn/prefer-string-replace-all
-        .replace(/\.(?!\*)/g, "\\.") // Escape . that is not preceded by *
+        .replace(/\.(?!\*)/g, String.raw`\.`) // Escape . that is not preceded by *
         // eslint-disable-next-line unicorn/prefer-string-replace-all
         .replace(/\{/g, "(") // Replace { with (
         // eslint-disable-next-line unicorn/prefer-string-replace-all

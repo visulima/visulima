@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import resolveSymlinkTarget from "../../../../src/ensure/utils/resolve-symlink-target";
 
-describe("resolveSymlinkTarget", () => {
+describe(resolveSymlinkTarget, () => {
     it("should return the target if it is a URL", () => {
         expect.assertions(1);
 
@@ -16,7 +16,7 @@ describe("resolveSymlinkTarget", () => {
         expect(result).toBe(target);
     });
 
-    it('should return the resolved target if it starts with "./"', () => {
+    it("should return the resolved target if it starts with \"./\"", () => {
         expect.assertions(1);
 
         const target = "./path/to/file";

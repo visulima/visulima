@@ -14,7 +14,6 @@ import toUint8Array from "./utils/to-uint-8-array";
 /**
  * Synchronously writes data to a file, replacing the file if it already exists.
  * This function includes safeguards like writing to a temporary file first and then renaming, and handling permissions.
- *
  * @param path The path to the file to write. Can be a file URL or a string path.
  * @param content The data to write. Can be a string, Buffer, ArrayBuffer, or ArrayBufferView.
  * @param options Optional configuration for writing the file. See {@link WriteFileOptions}.
@@ -39,7 +38,7 @@ import toUint8Array from "./utils/to-uint-8-array";
  * writeMyFileSync();
  * ```
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): void => {
     // eslint-disable-next-line no-param-reassign
     options = {
@@ -99,13 +98,12 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        chmodSync(temporaryPath, stat && !options.mode ? stat.mode : (options.mode ?? 0o666));
+        chmodSync(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         renameSync(temporaryPath, path);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/restrict-template-expressions
         throw new Error(`Failed to write file at: ${path} - ${error.message}`, { cause: error });
     } finally {
         if (isAccessibleSync(temporaryPath)) {

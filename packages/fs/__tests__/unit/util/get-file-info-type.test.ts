@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { getFileInfoType } from "../../../src/ensure/utils/get-file-info-type";
 
-describe("getFileInfoType", () => {
+describe(getFileInfoType, () => {
     it("should return undefined if type is not found", () => {
         expect.assertions(1);
 
@@ -19,7 +19,7 @@ describe("getFileInfoType", () => {
         expect(result).toBeUndefined();
     });
 
-    it('should return "file" if type is file', () => {
+    it("should return \"file\" if type is file", () => {
         expect.assertions(1);
 
         const fileInfo = {
@@ -33,7 +33,7 @@ describe("getFileInfoType", () => {
         expect(result).toBe("file");
     });
 
-    it('should return "dir" if type is directory', () => {
+    it("should return \"dir\" if type is directory", () => {
         expect.assertions(1);
 
         const fileInfo = {
@@ -47,7 +47,7 @@ describe("getFileInfoType", () => {
         expect(result).toBe("dir");
     });
 
-    it('should return "symlink" if type is symlink', () => {
+    it("should return \"symlink\" if type is symlink", () => {
         expect.assertions(1);
 
         const fileInfo = {

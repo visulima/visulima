@@ -16,16 +16,16 @@ function writeYamlSync(
     replacer?: YamlReplacer,
     options?: WriteYamlOptions | number | string,
 ): void;
+
 /**
  * Synchronously writes an object to a YAML file.
- *
  * @param path The path to the YAML file to write. Can be a file URL or a string path.
  * @param data The data to serialize and write. Can be any JavaScript value that can be stringified by `yaml.stringify`.
  * @param replacer Optional. A replacer function or an array of keys to include, or the options object itself.
- *                 See `yaml.stringify` documentation for more details.
+ * See `yaml.stringify` documentation for more details.
  * @param options Optional. Configuration for writing and stringifying the YAML file. See {@link WriteYamlOptions}.
- *                If `replacer` is an object and not a function/array, it's treated as `options`.
- *                The `space` property within options can be a number for spaces or a string for tabs/etc.
+ * If `replacer` is an object and not a function/array, it's treated as `options`.
+ * The `space` property within options can be a number for spaces or a string for tabs/etc.
  * @returns void
  * @example
  * ```javascript
@@ -51,7 +51,7 @@ function writeYamlSync(
  * writeMyYamlSync();
  * ```
  */
-// eslint-disable-next-line func-style
+
 function writeYamlSync(
     path: URL | string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types

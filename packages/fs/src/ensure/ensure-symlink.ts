@@ -18,7 +18,6 @@ const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<stri
  * Ensures that the link exists, and points to a valid file.
  * If the directory structure does not exist, it is created.
  * If the link already exists, it is not modified but error is thrown if it is not point to the given target.
- *
  * @param target the source file path
  * @param linkName the destination link path
  * @param type the type of the symlink, or null to use automatic detection
@@ -35,7 +34,7 @@ const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<stri
  * await ensureSymlink(join("/tmp", "foo", "baz-dir"), join("/tmp", "foo", "link-to-baz-dir"), "dir");
  * ```
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const ensureSymlink = async (target: URL | string, linkName: URL | string, type?: symlinkSync.Type): Promise<void> => {
     assertValidFileOrDirectoryPath(target);
     assertValidFileOrDirectoryPath(linkName);
@@ -50,9 +49,9 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
         const linkStatInfo = await lstat(linkName);
 
         if (
-            linkStatInfo.isSymbolicLink() &&
+            linkStatInfo.isSymbolicLink()
             // eslint-disable-next-line security/detect-non-literal-fs-filename
-            isStatsIdentical(await stat(targetRealPath), await stat(linkName))
+            && isStatsIdentical(await stat(targetRealPath), await stat(linkName))
         ) {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             const [sourceStat, destinationStat] = await Promise.all([stat(targetRealPath), stat(linkName)]);
@@ -80,7 +79,6 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
         await symlink(toNamespacedPath(toPath(targetRealPath)), linkName, symlinkType);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (error.code !== "EEXIST") {
             throw error;
         }
@@ -89,8 +87,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
         const linkStatInfo = await lstat(linkName);
 
         if (!linkStatInfo.isSymbolicLink()) {
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-            throw new AlreadyExistsError("A " + getFileInfoType(linkStatInfo) + " already exists at the path: " + (linkName as string));
+            throw new AlreadyExistsError(`A ${getFileInfoType(linkStatInfo)} already exists at the path: ${linkName as string}`);
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -98,8 +95,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
         const linkRealPath = toNamespacedPath(resolve(linkPath));
 
         if (linkRealPath !== targetRealPath) {
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-            throw new AlreadyExistsError("A symlink targeting to an undesired path already exists: " + (linkName as string) + " -> " + linkRealPath);
+            throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${linkName as string} -> ${linkRealPath}`);
         }
     }
 };

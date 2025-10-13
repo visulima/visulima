@@ -15,10 +15,10 @@
  *     err.fileName = filePath;
  *     // A real implementation might generate a code frame using a library
  *     err.codeFrame = `  13 |   "key": "value",
-> 14 |   "anotherKey": "anotherValue",}
-     |                             ^
-  15 |   "lastKey": "end"
-`;
+ * > 14 |   "anotherKey": "anotherValue",}
+ * |                             ^
+ * 15 |   "lastKey": "end"
+ * `;
  *     throw err;
  *   };
  *
@@ -56,8 +56,6 @@ class JSONError extends Error {
         super();
 
         this.#message = message;
-
-        Error.captureStackTrace(this, JSONError);
     }
 
     public override get message(): string {

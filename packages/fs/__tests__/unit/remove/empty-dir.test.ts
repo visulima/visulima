@@ -26,6 +26,7 @@ describe.each([
 
     it("should create a new dir if it does not exist", async () => {
         expect.assertions(1);
+
         const path = `${distribution}/new-dir`;
 
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -36,11 +37,12 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(path)).toBeTruthy();
+        expect(existsSync(path)).toBe(true);
     });
 
     it("should create a new nested dir if it does not exist", async () => {
         expect.assertions(1);
+
         const path = `${distribution}/new-dir/nested`;
 
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -51,7 +53,7 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(path)).toBeTruthy();
+        expect(existsSync(path)).toBe(true);
     });
 
     it("should empty nexted dirs and files", async () => {
@@ -80,14 +82,14 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(path)).toBeTruthy();
+        expect(existsSync(path)).toBe(true);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(path2)).toBeFalsy();
+        expect(existsSync(path2)).toBe(false);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(file)).toBeFalsy();
+        expect(existsSync(file)).toBe(false);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(file2)).toBeFalsy();
+        expect(existsSync(file2)).toBe(false);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(file3)).toBeFalsy();
+        expect(existsSync(file3)).toBe(false);
     });
 });

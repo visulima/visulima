@@ -47,7 +47,6 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
         sourceStat = await lstat(source);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         error.message = error.message.replace("lstat", "ensureLink");
 
         throw error;

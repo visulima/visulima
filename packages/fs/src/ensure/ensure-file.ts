@@ -12,8 +12,7 @@ import { getFileInfoType } from "./utils/get-file-info-type";
  * Asynchronously ensures that a file exists.
  * If the directory structure for the file does not exist, it is created.
  * If the file already exists, it is not modified.
- *
- * @param filePath - The path to the file. Can be a string or a URL object.
+ * @param filePath The path to the file. Can be a string or a URL object.
  * @returns A Promise that resolves when the file has been created or confirmed to exist.
  * @throws Will throw an error if the path exists and is not a file.
  * @throws Will throw an error if directory or file creation fails for reasons other than the path not existing initially.
@@ -43,13 +42,12 @@ const ensureFile = async (filePath: URL | string): Promise<void> => {
         const stat = await lstat(filePath);
 
         if (!stat.isFile()) {
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             throw new Error(`Ensure path exists, expected 'file', got '${getFileInfoType(stat)}'`);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         // if file not exists
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         if (error.code === "ENOENT") {
             // ensure dir exists
             await ensureDir(dirname(toPath(filePath)));

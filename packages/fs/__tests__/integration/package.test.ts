@@ -13,7 +13,7 @@ describe("usage `@visulima/fs` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(received.includes("packages/fs")).toBeTruthy();
+        expect(received).toContain("packages/fs");
     });
 
     it(`should work as ESM package`, async () => {
@@ -23,6 +23,6 @@ describe("usage `@visulima/fs` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(received.includes("packages/fs")).toBeTruthy();
+        expect(received).toContain("packages/fs");
     });
 });

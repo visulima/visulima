@@ -26,7 +26,7 @@ describe("size functions", () => {
         await rm(distribution, { recursive: true });
     });
 
-    describe("gzipSize", () => {
+    describe(gzipSize, () => {
         it("should get size of string", async () => {
             expect.assertions(1);
 
@@ -76,7 +76,7 @@ describe("size functions", () => {
         });
     });
 
-    describe("brotliSize", () => {
+    describe(brotliSize, () => {
         it("should get size of string", async () => {
             expect.assertions(1);
 
@@ -126,7 +126,7 @@ describe("size functions", () => {
         });
     });
 
-    describe("rawSize", () => {
+    describe(rawSize, () => {
         it("should get size of string", async () => {
             expect.assertions(1);
 
@@ -149,6 +149,7 @@ describe("size functions", () => {
             expect.assertions(1);
 
             const size = await rawSize(distributionFile);
+
             expect(size).toBe(fixtureFileContent.length);
         });
 
@@ -161,7 +162,7 @@ describe("size functions", () => {
         });
     });
 
-    describe("gzipSizeSync", () => {
+    describe(gzipSizeSync, () => {
         it("should get size of string synchronously", () => {
             expect.assertions(1);
 
@@ -202,7 +203,7 @@ describe("size functions", () => {
         });
     });
 
-    describe("brotliSizeSync", () => {
+    describe(brotliSizeSync, () => {
         it("should get size of string synchronously", () => {
             expect.assertions(1);
 
@@ -243,7 +244,7 @@ describe("size functions", () => {
         });
     });
 
-    describe("rawSizeSync", () => {
+    describe(rawSizeSync, () => {
         it("should get size of string synchronously", () => {
             expect.assertions(1);
 

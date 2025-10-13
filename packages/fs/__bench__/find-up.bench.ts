@@ -1,10 +1,10 @@
 import { join, resolve } from "node:path";
-import { bench, describe } from "vitest";
 
-import * as simple from "find-up-simple";
-import { findUp } from "find-up";
-import * as find from "empathic/find";
 import { findUp as visulimaFindUp, findUpSync as visulimaFindUpSync } from "@visulima/fs";
+import { up } from "empathic/find";
+import { findUp } from "find-up";
+import { findUp, findUpSync } from "find-up-simple";
+import { bench, describe } from "vitest";
 
 const fixtures = resolve(__dirname, "../__fixtures__/test-strings/fixtures");
 const start = join(fixtures, "a/b/c/d/e/f/g/h/i/j");
@@ -23,7 +23,7 @@ describe("find-up", () => {
                 await findUp(level6, { cwd: start });
             });
             bench("find-up-simple", async () => {
-                await simple.findUp(level6, { cwd: start });
+                await findUp(level6, { cwd: start });
             });
         });
         describe("sync", () => {
@@ -31,10 +31,10 @@ describe("find-up", () => {
                 visulimaFindUpSync(level6, { cwd: start });
             });
             bench("find-up-simple (sync)", () => {
-                simple.findUpSync(level6, { cwd: start });
+                findUpSync(level6, { cwd: start });
             });
             bench("empathic find.up (sync)", () => {
-                find.up(level6, { cwd: start });
+                up(level6, { cwd: start });
             });
         });
     });
@@ -47,7 +47,7 @@ describe("find-up", () => {
                 await findUp(level10, { cwd: start });
             });
             bench("find-up-simple", async () => {
-                await simple.findUp(level10, { cwd: start });
+                await findUp(level10, { cwd: start });
             });
         });
         describe("sync", () => {
@@ -55,10 +55,10 @@ describe("find-up", () => {
                 visulimaFindUpSync(level10, { cwd: start });
             });
             bench("find-up-simple (sync)", () => {
-                simple.findUpSync(level10, { cwd: start });
+                findUpSync(level10, { cwd: start });
             });
             bench("empathic find.up (sync)", () => {
-                find.up(level10, { cwd: start });
+                up(level10, { cwd: start });
             });
         });
     });
@@ -71,7 +71,7 @@ describe("find-up", () => {
                 await findUp(other, { cwd: start });
             });
             bench("find-up-simple", async () => {
-                await simple.findUp(other, { cwd: start });
+                await findUp(other, { cwd: start });
             });
         });
         describe("sync", () => {
@@ -79,10 +79,10 @@ describe("find-up", () => {
                 visulimaFindUpSync(other, { cwd: start });
             });
             bench("find-up-simple (sync)", () => {
-                simple.findUpSync(other, { cwd: start });
+                findUpSync(other, { cwd: start });
             });
             bench("empathic find.up (sync)", () => {
-                find.up(other, { cwd: start });
+                up(other, { cwd: start });
             });
         });
     });

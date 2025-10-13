@@ -1,7 +1,6 @@
 /**
  * Asserts that the provided contents are valid for writing to a file.
  * Valid contents can be a string, an ArrayBuffer, or an ArrayBuffer view (e.g., Uint8Array).
- *
  * @param contents The file contents to validate.
  * @throws {TypeError} If the contents are not a string, ArrayBuffer, or ArrayBuffer view.
  * @example

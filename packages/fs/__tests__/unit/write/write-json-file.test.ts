@@ -24,7 +24,7 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(readFileSync(path, "utf8")).toBe('{\n  "foo": true\n}\n');
+        expect(readFileSync(path, "utf8")).toBe("{\n  \"foo\": true\n}\n");
     });
 
     it("should detect file indent", async () => {
@@ -42,7 +42,7 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(readFileSync(path, "utf8")).toBe('{\n  "bar": true,\n  "foo": true,\n  "foobar": true\n}\n');
+        expect(readFileSync(path, "utf8")).toBe("{\n  \"bar\": true,\n  \"foo\": true,\n  \"foobar\": true\n}\n");
     });
 
     it("fall back to default indent if file doesn't exist", async () => {
@@ -58,7 +58,7 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(readFileSync(path, "utf8")).toBe('{\n\t"bar": true,\n\t"foo": true,\n\t"foobar": true\n}\n');
+        expect(readFileSync(path, "utf8")).toBe("{\n\t\"bar\": true,\n\t\"foo\": true,\n\t\"foobar\": true\n}\n");
     });
 
     it("should handle the `replacer` option", async () => {
@@ -74,7 +74,7 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(readFileSync(path, "utf8")).toBe('{\n\t"foo": true\n}\n');
+        expect(readFileSync(path, "utf8")).toBe("{\n\t\"foo\": true\n}\n");
     });
 
     it("should respect trailing newline at the end of the file", async () => {
@@ -93,7 +93,7 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(readFileSync(path, "utf8")).toBe('{\n\t"bar": true\n}');
+        expect(readFileSync(path, "utf8")).toBe("{\n\t\"bar\": true\n}");
     });
 
     it("should handle the `indent` option to be undefined", async () => {
@@ -109,7 +109,7 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(readFileSync(path, "utf8")).toBe('{"foo":true}\n');
+        expect(readFileSync(path, "utf8")).toBe("{\"foo\":true}\n");
     });
 
     it("should handle the `stringify` option", async () => {
@@ -125,6 +125,6 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(readFileSync(path, "utf8")).toBe('{\n\t"foo": true\n}\n');
+        expect(readFileSync(path, "utf8")).toBe("{\n\t\"foo\": true\n}\n");
     });
 });

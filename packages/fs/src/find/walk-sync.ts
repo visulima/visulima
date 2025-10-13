@@ -24,11 +24,10 @@ const _createWalkEntry = (path: string): WalkEntry => {
     const info: Stats = statSync(normalizePath);
 
     return {
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         isDirectory: info.isDirectory,
-        // eslint-disable-next-line @typescript-eslint/unbound-method
+
         isFile: info.isFile,
-        // eslint-disable-next-line @typescript-eslint/unbound-method
+
         isSymbolicLink: info.isSymbolicLink,
         name: basename(normalizePath),
         path: normalizePath,
@@ -38,7 +37,6 @@ const _createWalkEntry = (path: string): WalkEntry => {
 /**
  * Synchronously walks the file tree rooted at `directory`, yielding each file or directory that matches the criteria specified in `options`.
  * This is the synchronous version of the {@link walk} function.
- *
  * @param directory The root directory to start walking from.
  * @param options Optional configuration to control the walking process. See {@link WalkOptions}.
  * @returns An iterable iterator yielding {@link WalkEntry} objects for each matching file or directory.
@@ -95,7 +93,7 @@ export default function* walkSync(
     }
 
     try {
-        // eslint-disable-next-line no-restricted-syntax,no-loops/no-loops,security/detect-non-literal-fs-filename
+        // eslint-disable-next-line no-loops/no-loops,security/detect-non-literal-fs-filename
         for (const entry of readdirSync(directory, {
             withFileTypes: true,
         })) {
@@ -107,17 +105,15 @@ export default function* walkSync(
                     path = realpathSync(path);
                 } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                     yield {
-                        // eslint-disable-next-line @typescript-eslint/unbound-method
                         isDirectory: entry.isDirectory,
-                        // eslint-disable-next-line @typescript-eslint/unbound-method
+
                         isFile: entry.isFile,
-                        // eslint-disable-next-line @typescript-eslint/unbound-method
+
                         isSymbolicLink: entry.isSymbolicLink,
                         name: entry.name,
                         path: normalize(path),
                     };
                 } else {
-                    // eslint-disable-next-line no-continue
                     continue;
                 }
             }
@@ -135,11 +131,10 @@ export default function* walkSync(
                 } as WalkOptions);
             } else if (entry.isFile() && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                 yield {
-                    // eslint-disable-next-line @typescript-eslint/unbound-method
                     isDirectory: entry.isDirectory,
-                    // eslint-disable-next-line @typescript-eslint/unbound-method
+
                     isFile: entry.isFile,
-                    // eslint-disable-next-line @typescript-eslint/unbound-method
+
                     isSymbolicLink: entry.isSymbolicLink,
                     name: entry.name,
                     path: normalize(path),

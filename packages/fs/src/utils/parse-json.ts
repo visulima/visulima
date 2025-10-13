@@ -2,7 +2,7 @@
  * A modified version of `parse-json` from `https://github.com/sindresorhus/parse-json/blob/main/index.js`
  *
  * MIT License
- * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
  */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { codeFrame, indexToLineColumn } from "@visulima/error";
@@ -59,11 +59,11 @@ const addCodePointToUnexpectedToken = (message: string): string =>
 
 function parseJson<T = JsonValue>(string: string, filename?: string, options?: CodeFrameOptions): T;
 function parseJson<T = JsonValue>(string: string, reviver: JsonReviver, fileName?: string, options?: CodeFrameOptions): T;
+
 /**
  * Parses a JSON string, constructing the JavaScript value or object described by the string.
  * This is a modified version of `parse-json` from `https://github.com/sindresorhus/parse-json/blob/main/index.js`.
  * It provides more detailed error messages including code frames.
- *
  * @template T The type of the parsed JSON value.
  * @param string The JSON string to parse.
  * @param [reviver] An optional reviver function that can transform the results, or a filename string if no reviver is used.
@@ -112,7 +112,7 @@ function parseJson<T = JsonValue>(string: string, reviver: JsonReviver, fileName
  * }
  * ```
  */
-// eslint-disable-next-line func-style
+
 function parseJson<T = JsonValue>(string: string, reviver?: JsonReviver | string, fileName?: CodeFrameOptions | string, options?: CodeFrameOptions): T {
     if (typeof reviver === "string") {
         if (typeof fileName === "object") {
@@ -132,7 +132,6 @@ function parseJson<T = JsonValue>(string: string, reviver?: JsonReviver | string
         return JSON.parse(string, reviver as JsonReviver);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         message = error.message;
     }
 

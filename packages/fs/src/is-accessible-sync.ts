@@ -7,14 +7,14 @@ import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directo
 
 /** Returns a boolean indicating if the path is accessible or not. */
 function isAccessibleSync(path: URL | string, mode?: number): boolean;
+
 /**
  * Synchronously tests a user's permissions for the file or directory specified by `path`.
  * If the accessibility check is successful, `true` is returned. Otherwise, `false` is returned.
- *
  * @param path A path to a file or directory. If a URL is provided, it must use the `file:` protocol.
  * @param [mode=F_OK] The accessibility checks to perform. Default: `F_OK` (tests for existence of the file).
- *                    Other possible values are `R_OK` (tests for read permission), `W_OK` (tests for write permission),
- *                    and `X_OK` (tests for execute permissions). Multiple modes can be combined using bitwise OR.
+ * Other possible values are `R_OK` (tests for read permission), `W_OK` (tests for write permission),
+ * and `X_OK` (tests for execute permissions). Multiple modes can be combined using bitwise OR.
  * @returns `true` if the accessibility check is successful, `false` otherwise.
  * @example
  * ```javascript
@@ -50,7 +50,7 @@ function isAccessibleSync(path: URL | string, mode?: number): boolean;
  * unlinkSync(filePath);
  * ```
  */
-// eslint-disable-next-line func-style
+
 function isAccessibleSync(path: URL | string, mode: number = F_OK): boolean {
     assertValidFileOrDirectoryPath(path);
 

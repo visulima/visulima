@@ -1,3 +1,5 @@
+/* eslint-disable no-secrets/no-secrets, jsdoc/check-indentation */
+
 /**
  * Constant to check if the path is visible to the calling process.
  * Corresponds to `node:fs.constants.F_OK`.
@@ -28,14 +30,12 @@ export const X_OK = 1; // constants?.X_OK
  */
 export const FIND_UP_STOP = Symbol("findUpStop");
 
-// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Regular expression for stripping comments from JSON.
  * Matches:
  * 1. Quoted strings: "example \"escaped\" string"
  * 2. Single-line comments: // comment
  * 3. Multi-line comments: /* comment *\/
- *
  * @example
  * const json = `{
  *   // comment
@@ -46,4 +46,4 @@ export const FIND_UP_STOP = Symbol("findUpStop");
  * );
  * // Result: { "key": "value" }
  */
-export const INTERNAL_STRIP_JSON_REGEX = /"(?:[^"\\]|\\.)*"|\/\/[^\r\n]*|\/\*(?:[^*]|\*[^/])*\*\//g;
+export const INTERNAL_STRIP_JSON_REGEX = /"(?:[^"\\]|\\.)*"|\/\/[^\r\n]*|\/\*[\s\S]*?\*\//g;

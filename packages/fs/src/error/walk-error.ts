@@ -3,7 +3,8 @@
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 
-/** Error thrown in {@linkcode walk} or {@linkcode walkSync} during iteration.
+/**
+ * Error thrown in {@linkcode walk} or {@linkcode walkSync} during iteration.
  * @example
  * ```javascript
  * import { WalkError } from "@visulima/fs/error";
@@ -50,7 +51,6 @@ class WalkError extends Error {
      * @param root The root directory path where the walk operation started or encountered the error.
      */
     public constructor(cause: unknown, root: string) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         super(`${cause instanceof Error ? cause.message : cause} for path "${root}"`);
 
         this.cause = cause;

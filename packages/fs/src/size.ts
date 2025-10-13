@@ -12,7 +12,6 @@ import { toPath } from "@visulima/path/utils";
  * Checks if a file exists at the given path.
  * Note: This function checks for actual file existence, not just path syntax validity.
  * It correctly handles both absolute and relative paths.
- *
  * @param input The path to the file (string).
  * @returns True if the file exists, false otherwise.
  * @example
@@ -44,14 +43,13 @@ const fileExists = (input: string): boolean => {
 /**
  * Asynchronously gets the size of a readable stream by consuming it and summing the length of its chunks.
  * This function is memory-efficient as it does not store the entire stream content in memory.
- *
  * @param stream The readable stream to measure.
  * @returns A promise that resolves with the total size of the stream in bytes.
  */
 const getStreamSizeEfficient = async (stream: Readable): Promise<number> => {
     let totalSize = 0;
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line no-loops/no-loops
     for await (const chunk of stream) {
         totalSize += Buffer.from(chunk).length;
     }
@@ -63,7 +61,6 @@ const getStreamSizeEfficient = async (stream: Readable): Promise<number> => {
  * Asynchronously calculates the compressed size of a readable stream using a provided compression algorithm.
  * The function pipes the input stream through a compressor and sums the size of the compressed chunks.
  * This approach is memory-efficient, avoiding loading the entire compressed stream into memory.
- *
  * @param stream The readable stream to compress and measure.
  * @param createCompressor A factory function that returns a Node.js `ReadWriteStream` (e.g., `zlib.createGzip()`).
  * @returns A promise that resolves with the total compressed size of the stream in bytes.
@@ -75,7 +72,6 @@ const getCompressedStreamSizeEfficient = async (stream: Readable, createCompress
     // eslint-disable-next-line @typescript-eslint/no-shadow,compat/compat
     return await new Promise((resolve, reject) => {
         compressor.on("data", (chunk) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/restrict-plus-operands
             totalSize += chunk.length;
         });
         compressor.on("end", () => resolve(totalSize));
@@ -91,7 +87,6 @@ const getCompressedStreamSizeEfficient = async (stream: Readable, createCompress
  * If the input is a file path or URL, it reads the file as a stream.
  * If the input is a string, it converts it to a Buffer.
  * It then applies the appropriate processor function (either for Buffers or streams).
- *
  * @param input The input data to process. Can be a Buffer, Readable stream, URL (representing a file path), or a string (file path or content).
  * @param processor A function to process Buffer data, returning its size.
  * @param streamProcessor An async function to process Readable stream data, returning its size.
@@ -109,6 +104,7 @@ const processInputEfficiently = async (
             // For files, we create a readable stream to process them in chunks
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             const fileStream = Readable.from(await readFile(path));
+
             return await streamProcessor(fileStream);
         }
 
@@ -128,7 +124,6 @@ const processInputEfficiently = async (
  * Asynchronously calculates the gzipped size of the given input.
  * The input can be a Buffer, a Readable stream, a URL object pointing to a file, or a string (file path or content).
  * Uses memory-efficient streaming for files and streams to avoid loading entire contents into memory.
- *
  * @param input The input data to gzip and measure.
  * @param [options] Optional Zlib options for gzip compression.
  * @returns A promise that resolves with the gzipped size in bytes.
@@ -179,7 +174,6 @@ export const gzipSize = async (input: Buffer | Readable | URL | string, options?
  * Asynchronously calculates the Brotli compressed size of the given input.
  * The input can be a Buffer, a Readable stream, a URL object pointing to a file, or a string (file path or content).
  * Uses memory-efficient streaming for files and streams to avoid loading entire contents into memory.
- *
  * @param input The input data to compress with Brotli and measure.
  * @param [options] Optional Zlib options for Brotli compression.
  * @returns A promise that resolves with the Brotli compressed size in bytes.
@@ -230,7 +224,6 @@ export const brotliSize = async (input: Buffer | Readable | URL | string, option
  * Asynchronously calculates the raw (uncompressed) size of the given input.
  * The input can be a Buffer, a Readable stream, a URL object pointing to a file, or a string (file path or content).
  * Uses memory-efficient streaming for files and streams to avoid loading entire contents into memory.
- *
  * @param input The input data to measure.
  * @returns A promise that resolves with the raw size in bytes.
  * @example
@@ -280,7 +273,6 @@ export const rawSize = async (input: Buffer | Readable | URL | string): Promise<
  * Synchronously calculates the gzipped size of the given input.
  * The input can be a Buffer, a URL object pointing to a file, or a string (file path or content).
  * Note: For Readable streams or very large files, consider using the asynchronous `gzipSize` function for better performance and to avoid blocking.
- *
  * @param input The input data to gzip and measure.
  * @param [options] Optional Zlib options for gzip compression.
  * @returns The gzipped size in bytes.
@@ -334,7 +326,6 @@ export const gzipSizeSync = (input: Buffer | URL | string, options?: ZlibOptions
  * Synchronously calculates the Brotli compressed size of the given input.
  * The input can be a Buffer, a URL object pointing to a file, or a string (file path or content).
  * Note: For Readable streams or very large files, consider using the asynchronous `brotliSize` function for better performance and to avoid blocking.
- *
  * @param input The input data to compress with Brotli and measure.
  * @param [options] Optional Zlib options for Brotli compression.
  * @returns The Brotli compressed size in bytes.
@@ -389,7 +380,6 @@ export const brotliSizeSync = (input: Buffer | URL | string, options?: BrotliOpt
  * The input can be a Buffer, a URL object pointing to a file, or a string (file path or content).
  * For file paths, it uses `statSync` to get the file size.
  * Note: For Readable streams or very large files, consider using the asynchronous `rawSize` function for better performance and to avoid blocking.
- *
  * @param input The input data to measure.
  * @returns The raw size in bytes.
  * @example

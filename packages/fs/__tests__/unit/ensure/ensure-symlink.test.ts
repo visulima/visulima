@@ -42,7 +42,7 @@ describe.each([
     });
 
     afterEach(async () => {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for await (const directory of [
             "./sym-foo.txt",
             "./sym-link-foo.txt",
@@ -84,7 +84,7 @@ describe.each([
         expect.assertions(4);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(sourcePath)).toBeTruthy();
+        expect(existsSync(sourcePath)).toBe(true);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "ensureSymlink") {
@@ -99,7 +99,7 @@ describe.each([
         const destinationBasename = basename(destinationPath);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(lstatSync(destinationPath).isSymbolicLink()).toBeTruthy();
+        expect(lstatSync(destinationPath).isSymbolicLink()).toBe(true);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(sourceContent).toStrictEqual(readFileSync(destinationPath, "utf8"));
@@ -122,6 +122,7 @@ describe.each([
         [resolve(join(distribution, "../dir-foo/foo.txt")), resolve(join(distribution, "./sym-symlink.txt"))],
     ])("should return error when creating symlink file using src %s and dst %s", async (sourcePath, destinationPath) => {
         expect.assertions(2);
+
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const destinationDirectoryExistsBefore = existsSync(dirname(destinationPath));
 
@@ -167,7 +168,7 @@ describe.each([
         const destinationBasename = basename(destinationPath);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(lstatSync(destinationPath).isSymbolicLink()).toBeTruthy();
+        expect(lstatSync(destinationPath).isSymbolicLink()).toBe(true);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(sourceContents).toStrictEqual(readdirSync(destinationPath));
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -225,6 +226,7 @@ describe.each([
         const targetDirectory = join(distribution, "target-directory");
         const targetFileName = "target-file";
         const targetDirectoryFile = join(targetDirectory, targetFileName);
+
         await ensureFile(targetDirectoryFile);
         // a directory to put the symbolic link in (the `source`)
         const linkDirectory = join(distribution, "link-directory");
@@ -233,7 +235,7 @@ describe.each([
         const relativeSymbolicLinkReference = relative(dirname(symbolicLinkPath), targetDirectory);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(targetDirectoryFile)).toBeTruthy();
+        expect(existsSync(targetDirectoryFile)).toBe(true);
 
         // first time, setting up with a relative reference
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -244,9 +246,9 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(symbolicLinkPath)).toBeTruthy();
+        expect(existsSync(symbolicLinkPath)).toBe(true);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(targetFileViaSymbolicLink)).toBeTruthy();
+        expect(existsSync(targetFileViaSymbolicLink)).toBe(true);
 
         // second time, setting up with an absolute reference
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -257,9 +259,9 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(symbolicLinkPath)).toBeTruthy();
+        expect(existsSync(symbolicLinkPath)).toBe(true);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(targetFileViaSymbolicLink)).toBeTruthy();
+        expect(existsSync(targetFileViaSymbolicLink)).toBe(true);
     });
 
     it("can ensure a symbolic link a second time with a relative path", async () => {
@@ -269,6 +271,7 @@ describe.each([
         const targetDirectory = join(distribution, "target-directory");
         const targetFileName = "target-file";
         const targetDirectoryFile = join(targetDirectory, targetFileName);
+
         await ensureFile(targetDirectoryFile);
         // a directory to put the symbolic link in (the `source`)
         const linkDirectory = join(distribution, "link-directory");
@@ -277,7 +280,7 @@ describe.each([
         const relativeSymbolicLinkReference = relative(dirname(symbolicLinkPath), targetDirectory);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(targetDirectoryFile)).toBeTruthy();
+        expect(existsSync(targetDirectoryFile)).toBe(true);
 
         // first time, setting up with a relative reference
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -288,9 +291,9 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(symbolicLinkPath)).toBeTruthy();
+        expect(existsSync(symbolicLinkPath)).toBe(true);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(targetFileViaSymbolicLink)).toBeTruthy();
+        expect(existsSync(targetFileViaSymbolicLink)).toBe(true);
 
         // second time, setting up with an absolute reference
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -301,8 +304,8 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(symbolicLinkPath)).toBeTruthy();
+        expect(existsSync(symbolicLinkPath)).toBe(true);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(targetFileViaSymbolicLink)).toBeTruthy();
+        expect(existsSync(targetFileViaSymbolicLink)).toBe(true);
     });
 });

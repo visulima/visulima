@@ -28,7 +28,7 @@ describe("walkError", () => {
         expect(walkError.message).toBe(`${cause.message} for path "${root}"`);
     });
 
-    it('should have the name "WalkError"', () => {
+    it("should have the name \"WalkError\"", () => {
         expect.assertions(1);
 
         const walkError = new WalkError(null, "");

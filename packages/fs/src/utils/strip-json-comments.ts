@@ -4,11 +4,10 @@ import { INTERNAL_STRIP_JSON_REGEX } from "../constants";
 
 /**
  * Strips comments from a JSON string.
- * Handles both single-line (//) and multi-line (/* ... *&#47;) comments.
- *
+ * Handles both single-line (//) and multi-line (/* ... *&amp;#47;) comments.
  * @param jsonString The JSON string possibly containing comments.
  * @param [options] Optional configuration for stripping comments.
- * @param [options.whitespace=true] If `true` (default), comments are replaced with whitespace to preserve line numbers and character positions. If `false`, comments are removed entirely.
+ * @param [options.whitespace] If `true` (default), comments are replaced with whitespace to preserve line numbers and character positions. If `false`, comments are removed entirely.
  * @returns The JSON string with comments stripped.
  * @example
  * ```javascript
@@ -53,7 +52,7 @@ const stripJsonComments = (jsonString: string, { whitespace = true } = {}): stri
     // in the replacer function.
     jsonString.replace(INTERNAL_STRIP_JSON_REGEX, (match) => {
         // Skip strings & broken block comments:
-        if (match.startsWith('"') || (match[1] === "*" && !match.endsWith("*/"))) {
+        if (match.startsWith("\"") || (match[1] === "*" && !match.endsWith("*/"))) {
             return match;
         }
 

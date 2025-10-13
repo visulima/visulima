@@ -1,7 +1,6 @@
 /**
  * Asserts that the provided path is a valid file or directory path.
  * A valid path must be a non-empty string or a URL instance.
- *
  * @param fileOrDirectoryPath The path to validate.
  * @throws {TypeError} If the path is not a non-empty string or a URL.
  * @example

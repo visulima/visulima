@@ -40,7 +40,7 @@
 class NotEmptyError extends Error {
     /**
      * Creates a new instance.
-     * @param {string} message The error message.
+     * @param message The error message.
      */
     public constructor(message: string) {
         super(`ENOTEMPTY: Directory not empty, ${message}`);

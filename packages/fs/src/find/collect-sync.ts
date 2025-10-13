@@ -4,7 +4,6 @@ import walkSync from "./walk-sync";
 /**
  * Synchronously collects all file paths within a directory that match the specified criteria.
  * By default, it searches for JavaScript and TypeScript file extensions.
- *
  * @param directory The root directory to start collecting files from.
  * @param options Optional configuration to control the collection process. See {@link WalkOptions}.
  * @returns An array of absolute file paths.
@@ -38,7 +37,7 @@ const collectSync = (directory: string, options: WalkOptions = {}): string[] => 
 
     const entries: string[] = [];
 
-    // eslint-disable-next-line no-restricted-syntax,no-loops/no-loops
+    // eslint-disable-next-line no-loops/no-loops
     for (const entry of walkSync(directory, options)) {
         entries.push(entry.path);
     }

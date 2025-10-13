@@ -18,7 +18,7 @@ describe.each([
     it.each([
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         ["string", join(distribution, "file.txt"), async (path: URL | string) => await writeFile(path, "Hello, World!")],
-        // eslint-disable-next-line security/detect-non-literal-fs-filename,compat/compat,@typescript-eslint/restrict-template-expressions
+        // eslint-disable-next-line security/detect-non-literal-fs-filename,compat/compat
         ["URL", new URL(`file:///${join(distribution, "file.txt")}`), async (path: URL | string) => await writeFile(path, "Hello, World!")],
         [
             "Symbolic link",
@@ -43,6 +43,6 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(path)).toBeFalsy();
+        expect(existsSync(path)).toBe(false);
     });
 });

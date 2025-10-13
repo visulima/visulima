@@ -22,7 +22,7 @@ const internalMoveFile = async (
         validateSameDirectory(sourcePath, destinationPath);
     }
 
-    if (!overwrite && (await isAccessible(destinationPath))) {
+    if (!overwrite && await isAccessible(destinationPath)) {
         throw new Error(`The destination file exists: ${destinationPath}`);
     }
 
@@ -37,7 +37,6 @@ const internalMoveFile = async (
         await rename(sourcePath, destinationPath);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (error.code === "EXDEV") {
             await copyFile(sourcePath, destinationPath);
             // eslint-disable-next-line security/detect-non-literal-fs-filename

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import DirectoryError from "../../../src/error/directory-error";
 
@@ -22,7 +22,7 @@ describe("directoryError", () => {
         expect(directoryError.message).toContain(errorMessage);
     });
 
-    it('should have the error code set to "EISDIR"', () => {
+    it("should have the error code set to \"EISDIR\"", () => {
         expect.assertions(1);
 
         const errorMessage = "Invalid directory";
@@ -50,12 +50,12 @@ describe("directoryError", () => {
     });
 
     it("should have the error message as a string", () => {
-        expect.assertions(1);
+        expect.assertions(0);
 
         const errorMessage = "Invalid directory";
         const directoryError = new DirectoryError(errorMessage);
 
-        expect(typeof directoryError.message).toBe("string");
+        expectTypeOf(directoryError.message).toBeString();
     });
 
     it("should be read-only when accessing the code property", () => {

@@ -4,7 +4,6 @@ import walk from "./walk";
 /**
  * Asynchronously collects all file paths within a directory that match the specified criteria.
  * By default, it searches for JavaScript and TypeScript file extensions.
- *
  * @param directory The root directory to start collecting files from.
  * @param options Optional configuration to control the collection process. See {@link WalkOptions}.
  * @returns A promise that resolves to an array of absolute file paths.
@@ -42,7 +41,7 @@ const collect = async (directory: string, options: WalkOptions = {}): Promise<st
 
     const entries: string[] = [];
 
-    // eslint-disable-next-line no-restricted-syntax,no-loops/no-loops
+    // eslint-disable-next-line no-loops/no-loops
     for await (const entry of walk(directory, options)) {
         entries.push(entry.path);
     }
