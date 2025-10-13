@@ -16,9 +16,9 @@ export const bufferToUint8Array = (buf: Buffer): Uint8Array => new Uint8Array(bu
  * @returns True if x is a Uint8Array or Buffer, false otherwise.
  */
 export const isUint8Array
-  = typeof Buffer === "function"
-      ? (x: unknown): x is Uint8Array => x instanceof Uint8Array || Buffer.isBuffer(x)
-      : (x: unknown): x is Uint8Array => x instanceof Uint8Array;
+    = typeof Buffer === "function"
+        ? (x: unknown): x is Uint8Array => x instanceof Uint8Array || Buffer.isBuffer(x)
+        : (x: unknown): x is Uint8Array => x instanceof Uint8Array;
 
 /**
  * Converts an ASCII string, array of strings, or template literal to a Uint8Array.
@@ -34,9 +34,10 @@ export const asciiToUint8Array = (txt: TemplateStringsArray | string | [string])
     const inputLength = input.length;
     const result = new Uint8Array(inputLength); // Renamed 'res' to 'result'
 
-    for (let index = 0; index < inputLength; index += 1) { // Changed index++ to index += 1
+    for (let index = 0; index < inputLength; index += 1) {
+        // Changed index++ to index += 1
         // eslint-disable-next-line unicorn/prefer-code-point, no-bitwise
-        result[index] = input.charCodeAt(index) & 0xFF; // Ensure ASCII range
+        result[index] = input.charCodeAt(index) & 0xff; // Ensure ASCII range
     }
 
     return result;
@@ -70,7 +71,8 @@ export const toUint8Array = (data: unknown): Uint8Array => {
         return bufferToUint8Array(data); // Prioritize Buffer and ensure plain Uint8Array
     }
 
-    if (data instanceof Uint8Array) { // This will now handle non-Buffer Uint8Arrays
+    if (data instanceof Uint8Array) {
+        // This will now handle non-Buffer Uint8Arrays
         return data;
     }
 

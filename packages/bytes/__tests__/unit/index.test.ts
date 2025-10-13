@@ -2,13 +2,7 @@ import { Buffer } from "node:buffer";
 
 import { describe, expect, it } from "vitest";
 
-import {
-    asciiToUint8Array,
-    bufferToUint8Array,
-    isUint8Array,
-    toUint8Array,
-    utf8ToUint8Array,
-} from "../../src/index";
+import { asciiToUint8Array, bufferToUint8Array, isUint8Array, toUint8Array, utf8ToUint8Array } from "../../src/index";
 
 describe("@visulima/bytes", () => {
     describe(bufferToUint8Array, () => {
@@ -113,7 +107,7 @@ describe("@visulima/bytes", () => {
             const charHao = "好".codePointAt(0) as number;
             const charEuro = "€".codePointAt(0) as number;
             // eslint-disable-next-line no-bitwise
-            const expectedRobust = new Uint8Array([charNi & 0xFF, charHao & 0xFF, charEuro & 0xFF]);
+            const expectedRobust = new Uint8Array([charNi & 0xff, charHao & 0xff, charEuro & 0xff]);
 
             expect(asciiToUint8Array("你好€")).toStrictEqual(expectedRobust);
         });
@@ -123,20 +117,7 @@ describe("@visulima/bytes", () => {
 
             const world = "World";
 
-            expect(asciiToUint8Array(`Hello ${world}!`)).toStrictEqual(new Uint8Array([
-                72,
-                101,
-                108,
-                108,
-                111,
-                32,
-                87,
-                111,
-                114,
-                108,
-                100,
-                33,
-            ]));
+            expect(asciiToUint8Array(`Hello ${world}!`)).toStrictEqual(new Uint8Array([72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33]));
         });
     });
 
@@ -159,20 +140,7 @@ describe("@visulima/bytes", () => {
 
             const item = "你好";
 
-            expect(utf8ToUint8Array(`Item: ${item}`)).toStrictEqual(new Uint8Array([
-                73,
-                116,
-                101,
-                109,
-                58,
-                32,
-                228,
-                189,
-                160,
-                229,
-                165,
-                189,
-            ]));
+            expect(utf8ToUint8Array(`Item: ${item}`)).toStrictEqual(new Uint8Array([73, 116, 101, 109, 58, 32, 228, 189, 160, 229, 165, 189]));
         });
     });
 

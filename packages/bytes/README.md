@@ -62,6 +62,7 @@ assert.deepStrictEqual(concat([a, b]), new Uint8Array([0, 1, 2, 3, 4, 5]));
 Copies bytes from the source array to the destination array.
 
 **Basic usage:**
+
 ```typescript
 import { copy } from "@visulima/bytes";
 import assert from "node:assert";
@@ -74,6 +75,7 @@ assert.deepStrictEqual(dst, new Uint8Array([9, 8, 7, 3, 4, 5]));
 ```
 
 **Copy with offset:**
+
 ```typescript
 import { copy } from "@visulima/bytes";
 import assert from "node:assert";
@@ -120,6 +122,7 @@ assert.deepStrictEqual(equals(a, c), false);
 Determines whether a byte slice contains a specific sequence of bytes.
 
 **Basic usage:**
+
 ```typescript
 import { includesNeedle } from "@visulima/bytes";
 import assert from "node:assert";
@@ -131,6 +134,7 @@ assert.deepStrictEqual(includesNeedle(source, needle), true);
 ```
 
 **With start index:**
+
 ```typescript
 import { includesNeedle } from "@visulima/bytes";
 import assert from "node:assert";
@@ -147,6 +151,7 @@ assert.deepStrictEqual(includesNeedle(source, needle, 6), false);
 Finds the first index of a specific sequence of bytes within a byte slice.
 
 **Basic usage:**
+
 ```typescript
 import { indexOfNeedle } from "@visulima/bytes";
 import assert from "node:assert";
@@ -160,6 +165,7 @@ assert.deepStrictEqual(indexOfNeedle(source, notNeedle), -1);
 ```
 
 **With start index:**
+
 ```typescript
 import { indexOfNeedle } from "@visulima/bytes";
 import assert from "node:assert";
@@ -176,6 +182,7 @@ assert.deepStrictEqual(indexOfNeedle(source, needle, 6), -1);
 Finds the last index of a specific sequence of bytes within a byte slice.
 
 **Basic usage:**
+
 ```typescript
 import { lastIndexOfNeedle } from "@visulima/bytes";
 import assert from "node:assert";
@@ -189,6 +196,7 @@ assert.deepStrictEqual(lastIndexOfNeedle(source, notNeedle), -1);
 ```
 
 **With start index:**
+
 ```typescript
 import { lastIndexOfNeedle } from "@visulima/bytes";
 import assert from "node:assert";
@@ -205,6 +213,7 @@ assert.deepStrictEqual(lastIndexOfNeedle(source, needle, 6), 5);
 Repeats a byte slice a specified number of times.
 
 **Basic usage:**
+
 ```typescript
 import { repeat } from "@visulima/bytes";
 import assert from "node:assert";
@@ -215,6 +224,7 @@ assert.deepStrictEqual(repeat(source, 3), new Uint8Array([0, 1, 2, 0, 1, 2, 0, 1
 ```
 
 **Zero count:**
+
 ```typescript
 import { repeat } from "@visulima/bytes";
 import assert from "node:assert";
@@ -242,20 +252,20 @@ assert.deepStrictEqual(startsWith(source, prefix), true);
 
 This package provides the following utility functions for working with `Uint8Array`s, similar to the Deno standard library module [`@std/bytes`](https://github.com/denoland/std/tree/main/bytes):
 
-*   **`concat`**: Concatenate an array of byte slices into a single slice.
-*   **`copy`**: Copy bytes from the source array to the destination array and returns the number of bytes copied.
-*   **`endsWith`**: Returns true if the suffix array appears at the end of the source array, false otherwise.
-*   **`equals`**: Check whether byte slices are equal to each other.
-*   **`includesNeedle`**: Determines whether the source array contains the needle array.
-*   **`indexOfNeedle`**: Returns the index of the first occurrence of the needle array in the source array, or -1 if it is not present.
-*   **`lastIndexOfNeedle`**: Returns the index of the last occurrence of the needle array in the source array, or -1 if it is not present.
-*   **`repeat`**: Returns a new byte slice composed of count repetitions of the source array.
-*   **`startsWith`**: Returns true if the prefix array appears at the start of the source array, false otherwise.
-*   **`bufferToUint8Array(buf: Buffer): Uint8Array`**: Converts a Node.js `Buffer` to a `Uint8Array`.
-*   **`isUint8Array(x: unknown): x is Uint8Array`**: Checks if a value is a `Uint8Array` or (in Node.js) a `Buffer`.
-*   **`asciiToUint8Array(txt: TemplateStringsArray | string | [string]): Uint8Array`**: Converts an ASCII string to a `Uint8Array`.
-*   **`utf8ToUint8Array(txt: TemplateStringsArray | string | [string]): Uint8Array`**: Converts a UTF-8 string to a `Uint8Array` (requires Node.js `Buffer` support).
-*   **`toUint8Array(data: unknown): Uint8Array`**: Attempts to convert various data types (like `ArrayBuffer`, `Array` of numbers, `Buffer`, strings via `Buffer.from`) to a `Uint8Array`.
+- **`concat`**: Concatenate an array of byte slices into a single slice.
+- **`copy`**: Copy bytes from the source array to the destination array and returns the number of bytes copied.
+- **`endsWith`**: Returns true if the suffix array appears at the end of the source array, false otherwise.
+- **`equals`**: Check whether byte slices are equal to each other.
+- **`includesNeedle`**: Determines whether the source array contains the needle array.
+- **`indexOfNeedle`**: Returns the index of the first occurrence of the needle array in the source array, or -1 if it is not present.
+- **`lastIndexOfNeedle`**: Returns the index of the last occurrence of the needle array in the source array, or -1 if it is not present.
+- **`repeat`**: Returns a new byte slice composed of count repetitions of the source array.
+- **`startsWith`**: Returns true if the prefix array appears at the start of the source array, false otherwise.
+- **`bufferToUint8Array(buf: Buffer): Uint8Array`**: Converts a Node.js `Buffer` to a `Uint8Array`.
+- **`isUint8Array(x: unknown): x is Uint8Array`**: Checks if a value is a `Uint8Array` or (in Node.js) a `Buffer`.
+- **`asciiToUint8Array(txt: TemplateStringsArray | string | [string]): Uint8Array`**: Converts an ASCII string to a `Uint8Array`.
+- **`utf8ToUint8Array(txt: TemplateStringsArray | string | [string]): Uint8Array`**: Converts a UTF-8 string to a `Uint8Array` (requires Node.js `Buffer` support).
+- **`toUint8Array(data: unknown): Uint8Array`**: Attempts to convert various data types (like `ArrayBuffer`, `Array` of numbers, `Buffer`, strings via `Buffer.from`) to a `Uint8Array`.
 
 ## Related
 
@@ -309,7 +319,7 @@ assert.deepStrictEqual(templateAscii, new Uint8Array([87, 111, 114, 108, 100]));
 
 Converts a UTF-8 string to a `Uint8Array`.
 
-```typescript
+````typescript
 import { utf8ToUint8Array } from "@visulima/bytes";
 import assert from "node:assert";
 
@@ -351,7 +361,7 @@ try {
 } catch (e: any) {
   assert.strictEqual(e.message, "UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array");
 }
-```
+````
 
 ## Supported Node.js Versions
 
@@ -366,9 +376,9 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   The Deno Standard Library authors and contributors for their work on `@std/bytes`.
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- The Deno Standard Library authors and contributors for their work on `@std/bytes`.
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 
