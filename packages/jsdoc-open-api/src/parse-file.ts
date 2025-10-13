@@ -6,7 +6,7 @@ import yaml from "yaml";
 import type { OpenApiObject } from "./exported";
 import yamlLoc from "./util/yaml-loc";
 
-const ALLOWED_KEYS = new Set(["openapi", "info", "servers", "security", "tags", "externalDocs", "components", "paths"]);
+const ALLOWED_KEYS = new Set(["components", "externalDocs", "info", "openapi", "paths", "security", "servers", "tags"]);
 
 class ParseError extends Error {
     public filePath?: string;

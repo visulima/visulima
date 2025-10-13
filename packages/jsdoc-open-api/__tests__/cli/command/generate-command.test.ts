@@ -6,9 +6,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import generateCommand from "../../../src/cli/command/generate-command";
 
-vi.mock("node:fs/promises", async () => {
+vi.mock(import("node:fs/promises"), async () => {
     return {
-        ...(await import("node:fs/promises")),
+        ...await import("node:fs/promises"),
         writeFile: vi.fn(),
     };
 });
@@ -35,6 +35,6 @@ describe("generate command", () => {
         await generateCommand(".openapirc.js", [fixturesDirectory], { config: join(fixturesDirectory, ".openapirc.js") });
 
         expect(writeFileSpy).toMatchSnapshot();
-        expect(consoleLogMock).toHaveBeenCalledWith('\nSwagger specification is ready, check the "swagger.json" file.');
+        expect(consoleLogMock).toHaveBeenCalledExactlyOnceWith("\nSwagger specification is ready, check the \"swagger.json\" file.");
     });
 });

@@ -18,7 +18,7 @@ const fixSecurityObject = (thing: any) => {
     }
 };
 
-const primitiveTypes = new Set(["integer", "number", "string", "boolean", "object", "array"]);
+const primitiveTypes = new Set(["array", "boolean", "integer", "number", "object", "string"]);
 
 const formatMap: Record<string, string> = {
     binary: "string",
@@ -45,16 +45,16 @@ const parseDescription = (tag: Spec): { description: string | undefined; name: s
 
     if (tag.default) {
         switch (parsedType) {
-            case "integer":
-            case "int32":
-            case "int64": {
-                defaultValue = Number.parseInt(tag.default, 10);
+            case "double":
+            case "float":
+            case "number": {
+                defaultValue = Number.parseFloat(tag.default);
                 break;
             }
-            case "number":
-            case "double":
-            case "float": {
-                defaultValue = Number.parseFloat(tag.default);
+            case "int32":
+            case "int64":
+            case "integer": {
+                defaultValue = Number.parseInt(tag.default, 10);
                 break;
             }
             default: {
@@ -80,14 +80,14 @@ const parseDescription = (tag: Spec): { description: string | undefined; name: s
 
     let schema: object | undefined = isArray
         ? {
-              items: {
-                  ...rootType,
-              },
-              type: "array",
-          }
+            items: {
+                ...rootType,
+            },
+            type: "array",
+        }
         : {
-              ...rootType,
-          };
+            ...rootType,
+        };
 
     if (parsedType === "") {
         schema = undefined;
@@ -128,67 +128,26 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
         }
 
         switch (tag.tag) {
-            case "operationId":
-            case "summary":
-            case "description": {
-                return { [tag.tag]: nameAndDescription };
-            }
-
-            case "deprecated": {
-                return { deprecated: true };
-            }
-
-            case "externalDocs": {
+            case "bodyComponent": {
                 return {
-                    externalDocs: {
-                        description: parsedResponse.description,
-                        url: parsedResponse.name,
+                    requestBody: {
+                        $ref: `#/components/requestBodies/${parsedResponse.rawType}`,
                     },
                 };
             }
-
-            case "server": {
-                return {
-                    servers: [
-                        {
-                            description: parsedResponse.description,
-                            url: parsedResponse.name,
-                        },
-                    ],
-                };
-            }
-
-            case "tag": {
-                return { tags: [nameAndDescription] };
-            }
-
-            case "cookieParam":
-            case "headerParam":
-            case "queryParam":
-            case "pathParam": {
-                return {
-                    parameters: [
-                        {
-                            description: parsedResponse.description,
-                            in: tag.tag.replace(/Param$/u, ""),
-                            name: parsedResponse.name,
-                            required: parsedResponse.required,
-                            schema: parsedResponse.schema,
-                        },
-                    ],
-                };
-            }
-
             case "bodyContent": {
                 return {
                     requestBody: {
                         content: {
-                            [parsedResponse.name.replace("*\\/*", "*/*")]: {
+                            [parsedResponse.name.replace(String.raw`*\/*`, "*/*")]: {
                                 schema: parsedResponse.schema,
                             },
                         },
                     },
                 };
+            }
+            case "bodyDescription": {
+                return { requestBody: { description: nameAndDescription } };
             }
 
             case "bodyExample": {
@@ -209,12 +168,62 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
                 };
             }
 
-            case "bodyDescription": {
-                return { requestBody: { description: nameAndDescription } };
-            }
-
             case "bodyRequired": {
                 return { requestBody: { required: true } };
+            }
+
+            case "callback": {
+                return {
+                    callbacks: {
+                        [parsedResponse.name]: {
+                            $ref: `#/components/callbacks/${parsedResponse.rawType}`,
+                        },
+                    },
+                };
+            }
+
+            case "cookieParam":
+
+            case "headerParam":
+            case "pathParam":
+            case "queryParam": {
+                return {
+                    parameters: [
+                        {
+                            description: parsedResponse.description,
+                            in: tag.tag.replace(/Param$/u, ""),
+                            name: parsedResponse.name,
+                            required: parsedResponse.required,
+                            schema: parsedResponse.schema,
+                        },
+                    ],
+                };
+            }
+            case "deprecated": {
+                return { deprecated: true };
+            }
+
+            case "description":
+
+            case "operationId":
+
+            case "summary": {
+                return { [tag.tag]: nameAndDescription };
+            }
+
+            case "externalDocs": {
+                return {
+                    externalDocs: {
+                        description: parsedResponse.description,
+                        url: parsedResponse.name,
+                    },
+                };
+            }
+
+            case "paramComponent": {
+                return {
+                    parameters: [{ $ref: `#/components/parameters/${parsedResponse.rawType}` }],
+                };
             }
 
             case "response": {
@@ -227,11 +236,11 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
                 };
             }
 
-            case "callback": {
+            case "responseComponent": {
                 return {
-                    callbacks: {
+                    responses: {
                         [parsedResponse.name]: {
-                            $ref: `#/components/callbacks/${parsedResponse.rawType}`,
+                            $ref: `#/components/responses/${parsedResponse.rawType}`,
                         },
                     },
                 };
@@ -245,39 +254,6 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
                         [status as string]: {
                             content: {
                                 [contentType as string]: {
-                                    schema: parsedResponse.schema,
-                                },
-                            },
-                        },
-                    },
-                };
-            }
-
-            case "responseHeaderComponent": {
-                const [status, header] = parsedResponse.name.split(".");
-
-                return {
-                    responses: {
-                        [status as string]: {
-                            headers: {
-                                [header as string]: {
-                                    $ref: `#/components/headers/${parsedResponse.rawType}`,
-                                },
-                            },
-                        },
-                    },
-                };
-            }
-
-            case "responseHeader": {
-                const [status, header] = parsedResponse.name.split(".");
-
-                return {
-                    responses: {
-                        [status as string]: {
-                            headers: {
-                                [header as string]: {
-                                    description: parsedResponse.description,
                                     schema: parsedResponse.schema,
                                 },
                             },
@@ -306,6 +282,39 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
                 };
             }
 
+            case "responseHeader": {
+                const [status, header] = parsedResponse.name.split(".");
+
+                return {
+                    responses: {
+                        [status as string]: {
+                            headers: {
+                                [header as string]: {
+                                    description: parsedResponse.description,
+                                    schema: parsedResponse.schema,
+                                },
+                            },
+                        },
+                    },
+                };
+            }
+
+            case "responseHeaderComponent": {
+                const [status, header] = parsedResponse.name.split(".");
+
+                return {
+                    responses: {
+                        [status as string]: {
+                            headers: {
+                                [header as string]: {
+                                    $ref: `#/components/headers/${parsedResponse.rawType}`,
+                                },
+                            },
+                        },
+                    },
+                };
+            }
+
             case "responseLink": {
                 const [status, link] = parsedResponse.name.split(".");
 
@@ -319,30 +328,6 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
                             },
                         },
                     },
-                };
-            }
-
-            case "bodyComponent": {
-                return {
-                    requestBody: {
-                        $ref: `#/components/requestBodies/${parsedResponse.rawType}`,
-                    },
-                };
-            }
-
-            case "responseComponent": {
-                return {
-                    responses: {
-                        [parsedResponse.name]: {
-                            $ref: `#/components/responses/${parsedResponse.rawType}`,
-                        },
-                    },
-                };
-            }
-
-            case "paramComponent": {
-                return {
-                    parameters: [{ $ref: `#/components/parameters/${parsedResponse.rawType}` }],
                 };
             }
 
@@ -360,6 +345,21 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
                 };
             }
 
+            case "server": {
+                return {
+                    servers: [
+                        {
+                            description: parsedResponse.description,
+                            url: parsedResponse.name,
+                        },
+                    ],
+                };
+            }
+
+            case "tag": {
+                return { tags: [nameAndDescription] };
+            }
+
             default: {
                 return {};
             }
@@ -372,7 +372,6 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: numb
 
     const jsDocumentComments = parseComments(fileContents, { spacing: "preserve" });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return jsDocumentComments
         .filter((comment) => openAPIRegex.test(comment.description.trim()))
         .map((comment) => {

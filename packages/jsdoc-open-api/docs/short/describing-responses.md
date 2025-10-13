@@ -219,10 +219,8 @@ but all of them have the same response structure:
 /**
  * @response 200 - Success
  * @responseContent {User} 200.application/json
- *
  * @response 400 - Bad request
  * @responseContent {Error} 400.application/json
- *
  * @response 404 - Not found
  * @responseContent {Error} 404.application/json
  */
@@ -235,7 +233,6 @@ You can use the default response to describe these errors collectively, not indi
 /**
  * @response 200 - Success
  * @responseContent {User} 200.application/json
- *
  * @response default - Unexpected error
  * @responseContent {Error} default.application/json
  */
@@ -281,22 +278,17 @@ Can be reused as:
 /**
  * GET /users
  * @summary Gets a list of users.
- *
  * @response 200 - OK
  * @responseContent {ArrayOfUsers} 200.application/json
- *
  * @responseComponent {Unauthorized} 401
  */
 
 /**
  * GET /users/{id}
  * @summary Gets a user by ID.
- *
  * @response 200 - OK
  * @responseContent {User} 200.application/json
- *
  * @responseComponent {Unauthorized} 401
- *
  * @responseComponent {NotFound} 404
  */
 ```
