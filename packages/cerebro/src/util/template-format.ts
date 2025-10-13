@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-named-as-default
 import template from "@visulima/colorize/template";
 
 const templateFormat = (string_?: string): string => {

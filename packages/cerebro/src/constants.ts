@@ -1,19 +1,19 @@
 /**
  * Output with this option will be formatted.
  */
-// eslint-disable-next-line import/no-unused-modules
+
 export const OUTPUT_NORMAL = 1;
 
 /**
  * Output with this option will be passed as-is.
  */
-// eslint-disable-next-line import/no-unused-modules
+
 export const OUTPUT_RAW = 2;
 
 /**
  * Output with this option will have any formatting stripped away.
  */
-// eslint-disable-next-line import/no-unused-modules
+
 export const OUTPUT_PLAIN = 4;
 
 /**

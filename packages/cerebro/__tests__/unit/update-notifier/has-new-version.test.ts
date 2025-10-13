@@ -11,12 +11,12 @@ const { getDistributionVersion, getLastUpdate, saveLastUpdate } = vi.hoisted(() 
     };
 });
 
-vi.mock("../../../src/update-notifier/get-dist-version", () => {
+vi.mock(import("../../../src/update-notifier/get-dist-version"), () => {
     return {
         default: getDistributionVersion,
     };
 });
-vi.mock("../../../src/update-notifier/cache", () => {
+vi.mock(import("../../../src/update-notifier/cache"), () => {
     return {
         getLastUpdate,
         saveLastUpdate,
@@ -42,13 +42,13 @@ describe("update-notifier/has-new-version", () => {
 
         const newVersion = await hasNewVersion(defaultArguments);
 
-        expect(newVersion).toBeFalsy();
+        expect(newVersion).toBe(null);
     });
 
     it("should trigger update for patch version bump", async () => {
         expect.assertions(1);
 
-        (getDistributionVersion as Mock).mockReturnValue("1.0.1");
+        vi.mocked(getDistributionVersion).mockReturnValue("1.0.1");
 
         const newVersion = await hasNewVersion(defaultArguments);
 
@@ -58,7 +58,7 @@ describe("update-notifier/has-new-version", () => {
     it("should trigger update for minor version bump", async () => {
         expect.assertions(1);
 
-        (getDistributionVersion as Mock).mockReturnValue("1.1.0");
+        vi.mocked(getDistributionVersion).mockReturnValue("1.1.0");
 
         const newVersion = await hasNewVersion(defaultArguments);
 
@@ -68,7 +68,7 @@ describe("update-notifier/has-new-version", () => {
     it("should trigger update for major version bump", async () => {
         expect.assertions(1);
 
-        (getDistributionVersion as Mock).mockReturnValue("2.0.0");
+        vi.mocked(getDistributionVersion).mockReturnValue("2.0.0");
 
         const newVersion = await hasNewVersion(defaultArguments);
 
@@ -78,11 +78,11 @@ describe("update-notifier/has-new-version", () => {
     it("should not trigger update if version is lower", async () => {
         expect.assertions(1);
 
-        (getDistributionVersion as Mock).mockReturnValue("0.0.9");
+        vi.mocked(getDistributionVersion).mockReturnValue("0.0.9");
 
         const newVersion = await hasNewVersion(defaultArguments);
 
-        expect(newVersion).toBeFalsy();
+        expect(newVersion).toBe(null);
     });
 
     it("should trigger update check if last update older than config", async () => {
@@ -90,15 +90,15 @@ describe("update-notifier/has-new-version", () => {
 
         const TWO_WEEKS = Date.now() - 1000 * 60 * 60 * 24 * 14;
 
-        (getLastUpdate as Mock).mockReturnValue(TWO_WEEKS);
+        vi.mocked(getLastUpdate).mockReturnValue(TWO_WEEKS);
 
         const newVersion = await hasNewVersion({
             pkg: package_,
             shouldNotifyInNpmScript: true,
         });
 
-        expect(newVersion).toBeFalsy();
-        expect(getDistributionVersion).toHaveBeenCalledWith("has-new-version", "latest", "https://registry.npmjs.org/-/package/__NAME__/dist-tags");
+        expect(newVersion).toBe(null);
+        expect(getDistributionVersion).toHaveBeenCalledExactlyOnceWith("has-new-version", "latest", "https://registry.npmjs.org/-/package/__NAME__/dist-tags");
     });
 
     it("should not trigger update check if last update is too recent", async () => {
@@ -106,14 +106,14 @@ describe("update-notifier/has-new-version", () => {
 
         const TWELVE_HOURS = Date.now() - 1000 * 60 * 60 * 12;
 
-        (getLastUpdate as Mock).mockReturnValue(TWELVE_HOURS);
+        vi.mocked(getLastUpdate).mockReturnValue(TWELVE_HOURS);
 
         const newVersion = await hasNewVersion({
             pkg: package_,
             shouldNotifyInNpmScript: true,
         });
 
-        expect(newVersion).toBeFalsy();
+        expect(newVersion).toBe(null);
         expect(getDistributionVersion).not.toHaveBeenCalled();
     });
 });

@@ -32,10 +32,10 @@ describe("emptyToolbox", () => {
             getCliName(): string {
                 return "";
             },
-            getCommandSection(): CommandSection {
+            getCommands() {
                 return undefined;
             },
-            getCommands() {
+            getCommandSection(): CommandSection {
                 return undefined;
             },
             getCwd(): string {
@@ -76,7 +76,6 @@ describe("emptyToolbox", () => {
         const toolbox = new EmptyToolbox("testCommand", { execute: vi.fn(), name: "test" });
 
         expect(() => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             toolbox.nonexistentProperty;
         }).not.toThrow();
 

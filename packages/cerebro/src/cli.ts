@@ -2,9 +2,8 @@ import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit
 
 import { boxen } from "@visulima/boxen";
 import { dim, green, reset, yellow } from "@visulima/colorize";
-import type { ExtendedRfc5424LogLevels } from "@visulima/pail";
+import type { ConstructorOptions, ExtendedRfc5424LogLevels, Pail, Processor } from "@visulima/pail";
 import { CallerProcessor, MessageFormatterProcessor } from "@visulima/pail/processor";
-import type { ConstructorOptions, Pail, Processor } from "@visulima/pail/server";
 import { createPail } from "@visulima/pail/server";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import camelCase from "camelcase";
@@ -77,11 +76,11 @@ export class Cli implements ICli {
     /**
      * @param cliName The cli cliName.
      * @param options The options for the CLI.
-     *        - argv           This should be in the base case process.argv
-     *        - cwd            The path of main folder.
-     *        - logger         The logger options.
-     *        - packageName    The packageJson name.
-     *        - packageVersion The packageJson version.
+     * - argv           This should be in the base case process.argv
+     * - cwd            The path of main folder.
+     * - logger         The logger options.
+     * - packageName    The packageJson name.
+     * - packageVersion The packageJson version.
      */
     public constructor(cliName: string, options: CliOptions = {}) {
         const { argv, cwd, packageName, packageVersion } = {
@@ -108,9 +107,9 @@ export class Cli implements ICli {
         }
 
         const cerebroLevelToPailLevel: Record<string, ExtendedRfc5424LogLevels> = {
-            "32": "informational",
-            "64": "trace",
-            "128": "debug",
+            32: "informational",
+            64: "trace",
+            128: "debug",
         };
 
         const processors: Processor<string>[] = [new MessageFormatterProcessor()];
@@ -121,7 +120,7 @@ export class Cli implements ICli {
 
         this.logger = createPail({
             logLevel: env.CEREBRO_OUTPUT_LEVEL
-                ? (cerebroLevelToPailLevel[env.CEREBRO_OUTPUT_LEVEL as keyof typeof cerebroLevelToPailLevel] ?? "informational")
+                ? cerebroLevelToPailLevel[env.CEREBRO_OUTPUT_LEVEL as keyof typeof cerebroLevelToPailLevel] ?? "informational"
                 : "informational",
             processors,
             ...options.logger,
@@ -226,12 +225,10 @@ export class Cli implements ICli {
 
     /**
      * Enable the update notifier functionality with the given options.
-     *
-     * @param options - The options for enabling the update notifier.
-     *          options.alwaysRun - Determines whether the update check should always run. Defaults to false.
-     *          options.distributionTag - The distribution tag to use for checking updates. Defaults to "latest".
-     *          options.updateCheckInterval - The interval in milliseconds between each update check. Defaults to 24 hours.
-     *
+     * @param options The options for enabling the update notifier.
+     * options.alwaysRun - Determines whether the update check should always run. Defaults to false.
+     * options.distributionTag - The distribution tag to use for checking updates. Defaults to "latest".
+     * options.updateCheckInterval - The interval in milliseconds between each update check. Defaults to 24 hours.
      * @example
      * enableUpdateNotifier({
      *   alwaysRun: true,
@@ -340,7 +337,7 @@ export class Cli implements ICli {
         this.logger.debug(`command '${commandName}' found, parsing command args: ${commandArguments.join(", ")}`);
 
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-        let arguments_ = mergeArguments([...(command.options ?? []), ...defaultOptions]);
+        let arguments_ = mergeArguments([...command.options ?? [], ...defaultOptions]);
 
         arguments_.forEach((argument) => {
             if (argument.multiple && argument.lazyMultiple) {
@@ -521,8 +518,8 @@ export class Cli implements ICli {
 
     private async updateNotifier({ logger }: IToolbox) {
         if (
-            this.updateNotifierOptions?.alwaysRun ||
-            (!(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
+            this.updateNotifierOptions?.alwaysRun
+            || (!(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
         ) {
             // @TODO add a stream logger
             logger.raw("Checking for updates...");
@@ -532,7 +529,7 @@ export class Cli implements ICli {
             const updateAvailable = await hasNewVersion(this.updateNotifierOptions);
 
             if (updateAvailable) {
-                const template = "Update available " + dim(this.packageVersion + "") + reset(" → ") + green(updateAvailable);
+                const template = `Update available ${dim(`${this.packageVersion}`)}${reset(" → ")}${green(updateAvailable)}`;
 
                 this.logger.error(
                     boxen(template, {
@@ -547,7 +544,7 @@ export class Cli implements ICli {
         }
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity,class-methods-use-this,@typescript-eslint/no-explicit-any
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-explicit-any
     private validateCommandOptions<OD extends OptionDefinition<any>>(
         arguments_: PossibleOptionDefinition<OD>[],
         commandArguments: CommandLineOptions,
@@ -588,7 +585,6 @@ export class Cli implements ICli {
             });
 
             if (errors.length > 0) {
-                 
                 throw new Error(errors.join("\n"));
             }
         }
@@ -658,7 +654,7 @@ export class Cli implements ICli {
             return null;
         };
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const extension of this.extensions) {
             // eslint-disable-next-line no-await-in-loop
             await callback(extension);
