@@ -1,3 +1,3 @@
-const copyDate = <Value extends Date>(date: Value): Value => new Date(date.getTime()) as Value;
+const copyDate = <Value extends Date>(date: Value): Value => new Date(date) as Value;
 
 export default copyDate;
