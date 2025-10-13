@@ -41,6 +41,7 @@ export default (path, pattern) => {
 
 // eslint-disable-next-line import/no-unused-modules
 export default defineConfig({
+    runtime: "node",
     alias: {
         zeptomatch: await buildZeptomatch(),
     },
@@ -48,9 +49,8 @@ export default defineConfig({
         license: {
             path: "./LICENSE.md",
         },
-        node10Compatibility: {
-            writeToPackageJson: true,
-            typeScriptVersion: ">=5.0",
+        requireCJS: {
+            builtinNodeModules: true,
         },
     },
     transformer,

@@ -2,9 +2,9 @@
  * A modified version from `https://github.com/unjs/pathe/blob/main/test/index.spec.ts`
  *
  * MIT License
- * Copyright (c) Pooya Parsa <pooya@pi0.io> - Daniel Roe <daniel@roe.dev>
+ * Copyright (c) Pooya Parsa &lt;pooya@pi0.io> - Daniel Roe &lt;daniel@roe.dev>
  */
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import normalizeWindowsPath from "../../src/normalize-windows-path";
 import {
@@ -24,7 +24,7 @@ import {
     sep as separator,
     toNamespacedPath,
 } from "../../src/path";
-import runTest from "./helper";
+import { runTest } from "../helpers";
 
 runTest("normalizeWindowsPath", normalizeWindowsPath, {
     ".\\foo\\bar": "./foo/bar",
@@ -44,14 +44,14 @@ runTest("isAbsolute", isAbsolute, {
     "/foo/bar": true,
 
     "\\\\server": true,
+    "bar/baz": false,
+    "bar\\baz": false,
     // Windows
     "C:": false,
     "C:.": false,
     "C:.\\temp\\": false,
     "C:/": true,
     "C:/foo/..": true,
-    "bar/baz": false,
-    "bar\\baz": false,
     "quax/": false,
 });
 
@@ -68,15 +68,15 @@ runTest("normalizeString", normalizeString, {
     "/foo/bar/../.well-known/baz": "foo/.well-known/baz",
     // './foobar./../a/./': 'a',
 
-    [normalizeWindowsPath(".\\myfile.html")]: "myfile.html",
-    [normalizeWindowsPath("\\temp\\myfile.html")]: "temp/myfile.html",
     [normalizeWindowsPath("C:\\a\\..\\")]: "C:",
+    [normalizeWindowsPath(String.raw`.\myfile.html`)]: "myfile.html",
+    [normalizeWindowsPath(String.raw`\temp\myfile.html`)]: "temp/myfile.html",
+    [normalizeWindowsPath(String.raw`C:\temp\..\..well-known\Users`)]: "C:/..well-known/Users",
+    [normalizeWindowsPath(String.raw`C:\temp\..\.\Users`)]: "C:/Users",
+    [normalizeWindowsPath(String.raw`C:\temp\..\.well-known\Users`)]: "C:/.well-known/Users",
     // Windows
-    [normalizeWindowsPath("C:\\temp\\..")]: "C:",
-    [normalizeWindowsPath("C:\\temp\\..\\..well-known\\Users")]: "C:/..well-known/Users",
-    [normalizeWindowsPath("C:\\temp\\..\\.\\Users")]: "C:/Users",
-    [normalizeWindowsPath("C:\\temp\\..\\.well-known\\Users")]: "C:/.well-known/Users",
-    [normalizeWindowsPath("C:\\temp\\myfile.html")]: "C:/temp/myfile.html",
+    [normalizeWindowsPath(String.raw`C:\temp\..`)]: "C:",
+    [normalizeWindowsPath(String.raw`C:\temp\myfile.html`)]: "C:/temp/myfile.html",
 });
 
 runTest("basename", basename, [
@@ -87,11 +87,11 @@ runTest("basename", basename, [
     ["./undefined", undefined, "undefined"],
 
     // Windows
-    ["C:\\temp\\myfile.html", "myfile.html"],
-    ["\\temp\\myfile.html", "myfile.html"],
-    [".\\myfile.html", "myfile.html"],
-    [".\\myfile.html", ".html", "myfile"],
-    [".\\undefined", undefined, "undefined"],
+    [String.raw`C:\temp\myfile.html`, "myfile.html"],
+    [String.raw`\temp\myfile.html`, "myfile.html"],
+    [String.raw`.\myfile.html`, "myfile.html"],
+    [String.raw`.\myfile.html`, ".html", "myfile"],
+    [String.raw`.\undefined`, undefined, "undefined"],
 ]);
 
 runTest("dirname", dirname, {
@@ -139,7 +139,7 @@ runTest("format", format, [
 
     // Windows
     [{ base: "file.txt", name: "file" }, "file.txt"],
-    [{ base: "file.txt", dir: "C:\\path\\dir" }, "C:/path/dir/file.txt"],
+    [{ base: "file.txt", dir: String.raw`C:\path\dir` }, "C:/path/dir/file.txt"],
 ]);
 
 runTest("join", join, [
@@ -153,18 +153,18 @@ runTest("join", join, [
     ["/test//", "//path", "/test/path"],
     ["some/nodejs/deep", "../path", "some/nodejs/path"],
     ["./some/local/unix/", "../path", "some/local/path"],
-    ["./some\\current\\mixed", "..\\path", "some/current/path"],
-    ["../some/relative/destination", "..\\path", "../some/relative/path"],
+    [String.raw`./some\current\mixed`, String.raw`..\path`, "some/current/path"],
+    ["../some/relative/destination", String.raw`..\path`, "../some/relative/path"],
     ["some/nodejs/deep", "../path", "some/nodejs/path"],
     ["/foo", "bar", "baz/asdf", "quux", "..", "/foo/bar/baz/asdf"],
 
-    ["C:\\foo", "bar", "baz\\asdf", "quux", "..", "C:/foo/bar/baz/asdf"],
-    ["some/nodejs\\windows", "../path", "some/nodejs/path"],
-    ["some\\windows\\only", "..\\path", "some/windows/path"],
+    [String.raw`C:\foo`, "bar", String.raw`baz\asdf`, "quux", "..", "C:/foo/bar/baz/asdf"],
+    [String.raw`some/nodejs\windows`, "../path", "some/nodejs/path"],
+    [String.raw`some\windows\only`, String.raw`..\path`, "some/windows/path"],
     // UNC paths
-    ["\\\\server\\share\\file", "..\\path", "//server/share/path"],
-    ["\\\\.\\c:\\temp\\file", "..\\path", "//./c:/temp/path"],
-    ["\\\\server/share/file", "../path", "//server/share/path"],
+    [String.raw`\\server\share\file`, String.raw`..\path`, "//server/share/path"],
+    [String.raw`\\.\c:\temp\file`, String.raw`..\path`, "//./c:/temp/path"],
+    [String.raw`\\server/share/file`, "../path", "//server/share/path"],
     [String.raw`//server/share/file`, "../path", "//server/share/path"],
 ]);
 
@@ -192,13 +192,13 @@ runTest("normalize", normalize, {
     "\\windows\\..\\unix/mixed/": "/unix/mixed/",
 
     "C:////temp\\\\/\\/\\/foo/bar": "C:/temp/foo/bar",
+    "c:/windows/../nodejs/path": "C:/nodejs/path",
+
+    "c:/windows/nodejs/path": "C:/windows/nodejs/path",
     // Windows
     "C:\\": "C:/",
-
     "C:\\temp\\..": "C:/",
     "C:\\temp\\\\foo\\bar\\..\\": "C:/temp/foo/",
-    "c:/windows/../nodejs/path": "C:/nodejs/path",
-    "c:/windows/nodejs/path": "C:/windows/nodejs/path",
 
     "c:\\windows\\..\\nodejs\\path": "C:/nodejs/path",
     "c:\\windows\\nodejs\\path": "C:/windows/nodejs/path",
@@ -208,7 +208,7 @@ runTest("normalize", normalize, {
 });
 
 // eslint-disable-next-line vitest/require-top-level-describe
-test("parse", () => {
+it("parse", () => {
     expect.assertions(10);
 
     // POSIX
@@ -228,14 +228,14 @@ test("parse", () => {
     });
 
     // Windows
-    expect(parse("C:\\path\\dir\\file.txt")).toStrictEqual({
+    expect(parse(String.raw`C:\path\dir\file.txt`)).toStrictEqual({
         base: "file.txt",
         dir: "C:/path/dir",
         ext: ".txt",
         name: "file",
         root: "C:/",
     });
-    expect(parse(".\\dir\\file")).toStrictEqual({
+    expect(parse(String.raw`.\dir\file`)).toStrictEqual({
         base: "file",
         dir: "./dir",
         ext: "",
@@ -243,7 +243,7 @@ test("parse", () => {
         root: "",
     });
     // Windows path can have spaces
-    expect(parse("C:\\pa th\\dir\\file.txt")).toStrictEqual({
+    expect(parse(String.raw`C:\pa th\dir\file.txt`)).toStrictEqual({
         base: "file.txt",
         dir: "C:/pa th/dir",
         ext: ".txt",
@@ -298,11 +298,11 @@ runTest("relative", relative, [
     [() => process.cwd(), "./dist/client/b-scroll.d.ts", "dist/client/b-scroll.d.ts"],
 
     // Windows
-    ["C:\\orandea\\test\\aaa", "C:\\orandea\\impl\\bbb", "../../impl/bbb"],
-    ["C:\\orandea\\test\\aaa", "c:\\orandea\\impl\\bbb", "../../impl/bbb"],
-    ["C:\\", "C:\\foo\\bar", "foo/bar"],
-    ["C:\\foo", "C:\\", ".."],
-    ["C:\\foo", "d:\\bar", "D:/bar"],
+    [String.raw`C:\orandea\test\aaa`, String.raw`C:\orandea\impl\bbb`, "../../impl/bbb"],
+    [String.raw`C:\orandea\test\aaa`, String.raw`c:\orandea\impl\bbb`, "../../impl/bbb"],
+    ["C:\\", String.raw`C:\foo\bar`, "foo/bar"],
+    [String.raw`C:\foo`, "C:\\", ".."],
+    [String.raw`C:\foo`, String.raw`d:\bar`, "D:/bar"],
     [() => process.cwd().replaceAll("\\", "/"), "./dist/client/b-scroll.d.ts", "dist/client/b-scroll.d.ts"],
     [() => process.cwd(), "./dist/client/b-scroll.d.ts", "dist/client/b-scroll.d.ts"],
 ]);
@@ -318,22 +318,21 @@ runTest("resolve", resolve, [
     ["wwwroot", "static_files/png/", "../gif/image.gif", () => `${process.cwd().replaceAll("\\", "/")}/wwwroot/static_files/gif/image.gif`],
 
     // Windows
-    ["C:\\foo\\bar", ".\\baz", "C:/foo/bar/baz"],
-    ["\\foo\\bar", ".\\baz", "/foo/bar/baz"],
-    ["\\foo\\bar", "..", ".", ".\\baz", "/foo/baz"],
-    ["\\foo\\bar", "\\tmp\\file\\", "/tmp/file"],
-    ["\\foo\\bar", undefined, null, "", "\\tmp\\file\\", "/tmp/file"],
-    ["\\foo\\bar", undefined, null, "", "\\tmp\\file\\", undefined, null, "", "/tmp/file"],
-    ["wwwroot", "static_files\\png\\", "..\\gif\\image.gif", () => `${process.cwd().replaceAll("\\", "/")}/wwwroot/static_files/gif/image.gif`],
-    ["C:\\Windows\\path\\only", "../../reports", "C:/Windows/reports"],
-    ["C:\\Windows\\long\\path\\mixed/with/unix", "../..", "..\\../reports", "C:/Windows/long/reports"],
+    [String.raw`C:\foo\bar`, String.raw`.\baz`, "C:/foo/bar/baz"],
+    [String.raw`\foo\bar`, String.raw`.\baz`, "/foo/bar/baz"],
+    [String.raw`\foo\bar`, "..", ".", String.raw`.\baz`, "/foo/baz"],
+    [String.raw`\foo\bar`, "\\tmp\\file\\", "/tmp/file"],
+    [String.raw`\foo\bar`, undefined, null, "", "\\tmp\\file\\", "/tmp/file"],
+    [String.raw`\foo\bar`, undefined, null, "", "\\tmp\\file\\", undefined, null, "", "/tmp/file"],
+    ["wwwroot", "static_files\\png\\", String.raw`..\gif\image.gif`, () => `${process.cwd().replaceAll("\\", "/")}/wwwroot/static_files/gif/image.gif`],
+    [String.raw`C:\Windows\path\only`, "../../reports", "C:/Windows/reports"],
+    [String.raw`C:\Windows\long\path\mixed/with/unix`, "../..", String.raw`..\../reports`, "C:/Windows/long/reports"],
 ]);
 
 describe("resolve with catastrophic process.cwd() failure", () => {
     it("still works", () => {
         expect.assertions(2);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         const originalCwd = process.cwd;
 
         process.cwd = () => "";
@@ -368,22 +367,22 @@ describe("constants", () => {
     });
 });
 
-describe("matchesGlob", () => {
+describe(matchesGlob, () => {
     it("should match a glob pattern", () => {
         expect.assertions(1);
 
-        expect(matchesGlob("/foo/bar", "/foo/**")).toBeTruthy();
+        expect(matchesGlob("/foo/bar", "/foo/**")).toBe(true);
     });
 
     it("should not match a glob pattern", () => {
         expect.assertions(1);
 
-        expect(matchesGlob("/foo/bar", "/bar/**")).toBeFalsy();
+        expect(matchesGlob("/foo/bar", "/bar/**")).toBe(false);
     });
 
     it("should match a glob pattern with String.raw input", () => {
         expect.assertions(1);
 
-        expect(matchesGlob(String.raw`\foo\bar`, "/foo/**")).toBeTruthy();
+        expect(matchesGlob(String.raw`\foo\bar`, "/foo/**")).toBe(true);
     });
 });

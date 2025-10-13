@@ -19,4 +19,18 @@ export default createConfig(
             "README.md",
         ],
     },
+    {
+        files: ["src/utils.ts", "__tests__/unit/utils.test.ts"],
+        rules: {
+            "unicorn/prevent-abbreviations": "off",
+        },
+    },
+    {
+        files: ["__tests__/unit/*.test.ts"],
+        rules: {
+            "sonarjs/publicly-writable-directories": "off",
+            "unicorn/no-null": "off",
+            "vitest/require-hook": "off",
+        },
+    },
 );

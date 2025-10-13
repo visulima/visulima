@@ -2,7 +2,7 @@
  * A modified version from `https://github.com/unjs/pathe/blob/main/test/utils.spec.ts`
  *
  * MIT License
- * Copyright (c) Pooya Parsa <pooya@pi0.io> - Daniel Roe <daniel@roe.dev>
+ * Copyright (c) Pooya Parsa &lt;pooya@pi0.io> - Daniel Roe &lt;daniel@roe.dev>
  */
 import { fileURLToPath } from "node:url";
 
@@ -17,7 +17,6 @@ describe("utils", () => {
 
         const fixture = "./foo.js";
 
-        // eslint-disable-next-line compat/compat
         expect(toPath(new URL(fixture, import.meta.url))).toStrictEqual(resolve(dirname(fileURLToPath(import.meta.url)), fixture));
         expect(toPath(fixture)).toStrictEqual(fixture);
     });
@@ -27,12 +26,12 @@ describe("utils", () => {
             "@": "/root",
             "@foo/bar": "@foo/bar/dist/index.mjs",
             "@foo/bar/utils": "@foo/bar/dist/utils.mjs",
+            bingpot: "@/bingpot/index.ts",
+            test: "@bingpot/index.ts",
             "~": "/root/index.js",
             "~/": "/src",
             "~win": "C:/root/index.js",
             "~win/": "C:/src",
-            bingpot: "@/bingpot/index.ts",
-            test: "@bingpot/index.ts",
         });
 
         it("normalizeAliases", () => {
@@ -53,7 +52,7 @@ describe("utils", () => {
     `);
         });
 
-        describe("resolveAlias", () => {
+        describe(resolveAlias, () => {
             it.each(Object.entries(aliases))("should resolve alias from %s to %s", (from, to) => {
                 expect.assertions(1);
 
@@ -68,7 +67,7 @@ describe("utils", () => {
                         "~": "/root",
                         "~assets": "/root/some/dir",
                     }),
-                ).toMatchInlineSnapshot('"/root/some/dir/smth.jpg"');
+                ).toMatchInlineSnapshot("\"/root/some/dir/smth.jpg\"");
             });
 
             it("should let the input unchanged", () => {
@@ -86,7 +85,7 @@ describe("utils", () => {
             });
         });
 
-        describe("reverseResolveAlias", () => {
+        describe(reverseResolveAlias, () => {
             it.each(Object.entries(aliases))("should reverse resolve alias to %s from %s", (to, from) => {
                 expect.assertions(1);
 
@@ -101,7 +100,7 @@ describe("utils", () => {
                         "~": "/root",
                         "~assets": "/root/some/assets",
                     }),
-                ).toMatchInlineSnapshot('"~assets/smth.jpg"');
+                ).toMatchInlineSnapshot("\"~assets/smth.jpg\"");
             });
 
             it("unchanged", () => {
@@ -120,16 +119,17 @@ describe("utils", () => {
         });
     });
 
-    describe("filename", () => {
+    describe(filename, () => {
         it.each([
             ["./myfile.html", "myfile"],
-            [".\\myfile.html", "myfile"],
+            [String.raw`.\myfile.html`, "myfile"],
             ["/temp/myfile.html", "myfile"],
 
-            ["\\temp\\myfile.html", "myfile"],
+            [String.raw`\temp\myfile.html`, "myfile"],
             // Windows
+
             ["C:\\temp\\", undefined],
-            ["C:\\temp\\myfile.html", "myfile"],
+            [String.raw`C:\temp\myfile.html`, "myfile"],
             // POSIX
             ["test.html", "test"],
         ])("should return the filename from %s", (file, expected) => {
@@ -139,14 +139,14 @@ describe("utils", () => {
         });
     });
 
-    describe("isRelative", () => {
+    describe(isRelative, () => {
         it("should return true for a relative path starting with './'", () => {
             expect.assertions(1);
 
             const path = "./example/path";
             const result = isRelative(path);
 
-            expect(result).toBeTruthy();
+            expect(result).toBe(true);
         });
 
         it("should return true for a relative path starting with '../'", () => {
@@ -155,7 +155,7 @@ describe("utils", () => {
             const path = "../example/path";
             const result = isRelative(path);
 
-            expect(result).toBeTruthy();
+            expect(result).toBe(true);
         });
 
         it("should return true for a relative path with '..'", () => {
@@ -164,7 +164,7 @@ describe("utils", () => {
             const path = "..";
             const result = isRelative(path);
 
-            expect(result).toBeTruthy();
+            expect(result).toBe(true);
         });
 
         it("should return false for a non-relative path", () => {
@@ -173,7 +173,7 @@ describe("utils", () => {
             const path = "/example/path";
             const result = isRelative(path);
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
 
         it("should return false for an empty string", () => {
@@ -182,7 +182,7 @@ describe("utils", () => {
             const path = "";
             const result = isRelative(path);
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
 
         it("should return false for a path starting with a single dot", () => {
@@ -191,16 +191,16 @@ describe("utils", () => {
             const path = ".example/path";
             const result = isRelative(path);
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
 
         it("should return false for a path starting with a backslash", () => {
             expect.assertions(1);
 
-            const path = "\\example\\path";
+            const path = String.raw`\example\path`;
             const result = isRelative(path);
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
 
         it("should return false for a path starting with a forward slash", () => {
@@ -209,7 +209,7 @@ describe("utils", () => {
             const path = "/example/path";
             const result = isRelative(path);
 
-            expect(result).toBeFalsy();
+            expect(result).toBe(false);
         });
     });
 
@@ -217,41 +217,41 @@ describe("utils", () => {
         it("should return true for binary file extensions", () => {
             expect.assertions(3);
 
-            expect(isBinaryPath("file.exe")).toBeTruthy();
-            expect(isBinaryPath("file.dll")).toBeTruthy();
-            expect(isBinaryPath("file.jpg")).toBeTruthy();
+            expect(isBinaryPath("file.exe")).toBe(true);
+            expect(isBinaryPath("file.dll")).toBe(true);
+            expect(isBinaryPath("file.jpg")).toBe(true);
         });
 
         it("should return false for non-binary file extensions", () => {
             expect.assertions(3);
 
-            expect(isBinaryPath("file.txt")).toBeFalsy();
-            expect(isBinaryPath("file.js")).toBeFalsy();
-            expect(isBinaryPath("file.css")).toBeFalsy();
+            expect(isBinaryPath("file.txt")).toBe(false);
+            expect(isBinaryPath("file.js")).toBe(false);
+            expect(isBinaryPath("file.css")).toBe(false);
         });
 
         it("should be case-insensitive when checking file extensions", () => {
             expect.assertions(3);
 
-            expect(isBinaryPath("file.EXE")).toBeTruthy();
-            expect(isBinaryPath("file.DLL")).toBeTruthy();
-            expect(isBinaryPath("file.JPG")).toBeTruthy();
+            expect(isBinaryPath("file.EXE")).toBe(true);
+            expect(isBinaryPath("file.DLL")).toBe(true);
+            expect(isBinaryPath("file.JPG")).toBe(true);
         });
 
         it("should work with file paths with no extension", () => {
             expect.assertions(3);
 
-            expect(isBinaryPath("file")).toBeFalsy();
-            expect(isBinaryPath("path/to/file")).toBeFalsy();
-            expect(isBinaryPath("path/to/file/")).toBeFalsy();
+            expect(isBinaryPath("file")).toBe(false);
+            expect(isBinaryPath("path/to/file")).toBe(false);
+            expect(isBinaryPath("path/to/file/")).toBe(false);
         });
 
         it("should work with file paths with multiple extensions", () => {
             expect.assertions(3);
 
-            expect(isBinaryPath("file.tar.gz")).toBeTruthy();
-            expect(isBinaryPath("file.min.js")).toBeFalsy();
-            expect(isBinaryPath("file.test.spec.ts")).toBeFalsy();
+            expect(isBinaryPath("file.tar.gz")).toBe(true);
+            expect(isBinaryPath("file.min.js")).toBe(false);
+            expect(isBinaryPath("file.test.spec.ts")).toBe(false);
         });
     });
 });
