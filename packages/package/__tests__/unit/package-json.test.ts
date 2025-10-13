@@ -1165,7 +1165,7 @@ version: 1.0.0`;
                 writeFileSync(join(distribution, "package.json5"), json5Content);
 
                 await expect(findPackageJson(distribution, { json5: false })).rejects.toThrow(
-                    "No such file or directory, for package.json or package.yaml found.",
+                    "ENOENT: No such file or directory, for package.json, package.yaml or package.yml found.",
                 );
             });
         });
