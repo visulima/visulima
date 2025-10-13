@@ -449,7 +449,7 @@ export const parsePackageJson = async (
         strict?: boolean;
         yaml?: boolean;
     },
-// eslint-disable-next-line sonarjs/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<NormalizedPackageJson> => {
     const isObject = packageFile !== null && typeof packageFile === "object" && !Array.isArray(packageFile);
     const isString = typeof packageFile === "string";
