@@ -64,34 +64,34 @@ const getDefaultValue = (field: DMMF.Field): JSONSchema7["default"] => {
     const fieldDefault = field.default;
 
     if (!field.hasDefaultValue) {
-        return null;
+        return undefined;
     }
 
     if (field.kind === "enum") {
-        return typeof fieldDefault === "string" ? fieldDefault : null;
+        return typeof fieldDefault === "string" ? fieldDefault : undefined;
     }
 
     if (field.kind !== "scalar") {
-        return null;
+        return undefined;
     }
 
     switch (field.type) {
         case "BigInt":
         case "DateTime":
         case "String": {
-            return typeof fieldDefault === "string" ? fieldDefault : null;
+            return typeof fieldDefault === "string" ? fieldDefault : undefined;
         }
         case "Boolean": {
-            return typeof fieldDefault === "boolean" ? fieldDefault : null;
+            return typeof fieldDefault === "boolean" ? fieldDefault : undefined;
         }
         case "Bytes":
         case "Json": {
-            return null;
+            return undefined;
         }
         case "Decimal":
         case "Float":
         case "Int": {
-            return typeof fieldDefault === "number" ? fieldDefault : null;
+            return typeof fieldDefault === "number" ? fieldDefault : undefined;
         }
         default: {
             throw new Error(`Unhandled discriminated union member: ${JSON.stringify(field.type)}`);
