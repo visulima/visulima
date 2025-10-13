@@ -1,7 +1,7 @@
-import { format as utilFormat } from "node:util";
+import { format as utilityFormat } from "node:util";
 
-// eslint-disable-next-line import/no-extraneous-dependencies,import/no-named-default
-import { default as quickFormat } from "quick-format-unescaped";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import quickFormat from "quick-format-unescaped";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { bench, describe } from "vitest";
 
@@ -9,7 +9,7 @@ import { format as fmt } from "../src";
 
 describe("format simple", () => {
     bench("util.format", () => {
-        utilFormat("%s %j %d", "a", { a: { x: 1 } }, 1);
+        utilityFormat("%s %j %d", "a", { a: { x: 1 } }, 1);
     });
 
     bench("@visulima/fmt", () => {
@@ -23,7 +23,7 @@ describe("format simple", () => {
 
 describe("format tail object", () => {
     bench("util.format", () => {
-        utilFormat("hello %s %j %d", "world", { obj: true }, 4, { another: "obj" });
+        utilityFormat("hello %s %j %d", "world", { obj: true }, 4, { another: "obj" });
     });
 
     bench("@visulima/fmt", () => {
