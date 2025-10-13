@@ -364,8 +364,8 @@ describe("node.JS", () => {
             argv: [],
             env: {
                 PM2_HOME: "/var/www/",
-                TERM: "dumb",
                 pm_id: "1",
+                TERM: "dumb",
             },
             platform: "linux",
             stdout: { isTTY: true },
@@ -911,6 +911,7 @@ describe("deno", () => {
 
     it(`should support deno platform win`, () => {
         expect.assertions(2);
+
         vi.stubGlobal("process", undefined);
         vi.stubGlobal("Deno", {
             args: [],

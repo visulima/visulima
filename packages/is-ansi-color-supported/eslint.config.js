@@ -14,6 +14,7 @@ export default createConfig(
             "packem.config.ts",
             ".secretlintrc.cjs",
             "tsconfig.eslint.json",
+            ".prettierrc.cjs",
             "package.json",
             "README.md",
             ".prettierrc.cjs",
@@ -26,6 +27,7 @@ export default createConfig(
         files: ["**/*.test.ts"],
         rules: {
             "@typescript-eslint/no-explicit-any": "off",
+            "jsdoc/check-tag-names": "off",
             "no-secrets/no-secrets": "off",
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",

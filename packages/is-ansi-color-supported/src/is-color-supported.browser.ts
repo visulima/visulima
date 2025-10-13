@@ -1,3 +1,4 @@
+/* eslint-disable n/no-unsupported-features/node-builtins */
 /*
  * Some of this code is taken from https://github.com/chalk/supports-color/blob/main/index.js
  * MIT License
@@ -12,10 +13,9 @@ const isColorSupported = (): ColorSupportLevel =>
             // @ts-expect-error - `navigator` is not defined in Node.
             if (navigator.userAgentData) {
                 // @ts-expect-error - `navigator` is not defined in Node.
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+
                 const brand = navigator.userAgentData.brands.find(({ b }: { b: string }) => b === "Chromium");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (brand?.version > 93) {
                     return SPACE_TRUE_COLORS;
                 }
@@ -33,7 +33,6 @@ const isColorSupported = (): ColorSupportLevel =>
 export const isStdoutColorSupported = isColorSupported;
 
 export const isStderrColorSupported = isColorSupported;
-// eslint-disable-next-line import/no-unused-modules
+
 export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
-// eslint-disable-next-line import/no-unused-modules
 export type { ColorSupportLevel } from "./types";
