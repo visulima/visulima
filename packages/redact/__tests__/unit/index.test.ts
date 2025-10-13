@@ -16,10 +16,10 @@ type PlainJsObject = {
     _header: string;
     Authorization: string;
     body: {
-        "Private-Data": string;
         info: string;
         notes: string;
         parent?: PlainJsObject;
+        "Private-Data": string;
     };
     method: string;
     numRetries: number;
@@ -38,7 +38,7 @@ type SyntaxErrorWithFields = {
 
 type MixedArray = [{ Authorization: string; method: string; url: string }, number, [{ password: string; username: string }, string, MixedArray], string];
 
-describe("redact", () => {
+describe(redact, () => {
     describe("array", () => {
         describe("filtering nested arrays", () => {
             const mixedArrayInput: MixedArray = [
@@ -46,8 +46,9 @@ describe("redact", () => {
                 12_345,
                 // @ts-expect-error using null as a placeholder
                 [{ password: "qwery123456", username: "alice.smith" }, "Hello World", null],
-                '{ "amount": 9.75, "credit_card_number": "4551201891449281" }',
+                "{ \"amount\": 9.75, \"credit_card_number\": \"4551201891449281\" }",
             ];
+
             mixedArrayInput[2][2] = mixedArrayInput;
 
             const input = mixedArrayInput;
@@ -76,7 +77,7 @@ describe("redact", () => {
                 expect(input[2][0].username).toBe("alice.smith");
                 expect(input[2][1]).toBe("Hello World");
                 expect(input[2][2]).toBe(input);
-                expect(input[3]).toBe('{ "amount": 9.75, "credit_card_number": "4551201891449281" }');
+                expect(input[3]).toBe("{ \"amount\": 9.75, \"credit_card_number\": \"4551201891449281\" }");
             });
 
             it("maintains non-sensitive data in the output object, including circular references", () => {
@@ -240,12 +241,12 @@ describe("redact", () => {
     describe("object", () => {
         describe("filtering a plain JS object", () => {
             const plainJsInputObject: PlainJsObject = {
-                _header: "GET /some/items\\nAuthorization: Bearer someheadertoken",
+                _header: String.raw`GET /some/items\nAuthorization: Bearer someheadertoken`,
                 Authorization: "Bearer somedatatoken",
                 body: {
-                    "Private-Data": "somesecretstuff",
-                    info: '{ "first_name": "Bob", "last_name": "Bobbington", "PASSWORD": "asecurepassword1234", "amount": 4 }',
+                    info: "{ \"first_name\": \"Bob\", \"last_name\": \"Bobbington\", \"PASSWORD\": \"asecurepassword1234\", \"amount\": 4 }",
                     notes: "Use https://login.example.com?username=jon.smith&password=qwerty/?authentic=true to login.",
+                    "Private-Data": "somesecretstuff",
                 },
                 method: "POST",
                 numRetries: 6,
@@ -253,6 +254,7 @@ describe("redact", () => {
                 stageVariables: null,
                 username: "bob.bobbington",
             };
+
             plainJsInputObject.body.parent = plainJsInputObject;
 
             const input = plainJsInputObject;
@@ -277,7 +279,7 @@ describe("redact", () => {
                 expect(input.Authorization).toBe("Bearer somedatatoken");
                 expect(input.method).toBe("POST");
                 expect(input.body["Private-Data"]).toBe("somesecretstuff");
-                expect(input.body.info).toBe('{ "first_name": "Bob", "last_name": "Bobbington", "PASSWORD": "asecurepassword1234", "amount": 4 }');
+                expect(input.body.info).toBe("{ \"first_name\": \"Bob\", \"last_name\": \"Bobbington\", \"PASSWORD\": \"asecurepassword1234\", \"amount\": 4 }");
                 expect(input.body.notes).toBe("Use https://login.example.com?username=jon.smith&password=qwerty/?authentic=true to login.");
                 expect(input.body.parent).toStrictEqual(input);
                 expect(input.numRetries).toBe(6);
@@ -303,7 +305,7 @@ describe("redact", () => {
                 expect(output.password).toBe("<PASSWORD>");
                 expect(output.Authorization).toBe("<AUTHORIZATION>");
                 expect(output.body["Private-Data"]).toBe("<PRIVATE-DATA>");
-                expect(output._header).toBe("GET /some/items\\nAuthorization: <TOKEN>");
+                expect(output._header).toBe(String.raw`GET /some/items\nAuthorization: <TOKEN>`);
             });
 
             it("filters out JSON keys (case-insensitive) and matches partials while maintaining non-sensitive data", () => {
@@ -329,7 +331,7 @@ describe("redact", () => {
 
         describe("filtering a custom object with read-only and non-enumerable properties", () => {
             class VeryUnusualClass {
-                public password: string;
+                public password: string = "hunter12";
 
                 // @ts-expect-error created in constructor with Reflect.defineProperty()
                 public readonly: string;
@@ -338,7 +340,6 @@ describe("redact", () => {
                 public hidden: string;
 
                 public constructor() {
-                    this.password = "hunter12";
                     Reflect.defineProperty(this, "readonly", {
                         enumerable: true,
                         value: 42,
@@ -408,7 +409,7 @@ describe("redact", () => {
                 expect.assertions(3);
 
                 expect(output.veryUnusualObject.hidden).toBeUndefined();
-                // eslint-disable-next-line @typescript-eslint/unbound-method
+
                 expect(output.veryUnusualObject.doSomething).toBeUndefined();
                 expect(output.veryUnusualObject.constructor).not.toBe(veryUnusualObjectConstructor);
             });
@@ -827,10 +828,11 @@ describe("redact", () => {
             }
 
             const customJsonParseError = jsonParseError as SyntaxError & SyntaxErrorWithFields;
+
             customJsonParseError.Authorization = "Username: Bob, Password: pa$$word";
             customJsonParseError.customData = {
                 error: customJsonParseError,
-                info: '{ "json": false, "veryPrivateInfo": "credentials" }',
+                info: "{ \"json\": false, \"veryPrivateInfo\": \"credentials\" }",
             };
 
             const input = customJsonParseError;
@@ -862,7 +864,7 @@ describe("redact", () => {
                 expect(input.stack).toBe(inputStack);
 
                 expect(input.Authorization).toBe("Username: Bob, Password: pa$$word");
-                expect(input.customData.info).toBe('{ "json": false, "veryPrivateInfo": "credentials" }');
+                expect(input.customData.info).toBe("{ \"json\": false, \"veryPrivateInfo\": \"credentials\" }");
                 expect(input.customData.error).toBe(input);
             });
 
@@ -895,7 +897,7 @@ describe("redact", () => {
                 expect(Object.keys(outputInfoObject)).toHaveLength(2);
 
                 expect(outputInfoObject.veryPrivateInfo).toBe("<VERYPRIVATEINFO>");
-                expect(outputInfoObject.json).toBeFalsy();
+                expect(outputInfoObject.json).toBe(false);
             });
         });
     });

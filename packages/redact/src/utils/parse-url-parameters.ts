@@ -19,7 +19,7 @@ const parseUrlParameters = (input: string): { key: string | null; value: string 
 
     let match = urlParameterRegex.exec(input);
 
-    while (match != null) {
+    while (match != undefined) {
         const { 0: text, index } = match;
 
         segments.push({
@@ -31,13 +31,13 @@ const parseUrlParameters = (input: string): { key: string | null; value: string 
 
         segments.push({
             key: text.slice(1, text.indexOf("=")),
-            value: text.slice(text.indexOf("=") + 1, text.length),
+            value: text.slice(text.indexOf("=") + 1),
         });
 
         match = urlParameterRegex.exec(input);
     }
 
-    const lastSegment = input.slice(previousEndIndex, input.length);
+    const lastSegment = input.slice(previousEndIndex);
 
     if (lastSegment.length > 0) {
         segments.push({

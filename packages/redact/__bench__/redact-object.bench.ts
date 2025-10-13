@@ -1,11 +1,10 @@
-import { bench, describe } from "vitest";
-
-import unsetValue from "unset-value";
-import fastRedact from "fast-redact";
-import { core } from "fast-unset/dist/core";
-import { redact } from "../dist";
-import fastUnset from "fast-unset";
 import { masker } from "@qiwi/masker";
+import { redact } from "@visulima/redact/dist/dist";
+import fastRedact from "fast-redact";
+import fastUnset from "fast-unset";
+import { core } from "fast-unset/dist/core";
+import unsetValue from "unset-value";
+import { bench, describe } from "vitest";
 
 const redactObjectBench = fastRedact({
     paths: ["a"],
@@ -30,12 +29,12 @@ describe("object", () => {
         const output = redact(object, [{ key: "a", replacement: null }]);
 
         if (typeof output.a === "object") {
-            throw new Error("Expected a to be '<A>'");
+            throw new TypeError("Expected a to be '<A>'");
         }
     });
 
     bench("fast-redact", () => {
-        let object = {
+        const object = {
             a: {
                 b: {
                     c: 1,
@@ -159,7 +158,7 @@ describe("deep object", () => {
     });
 
     bench("fast-redact", () => {
-        let object = {
+        const object = {
             a: {
                 b: {
                     c: 1,

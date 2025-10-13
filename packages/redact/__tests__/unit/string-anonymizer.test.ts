@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 import standardModifierRules from "../../src/rules";
 import stringAnonymize from "../../src/string-anonymizer";
 
-describe("stringAnonymize", () => {
+describe(stringAnonymize, () => {
     it("should anonymize a string", () => {
         expect.assertions(1);
 
