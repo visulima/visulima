@@ -88,7 +88,7 @@ describe("stack page", () => {
 
             const page = await createStackPage(error, [mockFinder]);
 
-            expect(mockFinder.handle).toHaveBeenCalledWith(
+            expect(mockFinder.handle).toHaveBeenCalledExactlyOnceWith(
                 error,
                 expect.objectContaining({
                     file: expect.any(String),
@@ -258,7 +258,7 @@ describe("stack page", () => {
 
             const page = await createStackPage(error, [asyncFinder]);
 
-            expect(asyncFinder.handle).toHaveBeenCalledWith(
+            expect(asyncFinder.handle).toHaveBeenCalledExactlyOnceWith(
                 error,
                 expect.objectContaining({
                     file: expect.any(String),
@@ -283,7 +283,7 @@ describe("stack page", () => {
 
             const page = await createStackPage(error, [noSolutionFinder]);
 
-            expect(noSolutionFinder.handle).toHaveBeenCalledWith(
+            expect(noSolutionFinder.handle).toHaveBeenCalledExactlyOnceWith(
                 error,
                 expect.objectContaining({
                     file: expect.any(String),

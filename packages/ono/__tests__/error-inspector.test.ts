@@ -85,7 +85,7 @@ describe("error inspector template", () => {
 
         const html = await template(error, [customFinder]);
 
-        expect(customFinder.handle).toHaveBeenCalledWith(
+        expect(customFinder.handle).toHaveBeenCalledExactlyOnceWith(
             error,
             expect.objectContaining({
                 file: expect.any(String),

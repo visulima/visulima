@@ -5,6 +5,7 @@ import { buildOutput } from "../../../shared/utils/cli-error-builder";
 import template from "./error-inspector";
 import type { TemplateOptions as BaseTemplateOptions } from "./error-inspector/types";
 
+// eslint-disable-next-line @stylistic/no-extra-parens
 const ensureError = (value: unknown): Error => (value instanceof Error ? value : new Error(String(value)));
 
 export type TemplateOptions = BaseTemplateOptions & { solutionFinders?: SolutionFinder[] };

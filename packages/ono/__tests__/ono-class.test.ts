@@ -78,7 +78,7 @@ describe("ono class", () => {
                 solutionFinders: [customFinder],
             });
 
-            expect(customFinder.handle).toHaveBeenCalledWith(
+            expect(customFinder.handle).toHaveBeenCalledExactlyOnceWith(
                 error,
                 expect.objectContaining({
                     file: expect.any(String),
@@ -171,7 +171,7 @@ describe("ono class", () => {
                 solutionFinders: [customFinder],
             });
 
-            expect(customFinder.handle).toHaveBeenCalledWith(
+            expect(customFinder.handle).toHaveBeenCalledExactlyOnceWith(
                 error,
                 expect.objectContaining({
                     file: expect.any(String),
