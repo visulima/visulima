@@ -10,14 +10,14 @@ const getChangedFiles = (extension = "") => {
 };
 
 // Skip builds triggered by dependabot
-if (env["VERCEL_GIT_COMMIT_AUTHOR_LOGIN"] === "dependabot[bot]") {
+if (env.VERCEL_GIT_COMMIT_AUTHOR_LOGIN === "dependabot[bot]") {
     // eslint-disable-next-line no-console
     console.log("Build triggered by dependabot, skipping");
     exit(0);
 }
 
 // Skip builds if the commit message starts with [skip ci]
-if (env["VERCEL_GIT_COMMIT_MESSAGE"]?.startsWith("[skip ci]")) {
+if (env.VERCEL_GIT_COMMIT_MESSAGE?.startsWith("[skip ci]")) {
     // eslint-disable-next-line no-console
     console.log("Build triggered by [skip ci] commit message, skipping");
     exit(0);

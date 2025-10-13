@@ -5,10 +5,10 @@
     "type": "module",
     "scripts": {
         "build": "storybook build --docs",
-        "clean": "rm -rf .turbo && rm -rf node_modules",
+        "clean": "rimraf node_modules dist .eslintcache",
         "dev": "storybook dev -p 6006",
-        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
-        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
         "lint:package-json": "publint --strict",
         "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
@@ -22,8 +22,9 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^16.3.3",
         "@anolilab/prettier-config": "^6.0.6",
-        "@arthurgeron/eslint-plugin-react-usememo": "^2.5.0",
         "@babel/core": "^7.28.4",
+        "@eslint-react/eslint-plugin": "2.2.0",
+        "@eslint/css": "0.13.0",
         "@mdx-js/react": "^3.1.1",
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@storybook/addon-a11y": "^9.1.10",
@@ -48,21 +49,18 @@
         "@vitejs/plugin-react": "^5.0.4",
         "autoprefixer": "^10.4.21",
         "eslint": "9.37.0",
-        "eslint-plugin-deprecation": "^3.0.0",
-        "eslint-plugin-editorconfig": "^4.0.3",
-        "eslint-plugin-etc": "^2.0.3",
-        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
         "eslint-plugin-jsx-a11y": "^6.10.2",
-        "eslint-plugin-mdx": "^3.6.2",
         "eslint-plugin-react": "7.37.5",
         "eslint-plugin-react-hooks": "7.0.0",
-        "eslint-plugin-ssr-friendly": "^1.3.0",
-        "eslint-plugin-storybook": "^9.1.10",
-        "eslint-plugin-tailwindcss": "^3.18.2",
+        "eslint-plugin-react-perf": "3.3.3",
+        "eslint-plugin-react-refresh": "^0.4.23",
+        "eslint-plugin-react-you-might-not-need-an-effect": "0.5.6",
+        "eslint-plugin-storybook": "9.1.10",
         "eslint-plugin-testing-library": "^7.13.1",
         "eslint-plugin-validate-jsx-nesting": "^0.1.1",
         "postcss": "^8.5.6",
         "publint": "^0.3.14",
+        "rimraf": "6.0.1",
         "serve": "^14.2.5",
         "sort-package-json": "^3.4.0",
         "storybook": "^9.1.10",
@@ -71,18 +69,5 @@
         "typescript": "5.9.3",
         "vite": "^7.1.9",
         "vite-tsconfig-paths": "^5.1.4"
-    },
-    "anolilab": {
-        "eslint-config": {
-            "plugin": {
-                "tsdoc": false,
-                "testing-library-dom": false
-            },
-            "warn_on_unsupported_typescript_version": false,
-            "info_on_disabling_jsx_react_rule": false,
-            "info_on_disabling_prettier_conflict_rule": false,
-            "info_on_disabling_jsonc_sort_keys_rule": false,
-            "info_on_disabling_etc_no_deprecated": false
-        }
     }
 }
