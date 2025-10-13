@@ -155,8 +155,8 @@ export interface CaseOptions extends LocaleOptions {
  * type Result2 = CamelCase<'foo-bar'> // type Result2 = 'fooBar'
  * type Result3 = CamelCase<'foo_bar'> // type Result3 = 'fooBar'
  */
-export type CamelCase<T extends string> =
-    IsStringLiteral<T> extends true
+export type CamelCase<T extends string>
+    = IsStringLiteral<T> extends true
         ? T extends `${infer F}_${infer R}`
             ? `${Lowercase<F>}${Capitalize<CamelCase<R>>}`
             : T extends `${infer F}-${infer R}`
@@ -190,8 +190,8 @@ export type PascalCase<T extends string> = IsStringLiteral<T> extends true ? Cap
  * type Result2 = SnakeCase<'foo bar'> // type Result2 = 'foo_bar'
  * type Result3 = SnakeCase<'foo-bar'> // type Result3 = 'foo_bar'
  */
-export type SnakeCase<T extends string> =
-    IsStringLiteral<T> extends true
+export type SnakeCase<T extends string>
+    = IsStringLiteral<T> extends true
         ? T extends `${infer C}${infer Rest}`
             ? C extends Uppercase<C>
                 ? `_${Lowercase<C>}${SnakeCase<Rest>}`
@@ -210,8 +210,8 @@ export type SnakeCase<T extends string> =
  * type Result2 = KebabCase<'foo bar'> // type Result2 = 'foo-bar'
  * type Result3 = KebabCase<'foo_bar'> // type Result3 = 'foo-bar'
  */
-export type KebabCase<T extends string> =
-    IsStringLiteral<T> extends true
+export type KebabCase<T extends string>
+    = IsStringLiteral<T> extends true
         ? T extends `${infer C}${infer Rest}`
             ? C extends Uppercase<C>
                 ? `-${Lowercase<C>}${KebabCase<Rest>}`
@@ -244,8 +244,8 @@ export type FlatCase<T extends string> = IsStringLiteral<T> extends true ? Lower
  * type Result2 = TrainCase<'foo bar'> // type Result2 = 'Foo-Bar'
  * type Result3 = TrainCase<'foo_bar'> // type Result3 = 'Foo-Bar'
  */
-export type TrainCase<T extends string, N extends boolean = false> =
-    IsStringLiteral<T> extends true
+export type TrainCase<T extends string, N extends boolean = false>
+    = IsStringLiteral<T> extends true
         ? T extends `${infer F}${infer R}`
             ? F extends Uppercase<F>
                 ? R extends `${infer Next}${infer Rest}`
@@ -310,8 +310,8 @@ export type LowerFirst<T extends string> = IsStringLiteral<T> extends true ? (T 
  * type Result2 = FlipCase<'Hello World'> // type Result2 = 'hELLO wORLD'
  * type Result3 = FlipCase<'123'> // type Result3 = '123'
  */
-export type FlipCase<T extends string> =
-    IsStringLiteral<T> extends true
+export type FlipCase<T extends string>
+    = IsStringLiteral<T> extends true
         ? T extends `${infer C}${infer Rest}`
             ? `${C extends Uppercase<C> ? Lowercase<C> : Uppercase<C>}${FlipCase<Rest>}`
             : T
@@ -446,8 +446,8 @@ export type PascalSnakeCase<T extends string> = T & {
  * type Case4 = IdentifyCase<'FooBar'> // type Case4 = 'pascal'
  * type Case5 = IdentifyCase<'FOO_BAR'> // type Case5 = 'upper'
  */
-export type IdentifyCase<T extends string> =
-    IsStringLiteral<T> extends true
+export type IdentifyCase<T extends string>
+    = IsStringLiteral<T> extends true
         ? T extends Lowercase<T>
             ? T extends `${string}_${string}`
                 ? "snake"
