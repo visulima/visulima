@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import validate from "../src/validate";
 
-describe("validate", () => {
+describe(validate, () => {
     it("should validate a valid spec and return no errors", async () => {
         expect.assertions(1);
 

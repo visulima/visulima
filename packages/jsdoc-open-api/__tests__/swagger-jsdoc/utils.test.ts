@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { hasEmptyProperty } from "../../src/swagger-jsdoc/utils";
 
 describe("utilities module", () => {
-    describe("hasEmptyProperty", () => {
+    describe(hasEmptyProperty, () => {
         it("identifies object with an empty object or array as property", () => {
             expect.assertions(5);
 
@@ -13,11 +13,11 @@ describe("utilities module", () => {
             const validB = { foo: ["¯_(ツ)_/¯"] };
             const validC = { foo: "¯_(ツ)_/¯" };
 
-            expect(hasEmptyProperty(invalidA)).toBeTruthy();
-            expect(hasEmptyProperty(invalidB)).toBeTruthy();
-            expect(hasEmptyProperty(validA)).toBeFalsy();
-            expect(hasEmptyProperty(validB)).toBeFalsy();
-            expect(hasEmptyProperty(validC)).toBeFalsy();
+            expect(hasEmptyProperty(invalidA)).toBe(true);
+            expect(hasEmptyProperty(invalidB)).toBe(true);
+            expect(hasEmptyProperty(validA)).toBe(false);
+            expect(hasEmptyProperty(validB)).toBe(false);
+            expect(hasEmptyProperty(validC)).toBe(false);
         });
     });
 });

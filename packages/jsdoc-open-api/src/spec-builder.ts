@@ -36,6 +36,7 @@ class SpecBuilder implements OpenApiObject {
         if (baseDefinition.servers) {
             this.servers = baseDefinition.servers;
         }
+
         if (baseDefinition.components) {
             this.components = baseDefinition.components;
         }

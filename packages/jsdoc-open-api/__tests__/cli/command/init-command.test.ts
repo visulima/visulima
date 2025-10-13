@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import initCommand from "../../../src/cli/command/init-command";
 
-vi.mock("node:fs", () => {
+vi.mock(import("node:fs"), () => {
     return {
         existsSync: vi.fn(),
         realpathSync: vi.fn(),
@@ -39,7 +39,7 @@ describe("init command", () => {
         initCommand("config.js");
 
         // Verify that the writeFileSync function was called with the correct arguments
-        expect(writeFileSyncMock).toHaveBeenCalledWith(
+        expect(writeFileSyncMock).toHaveBeenCalledExactlyOnceWith(
             "config.js",
             `module.exports = {
   exclude: [
@@ -95,10 +95,10 @@ describe("init command", () => {
 
         initCommand("config.js");
 
-        expect(consoleInfoMock).toHaveBeenCalledWith(`Found package.json at "${fixturePath}${isWin ? "\\" : "/"}package.json"`);
-        expect(consoleInfoMock).toHaveBeenCalledWith("Found package.json with type: module, using ES6 as export for the config file");
+        expect(consoleInfoMock).toHaveBeenNthCalledWith(1, `Found package.json at "${fixturePath}${isWin ? "\\" : "/"}package.json"`);
+        expect(consoleInfoMock).toHaveBeenNthCalledWith(2, "Found package.json with type: module, using ES6 as export for the config file");
         // Verify that the writeFileSync function was called with the correct arguments
-        expect(writeFileSyncMock).toHaveBeenCalledWith(
+        expect(writeFileSyncMock).toHaveBeenCalledExactlyOnceWith(
             "config.js",
             `export default {
   exclude: [
@@ -147,6 +147,6 @@ describe("init command", () => {
 
         initCommand("config.js");
 
-        expect(consoleLogMock).toHaveBeenCalledWith('Created "config.js"');
+        expect(consoleLogMock).toHaveBeenCalledExactlyOnceWith("Created \"config.js\"");
     });
 });

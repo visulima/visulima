@@ -8,6 +8,7 @@ const yamlLoc = (string: string): number => {
         if (/^\s*(#\s*(?:\S.*)?)?$/u.test(line)) {
             return false;
         }
+
         // Remove empty lines.
         return line.trim().length > 0;
     });

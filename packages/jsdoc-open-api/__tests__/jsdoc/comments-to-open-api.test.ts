@@ -41,7 +41,7 @@ describe("code blocks", () => {
     });
 });
 
-describe("commentsToOpenApi", () => {
+describe(commentsToOpenApi, () => {
     it("big stuff", () => {
         expect.assertions(1);
 
@@ -303,17 +303,17 @@ describe("commentsToOpenApi", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
-        const comment = '/**\n\
+        const comment = "/**\n\
  * GET /hello\n\
- * @description Get a "hello world" message.\n\
+ * @description Get a \"hello world\" message.\n\
  * @response 200 - hello world.\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
                 "/hello": {
                     get: {
-                        description: 'Get a "hello world" message.',
+                        description: "Get a \"hello world\" message.",
                         responses: {
                             200: {
                                 description: "hello world.",
@@ -332,27 +332,27 @@ describe("commentsToOpenApi", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
-        const comment = '/**\n\
+        const comment = "/**\n\
  * POST /hello\n\
- * @description Get a "hello world" message.\n\
+ * @description Get a \"hello world\" message.\n\
  * @response 200 - hello world.\n\
  * @responseContent {string} 200.text/plain\n\
  */\n\
- const garbage = "trash";\n\
+ const garbage = \"trash\";\n\
  // eslint-disable-next-line no-console\n\
  console.log(garbage);\n\
  /**\n\
   * GET /hello\n\
-  * @description Get a "hello world" message.\n\
+  * @description Get a \"hello world\" message.\n\
   * @response 200 - hello world.\n\
   * @responseContent {string} 200.text/plain\n\
-  */'.replaceAll("\r\n", "\n");
+  */".replaceAll("\r\n", "\n");
 
         const expected1 = {
             paths: {
                 "/hello": {
                     post: {
-                        description: 'Get a "hello world" message.',
+                        description: "Get a \"hello world\" message.",
                         responses: {
                             200: {
                                 content: {
@@ -374,7 +374,7 @@ describe("commentsToOpenApi", () => {
             paths: {
                 "/hello": {
                     get: {
-                        description: 'Get a "hello world" message.',
+                        description: "Get a \"hello world\" message.",
                         responses: {
                             200: {
                                 content: {
@@ -527,19 +527,19 @@ describe("commentsToOpenApi", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
-        const comment = '/**\n\
+        const comment = "/**\n\
  * POST /hello\n\
- * @description Post a "hello world" message.\n\
+ * @description Post a \"hello world\" message.\n\
  * @bodyContent {boolean} application/json\n\
  * @bodyDescription Whether or not to say hello world.\n\
  * @response 200 - hello world.\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
                 "/hello": {
                     post: {
-                        description: 'Post a "hello world" message.',
+                        description: "Post a \"hello world\" message.",
                         requestBody: {
                             content: {
                                 "application/json": {
@@ -568,19 +568,19 @@ describe("commentsToOpenApi", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
-        const comment = '/**\n\
+        const comment = "/**\n\
  * POST /hello\n\
- * @description Post a "hello world" message.\n\
+ * @description Post a \"hello world\" message.\n\
  * @bodyContent {ExampleObject} application/x-www-form-urlencoded\n\
  * @bodyDescription A more complicated object.\n\
  * @response 200 - hello world.\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
                 "/hello": {
                     post: {
-                        description: 'Post a "hello world" message.',
+                        description: "Post a \"hello world\" message.",
                         requestBody: {
                             content: {
                                 "application/x-www-form-urlencoded": {
@@ -610,9 +610,9 @@ describe("commentsToOpenApi", () => {
 
         // Note: We can't use "*/*" in doc comments.
         // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
-        const comment = '/**\n\
+        const comment = "/**\n\
  * POST /hello\n\
- * @description Post a "hello world" message.\n\
+ * @description Post a \"hello world\" message.\n\
  * @bodyContent {ExampleObject} application/x-www-form-urlencoded\n\
  * @bodyContent {ExampleObject} application/json\n\
  * @bodyContent {binary} image/png\n\
@@ -627,13 +627,13 @@ describe("commentsToOpenApi", () => {
  * @responseHeader {string} 400.fake-header - A fake header\n\
  * @responseExample {Example} 400.application/json.example1\n\
  * @response 400 - error.\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
                 "/hello": {
                     post: {
-                        description: 'Post a "hello world" message.',
+                        description: "Post a \"hello world\" message.",
                         requestBody: {
                             content: {
                                 "*/*": {

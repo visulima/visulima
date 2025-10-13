@@ -25,7 +25,7 @@ const swaggerObject = {
 };
 
 describe("organize", () => {
-    it('should handle "definitions"', () => {
+    it("should handle \"definitions\"", () => {
         expect.assertions(1);
 
         const annotation = {
@@ -57,7 +57,7 @@ describe("organize", () => {
         });
     });
 
-    it('should handle "parameters"', () => {
+    it("should handle \"parameters\"", () => {
         expect.assertions(1);
 
         const annotation = {
@@ -87,7 +87,7 @@ describe("organize", () => {
         });
     });
 
-    it('should handle "securityDefinitions"', () => {
+    it("should handle \"securityDefinitions\"", () => {
         expect.assertions(1);
 
         const annotation = {
@@ -109,7 +109,7 @@ describe("organize", () => {
         });
     });
 
-    it('should handle "responses"', () => {
+    it("should handle \"responses\"", () => {
         expect.assertions(1);
 
         const annotation = {
@@ -127,7 +127,7 @@ describe("organize", () => {
         });
     });
 
-    it('should handle "security"', () => {
+    it("should handle \"security\"", () => {
         expect.assertions(1);
 
         const annotation = {

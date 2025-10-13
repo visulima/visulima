@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import objectMerge from "../src/util/object-merge";
 
-describe("objectMerge", () => {
+describe(objectMerge, () => {
     it("merges path into empty path object", () => {
         expect.assertions(1);
 

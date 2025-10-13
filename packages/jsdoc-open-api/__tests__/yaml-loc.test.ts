@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import yamlLoc from "../src/util/yaml-loc";
 
-describe("yamlLoc", () => {
+describe(yamlLoc, () => {
     it("handles simplest case", () => {
         expect.assertions(1);
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import commentsToOpenApi from "../../src/swagger-jsdoc/comments-to-open-api";
 
-describe("commentsToOpenApi", () => {
+describe(commentsToOpenApi, () => {
     it("simple openapi", () => {
         expect.assertions(1);
 
@@ -185,7 +185,6 @@ describe("commentsToOpenApi", () => {
     it("openapi with Square Bracket", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-secrets/no-secrets
         const fileContents = `
     /**
      * Description
@@ -245,7 +244,7 @@ describe("commentsToOpenApi", () => {
                                                             items: {
                                                                 properties: {
                                                                     access_token: {
-                                                                        // eslint-disable-next-line no-secrets/no-secrets
+
                                                                         example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                                                                         type: "string",
                                                                     },
