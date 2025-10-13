@@ -1,25 +1,25 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import writeConsoleLogBasedOnLevel from "../../../src/utils/write-console-log";
 
-describe("writeConsoleLogBasedOnLevel", () => {
+describe(writeConsoleLogBasedOnLevel, () => {
     it("should return a function that logs to console based on the provided log level", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const consoleMock = vi.spyOn(console, "log").mockImplementation(() => undefined);
 
         const logFunction = writeConsoleLogBasedOnLevel("debug");
 
-        expect(typeof logFunction).toBe("function");
+        expectTypeOf(logFunction).toBeFunction();
 
         logFunction("test message");
 
-        expect(consoleMock).toHaveBeenCalledWith("test message");
+        expect(consoleMock).toHaveBeenCalledExactlyOnceWith("test message");
 
         consoleMock.mockReset();
     });
 
-    it('should return console.error when level is "error"', () => {
+    it("should return console.error when level is \"error\"", () => {
         expect.assertions(1);
 
         const logFunction = writeConsoleLogBasedOnLevel("error");
@@ -28,7 +28,7 @@ describe("writeConsoleLogBasedOnLevel", () => {
         expect(logFunction).toBe(console.error);
     });
 
-    it('should return console.warn when level is "warn"', () => {
+    it("should return console.warn when level is \"warn\"", () => {
         expect.assertions(1);
 
         const logFunction = writeConsoleLogBasedOnLevel("warn");
@@ -37,7 +37,6 @@ describe("writeConsoleLogBasedOnLevel", () => {
         expect(logFunction).toBe(console.warn);
     });
 
-    // eslint-disable-next-line no-secrets/no-secrets
     it("should return console.log when level is not a valid ExtendedRfc5424LogLevels type", () => {
         expect.assertions(1);
 

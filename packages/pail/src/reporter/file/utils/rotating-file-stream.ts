@@ -17,7 +17,6 @@ class RotatingFileStream {
 
     readonly #options: RfsOptions;
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     readonly #createRfsStream: typeof createRotatingStream | undefined;
 
     public constructor(filePath: string, writeImmediately = false, options: RfsOptions = {}) {
@@ -27,7 +26,7 @@ class RotatingFileStream {
 
         if (!this.#immediate) {
             try {
-                // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module
+                // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
                 this.#createRfsStream = require("rotating-file-stream").createStream;
             } catch {
                 throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");

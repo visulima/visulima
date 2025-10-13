@@ -20,7 +20,7 @@ const getCallerFilename = (): {
             return callSitesWithoutCurrent;
         };
 
-        // eslint-disable-next-line unicorn/error-message,@typescript-eslint/no-unused-expressions
+        // eslint-disable-next-line unicorn/error-message
         new Error().stack;
 
         // eslint-disable-next-line unicorn/no-array-reduce

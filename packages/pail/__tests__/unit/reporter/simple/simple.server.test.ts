@@ -7,7 +7,7 @@ import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-r
 import { SimpleReporter } from "../../../../src/reporter/simple/simple.server";
 import type { Meta, ReadonlyMeta } from "../../../../src/types";
 
-vi.mock("terminal-size", () => {
+vi.mock(import("terminal-size"), () => {
     return {
         default: () => {
             return {
@@ -40,8 +40,8 @@ describe("simpleReporter", () => {
 
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
-        expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message1\n`,
+        expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message1\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -67,8 +67,8 @@ describe("simpleReporter", () => {
 
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
-        expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}     ${grey("[Scope1 > Scope2]")}     This is a sample message\n`,
+        expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}     ${grey("[Scope1 > Scope2]")}     This is a sample message\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -93,8 +93,8 @@ describe("simpleReporter", () => {
 
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
-        expect(stderrSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
+        expect(stderrSpy).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
         );
 
         stderrSpy.mockRestore();
@@ -122,9 +122,8 @@ describe("simpleReporter", () => {
 
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(newStdout.write).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
+        expect(newStdout.write).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
         );
     });
 
@@ -150,9 +149,8 @@ describe("simpleReporter", () => {
 
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(newStderr.write).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
+        expect(newStderr.write).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
         );
     });
 
@@ -242,8 +240,8 @@ describe("simpleReporter", () => {
 
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
-        expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}           a  This is a sample message1\n`,
+        expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}           a  This is a sample message1\n`,
         );
 
         stdoutSpy.mockRestore();

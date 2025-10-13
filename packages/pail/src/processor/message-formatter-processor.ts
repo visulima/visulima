@@ -5,7 +5,6 @@ import type { stringify } from "safe-stable-stringify";
 import type { Meta, StringifyAwareProcessor } from "../types";
 
 class MessageFormatterProcessor<L extends string = string> implements StringifyAwareProcessor<L> {
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 
     readonly #formatters: Record<string, FormatterFunction> | undefined;
@@ -27,7 +26,7 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
 
                 if (stringified === undefined) {
                     // eslint-disable-next-line no-console
-                    console.warn("Unable to stringify value of type " + typeof value, value);
+                    console.warn(`Unable to stringify value of type ${typeof value}`, value);
 
                     return "undefined";
                 }

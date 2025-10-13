@@ -123,7 +123,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         // Backup original value
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(stream as any).__write) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign,@typescript-eslint/unbound-method
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign
             (stream as any).__write = stream.write;
         }
 
@@ -154,10 +154,10 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
     }
 }
 
-export type PailServerType<T extends string = string, L extends string = string> = PailServerImpl<T, L> &
-    Record<DefaultLogTypes, LoggerFunction> &
-    Record<T, LoggerFunction> &
-    (new<TC extends string = string, LC extends string = string>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>);
+export type PailServerType<T extends string = string, L extends string = string> = (new<TC extends string = string, LC extends string = string>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>)
+    & PailServerImpl<T, L>
+    & Record<DefaultLogTypes, LoggerFunction>
+    & Record<T, LoggerFunction>;
 
 export type PailConstructor<T extends string = string, L extends string = string> = new (options?: ServerConstructorOptions<T, L>) => PailServerType<T, L>;
 

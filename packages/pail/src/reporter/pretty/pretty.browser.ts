@@ -23,7 +23,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public log(meta: ReadonlyMeta<L>): void {
         // eslint-disable-next-line unicorn/no-typeof-undefined
-        const isNotBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
+        const isNotBrowser = typeof globalThis.window !== "undefined" && typeof globalThis.document !== "undefined";
         const consoleLogFunction = writeConsoleLogBasedOnLevel(meta.type.level);
 
         const { badge, context, date, error, groups, label, message, prefix, repeated, scope, suffix, type } = meta;
@@ -36,7 +36,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
 
         if (isNotBrowser && groups.length > 0) {
             const groupSpaces: string = groups.map(() => "   ").join("");
-            const cGroup = grey("[" + (groups.at(-1) as string) + "]");
+            const cGroup = grey(`[${groups.at(-1) as string}]`);
 
             items.push(format(groupSpaces + (cGroup[0] as string), cGroup.slice(1) as unknown as string[]));
         }
@@ -47,7 +47,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             if (isNotBrowser) {
                 items.push(format(cDate[0] as string, cDate.slice(1) as unknown as string[]));
             } else {
-                items.push([(cDate[0] as string) + " ", ...cDate.slice(1)]);
+                items.push([`${cDate[0] as string} `, ...cDate.slice(1)]);
             }
         }
 
@@ -57,7 +57,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             if (isNotBrowser) {
                 items.push(format(cBadge[0] as string, cBadge.slice(1) as unknown as string[]));
             } else {
-                items.push([cBadge[0] + " ", ...cBadge.slice(1)]);
+                items.push([`${cBadge[0]} `, ...cBadge.slice(1)]);
             }
         } else {
             const longestBadge: string = getLongestBadge<L, T>(this._loggerTypes);
@@ -66,9 +66,9 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 const cBadgePlaceholder = grey(".".repeat(longestBadge.length));
 
                 if (isNotBrowser) {
-                    items.push(format((cBadgePlaceholder[0] as string) + " ", cBadgePlaceholder.slice(1) as unknown as string[]));
+                    items.push(format(`${cBadgePlaceholder[0] as string} `, cBadgePlaceholder.slice(1) as unknown as string[]));
                 } else {
-                    items.push([(cBadgePlaceholder[0] as string) + " ", ...cBadgePlaceholder.slice(1)]);
+                    items.push([`${cBadgePlaceholder[0] as string} `, ...cBadgePlaceholder.slice(1)]);
                 }
             }
         }
@@ -79,7 +79,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         let repeatedMessage: any[] | string | undefined;
 
         if (repeated) {
-            const cRepeated = white("[" + repeated + "x]");
+            const cRepeated = white(`[${repeated}x]`);
 
             repeatedMessage = isNotBrowser
                 ? (format(cRepeated[0] as string, cRepeated.slice(1) as unknown as string[]) as string)
@@ -113,7 +113,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 if (isNotBrowser) {
                     items.push(format(cLabelSpacer[0] as string, cLabelSpacer.slice(1) as unknown as string[]));
                 } else {
-                    items.push([" " + cLabelSpacer[0], ...cLabelSpacer.slice(1)]);
+                    items.push([` ${cLabelSpacer[0]}`, ...cLabelSpacer.slice(1)]);
                 }
             }
         } else {
@@ -127,7 +127,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-            const cScope = grey("[" + scope.join(" > ") + "]");
+            const cScope = grey(`[${scope.join(" > ")}]`);
 
             if (isNotBrowser) {
                 items.push(format(cScope[0] as string, cScope.slice(1) as unknown as string[]));
@@ -138,7 +138,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
 
         if (prefix) {
             const cPrefix = grey(
-                (Array.isArray(scope) && scope.length > 0 ? ". " : " ") + "[" + (this._styles.underline.prefix ? underline(prefix as string) : prefix) + "] ",
+                `${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this._styles.underline.prefix ? underline(prefix as string) : prefix}] `,
             );
 
             if (isNotBrowser) {
@@ -164,9 +164,9 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             const cSuffix = grey((this._styles.underline.suffix ? underline(suffix as string) : suffix) as string);
 
             if (isNotBrowser) {
-                items.push(format(("\n" + (cSuffix[0] as string)) as string, cSuffix.slice(1) as unknown as string[]));
+                items.push(format((`\n${cSuffix[0] as string}`) as string, cSuffix.slice(1) as unknown as string[]));
             } else {
-                items.push([("\n" + (cSuffix[0] as string)) as string, ...cSuffix.slice(1)]);
+                items.push([(`\n${cSuffix[0] as string}`) as string, ...cSuffix.slice(1)]);
             }
         }
 
@@ -179,7 +179,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const arguments_ = [];
 
-            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+            // eslint-disable-next-line no-loops/no-loops
             for (const value of items) {
                 if (Array.isArray(value) && value.length > 1 && (value[0] as string).includes("%c")) {
                     logMessage += value[0];
@@ -190,7 +190,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 }
             }
 
-            consoleLogFunction(logMessage + "%c", ...css, "", ...arguments_);
+            consoleLogFunction(`${logMessage}%c`, ...css, "", ...arguments_);
         }
     }
 

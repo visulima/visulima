@@ -1,10 +1,10 @@
 import type { ConsolaReporter } from "consola";
 
 export class JsonServerConsolaReporter implements ConsolaReporter {
-    public log(logObj, ctx): void {
-        const json = JSON.stringify(logObj);
+    public log(logObject, context): void {
+        const json = JSON.stringify(logObject);
 
-        const stream = logObj.level < 2 ? ctx.options.stderr || process.stderr : ctx.options.stdout || process.stdout;
+        const stream = logObject.level < 2 ? context.options.stderr || process.stderr : context.options.stdout || process.stdout;
         const write = stream.__write || stream.write;
 
         write.call(stream, json);
@@ -16,17 +16,19 @@ export class JsonBrowserConsolaReporter implements ConsolaReporter {
         if (level < 1) {
             return (console as any).__error || console.error;
         }
+
         if (level === 1) {
             return (console as any).__warn || console.warn;
         }
+
         return (console as any).__log || console.log;
     }
 
-    public log(logObj, ctx): void {
-        const json = JSON.stringify(logObj);
+    public log(logObject, context): void {
+        const json = JSON.stringify(logObject);
 
-        const consoleLogFn = this._getLogFn(logObj.level);
+        const consoleLogFunction = this._getLogFn(logObject.level);
 
-        consoleLogFn(json);
+        consoleLogFunction(json);
     }
 }

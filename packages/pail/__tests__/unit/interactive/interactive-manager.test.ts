@@ -22,9 +22,9 @@ describe("updateManager", (): void => {
     it("hook stream", (): void => {
         expect.assertions(4);
 
-        expect(manager.isHooked).toBeFalsy();
-        expect(manager.hook()).toBeTruthy();
-        expect(manager.isHooked).toBeTruthy();
+        expect(manager.isHooked).toBe(false);
+        expect(manager.hook()).toBe(true);
+        expect(manager.isHooked).toBe(true);
         expect(stdout._stack).toStrictEqual([cursorHide]);
     });
 
@@ -81,8 +81,8 @@ describe("updateManager", (): void => {
     it("unhook stream", (): void => {
         expect.assertions(3);
 
-        expect(manager.isHooked).toBeTruthy();
-        expect(manager.unhook()).toBeTruthy();
+        expect(manager.isHooked).toBe(true);
+        expect(manager.unhook()).toBe(true);
         expect(stdout._stack).toStrictEqual([cursorShow]);
     });
 });

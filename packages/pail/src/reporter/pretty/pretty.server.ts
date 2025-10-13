@@ -101,7 +101,6 @@ export class PrettyReporter<T extends string = string, L extends string = string
             size = this._styles.messageLength;
         }
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
         // @ts-ignore - @TODO: check rollup-plugin-dts
         const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, traceError, type } = data;
 
@@ -113,11 +112,11 @@ export class PrettyReporter<T extends string = string, L extends string = string
         const items: string[] = [];
 
         if (groups.length > 0) {
-            items.push(groupSpaces + grey("[" + groups.at(-1) + "]") + " ");
+            items.push(`${groupSpaces + grey(`[${groups.at(-1)}]`)} `);
         }
 
         if (date) {
-            items.push(grey(this._styles.dateFormatter(typeof date === "string" ? new Date(date) : date)) + " ");
+            items.push(`${grey(this._styles.dateFormatter(typeof date === "string" ? new Date(date) : date))} `);
         }
 
         if (badge) {
@@ -126,48 +125,48 @@ export class PrettyReporter<T extends string = string, L extends string = string
             const longestBadge: string = getLongestBadge<L, T>(this._loggerTypes);
 
             if (longestBadge.length > 0) {
-                items.push(grey(".".repeat(longestBadge.length)) + " ");
+                items.push(`${grey(".".repeat(longestBadge.length))} `);
             }
         }
 
         const longestLabel: string = getLongestLabel<L, T>(this._loggerTypes);
 
         if (label) {
-            items.push(colorized(formatLabel(label as string, this._styles)) + " ", grey(".".repeat(longestLabel.length - stringLength(label as string))));
+            items.push(`${colorized(formatLabel(label as string, this._styles))} `, grey(".".repeat(longestLabel.length - stringLength(label as string))));
         } else {
             // plus 2 for the space and the dot
             items.push(grey(".".repeat(longestLabel.length + 2)));
         }
 
         if (repeated) {
-            items.push(bgGrey.white("[" + repeated + "x]") + " ");
+            items.push(`${bgGrey.white(`[${repeated}x]`)} `);
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-            items.push(" " + grey("[" + scope.join(" > ") + "]") + " ");
+            items.push(` ${grey(`[${scope.join(" > ")}]`)} `);
         }
 
         if (prefix) {
             items.push(
-                grey(
-                    (Array.isArray(scope) && scope.length > 0 ? ". " : " ") +
-                        "[" +
-                        (this._styles.underline.prefix ? underline(prefix as string) : prefix) +
-                        "]",
-                ) + " ",
+                `${grey(
+                    `${Array.isArray(scope) && scope.length > 0 ? ". " : " "
+                    }[${
+                        this._styles.underline.prefix ? underline(prefix as string) : prefix
+                    }]`,
+                )} `,
             );
         }
 
         const titleSize = stringLength(items.join(" "));
 
         if (file) {
-            const fileMessage = file.name + (file.line ? ":" + file.line : "");
+            const fileMessage = file.name + (file.line ? `:${file.line}` : "");
             const fileMessageSize = stringLength(fileMessage);
 
             if (fileMessageSize + titleSize + 2 > size) {
-                items.push(grey(" " + fileMessage));
+                items.push(grey(` ${fileMessage}`));
             } else {
-                items.push(grey(".".repeat(size - titleSize - fileMessageSize - 2) + " " + fileMessage));
+                items.push(grey(`${".".repeat(size - titleSize - fileMessageSize - 2)} ${fileMessage}`));
             }
         } else {
             items.push(grey(".".repeat(size - titleSize - 1)));
@@ -181,12 +180,12 @@ export class PrettyReporter<T extends string = string, L extends string = string
             const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
-                groupSpaces +
-                    wrapAnsi(formattedMessage, size - 3, {
-                        hard: true,
-                        trim: false,
-                        wordWrap: true,
-                    }),
+                groupSpaces
+                + wrapAnsi(formattedMessage, size - 3, {
+                    hard: true,
+                    trim: false,
+                    wordWrap: true,
+                }),
             );
         }
 
@@ -197,18 +196,19 @@ export class PrettyReporter<T extends string = string, L extends string = string
                 ...context.map((value) => {
                     if (value instanceof Error) {
                         hasError = true;
+
                         return (
-                            "\n\n" +
-                            renderError(value as Error, {
-                                ...this.#errorOptions,
-                                filterStacktrace: pailFileFilter,
-                                prefix: groupSpaces,
-                            })
+                            `\n\n${
+                                renderError(value as Error, {
+                                    ...this.#errorOptions,
+                                    filterStacktrace: pailFileFilter,
+                                    prefix: groupSpaces,
+                                })}`
                         );
                     }
 
                     if (typeof value === "object") {
-                        return " " + inspect(value, this.#inspectOptions);
+                        return ` ${inspect(value, this.#inspectOptions)}`;
                     }
 
                     const newValue = (hasError ? "\n\n" : " ") + value;
@@ -232,7 +232,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
         if (traceError) {
             items.push(
-                "\n\n" +
+                `\n\n${
                     renderError(traceError as Error, {
                         ...this.#errorOptions,
                         filterStacktrace: pailFileFilter,
@@ -241,7 +241,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
                         hideErrorErrorsCodeView: true,
                         hideMessage: true,
                         prefix: groupSpaces,
-                    }),
+                    })}`,
             );
         }
 
@@ -249,7 +249,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
             items.push("\n", groupSpaces + grey(this._styles.underline.suffix ? underline(suffix as string) : suffix));
         }
 
-        return items.join("") + "\n";
+        return `${items.join("")}\n`;
     }
 
     protected _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {
@@ -259,7 +259,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
             this.#interactiveManager.update(streamType, message.split("\n"), 0);
         } else {
-            writeStream(message + "\n", stream);
+            writeStream(`${message}\n`, stream);
         }
     }
 }

@@ -58,12 +58,11 @@ class InteractiveManager {
 
     /**
      * Removes from the bottom of output up the specified count of lines
-     *
-     * @param stream - Stream to remove lines from
-     * @param count - lines count to remove
+     * @param stream Stream to remove lines from
+     * @param count lines count to remove
      */
     public erase(stream: StreamType, count = this.#lastLength): void {
-        // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unnecessary-condition
+        // eslint-disable-next-line security/detect-object-injection
         if (this.#stream[stream] === undefined) {
             throw new TypeError(`Stream "${stream}" is not available`);
         }
@@ -88,9 +87,8 @@ class InteractiveManager {
 
     /**
      * Resume suspend hooks
-     *
-     * @param stream - Stream to resume
-     * @param eraseRowCount - erase output rows count
+     * @param stream Stream to resume
+     * @param eraseRowCount erase output rows count
      */
     public resume(stream: StreamType, eraseRowCount?: number): void {
         if (this.#isSuspended) {
@@ -108,9 +106,8 @@ class InteractiveManager {
 
     /**
      * Suspend active hooks for external output
-     *
-     * @param stream - Stream to suspend
-     * @param erase - erase output
+     * @param stream Stream to suspend
+     * @param erase erase output
      */
     public suspend(stream: StreamType, erase = true): void {
         if (!this.#isSuspended) {
@@ -126,9 +123,7 @@ class InteractiveManager {
 
     /**
      * Unhooks both stdout and stderr streams and print their story of logs
-     *
-     * @param separateHistory - If `true`, will add an empty line to the history output for individual recorded lines and console logs
-     *
+     * @param separateHistory If `true`, will add an empty line to the history output for individual recorded lines and console logs
      * @returns Success status
      */
     public unhook(separateHistory = true): boolean {
@@ -143,14 +138,13 @@ class InteractiveManager {
 
     /**
      * Update output
-     *
-     * @param stream - Stream to write to
-     * @param rows - Text lines to write to standard output
-     * @param from - Index of the line starting from which the contents of the terminal are being overwritten
+     * @param stream Stream to write to
+     * @param rows Text lines to write to standard output
+     * @param from Index of the line starting from which the contents of the terminal are being overwritten
      */
     public update(stream: StreamType, rows: string[], from = 0): void {
         if (rows.length > 0) {
-            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unnecessary-condition
+            // eslint-disable-next-line security/detect-object-injection
             if (this.#stream[stream] === undefined) {
                 throw new TypeError(`Stream "${stream}" is not available`);
             }
@@ -187,7 +181,7 @@ class InteractiveManager {
                 hook.erase(actualLength);
             }
 
-            hook.write(output.join("\n") + "\n");
+            hook.write(`${output.join("\n")}\n`);
 
             this.#lastLength = outside ? outside + output.length + 1 : output.length;
             this.#outside = Math.max(this.lastLength - height, this.outside);

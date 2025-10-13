@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { DefaultLoggerTypes, LoggerTypesConfig } from "../../../src/types";
 import mergeTypes from "../../../src/utils/merge-types";
 
-describe("mergeTypes", () => {
+describe(mergeTypes, () => {
     it("should merge two types correctly when given standard and custom types", () => {
         expect.assertions(1);
 

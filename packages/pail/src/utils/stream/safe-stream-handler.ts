@@ -39,7 +39,8 @@ class SafeStreamHandler {
     protected writeStream(message: string): void {
         if (!this.#ready) {
             // eslint-disable-next-line no-console
-            console.warn("Stream busy: " + this.#name + '. Write will be dropped: "' + message + '"');
+            console.warn(`Stream busy: ${this.#name}. Write will be dropped: "${message}"`);
+
             return;
         }
 

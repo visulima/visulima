@@ -18,9 +18,9 @@ describe("pailServerImpl", () => {
         pailServer.warn("Warning message");
         pailServer.error("Error message");
 
-        expect(logStdoutSpy).toHaveBeenCalledWith("Info message");
-        expect(logStdoutSpy).toHaveBeenCalledWith("Warning message");
-        expect(logStderrSpy).toHaveBeenCalledWith("Error message");
+        expect(logStdoutSpy).toHaveBeenNthCalledWith(1, "Info message");
+        expect(logStdoutSpy).toHaveBeenNthCalledWith(2, "Warning message");
+        expect(logStderrSpy).toHaveBeenCalledExactlyOnceWith("Error message");
     });
 
     it("should handle interactive mode correctly", () => {
@@ -54,23 +54,21 @@ describe("pailServerImpl", () => {
         expect.assertions(4);
 
         const pailServer = new PailServer({ stderr, stdout });
-        // eslint-disable-next-line @typescript-eslint/unbound-method
+
         const originalStdoutWrite = stdout.write;
-        // eslint-disable-next-line @typescript-eslint/unbound-method
+
         const originalStderrWrite = stderr.write;
 
         pailServer.wrapStd();
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(stdout.write).not.toBe(originalStdoutWrite);
-        // eslint-disable-next-line @typescript-eslint/unbound-method
+
         expect(stderr.write).not.toBe(originalStderrWrite);
 
         pailServer.restoreStd();
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(stdout.write).toBe(originalStdoutWrite);
-        // eslint-disable-next-line @typescript-eslint/unbound-method
+
         expect(stderr.write).toBe(originalStderrWrite);
     });
 
@@ -135,12 +133,12 @@ describe("pailServerImpl", () => {
         newLogger3.groupEnd();
         newLogger3.log("Back to the outer level");
 
-        expect(logStdoutSpy).toHaveBeenCalledWith("This is the outer level");
-        expect(logStdoutSpy).toHaveBeenCalledWith("    Level 2");
-        expect(logStdoutSpy).toHaveBeenCalledWith("    Hello world!");
-        expect(logStdoutSpy).toHaveBeenCalledWith("        Level 3");
-        expect(logStdoutSpy).toHaveBeenCalledWith("        More of level 3");
-        expect(logStdoutSpy).toHaveBeenCalledWith("    Back to level 2");
-        expect(logStdoutSpy).toHaveBeenCalledWith("Back to the outer level");
+        expect(logStdoutSpy).toHaveBeenNthCalledWith(1, "This is the outer level");
+        expect(logStdoutSpy).toHaveBeenNthCalledWith(2, "    Level 2");
+        expect(logStdoutSpy).toHaveBeenNthCalledWith(3, "    Hello world!");
+        expect(logStdoutSpy).toHaveBeenNthCalledWith(4, "        Level 3");
+        expect(logStdoutSpy).toHaveBeenNthCalledWith(5, "        More of level 3");
+        expect(logStdoutSpy).toHaveBeenNthCalledWith(6, "    Back to level 2");
+        expect(logStdoutSpy).toHaveBeenNthCalledWith(7, "Back to the outer level");
     });
 });

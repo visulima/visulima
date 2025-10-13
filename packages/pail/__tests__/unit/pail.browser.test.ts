@@ -30,8 +30,8 @@ describe("pailBrowserImpl", () => {
         logger.info("Info message");
         logger.customType("Custom log message", { key: "value" });
 
-        expect(consoleSpy).toHaveBeenCalledWith("Info message");
-        expect(consoleSpy).toHaveBeenCalledWith("Custom log message", { key: "value" });
+        expect(consoleSpy).toHaveBeenNthCalledWith(1, "Info message");
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, "Custom log message", { key: "value" });
 
         consoleSpy.mockRestore();
     });
@@ -76,10 +76,12 @@ describe("pailBrowserImpl", () => {
         const originalConsoleLog = console.log;
 
         logger.wrapConsole();
+
         // eslint-disable-next-line no-console
         expect(console.log).not.toBe(originalConsoleLog);
 
         logger.restoreConsole();
+
         // eslint-disable-next-line no-console
         expect(console.log).toBe(originalConsoleLog);
     });
@@ -103,14 +105,14 @@ describe("pailBrowserImpl", () => {
         logger.timeLog("testTimer", "Intermediate log");
         logger.timeEnd("testTimer");
 
-        expect(consoleSpy).toHaveBeenCalledWith("Initialized timer...");
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/(.*) ms/), "Intermediate log");
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/Timer run for: (.*)ms/));
+        expect(consoleSpy).toHaveBeenNthCalledWith(1, "Initialized timer...");
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, expect.stringMatching(/(.*) ms/), "Intermediate log");
+        expect(consoleSpy).toHaveBeenNthCalledWith(3, expect.stringMatching(/Timer run for: (.*)ms/));
 
         consoleSpy.mockRestore();
     });
 
-    it.skipIf(typeof window === "undefined")("should group and ungroup logs correctly", () => {
+    it.skipIf(globalThis.window === undefined)("should group and ungroup logs correctly", () => {
         expect.assertions(2);
 
         const logger = new PailBrowser({
@@ -127,10 +129,12 @@ describe("pailBrowserImpl", () => {
         const consoleGroupEndSpy = vi.spyOn(console, "groupEnd").mockImplementation(() => {});
 
         logger.group("Test Group");
-        expect(consoleGroupSpy).toHaveBeenCalledWith("Test Group");
+
+        expect(consoleGroupSpy).toHaveBeenCalledExactlyOnceWith("Test Group");
 
         logger.groupEnd();
-        expect(consoleGroupEndSpy).toHaveBeenCalledWith();
+
+        expect(consoleGroupEndSpy).toHaveBeenCalledExactlyOnceWith();
 
         consoleGroupSpy.mockRestore();
         consoleGroupEndSpy.mockRestore();
@@ -177,8 +181,8 @@ describe("pailBrowserImpl", () => {
         logger.info(undefined);
         logger.info(null);
 
-        expect(consoleSpy).toHaveBeenCalledWith(undefined);
-        expect(consoleSpy).toHaveBeenCalledWith(null);
+        expect(consoleSpy).toHaveBeenNthCalledWith(1, undefined);
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, null);
 
         consoleSpy.mockRestore();
     });
@@ -201,7 +205,7 @@ describe("pailBrowserImpl", () => {
         logger.time("testTimer");
         logger.time("testTimer");
 
-        expect(consoleSpy).toHaveBeenCalledWith("Timer 'testTimer' already exists");
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, "Timer 'testTimer' already exists");
 
         consoleSpy.mockRestore();
     });
@@ -223,7 +227,7 @@ describe("pailBrowserImpl", () => {
 
         logger.timeEnd("nonExistentTimer");
 
-        expect(consoleSpy).toHaveBeenCalledWith("Timer not found");
+        expect(consoleSpy).toHaveBeenCalledExactlyOnceWith("Timer not found");
 
         consoleSpy.mockRestore();
     });
@@ -245,7 +249,7 @@ describe("pailBrowserImpl", () => {
 
         logger.count();
 
-        expect(consoleSpy).toHaveBeenCalledWith("default: 1");
+        expect(consoleSpy).toHaveBeenCalledExactlyOnceWith("default: 1");
 
         consoleSpy.mockRestore();
     });
@@ -255,9 +259,10 @@ describe("pailBrowserImpl", () => {
 
         const logger = new PailBrowser({});
 
-        expect(logger.isEnabled()).toBeTruthy();
+        expect(logger.isEnabled()).toBe(true);
 
         logger.disable();
-        expect(logger.isEnabled()).toBeFalsy();
+
+        expect(logger.isEnabled()).toBe(false);
     });
 });
