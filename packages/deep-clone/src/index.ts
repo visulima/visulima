@@ -10,7 +10,7 @@ import { copyRegExpLoose, copyRegExpStrict } from "./handler/copy-regexp";
 import { copySetLoose, copySetStrict } from "./handler/copy-set";
 import type { Options, State } from "./types";
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 const canValueHaveProperties = (value: unknown): value is NonNullable<Function | object> =>
     (typeof value === "object" && value !== null) || typeof value === "function";
 
@@ -24,7 +24,7 @@ const handlers = {
     DataView: copyDataView,
     Date: copyDate,
     Error: copyError,
-    // eslint-disable-next-line @typescript-eslint/ban-types,@typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-unused-vars
     Function: (object: Function, _state: State) => object,
     Map: copyMapLoose,
     Object: copyObjectLoose,
@@ -37,9 +37,11 @@ const handlers = {
     SharedArrayBuffer: (object: SharedArrayBuffer, _state: State) => {
         throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     WeakMap: (object: WeakMap<any, any>) => {
         throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     WeakSet: (object: WeakSet<any>) => {
         throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
     },
@@ -71,8 +73,10 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         ...options?.handler,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let cache: WeakMap<any, any> | null = new WeakMap();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const clone = (value: any, state: State): any => {
         if (!canValueHaveProperties(value)) {
             return value as DeepReadwrite<T>;
@@ -111,7 +115,8 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         }
 
         if (value instanceof Error) {
-            return new cloner.Error(value, state);
+            // eslint-disable-next-line unicorn/throw-new-error
+            return cloner.Error(value, state);
         }
 
         if (
@@ -167,7 +172,7 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
     const cloned = clone(originalData, { cache, clone });
 
     // Reset the cache to free up memory
-    cache = null;
+    cache = undefined;
 
     return cloned as DeepReadwrite<T>;
 };
